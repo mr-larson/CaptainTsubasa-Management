@@ -5,7 +5,7 @@
 
 > Une plateforme de gestion d'équipe inspirée de Captain Tsubasa. Gérez votre équipe, entraînez vos joueurs et menez-les à la victoire!
 
-## 🏠 [Documentation](https://gautd8.notion.site/Captain-Tsubasa-Management-28c47313c8ca4fb5b0e3652491118849?pvs=4)
+## 🏠 ![Documentation](https://gautd8.notion.site/Captain-Tsubasa-Management-28c47313c8ca4fb5b0e3652491118849?pvs=4)
 
 ## Fonctionnalités 🌱
 
