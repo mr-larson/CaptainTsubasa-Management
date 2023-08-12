@@ -46,6 +46,11 @@ class Player extends Model
         return $this->belongsTo(Team::class, 'current_team_id');
     }
 
+    public function trainings()
+    {
+        return $this->belongsToMany(Training::class, 'trainings_players', 'player_id', 'training_id');
+    }
+
     public function sanctions()
     {
         return $this->hasMany(Sanction::class);
