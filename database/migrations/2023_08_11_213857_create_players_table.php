@@ -27,7 +27,7 @@ class CreatePlayersTable extends Migration
             $table->integer('cost');  // Coût
             $table->integer('current_contract_duration')->nullable();  // Durée de contrat en cours
             $table->integer('fatigue')->default(0);  // Fatigue
-            $table->float('injury_risk', 3, 2)->default(0.0);  // Risque de blessure (stocké comme pourcentage, ex: 0.10 pour 10%)
+            $table->float('injury_risk', 3, 2)->default(0.0);  // Risque de blessure (stocké comme pourcentage, donc entre 0 et 100)
             $table->boolean('is_injured')->default(false);  // Est blessé
             $table->foreign('current_team_id')->references('id')->on('teams')->onDelete('set null');
             $table->timestamps();

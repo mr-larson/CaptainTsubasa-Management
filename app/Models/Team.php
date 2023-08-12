@@ -12,14 +12,15 @@ class Team extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'name',
-        'logo_path',
-        'budget',
-        'points',
-        'wins',
-        'draws',
-        'losses',
-        'team_stats_bonus',
+        'name', //string, nom de l'équipe
+        'logo_path', //string, chemin vers le logo de l'équipe
+        'budget', //integer, budget de l'équipe
+        'points', //integer, points de l'équipe
+        'wins', //integer, victoires de l'équipe
+        'draws', //integer, matchs nuls de l'équipe
+        'losses', //integer, défaites de l'équipe
+        'team_stats_bonus', //json, bonus d'équipe
+        'active_cards', //json, cartes actives
     ];
 
     protected $casts = [

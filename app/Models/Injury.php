@@ -12,10 +12,10 @@ class Injury extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'player_id',
-        'description',
-        'duration_in_days',
-        'injury_date',
+        'player_id', //foreign key vers le joueur
+        'description', //string
+        'duration_in_days', //integer
+        'injury_date', //date
     ];
 
     protected $casts = [

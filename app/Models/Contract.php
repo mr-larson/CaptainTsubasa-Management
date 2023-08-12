@@ -12,17 +12,17 @@ class Contract extends Model
     Use SoftDeletes;
 
     protected $fillable = [
-        'team_id',
-        'player_id',
-        'start_date',
-        'end_date',
+        'team_id', //unsignedBigInteger, équipe concernée par le contrat
+        'player_id', //unsignedBigInteger, joueur concerné par le contrat
+        'start_date', //date
+        'end_date', //date
     ];
 
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
     ];
-    
+
     public function team()
     {
         return $this->belongsTo(Team::class);

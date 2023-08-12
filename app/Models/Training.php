@@ -13,15 +13,14 @@ class Training extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'training_type_id',
-        'training_date',
-        'fatigue_generated',
-        'training_mode',
+        'training_type_id', //foreign key vers le type d'entraînement
+        'training_date', //date
+        'fatigue_generated', //json
+        'training_mode', //enum
     ];
 
     protected $casts = [
         'training_date' => 'date',
-        'fatigue_generated' => 'array',
     ];
 
     /**

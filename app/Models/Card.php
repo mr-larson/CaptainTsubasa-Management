@@ -12,10 +12,10 @@ class Card extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'type',
-        'name',
-        'description',
-        'effects',
+        'type', //enum('bonus', 'malus')
+        'name', //string
+        'description', //string
+        'effects', //json
     ];
 
     protected $casts = [

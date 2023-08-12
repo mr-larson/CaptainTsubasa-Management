@@ -12,27 +12,27 @@ class SoccerMatch extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'team_a_id',
-        'team_b_id',
-        'score_team_a',
-        'score_team_b',
-        'match_statistics',
-        'weather',
-        'red_cards',
-        'yellow_cards',
-        'team_a_players',
-        'team_b_players',
-        'match_date',
-        'highlights',
-        'team_a_promo_cards',
-        'team_b_promo_cards',
-        'team_a_pre_match_fatigue',
-        'team_b_pre_match_fatigue',
-        'team_a_post_match_fatigue',
-        'team_b_post_match_fatigue',
-        'injured_players',
-        'team_a_financial_gain',
-        'team_b_financial_gain',
+        'team_a_id', //unsignedBigInteger, équipe A
+        'team_b_id', //unsignedBigInteger, équipe B
+        'score_team_a', //unsignedInteger, score de l'équipe A
+        'score_team_b', //unsignedInteger, score de l'équipe B
+        'match_statistics', //json, array, statistiques du match
+        'weather', //string, météo
+        'red_cards', //json, array, cartons rouges (liste d'IDs de joueurs)
+        'yellow_cards', //json, array, cartons jaunes (liste d'IDs de joueurs)
+        'team_a_players', //json, array, liste d'IDs de joueurs de l'équipe A
+        'team_b_players', //json, array, liste d'IDs de joueurs de l'équipe B
+        'match_date', //date, date du match
+        'highlights', //text, résumé ou moments forts du match
+        'team_a_promo_cards', //json, array, cartes promotionnelles de l'équipe A 
+        'team_b_promo_cards', //json, array, cartes promotionnelles de l'équipe B
+        'team_a_pre_match_fatigue', //json, array, fatigue des joueurs de l'équipe A avant le match
+        'team_b_pre_match_fatigue', //json, array, fatigue des joueurs de l'équipe B avant le match
+        'team_a_post_match_fatigue', //json, array, fatigue des joueurs de l'équipe A après le match
+        'team_b_post_match_fatigue', //json, array, fatigue des joueurs de l'équipe B après le match
+        'injured_players', //json, array, joueurs blessés
+        'team_a_financial_gain', //decimal, gain financier de l'équipe A
+        'team_b_financial_gain', //decimal, gain financier de l'équipe B
     ];
 
     protected $casts = [

@@ -17,10 +17,10 @@ class Sanction extends Model
      * @var array
      */
     protected $fillable = [
-        'player_id',
-        'match_id',
-        'type',
-        'duration', // en semaines
+        'player_id', // unsignedBigInteger, joueur concerné par la sanction
+        'match_id', // unsignedBigInteger, match concerné par la sanction
+        'type', // string, type de sanction (carton jaune, double carton jaune, carton rouge.)
+        'duration', // integer, en semaines
     ];
 
     /**
