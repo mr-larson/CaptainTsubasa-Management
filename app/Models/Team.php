@@ -20,7 +20,6 @@ class Team extends Model
         'draws',
         'losses',
         'team_stats_bonus',
-        //... autres champs selon vos besoins...
     ];
 
     protected $casts = [
@@ -53,15 +52,18 @@ class Team extends Model
         return $this->matchesAsTeamA->concat($this->matchesAsTeamB);
     }
 
-    // Pour obtenir le nombre total de cartes jaunes pour cette équipe
     public function totalYellowCards()
     {
-        // À implémenter : Parcourez tous les matchs de l'équipe et sommez le nombre de cartes jaunes
+        return $this->matches->sum(function ($match) {
+            return count($match->yellow_cards); // Assurez-vous que yellow_cards est un tableau
+        });
     }
 
-    // Pour obtenir le nombre total de cartes rouges pour cette équipe
     public function totalRedCards()
     {
-        // À implémenter : Parcourez tous les matchs de l'équipe et sommez le nombre de cartes rouges
+        return $this->matches->sum(function ($match) {
+            return count($match->red_cards); // Assurez-vous que red_cards est un tableau
+        });
     }
+
 }

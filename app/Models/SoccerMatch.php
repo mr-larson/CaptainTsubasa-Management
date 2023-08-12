@@ -24,9 +24,34 @@ class SoccerMatch extends Model
         'team_b_players',
         'match_date',
         'highlights',
-        //... autres champs selon vos besoins...
+        'team_a_promo_cards',
+        'team_b_promo_cards',
+        'team_a_pre_match_fatigue',
+        'team_b_pre_match_fatigue',
+        'team_a_post_match_fatigue',
+        'team_b_post_match_fatigue',
+        'injured_players',
+        'team_a_financial_gain',
+        'team_b_financial_gain',
     ];
 
+    protected $casts = [
+        'match_statistics' => 'array',
+        'red_cards' => 'array',
+        'yellow_cards' => 'array',
+        'team_a_players' => 'array',
+        'team_b_players' => 'array',
+        'highlights' => 'array',
+        'team_a_promo_cards' => 'array',
+        'team_b_promo_cards' => 'array',
+        'team_a_pre_match_fatigue' => 'array',
+        'team_b_pre_match_fatigue' => 'array',
+        'team_a_post_match_fatigue' => 'array',
+        'team_b_post_match_fatigue' => 'array',
+        'injured_players' => 'array',
+    ];
+
+    // Relation vers les équipes
     public function teamA()
     {
         return $this->belongsTo(Team::class, 'team_a_id');
@@ -47,5 +72,18 @@ class SoccerMatch extends Model
     {
         return Player::whereIn('id', $this->yellow_cards ?? [])->get();
     }
+
+    /**
+     * Distribuez les récompenses financières aux équipes après le match.
+     */
+    public function distributeFinancialRewards()
+    {
+        $this->teamA->budget += $this->team_a_financial_gain;
+        $this->teamA->save();
+
+        $this->teamB->budget += $this->team_b_financial_gain;
+        $this->teamB->save();
+    }
+
 
 }

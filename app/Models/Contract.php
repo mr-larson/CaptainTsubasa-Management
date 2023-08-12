@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Contract extends Model
 {
     use HasFactory;
+    Use SoftDeletes;
+
     protected $fillable = [
         'team_id',
         'player_id',
@@ -15,6 +18,11 @@ class Contract extends Model
         'end_date',
     ];
 
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date' => 'date',
+    ];
+    
     public function team()
     {
         return $this->belongsTo(Team::class);

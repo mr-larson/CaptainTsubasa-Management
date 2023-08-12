@@ -16,7 +16,10 @@ class Card extends Model
         'name',
         'description',
         'effects',
-        'duration_in_weeks',
+    ];
+
+    protected $casts = [
+        'effects' => 'array',
     ];
 
     /**

@@ -65,4 +65,21 @@ class Player extends Model
         }
         return 0;
     }
+
+    public function increaseFatigue($value)
+    {
+        $this->fatigue += $value;
+        $this->checkForInjury();
+        $this->save();
+    }
+
+    const INJURY_THRESHOLD = 90; // exemple de valeur
+    const RISK_VALUE = 80;      // exemple de valeur
+    private function checkForInjury(): void
+    {
+        if ($this->fatigue > self::INJURY_THRESHOLD && $this->injury_risk > self::RISK_VALUE) {
+            $this->is_injured = true;
+        }
+    }
+
 }

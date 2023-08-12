@@ -18,6 +18,10 @@ class Injury extends Model
         'injury_date',
     ];
 
+    protected $casts = [
+        'injury_date' => 'date',
+    ];
+
     /**
      * Relation vers le joueur.
      */

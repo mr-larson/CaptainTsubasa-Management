@@ -13,6 +13,11 @@ class TrainingType extends Model
 
     protected $fillable = [
         'name',
+        'stat_increase',
+    ];
+
+    protected $casts = [
+        'stat_increase' => 'array',
     ];
 
     /**
@@ -23,3 +28,4 @@ class TrainingType extends Model
         return $this->hasMany(Training::class);
     }
 }
+
