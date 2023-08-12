@@ -13,15 +13,17 @@ class TeamController extends Controller
      */
     public function index()
     {
-        //
+        $teams = Team::all();
+        return response()->json($teams);
     }
 
     /**
      * Show the form for creating a new resource.
+     * NOTE: Avec Vue.js, cela n'est généralement pas nécessaire, car le formulaire serait côté client.
      */
     public function create()
     {
-        //
+        // Return view or redirect to Vue.js route
     }
 
     /**
@@ -29,7 +31,12 @@ class TeamController extends Controller
      */
     public function store(StoreTeamRequest $request)
     {
-        //
+        $team = Team::create($request->validated());
+
+        return response()->json([
+            'message' => 'Team created successfully.',
+            'team' => $team
+        ]);
     }
 
     /**
@@ -37,15 +44,16 @@ class TeamController extends Controller
      */
     public function show(Team $team)
     {
-        //
+        return response()->json($team);
     }
 
     /**
      * Show the form for editing the specified resource.
+     * NOTE: Avec Vue.js, cela n'est généralement pas nécessaire, car le formulaire serait côté client.
      */
     public function edit(Team $team)
     {
-        //
+        // Return view or redirect to Vue.js route
     }
 
     /**
@@ -53,7 +61,12 @@ class TeamController extends Controller
      */
     public function update(UpdateTeamRequest $request, Team $team)
     {
-        //
+        $team->update($request->validated());
+
+        return response()->json([
+            'message' => 'Team updated successfully.',
+            'team' => $team
+        ]);
     }
 
     /**
@@ -61,6 +74,10 @@ class TeamController extends Controller
      */
     public function destroy(Team $team)
     {
-        //
+        $team->delete();
+
+        return response()->json([
+            'message' => 'Team deleted successfully.'
+        ]);
     }
 }
