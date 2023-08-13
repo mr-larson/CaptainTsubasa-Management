@@ -118,6 +118,9 @@ const showingNavigationDropdown = ref(false);
                         <ResponsiveNavLink :href="route('dashboard')" :active="route().current('dashboard')">
                             Dashboard
                         </ResponsiveNavLink>
+                        <ResponsiveNavLink :href="route('teams')" :active="route().current('teams')">
+                                    Teams
+                        </ResponsiveNavLink>
                     </div>
 
                     <!-- Responsive Settings Options -->

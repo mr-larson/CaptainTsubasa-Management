@@ -52,21 +52,26 @@ onMounted(async () => {
                                 <TableHeaderCell>Wins</TableHeaderCell>
                                 <TableHeaderCell>Losses</TableHeaderCell>
                                 <TableHeaderCell>Draws</TableHeaderCell>
-                                <TableHeaderCell>Team Stats Bonus</TableHeaderCell>
-                                <TableHeaderCell>Team Stats Malus</TableHeaderCell>
+                                <TableHeaderCell>Actions</TableHeaderCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
                             <TableRow v-for="team in teams" :key="team.id">
                                 <TableCell>{{ team.name }}</TableCell>
-                                <TableCell><img :src="team.logo" :alt="team.name" customClass="h-20 w-20 rounded-full"></TableCell>
-                                <TableCell>{{ team.budget }} €</TableCell>
+                                <TableCell><img :src="team.logo ? `/storage/${team.logo}`: `https://ui-avatars.com/api/?name=${team.name}&color=7F9CF5&background=EBF4FF`" :alt="team.name" customClass="h-20 w-20 rounded-full"></TableCell>
+                                <TableCell customClass="text-right">{{ team.budget }} €</TableCell>
                                 <TableCell>{{ team.points }}</TableCell>
                                 <TableCell>{{ team.wins }}</TableCell>
                                 <TableCell>{{ team.losses }}</TableCell>
                                 <TableCell>{{ team.draws }}</TableCell>
-                                <TableCell>{{ team.team_stats_bonus }}</TableCell>
-                                <TableCell>{{ team.active_cards }}</TableCell>
+                                <TableCell>
+                                    <a :href="`/teams/${team.id}`" class="text-indigo-600 hover:text-indigo-900">Show</a>
+                                    <a :href="`/teams/${team.id}/edit`" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                                    <form :action="`/teams/${team.id}`" method="POST" class="inline-block">
+                                        <input type="hidden" name="_method" value="DELETE">
+                                        <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
+                                    </form>
+                                </TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>
