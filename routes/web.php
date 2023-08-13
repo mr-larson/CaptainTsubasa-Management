@@ -31,7 +31,7 @@ Route::get('/dashboard', function () {
 
 Route::get('/teams', function () {
     return Inertia::render('Teams/Index');
-})->middleware(['auth', 'verified'])->name('teams.index');
+})->middleware(['auth', 'verified'])->name('teams');
 
 
 Route::middleware('auth')->group(function () {

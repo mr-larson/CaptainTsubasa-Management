@@ -4,6 +4,10 @@ import { Head } from '@inertiajs/vue3';
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
+//Component
+import H2 from '@/Components/H2.vue';
+
+
 const teams = ref([]);
 
 onMounted(async () => {
@@ -14,6 +18,8 @@ onMounted(async () => {
         console.error("Erreur lors de la récupération des équipes:", error);
     }
 });
+
+
 </script>
 
 <template>
@@ -21,7 +27,7 @@ onMounted(async () => {
 
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Teams</h2>
+            <H2>Teams</H2>
         </template>
 
         <div class="py-12">
