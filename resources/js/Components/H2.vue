@@ -1,12 +1,19 @@
 <template>
-    <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-        <slot></slot> <!-- Ceci est un slot pour le contenu que vous voulez mettre à l'intérieur du H2 -->
-    </h2>
+  <h2 :class="customClass">
+    <slot></slot>
+  </h2>
 </template>
+
 
 <script>
 export default {
     name: "H2",
+    props: {
+        customClass: {
+            type: String,
+            default: "text-lg font-semibold text-gray-900 dark:text-gray-100"
+        }
+  }
 };
 </script>
 
