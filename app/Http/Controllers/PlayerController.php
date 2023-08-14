@@ -13,15 +13,8 @@ class PlayerController extends Controller
      */
     public function index()
     {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        $players = Player::all(); // Récupérez tous les joueurs. Considérez la pagination si nécessaire.
+        return response()->json($players);
     }
 
     /**
@@ -29,7 +22,11 @@ class PlayerController extends Controller
      */
     public function store(StorePlayerRequest $request)
     {
-        //
+        $player = Player::create($request->validated());
+        return response()->json([
+            'message' => 'Player created successfully.',
+            'player' => $player
+        ]);
     }
 
     /**
@@ -37,15 +34,7 @@ class PlayerController extends Controller
      */
     public function show(Player $player)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Player $player)
-    {
-        //
+        return response()->json($player);
     }
 
     /**
@@ -53,7 +42,11 @@ class PlayerController extends Controller
      */
     public function update(UpdatePlayerRequest $request, Player $player)
     {
-        //
+        $player->update($request->validated());
+        return response()->json([
+            'message' => 'Player updated successfully.',
+            'player' => $player
+        ]);
     }
 
     /**
@@ -61,6 +54,9 @@ class PlayerController extends Controller
      */
     public function destroy(Player $player)
     {
-        //
+        $player->delete();
+        return response()->json([
+            'message' => 'Player deleted successfully.'
+        ]);
     }
 }

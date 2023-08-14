@@ -29,9 +29,31 @@ Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::get('/teams', function () {
-    return Inertia::render('Teams/Index');
-})->middleware(['auth', 'verified'])->name('teams');
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/teams', function () {
+        return Inertia::render('Teams/Index');
+    })->name('teams');
+    
+    Route::get('/teams/create', function () {
+        return Inertia::render('Teams/Create');
+    })->name('teams.create');
+    
+    Route::get('/teams/{team}/edit', function () {
+        return Inertia::render('Teams/Edit');
+    })->name('teams.edit');
+    
+    Route::get('/players', function () {
+        return Inertia::render('Players/Index');
+    })->name('players');
+
+    Route::get('/players/create', function () {
+        return Inertia::render('Players/Create');
+    })->name('players.create');
+
+    Route::get('/players/{player}/edit', function () {
+        return Inertia::render('Players/Edit');
+    })->name('players.edit');
+});
 
 
 Route::middleware('auth')->group(function () {
