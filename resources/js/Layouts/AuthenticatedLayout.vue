@@ -35,6 +35,10 @@ const showingNavigationDropdown = ref(false);
                                 <NavLink :href="route('teams')" :active="route().current('teams')">
                                     Teams
                                 </NavLink>
+                                <NavLink :href="route('players')" :active="route().current('players')">
+                                    Players
+                                </NavLink>
+                               
                             </div>
                         </div>
 
@@ -110,16 +114,16 @@ const showingNavigationDropdown = ref(false);
                 </div>
 
                 <!-- Responsive Navigation Menu -->
-                <div
-                    :class="{ block: showingNavigationDropdown, hidden: !showingNavigationDropdown }"
-                    class="sm:hidden"
-                >
+                <div :class="{ block: showingNavigationDropdown, hidden: !showingNavigationDropdown }" class="sm:hidden">
                     <div class="pt-2 pb-3 space-y-1">
                         <ResponsiveNavLink :href="route('dashboard')" :active="route().current('dashboard')">
                             Dashboard
                         </ResponsiveNavLink>
                         <ResponsiveNavLink :href="route('teams')" :active="route().current('teams')">
-                                    Teams
+                            Teams
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink :href="route('players')" :active="route().current('players')">
+                            Players
                         </ResponsiveNavLink>
                     </div>
 
