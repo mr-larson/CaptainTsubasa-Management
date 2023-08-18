@@ -37,9 +37,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/teams/create', function () {
         return Inertia::render('Teams/Create');
     })->name('teams.create');
+
+    Route::get('/teams/{team}/edit', function ($team) {
+        $team = App\Models\Team::find($team);  // Trouvez l'équipe par son ID
+        $allTeams = App\Models\Team::all();    // Récupérez toutes les équipes pour la sidebar
     
-    Route::get('/teams/{team}/edit', function () {
-        return Inertia::render('Teams/Edit');
+        return Inertia::render('Teams/Edit', [
+            'team' => $team,
+            'allTeams' => $allTeams
+        ]);
     })->name('teams.edit');
     
     Route::get('/players', function () {

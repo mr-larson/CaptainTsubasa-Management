@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreTeamRequest;
 use App\Http\Requests\UpdateTeamRequest;
 use App\Models\Team;
+use Inertia\Inertia;
 
 class TeamController extends Controller
 {
@@ -17,13 +18,11 @@ class TeamController extends Controller
         return response()->json($teams);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     * NOTE: Avec Vue.js, cela n'est généralement pas nécessaire, car le formulaire serait côté client.
-     */
+    // app/Http/Controllers/TeamController.php
+
     public function create()
     {
-        // Return view or redirect to Vue.js route
+        return Inertia::render('CreateTeam');
     }
 
     /**
@@ -32,7 +31,6 @@ class TeamController extends Controller
     public function store(StoreTeamRequest $request)
     {
         $team = Team::create($request->validated());
-
         return response()->json([
             'message' => 'Team created successfully.',
             'team' => $team
@@ -49,12 +47,16 @@ class TeamController extends Controller
 
     /**
      * Show the form for editing the specified resource.
-     * NOTE: Avec Vue.js, cela n'est généralement pas nécessaire, car le formulaire serait côté client.
      */
     public function edit(Team $team)
     {
-        // Return view or redirect to Vue.js route
+        $allTeams = Team::all();
+        return Inertia::render('EditTeam', [
+            'team' => $team,
+            'allTeams' => $allTeams
+        ]);
     }
+
 
     /**
      * Update the specified resource in storage.
@@ -62,7 +64,6 @@ class TeamController extends Controller
     public function update(UpdateTeamRequest $request, Team $team)
     {
         $team->update($request->validated());
-
         return response()->json([
             'message' => 'Team updated successfully.',
             'team' => $team
@@ -75,7 +76,6 @@ class TeamController extends Controller
     public function destroy(Team $team)
     {
         $team->delete();
-
         return response()->json([
             'message' => 'Team deleted successfully.'
         ]);
