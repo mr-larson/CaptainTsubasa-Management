@@ -24,7 +24,7 @@ class SoccerMatch extends Model
         'team_b_players', //json, array, liste d'IDs de joueurs de l'équipe B
         'match_date', //date, date du match
         'highlights', //text, résumé ou moments forts du match
-        'team_a_promo_cards', //json, array, cartes promotionnelles de l'équipe A 
+        'team_a_promo_cards', //json, array, cartes promotionnelles de l'équipe A
         'team_b_promo_cards', //json, array, cartes promotionnelles de l'équipe B
         'team_a_pre_match_fatigue', //json, array, fatigue des joueurs de l'équipe A avant le match
         'team_b_pre_match_fatigue', //json, array, fatigue des joueurs de l'équipe B avant le match
@@ -72,6 +72,15 @@ class SoccerMatch extends Model
     {
         return Player::whereIn('id', $this->yellow_cards ?? [])->get();
     }
+
+    /**
+     * Déterminez la relation avec injury
+     */
+    public function injuries()
+    {
+        return $this->hasMany(Injury::class);
+    }
+
 
     /**
      * Distribuez les récompenses financières aux équipes après le match.

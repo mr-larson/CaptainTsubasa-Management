@@ -32,7 +32,7 @@ class CreatePlayersTable extends Migration
             $table->foreign('current_team_id')->references('id')->on('teams')->onDelete('set null');
             $table->timestamps();
             $table->softDeletes();
-        });        
+        });
     }
 
     public function down(): void

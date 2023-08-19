@@ -56,6 +56,25 @@ class Player extends Model
         return $this->hasMany(Sanction::class);
     }
 
+    public function injuries()
+    {
+        return $this->hasMany(Injury::class);
+    }
+
+    public function isCurrentlyInjured()
+    {
+        return $this->injuries->where('isActive', true)->count() > 0;
+    }
+
+    public function injuryDaysRemaining()
+    {
+        if ($this->isCurrentlyInjured()) {
+            $latestInjury = $this->injuries->sortByDesc('injury_date')->first();
+            return now()->diffInDays($latestInjury->injury_date->addDays($latestInjury->duration_in_days), false);
+        }
+        return 0;
+    }
+
     public function isSuspended()
     {
         $activeSanctions = $this->sanctions->where('end_date', '>=', now());

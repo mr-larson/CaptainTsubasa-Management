@@ -30,6 +30,11 @@ class Injury extends Model
         return $this->belongsTo(Player::class);
     }
 
+    public function match()
+    {
+        return $this->belongsTo(SoccerMatch::class);
+    }
+
     /**
      * Méthode pour déterminer si une blessure est toujours active.
      */
@@ -38,4 +43,16 @@ class Injury extends Model
         $endDate = $this->injury_date->addDays($this->duration_in_days);
         return now()->lessThan($endDate);
     }
+
+    public static function boot()
+    {
+        parent::boot();
+
+        static::saved(function ($injury) {
+            $player = $injury->player;
+            $player->is_injured = $player->isCurrentlyInjured();
+            $player->save();
+        });
+    }
+
 }
