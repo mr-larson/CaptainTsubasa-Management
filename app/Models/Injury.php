@@ -13,6 +13,7 @@ class Injury extends Model
 
     protected $fillable = [
         'player_id', //foreign key vers le joueur
+        'match_id', //foreign key vers le match
         'description', //string
         'duration_in_days', //integer
         'injury_date', //date

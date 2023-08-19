@@ -62,6 +62,23 @@ class SoccerMatch extends Model
         return $this->belongsTo(Team::class, 'team_b_id');
     }
 
+    // Relation vers les joueurs
+    public function recordPreMatchFatigue() {
+        $teamAPlayersFatigue = [];
+        foreach ($this->teamA->players as $player) {
+            $teamAPlayersFatigue[$player->id] = $player->fatigue;
+        }
+
+        $teamBPlayersFatigue = [];
+        foreach ($this->teamB->players as $player) {
+            $teamBPlayersFatigue[$player->id] = $player->fatigue;
+        }
+
+        $this->team_a_pre_match_fatigue = json_encode($teamAPlayersFatigue);
+        $this->team_b_pre_match_fatigue = json_encode($teamBPlayersFatigue);
+        $this->save();
+    }
+
     // Si vous souhaitez récupérer les joueurs ayant reçu des cartons rouges ou jaunes, vous pouvez ajouter des méthodes comme celle-ci
     public function getRedCardPlayersAttribute()
     {
@@ -81,7 +98,6 @@ class SoccerMatch extends Model
         return $this->hasMany(Injury::class);
     }
 
-
     /**
      * Distribuez les récompenses financières aux équipes après le match.
      */
@@ -93,6 +109,4 @@ class SoccerMatch extends Model
         $this->teamB->budget += $this->team_b_financial_gain;
         $this->teamB->save();
     }
-
-
 }

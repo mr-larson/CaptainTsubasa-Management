@@ -20,7 +20,6 @@ class Player extends Model
         'height', //integer
         'weight', //integer
         'period', //enum
-        'current_team_id', //foreign key vers l'équipe
         'stats', //json array
         'positions', //json array
         'special_skills', //json array
@@ -96,6 +95,15 @@ class Player extends Model
         $this->checkForInjury();
         $this->save();
     }
+
+    public function decreaseFatigue($value)
+    {
+        $this->fatigue -= max(0, $this->fatigue - $value);
+        $this->checkForInjury();
+        $this->save();
+    }
+
+
 
     const INJURY_THRESHOLD = 90; // exemple de valeur
     const RISK_VALUE = 80;      // exemple de valeur
