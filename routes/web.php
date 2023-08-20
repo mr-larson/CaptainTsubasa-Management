@@ -30,6 +30,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('MainMenu');
     })->name('mainMenu');
 
+    Route::get('/dataBaseMenu', function () {
+        return Inertia::render('DataBaseMenu');
+    })->name('dataBaseMenu');
+
     Route::get('/dashboard', function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');

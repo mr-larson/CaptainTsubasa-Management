@@ -104,7 +104,7 @@
                                     <TableCell>
                                         <a :href="`/teams/${team.id}`" class="text-indigo-600 hover:text-indigo-900">Show</a>
                                         <!-- create -->
-                                        
+
                                         <a :href="`/teams/${team.id}/edit`" class="text-indigo-600 hover:text-indigo-900">Edit</a>
                                         <!-- Ici, nous utilisons l'événement @click pour déclencher la fonction deleteTeam -->
                                         <button @click="deleteTeam(team.id)" class="text-red-600 hover:text-red-900">Delete</button>
