@@ -1,16 +1,3 @@
-<script setup>
-import { defineProps } from 'vue';
-
-const props = defineProps({
-    teams: Array
-});
-
-const selectTeam = (team) => {
-    // Ici, vous pouvez utiliser Inertia pour rediriger vers la page d'édition de l'équipe sélectionnée
-    Inertia.visit(`/teams/${team.id}/edit`);
-};
-</script>
-
 <template>
     <div class="sidebar">
         <ul>
@@ -20,6 +7,19 @@ const selectTeam = (team) => {
         </ul>
     </div>
 </template>
+
+<script>
+export default {
+    props: {
+        teams: Array
+    },
+    methods: {
+        selectTeam(team) {
+            this.$inertia.visit(`/teams/${team.id}/edit`);
+        }
+    }
+}
+</script>
 
 <style scoped>
 /* Vos styles pour la sidebar */

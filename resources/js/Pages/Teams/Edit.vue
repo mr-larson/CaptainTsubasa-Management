@@ -1,48 +1,77 @@
-<script setup>
-import { ref, toRefs } from 'vue';
-import Sidebar from './Sidebar.vue';
-
-const props = defineProps(['team', 'allTeams']); // 'allTeams' serait la liste de toutes les équipes pour la sidebar
-const team = toRefs(props.team);
-
-const updateTeam = () => {
-    Inertia.post('/teams/' + team.id + '/update', team);
-    // Remarque: L'URL exacte dépend de votre configuration de routage. 
-    // Ajustez si nécessaire.
-};
-</script>
-
 <template>
-    <div class="wrapper">   
+    <div class="wrapper">
         <div class="sidebar">
             <Sidebar :teams="allTeams" />
         </div>
         <div class="content">
-            <h1>Édition de l'équipe : {{ team.name }}</h1>
+            <h1 class="p-2">Édition de l'équipe : {{ name }}</h1>
 
-            <form @submit.prevent="updateTeam">
-                <div>
-                    <label for="name">Nom de l'équipe:</label>
-                    <input v-model="team.name" id="name" />
-                </div>
-
-                <div>
-                    <label for="logo_path">Chemin du logo:</label>
-                    <input v-model="team.logo_path" id="logo_path" />
-                </div>
-
-                <div>
-                    <label for="budget">Budget:</label>
-                    <input type="number" v-model="team.budget" id="budget" />
-                </div>
-
-                <!-- Vous pouvez continuer avec les autres champs de la même manière -->
-
-                <button type="submit">Mettre à jour</button>
-            </form>
+            <div class="flex">
+                <form @submit.prevent="updateTeam" class="flex flex-wrap">
+                    <div class="flex-1">
+                        <div v-if="logo_path" class="w-40 h-40 rounded overflow-hidden mb-4">
+                            <img :src="logo_path" alt="Logo de l'équipe" class="object-cover" />
+                        </div>
+                        <label for="logo_upload">Télécharger un nouveau logo :</label>
+                        <input type="file" id="logo_upload" @change="uploadLogo" />
+                    </div>
+                    <div class="flex-1">
+                        <div>
+                            <label for="name">Nom de l'équipe:</label>
+                            <input v-model="name" id="name" />
+                        </div>
+                        <div>
+                            <label for="budget">Budget:</label>
+                            <input v-model="budget" id="budget" />
+                        </div>
+                    </div>
+                    <div class="w-full mt-4">
+                        <button type="submit">Mettre à jour</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </template>
+
+<script setup>
+import { ref, toRefs } from 'vue';
+import Sidebar from './Sidebar.vue';
+
+const props = defineProps(['team', 'allTeams']);
+const { name, logo_path, budget } = toRefs(props.team);
+
+const uploadLogo = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            logo_path.value = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+};
+
+const updateTeam = () => {
+    const formData = new FormData();
+    formData.append("name", name.value);
+    formData.append("budget", budget.value);
+    if (document.querySelector("#logo_upload").files[0]) {
+        formData.append("logo", document.querySelector("#logo_upload").files[0]);
+    }
+
+    Inertia.patch(`/teams/${props.team.id}`, formData, {
+        onSuccess: () => {
+            console.log("L'équipe a été mise à jour avec succès !");
+        },
+        onError: (errors) => {
+            console.log("Erreur lors de la mise à jour :", errors);
+        }
+    });
+};
+
+</script>
+
 
 <style scoped>
 .wrapper {
@@ -66,19 +95,14 @@ const updateTeam = () => {
 }
 
 .content form {
-    max-width: 600px;
-    margin: 0 auto;
+    padding: 0 2em;
+    margin: 1em auto;
 }
 
 .content div {
     margin-bottom: 1rem;
 }
 
-.content label {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 0.5rem;
-}
 
 .content input {
     width: 100%;

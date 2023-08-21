@@ -20,7 +20,7 @@ import ResponsiveNavLink from "@/Components/ResponsiveNavLink.vue";
         <div class="mt-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="flex">
-                    <div class="flex-1 p-2 bg-contain bg-center bg-no-repeat" style="background-image: url('/images/tsubasa.jpg')">
+                    <div class="flex-1 p-2 bg-contain bg-center bg-no-repeat" style="background-image: url('/images/Hyuga.webp')">
                     </div>
                     <div class="flex-1 p-2 flex flex-col">
                         <h1 class="text-5xl font-bold text-slate-600 mb-2">Captain Tsubasa</h1>

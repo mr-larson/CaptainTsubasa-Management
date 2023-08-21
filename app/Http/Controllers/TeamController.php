@@ -12,7 +12,7 @@ class TeamController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(): \Illuminate\Http\JsonResponse
     {
         $teams = Team::all();
         return response()->json($teams);
@@ -20,7 +20,7 @@ class TeamController extends Controller
 
     // app/Http/Controllers/TeamController.php
 
-    public function create()
+    public function create(): \Inertia\Response
     {
         return Inertia::render('CreateTeam');
     }
@@ -28,7 +28,7 @@ class TeamController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreTeamRequest $request)
+    public function store(StoreTeamRequest $request): \Illuminate\Http\JsonResponse
     {
         $team = Team::create($request->validated());
         return response()->json([
@@ -40,7 +40,7 @@ class TeamController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Team $team)
+    public function show(Team $team): \Illuminate\Http\JsonResponse
     {
         return response()->json($team);
     }
@@ -51,11 +51,13 @@ class TeamController extends Controller
     public function edit(Team $team)
     {
         $allTeams = Team::all();
-        return Inertia::render('EditTeam', [
-            'team' => $team,
+
+        return Inertia::render('Teams/Edit', [
+            'team' => $team->only('id', 'name', 'logo_path', 'budget'),
             'allTeams' => $allTeams
         ]);
     }
+
 
 
     /**
@@ -64,10 +66,10 @@ class TeamController extends Controller
     public function update(UpdateTeamRequest $request, Team $team)
     {
         $team->update($request->validated());
-        return response()->json([
-            'message' => 'Team updated successfully.',
-            'team' => $team
-        ]);
+        return Inertia::render('Teams/Edit', [
+            'team' => $team->only('id', 'name', 'logo_path', 'budget'),
+            'allTeams' => Team::all()
+        ])->with('success', 'Team updated successfully.');
     }
 
     /**
