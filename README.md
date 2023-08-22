@@ -43,3 +43,4 @@ cp .env.example .env
 # Lancer l'environnement de développement Sail
 ./vendor/bin/sail up
 
+cp .env.example .env
