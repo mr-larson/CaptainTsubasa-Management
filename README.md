@@ -21,7 +21,7 @@
 
 ```bash
 # Cloner le répertoire
-git clone https://github.com/mr_larson/CaptainTsubasa-Management.git
+git clone https://github.com/mr-larson/CaptainTsubasa-Management.git
 
 # Se déplacer dans le dossier
 cd CaptainTsubasa-Management
