@@ -26,6 +26,9 @@ git clone https://github.com/mr-larson/CaptainTsubasa-Management.git
 # Se déplacer dans le dossier
 cd CaptainTsubasa-Management
 
+# Vérifier
+composer install
+
 # Installer les dépendances PHP avec Sail
 ./vendor/bin/sail composer install
 
