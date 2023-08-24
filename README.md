@@ -21,10 +21,13 @@
 
 ```bash
 # Cloner le répertoire
-git clone https://github.com/mr_larson/CaptainTsubasa-Management.git
+git clone https://github.com/mr-larson/CaptainTsubasa-Management.git
 
 # Se déplacer dans le dossier
 cd CaptainTsubasa-Management
+
+# Vérifier
+composer install
 
 # Installer les dépendances PHP avec Sail
 ./vendor/bin/sail composer install
@@ -42,4 +45,3 @@ cp .env.example .env
 
 # Lancer l'environnement de développement Sail
 ./vendor/bin/sail up
-
