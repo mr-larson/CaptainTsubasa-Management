@@ -31,6 +31,7 @@ class UpdateTeamRequest extends FormRequest
             'losses' => 'required|integer|min:0',  // Défaites obligatoires, entiers et positifs
             'team_stats_bonus' => 'nullable|array',  // Bonus d'équipe optionnels, sous forme de tableau
             'active_cards' => 'nullable|array',  // Cartes actives optionnelles, sous forme de tableau
+            'description' => 'nullable|string',  // Description optionnelle
         ];
     }
 }

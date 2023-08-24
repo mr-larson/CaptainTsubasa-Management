@@ -4,13 +4,13 @@
             <Sidebar :teams="allTeams" />
         </div>
         <div class="content">
-            <h1 class="p-2">Édition de l'équipe : {{ name }}</h1>
+            <h1 class="p-2">Édition de l'équipe : {{ form.data.name }}</h1>
 
             <div class="flex">
                 <form @submit.prevent="updateTeam" class="flex flex-wrap">
                     <div class="flex-1">
-                        <div v-if="logo_path" class="w-40 h-40 rounded overflow-hidden mb-4">
-                            <img :src="logo_path" alt="Logo de l'équipe" class="object-cover" />
+                        <div v-if="form.data.logo_path" class="w-40 h-40 rounded overflow-hidden mb-4">
+                            <img :src="form.data.logo_path" alt="Logo de l'équipe" class="object-cover" />
                         </div>
                         <label for="logo_upload">Télécharger un nouveau logo :</label>
                         <input type="file" id="logo_upload" @change="uploadLogo" />
@@ -18,15 +18,17 @@
                     <div class="flex-1">
                         <div>
                             <label for="name">Nom de l'équipe:</label>
-                            <input v-model="name" id="name" />
+                            <input v-model="form.data.name" id="name" />
+                            <div v-if="form.errors.name">{{ form.errors.name[0] }}</div>
                         </div>
                         <div>
                             <label for="budget">Budget:</label>
-                            <input v-model="budget" id="budget" />
+                            <input v-model="form.data.budget" id="budget" />
+                            <div v-if="form.errors.budget">{{ form.errors.budget[0] }}</div>
                         </div>
                     </div>
                     <div class="w-full mt-4">
-                        <button type="submit">Mettre à jour</button>
+                        <button type="submit" :disabled="form.processing">Mettre à jour</button>
                     </div>
                 </form>
             </div>
@@ -36,17 +38,27 @@
 
 <script setup>
 import { ref, toRefs } from 'vue';
+import { useForm } from '@inertiajs/inertia-vue3';
 import Sidebar from './Sidebar.vue';
 
 const props = defineProps(['team', 'allTeams']);
 const { name, logo_path, budget } = toRefs(props.team);
 
+const form = useForm({
+    name: name.value,
+    logo_path: logo_path.value,
+    budget: budget.value
+});
+
+const logoFile = ref(null);
+
 const uploadLogo = (event) => {
     const file = event.target.files[0];
     if (file) {
+        logoFile.value = file;
         const reader = new FileReader();
         reader.onload = (e) => {
-            logo_path.value = e.target.result;
+            form.data.logo_path = e.target.result;
         };
         reader.readAsDataURL(file);
     }
@@ -54,22 +66,14 @@ const uploadLogo = (event) => {
 
 const updateTeam = () => {
     const formData = new FormData();
-    formData.append("name", name.value);
-    formData.append("budget", budget.value);
-    if (document.querySelector("#logo_upload").files[0]) {
-        formData.append("logo", document.querySelector("#logo_upload").files[0]);
+    formData.append('name', form.data.name);
+    formData.append('budget', form.data.budget);
+    if (logoFile.value) {
+        formData.append('logo', logoFile.value);
     }
 
-    Inertia.patch(`/teams/${props.team.id}`, formData, {
-        onSuccess: () => {
-            console.log("L'équipe a été mise à jour avec succès !");
-        },
-        onError: (errors) => {
-            console.log("Erreur lors de la mise à jour :", errors);
-        }
-    });
+    form.post('/route-to-update-team', formData);
 };
-
 </script>
 
 

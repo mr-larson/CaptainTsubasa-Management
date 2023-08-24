@@ -21,6 +21,7 @@ class Team extends Model
         'losses', //integer, défaites de l'équipe
         'team_stats_bonus', //json, bonus d'équipe
         'active_cards', //json, cartes actives
+        'description', //string, description de l'équipe
     ];
 
     protected $casts = [
