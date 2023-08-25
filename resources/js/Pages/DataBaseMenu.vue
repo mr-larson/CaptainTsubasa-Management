@@ -27,19 +27,13 @@ import ResponsiveNavLink from "@/Components/ResponsiveNavLink.vue";
                         <h2 class="text-3xl font-bold text-slate-600 mb-4">Management</h2>
                         <p class="text-xl font-semibold underline text-slate-500">Menu D’éditions  de la base de données </p>
                         <!-- Ajout des boutons pour les nouvelles fonctionnalités -->
-                        <div class="h-72 mt-6 flex">
-                            <div class="flex-1 flex flex-col items-start justify-between">
+                        <div class="h-44 mt-6 flex">
+                            <div class="flex-1 flex flex-col items-baseline justify-between">
                                 <Link :href="route('profile.edit')" class="w-60 h-12 bg-sky-400 hover:bg-sky-500 text-2xl text-white text-center font-bold py-2 px-5 border-2 border-sky-600 rounded-full drop-shadow-md mb-2">
                                     My profile
                                 </Link>
                                 <a href="/players" class="w-60 h-12 bg-fuchsia-400 hover:bg-fuchsia-500 text-2xl text-white text-center font-bold py-2 px-5 border-2 border-fuchsia-600 rounded-full drop-shadow-md mb-2">
                                     Players
-                                </a>
-                                <a href="/dataBaseMenu" class="w-60 h-12 bg-sky-400 hover:bg-sky-500 text-2xl text-white text-center font-bold py-2 px-5 border-2 border-sky-600 rounded-full drop-shadow-md mb-2">
-                                    Injuries
-                                </a>
-                                <a href="/dataBaseMenu" class="w-60 h-12 bg-fuchsia-400 hover:bg-fuchsia-500 text-2xl text-white text-center font-bold py-2 px-5 border-2 border-fuchsia-600 rounded-full drop-shadow-md mb-2">
-                                    Cards
                                 </a>
                             </div>
                             <div class="flex-1 flex flex-col items-start justify-between">
@@ -49,13 +43,10 @@ import ResponsiveNavLink from "@/Components/ResponsiveNavLink.vue";
                                 <Link :href="route('teams')" class="w-60 h-12 bg-teal-400 hover:bg-teal-500 text-2xl text-white text-center font-bold py-2 px-5 border-2 border-teal-600 rounded-full drop-shadow-md mb-2">
                                     Teams
                                 </Link>
-                                <a href="/dataBaseMenu" class="w-60 h-12 bg-cyan-400 hover:bg-cyan-500 text-2xl text-white text-center font-bold py-2 px-5 border-2 border-cyan-600 rounded-full drop-shadow-md mb-2">
-                                    Sanctions
-                                </a>
-                                <a href="/dataBaseMenu" class="w-60 h-12 bg-teal-400 hover:bg-teal-500 text-2xl text-white text-center font-bold py-2 px-5 border-2 border-teal-600 rounded-full drop-shadow-md mb-2">
-                                    Trainings
-                                </a>
                             </div>
+                        </div>
+                        <div class="h-44 flex items-center justify-center">
+                            <Link :href="route('mainMenu')" class="w-60 h-12 bg-slate-400 hover:bg-slate-500 text-2xl text-white text-center font-bold py-2 px-5 border-2 border-slate-600 rounded-full drop-shadow-md mb-2">Return</Link>
                         </div>
                     </div>
                 </div>
