@@ -11,7 +11,7 @@ export default {
     props: {
         customClass: {
             type: String,
-            default: "text-lg font-semibold text-slate-600"
+            default: "text-lg font-semibold"
         }
   }
 };

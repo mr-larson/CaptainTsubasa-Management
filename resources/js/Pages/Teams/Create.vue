@@ -3,7 +3,9 @@
 </script>
 
 <template>
-  $END$
+test create form
+
+
 </template>
 
 <style scoped>

@@ -12,38 +12,15 @@ const showingNavigationDropdown = ref(false);
 
 <template>
     <div>
-        <div class="min-h-screen bg-gray-100">
-            <nav class="bg-white border-b border-gray-100">
+        <div class="min-h-screen">
+            <nav class="bg-slate-700 text-gray-100 border-b border-gray-100">
                 <!-- Primary Navigation Menu -->
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div class="flex justify-between h-16">
-                        <div class="flex">
-                            <!-- Logo -->
-                            <div class="shrink-0 flex items-center">
-                                <Link :href="route('mainMenu')">
-                                    <ApplicationLogo
-                                        class="block h-9 w-auto fill-current text-gray-800"
-                                    />
-                                </Link>
-                            </div>
-
-                            <!-- Navigation Links -->
-                            <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                                <NavLink :href="route('mainMenu')" :active="route().current('mainMenu')">
-                                    Main Menu
-                                </NavLink>
-                                <NavLink :href="route('dashboard')" :active="route().current('dashboard')">
-                                    Dashboard
-                                </NavLink>
-                                <NavLink :href="route('teams')" :active="route().current('teams')">
-                                    Teams
-                                </NavLink>
-                                <NavLink :href="route('players')" :active="route().current('players')">
-                                    Players
-                                </NavLink>
-                            </div>
-                        </div>
-
+                        <!-- Page Heading -->
+                        <header class="flex items-center" v-if="$slots.header">
+                            <slot name="header" />
+                        </header>
                         <div class="hidden sm:flex sm:items-center sm:ml-6">
                             <!-- Settings Dropdown -->
                             <div class="ml-3 relative">
@@ -117,21 +94,6 @@ const showingNavigationDropdown = ref(false);
 
                 <!-- Responsive Navigation Menu -->
                 <div :class="{ block: showingNavigationDropdown, hidden: !showingNavigationDropdown }" class="sm:hidden">
-                    <div class="pt-2 pb-3 space-y-1">
-                        <ResponsiveNavLink :href="route('mainMenu')" :active="route().current('mainMenu')">
-                            Main Menu
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink :href="route('dashboard')" :active="route().current('dashboard')">
-                            Dashboard
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink :href="route('teams')" :active="route().current('teams')">
-                            Teams
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink :href="route('players')" :active="route().current('players')">
-                            Players
-                        </ResponsiveNavLink>
-                    </div>
-
                     <!-- Responsive Settings Options -->
                     <div class="pt-4 pb-1 border-t border-gray-200">
                         <div class="px-4">
@@ -151,15 +113,8 @@ const showingNavigationDropdown = ref(false);
                 </div>
             </nav>
 
-            <!-- Page Heading -->
-            <header class="bg-white shadow" v-if="$slots.header">
-                <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                    <slot name="header" />
-                </div>
-            </header>
-
             <!-- Page Content -->
-            <main>
+            <main class="bg-slate-100">
                 <slot />
             </main>
         </div>

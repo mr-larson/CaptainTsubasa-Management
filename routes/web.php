@@ -1,6 +1,9 @@
 <?php
 
+use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TeamController;
+use App\Models\Team;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -25,7 +28,7 @@ Route::get('/', function () {
     ]);
 });
 
-Route::middleware(['auth', 'verified'])->group(function () {
+
     Route::get('/mainMenu', function () {
         return Inertia::render('MainMenu');
     })->name('mainMenu');
@@ -38,31 +41,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
 
-    Route::get('/teams', function () {
-        return Inertia::render('Teams/Index');
-    })->name('teams');
 
-    Route::get('/teams/create', function () {
-        return Inertia::render('Teams/Create');
-    })->name('teams.create');
+    Route::get('/teams', [TeamController::class, 'index'])->name('teams');
+    Route::get('/teams/create', [TeamController::class, 'create'])->name('teams.create');
+    Route::post('/teams', [TeamController::class, 'store'])->name('teams.store');
+    Route::get('/teams/{team}', [TeamController::class, 'show'])->name('teams.show');
+    Route::get('/teams/{team}/edit', [TeamController::class, 'edit'])->name('teams.edit');
+    Route::put('/teams/{team}', [TeamController::class, 'update'])->name('teams.update');
 
-    Route::post('/teams', [\App\Http\Controllers\TeamController::class, 'store'])->name('teams.store');
-    Route::get('/teams/{team}/edit', [\App\Http\Controllers\TeamController::class, 'edit'])->name('teams.edit');
-    Route::patch('/teams/{team}', [\App\Http\Controllers\TeamController::class, 'update'])->name('teams.update');
-
-
-    Route::get('/players', function () {
-        return Inertia::render('Players/Index');
-    })->name('players');
-
-    Route::get('/players/create', function () {
-        return Inertia::render('Players/Create');
-    })->name('players.create');
-
-    Route::get('/players/{player}/edit', function () {
-        return Inertia::render('Players/Edit');
-    })->name('players.edit');
-});
+Route::get('/players', [PlayerController::class, 'index'])->name('players');
 
 
 Route::middleware('auth')->group(function () {

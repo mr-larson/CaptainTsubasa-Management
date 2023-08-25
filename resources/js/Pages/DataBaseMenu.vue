@@ -1,6 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
+import { Link } from '@inertiajs/vue3';
 
 //Component
 import H2 from '@/Components/H2.vue';
@@ -10,7 +11,6 @@ import ResponsiveNavLink from "@/Components/ResponsiveNavLink.vue";
 </script>
 
 <template>
-    <Head title="MainMenu" />
 
     <AuthenticatedLayout>
         <template #header>
@@ -29,9 +29,9 @@ import ResponsiveNavLink from "@/Components/ResponsiveNavLink.vue";
                         <!-- Ajout des boutons pour les nouvelles fonctionnalités -->
                         <div class="h-72 mt-6 flex">
                             <div class="flex-1 flex flex-col items-start justify-between">
-                                <a href="/profile" class="w-60 h-12 bg-sky-400 hover:bg-sky-500 text-2xl text-white text-center font-bold py-2 px-5 border-2 border-sky-600 rounded-full drop-shadow-md mb-2">
+                                <Link :href="route('profile.edit')" class="w-60 h-12 bg-sky-400 hover:bg-sky-500 text-2xl text-white text-center font-bold py-2 px-5 border-2 border-sky-600 rounded-full drop-shadow-md mb-2">
                                     My profile
-                                </a>
+                                </Link>
                                 <a href="/players" class="w-60 h-12 bg-fuchsia-400 hover:bg-fuchsia-500 text-2xl text-white text-center font-bold py-2 px-5 border-2 border-fuchsia-600 rounded-full drop-shadow-md mb-2">
                                     Players
                                 </a>
@@ -46,9 +46,9 @@ import ResponsiveNavLink from "@/Components/ResponsiveNavLink.vue";
                                 <a href="/dataBaseMenu" class="w-60 h-12 bg-cyan-400 hover:bg-cyan-500 text-2xl text-white text-center font-bold py-2 px-5 border-2 border-cyan-600 rounded-full drop-shadow-md mb-2">
                                     Contracts
                                 </a>
-                                <a href="/teams" class="w-60 h-12 bg-teal-400 hover:bg-teal-500 text-2xl text-white text-center font-bold py-2 px-5 border-2 border-teal-600 rounded-full drop-shadow-md mb-2">
+                                <Link :href="route('teams')" class="w-60 h-12 bg-teal-400 hover:bg-teal-500 text-2xl text-white text-center font-bold py-2 px-5 border-2 border-teal-600 rounded-full drop-shadow-md mb-2">
                                     Teams
-                                </a>
+                                </Link>
                                 <a href="/dataBaseMenu" class="w-60 h-12 bg-cyan-400 hover:bg-cyan-500 text-2xl text-white text-center font-bold py-2 px-5 border-2 border-cyan-600 rounded-full drop-shadow-md mb-2">
                                     Sanctions
                                 </a>

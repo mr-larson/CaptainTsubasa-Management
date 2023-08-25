@@ -1,61 +1,131 @@
 <template>
-    <div class="wrapper">
-        <div class="sidebar">
-            <ul>
-                <li v-for="team in teams" :key="team.id" @click="selectTeam(team)">
-                    {{ team.name }}
-                </li>
-            </ul>
-        </div>
-        <div class="content">
-            <h1 class="p-2">Édition de l'équipe : {{ form.data.name }}</h1>
+    <Head title="Teams" />
 
-            <div class="flex">
-                <form @submit.prevent="updateTeam" class="flex flex-wrap">
-                    <div class="flex-1">
-                        <div v-if="form.data.logo_path" class="w-40 h-40 rounded overflow-hidden mb-4">
-                            <img :src="form.data.logo_path" alt="Logo de l'équipe" class="object-cover"/>
+    <AuthenticatedLayout>
+        <template #header>
+            <H2>Teams</H2>
+        </template>
+
+        <aside id="separator-sidebar" class="fixed top-0 left-0 z-40 w-64 h-screen transition-transform -translate-x-full sm:translate-x-0" aria-label="Sidebar">
+            <div class="h-full px-3 py-4 overflow-y-auto bg-slate-700">
+                <div class="pb-4 mb-3 border-b text-center text-gray-200">
+                    <H2>Teams</H2>
+                </div>
+                <div class="mb-4">
+                    <form>
+                        <label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                                </svg>
+                            </div>
+                            <input type="search" id="default-search" class="block w-full p-2 pl-10 text-sm text-gray-900 border border-gray-300  bg-gray-100 focus:ring-blue-500 focus:border-blue-500 rounded" placeholder="Search Mockups, Logos..." required>
                         </div>
-                        <label for="logo_upload">Télécharger un nouveau logo :</label>
-                        <input type="file" id="logo_upload" @change="uploadLogo"/>
+                    </form>
+                </div>
+                <ul class="space-y-3 font-medium">
+                    <li v-for="team in teams" :key="team.id" @click="selectTeam(team)">
+                        <a href="#" class="flex items-center p-1 text-gray-100 transition duration-75 rounded-lg hover:bg-slate-500">
+                            <span class="ml-4">{{ team.name }}</span>
+                        </a>
+                    </li>
+                </ul>
+                <ul class="pt-4 mt-6 space-y-2 font-medium border-t border-gray-200">
+                    <li class="">
+                        <button @click="goToCreateTeam" class="bg-teal-500 hover:bg-teal-600 border border-teal-300 text-white p-2 w-full rounded">Add a team</button>
+                    </li>
+                    <li class="py-2 flex">
+                        <Link :href="route('dataBaseMenu')" class="bg-cyan-500 hover:bg-cyan-600 border border-cyan-300 shadow-gray-100	 text-white p-2 w-full rounded mt-2 text-center">Return</Link>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+
+        <div class="p-4 sm:ml-64">
+            <div class="flex justify-center">
+                <h1 class="text-3xl font-bold text-slate-600 mb-2">Teams Edit</h1>
+            </div>
+            <div class="p-4 border-2 border-gray-200 border-dashed rounded-lg dark:border-gray-700">
+                <form @submit.prevent="submit">
+                    <div class="grid grid-cols-2 gap-4 text-slate-700">
+                        <div class="py-4">
+                            <label for="name" class="">Nom : </label>
+                            <input type="text" id="name" v-model="form.name" class="p-2  text-sm text-gray-900 border border-gray-300 rounded-full" placeholder="Nom de l'équipe" required>
+                        </div>
+
+                        <div class="py-4">
+                            <label for="budget" class="">Budget : </label>
+                            <input type="number" id="budget" v-model="form.budget" class="p-2  text-sm text-gray-900 border border-gray-300 rounded-full" placeholder="Budget de l'équipe" required>
+                        </div>
                     </div>
-                    <div class="flex-1">
-                        <div>
-                            <label for="name">Nom de l'équipe:</label>
-                            <input v-model="form.data.name" id="name"/>
-                            <div v-if="form.errors.name">{{ form.errors.name[0] }}</div>
-                        </div>
-                        <div>
-                            <label for="budget">Budget:</label>
-                            <input v-model="form.data.budget" id="budget"/>
-                            <div v-if="form.errors.budget">{{ form.errors.budget[0] }}</div>
-                        </div>
-                    </div>
-                    <div class="w-full mt-4">
-                        <button type="submit" :disabled="form.processing">Mettre à jour</button>
+
+                    <div class="flex justify-center">
+                        <button type="submit" class="ml-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Mettre à jour</button>
                     </div>
                 </form>
             </div>
         </div>
-    </div>
+    </AuthenticatedLayout>
 </template>
 
 <script setup>
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { Head } from '@inertiajs/vue3';
+import { Link } from '@inertiajs/vue3';
+import { Inertia } from '@inertiajs/inertia';
+import { defineProps } from 'vue';
+import { reactive } from "vue";
+import { onMounted } from 'vue';
+
+import { router} from "@inertiajs/vue3";
+
+
+//Component
+import H2 from '@/Components/H2.vue';
+
+
+const props = defineProps({
+    teams: {
+        type: Array,
+        required: true
+    }
+});
+const form = reactive({
+    name: '',
+    budget: '',
+    id: ''
+});
+
+onMounted(() => {
+    if (teams.length > 0) {
+        selectTeam(teams[0]);
+    }
+});
+
+function selectTeam(team) {
+    form.name = team.name;
+    form.id = team.id;
+    form.budget = team.budget;  // En supposant que votre objet 'team' possède également un champ 'budget'
+}
+
+function submit() {
+    Inertia.put(route('teams.update', form.id), form);
+}
+
+function goToCreateTeam() {
+    Inertia.visit(route('teams.create'));
+}
 
 </script>
 
 
 <style scoped>
-.wrapper {
-    display: flex;
-}
-
+/* Vos styles pour la sidebar */
 .sidebar {
     width: 200px;
     height: 100vh;
-    background-color: #333;
     color: #fff;
-    padding: 1rem;
 }
 
 .sidebar ul {
@@ -65,64 +135,7 @@
 }
 
 .sidebar ul li {
-    padding: 0.5rem 0;
     cursor: pointer;
-}
-
-.sidebar ul li:hover {
-    background-color: #555;
-}
-
-.sidebar ul li.active {
-    background-color: #777;
-}
-
-.sidebar ul li.active:hover {
-    background-color: #777;
-}
-
-.content {
-    flex: 1;
-    padding: 1rem;
-    margin-bottom: 2rem;
-}
-
-.content h1 {
-    font-size: 2rem;
-    margin-bottom: 1.5rem;
-    color: #333;
-}
-
-.content form {
-    padding: 0 2em;
-    margin: 1em auto;
-}
-
-.content div {
-    margin-bottom: 1rem;
-}
-
-
-.content input {
-    width: 100%;
-    padding: 0.5rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 1rem;
-}
-
-.content button {
-    padding: 0.5rem 1rem;
-    background-color: #007BFF;
-    color: #FFF;
-    border: none;
-    border-radius: 4px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.content button:hover {
-    background-color: #0056b3;
+    padding: 0.5rem 2px;
 }
 </style>

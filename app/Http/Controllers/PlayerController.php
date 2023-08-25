@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StorePlayerRequest;
 use App\Http\Requests\UpdatePlayerRequest;
 use App\Models\Player;
+use Inertia\Inertia;
 
 class PlayerController extends Controller
 {
@@ -13,8 +14,9 @@ class PlayerController extends Controller
      */
     public function index()
     {
-        $players = Player::all(); // Récupérez tous les joueurs. Considérez la pagination si nécessaire.
-        return response()->json($players);
+        return Inertia::render('Players/Index', [
+            'players' => Player::all(),
+        ]);
     }
 
     /**
