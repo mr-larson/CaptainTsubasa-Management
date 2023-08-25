@@ -50,6 +50,14 @@
                 <form @submit.prevent="submit">
                     <div class="grid grid-cols-2 gap-4 text-slate-700">
                         <div class="py-4">
+                            <div>
+                                <img :src="form.logo_path || 'default-image-path.jpg'" alt="Logo de l'équipe" width="100">
+                            </div>
+                            <label for="logo_path" class="">Logo : </label>
+                            <input type="file" id="logo_path" ref="logoInput" @change="handleLogoChange" class="p-2 text-sm text-gray-900 border border-gray-300 rounded-full">
+                        </div>
+
+                        <div class="py-4">
                             <label for="name" class="">Nom : </label>
                             <input type="text" id="name" v-model="form.name" class="p-2  text-sm text-gray-900 border border-gray-300 rounded-full" placeholder="Nom de l'équipe" required>
                         </div>
@@ -58,6 +66,22 @@
                             <label for="budget" class="">Budget : </label>
                             <input type="number" id="budget" v-model="form.budget" class="p-2  text-sm text-gray-900 border border-gray-300 rounded-full" placeholder="Budget de l'équipe" required>
                         </div>
+
+                        <div class="py-4">
+                            <label for="points" class="">Points : </label>
+                            <input type="number" id="points" v-model="form.points" class="p-2 text-sm text-gray-900 border border-gray-300 rounded-full" placeholder="Points de l'équipe" required>
+                        </div>
+
+                        <div class="py-4">
+                            <label for="wins" class="">Victoires : </label>
+                            <input type="number" id="wins" v-model="form.wins" class="p-2 text-sm text-gray-900 border border-gray-300 rounded-full" placeholder="Victoires de l'équipe" required>
+                        </div>
+
+                        <div class="py-4">
+                            <label for="draws" class="">Matchs nuls : </label>
+                            <input type="number" id="draws" v-model="form.draws" class="p-2 text-sm text-gray-900 border border-gray-300 rounded-full" placeholder="Matchs nuls de l'équipe" required>
+                        </div>
+
                     </div>
 
                     <div class="flex justify-center">
@@ -92,10 +116,22 @@ const props = defineProps({
     }
 });
 const form = reactive({
+    id: '',
     name: '',
+    logo_path: null,
     budget: '',
-    id: ''
+    points: '',
+    wins: '',
+    draws: '',
+    losses: '',
+    description: ''
 });
+
+function handleLogoChange(event) {
+    form.logo_path = event.target.files[0];
+}
+
+
 
 onMounted(() => {
     if (teams.length > 0) {
@@ -104,10 +140,17 @@ onMounted(() => {
 });
 
 function selectTeam(team) {
-    form.name = team.name;
     form.id = team.id;
-    form.budget = team.budget;  // En supposant que votre objet 'team' possède également un champ 'budget'
+    form.name = team.name;
+    form.logo_path = team.logo_path;
+    form.budget = team.budget;
+    form.points = team.points;
+    form.wins = team.wins;
+    form.draws = team.draws;
+    form.losses = team.losses;
+    form.description = team.description;
 }
+
 
 function submit() {
     Inertia.put(route('teams.update', form.id), form);
