@@ -29,24 +29,24 @@ import ResponsiveNavLink from "@/Components/ResponsiveNavLink.vue";
                         <!-- Ajout des boutons pour les nouvelles fonctionnalités -->
                         <div class="h-44 mt-6 flex">
                             <div class="flex-1 flex flex-col items-baseline justify-between">
-                                <Link :href="route('profile.edit')" class="w-60 h-12 bg-sky-400 hover:bg-sky-500 text-2xl text-white text-center font-bold py-2 px-5 border-2 border-sky-600 rounded-full drop-shadow-md mb-2">
+                                <Link :href="route('profile.edit')" class="w-60 h-12 bg-sky-300 hover:bg-sky-400 text-2xl text-white text-center font-bold py-2 px-5 border-2 border-sky-500 rounded-full drop-shadow-md mb-2">
                                     My profile
                                 </Link>
-                                <a href="/players" class="w-60 h-12 bg-fuchsia-400 hover:bg-fuchsia-500 text-2xl text-white text-center font-bold py-2 px-5 border-2 border-fuchsia-600 rounded-full drop-shadow-md mb-2">
+                                <a href="/players" class="w-60 h-12 bg-fuchsia-300 hover:bg-fuchsia-400 text-2xl text-white text-center font-bold py-2 px-5 border-2 border-fuchsia-500 rounded-full drop-shadow-md mb-2">
                                     Players
                                 </a>
                             </div>
                             <div class="flex-1 flex flex-col items-start justify-between">
-                                <a href="/dataBaseMenu" class="w-60 h-12 bg-cyan-400 hover:bg-cyan-500 text-2xl text-white text-center font-bold py-2 px-5 border-2 border-cyan-600 rounded-full drop-shadow-md mb-2">
+                                <a href="/dataBaseMenu" class="w-60 h-12 bg-cyan-300 hover:bg-cyan-400 text-2xl text-white text-center font-bold py-2 px-5 border-2 border-cyan-500 rounded-full drop-shadow-md mb-2">
                                     Contracts
                                 </a>
-                                <Link :href="route('teams')" class="w-60 h-12 bg-teal-400 hover:bg-teal-500 text-2xl text-white text-center font-bold py-2 px-5 border-2 border-teal-600 rounded-full drop-shadow-md mb-2">
+                                <Link :href="route('teams')" class="w-60 h-12 bg-teal-300 hover:bg-teal-400 text-2xl text-white text-center font-bold py-2 px-5 border-2 border-teal-500 rounded-full drop-shadow-md mb-2">
                                     Teams
                                 </Link>
                             </div>
                         </div>
                         <div class="h-44 flex items-center justify-center">
-                            <Link :href="route('mainMenu')" class="w-60 h-12 bg-slate-400 hover:bg-slate-500 text-2xl text-white text-center font-bold py-2 px-5 border-2 border-slate-600 rounded-full drop-shadow-md mb-2">Return</Link>
+                            <Link :href="route('mainMenu')" class="w-60 h-12 bg-slate-300 hover:bg-slate-400 text-2xl text-white text-center font-bold py-2 px-5 border-2 border-slate-500 rounded-full drop-shadow-md mb-2">Return</Link>
                         </div>
                     </div>
                 </div>
