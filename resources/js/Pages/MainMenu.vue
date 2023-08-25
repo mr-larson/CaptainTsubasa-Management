@@ -39,6 +39,9 @@ import H2 from '@/Components/H2.vue';
                         </div>
                     </div>
                 </div>
+                <div class="h-32 p-2 flex items-end justify-center text-l font-bold text-slate-400">
+                    Thank-you for using Captain Tsubasa Management
+                </div>
             </div>
         </div>
     </AuthenticatedLayout>
