@@ -8,11 +8,11 @@
 
         <aside id="separator-sidebar" class="fixed top-0 left-0 z-40 w-64 h-screen transition-transform -translate-x-full sm:translate-x-0" aria-label="Sidebar">
             <div class="h-full px-3 py-2 overflow-y-auto bg-slate-700">
-                <div class="pb-4 mb-3 border-b text-center text-gray-200">
-                    <H2>Teams</H2>
+                <div class="p-3 mb-3 border-b text-center text-gray-200">
+                    <H2>Equipes</H2>
                 </div>
-                <div class="mb-4">
-<!--                    <form>
+                <div class="mb-2">
+                    <form>
                         <label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -22,7 +22,7 @@
                             </div>
                             <input type="search" id="default-search" class="block w-full p-2 pl-10 text-sm text-gray-900 border border-gray-300  bg-gray-100 focus:ring-blue-500 focus:border-blue-500 rounded" placeholder="Search Mockups, Logos..." required>
                         </div>
-                    </form>-->
+                    </form>
                 </div>
                 <ul class="space-y-1 font-medium">
                     <li v-for="team in teams" :key="team.id" @click="selectTeam(team)">
@@ -33,12 +33,16 @@
                         </a>
                     </li>
                 </ul>
-                <ul class="pt-4 mt-6 space-y-2 font-medium border-t border-gray-200">
+                <ul class="pt-3 mt-2 space-y-1 font-medium border-t border-gray-200">
                     <li class="">
-                        <button @click="goToCreateTeam" class="bg-teal-500 hover:bg-teal-600 border border-teal-300 text-white p-2 w-full rounded">Add a team</button>
+                        <button @click="goToCreateTeam" class="bg-teal-500 hover:bg-teal-600 border border-teal-300 text-white p-1 w-full rounded">
+                            Créer une équipe
+                        </button>
                     </li>
-                    <li class="py-2 flex">
-                        <Link :href="route('dataBaseMenu')" class="bg-cyan-500 hover:bg-cyan-600 border border-cyan-300 shadow-gray-100	 text-white p-2 w-full rounded mt-2 text-center">Return</Link>
+                    <li class="pt-1 flex">
+                        <Link :href="route('dataBaseMenu')" class="bg-cyan-500 hover:bg-cyan-600 border border-cyan-300 shadow-gray-100	text-white p-1 w-full rounded mt-2 text-center">
+                            Retour
+                        </Link>
                     </li>
                 </ul>
             </div>
@@ -46,12 +50,11 @@
 
         <div class="p-4 sm:ml-64">
             <div class="flex justify-center">
-                <h1 class="text-3xl font-bold text-slate-600 mb-2">Teams Edit</h1>
+                <h1 class="text-3xl font-bold text-slate-600 mb-6">Editions</h1>
             </div>
-            <div class="h-5/6 p-4 border border-slate-300 rounded-lg mx-6 bg-white">
-                <form @submit.prevent="submit">
-                    <div class=" grid grid-cols-2 gap-4 text-slate-700">
-
+            <div class="p-4 border border-slate-300 rounded-lg mx-6 bg-white">
+                <form @submit.prevent="submit" enctype="multipart/form-data">
+                    <div class="grid grid-cols-2 gap-4 text-slate-700">
                         <div class="md:flex md:items-center m-3">
                             <div class="md:w-1/3">
                                 <label for="name" class="text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4">
@@ -88,7 +91,7 @@
                         <div class="md:flex md:items-center mb-3">
                             <div class="md:w-1/3">
                                 <label for="losses" class="text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4">
-                                    Défaites :
+                                    Défaite(s) :
                                 </label>
                             </div>
                             <div class="md:w-2/3">
@@ -110,7 +113,7 @@
                         <div class="md:flex md:items-center mb-3">
                             <div class="md:w-1/3">
                                 <label for="draws" class="text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4">
-                                    Matchs nuls :
+                                    Matchs nul(s) :
                                 </label>
                             </div>
                             <div class="md:w-2/3">
@@ -125,7 +128,7 @@
                                 </label>
                             </div>
                             <div class="md:w-2/3">
-                                <input type="file" id="logo_path" ref="logoInput" @change="handleLogoChange" class="hidden">
+                                <input type="file" name="logo_path" id="logo_path" ref="logoInput" @change="handleLogoChange" class="hidden">
                                 <img :src="form.logo_path || 'default-image-path.jpg'" alt="Logo de l'équipe" class="rounded-lg cursor-pointer w-40" @click="uploadLogo">
                             </div>
                         </div>
@@ -142,8 +145,9 @@
                         </div>
                     </div>
 
-                    <div class="flex justify-center pt-6">
-                        <button type="submit" class="ml-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Mettre à jour</button>
+                    <div class="flex justify-around pt-8">
+                        <button type="submit" class="w-40 bg-blue-300 hover:bg-blue-400 text-center font-bold py-2 px-5 border-2 border-blue-500 rounded-full drop-shadow-md mb-2">Mettre à jour</button>
+                        <button type="button" @click="deleteTeam" class="w-40 bg-red-300 hover:bg-red-400 text-red-950 text-center font-bold py-2 px-5 border-2 border-red-500 rounded-full drop-shadow-md mb-2">Supprimer</button>
                     </div>
                 </form>
             </div>
@@ -175,7 +179,7 @@
         selectedTeamId: null,
         id: '',
         name: '',
-        logo_path: null,
+        logo_path: '',
         budget: '',
         points: '',
         wins: '',
@@ -185,33 +189,6 @@
     });
     const logoInput = ref(null);
 
-    async function updateTeam() {
-        // Votre logique pour mettre à jour l'équipe, par exemple une requête HTTP
-        let response = await fetch(`/api/teams/${form.id}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ name: form.name /* et autres champs */ }),
-        });
-
-        if (response.ok) {
-            // Si la mise à jour est réussie
-            let updatedTeam = await response.json();
-
-            // Trouvez l'équipe dans votre liste d'équipes et mettez-la à jour
-            let teamIndex = teams.findIndex(team => team.id === updatedTeam.id);
-            if (teamIndex !== -1) {
-                teams[teamIndex] = updatedTeam;
-            }
-
-            // Pas besoin de réinitialiser selectedTeamId ici
-            // form.selectedTeamId reste inchangé
-        } else {
-            // Gérez les erreurs comme vous le souhaitez
-            console.error('Erreur lors de la mise à jour de l\'équipe');
-        }
-    }
 
     function handleLogoChange(event) {
         form.logo_path = event.target.files[0];
@@ -245,8 +222,15 @@
         Inertia.put(route('teams.update', form.id), form);
     }
 
+
     function goToCreateTeam() {
         Inertia.visit(route('teams.create'));
+    }
+
+    function deleteTeam() {
+        if (confirm("Voulez-vous vraiment supprimer cette équipe?")) {
+            Inertia.delete(route('teams.destroy', form.id));
+        }
     }
 </script>
 

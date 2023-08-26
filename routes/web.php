@@ -48,6 +48,8 @@ Route::get('/', function () {
     Route::get('/teams/{team}', [TeamController::class, 'show'])->name('teams.show');
     Route::get('/teams/{team}/edit', [TeamController::class, 'edit'])->name('teams.edit');
     Route::put('/teams/{team}', [TeamController::class, 'update'])->name('teams.update');
+    Route::delete('/teams/{team}', [TeamController::class, 'destroy'])->name('teams.destroy');
+
 
 Route::get('/players', [PlayerController::class, 'index'])->name('players');
 

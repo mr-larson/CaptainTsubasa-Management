@@ -41,6 +41,7 @@ class UpdatePlayerRequest extends FormRequest
             'fatigue' => 'required|integer|min:0|max:100',
             'injury_risk' => 'required|numeric|min:0|max:100',
             'is_injured' => 'required|boolean',
+            'description' => 'nullable|string',
         ];
     }
 

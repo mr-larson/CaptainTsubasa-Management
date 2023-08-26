@@ -30,6 +30,7 @@ class Player extends Model
         'fatigue', //integer
         'injury_risk', //float (0-100)
         'is_injured', //boolean
+        'description', //string
     ];
 
     protected $casts = [

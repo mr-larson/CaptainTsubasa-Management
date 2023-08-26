@@ -27,20 +27,20 @@ import H2 from '@/Components/H2.vue';
                         <h2 class="text-3xl font-bold text-slate-600 mb-6">Management</h2>
                         <!-- Ajout des boutons pour les nouvelles fonctionnalités -->
                         <div class="h-64 mt-6 flex flex-col items-start justify-between">
-                            <button  class="w-60 h-12 bg-sky-300 hover:bg-sky-400 text-2xl text-white font-bold py-2 px-5 border-2 border-sky-600 rounded-full drop-shadow-md">
-                                New Game
+                            <button  class="w-60 h-12 bg-sky-300 hover:bg-sky-400 text-xl text-sky-950 font-bold py-2 px-5 border-2 border-sky-600 rounded-full drop-shadow-md">
+                                Nouvelle Partie
                             </button>
-                            <button  class="w-60 h-12 bg-cyan-300 hover:bg-cyan-400 text-2xl text-white font-bold py-2 px-5 border-2 border-cyan-600 rounded-full drop-shadow-md">
-                                Load Game
+                            <button  class="w-60 h-12 bg-cyan-300 hover:bg-cyan-400 text-xl text-cyan-950 font-bold py-2 px-5 border-2 border-cyan-600 rounded-full drop-shadow-md">
+                                Charger Partie
                             </button>
-                            <Link :href="route('dataBaseMenu')" class="w-60 h-12 bg-fuchsia-300 hover:bg-fuchsia-400 text-2xl text-white text-center font-bold py-2 px-5 border-2 border-fuchsia-600 rounded-full drop-shadow-md">
-                                Edit Database
+                            <Link :href="route('dataBaseMenu')" class="w-60 h-12 bg-fuchsia-300 hover:bg-fuchsia-400 text-xl text-fuchsia-950 text-center font-bold py-2 px-5 border-2 border-fuchsia-600 rounded-full drop-shadow-md">
+                                Editer les Données
                             </Link>
                         </div>
                     </div>
                 </div>
                 <div class="h-32 p-2 flex items-end justify-center text-l font-bold text-slate-400">
-                    Thank-you for using Captain Tsubasa Management
+                    Merci d'utiliser notre application
                 </div>
             </div>
         </div>
