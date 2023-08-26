@@ -6,11 +6,9 @@
             <H2>Add Team</H2>
         </template>
 
-        <!-- ... Le reste du contenu reste essentiellement le même. Le sidebar peut être conservé si nécessaire ... -->
-
         <div class="p-4 ">
             <div class="flex justify-center">
-                <h1 class="text-3xl font-bold text-slate-600 mb-6">Add New Team</h1>
+                <h1 class="text-3xl font-bold text-slate-600 mb-6">Creation</h1>
             </div>
             <div class="flex flex-row">
                 <div class="basis-1/3 p-4 bg-contain bg-center bg-no-repeat" style="background-image: url('/images/wakabayashi.webp')">
@@ -56,7 +54,7 @@
                             <div class="md:flex md:items-center mb-3">
                                 <div class="md:w-1/3">
                                     <label for="losses" class="text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4">
-                                        Défaites :
+                                        Défaite(s) :
                                     </label>
                                 </div>
                                 <div class="md:w-2/3">
@@ -78,7 +76,7 @@
                             <div class="md:flex md:items-center mb-3">
                                 <div class="md:w-1/3">
                                     <label for="draws" class="text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4">
-                                        Matchs nuls :
+                                        Matchs nul(s) :
                                     </label>
                                 </div>
                                 <div class="md:w-2/3">
@@ -105,15 +103,15 @@
                                     </label>
                                 </div>
                                 <div class="md:w-2/3">
-                                    <textarea id="description" v-model="form.description" class="p-2 w-60 h-24 text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-lg" placeholder="Description de l'équipe"></textarea>
+                                    <textarea id="description" v-model="form.description" class="p-2 w-72 h-24 text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-lg" placeholder="Description de l'équipe"></textarea>
                                 </div>
                             </div>
                         </div>
 
                         <div class="flex justify-around p-6">
-                            <button type="submit" class="w-40 bg-blue-300 hover:bg-blue-400 text-center font-bold py-2 px-5 border-2 border-blue-500 rounded-full drop-shadow-md mb-2">Add Team</button>
-                            <Link :href="route('dataBaseMenu')" class="w-40 bg-slate-300 hover:bg-slate-400 text-center font-bold py-2 px-5 border-2 border-slate-500 rounded-full drop-shadow-md mb-2">
-                                Return
+                            <button type="submit" class="w-40 bg-cyan-300 hover:bg-cyan-400 text-center font-semibold py-2 px-5 border-2 border-cyan-500 rounded-full drop-shadow-md mb-2">Creation</button>
+                            <Link :href="route('dataBaseMenu')" class="w-40 bg-slate-300 hover:bg-slate-400 text-center font-semibold py-2 px-5 border-2 border-slate-500 rounded-full drop-shadow-md mb-2">
+                                Retour
                             </Link>
                         </div>
                     </form>

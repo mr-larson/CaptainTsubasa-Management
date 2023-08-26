@@ -34,13 +34,13 @@
                     </li>
                 </ul>
                 <ul class="pt-3 mt-2 space-y-1 font-medium border-t border-gray-200">
-                    <li class="">
-                        <button @click="goToCreateTeam" class="bg-teal-500 hover:bg-teal-600 border border-teal-300 text-white p-1 w-full rounded">
-                            Créer une équipe
-                        </button>
-                    </li>
                     <li class="pt-1 flex">
-                        <Link :href="route('dataBaseMenu')" class="bg-cyan-500 hover:bg-cyan-600 border border-cyan-300 shadow-gray-100	text-white p-1 w-full rounded mt-2 text-center">
+                        <Link :href="route('teams.create')" class="bg-teal-500 hover:bg-teal-600 border border-teal-300 text-white p-1 w-full rounded text-center">
+                            Créer une équipe
+                        </Link>
+                    </li>
+                    <li class="pt-2 flex">
+                        <Link :href="route('dataBaseMenu')" class="bg-slate-500 hover:bg-slate-600 border border-slate-300 shadow-gray-100	text-white p-1 w-full rounded text-center">
                             Retour
                         </Link>
                     </li>
@@ -140,14 +140,14 @@
                                 </label>
                             </div>
                             <div class="md:w-2/3">
-                                <textarea id="description" v-model="form.description" class="p-2 w-60 h-24 text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-lg" placeholder="Description de l'équipe"></textarea>
+                                <textarea id="description" v-model="form.description" class="p-2 w-80 h-24 text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-lg" placeholder="Description de l'équipe"></textarea>
                             </div>
                         </div>
                     </div>
 
                     <div class="flex justify-around pt-8">
-                        <button type="submit" class="w-40 bg-blue-300 hover:bg-blue-400 text-center font-bold py-2 px-5 border-2 border-blue-500 rounded-full drop-shadow-md mb-2">Mettre à jour</button>
-                        <button type="button" @click="deleteTeam" class="w-40 bg-red-300 hover:bg-red-400 text-red-950 text-center font-bold py-2 px-5 border-2 border-red-500 rounded-full drop-shadow-md mb-2">Supprimer</button>
+                        <button type="submit" class="w-40 bg-cyan-300 hover:bg-cyan-400 text-center font-semibold py-2 px-5 border-2 border-cyan-500 rounded-full drop-shadow-md mb-2">Mettre à jour</button>
+                        <button type="button" @click="deleteTeam" class="w-40 bg-fuchsia-300 hover:bg-fuchsia-400 text-fuchsia-950 text-center font-semibold py-2 px-5 border-2 border-fuchsia-500 rounded-full drop-shadow-md mb-2">Supprimer</button>
                     </div>
                 </form>
             </div>
