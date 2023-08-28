@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 
 class Team extends Model
 {
@@ -13,7 +14,7 @@ class Team extends Model
 
     protected $fillable = [
         'name', //string, nom de l'équipe
-        'logo_path', //string, chemin vers le logo de l'équipe
+        'image', //string, chemin vers le logo de l'équipe
         'budget', //integer, budget de l'équipe
         'points', //integer, points de l'équipe
         'wins', //integer, victoires de l'équipe
@@ -27,6 +28,24 @@ class Team extends Model
     protected $casts = [
         'team_stats_bonus' => 'array',
     ];
+
+    public function setImageAttribute($value)
+    {
+        if (is_string($value)) {
+            $this->attributes['image'] = $value;
+            return;
+        }
+
+        $path = $value->store('images/teams', 'public');
+
+        $this->attributes['image'] = $path;
+    }
+
+
+    public function getImageAttribute($value)
+    {
+        return $value ? str_replace('/storage/', '', Storage::url($value)) : null;
+    }
 
     public function players()
     {

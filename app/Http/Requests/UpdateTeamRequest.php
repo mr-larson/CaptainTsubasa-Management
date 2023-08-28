@@ -23,7 +23,7 @@ class UpdateTeamRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',  // Nom obligatoire et au maximum 255 caractères
-            'logo_path' => 'nullable|string|max:255',  // Chemin du logo optionnel, au maximum 255 caractères
+            'image' => 'nullable',  // Chemin du logo optionnel, au maximum 255 caractères
             'budget' => 'required|integer|min:0',  // Budget obligatoire, entier et positif
             'points' => 'required|integer|min:0',  // Points obligatoires, entiers et positifs
             'wins' => 'required|integer|min:0',  // Victoires obligatoires, entiers et positifs

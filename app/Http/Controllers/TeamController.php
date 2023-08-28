@@ -28,17 +28,19 @@ class TeamController extends Controller
 
     public function store(StoreTeamRequest $request)
     {
-        $validatedData = $request->validated();
-
-        if ($request->hasFile('logo_path')) {
-            $file = $request->file('logo_path');
-            $filename = time() . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('teams/logos', $filename, 'public');
-            $validatedData['logo_path'] = $path;
+        if ($request->hasFile('image')) {
+            // Récupérer le nom du fichier
+            $fileName = time() . '.' . $request->image->getClientOriginalExtension();
+            // Déplacer le fichier dans le dossier de stockage
+            $request->image->storeAs('public/images/teams', $fileName);
+            // Enregistrer le nom du fichier dans la base de données
+            $request->merge(['image' => $fileName]);
         }
 
-        Team::create($validatedData);
-        return redirect()->route('teams');
+        // Créer la team
+        Team::create($request->all());
+
+        return redirect()->route('teams')->with('success', "L'équipe a été créée avec succès");
     }
 
 
@@ -49,30 +51,34 @@ class TeamController extends Controller
 
     public function edit(Request $request)
     {
-        return response()->json([
-            'team' => Team::find($request->id),
-        ]);
+        $team = Team::find($request->id)->append('image');
+        return response()->json(['team' => $team]);
     }
+
 
     public function update(StoreTeamRequest $request, Team $team)
     {
-        $validatedData = $request->validated();
+        if ($request->hasFile('image')) {
+            // Récupérer le nom du fichier
+            $fileName = time() . '.' . $request->image->getClientOriginalExtension();
+            // Déplacer le fichier dans le dossier de stockage
+            $request->image->storeAs('public/images/teams', $fileName);
 
-        if ($request->hasFile('logo_path')) {
-            // Supprimer l'ancien fichier s'il existe
-            if ($team->logo_path) {
-                Storage::disk('public')->delete($team->logo_path);
+            // Supprimer l'ancienne image si elle existe
+            if($team->image) {
+                Storage::delete('public/images/teams/' . $team->image);
             }
 
-            $file = $request->file('logo_path');
-            $filename = time() . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('teams/logos', $filename, 'public');
-            $validatedData['logo_path'] = $path;
+            // Mettre à jour le champ image avant de sauvegarder les autres champs
+            $team->image = $fileName;
         }
 
-        $team->update($validatedData);
-        return redirect()->route('teams');
+        // Mettre à jour les autres champs de la team
+        $team->update($request->except('image'));
+
+        return redirect()->route('teams')->with('success', "L'équipe a été mise à jour avec succès");
     }
+
 
     public function destroy(Team $team)
     {
