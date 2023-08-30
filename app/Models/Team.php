@@ -29,23 +29,11 @@ class Team extends Model
         'team_stats_bonus' => 'array',
     ];
 
-    public function setImageAttribute($value)
+    public function getImageUrlAttribute()
     {
-        if (is_string($value)) {
-            $this->attributes['image'] = $value;
-            return;
-        }
-
-        $path = $value->store('images/teams', 'public');
-
-        $this->attributes['image'] = $path;
+        return asset('storage/' . $this->image);
     }
 
-
-    public function getImageAttribute($value)
-    {
-        return $value ? str_replace('/storage/', '', Storage::url($value)) : null;
-    }
 
     public function players()
     {

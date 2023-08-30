@@ -52,11 +52,6 @@
             <div class="flex justify-center">
                 <h1 class="text-3xl font-bold text-slate-600 mb-6">Editions</h1>
             </div>
-            <div v-if="hasErrors">
-                <ul>
-                    <li v-for="error in allErrors" :key="error">{{ error }}</li>
-                </ul>
-            </div>
             <div class="p-4 border border-slate-300 rounded-lg mx-6 bg-white">
                 <form @submit.prevent="submit" enctype="multipart/form-data">
                     <div class="flex flex-col md:grid lg:grid-cols-2 gap-4 text-slate-700">
@@ -172,12 +167,17 @@
     // Fonction pour lancer le sélecteur de fichier du logo
     function uploadLogo() {
         if (logoInput.value) {
-            logoInput.value.click();
+            logoInput.value.click(
+                handleImageUpload.bind(this)
+            );
         } else {
             console.warn("Logo input is not yet defined.");
         }
     }
 
+    function handleImageUpload() {
+        form.value.image_path = this.$refs.imageInput.files[0];
+    }
 
     // Gestion du changement de logo
     function handleLogoChange(event) {
@@ -205,13 +205,9 @@
     function submit() {
         const formData = new FormData();
 
-        // Ajoutez tous les champs du formulaire à formData
         for (const key in form) {
             formData.append(key, form[key]);
         }
-
-      console.log("formData");
-
         Inertia.post(route('teams.update', form.id), formData);
     }
 

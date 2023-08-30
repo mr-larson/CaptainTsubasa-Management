@@ -29,15 +29,10 @@ class TeamController extends Controller
     public function store(StoreTeamRequest $request)
     {
         if ($request->hasFile('image')) {
-            // Récupérer le nom du fichier
-            $fileName = time() . '.' . $request->image->getClientOriginalExtension();
-            // Déplacer le fichier dans le dossier de stockage
-            $request->image->storeAs('public/images/teams', $fileName);
-            // Enregistrer le nom du fichier dans la base de données
-            $request->merge(['image' => $fileName]);
+            $path = $request->file('image')->store('teams', 'public');
+            $request->merge(['image' => $path]);
         }
 
-        // Créer la team
         Team::create($request->all());
 
         return redirect()->route('teams')->with('success', "L'équipe a été créée avec succès");
@@ -59,22 +54,12 @@ class TeamController extends Controller
     public function update(StoreTeamRequest $request, Team $team)
     {
         if ($request->hasFile('image')) {
-            // Récupérer le nom du fichier
-            $fileName = time() . '.' . $request->image->getClientOriginalExtension();
-            // Déplacer le fichier dans le dossier de stockage
-            $request->image->storeAs('public/images/teams', $fileName);
-
-            // Supprimer l'ancienne image si elle existe
-            if($team->image) {
-                Storage::delete('public/images/teams/' . $team->image);
-            }
-
-            // Mettre à jour le champ image avant de sauvegarder les autres champs
-            $team->image = $fileName;
+            Storage::disk('public')->delete($team->image);
+            $path = $request->file('image')->store('teams', 'public');
+            $request->merge(['image' => $path]);
         }
 
-        // Mettre à jour les autres champs de la team
-        $team->update($request->except('image'));
+        $team->update($request->all());
 
         return redirect()->route('teams')->with('success', "L'équipe a été mise à jour avec succès");
     }
