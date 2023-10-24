@@ -2,22 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreTeamRequest;
-use App\Http\Requests\UpdateTeamRequest;
+use App\Http\Requests\TeamRequest;
 use App\Models\Team;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
-use Inertia\Response;
-
 class TeamController extends Controller
 {
     public function index()
     {
-        $teams = Team::orderBy('name')->get();
         return Inertia::render('Teams/Index', [
-            'teams' => $teams,
+            'teams' => Team::orderBy('name')->get()
         ]);
     }
 
@@ -26,7 +20,7 @@ class TeamController extends Controller
         return Inertia::render('Teams/Create');
     }
 
-    public function store(StoreTeamRequest $request)
+    public function store(TeamRequest $request)
     {
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('teams', 'public');
@@ -38,20 +32,15 @@ class TeamController extends Controller
         return redirect()->route('teams')->with('success', "L'équipe a été créée avec succès");
     }
 
-
-    public function show(Team $team)
+    public function edit()
     {
-        return response()->json($team);
-    }
-
-    public function edit(Request $request)
-    {
-        $team = Team::find($request->id)->append('image');
-        return response()->json(['team' => $team]);
+        return Inertia::render('Teams/Edit', [
+            'teams' => Team::orderBy('name')->get()
+        ]);
     }
 
 
-    public function update(StoreTeamRequest $request, Team $team)
+    public function update(TeamRequest $request, Team $team)
     {
         if ($request->hasFile('image')) {
             Storage::disk('public')->delete($team->image);

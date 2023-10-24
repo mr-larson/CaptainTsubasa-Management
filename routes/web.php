@@ -50,12 +50,18 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('/teams', [TeamController::class, 'index'])->name('teams');
+    Route::get('/teams/edit', [TeamController::class, 'edit'])->name('teams.edit');
     Route::get('/teams/create', [TeamController::class, 'create'])->name('teams.create');
     Route::post('/teams', [TeamController::class, 'store'])->name('teams.store');
-    Route::get('/teams/{team}', [TeamController::class, 'show'])->name('teams.show');
-    Route::get('/teams/{team}/edit', [TeamController::class, 'edit'])->name('teams.edit');
     Route::post('/teams/{team}', [TeamController::class, 'update'])->name('teams.update');
     Route::delete('/teams/{team}', [TeamController::class, 'destroy'])->name('teams.destroy');
+
+    Route::get('/players', [PlayerController::class, 'index'])->name('players');
+    Route::get('/players/edit', [PlayerController::class, 'edit'])->name('players.edit');
+    Route::get('/players/create', [PlayerController::class, 'create'])->name('players.create');
+    Route::post('/players', [PlayerController::class, 'store'])->name('players.store');
+    Route::post('/players/{player}', [PlayerController::class, 'update'])->name('players.update');
+    Route::delete('/players/{player}', [PlayerController::class, 'destroy'])->name('players.destroy');
 });
 
 require __DIR__.'/auth.php';

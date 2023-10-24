@@ -1,9 +1,9 @@
 <template>
-    <Head title="Teams"/>
+    <Head title="Players"/>
 
     <AuthenticatedLayout>
         <template #header>
-            <H2>Teams</H2>
+            <H2>Players</H2>
         </template>
 
         <aside id="separator-sidebar"
@@ -11,7 +11,7 @@
                aria-label="Sidebar">
             <div class="h-full px-3 py-2 overflow-y-auto bg-slate-700">
                 <div class="p-3 mb-3 border-b text-center text-gray-200">
-                    <H2>Equipes</H2>
+                    <H2>Joueurs</H2>
                 </div>
                 <div class="mb-2">
                     <form>
@@ -32,19 +32,19 @@
                     </form>
                 </div>
                 <ul class="space-y-1 font-medium">
-                    <li v-for="team in filteredTeams" :key="team.id" @click="selectTeam(team)">
+                    <li v-for="player in filteredPlayers" :key="player.id" @click="selectPlayer(player)">
                         <a href="#"
-                           :class="{'bg-slate-500': form.selectedTeamId === team.id}"
+                           :class="{'bg-slate-500': form.selectedPlayerId === player.id}"
                            class="flex items-center p-1 text-gray-100 transition duration-75 rounded-lg hover:bg-slate-500">
-                            <span class="ml-3">{{ team.name }}</span>
+                            <span class="ml-3">{{ player.name }}</span>
                         </a>
                     </li>
                 </ul>
                 <ul class="pt-3 mt-2 space-y-1 font-medium border-t border-gray-200">
                     <li class="pt-1 flex">
-                        <Link :href="route('teams.create')"
+                        <Link :href="route('players.create')"
                               class="bg-teal-500 hover:bg-teal-600 border border-teal-300 text-white p-1 w-full rounded text-center">
-                            Créer une équipe
+                            Créer une joueur
                         </Link>
                     </li>
                     <li class="pt-2 flex">
@@ -68,62 +68,22 @@
                         <div class="flex items-center m-3 gap-4 md:gap-0">
                             <label for="name"
                                    class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Nom</label>
-                            <input type="text" id="name" v-model="form.name" placeholder="Nom de l'équipe" required
+                            <input type="text" id="name" v-model="form.name" placeholder="Nom du joueur" required
                                    class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
                         </div>
 
                         <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label for="wins" class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Victoire(s)</label>
-                            <input type="number" id="wins" v-model="form.wins" placeholder="Victoire(s) de l'équipe"
-                                   required
-                                   class="text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
-                        </div>
-
-                        <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label for="points" class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Points</label>
-                            <input type="number" id="points" v-model="form.points" placeholder="Points de l'équipe"
-                                   required
-                                   class="text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
-                        </div>
-
-                        <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label for="losses" class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Défaite(s)</label>
-                            <input type="number" id="losses" v-model="form.losses" placeholder="Défaites de l'équipe"
-                                   required
-                                   class="text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
-                        </div>
-
-                        <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label for="budget" class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Budget</label>
-                            <input type="number" id="budget" v-model="form.budget" placeholder="Budget de l'équipe"
-                                   required
-                                   class="text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
-                        </div>
-
-                        <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label for="draws" class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Matchs
-                                nul(s)</label>
-                            <input type="number" id="draws" v-model="form.draws" placeholder="Matchs nuls de l'équipe"
-                                   required
-                                   class="text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
-                        </div>
-
-                        <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label for="image"
-                                   class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Logo</label>
-                            <div class="flex flex-col">
-                                <input type="file" name="image" id="image" ref="logoInput" @change="handleLogoChange"
-                                       class="hidden">
-                                <img :src="form.image || 'images/teams/team_default.png'" alt="Logo de l'équipe"
-                                     class="rounded-lg cursor-pointer w-36" @click="uploadLogo">
-                            </div>
+                            <label for="first_name"
+                                   class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Prénom</label>
+                            <input type="text" id="first_name" v-model="form.first_name" placeholder="Prénom du joueur" required
+                                      class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
                         </div>
 
                         <div class="flex items-start m-3 gap-4 md:gap-0">
                             <label for="description" class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Description</label>
                             <textarea id="description" v-model="form.description"
                                       class="p-2 w-full h-36 text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-lg"
-                                      placeholder="Description de l'équipe"></textarea>
+                                      placeholder="Description du joueur"></textarea>
                         </div>
 
                     </div>
@@ -133,7 +93,7 @@
                                 class="w-36 bg-sky-300 hover:bg-sky-400 text-center py-1 border-2 border-sky-500 rounded-full drop-shadow-md mb-2">
                             Mettre à jour
                         </button>
-                        <button type="button" @click="deleteTeam"
+                        <button type="button" @click="deletePlayer"
                                 class="w-36 bg-rose-300 hover:bg-rose-400 text-rose-950 text-center py-1 border-2 border-rose-500 rounded-full drop-shadow-md mb-2">
                             Supprimer
                         </button>
@@ -156,7 +116,7 @@ import H2 from '@/Components/H2.vue';
 
 // Propriétés du composant
 const props = defineProps({
-    teams: {
+    players: {
         type: Array,
         required: true
     }
@@ -164,31 +124,26 @@ const props = defineProps({
 
 // Réactif pour le formulaire d'édition
 const form = reactive({
-    selectedTeamId: null,
+    selectedPlayerId: null,
     id: '',
     name: '',
-    image: '',
-    budget: '',
-    points: '',
-    wins: '',
-    draws: '',
-    losses: '',
+    first_name: '',
     description: ''
 });
 
-// Sélectionner une équipe dès le chargement si des équipes existent
+// Sélectionner une joueur dès le chargement si des joueurs existent
 onMounted(() => {
-    if (props.teams.length > 0) {
-        selectTeam(props.teams[0]);
+    if (props.players.length > 0) {
+        selectPlayer(props.players[0]);
     }
 });
 
 // Réactif pour la barre de recherche
 const searchQuery = ref("");
 
-const filteredTeams = computed(() => {
-    if (!searchQuery.value) return props.teams;
-    return props.teams.filter(team => team.name.toLowerCase().includes(searchQuery.value.toLowerCase()));
+const filteredPlayers = computed(() => {
+    if (!searchQuery.value) return props.players;
+    return props.players.filter(player => player.name.toLowerCase().includes(searchQuery.value.toLowerCase()));
 });
 
 
@@ -217,21 +172,16 @@ function handleLogoChange(event) {
     }
 }
 
-// Fonction pour mettre à jour le formulaire avec les détails d'une équipe sélectionnée
-function selectTeam(team) {
-    form.id = team.id;
-    form.name = team.name;
-    form.image = team.image;
-    form.budget = team.budget;
-    form.points = team.points;
-    form.wins = team.wins;
-    form.draws = team.draws;
-    form.losses = team.losses;
-    form.description = team.description;
-    form.selectedTeamId = team.id;
+// Fonction pour mettre à jour le formulaire avec les détails d'une joueur sélectionnée
+function selectPlayer(player) {
+    form.id = player.id;
+    form.name = player.name;
+    form.first_name = player.first_name;
+    form.description = player.description;
+    form.selectedPlayerId = player.id;
 }
 
-// Fonction pour soumettre le formulaire et mettre à jour l'équipe
+// Fonction pour soumettre le formulaire et mettre à jour l'joueur
 function submit() {
     const formData = new FormData();
 
@@ -239,19 +189,19 @@ function submit() {
         formData.append(key, form[key]);
     }
     // Après une mise à jour réussie
-    Inertia.post(route('teams.update', form.id), formData, {
+    Inertia.post(route('players.update', form.id), formData, {
         onSuccess: () => {
-            // On recharge la page sur le team.id
-            Inertia.reload({only: ['teams'], data: {team: form.id}});
+            // On recharge la page sur le player.id
+            Inertia.reload({only: ['players'], data: {player: form.id}});
         }
     });
 
 }
 
-// Fonction pour supprimer une équipe
-function deleteTeam() {
-    if (confirm(" Voulez-vous vraiment supprimer cette équipe ? ")) {
-        Inertia.delete(route('teams.destroy', form.id));
+// Fonction pour supprimer une joueur
+function deletePlayer() {
+    if (confirm(" Voulez-vous vraiment supprimer cette joueur ? ")) {
+        Inertia.delete(route('players.destroy', form.id));
     }
 }
 </script>

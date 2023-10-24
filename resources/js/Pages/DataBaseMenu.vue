@@ -1,12 +1,8 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head } from '@inertiajs/vue3';
 import { Link } from '@inertiajs/vue3';
-
 //Component
 import H2 from '@/Components/H2.vue';
-import ResponsiveNavLink from "@/Components/ResponsiveNavLink.vue";
-
 
 </script>
 
@@ -34,17 +30,17 @@ import ResponsiveNavLink from "@/Components/ResponsiveNavLink.vue";
                                     </Link>
                                 </div>
                                 <div class="lg:w-1/2 mb-2 lg:h-24 flex justify-center">
-                                    <a href="/players" class="block w-60 h-12 bg-fuchsia-300 hover:bg-fuchsia-400 text-xl text-fuchsia-950 text-center font-bold py-2 px-5 border-2 border-fuchsia-500 rounded-full drop-shadow-md">
+                                    <Link :href="route('players.edit')" class="block w-60 h-12 bg-fuchsia-300 hover:bg-fuchsia-400 text-xl text-fuchsia-950 text-center font-bold py-2 px-5 border-2 border-fuchsia-500 rounded-full drop-shadow-md">
                                         Joueurs
-                                    </a>
+                                    </Link>
                                 </div>
                                 <div class="lg:w-1/2 mb-2 lg:h-24 flex justify-center">
-                                    <a href="/dataBaseMenu" class="block w-60 h-12 bg-cyan-300 hover:bg-cyan-400 text-xl text-cyan-950 text-center font-bold py-2 px-5 border-2 border-cyan-500 rounded-full drop-shadow-md">
+                                    <Link :href="route('teams')" class="block w-60 h-12 bg-cyan-300 hover:bg-cyan-400 text-xl text-cyan-950 text-center font-bold py-2 px-5 border-2 border-cyan-500 rounded-full drop-shadow-md">
                                         Contrats
-                                    </a>
+                                    </Link>
                                 </div>
                                 <div class="lg:w-1/2 mb-2 lg:h-24 flex justify-center">
-                                    <Link :href="route('teams')" class="block w-60 h-12 bg-teal-300 hover:bg-teal-400 text-xl text-teal-950 text-center font-bold py-2 px-5 border-2 border-teal-500 rounded-full drop-shadow-md">
+                                    <Link :href="route('teams.edit')" class="block w-60 h-12 bg-teal-300 hover:bg-teal-400 text-xl text-teal-950 text-center font-bold py-2 px-5 border-2 border-teal-500 rounded-full drop-shadow-md">
                                         Equipes
                                     </Link>
                                 </div>
@@ -62,7 +58,3 @@ import ResponsiveNavLink from "@/Components/ResponsiveNavLink.vue";
         </div>
     </AuthenticatedLayout>
 </template>
-
-<style scoped>
-/* Si vous avez des styles spécifiques pour ces boutons, ajoutez-les ici. */
-</style>

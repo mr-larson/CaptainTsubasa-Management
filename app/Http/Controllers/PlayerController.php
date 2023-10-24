@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StorePlayerRequest;
-use App\Http\Requests\UpdatePlayerRequest;
+use App\Http\Requests\PlayerRequest;
 use App\Models\Player;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class PlayerController extends Controller
@@ -15,40 +15,45 @@ class PlayerController extends Controller
     public function index()
     {
         return Inertia::render('Players/Index', [
-            'players' => Player::all(),
+            'players' => Player::orderBy('name')->get()
         ]);
     }
 
+    public function create()
+    {
+        return Inertia::render('Players/Create');
+    }
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StorePlayerRequest $request)
+    public function store(PlayerRequest $request)
     {
-        $player = Player::create($request->validated());
-        return response()->json([
-            'message' => 'Player created successfully.',
-            'player' => $player
-        ]);
+        if($request->hasFile('image_path')) {
+            $path = $request->file('image_path')->store('players', 'public');
+            $request->merge(['image_path' => $path]);
+        }
+
+        Player::create($request->all());
+
+        return redirect()->route('players')->with('success', "Le joueur a été créé avec succès");
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Player $player)
+    public function edit()
     {
-        return response()->json($player);
+        return Inertia::render('Players/Edit', [
+            'players' => Player::orderBy('name')->get()
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdatePlayerRequest $request, Player $player)
+    public function update(PlayerRequest $request, Player $player)
     {
-        $player->update($request->validated());
-        return response()->json([
-            'message' => 'Player updated successfully.',
-            'player' => $player
-        ]);
+
+        $player->update($request->all());
+
+        return redirect()->route('players')->with('success', "Le joueur a été mis à jour avec succès");
     }
 
     /**
@@ -57,6 +62,7 @@ class PlayerController extends Controller
     public function destroy(Player $player)
     {
         $player->delete();
+
         return response()->json([
             'message' => 'Player deleted successfully.'
         ]);
