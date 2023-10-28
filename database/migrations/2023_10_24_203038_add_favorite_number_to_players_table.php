@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('teams', function (Blueprint $table) {
-            $table->renameColumn('logo_path', 'image');
+        Schema::table('players', function (Blueprint $table) {
+            $table->integer('favorite_number')->nullable()->after('weight');
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('teams', function (Blueprint $table) {
-            $table->renameColumn('image', 'logo_path');
+        Schema::table('players', function (Blueprint $table) {
+            $table->dropColumn('favorite_number');
         });
     }
 };
