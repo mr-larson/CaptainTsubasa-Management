@@ -49,7 +49,7 @@
                     </li>
                     <li class="pt-2 flex">
                         <Link :href="route('dataBaseMenu')"
-                              class="bg-slate-500 hover:bg-slate-600 border border-slate-300 shadow-gray-100	text-white p-1 w-full rounded text-center">
+                              class="bg-slate-500 hover:bg-slate-600 border border-slate-300 shadow-gray-100 text-white p-1 w-full rounded text-center">
                             Retour
                         </Link>
                     </li>
@@ -109,12 +109,11 @@
                         </div>
 
                         <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label for="image"
-                                   class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Logo</label>
+                            <label for="logo" class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Logo</label>
                             <div class="flex flex-col">
-                                <input type="file" name="image" id="image" ref="logoInput" @change="handleLogoChange"
+                                <input type="file" name="logo" id="logo" @change="onLogoChange" accept="image/*"
                                        class="hidden">
-                                <img :src="form.image || 'images/teams/team_default.png'" alt="Logo de l'équipe"
+                                <img :src="form.logo_path || '/images/teams/team_default.png'" alt="Logo de l'équipe"
                                      class="rounded-lg cursor-pointer w-36" @click="uploadLogo">
                             </div>
                         </div>
@@ -167,7 +166,7 @@ const form = reactive({
     selectedTeamId: null,
     id: '',
     name: '',
-    image: '',
+    logo_path: null,
     budget: '',
     points: '',
     wins: '',
@@ -191,37 +190,22 @@ const filteredTeams = computed(() => {
     return props.teams.filter(team => team.name.toLowerCase().includes(searchQuery.value.toLowerCase()));
 });
 
-
-const logoInput = ref(null);
-
-// Fonction pour lancer le sélecteur de fichier du logo
-function uploadLogo() {
-    if (logoInput.value) {
-        logoInput.value.click(
-            handleImageUpload.bind(this)
-        );
-    } else {
-        console.warn("Logo input is not yet defined.");
-    }
-}
-
-function handleImageUpload() {
-    form.value.image_path = this.$refs.imageInput.files[0];
-}
-
-// Gestion du changement de logo
-function handleLogoChange(event) {
-    const file = event.target.files[0];
+function onLogoChange(e) {
+    const file = e.target.files[0];
     if (file) {
-        form.image = URL.createObjectURL(file);
+        form.logo_path = URL.createObjectURL(file);
     }
+}
+
+function uploadLogo() {
+    document.getElementById("logo").click();
 }
 
 // Fonction pour mettre à jour le formulaire avec les détails d'une équipe sélectionnée
 function selectTeam(team) {
     form.id = team.id;
     form.name = team.name;
-    form.image = team.image;
+    form.logo_path = team.logo_path;
     form.budget = team.budget;
     form.points = team.points;
     form.wins = team.wins;
@@ -235,18 +219,24 @@ function selectTeam(team) {
 function submit() {
     const formData = new FormData();
 
+    // Ajoutez chaque propriété de form au formData
     for (const key in form) {
         formData.append(key, form[key]);
     }
-    // Après une mise à jour réussie
+
+    // Si logo_path est une instance de File, ajoutez-la séparément (pour gérer l'envoi de fichiers)
+    if (form.logo_path instanceof File) {
+        formData.append('logo', form.logo_path);
+    }
+
     Inertia.post(route('teams.update', form.id), formData, {
+        preserveScroll: true, // Maintient la position de défilement après la soumission du formulaire
         onSuccess: () => {
-            // On recharge la page sur le team.id
-            Inertia.reload({only: ['teams'], data: {team: form.id}});
+
         }
     });
-
 }
+
 
 // Fonction pour supprimer une équipe
 function deleteTeam() {

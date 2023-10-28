@@ -63,7 +63,7 @@
             </div>
             <div class="p-4 border border-slate-300 rounded-lg mx-6 bg-white">
                 <form @submit.prevent="submit" enctype="multipart/form-data">
-                    <div class="flex flex-col md:grid lg:grid-cols-2 gap-4 text-slate-700">
+                    <div class="flex flex-col md:grid lg:grid-cols-3 gap-4 text-slate-700">
 
                         <div class="flex items-center m-3 gap-4 md:gap-0">
                             <label for="name"
@@ -79,6 +79,155 @@
                                       class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
                         </div>
 
+                        <!-- image_path -->
+                        <div class="flex items-center m-3 gap-4 md:gap-0">
+                            <label for="image_path"
+                                   class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Image</label>
+                            <input type="text" id="image_path" v-model="form.image_path" placeholder="Chemin vers l'image" required
+                                   class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
+                        </div>
+
+                        <!-- nationality -->
+                        <div class="flex items-center m-3 gap-4 md:gap-0">
+                            <label for="nationality"
+                                   class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Nationalité</label>
+                            <input type="text" id="nationality" v-model="form.nationality" placeholder="Nationalité" required
+                                   class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
+                        </div>
+
+                        <!-- birth_date -->
+                        <div class="flex items-center m-3 gap-4 md:gap-0">
+                            <label for="birth_date"
+                                   class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Date de naissance</label>
+                            <input type="date" id="birth_date" v-model="form.birth_date" placeholder="Date de naissance" required
+                                   class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
+                        </div>
+
+                        <!-- height -->
+                        <div class="flex items-center m-3 gap-4 md:gap-0">
+                            <label for="height"
+                                   class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Taille</label>
+                            <input type="number" id="height" v-model="form.height" placeholder="Taille" required
+                                   class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
+                        </div>
+
+                        <!-- weight -->
+                        <div class="flex items-center m-3 gap-4 md:gap-0">
+                            <label for="weight"
+                                   class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Poids</label>
+                            <input type="number" id="weight" v-model="form.weight" placeholder="Poids" required
+                                   class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
+                        </div>
+
+                        <!-- favorite_number -->
+                        <div class="flex items-center m-3 gap-4 md:gap-0">
+                            <label for="favorite_number"
+                                   class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Numéro favori</label>
+                            <input type="number" id="favorite_number" v-model="form.favorite_number" placeholder="Numéro favori" required
+                                   class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
+                        </div>
+
+                        <!-- period -->
+                        <div class="flex items-center m-3 gap-4 md:gap-0">
+                            <label for="period"
+                                   class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Période</label>
+                            <select id="period" v-model="form.period" required
+                                    class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
+                                <option value="" disabled selected>Choisir une période</option>
+                                <option v-for="periods in period" :value="periods.id">
+                                    {{ periods.name }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- positions -->
+                        <div class="flex items-center m-3 gap-4 md:gap-0">
+                            <label for="positions"
+                                   class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Positions</label>
+                            <select id="positions" v-model="form.positions" required class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight h-10 focus:outline-none focus:bg-white focus:border-purple-300">
+                                <option value="" disabled selected>Choisir une position</option>
+                                <option v-for="position in positions" :value="position.id">
+                                    {{ position.name }}
+                                </option>
+                            </select>
+                        </div>
+
+
+                        <!-- injury_risk -->
+                        <div class="flex items-center m-3 gap-4 md:gap-0">
+                            <label for="injury_risk"
+                                   class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Risque de blessure</label>
+                            <input type="text" id="injury_risk" v-model="form.injury_risk" placeholder="Risque de blessure" required
+                                   class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
+                        </div>
+
+                        <!-- is_injured -->
+                        <div class="flex items-center m-3 gap-4 md:gap-0">
+                            <label for="is_injured"
+                                   class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Est blessé ?</label>
+                            <input type="checkbox" id="is_injured" v-model="form.is_injured"
+                                   class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
+                        </div>
+
+                        <!-- stats -->
+                        <div class="flex items-center m-3 gap-4 md:gap-0">
+                            <label for="stats.physique" class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Physique</label>
+                            <input type="number" id="stats.strength" v-model="form.stats.strength" placeholder="Physique (0-100)" min="0" max="100"
+                                   class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
+                        </div>
+
+                        <!-- Répétez pour les autres statistiques -->
+
+
+                        <!-- special_skills -->
+                        <div class="flex items-center m-3 gap-4 md:gap-0">
+                            <label for="special_skills"
+                                   class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Compétences spéciales</label>
+                            <input type="text" id="special_skills" v-model="form.special_skills" placeholder="Compétences spéciales en JSON"
+                                   class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
+                        </div>
+
+                        <!-- special_moves -->
+                        <div class="flex items-center m-3 gap-4 md:gap-0">
+                            <label for="special_moves"
+                                   class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Mouvements spéciaux</label>
+                            <input type="text" id="special_moves" v-model="form.special_moves" placeholder="Mouvements spéciaux en JSON"
+                                   class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
+                        </div>
+
+                        <!-- cost -->
+                        <div class="flex items-center m-3 gap-4 md:gap-0">
+                            <label for="cost"
+                                   class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Coût</label>
+                            <input type="number" id="cost" v-model="form.cost" placeholder="Coût" required
+                                   class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
+                        </div>
+
+                        <!-- current_contract_duration -->
+                        <div class="flex items-center m-3 gap-4 md:gap-0">
+                            <label for="current_contract_duration"
+                                   class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Durée du contrat actuel</label>
+                            <input type="number" id="current_contract_duration" v-model="form.current_contract_duration" placeholder="Durée du contrat actuel"
+                                   class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
+                        </div>
+
+                        <!-- fatigue -->
+                        <div class="flex items-center m-3 gap-4 md:gap-0">
+                            <label for="fatigue"
+                                   class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Fatigue</label>
+                            <input type="number" id="fatigue" v-model="form.fatigue" placeholder="Fatigue" required
+                                   class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
+                        </div>
+
+                        <!-- weather_bonus -->
+                        <div class="flex items-center m-3 gap-4 md:gap-0">
+                            <label for="weather_bonus"
+                                   class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Bonus météo</label>
+                            <input type="text" id="weather_bonus" v-model="form.weather_bonus" placeholder="Bonus météorologique en JSON"
+                                   class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
+                        </div>
+
+                        <!-- description -->
                         <div class="flex items-start m-3 gap-4 md:gap-0">
                             <label for="description" class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Description</label>
                             <textarea id="description" v-model="form.description"
@@ -122,13 +271,64 @@ const props = defineProps({
     }
 });
 
+// Positions
+const positions = ref([
+    {id: 1, name: 'Gardien'},
+    {id: 2, name: 'Défenseur'},
+    {id: 3, name: 'Milieu'},
+    {id: 4, name: 'Attaquant'},
+]);
+
+// Périodes
+const period = ref(
+    [
+        {id: 1, name: 'collège'},
+        {id: 2, name: 'lycée'},
+        {id: 3, name: 'pro'},
+    ]
+)
+
+
+
 // Réactif pour le formulaire d'édition
 const form = reactive({
     selectedPlayerId: null,
     id: '',
     name: '',
     first_name: '',
-    description: ''
+    image_path:'',
+    nationality: '',
+    birth_date: '',
+    height: '',
+    weight: '',
+    favorite_number: '',
+    injury_risk: '',
+    is_injured: false,
+    cost: '',
+    weather_bonus: '',
+    fatigue: '',
+    positions: [],
+    period: [],
+    description: '',
+    stats: {
+        speed: '',
+        strength: '',
+        endurance: '',
+        technique: '',
+        dexterity: '',
+        attack: '',
+        defense: '',
+        goalkeeper: '',
+        pass: '',
+        shoot: '',
+        header: '',
+        dribble: '',
+        tackle: '',
+        interception: '',
+        blockage: '',
+        catch: '',
+        punch: '',
+    },
 });
 
 // Sélectionner une joueur dès le chargement si des joueurs existent
@@ -161,15 +361,7 @@ function uploadLogo() {
 }
 
 function handleImageUpload() {
-    form.value.image_path = this.$refs.imageInput.files[0];
-}
-
-// Gestion du changement de logo
-function handleLogoChange(event) {
-    const file = event.target.files[0];
-    if (file) {
-        form.image = URL.createObjectURL(file);
-    }
+    form.image = URL.createObjectURL(logoInput.value.files[0]);
 }
 
 // Fonction pour mettre à jour le formulaire avec les détails d'une joueur sélectionnée
@@ -177,6 +369,19 @@ function selectPlayer(player) {
     form.id = player.id;
     form.name = player.name;
     form.first_name = player.first_name;
+    form.image_path = player.image_path;
+    form.nationality = player.nationality;
+    form.birth_date = player.birth_date;
+    form.height = player.height;
+    form.weight = player.weight;
+    form.favorite_number = player.favorite_number;
+    form.injury_risk = player.injury_risk;
+    form.is_injured = player.is_injured;
+    form.cost = player.cost;
+    form.weather_bonus = player.weather_bonus;
+    form.fatigue = player.fatigue;
+    form.positions = player.positions;
+    form.period = player.period;
     form.description = player.description;
     form.selectedPlayerId = player.id;
 }

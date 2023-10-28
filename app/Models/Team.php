@@ -14,7 +14,7 @@ class Team extends Model
 
     protected $fillable = [
         'name', //string, nom de l'équipe
-        'image', //string, chemin vers le logo de l'équipe
+        'logo_path', //string, chemin vers le logo de l'équipe
         'budget', //integer, budget de l'équipe
         'points', //integer, points de l'équipe
         'wins', //integer, victoires de l'équipe

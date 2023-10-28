@@ -93,7 +93,7 @@
                         <div class="flex items-center m-3 gap-4 md:gap-0">
                             <label class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Logo</label>
                             <div class="flex flex-col">
-                                <img :src="form.image" class="w-36 h-36 rounded-lg mb-2">
+                                <img :src="form.logo_path" class="w-36 h-36 rounded-lg mb-2">
                             </div>
                         </div>
 
@@ -127,20 +127,6 @@ const props = defineProps({
     }
 });
 
-// Réactif pour le formulaire d'édition
-const form = reactive({
-    selectedTeamId: null,
-    id: '',
-    name: '',
-    image: '',
-    budget: '',
-    points: '',
-    wins: '',
-    draws: '',
-    losses: '',
-    description: ''
-});
-
 // Sélectionner une équipe dès le chargement si des équipes existent
 onMounted(() => {
     if (props.teams.length > 0) {
@@ -156,68 +142,5 @@ const filteredTeams = computed(() => {
     return props.teams.filter(team => team.name.toLowerCase().includes(searchQuery.value.toLowerCase()));
 });
 
-
-const logoInput = ref(null);
-
-// Fonction pour lancer le sélecteur de fichier du logo
-function uploadLogo() {
-    if (logoInput.value) {
-        logoInput.value.click(
-            handleImageUpload.bind(this)
-        );
-    } else {
-        console.warn("Logo input is not yet defined.");
-    }
-}
-
-function handleImageUpload() {
-    form.value.image_path = this.$refs.imageInput.files[0];
-}
-
-// Gestion du changement de logo
-function handleLogoChange(event) {
-    const file = event.target.files[0];
-    if (file) {
-        form.image = URL.createObjectURL(file);
-    }
-}
-
-// Fonction pour mettre à jour le formulaire avec les détails d'une équipe sélectionnée
-function selectTeam(team) {
-    form.id = team.id;
-    form.name = team.name;
-    form.image = team.image;
-    form.budget = team.budget;
-    form.points = team.points;
-    form.wins = team.wins;
-    form.draws = team.draws;
-    form.losses = team.losses;
-    form.description = team.description;
-    form.selectedTeamId = team.id;
-}
-
-// Fonction pour soumettre le formulaire et mettre à jour l'équipe
-function submit() {
-    const formData = new FormData();
-
-    for (const key in form) {
-        formData.append(key, form[key]);
-    }
-    // Après une mise à jour réussie
-    Inertia.post(route('teams.update', form.id), formData, {
-        onSuccess: () => {
-            // On recharge la page sur le team.id
-            Inertia.reload({only: ['teams'], data: {team: form.id}});
-        }
-    });
-
-}
-
-// Fonction pour supprimer une équipe
-function deleteTeam() {
-    if (confirm(" Voulez-vous vraiment supprimer cette équipe ? ")) {
-        Inertia.delete(route('teams.destroy', form.id));
-    }
-}
 </script>
 

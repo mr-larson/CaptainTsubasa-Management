@@ -23,7 +23,7 @@ class TeamRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',  // Nom obligatoire et au maximum 255 caractères
-            'image' => 'nullable',  // Chemin du logo optionnel, au maximum 255 caractères
+            'logo' => 'nullable|image|max:2048',  // Logo optionnel et de type image (jpg, png, bmp, gif, svg) et au maximum 2 Mo
             'budget' => 'required|integer|min:0',  // Budget obligatoire, entier et positif
             'points' => 'required|integer|min:0',  // Points obligatoires, entiers et positifs
             'wins' => 'required|integer|min:0',  // Victoires obligatoires, entiers et positifs

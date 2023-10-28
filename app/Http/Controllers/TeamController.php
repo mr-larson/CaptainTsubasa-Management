@@ -22,9 +22,11 @@ class TeamController extends Controller
 
     public function store(TeamRequest $request)
     {
-        if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('teams', 'public');
-            $request->merge(['image' => $path]);
+        $team = new Team();
+
+        if ($request->hasFile('logo')) {
+            $path = $request->file('logo')->store('public/images/teams');
+            $team->logo_path = Storage::url($path);
         }
 
         Team::create($request->all());
@@ -42,16 +44,25 @@ class TeamController extends Controller
 
     public function update(TeamRequest $request, Team $team)
     {
-        if ($request->hasFile('image')) {
-            Storage::disk('public')->delete($team->image);
-            $path = $request->file('image')->store('teams', 'public');
-            $request->merge(['image' => $path]);
+        if ($request->hasFile('logo')) {
+            // Supprimez l'ancienne logo si elle existe
+            if ($team->logo_path && Storage::exists($team->logo_path)) {
+                Storage::delete($team->logo_path);
+            }
+
+            $path = $request->file('logo')->store('public/images/teams');
+            $team->logo_path = Storage::url($path);
         }
 
-        $team->update($request->all());
+        $team->fill($request->all());
+        $team->save();
 
-        return redirect()->route('teams')->with('success', "L'équipe a été mise à jour avec succès");
+        //return Inertia::render('Teams/Edit', [
+        //            'teams' => Team::orderBy('name')->get()
+        //        ]);
+        return redirect()->route('teams.edit')->with('success', "L'équipe a été modifiée avec succès");
     }
+
 
 
     public function destroy(Team $team)

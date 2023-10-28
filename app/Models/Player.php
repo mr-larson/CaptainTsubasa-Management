@@ -19,6 +19,7 @@ class Player extends Model
         'birth_date', //date
         'height', //integer
         'weight', //integer
+        'favorite_number', //integer
         'period', //enum
         'stats', //json array
         'positions', //json array
