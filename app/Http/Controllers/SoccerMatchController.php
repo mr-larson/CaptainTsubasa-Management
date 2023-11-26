@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreSoccerMatchRequest;
+use App\Http\Requests\SoccerMatchRequest;
 use App\Http\Requests\UpdateSoccerMatchRequest;
 use App\Models\SoccerMatch;
 
@@ -27,7 +27,7 @@ class SoccerMatchController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreSoccerMatchRequest $request)
+    public function store(SoccerMatchRequest $request)
     {
         //
     }

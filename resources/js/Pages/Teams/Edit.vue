@@ -66,40 +66,36 @@
                     <div class="flex flex-col md:grid lg:grid-cols-2 gap-4 text-slate-700">
 
                         <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label for="name"
-                                   class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Nom</label>
-                            <input type="text" id="name" v-model="form.name" placeholder="Nom de l'équipe" required
-                                   class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
-                        </div>
+                            <InputLabel for="name" value="Name" />
 
-                        <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label for="wins" class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Victoire(s)</label>
-                            <input type="number" id="wins" v-model="form.wins" placeholder="Victoire(s) de l'équipe"
-                                   required
-                                   class="text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
+                            <TextInput
+                                id="name"
+                                type="text"
+                                class="mt-1  w-full"
+                                v-model="form.name"
+                                required
+                                autofocus
+                                autocomplete="name"
+                            />
                         </div>
-
-                        <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label for="points" class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Points</label>
-                            <input type="number" id="points" v-model="form.points" placeholder="Points de l'équipe"
-                                   required
-                                   class="text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
-                        </div>
-
-                        <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label for="losses" class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Défaite(s)</label>
-                            <input type="number" id="losses" v-model="form.losses" placeholder="Défaites de l'équipe"
-                                   required
-                                   class="text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
-                        </div>
-
                         <div class="flex items-center m-3 gap-4 md:gap-0">
                             <label for="budget" class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Budget</label>
                             <input type="number" id="budget" v-model="form.budget" placeholder="Budget de l'équipe"
                                    required
                                    class="text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
                         </div>
-
+                        <div class="flex items-center m-3 gap-4 md:gap-0">
+                            <label for="wins" class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Victoire(s)</label>
+                            <input type="number" id="wins" v-model="form.wins" placeholder="Victoire(s) de l'équipe"
+                                   required
+                                   class="text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
+                        </div>
+                        <div class="flex items-center m-3 gap-4 md:gap-0">
+                            <label for="losses" class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Défaite(s)</label>
+                            <input type="number" id="losses" v-model="form.losses" placeholder="Défaites de l'équipe"
+                                   required
+                                   class="text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
+                        </div>
                         <div class="flex items-center m-3 gap-4 md:gap-0">
                             <label for="draws" class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Matchs
                                 nul(s)</label>
@@ -107,33 +103,15 @@
                                    required
                                    class="text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
                         </div>
-
-                        <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label for="logo" class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Logo</label>
-                            <div class="flex flex-col">
-                                <input type="file" name="logo" id="logo" @change="onLogoChange" accept="image/*"
-                                       class="hidden">
-                                <img :src="form.logo_path || '/images/teams/team_default.png'" alt="Logo de l'équipe"
-                                     class="rounded-lg cursor-pointer w-36" @click="uploadLogo">
-                            </div>
-                        </div>
-
-                        <div class="flex items-start m-3 gap-4 md:gap-0">
-                            <label for="description" class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Description</label>
-                            <textarea id="description" v-model="form.description"
-                                      class="p-2 w-full h-36 text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-lg"
-                                      placeholder="Description de l'équipe"></textarea>
-                        </div>
-
                     </div>
 
                     <div class="flex justify-around pt-8">
                         <button type="submit"
-                                class="w-36 bg-sky-300 hover:bg-sky-400 text-center py-1 border-2 border-sky-500 rounded-full drop-shadow-md mb-2">
+                                class="w-36 bg-cyan-300 hover:bg-cyan-400 text-center py-1 border-2 border-cyan-500 rounded-full drop-shadow-md mb-2">
                             Mettre à jour
                         </button>
                         <button type="button" @click="deleteTeam"
-                                class="w-36 bg-rose-300 hover:bg-rose-400 text-rose-950 text-center py-1 border-2 border-rose-500 rounded-full drop-shadow-md mb-2">
+                                class="w-36 bg-rose-200 hover:bg-rose-400 text-rose-800 text-center py-1 border-2 border-rose-500 rounded-full drop-shadow-md mb-2">
                             Supprimer
                         </button>
                     </div>
@@ -151,6 +129,9 @@ import {ref, defineProps, reactive, onMounted, computed} from 'vue';
 
 //Component
 import H2 from '@/Components/H2.vue';
+import TextInput from "@/Components/TextInput.vue";
+import InputLabel from "@/Components/InputLabel.vue";
+import InputError from "@/Components/InputError.vue";
 
 
 // Propriétés du composant
@@ -166,13 +147,10 @@ const form = reactive({
     selectedTeamId: null,
     id: '',
     name: '',
-    logo_path: null,
     budget: '',
-    points: '',
     wins: '',
     draws: '',
     losses: '',
-    description: ''
 });
 
 // Sélectionner une équipe dès le chargement si des équipes existent
@@ -190,55 +168,28 @@ const filteredTeams = computed(() => {
     return props.teams.filter(team => team.name.toLowerCase().includes(searchQuery.value.toLowerCase()));
 });
 
-function onLogoChange(e) {
-    const file = e.target.files[0];
-    if (file) {
-        form.logo_path = URL.createObjectURL(file);
-    }
-}
-
-function uploadLogo() {
-    document.getElementById("logo").click();
-}
-
 // Fonction pour mettre à jour le formulaire avec les détails d'une équipe sélectionnée
 function selectTeam(team) {
     form.id = team.id;
     form.name = team.name;
-    form.logo_path = team.logo_path;
     form.budget = team.budget;
-    form.points = team.points;
     form.wins = team.wins;
     form.draws = team.draws;
     form.losses = team.losses;
-    form.description = team.description;
     form.selectedTeamId = team.id;
 }
 
-// Fonction pour soumettre le formulaire et mettre à jour l'équipe
 function submit() {
-    const formData = new FormData();
-
-    // Ajoutez chaque propriété de form au formData
-    for (const key in form) {
-        formData.append(key, form[key]);
-    }
-
-    // Si logo_path est une instance de File, ajoutez-la séparément (pour gérer l'envoi de fichiers)
-    if (form.logo_path instanceof File) {
-        formData.append('logo', form.logo_path);
-    }
-
-    Inertia.post(route('teams.update', form.id), formData, {
-        preserveScroll: true, // Maintient la position de défilement après la soumission du formulaire
+    Inertia.post(route('teams.update', form.id), form, {
+        preserveState: true,
+        preserveScroll: true,
         onSuccess: () => {
-
+            selectTeam(form);
         }
     });
 }
 
 
-// Fonction pour supprimer une équipe
 function deleteTeam() {
     if (confirm(" Voulez-vous vraiment supprimer cette équipe ? ")) {
         Inertia.delete(route('teams.destroy', form.id));

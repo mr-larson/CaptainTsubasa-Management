@@ -22,16 +22,11 @@ class TeamRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',  // Nom obligatoire et au maximum 255 caractères
-            'logo' => 'nullable|image|max:2048',  // Logo optionnel et de type image (jpg, png, bmp, gif, svg) et au maximum 2 Mo
-            'budget' => 'required|integer|min:0',  // Budget obligatoire, entier et positif
-            'points' => 'required|integer|min:0',  // Points obligatoires, entiers et positifs
-            'wins' => 'required|integer|min:0',  // Victoires obligatoires, entiers et positifs
-            'draws' => 'required|integer|min:0',  // Matchs nuls obligatoires, entiers et positifs
-            'losses' => 'required|integer|min:0',  // Défaites obligatoires, entiers et positifs
-            'team_stats_bonus' => 'nullable|array',  // Bonus d'équipe optionnels, sous forme de tableau
-            'active_cards' => 'nullable|array',  // Cartes actives optionnelles, sous forme de tableau
-            'description' => 'nullable|string',  // Description optionnelle
+            'name' => 'required|string|max:255',
+            'budget' => 'required|numeric',
+            'wins' => 'required|integer',
+            'draws' => 'required|integer',
+            'losses' => 'required|integer',
         ];
     }
 }

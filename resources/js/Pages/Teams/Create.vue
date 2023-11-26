@@ -130,5 +130,5 @@ function goToCreateTeam() {
 </script>
 
 <style scoped>
-/* ... Vos styles restent les mêmes, sauf si vous souhaitez ajouter ou modifier quelque chose spécifiquement pour cette vue ... */
+
 </style>

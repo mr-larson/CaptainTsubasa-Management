@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\PlayerRequest;
 use App\Models\Player;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class PlayerController extends Controller
@@ -28,11 +27,6 @@ class PlayerController extends Controller
      */
     public function store(PlayerRequest $request)
     {
-        if($request->hasFile('image_path')) {
-            $path = $request->file('image_path')->store('players', 'public');
-            $request->merge(['image_path' => $path]);
-        }
-
         Player::create($request->all());
 
         return redirect()->route('players')->with('success', "Le joueur a été créé avec succès");

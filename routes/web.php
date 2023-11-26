@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\ContractController;
 use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SoccerMatchController;
 use App\Http\Controllers\TeamController;
 use App\Models\Team;
 use Illuminate\Foundation\Application;
@@ -62,6 +64,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/players', [PlayerController::class, 'store'])->name('players.store');
     Route::post('/players/{player}', [PlayerController::class, 'update'])->name('players.update');
     Route::delete('/players/{player}', [PlayerController::class, 'destroy'])->name('players.destroy');
+
+
+
 });
 
 require __DIR__.'/auth.php';

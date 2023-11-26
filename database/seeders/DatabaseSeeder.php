@@ -12,13 +12,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // \App\Models\User::factory(10)->create();
-        \App\Models\Team::factory(2)->create();  // Ceci créera 10 équipes
-        \App\Models\Player::factory(5)->create();
-
-        // \App\Models\User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
+        $this->call([
+            TeamSeeder::class,
+            PlayerSeeder::class,
+            ContractSeeder::class,
+        ]);
     }
 }

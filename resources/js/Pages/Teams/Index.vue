@@ -89,19 +89,6 @@
                                 nul(s) : </label>
                             <span class="text-gray-900">{{ form.draws }}</span>
                         </div>
-
-                        <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Logo</label>
-                            <div class="flex flex-col">
-                                <img :src="form.logo_path" class="w-36 h-36 rounded-lg mb-2">
-                            </div>
-                        </div>
-
-                        <div class="m-3 gap-4 md:gap-0">
-                            <p class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Description</p>
-                            <p class="text-gray-900">{{ form.description }}</p>
-                        </div>
-
                     </div>
                 </form>
             </div>
@@ -127,6 +114,18 @@ const props = defineProps({
     }
 });
 
+// Réactif pour le formulaire d'édition
+const form = reactive({
+    selectedTeamId: null,
+    id: '',
+    name: '',
+    budget: '',
+    points: '',
+    wins: '',
+    draws: '',
+    losses: '',
+});
+
 // Sélectionner une équipe dès le chargement si des équipes existent
 onMounted(() => {
     if (props.teams.length > 0) {
@@ -142,5 +141,15 @@ const filteredTeams = computed(() => {
     return props.teams.filter(team => team.name.toLowerCase().includes(searchQuery.value.toLowerCase()));
 });
 
+function selectTeam(team) {
+    form.id = team.id;
+    form.name = team.name;
+    form.budget = team.budget;
+    form.points = team.points;
+    form.wins = team.wins;
+    form.draws = team.draws;
+    form.losses = team.losses;
+    form.selectedTeamId = team.id;
+}
 </script>
 

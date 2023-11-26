@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreContractRequest extends FormRequest
+class SoccerMatchRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,7 +22,11 @@ class StoreContractRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'team_id_home' => 'required|exists:teams,id',
+            'team_id_away' => 'required|exists:teams,id',
+            'score_home' => 'nullable|integer',
+            'score_away' => 'nullable|integer',
+            'date' => 'required|date',
         ];
     }
 }
