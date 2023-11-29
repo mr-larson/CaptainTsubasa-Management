@@ -4,6 +4,7 @@ import { Head } from '@inertiajs/vue3';
 import { Link } from '@inertiajs/vue3';
 //Component
 import H2 from '@/Components/H2.vue';
+import H1 from '@/Components/H1.vue';
 
 
 </script>

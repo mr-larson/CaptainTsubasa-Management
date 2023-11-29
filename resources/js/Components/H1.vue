@@ -1,17 +1,19 @@
 <template>
-  <h2 :class="customClass">
-    <slot></slot>
-  </h2>
+  <div class="flex justify-center">
+    <h1 :class="customClass">
+      <slot></slot>
+    </h1>
+  </div>
 </template>
 
 
 <script>
 export default {
-    name: "H2",
+    name: "H1",
     props: {
         customClass: {
             type: String,
-            default: "text-lg font-semibold"
+            default: "text-3xl font-bold text-slate-600 mb-4"
         }
   }
 };

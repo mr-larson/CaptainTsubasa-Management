@@ -58,17 +58,13 @@
         </aside>
 
         <div class="p-4 sm:ml-64">
-            <div class="flex justify-center">
-                <h1 class="text-3xl font-bold text-slate-600 mb-4">Editions</h1>
-            </div>
-            <div class="p-4 border border-slate-300 rounded-lg mx-6 bg-white">
+          <H1>Editions</H1>
+            <FormContainer>
                 <form @submit.prevent="submit" enctype="multipart/form-data">
-                    <div class="flex flex-col md:grid lg:grid-cols-2 gap-4 text-slate-700">
-
-                        <div class="flex items-center m-3 gap-4 md:gap-0">
+                    <FormRaw>
+                        <FormCol>
                             <InputLabel for="name" value="Name" />
-
-                            <TextInput
+                            <InputText
                                 id="name"
                                 type="text"
                                 class="mt-1  w-full"
@@ -77,46 +73,51 @@
                                 autofocus
                                 autocomplete="name"
                             />
-                        </div>
-                        <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label for="budget" class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Budget</label>
-                            <input type="number" id="budget" v-model="form.budget" placeholder="Budget de l'équipe"
-                                   required
-                                   class="text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
-                        </div>
-                        <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label for="wins" class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Victoire(s)</label>
-                            <input type="number" id="wins" v-model="form.wins" placeholder="Victoire(s) de l'équipe"
-                                   required
-                                   class="text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
-                        </div>
-                        <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label for="losses" class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Défaite(s)</label>
-                            <input type="number" id="losses" v-model="form.losses" placeholder="Défaites de l'équipe"
-                                   required
-                                   class="text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
-                        </div>
-                        <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label for="draws" class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Matchs
-                                nul(s)</label>
-                            <input type="number" id="draws" v-model="form.draws" placeholder="Matchs nuls de l'équipe"
-                                   required
-                                   class="text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
-                        </div>
-                    </div>
+                        </FormCol>
+                        <FormCol>
+                            <InputLabel for="budget" value="Budget" />
+                            <InputText type="number" id="budget" v-model="form.budget" placeholder="Budget de l'équipe"
+                                       required
+                                       class="mt-1 w-full"
+                                       autofocus
+                                       autocomplete="budget"
+                            />
+                        </FormCol>
+                        <FormCol>
+                            <InputLabel for="wins" value="Victoire(s)" />
+                            <InputText type="number" id="wins" v-model="form.wins" placeholder="Victoire(s) de l'équipe"
+                                       required
+                                       class="mt-1 w-full"
+                                       autofocus
+                                       autocomplete="wins"
+                            />
+                        </FormCol>
+                        <FormCol>
+                            <InputLabel for="losses" value="Défaite(s)" />
+                            <InputText type="number" id="losses" v-model="form.losses" placeholder="Défaite(s) de l'équipe"
+                                       required
+                                       class="mt-1 w-full"
+                                       autofocus
+                                       autocomplete="losses"
+                            />
+                        </FormCol>
+                        <FormCol>
+                            <InputLabel for="draws" value="Matchs nuls" />
+                            <InputText type="number" id="draws" v-model="form.draws" placeholder="Matchs nuls de l'équipe"
+                                       required
+                                       class="mt-1 w-full"
+                                       autofocus
+                                       autocomplete="draws"
+                            />
+                        </FormCol>
+                    </FormRaw>
 
-                    <div class="flex justify-around pt-8">
-                        <button type="submit"
-                                class="w-36 bg-cyan-300 hover:bg-cyan-400 text-center py-1 border-2 border-cyan-500 rounded-full drop-shadow-md mb-2">
-                            Mettre à jour
-                        </button>
-                        <button type="button" @click="deleteTeam"
-                                class="w-36 bg-rose-200 hover:bg-rose-400 text-rose-800 text-center py-1 border-2 border-rose-500 rounded-full drop-shadow-md mb-2">
-                            Supprimer
-                        </button>
-                    </div>
+                    <ButtonGroup>
+                        <ButtonPrimary :disabled="form.processing">Mettre à jour</ButtonPrimary>
+                        <ButtonDanger class="w-36" :disabled="form.processing" @click="deleteTeam">Supprimer</ButtonDanger>
+                    </ButtonGroup>
                 </form>
-            </div>
+            </FormContainer>
         </div>
     </AuthenticatedLayout>
 </template>
@@ -129,9 +130,15 @@ import {ref, defineProps, reactive, onMounted, computed} from 'vue';
 
 //Component
 import H2 from '@/Components/H2.vue';
-import TextInput from "@/Components/TextInput.vue";
+import InputText from "@/Components/InputText.vue";
 import InputLabel from "@/Components/InputLabel.vue";
-import InputError from "@/Components/InputError.vue";
+import H1 from '@/Components/H1.vue';
+import ButtonPrimary from "@/Components/ButtonPrimary.vue";
+import ButtonDanger from "@/Components/ButtonDanger.vue";
+import ButtonGroup from "@/Components/ButtonGroup.vue";
+import FormContainer from "@/Components/FormContainer.vue";
+import FormRaw from "@/Components/FormRaw.vue";
+import FormCol from "@/Components/FormCol.vue";
 
 
 // Propriétés du composant
@@ -185,6 +192,7 @@ function submit() {
         preserveScroll: true,
         onSuccess: () => {
             selectTeam(form);
+            debugger;
         }
     });
 }

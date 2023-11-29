@@ -4,6 +4,7 @@ import DeleteUserForm from './Partials/DeleteUserForm.vue';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm.vue';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm.vue';
 import { Head } from '@inertiajs/vue3';
+import H2 from '@/Components/H2.vue';
 
 defineProps({
     mustVerifyEmail: {
@@ -20,7 +21,7 @@ defineProps({
 
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="font-semibold text-xl leading-tight">Profile</h2>
+            <H2>Profile</h2>
         </template>
 
         <div class="py-12">
