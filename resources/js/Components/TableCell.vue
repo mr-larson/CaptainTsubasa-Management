@@ -1,4 +1,4 @@
-<template>
+@<template>
   <td :class="customClass">
     <slot></slot>
   </td>
