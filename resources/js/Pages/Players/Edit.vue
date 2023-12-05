@@ -36,7 +36,7 @@
                         <a href="#"
                            :class="{'bg-slate-500': form.selectedPlayerId === player.id}"
                            class="flex items-center p-1 text-gray-100 transition duration-75 rounded-lg hover:bg-slate-500">
-                            <span class="ml-3">{{ player.name }}</span>
+                            <span class="ml-3">{{ player.firstname }} {{ player.lastname }}</span>
                         </a>
                     </li>
                 </ul>
@@ -58,93 +58,110 @@
         </aside>
 
         <div class="p-4 sm:ml-64">
-            <div class="flex justify-center">
-                <h1 class="text-3xl font-bold text-slate-600 mb-4">Editions</h1>
-            </div>
-            <div class="p-4 border border-slate-300 rounded-lg mx-6 bg-white">
+            <H1>Editions</H1>
+            <FormContainer>
                 <form @submit.prevent="submit" enctype="multipart/form-data">
-                    <div class="flex flex-col md:grid lg:grid-cols-3 gap-4 text-slate-700">
-
-                      <div class="flex items-center m-3 gap-4 md:gap-0">
-                        <label for="firstname"
-                               class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Prénom</label>
-                        <input type="text" id="firstname" v-model="form.firstname" placeholder="Prénom du joueur" required
-                               class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
-                      </div>
-
-                      <div class="flex items-center m-3 gap-4 md:gap-0">
-                          <label for="lastname"
-                                   class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Nom</label>
-                          <input type="text" id="lastname" v-model="form.lastname" placeholder="Nom du joueur" required
-                                   class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
-                      </div>
-
-                      <!-- age -->
-                      <div class="flex items-center m-3 gap-4 md:gap-0">
-                          <label for="age"
-                                   class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Age</label>
-                          <input type="number" id="age" v-model="form.age" placeholder="Age du joueur" required
-                                   class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
-                      </div>
-
-
-                        <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label for="position"
-                                   class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Position</label>
-                            <select id="position" v-model="form.position" required class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight h-10 focus:outline-none focus:bg-white focus:border-purple-300">
-                                <option value="" disabled selected>Choisir une position</option>
-                                <option v-for="position in positions" :value="position.id">
-                                    {{ position.name }}
-                                </option>
-                            </select>
-                        </div>
-
-                        <div class="flex items-center m-3 gap-4 md:gap-0">
-                          <label for="cost"
-                                 class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Coût</label>
-                          <input type="number" id="cost" v-model="form.cost" placeholder="Coût" required
-                                 class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
-                        </div>
-
-                        <!-- stats -->
-                        <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label for="stats.speed"
-                                   class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Vitesse</label>
-                            <input type="number" id="stats.speed" v-model="form.stats.speed" placeholder="Vitesse" required
-                                    class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
-                        </div>
-                        <div class="flex items-center m-3 gap-4 md:gap-0">
+                    <FormRaw>
+                        <FormCol>
+                            <InputLabel for="firstname" value="prénom" />
+                            <InputText
+                                id="firstname"
+                                type="text"
+                                class="mt-1  w-full"
+                                v-model="form.firstname"
+                                required
+                                autofocus
+                                autocomplete="firstname"
+                            />
+                        </FormCol>
+                        <FormCol>
+                            <InputLabel for="lastname" value="nom" />
+                            <InputText
+                                id="lastname"
+                                type="text"
+                                class="mt-1  w-full"
+                                v-model="form.lastname"
+                                required
+                                autofocus
+                                autocomplete="lastname"
+                            />
+                        </FormCol>
+                    </FormRaw>
+                    <FormRaw>
+                        <FormCol>
+                            <InputLabel for="age" value="age" />
+                            <InputText
+                                id="age"
+                                type="text"
+                                class="mt-1  w-full"
+                                v-model="form.age"
+                                required
+                                autofocus
+                                autocomplete="age"
+                            />
+                        </FormCol>
+                        <FormCol>
+                            <InputLabel for="position" value="position" />
+                            <InputText
+                                id="position"
+                                type="text"
+                                class="mt-1  w-full"
+                                v-model="form.position"
+                                required
+                                autofocus
+                                autocomplete="position"
+                            />
+                        </FormCol>
+                    </FormRaw>
+                    <FormRaw>
+                        <FormCol>
+                            <InputLabel for="cost" value="cost" />
+                            <InputText
+                                id="cost"
+                                type="number"
+                                class="mt-1  w-full"
+                                v-model="form.cost"
+                                required
+                                autofocus
+                                autocomplete="cost"
+                            />
+                        </FormCol>
+                    </FormRaw>
+                    <FormRaw>
+                        <FormCol>
                             <label for="stats.attack"
                                    class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Attaque</label>
                             <input type="number" id="stats.attack" v-model="form.stats.attack" placeholder="Attaque" required
                                     class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
-                        </div>
-                        <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label for="stats.defense"
+                        </FormCol>
+                        <FormCol>
+                            <label for="stats.defender"
                                    class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Défense</label>
-                            <input type="number" id="stats.defense" v-model="form.stats.defense" placeholder="Défense" required
-                                    class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
-                        </div>
-                        <div class="flex items-center m-3 gap-4 md:gap-0">
-                          <label for="stats.stamina"
-                                 class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Stamina</label>
-                          <input type="number" id="stats.stamina" v-model="form.stats.stamina" placeholder="Stamina" required
-                                  class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
-                        </div>
-                    </div>
+                            <input type="number" id="stats.defender" v-model="form.stats.defender" placeholder="Défense" required
+                                   class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
+                        </FormCol>
+                    </FormRaw>
+                    <FormRaw>
+                        <FormCol>
+                            <label for="stats.speed"
+                                   class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Vitesse</label>
+                            <input type="number" id="stats.speed" v-model="form.stats.speed" placeholder="Vitesse" required
+                                   class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
+                        </FormCol>
+                        <FormCol>
+                              <label for="stats.stamina"
+                                     class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Stamina</label>
+                              <input type="number" id="stats.stamina" v-model="form.stats.stamina" placeholder="Stamina" required
+                                      class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300">
+                        </FormCol>
+                    </FormRaw>
 
-                    <div class="flex justify-around pt-8">
-                        <button type="submit"
-                                class="w-36 bg-sky-300 hover:bg-sky-400 text-center py-1 border-2 border-sky-500 rounded-full drop-shadow-md mb-2">
-                            Mettre à jour
-                        </button>
-                        <button type="button" @click="deletePlayer"
-                                class="w-36 bg-rose-300 hover:bg-rose-400 text-rose-950 text-center py-1 border-2 border-rose-500 rounded-full drop-shadow-md mb-2">
-                            Supprimer
-                        </button>
-                    </div>
+                    <ButtonGroup>
+                        <ButtonPrimary :disabled="form.processing">Mettre à jour</ButtonPrimary>
+                        <ButtonDanger class="w-36" :disabled="form.processing" @click="deletePlayer">Supprimer</ButtonDanger>
+                    </ButtonGroup>
                 </form>
-            </div>
+            </FormContainer>
         </div>
     </AuthenticatedLayout>
 </template>
@@ -157,6 +174,16 @@ import {ref, defineProps, reactive, onMounted, computed} from 'vue';
 
 //Component
 import H2 from '@/Components/H2.vue';
+import H1 from "@/Components/H1.vue";
+import FormContainer from "@/Components/FormContainer.vue";
+import FormCol from "@/Components/FormCol.vue";
+import FormRaw from "@/Components/FormRaw.vue";
+import InputLabel from "@/Components/InputLabel.vue";
+import InputText from "@/Components/InputText.vue";
+import ButtonGroup from "@/Components/ButtonGroup.vue";
+import ButtonPrimary from "@/Components/ButtonPrimary.vue";
+import ButtonDanger from "@/Components/ButtonDanger.vue";
+
 
 
 // Propriétés du composant
@@ -167,63 +194,20 @@ const props = defineProps({
     }
 });
 
-// Positions
-const positions = ref([
-    {id: 1, name: 'Gardien'},
-    {id: 2, name: 'Défenseur'},
-    {id: 3, name: 'Milieu'},
-    {id: 4, name: 'Attaquant'},
-]);
-
-// Périodes
-const period = ref(
-    [
-        {id: 1, name: 'collège'},
-        {id: 2, name: 'lycée'},
-        {id: 3, name: 'pro'},
-    ]
-)
-
-
-
 // Réactif pour le formulaire d'édition
 const form = reactive({
     selectedPlayerId: null,
     id: '',
-    name: '',
-    first_name: '',
-    image_path:'',
-    nationality: '',
-    birth_date: '',
-    height: '',
-    weight: '',
-    favorite_number: '',
-    injury_risk: '',
-    is_injured: false,
+    lastname: '',
+    firstname: '',
+    age: '',
+    position: '',
     cost: '',
-    weather_bonus: '',
-    fatigue: '',
-    positions: [],
-    period: [],
-    description: '',
     stats: {
         speed: '',
-        strength: '',
-        endurance: '',
-        technique: '',
-        dexterity: '',
         attack: '',
-        defense: '',
-        goalkeeper: '',
-        pass: '',
-        shoot: '',
-        header: '',
-        dribble: '',
-        tackle: '',
-        interception: '',
-        blockage: '',
-        catch: '',
-        punch: '',
+        defender: '',
+        stamina: '',
     },
 });
 
@@ -239,67 +223,37 @@ const searchQuery = ref("");
 
 const filteredPlayers = computed(() => {
     if (!searchQuery.value) return props.players;
-    return props.players.filter(player => player.name.toLowerCase().includes(searchQuery.value.toLowerCase()));
-});
-
-
-const logoInput = ref(null);
-
-// Fonction pour lancer le sélecteur de fichier du logo
-function uploadLogo() {
-    if (logoInput.value) {
-        logoInput.value.click(
-            handleImageUpload.bind(this)
+    return props.players.filter(player => {
+        return (
+            player.firstname.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+            player.lastname.toLowerCase().includes(searchQuery.value.toLowerCase())
         );
-    } else {
-        console.warn("Logo input is not yet defined.");
-    }
-}
-
-function handleImageUpload() {
-    form.image = URL.createObjectURL(logoInput.value.files[0]);
-}
+    });
+});
 
 // Fonction pour mettre à jour le formulaire avec les détails d'une joueur sélectionnée
 function selectPlayer(player) {
     form.id = player.id;
-    form.name = player.name;
-    form.first_name = player.first_name;
-    form.image_path = player.image_path;
-    form.nationality = player.nationality;
-    form.birth_date = player.birth_date;
-    form.height = player.height;
-    form.weight = player.weight;
-    form.favorite_number = player.favorite_number;
-    form.injury_risk = player.injury_risk;
-    form.is_injured = player.is_injured;
+    form.lastname = player.lastname;
+    form.firstname = player.firstname;
+    form.position = player.position;
+    form.age = player.age;
     form.cost = player.cost;
-    form.weather_bonus = player.weather_bonus;
-    form.fatigue = player.fatigue;
-    form.positions = player.positions;
-    form.period = player.period;
-    form.description = player.description;
+    form.stats = player.stats;
     form.selectedPlayerId = player.id;
 }
 
-// Fonction pour soumettre le formulaire et mettre à jour l'joueur
 function submit() {
-    const formData = new FormData();
-
-    for (const key in form) {
-        formData.append(key, form[key]);
-    }
-    // Après une mise à jour réussie
-    Inertia.post(route('players.update', form.id), formData, {
+    Inertia.post(route('players.update', form.id), form, {
+        preserveState: true,
+        preserveScroll: true,
         onSuccess: () => {
-            // On recharge la page sur le player.id
-            Inertia.reload({only: ['players'], data: {player: form.id}});
+            selectPlayer(form);
+            debugger;
         }
     });
-
 }
 
-// Fonction pour supprimer une joueur
 function deletePlayer() {
     if (confirm(" Voulez-vous vraiment supprimer cette joueur ? ")) {
         Inertia.delete(route('players.destroy', form.id));

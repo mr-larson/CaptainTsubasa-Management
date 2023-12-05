@@ -14,7 +14,7 @@ class PlayerController extends Controller
     public function index()
     {
         return Inertia::render('Players/Index', [
-            'players' => Player::orderBy('name')->get()
+            'players' => Player::orderBy('firstname')->get()
         ]);
     }
 
@@ -35,7 +35,7 @@ class PlayerController extends Controller
     public function edit()
     {
         return Inertia::render('Players/Edit', [
-            'players' => Player::orderBy('name')->get()
+            'players' => Player::orderBy('firstname')->get()
         ]);
     }
 

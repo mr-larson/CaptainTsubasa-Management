@@ -1,9 +1,9 @@
 <template>
-    <Head title="Teams"/>
+    <Head title="Contract"/>
 
     <AuthenticatedLayout>
         <template #header>
-            <H2>Teams</H2>
+            <H2>Contract</H2>
         </template>
 
         <aside id="separator-sidebar"
@@ -11,7 +11,7 @@
                aria-label="Sidebar">
             <div class="h-full px-3 py-2 overflow-y-auto bg-slate-700">
                 <div class="p-3 mb-3 border-b text-center text-gray-200">
-                    <H2>Equipes</H2>
+                    <H2>Contrats</H2>
                 </div>
                 <div class="mb-2">
                     <form>
@@ -32,19 +32,19 @@
                     </form>
                 </div>
                 <ul class="space-y-1 font-medium">
-                    <li v-for="team in filteredTeams" :key="team.id" @click="selectTeam(team)">
+                    <li v-for="contract in filteredContracts" :key="contract.id" @click="selectContract(contract)">
                         <a href="#"
-                           :class="{'bg-slate-500': form.selectedTeamId === team.id}"
+                           :class="{'bg-slate-500': form.selectedContractId === contract.id}"
                            class="flex items-center p-1 text-gray-100 transition duration-75 rounded-lg hover:bg-slate-500">
-                            <span class="ml-3">{{ team.name }}</span>
+                            <span class="ml-3">{{ contract.team_id }}</span>
                         </a>
                     </li>
                 </ul>
                 <ul class="pt-3 mt-2 space-y-1 font-medium border-t border-gray-200">
                     <li class="pt-1 flex">
-                        <Link :href="route('teams.create')"
+                        <Link :href="route('contracts.create')"
                               class="bg-teal-500 hover:bg-teal-600 border border-teal-300 text-white p-1 w-full rounded text-center">
-                            Créer une équipe
+                            Créer un contrat
                         </Link>
                     </li>
                     <li class="pt-2 flex">
@@ -63,66 +63,37 @@
                 <form @submit.prevent="submit" enctype="multipart/form-data">
                     <FormRaw>
                         <FormCol>
-                            <InputLabel for="name" value="Name" />
-                            <InputText
-                                id="name"
-                                type="text"
-                                class="mt-1  w-full"
-                                v-model="form.name"
-                                required
-                                autofocus
-                                autocomplete="name"
+                            <InputLabel for="team_id" value="Équipe" />
+                            <InputText id="team_id" v-model="form.team_id" required class="mt-1 w-full">
+                                <option v-for="team in teams" :key="team.id" :value="team.id">{{ team.name }}</option>
+                            </InputText>
+                        </FormCol>
+                        <FormCol>
+                            <InputLabel for="player_id" value="Joueur" />
+                            <InputSelect id="player_id" v-model="form.player_id" required class="mt-1 w-full">
+                                <option v-for="player in players" :key="player.id" :value="player.id">{{ player.firstname + ' ' + player.lastname }}</option>
+                            </InputSelect>
+                        </FormCol>
+                        <FormCol>
+                            <InputLabel for="salary" value="Salaire" />
+                            <InputText type="number" id="salary" v-model="form.salary" placeholder="Salaire du joueur"
+                                       required
+                                       class="mt-1 w-full"
                             />
                         </FormCol>
                         <FormCol>
-                            <InputLabel for="budget" value="Budget" />
-                            <InputText type="number" id="budget" v-model="form.budget" placeholder="Budget de l'équipe"
-                                       required
-                                       class="mt-1 w-full"
-                                       autofocus
-                                       autocomplete="budget"
-                            />
+                            <InputLabel for="start_date" value="Date de début" />
+                            <InputText type="date" id="start_date" v-model="form.start_date" required class="mt-1 w-full"/>
                         </FormCol>
                         <FormCol>
-                            <InputLabel for="wins" value="Victoire(s)" />
-                            <InputText type="number" id="wins" v-model="form.wins" placeholder="Victoire(s) de l'équipe"
-                                       required
-                                       class="mt-1 w-full"
-                                       autofocus
-                                       autocomplete="wins"
-                            />
-                        </FormCol>
-                        <FormCol>
-                            <InputLabel for="losses" value="Défaite(s)" />
-                            <InputText type="number" id="losses" v-model="form.losses" placeholder="Défaite(s) de l'équipe"
-                                       required
-                                       class="mt-1 w-full"
-                                       autofocus
-                                       autocomplete="losses"
-                            />
-                        </FormCol>
-                        <FormCol>
-                            <InputLabel for="draws" value="Matchs nuls" />
-                            <InputText type="number" id="draws" v-model="form.draws" placeholder="Matchs nuls de l'équipe"
-                                       required
-                                       class="mt-1 w-full"
-                                       autofocus
-                                       autocomplete="draws"
-                            />
+                            <InputLabel for="end_date" value="Date de fin" />
+                            <InputText type="date" id="end_date" v-model="form.end_date" required class="mt-1 w-full"/>
                         </FormCol>
                     </FormRaw>
 
                     <ButtonGroup>
                         <ButtonPrimary :disabled="form.processing">Mettre à jour</ButtonPrimary>
-                        <Transition
-                            enter-active-class="transition ease-in-out"
-                            enter-from-class="opacity-0"
-                            leave-active-class="transition ease-in-out"
-                            leave-to-class="opacity-0"
-                        >
-                            <p v-if="form.recentlySuccessful" class="text-sm text-slate-600">Saved.</p>
-                        </Transition>
-                        <ButtonDanger class="w-36" :disabled="form.processing" @click="deleteTeam">Supprimer</ButtonDanger>
+                        <ButtonDanger class="w-36" :disabled="form.processing" @click="deleteContract">Supprimer</ButtonDanger>
                     </ButtonGroup>
                 </form>
             </FormContainer>
@@ -144,71 +115,88 @@ import FormRaw from "@/Components/FormRaw.vue";
 import FormCol from "@/Components/FormCol.vue";
 import InputLabel from "@/Components/InputLabel.vue";
 import InputText from "@/Components/InputText.vue";
+import InputSelect from "@/Components/InputSelect.vue";
 import ButtonGroup from "@/Components/ButtonGroup.vue";
 import ButtonPrimary from "@/Components/ButtonPrimary.vue";
 import ButtonDanger from "@/Components/ButtonDanger.vue";
 
 
-
 // Propriétés du composant
 const props = defineProps({
+    contracts: {
+        type: Array,
+        required: true,
+    },
     teams: {
+        type: Array,
+        required: true
+    },
+    players: {
         type: Array,
         required: true
     }
 });
 
+const teams = props.teams;
+const players = props.players;
+
 // Réactif pour le formulaire d'édition
 const form = reactive({
-    selectedTeamId: null,
     id: '',
-    name: '',
-    budget: '',
-    wins: '',
-    draws: '',
-    losses: '',
+    team_id: '',
+    player_id: '',
+    salary: '',
+    start_date: '',
+    end_date: '',
 });
 
-// Sélectionner une équipe dès le chargement si des équipes existent
+
 onMounted(() => {
-    if (props.teams.length > 0) {
-        selectTeam(props.teams[0]);
+    console.log("Contrats:", props.contracts);
+    console.log("Équipes:", teams);
+    console.log("Joueurs:", players);
+    if (props.contracts.length > 0) {
+        selectContract(props.contracts[0]);
     }
 });
 
 // Réactif pour la barre de recherche
 const searchQuery = ref("");
 
-const filteredTeams = computed(() => {
-    if (!searchQuery.value) return props.teams;
-    return props.teams.filter(team => team.name.toLowerCase().includes(searchQuery.value.toLowerCase()));
+const filteredContracts = computed(() => {
+    if (!searchQuery.value) return props.contracts;
+    return props.contracts.filter(contract => contract.name.toLowerCase().includes(searchQuery.value.toLowerCase()));
 });
 
-// Fonction pour mettre à jour le formulaire avec les détails d'une équipe sélectionnée
-function selectTeam(team) {
-    form.id = team.id;
-    form.name = team.name;
-    form.budget = team.budget;
-    form.wins = team.wins;
-    form.draws = team.draws;
-    form.losses = team.losses;
-    form.selectedTeamId = team.id;
+function selectContract(contract) {
+    form.id = contract.id;
+    form.team_id = contract.team_id;
+    form.player_id = contract.player_id;
+    form.salary = contract.salary;
+    form.start_date = formatDate(contract.start_date);
+    form.end_date = formatDate(contract.end_date);
 }
 
+function formatDate(date) {
+    if (!date) return '';
+    return new Date(date).toISOString().split('T')[0];
+}
+
+
 function submit() {
-    Inertia.post(route('teams.update', form.id), form, {
+    Inertia.post(route('contracts.update', form.id), form, {
         preserveState: true,
         preserveScroll: true,
         onSuccess: () => {
-            selectTeam(form);
+            selectContract(form);
             debugger;
         }
     });
 }
 
-function deleteTeam() {
-    if (confirm(" Voulez-vous vraiment supprimer cette équipe ? ")) {
-        Inertia.delete(route('teams.destroy', form.id));
+function deleteContract() {
+    if (confirm(" Voulez-vous vraiment supprimer ce contrat ? ")) {
+        Inertia.delete(route('contracts.destroy', form.id));
     }
 }
 </script>

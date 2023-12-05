@@ -12,12 +12,12 @@ class Player extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'first_name', //string
-        'last_name', //string
-        'age', //integer
-        'position', //string
-        'cost', //integer
-        'stats', //json
+        'first_name',
+        'last_name',
+        'age',
+        'position',
+        'cost',
+        'stats',
     ];
 
     protected $casts = [

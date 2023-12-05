@@ -14,14 +14,13 @@ class Team extends Model
 
     protected $fillable = [
         'name',
-        'budget', //integer, budget de l'équipe
-        'points', //integer, points de l'équipe
-        'wins', //integer, victoires de l'équipe
-        'draws', //integer, matchs nuls de l'équipe
-        'losses', //integer, défaites de l'équipe
+        'budget',
+        'points',
+        'wins',
+        'draws',
+        'losses',
     ];
 
-    // Relation avec Player via la table pivot Contract
     public function players()
     {
         return $this->belongsToMany(Player::class, 'contracts');

@@ -11,7 +11,7 @@ class ContractController extends Controller
     public function index()
     {
         return Inertia::render('Contracts/Index', [
-            'contracts' => Contract::orderBy('name')->get()
+            'contracts' => Contract::all()
         ]);
     }
 
@@ -30,7 +30,7 @@ class ContractController extends Controller
     public function edit()
     {
         return Inertia::render('Contracts/Edit', [
-            'contracts' => Contract::orderBy('name')->get()
+            'contracts' => Contract::all()
         ]);
     }
 
@@ -44,7 +44,6 @@ class ContractController extends Controller
     public function destroy(Contract $contract)
     {
         $contract->delete();
-
         return redirect()->route('contracts')->with('message', 'Contract successfully deleted.');
     }
 }

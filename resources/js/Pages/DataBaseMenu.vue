@@ -35,7 +35,7 @@ import H2 from '@/Components/H2.vue';
                                     </Link>
                                 </div>
                                 <div class="lg:w-1/2 mb-2 lg:h-24 flex justify-center">
-                                    <Link :href="route('teams')" class="block w-60 h-12 bg-cyan-300 hover:bg-cyan-400 text-xl text-cyan-950 text-center font-bold py-2 px-5 border-2 border-cyan-500 rounded-full drop-shadow-md">
+                                    <Link :href="route('contracts.edit')" class="block w-60 h-12 bg-cyan-300 hover:bg-cyan-400 text-xl text-cyan-950 text-center font-bold py-2 px-5 border-2 border-cyan-500 rounded-full drop-shadow-md">
                                         Contrats
                                     </Link>
                                 </div>

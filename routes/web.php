@@ -65,7 +65,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/players/{player}', [PlayerController::class, 'update'])->name('players.update');
     Route::delete('/players/{player}', [PlayerController::class, 'destroy'])->name('players.destroy');
 
-
+    Route::get('/contracts', [ContractController::class, 'index'])->name('contracts');
+    Route::get('/contracts/edit', [ContractController::class, 'edit'])->name('contracts.edit');
+    Route::get('/contracts/create', [ContractController::class, 'create'])->name('contracts.create');
+    Route::post('/contracts', [ContractController::class, 'store'])->name('contracts.store');
+    Route::post('/contracts/{contract}', [ContractController::class, 'update'])->name('contracts.update');
+    Route::delete('/contracts/{contract}', [ContractController::class, 'destroy'])->name('contracts.destroy');
 
 });
 

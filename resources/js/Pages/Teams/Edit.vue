@@ -201,7 +201,6 @@ function submit() {
         preserveScroll: true,
         onSuccess: () => {
             selectTeam(form);
-            debugger;
         }
     });
 }

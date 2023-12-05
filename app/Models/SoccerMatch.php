@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class SoccerMatch extends Model
@@ -11,17 +12,24 @@ class SoccerMatch extends Model
     use HasFactory;
     use SoftDeletes;
 
-    // Attributs assignables en masse
-    protected $fillable = ['team_id_home', 'team_id_away', 'score_home', 'score_away', 'date'];
+    protected $fillable = [
+        'team_id_home',
+        'team_id_away',
+        'score_team_home',
+        'score_team_away',
+        'date',
+    ];
 
-    // Relation avec Team (équipe à domicile)
-    public function teamHome()
+    protected $casts = [
+        'date' => 'datetime',
+    ];
+
+    public function homeTeam(): BelongsTo
     {
         return $this->belongsTo(Team::class, 'team_id_home');
     }
 
-    // Relation avec Team (équipe visiteuse)
-    public function teamAway()
+    public function awayTeam(): BelongsTo
     {
         return $this->belongsTo(Team::class, 'team_id_away');
     }
