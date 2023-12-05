@@ -10,15 +10,20 @@ class CreatePlayersTable extends Migration
     {
         Schema::create('players', function (Blueprint $table) {
             $table->id();
-            $table->string('firstname');
-            $table->string('lastname');
+            $table->string('firstname', 255);
+            $table->string('lastname', 255);
             $table->integer('age');
-            $table->string('position');
-            $table->integer('cost');
+            $table->string('position', 100);
+            $table->integer('cost')->default(0);
             $table->json('stats');
+            $table->text('description')->nullable();
+
             $table->timestamps();
             $table->softDeletes();
+
+            $table->index(['firstname', 'lastname', 'position']);
         });
+
     }
 
     public function down(): void

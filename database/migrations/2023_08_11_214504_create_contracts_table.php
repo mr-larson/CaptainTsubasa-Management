@@ -15,10 +15,14 @@ class CreateContractsTable extends Migration
             $table->unsignedInteger('salary');
             $table->date('start_date');
             $table->date('end_date');
+
             $table->foreign('team_id')->references('id')->on('teams')->onDelete('cascade');
             $table->foreign('player_id')->references('id')->on('players')->onDelete('cascade');
+
             $table->timestamps();
             $table->softDeletes();
+
+            $table->index(['team_id', 'player_id', 'start_date', 'end_date']);
         });
     }
 

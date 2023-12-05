@@ -28,6 +28,7 @@ class PlayerRequest extends FormRequest
             'position' => 'required|string|max:255',
             'cost' => 'required|numeric',
             'stats' => 'required|array',
+            'description' => 'nullable|string',
         ];
     }
 

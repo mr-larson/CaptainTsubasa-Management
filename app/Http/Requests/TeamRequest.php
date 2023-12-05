@@ -23,6 +23,7 @@ class TeamRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
             'budget' => 'required|numeric',
             'wins' => 'required|integer',
             'draws' => 'required|integer',

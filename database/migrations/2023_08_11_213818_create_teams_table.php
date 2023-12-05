@@ -10,14 +10,19 @@ class CreateTeamsTable extends Migration
     {
         Schema::create('teams', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
-            $table->unsignedInteger('budget')->default(0);
-            $table->unsignedInteger('wins')->default(0);
-            $table->unsignedInteger('draws')->default(0);
-            $table->unsignedInteger('losses')->default(0);
+            $table->string('name', 255)->unique();
+            $table->text('description')->nullable();
+            $table->unsignedBigInteger('budget')->default(0);
+            $table->unsignedSmallInteger('wins')->default(0);
+            $table->unsignedSmallInteger('draws')->default(0);
+            $table->unsignedSmallInteger('losses')->default(0);
+
             $table->timestamps();
             $table->softDeletes();
+
+            $table->index(['name', 'budget', 'wins', 'draws', 'losses']);
         });
+
 
     }
 
