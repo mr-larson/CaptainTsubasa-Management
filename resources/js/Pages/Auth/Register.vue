@@ -25,13 +25,13 @@ const submit = () => {
         <Head title="Register" />
 
         <form @submit.prevent="submit">
-            <div>
+            <div class="">
                 <InputLabel for="name" value="Name" />
 
                 <InputText
                     id="name"
                     type="text"
-                    class="mt-1 block w-full"
+                    class="mt-1 block md:w-96 bg-stone-100"
                     v-model="form.name"
                     required
                     autofocus
@@ -47,7 +47,7 @@ const submit = () => {
                 <InputText
                     id="email"
                     type="email"
-                    class="mt-1 block w-full"
+                    class="mt-1 block md:w-96 bg-stone-100"
                     v-model="form.email"
                     required
                     autocomplete="username"
@@ -62,7 +62,7 @@ const submit = () => {
                 <InputText
                     id="password"
                     type="password"
-                    class="mt-1 block w-full"
+                    class="mt-1 block md:w-96 bg-stone-100"
                     v-model="form.password"
                     required
                     autocomplete="new-password"
@@ -77,7 +77,7 @@ const submit = () => {
                 <InputText
                     id="password_confirmation"
                     type="password"
-                    class="mt-1 block w-full"
+                    class="mt-1 block md:w-96 bg-stone-100"
                     v-model="form.password_confirmation"
                     required
                     autocomplete="new-password"
