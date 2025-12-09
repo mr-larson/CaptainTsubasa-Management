@@ -1,3 +1,3 @@
 <template>
-   <img src="/images/logo.png" class="w-96 h-32">
+   <img src="/images/capitain-tsubasa.jpg" class="flex">
 </template>

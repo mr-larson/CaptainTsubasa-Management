@@ -2,21 +2,24 @@
 
 namespace App\Models;
 
+use App\Enums\PlayerPosition;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
- * @property int $id
- * @property string $firstname
- * @property string $lastname
- * @property int $age
- * @property string $position
- * @property int $cost
- * @property array $stats
- * @property string $description
- **/
+ * Class Player
+ *
+ * @property int         $id
+ * @property string      $firstname
+ * @property string      $lastname
+ * @property int         $age
+ * @property string      $position
+ * @property int         $cost
+ * @property array       $stats
+ * @property string|null $description
+ */
 class Player extends Model
 {
     use HasFactory;
@@ -31,19 +34,28 @@ class Player extends Model
         'position',
         'cost',
         'stats',
-        'description'
+        'description',
     ];
 
     protected $casts = [
         'stats' => 'array',
+        'position' => PlayerPosition::class,
     ];
 
-    // Relation avec Team via la table pivot Contract
+    /**
+     * Equipes liées via contrats.
+     */
     public function teams(): BelongsToMany
     {
-        return $this->belongsToMany(Team::class, 'contracts');
+        return $this
+            ->belongsToMany(Team::class, 'contracts')
+            ->withPivot(['salary', 'start_date', 'end_date'])
+            ->withTimestamps();
     }
 
+    /**
+     * Nom complet "Daichi Kakeru".
+     */
     public function getFullNameAttribute(): string
     {
         return "{$this->firstname} {$this->lastname}";

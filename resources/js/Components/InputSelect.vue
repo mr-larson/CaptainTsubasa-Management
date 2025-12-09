@@ -1,8 +1,10 @@
 <script>
 export default {
     name: 'InputSelect',
+
+    // API v-model standard Vue 3 : modelValue / update:modelValue
     props: {
-        value: {
+        modelValue: {
             type: [String, Number],
             default: ''
         },
@@ -19,27 +21,36 @@ export default {
             default: false
         }
     },
-    data() {
-        return {
-            internalValue: this.value
-        };
-    },
-    watch: {
-        value(newValue) {
-            this.internalValue = newValue;
-        }
-    },
-    methods: {
-        updateValue(value) {
-            this.$emit('update:value', value);
+
+    emits: ['update:modelValue'],
+
+    computed: {
+        internalValue: {
+            get() {
+                return this.modelValue;
+            },
+            set(value) {
+                this.$emit('update:modelValue', value);
+            }
         }
     }
 };
 </script>
+
 <template>
     <div class="relative">
-        <select :id="id" :value="internalValue" @input="updateValue($event.target.value)" :disabled="disabled" class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-slate-700">
-            <option disabled value="">{{ placeholder }}</option>
+        <select
+            :id="id"
+            v-model="internalValue"
+            :disabled="disabled"
+            class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-slate-700"
+        >
+            <!-- option placeholder -->
+            <option v-if="placeholder" disabled value="">
+                {{ placeholder }}
+            </option>
+
+            <!-- options passées par le parent -->
             <slot></slot>
         </select>
     </div>

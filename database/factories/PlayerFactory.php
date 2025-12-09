@@ -29,7 +29,7 @@ class PlayerFactory extends Factory
             'period' => $this->faker->randomElement(['collège', 'lycée', 'pro']), // Périodes fictives
             'current_team_id' => function() {
                 return Team::all()->random()->id;
-            },            
+            },
             'stats' => [
                 'goals' => $this->faker->numberBetween(0, 50),
                 'assists' => $this->faker->numberBetween(0, 30)

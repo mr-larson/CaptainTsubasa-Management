@@ -7,33 +7,28 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-/**
- * @property int $id
- * @property int $team_id
- * @property int $player_id
- * @property int $salary
- * @property string $start_date
- * @property string $end_date
- **/
-
 class Contract extends Model
 {
     use HasFactory;
-    Use SoftDeletes;
+    use SoftDeletes;
 
     protected $table = 'contracts';
 
     protected $fillable = [
         'team_id',
         'player_id',
-        'salary',
-        'start_date',
+        'salary',          // devient "cost_per_match"
+        'matches_total',
+        'matches_played',
+        'start_date',      // gardées mais plus utilisées pour le gameplay
         'end_date',
     ];
 
     protected $casts = [
-        'start_date' => 'date',
-        'end_date' => 'date',
+        'start_date'     => 'date',
+        'end_date'       => 'date',
+        'matches_total'  => 'integer',
+        'matches_played' => 'integer',
     ];
 
     public function team(): BelongsTo
@@ -46,13 +41,38 @@ class Contract extends Model
         return $this->belongsTo(Player::class);
     }
 
-    public function isCurrent(): bool
+    // --- Helpers gameplay ---
+
+    /**
+     * Matchs restants avant fin de contrat.
+     */
+    public function getMatchesRemainingAttribute(): int
     {
-        return $this->start_date <= today() && $this->end_date >= today();
+        return max(0, ($this->matches_total ?? 0) - ($this->matches_played ?? 0));
     }
 
+    /**
+     * Le contrat est-il expiré (en termes de matchs) ?
+     */
+    public function isExpired(): bool
+    {
+        return ($this->matches_played ?? 0) >= ($this->matches_total ?? 0);
+    }
+
+    /**
+     * Contrat en cours (non expiré).
+     */
+    public function isCurrent(): bool
+    {
+        return ! $this->isExpired();
+    }
+
+    /**
+     * Ancienne méthode si tu l’utilisais (basée sur dates).
+     * Tu peux soit la retirer, soit la laisser obsolète.
+     */
     public function hasEnded(): bool
     {
-        return $this->end_date < today();
+        return $this->isExpired();
     }
 }

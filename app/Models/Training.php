@@ -16,7 +16,7 @@ class Training extends Model
         'training_type_id', //foreign key vers le type d'entraînement
         'training_date', //date
         'fatigue_generated', //json
-        'training_mode', //enum
+        'training_mode', //Enums
     ];
 
     protected $casts = [

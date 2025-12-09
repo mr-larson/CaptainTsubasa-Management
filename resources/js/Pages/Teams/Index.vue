@@ -10,7 +10,7 @@
                class="fixed top-0 left-0 z-40 w-64 h-screen transition-transform -translate-x-full sm:translate-x-0"
                aria-label="Sidebar">
             <div class="h-full px-3 py-2 overflow-y-auto bg-slate-700">
-                <div class="p-3 mb-3 border-b text-center text-gray-200">
+                <div class="p-3 pb-5 mb-4 border-b text-center text-gray-200">
                     <H2>Equipes</H2>
                 </div>
                 <div class="mb-2">
@@ -52,46 +52,17 @@
         </aside>
 
         <div class="p-4 sm:ml-64">
-            <div class="flex justify-center">
-                <h1 class="text-3xl font-bold text-slate-600 mb-4">Liste des équipes</h1>
-            </div>
-            <div class="p-4 border border-slate-300 rounded-lg mx-6 bg-white">
-                <form @submit.prevent="submit" enctype="multipart/form-data">
-                    <div class="flex flex-col md:grid lg:grid-cols-2 gap-4 text-slate-700">
+            <H1>Liste des équipes</H1>
+            <FormContainer>
+                <FormRaw>
+                    <FormCol>
+                        <InputLabel for="name" value="Name" />
+                        <span class="mt-1 block w-full rounded-md shadow-sm">
 
-                        <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Nom : </label>
-                            <span class="text-gray-900">{{ form.name }}</span>
-                        </div>
-
-                        <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Victoire(s) : </label>
-                            <span class="text-gray-900">{{ form.wins }}</span>
-                        </div>
-
-                        <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label for="points" class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Points : </label>
-                            <span class="text-gray-900">{{ form.points }}</span>
-                        </div>
-
-                        <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label for="losses" class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Défaite(s) : </label>
-                            <span class="text-gray-900">{{ form.losses }}</span>
-                        </div>
-
-                        <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label for="budget" class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Budget</label>
-                            <span class="text-gray-900">{{ form.budget }}</span>
-                        </div>
-
-                        <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Matchs
-                                nul(s) : </label>
-                            <span class="text-gray-900">{{ form.draws }}</span>
-                        </div>
-                    </div>
-                </form>
-            </div>
+                      </span>
+                    </FormCol>
+                </FormRaw>
+            </FormContainer>
         </div>
     </AuthenticatedLayout>
 </template>
@@ -104,6 +75,11 @@ import {ref, defineProps, reactive, onMounted, computed} from 'vue';
 
 //Component
 import H2 from '@/Components/H2.vue';
+import H1 from "@/Components/H1.vue";
+import FormContainer from "@/Components/FormContainer.vue";
+import FormRaw from "@/Components/FormRaw.vue";
+import FormCol from "@/Components/FormCol.vue";
+import InputLabel from "@/Components/InputLabel.vue";
 
 
 // Propriétés du composant

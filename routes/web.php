@@ -1,40 +1,44 @@
 <?php
 
 use App\Http\Controllers\ContractController;
+use App\Http\Controllers\GameSaveController;
 use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\SoccerMatchController;
 use App\Http\Controllers\TeamController;
-use App\Models\Team;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 /*
 |--------------------------------------------------------------------------
-| Web Routes
+| Public routes (non authentifiées)
 |--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
 */
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
+        'canLogin'       => Route::has('login'),
+        'canRegister'    => Route::has('register'),
         'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
+        'phpVersion'     => PHP_VERSION,
     ]);
-});
+})->name('welcome');
 
 
-Route::get('/players', [PlayerController::class, 'index'])->name('players');
-
+/*
+|--------------------------------------------------------------------------
+| Routes protégées (auth)
+|--------------------------------------------------------------------------
+*/
 
 Route::middleware('auth')->group(function () {
+
+    /*
+    |----------------------------------------------------------------------
+    | Menus principaux
+    |----------------------------------------------------------------------
+    */
+
     Route::get('/mainMenu', function () {
         return Inertia::render('MainMenu');
     })->name('mainMenu');
@@ -47,30 +51,95 @@ Route::middleware('auth')->group(function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
 
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+
+    /*
+    |----------------------------------------------------------------------
+    | Profil utilisateur
+    |----------------------------------------------------------------------
+    */
+
+    Route::get('/profile',   [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::delete('/profile',[ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::get('/teams', [TeamController::class, 'index'])->name('teams');
-    Route::get('/teams/edit', [TeamController::class, 'edit'])->name('teams.edit');
-    Route::get('/teams/create', [TeamController::class, 'create'])->name('teams.create');
-    Route::post('/teams', [TeamController::class, 'store'])->name('teams.store');
-    Route::post('/teams/{team}', [TeamController::class, 'update'])->name('teams.update');
-    Route::delete('/teams/{team}', [TeamController::class, 'destroy'])->name('teams.destroy');
 
-    Route::get('/players', [PlayerController::class, 'index'])->name('players');
-    Route::get('/players/edit', [PlayerController::class, 'edit'])->name('players.edit');
-    Route::get('/players/create', [PlayerController::class, 'create'])->name('players.create');
-    Route::post('/players', [PlayerController::class, 'store'])->name('players.store');
-    Route::post('/players/{player}', [PlayerController::class, 'update'])->name('players.update');
-    Route::delete('/players/{player}', [PlayerController::class, 'destroy'])->name('players.destroy');
+    /*
+    |----------------------------------------------------------------------
+    | Equipes
+    |----------------------------------------------------------------------
+    | NB : on garde le nom historique 'teams' pour l'index
+    |      car il est déjà utilisé côté contrôleurs / Vue.
+    */
+    Route::prefix('teams')->name('teams.')->group(function () {
+        Route::get('/',        [TeamController::class, 'index'])->name('index');
+        Route::get('/create',  [TeamController::class, 'create'])->name('create');
+        Route::get('/edit',    [TeamController::class, 'edit'])->name('edit');
+        Route::post('/',       [TeamController::class, 'store'])->name('store');
+        Route::post('/{team}', [TeamController::class, 'update'])->name('update');
+        Route::delete('/{team}', [TeamController::class, 'destroy'])->name('destroy');
+    });
 
-    Route::get('/contracts', [ContractController::class, 'index'])->name('contracts');
-    Route::get('/contracts/edit', [ContractController::class, 'edit'])->name('contracts.edit');
-    Route::get('/contracts/create', [ContractController::class, 'create'])->name('contracts.create');
-    Route::post('/contracts', [ContractController::class, 'store'])->name('contracts.store');
-    Route::post('/contracts/{contract}', [ContractController::class, 'update'])->name('contracts.update');
-    Route::delete('/contracts/{contract}', [ContractController::class, 'destroy'])->name('contracts.destroy');
+    /*
+    |----------------------------------------------------------------------
+    | Joueurs
+    |----------------------------------------------------------------------
+    | Même logique : index = 'players' pour rester compatible.
+    */
+
+    Route::prefix('players')->name('players.')->group(function () {
+        Route::get('/',          [PlayerController::class, 'index'])->name('index');
+        Route::get('/create',    [PlayerController::class, 'create'])->name('create');
+        Route::get('/edit',      [PlayerController::class, 'edit'])->name('edit');
+        Route::post('/',         [PlayerController::class, 'store'])->name('store');
+        Route::post('/{player}', [PlayerController::class, 'update'])->name('update');
+        Route::delete('/{player}', [PlayerController::class, 'destroy'])->name('destroy');
+    });
+
+    /*
+    |----------------------------------------------------------------------
+    | Contrats
+    |----------------------------------------------------------------------
+    */
+
+    Route::prefix('contracts')->name('contracts.')->group(function () {
+        Route::get('/',            [ContractController::class, 'index'])->name('index');
+        Route::get('/create',      [ContractController::class, 'create'])->name('create');
+        Route::get('/edit',        [ContractController::class, 'edit'])->name('edit');
+        Route::post('/',           [ContractController::class, 'store'])->name('store');
+        Route::post('/{contract}', [ContractController::class, 'update'])->name('update');
+        Route::delete('/{contract}', [ContractController::class, 'destroy'])->name('destroy');
+    });
+
+    /*
+    |----------------------------------------------------------------------
+    | Game saves session
+    |----------------------------------------------------------------------
+    */
+    Route::prefix('game-saves')->name('game-saves.')->group(function () {
+        Route::get('/', [GameSaveController::class, 'index'])->name('index');
+        Route::get('/create', [GameSaveController::class, 'create'])->name('create');
+        Route::post('/', [GameSaveController::class, 'store'])->name('store');
+        Route::post('/start', [GameSaveController::class, 'start'])->name('start');
+
+        Route::get('/continue', [GameSaveController::class, 'continue'])->name('continue');
+
+        Route::get('/{gameSave}', [GameSaveController::class, 'show'])->name('show');
+        Route::get('/{gameSave}/play', [GameSaveController::class, 'play'])->name('play');
+
+        Route::get('/{gameSave}/match', [GameSaveController::class, 'match'])->name('match');
+
+        Route::put('/{gameSave}', [GameSaveController::class, 'update'])->name('update');
+        Route::delete('/{gameSave}', [GameSaveController::class, 'destroy'])->name('destroy');
+    });
+
+    /*
+    |----------------------------------------------------------------------
+    | Gameplay
+    |----------------------------------------------------------------------
+    */
+    Route::get('/match/demo', function () {
+        return Inertia::render('Match/Engine');
+    })->name('match.demo');
 
 });
 

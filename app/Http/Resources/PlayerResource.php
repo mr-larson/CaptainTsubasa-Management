@@ -11,7 +11,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * @property mixed $lastname
  * @property mixed $age
  * @property mixed $position
- * @property mixed $cost
+ * @property mixed $macost
  * @property mixed $stats
  * @property mixed $description
  */

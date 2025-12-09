@@ -2,63 +2,68 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\PlayerPosition;
 use App\Http\Requests\PlayerRequest;
 use App\Models\Player;
 use Inertia\Inertia;
+use Inertia\Response;
+use Illuminate\Http\RedirectResponse;
 
 class PlayerController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        return Inertia::render('Players/Index', [
-            'players' => Player::orderBy('firstname')->get()
-        ]);
-    }
-
-    public function create()
-    {
-        return Inertia::render('Players/Create');
-    }
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(PlayerRequest $request)
-    {
-        Player::create($request->all());
-
-        return redirect()->route('players')->with('success', "Le joueur a été créé avec succès");
-    }
-
-    public function edit()
+    public function index(): Response
     {
         return Inertia::render('Players/Edit', [
-            'players' => Player::orderBy('firstname')->get()
+            'players'        => Player::orderBy('firstname')->get(),
+            'positions'      => PlayerPosition::values(),
+            'positionLabels' => PlayerPosition::labels(),
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(PlayerRequest $request, Player $player)
+    public function create(): Response
     {
-
-        $player->update($request->all());
-
-        return redirect()->route('players')->with('success', "Le joueur a été mis à jour avec succès");
+        return Inertia::render('Players/Create', [
+            'positions'      => PlayerPosition::values(),
+            'positionLabels' => PlayerPosition::labels(),
+        ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Player $player)
+    public function store(PlayerRequest $request): RedirectResponse
+    {
+        $data = $request->validated();
+
+        Player::create($data);
+
+        // après création, on revient sur l’écran d’édition
+        return redirect()
+            ->route('players.index')
+            ->with('success', 'Le joueur a été créé avec succès.');
+    }
+
+    public function edit(): Response
+    {
+        return Inertia::render('Players/Edit', [
+            'players'        => Player::orderBy('firstname')->get(),
+            'positions'      => PlayerPosition::values(),
+            'positionLabels' => PlayerPosition::labels(),
+        ]);
+    }
+
+    public function update(PlayerRequest $request, Player $player): RedirectResponse
+    {
+        $player->update($request->validated());
+
+        return redirect()
+            ->route('players.index')
+            ->with('success', 'Le joueur a été mis à jour avec succès.');
+    }
+
+    public function destroy(Player $player): RedirectResponse
     {
         $player->delete();
 
-        return response()->json([
-            'message' => 'Player deleted successfully.'
-        ]);
+        return redirect()
+            ->route('players.index')
+            ->with('success', 'Le joueur a été supprimé avec succès.');
     }
 }

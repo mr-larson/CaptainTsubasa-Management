@@ -1,0 +1,1045 @@
+
+/* ==========================================================================
+   HELPERS SCOPÉS AU MATCH
+   ========================================================================== */
+
+/* .hidden ou [hidden] à l'intérieur du game-wrapper uniquement */
+#game-wrapper .hidden,
+#game-wrapper [hidden] {
+    display: none !important;
+}
+
+/* .visually-hidden à l'intérieur du game-wrapper */
+#game-wrapper .visually-hidden {
+    border: 0;
+    clip: rect(0, 0, 0, 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+}
+
+#game-wrapper .visually-hidden.focusable:active,
+#game-wrapper .visually-hidden.focusable:focus {
+    clip: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    position: static;
+    white-space: inherit;
+    width: auto;
+}
+
+/* .invisible locale au match */
+#game-wrapper .invisible {
+    visibility: hidden;
+}
+
+/* Clearfix générique mais uniquement pour les éléments dans le wrapper */
+#game-wrapper .clearfix::before,
+#game-wrapper .clearfix::after {
+    content: "";
+    display: table;
+}
+
+#game-wrapper .clearfix::after {
+    clear: both;
+}
+
+/* ==========================================================================
+   LAYOUT GLOBAL
+   ========================================================================== */
+
+#game-wrapper {
+    width: 1100px;
+    max-width: 100%;
+}
+
+/* ==========================================================================
+   TOP BAR (score + panneau de contrôle)
+   ========================================================================== */
+
+#top-bar {
+    display: grid;
+    grid-template-columns: 2.1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+#score-strip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(#333, #111);
+    border-radius: 8px;
+    padding: 6px 12px;
+    color: #fff;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.45);
+    font-variant-numeric: tabular-nums;
+    font-size: 14px;
+}
+
+#score-strip span {
+    padding: 0 12px;
+}
+
+#score-strip .team-name {
+    font-weight: 700;
+}
+
+#score-strip .score-value {
+    font-size: 18px;
+    font-weight: 800;
+}
+
+#score-strip .timer {
+    font-size: 13px;
+    opacity: 0.8;
+}
+
+/* Panneau de contrôle (mode 1 joueur + équipe) */
+#control-panel {
+    background: rgba(255,255,255,0.9);
+    border-radius: 12px;
+    padding: 10px 14px;
+    box-shadow:
+        0 3px 8px rgba(0,0,0,0.25),
+        0 0 0 1px rgba(255,255,255,0.9) inset;
+}
+
+
+.control-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.control-row.compact {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;             /* espace entre les deux éléments */
+}
+
+
+/* Bouton mode 1 joueur */
+.mode-toggle {
+    padding: 8px 18px;
+    border-radius: 999px;
+    border: none;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    background: linear-gradient(135deg, #dbe8ff, #bcd5ff);
+    color: #234;
+    box-shadow:
+        0 2px 4px rgba(0,0,0,0.25),
+        0 0 0 1px rgba(255,255,255,0.9) inset;
+    transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+}
+
+.mode-toggle.active {
+    background: linear-gradient(135deg, #4da7ff, #0062e0);
+    color: #fff;
+    box-shadow:
+        0 3px 6px rgba(0,0,0,0.4),
+        0 0 0 1px rgba(255,255,255,0.95) inset;
+}
+
+.mode-toggle:hover { filter: brightness(1.06); }
+.mode-toggle:active { transform: translateY(1px); }
+
+/* Select équipe contrôlée */
+.control-row label {
+    font-size: 11px;
+    opacity: 0.85;
+}
+
+#controlled-team-select {
+    flex: 0 0 110px;
+    padding: 4px 6px;
+    border-radius: 999px;
+    border: 1px solid rgba(0,0,0,0.12);
+    background: #f5f7ff;
+    font-size: 11px;
+    outline: none;
+}
+
+.team-select {
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(0,0,0,0.15);
+    background: #f8f9ff;
+    font-size: 12px;
+    font-weight: 600;
+    color: #234;
+    cursor: pointer;
+    min-width: 110px;
+    text-align: center;
+
+    box-shadow:
+        0 2px 4px rgba(0,0,0,0.15),
+        0 0 0 1px rgba(255,255,255,0.9) inset;
+}
+.team-select:hover { filter: brightness(1.05); }
+
+
+/* ==========================================================================
+   MAIN ROW : FICHE JOUEUR + TERRAIN
+   ========================================================================== */
+
+#main-row {
+    display: grid;
+    grid-template-columns: 0.8fr 3fr;
+    gap: 10px;
+    align-items: stretch;
+}
+
+/* ----- Fiche joueur ----- */
+#player-card {
+    background: linear-gradient(135deg, #ffffff, #e5f0ff);
+    border-radius: 16px;
+    padding: 14px 16px;
+    box-shadow:
+        0 4px 10px rgba(0,0,0,0.35),
+        0 0 0 2px rgba(255,255,255,0.9) inset;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Header : portrait + infos */
+#player-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#portrait {
+    width: 70px;
+    height: 70px;
+    background: radial-gradient(circle at 30% 30%, #fff 0, #ffd27a 40%, #ff9600 100%);
+    border-radius: 10px;
+    box-shadow:
+        0 2px 4px rgba(0,0,0,0.4),
+        0 0 0 2px #ffffff inset;
+    position: relative;
+    overflow: hidden;
+}
+
+#portrait::after {
+    content: "";
+    position: absolute;
+    left: -30%;
+    top: -20%;
+    width: 70%;
+    height: 60%;
+    background: rgba(255,255,255,0.55);
+    transform: rotate(-25deg);
+}
+
+#player-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    font-size: 12px;
+}
+
+#player-name {
+    font-weight: 800;
+    font-size: 16px;
+    margin-bottom: 2px;
+}
+
+/* === Bloc stats joueur === */
+#player-stats {
+    margin-top: 4px;
+    padding: 6px 8px;
+    background: rgba(255,255,255,0.85);
+    border-radius: 10px;
+    border: 1px solid rgba(0,0,0,0.04);
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 12px;
+    row-gap: 4px;
+    font-size: 11px;
+}
+
+#player-stats div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #234;
+}
+
+#player-stats div::before {
+    content: "•";
+    margin-right: 4px;
+    font-size: 10px;
+    color: rgba(0,0,0,0.25);
+}
+
+#player-stats strong {
+    font-weight: 700;
+    color: #0f7b3b;
+    font-size: 11px;
+}
+
+/* === Barre d'énergie fiche joueur === */
+#energy-bar {
+    margin-top: 6px;
+    width: 100%;
+    height: 10px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #d4e3ff, #ffffff);
+    box-shadow:
+        inset 0 0 0 1px rgba(0,0,0,0.05),
+        0 1px 2px rgba(0,0,0,0.25);
+    overflow: hidden;
+}
+
+#energy-fill {
+    height: 100%;
+    width: 100%;
+    border-radius: inherit;
+    transition: width 0.3s ease, background 0.25s ease, box-shadow 0.25s ease;
+}
+
+/* couleurs selon état (JS ajoute e-high / e-mid / e-low / e-crit) */
+#energy-fill.e-high {
+    background: linear-gradient(90deg, #38b000, #9ef01a);
+    box-shadow: 0 0 6px rgba(56,176,0,0.6);
+}
+#energy-fill.e-mid {
+    background: linear-gradient(90deg, #f2c94c, #f2994a);
+    box-shadow: 0 0 6px rgba(242,153,74,0.6);
+}
+#energy-fill.e-low {
+    background: linear-gradient(90deg, #ff8e53, #ff3d00);
+    box-shadow: 0 0 6px rgba(255,61,0,0.6);
+}
+#energy-fill.e-crit {
+    background: linear-gradient(90deg, #ff1744, #d50000);
+    box-shadow: 0 0 6px rgba(213,0,0,0.7);
+}
+
+/* ===== COLONNE GAUCHE (JOUEUR + LOG) ===== */
+
+#left-column {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* ===== CARTE DE LOG D'ACTIONS ===== */
+
+#log-card {
+    background: linear-gradient(135deg, #f7f9ff, #e3e9f7);
+    border-radius: 14px;
+    padding: 10px 12px;
+    box-shadow:
+        0 3px 8px rgba(0,0,0,0.3),
+        0 0 0 1px rgba(255,255,255,0.9) inset;
+    font-size: 11px;
+
+    /* occupe tout l'espace restant sous la fiche joueur */
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#log-current {
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+/* Header de la zone "Dernière action" avec chip de duel à droite */
+#log-current .log-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+#dice-box .dice-values {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.dice-value {
+    font-weight: 700;
+}
+
+/* Couleurs par équipe */
+.dice-internal {
+    color: #0b76ff;   /* bleu équipe Internal */
+}
+
+.dice-external {
+    color: #ff7a2e;   /* orange équipe External */
+}
+
+
+/* Petit chip pour afficher le résultat du duel */
+.dice-chip {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(0,0,0,0.06)
+;
+    color: #222;
+    font-variant-numeric: tabular-nums;
+    opacity: 0;
+    transform: scale(0.8);
+    transition:
+        opacity 0.25s ease,
+        transform 0.25s ease;
+    white-space: nowrap;
+}
+
+/* Visible quand un duel vient d’être joué */
+.dice-chip.visible {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Animation pop à chaque nouveau duel */
+.dice-chip.pop {
+    animation: dice-pop 0.45s ease-out;
+}
+
+@keyframes dice-pop {
+    0%   { transform: scale(0.8); }
+    40%  { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.log-section-title {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    color: #556;
+    margin-bottom: 4px;
+}
+
+#current-action-title {
+    font-weight: 700;
+    font-size: 12px;
+    margin-bottom: 2px;
+    color: #222;
+}
+
+#current-action-detail {
+    font-size: 11px;
+    color: #555;
+    line-height: 1.3;
+}
+
+#log-history {
+    flex: 1;
+    overflow-y: auto;
+}
+
+#history-list {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+#history-list li {
+    padding: 2px 0;
+    border-bottom: 1px dashed rgba(0,0,0,0.06);
+    font-size: 11px;
+    color: #444;
+}
+
+#history-list li:last-child {
+    border-bottom: none;
+}
+
+/* ==========================================================================
+   TERRAIN
+   ========================================================================== */
+
+#field-wrapper {
+    position: relative;
+}
+
+#field {
+    width: 100%;
+    padding-top: 60%;
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+
+    /* 6 bandes verticales */
+    background: linear-gradient(
+        90deg,
+        #2f7b28 0%,
+        #2f7b28 15%,
+        #34852e 15%,
+        #34852e 30%,
+        #2f7b28 30%,
+        #2f7b28 50%,
+        #34852e 50%,
+        #34852e 70%,
+        #2f7b28 70%,
+        #2f7b28 85%,
+        #34852e 85%,
+        #34852e 100%
+    );
+
+    box-shadow:
+        0 15px 26px rgba(0,0,0,0.45),
+        0 0 0 4px #fdfdfd inset;
+}
+
+/* Overlay "Tour de l'IA" */
+#ai-turn-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.18);
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 10;
+}
+
+#ai-turn-overlay.visible {
+    opacity: 1;
+}
+
+/* Lignes du terrain */
+.pitch-line {
+    position: absolute;
+    border: 2px solid rgba(245,245,245,0.95);
+    pointer-events: none;
+}
+
+#border-rect {
+    left: 3%;
+    top: 3%;
+    right: 3%;
+    bottom: 3%;
+}
+
+#halfway-line {
+    left: 50%;
+    top: 3%;
+    bottom: 3%;
+    border-left-width: 2px;
+    border-right: none;
+}
+
+#center-circle {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 18%;
+    height: 36%;
+    border-radius: 50%;
+    border: 2px solid rgba(245,245,245,0.95);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.penalty-box {
+    position: absolute;
+    top: 20%;
+    width: 18%;
+    height: 60%;
+    border: 2px solid rgba(245,245,245,0.95);
+    pointer-events: none;
+}
+#penalty-left  { left: 3%; }
+#penalty-right { right: 3%; }
+
+.goal-area {
+    position: absolute;
+    top: 32%;
+    width: 8%;
+    height: 36%;
+    border: 2px solid rgba(245,245,245,0.95);
+    pointer-events: none;
+}
+#goal-area-left  { left: 3%; }
+#goal-area-right { right: 3%; }
+
+/* Spots (centre + pénalty) */
+.spot {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #fefefe;
+    box-shadow: 0 0 4px rgba(0,0,0,0.5);
+}
+#center-spot    { left: 50%; top: 50%; transform: translate(-50%,-50%); }
+#pen-spot-left  { left: 13%; top: 50%; transform: translate(-50%,-50%); }
+#pen-spot-right { right: 13%; top: 50%; transform: translate(50%,-50%); }
+
+/* Buts */
+.goal {
+    position: absolute;
+    width: 10px;
+    height: 30%;
+    background: #8c8c8c;
+    top: 35%;
+    box-shadow:
+        0 3px 5px rgba(0,0,0,0.4),
+        0 0 0 2px #f9f9f9 inset;
+}
+#goal-left  { left: -3px; }
+#goal-right { right: -3px; }
+
+/* ==========================================================================
+   JOUEURS + BALLON
+   ========================================================================== */
+
+.player {
+    position: absolute;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    transform: translate(-50%, -50%);
+    text-shadow: 0 0 3px rgba(0,0,0,0.6);
+    transition:
+        left 0.70s cubic-bezier(0.22, 0.61, 0.36, 1),
+        top 0.70s  cubic-bezier(0.22, 0.61, 0.36, 1),
+        box-shadow 0.20s;
+}
+
+/* équipe bleue */
+.player.internal {
+    background: radial-gradient(circle at 30% 30%, #8ad0ff 0, #0074ff 70%);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.45);
+}
+
+/* équipe orange */
+.player.external {
+    background: radial-gradient(circle at 30% 30%, #ffd19a 0, #ff7f35 70%);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.45);
+}
+
+/* gardien highlight */
+.player.goalkeeper {
+    box-shadow:
+        0 0 8px rgba(255,255,0,0.9),
+        0 3px 6px rgba(0,0,0,0.55);
+}
+
+/* Mini barre d'endurance sur les pions */
+.player .endurance-shell {
+    position: absolute;
+    left: 50%;
+    bottom: -5px;
+    transform: translateX(-50%);
+    width: 70%;
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(0,0,0,0.35);
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.player.show-endurance .endurance-shell {
+    opacity: 1;
+}
+
+.player .endurance-bar {
+    height: 100%;
+    width: 100%;
+    border-radius: inherit;
+    background: #4de074;
+}
+
+/* Feedback couleur sur le pion selon endurance */
+.player.e-high { filter: none; }
+.player.e-mid  { filter: brightness(1.05) saturate(1.1); }
+.player.e-low  { filter: brightness(0.95) saturate(1.2); }
+.player.e-crit { filter: brightness(0.9) saturate(1.4); }
+
+/* Ballon */
+#ball {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #ffffff 0, #f0e6b5 40%, #d1c56a 100%);
+    border: 2px solid rgba(115,105,35,0.8);
+    transform: translate(-50%, -50%);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.6);
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    text-shadow: 0 0 2px rgba(0,0,0,0.8);
+    transition:
+        left 0.70s cubic-bezier(0.22, 0.61, 0.36, 1),
+        top 0.70s  cubic-bezier(0.22, 0.61, 0.36, 1),
+        transform 0.15s ease-out;
+}
+
+/* petit effet de "shoot" */
+.ball-kick {
+    transform: translate(-50%, -52%) scale(1.05);
+}
+
+/* Indicateur de tour en bas du terrain */
+#turn-indicator {
+    position: absolute;
+    right: 10px;
+    bottom: -32px;
+    width: 30px;
+    height: 30px;
+    background: #000;
+    color: #fff;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    box-shadow:
+        0 2px 4px rgba(0,0,0,0.5),
+        0 0 0 1px rgba(255,255,255,0.4) inset;
+}
+
+/* ==========================================================================
+   BARRE D’ACTION (ATTAQUE + DÉFENSE)
+   ========================================================================== */
+
+#bars-container {
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Conteneur unique : l’UI JS injecte soit l’attaque soit la défense */
+#action-bar {
+    background: rgba(0,0,0,0.35);
+    border-radius: 16px;
+    padding: 10px 14px;
+    margin-top: 12px;
+    box-shadow:
+        0 4px 12px rgba(0,0,0,0.5),
+        0 0 0 2px rgba(255,255,255,0.25) inset;
+    transition:
+        background 0.3s ease,
+        opacity 0.25s ease,
+        transform 0.25s ease;
+}
+
+/* animation de switch attaque <-> défense */
+#action-bar.fade-out {
+    opacity: 0;
+    transform: translateY(8px);
+    pointer-events: none;
+}
+#action-bar.fade-in {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+/* Flex générique pour les rangées de cartes (attaque ou défense) */
+#attack-strip,
+#defense-strip {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+/* Cartes d’attaque */
+.skill-card {
+    width: 150px;
+    height: 70px;
+    background: linear-gradient(#3ca4ff,#0054d6);
+    border-radius: 12px;
+    border: 2px solid #ffffff;
+    position: relative;
+    color: #fff;
+    padding: 4px 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    box-shadow:
+        0 3px 8px rgba(0,0,0,0.6),
+        0 0 0 2px rgba(0,0,0,0.25) inset;
+    transition:
+        background 0.3s ease,
+        border-color 0.3s ease,
+        box-shadow 0.25s ease,
+        transform 0.12s,
+        filter 0.15s,
+        opacity 0.15s;
+    text-shadow: 0 0 3px rgba(0,0,0,0.8);
+}
+
+.skill-card:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+.skill-card:hover:not(:disabled)  { filter: brightness(1.08); }
+.skill-card:active:not(:disabled) { transform: translateY(1px) scale(0.98); }
+
+.skill-title {
+    font-size: 13px;
+    font-weight: 800;
+}
+.skill-sub {
+    font-size: 10px;
+    opacity: 0.9;
+}
+
+.skill-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    font-variant-numeric: tabular-nums;
+}
+
+.skill-power {
+    font-size: 16px;
+    font-weight: 800;
+}
+
+.skill-cost {
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+.skill-cost span {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 8px;
+    background: rgba(0,0,0,0.35);
+}
+
+.skill-icon {
+    position: absolute;
+    right: 4px;
+    top: 4px;
+    font-size: 14px;
+}
+
+/* Cartes de défense */
+.def-card {
+    width: 150px;
+    height: 70px;
+    border-radius: 12px;
+    border: 2px solid #ffffff;
+    color: #fff;
+    padding: 4px 8px;
+    cursor: pointer;
+    box-shadow:
+        0 3px 8px rgba(0,0,0,0.6),
+        0 0 0 2px rgba(0,0,0,0.25) inset;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    text-shadow: 0 0 3px rgba(0,0,0,0.8);
+    font-variant-numeric: tabular-nums;
+    transition:
+        background 0.3s ease,
+        border-color 0.3s ease,
+        box-shadow 0.25s ease,
+        transform 0.12s,
+        filter 0.15s,
+        opacity 0.15s;
+}
+
+.def-card:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+.def-card:hover:not(:disabled)  { filter: brightness(1.08); }
+.def-card:active:not(:disabled) { transform: translateY(1px) scale(0.98); }
+
+.def-icon {
+    position: absolute;
+    right: 4px;
+    top: 4px;
+    font-size: 14px;
+}
+
+.def-title {
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.def-sub {
+    font-size: 10px;
+    opacity: 0.9;
+}
+
+.def-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    font-size: 11px;
+}
+
+.def-power {
+    font-size: 16px;
+    font-weight: 800;
+}
+
+.def-cost {
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.def-cost span {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 8px;
+    background: rgba(0,0,0,0.35);
+}
+
+/* Thèmes équipe */
+#action-bar.mode-attack-internal .skill-card,
+#action-bar.mode-attack-internal .def-card {
+    background: linear-gradient(#3ca4ff, #0054d6);
+    border-color: #ffffff;
+}
+
+#action-bar.mode-attack-external .skill-card,
+#action-bar.mode-attack-external .def-card {
+    background: linear-gradient(#ffb067, #ff6a00);
+    border-color: #ffffff;
+}
+
+#action-bar.mode-defense-internal .def-card {
+    background: linear-gradient(#3ca4ff, #0054d6);
+    border-color: #ffffff;
+}
+
+#action-bar.mode-defense-external .def-card {
+    background: linear-gradient(#ffb067, #ff6a00);
+    border-color: #ffffff;
+}
+
+#action-bar .skill-card .skill-icon,
+#action-bar .def-card .def-icon {
+    text-shadow: 0 0 3px rgba(0,0,0,0.8);
+}
+
+/* Petit texte d’aide sous la barre */
+#info-text {
+    margin-top: 6px;
+    font-size: 11px;
+    text-align: center;
+    color: #222;
+    opacity: 0.85;
+}
+
+/* ==========================================================================
+   PRINT (hérité de H5BP)
+   ========================================================================== */
+
+@media print {
+    *,
+    *::before,
+    *::after {
+        background: #fff !important;
+        color: #000 !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+
+    a,
+    a:visited {
+        text-decoration: underline;
+    }
+
+    a[href]::after {
+        content: " (" attr(href) ")";
+    }
+
+    abbr[title]::after {
+        content: " (" attr(title) ")";
+    }
+
+    a[href^="#"]::after,
+    a[href^="javascript:"]::after {
+        content: "";
+    }
+
+    pre {
+        white-space: pre-wrap !important;
+    }
+
+    pre,
+    blockquote {
+        border: 1px solid #999;
+        page-break-inside: avoid;
+    }
+
+    tr,
+    img {
+        page-break-inside: avoid;
+    }
+
+    p,
+    h2,
+    h3 {
+        orphans: 3;
+        widows: 3;
+    }
+
+    h2,
+    h3 {
+        page-break-after: avoid;
+    }
+}
+
+/* ==========================================================================
+   MEDIA QUERIES
+   ========================================================================== */
+
+@media only screen and (min-width: 35em) {
+    /* Ajustements possibles pour tablettes / desktop larges */
+}
+
+@media print,
+(-webkit-min-device-pixel-ratio: 1.25),
+(min-resolution: 1.25dppx),
+(min-resolution: 120dpi) {
+    /* Ajustements écrans haute densité si besoin */
+}
+
