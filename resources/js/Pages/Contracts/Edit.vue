@@ -3,7 +3,6 @@
 
     <AuthenticatedLayout>
         <template #header>
-            <H2>Contracts</H2>
         </template>
 
         <!-- SIDEBAR -->

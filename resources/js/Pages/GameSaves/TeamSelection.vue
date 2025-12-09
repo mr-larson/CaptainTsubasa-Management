@@ -121,7 +121,7 @@
                 </div>
 
                 <!-- Carte joueurs sous contrat -->
-                <div class="border border-slate-300 rounded-lg bg-white p-4 min-h-[260px]">
+                <div class="border border-slate-300 rounded-lg bg-white p-4 min-h-[360px]">
                     <h2 class="text-xl font-semibold text-slate-700 mb-3">
                         Joueurs sous contrat
                     </h2>
@@ -175,7 +175,7 @@
                     :disabled="!startForm.team_id || startForm.processing"
                     @click="startWithTeam"
                 >
-                    Jouer avec cette équipe
+                    Sélectionner
                 </button>
 
                 <button

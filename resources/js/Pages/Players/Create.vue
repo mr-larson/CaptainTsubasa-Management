@@ -93,7 +93,7 @@
                             </FormCol>
                         </FormRaw>
 
-                        <!-- Ligne 3 : coût par match -->
+                        <!-- Ligne 3 : coût par match (2 colonnes) -->
                         <FormRaw>
                             <FormCol>
                                 <InputLabel for="cost" value="Coût par match" />
@@ -107,9 +107,13 @@
                                     {{ form.errors.cost }}
                                 </p>
                             </FormCol>
+
+                            <FormCol>
+                                <!-- Colonne vide pour garder le layout 2 colonnes -->
+                            </FormCol>
                         </FormRaw>
 
-                        <!-- Ligne 4 : stats attaque / défense -->
+                        <!-- Ligne 4 : attaque / défense -->
                         <FormRaw>
                             <FormCol>
                                 <InputLabel for="stats.attack" value="Attaque" />
@@ -125,20 +129,20 @@
                             </FormCol>
 
                             <FormCol>
-                                <InputLabel for="stats.defender" value="Défense" />
+                                <InputLabel for="stats.defense" value="Défense" />
                                 <InputText
-                                    id="stats.defender"
+                                    id="stats.defense"
                                     type="number"
                                     class="mt-1 w-full"
-                                    v-model="form.stats.defender"
+                                    v-model="form.stats.defense"
                                 />
-                                <p v-if="form.errors['stats.defender']" class="text-sm text-red-600 mt-1">
-                                    {{ form.errors['stats.defender'] }}
+                                <p v-if="form.errors['stats.defense']" class="text-sm text-red-600 mt-1">
+                                    {{ form.errors['stats.defense'] }}
                                 </p>
                             </FormCol>
                         </FormRaw>
 
-                        <!-- Ligne 5 : stats vitesse / stamina -->
+                        <!-- Ligne 5 : vitesse / stamina -->
                         <FormRaw>
                             <FormCol>
                                 <InputLabel for="stats.speed" value="Vitesse" />
@@ -164,6 +168,143 @@
                                 <p v-if="form.errors['stats.stamina']" class="text-sm text-red-600 mt-1">
                                     {{ form.errors['stats.stamina'] }}
                                 </p>
+                            </FormCol>
+                        </FormRaw>
+
+                        <!-- Ligne 6 : tir / passe -->
+                        <FormRaw>
+                            <FormCol>
+                                <InputLabel for="stats.shot" value="Tir" />
+                                <InputText
+                                    id="stats.shot"
+                                    type="number"
+                                    class="mt-1 w-full"
+                                    v-model="form.stats.shot"
+                                />
+                                <p v-if="form.errors['stats.shot']" class="text-sm text-red-600 mt-1">
+                                    {{ form.errors['stats.shot'] }}
+                                </p>
+                            </FormCol>
+
+                            <FormCol>
+                                <InputLabel for="stats.pass" value="Passe" />
+                                <InputText
+                                    id="stats.pass"
+                                    type="number"
+                                    class="mt-1 w-full"
+                                    v-model="form.stats.pass"
+                                />
+                                <p v-if="form.errors['stats.pass']" class="text-sm text-red-600 mt-1">
+                                    {{ form.errors['stats.pass'] }}
+                                </p>
+                            </FormCol>
+                        </FormRaw>
+
+                        <!-- Ligne 7 : dribble / block -->
+                        <FormRaw>
+                            <FormCol>
+                                <InputLabel for="stats.dribble" value="Dribble" />
+                                <InputText
+                                    id="stats.dribble"
+                                    type="number"
+                                    class="mt-1 w-full"
+                                    v-model="form.stats.dribble"
+                                />
+                                <p v-if="form.errors['stats.dribble']" class="text-sm text-red-600 mt-1">
+                                    {{ form.errors['stats.dribble'] }}
+                                </p>
+                            </FormCol>
+
+                            <FormCol>
+                                <InputLabel for="stats.block" value="Block" />
+                                <InputText
+                                    id="stats.block"
+                                    type="number"
+                                    class="mt-1 w-full"
+                                    v-model="form.stats.block"
+                                />
+                                <p v-if="form.errors['stats.block']" class="text-sm text-red-600 mt-1">
+                                    {{ form.errors['stats.block'] }}
+                                </p>
+                            </FormCol>
+                        </FormRaw>
+
+                        <!-- Ligne 8 : intercept / tackle -->
+                        <FormRaw>
+                            <FormCol>
+                                <InputLabel for="stats.intercept" value="Interception" />
+                                <InputText
+                                    id="stats.intercept"
+                                    type="number"
+                                    class="mt-1 w-full"
+                                    v-model="form.stats.intercept"
+                                />
+                                <p v-if="form.errors['stats.intercept']" class="text-sm text-red-600 mt-1">
+                                    {{ form.errors['stats.intercept'] }}
+                                </p>
+                            </FormCol>
+
+                            <FormCol>
+                                <InputLabel for="stats.tackle" value="Tacle" />
+                                <InputText
+                                    id="stats.tackle"
+                                    type="number"
+                                    class="mt-1 w-full"
+                                    v-model="form.stats.tackle"
+                                />
+                                <p v-if="form.errors['stats.tackle']" class="text-sm text-red-600 mt-1">
+                                    {{ form.errors['stats.tackle'] }}
+                                </p>
+                            </FormCol>
+                        </FormRaw>
+
+                        <!-- Ligne 9 : hand_save / punch_save -->
+                        <FormRaw>
+                            <FormCol>
+                                <InputLabel for="stats.hand_save" value="Arrêt main" />
+                                <InputText
+                                    id="stats.hand_save"
+                                    type="number"
+                                    class="mt-1 w-full"
+                                    v-model="form.stats.hand_save"
+                                />
+                                <p v-if="form.errors['stats.hand_save']" class="text-sm text-red-600 mt-1">
+                                    {{ form.errors['stats.hand_save'] }}
+                                </p>
+                            </FormCol>
+
+                            <FormCol>
+                                <InputLabel for="stats.punch_save" value="Dégagement poing" />
+                                <InputText
+                                    id="stats.punch_save"
+                                    type="number"
+                                    class="mt-1 w-full"
+                                    v-model="form.stats.punch_save"
+                                />
+                                <p v-if="form.errors['stats.punch_save']" class="text-sm text-red-600 mt-1">
+                                    {{ form.errors['stats.punch_save'] }}
+                                </p>
+                            </FormCol>
+                        </FormRaw>
+
+                        <!-- Dernière ligne : description sur 2 colonnes -->
+                        <FormRaw>
+                            <FormCol>
+                                <InputLabel for="description" value="Description" />
+                                <textarea
+                                    id="description"
+                                    v-model="form.description"
+                                    rows="3"
+                                    placeholder="Description du joueur (optionnel)"
+                                    class="mt-1 w-full rounded border border-gray-300 bg-stone-50 text-sm text-gray-900 leading-tight focus:outline-none focus:bg-white focus:border-purple-300"
+                                ></textarea>
+                                <p v-if="form.errors.description" class="text-sm text-red-600 mt-1">
+                                    {{ form.errors.description }}
+                                </p>
+                            </FormCol>
+
+                            <FormCol>
+                                <!-- Colonne vide pour garder le layout 2 colonnes -->
                             </FormCol>
                         </FormRaw>
 
@@ -197,7 +338,6 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 
 // Components
 import H2 from '@/Components/H2.vue';
-import FormContainer from '@/Components/FormContainer.vue';
 import FormRaw from '@/Components/FormRaw.vue';
 import FormCol from '@/Components/FormCol.vue';
 import InputLabel from '@/Components/InputLabel.vue';
@@ -223,9 +363,17 @@ const form = useForm({
     cost: '',
     stats: {
         attack: 0,
-        defender: 0,
+        defense: 0,
         speed: 0,
         stamina: 0,
+        shot: 0,
+        pass: 0,
+        dribble: 0,
+        block: 0,
+        intercept: 0,
+        tackle: 0,
+        hand_save: 0,
+        punch_save: 0,
     },
     description: '',
 });

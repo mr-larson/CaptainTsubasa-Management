@@ -3,7 +3,6 @@
 
     <AuthenticatedLayout>
         <template #header>
-            <H2>Players</H2>
         </template>
 
         <!-- SIDEBAR -->
@@ -178,6 +177,10 @@
                                 {{ form.errors.cost }}
                             </p>
                         </FormCol>
+
+                        <FormCol>
+                            <!-- colonne vide pour garder le layout 2 colonnes -->
+                        </FormCol>
                     </FormRaw>
 
                     <!-- Ligne 4 : stats attaque / défense -->
@@ -203,20 +206,20 @@
 
                         <FormCol>
                             <label
-                                for="stats.defender"
+                                for="stats.defense"
                                 class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4"
                             >
                                 Défense
                             </label>
                             <input
                                 type="number"
-                                id="stats.defender"
-                                v-model="form.stats.defender"
+                                id="stats.defense"
+                                v-model="form.stats.defense"
                                 placeholder="Défense"
                                 class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300"
                             >
-                            <p v-if="form.errors['stats.defender']" class="text-sm text-red-600 mt-1">
-                                {{ form.errors['stats.defender'] }}
+                            <p v-if="form.errors['stats.defense']" class="text-sm text-red-600 mt-1">
+                                {{ form.errors['stats.defense'] }}
                             </p>
                         </FormCol>
                     </FormRaw>
@@ -258,6 +261,187 @@
                             >
                             <p v-if="form.errors['stats.stamina']" class="text-sm text-red-600 mt-1">
                                 {{ form.errors['stats.stamina'] }}
+                            </p>
+                        </FormCol>
+                    </FormRaw>
+
+                    <!-- Ligne 6 : stats shot / pass -->
+                    <FormRaw>
+                        <FormCol>
+                            <label
+                                for="stats.shot"
+                                class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4"
+                            >
+                                Tir
+                            </label>
+                            <input
+                                type="number"
+                                id="stats.shot"
+                                v-model="form.stats.shot"
+                                placeholder="Tir"
+                                class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300"
+                            >
+                            <p v-if="form.errors['stats.shot']" class="text-sm text-red-600 mt-1">
+                                {{ form.errors['stats.shot'] }}
+                            </p>
+                        </FormCol>
+
+                        <FormCol>
+                            <label
+                                for="stats.pass"
+                                class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4"
+                            >
+                                Passe
+                            </label>
+                            <input
+                                type="number"
+                                id="stats.pass"
+                                v-model="form.stats.pass"
+                                placeholder="Passe"
+                                class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300"
+                            >
+                            <p v-if="form.errors['stats.pass']" class="text-sm text-red-600 mt-1">
+                                {{ form.errors['stats.pass'] }}
+                            </p>
+                        </FormCol>
+                    </FormRaw>
+
+                    <!-- Ligne 7 : stats dribble / block -->
+                    <FormRaw>
+                        <FormCol>
+                            <label
+                                for="stats.dribble"
+                                class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4"
+                            >
+                                Dribble
+                            </label>
+                            <input
+                                type="number"
+                                id="stats.dribble"
+                                v-model="form.stats.dribble"
+                                placeholder="Dribble"
+                                class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300"
+                            >
+                            <p v-if="form.errors['stats.dribble']" class="text-sm text-red-600 mt-1">
+                                {{ form.errors['stats.dribble'] }}
+                            </p>
+                        </FormCol>
+
+                        <FormCol>
+                            <label
+                                for="stats.block"
+                                class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4"
+                            >
+                                Block
+                            </label>
+                            <input
+                                type="number"
+                                id="stats.block"
+                                v-model="form.stats.block"
+                                placeholder="Block"
+                                class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300"
+                            >
+                            <p v-if="form.errors['stats.block']" class="text-sm text-red-600 mt-1">
+                                {{ form.errors['stats.block'] }}
+                            </p>
+                        </FormCol>
+                    </FormRaw>
+
+                    <!-- Ligne 8 : stats intercept / tackle -->
+                    <FormRaw>
+                        <FormCol>
+                            <label
+                                for="stats.intercept"
+                                class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4"
+                            >
+                                Interception
+                            </label>
+                            <input
+                                type="number"
+                                id="stats.intercept"
+                                v-model="form.stats.intercept"
+                                placeholder="Interception"
+                                class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300"
+                            >
+                            <p v-if="form.errors['stats.intercept']" class="text-sm text-red-600 mt-1">
+                                {{ form.errors['stats.intercept'] }}
+                            </p>
+                        </FormCol>
+
+                        <FormCol>
+                            <label
+                                for="stats.tackle"
+                                class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4"
+                            >
+                                Tacle
+                            </label>
+                            <input
+                                type="number"
+                                id="stats.tackle"
+                                v-model="form.stats.tackle"
+                                placeholder="Tacle"
+                                class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300"
+                            >
+                            <p v-if="form.errors['stats.tackle']" class="text-sm text-red-600 mt-1">
+                                {{ form.errors['stats.tackle'] }}
+                            </p>
+                        </FormCol>
+                    </FormRaw>
+
+                    <!-- Ligne 9 : stats hand_save / punch_save -->
+                    <FormRaw>
+                        <FormCol>
+                            <label
+                                for="stats.hand_save"
+                                class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4"
+                            >
+                                Arrêt main
+                            </label>
+                            <input
+                                type="number"
+                                id="stats.hand_save"
+                                v-model="form.stats.hand_save"
+                                placeholder="Arrêt main"
+                                class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300"
+                            >
+                            <p v-if="form.errors['stats.hand_save']" class="text-sm text-red-600 mt-1">
+                                {{ form.errors['stats.hand_save'] }}
+                            </p>
+                        </FormCol>
+
+                        <FormCol>
+                            <label
+                                for="stats.punch_save"
+                                class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4"
+                            >
+                                Dégagement poing
+                            </label>
+                            <input
+                                type="number"
+                                id="stats.punch_save"
+                                v-model="form.stats.punch_save"
+                                placeholder="Dégagement poing"
+                                class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300"
+                            >
+                            <p v-if="form.errors['stats.punch_save']" class="text-sm text-red-600 mt-1">
+                                {{ form.errors['stats.punch_save'] }}
+                            </p>
+                        </FormCol>
+                    </FormRaw>
+
+                    <!-- Dernière ligne : description (2 colonnes) -->
+                    <FormRaw>
+                        <FormCol>
+                            <InputLabel for="description" value="Description" />
+                            <textarea
+                                id="description"
+                                v-model="form.description"
+                                rows="3"
+                                placeholder="Description du joueur (optionnel)"
+                                class="mt-1 w-full rounded border border-gray-300 bg-stone-50 text-sm text-gray-900 leading-tight focus:outline-none focus:bg-white focus:border-purple-300"
+                            ></textarea>
+                            <p v-if="form.errors.description" class="text-sm text-red-600 mt-1">
+                                {{ form.errors.description }}
                             </p>
                         </FormCol>
                     </FormRaw>
@@ -315,7 +499,6 @@ const props = defineProps({
     },
 });
 
-
 const form = useForm({
     selectedPlayerId: null,
     id: null,
@@ -324,11 +507,20 @@ const form = useForm({
     age: '',
     position: '',
     cost: '',
+    description: '',
     stats: {
         speed: 0,
         attack: 0,
-        defender: 0,
+        defense: 0,
         stamina: 0,
+        shot: 0,
+        pass: 0,
+        dribble: 0,
+        block: 0,
+        intercept: 0,
+        tackle: 0,
+        hand_save: 0,
+        punch_save: 0,
     },
 });
 
@@ -337,8 +529,8 @@ const searchQuery = ref('');
 const filteredPlayers = computed(() => {
     if (!searchQuery.value) return props.players;
 
+    const q = searchQuery.value.toLowerCase();
     return props.players.filter((player) => {
-        const q = searchQuery.value.toLowerCase();
         return (
             player.firstname.toLowerCase().includes(q) ||
             player.lastname.toLowerCase().includes(q)
@@ -354,20 +546,25 @@ function selectPlayer(player) {
     form.age              = player.age ?? '';
     form.position         = player.position ?? '';
     form.cost             = player.cost ?? '';
+    form.description      = player.description ?? '';
 
     // stats peut être null en DB → on sécurise
-    const stats = player.stats || {
-        speed: 0,
-        attack: 0,
-        defender: 0,
-        stamina: 0,
-    };
+    const stats = player.stats || {};
 
     form.stats = {
-        speed: Number(stats.speed ?? 0),
-        attack: Number(stats.attack ?? 0),
-        defender: Number(stats.defender ?? 0),
-        stamina: Number(stats.stamina ?? 0),
+        speed:       Number(stats.speed ?? 0),
+        attack:      Number(stats.attack ?? 0),
+        defense:     Number(stats.defense ?? 0),
+        stamina:     Number(stats.stamina ?? 0),
+
+        shot:        Number(stats.shot ?? 0),
+        pass:        Number(stats.pass ?? 0),
+        dribble:     Number(stats.dribble ?? 0),
+        block:       Number(stats.block ?? 0),
+        intercept:   Number(stats.intercept ?? 0),
+        tackle:      Number(stats.tackle ?? 0),
+        hand_save:   Number(stats.hand_save ?? 0),
+        punch_save:  Number(stats.punch_save ?? 0),
     };
 
     form.clearErrors();
@@ -376,7 +573,6 @@ function selectPlayer(player) {
 function submit() {
     if (!form.id) return;
 
-    // Ton route.php utilise POST pour update : Route::post('/players/{player}', 'update')
     form.post(route('players.update', form.id), {
         preserveScroll: true,
     });

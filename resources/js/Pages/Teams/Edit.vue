@@ -168,6 +168,20 @@
                                 {{ form.errors.draws }}
                             </p>
                         </FormCol>
+
+                        <FormCol>
+                            <InputLabel for="description" value="Description" />
+                            <InputText
+                                type="text"
+                                id="description"
+                                v-model="form.description"
+                                placeholder="Description"
+                                class="mt-1 w-full"
+                            />
+                            <p v-if="form.errors.description" class="text-sm text-red-600 mt-1">
+                                {{ form.errors.description }}
+                            </p>
+                        </FormCol>
                     </FormRaw>
 
                     <ButtonGroup>
