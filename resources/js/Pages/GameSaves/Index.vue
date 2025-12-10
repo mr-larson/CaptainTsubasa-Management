@@ -18,7 +18,7 @@
                 <!-- Visuel gauche -->
                 <div
                     class="hidden md:block basis-1/3 p-4 bg-contain bg-center bg-no-repeat"
-                    style="background-image: url('/images/wakabayashi.webp')"
+                    style="background-image: url('/images/Jun_Misugi.webp')"
                 ></div>
 
                 <!-- Carte liste de sauvegardes -->

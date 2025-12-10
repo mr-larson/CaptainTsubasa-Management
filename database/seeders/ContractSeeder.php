@@ -15,92 +15,273 @@ class ContractSeeder extends Seeder
      */
     public function run(): void
     {
-        // On nettoie la table des contrats
+        // On nettoie les contrats avant de reseed
         Schema::disableForeignKeyConstraints();
         DB::table('contracts')->truncate();
         Schema::enableForeignKeyConstraints();
 
-        // Define teams and their corresponding players (par nom de famille)
+        // Map des équipes par nom -> id
+        $teamsByName = Team::pluck('id', 'name');
+
+        // Map des joueurs par "Prénom Nom" -> Player
+        $playersByFullName = Player::all()->keyBy(function (Player $player) {
+            return "{$player->firstname} {$player->lastname}";
+        });
+
+        // Define teams and their corresponding players (par nom complet)
         $teamsPlayers = [
-            'Nankatsu' => ['Morisaki', 'Tsuboi', 'Ishizaki', 'Nakazato', 'Nagano', 'Okawa', 'Sakurai', 'Ozora', 'Misaki', 'Oda', 'Iwami', 'Minowa', 'Murashige'],
+            'Nankatsu' => [
+                'Yuzo Morisaki',
+                'Akira Tsuboi',
+                'Ryo Ishizaki',
+                'Masato Nakazato',
+                'Hiroshi Nagano',
+                'Manabu Okawa',
+                'Susumu Sakurai',
+                'Tsubasa Ozora',
+                'Taro Misaki',
+                'Tsuyoshi Oda',
+                'Kenichi Iwami',
+                'Shota Minowa',
+                'Yutaka Murashige',
+            ],
 
-            'Toho' => ['Wakashimazu', 'Furuta', 'Kawabe', 'Takashima', 'Imai', 'Koike', 'Matsuki', 'Sawada', 'Shimano', 'Hyuga', 'Sorimachi'],
+            'Shutetsu' => [
+                'Genzo Wakabayashi',
+                'Shingo Takasugi',
+                'Kenta Shimada',
+                'Kazuma Matsumo',
+                'Kohei Nakamoto',
+                'Jun Kurata',
+                'Takumi Osaki',
+                'Kaito Inamura',
+                'Mamoru Izawa',
+                'Teppei Kisugi',
+                'Hajime Taki',
+            ],
 
-            'Hanawa' => ['Yoshikura', 'Koda', 'Murasawa', 'Nakamura', 'Daimaru', 'Shiota', 'Aimoto', 'Tamai', 'Tachibana', 'Ono'],
+            'Toho' => [
+                'Ken Wakashimazu',
+                'Kiyoshi Furuta',
+                'Katsuji Kawabe',
+                'Tsuneo Takashima',
+                'Hiroshi Imai',
+                'Hideto Koike',
+                'Yutaka Matsuki',
+                'Takeshi Sawada',
+                'Tadashi Shimano',
+                'Kojiro Hyuga',
+                'Kazuki Sorimachi',
+            ],
 
-            'Furano' => ['Kato', 'Honda', 'Kondo', 'Kamata', 'Matsuda', 'Kaneda', 'Matsuyama', 'Wakamatsu', 'Nakagawa', 'Oda', 'Yamamuro'],
+            'Furano' => [
+                'Masanori Kato',
+                'Susumu Honda',
+                'Tsuyoshi Kondo',
+                'Kentaro Kamata',
+                'Hisashi Matsuda',
+                'Haruo Kaneda',
+                'Hikaru Matsuyama',
+                'Koichi Wakamatsu',
+                'Seiji Nakagawa',
+                'Kazumasa Oda',
+                'Shuichi Yamamuro',
+            ],
 
-            'Otomo' => ['Ichijo', 'Yoshikawa', 'Nishio', 'Nakayama', 'Kawada', 'Hiraoka', 'Kishida', 'Urabe', 'Tadami', 'Nakao', 'Nitta'],
+            'Musashi' => [
+                'Tsutomu Moriyama',
+                'Osamu Kido',
+                'Hiroshi Mukai',
+                'Ryoichi Sano',
+                'Shinichi Suzuki',
+                'Kensaku Yoshida',
+                'Shota Inoue',
+                'Jun Misugi',
+                'Akira Ichinose',
+                'Minoru Honma',
+                'Shinji Sanada',
+            ],
 
-            'Azumaichi' => ['Tsuji', 'Soda', 'Yamada', 'Sasaki', 'Hayashi', 'Yoshida', 'Kuramochi', 'Nakai', 'Onodera', 'Ide', 'Mihashi'],
+            'Hanawa' => [
+                'Kimio Yoshikura',
+                'Masaru Koda',
+                'Yusuaki Murasawa',
+                'Norio Nakamura',
+                'Yuichiro Daimaru',
+                'Takayuki Shiota',
+                'Nobuo Aimoto',
+                'Hiroshi Tamai',
+                'Masao Tachibana',
+                'Kazuo Tachibana',
+                'Yoshiharu Ono',
+            ],
 
-            'Musashi' => ['Moriyama', 'Kido', 'Mukai', 'Sano', 'Suzuki', 'Yoshida', 'Inoue', 'Misugi', 'Ichinose', 'Honma', 'Sanada'],
+            'Azumaichi' => [
+                'Ryota Tsuji',
+                'Makoto Soda',
+                'Junji Yamada',
+                'Daigo Sasaki',
+                'Tatsuya Hayashi',
+                'Koji Yoshida',
+                'Yohei Kuramochi',
+                'Toru Nakai',
+                'Kazuyasu Onodera',
+                'Mitsuru Ide',
+                'Shohei Mihashi',
+            ],
 
-            'Shutetsu' => ['Wakabayashi', 'Takasugi', 'Shimada', 'Matsumo', 'Nakamoto', 'Kurata', 'Osaki', 'Inamura', 'Izawa', 'Kisugi', 'Taki'],
+            'Hirado' => [
+                'Akira Hatakeyama',
+                'Kazuaki Soda',
+                'Hiroshi Jito',
+                'Toshio Akizawa',
+                'Shinji Noda',
+                'Tsutomu Nagaoka',
+                'Koji Nakajo',
+                'Shinji Morisue',
+                'Kazuo Takeno',
+                'Katsumi Himeji',
+                'Mitsuru Sano',
+            ],
 
-            'Meiwa' => ['Murasawa', 'Kawagoe', 'Ishii', 'Takagi', 'Nagano', 'Sakamoto', 'Narita', 'Hori', 'Enomoto', 'Sawaki', 'Suenaga'],
+            'Otomo' => [
+                'Isamu Ichijo',
+                'Masaki Yoshikawa',
+                'Koji Nishio',
+                'Masao Nakayama',
+                'Kozo Kawada',
+                'Toru Hiraoka',
+                'Takeshi Kishida',
+                'Hanji Urabe',
+                'Shingo Tadami',
+                'Akio Nakao',
+                'Shun Nitta',
+            ],
 
-            'Nakahara' => ['Kawakami', 'Masumoto', 'Haranashi', 'Fujita', 'Toda', 'Nagatani', 'Harukawa', 'Itao', 'Kurita', 'Asada', 'Aoi'],
+            'Meiwa' => [
+                'Tetsuji Murasawa',
+                'Keiji Kawagoe',
+                'Hiroshi Ishii',
+                'Toshiyuki Takagi',
+                'Motoharu Nagano',
+                'Shinishi Sakamoto',
+                'Kuniaki Narita',
+                'Hiromichi Hori',
+                'Kazushige Enomoto',
+                'Noboru Sawaki',
+                'Yuichi Suenaga',
+            ],
 
-            'Shimizu' => ['Kawakami', 'Kudo', 'Kanda', 'Ibaraki', 'Suzuki', 'Takada', 'Nakao', 'Iimura', 'Murakami', 'Kato', 'Obayashi'],
+            'Nakahara' => [
+                'Goro Kawakami',
+                'Yuichi Masumoto',
+                'Keisuke Haranashi',
+                'Takamasa Fujita',
+                'Jin Toda',
+                'Ken Nagatani',
+                'Shunta Harukawa',
+                'Susumu Itao',
+                'Goro Kurita',
+                'Takeshi Asada',
+                'Shingo Aoi',
+            ],
 
-            'Shimada' => ['Nagai', 'Ito', 'Fujisawa', 'Takahashi', 'Kimura', 'Ishikawa', 'Hashimoto', 'Nagasaki', 'Nakamura', 'Jinbo', 'Wesugi'],
+            'Naniwa' => [
+                'Taichi Nakanishi',
+                'Hiroshi Tsusaki',
+                'Kazuya Kosaka',
+                'Shinji Yoshimoto',
+                'Daisuke Tennoji',
+                'Masato Dojima',
+                'Ryo Maeda',
+                'Kenji Shirai',
+                'Yuta Ogami',
+                'Satoshi Takayanagi',
+                'Tetsuya Marui',
+            ],
 
-            'Hirado' => ['Hatakeyama', 'Soda', 'Jito', 'Akizawa', 'Noda', 'Nagaoka', 'Nakajo', 'Morisue', 'Takeno', 'Himeji', 'Sano'],
+            'Minawi' => [
+                'Hajime Asakura',
+                'Daichi Azuma',
+                'Shinji Takahama',
+                'Ryu Kawanoe',
+                'Takashi Iyo',
+                'Koji Tosa',
+                'Hiroto Shintani',
+                'Tetsuo Ishida',
+                'Masaru Hirayama',
+                'Kazuki Seto',
+                'Kazuto Takei',
+            ],
 
-            'Naniwa' => ['Nakanishi', 'Tsusaki', 'Kosaka', 'Yoshimoto', 'Tennoji', 'Dojima', 'Maeda', 'Shirai', 'Ogami', 'Takayanagi', 'Marui'],
+            'Shimizu' => [
+                'Morimichi Kawakami',
+                'Takeshi Kudo',
+                'Ichiro Kanda',
+                'Yuto Ibaraki',
+                'Hiroshi Suzuki',
+                'Daisuke Takada',
+                'Ryota Nakao',
+                'Shinji Iimura',
+                'Koji Murakami',
+                'Kazumasa Kato',
+                'Takashi Obayashi',
+            ],
 
-            'Minawi' => ['Asakura', 'Azuma', 'Takahama', 'Kawanoe', 'Iyo', 'Tosa', 'Shintani', 'Ishida', 'Hirayama', 'Seto', 'Takei'],
+            'Shimada' => [
+                'Etsuo Nagai',
+                'Ikushi Ito',
+                'Koichi Fujisawa',
+                'Nemto Takahashi',
+                'Jo Kimura',
+                'Koji Ishikawa',
+                'Takushi Hashimoto',
+                'Junichi Nagasaki',
+                'Light Nakamura',
+                'Masayuki Jinbo',
+                'Naoki Wesugi',
+            ],
         ];
 
-        // Pour éviter d’assigner deux fois le même joueur si un nom existe en double
-        $alreadyAssignedPlayerIds = [];
+        $contracts = [];
 
-        foreach ($teamsPlayers as $teamName => $playerLastnames) {
-            /** @var \App\Models\Team|null $team */
-            $team = Team::where('name', $teamName)->first();
+        foreach ($teamsPlayers as $teamName => $playerNames) {
+            $teamId = $teamsByName[$teamName] ?? null;
 
-            if (! $team) {
-                // Option douce : on skippe si l'équipe n'existe pas encore
-                // tu peux remplacer par un throw si tu préfères que ça pète en dev
-                // throw new \Exception("Team '{$teamName}' not found");
+            if (! $teamId) {
+                // Optionnel: log si une équipe n'existe pas
+                dump("Team not found for name: {$teamName}");
                 continue;
             }
 
-            foreach ($playerLastnames as $lastname) {
-                /** @var \App\Models\Player|null $player */
-                $playerQuery = Player::where('lastname', $lastname);
-
-                // Si tu veux être ultra strict, tu peux ajouter des conditions
-                // par exemple sur l'âge ou sur le coût minimum/maximum.
-
-                $player = $playerQuery->first();
+            foreach ($playerNames as $fullName) {
+                /** @var Player|null $player */
+                $player = $playersByFullName->get($fullName);
 
                 if (! $player) {
-                    // Même chose : tu peux logger ou throw ici si un nom ne matche rien
-                    // logger("Player with lastname '{$lastname}' not found for team '{$teamName}'");
+                    // Optionnel: log si un joueur n'existe pas
+                    dump("Player not found for full name: {$fullName}");
                     continue;
                 }
 
-                // éviter les doublons si un même joueur pourrait être ciblé deux fois
-                if (in_array($player->id, $alreadyAssignedPlayerIds, true)) {
-                    continue;
-                }
-
-                $alreadyAssignedPlayerIds[] = $player->id;
-
-                DB::table('contracts')->insert([
-                    'player_id' => $player->id,
-                    'team_id'   => $team->id,
-                    'salary'    => $player->cost, // Utiliser le coût du joueur comme salaire
+                $contracts[] = [
+                    'player_id'  => $player->id,
+                    'team_id'    => $teamId,
+                    'salary'     => $player->cost,
                     'start_date' => now()
                         ->subMonths(rand(1, 12))
                         ->subDays(rand(1, 30)),
                     'end_date'   => now()
                         ->addMonths(rand(1, 12))
                         ->addDays(rand(1, 30)),
-                ]);
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
             }
+        }
+
+        if (! empty($contracts)) {
+            DB::table('contracts')->insert($contracts);
         }
     }
 }

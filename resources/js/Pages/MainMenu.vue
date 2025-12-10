@@ -58,7 +58,7 @@ import H1 from '@/Components/H1.vue';
                 </div>
 
                 <div class="h-32 p-2 flex items-end justify-center text-lg font-bold text-slate-400">
-                    Merci d'utiliser notre application
+
                 </div>
             </div>
         </div>

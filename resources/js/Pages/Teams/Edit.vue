@@ -3,7 +3,6 @@
 
     <AuthenticatedLayout>
         <template #header>
-            <H2>Teams</H2>
         </template>
 
         <!-- SIDEBAR -->
@@ -171,13 +170,13 @@
 
                         <FormCol>
                             <InputLabel for="description" value="Description" />
-                            <InputText
-                                type="text"
+                            <textarea
                                 id="description"
                                 v-model="form.description"
-                                placeholder="Description"
-                                class="mt-1 w-full"
-                            />
+                                rows="3"
+                                placeholder="Description du joueur (optionnel)"
+                                class="mt-1 w-full rounded border border-gray-300 bg-stone-50 text-sm text-gray-900 leading-tight focus:outline-none focus:bg-white focus:border-purple-300"
+                            ></textarea>
                             <p v-if="form.errors.description" class="text-sm text-red-600 mt-1">
                                 {{ form.errors.description }}
                             </p>
@@ -246,6 +245,7 @@ const form = useForm({
     selectedTeamId: null,
     id: null,
     name: '',
+    description: '',
     budget: '',
     wins: 0,
     draws: 0,
@@ -265,6 +265,7 @@ function selectTeam(team) {
     form.selectedTeamId = team.id;
     form.id             = team.id;
     form.name           = team.name;
+    form.description    = team.description ?? '';
     form.budget         = team.budget ?? 0;
     form.wins           = team.wins ?? 0;
     form.draws          = team.draws ?? 0;

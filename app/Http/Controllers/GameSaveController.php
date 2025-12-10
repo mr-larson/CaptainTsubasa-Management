@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\GameSaveRequest;
 use App\Models\GameSave;
 use App\Models\Team;
+use App\Models\Player;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -92,15 +93,65 @@ class GameSaveController extends Controller
     {
         $this->authorizeSave($request, $gameSave);
 
-        // On charge l'équipe + contrats + joueurs
+        // Équipe contrôlée + contrats + joueurs
         $gameSave->load([
             'team.contracts.player',
         ]);
 
+        // Toutes les équipes avec leurs contrats + joueurs (pour autres équipes + classement)
+        $teams = Team::with(['contracts.player'])
+            ->orderBy('name')
+            ->get();
+
+        // 👉 Joueurs libres = joueurs sans contrat dans la DB de base
+        $freePlayers = Player::whereDoesntHave('contracts')
+            ->orderBy('lastname')
+            ->orderBy('firstname')
+            ->get();
+
         return Inertia::render('GameSaves/Play', [
-            'gameSave' => $gameSave,
+            'gameSave'    => $gameSave,
+            'teams'       => $teams,
+            'freePlayers' => $freePlayers,
         ]);
     }
+
+    public function signFreeAgent(Request $request, GameSave $gameSave, Player $player): RedirectResponse
+    {
+        $this->authorizeSave($request, $gameSave);
+
+        $data = $request->validate([
+            'team_id' => ['required', 'integer', 'exists:teams,id'],
+            'salary'  => ['nullable', 'integer', 'min:0'],
+        ]);
+
+        // On récupère l'état actuel ou un tableau vide
+        $state = $gameSave->state ?? [];
+
+        // On garantit la clé 'free_agent_signings'
+        if (! isset($state['free_agent_signings'])) {
+            $state['free_agent_signings'] = [];
+        }
+
+        // On évite les doublons : si le joueur est déjà signé pour cette gameSave, on ne le rajoute pas
+        foreach ($state['free_agent_signings'] as $signing) {
+            if ($signing['player_id'] === $player->id) {
+                return back()->with('info', 'Ce joueur est déjà sous contrat dans cette partie.');
+            }
+        }
+
+        $state['free_agent_signings'][] = [
+            'player_id' => $player->id,
+            'team_id'   => $data['team_id'],
+            'salary'    => $data['salary'] ?? null,
+        ];
+
+        $gameSave->state = $state;
+        $gameSave->save();
+
+        return back()->with('success', 'Contrat proposé au joueur libre.');
+    }
+
 
     /**
      * Écran de match pour une session.
