@@ -6,6 +6,8 @@ use App\Http\Requests\GameSaveRequest;
 use App\Models\GameSave;
 use App\Models\Team;
 use App\Models\Player;
+use App\Models\GameMatch;
+use Illuminate\Support\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -103,7 +105,16 @@ class GameSaveController extends Controller
             ->orderBy('name')
             ->get();
 
-        // 👉 Joueurs libres = joueurs sans contrat dans la DB de base
+        // Générer un calendrier si pas encore existant
+        $this->ensureCalendar($gameSave, $teams);
+
+        // Charger les matchs de cette game save
+        $matches = GameMatch::with(['homeTeam', 'awayTeam'])
+            ->where('game_save_id', $gameSave->id)
+            ->orderBy('week')
+            ->get();
+
+        // Joueurs libres = joueurs sans contrat dans la DB de base
         $freePlayers = Player::whereDoesntHave('contracts')
             ->orderBy('lastname')
             ->orderBy('firstname')
@@ -112,6 +123,7 @@ class GameSaveController extends Controller
         return Inertia::render('GameSaves/Play', [
             'gameSave'    => $gameSave,
             'teams'       => $teams,
+            'matches'     => $matches,
             'freePlayers' => $freePlayers,
         ]);
     }
@@ -152,6 +164,74 @@ class GameSaveController extends Controller
         return back()->with('success', 'Contrat proposé au joueur libre.');
     }
 
+    private function ensureCalendar(GameSave $gameSave, Collection $teams): void
+    {
+        // S'il y a déjà un calendrier pour cette partie, on ne régénère pas
+        if ($gameSave->matches()->exists()) {
+            return;
+        }
+
+        $teamIds = $teams->pluck('id')->values()->all();
+        $teamCount = count($teamIds);
+
+        // Il faut au moins 2 équipes
+        if ($teamCount < 2) {
+            return;
+        }
+
+        // Si nombre impair → on ajoute un "ghost" (bye)
+        $hasGhost = false;
+        if ($teamCount % 2 === 1) {
+            $teamIds[] = null;
+            $teamCount++;
+            $hasGhost = true;
+        }
+
+        $rounds = $teamCount - 1;     // nombre de journées dans la phase aller
+        $half   = $teamCount / 2;     // nombre de matchs par journée
+        $ids    = $teamIds;
+
+        // Phase aller + on génère en même temps la phase retour
+        for ($round = 0; $round < $rounds; $round++) {
+            $weekAller  = $round + 1;          // 1..(n-1)
+            $weekRetour = $round + 1 + $rounds; // (n)..(2n-2)
+
+            for ($i = 0; $i < $half; $i++) {
+                $home = $ids[$i];
+                $away = $ids[$teamCount - 1 - $i];
+
+                // Si ghost (bye), on ignore le match
+                if ($home === null || $away === null) {
+                    continue;
+                }
+
+                // Match aller
+                GameMatch::create([
+                    'game_save_id' => $gameSave->id,
+                    'week'         => $weekAller,
+                    'home_team_id' => $home,
+                    'away_team_id' => $away,
+                    'status'       => 'scheduled',
+                ]);
+
+                // Match retour (domicile inversé)
+                GameMatch::create([
+                    'game_save_id' => $gameSave->id,
+                    'week'         => $weekRetour,
+                    'home_team_id' => $away,
+                    'away_team_id' => $home,
+                    'status'       => 'scheduled',
+                ]);
+            }
+
+            // Rotation des équipes (méthode du cercle)
+            // On garde le premier fixe, on fait tourner les autres
+            $fixed = array_shift($ids);          // premier
+            $last  = array_pop($ids);            // dernier
+            array_unshift($ids, $fixed);         // on remet le fixe au début
+            array_splice($ids, 1, 0, [$last]);   // on insère l'ancien dernier en 2e position
+        }
+    }
 
     /**
      * Écran de match pour une session.

@@ -5,19 +5,56 @@ import { ref, computed } from 'vue';
 import H2 from '@/Components/H2.vue';
 
 const props = defineProps({
-    gameSave: {
-        type: Object,
-        required: true,
-    },
-    teams: {
-        type: Array,
-        required: true,
-    },
-    freePlayers: {
-        type: Array,
-        required: true,
-    },
+    gameSave: { type: Object, required: true },
+    teams: { type: Array, required: true },
+    freePlayers: { type: Array, required: true },
+    matches: { type: Array, required: true },
 });
+
+const myMatches = computed(() => {
+    if (!team.value) return [];
+
+    return props.matches.filter(
+        (m) => m.home_team_id === team.value.id || m.away_team_id === team.value.id
+    );
+});
+
+// Prochain match à jouer pour mon équipe
+const nextMatch = computed(() => {
+    if (!team.value || !myMatches.value.length) return null;
+
+    const currentWeek = week.value ?? 1;
+
+    const candidates = myMatches.value
+        .filter(m => m.status === 'scheduled' && m.week >= currentWeek)
+        .sort((a, b) => a.week - b.week);
+
+    return candidates[0] ?? null;
+});
+
+// Infos pratiques pour l'affichage (adversaire + domicile / extérieur)
+const nextMatchInfo = computed(() => {
+    if (!nextMatch.value || !team.value) return null;
+
+    const isHome = nextMatch.value.home_team_id === team.value.id;
+    const opponent = isHome ? nextMatch.value.away_team : nextMatch.value.home_team;
+
+    return {
+        isHome,
+        opponentName: opponent?.name ?? 'Adversaire inconnu',
+        week: nextMatch.value.week,
+    };
+});
+
+const matchLabel = (match) => {
+    if (!team.value) return '';
+
+    const isHome = match.home_team_id === team.value.id;
+    const opponent = isHome ? match.away_team : match.home_team;
+
+    return `${isHome ? 'Domicile' : 'Extérieur'} vs ${opponent?.name ?? '???'}`;
+};
+
 
 // Saison / semaine
 const season = ref(props.gameSave.season || 1);
@@ -266,7 +303,7 @@ const playNextMatch = () => {
                                 :class="[
                                     'whitespace-nowrap py-2 px-4 text-sm font-medium border-b-2 rounded-t-md',
                                     activeTab === tab.key
-                                        ? 'border-emerald-500 text-slate-900 bg-slate-50'
+                                        ? 'border-teal-500 text-slate-900 bg-slate-50'
                                         : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
                                 ]"
                             >
@@ -310,51 +347,51 @@ const playNextMatch = () => {
                             class="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1"
                         >
                             <!-- Prochain match -->
-                            <div
-                                class="border border-slate-200 rounded-lg p-4 bg-slate-50"
-                            >
-                                <h3
-                                    class="text-lg font-semibold text-slate-700 mb-2"
-                                >
+                            <div class="border border-slate-200 rounded-lg p-4 bg-slate-50">
+                                <h3 class="text-lg font-semibold text-slate-700 mb-2">
                                     Prochain match
                                 </h3>
-                                <p class="text-sm text-slate-600 mb-2">
-                                    Le calendrier de la saison sera géré ici
-                                    (MVP futur).
-                                </p>
-                                <ul class="text-sm text-slate-700 space-y-1">
-                                    <li>
-                                        <span class="font-semibold">
-                                            Adversaire :
-                                        </span>
-                                        <span class="text-slate-500">
-                                            Non défini
-                                        </span>
-                                    </li>
-                                    <li>
-                                        <span class="font-semibold">Lieu :</span>
-                                        <span class="text-slate-500">
-                                            À venir
-                                        </span>
-                                    </li>
-                                    <li>
-                                        <span class="font-semibold">
-                                            Contexte :
-                                        </span>
-                                        <span class="text-slate-500">
-                                            Match amical / J1
-                                        </span>
-                                    </li>
-                                </ul>
 
-                                <div class="mt-4 flex justify-center">
-                                    <button
-                                        type="button"
-                                        class="w-60 bg-emerald-300 hover:bg-emerald-400 text-center font-semibold py-1 px-5 border-2 border-emerald-500 rounded-full drop-shadow-md mb-2"
-                                        @click="playNextMatch"
-                                    >
-                                        Jouer le prochain match
-                                    </button>
+                                <!-- Si un match est planifié -->
+                                <div v-if="nextMatch && nextMatchInfo" class="text-sm text-slate-700">
+                                    <ul class="space-y-1">
+                                        <li>
+                                            <span class="font-semibold">Semaine :</span>
+                                            {{ nextMatchInfo.week }}
+                                        </li>
+                                        <li>
+                                            <span class="font-semibold">Adversaire :</span>
+                                            {{ nextMatchInfo.opponentName }}
+                                        </li>
+                                        <li>
+                                            <span class="font-semibold">Lieu :</span>
+                                            {{ nextMatchInfo.isHome ? 'Domicile' : 'Extérieur' }}
+                                        </li>
+                                        <li>
+                                            <span class="font-semibold">Contexte :</span>
+                                            Saison {{ season }} — Championnat
+                                        </li>
+                                    </ul>
+
+                                    <div class="mt-4 flex justify-center">
+                                        <button
+                                            type="button"
+                                            class="w-60 bg-emerald-300 hover:bg-emerald-400 text-center font-semibold py-1 px-5 border-2 border-emerald-500 rounded-full drop-shadow-md mb-2"
+                                            @click="playNextMatch"
+                                        >
+                                            Jouer le prochain match
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Si aucun match trouvé (sécurité / debug) -->
+                                <div v-else class="text-sm text-slate-600">
+                                    <p class="mb-2">
+                                        Aucun match de championnat planifié pour le moment.
+                                    </p>
+                                    <p class="text-xs text-slate-500">
+                                        Vérifie que le calendrier a bien été généré pour cette sauvegarde.
+                                    </p>
                                 </div>
                             </div>
 
@@ -472,16 +509,6 @@ const playNextMatch = () => {
                             Mon équipe
                         </h3>
 
-                        <!-- Formation -->
-                        <div
-                            class="border border-slate-200 rounded-lg p-4 bg-slate-50 mb-2"
-                        >
-                            <p class="text-sm text-slate-600 mb-2">
-                                Ici s’affichera la formation (terrain + postes +
-                                drag & drop).
-                            </p>
-                        </div>
-
                         <!-- Joueurs -->
                         <div
                             class="border border-slate-200 rounded-lg p-4 bg-slate-50 flex-1"
@@ -521,7 +548,7 @@ const playNextMatch = () => {
                                             <th class="py-1 pr-2 text-right">Main</th>
                                             <th class="py-1 pr-2 text-right">Poings</th>
 
-                                            <th class="py-1 pr-2 text-right">Coût / match</th>
+                                            <th class="py-1 pr-2 text-right">Coût</th>
                                         </tr>
                                         </thead>
                                         <tbody>
@@ -930,15 +957,71 @@ const playNextMatch = () => {
                     <!-- ============================== -->
                     <div
                         v-else-if="activeTab === 'calendar'"
-                        class="flex-1"
+                        class="flex-1 border border-slate-200 rounded-lg bg-slate-50 p-4"
                     >
                         <h3 class="text-lg font-semibold text-slate-700 mb-2">
-                            Calendrier
+                            Calendrier de la saison
                         </h3>
-                        <p class="text-sm text-slate-600">
-                            Affichage du calendrier de la saison (à venir).
+
+                        <p class="text-xs text-slate-500 mb-3">
+                            Un match aller et un match retour contre chaque équipe de la ligue.
+                        </p>
+
+                        <div v-if="myMatches.length" class="max-h-96 overflow-y-auto">
+                            <table class="w-full text-sm text-left">
+                                <thead class="text-xs uppercase text-slate-500 border-b">
+                                <tr>
+                                    <th class="py-1 pr-2 text-right">Semaine</th>
+                                    <th class="py-1 pr-2">Adversaire</th>
+                                    <th class="py-1 pr-2">Lieu</th>
+                                    <th class="py-1 pr-2 text-right">Statut</th>
+                                    <th class="py-1 pr-2 text-right">Score</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr
+                                    v-for="match in myMatches"
+                                    :key="match.id"
+                                    class="border-b last:border-b-0"
+                                >
+                                    <td class="py-1 pr-2 text-right">
+                                        {{ match.week }}
+                                    </td>
+
+                                    <td class="py-1 pr-2">
+                                        {{
+                                            match.home_team_id === team.id
+                                                ? match.away_team?.name
+                                                : match.home_team?.name
+                                        }}
+                                    </td>
+
+                                    <td class="py-1 pr-2">
+                                        {{ match.home_team_id === team.id ? 'Domicile' : 'Extérieur' }}
+                                    </td>
+
+                                    <td class="py-1 pr-2 text-right">
+                                        <span v-if="match.status === 'scheduled'">À jouer</span>
+                                        <span v-else-if="match.status === 'played'">Joué</span>
+                                        <span v-else>Annulé</span>
+                                    </td>
+
+                                    <td class="py-1 pr-2 text-right">
+                        <span v-if="match.status === 'played'">
+                            {{ match.home_score }} - {{ match.away_score }}
+                        </span>
+                                        <span v-else class="text-slate-400">-</span>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <p v-else class="text-sm text-slate-500">
+                            Aucun match planifié pour le moment.
                         </p>
                     </div>
+
 
                     <!-- ============================== -->
                     <!--          CLASSEMENT           -->

@@ -32,4 +32,10 @@ class GameSave extends Model
     {
         return $this->belongsTo(Team::class);
     }
+
+    public function matches()
+    {
+        return $this->hasMany(GameMatch::class);
+    }
+
 }
