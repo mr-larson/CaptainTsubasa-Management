@@ -91,9 +91,10 @@
                 Partie : <strong>{{ label || 'Sans nom' }}</strong> — Période : <strong>Collège</strong>
             </p>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <!-- Carte détails équipe -->
-                <div class="border border-slate-300 rounded-lg bg-white p-4 min-h-[260px]">
+            <!-- 1/4 - 3/4 sur desktop -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                <!-- Carte détails équipe (1/4) -->
+                <div class="border border-slate-300 rounded-lg bg-white p-4 min-h-[260px] lg:col-span-1">
                     <h2 class="text-xl font-semibold text-slate-700 mb-3">
                         Détails de l'équipe
                     </h2>
@@ -108,11 +109,17 @@
                         </p>
                         <p class="text-slate-700">
                             <span class="font-semibold">Bilan :</span>
-                            {{ selectedTeam.wins ?? 0 }} V / {{ selectedTeam.draws ?? 0 }} N / {{ selectedTeam.losses ?? 0 }} D
+                            {{ selectedTeam.wins ?? 0 }} V /
+                            {{ selectedTeam.draws ?? 0 }} N /
+                            {{ selectedTeam.losses ?? 0 }} D
                         </p>
                         <p class="text-slate-700">
                             <span class="font-semibold">Joueurs sous contrat :</span>
                             {{ roster.length }}
+                        </p>
+                        <p class="text-slate-700">
+                            <span class="font-semibold">Description :</span>
+                            {{ selectedTeam.description ?? '-'  }}
                         </p>
                     </div>
                     <div v-else class="text-slate-500">
@@ -120,40 +127,108 @@
                     </div>
                 </div>
 
-                <!-- Carte joueurs sous contrat -->
-                <div class="border border-slate-300 rounded-lg bg-white p-4 min-h-[360px]">
+                <!-- Carte joueurs sous contrat (3/4) -->
+                <div class="border border-slate-300 rounded-lg bg-white p-4 min-h-[360px] lg:col-span-3">
                     <h2 class="text-xl font-semibold text-slate-700 mb-3">
                         Joueurs sous contrat
                     </h2>
 
                     <div v-if="selectedTeam && roster.length > 0">
-                        <div class="max-h-64 overflow-y-auto">
-                            <table class="w-full text-sm text-left">
-                                <thead class="text-xs uppercase text-slate-500 border-b">
-                                <tr>
-                                    <th class="py-1 pr-2">Joueur</th>
-                                    <th class="py-1 pr-2">Poste</th>
-                                    <th class="py-1 pr-2">Coût</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr
-                                    v-for="player in roster"
-                                    :key="player.id"
-                                    class="border-b last:border-b-0"
-                                >
-                                    <td class="py-1 pr-2">
-                                        {{ player.firstname }} {{ player.lastname }}
-                                    </td>
-                                    <td class="py-1 pr-2">
-                                        {{ player.position }}
-                                    </td>
-                                    <td class="py-1 pr-2">
-                                        {{ player.cost ?? '-' }}
-                                    </td>
-                                </tr>
-                                </tbody>
-                            </table>
+                        <div class="max-h-72 overflow-y-auto">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm text-left min-w-max">
+                                    <thead class="text-xs uppercase text-slate-500 border-b">
+                                    <tr>
+                                        <th class="py-1 pr-2">Joueur</th>
+                                        <th class="py-1 pr-2">Poste</th>
+
+                                        <!-- Core -->
+                                        <th class="py-1 pr-2 text-right">Vit</th>
+                                        <th class="py-1 pr-2 text-right">End</th>
+                                        <th class="py-1 pr-2 text-right">Att</th>
+                                        <th class="py-1 pr-2 text-right">Def</th>
+
+                                        <!-- Offensif -->
+                                        <th class="py-1 pr-2 text-right">Tir</th>
+                                        <th class="py-1 pr-2 text-right">Passe</th>
+                                        <th class="py-1 pr-2 text-right">Dribble</th>
+
+                                        <!-- Défensif spé -->
+                                        <th class="py-1 pr-2 text-right">Block</th>
+                                        <th class="py-1 pr-2 text-right">Interc.</th>
+                                        <th class="py-1 pr-2 text-right">Tacle</th>
+
+                                        <!-- Gardien -->
+                                        <th class="py-1 pr-2 text-right">Main</th>
+                                        <th class="py-1 pr-2 text-right">Poings</th>
+
+                                        <th class="py-1 pr-2 text-right">Coût</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr
+                                        v-for="player in roster"
+                                        :key="player.id"
+                                        class="border-b last:border-b-0"
+                                    >
+                                        <td class="py-1 pr-2">
+                                            {{ player.firstname }} {{ player.lastname }}
+                                        </td>
+                                        <td class="py-1 pr-2">
+                                            {{ player.position }}
+                                        </td>
+
+                                        <!-- Core -->
+                                        <td class="py-1 pr-2 text-right">
+                                            {{ player.speed ?? player.stats?.speed ?? '-' }}
+                                        </td>
+                                        <td class="py-1 pr-2 text-right">
+                                            {{ player.stamina ?? player.stats?.stamina ?? '-' }}
+                                        </td>
+                                        <td class="py-1 pr-2 text-right">
+                                            {{ player.attack ?? player.stats?.attack ?? '-' }}
+                                        </td>
+                                        <td class="py-1 pr-2 text-right">
+                                            {{ player.defense ?? player.stats?.defense ?? '-' }}
+                                        </td>
+
+                                        <!-- Offensif -->
+                                        <td class="py-1 pr-2 text-right">
+                                            {{ player.shot ?? player.stats?.shot ?? '-' }}
+                                        </td>
+                                        <td class="py-1 pr-2 text-right">
+                                            {{ player.pass ?? player.stats?.pass ?? '-' }}
+                                        </td>
+                                        <td class="py-1 pr-2 text-right">
+                                            {{ player.dribble ?? player.stats?.dribble ?? '-' }}
+                                        </td>
+
+                                        <!-- Défensif spé -->
+                                        <td class="py-1 pr-2 text-right">
+                                            {{ player.block ?? player.stats?.block ?? '-' }}
+                                        </td>
+                                        <td class="py-1 pr-2 text-right">
+                                            {{ player.intercept ?? player.stats?.intercept ?? '-' }}
+                                        </td>
+                                        <td class="py-1 pr-2 text-right">
+                                            {{ player.tackle ?? player.stats?.tackle ?? '-' }}
+                                        </td>
+
+                                        <!-- Gardien -->
+                                        <td class="py-1 pr-2 text-right">
+                                            {{ player.hand_save ?? player.stats?.hand_save ?? '-' }}
+                                        </td>
+                                        <td class="py-1 pr-2 text-right">
+                                            {{ player.punch_save ?? player.stats?.punch_save ?? '-' }}
+                                        </td>
+
+                                        <td class="py-1 pr-2 text-right">
+                                            {{ player.cost ?? '-' }}
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
 

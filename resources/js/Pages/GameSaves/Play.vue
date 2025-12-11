@@ -55,6 +55,30 @@ const saving = ref(false);
 const team = computed(() => props.controlledTeam || null);
 
 /**
+ * Map id -> GameTeam pour retrouver rapidement un club
+ */
+const teamById = computed(() => {
+    const map = {};
+    props.teams.forEach((t) => {
+        map[t.id] = t;
+    });
+    return map;
+});
+
+/**
+ * Nom de l’adversaire pour un match donné
+ */
+const opponentNameFor = (match) => {
+    if (!team.value) return '???';
+
+    const isHome = match.home_team_id === team.value.id;
+    const opponentId = isHome ? match.away_team_id : match.home_team_id;
+    const opponent   = teamById.value[opponentId];
+
+    return opponent?.name ?? '???';
+};
+
+/**
  * Effectif = joueurs liés via les game_contracts
  * -> on map sur contracts.player
  */
@@ -518,7 +542,7 @@ const playNextMatch = () => {
                                         </li>
                                         <li>
                                             <span class="font-semibold">Adversaire :</span>
-                                            {{ nextMatchInfo.opponentName }}
+                                            {{ opponentNameFor(nextMatch) }}
                                         </li>
                                         <li>
                                             <span class="font-semibold">Lieu :</span>
@@ -1194,15 +1218,11 @@ const playNextMatch = () => {
                                     </td>
 
                                     <td class="py-1 pr-2">
-                                        {{
-                                            (team && match.home_team_id === team.id)
-                                                ? (match.away_team ? match.away_team.name : '???')
-                                                : (match.home_team ? match.home_team.name : '???')
-                                        }}
+                                        {{ opponentNameFor(match) }}
                                     </td>
 
                                     <td class="py-1 pr-2">
-                                        {{ team && match.home_team_id === team.id ? 'Domicile' : 'Extérieur' }}
+                                        {{ team && match.home_team_id === team.i ? 'Domicile' : 'Extérieur' }}
                                     </td>
 
                                     <td class="py-1 pr-2 text-right">
