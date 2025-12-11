@@ -1,16 +1,114 @@
 <script setup>
+/**
+ * Dashboard de partie Captain Tsubasa
+ * - Vue Inertia pour gérer :
+ *   - Dashboard général
+ *   - Mon équipe (GameTeam + GamePlayers)
+ *   - Autres équipes
+ *   - Transferts (joueurs libres)
+ *   - Calendrier & classement
+ */
+
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import H2 from '@/Components/H2.vue';
 
+// ==========================
+//   PROPS INERTIA
+// ==========================
+
 const props = defineProps({
-    gameSave: { type: Object, required: true },
-    teams: { type: Array, required: true },
-    freePlayers: { type: Array, required: true },
-    matches: { type: Array, required: true },
+    gameSave:   { type: Object, required: true }, // GameSave (contient encore la Team de base)
+    teams:      { type: Array,  required: true }, // GameTeam[] avec contracts.player
+    freePlayers:{ type: Array,  required: true }, // GamePlayer[] sans contrat
+    matches:    { type: Array,  required: true }, // GameMatch[] avec home_team / away_team
+    controlledTeam: {
+        type: Object,           // GameTeam contrôlée dans cette partie
+        required: false,
+        default: null,
+    },
 });
 
+// ==========================
+//   SAISON / SEMAINE
+// ==========================
+
+const season = ref(props.gameSave.season || 1);
+const week   = ref(props.gameSave.week   || 1);
+
+// Etat de jeu générique (pour d'autres infos plus tard : blessures, cartes...)
+const currentState = ref(props.gameSave.state || {
+    match: null,
+});
+
+const saving = ref(false);
+
+// ==========================
+//   RACCOURCIS PRINCIPAUX
+// ==========================
+
+/**
+ * Equipe contrôlée = GameTeam (runtime)
+ * et non plus la Team "template" de base.
+ */
+const team = computed(() => props.controlledTeam || null);
+
+/**
+ * Effectif = joueurs liés via les game_contracts
+ * -> on map sur contracts.player
+ */
+const roster = computed(() => {
+    if (!team.value || !team.value.contracts) return [];
+    return team.value.contracts
+        .map(c => c.player)
+        .filter(p => !!p);
+});
+
+/**
+ * Bilan simple de l'équipe (GameTeam)
+ */
+const teamRecord = computed(() => {
+    if (!team.value) return { wins: 0, draws: 0, losses: 0 };
+
+    return {
+        wins:   team.value.wins   ?? 0,
+        draws:  team.value.draws  ?? 0,
+        losses: team.value.losses ?? 0,
+    };
+});
+
+/**
+ * Budget de l'équipe dans la PARTIE
+ * (GameTeam.budget, modifié par les transferts)
+ */
+const teamBudget = computed(() => team.value?.budget ?? 0);
+
+// ==========================
+//   ONGLET & NAVIGATION
+// ==========================
+
+const tabs = [
+    { key: 'dashboard',   label: 'Dashboard' },
+    { key: 'my-team',     label: 'Mon équipe' },
+    { key: 'other-teams', label: 'Autres équipes' },
+    { key: 'transfers',   label: 'Transferts' },
+    { key: 'calendar',    label: 'Calendrier' },
+    { key: 'standings',   label: 'Classement' },
+    { key: 'training',    label: 'Entraînement' },
+    { key: 'cards',       label: 'Cartes bonus' },
+];
+
+const activeTab = ref('dashboard');
+
+// ==========================
+//   CALENDRIER & MATCHS
+// ==========================
+
+/**
+ * Liste des matchs de l'équipe contrôlée
+ * (home ou away dans GameMatch)
+ */
 const myMatches = computed(() => {
     if (!team.value) return [];
 
@@ -19,7 +117,10 @@ const myMatches = computed(() => {
     );
 });
 
-// Prochain match à jouer pour mon équipe
+/**
+ * Prochain match à jouer pour mon équipe
+ * (status = scheduled, semaine >= semaine courante)
+ */
 const nextMatch = computed(() => {
     if (!team.value || !myMatches.value.length) return null;
 
@@ -32,11 +133,16 @@ const nextMatch = computed(() => {
     return candidates[0] ?? null;
 });
 
-// Infos pratiques pour l'affichage (adversaire + domicile / extérieur)
+/**
+ * Infos pratiques sur le prochain match :
+ * - domicile / extérieur
+ * - nom de l'adversaire
+ * - semaine
+ */
 const nextMatchInfo = computed(() => {
     if (!nextMatch.value || !team.value) return null;
 
-    const isHome = nextMatch.value.home_team_id === team.value.id;
+    const isHome   = nextMatch.value.home_team_id === team.value.id;
     const opponent = isHome ? nextMatch.value.away_team : nextMatch.value.home_team;
 
     return {
@@ -46,62 +152,25 @@ const nextMatchInfo = computed(() => {
     };
 });
 
+/**
+ * Label lisible pour un match donné (pour la liste)
+ */
 const matchLabel = (match) => {
     if (!team.value) return '';
 
-    const isHome = match.home_team_id === team.value.id;
+    const isHome   = match.home_team_id === team.value.id;
     const opponent = isHome ? match.away_team : match.home_team;
 
     return `${isHome ? 'Domicile' : 'Extérieur'} vs ${opponent?.name ?? '???'}`;
 };
 
+// ==========================
+//   AUTRES EQUIPES
+// ==========================
 
-// Saison / semaine
-const season = ref(props.gameSave.season || 1);
-const week   = ref(props.gameSave.week || 1);
-
-// État de jeu MVP (à enrichir plus tard)
-const currentState = ref(props.gameSave.state || {
-    match: null,
-});
-
-const saving = ref(false);
-
-// Raccourcis
-const team = computed(() => props.gameSave.team || null);
-const roster = computed(() => {
-    if (!team.value || !team.value.contracts) return [];
-    return team.value.contracts
-        .map(c => c.player)
-        .filter(p => !!p);
-});
-
-const teamRecord = computed(() => {
-    if (!team.value) return { wins: 0, draws: 0, losses: 0 };
-    return {
-        wins: team.value.wins ?? 0,
-        draws: team.value.draws ?? 0,
-        losses: team.value.losses ?? 0,
-    };
-});
-
-const teamBudget = computed(() => team.value?.budget ?? 0);
-
-// 🔹 Onglets
-const tabs = [
-    { key: 'dashboard', label: 'Dashboard' },
-    { key: 'my-team', label: 'Mon équipe' },
-    { key: 'other-teams', label: 'Autres équipes' },
-    { key: 'transfers',  label: 'Transferts' },
-    { key: 'calendar', label: 'Calendrier' },
-    { key: 'standings', label: 'Classement' },
-    { key: 'training', label: 'Entraînement' },
-    { key: 'cards', label: 'Cartes bonus' },
-];
-
-const activeTab = ref('dashboard');
-
-// 🔹 Autres équipes (toutes sauf celle contrôlée)
+/**
+ * Toutes les GameTeam de la ligue sauf celle contrôlée
+ */
 const otherTeams = computed(() => {
     const currentId = team.value?.id ?? null;
     return props.teams.filter(t => t.id !== currentId);
@@ -109,10 +178,12 @@ const otherTeams = computed(() => {
 
 const selectedOtherTeamId = ref(null);
 
+/**
+ * Equipe sélectionnée dans l’onglet "Autres équipes"
+ */
 const selectedOtherTeam = computed(() => {
     if (!otherTeams.value.length) return null;
 
-    // si rien n'est sélectionné, on prend la première
     if (!selectedOtherTeamId.value) {
         return otherTeams.value[0];
     }
@@ -123,6 +194,9 @@ const selectedOtherTeam = computed(() => {
     );
 });
 
+/**
+ * Effectif de l’équipe sélectionnée (GameTeam + GameContracts)
+ */
 const selectedOtherTeamRoster = computed(() => {
     if (!selectedOtherTeam.value || !selectedOtherTeam.value.contracts) {
         return [];
@@ -137,29 +211,14 @@ const selectOtherTeam = (t) => {
     selectedOtherTeamId.value = t.id;
 };
 
-const freeAgentSignings = computed(() => {
-    return (props.gameSave.state?.free_agent_signings ?? []);
-});
+// ==========================
+//   CLASSEMENT
+// ==========================
 
-// Ids des joueurs déjà signés
-const signedFreePlayerIds = computed(() =>
-    freeAgentSignings.value.map(s => s.player_id)
-);
-
-// Joueurs libres encore disponibles
-const availableFreePlayers = computed(() => {
-    if (!Array.isArray(props.freePlayers)) {
-        return [];
-    }
-
-    return props.freePlayers.filter(
-        (p) => !signedFreePlayerIds.value.includes(p.id)
-    );
-});
-
-
-
-// 🔹 Classement des équipes
+/**
+ * Classement général des GameTeam
+ * Tri : points desc, victoires desc, nom asc
+ */
 const standings = computed(() => {
     const list = props.teams.map((t) => {
         const wins   = t.wins   ?? 0;
@@ -178,7 +237,6 @@ const standings = computed(() => {
         };
     });
 
-    // Tri : points desc, puis victoires, puis nom
     list.sort((a, b) => {
         if (b.points !== a.points) return b.points - a.points;
         if (b.wins !== a.wins)     return b.wins - a.wins;
@@ -188,7 +246,9 @@ const standings = computed(() => {
     return list;
 });
 
-// Position de ton club dans le classement
+/**
+ * Position de ton club dans le classement
+ */
 const clubStanding = computed(() => {
     if (!team.value) return null;
 
@@ -201,24 +261,38 @@ const clubStanding = computed(() => {
     };
 });
 
-// Blessés / suspensions / cartons (pour plus tard, lis depuis state)
-const injuries = computed(() => props.gameSave.state?.injuries ?? []);
+// ==========================
+//   BLESSURES / CARTONS
+//   (pour la "santé du club")
+// ==========================
+
+const injuries    = computed(() => props.gameSave.state?.injuries    ?? []);
 const suspensions = computed(() => props.gameSave.state?.suspensions ?? []);
-const cards = computed(() => props.gameSave.state?.cards ?? []);
+const cards       = computed(() => props.gameSave.state?.cards       ?? []);
 
-// Compteurs simples
-const injuriesCount = computed(() => injuries.value.length);
+const injuriesCount    = computed(() => injuries.value.length);
 const suspensionsCount = computed(() => suspensions.value.length);
-const cardsCount = computed(() => cards.value.length);
+const cardsCount       = computed(() => cards.value.length);
 
-// Moyennes simples d'attaque / défense / endurance / vitesse
+// ==========================
+//   MOYENNES DES STATS
+// ==========================
+
+/**
+ * Calcule la moyenne d’une stat (attack, defense, stamina, speed)
+ * en allant chercher dans :
+ * - les colonnes directes si présentes
+ * - sinon dans player.stats (JSON)
+ */
 const averageStat = (key) => {
     if (!roster.value.length) return 0;
+
     const total = roster.value.reduce((sum, p) => {
         const stats = p.stats ?? {};
         const value = p[key] ?? stats[key] ?? 0;
         return sum + Number(value || 0);
     }, 0);
+
     return Math.round(total / roster.value.length);
 };
 
@@ -227,27 +301,109 @@ const averageDefense = computed(() => averageStat('defense'));
 const averageStamina = computed(() => averageStat('stamina'));
 const averageSpeed   = computed(() => averageStat('speed'));
 
+// ==========================
+//   MODAL TRANSFERT
+// ==========================
+
+// Signatures déjà effectuées dans le state
+const freeAgentSignings = computed(() => {
+    return props.gameSave.state?.free_agent_signings ?? [];
+});
+
+// Ids des joueurs déjà signés
+const signedFreePlayerIds = computed(() =>
+    freeAgentSignings.value.map(s => s.player_id)
+);
+
+// Joueurs libres encore disponibles (après filtrage)
+const freePlayers = computed(() => {
+    if (!Array.isArray(props.freePlayers)) {
+        return [];
+    }
+
+    return props.freePlayers.filter(
+        (p) => !signedFreePlayerIds.value.includes(p.id)
+    );
+});
+
+// État du modal
+const showTransferModal = ref(false);
+const transferTarget    = ref(null);   // joueur sélectionné
+const transferMatches   = ref(10);     // nb de matchs du contrat
+const transferSalary    = ref(0);      // coût / match
+const transferReason    = ref('');     // raison RP / note
+
+// Total impact budget
+const transferTotalCost = computed(() => {
+    return (Number(transferMatches.value) || 0) * (Number(transferSalary.value) || 0);
+});
+
+// Ouvrir le modal pour un joueur
+const openTransferModal = (player) => {
+    transferTarget.value  = player;
+    transferMatches.value = 10;
+    transferSalary.value  = player.cost ?? 0;
+    transferReason.value  = '';
+    showTransferModal.value = true;
+};
+
+// Fermer le modal
+const closeTransferModal = () => {
+    showTransferModal.value = false;
+    transferTarget.value    = null;
+};
+
+// Confirmer la signature
+const confirmTransfer = () => {
+    if (!team.value || !transferTarget.value) {
+        return;
+    }
+
+    router.post(
+        route('game-saves.free-agents.sign', {
+            gameSave: props.gameSave.id,
+            player:   transferTarget.value.id,
+        }),
+        {
+            team_id:       team.value.id,
+            salary:        transferSalary.value,
+            matches_total: transferMatches.value,
+            reason:        transferReason.value,
+        },
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                closeTransferModal();
+            }
+        }
+    );
+};
+
+// ==========================
+//   HELPERS GÉNÉRAUX
+// ==========================
 
 const periodLabel = (period) => {
-    if (period === 'college') return 'Collège';
+    if (period === 'college')    return 'Collège';
     if (period === 'highschool') return 'Lycée';
-    if (period === 'pro') return 'Professionnel';
+    if (period === 'pro')        return 'Professionnel';
     return period;
 };
 
+// Sauvegarde de la partie (saison / semaine / state)
 const saveGame = () => {
     saving.value = true;
 
     router.put(
         route('game-saves.update', props.gameSave.id),
         {
-            label: props.gameSave.label,
+            label:  props.gameSave.label,
             season: season.value,
-            week: week.value,
-            state: currentState.value,
+            week:   week.value,
+            state:  currentState.value,
         },
         {
-            preserveState: true,
+            preserveState:  true,
             preserveScroll: true,
             onFinish: () => {
                 saving.value = false;
@@ -256,12 +412,13 @@ const saveGame = () => {
     );
 };
 
-// Bouton "Jouer le prochain match"
+// Lancer le moteur de match pour le prochain match
 const playNextMatch = () => {
     router.get(route('game-saves.match', { gameSave: props.gameSave.id }));
 };
 
 </script>
+
 
 <template>
     <Head :title="`Partie ${gameSave.label ?? '#' + gameSave.id}`" />
@@ -376,7 +533,7 @@ const playNextMatch = () => {
                                     <div class="mt-4 flex justify-center">
                                         <button
                                             type="button"
-                                            class="w-60 bg-emerald-300 hover:bg-emerald-400 text-center font-semibold py-1 px-5 border-2 border-emerald-500 rounded-full drop-shadow-md mb-2"
+                                            class="w-60 bg-teal-300 hover:bg-teal-400 text-center font-semibold py-1 px-5 border-2 border-teal-500 rounded-full drop-shadow-md mb-2"
                                             @click="playNextMatch"
                                         >
                                             Jouer le prochain match
@@ -384,7 +541,7 @@ const playNextMatch = () => {
                                     </div>
                                 </div>
 
-                                <!-- Si aucun match trouvé (sécurité / debug) -->
+                                <!-- Si aucun match trouvé -->
                                 <div v-else class="text-sm text-slate-600">
                                     <p class="mb-2">
                                         Aucun match de championnat planifié pour le moment.
@@ -402,7 +559,6 @@ const playNextMatch = () => {
                                 </h3>
 
                                 <div v-if="team" class="space-y-2 text-sm text-slate-700">
-
                                     <p>
                                         <span class="font-semibold">Nom :</span>
                                         {{ team.name }}
@@ -422,14 +578,12 @@ const playNextMatch = () => {
                                         <span class="font-semibold">Description :</span>
                                         <span class="text-slate-600">{{ team.description }}</span>
                                     </p>
-
                                 </div>
 
                                 <div v-else class="text-sm text-slate-500">
                                     Aucune équipe liée à cette sauvegarde.
                                 </div>
                             </div>
-
 
                             <!-- Statut du club -->
                             <div class="border border-slate-200 rounded-lg p-4 bg-slate-50 lg:col-span-2">
@@ -481,7 +635,7 @@ const playNextMatch = () => {
                         <div class="flex justify-around mt-6">
                             <button
                                 type="button"
-                                class="w-40 bg-cyan-300 hover:bg-cyan-400 text-center font-semibold py-2 px-5 border-2 border-cyan-500 rounded-full drop-shadow-md mb-2 disabled:opacity-50"
+                                class="w-40 bg-cyan-300 hover:bg-cyan-400 text-center font-semibold py-1 px-5 border-2 border-cyan-500 rounded-full drop-shadow-md mb-2 disabled:opacity-50"
                                 :disabled="saving"
                                 @click="saveGame"
                             >
@@ -490,7 +644,7 @@ const playNextMatch = () => {
 
                             <button
                                 type="button"
-                                class="w-40 bg-slate-300 hover:bg-slate-400 text-center font-semibold py-2 px-5 border-2 border-slate-500 rounded-full drop-shadow-md mb-2"
+                                class="w-40 bg-slate-300 hover:bg-slate-400 text-center font-semibold py-1 px-5 border-2 border-slate-500 rounded-full drop-shadow-md mb-2"
                                 @click="$inertia.visit(route('mainMenu'))"
                             >
                                 Quitter
@@ -509,7 +663,6 @@ const playNextMatch = () => {
                             Mon équipe
                         </h3>
 
-                        <!-- Joueurs -->
                         <div
                             class="border border-slate-200 rounded-lg p-4 bg-slate-50 flex-1"
                         >
@@ -647,11 +800,11 @@ const playNextMatch = () => {
                                     type="button"
                                     @click="selectOtherTeam(t)"
                                     :class="[
-                    'w-full text-left text-sm px-2 py-1 rounded',
-                    selectedOtherTeam && selectedOtherTeam.id === t.id
-                        ? 'bg-emerald-100 text-slate-900'
-                        : 'bg-white hover:bg-slate-100 text-slate-700'
-                ]"
+                                        'w-full text-left text-sm px-2 py-1 rounded',
+                                        selectedOtherTeam && selectedOtherTeam.id === t.id
+                                            ? 'bg-teal-100 text-slate-900'
+                                            : 'bg-white hover:bg-slate-100 text-slate-700'
+                                    ]"
                                 >
                                     {{ t.name }}
                                 </button>
@@ -804,18 +957,18 @@ const playNextMatch = () => {
                     <!-- ============================== -->
                     <div
                         v-else-if="activeTab === 'transfers'"
-                        class="flex-1 border border-slate-200 rounded-lg bg-slate-50 p-4 flex flex-col gap-4"
+                        class="flex-1 border border-slate-200 rounded-lg bg-slate-50 p-4 flex flex-col gap-4 relative"
                     >
                         <div class="flex justify-between items-center">
                             <h3 class="text-lg font-semibold text-slate-700">
                                 Joueurs libres
                             </h3>
                             <p class="text-xs text-slate-500">
-                                Les signatures sont propres à cette sauvegarde de partie.
+                                Les signatures impactent le budget de ton club dans cette sauvegarde.
                             </p>
                         </div>
 
-                        <div v-if="availableFreePlayers.length" class="max-h-96 overflow-y-auto">
+                        <div v-if="freePlayers.length" class="max-h-96 overflow-y-auto">
                             <div class="overflow-x-auto">
                                 <table class="w-full text-sm text-left min-w-max">
                                     <thead class="text-xs uppercase text-slate-500 border-b">
@@ -848,7 +1001,7 @@ const playNextMatch = () => {
                                     </thead>
                                     <tbody>
                                     <tr
-                                        v-for="player in availableFreePlayers"
+                                        v-for="player in freePlayers"
                                         :key="player.id"
                                         class="border-b last:border-b-0"
                                     >
@@ -904,27 +1057,14 @@ const playNextMatch = () => {
                                         </td>
 
                                         <td class="py-1 pr-2 text-right">
-                                            <form
-                                                method="post"
-                                                :action="route('game-saves.free-agents.sign', { gameSave: gameSave.id, player: player.id })"
-                                                @submit.prevent="
-                                    $inertia.post(
-                                        route('game-saves.free-agents.sign', { gameSave: gameSave.id, player: player.id }),
-                                        {
-                                            team_id: team?.id,
-                                            salary: null,
-                                        }
-                                    )
-                                "
+                                            <button
+                                                type="button"
+                                                class="text-xs px-3 py-0.5 rounded-full border border-teal-500 bg-teal-100 hover:bg-teal-200 font-semibold disabled:opacity-50"
+                                                :disabled="!team"
+                                                @click="openTransferModal(player)"
                                             >
-                                                <button
-                                                    type="submit"
-                                                    class="text-xs px-3 py-0.5 rounded-full border border-emerald-500 bg-emerald-100 hover:bg-emerald-200 font-semibold"
-                                                    :disabled="!team"
-                                                >
-                                                    Offre
-                                                </button>
-                                            </form>
+                                                Offre
+                                            </button>
                                         </td>
                                     </tr>
                                     </tbody>
@@ -936,19 +1076,84 @@ const playNextMatch = () => {
                             Aucun joueur libre disponible.
                         </p>
 
-                        <!-- Liste des signatures déjà réalisées dans cette gameSave -->
-                        <div v-if="freeAgentSignings.length" class="mt-4">
-                            <h4 class="text-md font-semibold text-slate-700 mb-1">
-                                Joueurs déjà signés dans cette partie
-                            </h4>
-                            <ul class="text-sm text-slate-600 list-disc list-inside">
-                                <li
-                                    v-for="signing in freeAgentSignings"
-                                    :key="signing.player_id"
-                                >
-                                    Joueur #{{ signing.player_id }} → équipe #{{ signing.team_id }}
-                                </li>
-                            </ul>
+                        <!-- MODAL TRANSFERT -->
+                        <div
+                            v-if="showTransferModal && transferTarget"
+                            class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+                        >
+                            <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-5">
+                                <h3 class="text-lg font-semibold text-slate-800 mb-3">
+                                    Proposer un contrat à
+                                    {{ transferTarget.firstname }} {{ transferTarget.lastname }}
+                                </h3>
+
+                                <p class="text-sm text-slate-600 mb-3">
+                                    Club : <span class="font-semibold">{{ team?.name }}</span><br>
+                                    Budget actuel : <span class="font-semibold">{{ teamBudget }} €</span>
+                                </p>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-600 mb-1">
+                                            Nombre de matchs (durée du contrat)
+                                        </label>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max="60"
+                                            v-model.number="transferMatches"
+                                            class="w-full border border-slate-300 rounded-md px-2 py-1 text-sm"
+                                        >
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-600 mb-1">
+                                            Coût par match (€)
+                                        </label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            v-model.number="transferSalary"
+                                            class="w-full border border-slate-300 rounded-md px-2 py-1 text-sm"
+                                        >
+                                    </div>
+                                </div>
+
+                                <p class="text-sm text-slate-700 mb-3">
+                                    Coût total estimé :
+                                    <span class="font-semibold">{{ transferTotalCost }} €</span>
+                                </p>
+
+                                <div class="mb-4">
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1">
+                                        Raison du recrutement (note RP / mémo)
+                                    </label>
+                                    <textarea
+                                        rows="3"
+                                        v-model="transferReason"
+                                        class="w-full border border-slate-300 rounded-md px-2 py-1 text-sm"
+                                        placeholder="Ex. : Renforcer l’aile gauche, remplacer un blessé, jeune à fort potentiel..."
+                                    ></textarea>
+                                </div>
+
+                                <div class="flex justify-end gap-2">
+                                    <button
+                                        type="button"
+                                        class="px-3 py-1.5 text-sm rounded-md border border-slate-300 text-slate-600 hover:bg-slate-100"
+                                        @click="closeTransferModal"
+                                    >
+                                        Annuler
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="px-4 py-1.5 text-sm rounded-md bg-teal-500 hover:bg-teal-600 text-white font-semibold disabled:opacity-50"
+                                        :disabled="!team || transferMatches <= 0 || transferSalary < 0"
+                                        @click="confirmTransfer"
+                                    >
+                                        Confirmer l’offre
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -990,14 +1195,14 @@ const playNextMatch = () => {
 
                                     <td class="py-1 pr-2">
                                         {{
-                                            match.home_team_id === team.id
-                                                ? match.away_team?.name
-                                                : match.home_team?.name
+                                            (team && match.home_team_id === team.id)
+                                                ? (match.away_team ? match.away_team.name : '???')
+                                                : (match.home_team ? match.home_team.name : '???')
                                         }}
                                     </td>
 
                                     <td class="py-1 pr-2">
-                                        {{ match.home_team_id === team.id ? 'Domicile' : 'Extérieur' }}
+                                        {{ team && match.home_team_id === team.id ? 'Domicile' : 'Extérieur' }}
                                     </td>
 
                                     <td class="py-1 pr-2 text-right">
@@ -1007,9 +1212,9 @@ const playNextMatch = () => {
                                     </td>
 
                                     <td class="py-1 pr-2 text-right">
-                        <span v-if="match.status === 'played'">
-                            {{ match.home_score }} - {{ match.away_score }}
-                        </span>
+                                        <span v-if="match.status === 'played'">
+                                            {{ match.home_score }} - {{ match.away_score }}
+                                        </span>
                                         <span v-else class="text-slate-400">-</span>
                                     </td>
                                 </tr>
@@ -1021,7 +1226,6 @@ const playNextMatch = () => {
                             Aucun match planifié pour le moment.
                         </p>
                     </div>
-
 
                     <!-- ============================== -->
                     <!--          CLASSEMENT           -->
@@ -1056,11 +1260,11 @@ const playNextMatch = () => {
                                     v-for="(row, index) in standings"
                                     :key="row.id"
                                     :class="[
-                        'border-b last:border-b-0',
-                        team && team.id === row.id
-                            ? 'bg-emerald-50 font-semibold'
-                            : ''
-                    ]"
+                                        'border-b last:border-b-0',
+                                        team && team.id === row.id
+                                            ? 'bg-teal-50 font-semibold'
+                                            : ''
+                                    ]"
                                 >
                                     <td class="py-1 pr-2 text-right">
                                         {{ index + 1 }}

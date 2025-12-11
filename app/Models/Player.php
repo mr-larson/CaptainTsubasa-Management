@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\PlayerPosition;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Traits\HasSoccerStats;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -27,6 +28,7 @@ class Player extends Model
 {
     use HasFactory;
     use SoftDeletes;
+    use HasSoccerStats;
 
     protected $table = 'players';
 
@@ -124,59 +126,15 @@ class Player extends Model
     //  HELPERS POUR LE MOTEUR
     // ==========================
 
-    public function shotStat(): int
-    {
-        return (int) $this->stats['shot'];
-    }
-
-    public function passStat(): int
-    {
-        return (int) $this->stats['pass'];
-    }
-
-    public function dribbleStat(): int
-    {
-        return (int) $this->stats['dribble'];
-    }
-
-    public function blockStat(): int
-    {
-        return (int) $this->stats['block'];
-    }
-
-    public function interceptionStat(): int
-    {
-        return (int) $this->stats['intercept'];
-    }
-
-    public function tackleStat(): int
-    {
-        return (int) $this->stats['tackle'];
-    }
-
-    public function gkCatchStat(): int
-    {
-        return (int) $this->stats['hand_save'];
-    }
-
-    public function gkPunchStat(): int
-    {
-        return (int) $this->stats['punch_save'];
-    }
-
     /**
-     * Stat utilisée pour les "special" offensifs.
+     * Implémentation pour HasSoccerStats :
+     * va chercher dans le JSON stats en fusionnant avec les valeurs par défaut.
      */
-    public function offensiveSpecialStat(): int
+    protected function getBaseStat(string $key): int
     {
-        return (int) $this->stats['attack'];
+        $stats = $this->stats ?? [];
+
+        return (int) ($stats[$key] ?? self::DEFAULT_STATS[$key] ?? 0);
     }
 
-    /**
-     * Stat utilisée pour les "special" défensifs.
-     */
-    public function defensiveSpecialStat(): int
-    {
-        return (int) $this->stats['defense'];
-    }
 }

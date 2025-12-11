@@ -38,4 +38,20 @@ class GameSave extends Model
         return $this->hasMany(GameMatch::class);
     }
 
+    public function gameTeams()
+    {
+        return $this->hasMany(GameTeam::class);
+    }
+
+    public function gamePlayers()
+    {
+        return $this->hasMany(GamePlayer::class);
+    }
+
+    public function gameContracts()
+    {
+        return $this->hasMany(GameContract::class);
+    }
+
+
 }

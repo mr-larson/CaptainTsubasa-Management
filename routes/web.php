@@ -126,9 +126,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/{gameSave}', [GameSaveController::class, 'show'])->name('show');
         Route::get('/{gameSave}/play', [GameSaveController::class, 'play'])->name('play');
         Route::post('/{gameSave}/free-agents/{player}/sign', [GameSaveController::class, 'signFreeAgent'])->name('free-agents.sign');
-
         Route::get('/{gameSave}/match', [GameSaveController::class, 'match'])->name('match');
-
         Route::put('/{gameSave}', [GameSaveController::class, 'update'])->name('update');
         Route::delete('/{gameSave}', [GameSaveController::class, 'destroy'])->name('destroy');
     });

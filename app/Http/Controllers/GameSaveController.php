@@ -6,7 +6,12 @@ use App\Http\Requests\GameSaveRequest;
 use App\Models\GameSave;
 use App\Models\Team;
 use App\Models\Player;
+use App\Models\Contract;
+use App\Models\GameTeam;
+use App\Models\GamePlayer;
+use App\Models\GameContract;
 use App\Models\GameMatch;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
@@ -66,120 +71,236 @@ class GameSaveController extends Controller
 
         $gameSave = GameSave::create([
             'user_id' => $request->user()->id,
-            'team_id' => $data['team_id'],      // requis via le FormRequest (à ajuster si besoin)
-            'period'  => $data['period'],       // 'college' pour le MVP
+            'team_id' => $data['team_id'], // team de base choisie
+            'period'  => $data['period'],
             'season'  => 1,
             'week'    => 1,
             'label'   => $data['label'] ?? null,
-            'state'   => null,                  // tu pourras y mettre l'état initial (calendrier, fatigue, etc.)
+            'state'   => null,
         ]);
+
+        // -----------------------------
+        // 1. Dupliquer toutes les équipes
+        // -----------------------------
+        $teams = Team::orderBy('id')->get();
+
+        $teamCount     = $teams->count();
+        $seasonLength  = max(1, ($teamCount - 1) * 2); // sécurité min 1
+
+        $gameTeamsByBaseId = [];
+
+        foreach ($teams as $team) {
+            $gameTeam = GameTeam::create([
+                'game_save_id' => $gameSave->id,
+                'base_team_id' => $team->id,
+                'name'         => $team->name,
+                'description'  => $team->description,
+                'budget'       => $team->budget,
+                'wins'         => 0,
+                'draws'        => 0,
+                'losses'       => 0,
+            ]);
+
+            $gameTeamsByBaseId[$team->id] = $gameTeam;
+        }
+
+
+        // -----------------------------
+        // 2. Dupliquer tous les joueurs
+        // -----------------------------
+        $players = Player::orderBy('id')->get();
+        $gamePlayersByBaseId = [];
+
+        foreach ($players as $player) {
+            $stats = $player->stats ?? []; // si tu stockes en JSON
+
+            $gamePlayer = GamePlayer::create([
+                'game_save_id'   => $gameSave->id,
+                'base_player_id' => $player->id,
+                'firstname'      => $player->firstname,
+                'lastname'       => $player->lastname,
+                'position'       => $player->position,
+
+                'speed'      => $player->speed      ?? $stats['speed']      ?? 50,
+                'stamina'    => $player->stamina    ?? $stats['stamina']    ?? 50,
+                'attack'     => $player->attack     ?? $stats['attack']     ?? 50,
+                'defense'    => $player->defense    ?? $stats['defense']    ?? 50,
+
+                'shot'       => $player->shot       ?? $stats['shot']       ?? 50,
+                'pass'       => $player->pass       ?? $stats['pass']       ?? 50,
+                'dribble'    => $player->dribble    ?? $stats['dribble']    ?? 50,
+                'block'      => $player->block      ?? $stats['block']      ?? 50,
+                'intercept'  => $player->intercept  ?? $stats['intercept']  ?? 50,
+                'tackle'     => $player->tackle     ?? $stats['tackle']     ?? 50,
+
+                'hand_save'  => $player->hand_save  ?? $stats['hand_save']  ?? 0,
+                'punch_save' => $player->punch_save ?? $stats['punch_save'] ?? 0,
+
+                'cost'       => $player->cost ?? 0,
+            ]);
+
+            $gamePlayersByBaseId[$player->id] = $gamePlayer;
+        }
+
+        // -----------------------------
+        // 3. Dupliquer tous les contrats
+        // -----------------------------
+        $contracts = Contract::with(['team', 'player'])->get();
+
+        foreach ($contracts as $contract) {
+            $baseTeam   = $contract->team;
+            $basePlayer = $contract->player;
+
+            if (
+                !isset($gameTeamsByBaseId[$baseTeam->id]) ||
+                !isset($gamePlayersByBaseId[$basePlayer->id])
+            ) {
+                continue;
+            }
+
+            GameContract::create([
+                'game_save_id'   => $gameSave->id,
+                'game_team_id'   => $gameTeamsByBaseId[$baseTeam->id]->id,
+                'game_player_id' => $gamePlayersByBaseId[$basePlayer->id]->id,
+                'salary'         => $contract->salary ?? 0,
+                'start_week'     => 1,
+                'end_week'       => $seasonLength,
+            ]);
+        }
 
         return redirect()
             ->route('game-saves.play', $gameSave)
             ->with('success', 'Partie créée');
     }
 
-    public function show(Request $request, GameSave $gameSave): Response
-    {
-        $this->authorizeSave($request, $gameSave);
-
-        return Inertia::render('GameSaves/Show', [
-            'gameSave' => $gameSave->load('team'),
-        ]);
-    }
-
     /**
-     * Dashboard de la session (pour l'instant ton Play).
+     * Dashboard de la session.
      */
     public function play(Request $request, GameSave $gameSave): Response
     {
         $this->authorizeSave($request, $gameSave);
 
-        // Équipe contrôlée + contrats + joueurs
-        $gameSave->load([
-            'team.contracts.player',
-        ]);
-
-        // Toutes les équipes avec leurs contrats + joueurs (pour autres équipes + classement)
-        $teams = Team::with(['contracts.player'])
+        // 🔹 Toutes les équipes de la PARTIE (GameTeam)
+        $gameTeams = GameTeam::with(['contracts.player'])
+            ->where('game_save_id', $gameSave->id)
             ->orderBy('name')
             ->get();
 
-        // Générer un calendrier si pas encore existant
-        $this->ensureCalendar($gameSave, $teams);
+        // 🔹 Équipe contrôlée = GameTeam clonée à partir de la team_id de base
+        $controlledTeam = $gameTeams->firstWhere('base_team_id', $gameSave->team_id);
 
-        // Charger les matchs de cette game save
+        // Sécu : si jamais rien trouvé, on prend la première
+        if (! $controlledTeam && $gameTeams->isNotEmpty()) {
+            $controlledTeam = $gameTeams->first();
+        }
+
+        // 🔹 Générer le calendrier sur base des GameTeams
+        $this->ensureCalendar($gameSave, $gameTeams);
+
+        // 🔹 Matchs de la partie (GameMatch + relations homeTeam / awayTeam sur GameTeam)
         $matches = GameMatch::with(['homeTeam', 'awayTeam'])
             ->where('game_save_id', $gameSave->id)
             ->orderBy('week')
             ->get();
 
-        // Joueurs libres = joueurs sans contrat dans la DB de base
-        $freePlayers = Player::whereDoesntHave('contracts')
+        // 🔹 Joueurs libres = GamePlayer de cette partie sans GameContract
+        $freePlayers = GamePlayer::where('game_save_id', $gameSave->id)
+            ->whereDoesntHave('contracts')   // relation sur GamePlayer
             ->orderBy('lastname')
             ->orderBy('firstname')
             ->get();
 
         return Inertia::render('GameSaves/Play', [
-            'gameSave'    => $gameSave,
-            'teams'       => $teams,
-            'matches'     => $matches,
-            'freePlayers' => $freePlayers,
+            'gameSave'       => $gameSave,
+            'teams'          => $gameTeams,
+            'matches'        => $matches,
+            'freePlayers'    => $freePlayers,
+            'controlledTeam' => $controlledTeam,
         ]);
     }
 
-    public function signFreeAgent(Request $request, GameSave $gameSave, Player $player): RedirectResponse
+
+    public function signFreeAgent(Request $request, GameSave $gameSave, GamePlayer $player): RedirectResponse
     {
         $this->authorizeSave($request, $gameSave);
 
         $data = $request->validate([
-            'team_id' => ['required', 'integer', 'exists:teams,id'],
-            'salary'  => ['nullable', 'integer', 'min:0'],
+            'team_id'       => [
+                'required',
+                'integer',
+                Rule::exists('game_teams', 'id')->where('game_save_id', $gameSave->id),
+            ],
+            'salary'        => ['required', 'integer', 'min:0'],
+            'matches_total' => ['required', 'integer', 'min:1'],
+            'reason'        => ['nullable', 'string', 'max:1000'],
         ]);
 
-        // On récupère l'état actuel ou un tableau vide
+        $team = GameTeam::where('game_save_id', $gameSave->id)
+            ->findOrFail($data['team_id']);
+
+        // Déjà sous contrat ?
+        $alreadyHasContract = GameContract::where('game_save_id', $gameSave->id)
+            ->where('game_player_id', $player->id)
+            ->whereNull('end_week')
+            ->exists();
+
+        if ($alreadyHasContract) {
+            return back()->with('info', 'Ce joueur a déjà un contrat en cours dans cette partie.');
+        }
+
+        // Création du contrat de partie
+        $startWeek = $gameSave->week ?? 1;
+        $endWeek   = $startWeek + $data['matches_total'] - 1;
+
+        GameContract::create([
+            'game_save_id'   => $gameSave->id,
+            'game_team_id'   => $team->id,
+            'game_player_id' => $player->id,
+            'salary'         => $data['salary'],
+            'start_week'     => $startWeek,
+            'end_week'       => $endWeek,
+            // si tu as une colonne matches_total dans game_contracts, ajoute-la ici
+            // 'matches_total'  => $data['matches_total'],
+        ]);
+
+        // Mise à jour du budget
+        $totalCost    = $data['salary'] * $data['matches_total'];
+        $team->budget = max(0, ($team->budget ?? 0) - $totalCost);
+        $team->save();
+
+        // Log optionnel dans le state de GameSave (pour historique / RP)
         $state = $gameSave->state ?? [];
-
-        // On garantit la clé 'free_agent_signings'
-        if (! isset($state['free_agent_signings'])) {
-            $state['free_agent_signings'] = [];
-        }
-
-        // On évite les doublons : si le joueur est déjà signé pour cette gameSave, on ne le rajoute pas
-        foreach ($state['free_agent_signings'] as $signing) {
-            if ($signing['player_id'] === $player->id) {
-                return back()->with('info', 'Ce joueur est déjà sous contrat dans cette partie.');
-            }
-        }
-
+        $state['free_agent_signings'] = $state['free_agent_signings'] ?? [];
         $state['free_agent_signings'][] = [
-            'player_id' => $player->id,
-            'team_id'   => $data['team_id'],
-            'salary'    => $data['salary'] ?? null,
+            'player_id'      => $player->id,
+            'team_id'        => $team->id,
+            'salary'         => $data['salary'],
+            'matches_total'  => $data['matches_total'],
+            'total_cost'     => $totalCost,
+            'reason'         => $data['reason'] ?? null,
+            'week'           => $gameSave->week,
         ];
-
         $gameSave->state = $state;
         $gameSave->save();
 
-        return back()->with('success', 'Contrat proposé au joueur libre.');
+        return back()->with('success', 'Joueur signé et budget mis à jour.');
     }
 
     private function ensureCalendar(GameSave $gameSave, Collection $teams): void
     {
-        // S'il y a déjà un calendrier pour cette partie, on ne régénère pas
+        // S'il y a déjà un calendrier, on ne régénère pas
         if ($gameSave->matches()->exists()) {
             return;
         }
 
-        $teamIds = $teams->pluck('id')->values()->all();
+        // Ici, $teams est une collection de GameTeam
+        $teamIds   = $teams->pluck('id')->values()->all();
         $teamCount = count($teamIds);
 
-        // Il faut au moins 2 équipes
         if ($teamCount < 2) {
             return;
         }
 
-        // Si nombre impair → on ajoute un "ghost" (bye)
         $hasGhost = false;
         if ($teamCount % 2 === 1) {
             $teamIds[] = null;
@@ -187,34 +308,30 @@ class GameSaveController extends Controller
             $hasGhost = true;
         }
 
-        $rounds = $teamCount - 1;     // nombre de journées dans la phase aller
-        $half   = $teamCount / 2;     // nombre de matchs par journée
+        $rounds = $teamCount - 1;
+        $half   = $teamCount / 2;
         $ids    = $teamIds;
 
-        // Phase aller + on génère en même temps la phase retour
         for ($round = 0; $round < $rounds; $round++) {
-            $weekAller  = $round + 1;          // 1..(n-1)
-            $weekRetour = $round + 1 + $rounds; // (n)..(2n-2)
+            $weekAller  = $round + 1;
+            $weekRetour = $round + 1 + $rounds;
 
             for ($i = 0; $i < $half; $i++) {
                 $home = $ids[$i];
                 $away = $ids[$teamCount - 1 - $i];
 
-                // Si ghost (bye), on ignore le match
                 if ($home === null || $away === null) {
                     continue;
                 }
 
-                // Match aller
                 GameMatch::create([
                     'game_save_id' => $gameSave->id,
                     'week'         => $weekAller,
-                    'home_team_id' => $home,
+                    'home_team_id' => $home, // 👉 id de GameTeam
                     'away_team_id' => $away,
                     'status'       => 'scheduled',
                 ]);
 
-                // Match retour (domicile inversé)
                 GameMatch::create([
                     'game_save_id' => $gameSave->id,
                     'week'         => $weekRetour,
@@ -224,12 +341,10 @@ class GameSaveController extends Controller
                 ]);
             }
 
-            // Rotation des équipes (méthode du cercle)
-            // On garde le premier fixe, on fait tourner les autres
-            $fixed = array_shift($ids);          // premier
-            $last  = array_pop($ids);            // dernier
-            array_unshift($ids, $fixed);         // on remet le fixe au début
-            array_splice($ids, 1, 0, [$last]);   // on insère l'ancien dernier en 2e position
+            $fixed = array_shift($ids);
+            $last  = array_pop($ids);
+            array_unshift($ids, $fixed);
+            array_splice($ids, 1, 0, [$last]);
         }
     }
 
