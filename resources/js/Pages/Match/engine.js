@@ -428,6 +428,8 @@ export function initMatchEngine(rootEl, config = {}) {
     const actionBarEl     = $("#action-bar");
     const teamNameInternalEl = $("#team-name-internal");
     const teamNameExternalEl = $("#team-name-external");
+    const matchEndActionsEl = $("#match-end-actions");
+    const finishMatchBtn    = $("#btn-finish-match");
 
 
     // Log visuel
@@ -1026,6 +1028,26 @@ export function initMatchEngine(rootEl, config = {}) {
             }
 
             refreshUI();
+            // afficher bouton + bind
+            if (matchEndActionsEl) matchEndActionsEl.classList.remove("hidden");
+
+            if (finishMatchBtn) {
+                finishMatchBtn.onclick = () => {
+                    // IMPORTANT: home_score / away_score = score des équipes du match (homeTeam/awayTeam)
+                    // Ici on suppose: internal = home, external = away (comme ta config actuelle)
+                    const payload = {
+                        homeScore: score.internal,
+                        awayScore: score.external,
+                        matchId: matchConfig.matchId,
+                        gameSaveId: matchConfig.gameSaveId,
+                    };
+
+                    if (typeof matchConfig.onMatchEnd === "function") {
+                        matchConfig.onMatchEnd(payload);
+                    }
+                };
+            }
+
             return;
         }
 

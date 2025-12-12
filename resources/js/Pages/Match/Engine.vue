@@ -12,6 +12,15 @@
                 <div id="top-bar">
                     <!-- Score -->
                     <div id="score-strip">
+                        <div id="match-end-actions" class="hidden mt-4 flex justify-center">
+                            <button
+                                id="btn-finish-match"
+                                type="button"
+                                class="w-72 bg-teal-400 hover:bg-teal-500 text-center font-semibold py-2 px-6 border-2 border-teal-600 rounded-full drop-shadow-md"
+                            >
+                                Retour au dashboard
+                            </button>
+                        </div>
                         <div class="">
                             <Link
                                 :href="route('game-saves.play', { gameSave: engineConfig.gameSaveId })"
@@ -186,7 +195,7 @@
 
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { onMounted, ref, onBeforeUnmount } from 'vue';
 import { initMatchEngine } from './engine';
 import './engine.css';
@@ -203,10 +212,19 @@ import './engine.css';
 const gameRoot = ref(null);
 
 onMounted(() => {
-    if (gameRoot.value) {
-        initMatchEngine(gameRoot.value, props.engineConfig);
-    }
+    if (!gameRoot.value) return;
+
+    initMatchEngine(gameRoot.value, {
+        ...props.engineConfig,
+        onMatchEnd: ({ homeScore, awayScore, matchId, gameSaveId }) => {
+            router.post(
+                route('game-saves.matches.finish', { gameSave: gameSaveId, match: matchId }),
+                { home_score: homeScore, away_score: awayScore },
+            );
+        },
+    });
 });
+
 
 onBeforeUnmount(() => {
     // destroy éventuel du moteur plus tard

@@ -495,4 +495,51 @@ class GameSaveController extends Controller
             abort(403);
         }
     }
+
+    public function finishMatch(Request $request, GameSave $gameSave, GameMatch $match): RedirectResponse
+    {
+        $this->authorizeSave($request, $gameSave);
+
+        abort_unless($match->game_save_id === $gameSave->id, 404);
+
+        $data = $request->validate([
+            'home_score' => ['required', 'integer', 'min:0'],
+            'away_score' => ['required', 'integer', 'min:0'],
+        ]);
+
+        // déjà joué ? (sécurité)
+        if ($match->status === 'played') {
+            return redirect()->route('game-saves.play', $gameSave);
+        }
+
+        // 1) sauver le match
+        $match->update([
+            'home_score' => $data['home_score'],
+            'away_score' => $data['away_score'],
+            'status'     => 'played',
+        ]);
+
+        // 2) MAJ classement (wins/draws/losses)
+        $home = GameTeam::where('game_save_id', $gameSave->id)->findOrFail($match->home_team_id);
+        $away = GameTeam::where('game_save_id', $gameSave->id)->findOrFail($match->away_team_id);
+
+        if ($data['home_score'] > $data['away_score']) {
+            $home->wins++;  $away->losses++;
+        } elseif ($data['home_score'] < $data['away_score']) {
+            $away->wins++;  $home->losses++;
+        } else {
+            $home->draws++; $away->draws++;
+        }
+
+        $home->save();
+        $away->save();
+
+        // (optionnel mais conseillé) avancer la semaine du save
+        $gameSave->week = max($gameSave->week ?? 1, $match->week + 1);
+        $gameSave->save();
+
+        // 3) retour dashboard (props à jour)
+        return redirect()->route('game-saves.play', $gameSave);
+    }
+
 }
