@@ -745,48 +745,50 @@ export function initMatchEngine(rootEl, config = {}) {
     // ==========================
     //   PLAYER CARD
     // ==========================
-
     function updatePlayerCard(team, slotNumber) {
         if (!teamLabelEl || !playerNumberEl) return;
 
         const info = getPlayerInfo(team, slotNumber);
+
         teamLabelEl.textContent = TEAMS[team].label;
         playerNumberEl.textContent = info ? info.number : slotNumber;
 
         const nameEl = $("#player-name");
         const roleEl = $("#player-role-label");
 
-        if (nameEl && info) {
-            const full = `${info.firstname ?? ""} ${info.lastname ?? ""}`.trim();
-            nameEl.textContent = full || `Joueur #${info.number}`;
-        }
-        if (roleEl && info) {
-            roleEl.textContent = info.position || "—";
+        if (nameEl) {
+            const full = info ? `${info.firstname ?? ""} ${info.lastname ?? ""}`.trim() : "";
+            nameEl.textContent = full || `Joueur #${info?.number ?? slotNumber}`;
         }
 
-        const s = (info && info.stats) ? info.stats : {};
+        if (roleEl) {
+            roleEl.textContent = info?.position || "—";
+        }
 
-        const setStat = (key, value) => {
-            const byId =
-                rootEl.querySelector(`#stat-${key}`) ||
-                rootEl.querySelector(`#player-stat-${key}`) ||
-                rootEl.querySelector(`[data-stat="${key}"]`);
-            if (byId) byId.textContent = (value ?? "—");
+        // ✅ mise à jour des stats via les IDs du template
+        const s = info?.stats ?? {};
+        const v = (k) => {
+            const n = Number(s?.[k] ?? 0);
+            return Number.isFinite(n) ? n : 0;
         };
 
-        setStat("shot",      s.shot);
-        setStat("pass",      s.pass);
-        setStat("dribble",   s.dribble);
-        setStat("block",     s.block);
-        setStat("intercept", s.intercept);
-        setStat("tackle",    s.tackle);
-        setStat("attack",    s.attack);
-        setStat("defense",   s.defense);
-        setStat("speed",     s.speed);
-        setStat("stamina",   s.stamina);
-        setStat("hand_save", s.hand_save);
-        setStat("punch_save", s.punch_save);
+        const set = (id, val) => {
+            const el = rootEl.querySelector(id);
+            if (el) el.textContent = String(val);
+        };
 
+        set("#stat-shot",      v("shot"));
+        set("#stat-pass",      v("pass"));
+        set("#stat-dribble",   v("dribble"));
+        set("#stat-block",     v("block"));
+        set("#stat-intercept", v("intercept"));
+        set("#stat-tackle",    v("tackle"));
+
+        // gardien
+        set("#stat-hand_save",  v("hand_save"));
+        set("#stat-punch_save", v("punch_save"));
+
+        // stamina bar (garde ta logique)
         const playerId = getPlayerId(team, slotNumber);
         const value = getStamina(playerId);
         const ratio = value / ENDURANCE_MAX;
@@ -794,12 +796,14 @@ export function initMatchEngine(rootEl, config = {}) {
         if (energyFillEl) {
             energyFillEl.style.width = `${ratio * 100}%`;
             energyFillEl.classList.remove("e-high","e-mid","e-low","e-crit");
+
             if (value >= STAMINA_THRESHOLDS.HIGH) energyFillEl.classList.add("e-high");
             else if (value >= STAMINA_THRESHOLDS.MID) energyFillEl.classList.add("e-mid");
             else if (value >= STAMINA_THRESHOLDS.LOW) energyFillEl.classList.add("e-low");
             else energyFillEl.classList.add("e-crit");
         }
     }
+
 
     function updateTeamCard() {
         updatePlayerCard(ball.team, ball.number);
@@ -1088,11 +1092,23 @@ export function initMatchEngine(rootEl, config = {}) {
 
             if (finishMatchBtn) {
                 finishMatchBtn.onclick = () => {
+                    const internalTeamId = matchConfig?.sides?.internalTeamId;
+                    const externalTeamId = matchConfig?.sides?.externalTeamId;
+
+                    if (!internalTeamId || !externalTeamId) {
+                        console.error("Missing sides mapping in engineConfig", matchConfig?.sides);
+                        return;
+                    }
+
                     const payload = {
-                        homeScore: score.internal,
-                        awayScore: score.external,
                         matchId: matchConfig.matchId,
                         gameSaveId: matchConfig.gameSaveId,
+
+                        // ✅ SOURCE DE VÉRITÉ = teamId → score
+                        scoresByTeamId: {
+                            [internalTeamId]: score.internal,
+                            [externalTeamId]: score.external,
+                        },
                     };
 
                     if (typeof matchConfig.onMatchEnd === "function") {
@@ -1100,6 +1116,7 @@ export function initMatchEngine(rootEl, config = {}) {
                     }
                 };
             }
+
 
             return;
         }
@@ -2065,8 +2082,8 @@ export function initMatchEngine(rootEl, config = {}) {
     function bindPlayerClickHandlers() {
         $$(".player").forEach((el) => {
             el.addEventListener("click", () => {
-                const playerId = el.dataset.player;
-                showPlayerCard(playerId);
+                console.log("CLICK PLAYER", el.dataset.player);
+                showPlayerCard(el.dataset.player);
             });
         });
     }
@@ -2088,6 +2105,8 @@ export function initMatchEngine(rootEl, config = {}) {
         initBasePositions();
         applyRosterToDOM();
         initStamina();
+
+        bindPlayerClickHandlers();
 
         turns              = 0;
         currentTeam        = "internal";

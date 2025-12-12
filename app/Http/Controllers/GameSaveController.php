@@ -380,23 +380,28 @@ class GameSaveController extends Controller
         $homeTeam = $match->homeTeam;
         $awayTeam = $match->awayTeam;
 
-        $controlledGameTeam = GameTeam::where('game_save_id', $gameSave->id)
-            ->where('base_team_id', $gameSave->team_id)
-            ->first() ?? $homeTeam;
+        // ✅ IMPORTANT: on ne swap plus internal/external.
+        // internal = home (DB), external = away (DB)
+        $internalTeam = $homeTeam;
+        $externalTeam = $awayTeam;
 
-        $isControlledHome = ($controlledGameTeam->id === $homeTeam->id);
+        // Déterminer si l'équipe contrôlée est home ou away (DB)
+        $isControlledHome = ((int) $controlledGameTeam->id === (int) $homeTeam->id);
 
-        $internalTeam = $isControlledHome ? $homeTeam : $awayTeam;
-        $externalTeam = $isControlledHome ? $awayTeam : $homeTeam;
+        $controlMode = $request->query('controlMode', 'both'); // both|single
+        if (!in_array($controlMode, ['both', 'single'], true)) {
+            $controlMode = 'both';
+        }
 
-        $controlMode    = $request->query('controlMode', 'both');      // both|single
-        $controlledSide = $request->query('controlledSide', 'internal'); // internal|external
-        if (!in_array($controlMode, ['both','single'], true)) $controlMode = 'both';
-        if (!in_array($controlledSide, ['internal','external'], true)) $controlledSide = 'internal';
+        // ✅ controlledSide par défaut = côté réel en DB
+        $controlledSide = $request->query('controlledSide', $isControlledHome ? 'internal' : 'external');
+        if (!in_array($controlledSide, ['internal', 'external'], true)) {
+            $controlledSide = $isControlledHome ? 'internal' : 'external';
+        }
 
         $mapPlayers = fn($team) => $team->contracts
             ->values()
-            ->map(function ($c, $idx) use ($team) {
+            ->map(function ($c, $idx) {
                 $p = $c->gamePlayer;
 
                 return [
@@ -405,7 +410,7 @@ class GameSaveController extends Controller
                     'firstname' => $p->firstname,
                     'lastname'  => $p->lastname,
                     'position'  => $p->position,
-                    'stats' => [
+                    'stats'     => [
                         'speed'      => $p->speed,
                         'stamina'    => $p->stamina,
                         'attack'     => $p->attack,
@@ -429,7 +434,18 @@ class GameSaveController extends Controller
                 'week'           => $match->week,
                 'maxTurns'       => 30,
                 'controlMode'    => $controlMode,
-                'controlledSide' => $controlledSide, // toujours internal|external
+                'controlledSide' => $controlledSide, // internal|external
+
+                // vérité DB
+                'homeTeamId'     => $match->home_team_id,
+                'awayTeamId'     => $match->away_team_id,
+
+                // mapping UI → DB (maintenu)
+                'sides' => [
+                    'internalTeamId' => $internalTeam->id, // == home_team_id
+                    'externalTeamId' => $externalTeam->id, // == away_team_id
+                ],
+
                 'teams' => [
                     'internal' => [
                         'id'      => $internalTeam->id,
@@ -497,51 +513,78 @@ class GameSaveController extends Controller
         }
     }
 
-    public function finishMatch(Request $request, GameSave $gameSave, GameMatch $match): RedirectResponse
+    public function finishMatch(
+        Request $request,
+        GameSave $gameSave,
+        GameMatch $match
+    ): RedirectResponse
     {
         $this->authorizeSave($request, $gameSave);
 
-        abort_unless($match->game_save_id === $gameSave->id, 404);
+        abort_unless((int) $match->game_save_id === (int) $gameSave->id, 404);
 
-        $data = $request->validate([
-            'home_score' => ['required', 'integer', 'min:0'],
-            'away_score' => ['required', 'integer', 'min:0'],
-        ]);
-
-        // déjà joué ? (sécurité)
+        // Sécurité : match déjà joué
         if ($match->status === 'played') {
             return redirect()->route('game-saves.play', $gameSave);
         }
 
-        // 1) sauver le match
+        /**
+         * ✅ Format attendu (SOURCE DE VÉRITÉ)
+         * scoresByTeamId = {
+         *   [game_team_id]: score,
+         *   ...
+         * }
+         */
+        $data = $request->validate([
+            'scoresByTeamId' => ['required', 'array', 'min:2'],
+            'scoresByTeamId.*' => ['integer', 'min:0'],
+        ]);
+
+        $scores = $data['scoresByTeamId'];
+
+        // IDs DB
+        $homeTeamId = (int) $match->home_team_id;
+        $awayTeamId = (int) $match->away_team_id;
+
+        if (!array_key_exists($homeTeamId, $scores) || !array_key_exists($awayTeamId, $scores)) {
+            abort(422, 'Scores incomplets pour ce match.');
+        }
+
+        $homeScore = (int) $scores[$homeTeamId];
+        $awayScore = (int) $scores[$awayTeamId];
+
+        // 1️⃣ Sauvegarde du match (DB = vérité)
         $match->update([
-            'home_score' => $data['home_score'],
-            'away_score' => $data['away_score'],
+            'home_score' => $homeScore,
+            'away_score' => $awayScore,
             'status'     => 'played',
         ]);
 
-        // 2) MAJ classement (wins/draws/losses)
-        $home = GameTeam::where('game_save_id', $gameSave->id)->findOrFail($match->home_team_id);
-        $away = GameTeam::where('game_save_id', $gameSave->id)->findOrFail($match->away_team_id);
+        // 2️⃣ Mise à jour classement
+        $home = GameTeam::where('game_save_id', $gameSave->id)->findOrFail($homeTeamId);
+        $away = GameTeam::where('game_save_id', $gameSave->id)->findOrFail($awayTeamId);
 
-        if ($data['home_score'] > $data['away_score']) {
-            $home->wins++;  $away->losses++;
-        } elseif ($data['home_score'] < $data['away_score']) {
-            $away->wins++;  $home->losses++;
+        if ($homeScore > $awayScore) {
+            $home->wins++;
+            $away->losses++;
+        } elseif ($homeScore < $awayScore) {
+            $away->wins++;
+            $home->losses++;
         } else {
-            $home->draws++; $away->draws++;
+            $home->draws++;
+            $away->draws++;
         }
 
         $home->save();
         $away->save();
+
+        // 3️⃣ Simulation autres matchs de la semaine
         app(MatchSimulator::class)->simulateOtherMatchesOfWeek($match);
 
-        // (optionnel mais conseillé) avancer la semaine du save
+        // 4️⃣ Avancer la semaine
         $gameSave->week = max($gameSave->week ?? 1, $match->week + 1);
         $gameSave->save();
 
-        // 3) retour dashboard (props à jour)
         return redirect()->route('game-saves.play', $gameSave);
     }
-
 }

@@ -216,14 +216,26 @@ onMounted(() => {
 
     initMatchEngine(gameRoot.value, {
         ...props.engineConfig,
-        onMatchEnd: ({ homeScore, awayScore, matchId, gameSaveId }) => {
+
+        onMatchEnd: ({ matchId, gameSaveId, scoresByTeamId }) => {
             router.post(
                 route('game-saves.matches.finish', { gameSave: gameSaveId, match: matchId }),
-                { home_score: homeScore, away_score: awayScore },
+                { scoresByTeamId },
+                {
+                    preserveScroll: true,
+                    onSuccess: () => {
+                        // ✅ redirection après finish
+                        router.visit(route('game-saves.play', { gameSave: gameSaveId }));
+                        // ou si tu as une vraie route dashboard :
+                        // router.visit(route('game-saves.show', { gameSave: gameSaveId }));
+                        // router.visit(route('game-saves.index'));
+                    },
+                }
             );
         },
     });
 });
+
 
 
 onBeforeUnmount(() => {
