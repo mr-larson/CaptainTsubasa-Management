@@ -14,17 +14,17 @@
                     <div id="score-strip">
                         <div class="">
                             <Link
-                                :href="route('game-saves.play', { gameSave: props.gameSaveId })"
+                                :href="route('game-saves.play', { gameSave: engineConfig.gameSaveId })"
                                 class="bg-slate-500 hover:bg-slate-300 text-center font-semibold py-1 px-5 border-2 border-slate-500 rounded-full drop-shadow-md"
                             >
                                 Retour
                             </Link>
                         </div>
-                        <span class="team-name">Domicile</span>
+                        <span class="team-name" id="team-name-internal">Domicile</span>
                         <span class="score-value" id="score-internal">0</span>
                         <span>-</span>
                         <span class="score-value" id="score-external">0</span>
-                        <span class="team-name">Exterieur</span>
+                        <span class="team-name" id="team-name-external">Exterieur</span>
                         <span class="timer">Tours : <span id="turns-display">00</span>/30</span>
                     </div>
 
@@ -65,12 +65,15 @@
                                 </div>
                             </div>
                             <div id="player-stats">
-                                <div>Shot : <strong>17</strong></div>
-                                <div>Pass : <strong>16</strong></div>
-                                <div>Dribble : <strong>12</strong></div>
-                                <div>Contre : <strong>10</strong></div>
-                                <div>Intercept : <strong>14</strong></div>
-                                <div>Tackle : <strong>13</strong></div>
+                                <div>Shot : <strong id="stat-shot">—</strong></div>
+                                <div>Pass : <strong id="stat-pass">—</strong></div>
+                                <div>Dribble : <strong id="stat-dribble">—</strong></div>
+                                <div>Block : <strong id="stat-block">—</strong></div>
+                                <div>Intercept : <strong id="stat-intercept">—</strong></div>
+                                <div>Tackle : <strong id="stat-tackle">—</strong></div>
+                                <!-- Gardien -->
+                                <div>Arrêt : <strong id="stat-hand_save">—</strong></div>
+                                <div>Poings : <strong id="stat-punch_save">—</strong></div>
                             </div>
                             <div id="energy-bar"><div id="energy-fill" class="e-high"></div></div>
                         </div>
@@ -88,7 +91,7 @@
                                 <div id="current-action-detail">Les duels et détails apparaîtront ici.</div>
                             </div>
                             <div id="log-history">
-                                <div class="log-section-title">Historique (8 derniers coups)</div>
+                                <div class="log-section-title">Historique (5 derniers coups)</div>
                                 <ul id="history-list">
                                     <!-- rempli dynamiquement -->
                                 </ul>
@@ -184,16 +187,16 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
-import H2 from '@/Components/H2.vue';
 import { onMounted, ref, onBeforeUnmount } from 'vue';
-import { initMatchEngine } from '@/Pages/Match/engine';
+import { initMatchEngine } from './engine';
 import './engine.css';
 
-const props = defineProps({
-    gameSaveId: {
-        type: [Number, String],
-        required: true,
-    },
+
+    const props = defineProps({
+        engineConfig: {
+            type: Object,
+                required: true,
+            },
 });
 
 
@@ -201,7 +204,7 @@ const gameRoot = ref(null);
 
 onMounted(() => {
     if (gameRoot.value) {
-        initMatchEngine(gameRoot.value);
+        initMatchEngine(gameRoot.value, props.engineConfig);
     }
 });
 

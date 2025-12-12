@@ -25,13 +25,14 @@ class GameMatch extends Model
         return $this->belongsTo(GameSave::class);
     }
 
+
     public function homeTeam(): BelongsTo
     {
-        return $this->belongsTo(Team::class, 'home_team_id');
+        return $this->belongsTo(GameTeam::class, 'home_team_id');
     }
 
     public function awayTeam(): BelongsTo
     {
-        return $this->belongsTo(Team::class, 'away_team_id');
+        return $this->belongsTo(GameTeam::class, 'away_team_id');
     }
 }

@@ -2,9 +2,6 @@
 
 namespace App\Models;
 
-
-namespace App\Models;
-
 use App\Models\Traits\HasSoccerStats;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -45,9 +42,10 @@ class GamePlayer extends Model
         return $this->belongsTo(Player::class, 'base_player_id');
     }
 
+    // (optionnel mais conseillé) : contrats dans la partie
     public function contracts()
     {
-        return $this->hasMany(GameContract::class);
+        return $this->hasMany(GameContract::class, 'game_player_id');
     }
 
     /**
@@ -63,5 +61,4 @@ class GamePlayer extends Model
     {
         return "{$this->firstname} {$this->lastname}";
     }
-
 }

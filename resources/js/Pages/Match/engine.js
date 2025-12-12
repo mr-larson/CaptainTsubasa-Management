@@ -6,7 +6,7 @@
 
 const ANIM_MS     = 700; // ralenti pour suivre les transitions CSS
 const AI_THINK_MS = 400; // délai "réflexion IA"
-const DIE_SIDES   = 6;   // nombre de faces du dé utilisé dans les calculs de duel
+const DIE_SIDES   = 20;   // nombre de faces du dé utilisé dans les calculs de duel
 
 // ==========================
 //   RÈGLES & CONFIG GLOBALES
@@ -183,10 +183,7 @@ const TEXTS = {
 //   CONSTANTES & STRUCTURE
 // ==========================
 
-const TEAMS = {
-    internal: { id: "internal", label: TEXTS.teams.internal },
-    external: { id: "external", label: TEXTS.teams.external },
-};
+let TEAMS = null;
 
 // Bornes des zones (en % de largeur terrain, côté Internal)
 const ZONE_BOUNDS_INTERNAL = [5, 25, 45, 65, 85];
@@ -227,12 +224,99 @@ const STATS = {
 //   EXPORT PRINCIPAL
 // ==========================
 
-export function initMatchEngine(rootEl) {
+export function initMatchEngine(rootEl, config = {}) {
     if (!rootEl) return;
+    const matchConfig = config || {};
+
+    TEAMS = {
+        internal: {
+            id: "internal",
+            label: matchConfig.teams?.internal?.name ?? TEXTS.teams.internal,
+        },
+        external: {
+            id: "external",
+            label: matchConfig.teams?.external?.name ?? TEXTS.teams.external,
+        },
+    };
+
+    // côté humain contrôlé par défaut : ce qu’on a mis dans la config
+    let controlledTeam = matchConfig.controlledSide ?? "internal";
 
     // Helpers de sélection scoped au root
     const $  = (sel) => rootEl.querySelector(sel);
     const $$ = (sel) => rootEl.querySelectorAll(sel);
+
+    // ==========================
+//   ROSTERS (slot -> player)
+// ==========================
+    const rosters = {
+        internal: new Map(), // key: slotNumber (1..11) => player DTO
+        external: new Map(),
+    };
+
+    function normalizePlayers(list = []) {
+        // on force un tableau
+        return Array.isArray(list) ? list : [];
+    }
+
+    function seedRosterFromConfig(teamKey) {
+        const players = normalizePlayers(matchConfig.teams?.[teamKey]?.players);
+
+        // MVP: on prend les 11 premiers (si moins, on “remplit” avec placeholders)
+        const take = players.slice(0, 11);
+
+        // slots 1..11
+        for (let slot = 1; slot <= 11; slot++) {
+            const p = take[slot - 1] ?? null;
+
+            rosters[teamKey].set(slot, p ? {
+                id: p.id,
+                number: p.number ?? slot,                 // numéro maillot
+                firstname: p.firstname ?? "",
+                lastname: p.lastname ?? "",
+                position: p.position ?? "",
+                stats: p.stats ?? null,
+            } : {
+                id: null,
+                number: slot,
+                firstname: "Joueur",
+                lastname: `#${slot}`,
+                position: "",
+                stats: null,
+            });
+        }
+    }
+
+    seedRosterFromConfig("internal");
+    seedRosterFromConfig("external");
+
+    function getPlayerInfo(team, slotNumber) {
+        return rosters[team]?.get(slotNumber) ?? null;
+    }
+
+    function applyRosterToDOM() {
+        // I1..I11 / E1..E11 existent déjà dans ton template
+        for (const team of ["internal", "external"]) {
+            for (let slot = 1; slot <= 11; slot++) {
+                const id = (team === "internal" ? "I" : "E") + String(slot);
+                const el = rootEl.querySelector(`.player[data-player="${id}"]`);
+                if (!el) continue;
+
+                const info = getPlayerInfo(team, slot);
+                if (!info) continue;
+
+                // Afficher le numéro maillot dans le rond
+                el.textContent = String(info.number);
+
+                // stocker des infos utiles pour debug / UI
+                el.dataset.slot = String(slot);
+                el.dataset.jersey = String(info.number);
+                el.dataset.firstname = info.firstname;
+                el.dataset.lastname = info.lastname;
+                el.dataset.position = info.position;
+            }
+        }
+    }
 
     // ==========================
     //   ÉTAT DU MATCH
@@ -267,11 +351,14 @@ export function initMatchEngine(rootEl) {
 
     // Mode 1 joueur
     let onePlayerMode  = false;
-    let controlledTeam = "internal";
+    const controlMode = matchConfig.controlMode ?? "both"; // "both" | "single"
+    onePlayerMode = (controlMode === "single");
+    controlledTeam = matchConfig.controlledSide ?? "internal"; // côté humain si single
+
 
     // Historique des actions
     const actionHistory = [];
-    const MAX_HISTORY   = 8;
+    const MAX_HISTORY   = 5;
 
     // ==========================
     //   RÉFÉRENCES DOM
@@ -287,6 +374,9 @@ export function initMatchEngine(rootEl) {
     const teamLabelEl     = $("#player-team-label");
     const playerNumberEl  = $("#player-number-label");
     const actionBarEl     = $("#action-bar");
+    const teamNameInternalEl = $("#team-name-internal");
+    const teamNameExternalEl = $("#team-name-external");
+
 
     // Log visuel
     const currentActionTitleEl  = $("#current-action-title");
@@ -314,7 +404,7 @@ export function initMatchEngine(rootEl) {
         return onePlayerMode && team !== controlledTeam;
     }
 
-    function rollD6() {
+    function rollDie() {
         return 1 + Math.floor(Math.random() * DIE_SIDES);
     }
 
@@ -568,7 +658,9 @@ export function initMatchEngine(rootEl) {
 
         ballEl.style.left  = x + "%";
         ballEl.style.top   = y + "%";
-        ballEl.textContent = number;
+        const info = getPlayerInfo(team, number);
+        ballEl.textContent = info ? String(info.number) : String(number);
+
 
         ball.team          = team;
         ball.number        = number;
@@ -619,31 +711,67 @@ export function initMatchEngine(rootEl) {
     //   PLAYER CARD
     // ==========================
 
-    function updatePlayerCard(team, number) {
+    function updatePlayerCard(team, slotNumber) {
         if (!teamLabelEl || !playerNumberEl) return;
 
-        teamLabelEl.textContent    = TEAMS[team].label;
-        playerNumberEl.textContent = number;
+        const info = getPlayerInfo(team, slotNumber);
+        teamLabelEl.textContent = TEAMS[team].label;
 
-        const playerId = getPlayerId(team, number);
-        const value    = getStamina(playerId);
-        const ratio    = value / ENDURANCE_MAX;
+        // numéro affiché = numéro maillot
+        playerNumberEl.textContent = info ? info.number : slotNumber;
+
+        const nameEl = $("#player-name");
+        const roleEl = $("#player-role-label");
+
+        if (nameEl && info) {
+            const full = `${info.firstname ?? ""} ${info.lastname ?? ""}`.trim();
+            nameEl.textContent = full || `Joueur #${info.number}`;
+        }
+        if (roleEl && info) {
+            roleEl.textContent = info.position || "—";
+        }
+
+        // ✅ STATS (sidebar) : on pousse les stats du GamePlayer
+        const s = (info && info.stats) ? info.stats : {};
+
+        const setStat = (key, value) => {
+            // support ids possibles
+            const byId =
+                rootEl.querySelector(`#stat-${key}`) ||
+                rootEl.querySelector(`#player-stat-${key}`) ||
+                rootEl.querySelector(`[data-stat="${key}"]`);
+
+            if (byId) byId.textContent = (value ?? "—");
+        };
+
+        setStat("shot",      s.shot);
+        setStat("pass",      s.pass);
+        setStat("dribble",   s.dribble);
+        setStat("block",     s.block);
+        setStat("intercept", s.intercept);
+        setStat("tackle",    s.tackle);
+        setStat("attack",    s.attack);
+        setStat("defense",   s.defense);
+        setStat("speed",     s.speed);
+        setStat("stamina",   s.stamina);
+        setStat("hand_save", s.hand_save);
+        setStat("punch_save", s.punch_save);
+
+        // stamina UI (reste basé sur le SLOT)
+        const playerId = getPlayerId(team, slotNumber);
+        const value = getStamina(playerId);
+        const ratio = value / ENDURANCE_MAX;
 
         if (energyFillEl) {
             energyFillEl.style.width = `${ratio * 100}%`;
             energyFillEl.classList.remove("e-high","e-mid","e-low","e-crit");
-
-            if (value >= STAMINA_THRESHOLDS.HIGH) {
-                energyFillEl.classList.add("e-high");
-            } else if (value >= STAMINA_THRESHOLDS.MID) {
-                energyFillEl.classList.add("e-mid");
-            } else if (value >= STAMINA_THRESHOLDS.LOW) {
-                energyFillEl.classList.add("e-low");
-            } else {
-                energyFillEl.classList.add("e-crit");
-            }
+            if (value >= STAMINA_THRESHOLDS.HIGH) energyFillEl.classList.add("e-high");
+            else if (value >= STAMINA_THRESHOLDS.MID) energyFillEl.classList.add("e-mid");
+            else if (value >= STAMINA_THRESHOLDS.LOW) energyFillEl.classList.add("e-low");
+            else energyFillEl.classList.add("e-crit");
         }
     }
+
 
     function updateTeamCard() {
         updatePlayerCard(ball.team, ball.number);
@@ -1036,8 +1164,8 @@ export function initMatchEngine(rootEl) {
             attackScore  += DUEL_RULES.GENERIC_ATTACK_BONUS;
         }
 
-        attackScore  += rollD6();
-        defenseScore += rollD6();
+        attackScore  += rollDie();
+        defenseScore += rollDie();
 
         showDuelDice(attackScore, defenseScore);
 
@@ -1236,8 +1364,8 @@ export function initMatchEngine(rootEl) {
             attackScore  += DUEL_RULES.GENERIC_ATTACK_BONUS;
         }
 
-        attackScore  += rollD6();
-        defenseScore += rollD6();
+        attackScore  += rollDie();
+        defenseScore += rollDie();
 
         showDuelDice(attackScore, defenseScore);
 
@@ -1429,8 +1557,8 @@ export function initMatchEngine(rootEl) {
         let attackScore  = gkAttackBase * staminaFactor(attackerId);
         let defenseScore = getKeeperDefensePower(defenseAction);
 
-        attackScore  += rollD6();
-        defenseScore += rollD6();
+        attackScore  += rollDie();
+        defenseScore += rollDie();
 
         showDuelDice(attackScore, defenseScore);
 
@@ -1520,8 +1648,8 @@ export function initMatchEngine(rootEl) {
             let attackScore  = STATS.attack[attackType].power * staminaFactor(attackerId);
             let defenseScore = getKeeperDefensePower(defenseAction);
 
-            attackScore  += rollD6();
-            defenseScore += rollD6();
+            attackScore  += rollDie();
+            defenseScore += rollDie();
 
             showDuelDice(attackScore, defenseScore);
 
@@ -1611,8 +1739,8 @@ export function initMatchEngine(rootEl) {
             fieldAttackScore  += DUEL_RULES.GENERIC_ATTACK_BONUS;
         }
 
-        fieldAttackScore  += rollD6();
-        fieldDefenseScore += rollD6();
+        fieldAttackScore  += rollDie();
+        fieldDefenseScore += rollDie();
 
         showDuelDice(fieldAttackScore, fieldDefenseScore);
 
@@ -1838,6 +1966,7 @@ export function initMatchEngine(rootEl) {
 
     function init() {
         initBasePositions();
+        applyRosterToDOM();
         initStamina();
         bindPlayerClickHandlers();
 
@@ -1868,20 +1997,37 @@ export function initMatchEngine(rootEl) {
         refreshUI();
 
         if (modeOnePlayerBtn) {
+            const syncModeLabel = () => {
+                modeOnePlayerBtn.classList.toggle("active", onePlayerMode);
+                modeOnePlayerBtn.textContent = onePlayerMode ? "Mode 1 joueur (ON)" : "Mode 2 joueurs (ON)";
+            };
+
+            syncModeLabel();
+
             modeOnePlayerBtn.addEventListener("click", () => {
                 onePlayerMode = !onePlayerMode;
-                modeOnePlayerBtn.classList.toggle("active", onePlayerMode);
-                modeOnePlayerBtn.textContent = onePlayerMode
-                    ? "Mode 1 joueur (ON)"
-                    : "Mode 1 joueur (OFF)";
+                syncModeLabel();
+
+                // si on repasse en 2 joueurs, l’IA ne doit plus jouer
+                setAIOverlay(false);
             });
         }
 
         if (controlledTeamSelect) {
+            controlledTeamSelect.value = controlledTeam;
             controlledTeamSelect.addEventListener("change", () => {
                 controlledTeam = controlledTeamSelect.value === "external" ? "external" : "internal";
             });
         }
+
+        if (teamNameInternalEl) {
+            teamNameInternalEl.textContent = TEAMS.internal.label;
+        }
+        if (teamNameExternalEl) {
+            teamNameExternalEl.textContent = TEAMS.external.label;
+        }
+
+
     }
 
     init();

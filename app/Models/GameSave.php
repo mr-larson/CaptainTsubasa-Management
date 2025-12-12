@@ -12,12 +12,15 @@ class GameSave extends Model
     protected $fillable = [
         'user_id',
         'team_id',
+        'controlled_game_team_id',
+        'control_mode',
         'period',
         'season',
         'week',
         'label',
         'state',
     ];
+
 
     protected $casts = [
         'state' => 'array',
@@ -53,5 +56,8 @@ class GameSave extends Model
         return $this->hasMany(GameContract::class);
     }
 
-
+    public function controlledGameTeam()
+    {
+        return $this->belongsTo(GameTeam::class, 'controlled_game_team_id');
+    }
 }

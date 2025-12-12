@@ -83,11 +83,12 @@ const opponentNameFor = (match) => {
  * -> on map sur contracts.player
  */
 const roster = computed(() => {
-    if (!team.value || !team.value.contracts) return [];
+    if (!team.value || !Array.isArray(team.value.contracts)) return [];
     return team.value.contracts
-        .map(c => c.player)
-        .filter(p => !!p);
+        .map(c => c.game_player)
+        .filter(Boolean);
 });
+
 
 /**
  * Bilan simple de l'équipe (GameTeam)
@@ -166,15 +167,16 @@ const nextMatch = computed(() => {
 const nextMatchInfo = computed(() => {
     if (!nextMatch.value || !team.value) return null;
 
-    const isHome   = nextMatch.value.home_team_id === team.value.id;
-    const opponent = isHome ? nextMatch.value.away_team : nextMatch.value.home_team;
+    const isHome = nextMatch.value.home_team_id === team.value.id;
+    const opponent = isHome ? nextMatch.value.away_team : nextMatch.value.home_team; // ✅
 
     return {
         isHome,
-        opponentName: opponent?.name ?? 'Adversaire inconnu',
+        opponentName: opponent?.name ?? opponentNameFor(nextMatch.value),
         week: nextMatch.value.week,
     };
 });
+
 
 /**
  * Label lisible pour un match donné (pour la liste)
@@ -222,13 +224,10 @@ const selectedOtherTeam = computed(() => {
  * Effectif de l’équipe sélectionnée (GameTeam + GameContracts)
  */
 const selectedOtherTeamRoster = computed(() => {
-    if (!selectedOtherTeam.value || !selectedOtherTeam.value.contracts) {
-        return [];
-    }
-
+    if (!selectedOtherTeam.value || !Array.isArray(selectedOtherTeam.value.contracts)) return [];
     return selectedOtherTeam.value.contracts
-        .map(c => c.player)
-        .filter(p => !!p);
+        .map(c => c.gamePlayer ?? c.game_player ?? c.player ?? null)
+        .filter(Boolean);
 });
 
 const selectOtherTeam = (t) => {
@@ -1222,7 +1221,8 @@ const playNextMatch = () => {
                                     </td>
 
                                     <td class="py-1 pr-2">
-                                        {{ team && match.home_team_id === team.i ? 'Domicile' : 'Extérieur' }}
+                                        <span v-if="!team">-</span>
+                                        <span v-else>{{ match.home_team_id === team.id ? 'Domicile' : 'Extérieur' }}</span>
                                     </td>
 
                                     <td class="py-1 pr-2 text-right">

@@ -84,8 +84,8 @@ class GameSaveController extends Controller
         // -----------------------------
         $teams = Team::orderBy('id')->get();
 
-        $teamCount     = $teams->count();
-        $seasonLength  = max(1, ($teamCount - 1) * 2); // sécurité min 1
+        $teamCount    = $teams->count();
+        $seasonLength = max(1, ($teamCount - 1) * 2);
 
         $gameTeamsByBaseId = [];
 
@@ -102,6 +102,12 @@ class GameSaveController extends Controller
             ]);
 
             $gameTeamsByBaseId[$team->id] = $gameTeam;
+        }
+
+        $controlled = $gameTeamsByBaseId[$data['team_id']] ?? null;
+        if ($controlled) {
+            $gameSave->controlled_game_team_id = $controlled->id;
+            $gameSave->save();
         }
 
 
@@ -180,35 +186,31 @@ class GameSaveController extends Controller
     {
         $this->authorizeSave($request, $gameSave);
 
-        // 🔹 Toutes les équipes de la PARTIE (GameTeam)
-        $gameTeams = GameTeam::with(['contracts.player'])
+        $gameTeams = GameTeam::with(['contracts.gamePlayer'])
             ->where('game_save_id', $gameSave->id)
             ->orderBy('name')
             ->get();
 
-        // 🔹 Équipe contrôlée = GameTeam clonée à partir de la team_id de base
-        $controlledTeam = $gameTeams->firstWhere('base_team_id', $gameSave->team_id);
+        // charge la relation contrôlée
+        $gameSave->load('controlledGameTeam');
 
-        // Sécu : si jamais rien trouvé, on prend la première
-        if (! $controlledTeam && $gameTeams->isNotEmpty()) {
-            $controlledTeam = $gameTeams->first();
-        }
+        $controlledTeam = $gameTeams->firstWhere('base_team_id', $gameSave->team_id)
+            ?? $gameTeams->first();
 
-        // 🔹 Générer le calendrier sur base des GameTeams
         $this->ensureCalendar($gameSave, $gameTeams);
 
-        // 🔹 Matchs de la partie (GameMatch + relations homeTeam / awayTeam sur GameTeam)
         $matches = GameMatch::with(['homeTeam', 'awayTeam'])
             ->where('game_save_id', $gameSave->id)
             ->orderBy('week')
             ->get();
 
-        // 🔹 Joueurs libres = GamePlayer de cette partie sans GameContract
         $freePlayers = GamePlayer::where('game_save_id', $gameSave->id)
-            ->whereDoesntHave('contracts')   // relation sur GamePlayer
+            ->whereDoesntHave('contracts')
             ->orderBy('lastname')
             ->orderBy('firstname')
             ->get();
+
+        $gameTeams->loadMissing(['contracts.gamePlayer']);
 
         return Inertia::render('GameSaves/Play', [
             'gameSave'       => $gameSave,
@@ -218,7 +220,6 @@ class GameSaveController extends Controller
             'controlledTeam' => $controlledTeam,
         ]);
     }
-
 
     public function signFreeAgent(Request $request, GameSave $gameSave, GamePlayer $player): RedirectResponse
     {
@@ -241,7 +242,6 @@ class GameSaveController extends Controller
         // Déjà sous contrat ?
         $alreadyHasContract = GameContract::where('game_save_id', $gameSave->id)
             ->where('game_player_id', $player->id)
-            ->whereNull('end_week')
             ->exists();
 
         if ($alreadyHasContract) {
@@ -351,12 +351,97 @@ class GameSaveController extends Controller
     /**
      * Écran de match pour une session.
      */
+    /**
+     * Écran de match pour une session.
+     */
     public function match(Request $request, GameSave $gameSave): Response
     {
         $this->authorizeSave($request, $gameSave);
 
+        $controlledGameTeam = GameTeam::where('game_save_id', $gameSave->id)
+            ->where('base_team_id', $gameSave->team_id)
+            ->firstOrFail();
+
+        $match = GameMatch::with([
+            'homeTeam.contracts.gamePlayer.basePlayer',
+            'awayTeam.contracts.gamePlayer.basePlayer',
+        ])
+            ->where('game_save_id', $gameSave->id)
+            ->where('status', 'scheduled')
+            ->where('week', '>=', $gameSave->week ?? 1)
+            ->where(function ($q) use ($controlledGameTeam) {
+                $q->where('home_team_id', $controlledGameTeam->id)
+                    ->orWhere('away_team_id', $controlledGameTeam->id);
+            })
+            ->orderBy('week')
+            ->firstOrFail();
+
+        $homeTeam = $match->homeTeam;
+        $awayTeam = $match->awayTeam;
+
+        $controlledGameTeam = GameTeam::where('game_save_id', $gameSave->id)
+            ->where('base_team_id', $gameSave->team_id)
+            ->first() ?? $homeTeam;
+
+        $isControlledHome = ($controlledGameTeam->id === $homeTeam->id);
+
+        $internalTeam = $isControlledHome ? $homeTeam : $awayTeam;
+        $externalTeam = $isControlledHome ? $awayTeam : $homeTeam;
+
+        $controlMode    = $request->query('controlMode', 'both');      // both|single
+        $controlledSide = $request->query('controlledSide', 'internal'); // internal|external
+        if (!in_array($controlMode, ['both','single'], true)) $controlMode = 'both';
+        if (!in_array($controlledSide, ['internal','external'], true)) $controlledSide = 'internal';
+
+        $mapPlayers = fn($team) => $team->contracts
+            ->values()
+            ->map(function ($c, $idx) use ($team) {
+                $p = $c->gamePlayer;
+
+                return [
+                    'id'        => $p->id,
+                    'number'    => $idx + 1,
+                    'firstname' => $p->firstname,
+                    'lastname'  => $p->lastname,
+                    'position'  => $p->position,
+                    'stats' => [
+                        'speed'      => $p->speed,
+                        'stamina'    => $p->stamina,
+                        'attack'     => $p->attack,
+                        'defense'    => $p->defense,
+                        'shot'       => $p->shot,
+                        'pass'       => $p->pass,
+                        'dribble'    => $p->dribble,
+                        'block'      => $p->block,
+                        'intercept'  => $p->intercept,
+                        'tackle'     => $p->tackle,
+                        'hand_save'  => $p->hand_save,
+                        'punch_save' => $p->punch_save,
+                    ],
+                ];
+            })->values();
+
         return Inertia::render('Match/Engine', [
-            'gameSaveId' => $gameSave->id,
+            'engineConfig' => [
+                'gameSaveId'     => $gameSave->id,
+                'matchId'        => $match->id,
+                'week'           => $match->week,
+                'maxTurns'       => 30,
+                'controlMode'    => $controlMode,
+                'controlledSide' => $controlledSide, // toujours internal|external
+                'teams' => [
+                    'internal' => [
+                        'id'      => $internalTeam->id,
+                        'name'    => $internalTeam->name,
+                        'players' => $mapPlayers($internalTeam),
+                    ],
+                    'external' => [
+                        'id'      => $externalTeam->id,
+                        'name'    => $externalTeam->name,
+                        'players' => $mapPlayers($externalTeam),
+                    ],
+                ],
+            ],
         ]);
     }
 

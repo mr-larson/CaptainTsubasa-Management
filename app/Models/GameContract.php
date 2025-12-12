@@ -17,21 +17,28 @@ class GameContract extends Model
         'start_week',
         'end_week',
     ];
+    protected $casts = [
+        'salary'     => 'integer',
+        'start_week' => 'integer',
+        'end_week'   => 'integer',
+    ];
+
 
     public function gameSave()
     {
         return $this->belongsTo(GameSave::class);
     }
 
-    public function team()
+    public function gameTeam()
     {
         return $this->belongsTo(GameTeam::class, 'game_team_id');
     }
 
-    public function player()
+    public function gamePlayer()
     {
         return $this->belongsTo(GamePlayer::class, 'game_player_id');
     }
+
 
     public function isActive(int $currentWeek): bool
     {
