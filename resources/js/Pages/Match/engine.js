@@ -294,6 +294,58 @@ export function initMatchEngine(rootEl, config = {}) {
         return rosters[team]?.get(slotNumber) ?? null;
     }
 
+    function clampStat(v) {
+        const n = Number(v ?? 0);
+        return Number.isFinite(n) ? Math.max(0, n) : 0;
+    }
+
+    function getStat(team, slotNumber, key) {
+        const info = getPlayerInfo(team, slotNumber);
+        const stats = info?.stats ?? {};
+        return clampStat(stats[key]);
+    }
+
+    // petit coefficient pour ne pas exploser l’équilibrage (à ajuster)
+    const STAT_COEF = 0.6;
+
+    function attackBaseFor(actionKey, team, slotNumber) {
+        // base “générique” + stat dédiée
+        const base = STATS.attack[actionKey]?.power ?? 10;
+
+        if (actionKey === "pass")    return base + getStat(team, slotNumber, "pass") * STAT_COEF;
+        if (actionKey === "dribble") return base + getStat(team, slotNumber, "dribble") * STAT_COEF;
+        if (actionKey === "shot")    return base + getStat(team, slotNumber, "shot") * STAT_COEF;
+
+        // special offensif => ATTACK
+        if (actionKey === "special") return base + getStat(team, slotNumber, "attack") * STAT_COEF;
+
+        return base;
+    }
+
+    function defenseBaseFor(defenseAction, defenseTeam, defenseSlotNumber, isKeeper = false) {
+        const baseField = STATS.defenseField[defenseAction]?.power;
+        const baseGk    = STATS.defenseGK[defenseAction]?.power;
+        const base      = (baseField ?? baseGk ?? 10);
+
+        if (isKeeper) {
+            if (defenseAction === "hands") return base + getStat(defenseTeam, defenseSlotNumber, "hand_save") * STAT_COEF;
+            if (defenseAction === "punch") return base + getStat(defenseTeam, defenseSlotNumber, "punch_save") * STAT_COEF;
+            // special défensif gardien => DEFENSE
+            if (defenseAction === "gk-special") return base + getStat(defenseTeam, defenseSlotNumber, "defense") * STAT_COEF;
+            return base;
+        }
+
+        if (defenseAction === "block")     return base + getStat(defenseTeam, defenseSlotNumber, "block") * STAT_COEF;
+        if (defenseAction === "intercept") return base + getStat(defenseTeam, defenseSlotNumber, "intercept") * STAT_COEF;
+        if (defenseAction === "tackle")    return base + getStat(defenseTeam, defenseSlotNumber, "tackle") * STAT_COEF;
+
+        // special défensif terrain => DEFENSE
+        if (defenseAction === "field-special") return base + getStat(defenseTeam, defenseSlotNumber, "defense") * STAT_COEF;
+
+        return base;
+    }
+
+
     function applyRosterToDOM() {
         // I1..I11 / E1..E11 existent déjà dans ton template
         for (const team of ["internal", "external"]) {
@@ -1154,15 +1206,25 @@ export function initMatchEngine(rootEl, config = {}) {
 
         const attackerId = getPlayerId(attackTeam, ball.number);
 
-        let attackScore  = STATS.attack.pass.power * staminaFactor(attackerId);
-        let defenseScore = getFieldDefensePower(defenseAction);
+        const originZone = ball.zoneIndex;
+        const originLane = ball.laneIndex;
 
-        const isGoodCounter = (defenseAction === "intercept");
-        if (isGoodCounter) {
-            defenseScore += DUEL_RULES.GOOD_COUNTER_BONUS;
-        } else {
-            attackScore  += DUEL_RULES.GENERIC_ATTACK_BONUS;
-        }
+        // défenseur impliqué (il faut le choisir AVANT de calculer defenseScore)
+        let defZone = getFacingZoneIndex(originZone);
+        let defLane = originLane;
+
+        let defenderId =
+            getClosestPlayerInCell(defenseTeam, defZone, defLane) ||
+            getRandomFieldPlayer(defenseTeam);
+
+        let defenderSlot = defenderId ? parseInt(defenderId.slice(1), 10) : 6;
+
+        // scores (stats dynamiques)
+        let attackScore =
+            attackBaseFor("pass", attackTeam, ball.number) * staminaFactor(attackerId);
+
+        let defenseScore =
+            defenseBaseFor(defenseAction, defenseTeam, defenderSlot, false);
 
         attackScore  += rollDie();
         defenseScore += rollDie();
@@ -1171,18 +1233,10 @@ export function initMatchEngine(rootEl, config = {}) {
 
         const diff     = attackScore - defenseScore;
         const ok       = diff > 0;
-        const duelText = `Duel stats : ${attackScore.toFixed(1)} - ${defenseScore.toFixed(1)} (${diff > 0 ? "+"+diff.toFixed(1) : diff.toFixed(1)})`;
+        const duelText = `Duel stats : ${attackScore.toFixed(1)} - ${defenseScore.toFixed(1)} (${diff > 0 ? "+" + diff.toFixed(1) : diff.toFixed(1)})`;
 
+        // stamina
         applyStaminaCost(attackerId, "attack", "pass");
-
-        const originZone = ball.zoneIndex;
-        const originLane = ball.laneIndex;
-
-        // défenseur impliqué dans le duel (pour la stamina)
-        let defZone = getFacingZoneIndex(originZone);
-        let defLane = originLane;
-        let defenderId = getClosestPlayerInCell(defenseTeam, defZone, defLane)
-            || getRandomFieldPlayer(defenseTeam);
         if (defenderId) {
             applyStaminaCost(defenderId, "defenseField", defenseAction);
         }
@@ -1354,15 +1408,26 @@ export function initMatchEngine(rootEl, config = {}) {
 
         const attackerId = getPlayerId(attackTeam, ball.number);
 
-        let attackScore  = STATS.attack.dribble.power * staminaFactor(attackerId);
-        let defenseScore = getFieldDefensePower(defenseAction);
-        const isGoodCounter = (defenseAction === "tackle");
+        const oldZone = ball.zoneIndex;
+        const lane    = ball.laneIndex;
 
-        if (isGoodCounter) {
-            defenseScore += DUEL_RULES.GOOD_COUNTER_BONUS;
-        } else {
-            attackScore  += DUEL_RULES.GENERIC_ATTACK_BONUS;
-        }
+        const defZone = getFacingZoneIndex(oldZone);
+        const defLane = lane;
+
+// choisir le défenseur AVANT d'utiliser ses stats
+        const defenderId =
+            getClosestPlayerInCell(defenseTeam, defZone, defLane) ||
+            getRandomFieldPlayer(defenseTeam);
+
+        const defenderSlot = defenderId ? parseInt(defenderId.slice(1), 10) : 6;
+
+// scores dynamiques
+        let attackScore =
+            attackBaseFor("dribble", attackTeam, ball.number) *
+            staminaFactor(attackerId);
+
+        let defenseScore =
+            defenseBaseFor(defenseAction, defenseTeam, defenderSlot, false);
 
         attackScore  += rollDie();
         defenseScore += rollDie();
@@ -1373,17 +1438,8 @@ export function initMatchEngine(rootEl, config = {}) {
         const ok       = diff > 0;
         const duelText = `Duel stats : ${attackScore.toFixed(1)} - ${defenseScore.toFixed(1)} (${diff > 0 ? "+" + diff.toFixed(1) : diff.toFixed(1)})`;
 
+        // stamina
         applyStaminaCost(attackerId, "attack", "dribble");
-
-        const oldZone   = ball.zoneIndex;
-        const lane      = ball.laneIndex;
-        let newZone     = oldZone;
-
-        // défenseur impliqué (pour stamina)
-        const defZone   = getFacingZoneIndex(oldZone);
-        const defLane   = lane;
-        const defenderId = getClosestPlayerInCell(defenseTeam, defZone, defLane)
-            || getRandomFieldPlayer(defenseTeam);
         if (defenderId) {
             applyStaminaCost(defenderId, "defenseField", defenseAction);
         }
@@ -1391,6 +1447,8 @@ export function initMatchEngine(rootEl, config = {}) {
         const prefix     = attackTeam === "internal" ? "I" : "E";
         const carrierId  = prefix + String(ball.number);
         const carrierEl  = rootEl.querySelector(`[data-player="${carrierId}"]`);
+
+        let newZone = oldZone;
 
         if (ok) {
             if (oldZone < 3) {
@@ -1555,7 +1613,8 @@ export function initMatchEngine(rootEl, config = {}) {
         const keeperId   = getKeeperId(defenseTeam);
 
         let attackScore  = gkAttackBase * staminaFactor(attackerId);
-        let defenseScore = getKeeperDefensePower(defenseAction);
+        let defenseScore = defenseBaseFor(defenseAction, defenseTeam, 1, true);
+
 
         attackScore  += rollDie();
         defenseScore += rollDie();
@@ -1645,8 +1704,10 @@ export function initMatchEngine(rootEl, config = {}) {
         if (ball.frontOfKeeper) {
             const keeperId = getKeeperId(defenseTeam);
 
-            let attackScore  = STATS.attack[attackType].power * staminaFactor(attackerId);
-            let defenseScore = getKeeperDefensePower(defenseAction);
+            let attackScore = attackBaseFor(attackType, attackTeam, ball.number) * staminaFactor(attackerId);
+
+            // gardien = slot 1 (I1/E1) dans ton layout
+            let defenseScore = defenseBaseFor(defenseAction, defenseTeam, 1, true);
 
             attackScore  += rollDie();
             defenseScore += rollDie();
@@ -1727,17 +1788,19 @@ export function initMatchEngine(rootEl, config = {}) {
         const logParts   = [];
         const facingZone = getFacingZoneIndex(originZone);
 
-        let fieldAttackScore  = STATS.attack[attackType].power * staminaFactor(attackerId);
-        let fieldDefenseScore = getFieldDefensePower(defenseAction);
+        // choisir le défenseur AVANT d'utiliser ses stats
+        const defenderId =
+            getClosestPlayerInCell(defenseTeam, facingZone, originLane) ||
+            getRandomFieldPlayer(defenseTeam);
 
-        const isGoodCounterField =
-            (defenseAction === "block" || defenseAction === "field-special");
+        const defenderSlot = defenderId ? parseInt(defenderId.slice(1), 10) : 6;
 
-        if (isGoodCounterField) {
-            fieldDefenseScore += DUEL_RULES.GOOD_COUNTER_BONUS;
-        } else {
-            fieldAttackScore  += DUEL_RULES.GENERIC_ATTACK_BONUS;
-        }
+        let fieldAttackScore =
+            attackBaseFor(isSpecial ? "special" : "shot", attackTeam, ball.number) *
+            staminaFactor(attackerId);
+
+        let fieldDefenseScore =
+            defenseBaseFor(defenseAction, defenseTeam, defenderSlot, false);
 
         fieldAttackScore  += rollDie();
         fieldDefenseScore += rollDie();
@@ -1749,11 +1812,8 @@ export function initMatchEngine(rootEl, config = {}) {
         const fieldText = `Duel tir vs défense : ${fieldAttackScore.toFixed(1)}-${fieldDefenseScore.toFixed(1)} (${diffField > 0 ? "+"+diffField.toFixed(1) : diffField.toFixed(1)})`;
         logParts.push(fieldText);
 
-        applyStaminaCost(attackerId, "attack", attackType);
-
-        // stamina défenseur de champ
-        const defenderId = getClosestPlayerInCell(defenseTeam, facingZone, originLane)
-            || getRandomFieldPlayer(defenseTeam);
+        // stamina (attaquant + défenseur)
+        applyStaminaCost(attackerId, "attack", isSpecial ? "special" : "shot");
         if (defenderId) {
             applyStaminaCost(defenderId, "defenseField", defenseAction);
         }
