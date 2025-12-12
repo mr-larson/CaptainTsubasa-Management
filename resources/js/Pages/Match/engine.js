@@ -6,7 +6,7 @@
 
 const ANIM_MS     = 700; // ralenti pour suivre les transitions CSS
 const AI_THINK_MS = 400; // délai "réflexion IA"
-const DIE_SIDES   = 20;   // nombre de faces du dé utilisé dans les calculs de duel
+const DIE_SIDES   = 20;  // nombre de faces du dé utilisé dans les calculs de duel
 
 // ==========================
 //   RÈGLES & CONFIG GLOBALES
@@ -247,35 +247,45 @@ export function initMatchEngine(rootEl, config = {}) {
     const $$ = (sel) => rootEl.querySelectorAll(sel);
 
     // ==========================
-//   ROSTERS (slot -> player)
-// ==========================
+    //   ROSTERS (slot -> player)
+    // ==========================
     const rosters = {
         internal: new Map(), // key: slotNumber (1..11) => player DTO
         external: new Map(),
     };
 
     function normalizePlayers(list = []) {
-        // on force un tableau
         return Array.isArray(list) ? list : [];
     }
 
     function seedRosterFromConfig(teamKey) {
         const players = normalizePlayers(matchConfig.teams?.[teamKey]?.players);
-
-        // MVP: on prend les 11 premiers (si moins, on “remplit” avec placeholders)
         const take = players.slice(0, 11);
 
-        // slots 1..11
         for (let slot = 1; slot <= 11; slot++) {
             const p = take[slot - 1] ?? null;
 
             rosters[teamKey].set(slot, p ? {
                 id: p.id,
-                number: p.number ?? slot,                 // numéro maillot
+                number: p.number ?? slot,
                 firstname: p.firstname ?? "",
                 lastname: p.lastname ?? "",
                 position: p.position ?? "",
-                stats: p.stats ?? null,
+                // ✅ FIX: fallback stats si elles ne sont pas dans p.stats
+                stats: p.stats ?? {
+                    shot: p.shot ?? 0,
+                    pass: p.pass ?? 0,
+                    dribble: p.dribble ?? 0,
+                    tackle: p.tackle ?? 0,
+                    intercept: p.intercept ?? 0,
+                    block: p.block ?? 0,
+                    attack: p.attack ?? 0,
+                    defense: p.defense ?? 0,
+                    speed: p.speed ?? 0,
+                    stamina: p.stamina ?? 0,
+                    hand_save: p.hand_save ?? 0,
+                    punch_save: p.punch_save ?? 0,
+                },
             } : {
                 id: null,
                 number: slot,
@@ -305,11 +315,9 @@ export function initMatchEngine(rootEl, config = {}) {
         return clampStat(stats[key]);
     }
 
-    // petit coefficient pour ne pas exploser l’équilibrage (à ajuster)
     const STAT_COEF = 0.6;
 
     function attackBaseFor(actionKey, team, slotNumber) {
-        // base “générique” + stat dédiée
         const base = STATS.attack[actionKey]?.power ?? 10;
 
         if (actionKey === "pass")    return base + getStat(team, slotNumber, "pass") * STAT_COEF;
@@ -330,8 +338,7 @@ export function initMatchEngine(rootEl, config = {}) {
         if (isKeeper) {
             if (defenseAction === "hands") return base + getStat(defenseTeam, defenseSlotNumber, "hand_save") * STAT_COEF;
             if (defenseAction === "punch") return base + getStat(defenseTeam, defenseSlotNumber, "punch_save") * STAT_COEF;
-            // special défensif gardien => DEFENSE
-            if (defenseAction === "gk-special") return base + getStat(defenseTeam, defenseSlotNumber, "defense") * STAT_COEF;
+            if (defenseAction === "gk-special") return base + getStat(defenseTeam, defenseSlotNumber, "defense") * STAT_COEF; // special def => defense
             return base;
         }
 
@@ -339,15 +346,12 @@ export function initMatchEngine(rootEl, config = {}) {
         if (defenseAction === "intercept") return base + getStat(defenseTeam, defenseSlotNumber, "intercept") * STAT_COEF;
         if (defenseAction === "tackle")    return base + getStat(defenseTeam, defenseSlotNumber, "tackle") * STAT_COEF;
 
-        // special défensif terrain => DEFENSE
-        if (defenseAction === "field-special") return base + getStat(defenseTeam, defenseSlotNumber, "defense") * STAT_COEF;
+        if (defenseAction === "field-special") return base + getStat(defenseTeam, defenseSlotNumber, "defense") * STAT_COEF; // special def => defense
 
         return base;
     }
 
-
     function applyRosterToDOM() {
-        // I1..I11 / E1..E11 existent déjà dans ton template
         for (const team of ["internal", "external"]) {
             for (let slot = 1; slot <= 11; slot++) {
                 const id = (team === "internal" ? "I" : "E") + String(slot);
@@ -357,10 +361,8 @@ export function initMatchEngine(rootEl, config = {}) {
                 const info = getPlayerInfo(team, slot);
                 if (!info) continue;
 
-                // Afficher le numéro maillot dans le rond
                 el.textContent = String(info.number);
 
-                // stocker des infos utiles pour debug / UI
                 el.dataset.slot = String(slot);
                 el.dataset.jersey = String(info.number);
                 el.dataset.firstname = info.firstname;
@@ -386,29 +388,24 @@ export function initMatchEngine(rootEl, config = {}) {
     let score              = { internal: 0, external: 0 };
     let turns              = 0;
 
-    let phase              = "attack";     // 'attack' ou 'defense'
-    let pendingAttack      = null;         // 'pass' | 'dribble' | 'shot' | 'special'
+    let phase              = "attack";
+    let pendingAttack      = null;
     let isAnimating        = false;
     let isKickoff          = true;
     let isGameOver         = false;
     let pendingShotContext = null;
 
-    // positions de base de chaque joueur (pour revenir après dribbles / kickoff)
-    const basePositions = {};         // { "I6": {x:%, y:%}, ... }
+    const basePositions = {};
     let lastDribblerId  = null;
 
-    // Endurance
     const ENDURANCE_MAX  = 100;
-    const stamina        = {};        // { "I8": 100, "E3": 100, ... }
+    const stamina        = {};
 
-    // Mode 1 joueur
     let onePlayerMode  = false;
-    const controlMode = matchConfig.controlMode ?? "both"; // "both" | "single"
+    const controlMode = matchConfig.controlMode ?? "both";
     onePlayerMode = (controlMode === "single");
-    controlledTeam = matchConfig.controlledSide ?? "internal"; // côté humain si single
+    controlledTeam = matchConfig.controlledSide ?? "internal";
 
-
-    // Historique des actions
     const actionHistory = [];
     const MAX_HISTORY   = 5;
 
@@ -431,21 +428,16 @@ export function initMatchEngine(rootEl, config = {}) {
     const matchEndActionsEl = $("#match-end-actions");
     const finishMatchBtn    = $("#btn-finish-match");
 
-
-    // Log visuel
     const currentActionTitleEl  = $("#current-action-title");
     const currentActionDetailEl = $("#current-action-detail");
     const duelDiceEl            = $("#duel-dice-display");
     const historyListEl         = $("#history-list");
 
-    // Endurance fiche joueur
     const energyFillEl = $("#energy-fill");
 
-    // Mode 1 joueur
     const modeOnePlayerBtn     = $("#mode-one-player");
     const controlledTeamSelect = $("#controlled-team-select");
 
-    // Overlay IA
     const aiOverlayEl = $("#ai-turn-overlay");
 
     // ==========================
@@ -509,7 +501,6 @@ export function initMatchEngine(rootEl, config = {}) {
         duelDiceEl.classList.add("visible");
 
         duelDiceEl.classList.remove("pop");
-        // force reflow
         void duelDiceEl.offsetWidth;
         duelDiceEl.classList.add("pop");
     }
@@ -634,16 +625,6 @@ export function initMatchEngine(rootEl, config = {}) {
         return rootEl.querySelector(`[data-player="${id}"]`);
     }
 
-    function getFieldDefensePower(defenseAction) {
-        const cfg = STATS.defenseField[defenseAction];
-        return cfg ? cfg.power : 10;
-    }
-
-    function getKeeperDefensePower(defenseAction) {
-        const cfg = STATS.defenseGK[defenseAction];
-        return cfg ? cfg.power : 10;
-    }
-
     function getClosestPlayerInCell(team, zoneIndex, laneIndex) {
         const selector = team === "internal" ? ".player.internal" : ".player.external";
         const center   = getCellCenter(team, zoneIndex, laneIndex);
@@ -670,7 +651,7 @@ export function initMatchEngine(rootEl, config = {}) {
 
         if (!bestCandidates.length) return null;
         const randIdx = Math.floor(Math.random() * bestCandidates.length);
-        return bestCandidates[randIdx]; // ex: "I8"
+        return bestCandidates[randIdx];
     }
 
     function pickReceiverInCell(team, zoneIndex, laneIndex, fallbackNumber, excludeNumber = null) {
@@ -702,6 +683,23 @@ export function initMatchEngine(rootEl, config = {}) {
         return parseInt(receiverId.slice(1), 10);
     }
 
+    function getRandomFieldPlayer(team) {
+        const selector = team === "internal" ? ".player.internal" : ".player.external";
+        const candidates = Array.from(rootEl.querySelectorAll(selector))
+            .filter(el => !el.classList.contains("goalkeeper"));
+        if (!candidates.length) return null;
+        const idx = Math.floor(Math.random()*candidates.length);
+        return candidates[idx].dataset.player;
+    }
+
+    function getKeeperId(team) {
+        const selector = team === "internal"
+            ? ".player.internal.goalkeeper"
+            : ".player.external.goalkeeper";
+        const el = rootEl.querySelector(selector);
+        return el ? el.dataset.player : null;
+    }
+
     function moveBallToPlayer(team, number) {
         if (!ballEl) return;
         const el = getCarrierElement(team, number);
@@ -714,7 +712,6 @@ export function initMatchEngine(rootEl, config = {}) {
         ballEl.style.top   = y + "%";
         const info = getPlayerInfo(team, number);
         ballEl.textContent = info ? String(info.number) : String(number);
-
 
         ball.team          = team;
         ball.number        = number;
@@ -742,23 +739,7 @@ export function initMatchEngine(rootEl, config = {}) {
         ball.laneIndex = bestLane;
 
         updateTeamCard();
-    }
-
-    function getRandomFieldPlayer(team) {
-        const selector = team === "internal" ? ".player.internal" : ".player.external";
-        const candidates = Array.from(rootEl.querySelectorAll(selector))
-            .filter(el => !el.classList.contains("goalkeeper"));
-        if (!candidates.length) return null;
-        const idx = Math.floor(Math.random()*candidates.length);
-        return candidates[idx].dataset.player;
-    }
-
-    function getKeeperId(team) {
-        const selector = team === "internal"
-            ? ".player.internal.goalkeeper"
-            : ".player.external.goalkeeper";
-        const el = rootEl.querySelector(selector);
-        return el ? el.dataset.player : null;
+        updateCardsPower(); // ✅ refresh power cards
     }
 
     // ==========================
@@ -770,8 +751,6 @@ export function initMatchEngine(rootEl, config = {}) {
 
         const info = getPlayerInfo(team, slotNumber);
         teamLabelEl.textContent = TEAMS[team].label;
-
-        // numéro affiché = numéro maillot
         playerNumberEl.textContent = info ? info.number : slotNumber;
 
         const nameEl = $("#player-name");
@@ -785,16 +764,13 @@ export function initMatchEngine(rootEl, config = {}) {
             roleEl.textContent = info.position || "—";
         }
 
-        // ✅ STATS (sidebar) : on pousse les stats du GamePlayer
         const s = (info && info.stats) ? info.stats : {};
 
         const setStat = (key, value) => {
-            // support ids possibles
             const byId =
                 rootEl.querySelector(`#stat-${key}`) ||
                 rootEl.querySelector(`#player-stat-${key}`) ||
                 rootEl.querySelector(`[data-stat="${key}"]`);
-
             if (byId) byId.textContent = (value ?? "—");
         };
 
@@ -811,7 +787,6 @@ export function initMatchEngine(rootEl, config = {}) {
         setStat("hand_save", s.hand_save);
         setStat("punch_save", s.punch_save);
 
-        // stamina UI (reste basé sur le SLOT)
         const playerId = getPlayerId(team, slotNumber);
         const value = getStamina(playerId);
         const ratio = value / ENDURANCE_MAX;
@@ -826,9 +801,9 @@ export function initMatchEngine(rootEl, config = {}) {
         }
     }
 
-
     function updateTeamCard() {
         updatePlayerCard(ball.team, ball.number);
+        updateCardsPower();
     }
 
     // ==========================
@@ -898,34 +873,114 @@ export function initMatchEngine(rootEl, config = {}) {
       `;
     }
 
+    // ✅ IMPORTANT: ici on NE met plus les "power" (sinon ça remet 10)
+    // On ne met que les coûts.
     function initUIFromStats() {
         const attackStrip = rootEl.querySelector("#attack-strip");
         if (attackStrip) {
             attackStrip.querySelectorAll(".skill-card").forEach((btn) => {
                 const action = btn.dataset.action;
-                const cfg    = STATS.attack[action];
+                const cfg = STATS.attack[action];
                 if (!cfg) return;
-                const powerEl = btn.querySelector(".skill-power");
-                const costEl  = btn.querySelector(".skill-cost span");
-                if (powerEl) powerEl.textContent = cfg.power;
-                if (costEl)  costEl.textContent  = cfg.cost;
+                const costEl = btn.querySelector(".skill-cost span");
+                if (costEl) costEl.textContent = cfg.cost;
             });
         }
 
         const defenseStrip = rootEl.querySelector("#defense-strip");
         if (defenseStrip) {
             defenseStrip.querySelectorAll(".def-card").forEach((btn) => {
-                const def     = btn.dataset.defense;
+                const def = btn.dataset.defense;
                 const cfgField = STATS.defenseField[def];
                 const cfgGk    = STATS.defenseGK[def];
                 const cfg      = cfgField || cfgGk;
                 if (!cfg) return;
-                const powerEl = btn.querySelector(".def-power");
-                const costEl  = btn.querySelector(".def-cost span");
-                if (powerEl) powerEl.textContent = cfg.power;
-                if (costEl)  costEl.textContent  = cfg.cost;
+                const costEl = btn.querySelector(".def-cost span");
+                if (costEl) costEl.textContent = cfg.cost;
             });
         }
+    }
+
+    // ✅ POWER dynamique pour Attack + Defense + GK
+    function updateCardsPower() {
+        if (!actionBarEl) return;
+
+        // ---- Attack cards (ball carrier)
+        const info = getPlayerInfo(ball.team, ball.number);
+        const s = info?.stats ?? null;
+
+        actionBarEl.querySelectorAll(".skill-card").forEach(btn => {
+            const action = btn.dataset.action;
+            let value = 0;
+
+            if (s) {
+                if (action === "pass") value = Number(s.pass ?? 0);
+                if (action === "dribble") value = Number(s.dribble ?? 0);
+                if (action === "shot") value = Number(s.shot ?? 0);
+                if (action === "special") value = Number(s.attack ?? 0); // special offensif => attack
+            }
+
+            const powerEl = btn.querySelector(".skill-power");
+            if (powerEl) powerEl.textContent = String(value);
+        });
+
+        // ---- Defense cards (depends on which defense bar is displayed)
+        const modeClass = Array.from(actionBarEl.classList).find(c => c.startsWith("mode-defense-"));
+        if (!modeClass) return;
+
+        const defenseTeam = modeClass.includes("mode-defense-external") ? "external" : "internal";
+
+        // GK bar ?
+        const hasHands = !!actionBarEl.querySelector('.def-card[data-defense="hands"]');
+        const hasPunch = !!actionBarEl.querySelector('.def-card[data-defense="punch"]');
+
+        if (hasHands || hasPunch) {
+            // Gardien = slot 1
+            const gkSlot = 1;
+            const gkInfo = getPlayerInfo(defenseTeam, gkSlot);
+            const gk = gkInfo?.stats ?? {};
+
+            actionBarEl.querySelectorAll(".def-card").forEach(btn => {
+                const def = btn.dataset.defense;
+                let value = 0;
+
+                if (def === "hands") value = Number(gk.hand_save ?? 0);
+                if (def === "punch") value = Number(gk.punch_save ?? 0);
+                if (def === "gk-special") value = Number(gk.defense ?? 0); // special défensif => defense
+
+                const powerEl = btn.querySelector(".def-power");
+                if (powerEl) powerEl.textContent = String(value);
+            });
+
+            return;
+        }
+
+        // Defense field: prendre le défenseur "logique" (proche de la cellule face)
+        const originZone = ball.zoneIndex;
+        const originLane = ball.laneIndex;
+        const defZone = getFacingZoneIndex(originZone);
+        const defLane = originLane;
+
+        const defenderId =
+            getClosestPlayerInCell(defenseTeam, defZone, defLane) ||
+            getRandomFieldPlayer(defenseTeam);
+
+        const defenderSlot = defenderId ? parseInt(defenderId.slice(1), 10) : 6;
+        const dInfo = getPlayerInfo(defenseTeam, defenderSlot);
+        const d = dInfo?.stats ?? {};
+
+        actionBarEl.querySelectorAll(".def-card").forEach(btn => {
+            const def = btn.dataset.defense;
+            let value = 0;
+
+            if (def === "block") value = Number(d.block ?? 0);
+            if (def === "intercept") value = Number(d.intercept ?? 0);
+            if (def === "tackle") value = Number(d.tackle ?? 0);
+            if (def === "field-special") value = Number(d.defense ?? 0); // special défensif => defense
+
+            const powerEl = btn.querySelector(".def-power");
+            if (powerEl) powerEl.textContent = String(value);
+        });
     }
 
     function bindActionButtons() {
@@ -958,8 +1013,8 @@ export function initMatchEngine(rootEl, config = {}) {
             }
 
             initUIFromStats();
+            updateCardsPower(); // ✅ power dynamique
 
-            // Kickoff : on ne laisse visible que le bouton "Pass"
             if (isKickoff && html.includes("attack-strip")) {
                 const cards = actionBarEl.querySelectorAll(".skill-card");
                 cards.forEach((btn) => {
@@ -984,6 +1039,7 @@ export function initMatchEngine(rootEl, config = {}) {
         if (isAITeam(currentTeam)) {
             scheduleAIAttack();
         }
+        updateCardsPower();
     }
 
     // ==========================
@@ -1028,13 +1084,10 @@ export function initMatchEngine(rootEl, config = {}) {
             }
 
             refreshUI();
-            // afficher bouton + bind
             if (matchEndActionsEl) matchEndActionsEl.classList.remove("hidden");
 
             if (finishMatchBtn) {
                 finishMatchBtn.onclick = () => {
-                    // IMPORTANT: home_score / away_score = score des équipes du match (homeTeam/awayTeam)
-                    // Ici on suppose: internal = home, external = away (comme ta config actuelle)
                     const payload = {
                         homeScore: score.internal,
                         awayScore: score.external,
@@ -1190,7 +1243,6 @@ export function initMatchEngine(rootEl, config = {}) {
         const attackerId = getPlayerId(attackTeam, ball.number);
         applyStaminaCost(attackerId, "attack", "pass");
 
-        // petit coût de stamina sur un défenseur quelconque aussi
         const defTeam     = otherTeam(attackTeam);
         const defFieldId  = getRandomFieldPlayer(defTeam);
         if (defFieldId) {
@@ -1231,7 +1283,6 @@ export function initMatchEngine(rootEl, config = {}) {
         const originZone = ball.zoneIndex;
         const originLane = ball.laneIndex;
 
-        // défenseur impliqué (il faut le choisir AVANT de calculer defenseScore)
         let defZone = getFacingZoneIndex(originZone);
         let defLane = originLane;
 
@@ -1241,7 +1292,6 @@ export function initMatchEngine(rootEl, config = {}) {
 
         let defenderSlot = defenderId ? parseInt(defenderId.slice(1), 10) : 6;
 
-        // scores (stats dynamiques)
         let attackScore =
             attackBaseFor("pass", attackTeam, ball.number) * staminaFactor(attackerId);
 
@@ -1257,13 +1307,11 @@ export function initMatchEngine(rootEl, config = {}) {
         const ok       = diff > 0;
         const duelText = `Duel stats : ${attackScore.toFixed(1)} - ${defenseScore.toFixed(1)} (${diff > 0 ? "+" + diff.toFixed(1) : diff.toFixed(1)})`;
 
-        // stamina
         applyStaminaCost(attackerId, "attack", "pass");
         if (defenderId) {
             applyStaminaCost(defenderId, "defenseField", defenseAction);
         }
 
-        // --- KICKOFF ---
         if (wasKickoff) {
             if (ok) {
                 const dmNumbers = [5, 6];
@@ -1319,25 +1367,21 @@ export function initMatchEngine(rootEl, config = {}) {
             return;
         }
 
-        // --- CAS STANDARD ---
         let targetZone = ball.zoneIndex;
         let targetLane = ball.laneIndex;
 
         if (ball.zoneIndex < 3) {
             targetZone = ball.zoneIndex + 1;
 
-            // On autorise même ligne + lignes adjacentes (pour éviter toujours le même joueur)
             const laneOptions = [ball.laneIndex];
             if (ball.laneIndex > 0) laneOptions.push(ball.laneIndex - 1);
             if (ball.laneIndex < laneY.length - 1) laneOptions.push(ball.laneIndex + 1);
 
             targetLane = laneOptions[Math.floor(Math.random() * laneOptions.length)];
         } else {
-            // Dernière zone : tir ou variation latérale
             const lanes = [0, 1, 2];
             targetLane = lanes[Math.floor(Math.random() * lanes.length)];
         }
-
 
         if (ok) {
             resetLastDribbler();
@@ -1372,7 +1416,6 @@ export function initMatchEngine(rootEl, config = {}) {
         } else {
             resetLastDribbler();
 
-            // Zone qui fait face, mais ligne un peu aléatoire
             const defZone = getFacingZoneIndex(originZone);
             const laneOptions = [originLane];
             if (originLane > 0) laneOptions.push(originLane - 1);
@@ -1436,14 +1479,12 @@ export function initMatchEngine(rootEl, config = {}) {
         const defZone = getFacingZoneIndex(oldZone);
         const defLane = lane;
 
-// choisir le défenseur AVANT d'utiliser ses stats
         const defenderId =
             getClosestPlayerInCell(defenseTeam, defZone, defLane) ||
             getRandomFieldPlayer(defenseTeam);
 
         const defenderSlot = defenderId ? parseInt(defenderId.slice(1), 10) : 6;
 
-// scores dynamiques
         let attackScore =
             attackBaseFor("dribble", attackTeam, ball.number) *
             staminaFactor(attackerId);
@@ -1460,7 +1501,6 @@ export function initMatchEngine(rootEl, config = {}) {
         const ok       = diff > 0;
         const duelText = `Duel stats : ${attackScore.toFixed(1)} - ${defenseScore.toFixed(1)} (${diff > 0 ? "+" + diff.toFixed(1) : diff.toFixed(1)})`;
 
-        // stamina
         applyStaminaCost(attackerId, "attack", "dribble");
         if (defenderId) {
             applyStaminaCost(defenderId, "defenseField", defenseAction);
@@ -1513,7 +1553,6 @@ export function initMatchEngine(rootEl, config = {}) {
                     refreshUI();
                 });
             } else {
-                // FACE-À-FACE GARDIEN
                 lastDribblerId = carrierId;
 
                 const y      = laneY[lane];
@@ -1575,7 +1614,6 @@ export function initMatchEngine(rootEl, config = {}) {
             });
         }
     }
-
     // ==========================
     //   ANIM TIR & GK
     // ==========================
@@ -2043,14 +2081,13 @@ export function initMatchEngine(rootEl, config = {}) {
     }
 
     // ==========================
-    //   INIT GLOBAL
+    //   Init
     // ==========================
 
     function init() {
         initBasePositions();
         applyRosterToDOM();
         initStamina();
-        bindPlayerClickHandlers();
 
         turns              = 0;
         currentTeam        = "internal";
@@ -2089,8 +2126,6 @@ export function initMatchEngine(rootEl, config = {}) {
             modeOnePlayerBtn.addEventListener("click", () => {
                 onePlayerMode = !onePlayerMode;
                 syncModeLabel();
-
-                // si on repasse en 2 joueurs, l’IA ne doit plus jouer
                 setAIOverlay(false);
             });
         }
@@ -2108,8 +2143,6 @@ export function initMatchEngine(rootEl, config = {}) {
         if (teamNameExternalEl) {
             teamNameExternalEl.textContent = TEAMS.external.label;
         }
-
-
     }
 
     init();

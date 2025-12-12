@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\GameSaveRequest;
+use App\Services\MatchSimulator;
 use App\Models\GameSave;
 use App\Models\Team;
 use App\Models\Player;
@@ -533,6 +534,7 @@ class GameSaveController extends Controller
 
         $home->save();
         $away->save();
+        app(MatchSimulator::class)->simulateOtherMatchesOfWeek($match);
 
         // (optionnel mais conseillé) avancer la semaine du save
         $gameSave->week = max($gameSave->week ?? 1, $match->week + 1);

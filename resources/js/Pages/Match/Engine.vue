@@ -75,10 +75,10 @@
                             </div>
                             <div id="player-stats">
                                 <div>Shot : <strong id="stat-shot">—</strong></div>
-                                <div>Pass : <strong id="stat-pass">—</strong></div>
-                                <div>Dribble : <strong id="stat-dribble">—</strong></div>
                                 <div>Block : <strong id="stat-block">—</strong></div>
+                                <div>Pass : <strong id="stat-pass">—</strong></div>
                                 <div>Intercept : <strong id="stat-intercept">—</strong></div>
+                                <div>Dribble : <strong id="stat-dribble">—</strong></div>
                                 <div>Tackle : <strong id="stat-tackle">—</strong></div>
                                 <!-- Gardien -->
                                 <div>Arrêt : <strong id="stat-hand_save">—</strong></div>
