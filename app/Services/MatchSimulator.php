@@ -15,7 +15,7 @@ class MatchSimulator
             ->where('week', $playedMatch->week)
             ->where('status', 'scheduled')
             ->where('id', '!=', $playedMatch->id)
-            ->with(['homeTeam.contracts.gamePlayer', 'awayTeam.contracts.gamePlayer'])
+            ->with(['homeTeam', 'awayTeam', 'homeTeam.contracts.gamePlayer', 'awayTeam.contracts.gamePlayer'])
             ->get();
 
         foreach ($others as $m) {
@@ -96,28 +96,54 @@ class MatchSimulator
     {
         return random_int(1, 20);
     }
+    public function simulateMatchesCollection(Collection $matches): void
+    {
+        // On suppose que la collection contient des GameMatch
+        // et qu'on peut charger les relations si pas déjà fait.
+        $matches->loadMissing(['homeTeam.contracts.gamePlayer', 'awayTeam.contracts.gamePlayer']);
+
+        foreach ($matches as $m) {
+            if ($m->status !== 'scheduled') {
+                continue;
+            }
+
+            [$hs, $as] = $this->simulateScore($m->homeTeam, $m->awayTeam);
+
+            $m->home_score = $hs;
+            $m->away_score = $as;
+            $m->status     = 'played';
+            $m->save();
+
+            // Ici homeTeam/awayTeam sont déjà en mémoire
+            $this->applyResultToStandings($m);
+        }
+    }
 
     private function applyResultToStandings(GameMatch $m): void
     {
+        // sécurité
         if ($m->status !== 'played') return;
         if ($m->home_score === null || $m->away_score === null) return;
 
-        $home = $m->homeTeam()->first();
-        $away = $m->awayTeam()->first();
+        // on part des relations déjà chargées si dispo
+        $home = $m->relationLoaded('homeTeam') ? $m->homeTeam : $m->homeTeam()->first();
+        $away = $m->relationLoaded('awayTeam') ? $m->awayTeam : $m->awayTeam()->first();
+
         if (!$home || !$away) return;
 
         if ($m->home_score > $m->away_score) {
-            $home->wins  += 1;
-            $away->losses += 1;
+            $home->wins   = ($home->wins ?? 0) + 1;
+            $away->losses = ($away->losses ?? 0) + 1;
         } elseif ($m->home_score < $m->away_score) {
-            $away->wins  += 1;
-            $home->losses += 1;
+            $away->wins   = ($away->wins ?? 0) + 1;
+            $home->losses = ($home->losses ?? 0) + 1;
         } else {
-            $home->draws += 1;
-            $away->draws += 1;
+            $home->draws  = ($home->draws ?? 0) + 1;
+            $away->draws  = ($away->draws ?? 0) + 1;
         }
 
         $home->save();
         $away->save();
     }
+
 }

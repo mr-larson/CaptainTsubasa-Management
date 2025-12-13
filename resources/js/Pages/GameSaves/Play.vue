@@ -23,11 +23,7 @@ const props = defineProps({
     teams:      { type: Array,  required: true }, // GameTeam[] avec contracts.player
     freePlayers:{ type: Array,  required: true }, // GamePlayer[] sans contrat
     matches:    { type: Array,  required: true }, // GameMatch[] avec home_team / away_team
-    controlledTeam: {
-        type: Object,           // GameTeam contrôlée dans cette partie
-        required: false,
-        default: null,
-    },
+    controlledTeam: { type: Object, required: false, default: null},
 });
 
 // ==========================
@@ -143,6 +139,37 @@ const myMatches = computed(() => {
 });
 
 /**
+ * Match de MON équipe pour la semaine en cours (s'il existe)
+ */
+const myMatchThisWeek = computed(() => {
+    if (!team.value) return null;
+    const w = week.value ?? 1;
+
+    return myMatches.value.find(m =>
+        m.week === w &&
+        (m.status === 'scheduled' || m.status === 'played')
+    ) ?? null;
+});
+
+/**
+ * Est-ce que mon équipe est OFF cette semaine ?
+ * (= aucun match planifié pour elle à week courante)
+ */
+const isByeWeek = computed(() => {
+    if (!team.value) return false;
+    return !myMatchThisWeek.value;
+});
+
+const simulateWeek = () => {
+    router.post(
+        route('game-saves.simulate-week', { gameSave: props.gameSave.id }),
+        {},
+        { preserveScroll: true }
+    );
+};
+
+
+/**
  * Prochain match à jouer pour mon équipe
  * (status = scheduled, semaine >= semaine courante)
  */
@@ -177,6 +204,19 @@ const nextMatchInfo = computed(() => {
     };
 });
 
+const myMatchThisWeekInfo = computed(() => {
+    if (!myMatchThisWeek.value || !team.value) return null;
+
+    const isHome = myMatchThisWeek.value.home_team_id === team.value.id;
+    const opponent = isHome ? myMatchThisWeek.value.away_team : myMatchThisWeek.value.home_team;
+
+    return {
+        isHome,
+        opponentName: opponent?.name ?? opponentNameFor(myMatchThisWeek.value),
+        week: myMatchThisWeek.value.week,
+        status: myMatchThisWeek.value.status,
+    };
+});
 
 /**
  * Label lisible pour un match donné (pour la liste)
@@ -536,7 +576,7 @@ const playNextMatch = () => {
                                     <ul class="space-y-1">
                                         <li>
                                             <span class="font-semibold">Semaine :</span>
-                                            {{ nextMatchInfo.week }}
+                                            {{ isByeWeek ? week : nextMatchInfo.week }}
                                         </li>
                                         <li>
                                             <span class="font-semibold">Adversaire :</span>
@@ -552,13 +592,25 @@ const playNextMatch = () => {
                                         </li>
                                     </ul>
 
-                                    <div class="mt-4 flex justify-center">
+                                    <div class="mt-4 flex justify-center gap-3">
+                                        <!-- JOUER LE MATCH -->
                                         <button
+                                            v-if="!isByeWeek"
                                             type="button"
-                                            class="w-60 bg-teal-300 hover:bg-teal-400 text-center font-semibold py-1 px-5 border-2 border-teal-500 rounded-full drop-shadow-md mb-2"
+                                            class="w-60 bg-teal-300 hover:bg-teal-400 text-center font-semibold py-1 px-5 border-2 border-teal-500 rounded-full drop-shadow-md"
                                             @click="playNextMatch"
                                         >
                                             Jouer le prochain match
+                                        </button>
+
+                                        <!-- SEMAINE OFF -->
+                                        <button
+                                            v-else
+                                            type="button"
+                                            class="w-60 bg-slate-300 hover:bg-slate-400 text-center font-semibold py-1 px-5 border-2 border-slate-500 rounded-full drop-shadow-md"
+                                            @click="simulateWeek"
+                                        >
+                                            Simuler la semaine
                                         </button>
                                     </div>
                                 </div>
@@ -680,10 +732,6 @@ const playNextMatch = () => {
                         v-else-if="activeTab === 'my-team'"
                         class="flex-1 flex flex-col gap-4"
                     >
-                        <h3 class="text-lg font-semibold text-slate-700">
-                            Mon équipe
-                        </h3>
-
                         <div
                             class="border border-slate-200 rounded-lg p-4 bg-slate-50 flex-1"
                         >

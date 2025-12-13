@@ -205,6 +205,17 @@ class GameSaveController extends Controller
             ->orderBy('week')
             ->get();
 
+        $currentWeek = $gameSave->week ?? 1;
+
+        $hasMatchThisWeek = GameMatch::where('game_save_id', $gameSave->id)
+            ->where('week', $currentWeek)
+            ->where(function ($q) use ($controlledTeam) {
+                $q->where('home_team_id', $controlledTeam->id)
+                    ->orWhere('away_team_id', $controlledTeam->id);
+            })
+            ->exists();
+
+
         $freePlayers = GamePlayer::where('game_save_id', $gameSave->id)
             ->whereDoesntHave('contracts')
             ->orderBy('lastname')
@@ -219,6 +230,7 @@ class GameSaveController extends Controller
             'matches'        => $matches,
             'freePlayers'    => $freePlayers,
             'controlledTeam' => $controlledTeam,
+            'hasMatchThisWeek'=> $hasMatchThisWeek,
         ]);
     }
 
@@ -478,6 +490,28 @@ class GameSaveController extends Controller
         return redirect()->route('game-saves.play', $lastSave);
     }
 
+    public function simulateWeek(Request $request, GameSave $gameSave): RedirectResponse
+    {
+        $this->authorizeSave($request, $gameSave);
+
+        $week = (int) ($gameSave->week ?? 1);
+
+        $matches = GameMatch::query()
+            ->where('game_save_id', $gameSave->id)
+            ->where('week', $week)
+            ->where('status', 'scheduled')
+            ->with(['homeTeam.contracts.gamePlayer', 'awayTeam.contracts.gamePlayer'])
+            ->get();
+
+        // Simule tous les matchs jouables de la semaine
+        app(MatchSimulator::class)->simulateMatchesCollection($matches);
+
+        // Avance la semaine
+        $gameSave->week = $week + 1;
+        $gameSave->save();
+
+        return redirect()->route('game-saves.play', $gameSave);
+    }
 
     public function update(GameSaveRequest $request, GameSave $gameSave)
     {

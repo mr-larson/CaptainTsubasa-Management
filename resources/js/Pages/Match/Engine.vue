@@ -16,36 +16,37 @@
                     <!-- Score (2 cols / 3) -->
                     <div
                         id="score-strip"
-                        class="lg:col-span-2 flex items-center justify-center h-full rounded-lg px-4 py-6 text-white shadow-md text-sm bg-gradient-to-b from-neutral-700 to-neutral-900"
+                        class="lg:col-span-2 grid grid-cols-3 items-center rounded-lg px-6 py-6 text-white shadow-md text-sm bg-gradient-to-b from-neutral-600 to-neutral-800 border-2 border-white"
                     >
-                        <div id="match-end-actions" class="hidden mr-3 flex justify-center">
-                            <button
-                                id="btn-finish-match"
-                                type="button"
-                                class="bg-slate-500 hover:bg-slate-300 text-center font-semibold py-1 px-5 border-2 border-slate-500 rounded-full drop-shadow-md"
-                            >
-                                Suite
-                            </button>
-                        </div>
-
-                        <div class="mr-4">
+                        <div class="flex items-center gap-3 justify-start">
                             <Link
                                 :href="route('game-saves.play', { gameSave: engineConfig.gameSaveId })"
-                                class="bg-slate-500 hover:bg-slate-300 text-center font-semibold py-1 px-5 border-2 border-slate-500 rounded-full drop-shadow-md"
+                                class="bg-gradient-to-br from-slate-500 to-slate-600 hover:bg-slate-700 font-semibold py-1 px-5 border-2 border-slate-50 rounded-full drop-shadow-md"
                             >
                                 Retour
                             </Link>
+                            <div id="match-end-actions" class="hidden">
+                                <button
+                                    id="btn-finish-match"
+                                    type="button"
+                                    class="bg-gradient-to-br from-teal-400 to-teal-500 hover:bg-teal-700 font-semibold py-1 px-5 border-2 border-teal-50 rounded-full drop-shadow-md"
+                                >
+                                    Suite
+                                </button>
+                            </div>
                         </div>
 
-                        <span class="px-3 font-bold" id="team-name-internal">Domicile</span>
-                        <span class="px-3 text-lg font-extrabold" id="score-internal">0</span>
-                        <span class="px-2">-</span>
-                        <span class="px-3 text-lg font-extrabold" id="score-external">0</span>
-                        <span class="px-3 font-bold" id="team-name-external">Exterieur</span>
+                        <div class="flex items-center justify-center gap-3">
+                            <span class="px-3 font-bold" id="team-name-internal">Domicile</span>
+                            <span class="px-3 text-lg font-extrabold" id="score-internal">0</span>
+                            <span class="px-2">-</span>
+                            <span class="px-3 text-lg font-extrabold" id="score-external">0</span>
+                            <span class="px-3 font-bold" id="team-name-external">Exterieur</span>
+                        </div>
 
-                        <span class="px-3 text-xs opacity-80">
-              Tours : <span id="turns-display">00</span>/30
-            </span>
+                        <div class="flex items-center justify-end text-xs opacity-80">
+                            Tours : <span id="turns-display" class="ml-1">30</span>/30
+                        </div>
                     </div>
 
                     <!-- Control panel (1 col / 3) -->

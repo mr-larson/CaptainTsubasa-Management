@@ -129,8 +129,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/{gameSave}/match', [GameSaveController::class, 'match'])->name('match');
         Route::put('/{gameSave}', [GameSaveController::class, 'update'])->name('update');
         Route::delete('/{gameSave}', [GameSaveController::class, 'destroy'])->name('destroy');
-        Route::post('{gameSave}/matches/{match}/finish', [GameSaveController::class, 'finishMatch'])
+        Route::post('/{gameSave}/matches/{match}/finish', [GameSaveController::class, 'finishMatch'])
             ->name('matches.finish');
+        Route::post('/{gameSave}/simulate-week', [GameSaveController::class, 'simulateWeek'])
+            ->name('game-saves.simulate-week');
+
 
     });
 
