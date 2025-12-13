@@ -497,8 +497,7 @@ const playNextMatch = () => {
                     <!-- ============================== -->
                     <div
                         v-if="activeTab === 'dashboard'"
-                        class="flex-1 flex flex-col"
-                    >
+                        class="flex-1 flex flex-col">
                         <!-- Infos générales -->
                         <div
                             class="mb-4 flex flex-col lg:flex-row lg:items-center lg:justify-around gap-2"
@@ -640,7 +639,6 @@ const playNextMatch = () => {
                                         <p>Attaque : {{ averageAttack }}</p>
                                         <p>Défense : {{ averageDefense }}</p>
                                         <p>Endurance : {{ averageStamina }}</p>
-                                        <p>Vitesse : {{ averageSpeed }}</p>
                                     </div>
 
                                     <!-- Bloc état de l’effectif -->
@@ -695,7 +693,7 @@ const playNextMatch = () => {
 
                             <div
                                 v-if="roster.length > 0"
-                                class="max-h-64 overflow-y-auto"
+                                class="max-h-80 overflow-y-auto"
                             >
                                 <div class="overflow-x-auto">
                                     <table class="w-full text-sm text-left min-w-max">

@@ -407,7 +407,7 @@ export function initMatchEngine(rootEl, config = {}) {
     controlledTeam = matchConfig.controlledSide ?? "internal";
 
     const actionHistory = [];
-    const MAX_HISTORY   = 5;
+    const MAX_HISTORY   = 15;
 
     // ==========================
     //   RÉFÉRENCES DOM
@@ -434,6 +434,21 @@ export function initMatchEngine(rootEl, config = {}) {
     const historyListEl         = $("#history-list");
 
     const energyFillEl = $("#energy-fill");
+
+    const defenderTeamEl    = $("#defender-team");
+    const defenderNumberEl  = $("#defender-number");
+    const defenderNameEl    = $("#defender-name");
+    const defenderRoleEl    = $("#defender-role");
+
+    const defStatBlockEl     = $("#def-stat-block");
+    const defStatInterceptEl = $("#def-stat-intercept");
+    const defStatTackleEl    = $("#def-stat-tackle");
+    const defStatDefenseEl   = $("#def-stat-defense");
+    const defStatHandSaveEl  = $("#def-stat-hand_save");
+    const defStatPunchSaveEl = $("#def-stat-punch_save");
+
+    const defenderEnergyFillEl = $("#defender-energy-fill");
+
 
     const modeOnePlayerBtn     = $("#mode-one-player");
     const controlledTeamSelect = $("#controlled-team-select");
@@ -783,6 +798,8 @@ export function initMatchEngine(rootEl, config = {}) {
         set("#stat-block",     v("block"));
         set("#stat-intercept", v("intercept"));
         set("#stat-tackle",    v("tackle"));
+        set("#stat-defense",   v("defense"));
+        set("#stat-attack",     v("attack"));
 
         // gardien
         set("#stat-hand_save",  v("hand_save"));
@@ -804,6 +821,92 @@ export function initMatchEngine(rootEl, config = {}) {
         }
     }
 
+    function clearDefenderCard() {
+        if (defenderTeamEl)   defenderTeamEl.textContent = "—";
+        if (defenderNumberEl) defenderNumberEl.textContent = "—";
+        if (defenderNameEl)   defenderNameEl.textContent = "—";
+        if (defenderRoleEl)   defenderRoleEl.textContent = "—";
+
+        const dash = (el) => { if (el) el.textContent = "—"; };
+        dash(defStatBlockEl);
+        dash(defStatInterceptEl);
+        dash(defStatTackleEl);
+        dash(defStatDefenseEl);
+        dash(defStatHandSaveEl);
+        dash(defStatPunchSaveEl);
+
+        if (defenderEnergyFillEl) {
+            defenderEnergyFillEl.style.width = `100%`;
+            defenderEnergyFillEl.classList.remove("e-high","e-mid","e-low","e-crit");
+            defenderEnergyFillEl.classList.add("e-high");
+        }
+    }
+
+    function updateDefenderCard(team, slotNumber) {
+        const info = getPlayerInfo(team, slotNumber);
+
+        if (defenderTeamEl) defenderTeamEl.textContent = TEAMS[team].label;
+        if (defenderNumberEl) defenderNumberEl.textContent = info ? String(info.number) : String(slotNumber);
+
+        if (defenderNameEl) {
+            const full = info ? `${info.firstname ?? ""} ${info.lastname ?? ""}`.trim() : "";
+            defenderNameEl.textContent = full || `Joueur #${info?.number ?? slotNumber}`;
+        }
+        if (defenderRoleEl) defenderRoleEl.textContent = info?.position || "—";
+
+        const s = info?.stats ?? {};
+        const v = (k) => {
+            const n = Number(s?.[k] ?? 0);
+            return Number.isFinite(n) ? n : 0;
+        };
+
+        if (defStatBlockEl)     defStatBlockEl.textContent = String(v("block"));
+        if (defStatInterceptEl) defStatInterceptEl.textContent = String(v("intercept"));
+        if (defStatTackleEl)    defStatTackleEl.textContent = String(v("tackle"));
+        if (defStatDefenseEl)   defStatDefenseEl.textContent = String(v("defense"));
+
+        if (defStatHandSaveEl)  defStatHandSaveEl.textContent = String(v("hand_save"));
+        if (defStatPunchSaveEl) defStatPunchSaveEl.textContent = String(v("punch_save"));
+
+        // stamina
+        const playerId = getPlayerId(team, slotNumber);
+        const value = getStamina(playerId);
+        const ratio = value / ENDURANCE_MAX;
+
+        if (defenderEnergyFillEl) {
+            defenderEnergyFillEl.style.width = `${ratio * 100}%`;
+            defenderEnergyFillEl.classList.remove("e-high","e-mid","e-low","e-crit");
+
+            if (value >= STAMINA_THRESHOLDS.HIGH) defenderEnergyFillEl.classList.add("e-high");
+            else if (value >= STAMINA_THRESHOLDS.MID) defenderEnergyFillEl.classList.add("e-mid");
+            else if (value >= STAMINA_THRESHOLDS.LOW) defenderEnergyFillEl.classList.add("e-low");
+            else defenderEnergyFillEl.classList.add("e-crit");
+        }
+    }
+
+    /**
+     * Choisit le défenseur “logique” pour l’UI (avant le duel),
+     * cohérent avec la logique de tes duels.
+     */
+    function setDefenderPreviewFor(action, defenseTeam) {
+        // Gardien si tir à bout portant (face au GK)
+        const isCloseRange = ball.frontOfKeeper && (action === "shot" || action === "special");
+        if (isCloseRange) {
+            updateDefenderCard(defenseTeam, 1);
+            return;
+        }
+
+        // Défense de champ : joueur le plus proche de la cellule “face”
+        const defZone = getFacingZoneIndex(ball.zoneIndex);
+        const defLane = ball.laneIndex;
+
+        const defenderId =
+            getClosestPlayerInCell(defenseTeam, defZone, defLane) ||
+            getRandomFieldPlayer(defenseTeam);
+
+        const defenderSlot = defenderId ? parseInt(defenderId.slice(1), 10) : 6;
+        updateDefenderCard(defenseTeam, defenderSlot);
+    }
 
     function updateTeamCard() {
         updatePlayerCard(ball.team, ball.number);
@@ -1039,6 +1142,14 @@ export function initMatchEngine(rootEl, config = {}) {
         if (isGameOver) return;
         const mode = `mode-attack-${currentTeam}`;
         setActionBar(buildAttackActionsHTML(), mode);
+
+        // ✅ Preview défenseur pendant la phase attaque
+        const defTeam = otherTeam(currentTeam);
+        const defaultAction = isKickoff
+            ? "pass"
+            : (ball.frontOfKeeper ? "shot" : "pass"); // tu peux mettre dribble si tu préfères
+
+        setDefenderPreviewFor(defaultAction, defTeam);
 
         if (isAITeam(currentTeam)) {
             scheduleAIAttack();
@@ -2008,6 +2119,7 @@ export function initMatchEngine(rootEl, config = {}) {
         phase         = "defense";
 
         const defTeam = otherTeam(currentTeam);
+        setDefenderPreviewFor(action, defTeam);
         const mode    = `mode-defense-${defTeam}`;
         let html;
 
@@ -2137,7 +2249,7 @@ export function initMatchEngine(rootEl, config = {}) {
         if (modeOnePlayerBtn) {
             const syncModeLabel = () => {
                 modeOnePlayerBtn.classList.toggle("active", onePlayerMode);
-                modeOnePlayerBtn.textContent = onePlayerMode ? "Mode 1 joueur (ON)" : "Mode 2 joueurs (ON)";
+                modeOnePlayerBtn.textContent = onePlayerMode ? "Mode 1 joueur" : "Mode 2 joueurs";
             };
 
             syncModeLabel();
