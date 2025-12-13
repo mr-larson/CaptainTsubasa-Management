@@ -20,7 +20,7 @@ class TeamSeeder extends Seeder
                 'wins' => 0,
                 'draws' => 0,
                 'losses' => 0,
-                'description' => 'Nankatsu ES is an elementary school team from Nankatsu City, Shizuoka Prefecture.'
+                'description' => 'Équipe équilibrée et technique, centrée sur le jeu collectif et la créativité offensive. Capable de contrôler le rythme du match et de faire la différence par la maîtrise du ballon.'
             ],
             [
                 'name' => 'Toho',
@@ -28,7 +28,7 @@ class TeamSeeder extends Seeder
                 'wins' => 0,
                 'draws' => 0,
                 'losses' => 0,
-                'description' => 'Toho Academy MS is a middle school team from Setagaya, Tokyo.'
+                'description' => 'Équipe agressive et directe, axée sur la puissance offensive et le jeu vertical. Pression constante et grande efficacité dans les phases de finition.'
             ],
             [
                 'name' => 'Hanawa',
@@ -36,7 +36,7 @@ class TeamSeeder extends Seeder
                 'wins' => 0,
                 'draws' => 0,
                 'losses' => 0,
-                'description' => 'Hanawa SS is an elementary school team from Kazuno City, Akita Prefecture.'
+                'description' => 'Équipe athlétique et explosive, spécialisée dans les duels et les attaques rapides. Dangereuse dans les phases aériennes mais parfois irrégulière collectivement.'
             ],
             [
                 'name' => 'Furano',
@@ -44,7 +44,7 @@ class TeamSeeder extends Seeder
                 'wins' => 0,
                 'draws' => 0,
                 'losses' => 0,
-                'description' => 'Furano ES is an elementary school team from Furano City, Hokkaido.'
+                'description' => 'Équipe très endurante et disciplinée, basée sur le combat physique et la constance. Difficile à battre sur la durée, elle use l’adversaire progressivement.'
             ],
             [
                 'name' => 'Otomo',
@@ -52,7 +52,7 @@ class TeamSeeder extends Seeder
                 'wins' => 0,
                 'draws' => 0,
                 'losses' => 0,
-                'description' => 'Otomo MS is a middle school team from Shizuoka Prefecture.'
+                'description' => 'Équipe rigoureuse et très organisée, dotée d’une défense dense et disciplinée. Peu de fantaisie mais redoutable en transition et en jeu regroupé.'
             ],
             [
                 'name' => 'Azumaichi',
@@ -60,7 +60,7 @@ class TeamSeeder extends Seeder
                 'wins' => 0,
                 'draws' => 0,
                 'losses' => 0,
-                'description' => 'Azumaichi MS is a middle school team from Toyono District, Osaka Prefecture.'
+                'description' => 'Équipe très dure et défensive, axée sur l’impact physique et les duels. Bloc solide, pressing agressif et volonté constante de casser le jeu adverse.'
             ],
             [
                 'name' => 'Musashi',
@@ -68,7 +68,7 @@ class TeamSeeder extends Seeder
                 'wins' => 0,
                 'draws' => 0,
                 'losses' => 0,
-                'description' => 'Musashi FC is a selection team of elementary school players from Musashino City, Tokyo, consisting of elite selected among over 1000 juvenile players.'
+                'description' => 'Équipe extrêmement technique et tactique, privilégiant le jeu posé et intelligent. Capable de dominer par la maîtrise, mais vulnérable face à une forte pression.'
             ],
             [
                 'name' => 'Shutetsu',
@@ -76,7 +76,7 @@ class TeamSeeder extends Seeder
                 'wins' => 0,
                 'draws' => 0,
                 'losses' => 0,
-                'description' => 'Shutetsu ES is an elementary school team from Nankatsu City, Shizuoka Prefecture. The football club has a high number of members, which allows Shutetsu to have a B team.'
+                'description' => 'Équipe solide et bien structurée, réputée pour sa formation rigoureuse. Jeu collectif discipliné, sans véritable star mais difficile à manœuvrer.'
             ],
             [
                 'name' => 'Meiwa',
@@ -84,7 +84,7 @@ class TeamSeeder extends Seeder
                 'wins' => 0,
                 'draws' => 0,
                 'losses' => 0,
-                'description' => 'Meiwa FC is an elementary school team from Misato City, Saitama Prefecture.'
+                'description' => 'Équipe agressive et collective, spécialisée dans le pressing et l’intensité. Jeu dur, rythme élevé et forte pression mentale sur l’adversaire.'
             ],
             [
                 'name' => 'Hirado',
@@ -92,7 +92,7 @@ class TeamSeeder extends Seeder
                 'wins' => 0,
                 'draws' => 0,
                 'losses' => 0,
-                'description' => 'Hirado MS is a middle school team from Hirado City, Nagasaki Prefecture.'
+                'description' => 'Équipe ultra-physique et intimidante. Défense brutale, jeu direct et affrontement constant, cherchant à gagner par la domination physique.'
             ],
             [
                 'name' => 'Naniwa',
@@ -100,7 +100,7 @@ class TeamSeeder extends Seeder
                 'wins' => 0,
                 'draws' => 0,
                 'losses' => 0,
-                'description' => 'Naniwa FC is an elementary school team from Namba, Osaka.'
+                'description' => 'Équipe très défensive et méthodique, reposant sur un bloc bas compact et un gardien solide. Cherche à fermer le jeu et punir sur de rares occasions.'
             ],
             [
                 'name' => 'Minawi',
@@ -108,7 +108,7 @@ class TeamSeeder extends Seeder
                 'wins' => 0,
                 'draws' => 0,
                 'losses' => 0,
-                'description' => 'Minamiuwa MS is a middle school team from Minamiuwa District, Ehime Prefecture.'
+                'description' => 'Équipe équilibrée sans spécialisation marquée. Jeu simple et appliqué, capable de rivaliser collectivement mais manquant d’impact individuel.'
             ],
             [
                 'name' => 'Nakahara',
@@ -116,7 +116,7 @@ class TeamSeeder extends Seeder
                 'wins' => 0,
                 'draws' => 0,
                 'losses' => 0,
-                'description' => 'Nakahara FC is an elementary school team from Gifu Prefecture.'
+                'description' => 'Équipe modeste et peu spectaculaire, basée sur un jeu simple et structuré. Dépend fortement de rares éléments offensifs pour exister.'
             ],
             [
                 'name' => 'Shimizu',
@@ -124,7 +124,7 @@ class TeamSeeder extends Seeder
                 'wins' => 0,
                 'draws' => 0,
                 'losses' => 0,
-                'description' => 'Shimizu FC is an elementary school team from Shimizu City, Shizuoka Prefecture.'
+                'description' => 'Équipe prudente et moyenne, sans point fort dominant. Organisation correcte mais difficulté à faire la différence individuellement.'
             ],
             [
                 'name' => 'Shimada',
@@ -132,7 +132,7 @@ class TeamSeeder extends Seeder
                 'wins' => 0,
                 'draws' => 0,
                 'losses' => 0,
-                'description' => 'Shimada ES is an elementary school team from Shimada City, Shizuoka Prefecture.'
+                'description' => 'Équipe très neutre et disciplinée. Possède un bloc compact, un jeu simple et peu risqué, avec un danger principalement collectif.'
             ],
         ]);
     }
