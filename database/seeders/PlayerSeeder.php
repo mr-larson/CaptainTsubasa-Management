@@ -24,14 +24,11 @@ class PlayerSeeder extends Seeder
             ['Yuzo', 'Morisaki', 12, 'Goalkeeper', 340, [
                 'speed' => 60, 'stamina' => 80, 'defense' => 32, 'attack' => 18, 'shot' => 16, 'pass' => 18, 'dribble' => 16, 'block' => 18, 'intercept' => 20, 'tackle' => 18, 'hand_save' => 27, 'punch_save' => 24
             ]],
-            ['Akira', 'Tsuboi', 12, 'Goalkeeper', 250, [
-                'speed' => 40, 'stamina' => 60, 'defense' => 24, 'attack' => 16, 'shot' => 15, 'pass' => 16, 'dribble' => 15, 'block' => 16, 'intercept' => 16, 'tackle' => 15, 'hand_save' => 21, 'punch_save' => 18
-            ]],
-            ['Ryo', 'Ishizaki', 12, 'Defender', 425, [
-                'speed' => 65, 'stamina' => 75, 'defense' => 31, 'attack' => 22, 'shot' => 18, 'pass' => 20, 'dribble' => 18, 'block' => 25, 'intercept' => 24, 'tackle' => 27, 'hand_save' => 15, 'punch_save' => 15
-            ]],
             ['Masato', 'Nakazato', 12, 'Defender', 240, [
                 'speed' => 45, 'stamina' => 55, 'defense' => 22, 'attack' => 18, 'shot' => 16, 'pass' => 17, 'dribble' => 16, 'block' => 20, 'intercept' => 18, 'tackle' => 21, 'hand_save' => 15, 'punch_save' => 15
+            ]],
+            ['Ryo', 'Ishizaki', 12, 'Defender', 425, [
+                'speed' => 65, 'stamina' => 75, 'defense' => 31, 'attack' => 22, 'shot' => 18, 'pass' => 23, 'dribble' => 18, 'block' => 25, 'intercept' => 24, 'tackle' => 27, 'hand_save' => 15, 'punch_save' => 15
             ]],
             ['Hiroshi', 'Nagano', 12, 'Defender', 235, [
                 'speed' => 43, 'stamina' => 58, 'defense' => 23, 'attack' => 17, 'shot' => 16, 'pass' => 17, 'dribble' => 16, 'block' => 21, 'intercept' => 19, 'tackle' => 20, 'hand_save' => 15, 'punch_save' => 15
@@ -42,11 +39,11 @@ class PlayerSeeder extends Seeder
             ['Susumu', 'Sakurai', 12, 'Defender', 225, [
                 'speed' => 42, 'stamina' => 56, 'defense' => 21, 'attack' => 16, 'shot' => 15, 'pass' => 16, 'dribble' => 15, 'block' => 20, 'intercept' => 18, 'tackle' => 19, 'hand_save' => 15, 'punch_save' => 15
             ]],
-            ['Tsubasa', 'Ozora', 12, 'Midfielder', 500, [
-                'speed' => 78, 'stamina' => 85, 'defense' => 26, 'attack' => 39, 'shot' => 28, 'pass' => 29, 'dribble' => 30, 'block' => 20, 'intercept' => 22, 'tackle' => 20, 'hand_save' => 15, 'punch_save' => 15
-            ]],
             ['Taro', 'Misaki', 12, 'Midfielder', 475, [
-                'speed' => 75, 'stamina' => 80, 'defense' => 24, 'attack' => 37, 'shot' => 25, 'pass' => 30, 'dribble' => 28, 'block' => 19, 'intercept' => 21, 'tackle' => 19, 'hand_save' => 15, 'punch_save' => 15
+                'speed' => 75, 'stamina' => 80, 'defense' => 26, 'attack' => 37, 'shot' => 28, 'pass' => 30, 'dribble' => 28, 'block' => 19, 'intercept' => 23, 'tackle' => 21, 'hand_save' => 15, 'punch_save' => 15
+            ]],
+            ['Tsubasa', 'Ozora', 12, 'Midfielder', 500, [
+                'speed' => 78, 'stamina' => 85, 'defense' => 30, 'attack' => 39, 'shot' => 30, 'pass' => 29, 'dribble' => 30, 'block' => 20, 'intercept' => 22, 'tackle' => 22, 'hand_save' => 15, 'punch_save' => 15
             ]],
             ['Tsuyoshi', 'Oda', 12, 'Midfielder', 245, [
                 'speed' => 50, 'stamina' => 60, 'defense' => 20, 'attack' => 22, 'shot' => 20, 'pass' => 22, 'dribble' => 20, 'block' => 18, 'intercept' => 19, 'tackle' => 18, 'hand_save' => 15, 'punch_save' => 15
@@ -54,22 +51,25 @@ class PlayerSeeder extends Seeder
             ['Kenichi', 'Iwami', 12, 'Midfielder', 240, [
                 'speed' => 48, 'stamina' => 59, 'defense' => 19, 'attack' => 21, 'shot' => 19, 'pass' => 21, 'dribble' => 19, 'block' => 18, 'intercept' => 18, 'tackle' => 18, 'hand_save' => 15, 'punch_save' => 15
             ]],
+            ['Yutaka', 'Murashige', 12, 'Forward', 250, [
+                'speed' => 49, 'stamina' => 60, 'defense' => 16, 'attack' => 28, 'shot' => 25, 'pass' => 20, 'dribble' => 22, 'block' => 16, 'intercept' => 16, 'tackle' => 16, 'hand_save' => 15, 'punch_save' => 15
+            ]],
             ['Shota', 'Minowa', 12, 'Midfielder', 235, [
                 'speed' => 46, 'stamina' => 57, 'defense' => 18, 'attack' => 30, 'shot' => 24, 'pass' => 22, 'dribble' => 23, 'block' => 17, 'intercept' => 18, 'tackle' => 17, 'hand_save' => 15, 'punch_save' => 15
             ]],
-            ['Yutaka', 'Murashige', 12, 'Forward', 250, [
-                'speed' => 49, 'stamina' => 60, 'defense' => 16, 'attack' => 28, 'shot' => 25, 'pass' => 20, 'dribble' => 22, 'block' => 16, 'intercept' => 16, 'tackle' => 16, 'hand_save' => 15, 'punch_save' => 15
+            ['Akira', 'Tsuboi', 12, 'Goalkeeper', 250, [
+                'speed' => 40, 'stamina' => 60, 'defense' => 24, 'attack' => 16, 'shot' => 15, 'pass' => 16, 'dribble' => 15, 'block' => 16, 'intercept' => 16, 'tackle' => 15, 'hand_save' => 21, 'punch_save' => 18
             ]],
 
             // Shutetsu
             ['Genzo', 'Wakabayashi', 12, 'Goalkeeper', 500, [
                 'speed' => 70, 'stamina' => 70, 'defense' => 38, 'attack' => 18, 'shot' => 16, 'pass' => 18, 'dribble' => 16, 'block' => 22, 'intercept' => 24, 'tackle' => 18, 'hand_save' => 30, 'punch_save' => 28
             ]],
-            ['Shingo', 'Takasugi', 12, 'Defender', 375, [
-                'speed' => 64, 'stamina' => 70, 'defense' => 30, 'attack' => 20, 'shot' => 18, 'pass' => 19, 'dribble' => 17, 'block' => 24, 'intercept' => 23, 'tackle' => 25, 'hand_save' => 15, 'punch_save' => 15
-            ]],
             ['Kenta', 'Shimada', 12, 'Defender', 250, [
                 'speed' => 50, 'stamina' => 60, 'defense' => 26, 'attack' => 18, 'shot' => 16, 'pass' => 17, 'dribble' => 16, 'block' => 22, 'intercept' => 20, 'tackle' => 22, 'hand_save' => 15, 'punch_save' => 15
+            ]],
+            ['Shingo', 'Takasugi', 12, 'Defender', 375, [
+                'speed' => 64, 'stamina' => 70, 'defense' => 30, 'attack' => 20, 'shot' => 18, 'pass' => 20, 'dribble' => 17, 'block' => 25, 'intercept' => 23, 'tackle' => 25, 'hand_save' => 15, 'punch_save' => 15
             ]],
             ['Kazuma', 'Matsumo', 12, 'Defender', 225, [
                 'speed' => 48, 'stamina' => 58, 'defense' => 24, 'attack' => 17, 'shot' => 16, 'pass' => 16, 'dribble' => 15, 'block' => 21, 'intercept' => 19, 'tackle' => 21, 'hand_save' => 15, 'punch_save' => 15
@@ -83,17 +83,17 @@ class PlayerSeeder extends Seeder
             ['Takumi', 'Osaki', 12, 'Midfielder', 270, [
                 'speed' => 54, 'stamina' => 65, 'defense' => 22, 'attack' => 24, 'shot' => 21, 'pass' => 23, 'dribble' => 22, 'block' => 18, 'intercept' => 19, 'tackle' => 18, 'hand_save' => 15, 'punch_save' => 15
             ]],
+            ['Mamoru', 'Izawa', 12, 'Midfielder', 450, [
+                'speed' => 68, 'stamina' => 70, 'defense' => 28, 'attack' => 32, 'shot' => 25, 'pass' => 27, 'dribble' => 24, 'block' => 20, 'intercept' => 23, 'tackle' => 21, 'hand_save' => 15, 'punch_save' => 15
+            ]],
             ['Kaito', 'Inamura', 12, 'Midfielder', 290, [
                 'speed' => 55, 'stamina' => 67, 'defense' => 23, 'attack' => 25, 'shot' => 22, 'pass' => 24, 'dribble' => 23, 'block' => 19, 'intercept' => 20, 'tackle' => 19, 'hand_save' => 15, 'punch_save' => 15
-            ]],
-            ['Mamoru', 'Izawa', 12, 'Midfielder', 450, [
-                'speed' => 68, 'stamina' => 70, 'defense' => 28, 'attack' => 32, 'shot' => 24, 'pass' => 26, 'dribble' => 24, 'block' => 21, 'intercept' => 23, 'tackle' => 21, 'hand_save' => 15, 'punch_save' => 15
             ]],
             ['Teppei', 'Kisugi', 13, 'Forward', 400, [
                 'speed' => 70, 'stamina' => 80, 'defense' => 16, 'attack' => 34, 'shot' => 28, 'pass' => 21, 'dribble' => 24, 'block' => 16, 'intercept' => 16, 'tackle' => 16, 'hand_save' => 15, 'punch_save' => 15
             ]],
             ['Hajime', 'Taki', 12, 'Forward', 400, [
-                'speed' => 80, 'stamina' => 75, 'defense' => 18, 'attack' => 33, 'shot' => 27, 'pass' => 22, 'dribble' => 25, 'block' => 16, 'intercept' => 17, 'tackle' => 17, 'hand_save' => 15, 'punch_save' => 15
+                'speed' => 80, 'stamina' => 75, 'defense' => 18, 'attack' => 33, 'shot' => 27, 'pass' => 22, 'dribble' => 25, 'block' => 16, 'intercept' => 17, 'tackle' => 18, 'hand_save' => 15, 'punch_save' => 15
             ]],
 
             // Toho
@@ -119,16 +119,16 @@ class PlayerSeeder extends Seeder
                 'speed' => 64, 'stamina' => 72, 'defense' => 27, 'attack' => 24, 'shot' => 22, 'pass' => 24, 'dribble' => 22, 'block' => 20, 'intercept' => 21, 'tackle' => 20, 'hand_save' => 15, 'punch_save' => 15
             ]],
             ['Takeshi', 'Sawada', 11, 'Midfielder', 415, [
-                'speed' => 73, 'stamina' => 80, 'defense' => 24, 'attack' => 34, 'shot' => 26, 'pass' => 25, 'dribble' => 26, 'block' => 19, 'intercept' => 21, 'tackle' => 19, 'hand_save' => 15, 'punch_save' => 15
+                'speed' => 73, 'stamina' => 80, 'defense' => 28, 'attack' => 35, 'shot' => 25, 'pass' => 27, 'dribble' => 27, 'block' => 19, 'intercept' => 24, 'tackle' => 23, 'hand_save' => 15, 'punch_save' => 15
             ]],
             ['Tadashi', 'Shimano', 12, 'Midfielder', 260, [
                 'speed' => 63, 'stamina' => 70, 'defense' => 26, 'attack' => 23, 'shot' => 21, 'pass' => 23, 'dribble' => 21, 'block' => 20, 'intercept' => 21, 'tackle' => 20, 'hand_save' => 15, 'punch_save' => 15
             ]],
             ['Kojiro', 'Hyuga', 13, 'Forward', 500, [
-                'speed' => 78, 'stamina' => 85, 'defense' => 22, 'attack' => 40, 'shot' => 30, 'pass' => 20, 'dribble' => 26, 'block' => 18, 'intercept' => 18, 'tackle' => 18, 'hand_save' => 15, 'punch_save' => 15
+                'speed' => 78, 'stamina' => 85, 'defense' => 22, 'attack' => 42, 'shot' => 31, 'pass' => 20, 'dribble' => 27, 'block' => 18, 'intercept' => 20, 'tackle' => 21, 'hand_save' => 15, 'punch_save' => 15
             ]],
             ['Kazuki', 'Sorimachi', 12, 'Forward', 345, [
-                'speed' => 68, 'stamina' => 75, 'defense' => 20, 'attack' => 32, 'shot' => 26, 'pass' => 21, 'dribble' => 24, 'block' => 17, 'intercept' => 17, 'tackle' => 17, 'hand_save' => 15, 'punch_save' => 15
+                'speed' => 68, 'stamina' => 75, 'defense' => 20, 'attack' => 32, 'shot' => 26, 'pass' => 23, 'dribble' => 24, 'block' => 17, 'intercept' => 17, 'tackle' => 17, 'hand_save' => 15, 'punch_save' => 15
             ]],
 
             // Furano
@@ -150,11 +150,11 @@ class PlayerSeeder extends Seeder
             ['Haruo', 'Kaneda', 12, 'Midfielder', 275, [
                 'speed' => 56, 'stamina' => 65, 'defense' => 26, 'attack' => 21, 'shot' => 20, 'pass' => 22, 'dribble' => 20, 'block' => 19, 'intercept' => 20, 'tackle' => 19, 'hand_save' => 15, 'punch_save' => 15
             ]],
-            ['Hikaru', 'Matsuyama', 13, 'Midfielder', 475, [
-                'speed' => 75, 'stamina' => 87, 'defense' => 35, 'attack' => 36, 'shot' => 26, 'pass' => 24, 'dribble' => 23, 'block' => 25, 'intercept' => 26, 'tackle' => 26, 'hand_save' => 15, 'punch_save' => 15
-            ]],
             ['Koichi', 'Wakamatsu', 12, 'Midfielder', 265, [
                 'speed' => 55, 'stamina' => 64, 'defense' => 26, 'attack' => 21, 'shot' => 20, 'pass' => 22, 'dribble' => 20, 'block' => 19, 'intercept' => 20, 'tackle' => 19, 'hand_save' => 15, 'punch_save' => 15
+            ]],
+            ['Hikaru', 'Matsuyama', 13, 'Midfielder', 475, [
+                'speed' => 75, 'stamina' => 87, 'defense' => 35, 'attack' => 36, 'shot' => 28, 'pass' => 25, 'dribble' => 25, 'block' => 25, 'intercept' => 26, 'tackle' => 26, 'hand_save' => 15, 'punch_save' => 15
             ]],
             ['Seiji', 'Nakagawa', 12, 'Forward', 270, [
                 'speed' => 60, 'stamina' => 68, 'defense' => 18, 'attack' => 30, 'shot' => 25, 'pass' => 20, 'dribble' => 22, 'block' => 17, 'intercept' => 17, 'tackle' => 17, 'hand_save' => 15, 'punch_save' => 15
@@ -189,13 +189,13 @@ class PlayerSeeder extends Seeder
                 'speed' => 48, 'stamina' => 68, 'defense' => 25, 'attack' => 23, 'shot' => 21, 'pass' => 23, 'dribble' => 21, 'block' => 20, 'intercept' => 21, 'tackle' => 20, 'hand_save' => 15, 'punch_save' => 15
             ]],
             ['Jun', 'Misugi', 13, 'Midfielder', 500, [
-                'speed' => 83, 'stamina' => 50, 'defense' => 38, 'attack' => 38, 'shot' => 27, 'pass' => 28, 'dribble' => 27, 'block' => 25, 'intercept' => 26, 'tackle' => 25, 'hand_save' => 15, 'punch_save' => 15
-            ]],
-            ['Akira', 'Ichinose', 12, 'Forward', 350, [
-                'speed' => 70, 'stamina' => 67, 'defense' => 18, 'attack' => 32, 'shot' => 27, 'pass' => 21, 'dribble' => 24, 'block' => 17, 'intercept' => 17, 'tackle' => 17, 'hand_save' => 15, 'punch_save' => 15
+                'speed' => 83, 'stamina' => 50, 'defense' => 38, 'attack' => 38, 'shot' => 30, 'pass' => 29, 'dribble' => 29, 'block' => 25, 'intercept' => 26, 'tackle' => 25, 'hand_save' => 15, 'punch_save' => 15
             ]],
             ['Minoru', 'Honma', 12, 'Forward', 350, [
                 'speed' => 65, 'stamina' => 75, 'defense' => 20, 'attack' => 31, 'shot' => 26, 'pass' => 22, 'dribble' => 23, 'block' => 17, 'intercept' => 17, 'tackle' => 17, 'hand_save' => 15, 'punch_save' => 15
+            ]],
+            ['Akira', 'Ichinose', 12, 'Forward', 350, [
+                'speed' => 70, 'stamina' => 67, 'defense' => 18, 'attack' => 32, 'shot' => 27, 'pass' => 21, 'dribble' => 24, 'block' => 17, 'intercept' => 17, 'tackle' => 17, 'hand_save' => 15, 'punch_save' => 15
             ]],
             ['Shinji', 'Sanada', 12, 'Forward', 350, [
                 'speed' => 65, 'stamina' => 72, 'defense' => 19, 'attack' => 30, 'shot' => 25, 'pass' => 21, 'dribble' => 22, 'block' => 17, 'intercept' => 17, 'tackle' => 17, 'hand_save' => 15, 'punch_save' => 15
@@ -215,7 +215,7 @@ class PlayerSeeder extends Seeder
                 'speed' => 57, 'stamina' => 66, 'defense' => 28, 'attack' => 22, 'shot' => 18, 'pass' => 19, 'dribble' => 17, 'block' => 24, 'intercept' => 23, 'tackle' => 24, 'hand_save' => 15, 'punch_save' => 15
             ]],
             ['Yuichiro', 'Daimaru', 12, 'Midfielder', 310, [
-                'speed' => 64, 'stamina' => 74, 'defense' => 27, 'attack' => 24, 'shot' => 22, 'pass' => 24, 'dribble' => 22, 'block' => 20, 'intercept' => 21, 'tackle' => 20, 'hand_save' => 15, 'punch_save' => 15
+                'speed' => 64, 'stamina' => 74, 'defense' => 30, 'attack' => 24, 'shot' => 22, 'pass' => 25, 'dribble' => 22, 'block' => 22, 'intercept' => 22, 'tackle' => 22, 'hand_save' => 15, 'punch_save' => 15
             ]],
             ['Takayuki', 'Shiota', 12, 'Midfielder', 225, [
                 'speed' => 56, 'stamina' => 65, 'defense' => 26, 'attack' => 21, 'shot' => 20, 'pass' => 22, 'dribble' => 20, 'block' => 19, 'intercept' => 20, 'tackle' => 19, 'hand_save' => 15, 'punch_save' => 15
@@ -226,25 +226,25 @@ class PlayerSeeder extends Seeder
             ['Hiroshi', 'Tamai', 12, 'Midfielder', 235, [
                 'speed' => 59, 'stamina' => 67, 'defense' => 27, 'attack' => 22, 'shot' => 21, 'pass' => 23, 'dribble' => 21, 'block' => 20, 'intercept' => 21, 'tackle' => 20, 'hand_save' => 15, 'punch_save' => 15
             ]],
-            ['Masao', 'Tachibana', 13, 'Forward', 425, [
-                'speed' => 75, 'stamina' => 75, 'defense' => 20, 'attack' => 38, 'shot' => 29, 'pass' => 20, 'dribble' => 26, 'block' => 18, 'intercept' => 18, 'tackle' => 18, 'hand_save' => 15, 'punch_save' => 15
-            ]],
-            ['Kazuo', 'Tachibana', 13, 'Forward', 425, [
-                'speed' => 75, 'stamina' => 75, 'defense' => 20, 'attack' => 38, 'shot' => 29, 'pass' => 20, 'dribble' => 26, 'block' => 18, 'intercept' => 18, 'tackle' => 18, 'hand_save' => 15, 'punch_save' => 15
-            ]],
             ['Yoshiharu', 'Ono', 12, 'Forward', 240, [
                 'speed' => 60, 'stamina' => 68, 'defense' => 18, 'attack' => 26, 'shot' => 23, 'pass' => 21, 'dribble' => 22, 'block' => 17, 'intercept' => 17, 'tackle' => 17, 'hand_save' => 15, 'punch_save' => 15
+            ]],
+            ['Masao', 'Tachibana', 13, 'Forward', 425, [
+                'speed' => 75, 'stamina' => 75, 'defense' => 20, 'attack' => 38, 'shot' => 29, 'pass' => 28, 'dribble' => 26, 'block' => 18, 'intercept' => 20, 'tackle' => 20, 'hand_save' => 15, 'punch_save' => 15
+            ]],
+            ['Kazuo', 'Tachibana', 13, 'Forward', 425, [
+                'speed' => 75, 'stamina' => 75, 'defense' => 20, 'attack' => 38, 'shot' => 29, 'pass' => 28, 'dribble' => 26, 'block' => 18, 'intercept' => 20, 'tackle' => 20, 'hand_save' => 15, 'punch_save' => 15
             ]],
 
             // Azuma-ichi
             ['Ryota', 'Tsuji', 12, 'Goalkeeper', 225, [
                 'speed' => 55, 'stamina' => 65, 'defense' => 30, 'attack' => 16, 'shot' => 15, 'pass' => 18, 'dribble' => 15, 'block' => 21, 'intercept' => 22, 'tackle' => 18, 'hand_save' => 25, 'punch_save' => 22
             ]],
-            ['Makoto', 'Soda', 12, 'Defender', 430, [
-                'speed' => 70, 'stamina' => 85, 'defense' => 36, 'attack' => 24, 'shot' => 20, 'pass' => 21, 'dribble' => 19, 'block' => 27, 'intercept' => 25, 'tackle' => 30, 'hand_save' => 15, 'punch_save' => 15
-            ]],
             ['Junji', 'Yamada', 12, 'Defender', 235, [
                 'speed' => 60, 'stamina' => 67, 'defense' => 28, 'attack' => 22, 'shot' => 18, 'pass' => 19, 'dribble' => 17, 'block' => 24, 'intercept' => 23, 'tackle' => 25, 'hand_save' => 15, 'punch_save' => 15
+            ]],
+            ['Makoto', 'Soda', 12, 'Defender', 430, [
+                'speed' => 70, 'stamina' => 85, 'defense' => 38, 'attack' => 24, 'shot' => 25, 'pass' => 24, 'dribble' => 20, 'block' => 28, 'intercept' => 28, 'tackle' => 30, 'hand_save' => 15, 'punch_save' => 15
             ]],
             ['Daigo', 'Sasaki', 12, 'Defender', 240, [
                 'speed' => 58, 'stamina' => 68, 'defense' => 29, 'attack' => 21, 'shot' => 18, 'pass' => 19, 'dribble' => 17, 'block' => 24, 'intercept' => 23, 'tackle' => 25, 'hand_save' => 15, 'punch_save' => 15
@@ -279,7 +279,7 @@ class PlayerSeeder extends Seeder
                 'speed' => 60, 'stamina' => 67, 'defense' => 28, 'attack' => 22, 'shot' => 18, 'pass' => 19, 'dribble' => 17, 'block' => 24, 'intercept' => 23, 'tackle' => 25, 'hand_save' => 15, 'punch_save' => 15
             ]],
             ['Hiroshi', 'Jito', 13, 'Defender', 440, [
-                'speed' => 65, 'stamina' => 85, 'defense' => 36, 'attack' => 26, 'shot' => 21, 'pass' => 20, 'dribble' => 18, 'block' => 30, 'intercept' => 27, 'tackle' => 30, 'hand_save' => 15, 'punch_save' => 15
+                'speed' => 65, 'stamina' => 85, 'defense' => 36, 'attack' => 26, 'shot' => 22, 'pass' => 24, 'dribble' => 23, 'block' => 30, 'intercept' => 28, 'tackle' => 30, 'hand_save' => 15, 'punch_save' => 15
             ]],
             ['Toshio', 'Akizawa', 12, 'Defender', 240, [
                 'speed' => 58, 'stamina' => 68, 'defense' => 29, 'attack' => 21, 'shot' => 18, 'pass' => 19, 'dribble' => 17, 'block' => 24, 'intercept' => 23, 'tackle' => 25, 'hand_save' => 15, 'punch_save' => 15
@@ -303,7 +303,7 @@ class PlayerSeeder extends Seeder
                 'speed' => 60, 'stamina' => 68, 'defense' => 18, 'attack' => 26, 'shot' => 24, 'pass' => 21, 'dribble' => 22, 'block' => 17, 'intercept' => 17, 'tackle' => 17, 'hand_save' => 15, 'punch_save' => 15
             ]],
             ['Mitsuru', 'Sano', 13, 'Forward', 340, [
-                'speed' => 62, 'stamina' => 76, 'defense' => 20, 'attack' => 36, 'shot' => 28, 'pass' => 22, 'dribble' => 25, 'block' => 18, 'intercept' => 18, 'tackle' => 18, 'hand_save' => 15, 'punch_save' => 15
+                'speed' => 62, 'stamina' => 76, 'defense' => 20, 'attack' => 36, 'shot' => 28, 'pass' => 22, 'dribble' => 26, 'block' => 18, 'intercept' => 18, 'tackle' => 18, 'hand_save' => 15, 'punch_save' => 15
             ]],
 
             // Otomo
@@ -314,10 +314,10 @@ class PlayerSeeder extends Seeder
                 'speed' => 52, 'stamina' => 67, 'defense' => 30, 'attack' => 21, 'shot' => 18, 'pass' => 19, 'dribble' => 17, 'block' => 24, 'intercept' => 23, 'tackle' => 25, 'hand_save' => 15, 'punch_save' => 15
             ]],
             ['Koji', 'Nishio', 12, 'Defender', 350, [
-                'speed' => 55, 'stamina' => 70, 'defense' => 32, 'attack' => 22, 'shot' => 19, 'pass' => 20, 'dribble' => 18, 'block' => 26, 'intercept' => 25, 'tackle' => 27, 'hand_save' => 15, 'punch_save' => 15
+                'speed' => 55, 'stamina' => 70, 'defense' => 34, 'attack' => 22, 'shot' => 19, 'pass' => 22, 'dribble' => 19, 'block' => 26, 'intercept' => 27, 'tackle' => 27, 'hand_save' => 15, 'punch_save' => 15
             ]],
             ['Masao', 'Nakayama', 12, 'Defender', 350, [
-                'speed' => 55, 'stamina' => 70, 'defense' => 32, 'attack' => 22, 'shot' => 19, 'pass' => 20, 'dribble' => 18, 'block' => 26, 'intercept' => 25, 'tackle' => 27, 'hand_save' => 15, 'punch_save' => 15
+                'speed' => 55, 'stamina' => 70, 'defense' => 34, 'attack' => 22, 'shot' => 19, 'pass' => 22, 'dribble' => 19, 'block' => 27, 'intercept' => 26, 'tackle' => 27, 'hand_save' => 15, 'punch_save' => 15
             ]],
             ['Kozo', 'Kawada', 12, 'Defender', 290, [
                 'speed' => 53, 'stamina' => 68, 'defense' => 31, 'attack' => 21, 'shot' => 18, 'pass' => 19, 'dribble' => 17, 'block' => 25, 'intercept' => 24, 'tackle' => 26, 'hand_save' => 15, 'punch_save' => 15
@@ -326,19 +326,19 @@ class PlayerSeeder extends Seeder
                 'speed' => 51, 'stamina' => 66, 'defense' => 25, 'attack' => 23, 'shot' => 21, 'pass' => 23, 'dribble' => 21, 'block' => 20, 'intercept' => 21, 'tackle' => 20, 'hand_save' => 15, 'punch_save' => 15
             ]],
             ['Takeshi', 'Kishida', 12, 'Midfielder', 350, [
-                'speed' => 55, 'stamina' => 70, 'defense' => 24, 'attack' => 26, 'shot' => 23, 'pass' => 24, 'dribble' => 22, 'block' => 20, 'intercept' => 22, 'tackle' => 20, 'hand_save' => 15, 'punch_save' => 15
+                'speed' => 55, 'stamina' => 70, 'defense' => 26, 'attack' => 26, 'shot' => 22, 'pass' => 25, 'dribble' => 23, 'block' => 20, 'intercept' => 23, 'tackle' => 22, 'hand_save' => 15, 'punch_save' => 15
             ]],
             ['Hanji', 'Urabe', 12, 'Midfielder', 400, [
-                'speed' => 60, 'stamina' => 75, 'defense' => 30, 'attack' => 28, 'shot' => 24, 'pass' => 25, 'dribble' => 24, 'block' => 22, 'intercept' => 24, 'tackle' => 22, 'hand_save' => 15, 'punch_save' => 15
+                'speed' => 60, 'stamina' => 75, 'defense' => 30, 'attack' => 30, 'shot' => 24, 'pass' => 25, 'dribble' => 25, 'block' => 22, 'intercept' => 25, 'tackle' => 25, 'hand_save' => 15, 'punch_save' => 15
             ]],
             ['Shingo', 'Tadami', 12, 'Midfielder', 290, [
                 'speed' => 53, 'stamina' => 68, 'defense' => 25, 'attack' => 25, 'shot' => 23, 'pass' => 24, 'dribble' => 22, 'block' => 20, 'intercept' => 21, 'tackle' => 20, 'hand_save' => 15, 'punch_save' => 15
             ]],
             ['Akio', 'Nakao', 12, 'Forward', 300, [
-                'speed' => 55, 'stamina' => 70, 'defense' => 18, 'attack' => 30, 'shot' => 26, 'pass' => 21, 'dribble' => 23, 'block' => 17, 'intercept' => 17, 'tackle' => 17, 'hand_save' => 15, 'punch_save' => 15
+                'speed' => 55, 'stamina' => 70, 'defense' => 18, 'attack' => 31, 'shot' => 26, 'pass' => 21, 'dribble' => 23, 'block' => 17, 'intercept' => 17, 'tackle' => 17, 'hand_save' => 15, 'punch_save' => 15
             ]],
             ['Shun', 'Nitta', 12, 'Forward', 475, [
-                'speed' => 70, 'stamina' => 75, 'defense' => 18, 'attack' => 38, 'shot' => 29, 'pass' => 22, 'dribble' => 26, 'block' => 18, 'intercept' => 18, 'tackle' => 18, 'hand_save' => 15, 'punch_save' => 15
+                'speed' => 70, 'stamina' => 75, 'defense' => 18, 'attack' => 39, 'shot' => 29, 'pass' => 23, 'dribble' => 26, 'block' => 18, 'intercept' => 22, 'tackle' => 21, 'hand_save' => 15, 'punch_save' => 15
             ]],
 
             // Meiwa
@@ -408,12 +408,12 @@ class PlayerSeeder extends Seeder
                 'speed' => 49, 'stamina' => 60, 'defense' => 20, 'attack' => 26, 'shot' => 24, 'pass' => 21, 'dribble' => 22, 'block' => 17, 'intercept' => 17, 'tackle' => 17, 'hand_save' => 15, 'punch_save' => 15
             ]],
             ['Shingo', 'Aoi', 12, 'Forward', 450, [
-                'speed' => 75, 'stamina' => 72, 'defense' => 18, 'attack' => 36, 'shot' => 29, 'pass' => 24, 'dribble' => 28, 'block' => 18, 'intercept' => 18, 'tackle' => 18, 'hand_save' => 15, 'punch_save' => 15
+                'speed' => 75, 'stamina' => 72, 'defense' => 25, 'attack' => 36, 'shot' => 29, 'pass' => 25, 'dribble' => 28, 'block' => 18, 'intercept' => 22, 'tackle' => 22, 'hand_save' => 15, 'punch_save' => 15
             ]],
 
             // Naniwa
             ['Taichi', 'Nakanishi', 12, 'Goalkeeper', 400, [
-                'speed' => 40, 'stamina' => 70, 'defense' => 35, 'attack' => 16, 'shot' => 15, 'pass' => 18, 'dribble' => 15, 'block' => 26, 'intercept' => 24, 'tackle' => 18, 'hand_save' => 29, 'punch_save' => 26
+                'speed' => 40, 'stamina' => 70, 'defense' => 38, 'attack' => 16, 'shot' => 15, 'pass' => 18, 'dribble' => 15, 'block' => 26, 'intercept' => 24, 'tackle' => 18, 'hand_save' => 29, 'punch_save' => 29
             ]],
             ['Hiroshi', 'Tsusaki', 12, 'Defender', 240, [
                 'speed' => 45, 'stamina' => 55, 'defense' => 24, 'attack' => 20, 'shot' => 17, 'pass' => 18, 'dribble' => 16, 'block' => 21, 'intercept' => 19, 'tackle' => 22, 'hand_save' => 15, 'punch_save' => 15
