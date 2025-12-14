@@ -423,7 +423,8 @@ export function initMatchEngine(rootEl, config = {}) {
     const teamLabelEl     = $("#player-team-label");
     const playerNumberEl  = $("#player-number-label");
     const actionBarEl     = $("#action-bar");
-    console.log("actionBarEl?", !!actionBarEl, rootEl);
+    const defenderEnergyFillEl = $("#defender-energy-fill");
+
 
     const teamNameInternalEl = $("#team-name-internal");
     const teamNameExternalEl = $("#team-name-external");
@@ -434,8 +435,6 @@ export function initMatchEngine(rootEl, config = {}) {
     const currentActionDetailEl = $("#current-action-detail");
     const duelDiceEl            = $("#duel-dice-display");
     const historyListEl         = $("#history-list");
-
-    const energyFillEl = $("#energy-fill");
 
     const defenderTeamEl    = $("#defender-team");
     const defenderNumberEl  = $("#defender-number");
@@ -449,8 +448,8 @@ export function initMatchEngine(rootEl, config = {}) {
     const defStatHandSaveEl  = $("#def-stat-hand_save");
     const defStatPunchSaveEl = $("#def-stat-punch_save");
 
-    const defenderEnergyFillEl = $("#defender-energy-fill");
-
+    const homeEnergyFillEl = $("#home-energy-fill");
+    const awayEnergyFillEl = $("#away-energy-fill");
 
     const modeOnePlayerBtn     = $("#mode-one-player");
     const controlledTeamSelect = $("#controlled-team-select");
@@ -763,128 +762,112 @@ export function initMatchEngine(rootEl, config = {}) {
     }
 
     /**
-     * Met à jour la carte "home" ou "away" en fonction du joueur demandé.
-     * - prefix: "home" | "away"  (détermine quels IDs HTML sont ciblés)
-     * - team:   "internal" | "external"
-     * - slotNumber: 1..11
+     * Met à jour UNE carte (home/away) selon le prefix :
+     * - prefix = "home" => carte domicile
+     * - prefix = "away" => carte extérieur
      */
     function updateSideCard(prefix, team, slotNumber) {
         const info = getPlayerInfo(team, slotNumber);
 
-        // Helpers DOM (IDs préfixés)
-        const byId = (suffix) => rootEl.querySelector(`#${prefix}-${suffix}`);
-        const setText = (suffix, value) => {
-            const el = byId(suffix);
+        // --------------------------
+        //   Helpers DOM
+        // --------------------------
+        const setText = (selector, value) => {
+            const el = rootEl.querySelector(selector);
             if (el) el.textContent = value ?? "—";
         };
 
-        // Nom / rôle / numéro / équipe
+        // --------------------------
+        //   Header
+        // --------------------------
         const fullName = info ? `${info.firstname ?? ""} ${info.lastname ?? ""}`.trim() : "";
-        setText("name", fullName || `Joueur #${info?.number ?? slotNumber}`);
-        setText("role", info?.position || "—");
-        setText("number", String(info?.number ?? slotNumber));
-        setText("team", TEAMS?.[team]?.label ?? team);
+        setText(`#${prefix}-name`, fullName || `Joueur #${info?.number ?? slotNumber}`);
+        setText(`#${prefix}-role`, info?.position || "—");
+        setText(`#${prefix}-number`, info ? String(info.number) : String(slotNumber));
+        setText(
+            `#${prefix}-team`,
+            TEAMS?.[team]?.label ?? (team === "internal" ? "Domicile" : "Extérieur")
+        );
 
-        // Stats
+        // --------------------------
+        //   Stats
+        // --------------------------
         const s = info?.stats ?? {};
         const v = (k) => {
             const n = Number(s?.[k] ?? 0);
             return Number.isFinite(n) ? n : 0;
         };
 
-        setText("stat-shot",       String(v("shot")));
-        setText("stat-pass",       String(v("pass")));
-        setText("stat-dribble",    String(v("dribble")));
-        setText("stat-attack",     String(v("attack")));
+        setText(`#${prefix}-stat-shot`,       String(v("shot")));
+        setText(`#${prefix}-stat-pass`,       String(v("pass")));
+        setText(`#${prefix}-stat-dribble`,    String(v("dribble")));
+        setText(`#${prefix}-stat-attack`,     String(v("attack")));
 
-        setText("stat-block",      String(v("block")));
-        setText("stat-intercept",  String(v("intercept")));
-        setText("stat-tackle",     String(v("tackle")));
-        setText("stat-defense",    String(v("defense")));
+        setText(`#${prefix}-stat-block`,      String(v("block")));
+        setText(`#${prefix}-stat-intercept`,  String(v("intercept")));
+        setText(`#${prefix}-stat-tackle`,     String(v("tackle")));
+        setText(`#${prefix}-stat-defense`,    String(v("defense")));
 
-        setText("stat-hand_save",  String(v("hand_save")));
-        setText("stat-punch_save", String(v("punch_save")));
+        setText(`#${prefix}-stat-hand_save`,  String(v("hand_save")));
+        setText(`#${prefix}-stat-punch_save`, String(v("punch_save")));
 
-        // Stamina bar
+        // --------------------------
+        //   Toggle GK / Field stats
+        //   (on cache/affiche le parent <div class="flex justify-between">)
+        // --------------------------
+        const isGoalkeeper = (info?.position ?? "").toLowerCase() === "goalkeeper";
+
+        const showRow = (id) => {
+            const el = rootEl.querySelector(id);
+            if (el?.parentElement) el.parentElement.classList.remove("hidden");
+        };
+        const hideRow = (id) => {
+            const el = rootEl.querySelector(id);
+            if (el?.parentElement) el.parentElement.classList.add("hidden");
+        };
+
+        const fieldRows = [
+            `#${prefix}-stat-block`,
+            `#${prefix}-stat-intercept`,
+            `#${prefix}-stat-tackle`,
+            `#${prefix}-stat-dribble`,
+        ];
+
+        const gkRows = [
+            `#${prefix}-stat-hand_save`,
+            `#${prefix}-stat-punch_save`,
+        ];
+
+        if (isGoalkeeper) {
+            fieldRows.forEach(hideRow);
+            gkRows.forEach(showRow);
+        } else {
+            gkRows.forEach(hideRow);
+            fieldRows.forEach(showRow);
+        }
+
+        // --------------------------
+        //   Endurance bar (celle de la carte)
+        // --------------------------
         const playerId = getPlayerId(team, slotNumber);
         const value = getStamina(playerId);
         const ratio = value / ENDURANCE_MAX;
 
-        const energyFill = byId("energy-fill");
-        if (energyFill) {
-            energyFill.style.width = `${Math.max(0, Math.min(1, ratio)) * 100}%`;
-            energyFill.classList.remove("e-high","e-mid","e-low","e-crit");
+        const fillEl = rootEl.querySelector(`#${prefix}-energy-fill`);
+        if (fillEl) {
+            fillEl.style.width = `${Math.max(0, ratio * 100)}%`;
+            fillEl.classList.remove("e-high", "e-mid", "e-low", "e-crit");
 
-            if (value >= STAMINA_THRESHOLDS.HIGH) energyFill.classList.add("e-high");
-            else if (value >= STAMINA_THRESHOLDS.MID) energyFill.classList.add("e-mid");
-            else if (value >= STAMINA_THRESHOLDS.LOW) energyFill.classList.add("e-low");
-            else energyFill.classList.add("e-crit");
+            if (value >= STAMINA_THRESHOLDS.HIGH) fillEl.classList.add("e-high");
+            else if (value >= STAMINA_THRESHOLDS.MID) fillEl.classList.add("e-mid");
+            else if (value >= STAMINA_THRESHOLDS.LOW) fillEl.classList.add("e-low");
+            else fillEl.classList.add("e-crit");
         }
     }
 
     // ==========================
     //   PLAYER CARD
     // ==========================
-    function updatePlayerCard(team, slotNumber) {
-        if (!teamLabelEl || !playerNumberEl) return;
-
-        const info = getPlayerInfo(team, slotNumber);
-
-        teamLabelEl.textContent = TEAMS[team].label;
-        playerNumberEl.textContent = info ? info.number : slotNumber;
-
-        const nameEl = $("#player-name");
-        const roleEl = $("#player-role-label");
-
-        if (nameEl) {
-            const full = info ? `${info.firstname ?? ""} ${info.lastname ?? ""}`.trim() : "";
-            nameEl.textContent = full || `Joueur #${info?.number ?? slotNumber}`;
-        }
-
-        if (roleEl) {
-            roleEl.textContent = info?.position || "—";
-        }
-
-        // ✅ mise à jour des stats via les IDs du template
-        const s = info?.stats ?? {};
-        const v = (k) => {
-            const n = Number(s?.[k] ?? 0);
-            return Number.isFinite(n) ? n : 0;
-        };
-
-        const set = (id, val) => {
-            const el = rootEl.querySelector(id);
-            if (el) el.textContent = String(val);
-        };
-
-        set("#stat-shot",      v("shot"));
-        set("#stat-pass",      v("pass"));
-        set("#stat-dribble",   v("dribble"));
-        set("#stat-block",     v("block"));
-        set("#stat-intercept", v("intercept"));
-        set("#stat-tackle",    v("tackle"));
-        set("#stat-defense",   v("defense"));
-        set("#stat-attack",     v("attack"));
-
-        // gardien
-        set("#stat-hand_save",  v("hand_save"));
-        set("#stat-punch_save", v("punch_save"));
-
-        // stamina bar (garde ta logique)
-        const playerId = getPlayerId(team, slotNumber);
-        const value = getStamina(playerId);
-        const ratio = value / ENDURANCE_MAX;
-
-        if (energyFillEl) {
-            energyFillEl.style.width = `${ratio * 100}%`;
-            energyFillEl.classList.remove("e-high","e-mid","e-low","e-crit");
-
-            if (value >= STAMINA_THRESHOLDS.HIGH) energyFillEl.classList.add("e-high");
-            else if (value >= STAMINA_THRESHOLDS.MID) energyFillEl.classList.add("e-mid");
-            else if (value >= STAMINA_THRESHOLDS.LOW) energyFillEl.classList.add("e-low");
-            else energyFillEl.classList.add("e-crit");
-        }
-    }
 
     function clearDefenderCard() {
         if (defenderTeamEl)   defenderTeamEl.textContent = "—";
@@ -978,15 +961,15 @@ export function initMatchEngine(rootEl, config = {}) {
     }
 
     /**
-     * Met à jour les deux cartes :
-     * - la carte du porteur de balle sur son côté (home si internal, away si external)
-     * - les "power cards" (action bar) reste inchangé
+     * Met à jour la carte du porteur de balle sur son côté (home/away)
+     * et laisse l’action bar inchangée.
      */
     function updateTeamCard() {
         const prefix = (ball.team === "internal") ? "home" : "away";
         updateSideCard(prefix, ball.team, ball.number);
         updateCardsPower();
     }
+
 
     // ==========================
     //   UI ACTION BAR
@@ -2343,9 +2326,11 @@ export function initMatchEngine(rootEl, config = {}) {
         const team   = playerId.startsWith("I") ? "internal" : "external";
         const number = parseInt(playerId.slice(1), 10);
 
+        // ✅ clic joueur => update la carte de SON côté
         const prefix = (team === "internal") ? "home" : "away";
         updateSideCard(prefix, team, number);
     }
+
 
     function bindPlayerClickHandlers() {
         $$(".player").forEach((el) => {

@@ -265,19 +265,31 @@
 #action-bar.fade-out { opacity: 0; transform: translateY(8px); pointer-events: none; }
 #action-bar.fade-in  { opacity: 1; transform: translateY(0); pointer-events: auto; }
 
-/* Energy fill états (JS set class e-high/e-mid/e-low/e-crit) */
-#energy-fill { transition: width 0.3s ease, background 0.25s ease, box-shadow 0.25s ease; }
-#energy-fill.e-high { background: linear-gradient(90deg, #38b000, #9ef01a); }
-#energy-fill.e-mid  { background: linear-gradient(90deg, #f2c94c, #f2994a); }
-#energy-fill.e-low  { background: linear-gradient(90deg, #ff8e53, #ff3d00); }
-#energy-fill.e-crit { background: linear-gradient(90deg, #ff1744, #d50000); }
+#home-energy-fill,
+#away-energy-fill {
+    display: block;
+    height: 100%;
+    width: 100%;
+    transition: width 0.3s ease, background 0.25s ease;
+}
 
-#defender-energy-fill { transition: width 0.3s ease, background 0.25s ease, box-shadow 0.25s ease; }
-#defender-energy-fill.e-high { background: linear-gradient(90deg, #38b000, #9ef01a); }
-#defender-energy-fill.e-mid  { background: linear-gradient(90deg, #f2c94c, #f2994a); }
-#defender-energy-fill.e-low  { background: linear-gradient(90deg, #ff8e53, #ff3d00); }
-#defender-energy-fill.e-crit { background: linear-gradient(90deg, #ff1744, #d50000); }
-
+/* états */
+#home-energy-fill.e-high,
+#away-energy-fill.e-high {
+    background: linear-gradient(90deg, #38b000, #9ef01a);
+}
+#home-energy-fill.e-mid,
+#away-energy-fill.e-mid {
+    background: linear-gradient(90deg, #f2c94c, #f2994a);
+}
+#home-energy-fill.e-low,
+#away-energy-fill.e-low {
+    background: linear-gradient(90deg, #ff8e53, #ff3d00);
+}
+#home-energy-fill.e-crit,
+#away-energy-fill.e-crit {
+    background: linear-gradient(90deg, #ff1744, #d50000);
+}
 
 /* ==========================================================================
    ACTION BAR (cards) — nécessaire car HTML injecté par engine.js
@@ -354,64 +366,66 @@
 }
 
 /* ==========================================================================
-   ACTION CARDS — accent couleur par équipe (via classes mode-*)
+   ACTION CARDS — thématisation via CSS variables (mode-*)
    ========================================================================== */
 
-/* petit bandeau couleur en haut de chaque carte */
-.skill-card,
-.def-card { position: relative; overflow: hidden; }
+/* Base : variables par défaut (fallback) */
+#action-bar {
+    --card-accent-1: rgba(15, 23, 42, 0.95);
+    --card-accent-2: rgba(148, 163, 184, 0.95);
 
-.skill-card::before,
-.def-card::before{
-    content: "";
-    position: absolute;
-    left: 0; right: 0; top: 0;
-    height: 6px;
-    opacity: 0.95;
+    --card-border: rgba(0, 0, 0, 0.06);
+    --card-inset: rgba(0, 0, 0, 0.10);
+    --card-shadow: rgba(0, 0, 0, 0.16);
 }
+
+/* =========================================================
+   Modes : on ne fait que setter les variables
+   ========================================================= */
 
 /* Attaque INTERNAL (bleu) */
-#action-bar.mode-attack-internal .skill-card{
-    border-color: rgba(59,130,246,0.28);
-    box-shadow: 0 10px 18px rgba(0,0,0,0.16), 0 0 0 1px rgba(59,130,246,0.10) inset;
-}
-#action-bar.mode-attack-internal .skill-card::before{
-    background: linear-gradient(90deg, rgba(59,130,246,0.95), rgba(147,197,253,0.95));
+#action-bar.mode-attack-internal {
+    --card-accent-1: rgba(59, 130, 246, 0.95);
+    --card-accent-2: rgba(147, 197, 253, 0.95);
+    --card-border: rgba(59, 130, 246, 0.28);
+    --card-inset: rgba(59, 130, 246, 0.10);
 }
 
 /* Attaque EXTERNAL (orange) */
-#action-bar.mode-attack-external .skill-card{
-    border-color: rgba(249,115,22,0.28);
-    box-shadow: 0 10px 18px rgba(0,0,0,0.16), 0 0 0 1px rgba(249,115,22,0.10) inset;
-}
-#action-bar.mode-attack-external .skill-card::before{
-    background: linear-gradient(90deg, rgba(249,115,22,0.95), rgba(253,186,116,0.95));
-}
-
-/* Défense INTERNAL (vert) */
-#action-bar.mode-defense-internal .def-card{
-    border-color: rgba(59,130,246,0.28);
-    box-shadow: 0 10px 18px rgba(0,0,0,0.16), 0 0 0 1px rgba(59,130,246,0.10) inset;
-}
-#action-bar.mode-defense-internal .def-card::before{
-    background: linear-gradient(90deg, rgba(59,130,246,0.95), rgba(147,197,253,0.95));
+#action-bar.mode-attack-external {
+    --card-accent-1: rgba(249, 115, 22, 0.95);
+    --card-accent-2: rgba(253, 186, 116, 0.95);
+    --card-border: rgba(249, 115, 22, 0.28);
+    --card-inset: rgba(249, 115, 22, 0.10);
 }
 
-/* Défense EXTERNAL (rouge) */
-#action-bar.mode-defense-external .def-card{
-    border-color: rgba(249,115,22,0.28);
-    box-shadow: 0 10px 18px rgba(0,0,0,0.16), 0 0 0 1px rgba(249,115,22,0.10) inset;
-}
-#action-bar.mode-defense-external .def-card::before{
-    background: linear-gradient(90deg, rgba(249,115,22,0.95), rgba(253,186,116,0.95));
+/* Défense INTERNAL (bleu aussi chez toi actuellement) */
+#action-bar.mode-defense-internal {
+    --card-accent-1: rgba(59, 130, 246, 0.95);
+    --card-accent-2: rgba(147, 197, 253, 0.95);
+    --card-border: rgba(59, 130, 246, 0.28);
+    --card-inset: rgba(59, 130, 246, 0.10);
 }
 
+/* Défense EXTERNAL (orange aussi chez toi actuellement) */
+#action-bar.mode-defense-external {
+    --card-accent-1: rgba(249, 115, 22, 0.95);
+    --card-accent-2: rgba(253, 186, 116, 0.95);
+    --card-border: rgba(249, 115, 22, 0.28);
+    --card-inset: rgba(249, 115, 22, 0.10);
+}
 
-/* base card */
+/* =========================================================
+   Base cards (skill + defense) — styles communs
+   ========================================================= */
+
 .skill-card,
 .def-card {
+    position: relative;
+    overflow: hidden;
+
     appearance: none;
-    border: 0;
+    border: 1px solid var(--card-border);
     cursor: pointer;
 
     display: grid;
@@ -423,18 +437,32 @@
     padding: 12px;
     border-radius: 16px;
 
-    background: rgba(255,255,255,0.92);
-    box-shadow: 0 10px 18px rgba(0,0,0,0.16);
-    border: 1px solid rgba(0,0,0,0.06);
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow:
+        0 10px 18px var(--card-shadow),
+        0 0 0 1px var(--card-inset) inset;
 
     transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
     text-align: left;
 }
 
+/* petit bandeau couleur en haut de chaque carte */
+.skill-card::before,
+.def-card::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 6px;
+    opacity: 0.95;
+    background: linear-gradient(90deg, var(--card-accent-1), var(--card-accent-2));
+}
+
 .skill-card:hover,
 .def-card:hover {
     transform: translateY(-1px);
-    box-shadow: 0 14px 22px rgba(0,0,0,0.22);
+    box-shadow: 0 14px 22px rgba(0, 0, 0, 0.22);
 }
 
 .skill-card:active,
