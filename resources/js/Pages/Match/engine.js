@@ -762,6 +762,66 @@ export function initMatchEngine(rootEl, config = {}) {
         updateCardsPower(); // ✅ refresh power cards
     }
 
+    /**
+     * Met à jour la carte "home" ou "away" en fonction du joueur demandé.
+     * - prefix: "home" | "away"  (détermine quels IDs HTML sont ciblés)
+     * - team:   "internal" | "external"
+     * - slotNumber: 1..11
+     */
+    function updateSideCard(prefix, team, slotNumber) {
+        const info = getPlayerInfo(team, slotNumber);
+
+        // Helpers DOM (IDs préfixés)
+        const byId = (suffix) => rootEl.querySelector(`#${prefix}-${suffix}`);
+        const setText = (suffix, value) => {
+            const el = byId(suffix);
+            if (el) el.textContent = value ?? "—";
+        };
+
+        // Nom / rôle / numéro / équipe
+        const fullName = info ? `${info.firstname ?? ""} ${info.lastname ?? ""}`.trim() : "";
+        setText("name", fullName || `Joueur #${info?.number ?? slotNumber}`);
+        setText("role", info?.position || "—");
+        setText("number", String(info?.number ?? slotNumber));
+        setText("team", TEAMS?.[team]?.label ?? team);
+
+        // Stats
+        const s = info?.stats ?? {};
+        const v = (k) => {
+            const n = Number(s?.[k] ?? 0);
+            return Number.isFinite(n) ? n : 0;
+        };
+
+        setText("stat-shot",       String(v("shot")));
+        setText("stat-pass",       String(v("pass")));
+        setText("stat-dribble",    String(v("dribble")));
+        setText("stat-attack",     String(v("attack")));
+
+        setText("stat-block",      String(v("block")));
+        setText("stat-intercept",  String(v("intercept")));
+        setText("stat-tackle",     String(v("tackle")));
+        setText("stat-defense",    String(v("defense")));
+
+        setText("stat-hand_save",  String(v("hand_save")));
+        setText("stat-punch_save", String(v("punch_save")));
+
+        // Stamina bar
+        const playerId = getPlayerId(team, slotNumber);
+        const value = getStamina(playerId);
+        const ratio = value / ENDURANCE_MAX;
+
+        const energyFill = byId("energy-fill");
+        if (energyFill) {
+            energyFill.style.width = `${Math.max(0, Math.min(1, ratio)) * 100}%`;
+            energyFill.classList.remove("e-high","e-mid","e-low","e-crit");
+
+            if (value >= STAMINA_THRESHOLDS.HIGH) energyFill.classList.add("e-high");
+            else if (value >= STAMINA_THRESHOLDS.MID) energyFill.classList.add("e-mid");
+            else if (value >= STAMINA_THRESHOLDS.LOW) energyFill.classList.add("e-low");
+            else energyFill.classList.add("e-crit");
+        }
+    }
+
     // ==========================
     //   PLAYER CARD
     // ==========================
@@ -891,13 +951,17 @@ export function initMatchEngine(rootEl, config = {}) {
 
     /**
      * Choisit le défenseur “logique” pour l’UI (avant le duel),
-     * cohérent avec la logique de tes duels.
+     * et met à jour la carte correspondant à son côté :
+     * - internal => home
+     * - external => away
      */
     function setDefenderPreviewFor(action, defenseTeam) {
+        const defensePrefix = (defenseTeam === "internal") ? "home" : "away";
+
         // Gardien si tir à bout portant (face au GK)
         const isCloseRange = ball.frontOfKeeper && (action === "shot" || action === "special");
         if (isCloseRange) {
-            updateDefenderCard(defenseTeam, 1);
+            updateSideCard(defensePrefix, defenseTeam, 1);
             return;
         }
 
@@ -910,11 +974,17 @@ export function initMatchEngine(rootEl, config = {}) {
             getRandomFieldPlayer(defenseTeam);
 
         const defenderSlot = defenderId ? parseInt(defenderId.slice(1), 10) : 6;
-        updateDefenderCard(defenseTeam, defenderSlot);
+        updateSideCard(defensePrefix, defenseTeam, defenderSlot);
     }
 
+    /**
+     * Met à jour les deux cartes :
+     * - la carte du porteur de balle sur son côté (home si internal, away si external)
+     * - les "power cards" (action bar) reste inchangé
+     */
     function updateTeamCard() {
-        updatePlayerCard(ball.team, ball.number);
+        const prefix = (ball.team === "internal") ? "home" : "away";
+        updateSideCard(prefix, ball.team, ball.number);
         updateCardsPower();
     }
 
@@ -2262,11 +2332,19 @@ export function initMatchEngine(rootEl, config = {}) {
         }
     }
 
+    /**
+     * Au clic sur un joueur :
+     * - si joueur internal => on met à jour la carte HOME
+     * - si joueur external => on met à jour la carte AWAY
+     */
     function showPlayerCard(playerId) {
         if (!playerId) return;
+
         const team   = playerId.startsWith("I") ? "internal" : "external";
         const number = parseInt(playerId.slice(1), 10);
-        updatePlayerCard(team, number);
+
+        const prefix = (team === "internal") ? "home" : "away";
+        updateSideCard(prefix, team, number);
     }
 
     function bindPlayerClickHandlers() {
@@ -2311,6 +2389,9 @@ export function initMatchEngine(rootEl, config = {}) {
 
         applyKickoffPositions();
         moveBallToPlayer("internal", 8);
+        updateSideCard("home", "internal", 8);
+        updateSideCard("away", "external", 8);
+
 
         setMessage(
             TEXTS.ui.gameStartMain,

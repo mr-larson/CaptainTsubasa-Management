@@ -79,90 +79,103 @@
                     <div id="message-sub"></div>
                 </div>
 
-                <!-- MAIN ROW : 1/8 - 6/8 - 1/8 -->
+                <!-- MAIN ROW -->
                 <div
                     id="main-row"
                     class="grid grid-cols-1 lg:grid-cols-10 gap-6 items-stretch"
                 >
-                    <!-- LEFT (1/8) -->
-                    <div id="left-column" class="lg:col-span-2 min-w-0 flex flex-col justify-around">
-                    <div
-                            id="player-card"
-                            class="min-w-0 rounded-2xl bg-white p-4 shadow-lg ring-1 ring-white/80 flex flex-col gap-3"
-                        >
-                            <div id="player-header" class="flex items-center gap-3 min-w-0">
-                                <div
-                                    id="portrait"
-                                    class="shrink-0 h-[70px] w-[70px] rounded-xl shadow-md bg-gradient-to-br from-slate-100 via-slate-200 to-slate-400 relative overflow-hidden"
-                                ></div>
+                    <!-- Stats Cards (HOME / AWAY) -->
+                    <div id="left-column" class="lg:col-span-2 min-w-0 flex flex-col justify-around gap-4">
 
-                                <div id="player-info" class="min-w-0 flex-1 text-xs space-y-0.5">
-                                    <div id="player-name" class="text-base font-extrabold truncate">Nom complet</div>
-                                    <div id="player-role">Poste : <span id="player-role-label" class="font-semibold">Milieu</span></div>
-                                    <div id="player-number">Numéro : <span id="player-number-label" class="font-semibold">10</span></div>
-                                    <div id="player-team">Équipe : <span id="player-team-label" class="font-semibold">Internal</span></div>
-                                </div>
-                            </div>
-
-                            <div
-                                id="player-stats"
-                                class="grid grid-cols-2 gap-x-3 gap-y-1 rounded-xl bg-slate-100 p-2 text-[11px] ring-1 ring-black/5"
-                            >
-                                <div class="flex justify-between"><span>Shot :</span> <strong id="stat-shot">—</strong></div>
-                                <div class="flex justify-between"><span>Pass :</span> <strong id="stat-pass">—</strong></div>
-                                <div class="flex justify-between"><span>Dribble :</span> <strong id="stat-dribble">—</strong></div>
-                                <div class="flex justify-between"><span>Attack :</span> <strong id="stat-attack">—</strong></div>
-                            </div>
-
-                            <div
-                                id="energy-bar"
-                                class="h-2.5 w-full overflow-hidden rounded-full bg-gradient-to-r from-blue-200 to-white shadow-inner ring-1 ring-black/5"
-                            >
-                                <div id="energy-fill" class="h-full w-full e-high"></div>
-                            </div>
-                        </div>
-                        <!-- DEFENDER CARD (remplie par engine.js) -->
+                        <!-- HOME CARD (Domicile) -->
                         <div
-                            id="defender-card"
-                            class="min-w-0 rounded-2xl bg-white to-rose-50 p-4 shadow-lg ring-1 ring-white/80 flex flex-col gap-3"
+                            id="home-card"
+                            class="min-w-0 rounded-2xl bg-white p-4 shadow-lg ring-1 ring-white/80 flex flex-col gap-3"
                         >
                             <div class="flex items-center gap-3 min-w-0">
                                 <div
-                                    id="portrait"
+                                    id="home-portrait"
                                     class="shrink-0 h-[70px] w-[70px] rounded-xl shadow-md bg-gradient-to-br from-slate-100 via-slate-200 to-slate-400 relative overflow-hidden"
                                 ></div>
 
                                 <div class="min-w-0 flex-1 text-xs space-y-0.5">
-                                    <div id="defender-name" class="text-sm font-extrabold truncate">—</div>
-                                    <div>Poste : <span id="defender-role" class="font-semibold">—</span></div>
-                                    <div>Numéro : <span id="defender-number" class="font-semibold">—</span></div>
-                                    <div>Équipe : <span id="defender-team" class="font-semibold">—</span></div>
+                                    <div id="home-name" class="text-base font-extrabold truncate">—</div>
+                                    <div>Poste : <span id="home-role" class="font-semibold">—</span></div>
+                                    <div>Numéro : <span id="home-number" class="font-semibold">—</span></div>
+                                    <div>Équipe : <span id="home-team" class="font-semibold">Domicile</span></div>
+                                </div>
+                            </div>
+
+                            <!-- mêmes stats sur les 2 cartes (plus simple + cohérent) -->
+                            <div
+                                class="grid grid-cols-2 gap-x-3 gap-y-1 rounded-xl bg-slate-100 p-2 text-[11px] ring-1 ring-black/5"
+                            >
+                                <div class="flex justify-between"><span>Shot :</span> <strong id="home-stat-shot">—</strong></div>
+                                <div class="flex justify-between"><span>Pass :</span> <strong id="home-stat-pass">—</strong></div>
+                                <div class="flex justify-between"><span>Dribble :</span> <strong id="home-stat-dribble">—</strong></div>
+                                <div class="flex justify-between"><span>Attack :</span> <strong id="home-stat-attack">—</strong></div>
+
+                                <div class="flex justify-between"><span>Block :</span> <strong id="home-stat-block">—</strong></div>
+                                <div class="flex justify-between"><span>Intercept :</span> <strong id="home-stat-intercept">—</strong></div>
+                                <div class="flex justify-between"><span>Tackle :</span> <strong id="home-stat-tackle">—</strong></div>
+                                <div class="flex justify-between"><span>Défense :</span> <strong id="home-stat-defense">—</strong></div>
+
+                                <div class="flex justify-between"><span>Arrêt :</span> <strong id="home-stat-hand_save">—</strong></div>
+                                <div class="flex justify-between"><span>Poings :</span> <strong id="home-stat-punch_save">—</strong></div>
+                            </div>
+
+                            <div
+                                class="h-2.5 w-full overflow-hidden rounded-full bg-gradient-to-r from-blue-200 to-white shadow-inner ring-1 ring-black/5"
+                            >
+                                <div id="home-energy-fill" class="h-full w-full e-high"></div>
+                            </div>
+                        </div>
+
+                        <!-- AWAY CARD (Extérieur) -->
+                        <div
+                            id="away-card"
+                            class="min-w-0 rounded-2xl bg-white p-4 shadow-lg ring-1 ring-white/80 flex flex-col gap-3"
+                        >
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div
+                                    id="away-portrait"
+                                    class="shrink-0 h-[70px] w-[70px] rounded-xl shadow-md bg-gradient-to-br from-slate-100 via-slate-200 to-slate-400 relative overflow-hidden"
+                                ></div>
+
+                                <div class="min-w-0 flex-1 text-xs space-y-0.5">
+                                    <div id="away-name" class="text-base font-extrabold truncate">—</div>
+                                    <div>Poste : <span id="away-role" class="font-semibold">—</span></div>
+                                    <div>Numéro : <span id="away-number" class="font-semibold">—</span></div>
+                                    <div>Équipe : <span id="away-team" class="font-semibold">Extérieur</span></div>
                                 </div>
                             </div>
 
                             <div
-                                id="defender-stats"
                                 class="grid grid-cols-2 gap-x-3 gap-y-1 rounded-xl bg-slate-100 p-2 text-[11px] ring-1 ring-black/5"
                             >
-                                <div class="flex justify-between"><span>Block :</span> <strong id="def-stat-block">—</strong></div>
-                                <div class="flex justify-between"><span>Intercept :</span> <strong id="def-stat-intercept">—</strong></div>
-                                <div class="flex justify-between"><span>Tackle :</span> <strong id="def-stat-tackle">—</strong></div>
-                                <div class="flex justify-between"><span>Défense :</span> <strong id="def-stat-defense">—</strong></div>
+                                <div class="flex justify-between"><span>Shot :</span> <strong id="away-stat-shot">—</strong></div>
+                                <div class="flex justify-between"><span>Pass :</span> <strong id="away-stat-pass">—</strong></div>
+                                <div class="flex justify-between"><span>Dribble :</span> <strong id="away-stat-dribble">—</strong></div>
+                                <div class="flex justify-between"><span>Attack :</span> <strong id="away-stat-attack">—</strong></div>
 
-                                <div class="flex justify-between"><span>Arrêt :</span> <strong id="def-stat-hand_save">—</strong></div>
-                                <div class="flex justify-between"><span>Poings :</span> <strong id="def-stat-punch_save">—</strong></div>
+                                <div class="flex justify-between"><span>Block :</span> <strong id="away-stat-block">—</strong></div>
+                                <div class="flex justify-between"><span>Intercept :</span> <strong id="away-stat-intercept">—</strong></div>
+                                <div class="flex justify-between"><span>Tackle :</span> <strong id="away-stat-tackle">—</strong></div>
+                                <div class="flex justify-between"><span>Défense :</span> <strong id="away-stat-defense">—</strong></div>
+
+                                <div class="flex justify-between"><span>Arrêt :</span> <strong id="away-stat-hand_save">—</strong></div>
+                                <div class="flex justify-between"><span>Poings :</span> <strong id="away-stat-punch_save">—</strong></div>
                             </div>
 
                             <div
-                                id="defender-energy-bar"
                                 class="h-2.5 w-full overflow-hidden rounded-full bg-gradient-to-r from-rose-100 to-white shadow-inner ring-1 ring-black/5"
                             >
-                                <div id="defender-energy-fill" class="h-full w-full e-high"></div>
+                                <div id="away-energy-fill" class="h-full w-full e-high"></div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- CENTER (6/8) -->
+                    <!-- CENTER field -->
                     <div id="field-wrapper" class="lg:col-span-6 min-w-0 relative">
                         <div id="ai-turn-overlay">Tour de l'IA…</div>
 
@@ -212,7 +225,7 @@
                         </div>
                     </div>
 
-                    <!-- RIGHT (1/8) -->
+                    <!-- RIGHT log story -->
                     <div class="lg:col-span-2 min-w-0 flex min-h-0">
                         <div
                             id="log-card"
