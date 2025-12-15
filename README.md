@@ -45,7 +45,7 @@ https://gautd8.notion.site/Captain-Tsubasa-Management-28c47313c8ca4fb5b0e3652491
 
 ### ⚽️ Moteur de match
 - Match **jouable** (home / away)
-- Tours limités (30)
+- Tours limités (40)
 - Actions : Passe, Dribble, Tir, Spécial
 - Duels basés sur :(Stat joueur × coef) × stamina + dé
 - IA offensive et défensive
