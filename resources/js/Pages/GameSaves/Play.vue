@@ -62,17 +62,45 @@ const teamById = computed(() => {
 });
 
 /**
+ * Un "bye" = match incomplet (opponent null) OU flag is_bye si présent.
+ */
+const isByeMatch = (match) => {
+    if (!match) return false;
+
+    // ✅ si ton backend pose un flag
+    if (match.is_bye === true) return true;
+
+    // ✅ cas fréquent : une des deux équipes est null
+    const homeMissing = !match.home_team_id;
+    const awayMissing = !match.away_team_id;
+
+    return homeMissing || awayMissing;
+};
+
+/**
+ * Pour afficher l'équipe adverse de façon safe.
+ */
+const opponentTeamIdFor = (match) => {
+    if (!team.value || !match || isByeMatch(match)) return null;
+
+    const isHome = match.home_team_id === team.value.id;
+    return isHome ? match.away_team_id : match.home_team_id;
+};
+
+/**
  * Nom de l’adversaire pour un match donné
  */
 const opponentNameFor = (match) => {
     if (!team.value) return '???';
+    if (!match || isByeMatch(match)) return 'Repos';
 
-    const isHome = match.home_team_id === team.value.id;
-    const opponentId = isHome ? match.away_team_id : match.home_team_id;
-    const opponent   = teamById.value[opponentId];
+    const opponentId = opponentTeamIdFor(match);
+    if (!opponentId) return 'Repos';
 
+    const opponent = teamById.value[opponentId];
     return opponent?.name ?? '???';
 };
+
 
 /**
  * Effectif = joueurs liés via les game_contracts
@@ -133,9 +161,62 @@ const activeTab = ref('dashboard');
 const myMatches = computed(() => {
     if (!team.value) return [];
 
-    return props.matches.filter(
-        (m) => m.home_team_id === team.value.id || m.away_team_id === team.value.id
-    );
+    return props.matches
+        .filter((m) => {
+            // match “normal”
+            if (m.home_team_id === team.value.id || m.away_team_id === team.value.id) return true;
+
+            // match “bye” encodé avec une seule team (ex home_team_id = team.id, away null)
+            // -> déjà couvert par la condition ci-dessus, mais on laisse explicite si tu ajustes plus tard
+            return false;
+        })
+        .sort((a, b) => (a.week ?? 0) - (b.week ?? 0));
+});
+
+/**
+ * Nombre total de semaines de saison (double round-robin)
+ * - si nb équipes impair => semaines = nb_équipes * 2 (ex 15 => 30)
+ * - si nb équipes pair   => semaines = (nb_équipes - 1) * 2 (ex 16 => 30)
+ */
+const seasonWeeksCount = computed(() => {
+    const n = props.teams?.length ?? 0;
+    if (n < 2) return 0;
+    return (n % 2 === 1) ? (n * 2) : ((n - 1) * 2);
+});
+
+/**
+ * Calendrier "complet" (1 ligne par semaine) pour l'équipe sélectionnée.
+ * - si match existe => ligne match
+ * - sinon => ligne BYE (repos) virtuelle
+ */
+const calendarRows = computed(() => {
+    if (!calendarTeam.value) return [];
+
+    const byWeek = new Map();
+    calendarTeamMatches.value.forEach(m => byWeek.set(Number(m.week), m));
+
+    const totalWeeks = seasonWeeksCount.value || 0;
+    const rows = [];
+
+    for (let w = 1; w <= totalWeeks; w++) {
+        const match = byWeek.get(w);
+
+        if (match) {
+            rows.push(match);
+        } else {
+            // ✅ ligne "Repos" virtuelle
+            rows.push({
+                id: `bye-${calendarTeam.value.id}-${w}`,
+                week: w,
+                is_bye: true,
+                status: 'bye',
+                home_team_id: null,
+                away_team_id: null,
+            });
+        }
+    }
+
+    return rows;
 });
 
 /**
@@ -147,6 +228,7 @@ const myMatchThisWeek = computed(() => {
 
     return myMatches.value.find(m =>
         m.week === w &&
+        !isByeMatch(m) && // ✅
         (m.status === 'scheduled' || m.status === 'played')
     ) ?? null;
 });
@@ -259,6 +341,65 @@ const selectedOtherTeam = computed(() => {
         otherTeams.value[0]
     );
 });
+
+// ==========================
+//   CALENDRIER - ÉQUIPE SÉLECTIONNÉE (UI style "Autres équipes")
+// ==========================
+
+const selectedCalendarTeamId = ref(null);
+
+/**
+ * Liste des équipes affichées dans la colonne gauche du calendrier
+ * - on inclut ton équipe contrôlée + les autres
+ */
+const calendarTeams = computed(() => {
+    return props.teams ?? [];
+});
+
+/**
+ * Sélection par défaut : ton équipe contrôlée (si dispo), sinon 1ère équipe
+ */
+const calendarTeam = computed(() => {
+    if (!calendarTeams.value.length) return null;
+
+    if (!selectedCalendarTeamId.value) {
+        return team.value || calendarTeams.value[0];
+    }
+
+    const id = Number(selectedCalendarTeamId.value);
+    return calendarTeams.value.find(t => Number(t.id) === id) ?? (team.value || calendarTeams.value[0]);
+});
+
+/**
+ * Action: sélectionner une équipe (colonne gauche)
+ */
+const selectCalendarTeam = (t) => {
+    selectedCalendarTeamId.value = t.id;
+};
+
+/**
+ * Matches de l'équipe sélectionnée (home ou away)
+ */
+const calendarTeamMatches = computed(() => {
+    if (!calendarTeam.value) return [];
+
+    return props.matches
+        .filter(m => m.home_team_id === calendarTeam.value.id || m.away_team_id === calendarTeam.value.id)
+        .sort((a, b) => (a.week ?? 0) - (b.week ?? 0));
+});
+
+/**
+ * Adversaire pour une équipe donnée (pas forcément ton équipe contrôlée)
+ */
+const opponentNameForTeam = (match, teamId) => {
+    if (!match || !teamId) return '???';
+    if (match.is_bye === true) return 'Repos';
+
+    const isHome = match.home_team_id === teamId;
+    const oppId  = isHome ? match.away_team_id : match.home_team_id;
+
+    return teamById.value[oppId]?.name ?? '???';
+};
 
 /**
  * Effectif de l’équipe sélectionnée (GameTeam + GameContracts)
@@ -861,7 +1002,7 @@ const playNextMatch = () => {
 
                             <div
                                 v-if="otherTeams.length"
-                                class="max-h-80 overflow-y-auto space-y-1"
+                                class="max-h-96 overflow-y-auto space-y-1"
                             >
                                 <button
                                     v-for="t in otherTeams"
@@ -1231,66 +1372,110 @@ const playNextMatch = () => {
                     <!-- ============================== -->
                     <div
                         v-else-if="activeTab === 'calendar'"
-                        class="flex-1 border border-slate-200 rounded-lg bg-slate-50 p-4"
+                        class="flex-1 flex gap-4"
                     >
-                        <h3 class="text-lg font-semibold text-slate-700 mb-2">
-                            Calendrier de la saison
-                        </h3>
+                        <!-- Colonne gauche : liste des équipes -->
+                        <div class="w-1/5 border border-slate-200 rounded-lg bg-slate-50 p-3">
+                            <h3 class="text-md font-semibold text-slate-700 mb-2">
+                                Equipes
+                            </h3>
 
-                        <p class="text-xs text-slate-500 mb-3">
-                            Un match aller et un match retour contre chaque équipe de la ligue.
-                        </p>
-
-                        <div v-if="myMatches.length" class="max-h-96 overflow-y-auto">
-                            <table class="w-full text-sm text-left">
-                                <thead class="text-xs uppercase text-slate-500 border-b">
-                                <tr>
-                                    <th class="py-1 pr-2 text-right">Semaine</th>
-                                    <th class="py-1 pr-2">Adversaire</th>
-                                    <th class="py-1 pr-2">Lieu</th>
-                                    <th class="py-1 pr-2 text-right">Statut</th>
-                                    <th class="py-1 pr-2 text-right">Score</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr
-                                    v-for="match in myMatches"
-                                    :key="match.id"
-                                    class="border-b last:border-b-0"
+                            <div
+                                v-if="calendarTeams.length"
+                                class="max-h-96 overflow-y-auto space-y-1"
+                            >
+                                <button
+                                    v-for="t in calendarTeams"
+                                    :key="t.id"
+                                    type="button"
+                                    @click="selectCalendarTeam(t)"
+                                    :class="[
+                    'w-full text-left text-sm px-2 py-1 rounded',
+                    calendarTeam && calendarTeam.id === t.id
+                        ? 'bg-teal-100 text-slate-900'
+                        : 'bg-white hover:bg-slate-100 text-slate-700'
+                ]"
                                 >
-                                    <td class="py-1 pr-2 text-right">
-                                        {{ match.week }}
-                                    </td>
+                                    {{ t.name }}
+                                </button>
+                            </div>
 
-                                    <td class="py-1 pr-2">
-                                        {{ opponentNameFor(match) }}
-                                    </td>
-
-                                    <td class="py-1 pr-2">
-                                        <span v-if="!team">-</span>
-                                        <span v-else>{{ match.home_team_id === team.id ? 'Domicile' : 'Extérieur' }}</span>
-                                    </td>
-
-                                    <td class="py-1 pr-2 text-right">
-                                        <span v-if="match.status === 'scheduled'">À jouer</span>
-                                        <span v-else-if="match.status === 'played'">Joué</span>
-                                        <span v-else>Annulé</span>
-                                    </td>
-
-                                    <td class="py-1 pr-2 text-right">
-                                        <span v-if="match.status === 'played'">
-                                            {{ match.home_score }} - {{ match.away_score }}
-                                        </span>
-                                        <span v-else class="text-slate-400">-</span>
-                                    </td>
-                                </tr>
-                                </tbody>
-                            </table>
+                            <p v-else class="text-sm text-slate-500">
+                                Aucune équipe trouvée.
+                            </p>
                         </div>
 
-                        <p v-else class="text-sm text-slate-500">
-                            Aucun match planifié pour le moment.
-                        </p>
+                        <!-- Colonne droite : calendrier de l'équipe sélectionnée -->
+                        <div class="flex-1 border border-slate-200 rounded-lg bg-slate-50 p-4">
+                            <div v-if="calendarTeam">
+                                <h3 class="text-lg font-semibold text-slate-700 mb-2">
+                                    Calendrier : {{ calendarTeam.name }}
+                                </h3>
+
+                                <p class="text-xs text-slate-500 mb-3">
+                                    Un match aller et un match retour contre chaque équipe de la ligue.
+                                </p>
+
+                                <div v-if="calendarRows.length" class="max-h-96 overflow-y-auto">
+                                    <table class="w-full text-sm text-left">
+                                        <thead class="text-xs uppercase text-slate-500 border-b">
+                                        <tr>
+                                            <th class="py-1 pr-2 text-right">Semaine</th>
+                                            <th class="py-1 pr-2">Adversaire</th>
+                                            <th class="py-1 pr-2">Lieu</th>
+                                            <th class="py-1 pr-2 text-right">Statut</th>
+                                            <th class="py-1 pr-2 text-right">Score</th>
+                                        </tr>
+                                        </thead>
+
+                                        <tbody>
+                                        <tr
+                                            v-for="match in calendarRows"
+                                            :key="match.id"
+                                            class="border-b last:border-b-0"
+                                        >
+                                            <td class="py-1 pr-2 text-right">
+                                                {{ match.week }}
+                                            </td>
+
+                                            <td class="py-1 pr-2">
+                                                <span v-if="isByeMatch(match)" class="text-slate-400 italic">Repos</span>
+                                                <span v-else>{{ opponentNameForTeam(match, calendarTeam.id) }}</span>
+                                            </td>
+
+                                            <td class="py-1 pr-2">
+                                                <span v-if="isByeMatch(match)" class="text-slate-400">—</span>
+                                                <span v-else>{{ match.home_team_id === calendarTeam.id ? 'Domicile' : 'Extérieur' }}</span>
+                                            </td>
+
+                                            <td class="py-1 pr-2 text-right">
+                                                <span v-if="isByeMatch(match)" class="text-slate-400">Repos</span>
+                                                <template v-else>
+                                                    <span v-if="match.status === 'scheduled'">À jouer</span>
+                                                    <span v-else-if="match.status === 'played'">Joué</span>
+                                                    <span v-else>Annulé</span>
+                                                </template>
+                                            </td>
+
+                                            <td class="py-1 pr-2 text-right">
+                                                <span v-if="isByeMatch(match)" class="text-slate-400">-</span>
+                                                <span v-else-if="match.status === 'played'">{{ match.home_score }} - {{ match.away_score }}</span>
+                                                <span v-else class="text-slate-400">-</span>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <p v-else class="text-sm text-slate-500">
+                                    Aucun match planifié pour le moment.
+                                </p>
+                            </div>
+
+                            <p v-else class="text-sm text-slate-500">
+                                Sélectionne une équipe dans la liste à gauche.
+                            </p>
+                        </div>
                     </div>
 
                     <!-- ============================== -->

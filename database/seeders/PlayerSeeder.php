@@ -189,7 +189,7 @@ class PlayerSeeder extends Seeder
                 'speed' => 48, 'stamina' => 68, 'defense' => 25, 'attack' => 23, 'shot' => 21, 'pass' => 23, 'dribble' => 21, 'block' => 20, 'intercept' => 21, 'tackle' => 20, 'hand_save' => 15, 'punch_save' => 15
             ]],
             ['Jun', 'Misugi', 13, 'Midfielder', 500, [
-                'speed' => 83, 'stamina' => 50, 'defense' => 38, 'attack' => 38, 'shot' => 30, 'pass' => 29, 'dribble' => 29, 'block' => 25, 'intercept' => 26, 'tackle' => 25, 'hand_save' => 15, 'punch_save' => 15
+                'speed' => 83, 'stamina' => 50, 'defense' => 38, 'attack' => 38, 'shot' => 29, 'pass' => 29, 'dribble' => 29, 'block' => 25, 'intercept' => 25, 'tackle' => 25, 'hand_save' => 15, 'punch_save' => 15
             ]],
             ['Minoru', 'Honma', 12, 'Forward', 350, [
                 'speed' => 65, 'stamina' => 75, 'defense' => 20, 'attack' => 31, 'shot' => 26, 'pass' => 22, 'dribble' => 23, 'block' => 17, 'intercept' => 17, 'tackle' => 17, 'hand_save' => 15, 'punch_save' => 15

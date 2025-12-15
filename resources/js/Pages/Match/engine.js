@@ -13,7 +13,7 @@ const DIE_SIDES   = 20;  // nombre de faces du dé utilisé dans les calculs de 
 // ==========================
 
 const GAME_RULES = {
-    MAX_TURNS: 30,
+    MAX_TURNS: 40,
 };
 
 // Bonus / malus des duels
@@ -509,7 +509,6 @@ export function initMatchEngine(rootEl, config = {}) {
         }
     }
 
-
     function showDuelDice(attackScore, defenseScore) {
         if (!duelDiceEl) return;
 
@@ -527,6 +526,37 @@ export function initMatchEngine(rootEl, config = {}) {
     function clearDuelDice() {
         if (!duelDiceEl) return;
         duelDiceEl.classList.remove("visible", "pop");
+    }
+
+    // ==========================
+//   BALLE LIBRE (égalité duel)
+// ==========================
+
+    /**
+     * En cas d'égalité parfaite au duel :
+     * le ballon devient "libre" et est attribué aléatoirement
+     * à un joueur de champ (20 joueurs : 10 + 10, sans gardiens).
+     */
+    function sendLooseBallRandomFieldPlayer() {
+        const fieldEls = Array.from(rootEl.querySelectorAll(".player"))
+            .filter(el => !el.classList.contains("goalkeeper"));
+
+        if (!fieldEls.length) return;
+
+        const picked = fieldEls[Math.floor(Math.random() * fieldEls.length)];
+        const pid = picked.dataset.player; // ex: "I8" ou "E6"
+
+        if (!pid) return;
+
+        const t = pid.startsWith("I") ? "internal" : "external";
+        const num = parseInt(pid.slice(1), 10);
+
+        // ✅ Déplacement via ta fonction existante (recalcule zone/lane + UI)
+        moveBallToPlayer(t, num);
+
+        // ✅ Log + message pour rendre ça lisible
+        setMessage("Duel équilibré !", "Ballon dévié : possession aléatoire.");
+        pushLogEntry("Duel équilibré — ballon dévié", [`Possession : ${TEAMS[t].label} #${num}`]);
     }
 
     function updateScoreUI() {
@@ -562,14 +592,30 @@ export function initMatchEngine(rootEl, config = {}) {
         return STAMINA_FACTORS.EXHAUSTED;
     }
 
+    /**
+     * ✅ NEW: multiplicateur de coût par catégorie
+     * - le gardien doit consommer moins vite
+     */
+    function staminaCostMultiplierFor(category) {
+        if (category === "defenseGK") return 0.6; // ✅ GK consomme ~40% moins
+        return 1.0;
+    }
+
     function applyStaminaCost(playerId, category, actionKey) {
         if (!playerId) return;
+
         const cfgCategory = STATS[category];
         const cfg         = cfgCategory && cfgCategory[actionKey];
-        const cost        = cfg ? cfg.cost : 0;
+
+        const baseCost    = cfg ? cfg.cost : 0;
+
+        // ✅ NEW: coût ajusté (GK moins gourmand)
+        const cost        = Math.round(baseCost * staminaCostMultiplierFor(category));
+
         const curr        = getStamina(playerId);
         const next        = Math.max(0, curr - cost);
         stamina[playerId] = next;
+
         updateStaminaUI(playerId);
     }
 
@@ -1352,6 +1398,7 @@ export function initMatchEngine(rootEl, config = {}) {
     //   IA
     // ==========================
     function computeAIAttackChoice() {
+        // Kickoff = passe forcée
         if (isKickoff) return "pass";
 
         // Si déjà face au gardien : tirer (ou special)
@@ -1361,37 +1408,67 @@ export function initMatchEngine(rootEl, config = {}) {
             return (r < specialProb) ? "special" : "shot";
         }
 
-        // ✅ BONUS : si en zone 3 mais stamina trop basse, évite dribble (sinon IA boucle/échoue)
-        if (ball.zoneIndex === 3 && !ball.frontOfKeeper) {
-            const aiCarrierId = getPlayerId(currentTeam, ball.number);
-            const st = getStamina(aiCarrierId);
-            if (st < 25) return "shot"; // ou "pass" si tu veux sécuriser
+        const z = ball.zoneIndex;
+
+        // --------------------------
+        // Stamina du porteur IA (source de vérité)
+        // --------------------------
+        const aiCarrierId = getPlayerId(currentTeam, ball.number);
+        const st = getStamina(aiCarrierId);
+
+        // Trop fatigué => éviter les actions chères / risquées
+        if (st < 20) {
+            return "pass";
         }
 
-        const z = ball.zoneIndex;
-        const r = Math.random();
-
+        // --------------------------
+        // Zones 0–1 : construction
+        // --------------------------
         if (z <= 1) {
-            if (r < AI_RULES.ATTACK.EARLY_PASS_PROB) return "pass";
+            const r = Math.random();
+            if (r < (AI_RULES.ATTACK.EARLY_PASS_PROB ?? 0.7)) return "pass";
             return "dribble";
         }
 
+        // --------------------------
+        // Zone 2 : chercher à progresser (dribble prioritaire)
+        // Objectif : dribble → zone 3 → dribble → face GK → shot
+        // --------------------------
         if (z === 2) {
-            if (r < AI_RULES.ATTACK.MID_DRIBBLE_PROB) return "dribble";
-            if (r < AI_RULES.ATTACK.MID_PASS_PROB) return "pass";
-            return "shot";
+            const r = Math.random();
+
+            // si stamina correcte => dribble souvent
+            if (st >= 30) {
+                if (r < 0.70) return "dribble";
+                if (r < 0.95) return "pass";
+                return "shot"; // rare tir de zone 2
+            }
+
+            // stamina moyenne => plus simple
+            if (r < 0.80) return "pass";
+            return "dribble";
         }
 
-        // Zone 3 : dribble souvent pour aller face GK
-        const toGkProb = AI_RULES.ATTACK.LATE_DRIBBLE_TO_GK_PROB
-            ?? AI_RULES.ATTACK.LATE_DRIBBLE_PROB
-            ?? 0.85;
+        // --------------------------
+        // Zone 3 : l’IA doit DRIBBLER pour aller face GK (sinon elle tire trop tôt)
+        // --------------------------
+        if (z === 3) {
+            const r = Math.random();
 
-        if (r < toGkProb) return "dribble";
+            // stamina bonne : dribble quasi systématique pour chercher face GK
+            if (st >= 35) {
+                if (r < 0.85) return "dribble";
+                if (r < 0.95) return "shot";  // quelques tirs “classiques”
+                return "pass";
+            }
 
-        const shotProb = AI_RULES.ATTACK.LATE_SHOT_PROB ?? 0.35;
-        if (r < toGkProb + shotProb * (1 - toGkProb)) return "shot";
+            // stamina moyenne : moins de dribbles, plus de tirs/passes
+            if (r < 0.55) return "dribble";
+            if (r < 0.85) return "shot";
+            return "pass";
+        }
 
+        // fallback
         return "pass";
     }
 
@@ -1407,21 +1484,29 @@ export function initMatchEngine(rootEl, config = {}) {
         }, AI_THINK_MS);
     }
 
-    function computeAIDefenseChoice(attack) {
-        const table = {
-            pass:    ["intercept", "block", "tackle", "field-special"],
-            dribble: ["tackle", "block", "intercept", "field-special"],
-            shot:    ["block", "tackle", "intercept", "field-special"],
-            special: ["field-special", "block", "tackle", "intercept"],
-        };
-
-        const list = table[attack] || ["block","intercept","tackle","field-special"];
+    function computeAIDefenseChoice(attackAction) {
         const r = Math.random();
 
-        if (r < AI_RULES.DEFENSE.MAIN_CHOICE_PROB) return list[0];
-        if (r < AI_RULES.DEFENSE.SECOND_CHOICE_PROB && list[1]) return list[1];
-        return list[Math.floor(Math.random() * list.length)];
+        switch (attackAction) {
+            case "pass":
+                if (r < 0.7) return "intercept";
+                if (r < 0.9) return "tackle";
+                return "block";
+
+            case "dribble":
+                if (r < 0.7) return "tackle";
+                if (r < 0.9) return "intercept";
+                return "block";
+
+            case "shot":
+                if (r < 0.75) return "block";
+                return "intercept";
+
+            default:
+                return "intercept";
+        }
     }
+
 
     function scheduleAIDefense(attack, defendingTeam) {
         if (!isAITeam(defendingTeam) || phase !== "defense" || !pendingAttack || isGameOver) return;
@@ -1477,9 +1562,8 @@ export function initMatchEngine(rootEl, config = {}) {
     }
 
     // ==========================
-//   RÉSOLUTION : PASS
-// ==========================
-
+    //   RÉSOLUTION : PASS
+    // ==========================
     function resolvePass(attackTeam, defenseTeam, defenseAction) {
         const wasKickoff = isKickoff;
         isKickoff = false;
@@ -1501,8 +1585,11 @@ export function initMatchEngine(rootEl, config = {}) {
         let attackScore =
             attackBaseFor("pass", attackTeam, ball.number) * staminaFactor(attackerId);
 
+        // ✅ FIX: la défense doit aussi être impactée par sa stamina
+        const defFactor = defenderId ? staminaFactor(defenderId) : 1.0;
+
         let defenseScore =
-            defenseBaseFor(defenseAction, defenseTeam, defenderSlot, false);
+            defenseBaseFor(defenseAction, defenseTeam, defenderSlot, false) * defFactor;
 
         attackScore += rollDie();
         defenseScore += rollDie();
@@ -1510,6 +1597,34 @@ export function initMatchEngine(rootEl, config = {}) {
         showDuelDice(attackScore, defenseScore);
 
         const diff = attackScore - defenseScore;
+
+        if (diff === 0) {
+            // ✅ log du duel + règle égalité
+            pushLogEntry(
+                "Duel équilibré — ballon libre",
+                [
+                    `Attaque: pass`,
+                    `Défense: ${defenseAction}`,
+                    `Duel stats : ${attackScore.toFixed(1)} - ${defenseScore.toFixed(1)} (0.0)`,
+                    "Ballon envoyé aléatoirement à un joueur de champ",
+                ],
+                `🎲 ${attackScore.toFixed(1)}-${defenseScore.toFixed(1)}`
+            );
+
+            sendLooseBallRandomFieldPlayer();
+
+            phase = "attack";
+            pendingAttack = null;
+
+            animateAndThen(() => {
+                advanceTurn(ball.team);
+                showAttackBarForCurrentTeam();
+                refreshUI();
+            });
+
+            return;
+        }
+
         const ok = diff > 0;
 
         const duelText =
@@ -1523,7 +1638,7 @@ export function initMatchEngine(rootEl, config = {}) {
             applyStaminaCost(defenderId, "defenseField", defenseAction);
         }
 
-        // ---- Kickoff: tu gardes ta logique (mais on ajoute diceTag)
+        // ---- Kickoff
         if (wasKickoff) {
             if (ok) {
                 const dmNumbers = [5, 6];
@@ -1674,8 +1789,8 @@ export function initMatchEngine(rootEl, config = {}) {
     }
 
     // ==========================
-//   RÉSOLUTION : DRIBBLE
-// ==========================
+    //   RÉSOLUTION : DRIBBLE
+    // ==========================
 
     function resolveDribble(attackTeam, defenseTeam, defenseAction) {
         if (ball.frontOfKeeper) {
@@ -1709,8 +1824,11 @@ export function initMatchEngine(rootEl, config = {}) {
         let attackScore =
             attackBaseFor("dribble", attackTeam, ball.number) * staminaFactor(attackerId);
 
+        // ✅ FIX: stamina côté défense aussi
+        const defFactor = defenderId ? staminaFactor(defenderId) : 1.0;
+
         let defenseScore =
-            defenseBaseFor(defenseAction, defenseTeam, defenderSlot, false);
+            defenseBaseFor(defenseAction, defenseTeam, defenderSlot, false) * defFactor;
 
         attackScore += rollDie();
         defenseScore += rollDie();
@@ -1718,6 +1836,34 @@ export function initMatchEngine(rootEl, config = {}) {
         showDuelDice(attackScore, defenseScore);
 
         const diff = attackScore - defenseScore;
+
+// ✅ Égalité => ballon libre aléatoire vers un joueur de champ
+        if (diff === 0) {
+            pushLogEntry(
+                "Duel équilibré — ballon libre",
+                [
+                    `Attaque: dribble`,
+                    `Défense: ${defenseAction}`,
+                    `Duel stats : ${attackScore.toFixed(1)} - ${defenseScore.toFixed(1)} (0.0)`,
+                    "Ballon envoyé aléatoirement à un joueur de champ",
+                ],
+                diceTag
+            );
+
+            sendLooseBallRandomFieldPlayer();
+
+            phase = "attack";
+            pendingAttack = null;
+
+            animateAndThen(() => {
+                advanceTurn(ball.team);
+                showAttackBarForCurrentTeam();
+                refreshUI();
+            });
+
+            return;
+        }
+
         const ok = diff > 0;
 
         const duelText =
@@ -1883,8 +2029,8 @@ export function initMatchEngine(rootEl, config = {}) {
     }
 
     // ==========================
-//   DUEL GARDIEN (TIR DE LOIN)
-// ==========================
+    //   DUEL GARDIEN (TIR DE LOIN)
+    // ==========================
 
     function resolveShotKeeperDuel(ctx, defenseAction) {
         const {
@@ -1900,7 +2046,11 @@ export function initMatchEngine(rootEl, config = {}) {
         const keeperId = getKeeperId(defenseTeam);
 
         let attackScore = gkAttackBase * staminaFactor(attackerId);
-        let defenseScore = defenseBaseFor(defenseAction, defenseTeam, 1, true);
+
+        // ✅ FIX: stamina du gardien aussi
+        const gkFactor = keeperId ? staminaFactor(keeperId) : 1.0;
+
+        let defenseScore = defenseBaseFor(defenseAction, defenseTeam, 1, true) * gkFactor;
 
         attackScore += rollDie();
         defenseScore += rollDie();
@@ -1908,6 +2058,41 @@ export function initMatchEngine(rootEl, config = {}) {
         showDuelDice(attackScore, defenseScore);
 
         const diff = attackScore - defenseScore;
+
+// ✅ ÉGALITÉ → ballon libre (pas arrêt, pas but)
+        if (diff === 0) {
+            ball.frontOfKeeper = false;
+            resetLastDribbler();
+
+            applyStaminaCost(attackerId, "attack", isSpecial ? "special" : "shot");
+            if (keeperId) {
+                applyStaminaCost(keeperId, "defenseGK", defenseAction);
+            }
+
+            pushLogEntry(
+                "Duel tir vs gardien — équilibre",
+                [
+                    `Tir depuis zone ${originZone + 1}`,
+                    `Duel stats : ${attackScore.toFixed(1)}-${defenseScore.toFixed(1)} (0.0)`,
+                    "Ballon dévié — possession aléatoire",
+                ],
+                `🎲 ${attackScore.toFixed(1)}-${defenseScore.toFixed(1)}`
+            );
+
+            sendLooseBallRandomFieldPlayer();
+
+            phase = "attack";
+            pendingAttack = null;
+
+            animateAndThen(() => {
+                advanceTurn(ball.team);
+                showAttackBarForCurrentTeam();
+                refreshUI();
+            });
+
+            return;
+        }
+
         const ok = diff > 0;
 
         const duelText =
@@ -1923,7 +2108,7 @@ export function initMatchEngine(rootEl, config = {}) {
 
         applyStaminaCost(attackerId, "attack", isSpecial ? "special" : "shot");
         if (keeperId) {
-            applyStaminaCost(keeperId, "defenseGK", defenseAction);
+            applyStaminaCost(keeperId, "defenseGK", defenseAction); // ✅ coûtera moins (multiplier)
         }
 
         if (ok) {
@@ -1987,9 +2172,8 @@ export function initMatchEngine(rootEl, config = {}) {
     }
 
     // ==========================
-//   RÉSOLUTION : TIR
-// ==========================
-
+    //   RÉSOLUTION : TIR
+    // ==========================
     function resolveShot(attackTeam, defenseTeam, defenseAction, isSpecial = false) {
         const originZone = ball.zoneIndex;
         const originLane = ball.laneIndex;
@@ -2003,8 +2187,11 @@ export function initMatchEngine(rootEl, config = {}) {
             let attackScore =
                 attackBaseFor(attackType, attackTeam, ball.number) * staminaFactor(attackerId);
 
+            // ✅ FIX: stamina gardien aussi
+            const gkFactor = keeperId ? staminaFactor(keeperId) : 1.0;
+
             let defenseScore =
-                defenseBaseFor(defenseAction, defenseTeam, 1, true);
+                defenseBaseFor(defenseAction, defenseTeam, 1, true) * gkFactor;
 
             attackScore += rollDie();
             defenseScore += rollDie();
@@ -2012,7 +2199,26 @@ export function initMatchEngine(rootEl, config = {}) {
             showDuelDice(attackScore, defenseScore);
 
             const diff = attackScore - defenseScore;
+
+            // ✅ ÉGALITÉ => ballon libre attribué à un joueur de champ aléatoire
+            if (diff === 0) {
+                sendLooseBallRandomFieldPlayer();
+
+                // le tour repart avec l'équipe du porteur
+                phase = "attack";
+                pendingAttack = null;
+
+                animateAndThen(() => {
+                    advanceTurn(ball.team);
+                    showAttackBarForCurrentTeam();
+                    refreshUI();
+                });
+
+                return;
+            }
+
             const ok = diff > 0;
+
 
             const duelText =
                 `Duel tir vs gardien : ${attackScore.toFixed(1)}-${defenseScore.toFixed(1)} ` +
@@ -2027,7 +2233,7 @@ export function initMatchEngine(rootEl, config = {}) {
 
             applyStaminaCost(attackerId, "attack", attackType);
             if (keeperId) {
-                applyStaminaCost(keeperId, "defenseGK", defenseAction);
+                applyStaminaCost(keeperId, "defenseGK", defenseAction); // ✅ coûtera moins (multiplier)
             }
 
             if (ok) {
@@ -2104,8 +2310,11 @@ export function initMatchEngine(rootEl, config = {}) {
             attackBaseFor(isSpecial ? "special" : "shot", attackTeam, ball.number) *
             staminaFactor(attackerId);
 
+        // ✅ FIX: stamina défenseur de champ aussi
+        const defFactor = defenderId ? staminaFactor(defenderId) : 1.0;
+
         let fieldDefenseScore =
-            defenseBaseFor(defenseAction, defenseTeam, defenderSlot, false);
+            defenseBaseFor(defenseAction, defenseTeam, defenderSlot, false) * defFactor;
 
         fieldAttackScore += rollDie();
         fieldDefenseScore += rollDie();
@@ -2113,6 +2322,23 @@ export function initMatchEngine(rootEl, config = {}) {
         showDuelDice(fieldAttackScore, fieldDefenseScore);
 
         const diffField = fieldAttackScore - fieldDefenseScore;
+
+        // ✅ ÉGALITÉ => ballon libre attribué à un joueur de champ aléatoire
+        if (diffField === 0) {
+            sendLooseBallRandomFieldPlayer();
+
+            phase = "attack";
+            pendingAttack = null;
+
+            animateAndThen(() => {
+                advanceTurn(ball.team);
+                showAttackBarForCurrentTeam();
+                refreshUI();
+            });
+
+            return;
+        }
+
         const passField = diffField > 0;
 
         const fieldText =
@@ -2169,7 +2395,6 @@ export function initMatchEngine(rootEl, config = {}) {
             return;
         }
 
-        // Le tir passe la défense → duel gardien (pas de nouveau duel ici, donc on peut utiliser diceTagField)
         pushLogEntry(
             TEXTS.logs.shotThroughDefenseTitle,
             [
@@ -2382,11 +2607,6 @@ export function initMatchEngine(rootEl, config = {}) {
             TEXTS.ui.gameStartMain,
             TEXTS.ui.gameStartSub,
         );
-        pushLogEntry(
-            TEXTS.logs.kickoffTitle,
-            [TEXTS.logs.kickoffDetail],
-        );
-
         showAttackBarForCurrentTeam();
         refreshUI();
 
