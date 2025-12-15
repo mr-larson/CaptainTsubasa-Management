@@ -69,8 +69,8 @@ https://gautd8.notion.site/Captain-Tsubasa-Management-28c47313c8ca4fb5b0e3652491
 
 <img width="900" alt="Capture d’écran 2025-12-14 à 20 06 20" src="https://github.com/user-attachments/assets/a7d11ace-545c-471a-ae22-be13bf60ca1e" />
 <img width="900" alt="Capture d’écran 2025-12-14 à 20 05 59" src="https://github.com/user-attachments/assets/ef03088b-a3ce-445d-a08d-4457f58efa4b" />
+<img width="900" height="791" alt="Capture d’écran 2025-12-07 à 17 30 31" src="https://github.com/user-attachments/assets/58df4223-0dfb-4fe1-911a-082086bc00c9" />
 <img width="900" alt="Capture d’écran 2025-12-13 à 05 14 08" src="https://github.com/user-attachments/assets/73d071dc-e222-48a5-ad0f-5acf5cb27229" />
-<img width="900" alt="Capture d’écran 2025-12-07 à 17 30 31" src="https://github.com/user-attachments/assets/04c3bb5f-d49e-4311-b34a-f9e0fa330d8f" />
 
 
 ---
