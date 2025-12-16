@@ -1489,38 +1489,61 @@ export function initMatchEngine(rootEl, config = {}) {
         const r = Math.random();
 
         // ==========================
-        // ✅ DUEL GARDIEN : actions autorisées UNIQUEMENT
+        // DUEL GARDIEN (LOGIQUE AVANCÉE)
         // ==========================
         if (isKeeperDuel) {
-            // tireur = porteur de balle (équipe attaquante = otherTeam(defendingTeam))
             const attackerTeam = otherTeam(defendingTeam);
             const shooterSlot  = ball.number;
 
+            // Menace du tir : shot ou attack (special)
             const shooterShot   = getStat(attackerTeam, shooterSlot, "shot");
             const shooterAttack = getStat(attackerTeam, shooterSlot, "attack");
-            const threat = Math.max(shooterShot, shooterAttack); // menace simple
+            const threat        = Math.max(shooterShot, shooterAttack);
 
+            // Stamina du gardien
             const keeperId = getKeeperId(defendingTeam);
-            const st = keeperId ? getStamina(keeperId) : 100;
+            const stamina  = keeperId ? getStamina(keeperId) : 100;
 
-            // Danger haut => on sécurise (hands / special si assez de stamina)
+            // --------------------------
+            // MENACE ÉLEVÉE
+            // --------------------------
             if (threat >= 35) {
-                if (st >= 25) return (Math.random() < 0.30) ? "gk-special" : "hands";
-                return "hands";
+                if (stamina >= 30) {
+                    // sécuriser : hands majoritaire, special parfois
+                    return (r < 0.25) ? "gk-special" : "hands";
+                }
+                if (stamina >= 15) {
+                    return "hands";
+                }
+                // trop fatigué
+                return "punch";
             }
 
-            // Danger moyen => hands souvent, punch parfois
+            // --------------------------
+            // MENACE MOYENNE
+            // --------------------------
             if (threat >= 25) {
-                if (st < 15) return "punch";
-                return (Math.random() < 0.70) ? "hands" : "punch";
+                if (stamina >= 30) {
+                    return (r < 0.65) ? "hands" : "punch";
+                }
+                if (stamina >= 15) {
+                    return (r < 0.55) ? "hands" : "punch";
+                }
+                return "punch";
             }
 
-            // Danger faible => punch pour économiser
-            return (Math.random() < 0.65) ? "punch" : "hands";
+            // --------------------------
+            // MENACE FAIBLE
+            // --------------------------
+            if (stamina >= 30) {
+                return (r < 0.70) ? "punch" : "hands";
+            }
+
+            return "punch";
         }
 
         // ==========================
-        // DUEL CHAMP : logique actuelle
+        // DUEL CHAMP (INCHANGÉ)
         // ==========================
         switch (attackAction) {
             case "pass":
@@ -1546,7 +1569,6 @@ export function initMatchEngine(rootEl, config = {}) {
                 return "intercept";
         }
     }
-
 
     function scheduleAIDefense(attack, defendingTeam) {
         if (!isAITeam(defendingTeam) || phase !== "defense" || !pendingAttack || isGameOver) return;
@@ -1795,25 +1817,14 @@ export function initMatchEngine(rootEl, config = {}) {
         } else {
             resetLastDribbler();
 
-            const defZone2 = getFacingZoneIndex(originZone);
-            const laneOptions = [originLane];
-            if (originLane > 0) laneOptions.push(originLane - 1);
-            if (originLane < laneY.length - 1) laneOptions.push(originLane + 1);
-            const defLane2 = laneOptions[Math.floor(Math.random() * laneOptions.length)];
-
-            const number = pickReceiverInCell(
-                defenseTeam,
-                defZone2,
-                defLane2,
-                6,
-                null,
-            );
-
+            // ✅ Le joueur qui intercepte (defenderId) récupère le ballon
+            const number = defenderId ? parseInt(defenderId.slice(1), 10) : 6;
             moveBallToPlayer(defenseTeam, number);
 
+            // ✅ Message basé sur la vraie position du récupérateur (ball recalculé par moveBallToPlayer)
             setMessage(
                 "Passe interceptée !",
-                `${TEAMS[defenseTeam].label} récupère en zone ${defZone2 + 1}, ligne ${defLane2 + 1}.`,
+                `${TEAMS[defenseTeam].label} récupère avec le n°${number} (zone ${ball.zoneIndex + 1}, ligne ${ball.laneIndex + 1}).`,
             );
 
             pushLogEntry(
@@ -1840,14 +1851,8 @@ export function initMatchEngine(rootEl, config = {}) {
 
     function resolveDribble(attackTeam, defenseTeam, defenseAction) {
         if (ball.frontOfKeeper) {
-            setMessage(
-                TEXTS.ui.dribbleForbiddenMain,
-                TEXTS.ui.dribbleForbiddenSub,
-            );
-            pushLogEntry(
-                TEXTS.logs.dribbleRefusedTitle,
-                [TEXTS.logs.dribbleRefusedDetail],
-            );
+            setMessage(TEXTS.ui.dribbleForbiddenMain, TEXTS.ui.dribbleForbiddenSub);
+            pushLogEntry(TEXTS.logs.dribbleRefusedTitle, [TEXTS.logs.dribbleRefusedDetail]);
             phase = "attack";
             pendingAttack = null;
             return;
@@ -1883,16 +1888,18 @@ export function initMatchEngine(rootEl, config = {}) {
 
         const diff = attackScore - defenseScore;
 
-// ✅ Égalité => ballon libre aléatoire vers un joueur de champ
+        // ✅ IMPORTANT : on initialise AVANT tout pushLogEntry potentiel
+        const duelText =
+            `Duel stats : ${attackScore.toFixed(1)} - ${defenseScore.toFixed(1)} ` +
+            `(${diff > 0 ? "+" + diff.toFixed(1) : diff.toFixed(1)})`;
+
+        const diceTag = `🎲 ${attackScore.toFixed(1)}-${defenseScore.toFixed(1)}`;
+
+        // ✅ (Optionnel mais cohérent avec ton pass) : égalité => ballon aléatoire
         if (diff === 0) {
             pushLogEntry(
-                "Duel équilibré — ballon libre",
-                [
-                    `Attaque: dribble`,
-                    `Défense: ${defenseAction}`,
-                    `Duel stats : ${attackScore.toFixed(1)} - ${defenseScore.toFixed(1)} (0.0)`,
-                    "Ballon envoyé aléatoirement à un joueur de champ",
-                ],
+                "Duel équilibré — ballon dévié",
+                [`Attaque: dribble`, `Défense: ${defenseAction}`, duelText],
                 diceTag
             );
 
@@ -1902,7 +1909,8 @@ export function initMatchEngine(rootEl, config = {}) {
             pendingAttack = null;
 
             animateAndThen(() => {
-                advanceTurn(ball.team);
+                currentTeam = ball.team;
+                advanceTurn(currentTeam);
                 showAttackBarForCurrentTeam();
                 refreshUI();
             });
@@ -1911,12 +1919,6 @@ export function initMatchEngine(rootEl, config = {}) {
         }
 
         const ok = diff > 0;
-
-        const duelText =
-            `Duel stats : ${attackScore.toFixed(1)} - ${defenseScore.toFixed(1)} ` +
-            `(${diff > 0 ? "+" + diff.toFixed(1) : diff.toFixed(1)})`;
-
-        const diceTag = `🎲 ${attackScore.toFixed(1)}-${defenseScore.toFixed(1)}`;
 
         applyStaminaCost(attackerId, "attack", "dribble");
         if (defenderId) {
@@ -1948,16 +1950,12 @@ export function initMatchEngine(rootEl, config = {}) {
 
                 setMessage(
                     TEXTS.logs.dribbleSuccessTitle,
-                    `${TEAMS[attackTeam].label} avance en zone ${newZone + 1} sur la même ligne.`,
+                    `${TEAMS[attackTeam].label} avance en zone ${newZone + 1} sur la même ligne.`
                 );
 
                 pushLogEntry(
                     TEXTS.logs.dribbleSuccessTitle,
-                    [
-                        `Vers zone ${newZone + 1}`,
-                        `Défense: ${defenseAction}`,
-                        duelText,
-                    ],
+                    [`Vers zone ${newZone + 1}`, `Défense: ${defenseAction}`, duelText],
                     diceTag
                 );
 
@@ -1983,15 +1981,12 @@ export function initMatchEngine(rootEl, config = {}) {
 
                 setMessage(
                     TEXTS.logs.dribbleSuccessGKTitle,
-                    "Face au gardien ! Prochaine action : tir ou tir spécial.",
+                    "Face au gardien ! Prochaine action : tir ou tir spécial."
                 );
 
                 pushLogEntry(
                     TEXTS.logs.dribbleSuccessGKTitle,
-                    [
-                        `Défense: ${defenseAction}`,
-                        duelText,
-                    ],
+                    [`Défense: ${defenseAction}`, duelText],
                     diceTag
                 );
 
@@ -2004,24 +1999,18 @@ export function initMatchEngine(rootEl, config = {}) {
         } else {
             resetLastDribbler();
 
-            const defZone2 = getFacingZoneIndex(oldZone);
-            const receiverId = getClosestPlayerInCell(defenseTeam, defZone2, defLane);
-            const number = receiverId ? parseInt(receiverId.slice(1), 10) : 6;
-
+            // ✅ Le tacleur (defenderId) récupère le ballon
+            const number = defenderId ? parseInt(defenderId.slice(1), 10) : 6;
             moveBallToPlayer(defenseTeam, number);
 
             setMessage(
                 TEXTS.logs.dribbleFailTitle,
-                `${TEAMS[defenseTeam].label} récupère en zone ${defZone2 + 1}.`,
+                `${TEAMS[defenseTeam].label} récupère avec le n°${number} (zone ${ball.zoneIndex + 1}, ligne ${ball.laneIndex + 1}).`
             );
 
             pushLogEntry(
                 TEXTS.logs.dribbleFailTitle,
-                [
-                    `Attaque depuis zone ${oldZone + 1}`,
-                    `Défense: ${defenseAction}`,
-                    duelText,
-                ],
+                [`Attaque depuis zone ${oldZone + 1}`, `Défense: ${defenseAction}`, duelText],
                 diceTag
             );
 
@@ -2075,9 +2064,69 @@ export function initMatchEngine(rootEl, config = {}) {
     }
 
     // ==========================
+    //   RELANCE / DEGAGEMENT GK
+    // ==========================
+    // Appelée quand le gardien GAGNE un duel de tir.
+    function performKeeperClearance(defenseTeam, defenseAction) {
+        // On part du principe qu'on est proche du GK => zone 3 le plus souvent
+        const originZone = ball.zoneIndex;
+        const originLane = ball.laneIndex;
+
+        // helper: avancer "vers l'avant" = diminuer zoneIndex (3 -> 0)
+        const forwardZone = (lines) => Math.max(0, originZone - lines);
+
+        // Choix de distance selon l'action
+        let targetZone = originZone;
+        const r = Math.random();
+
+        if (defenseAction === "hands") {
+            // relance "propre" : au moins 1 ligne, parfois 2
+            targetZone = forwardZone(r < 0.65 ? 1 : 2);
+        } else if (defenseAction === "punch") {
+            // repousse : 1 ou 2 lignes, plus souvent 1
+            targetZone = forwardZone(r < 0.75 ? 1 : 2);
+        } else {
+            // gk-special : bonus distance, parfois très loin (jusqu'à zone 0)
+            // 55% => 2 lignes, 35% => 3 lignes, 10% => 4 lignes (clamp vers 0)
+            if (r < 0.55) targetZone = forwardZone(2);
+            else if (r < 0.90) targetZone = forwardZone(3);
+            else targetZone = forwardZone(4);
+        }
+
+        // Lane: on garde souvent la même, parfois variation (pour éviter trop "laser")
+        const laneOptions = [originLane];
+        if (originLane > 0) laneOptions.push(originLane - 1);
+        if (originLane < laneY.length - 1) laneOptions.push(originLane + 1);
+        const targetLane = laneOptions[Math.floor(Math.random() * laneOptions.length)];
+
+        // On choisit un receveur DANS la cellule (ou fallback)
+        const receiverNumber = pickReceiverInCell(
+            defenseTeam,
+            targetZone,
+            targetLane,
+            6,
+            null
+        );
+
+        moveBallToPlayer(defenseTeam, receiverNumber);
+
+        // Message + log lisibles
+        const label = TEAMS[defenseTeam].label;
+        const actionLabel =
+            defenseAction === "hands" ? "capte et relance" :
+                defenseAction === "punch" ? "repousse au poing" :
+                    "repousse en spécial";
+
+        setMessage("Relance du gardien !", `${label} ${actionLabel} vers la zone ${targetZone + 1}.`);
+        pushLogEntry(
+            "Relance du gardien",
+            [`Action: ${defenseAction}`, `Vers zone ${targetZone + 1}, ligne ${targetLane + 1}`, `Receveur: #${receiverNumber}`]
+        );
+    }
+
+    // ==========================
     //   DUEL GARDIEN (TIR DE LOIN)
     // ==========================
-
     function resolveShotKeeperDuel(ctx, defenseAction) {
         const {
             attackTeam,
@@ -2089,31 +2138,30 @@ export function initMatchEngine(rootEl, config = {}) {
         } = ctx;
 
         const attackerId = getPlayerId(attackTeam, ball.number);
-        const keeperId = getKeeperId(defenseTeam);
+        const keeperId   = getKeeperId(defenseTeam);
 
-        let attackScore = gkAttackBase * staminaFactor(attackerId);
+        let attackScore  = gkAttackBase * staminaFactor(attackerId);
 
-        // ✅ FIX: stamina du gardien aussi
-        const gkFactor = keeperId ? staminaFactor(keeperId) : 1.0;
-
+        // ✅ stamina du gardien aussi
+        const gkFactor   = keeperId ? staminaFactor(keeperId) : 1.0;
         let defenseScore = defenseBaseFor(defenseAction, defenseTeam, 1, true) * gkFactor;
 
-        attackScore += rollDie();
+        attackScore  += rollDie();
         defenseScore += rollDie();
 
         showDuelDice(attackScore, defenseScore);
 
         const diff = attackScore - defenseScore;
 
-// ✅ ÉGALITÉ → ballon libre (pas arrêt, pas but)
+        // ==========================
+        // ÉGALITÉ -> ballon libre
+        // ==========================
         if (diff === 0) {
             ball.frontOfKeeper = false;
             resetLastDribbler();
 
             applyStaminaCost(attackerId, "attack", isSpecial ? "special" : "shot");
-            if (keeperId) {
-                applyStaminaCost(keeperId, "defenseGK", defenseAction);
-            }
+            if (keeperId) applyStaminaCost(keeperId, "defenseGK", defenseAction);
 
             pushLogEntry(
                 "Duel tir vs gardien — équilibre",
@@ -2139,6 +2187,9 @@ export function initMatchEngine(rootEl, config = {}) {
             return;
         }
 
+        // ==========================
+        // Résultat duel gardien
+        // ==========================
         const ok = diff > 0;
 
         const duelText =
@@ -2153,18 +2204,17 @@ export function initMatchEngine(rootEl, config = {}) {
         resetLastDribbler();
 
         applyStaminaCost(attackerId, "attack", isSpecial ? "special" : "shot");
-        if (keeperId) {
-            applyStaminaCost(keeperId, "defenseGK", defenseAction); // ✅ coûtera moins (multiplier)
-        }
+        if (keeperId) applyStaminaCost(keeperId, "defenseGK", defenseAction);
 
         if (ok) {
+            // BUT
             score[attackTeam]++;
 
             setMessage(
                 isSpecial
                     ? `BUT SPÉCIAL à distance pour ${TEAMS[attackTeam].label} !`
                     : `BUT de loin pour ${TEAMS[attackTeam].label} !`,
-                `Le tir bat le gardien. Score : ${score.internal} - ${score.external}.`,
+                `Le tir bat le gardien. Score : ${score.internal} - ${score.external}.`
             );
 
             pushLogEntry(
@@ -2176,7 +2226,7 @@ export function initMatchEngine(rootEl, config = {}) {
                 diceTag
             );
 
-            const newTeam = defenseTeam;
+            const newTeam   = defenseTeam;
             const newNumber = 8;
 
             animateGoalThenReset(attackTeam, () => {
@@ -2187,34 +2237,33 @@ export function initMatchEngine(rootEl, config = {}) {
                 showAttackBarForCurrentTeam();
                 refreshUI();
             });
-        } else {
-            const receiverId = getRandomFieldPlayer(defenseTeam);
-            const number = receiverId ? parseInt(receiverId.slice(1), 10) : 1;
 
-            setMessage(
-                TEXTS.logs.longShotKeeperSaveTitle,
-                `${TEAMS[defenseTeam].label} finit par contrôler le ballon et relance.`,
-            );
-
-            pushLogEntry(
-                TEXTS.logs.longShotSavedTitle,
-                [
-                    `Tir depuis zone ${originZone + 1}`,
-                    ...logParts,
-                ],
-                diceTag
-            );
-
-            animateAndThen(() => {
-                moveBallToPlayer(defenseTeam, number);
-                advanceTurn(defenseTeam);
-                showAttackBarForCurrentTeam();
-                refreshUI();
-            });
+            phase = "attack";
+            pendingAttack = null;
+            return;
         }
+
+        // ARRÊT -> relance / dégagement (hands/punch/special influencent la distance)
+        pushLogEntry(
+            TEXTS.logs.longShotSavedTitle,
+            [
+                `Tir depuis zone ${originZone + 1}`,
+                ...logParts,
+            ],
+            diceTag
+        );
+
+        // ✅ relance cohérente : le gardien gagne => il relance selon defenseAction
+        performKeeperClearance(defenseTeam, defenseAction);
 
         phase = "attack";
         pendingAttack = null;
+
+        animateAndThen(() => {
+            advanceTurn(defenseTeam);
+            showAttackBarForCurrentTeam();
+            refreshUI();
+        });
     }
 
     // ==========================
@@ -2313,32 +2362,14 @@ export function initMatchEngine(rootEl, config = {}) {
                     refreshUI();
                 });
             } else {
-                const receiverId = getRandomFieldPlayer(defenseTeam);
-                const number = receiverId ? parseInt(receiverId.slice(1), 10) : 1;
-
-                setMessage(
-                    isSpecial ? "Arrêt sur tir spécial !" : "Arrêt du gardien !",
-                    `${TEAMS[defenseTeam].label} capte ou repousse le ballon.`,
-                );
-
-                pushLogEntry(
-                    isSpecial ? TEXTS.logs.shotSavedSpecialTitle : TEXTS.logs.shotSavedTitle,
-                    [
-                        `Zone ${originZone + 1}`,
-                        `Défense: ${defenseAction}`,
-                        duelText,
-                    ],
-                    diceTag
-                );
+                performKeeperClearance(defenseTeam, defenseAction);
 
                 animateShotToKeeper(defenseTeam, () => {
-                    moveBallToPlayer(defenseTeam, number);
                     advanceTurn(defenseTeam);
                     showAttackBarForCurrentTeam();
                     refreshUI();
                 });
             }
-
             return;
         }
 
@@ -2401,22 +2432,13 @@ export function initMatchEngine(rootEl, config = {}) {
         }
 
         if (!passField) {
-            const defZone = facingZone;
-            const defLane = originLane;
-
-            const number = pickReceiverInCell(
-                defenseTeam,
-                defZone,
-                defLane,
-                6,
-                null,
-            );
-
+            // ✅ Le bloqueur (defenderId) récupère le ballon
+            const number = defenderId ? parseInt(defenderId.slice(1), 10) : 6;
             moveBallToPlayer(defenseTeam, number);
 
             setMessage(
                 "Tir contré !",
-                `${TEAMS[defenseTeam].label} contre le tir et récupère en zone ${defZone + 1}, ligne ${defLane + 1}.`,
+                `${TEAMS[defenseTeam].label} contre le tir et récupère avec le n°${number} (zone ${ball.zoneIndex + 1}, ligne ${ball.laneIndex + 1}).`,
             );
 
             pushLogEntry(
