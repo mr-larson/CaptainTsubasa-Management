@@ -1,9 +1,9 @@
 <template>
-    <Head title="Match de démo" />
+    <Head title="Match" />
 
     <AuthenticatedLayout>
         <template #header>
-            <H2>Match de démo</H2>
+            <H2>Match</H2>
         </template>
 
         <div class="w-full px-4 lg:px-8 mt-4">

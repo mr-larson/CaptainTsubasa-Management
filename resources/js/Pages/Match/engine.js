@@ -1484,9 +1484,44 @@ export function initMatchEngine(rootEl, config = {}) {
         }, AI_THINK_MS);
     }
 
-    function computeAIDefenseChoice(attackAction) {
+    function computeAIDefenseChoice(attackAction, defendingTeam, opts = {}) {
+        const { isKeeperDuel = false } = opts;
         const r = Math.random();
 
+        // ==========================
+        // ✅ DUEL GARDIEN : actions autorisées UNIQUEMENT
+        // ==========================
+        if (isKeeperDuel) {
+            // tireur = porteur de balle (équipe attaquante = otherTeam(defendingTeam))
+            const attackerTeam = otherTeam(defendingTeam);
+            const shooterSlot  = ball.number;
+
+            const shooterShot   = getStat(attackerTeam, shooterSlot, "shot");
+            const shooterAttack = getStat(attackerTeam, shooterSlot, "attack");
+            const threat = Math.max(shooterShot, shooterAttack); // menace simple
+
+            const keeperId = getKeeperId(defendingTeam);
+            const st = keeperId ? getStamina(keeperId) : 100;
+
+            // Danger haut => on sécurise (hands / special si assez de stamina)
+            if (threat >= 35) {
+                if (st >= 25) return (Math.random() < 0.30) ? "gk-special" : "hands";
+                return "hands";
+            }
+
+            // Danger moyen => hands souvent, punch parfois
+            if (threat >= 25) {
+                if (st < 15) return "punch";
+                return (Math.random() < 0.70) ? "hands" : "punch";
+            }
+
+            // Danger faible => punch pour économiser
+            return (Math.random() < 0.65) ? "punch" : "hands";
+        }
+
+        // ==========================
+        // DUEL CHAMP : logique actuelle
+        // ==========================
         switch (attackAction) {
             case "pass":
                 if (r < 0.7) return "intercept";
@@ -1502,6 +1537,11 @@ export function initMatchEngine(rootEl, config = {}) {
                 if (r < 0.75) return "block";
                 return "intercept";
 
+            case "special":
+                if (r < 0.65) return "field-special";
+                if (r < 0.85) return "block";
+                return "intercept";
+
             default:
                 return "intercept";
         }
@@ -1512,7 +1552,13 @@ export function initMatchEngine(rootEl, config = {}) {
         if (!isAITeam(defendingTeam) || phase !== "defense" || !pendingAttack || isGameOver) return;
 
         setAIOverlay(true, TEXTS.ui.aiDefenseTurn);
-        const defense = computeAIDefenseChoice(attack);
+
+        // ✅ Détecte si on est dans un duel gardien
+        const isKeeperDuel =
+            (pendingShotContext && pendingShotContext.stage === "keeper") ||
+            ball.frontOfKeeper;
+
+        const defense = computeAIDefenseChoice(attack,defendingTeam, { isKeeperDuel });
 
         setTimeout(() => {
             setAIOverlay(false);
@@ -2512,6 +2558,15 @@ export function initMatchEngine(rootEl, config = {}) {
 
     function handleDefenseClick(defense) {
         if (turns >= GAME_RULES.MAX_TURNS || isAnimating || phase !== "defense" || !pendingAttack) return;
+
+        // ✅ Si duel gardien => on force une action GK valide
+        const isKeeperDuel =
+            (pendingShotContext && pendingShotContext.stage === "keeper") ||
+            ball.frontOfKeeper;
+
+        if (isKeeperDuel && !["hands", "punch", "gk-special"].includes(defense)) {
+            defense = "hands"; // fallback safe
+        }
 
         const attackTeam  = currentTeam;
         const defenseTeam = otherTeam(currentTeam);
