@@ -408,7 +408,7 @@ class PlayerSeeder extends Seeder
                 'speed' => 49, 'stamina' => 60, 'defense' => 20, 'attack' => 26, 'shot' => 24, 'pass' => 21, 'dribble' => 22, 'block' => 17, 'intercept' => 17, 'tackle' => 17, 'hand_save' => 15, 'punch_save' => 15
             ]],
             ['Shingo', 'Aoi', 12, 'Forward', 450, [
-                'speed' => 75, 'stamina' => 72, 'defense' => 25, 'attack' => 36, 'shot' => 29, 'pass' => 25, 'dribble' => 28, 'block' => 18, 'intercept' => 22, 'tackle' => 22, 'hand_save' => 15, 'punch_save' => 15
+                'speed' => 75, 'stamina' => 72, 'defense' => 25, 'attack' => 36, 'shot' => 29, 'pass' => 25, 'dribble' => 28, 'block' => 18, 'intercept' => 23, 'tackle' => 22, 'hand_save' => 15, 'punch_save' => 15
             ]],
 
             // Naniwa

@@ -264,6 +264,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { onMounted, ref, onBeforeUnmount } from 'vue';
+import H2 from '@/Components/H2.vue'
 import { initMatchEngine } from './engine';
 import './engine.css';
 
