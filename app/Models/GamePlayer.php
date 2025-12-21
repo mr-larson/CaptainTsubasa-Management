@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Models\Traits\HasSoccerStats;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
+
 
 class GamePlayer extends Model
 {
@@ -30,6 +32,8 @@ class GamePlayer extends Model
         'hand_save',
         'punch_save',
         'cost',
+        'description',
+        'photo_path',
     ];
 
     public function gameSave()
@@ -61,4 +65,14 @@ class GamePlayer extends Model
     {
         return "{$this->firstname} {$this->lastname}";
     }
+
+    public function getPhotoUrlAttribute(): ?string
+    {
+        if (! $this->photo_path) {
+            return null;
+        }
+
+        return \Storage::url($this->photo_path);
+    }
+
 }

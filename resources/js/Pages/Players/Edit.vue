@@ -1,9 +1,9 @@
+<!-- resources/js/Pages/Players/Edit.vue -->
 <template>
     <Head title="Players"/>
 
     <AuthenticatedLayout>
-        <template #header>
-        </template>
+        <template #header></template>
 
         <!-- SIDEBAR -->
         <aside
@@ -163,7 +163,7 @@
                         </FormCol>
                     </FormRaw>
 
-                    <!-- Ligne 3 : coût -->
+                    <!-- Ligne 3 : coût & photo-->
                     <FormRaw>
                         <FormCol>
                             <InputLabel for="cost" value="Coût" />
@@ -179,7 +179,53 @@
                         </FormCol>
 
                         <FormCol>
-                            <!-- colonne vide pour garder le layout 2 colonnes -->
+                            <InputLabel value="Photo" />
+
+                            <div class="mt-1 flex flex-col gap-2">
+                                <div class="flex items-center gap-3">
+                                    <!-- input file caché -->
+                                    <input
+                                        ref="photoInput"
+                                        type="file"
+                                        accept="image/*"
+                                        class="hidden"
+                                        @change="onPhotoChange"
+                                    />
+
+                                    <!-- faux input -->
+                                    <div class="flex items-center w-full md:w-56">
+                                        <button
+                                            type="button"
+                                            class="shrink-0 px-3 py-1.5 rounded-l-full border border-gray-300 bg-stone-50 text-sm text-gray-900 hover:bg-white focus:outline-none focus:border-slate-700"
+                                            @click="openPhotoPicker"
+                                        >
+                                            Choisir
+                                        </button>
+
+                                        <div
+                                            class="flex-1 px-3 py-1.5 rounded-r-full border border-l-0 border-gray-300 bg-stone-50 text-sm text-slate-600 truncate"
+                                            :title="selectedPhotoName || 'Aucun fichier choisi'"
+                                        >
+                                            {{ selectedPhotoName || 'Aucun fichier choisi' }}
+                                        </div>
+                                    </div>
+
+                                    <!-- preview carré -->
+                                    <div class="h-16 w-16 rounded border bg-white overflow-hidden flex items-center justify-center">
+                                        <img
+                                            v-if="photoPreviewUrl || form.photo_path"
+                                            :src="photoPreviewUrl ? photoPreviewUrl : `/storage/${form.photo_path}`"
+                                            class="h-full w-full object-cover"
+                                            alt="Photo joueur"
+                                        />
+                                        <span v-else class="text-xs text-slate-400">Aucune</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <p v-if="form.errors.photo" class="text-sm text-red-600 mt-1">
+                                {{ form.errors.photo }}
+                            </p>
                         </FormCol>
                     </FormRaw>
 
@@ -469,7 +515,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ref, defineProps, computed, onMounted } from 'vue';
+import { ref, onBeforeUnmount, defineProps, computed, onMounted } from 'vue';
 
 // Components
 import H2 from '@/Components/H2.vue';
@@ -485,18 +531,9 @@ import ButtonDanger from '@/Components/ButtonDanger.vue';
 import InputSelect from "@/Components/InputSelect.vue";
 
 const props = defineProps({
-    players: {
-        type: Array,
-        required: true,
-    },
-    positions: {
-        type: Array,
-        required: true,
-    },
-    positionLabels: {
-        type: Object,
-        required: true,
-    },
+    players: { type: Array, required: true },
+    positions: { type: Array, required: true },
+    positionLabels: { type: Object, required: true },
 });
 
 const form = useForm({
@@ -508,6 +545,8 @@ const form = useForm({
     position: '',
     cost: '',
     description: '',
+    photo_path: null, // string depuis DB
+    photo: null,      // File
     stats: {
         speed: 0,
         attack: 0,
@@ -532,13 +571,60 @@ const filteredPlayers = computed(() => {
     const q = searchQuery.value.toLowerCase();
     return props.players.filter((player) => {
         return (
-            player.firstname.toLowerCase().includes(q) ||
-            player.lastname.toLowerCase().includes(q)
+            (player.firstname ?? '').toLowerCase().includes(q) ||
+            (player.lastname ?? '').toLowerCase().includes(q)
         );
     });
 });
 
+// ==========================
+// PREVIEW (instantané)
+// ==========================
+
+const photoPreviewUrl = ref(null);
+
+const revokePreview = () => {
+    if (photoPreviewUrl.value) {
+        URL.revokeObjectURL(photoPreviewUrl.value);
+        photoPreviewUrl.value = null;
+    }
+};
+
+const photoInput = ref(null);
+const selectedPhotoName = ref('');
+
+const openPhotoPicker = () => {
+    photoInput.value?.click();
+};
+
+const onPhotoChange = (e) => {
+    const file = e.target.files?.[0] ?? null;
+
+    revokePreview();
+    form.photo = file;
+
+    selectedPhotoName.value = file ? file.name : '';
+
+    if (file) {
+        photoPreviewUrl.value = URL.createObjectURL(file);
+    }
+    e.target.value = '';
+};
+
+
+onBeforeUnmount(() => {
+    revokePreview();
+});
+
+// ==========================
+// SELECT / CRUD
+// ==========================
+
 function selectPlayer(player) {
+    // reset preview + file quand on change de joueur
+    revokePreview();
+    form.photo = null;
+
     form.selectedPlayerId = player.id;
     form.id               = player.id;
     form.firstname        = player.firstname ?? '';
@@ -547,10 +633,11 @@ function selectPlayer(player) {
     form.position         = player.position ?? '';
     form.cost             = player.cost ?? '';
     form.description      = player.description ?? '';
+    form.photo_path       = player.photo_path ?? null;
+    selectedPhotoName.value = '';
 
-    // stats peut être null en DB → on sécurise
+
     const stats = player.stats || {};
-
     form.stats = {
         speed:       Number(stats.speed ?? 0),
         attack:      Number(stats.attack ?? 0),
@@ -575,15 +662,14 @@ function submit() {
 
     form.post(route('players.update', form.id), {
         preserveScroll: true,
+        forceFormData: true, // ✅ nécessaire pour envoyer form.photo (File)
     });
 }
 
 function deletePlayer() {
     if (!form.id) return;
 
-    if (!confirm('Voulez-vous vraiment supprimer ce joueur ?')) {
-        return;
-    }
+    if (!confirm('Voulez-vous vraiment supprimer ce joueur ?')) return;
 
     form.delete(route('players.destroy', form.id), {
         preserveScroll: true,

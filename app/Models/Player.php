@@ -10,20 +10,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-/**
- * Class Player
- *
- * @property int         $id
- * @property string      $firstname
- * @property string      $lastname
- * @property int         $age
- * @property string      $position
- * @property int         $cost
- * @property array       $stats
- * @property string|null $description
- *
- * @property-read string $full_name
- */
 class Player extends Model
 {
     use HasFactory;
@@ -49,7 +35,7 @@ class Player extends Model
         'intercept'  => 50,
         'tackle'     => 50,
 
-        'hand_save'  => 0,    // gardien
+        'hand_save'  => 0,
         'punch_save' => 0,
     ];
 
@@ -61,6 +47,7 @@ class Player extends Model
         'cost',
         'stats',
         'description',
+        'photo_path',
     ];
 
     protected $casts = [
@@ -86,7 +73,7 @@ class Player extends Model
     }
 
     // ==========================
-    //  ACCESSORS / MUTATORS
+    //  ACCESSORS
     // ==========================
 
     public function getFullNameAttribute(): string
@@ -94,47 +81,55 @@ class Player extends Model
         return "{$this->firstname} {$this->lastname}";
     }
 
-    /**
-     * Retourne les stats en fusionnant avec les valeurs par défaut.
-     */
     public function getStatsAttribute($value): array
     {
-        $stats = $value ?? [];
-
-        if (is_string($stats)) {
-            $stats = json_decode($stats, true) ?: [];
+        if (is_string($value)) {
+            $value = json_decode($value, true) ?: [];
         }
 
-        return array_merge(self::DEFAULT_STATS, $stats);
-    }
-
-    /**
-     * Force le stockage des stats comme JSON complet + merge avec defaults.
-     */
-    public function setStatsAttribute($value): void
-    {
         if (! is_array($value)) {
             $value = [];
         }
 
-        $this->attributes['stats'] = json_encode(
-            array_merge(self::DEFAULT_STATS, $value)
-        );
+        return array_merge(self::DEFAULT_STATS, $value);
     }
+
+
+    public function setStatsAttribute($value): void
+    {
+        if (is_string($value)) {
+            $decoded = json_decode($value, true);
+            $value = (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) ? $decoded : [];
+        }
+
+        if (! is_array($value)) {
+            $value = [];
+        }
+
+        $merged = array_merge(self::DEFAULT_STATS, $value);
+
+        $this->attributes['stats'] = json_encode($merged);
+    }
+
 
     // ==========================
     //  HELPERS POUR LE MOTEUR
     // ==========================
 
-    /**
-     * Implémentation pour HasSoccerStats :
-     * va chercher dans le JSON stats en fusionnant avec les valeurs par défaut.
-     */
     protected function getBaseStat(string $key): int
     {
-        $stats = $this->stats ?? [];
+        $stats = $this->stats;
 
         return (int) ($stats[$key] ?? self::DEFAULT_STATS[$key] ?? 0);
+    }
+
+    public function getPhotoUrlAttribute(): ?string
+    {
+        if (!$this->photo_path) {
+            return null;
+        }
+
+        return asset('storage/' . ltrim($this->photo_path, '/'));
     }
 
 }

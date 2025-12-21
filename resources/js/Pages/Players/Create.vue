@@ -1,3 +1,4 @@
+<!-- resources/js/Pages/Players/Create.vue -->
 <template>
     <Head title="Add Player" />
 
@@ -93,7 +94,7 @@
                             </FormCol>
                         </FormRaw>
 
-                        <!-- Ligne 3 : coût par match (2 colonnes) -->
+                        <!-- Ligne 3 : coût & photo (même rendu que Edit) -->
                         <FormRaw>
                             <FormCol>
                                 <InputLabel for="cost" value="Coût par match" />
@@ -109,7 +110,53 @@
                             </FormCol>
 
                             <FormCol>
-                                <!-- Colonne vide pour garder le layout 2 colonnes -->
+                                <InputLabel value="Photo" />
+
+                                <div class="mt-1 flex flex-col gap-2">
+                                    <div class="flex items-center gap-3">
+                                        <!-- input file caché -->
+                                        <input
+                                            ref="photoInput"
+                                            type="file"
+                                            accept="image/*"
+                                            class="hidden"
+                                            @change="onPhotoChange"
+                                        />
+
+                                        <!-- faux input (bouton + nom fichier) -->
+                                        <div class="flex items-center w-full md:w-56">
+                                            <button
+                                                type="button"
+                                                class="shrink-0 px-3 py-1.5 rounded-l-full border border-gray-300 bg-stone-50 text-sm text-gray-900 hover:bg-white focus:outline-none focus:border-slate-700"
+                                                @click="openPhotoPicker"
+                                            >
+                                                Choisir
+                                            </button>
+
+                                            <div
+                                                class="flex-1 px-3 py-1.5 rounded-r-full border border-l-0 border-gray-300 bg-stone-50 text-sm text-slate-600 truncate"
+                                                :title="selectedPhotoName || 'Aucun fichier choisi'"
+                                            >
+                                                {{ selectedPhotoName || 'Aucun fichier choisi' }}
+                                            </div>
+                                        </div>
+
+                                        <!-- preview carré (même taille) -->
+                                        <div class="h-16 w-16 rounded border bg-white overflow-hidden flex items-center justify-center">
+                                            <img
+                                                v-if="photoPreviewUrl"
+                                                :src="photoPreviewUrl"
+                                                class="h-full w-full object-cover"
+                                                alt="Photo joueur"
+                                            />
+                                            <span v-else class="text-xs text-slate-400">Aucune</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <p v-if="form.errors.photo" class="text-sm text-red-600 mt-1">
+                                    {{ form.errors.photo }}
+                                </p>
                             </FormCol>
                         </FormRaw>
 
@@ -287,7 +334,7 @@
                             </FormCol>
                         </FormRaw>
 
-                        <!-- Dernière ligne : description sur 2 colonnes -->
+                        <!-- Dernière ligne : description -->
                         <FormRaw>
                             <FormCol>
                                 <InputLabel for="description" value="Description" />
@@ -303,9 +350,7 @@
                                 </p>
                             </FormCol>
 
-                            <FormCol>
-                                <!-- Colonne vide pour garder le layout 2 colonnes -->
-                            </FormCol>
+                            <FormCol />
                         </FormRaw>
 
                         <!-- Boutons -->
@@ -335,6 +380,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { ref, onBeforeUnmount } from 'vue';
 
 // Components
 import H2 from '@/Components/H2.vue';
@@ -345,14 +391,8 @@ import InputText from '@/Components/InputText.vue';
 import InputSelect from '@/Components/InputSelect.vue';
 
 const props = defineProps({
-    positions: {
-        type: Array,
-        required: true,
-    },
-    positionLabels: {
-        type: Object,
-        required: true,
-    },
+    positions: { type: Array, required: true },
+    positionLabels: { type: Object, required: true },
 });
 
 const form = useForm({
@@ -376,13 +416,56 @@ const form = useForm({
         punch_save: 0,
     },
     description: '',
+    photo: null,
+});
+
+// ==========================
+// PREVIEW (instantané)
+// ==========================
+
+const photoPreviewUrl = ref(null);
+
+const revokePreview = () => {
+    if (photoPreviewUrl.value) {
+        URL.revokeObjectURL(photoPreviewUrl.value);
+        photoPreviewUrl.value = null;
+    }
+};
+
+const photoInput = ref(null);
+const selectedPhotoName = ref('');
+
+const openPhotoPicker = () => {
+    photoInput.value?.click();
+};
+
+const onPhotoChange = (e) => {
+    const file = e.target.files?.[0] ?? null;
+
+    revokePreview();
+    form.photo = file;
+    selectedPhotoName.value = file ? file.name : '';
+
+    if (file) {
+        photoPreviewUrl.value = URL.createObjectURL(file);
+    }
+
+    // permet de re-choisir le même fichier
+    e.target.value = '';
+};
+
+onBeforeUnmount(() => {
+    revokePreview();
 });
 
 function submit() {
     form.post(route('players.store'), {
         preserveScroll: true,
+        forceFormData: true, // ✅ important
         onSuccess: () => {
             form.reset();
+            revokePreview();
+            selectedPhotoName.value = '';
         },
     });
 }

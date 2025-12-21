@@ -127,6 +127,8 @@ class GameSaveController extends Controller
                 'firstname'      => $player->firstname,
                 'lastname'       => $player->lastname,
                 'position'       => $player->position,
+                'description'    => $player->description,
+                'photo_path'     => $player->photo_path,
 
                 'speed'      => $player->speed      ?? $stats['speed']      ?? 50,
                 'stamina'    => $player->stamina    ?? $stats['stamina']    ?? 50,

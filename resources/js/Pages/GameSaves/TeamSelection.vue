@@ -134,11 +134,12 @@
                     </h2>
 
                     <div v-if="selectedTeam && roster.length > 0">
-                        <div class="max-h-72 overflow-y-auto">
+                        <div class="max-h-96 overflow-y-auto">
                             <div class="overflow-x-auto">
                                 <table class="w-full text-sm text-left min-w-max">
                                     <thead class="text-xs uppercase text-slate-500 border-b">
                                     <tr>
+                                        <th class="py-1 pr-2">Photo</th>
                                         <th class="py-1 pr-2">Joueur</th>
                                         <th class="py-1 pr-2">Poste</th>
 
@@ -171,6 +172,18 @@
                                         :key="player.id"
                                         class="border-b last:border-b-0"
                                     >
+                                        <td class="py-1 pr-2">
+                                            <div class="h-10 w-10 rounded border bg-white overflow-hidden flex items-center justify-center">
+                                                <img
+                                                    v-if="playerPhotoUrl(player)"
+                                                    :src="playerPhotoUrl(player)"
+                                                    class="h-full w-full object-cover"
+                                                    alt="Photo joueur"
+                                                />
+                                                <span v-else class="text-[10px] text-slate-400">—</span>
+                                            </div>
+                                        </td>
+
                                         <td class="py-1 pr-2">
                                             {{ player.firstname }} {{ player.lastname }}
                                         </td>
@@ -326,6 +339,17 @@ function startWithTeam() {
         preserveScroll: true,
     });
 }
+
+const playerPhotoUrl = (player) => {
+    // cas 1: photo sur le player directement
+    if (player?.photo_path) return `/storage/${player.photo_path}`;
+
+    // cas 2: si un jour tu envoies la photo via stats ou autre structure
+    if (player?.photo?.path) return `/storage/${player.photo.path}`;
+
+    return null;
+};
+
 
 const label = props.label;
 </script>

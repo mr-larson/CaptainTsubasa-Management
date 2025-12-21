@@ -8,6 +8,8 @@ use App\Models\Player;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Storage;
+
 
 class PlayerController extends Controller
 {
@@ -32,9 +34,14 @@ class PlayerController extends Controller
     {
         $data = $request->validated();
 
+        // ✅ UPLOAD PHOTO (si présente)
+        if ($request->hasFile('photo')) {
+            // stock dans storage/app/public/players/...
+            $data['photo_path'] = $request->file('photo')->store('players', 'public');
+        }
+
         Player::create($data);
 
-        // après création, on revient sur l’écran d’édition
         return redirect()
             ->route('players.index')
             ->with('success', 'Le joueur a été créé avec succès.');
@@ -51,7 +58,18 @@ class PlayerController extends Controller
 
     public function update(PlayerRequest $request, Player $player): RedirectResponse
     {
-        $player->update($request->validated());
+        $data = $request->validated();
+
+        // ✅ UPLOAD PHOTO (si présente) + suppression ancienne
+        if ($request->hasFile('photo')) {
+            if ($player->photo_path) {
+                Storage::disk('public')->delete($player->photo_path);
+            }
+
+            $data['photo_path'] = $request->file('photo')->store('players', 'public');
+        }
+
+        $player->update($data);
 
         return redirect()
             ->route('players.index')
@@ -60,6 +78,11 @@ class PlayerController extends Controller
 
     public function destroy(Player $player): RedirectResponse
     {
+        // ✅ supprimer aussi la photo
+        if ($player->photo_path) {
+            Storage::disk('public')->delete($player->photo_path);
+        }
+
         $player->delete();
 
         return redirect()

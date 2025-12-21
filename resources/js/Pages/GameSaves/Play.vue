@@ -1,3 +1,4 @@
+<!-- resources/js/Pages/GameSaves/Show.vue (ou le nom réel de ta vue "game") -->
 <script setup>
 /**
  * Dashboard de partie Captain Tsubasa
@@ -19,11 +20,11 @@ import H2 from '@/Components/H2.vue';
 // ==========================
 
 const props = defineProps({
-    gameSave:   { type: Object, required: true }, // GameSave (contient encore la Team de base)
-    teams:      { type: Array,  required: true }, // GameTeam[] avec contracts.player
+    gameSave:   { type: Object, required: true },
+    teams:      { type: Array,  required: true }, // GameTeam[] avec contracts.*
     freePlayers:{ type: Array,  required: true }, // GamePlayer[] sans contrat
     matches:    { type: Array,  required: true }, // GameMatch[] avec home_team / away_team
-    controlledTeam: { type: Object, required: false, default: null},
+    controlledTeam: { type: Object, required: false, default: null },
 });
 
 // ==========================
@@ -33,93 +34,83 @@ const props = defineProps({
 const season = ref(props.gameSave.season || 1);
 const week   = ref(props.gameSave.week   || 1);
 
-// Etat de jeu générique (pour d'autres infos plus tard : blessures, cartes...)
-const currentState = ref(props.gameSave.state || {
-    match: null,
-});
-
+const currentState = ref(props.gameSave.state || { match: null });
 const saving = ref(false);
 
 // ==========================
 //   RACCOURCIS PRINCIPAUX
 // ==========================
 
-/**
- * Equipe contrôlée = GameTeam (runtime)
- * et non plus la Team "template" de base.
- */
 const team = computed(() => props.controlledTeam || null);
 
-/**
- * Map id -> GameTeam pour retrouver rapidement un club
- */
 const teamById = computed(() => {
     const map = {};
-    props.teams.forEach((t) => {
-        map[t.id] = t;
-    });
+    (props.teams ?? []).forEach((t) => { map[t.id] = t; });
     return map;
 });
 
-/**
- * Un "bye" = match incomplet (opponent null) OU flag is_bye si présent.
- */
 const isByeMatch = (match) => {
     if (!match) return false;
-
-    // ✅ si ton backend pose un flag
     if (match.is_bye === true) return true;
-
-    // ✅ cas fréquent : une des deux équipes est null
-    const homeMissing = !match.home_team_id;
-    const awayMissing = !match.away_team_id;
-
-    return homeMissing || awayMissing;
+    return !match.home_team_id || !match.away_team_id;
 };
 
-/**
- * Pour afficher l'équipe adverse de façon safe.
- */
 const opponentTeamIdFor = (match) => {
     if (!team.value || !match || isByeMatch(match)) return null;
-
     const isHome = match.home_team_id === team.value.id;
     return isHome ? match.away_team_id : match.home_team_id;
 };
 
-/**
- * Nom de l’adversaire pour un match donné
- */
 const opponentNameFor = (match) => {
     if (!team.value) return '???';
     if (!match || isByeMatch(match)) return 'Repos';
-
     const opponentId = opponentTeamIdFor(match);
     if (!opponentId) return 'Repos';
-
-    const opponent = teamById.value[opponentId];
-    return opponent?.name ?? '???';
+    return teamById.value[opponentId]?.name ?? '???';
 };
 
+// ✅ Photo URL (GamePlayer)
+const playerPhotoUrl = (p) => {
+    if (!p) return null;
+    if (p.photo_path) return `/storage/${p.photo_path}`;
+    if (p.player?.photo_path) return `/storage/${p.player.photo_path}`;
+    return null;
+};
 
 /**
  * Effectif = joueurs liés via les game_contracts
- * -> on map sur contracts.player
+ * IMPORTANT : selon ton backend, l'objet peut être :
+ * - c.game_player
+ * - c.gamePlayer
+ * - c.player
  */
 const roster = computed(() => {
     if (!team.value || !Array.isArray(team.value.contracts)) return [];
     return team.value.contracts
-        .map(c => c.game_player)
+        .map(c => c.game_player ?? c.gamePlayer ?? c.player ?? null)
         .filter(Boolean);
 });
 
+// ==========================
+//   MON ÉQUIPE - SÉLECTION JOUEUR
+// ==========================
 
-/**
- * Bilan simple de l'équipe (GameTeam)
- */
+const selectedMyPlayerId = ref(null);
+
+const selectedMyPlayer = computed(() => {
+    if (!roster.value.length) return null;
+    if (!selectedMyPlayerId.value) return roster.value[0];
+    return roster.value.find(p => p.id === selectedMyPlayerId.value) ?? roster.value[0];
+});
+
+const selectMyPlayer = (player) => { selectedMyPlayerId.value = player.id; };
+
+// ==========================
+//   BILAN / BUDGET
+// ==========================
+
 const teamRecord = computed(() => {
     if (!team.value) return { wins: 0, draws: 0, losses: 0 };
-
     return {
         wins:   team.value.wins   ?? 0,
         draws:  team.value.draws  ?? 0,
@@ -127,10 +118,6 @@ const teamRecord = computed(() => {
     };
 });
 
-/**
- * Budget de l'équipe dans la PARTIE
- * (GameTeam.budget, modifié par les transferts)
- */
 const teamBudget = computed(() => team.value?.budget ?? 0);
 
 // ==========================
@@ -154,41 +141,46 @@ const activeTab = ref('dashboard');
 //   CALENDRIER & MATCHS
 // ==========================
 
-/**
- * Liste des matchs de l'équipe contrôlée
- * (home ou away dans GameMatch)
- */
 const myMatches = computed(() => {
     if (!team.value) return [];
-
-    return props.matches
-        .filter((m) => {
-            // match “normal”
-            if (m.home_team_id === team.value.id || m.away_team_id === team.value.id) return true;
-
-            // match “bye” encodé avec une seule team (ex home_team_id = team.id, away null)
-            // -> déjà couvert par la condition ci-dessus, mais on laisse explicite si tu ajustes plus tard
-            return false;
-        })
+    return (props.matches ?? [])
+        .filter((m) => m.home_team_id === team.value.id || m.away_team_id === team.value.id)
         .sort((a, b) => (a.week ?? 0) - (b.week ?? 0));
 });
 
-/**
- * Nombre total de semaines de saison (double round-robin)
- * - si nb équipes impair => semaines = nb_équipes * 2 (ex 15 => 30)
- * - si nb équipes pair   => semaines = (nb_équipes - 1) * 2 (ex 16 => 30)
- */
 const seasonWeeksCount = computed(() => {
     const n = props.teams?.length ?? 0;
     if (n < 2) return 0;
     return (n % 2 === 1) ? (n * 2) : ((n - 1) * 2);
 });
 
-/**
- * Calendrier "complet" (1 ligne par semaine) pour l'équipe sélectionnée.
- * - si match existe => ligne match
- * - sinon => ligne BYE (repos) virtuelle
- */
+// ==========================
+//   CALENDRIER - ÉQUIPE SÉLECTIONNÉE
+// ==========================
+
+const selectedCalendarTeamId = ref(null);
+const calendarTeams = computed(() => props.teams ?? []);
+
+const calendarTeam = computed(() => {
+    if (!calendarTeams.value.length) return null;
+
+    if (!selectedCalendarTeamId.value) {
+        return team.value || calendarTeams.value[0];
+    }
+
+    const id = Number(selectedCalendarTeamId.value);
+    return calendarTeams.value.find(t => Number(t.id) === id) ?? (team.value || calendarTeams.value[0]);
+});
+
+const selectCalendarTeam = (t) => { selectedCalendarTeamId.value = t.id; };
+
+const calendarTeamMatches = computed(() => {
+    if (!calendarTeam.value) return [];
+    return (props.matches ?? [])
+        .filter(m => m.home_team_id === calendarTeam.value.id || m.away_team_id === calendarTeam.value.id)
+        .sort((a, b) => (a.week ?? 0) - (b.week ?? 0));
+});
+
 const calendarRows = computed(() => {
     if (!calendarTeam.value) return [];
 
@@ -200,11 +192,8 @@ const calendarRows = computed(() => {
 
     for (let w = 1; w <= totalWeeks; w++) {
         const match = byWeek.get(w);
-
-        if (match) {
-            rows.push(match);
-        } else {
-            // ✅ ligne "Repos" virtuelle
+        if (match) rows.push(match);
+        else {
             rows.push({
                 id: `bye-${calendarTeam.value.id}-${w}`,
                 week: w,
@@ -215,46 +204,29 @@ const calendarRows = computed(() => {
             });
         }
     }
-
     return rows;
 });
 
-/**
- * Match de MON équipe pour la semaine en cours (s'il existe)
- */
 const myMatchThisWeek = computed(() => {
     if (!team.value) return null;
     const w = week.value ?? 1;
 
     return myMatches.value.find(m =>
         m.week === w &&
-        !isByeMatch(m) && // ✅
+        !isByeMatch(m) &&
         (m.status === 'scheduled' || m.status === 'played')
     ) ?? null;
 });
 
-/**
- * Est-ce que mon équipe est OFF cette semaine ?
- * (= aucun match planifié pour elle à week courante)
- */
 const isByeWeek = computed(() => {
     if (!team.value) return false;
     return !myMatchThisWeek.value;
 });
 
 const simulateWeek = () => {
-    router.post(
-        route('game-saves.simulate-week', { gameSave: props.gameSave.id }),
-        {},
-        { preserveScroll: true }
-    );
+    router.post(route('game-saves.simulate-week', { gameSave: props.gameSave.id }), {}, { preserveScroll: true });
 };
 
-
-/**
- * Prochain match à jouer pour mon équipe
- * (status = scheduled, semaine >= semaine courante)
- */
 const nextMatch = computed(() => {
     if (!team.value || !myMatches.value.length) return null;
 
@@ -267,17 +239,11 @@ const nextMatch = computed(() => {
     return candidates[0] ?? null;
 });
 
-/**
- * Infos pratiques sur le prochain match :
- * - domicile / extérieur
- * - nom de l'adversaire
- * - semaine
- */
 const nextMatchInfo = computed(() => {
     if (!nextMatch.value || !team.value) return null;
 
     const isHome = nextMatch.value.home_team_id === team.value.id;
-    const opponent = isHome ? nextMatch.value.away_team : nextMatch.value.home_team; // ✅
+    const opponent = isHome ? nextMatch.value.away_team : nextMatch.value.home_team;
 
     return {
         isHome,
@@ -286,111 +252,6 @@ const nextMatchInfo = computed(() => {
     };
 });
 
-const myMatchThisWeekInfo = computed(() => {
-    if (!myMatchThisWeek.value || !team.value) return null;
-
-    const isHome = myMatchThisWeek.value.home_team_id === team.value.id;
-    const opponent = isHome ? myMatchThisWeek.value.away_team : myMatchThisWeek.value.home_team;
-
-    return {
-        isHome,
-        opponentName: opponent?.name ?? opponentNameFor(myMatchThisWeek.value),
-        week: myMatchThisWeek.value.week,
-        status: myMatchThisWeek.value.status,
-    };
-});
-
-/**
- * Label lisible pour un match donné (pour la liste)
- */
-const matchLabel = (match) => {
-    if (!team.value) return '';
-
-    const isHome   = match.home_team_id === team.value.id;
-    const opponent = isHome ? match.away_team : match.home_team;
-
-    return `${isHome ? 'Domicile' : 'Extérieur'} vs ${opponent?.name ?? '???'}`;
-};
-
-// ==========================
-//   AUTRES EQUIPES
-// ==========================
-
-/**
- * Toutes les GameTeam de la ligue sauf celle contrôlée
- */
-const otherTeams = computed(() => {
-    const currentId = team.value?.id ?? null;
-    return props.teams.filter(t => t.id !== currentId);
-});
-
-const selectedOtherTeamId = ref(null);
-
-/**
- * Equipe sélectionnée dans l’onglet "Autres équipes"
- */
-const selectedOtherTeam = computed(() => {
-    if (!otherTeams.value.length) return null;
-
-    if (!selectedOtherTeamId.value) {
-        return otherTeams.value[0];
-    }
-
-    return (
-        otherTeams.value.find(t => t.id === selectedOtherTeamId.value) ??
-        otherTeams.value[0]
-    );
-});
-
-// ==========================
-//   CALENDRIER - ÉQUIPE SÉLECTIONNÉE (UI style "Autres équipes")
-// ==========================
-
-const selectedCalendarTeamId = ref(null);
-
-/**
- * Liste des équipes affichées dans la colonne gauche du calendrier
- * - on inclut ton équipe contrôlée + les autres
- */
-const calendarTeams = computed(() => {
-    return props.teams ?? [];
-});
-
-/**
- * Sélection par défaut : ton équipe contrôlée (si dispo), sinon 1ère équipe
- */
-const calendarTeam = computed(() => {
-    if (!calendarTeams.value.length) return null;
-
-    if (!selectedCalendarTeamId.value) {
-        return team.value || calendarTeams.value[0];
-    }
-
-    const id = Number(selectedCalendarTeamId.value);
-    return calendarTeams.value.find(t => Number(t.id) === id) ?? (team.value || calendarTeams.value[0]);
-});
-
-/**
- * Action: sélectionner une équipe (colonne gauche)
- */
-const selectCalendarTeam = (t) => {
-    selectedCalendarTeamId.value = t.id;
-};
-
-/**
- * Matches de l'équipe sélectionnée (home ou away)
- */
-const calendarTeamMatches = computed(() => {
-    if (!calendarTeam.value) return [];
-
-    return props.matches
-        .filter(m => m.home_team_id === calendarTeam.value.id || m.away_team_id === calendarTeam.value.id)
-        .sort((a, b) => (a.week ?? 0) - (b.week ?? 0));
-});
-
-/**
- * Adversaire pour une équipe donnée (pas forcément ton équipe contrôlée)
- */
 const opponentNameForTeam = (match, teamId) => {
     if (!match || !teamId) return '???';
     if (match.is_bye === true) return 'Repos';
@@ -401,44 +262,45 @@ const opponentNameForTeam = (match, teamId) => {
     return teamById.value[oppId]?.name ?? '???';
 };
 
-/**
- * Effectif de l’équipe sélectionnée (GameTeam + GameContracts)
- */
+// ==========================
+//   AUTRES EQUIPES
+// ==========================
+
+const otherTeams = computed(() => {
+    const currentId = team.value?.id ?? null;
+    return (props.teams ?? []).filter(t => t.id !== currentId);
+});
+
+const selectedOtherTeamId = ref(null);
+
+const selectedOtherTeam = computed(() => {
+    if (!otherTeams.value.length) return null;
+    if (!selectedOtherTeamId.value) return otherTeams.value[0];
+    return otherTeams.value.find(t => t.id === selectedOtherTeamId.value) ?? otherTeams.value[0];
+});
+
 const selectedOtherTeamRoster = computed(() => {
     if (!selectedOtherTeam.value || !Array.isArray(selectedOtherTeam.value.contracts)) return [];
     return selectedOtherTeam.value.contracts
-        .map(c => c.gamePlayer ?? c.game_player ?? c.player ?? null)
+        .map(c => c.game_player ?? c.gamePlayer ?? c.player ?? null)
         .filter(Boolean);
 });
 
-const selectOtherTeam = (t) => {
-    selectedOtherTeamId.value = t.id;
-};
+const selectOtherTeam = (t) => { selectedOtherTeamId.value = t.id; };
 
 // ==========================
 //   CLASSEMENT
 // ==========================
 
-/**
- * Classement général des GameTeam
- * Tri : points desc, victoires desc, nom asc
- */
 const standings = computed(() => {
-    const list = props.teams.map((t) => {
+    const list = (props.teams ?? []).map((t) => {
         const wins   = t.wins   ?? 0;
         const draws  = t.draws  ?? 0;
         const losses = t.losses ?? 0;
         const played = wins + draws + losses;
         const points = wins * 3 + draws;
 
-        return {
-            ...t,
-            wins,
-            draws,
-            losses,
-            played,
-            points,
-        };
+        return { ...t, wins, draws, losses, played, points };
     });
 
     list.sort((a, b) => {
@@ -450,24 +312,17 @@ const standings = computed(() => {
     return list;
 });
 
-/**
- * Position de ton club dans le classement
- */
 const clubStanding = computed(() => {
     if (!team.value) return null;
 
     const index = standings.value.findIndex(row => row.id === team.value.id);
     if (index === -1) return null;
 
-    return {
-        ...standings.value[index],
-        position: index + 1,
-    };
+    return { ...standings.value[index], position: index + 1 };
 });
 
 // ==========================
 //   BLESSURES / CARTONS
-//   (pour la "santé du club")
 // ==========================
 
 const injuries    = computed(() => props.gameSave.state?.injuries    ?? []);
@@ -482,21 +337,16 @@ const cardsCount       = computed(() => cards.value.length);
 //   MOYENNES DES STATS
 // ==========================
 
-/**
- * Calcule la moyenne d’une stat (attack, defense, stamina, speed)
- * en allant chercher dans :
- * - les colonnes directes si présentes
- * - sinon dans player.stats (JSON)
- */
+const statValue = (p, key) => {
+    if (!p) return 0;
+    const stats = p.stats ?? {};
+    const value = p[key] ?? stats[key] ?? 0;
+    return Number(value || 0);
+};
+
 const averageStat = (key) => {
     if (!roster.value.length) return 0;
-
-    const total = roster.value.reduce((sum, p) => {
-        const stats = p.stats ?? {};
-        const value = p[key] ?? stats[key] ?? 0;
-        return sum + Number(value || 0);
-    }, 0);
-
+    const total = roster.value.reduce((sum, p) => sum + statValue(p, key), 0);
     return Math.round(total / roster.value.length);
 };
 
@@ -509,40 +359,24 @@ const averageSpeed   = computed(() => averageStat('speed'));
 //   MODAL TRANSFERT
 // ==========================
 
-// Signatures déjà effectuées dans le state
-const freeAgentSignings = computed(() => {
-    return props.gameSave.state?.free_agent_signings ?? [];
-});
+const freeAgentSignings = computed(() => props.gameSave.state?.free_agent_signings ?? []);
+const signedFreePlayerIds = computed(() => freeAgentSignings.value.map(s => s.player_id));
 
-// Ids des joueurs déjà signés
-const signedFreePlayerIds = computed(() =>
-    freeAgentSignings.value.map(s => s.player_id)
-);
-
-// Joueurs libres encore disponibles (après filtrage)
 const freePlayers = computed(() => {
-    if (!Array.isArray(props.freePlayers)) {
-        return [];
-    }
-
-    return props.freePlayers.filter(
-        (p) => !signedFreePlayerIds.value.includes(p.id)
-    );
+    if (!Array.isArray(props.freePlayers)) return [];
+    return props.freePlayers.filter((p) => !signedFreePlayerIds.value.includes(p.id));
 });
 
-// État du modal
 const showTransferModal = ref(false);
-const transferTarget    = ref(null);   // joueur sélectionné
-const transferMatches   = ref(10);     // nb de matchs du contrat
-const transferSalary    = ref(0);      // coût / match
-const transferReason    = ref('');     // raison RP / note
+const transferTarget    = ref(null);
+const transferMatches   = ref(10);
+const transferSalary    = ref(0);
+const transferReason    = ref('');
 
-// Total impact budget
 const transferTotalCost = computed(() => {
     return (Number(transferMatches.value) || 0) * (Number(transferSalary.value) || 0);
 });
 
-// Ouvrir le modal pour un joueur
 const openTransferModal = (player) => {
     transferTarget.value  = player;
     transferMatches.value = 10;
@@ -551,17 +385,13 @@ const openTransferModal = (player) => {
     showTransferModal.value = true;
 };
 
-// Fermer le modal
 const closeTransferModal = () => {
     showTransferModal.value = false;
     transferTarget.value    = null;
 };
 
-// Confirmer la signature
 const confirmTransfer = () => {
-    if (!team.value || !transferTarget.value) {
-        return;
-    }
+    if (!team.value || !transferTarget.value) return;
 
     router.post(
         route('game-saves.free-agents.sign', {
@@ -576,9 +406,7 @@ const confirmTransfer = () => {
         },
         {
             preserveScroll: true,
-            onSuccess: () => {
-                closeTransferModal();
-            }
+            onSuccess: () => closeTransferModal(),
         }
     );
 };
@@ -594,7 +422,6 @@ const periodLabel = (period) => {
     return period;
 };
 
-// Sauvegarde de la partie (saison / semaine / state)
 const saveGame = () => {
     saving.value = true;
 
@@ -609,20 +436,15 @@ const saveGame = () => {
         {
             preserveState:  true,
             preserveScroll: true,
-            onFinish: () => {
-                saving.value = false;
-            },
+            onFinish: () => { saving.value = false; },
         }
     );
 };
 
-// Lancer le moteur de match pour le prochain match
 const playNextMatch = () => {
     router.get(route('game-saves.match', { gameSave: props.gameSave.id }));
 };
-
 </script>
-
 
 <template>
     <Head :title="`Partie ${gameSave.label ?? '#' + gameSave.id}`" />
@@ -650,9 +472,7 @@ const playNextMatch = () => {
                 ></div>
 
                 <!-- Carte principale -->
-                <div
-                    class="basis-3/4 p-4 border border-slate-300 rounded-lg mx-6 bg-white min-h-[500px] flex flex-col"
-                >
+                <div class="basis-3/4 p-4 border border-slate-300 rounded-lg mx-6 bg-white min-h-[500px] flex flex-col">
                     <!-- Onglets -->
                     <div class="mb-4 border-b border-slate-200">
                         <nav class="-mb-px flex space-x-2 overflow-x-auto">
@@ -676,65 +496,34 @@ const playNextMatch = () => {
                     <!-- ============================== -->
                     <!--            DASHBOARD           -->
                     <!-- ============================== -->
-                    <div
-                        v-if="activeTab === 'dashboard'"
-                        class="flex-1 flex flex-col">
+                    <div v-if="activeTab === 'dashboard'" class="flex-1 flex flex-col">
                         <!-- Infos générales -->
-                        <div
-                            class="mb-4 flex flex-col lg:flex-row lg:items-center lg:justify-around gap-2"
-                        >
+                        <div class="mb-4 flex flex-col lg:flex-row lg:items-center lg:justify-around gap-2">
                             <p class="text-slate-600">
                                 Période :
-                                <span class="font-semibold">
-                                    {{ periodLabel(gameSave.period) }}
-                                </span>
+                                <span class="font-semibold">{{ periodLabel(gameSave.period) }}</span>
                             </p>
-
-                            <p class="text-slate-600">
-                                Saison {{ season }} — Semaine {{ week }}
-                            </p>
-
+                            <p class="text-slate-600">Saison {{ season }} — Semaine {{ week }}</p>
                             <p class="text-slate-600" v-if="team">
-                                Équipe contrôlée :
-                                <span class="font-semibold">
-                                    {{ team.name }}
-                                </span>
+                                Équipe contrôlée : <span class="font-semibold">{{ team.name }}</span>
                             </p>
                         </div>
 
                         <!-- Cartes du dashboard -->
-                        <div
-                            class="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1"
-                        >
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1">
                             <!-- Prochain match -->
                             <div class="border border-slate-200 rounded-lg p-4 bg-slate-50">
-                                <h3 class="text-lg font-semibold text-slate-700 mb-2">
-                                    Prochain match
-                                </h3>
+                                <h3 class="text-lg font-semibold text-slate-700 mb-2">Prochain match</h3>
 
-                                <!-- Si un match est planifié -->
                                 <div v-if="nextMatch && nextMatchInfo" class="text-sm text-slate-700">
                                     <ul class="space-y-1">
-                                        <li>
-                                            <span class="font-semibold">Semaine :</span>
-                                            {{ isByeWeek ? week : nextMatchInfo.week }}
-                                        </li>
-                                        <li>
-                                            <span class="font-semibold">Adversaire :</span>
-                                            {{ opponentNameFor(nextMatch) }}
-                                        </li>
-                                        <li>
-                                            <span class="font-semibold">Lieu :</span>
-                                            {{ nextMatchInfo.isHome ? 'Domicile' : 'Extérieur' }}
-                                        </li>
-                                        <li>
-                                            <span class="font-semibold">Contexte :</span>
-                                            Saison {{ season }} — Championnat
-                                        </li>
+                                        <li><span class="font-semibold">Semaine :</span> {{ isByeWeek ? week : nextMatchInfo.week }}</li>
+                                        <li><span class="font-semibold">Adversaire :</span> {{ opponentNameFor(nextMatch) }}</li>
+                                        <li><span class="font-semibold">Lieu :</span> {{ nextMatchInfo.isHome ? 'Domicile' : 'Extérieur' }}</li>
+                                        <li><span class="font-semibold">Contexte :</span> Saison {{ season }} — Championnat</li>
                                     </ul>
 
                                     <div class="mt-4 flex justify-center gap-3">
-                                        <!-- JOUER LE MATCH -->
                                         <button
                                             v-if="!isByeWeek"
                                             type="button"
@@ -744,7 +533,6 @@ const playNextMatch = () => {
                                             Jouer le prochain match
                                         </button>
 
-                                        <!-- SEMAINE OFF -->
                                         <button
                                             v-else
                                             type="button"
@@ -756,77 +544,47 @@ const playNextMatch = () => {
                                     </div>
                                 </div>
 
-                                <!-- Si aucun match trouvé -->
                                 <div v-else class="text-sm text-slate-600">
-                                    <p class="mb-2">
-                                        Aucun match de championnat planifié pour le moment.
-                                    </p>
-                                    <p class="text-xs text-slate-500">
-                                        Vérifie que le calendrier a bien été généré pour cette sauvegarde.
-                                    </p>
+                                    <p class="mb-2">Aucun match de championnat planifié pour le moment.</p>
+                                    <p class="text-xs text-slate-500">Vérifie que le calendrier a bien été généré pour cette sauvegarde.</p>
                                 </div>
                             </div>
 
                             <!-- Résumé du club -->
                             <div class="border border-slate-200 rounded-lg p-4 bg-slate-50">
-                                <h3 class="text-lg font-semibold text-slate-700 mb-2">
-                                    Résumé du club
-                                </h3>
+                                <h3 class="text-lg font-semibold text-slate-700 mb-2">Résumé du club</h3>
 
                                 <div v-if="team" class="space-y-2 text-sm text-slate-700">
-                                    <p>
-                                        <span class="font-semibold">Nom :</span>
-                                        {{ team.name }}
-                                    </p>
-
-                                    <p>
-                                        <span class="font-semibold">Budget :</span>
-                                        {{ teamBudget }} €
-                                    </p>
-
-                                    <p>
-                                        <span class="font-semibold">Joueurs sous contrat :</span>
-                                        {{ roster.length }}
-                                    </p>
-
+                                    <p><span class="font-semibold">Nom :</span> {{ team.name }}</p>
+                                    <p><span class="font-semibold">Budget :</span> {{ teamBudget }} €</p>
+                                    <p><span class="font-semibold">Joueurs sous contrat :</span> {{ roster.length }}</p>
                                     <p v-if="team.description">
                                         <span class="font-semibold">Description :</span>
                                         <span class="text-slate-600">{{ team.description }}</span>
                                     </p>
                                 </div>
 
-                                <div v-else class="text-sm text-slate-500">
-                                    Aucune équipe liée à cette sauvegarde.
-                                </div>
+                                <div v-else class="text-sm text-slate-500">Aucune équipe liée à cette sauvegarde.</div>
                             </div>
 
                             <!-- Statut du club -->
                             <div class="border border-slate-200 rounded-lg p-4 bg-slate-50 lg:col-span-2">
-                                <h3 class="text-lg font-semibold text-slate-700 mb-2">
-                                    Statut du club
-                                </h3>
+                                <h3 class="text-lg font-semibold text-slate-700 mb-2">Statut du club</h3>
 
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-slate-700">
-                                    <!-- Bloc classement -->
                                     <div>
                                         <p class="font-semibold mb-1">Classement</p>
                                         <p v-if="clubStanding">
                                             Place : {{ clubStanding.position }}<sup>e</sup> / {{ standings.length }}
                                         </p>
-                                        <p v-else>
-                                            Classement non disponible.
-                                        </p>
+                                        <p v-else>Classement non disponible.</p>
+
                                         <p class="mt-1">
-                                            Bilan : {{ teamRecord.wins }} V /
-                                            {{ teamRecord.draws }} N /
-                                            {{ teamRecord.losses }} D
+                                            Bilan : {{ teamRecord.wins }} V / {{ teamRecord.draws }} N / {{ teamRecord.losses }} D
                                         </p>
-                                        <p>
-                                            Matchs joués : {{ teamRecord.wins + teamRecord.draws + teamRecord.losses }}
-                                        </p>
+                                        <p>Matchs joués : {{ teamRecord.wins + teamRecord.draws + teamRecord.losses }}</p>
                                     </div>
 
-                                    <!-- Bloc forces moyennes -->
                                     <div>
                                         <p class="font-semibold mb-1">Forces moyennes de l’équipe</p>
                                         <p>Attaque : {{ averageAttack }}</p>
@@ -834,7 +592,6 @@ const playNextMatch = () => {
                                         <p>Endurance : {{ averageStamina }}</p>
                                     </div>
 
-                                    <!-- Bloc état de l’effectif -->
                                     <div>
                                         <p class="font-semibold mb-1">État de l’effectif</p>
                                         <p>Blessés : {{ injuriesCount }}</p>
@@ -869,141 +626,182 @@ const playNextMatch = () => {
                     <!-- ============================== -->
                     <!--        MON ÉQUIPE              -->
                     <!-- ============================== -->
-                    <div
-                        v-else-if="activeTab === 'my-team'"
-                        class="flex-1 flex flex-col gap-4"
-                    >
-                        <div
-                            class="border border-slate-200 rounded-lg p-4 bg-slate-50 flex-1"
-                        >
-                            <h4 class="text-md font-semibold text-slate-700 mb-2">
-                                Effectif complet
-                            </h4>
+                    <div v-else-if="activeTab === 'my-team'" class="flex-1 flex gap-4">
+                        <!-- Colonne gauche : liste joueurs -->
+                        <div class="w-1/5 border border-slate-200 rounded-lg bg-slate-50 p-3">
+                            <h3 class="text-md font-semibold text-slate-700 mb-2">Joueurs</h3>
 
-                            <div
-                                v-if="roster.length > 0"
-                                class="max-h-80 overflow-y-auto"
-                            >
-                                <div class="overflow-x-auto">
-                                    <table class="w-full text-sm text-left min-w-max">
-                                        <thead class="text-xs uppercase text-slate-500 border-b">
-                                        <tr>
-                                            <th class="py-1 pr-2">Joueur</th>
-                                            <th class="py-1 pr-2">Poste</th>
+                            <div v-if="roster.length" class="max-h-96 overflow-y-auto space-y-1">
+                                <button
+                                    v-for="p in roster"
+                                    :key="p.id"
+                                    type="button"
+                                    @click="selectMyPlayer(p)"
+                                    :class="[
+                                        'w-full text-left text-sm px-2 py-1 rounded',
+                                        selectedMyPlayer && selectedMyPlayer.id === p.id
+                                            ? 'bg-teal-100 text-slate-900'
+                                            : 'bg-white hover:bg-slate-100 text-slate-700'
+                                    ]"
+                                >
+                                    <div class="flex items-center gap-2">
 
-                                            <!-- Core -->
-                                            <th class="py-1 pr-2 text-right">Vit</th>
-                                            <th class="py-1 pr-2 text-right">End</th>
-                                            <th class="py-1 pr-2 text-right">Att</th>
-                                            <th class="py-1 pr-2 text-right">Def</th>
+                                        <div class="flex-1 min-w-0 flex items-center justify-between">
+                                            <span class="truncate">{{ p.firstname }} {{ p.lastname }}</span>
+                                            <span class="text-xs text-slate-400 ml-2 shrink-0">{{ p.position }}</span>
+                                        </div>
+                                    </div>
+                                </button>
+                            </div>
 
-                                            <!-- Offensif -->
-                                            <th class="py-1 pr-2 text-right">Tir</th>
-                                            <th class="py-1 pr-2 text-right">Passe</th>
-                                            <th class="py-1 pr-2 text-right">Dribble</th>
+                            <p v-else class="text-sm text-slate-500">Aucun joueur sous contrat.</p>
+                        </div>
 
-                                            <!-- Défensif spé -->
-                                            <th class="py-1 pr-2 text-right">Block</th>
-                                            <th class="py-1 pr-2 text-right">Interc.</th>
-                                            <th class="py-1 pr-2 text-right">Tacle</th>
+                        <!-- Colonne droite : profil + stats + historique -->
+                        <div class="flex-1 flex flex-col gap-4">
+                            <template v-if="selectedMyPlayer">
+                                <!-- Carte profil -->
+                                <div class="border border-slate-200 rounded-lg bg-slate-50 p-4">
+                                    <div class="flex items-start gap-4">
+                                        <div class="w-24 h-24 rounded-lg border border-slate-200 bg-white overflow-hidden flex items-center justify-center">
+                                            <img
+                                                v-if="playerPhotoUrl(selectedMyPlayer)"
+                                                :src="playerPhotoUrl(selectedMyPlayer)"
+                                                class="h-full w-full object-cover"
+                                                alt="Photo joueur"
+                                            />
+                                            <span v-else class="text-xs text-slate-400 text-center px-2">
+                                                Aucune<br>photo
+                                            </span>
+                                        </div>
 
-                                            <!-- Gardien -->
-                                            <th class="py-1 pr-2 text-right">Main</th>
-                                            <th class="py-1 pr-2 text-right">Poings</th>
+                                        <div class="flex-1">
+                                            <h3 class="text-lg font-semibold text-slate-800">
+                                                {{ selectedMyPlayer.firstname }} {{ selectedMyPlayer.lastname }}
+                                            </h3>
 
-                                            <th class="py-1 pr-2 text-right">Coût</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        <tr
-                                            v-for="player in roster"
-                                            :key="player.id"
-                                            class="border-b last:border-b-0"
-                                        >
-                                            <td class="py-1 pr-2">
-                                                {{ player.firstname }} {{ player.lastname }}
-                                            </td>
+                                            <p class="text-sm text-slate-600">
+                                                Poste : <span class="font-semibold">{{ selectedMyPlayer.position }}</span>
+                                                <span class="text-slate-400 mx-2">•</span>
+                                                Coût : <span class="font-semibold">{{ selectedMyPlayer.cost ?? 0 }} €</span>
+                                            </p>
 
-                                            <td class="py-1 pr-2">
-                                                {{ player.position }}
-                                            </td>
-
-                                            <!-- Core -->
-                                            <td class="py-1 pr-2 text-right">
-                                                {{ player.speed ?? player.stats?.speed ?? '-' }}
-                                            </td>
-                                            <td class="py-1 pr-2 text-right">
-                                                {{ player.stamina ?? player.stats?.stamina ?? '-' }}
-                                            </td>
-                                            <td class="py-1 pr-2 text-right">
-                                                {{ player.attack ?? player.stats?.attack ?? '-' }}
-                                            </td>
-                                            <td class="py-1 pr-2 text-right">
-                                                {{ player.defense ?? player.stats?.defense ?? '-' }}
-                                            </td>
-
-                                            <!-- Offensif -->
-                                            <td class="py-1 pr-2 text-right">
-                                                {{ player.shot ?? player.stats?.shot ?? '-' }}
-                                            </td>
-                                            <td class="py-1 pr-2 text-right">
-                                                {{ player.pass ?? player.stats?.pass ?? '-' }}
-                                            </td>
-                                            <td class="py-1 pr-2 text-right">
-                                                {{ player.dribble ?? player.stats?.dribble ?? '-' }}
-                                            </td>
-
-                                            <!-- Défensif spé -->
-                                            <td class="py-1 pr-2 text-right">
-                                                {{ player.block ?? player.stats?.block ?? '-' }}
-                                            </td>
-                                            <td class="py-1 pr-2 text-right">
-                                                {{ player.intercept ?? player.stats?.intercept ?? '-' }}
-                                            </td>
-                                            <td class="py-1 pr-2 text-right">
-                                                {{ player.tackle ?? player.stats?.tackle ?? '-' }}
-                                            </td>
-
-                                            <!-- Gardien -->
-                                            <td class="py-1 pr-2 text-right">
-                                                {{ player.hand_save ?? player.stats?.hand_save ?? '-' }}
-                                            </td>
-                                            <td class="py-1 pr-2 text-right">
-                                                {{ player.punch_save ?? player.stats?.punch_save ?? '-' }}
-                                            </td>
-
-                                            <td class="py-1 pr-2 text-right">
-                                                {{ player.cost ?? '-' }}
-                                            </td>
-                                        </tr>
-                                        </tbody>
-                                    </table>
+                                            <p v-if="selectedMyPlayer.description" class="mt-3 text-sm text-slate-700">
+                                                <span class="font-semibold">Description :</span>
+                                                <span class="text-slate-600">{{ selectedMyPlayer.description }}</span>
+                                            </p>
+                                            <p v-else class="mt-3 text-sm text-slate-400 italic">Aucune description.</p>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div v-else class="text-sm text-slate-500">
-                                Aucun joueur.
-                            </div>
+                                <!-- Carte stats -->
+                                <div class="border border-slate-200 rounded-lg bg-slate-50 p-4">
+                                    <h4 class="text-md font-semibold text-slate-700 mb-3">Statistiques</h4>
+
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                                        <div class="flex justify-between border-b border-slate-200 pb-1">
+                                            <span class="text-slate-600">Vitesse</span>
+                                            <span class="font-semibold text-slate-800">
+                                                {{ selectedMyPlayer.speed ?? selectedMyPlayer.stats?.speed ?? '-' }}
+                                            </span>
+                                        </div>
+                                        <div class="flex justify-between border-b border-slate-200 pb-1">
+                                            <span class="text-slate-600">Stamina</span>
+                                            <span class="font-semibold text-slate-800">
+                                                {{ selectedMyPlayer.stamina ?? selectedMyPlayer.stats?.stamina ?? '-' }}
+                                            </span>
+                                        </div>
+                                        <div class="flex justify-between border-b border-slate-200 pb-1">
+                                            <span class="text-slate-600">Attaque</span>
+                                            <span class="font-semibold text-slate-800">
+                                                {{ selectedMyPlayer.attack ?? selectedMyPlayer.stats?.attack ?? '-' }}
+                                            </span>
+                                        </div>
+                                        <div class="flex justify-between border-b border-slate-200 pb-1">
+                                            <span class="text-slate-600">Défense</span>
+                                            <span class="font-semibold text-slate-800">
+                                                {{ selectedMyPlayer.defense ?? selectedMyPlayer.stats?.defense ?? '-' }}
+                                            </span>
+                                        </div>
+
+                                        <div class="flex justify-between border-b border-slate-200 pb-1">
+                                            <span class="text-slate-600">Tir</span>
+                                            <span class="font-semibold text-slate-800">
+                                                {{ selectedMyPlayer.shot ?? selectedMyPlayer.stats?.shot ?? '-' }}
+                                            </span>
+                                        </div>
+                                        <div class="flex justify-between border-b border-slate-200 pb-1">
+                                            <span class="text-slate-600">Passe</span>
+                                            <span class="font-semibold text-slate-800">
+                                                {{ selectedMyPlayer.pass ?? selectedMyPlayer.stats?.pass ?? '-' }}
+                                            </span>
+                                        </div>
+                                        <div class="flex justify-between border-b border-slate-200 pb-1">
+                                            <span class="text-slate-600">Dribble</span>
+                                            <span class="font-semibold text-slate-800">
+                                                {{ selectedMyPlayer.dribble ?? selectedMyPlayer.stats?.dribble ?? '-' }}
+                                            </span>
+                                        </div>
+
+                                        <div class="flex justify-between border-b border-slate-200 pb-1">
+                                            <span class="text-slate-600">Block</span>
+                                            <span class="font-semibold text-slate-800">
+                                                {{ selectedMyPlayer.block ?? selectedMyPlayer.stats?.block ?? '-' }}
+                                            </span>
+                                        </div>
+                                        <div class="flex justify-between border-b border-slate-200 pb-1">
+                                            <span class="text-slate-600">Interception</span>
+                                            <span class="font-semibold text-slate-800">
+                                                {{ selectedMyPlayer.intercept ?? selectedMyPlayer.stats?.intercept ?? '-' }}
+                                            </span>
+                                        </div>
+                                        <div class="flex justify-between border-b border-slate-200 pb-1">
+                                            <span class="text-slate-600">Tacle</span>
+                                            <span class="font-semibold text-slate-800">
+                                                {{ selectedMyPlayer.tackle ?? selectedMyPlayer.stats?.tackle ?? '-' }}
+                                            </span>
+                                        </div>
+
+                                        <div class="flex justify-between border-b border-slate-200 pb-1">
+                                            <span class="text-slate-600">Arrêt main</span>
+                                            <span class="font-semibold text-slate-800">
+                                                {{ selectedMyPlayer.hand_save ?? selectedMyPlayer.stats?.hand_save ?? '-' }}
+                                            </span>
+                                        </div>
+                                        <div class="flex justify-between border-b border-slate-200 pb-1">
+                                            <span class="text-slate-600">Arrêt poings</span>
+                                            <span class="font-semibold text-slate-800">
+                                                {{ selectedMyPlayer.punch_save ?? selectedMyPlayer.stats?.punch_save ?? '-' }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="border border-slate-200 rounded-lg bg-slate-50 p-4">
+                                    <h4 class="text-md font-semibold text-slate-700 mb-2">Historique & performance</h4>
+                                    <p class="text-sm text-slate-500">
+                                        Cette section arrive bientôt : historique des matchs, taux de réussite (passes, tirs, dribbles),
+                                        et statistiques par semaine.
+                                    </p>
+                                </div>
+                            </template>
+
+                            <p v-else class="text-sm text-slate-500">
+                                Sélectionne un joueur dans la liste à gauche.
+                            </p>
                         </div>
                     </div>
 
                     <!-- ============================== -->
                     <!--        AUTRES ÉQUIPES          -->
                     <!-- ============================== -->
-                    <div
-                        v-else-if="activeTab === 'other-teams'"
-                        class="flex-1 flex gap-4"
-                    >
+                    <div v-else-if="activeTab === 'other-teams'" class="flex-1 flex gap-4">
                         <!-- Liste des équipes -->
                         <div class="w-1/5 border border-slate-200 rounded-lg bg-slate-50 p-3">
-                            <h3 class="text-md font-semibold text-slate-700 mb-2">
-                                Équipes de la ligue
-                            </h3>
+                            <h3 class="text-md font-semibold text-slate-700 mb-2">Équipes de la ligue</h3>
 
-                            <div
-                                v-if="otherTeams.length"
-                                class="max-h-96 overflow-y-auto space-y-1"
-                            >
+                            <div v-if="otherTeams.length" class="max-h-96 overflow-y-auto space-y-1">
                                 <button
                                     v-for="t in otherTeams"
                                     :key="t.id"
@@ -1020,62 +818,48 @@ const playNextMatch = () => {
                                 </button>
                             </div>
 
-                            <p v-else class="text-sm text-slate-500">
-                                Aucune autre équipe trouvée.
-                            </p>
+                            <p v-else class="text-sm text-slate-500">Aucune autre équipe trouvée.</p>
                         </div>
 
                         <!-- Détail de l'équipe sélectionnée -->
                         <div class="flex-1 border border-slate-200 rounded-lg bg-slate-50 p-4">
                             <div v-if="selectedOtherTeam">
-                                <h3 class="text-lg font-semibold text-slate-700 mb-2">
-                                    {{ selectedOtherTeam.name }}
-                                </h3>
+                                <h3 class="text-lg font-semibold text-slate-700 mb-2">{{ selectedOtherTeam.name }}</h3>
 
                                 <p class="text-sm text-slate-700 mb-2">
-                                    <span class="font-semibold">Budget :</span>
-                                    {{ selectedOtherTeam.budget ?? 0 }} €
+                                    <span class="font-semibold">Budget :</span> {{ selectedOtherTeam.budget ?? 0 }} €
                                 </p>
 
                                 <p class="text-sm text-slate-700 mb-4">
                                     <span class="font-semibold">Bilan :</span>
-                                    {{ selectedOtherTeam.wins ?? 0 }} V /
-                                    {{ selectedOtherTeam.draws ?? 0 }} N /
-                                    {{ selectedOtherTeam.losses ?? 0 }} D
+                                    {{ selectedOtherTeam.wins ?? 0 }} V / {{ selectedOtherTeam.draws ?? 0 }} N / {{ selectedOtherTeam.losses ?? 0 }} D
                                 </p>
 
-                                <h4 class="text-md font-semibold text-slate-700 mb-2">
-                                    Effectif
-                                </h4>
+                                <h4 class="text-md font-semibold text-slate-700 mb-2">Effectif</h4>
 
-                                <div
-                                    v-if="selectedOtherTeamRoster.length"
-                                    class="max-h-72 overflow-y-auto"
-                                >
+                                <div v-if="selectedOtherTeamRoster.length" class="max-h-72 overflow-y-auto">
                                     <div class="overflow-x-auto">
                                         <table class="w-full text-sm text-left min-w-max">
                                             <thead class="text-xs uppercase text-slate-500 border-b">
                                             <tr>
+                                                <!-- ✅ Photo -->
+                                                <th class="py-1 pr-2 w-10"></th>
                                                 <th class="py-1 pr-2">Joueur</th>
                                                 <th class="py-1 pr-2">Poste</th>
 
-                                                <!-- Core -->
                                                 <th class="py-1 pr-2 text-right">Vit</th>
                                                 <th class="py-1 pr-2 text-right">End</th>
                                                 <th class="py-1 pr-2 text-right">Att</th>
                                                 <th class="py-1 pr-2 text-right">Def</th>
 
-                                                <!-- Offensif -->
                                                 <th class="py-1 pr-2 text-right">Tir</th>
                                                 <th class="py-1 pr-2 text-right">Passe</th>
                                                 <th class="py-1 pr-2 text-right">Dribble</th>
 
-                                                <!-- Défensif spé -->
                                                 <th class="py-1 pr-2 text-right">Block</th>
                                                 <th class="py-1 pr-2 text-right">Interc.</th>
                                                 <th class="py-1 pr-2 text-right">Tacle</th>
 
-                                                <!-- Gardien -->
                                                 <th class="py-1 pr-2 text-right">Main</th>
                                                 <th class="py-1 pr-2 text-right">Poings</th>
 
@@ -1089,62 +873,42 @@ const playNextMatch = () => {
                                                 :key="player.id"
                                                 class="border-b last:border-b-0"
                                             >
+                                                <!-- ✅ Photo -->
+                                                <td class="py-1 pr-2">
+                                                    <div class="h-7 w-7 rounded border bg-white overflow-hidden flex items-center justify-center">
+                                                        <img
+                                                            v-if="playerPhotoUrl(player)"
+                                                            :src="playerPhotoUrl(player)"
+                                                            class="h-full w-full object-cover"
+                                                            alt=""
+                                                        />
+                                                        <span v-else class="text-[10px] text-slate-400">—</span>
+                                                    </div>
+                                                </td>
+
                                                 <td class="py-1 pr-2">
                                                     {{ player.firstname }} {{ player.lastname }}
                                                 </td>
 
-                                                <td class="py-1 pr-2">
-                                                    {{ player.position }}
-                                                </td>
+                                                <td class="py-1 pr-2">{{ player.position }}</td>
 
-                                                <!-- Core -->
-                                                <td class="py-1 pr-2 text-right">
-                                                    {{ player.speed ?? player.stats?.speed ?? '-' }}
-                                                </td>
-                                                <td class="py-1 pr-2 text-right">
-                                                    {{ player.stamina ?? player.stats?.stamina ?? '-' }}
-                                                </td>
-                                                <td class="py-1 pr-2 text-right">
-                                                    {{ player.attack ?? player.stats?.attack ?? '-' }}
-                                                </td>
-                                                <td class="py-1 pr-2 text-right">
-                                                    {{ player.defense ?? player.stats?.defense ?? '-' }}
-                                                </td>
+                                                <td class="py-1 pr-2 text-right">{{ player.speed ?? player.stats?.speed ?? '-' }}</td>
+                                                <td class="py-1 pr-2 text-right">{{ player.stamina ?? player.stats?.stamina ?? '-' }}</td>
+                                                <td class="py-1 pr-2 text-right">{{ player.attack ?? player.stats?.attack ?? '-' }}</td>
+                                                <td class="py-1 pr-2 text-right">{{ player.defense ?? player.stats?.defense ?? '-' }}</td>
 
-                                                <!-- Offensif -->
-                                                <td class="py-1 pr-2 text-right">
-                                                    {{ player.shot ?? player.stats?.shot ?? '-' }}
-                                                </td>
-                                                <td class="py-1 pr-2 text-right">
-                                                    {{ player.pass ?? player.stats?.pass ?? '-' }}
-                                                </td>
-                                                <td class="py-1 pr-2 text-right">
-                                                    {{ player.dribble ?? player.stats?.dribble ?? '-' }}
-                                                </td>
+                                                <td class="py-1 pr-2 text-right">{{ player.shot ?? player.stats?.shot ?? '-' }}</td>
+                                                <td class="py-1 pr-2 text-right">{{ player.pass ?? player.stats?.pass ?? '-' }}</td>
+                                                <td class="py-1 pr-2 text-right">{{ player.dribble ?? player.stats?.dribble ?? '-' }}</td>
 
-                                                <!-- Défensif spé -->
-                                                <td class="py-1 pr-2 text-right">
-                                                    {{ player.block ?? player.stats?.block ?? '-' }}
-                                                </td>
-                                                <td class="py-1 pr-2 text-right">
-                                                    {{ player.intercept ?? player.stats?.intercept ?? '-' }}
-                                                </td>
-                                                <td class="py-1 pr-2 text-right">
-                                                    {{ player.tackle ?? player.stats?.tackle ?? '-' }}
-                                                </td>
+                                                <td class="py-1 pr-2 text-right">{{ player.block ?? player.stats?.block ?? '-' }}</td>
+                                                <td class="py-1 pr-2 text-right">{{ player.intercept ?? player.stats?.intercept ?? '-' }}</td>
+                                                <td class="py-1 pr-2 text-right">{{ player.tackle ?? player.stats?.tackle ?? '-' }}</td>
 
-                                                <!-- Gardien -->
-                                                <td class="py-1 pr-2 text-right">
-                                                    {{ player.hand_save ?? player.stats?.hand_save ?? '-' }}
-                                                </td>
-                                                <td class="py-1 pr-2 text-right">
-                                                    {{ player.punch_save ?? player.stats?.punch_save ?? '-' }}
-                                                </td>
+                                                <td class="py-1 pr-2 text-right">{{ player.hand_save ?? player.stats?.hand_save ?? '-' }}</td>
+                                                <td class="py-1 pr-2 text-right">{{ player.punch_save ?? player.stats?.punch_save ?? '-' }}</td>
 
-                                                <!-- Coût -->
-                                                <td class="py-1 pr-2 text-right">
-                                                    {{ player.cost ?? '-' }}
-                                                </td>
+                                                <td class="py-1 pr-2 text-right">{{ player.cost ?? '-' }}</td>
                                             </tr>
                                             </tbody>
                                         </table>
@@ -1165,14 +929,9 @@ const playNextMatch = () => {
                     <!-- ============================== -->
                     <!--          TRANSFERTS           -->
                     <!-- ============================== -->
-                    <div
-                        v-else-if="activeTab === 'transfers'"
-                        class="flex-1 border border-slate-200 rounded-lg bg-slate-50 p-4 flex flex-col gap-4 relative"
-                    >
+                    <div v-else-if="activeTab === 'transfers'" class="flex-1 border border-slate-200 rounded-lg bg-slate-50 p-4 flex flex-col gap-4 relative">
                         <div class="flex justify-between items-center">
-                            <h3 class="text-lg font-semibold text-slate-700">
-                                Joueurs libres
-                            </h3>
+                            <h3 class="text-lg font-semibold text-slate-700">Joueurs libres</h3>
                             <p class="text-xs text-slate-500">
                                 Les signatures impactent le budget de ton club dans cette sauvegarde.
                             </p>
@@ -1183,88 +942,64 @@ const playNextMatch = () => {
                                 <table class="w-full text-sm text-left min-w-max">
                                     <thead class="text-xs uppercase text-slate-500 border-b">
                                     <tr>
+                                        <!-- ✅ Photo -->
+                                        <th class="py-1 pr-2 w-10"></th>
                                         <th class="py-1 pr-2">Joueur</th>
                                         <th class="py-1 pr-2">Poste</th>
 
-                                        <!-- Core -->
                                         <th class="py-1 pr-2 text-right">Vit</th>
                                         <th class="py-1 pr-2 text-right">End</th>
                                         <th class="py-1 pr-2 text-right">Att</th>
                                         <th class="py-1 pr-2 text-right">Def</th>
 
-                                        <!-- Offensif -->
                                         <th class="py-1 pr-2 text-right">Tir</th>
                                         <th class="py-1 pr-2 text-right">Passe</th>
                                         <th class="py-1 pr-2 text-right">Dribble</th>
 
-                                        <!-- Défensif spé -->
                                         <th class="py-1 pr-2 text-right">Block</th>
                                         <th class="py-1 pr-2 text-right">Interc.</th>
                                         <th class="py-1 pr-2 text-right">Tacle</th>
 
-                                        <!-- Gardien -->
                                         <th class="py-1 pr-2 text-right">Main</th>
                                         <th class="py-1 pr-2 text-right">Poings</th>
 
                                         <th class="py-1 pr-2 text-right">Action</th>
                                     </tr>
                                     </thead>
+
                                     <tbody>
-                                    <tr
-                                        v-for="player in freePlayers"
-                                        :key="player.id"
-                                        class="border-b last:border-b-0"
-                                    >
+                                    <tr v-for="player in freePlayers" :key="player.id" class="border-b last:border-b-0">
+                                        <!-- ✅ Photo -->
                                         <td class="py-1 pr-2">
-                                            {{ player.firstname }} {{ player.lastname }}
-                                        </td>
-                                        <td class="py-1 pr-2">
-                                            {{ player.position }}
-                                        </td>
-
-                                        <!-- Core -->
-                                        <td class="py-1 pr-2 text-right">
-                                            {{ player.speed ?? player.stats?.speed ?? '-' }}
-                                        </td>
-                                        <td class="py-1 pr-2 text-right">
-                                            {{ player.stamina ?? player.stats?.stamina ?? '-' }}
-                                        </td>
-                                        <td class="py-1 pr-2 text-right">
-                                            {{ player.attack ?? player.stats?.attack ?? '-' }}
-                                        </td>
-                                        <td class="py-1 pr-2 text-right">
-                                            {{ player.defense ?? player.stats?.defense ?? '-' }}
+                                            <div class="h-7 w-7 rounded border bg-white overflow-hidden flex items-center justify-center">
+                                                <img
+                                                    v-if="playerPhotoUrl(player)"
+                                                    :src="playerPhotoUrl(player)"
+                                                    class="h-full w-full object-cover"
+                                                    alt=""
+                                                />
+                                                <span v-else class="text-[10px] text-slate-400">—</span>
+                                            </div>
                                         </td>
 
-                                        <!-- Offensif -->
-                                        <td class="py-1 pr-2 text-right">
-                                            {{ player.shot ?? player.stats?.shot ?? '-' }}
-                                        </td>
-                                        <td class="py-1 pr-2 text-right">
-                                            {{ player.pass ?? player.stats?.pass ?? '-' }}
-                                        </td>
-                                        <td class="py-1 pr-2 text-right">
-                                            {{ player.dribble ?? player.stats?.dribble ?? '-' }}
-                                        </td>
+                                        <td class="py-1 pr-2">{{ player.firstname }} {{ player.lastname }}</td>
+                                        <td class="py-1 pr-2">{{ player.position }}</td>
 
-                                        <!-- Défensif spé -->
-                                        <td class="py-1 pr-2 text-right">
-                                            {{ player.block ?? player.stats?.block ?? '-' }}
-                                        </td>
-                                        <td class="py-1 pr-2 text-right">
-                                            {{ player.intercept ?? player.stats?.intercept ?? '-' }}
-                                        </td>
-                                        <td class="py-1 pr-2 text-right">
-                                            {{ player.tackle ?? player.stats?.tackle ?? '-' }}
-                                        </td>
+                                        <td class="py-1 pr-2 text-right">{{ player.speed ?? player.stats?.speed ?? '-' }}</td>
+                                        <td class="py-1 pr-2 text-right">{{ player.stamina ?? player.stats?.stamina ?? '-' }}</td>
+                                        <td class="py-1 pr-2 text-right">{{ player.attack ?? player.stats?.attack ?? '-' }}</td>
+                                        <td class="py-1 pr-2 text-right">{{ player.defense ?? player.stats?.defense ?? '-' }}</td>
 
-                                        <!-- Gardien -->
-                                        <td class="py-1 pr-2 text-right">
-                                            {{ player.hand_save ?? player.stats?.hand_save ?? '-' }}
-                                        </td>
-                                        <td class="py-1 pr-2 text-right">
-                                            {{ player.punch_save ?? player.stats?.punch_save ?? '-' }}
-                                        </td>
+                                        <td class="py-1 pr-2 text-right">{{ player.shot ?? player.stats?.shot ?? '-' }}</td>
+                                        <td class="py-1 pr-2 text-right">{{ player.pass ?? player.stats?.pass ?? '-' }}</td>
+                                        <td class="py-1 pr-2 text-right">{{ player.dribble ?? player.stats?.dribble ?? '-' }}</td>
+
+                                        <td class="py-1 pr-2 text-right">{{ player.block ?? player.stats?.block ?? '-' }}</td>
+                                        <td class="py-1 pr-2 text-right">{{ player.intercept ?? player.stats?.intercept ?? '-' }}</td>
+                                        <td class="py-1 pr-2 text-right">{{ player.tackle ?? player.stats?.tackle ?? '-' }}</td>
+
+                                        <td class="py-1 pr-2 text-right">{{ player.hand_save ?? player.stats?.hand_save ?? '-' }}</td>
+                                        <td class="py-1 pr-2 text-right">{{ player.punch_save ?? player.stats?.punch_save ?? '-' }}</td>
 
                                         <td class="py-1 pr-2 text-right">
                                             <button
@@ -1282,31 +1017,35 @@ const playNextMatch = () => {
                             </div>
                         </div>
 
-                        <p v-else class="text-sm text-slate-500">
-                            Aucun joueur libre disponible.
-                        </p>
+                        <p v-else class="text-sm text-slate-500">Aucun joueur libre disponible.</p>
 
                         <!-- MODAL TRANSFERT -->
-                        <div
-                            v-if="showTransferModal && transferTarget"
-                            class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-                        >
+                        <div v-if="showTransferModal && transferTarget" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
                             <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-5">
                                 <h3 class="text-lg font-semibold text-slate-800 mb-3">
-                                    Proposer un contrat à
-                                    {{ transferTarget.firstname }} {{ transferTarget.lastname }}
+                                    Proposer un contrat à {{ transferTarget.firstname }} {{ transferTarget.lastname }}
                                 </h3>
 
-                                <p class="text-sm text-slate-600 mb-3">
-                                    Club : <span class="font-semibold">{{ team?.name }}</span><br>
-                                    Budget actuel : <span class="font-semibold">{{ teamBudget }} €</span>
-                                </p>
+                                <!-- ✅ mini header avec photo -->
+                                <div class="flex items-center gap-3 mb-3">
+                                    <div class="h-10 w-10 rounded border bg-white overflow-hidden flex items-center justify-center">
+                                        <img
+                                            v-if="playerPhotoUrl(transferTarget)"
+                                            :src="playerPhotoUrl(transferTarget)"
+                                            class="h-full w-full object-cover"
+                                            alt=""
+                                        />
+                                        <span v-else class="text-[10px] text-slate-400">—</span>
+                                    </div>
+                                    <p class="text-sm text-slate-600">
+                                        Club : <span class="font-semibold">{{ team?.name }}</span> —
+                                        Budget actuel : <span class="font-semibold">{{ teamBudget }} €</span>
+                                    </p>
+                                </div>
 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                     <div>
-                                        <label class="block text-xs font-semibold text-slate-600 mb-1">
-                                            Nombre de matchs (durée du contrat)
-                                        </label>
+                                        <label class="block text-xs font-semibold text-slate-600 mb-1">Nombre de matchs</label>
                                         <input
                                             type="number"
                                             min="1"
@@ -1317,9 +1056,7 @@ const playNextMatch = () => {
                                     </div>
 
                                     <div>
-                                        <label class="block text-xs font-semibold text-slate-600 mb-1">
-                                            Coût par match (€)
-                                        </label>
+                                        <label class="block text-xs font-semibold text-slate-600 mb-1">Coût par match (€)</label>
                                         <input
                                             type="number"
                                             min="0"
@@ -1330,19 +1067,16 @@ const playNextMatch = () => {
                                 </div>
 
                                 <p class="text-sm text-slate-700 mb-3">
-                                    Coût total estimé :
-                                    <span class="font-semibold">{{ transferTotalCost }} €</span>
+                                    Coût total estimé : <span class="font-semibold">{{ transferTotalCost }} €</span>
                                 </p>
 
                                 <div class="mb-4">
-                                    <label class="block text-xs font-semibold text-slate-600 mb-1">
-                                        Raison du recrutement (note RP / mémo)
-                                    </label>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1">Raison du recrutement</label>
                                     <textarea
                                         rows="3"
                                         v-model="transferReason"
                                         class="w-full border border-slate-300 rounded-md px-2 py-1 text-sm"
-                                        placeholder="Ex. : Renforcer l’aile gauche, remplacer un blessé, jeune à fort potentiel..."
+                                        placeholder="Ex. : Renforcer l’aile gauche, remplacer un blessé..."
                                     ></textarea>
                                 </div>
 
@@ -1370,42 +1104,30 @@ const playNextMatch = () => {
                     <!-- ============================== -->
                     <!--          CALENDRIER           -->
                     <!-- ============================== -->
-                    <div
-                        v-else-if="activeTab === 'calendar'"
-                        class="flex-1 flex gap-4"
-                    >
-                        <!-- Colonne gauche : liste des équipes -->
+                    <div v-else-if="activeTab === 'calendar'" class="flex-1 flex gap-4">
                         <div class="w-1/5 border border-slate-200 rounded-lg bg-slate-50 p-3">
-                            <h3 class="text-md font-semibold text-slate-700 mb-2">
-                                Equipes
-                            </h3>
+                            <h3 class="text-md font-semibold text-slate-700 mb-2">Equipes</h3>
 
-                            <div
-                                v-if="calendarTeams.length"
-                                class="max-h-96 overflow-y-auto space-y-1"
-                            >
+                            <div v-if="calendarTeams.length" class="max-h-96 overflow-y-auto space-y-1">
                                 <button
                                     v-for="t in calendarTeams"
                                     :key="t.id"
                                     type="button"
                                     @click="selectCalendarTeam(t)"
                                     :class="[
-                    'w-full text-left text-sm px-2 py-1 rounded',
-                    calendarTeam && calendarTeam.id === t.id
-                        ? 'bg-teal-100 text-slate-900'
-                        : 'bg-white hover:bg-slate-100 text-slate-700'
-                ]"
+                                        'w-full text-left text-sm px-2 py-1 rounded',
+                                        calendarTeam && calendarTeam.id === t.id
+                                            ? 'bg-teal-100 text-slate-900'
+                                            : 'bg-white hover:bg-slate-100 text-slate-700'
+                                    ]"
                                 >
                                     {{ t.name }}
                                 </button>
                             </div>
 
-                            <p v-else class="text-sm text-slate-500">
-                                Aucune équipe trouvée.
-                            </p>
+                            <p v-else class="text-sm text-slate-500">Aucune équipe trouvée.</p>
                         </div>
 
-                        <!-- Colonne droite : calendrier de l'équipe sélectionnée -->
                         <div class="flex-1 border border-slate-200 rounded-lg bg-slate-50 p-4">
                             <div v-if="calendarTeam">
                                 <h3 class="text-lg font-semibold text-slate-700 mb-2">
@@ -1429,14 +1151,8 @@ const playNextMatch = () => {
                                         </thead>
 
                                         <tbody>
-                                        <tr
-                                            v-for="match in calendarRows"
-                                            :key="match.id"
-                                            class="border-b last:border-b-0"
-                                        >
-                                            <td class="py-1 pr-2 text-right">
-                                                {{ match.week }}
-                                            </td>
+                                        <tr v-for="match in calendarRows" :key="match.id" class="border-b last:border-b-0">
+                                            <td class="py-1 pr-2 text-right">{{ match.week }}</td>
 
                                             <td class="py-1 pr-2">
                                                 <span v-if="isByeMatch(match)" class="text-slate-400 italic">Repos</span>
@@ -1467,9 +1183,7 @@ const playNextMatch = () => {
                                     </table>
                                 </div>
 
-                                <p v-else class="text-sm text-slate-500">
-                                    Aucun match planifié pour le moment.
-                                </p>
+                                <p v-else class="text-sm text-slate-500">Aucun match planifié pour le moment.</p>
                             </div>
 
                             <p v-else class="text-sm text-slate-500">
@@ -1481,17 +1195,10 @@ const playNextMatch = () => {
                     <!-- ============================== -->
                     <!--          CLASSEMENT           -->
                     <!-- ============================== -->
-                    <div
-                        v-else-if="activeTab === 'standings'"
-                        class="flex-1 border border-slate-200 rounded-lg bg-slate-50 p-4"
-                    >
-                        <h3 class="text-lg font-semibold text-slate-700 mb-2">
-                            Classement de la saison
-                        </h3>
+                    <div v-else-if="activeTab === 'standings'" class="flex-1 border border-slate-200 rounded-lg bg-slate-50 p-4">
+                        <h3 class="text-lg font-semibold text-slate-700 mb-2">Classement de la saison</h3>
 
-                        <p class="text-xs text-slate-500 mb-3">
-                            Ligne surlignée = ton équipe contrôlée.
-                        </p>
+                        <p class="text-xs text-slate-500 mb-3">Ligne surlignée = ton équipe contrôlée.</p>
 
                         <div class="max-h-96 overflow-y-auto">
                             <table class="w-full text-sm text-left">
@@ -1506,38 +1213,23 @@ const playNextMatch = () => {
                                     <th class="py-1 pr-2 text-right">Pts</th>
                                 </tr>
                                 </thead>
+
                                 <tbody>
                                 <tr
                                     v-for="(row, index) in standings"
                                     :key="row.id"
                                     :class="[
-                                        'border-b last:border-b-0',
-                                        team && team.id === row.id
-                                            ? 'bg-teal-50 font-semibold'
-                                            : ''
-                                    ]"
+                                            'border-b last:border-b-0',
+                                            team && team.id === row.id ? 'bg-teal-50 font-semibold' : ''
+                                        ]"
                                 >
-                                    <td class="py-1 pr-2 text-right">
-                                        {{ index + 1 }}
-                                    </td>
-                                    <td class="py-1 pr-2">
-                                        {{ row.name }}
-                                    </td>
-                                    <td class="py-1 pr-2 text-right">
-                                        {{ row.played }}
-                                    </td>
-                                    <td class="py-1 pr-2 text-right">
-                                        {{ row.wins }}
-                                    </td>
-                                    <td class="py-1 pr-2 text-right">
-                                        {{ row.draws }}
-                                    </td>
-                                    <td class="py-1 pr-2 text-right">
-                                        {{ row.losses }}
-                                    </td>
-                                    <td class="py-1 pr-2 text-right">
-                                        {{ row.points }}
-                                    </td>
+                                    <td class="py-1 pr-2 text-right">{{ index + 1 }}</td>
+                                    <td class="py-1 pr-2">{{ row.name }}</td>
+                                    <td class="py-1 pr-2 text-right">{{ row.played }}</td>
+                                    <td class="py-1 pr-2 text-right">{{ row.wins }}</td>
+                                    <td class="py-1 pr-2 text-right">{{ row.draws }}</td>
+                                    <td class="py-1 pr-2 text-right">{{ row.losses }}</td>
+                                    <td class="py-1 pr-2 text-right">{{ row.points }}</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -1547,33 +1239,20 @@ const playNextMatch = () => {
                     <!-- ============================== -->
                     <!--         ENTRAÎNEMENT          -->
                     <!-- ============================== -->
-                    <div
-                        v-else-if="activeTab === 'training'"
-                        class="flex-1"
-                    >
-                        <h3 class="text-lg font-semibold text-slate-700 mb-2">
-                            Entraînement
-                        </h3>
-                        <p class="text-sm text-slate-600">
-                            Gestion des entraînements, fatigue, progression
-                            (à venir).
-                        </p>
+                    <div v-else-if="activeTab === 'training'" class="flex-1">
+                        <h3 class="text-lg font-semibold text-slate-700 mb-2">Entraînement</h3>
+                        <p class="text-sm text-slate-600">Gestion des entraînements, fatigue, progression (à venir).</p>
                     </div>
 
                     <!-- ============================== -->
                     <!--         CARTES BONUS          -->
                     <!-- ============================== -->
                     <div v-else-if="activeTab === 'cards'" class="flex-1">
-                        <h3 class="text-lg font-semibold text-slate-700 mb-2">
-                            Cartes bonus
-                        </h3>
-                        <p class="text-sm text-slate-600">
-                            Système de cartes bonus / malus (à venir).
-                        </p>
+                        <h3 class="text-lg font-semibold text-slate-700 mb-2">Cartes bonus</h3>
+                        <p class="text-sm text-slate-600">Système de cartes bonus / malus (à venir).</p>
                     </div>
                 </div>
             </div>
         </div>
     </AuthenticatedLayout>
 </template>
-

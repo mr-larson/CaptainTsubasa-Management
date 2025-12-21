@@ -21,8 +21,9 @@ class PlayerRequest extends FormRequest
             'age'       => ['required', 'integer', 'min:1'],
             'position'  => ['required', new Enum(PlayerPosition::class)],
             'cost'      => ['required', 'integer', 'min:0'],
-
             'description' => ['nullable', 'string', 'max:1000'],
+            'photo' => ['nullable', 'image', 'max:4096'],
+
 
             // ─────────────────────────────
             //   STATS : complètement optionnelles
