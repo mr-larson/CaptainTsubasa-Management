@@ -311,6 +311,9 @@ const form = useForm({
     wins: 0,
     draws: 0,
     losses: 0,
+    logo: null,
+    remove_logo: false,
+    logo_path: null,
 });
 
 const searchQuery = ref('');

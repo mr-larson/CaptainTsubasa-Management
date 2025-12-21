@@ -1,10 +1,9 @@
+<!-- resources/js/Pages/GameSaves/TeamSelection.vue (ou ton fichier actuel) -->
 <template>
     <Head title="Choix de l'équipe" />
 
     <AuthenticatedLayout>
-        <template #header>
-
-        </template>
+        <template #header></template>
 
         <!-- SIDEBAR : liste d'équipes -->
         <aside
@@ -62,9 +61,20 @@
                         <a
                             href="#"
                             :class="{'bg-slate-500': startForm.team_id === team.id}"
-                            class="flex items-center p-1 text-gray-100 transition duration-75 rounded-lg hover:bg-slate-500"
+                            class="flex items-center gap-2 p-1 text-gray-100 transition duration-75 rounded-lg hover:bg-slate-500"
                         >
-                            <span class="ml-3">{{ team.name }}</span>
+                            <!-- ✅ mini logo -->
+                            <div class="h-7 w-7 rounded border border-slate-500 bg-slate-800 overflow-hidden flex items-center justify-center shrink-0">
+                                <img
+                                    v-if="teamLogoUrl(team)"
+                                    :src="teamLogoUrl(team)"
+                                    class="h-full w-full object-cover"
+                                    alt="Logo équipe"
+                                />
+                                <span v-else class="text-[10px] text-slate-400">—</span>
+                            </div>
+
+                            <span class="truncate">{{ team.name }}</span>
                         </a>
                     </li>
                 </ul>
@@ -100,13 +110,29 @@
                     </h2>
 
                     <div v-if="selectedTeam">
-                        <p class="text-slate-700">
-                            <span class="font-semibold">Nom :</span> {{ selectedTeam.name }}
-                        </p>
-                        <p class="text-slate-700">
-                            <span class="font-semibold">Budget :</span>
-                            {{ selectedTeam.budget ?? 0 }}
-                        </p>
+                        <!-- ✅ logo + nom -->
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="h-16 w-16 rounded overflow-hidden flex items-center justify-center ">
+                                <img
+                                    v-if="teamLogoUrl(selectedTeam)"
+                                    :src="teamLogoUrl(selectedTeam)"
+                                    class="h-full w-full object-cover"
+                                    alt="Logo équipe"
+                                />
+                                <span v-else class="text-xs text-slate-400">Aucun</span>
+                            </div>
+
+                            <div class="min-w-0">
+                                <p class="text-slate-700">
+                                    <span class="font-semibold">Nom :</span> {{ selectedTeam.name }}
+                                </p>
+                                <p class="text-slate-700">
+                                    <span class="font-semibold">Budget :</span>
+                                    {{ selectedTeam.budget ?? 0 }}
+                                </p>
+                            </div>
+                        </div>
+
                         <p class="text-slate-700">
                             <span class="font-semibold">Bilan :</span>
                             {{ selectedTeam.wins ?? 0 }} V /
@@ -122,6 +148,7 @@
                             {{ selectedTeam.description ?? '-'  }}
                         </p>
                     </div>
+
                     <div v-else class="text-slate-500">
                         Sélectionne une équipe dans la colonne de gauche.
                     </div>
@@ -143,23 +170,19 @@
                                         <th class="py-1 pr-2">Joueur</th>
                                         <th class="py-1 pr-2">Poste</th>
 
-                                        <!-- Core -->
                                         <th class="py-1 pr-2 text-right">Vit</th>
                                         <th class="py-1 pr-2 text-right">End</th>
                                         <th class="py-1 pr-2 text-right">Att</th>
                                         <th class="py-1 pr-2 text-right">Def</th>
 
-                                        <!-- Offensif -->
                                         <th class="py-1 pr-2 text-right">Tir</th>
                                         <th class="py-1 pr-2 text-right">Passe</th>
                                         <th class="py-1 pr-2 text-right">Dribble</th>
 
-                                        <!-- Défensif spé -->
                                         <th class="py-1 pr-2 text-right">Block</th>
                                         <th class="py-1 pr-2 text-right">Interc.</th>
                                         <th class="py-1 pr-2 text-right">Tacle</th>
 
-                                        <!-- Gardien -->
                                         <th class="py-1 pr-2 text-right">Main</th>
                                         <th class="py-1 pr-2 text-right">Poings</th>
 
@@ -191,7 +214,6 @@
                                             {{ player.position }}
                                         </td>
 
-                                        <!-- Core -->
                                         <td class="py-1 pr-2 text-right">
                                             {{ player.speed ?? player.stats?.speed ?? '-' }}
                                         </td>
@@ -205,7 +227,6 @@
                                             {{ player.defense ?? player.stats?.defense ?? '-' }}
                                         </td>
 
-                                        <!-- Offensif -->
                                         <td class="py-1 pr-2 text-right">
                                             {{ player.shot ?? player.stats?.shot ?? '-' }}
                                         </td>
@@ -216,7 +237,6 @@
                                             {{ player.dribble ?? player.stats?.dribble ?? '-' }}
                                         </td>
 
-                                        <!-- Défensif spé -->
                                         <td class="py-1 pr-2 text-right">
                                             {{ player.block ?? player.stats?.block ?? '-' }}
                                         </td>
@@ -227,7 +247,6 @@
                                             {{ player.tackle ?? player.stats?.tackle ?? '-' }}
                                         </td>
 
-                                        <!-- Gardien -->
                                         <td class="py-1 pr-2 text-right">
                                             {{ player.hand_save ?? player.stats?.hand_save ?? '-' }}
                                         </td>
@@ -283,23 +302,13 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 
-// Components
 import H2 from '@/Components/H2.vue';
 import H1 from '@/Components/H1.vue';
 
 const props = defineProps({
-    label: {
-        type: String,
-        default: null,
-    },
-    period: {
-        type: String,
-        required: true,
-    },
-    teams: {
-        type: Array,
-        required: true,
-    },
+    label: { type: String, default: null },
+    period: { type: String, required: true },
+    teams: { type: Array, required: true },
 });
 
 const searchQuery = ref('');
@@ -312,14 +321,12 @@ const filteredTeams = computed(() => {
     );
 });
 
-// Formulaire pour démarrer réellement la partie (création du GameSave)
 const startForm = useForm({
     label: props.label || '',
     period: props.period,
     team_id: null,
 });
 
-// Roster (= joueurs liés via contrats)
 const roster = computed(() => {
     if (!selectedTeam.value || !selectedTeam.value.contracts) return [];
     return selectedTeam.value.contracts
@@ -340,16 +347,21 @@ function startWithTeam() {
     });
 }
 
-const playerPhotoUrl = (player) => {
-    // cas 1: photo sur le player directement
-    if (player?.photo_path) return `/storage/${player.photo_path}`;
-
-    // cas 2: si un jour tu envoies la photo via stats ou autre structure
-    if (player?.photo?.path) return `/storage/${player.photo.path}`;
-
-    return null;
+/**
+ * ✅ LOGO TEAM
+ * team.logo_path est stocké en "images/teams/xxx.webp"
+ * -> accessible via "/images/teams/xxx.webp"
+ */
+const teamLogoUrl = (team) => {
+    if (!team?.logo_path) return null;
+    return `/${team.logo_path}`;
 };
 
+const playerPhotoUrl = (player) => {
+    if (player?.photo_path) return `/storage/${player.photo_path}`;
+    if (player?.photo?.path) return `/storage/${player.photo.path}`;
+    return null;
+};
 
 const label = props.label;
 </script>

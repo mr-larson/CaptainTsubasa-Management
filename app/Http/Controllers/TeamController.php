@@ -36,13 +36,15 @@ class TeamController extends Controller
     /**
      * Enregistrement d’une nouvelle équipe.
      */
+    // App\Http\Controllers\TeamController.php
+
     public function store(TeamRequest $request)
     {
         $data = $request->validated();
 
         $team = new Team();
 
-        // IMPORTANT : on ne "fill" pas logo/remove_logo (pas des colonnes DB)
+        // On ne "fill" pas logo/remove_logo
         unset($data['remove_logo'], $data['logo']);
         $team->fill($data);
 
@@ -75,10 +77,9 @@ class TeamController extends Controller
     {
         $data = $request->validated();
 
-        // ✅ lire remove_logo AVANT unset (sinon tu le perds)
-        $removeLogo = !empty($data['remove_logo']);
+        // ✅ IMPORTANT : on lit remove_logo AVANT de unset
+        $removeLogo = $request->boolean('remove_logo');
 
-        // IMPORTANT : on ne "fill" pas logo/remove_logo (pas des colonnes DB)
         unset($data['remove_logo'], $data['logo']);
         $team->fill($data);
 
@@ -88,7 +89,7 @@ class TeamController extends Controller
             $team->logo_path = null;
         }
 
-        // remplacement logo (prioritaire sur remove_logo si un fichier est fourni)
+        // remplacement logo
         if ($request->hasFile('logo')) {
             if ($team->logo_path) {
                 $this->deleteTeamLogo($team->logo_path);

@@ -1,4 +1,4 @@
-<!-- resources/js/Pages/GameSaves/Show.vue (ou le nom réel de ta vue "game") -->
+<!-- resources/js/Pages/GameSaves/Show.vue -->
 <script setup>
 /**
  * Dashboard de partie Captain Tsubasa
@@ -76,6 +76,30 @@ const playerPhotoUrl = (p) => {
     if (p.player?.photo_path) return `/storage/${p.player.photo_path}`;
     return null;
 };
+
+/**
+ * ✅ AJOUT : Logo URL (GameTeam.logo_path stocké en public/images/teams/xxx.webp)
+ * logo_path = "images/teams/xxx.webp" => URL = "/images/teams/xxx.webp"
+ */
+const teamLogoUrl = (t) => {
+    if (!t?.logo_path) return null;
+    return `/${t.logo_path}`;
+};
+
+// ✅ AJOUT : équipe adverse du prochain match (robuste via IDs)
+const nextOpponentTeamId = computed(() => {
+    if (!team.value || !nextMatch.value) return null;
+    return opponentTeamIdFor(nextMatch.value);
+});
+
+const nextOpponentTeam = computed(() => {
+    const id = nextOpponentTeamId.value;
+    if (!id) return null;
+    return teamById.value[id] ?? null;
+});
+
+const myLogoUrl = computed(() => teamLogoUrl(team.value));
+const opponentLogoUrl = computed(() => teamLogoUrl(nextOpponentTeam.value));
 
 /**
  * Effectif = joueurs liés via les game_contracts
@@ -287,6 +311,35 @@ const selectedOtherTeamRoster = computed(() => {
 });
 
 const selectOtherTeam = (t) => { selectedOtherTeamId.value = t.id; };
+
+// ==========================
+//   HELPERS AUTRES ÉQUIPES
+// ==========================
+
+const statValueFor = (p, key) => {
+    if (!p) return 0;
+    const stats = p.stats ?? {};
+    const value = p[key] ?? stats[key] ?? 0;
+    return Number(value || 0);
+};
+
+const averageTeamStat = (players, key) => {
+    if (!Array.isArray(players) || players.length === 0) return 0;
+    const total = players.reduce((sum, p) => sum + statValueFor(p, key), 0);
+    return Math.round(total / players.length);
+};
+
+// si dans state tu stockes team_id => on filtre, sinon fallback sur le total global
+const countByTeamIdOrAll = (items, teamId) => {
+    if (!Array.isArray(items)) return 0;
+    const hasTeamId = items.some(x => x && Object.prototype.hasOwnProperty.call(x, 'team_id'));
+    if (!hasTeamId) return items.length;
+    return items.filter(x => Number(x.team_id) === Number(teamId)).length;
+};
+
+const injuriesCountForTeam = (teamId) => countByTeamIdOrAll(injuries.value, teamId);
+const suspensionsCountForTeam = (teamId) => countByTeamIdOrAll(suspensions.value, teamId);
+const cardsCountForTeam = (teamId) => countByTeamIdOrAll(cards.value, teamId);
 
 // ==========================
 //   CLASSEMENT
@@ -513,59 +566,86 @@ const playNextMatch = () => {
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1">
                             <!-- Prochain match -->
                             <div class="border border-slate-200 rounded-lg p-4 bg-slate-50">
-                                <h3 class="text-lg font-semibold text-slate-700 mb-2">Prochain match</h3>
-
-                                <div v-if="nextMatch && nextMatchInfo" class="text-sm text-slate-700">
-                                    <ul class="space-y-1">
-                                        <li><span class="font-semibold">Semaine :</span> {{ isByeWeek ? week : nextMatchInfo.week }}</li>
-                                        <li><span class="font-semibold">Adversaire :</span> {{ opponentNameFor(nextMatch) }}</li>
-                                        <li><span class="font-semibold">Lieu :</span> {{ nextMatchInfo.isHome ? 'Domicile' : 'Extérieur' }}</li>
-                                        <li><span class="font-semibold">Contexte :</span> Saison {{ season }} — Championnat</li>
-                                    </ul>
-
-                                    <div class="mt-4 flex justify-center gap-3">
-                                        <button
-                                            v-if="!isByeWeek"
-                                            type="button"
-                                            class="w-60 bg-teal-300 hover:bg-teal-400 text-center font-semibold py-1 px-5 border-2 border-teal-500 rounded-full drop-shadow-md"
-                                            @click="playNextMatch"
-                                        >
-                                            Jouer le prochain match
-                                        </button>
-
-                                        <button
-                                            v-else
-                                            type="button"
-                                            class="w-60 bg-slate-300 hover:bg-slate-400 text-center font-semibold py-1 px-5 border-2 border-slate-500 rounded-full drop-shadow-md"
-                                            @click="simulateWeek"
-                                        >
-                                            Simuler la semaine
-                                        </button>
+                                <!-- header: titre à gauche, logo à droite -->
+                                <div class="flex items-start justify-between gap-4 mb-2">
+                                    <div v-if="nextMatch && nextMatchInfo" class="text-sm text-slate-700">
+                                        <h3 class="text-lg font-semibold text-slate-700">Prochain match</h3>
+                                        <ul class="space-y-1">
+                                            <li><span class="font-semibold">Semaine :</span> {{ isByeWeek ? week : nextMatchInfo.week }}</li>
+                                            <li><span class="font-semibold">Adversaire :</span> {{ opponentNameFor(nextMatch) }}</li>
+                                            <li><span class="font-semibold">Lieu :</span> {{ nextMatchInfo.isHome ? 'Domicile' : 'Extérieur' }}</li>
+                                            <li><span class="font-semibold">Contexte :</span> Saison {{ season }} — Championnat</li>
+                                        </ul>
+                                    </div>
+                                    <div v-else class="text-sm text-slate-600">
+                                        <p class="mb-2">Aucun match de championnat planifié pour le moment.</p>
+                                        <p class="text-xs text-slate-500">Vérifie que le calendrier a bien été généré pour cette sauvegarde.</p>
+                                    </div>
+                                    <!-- ✅ Logo adversaire à droite (case rouge) -->
+                                    <div class="h-24 w-24 rounded-lg overflow-hidden flex items-center justify-center shrink-0">
+                                        <img
+                                            v-if="nextMatch && opponentTeamIdFor(nextMatch) && teamById[opponentTeamIdFor(nextMatch)]?.logo_path"
+                                            :src="`/${teamById[opponentTeamIdFor(nextMatch)].logo_path}`"
+                                            class="h-full w-full object-contain"
+                                            alt="Logo adversaire"
+                                        />
+                                        <span v-else class="text-xs text-slate-400">—</span>
                                     </div>
                                 </div>
+                                <div class="mt-4 pt-6 flex justify-center gap-3">
+                                    <button
+                                        v-if="!isByeWeek"
+                                        type="button"
+                                        class="w-60 bg-teal-300 hover:bg-teal-400 text-center font-semibold py-1 px-5 border-2 border-teal-500 rounded-full drop-shadow-md"
+                                        @click="playNextMatch"
+                                    >
+                                        Jouer le prochain match
+                                    </button>
 
-                                <div v-else class="text-sm text-slate-600">
-                                    <p class="mb-2">Aucun match de championnat planifié pour le moment.</p>
-                                    <p class="text-xs text-slate-500">Vérifie que le calendrier a bien été généré pour cette sauvegarde.</p>
+                                    <button
+                                        v-else
+                                        type="button"
+                                        class="w-60 bg-slate-300 hover:bg-slate-400 text-center font-semibold py-1 px-5 border-2 border-slate-500 rounded-full drop-shadow-md"
+                                        @click="simulateWeek"
+                                    >
+                                        Simuler la semaine
+                                    </button>
                                 </div>
                             </div>
 
                             <!-- Résumé du club -->
                             <div class="border border-slate-200 rounded-lg p-4 bg-slate-50">
-                                <h3 class="text-lg font-semibold text-slate-700 mb-2">Résumé du club</h3>
+                                <!-- Ligne haute : texte + logo -->
+                                <div class="flex items-start justify-between gap-4 mb-2">
+                                    <div class="text-sm text-slate-700">
+                                        <h3 class="text-lg font-semibold text-slate-700 mb-1">
+                                            Résumé du club
+                                        </h3>
 
-                                <div v-if="team" class="space-y-2 text-sm text-slate-700">
-                                    <p><span class="font-semibold">Nom :</span> {{ team.name }}</p>
-                                    <p><span class="font-semibold">Budget :</span> {{ teamBudget }} €</p>
-                                    <p><span class="font-semibold">Joueurs sous contrat :</span> {{ roster.length }}</p>
-                                    <p v-if="team.description">
-                                        <span class="font-semibold">Description :</span>
-                                        <span class="text-slate-600">{{ team.description }}</span>
-                                    </p>
+                                        <p><span class="font-semibold">Nom :</span> {{ team.name }}</p>
+                                        <p><span class="font-semibold">Budget :</span> {{ teamBudget }} €</p>
+                                        <p><span class="font-semibold">Joueurs sous contrat :</span> {{ roster.length }}</p>
+                                    </div>
+
+                                    <!-- Logo équipe à droite -->
+                                    <div class="h-24 w-24 rounded-lg overflow-hidden flex items-center justify-center shrink-0">
+                                        <img
+                                            v-if="team?.logo_path"
+                                            :src="`/${team.logo_path}`"
+                                            class="h-full w-full object-contain"
+                                            alt="Logo équipe"
+                                        />
+                                        <span v-else class="text-xs text-slate-400">—</span>
+                                    </div>
                                 </div>
 
-                                <div v-else class="text-sm text-slate-500">Aucune équipe liée à cette sauvegarde.</div>
+                                <!-- Description descendue (équivalent du bouton dans l’autre carte) -->
+                                <div v-if="team.description" class="mt-6 text-sm text-slate-700">
+                                    <span class="font-semibold">Description :</span>
+                                    <span class="text-slate-600">{{ team.description }}</span>
+                                </div>
                             </div>
+
 
                             <!-- Statut du club -->
                             <div class="border border-slate-200 rounded-lg p-4 bg-slate-50 lg:col-span-2">
@@ -645,7 +725,6 @@ const playNextMatch = () => {
                                     ]"
                                 >
                                     <div class="flex items-center gap-2">
-
                                         <div class="flex-1 min-w-0 flex items-center justify-between">
                                             <span class="truncate">{{ p.firstname }} {{ p.lastname }}</span>
                                             <span class="text-xs text-slate-400 ml-2 shrink-0">{{ p.position }}</span>
@@ -798,7 +877,7 @@ const playNextMatch = () => {
                     <!-- ============================== -->
                     <div v-else-if="activeTab === 'other-teams'" class="flex-1 flex gap-4">
                         <!-- Liste des équipes -->
-                        <div class="w-1/5 border border-slate-200 rounded-lg bg-slate-50 p-3">
+                        <div class="w-2/5 border border-slate-200 rounded-lg bg-slate-50 p-3">
                             <h3 class="text-md font-semibold text-slate-700 mb-2">Équipes de la ligue</h3>
 
                             <div v-if="otherTeams.length" class="max-h-96 overflow-y-auto space-y-1">
@@ -822,19 +901,101 @@ const playNextMatch = () => {
                         </div>
 
                         <!-- Détail de l'équipe sélectionnée -->
-                        <div class="flex-1 border border-slate-200 rounded-lg bg-slate-50 p-4">
-                            <div v-if="selectedOtherTeam">
-                                <h3 class="text-lg font-semibold text-slate-700 mb-2">{{ selectedOtherTeam.name }}</h3>
+                        <div v-if="selectedOtherTeam">
+                            <!-- TOP : 3 blocs (Budget/Bilan) | (Description courte) | (Logo) -->
+                            <div class="border border-slate-200 rounded-lg bg-slate-50 p-4">
+                                <div class="flex items-start justify-between gap-4">
+                                    <!-- Gauche : Nom + Budget/Bilan -->
+                                    <div class="min-w-0">
+                                        <h3 class="text-lg font-semibold text-slate-700 mb-2">
+                                            {{ selectedOtherTeam.name }}
+                                        </h3>
 
-                                <p class="text-sm text-slate-700 mb-2">
-                                    <span class="font-semibold">Budget :</span> {{ selectedOtherTeam.budget ?? 0 }} €
-                                </p>
+                                        <div class="text-sm text-slate-700 space-y-1">
+                                            <p>
+                                                <span class="font-semibold">Budget :</span>
+                                                {{ selectedOtherTeam.budget ?? 0 }} €
+                                            </p>
+                                        </div>
+                                    </div>
 
-                                <p class="text-sm text-slate-700 mb-4">
-                                    <span class="font-semibold">Bilan :</span>
-                                    {{ selectedOtherTeam.wins ?? 0 }} V / {{ selectedOtherTeam.draws ?? 0 }} N / {{ selectedOtherTeam.losses ?? 0 }} D
-                                </p>
+                                    <!-- Milieu : Description -->
+                                    <div class="flex-1 min-w-0 px-6">
+                                        <p class="text-sm text-slate-700">
+                                            <span class="font-semibold">Description :</span>
+                                            <span class="text-slate-600">{{
+                                                    (selectedOtherTeam.description ?? '-')
+                                                        ? (selectedOtherTeam.description)
+                                                        : (selectedOtherTeam.description ?? '-') }}
+                                            </span>
+                                        </p>
+                                    </div>
 
+                                    <!-- Droite : Logo -->
+                                    <div class="h-24 w-24 rounded-lg  overflow-hidden flex items-center justify-center shrink-0">
+                                        <img
+                                            v-if="selectedOtherTeam?.logo_path"
+                                            :src="`/${selectedOtherTeam.logo_path}`"
+                                            class="h-full w-full object-contain"
+                                            alt="Logo club"
+                                        />
+                                        <span v-else class="text-xs text-slate-400">—</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- STATUT : carte séparée (3 colonnes) -->
+                            <div class="mt-4 border border-slate-200 rounded-lg bg-slate-50 p-4">
+                                <h4 class="text-md font-semibold text-slate-700 mb-3">Statut du club</h4>
+
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-slate-700">
+                                    <!-- Classement -->
+                                    <div>
+                                        <p class="font-semibold mb-1">Classement</p>
+
+                                        <p v-if="standings?.length">
+                                            Place :
+                                            {{ (standings.findIndex(row => row.id === selectedOtherTeam.id) + 1) || '—' }}
+                                            <sup>e</sup> / {{ standings.length }}
+                                        </p>
+
+                                        <p class="mt-1">
+                                            Bilan :
+                                            {{ selectedOtherTeam.wins ?? 0 }} V /
+                                            {{ selectedOtherTeam.draws ?? 0 }} N /
+                                            {{ selectedOtherTeam.losses ?? 0 }} D
+                                        </p>
+
+                                        <p>
+                                            Matchs joués :
+                                            {{
+                                                (selectedOtherTeam.wins ?? 0) +
+                                                (selectedOtherTeam.draws ?? 0) +
+                                                (selectedOtherTeam.losses ?? 0)
+                                            }}
+                                        </p>
+                                    </div>
+
+                                    <!-- Forces moyennes -->
+                                    <div>
+                                        <p class="font-semibold mb-1">Forces moyennes de l’équipe</p>
+                                        <p>Attaque : {{ averageTeamStat(selectedOtherTeamRoster, 'attack') }}</p>
+                                        <p>Défense : {{ averageTeamStat(selectedOtherTeamRoster, 'defense') }}</p>
+                                        <p>Endurance : {{ averageTeamStat(selectedOtherTeamRoster, 'stamina') }}</p>
+                                    </div>
+
+                                    <!-- État de l’effectif -->
+                                    <div>
+                                        <p class="font-semibold mb-1">État de l’effectif</p>
+                                        <p>Blessés : {{ injuriesCountForTeam(selectedOtherTeam.id) }}</p>
+                                        <p>Suspensions : {{ suspensionsCountForTeam(selectedOtherTeam.id) }}</p>
+                                        <p>Cartons en cours : {{ cardsCountForTeam(selectedOtherTeam.id) }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- EFFECTIF : carte séparée -->
+                            <div class="mt-4 border border-slate-200 rounded-lg bg-slate-50 p-4">
                                 <h4 class="text-md font-semibold text-slate-700 mb-2">Effectif</h4>
 
                                 <div v-if="selectedOtherTeamRoster.length" class="max-h-72 overflow-y-auto">
@@ -842,7 +1003,6 @@ const playNextMatch = () => {
                                         <table class="w-full text-sm text-left min-w-max">
                                             <thead class="text-xs uppercase text-slate-500 border-b">
                                             <tr>
-                                                <!-- ✅ Photo -->
                                                 <th class="py-1 pr-2 w-10"></th>
                                                 <th class="py-1 pr-2">Joueur</th>
                                                 <th class="py-1 pr-2">Poste</th>
@@ -873,7 +1033,6 @@ const playNextMatch = () => {
                                                 :key="player.id"
                                                 class="border-b last:border-b-0"
                                             >
-                                                <!-- ✅ Photo -->
                                                 <td class="py-1 pr-2">
                                                     <div class="h-7 w-7 rounded border bg-white overflow-hidden flex items-center justify-center">
                                                         <img
@@ -886,10 +1045,7 @@ const playNextMatch = () => {
                                                     </div>
                                                 </td>
 
-                                                <td class="py-1 pr-2">
-                                                    {{ player.firstname }} {{ player.lastname }}
-                                                </td>
-
+                                                <td class="py-1 pr-2">{{ player.firstname }} {{ player.lastname }}</td>
                                                 <td class="py-1 pr-2">{{ player.position }}</td>
 
                                                 <td class="py-1 pr-2 text-right">{{ player.speed ?? player.stats?.speed ?? '-' }}</td>
@@ -919,10 +1075,6 @@ const playNextMatch = () => {
                                     Aucun joueur sous contrat pour cette équipe.
                                 </p>
                             </div>
-
-                            <div v-else class="text-sm text-slate-500">
-                                Sélectionne une équipe dans la liste à gauche.
-                            </div>
                         </div>
                     </div>
 
@@ -942,7 +1094,6 @@ const playNextMatch = () => {
                                 <table class="w-full text-sm text-left min-w-max">
                                     <thead class="text-xs uppercase text-slate-500 border-b">
                                     <tr>
-                                        <!-- ✅ Photo -->
                                         <th class="py-1 pr-2 w-10"></th>
                                         <th class="py-1 pr-2">Joueur</th>
                                         <th class="py-1 pr-2">Poste</th>
@@ -969,7 +1120,6 @@ const playNextMatch = () => {
 
                                     <tbody>
                                     <tr v-for="player in freePlayers" :key="player.id" class="border-b last:border-b-0">
-                                        <!-- ✅ Photo -->
                                         <td class="py-1 pr-2">
                                             <div class="h-7 w-7 rounded border bg-white overflow-hidden flex items-center justify-center">
                                                 <img
@@ -1026,7 +1176,7 @@ const playNextMatch = () => {
                                     Proposer un contrat à {{ transferTarget.firstname }} {{ transferTarget.lastname }}
                                 </h3>
 
-                                <!-- ✅ mini header avec photo -->
+                                <!-- mini header avec photo -->
                                 <div class="flex items-center gap-3 mb-3">
                                     <div class="h-10 w-10 rounded border bg-white overflow-hidden flex items-center justify-center">
                                         <img
@@ -1219,9 +1369,9 @@ const playNextMatch = () => {
                                     v-for="(row, index) in standings"
                                     :key="row.id"
                                     :class="[
-                                            'border-b last:border-b-0',
-                                            team && team.id === row.id ? 'bg-teal-50 font-semibold' : ''
-                                        ]"
+                                        'border-b last:border-b-0',
+                                        team && team.id === row.id ? 'bg-teal-50 font-semibold' : ''
+                                    ]"
                                 >
                                     <td class="py-1 pr-2 text-right">{{ index + 1 }}</td>
                                     <td class="py-1 pr-2">{{ row.name }}</td>

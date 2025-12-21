@@ -1,3 +1,4 @@
+<!-- resources/js/Pages/Teams/Create.vue -->
 <template>
     <Head title="Add Team" />
 
@@ -96,6 +97,59 @@
                             </FormCol>
                         </FormRaw>
 
+                        <!-- ✅ LOGO UPLOAD -->
+                        <FormRaw>
+                            <FormCol>
+                                <InputLabel value="Logo" />
+
+                                <div class="mt-1 flex flex-col gap-2">
+                                    <div class="flex items-center gap-3">
+                                        <!-- input file caché -->
+                                        <input
+                                            ref="logoInput"
+                                            type="file"
+                                            accept="image/*"
+                                            class="hidden"
+                                            @change="onLogoChange"
+                                        />
+
+                                        <!-- faux input -->
+                                        <div class="flex items-center w-full md:w-56">
+                                            <button
+                                                type="button"
+                                                class="shrink-0 px-3 py-1.5 rounded-l-full border border-gray-300 bg-stone-50 text-sm text-gray-900 hover:bg-white focus:outline-none focus:border-slate-700"
+                                                @click="openLogoPicker"
+                                            >
+                                                Choisir
+                                            </button>
+
+                                            <div
+                                                class="flex-1 px-3 py-1.5 rounded-r-full border border-l-0 border-gray-300 bg-stone-50 text-sm text-slate-600 truncate"
+                                                :title="selectedLogoName || 'Aucun fichier choisi'"
+                                            >
+                                                {{ selectedLogoName || 'Aucun fichier choisi' }}
+                                            </div>
+                                        </div>
+
+                                        <!-- preview carré -->
+                                        <div class="h-16 w-16 rounded border bg-white overflow-hidden flex items-center justify-center">
+                                            <img
+                                                v-if="logoPreviewUrl"
+                                                :src="logoPreviewUrl"
+                                                class="h-full w-full object-cover"
+                                                alt="Logo équipe"
+                                            />
+                                            <span v-else class="text-xs text-slate-400">Aucun</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <p v-if="form.errors.logo" class="text-sm text-red-600 mt-1">
+                                    {{ form.errors.logo }}
+                                </p>
+                            </FormCol>
+                        </FormRaw>
+
                         <div class="flex justify-around p-6">
                             <button
                                 type="submit"
@@ -122,6 +176,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 // Components
 import H2 from '@/Components/H2.vue';
@@ -136,13 +191,40 @@ const form = useForm({
     wins: 0,
     losses: 0,
     draws: 0,
+    logo: null, // ✅ AJOUT
 });
+
+// ✅ LOGO UI
+const logoInput = ref(null);
+const selectedLogoName = ref('');
+const logoPreviewUrl = ref(null);
+
+function openLogoPicker() {
+    logoInput.value?.click();
+}
+
+function onLogoChange(e) {
+    const file = e.target.files?.[0] || null;
+
+    if (!file) {
+        selectedLogoName.value = '';
+        logoPreviewUrl.value = null;
+        form.logo = null;
+        return;
+    }
+
+    selectedLogoName.value = file.name;
+    form.logo = file;
+
+    // preview
+    logoPreviewUrl.value = URL.createObjectURL(file);
+}
 
 function submit() {
     form.post(route('teams.store'), {
+        forceFormData: true, // ✅ indispensable pour l'upload
         onSuccess: () => {
-            // On pourrait reset le formulaire, mais ici on redirige vers teams.edit côté backend,
-            // donc pas besoin de faire plus.
+            // rien
         },
     });
 }
