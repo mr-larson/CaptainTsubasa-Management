@@ -872,6 +872,22 @@ export function initMatchEngine(rootEl, config = {}) {
             else if (value >= STAMINA_THRESHOLDS.LOW) fillEl.classList.add("e-low");
             else fillEl.classList.add("e-crit");
         }
+        // ==========================
+        //   UI: TEAM BORDER + BALL ICON
+        // ==========================
+        const cardEl = rootEl.querySelector(`#${prefix}-card`);
+        if (cardEl) {
+            cardEl.classList.remove("team-internal", "team-external");
+            cardEl.classList.add(team === "internal" ? "team-internal" : "team-external");
+        }
+
+        const ballIconEl = rootEl.querySelector(`#${prefix}-ball-icon`);
+        if (ballIconEl) {
+            const isBallCarrier =
+                (team === ball.team) && (Number(slotNumber) === Number(ball.number));
+            ballIconEl.classList.toggle("hidden", !isBallCarrier);
+        }
+
     }
 
     // ==========================

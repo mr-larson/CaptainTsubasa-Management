@@ -8,53 +8,106 @@
 
         <div class="w-full px-4 lg:px-8 mt-4">
             <div id="game-wrapper" ref="gameRoot" class="mx-auto w-full max-w-[1500px]">
-                <!-- TOP BAR : 2/3 + 1/3 -->
-                <div
-                    id="top-bar"
-                    class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4 items-stretch"
-                >
-                    <!-- Score (2 cols / 3) -->
+
+                <!-- =======================================================
+                     TOP BAR : score (2/3) + control panel (1/3)
+                     ======================================================= -->
+                <div id="top-bar" class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4 items-stretch">
+
+                    <!-- ======================
+                         SCORE STRIP (2 cols)
+                         ====================== -->
                     <div
                         id="score-strip"
-                        class="lg:col-span-2 grid grid-cols-3 items-center rounded-lg px-6 py-6 text-white shadow-md text-sm bg-gradient-to-b from-neutral-600 to-neutral-800 border-2 border-white"
+                        class="lg:col-span-2 grid grid-cols-3 items-center rounded-xl px-6 py-6 text-neutral-800 shadow-md text-sm bg-white/90 shadow-md
+                   border border-slate-200/70"
                     >
+                        <!-- Left: actions -->
                         <div class="flex items-center gap-3 justify-start">
                             <Link
                                 :href="route('game-saves.play', { gameSave: engineConfig.gameSaveId })"
-                                class="bg-gradient-to-br from-slate-500 to-slate-600 hover:bg-slate-700 font-semibold py-1 px-5 border-2 border-slate-50 rounded-full drop-shadow-md"
+                                class="bg-gradient-to-br from-slate-500 to-slate-600 hover:from-slate-600 hover:to-slate-700
+                       font-semibold text-white py-1 px-5 border border-white/30 rounded-full drop-shadow-md"
                             >
                                 Retour
                             </Link>
+
+                            <!-- ⚠️ Ce bloc est togglé en JS (engine.js) -->
                             <div id="match-end-actions" class="hidden">
                                 <button
                                     id="btn-finish-match"
                                     type="button"
-                                    class="bg-gradient-to-br from-teal-400 to-teal-500 hover:bg-teal-700 font-semibold py-1 px-5 border-2 border-teal-50 rounded-full drop-shadow-md"
+                                    class="bg-gradient-to-br from-teal-400 to-teal-500 hover:from-teal-500 hover:to-teal-600
+                         font-semibold py-1 px-5 border border-white/30 rounded-full drop-shadow-md"
                                 >
                                     Suite
                                 </button>
                             </div>
                         </div>
 
-                        <div class="flex items-center justify-center gap-3">
-                            <span class="px-3 font-bold" id="team-name-internal">Domicile</span>
-                            <span class="px-3 text-lg font-extrabold" id="score-internal">0</span>
-                            <span class="px-2">-</span>
-                            <span class="px-3 text-lg font-extrabold" id="score-external">0</span>
-                            <span class="px-3 font-bold" id="team-name-external">Exterieur</span>
+                        <!-- Center: score + logos -->
+                        <div class="flex items-center justify-center gap-4">
+
+                            <!-- HOME / INTERNAL -->
+                            <div class="flex items-center gap-2 min-w-[160px] justify-end">
+                                <div class="h-12 w-12 rounded-md overflow-hidden flex items-center justify-center">
+                                    <img
+                                        v-if="homeLogoUrl"
+                                        :src="homeLogoUrl"
+                                        alt="Logo domicile"
+                                        class="h-full w-full object-contain"
+                                    />
+                                    <span v-else class="text-[10px] opacity-60">—</span>
+                                </div>
+
+                                <!-- ⚠️ ID utilisé par engine.js -->
+                                <span class="font-bold truncate max-w-[180px]" id="team-name-internal">
+                  {{ homeName }}
+                </span>
+                            </div>
+
+                            <!-- SCORE -->
+                            <div class="flex items-center gap-2">
+                                <!-- ⚠️ IDs utilisés par engine.js -->
+                                <span class="text-lg font-extrabold tabular-nums" id="score-internal">0</span>
+                                <span class="opacity-80">-</span>
+                                <span class="text-lg font-extrabold tabular-nums" id="score-external">0</span>
+                            </div>
+
+                            <!-- AWAY / EXTERNAL -->
+                            <div class="flex items-center gap-2 min-w-[160px] justify-start">
+                <span class="font-bold truncate max-w-[180px]" id="team-name-external">
+                  {{ awayName }}
+                </span>
+
+                                <div class="h-12 w-12 rounded-md overflow-hidden flex items-center justify-center">
+                                    <img
+                                        v-if="awayLogoUrl"
+                                        :src="awayLogoUrl"
+                                        alt="Logo extérieur"
+                                        class="h-full w-full object-contain"
+                                    />
+                                    <span v-else class="text-[10px] opacity-60">—</span>
+                                </div>
+                            </div>
                         </div>
 
+                        <!-- Right: turns -->
                         <div class="flex items-center justify-end text-xs opacity-80">
-                            Tours : <span id="turns-display" class="ml-1">40</span>/40
+                            Tours : <span id="turns-display" class="ml-1 tabular-nums">00</span>/40
                         </div>
                     </div>
 
-                    <!-- Control panel (1 col / 3) -->
+                    <!-- ======================
+                         CONTROL PANEL (1 col)
+                         ====================== -->
                     <div
                         id="control-panel"
-                        class="lg:col-span-1 h-full rounded-xl bg-white/90 shadow-md px-4 py-3 flex items-center justify-center"
+                        class="lg:col-span-1 h-full rounded-xl bg-white/90 shadow-md px-4 py-3 flex items-center justify-center
+                   border border-slate-200/70"
                     >
                         <div class="flex items-center gap-3 justify-center">
+                            <!-- ⚠️ ID utilisé par engine.js -->
                             <button
                                 id="mode-one-player"
                                 class="rounded-full px-5 py-2 text-xs font-semibold shadow-sm bg-blue-100 text-slate-800 hover:brightness-105 active:translate-y-px"
@@ -62,9 +115,11 @@
                                 Mode 2 joueurs
                             </button>
 
+                            <!-- ⚠️ ID utilisé par engine.js -->
                             <select
                                 id="controlled-team-select"
-                                class="rounded-full px-8 py-2 text-xs font-semibold bg-slate-50 border border-slate-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                                class="rounded-full px-8 py-2 text-xs font-semibold bg-slate-50 border border-slate-200 shadow-sm
+                       focus:outline-none focus:ring-2 focus:ring-blue-300"
                             >
                                 <option value="internal">Domicile</option>
                                 <option value="external">Exterieur</option>
@@ -73,25 +128,33 @@
                     </div>
                 </div>
 
-                <!-- message panel (JS only) -->
+                <!-- =======================================================
+                     MESSAGE PANEL (JS only)
+                     ======================================================= -->
                 <div id="message-panel" class="visually-hidden">
                     <div id="message-main"></div>
                     <div id="message-sub"></div>
                 </div>
 
-                <!-- MAIN ROW -->
-                <div
-                    id="main-row"
-                    class="grid grid-cols-1 lg:grid-cols-10 gap-6 items-stretch"
-                >
-                    <!-- Stats Cards (HOME / AWAY) -->
+                <!-- =======================================================
+                     MAIN ROW : left cards / field / right log
+                     ======================================================= -->
+                <div id="main-row" class="grid grid-cols-1 lg:grid-cols-10 gap-6 items-stretch">
+
+                    <!-- LEFT COLUMN : Stats cards -->
                     <div id="left-column" class="lg:col-span-2 min-w-0 flex flex-col justify-around gap-4">
 
-                        <!-- HOME CARD (Domicile) -->
+                        <!-- HOME CARD -->
                         <div
                             id="home-card"
-                            class="min-w-0 rounded-2xl bg-white p-4 shadow-lg ring-1 ring-white/80 flex flex-col gap-3"
+                            class="min-w-0 rounded-2xl bg-white p-4 shadow-lg ring-1 ring-white/80 flex flex-col gap-3 relative"
                         >
+                            <div
+                                id="home-ball-icon"
+                                class="hidden absolute top-2 right-2 h-7 w-7 flex items-center justify-center text-sm"
+                                title="Porte le ballon"
+                            >⚽</div>
+
                             <div class="flex items-center gap-3 min-w-0">
                                 <div
                                     id="home-portrait"
@@ -102,14 +165,11 @@
                                     <div id="home-name" class="text-base font-extrabold truncate">—</div>
                                     <div>Poste : <span id="home-role" class="font-semibold">—</span></div>
                                     <div>Numéro : <span id="home-number" class="font-semibold">—</span></div>
-                                    <div>Équipe : <span id="home-team" class="font-semibold">Domicile</span></div>
+                                    <div>Équipe : <span id="home-team" class="font-semibold">{{ homeName }}</span></div>
                                 </div>
                             </div>
 
-                            <!-- mêmes stats sur les 2 cartes (plus simple + cohérent) -->
-                            <div
-                                class="grid grid-cols-2 gap-x-3 gap-y-1 rounded-xl bg-slate-100 p-2 text-[11px] ring-1 ring-black/5"
-                            >
+                            <div class="grid grid-cols-2 gap-x-3 gap-y-1 rounded-xl bg-slate-100 p-2 text-[11px] ring-1 ring-black/5">
                                 <div class="flex justify-between"><span>Shot :</span> <strong id="home-stat-shot">—</strong></div>
                                 <div class="flex justify-between"><span>Block :</span> <strong id="home-stat-block">—</strong></div>
                                 <div class="flex justify-between"><span>Pass :</span> <strong id="home-stat-pass">—</strong></div>
@@ -123,18 +183,22 @@
                                 <div class="flex justify-between"><span>Poings :</span> <strong id="home-stat-punch_save">—</strong></div>
                             </div>
 
-                            <div
-                                class="h-2.5 w-full overflow-hidden rounded-full bg-gradient-to-r from-blue-200 to-white shadow-inner ring-1 ring-black/5"
-                            >
+                            <div class="h-2.5 w-full overflow-hidden rounded-full bg-gradient-to-r from-blue-200 to-white shadow-inner ring-1 ring-black/5">
                                 <div id="home-energy-fill" class="h-full w-full e-high"></div>
                             </div>
                         </div>
 
-                        <!-- AWAY CARD (Extérieur) -->
+                        <!-- AWAY CARD -->
                         <div
                             id="away-card"
-                            class="min-w-0 rounded-2xl bg-white p-4 shadow-lg ring-1 ring-white/80 flex flex-col gap-3"
+                            class="min-w-0 rounded-2xl bg-white p-4 shadow-lg ring-1 ring-white/80 flex flex-col gap-3 relative"
                         >
+                            <div
+                                id="away-ball-icon"
+                                class="hidden absolute top-2 right-2 h-7 w-7 flex items-center justify-center text-sm"
+                                title="Porte le ballon"
+                            >⚽</div>
+
                             <div class="flex items-center gap-3 min-w-0">
                                 <div
                                     id="away-portrait"
@@ -145,13 +209,11 @@
                                     <div id="away-name" class="text-base font-extrabold truncate">—</div>
                                     <div>Poste : <span id="away-role" class="font-semibold">—</span></div>
                                     <div>Numéro : <span id="away-number" class="font-semibold">—</span></div>
-                                    <div>Équipe : <span id="away-team" class="font-semibold">Extérieur</span></div>
+                                    <div>Équipe : <span id="away-team" class="font-semibold">{{ awayName }}</span></div>
                                 </div>
                             </div>
 
-                            <div
-                                class="grid grid-cols-2 gap-x-3 gap-y-1 rounded-xl bg-slate-100 p-2 text-[11px] ring-1 ring-black/5"
-                            >
+                            <div class="grid grid-cols-2 gap-x-3 gap-y-1 rounded-xl bg-slate-100 p-2 text-[11px] ring-1 ring-black/5">
                                 <div class="flex justify-between"><span>Shot :</span> <strong id="away-stat-shot">—</strong></div>
                                 <div class="flex justify-between"><span>Block :</span> <strong id="away-stat-block">—</strong></div>
                                 <div class="flex justify-between"><span>Pass :</span> <strong id="away-stat-pass">—</strong></div>
@@ -165,15 +227,13 @@
                                 <div class="flex justify-between"><span>Poings :</span> <strong id="away-stat-punch_save">—</strong></div>
                             </div>
 
-                            <div
-                                class="h-2.5 w-full overflow-hidden rounded-full bg-gradient-to-r from-rose-100 to-white shadow-inner ring-1 ring-black/5"
-                            >
+                            <div class="h-2.5 w-full overflow-hidden rounded-full bg-gradient-to-r from-rose-100 to-white shadow-inner ring-1 ring-black/5">
                                 <div id="away-energy-fill" class="h-full w-full e-high"></div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- CENTER field -->
+                    <!-- CENTER : field -->
                     <div id="field-wrapper" class="lg:col-span-6 min-w-0 relative">
                         <div id="ai-turn-overlay">Tour de l'IA…</div>
 
@@ -223,7 +283,7 @@
                         </div>
                     </div>
 
-                    <!-- RIGHT log story -->
+                    <!-- RIGHT : log -->
                     <div class="lg:col-span-2 min-w-0 flex min-h-0">
                         <div
                             id="log-card"
@@ -250,35 +310,76 @@
                     </div>
                 </div>
 
-                <!-- SKILL BARS -->
+                <!-- =======================================================
+                     SKILL BARS (injecté par engine.js)
+                     ======================================================= -->
                 <div id="bars-container">
                     <div id="action-bar"></div>
                     <div id="info-text"></div>
                 </div>
+
             </div>
         </div>
     </AuthenticatedLayout>
 </template>
 
 <script setup>
+// ==========================
+//  Imports Vue / Inertia
+// ==========================
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { onMounted, ref, onBeforeUnmount } from 'vue';
-import H2 from '@/Components/H2.vue'
+import { onMounted, onBeforeUnmount, ref, computed } from 'vue';
+import H2 from '@/Components/H2.vue';
+
+// ==========================
+//  Engine
+// ==========================
 import { initMatchEngine } from './engine';
 import './engine.css';
 
+// ==========================
+//  Props Inertia
+// ==========================
 const props = defineProps({
     engineConfig: { type: Object, required: true },
 });
 
+// ==========================
+//  Refs
+// ==========================
 const gameRoot = ref(null);
+
+// ==========================
+//  Helpers (logos / names)
+//  ✅ Source de vérité : engineConfig.teams.internal/external
+// ==========================
+const homeName = computed(() => props.engineConfig?.teams?.internal?.name ?? 'Domicile');
+const awayName = computed(() => props.engineConfig?.teams?.external?.name ?? 'Extérieur');
+
+const homeLogoUrl = computed(() => {
+    const p = props.engineConfig?.teams?.internal?.logo_path;
+    return p ? `/${p}` : null;
+});
+
+const awayLogoUrl = computed(() => {
+    const p = props.engineConfig?.teams?.external?.logo_path;
+    return p ? `/${p}` : null;
+});
+
+// ==========================
+//  Lifecycle : mount / unmount
+// ==========================
+let cleanup = null; // ✅ si initMatchEngine retourne une fonction de teardown
 
 onMounted(() => {
     if (!gameRoot.value) return;
 
-    initMatchEngine(gameRoot.value, {
+    // initMatchEngine peut (optionnellement) retourner une fonction cleanup
+    cleanup = initMatchEngine(gameRoot.value, {
         ...props.engineConfig,
+
+        // Callback fin de match : engine.js appelle ça à la fin
         onMatchEnd: ({ matchId, gameSaveId, scoresByTeamId }) => {
             router.post(
                 route('game-saves.matches.finish', { gameSave: gameSaveId, match: matchId }),
@@ -292,5 +393,8 @@ onMounted(() => {
     });
 });
 
-onBeforeUnmount(() => {});
+onBeforeUnmount(() => {
+    // ✅ si ton engine a besoin de détacher des listeners / timers
+    if (typeof cleanup === 'function') cleanup();
+});
 </script>

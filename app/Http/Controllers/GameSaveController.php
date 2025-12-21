@@ -442,6 +442,11 @@ class GameSaveController extends Controller
                 ];
             })->values();
 
+        // ✅ AJOUT: URLs prêtes pour la vue (tailwind <img :src="...">)
+        // logo_path = "images/teams/xxx.webp" => url = "/images/teams/xxx.webp"
+        $homeLogoUrl = $homeTeam->logo_path ? '/' . ltrim($homeTeam->logo_path, '/') : null;
+        $awayLogoUrl = $awayTeam->logo_path ? '/' . ltrim($awayTeam->logo_path, '/') : null;
+
         return Inertia::render('Match/Engine', [
             'engineConfig' => [
                 'gameSaveId'     => $gameSave->id,
@@ -450,6 +455,12 @@ class GameSaveController extends Controller
                 'maxTurns'       => 30,
                 'controlMode'    => $controlMode,
                 'controlledSide' => $controlledSide, // internal|external
+
+                // ✅ AJOUT: champs simples pour le score-strip (nom + logo)
+                'homeTeamName'   => $homeTeam->name,
+                'awayTeamName'   => $awayTeam->name,
+                'homeLogoUrl'    => $homeLogoUrl,
+                'awayLogoUrl'    => $awayLogoUrl,
 
                 // vérité DB
                 'homeTeamId'     => $match->home_team_id,
