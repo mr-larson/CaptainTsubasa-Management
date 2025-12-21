@@ -167,7 +167,68 @@
                                 {{ form.errors.draws }}
                             </p>
                         </FormCol>
+                        <FormCol>
+                            <InputLabel value="Logo" />
 
+                            <div class="mt-1 flex flex-col gap-2">
+                                <div class="flex items-center gap-3">
+                                    <!-- input file caché -->
+                                    <input
+                                        ref="logoInput"
+                                        type="file"
+                                        accept="image/*"
+                                        class="hidden"
+                                        @change="onLogoChange"
+                                    />
+
+                                    <!-- faux input -->
+                                    <div class="flex items-center w-full md:w-56">
+                                        <button
+                                            type="button"
+                                            class="shrink-0 px-3 py-1.5 rounded-l-full border border-gray-300 bg-stone-50 text-sm text-gray-900 hover:bg-white focus:outline-none focus:border-slate-700"
+                                            @click="openLogoPicker"
+                                        >
+                                            Choisir
+                                        </button>
+
+                                        <div
+                                            class="flex-1 px-3 py-1.5 rounded-r-full border border-l-0 border-gray-300 bg-stone-50 text-sm text-slate-600 truncate"
+                                            :title="selectedLogoName || 'Aucun fichier choisi'"
+                                        >
+                                            {{ selectedLogoName || 'Aucun fichier choisi' }}
+                                        </div>
+                                    </div>
+
+                                    <!-- preview carré -->
+                                    <div class="h-16 w-16 rounded border bg-white overflow-hidden flex items-center justify-center">
+                                        <img
+                                            v-if="logoPreviewUrl || form.logo_path"
+                                            :src="logoPreviewUrl ? logoPreviewUrl : `/${form.logo_path}`"
+                                            class="h-full w-full object-cover"
+                                            alt="Logo équipe"
+                                        />
+                                        <span v-else class="text-xs text-slate-400">Aucun</span>
+                                    </div>
+
+                                    <!-- supprimer logo existant -->
+                                    <button
+                                        v-if="form.logo_path"
+                                        type="button"
+                                        class="px-3 py-1.5 rounded-full border border-red-300 bg-red-50 text-sm text-red-700 hover:bg-red-100"
+                                        @click="removeLogo"
+                                    >
+                                        Supprimer
+                                    </button>
+                                </div>
+                            </div>
+
+                            <p v-if="form.errors.logo" class="text-sm text-red-600 mt-1">
+                                {{ form.errors.logo }}
+                            </p>
+                        </FormCol>
+                    </FormRaw>
+
+                    <FormRaw>
                         <FormCol>
                             <InputLabel for="description" value="Description" />
                             <textarea
@@ -261,6 +322,46 @@ const filteredTeams = computed(() => {
     );
 });
 
+// AJOUT LOGO UI
+const logoInput = ref(null);
+const selectedLogoName = ref('');
+const logoPreviewUrl = ref('');
+
+function openLogoPicker() {
+    logoInput.value?.click();
+}
+
+function onLogoChange(e) {
+    const file = e.target.files?.[0] ?? null;
+
+    if (!file) {
+        form.logo = null;
+        selectedLogoName.value = '';
+        logoPreviewUrl.value = '';
+        return;
+    }
+
+    form.logo = file;
+    form.remove_logo = false; // si on choisit un fichier, on annule le "remove"
+    selectedLogoName.value = file.name;
+
+    // preview
+    logoPreviewUrl.value = URL.createObjectURL(file);
+}
+
+function removeLogo() {
+    // suppression côté backend
+    form.remove_logo = true;
+
+    // reset fichier / preview
+    form.logo = null;
+    selectedLogoName.value = '';
+    logoPreviewUrl.value = '';
+
+    // reset input file
+    if (logoInput.value) logoInput.value.value = '';
+}
+
 function selectTeam(team) {
     form.selectedTeamId = team.id;
     form.id             = team.id;
@@ -270,6 +371,16 @@ function selectTeam(team) {
     form.wins           = team.wins ?? 0;
     form.draws          = team.draws ?? 0;
     form.losses         = team.losses ?? 0;
+
+    // AJOUT LOGO
+    form.logo_path      = team.logo_path ?? null;
+    form.logo           = null;
+    form.remove_logo    = false;
+
+    // reset preview UI
+    selectedLogoName.value = '';
+    logoPreviewUrl.value   = '';
+
     form.clearErrors();
 }
 
@@ -278,6 +389,7 @@ function submit() {
 
     form.post(route('teams.update', form.id), {
         preserveScroll: true,
+        forceFormData: true,
     });
 }
 

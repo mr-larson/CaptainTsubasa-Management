@@ -18,6 +18,7 @@ class GameTeam extends Model
         'wins',
         'draws',
         'losses',
+        'logo_path',
     ];
 
     public function gameSave()

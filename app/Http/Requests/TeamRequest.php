@@ -7,53 +7,36 @@ use Illuminate\Validation\Rule;
 
 class TeamRequest extends FormRequest
 {
-    /**
-     * Autorisation de la requête.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Règles de validation.
-     *
-     * - name : requis + unique (create & update)
-     * - budget : requis
-     * - wins/draws/losses : optionnels, >= 0
-     */
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'wins'   => $this->input('wins', 0),
+            'draws'  => $this->input('draws', 0),
+            'losses' => $this->input('losses', 0),
+            // si tu gardes budget required, tu peux retirer cette ligne
+            // 'budget' => $this->input('budget', 0),
+        ]);
+    }
+
     public function rules(): array
     {
-        // Récupère l’ID de la team en cours (pour l’update)
         $teamId = $this->route('team')?->id;
 
         return [
-            'name'        => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('teams', 'name')->ignore($teamId),
-            ],
+            'name'        => ['required', 'string', 'max:255', Rule::unique('teams', 'name')->ignore($teamId)],
             'description' => ['nullable', 'string'],
             'budget'      => ['required', 'integer', 'min:0'],
             'wins'        => ['nullable', 'integer', 'min:0'],
             'draws'       => ['nullable', 'integer', 'min:0'],
             'losses'      => ['nullable', 'integer', 'min:0'],
+
+            'logo'        => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'remove_logo' => ['nullable', 'boolean'],
         ];
-    }
-
-    /**
-     * Normalise les données validées :
-     * - wins/draws/losses par défaut à 0 si non renseignés.
-     */
-    public function validated($key = null, $default = null)
-    {
-        $data = parent::validated($key, $default);
-
-        $data['wins']   = $data['wins']   ?? 0;
-        $data['draws']  = $data['draws']  ?? 0;
-        $data['losses'] = $data['losses'] ?? 0;
-
-        return $data;
     }
 }

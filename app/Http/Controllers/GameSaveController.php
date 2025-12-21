@@ -100,6 +100,7 @@ class GameSaveController extends Controller
                 'wins'         => 0,
                 'draws'        => 0,
                 'losses'       => 0,
+                'logo_path'    => $team->logo_path,
             ]);
 
             $gameTeamsByBaseId[$team->id] = $gameTeam;
@@ -462,14 +463,16 @@ class GameSaveController extends Controller
 
                 'teams' => [
                     'internal' => [
-                        'id'      => $internalTeam->id,
-                        'name'    => $internalTeam->name,
-                        'players' => $mapPlayers($internalTeam),
+                        'id'        => $internalTeam->id,
+                        'name'      => $internalTeam->name,
+                        'logo_path' => $internalTeam->logo_path,
+                        'players'   => $mapPlayers($internalTeam),
                     ],
                     'external' => [
-                        'id'      => $externalTeam->id,
-                        'name'    => $externalTeam->name,
-                        'players' => $mapPlayers($externalTeam),
+                        'id'        => $externalTeam->id,
+                        'name'      => $externalTeam->name,
+                        'logo_path' => $externalTeam->logo_path,
+                        'players'   => $mapPlayers($externalTeam),
                     ],
                 ],
             ],

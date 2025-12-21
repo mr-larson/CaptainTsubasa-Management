@@ -33,6 +33,7 @@ class Team extends Model
         'wins',
         'draws',
         'losses',
+        'logo_path',
     ];
 
     /**
@@ -67,4 +68,15 @@ class Team extends Model
     {
         return $this->hasMany(SoccerMatch::class, 'team_id_away');
     }
+
+    public function getLogoUrlAttribute(): ?string
+    {
+        if (!$this->logo_path) {
+            return null; // ou une image par défaut si tu veux
+        }
+
+        // logo_path stocke un chemin type: images/teams/nankatsu.webp
+        return asset($this->logo_path);
+    }
+
 }
