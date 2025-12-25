@@ -38,7 +38,7 @@
                                     id="btn-finish-match"
                                     type="button"
                                     class="bg-gradient-to-br from-teal-400 to-teal-500 hover:from-teal-500 hover:to-teal-600
-                         font-semibold py-1 px-5 border border-white/30 rounded-full drop-shadow-md"
+                         font-semibold text-white py-1 px-5 border border-white/30 rounded-full drop-shadow-md"
                                 >
                                     Suite
                                 </button>
@@ -110,7 +110,7 @@
                             <!-- ⚠️ ID utilisé par engine.js -->
                             <button
                                 id="mode-one-player"
-                                class="rounded-full px-5 py-2 text-xs font-semibold shadow-sm bg-blue-100 text-slate-800 hover:brightness-105 active:translate-y-px"
+                                class="rounded-full px-5 py-2 text-xs font-semibold shadow-sm bg-slate-100 border border-slate-200 text-slate-800 hover:bg-slate-200 active:translate-y-px"
                             >
                                 Mode 2 joueurs
                             </button>
@@ -118,8 +118,8 @@
                             <!-- ⚠️ ID utilisé par engine.js -->
                             <select
                                 id="controlled-team-select"
-                                class="rounded-full px-8 py-2 text-xs font-semibold bg-slate-50 border border-slate-200 shadow-sm
-                       focus:outline-none focus:ring-2 focus:ring-blue-300"
+                                class="rounded-full px-8 py-2 text-xs font-semibold bg-slate-100 border border-slate-200 shadow-sm
+                       focus:outline-none focus:ring-2 focus:ring-slate-300"
                             >
                                 <option value="internal">Domicile</option>
                                 <option value="external">Exterieur</option>
@@ -158,7 +158,7 @@
                             <div class="flex items-center gap-3 min-w-0">
                                 <div
                                     id="home-portrait"
-                                    class="shrink-0 h-[70px] w-[70px] rounded-xl shadow-md bg-gradient-to-br from-slate-100 via-slate-200 to-slate-400 relative overflow-hidden"
+                                    class="shrink-0 h-[90px] w-[90px] rounded shadow-md bg-gradient-to-br from-slate-100 via-slate-200 to-slate-400 relative overflow-hidden"
                                 ></div>
 
                                 <div class="min-w-0 flex-1 text-xs space-y-0.5">
@@ -202,7 +202,7 @@
                             <div class="flex items-center gap-3 min-w-0">
                                 <div
                                     id="away-portrait"
-                                    class="shrink-0 h-[70px] w-[70px] rounded-xl shadow-md bg-gradient-to-br from-slate-100 via-slate-200 to-slate-400 relative overflow-hidden"
+                                    class="shrink-0 h-[90px] w-[90px] rounded  shadow-md bg-gradient-to-br from-slate-100 via-slate-200 to-slate-400 relative overflow-hidden"
                                 ></div>
 
                                 <div class="min-w-0 flex-1 text-xs space-y-0.5">

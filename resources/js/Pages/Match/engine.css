@@ -535,18 +535,24 @@
    ========================================================================== */
 
 #mode-one-player.active {
-    background: linear-gradient(135deg, #3b82f6, #2563eb); /* bleu */
+    background: linear-gradient(
+        135deg,
+        #64748b, /* slate-500 */
+        #475569  /* slate-600 */
+    );
     color: #ffffff;
+
+    border: 1px solid rgba(255, 255, 255, 0.3);
+
     box-shadow:
-        0 2px 2px rgba(37, 99, 235, 0.35),
-        0 0 0 2px rgba(255,255,255,0.8) inset;
+        0 4px 6px rgba(0, 0, 0, 0.15),       /* drop-shadow-md */
+        0 0 0 1px rgba(255, 255, 255, 0.35) inset;
+
+    transform: translateY(0); /* cohérence avec active */
 }
-/* ==========================================================================
-   TEAM BORDER (cards home/away)
-   ========================================================================== */
 
 /* ==========================================================================
-   PLAYER CARDS — même style que les cartes d'action
+   TEAM BORDER (cards home/away)
    ========================================================================== */
 
 #home-card,
@@ -632,6 +638,30 @@
         var(--player-accent-1),
         var(--player-accent-2)
     );
+}
+
+/* ==========================================================================
+   PLAYER CARD PHOTO LAYER (ne remplace pas le gradient existant)
+   ========================================================================== */
+
+#home-card,
+#away-card,
+#defender-card {
+}
+
+.player-card-photo {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+}
+#home-portrait,
+#away-portrait,
+#defender-portrait { /* si tu en crées un */
+    position: relative;
+    overflow: hidden;
 }
 
 

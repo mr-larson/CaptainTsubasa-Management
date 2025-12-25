@@ -18,6 +18,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Facades\Storage;
+
 
 class GameSaveController extends Controller
 {
@@ -419,12 +421,20 @@ class GameSaveController extends Controller
             ->map(function ($c, $idx) {
                 $p = $c->gamePlayer;
 
+                // ✅ URL publique de la photo (si stockée dans storage/app/public)
+                $photoUrl = $p->photo_path ? Storage::url($p->photo_path) : null;
+
                 return [
                     'id'        => $p->id,
                     'number'    => $idx + 1,
                     'firstname' => $p->firstname,
                     'lastname'  => $p->lastname,
                     'position'  => $p->position,
+
+                    // ✅ AJOUT: champs photo pour le front
+                    'photo_path' => $p->photo_path,
+                    'photo_url'  => $photoUrl,
+
                     'stats'     => [
                         'speed'      => $p->speed,
                         'stamina'    => $p->stamina,

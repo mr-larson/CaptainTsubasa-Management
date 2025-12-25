@@ -242,7 +242,20 @@ export function initMatchEngine(rootEl, config = {}) {
                 firstname: p.firstname ?? "",
                 lastname: p.lastname ?? "",
                 position: p.position ?? "",
-                // ✅ FIX: fallback stats si elles ne sont pas dans p.stats
+
+                photo:
+                    p.photo_url ??
+                    p.photo ??
+                    p.image_url ??
+                    p.avatar_url ??
+                    p.photo_path ??
+                    p.portrait_url ??
+                    p.portrait ??
+                    p.picture_url ??
+                    p.picture ??
+                    null,
+
+
                 stats: p.stats ?? {
                     shot: p.shot ?? 0,
                     pass: p.pass ?? 0,
@@ -263,6 +276,10 @@ export function initMatchEngine(rootEl, config = {}) {
                 firstname: "Joueur",
                 lastname: `#${slot}`,
                 position: "",
+
+                // ✅ ADD
+                photo: null,
+
                 stats: null,
             });
         }
@@ -397,6 +414,8 @@ export function initMatchEngine(rootEl, config = {}) {
 
     const teamNameInternalEl = $("#team-name-internal");
     const teamNameExternalEl = $("#team-name-external");
+    const homeBallIconEl = $("#home-ball-icon");
+    const awayBallIconEl = $("#away-ball-icon");
     const matchEndActionsEl = $("#match-end-actions");
     const finishMatchBtn    = $("#btn-finish-match");
 
@@ -789,11 +808,82 @@ export function initMatchEngine(rootEl, config = {}) {
     }
 
     // ==========================
+    //   UI: PHOTO LAYER ON CARDS
+    // ==========================
+    function ensureCardPhotoLayer(cardEl) {
+        if (!cardEl) return null;
+
+        // ✅ force le parent à être un conteneur de calque
+        if (getComputedStyle(cardEl).position === "static") {
+            cardEl.style.position = "relative";
+        }
+        cardEl.style.overflow = "hidden";
+
+        let img = cardEl.querySelector("img.player-card-photo");
+        if (!img) {
+            img = document.createElement("img");
+            img.className = "player-card-photo hidden";
+            img.alt = "";
+            img.loading = "lazy";
+            img.decoding = "async";
+
+            // ✅ force un style inline (prioritaire sur CSS)
+            img.style.position = "absolute";
+            img.style.inset = "0";
+            img.style.width = "100%";
+            img.style.height = "100%";
+            img.style.objectFit = "cover";
+            img.style.pointerEvents = "none";
+            img.style.zIndex = "50";          // ✅ IMPORTANT
+            img.style.display = "block";      // ✅ IMPORTANT
+
+            img.addEventListener("load", () => {
+                console.log("[CARD PHOTO LOADED]", img.src, "natural:", img.naturalWidth, img.naturalHeight);
+            });
+
+            img.addEventListener("error", () => {
+                console.warn("[CARD PHOTO ERROR]", img.src);
+                img.classList.add("hidden");
+                img.removeAttribute("src");
+            });
+
+            cardEl.appendChild(img);
+        }
+
+        return img;
+    }
+
+
+    function setCardPhoto(cardEl, photoUrl) {
+        const img = ensureCardPhotoLayer(cardEl);
+        if (!img) return;
+
+        const raw = (photoUrl || "").trim();
+
+        if (!raw) {
+            img.src = "";
+            img.classList.add("hidden");
+            return;
+        }
+
+        let url = raw;
+        if (url.startsWith("storage/")) url = "/" + url;
+        if (!url.startsWith("http://") && !url.startsWith("https://") && !url.startsWith("/")) {
+            url = "/" + url;
+        }
+
+        img.src = url;
+        img.classList.remove("hidden");
+    }
+
+
+    // ==========================
     //   CARDS HOME/AWAY
     // ==========================
 
     function updateSideCard(prefix, team, slotNumber) {
         const info = getPlayerInfo(team, slotNumber);
+        console.log("[CARD PHOTO]", prefix, info?.firstname, info?.lastname, info?.photo);
 
         const setText = (selector, value) => {
             const el = rootEl.querySelector(selector);
@@ -872,22 +962,23 @@ export function initMatchEngine(rootEl, config = {}) {
             else if (value >= STAMINA_THRESHOLDS.LOW) fillEl.classList.add("e-low");
             else fillEl.classList.add("e-crit");
         }
+
+        const portraitEl = rootEl.querySelector(`#${prefix}-portrait`);
+        if (portraitEl) {
+            setCardPhoto(portraitEl, info?.photo ?? null);
+        }
+
         // ==========================
-        //   UI: TEAM BORDER + BALL ICON
+        //   UI: TEAM BORDER (classes)
         // ==========================
-        const cardEl = rootEl.querySelector(`#${prefix}-card`);
+        const cardEl = rootEl.querySelector(`#${prefix}-card`); // #home-card ou #away-card
         if (cardEl) {
+            // reset
             cardEl.classList.remove("team-internal", "team-external");
+
+            // applique la bonne classe selon l'équipe affichée dans la card
             cardEl.classList.add(team === "internal" ? "team-internal" : "team-external");
         }
-
-        const ballIconEl = rootEl.querySelector(`#${prefix}-ball-icon`);
-        if (ballIconEl) {
-            const isBallCarrier =
-                (team === ball.team) && (Number(slotNumber) === Number(ball.number));
-            ballIconEl.classList.toggle("hidden", !isBallCarrier);
-        }
-
     }
 
     // ==========================
@@ -907,6 +998,9 @@ export function initMatchEngine(rootEl, config = {}) {
         dash(defStatDefenseEl);
         dash(defStatHandSaveEl);
         dash(defStatPunchSaveEl);
+
+        const defenderCardEl = rootEl.querySelector("#defender-card");
+        if (defenderCardEl) setCardPhoto(defenderCardEl, null); // ✅ ADD
 
         if (defenderEnergyFillEl) {
             defenderEnergyFillEl.style.width = `100%`;
@@ -932,6 +1026,10 @@ export function initMatchEngine(rootEl, config = {}) {
             const n = Number(s?.[k] ?? 0);
             return Number.isFinite(n) ? n : 0;
         };
+
+
+        const defenderCardEl = rootEl.querySelector("#defender-card");
+        if (defenderCardEl) setCardPhoto(defenderCardEl, info?.photo ?? null);
 
         if (defStatBlockEl)     defStatBlockEl.textContent = String(v("block"));
         if (defStatInterceptEl) defStatInterceptEl.textContent = String(v("intercept"));
@@ -977,10 +1075,14 @@ export function initMatchEngine(rootEl, config = {}) {
     }
 
     function updateTeamCard() {
+        if (homeBallIconEl) homeBallIconEl.classList.toggle("hidden", ball.team !== "internal");
+        if (awayBallIconEl) awayBallIconEl.classList.toggle("hidden", ball.team !== "external");
+
         const prefix = (ball.team === "internal") ? "home" : "away";
         updateSideCard(prefix, ball.team, ball.number);
         updateCardsPower();
     }
+
 
     // ==========================
     //   UI ACTION BAR
