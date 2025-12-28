@@ -912,6 +912,17 @@ const playNextMatch = () => {
                                         </h3>
 
                                         <div class="text-sm text-slate-700 space-y-1">
+                                            <p v-if="standings?.length">
+                                                <span class="font-semibold">Place :</span>
+                                                {{ (standings.findIndex(row => row.id === selectedOtherTeam.id) + 1) || '—' }}
+                                                <sup>e</sup> / {{ standings.length }}
+                                            </p>
+                                            <p class="mt-1">
+                                                <span class="font-semibold">Bilan :</span>
+                                                {{ selectedOtherTeam.wins ?? 0 }} V /
+                                                {{ selectedOtherTeam.draws ?? 0 }} N /
+                                                {{ selectedOtherTeam.losses ?? 0 }} D
+                                            </p>
                                             <p>
                                                 <span class="font-semibold">Budget :</span>
                                                 {{ selectedOtherTeam.budget ?? 0 }} €
@@ -949,22 +960,9 @@ const playNextMatch = () => {
                                 <h4 class="text-md font-semibold text-slate-700 mb-3">Statut du club</h4>
 
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-slate-700">
-                                    <!-- Classement -->
+                                    <!-- Performances -->
                                     <div>
-                                        <p class="font-semibold mb-1">Classement</p>
-
-                                        <p v-if="standings?.length">
-                                            Place :
-                                            {{ (standings.findIndex(row => row.id === selectedOtherTeam.id) + 1) || '—' }}
-                                            <sup>e</sup> / {{ standings.length }}
-                                        </p>
-
-                                        <p class="mt-1">
-                                            Bilan :
-                                            {{ selectedOtherTeam.wins ?? 0 }} V /
-                                            {{ selectedOtherTeam.draws ?? 0 }} N /
-                                            {{ selectedOtherTeam.losses ?? 0 }} D
-                                        </p>
+                                        <p class="font-semibold mb-1">Performances</p>
 
                                         <p>
                                             Matchs joués :

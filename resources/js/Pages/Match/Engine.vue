@@ -151,18 +151,18 @@
                         >
                             <div
                                 id="home-ball-icon"
-                                class="hidden absolute top-2 right-2 h-7 w-7 flex items-center justify-center text-sm"
+                                class="hidden absolute top-2 right-2 h-5 w-5 flex items-center justify-center text-sm"
                                 title="Porte le ballon"
                             >⚽</div>
 
                             <div class="flex items-center gap-3 min-w-0">
                                 <div
                                     id="home-portrait"
-                                    class="shrink-0 h-[90px] w-[90px] rounded shadow-md bg-gradient-to-br from-slate-100 via-slate-200 to-slate-400 relative overflow-hidden"
+                                    class="shrink-0 h-[80px] w-[80px] rounded shadow-md bg-gradient-to-br from-slate-100 via-slate-200 to-slate-400 relative overflow-hidden"
                                 ></div>
 
                                 <div class="min-w-0 flex-1 text-xs space-y-0.5">
-                                    <div id="home-name" class="text-base font-extrabold truncate">—</div>
+                                    <div id="home-name" class="text-base font-bold truncate">—</div>
                                     <div>Poste : <span id="home-role" class="font-semibold">—</span></div>
                                     <div>Numéro : <span id="home-number" class="font-semibold">—</span></div>
                                     <div>Équipe : <span id="home-team" class="font-semibold">{{ homeName }}</span></div>
@@ -195,18 +195,18 @@
                         >
                             <div
                                 id="away-ball-icon"
-                                class="hidden absolute top-2 right-2 h-7 w-7 flex items-center justify-center text-sm"
+                                class="hidden absolute top-2 right-2 h-5 w-5 flex items-center justify-center text-sm"
                                 title="Porte le ballon"
                             >⚽</div>
 
                             <div class="flex items-center gap-3 min-w-0">
                                 <div
                                     id="away-portrait"
-                                    class="shrink-0 h-[90px] w-[90px] rounded  shadow-md bg-gradient-to-br from-slate-100 via-slate-200 to-slate-400 relative overflow-hidden"
+                                    class="shrink-0 h-[80px] w-[80px] rounded shadow-md bg-gradient-to-br from-slate-100 via-slate-200 to-slate-400 relative overflow-hidden"
                                 ></div>
 
                                 <div class="min-w-0 flex-1 text-xs space-y-0.5">
-                                    <div id="away-name" class="text-base font-extrabold truncate">—</div>
+                                    <div id="away-name" class="text-base font-bold truncate">—</div>
                                     <div>Poste : <span id="away-role" class="font-semibold">—</span></div>
                                     <div>Numéro : <span id="away-number" class="font-semibold">—</span></div>
                                     <div>Équipe : <span id="away-team" class="font-semibold">{{ awayName }}</span></div>
@@ -348,7 +348,12 @@ const props = defineProps({
 // ==========================
 //  Refs
 // ==========================
-const gameRoot = ref(null);
+const gameRoot = ref(/** @type {HTMLElement|null} */ (null));
+
+// Cleanup
+/** @type {null | (() => void)} */
+let cleanup = null;
+
 
 // ==========================
 //  Helpers (logos / names)
@@ -370,8 +375,6 @@ const awayLogoUrl = computed(() => {
 // ==========================
 //  Lifecycle : mount / unmount
 // ==========================
-let cleanup = null; // ✅ si initMatchEngine retourne une fonction de teardown
-
 onMounted(() => {
     if (!gameRoot.value) return;
 

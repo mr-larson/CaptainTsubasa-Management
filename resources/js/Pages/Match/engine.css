@@ -248,10 +248,18 @@
     background: rgba(0,0,0,0.06);
     color: #222;
     font-variant-numeric: tabular-nums;
+
     opacity: 0;
     transform: scale(0.8);
     transition: opacity 0.25s ease, transform 0.25s ease;
     white-space: nowrap;
+
+    cursor: help;                 /* ✅ indique tooltip */
+    position: relative;           /* ✅ safe */
+}
+.dice-chip:focus {
+    outline: 2px solid rgba(59,130,246,0.85);
+    outline-offset: 2px;
 }
 .dice-chip.visible { opacity: 1; transform: scale(1); }
 .dice-chip.pop { animation: dice-pop 0.45s ease-out; }
@@ -260,6 +268,92 @@
     40% { transform: scale(1.1); }
     100% { transform: scale(1); }
 }
+/* ==========================================================================
+   TOOLTIP duel (calcul complet)
+   ========================================================================== */
+.dice-tooltip{
+    max-width: min(420px, calc(100vw - 24px));
+}
+/* Par défaut, flèche vers le haut (tooltip en dessous du dé) */
+.dice-tooltip::after{
+    /* ton style actuel de flèche... */
+}
+
+/* ✅ Si tooltip au-dessus du dé, on inverse la flèche */
+.dice-tooltip[data-placement="top"]::after{
+    /* exemple si ta flèche est un triangle CSS :
+       - inverse border-top/border-bottom
+       - et positionne la flèche en bas du tooltip
+    */
+    top: auto;
+    bottom: -8px;
+    transform: rotate(180deg);
+}
+
+
+#duel-dice-tooltip {
+    position: absolute;
+    z-index: 9999;
+    width: 360px;
+
+
+    /* le JS place left/top près de la chip,
+       et on remonte un peu au-dessus */
+    transform: translateY(-100%);
+    margin-top: -10px;
+
+    background: linear-gradient(
+        to bottom,
+        rgba(71, 85, 105, 0.95) 0%,
+        rgba(51, 65, 85, 0.95) 40%,
+        rgba(33, 45, 65, 0.95) 100%
+    );
+    color: rgba(226, 232, 240, 0.95);
+
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    border-radius: 14px;
+
+    padding: 10px 12px;
+
+    box-shadow:
+        0 18px 34px rgba(0,0,0,0.42),
+        0 0 0 1px rgba(255,255,255,0.04) inset;
+
+    font-size: 12px;
+    line-height: 1.35;
+
+    pointer-events: none; /* ✅ évite le flicker au hover */
+}
+
+#duel-dice-tooltip.hidden { display: none !important; }
+
+#duel-dice-tooltip .dt-title {
+    font-weight: 900;
+    color: #fff;
+    margin: 6px 0 6px;
+    letter-spacing: 0.2px;
+}
+
+#duel-dice-tooltip .dt-section + .dt-section { margin-top: 10px; }
+
+#duel-dice-tooltip .dt-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+
+    padding: 2px 0;
+    border-bottom: 1px dashed rgba(148, 163, 184, 0.14);
+}
+#duel-dice-tooltip .dt-row:last-child { border-bottom: none; }
+
+#duel-dice-tooltip .dt-label { opacity: 0.85; }
+#duel-dice-tooltip .dt-value {
+    font-weight: 800;
+    color: rgba(241, 245, 249, 0.95);
+    font-variant-numeric: tabular-nums;
+}
+
 
 /* Action bar switch (JS toggle fade-in/out) */
 #action-bar.fade-out { opacity: 0; transform: translateY(8px); pointer-events: none; }
