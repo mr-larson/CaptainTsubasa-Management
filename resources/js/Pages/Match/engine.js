@@ -1209,6 +1209,10 @@ export function initMatchEngine(rootEl, config = {}) {
     function applyDuelBonuses({ attackAction, defenseAction, attackScore, defenseScore, context = {} }) {
         const isKeeperDuel = !!context.isKeeperDuel;
 
+        if (context?.isKeeperDuel && context?.disableCounterBonuses) {
+            return { attackScore, defenseScore };
+        }
+
         const isGood = isKeeperDuel
             ? (defenseAction === "hands" || defenseAction === "gk-special")
             : isGoodDefenseChoice(attackAction, defenseAction);
@@ -2398,7 +2402,8 @@ export function initMatchEngine(rootEl, config = {}) {
             defenseAction,
             attackScore,
             defenseScore,
-            context: { isKeeperDuel: true },
+            context: { isKeeperDuel: true, disableCounterBonuses: true },
+
         }));
 
         const aTag = aRoll.critSuccess ? "20!" : (aRoll.critFail ? "1!" : String(aRoll.roll));
@@ -2408,8 +2413,8 @@ export function initMatchEngine(rootEl, config = {}) {
         const defStamF    = keeperId ? staminaFactor(keeperId) : 1.0;
 
         const isGoodGK = (defenseAction === "hands" || defenseAction === "gk-special");
-        const goodBonus = (DUEL_RULES.GOOD_COUNTER_BONUS ?? 0);
-        const genericBonus = (DUEL_RULES.GENERIC_ATTACK_BONUS ?? 0);
+        const goodBonus = 0;
+        const genericBonus = 0;
 
         const breakdown = {
             rolls: {
@@ -2436,7 +2441,7 @@ export function initMatchEngine(rootEl, config = {}) {
                 total: defenseScore,
             },
             result: {
-                bonusRuleLabel: isGoodGK ? `Good GK choice (+${goodBonus} defense)` : `Generic attack (+${genericBonus} attack)`,
+                bonusRuleLabel:  "No counter bonus (GK duel)",
                 critWinner,
                 diff: attackScore - defenseScore,
                 winner: (critWinner ? critWinner : ((attackScore - defenseScore) > 0 ? "attack" : (attackScore - defenseScore) < 0 ? "defense" : "tie")),
