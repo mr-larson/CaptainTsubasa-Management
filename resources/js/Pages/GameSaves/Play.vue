@@ -12,7 +12,7 @@
 
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import H2 from '@/Components/H2.vue';
 
 // ==========================
@@ -36,6 +36,18 @@ const week   = ref(props.gameSave.week   || 1);
 
 const currentState = ref(props.gameSave.state || { match: null });
 const saving = ref(false);
+
+watch(
+    () => props.gameSave.season,
+    (v) => { season.value = v ?? 1; },
+    { immediate: true }
+);
+
+watch(
+    () => props.gameSave.week,
+    (v) => { week.value = v ?? 1; },
+    { immediate: true }
+);
 
 // ==========================
 //   RACCOURCIS PRINCIPAUX
@@ -248,8 +260,16 @@ const isByeWeek = computed(() => {
 });
 
 const simulateWeek = () => {
-    router.post(route('game-saves.simulate-week', { gameSave: props.gameSave.id }), {}, { preserveScroll: true });
+    router.post(
+        route('game-saves.simulate-week', { gameSave: props.gameSave.id }),
+        {},
+        {
+            preserveScroll: true,
+            preserveState: false,
+        }
+    );
 };
+
 
 const nextMatch = computed(() => {
     if (!team.value || !myMatches.value.length) return null;

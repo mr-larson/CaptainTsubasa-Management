@@ -870,7 +870,7 @@ export function initMatchEngine(rootEl, config = {}) {
             const staminaRatio = stMax > 0 ? st / stMax : 1;
 
             const heat = heatOf(id);
-            const heatPenalty = 1 / (1 + heat * 0.75);
+            const heatPenalty = 1 / (1 + heat * 1.25);
 
             return distW * (0.85 + 0.15 * staminaRatio) * heatPenalty;
         });
@@ -896,7 +896,7 @@ export function initMatchEngine(rootEl, config = {}) {
 
     function pickReceiverInCell(team, zoneIndex, laneIndex, fallbackNumber, excludeNumber = null) {
         let receiverId = pickWeightedPlayerInCell(team, zoneIndex, laneIndex, {
-            topK: 5,
+            topK: 6, // ✅ un peu plus large, aide au milieu
             excludeIds: excludeNumber ? [getPlayerId(team, excludeNumber)] : [],
         });
 
@@ -912,11 +912,12 @@ export function initMatchEngine(rootEl, config = {}) {
 
             if (!all.length) return fallbackNumber;
 
-            const filtered = excludeNumber === null
+            const filtered = (excludeNumber === null)
                 ? all
                 : all.filter(el => parseInt(el.dataset.player.slice(1), 10) !== excludeNumber);
 
             const pool = filtered.length ? filtered : all;
+
             const rand = pool[Math.floor(Math.random() * pool.length)];
             return parseInt(rand.dataset.player.slice(1), 10);
         }
