@@ -1447,13 +1447,6 @@ export function initMatchEngine(rootEl, config = {}) {
                 });
             }
 
-            // ✅ keeper restart : pass only (un seul tour)
-            if (keeperRestartMustPass && html.includes("attack-strip")) {
-                actionBarEl.querySelectorAll(".skill-card").forEach((btn) => {
-                    if (btn.dataset.action !== "pass") btn.style.display = "none";
-                });
-            }
-
             actionBarEl.classList.remove("fade-out");
             actionBarEl.classList.add("fade-in");
 
@@ -1944,11 +1937,16 @@ export function initMatchEngine(rootEl, config = {}) {
         });
 
         // =====================================================
-        // 1) Choix du bonus + cible zone/lane (en partant du GK)
+        // 1) Bonus + cible zone/lane (en partant du GK)
         // =====================================================
+
+        // ✅ CHANGEMENT: bonus aligné à tes règles
+        // - Hands = relance courte (safe)      -> bonus moyen
+        // - Punch = relance moyenne (variance) -> bonus plus faible
+        // - GK-special = grosse relance        -> bonus plus élevé
         pendingClearanceBonus =
-            defenseAction === "hands" ? 7 :
-                defenseAction === "punch" ? 4 : 5;
+            defenseAction === "hands" ? 5 :
+                defenseAction === "punch" ? 4 : 7;
 
         // ✅ relance "vers l'avant" par rapport à l'équipe qui relance
         const forwardZone = (lines) => {
@@ -1959,21 +1957,47 @@ export function initMatchEngine(rootEl, config = {}) {
         let targetZone = originZone;
         const r = Math.random();
 
+        // ✅ CHANGEMENT: distance + variance alignées à tes règles
+        // Hands = court + très safe (1-2 lignes)
+        // Punch = moyen + plus aléatoire (1-3 lignes)
+        // GK-special = long + grosse variance (2-4 lignes)
         if (defenseAction === "hands") {
-            targetZone = forwardZone(r < 0.65 ? 1 : 2);
+            // 80% +1 ligne, 20% +2 lignes
+            targetZone = forwardZone(r < 0.80 ? 1 : 2);
+
         } else if (defenseAction === "punch") {
-            targetZone = forwardZone(r < 0.75 ? 1 : 2);
+            // 45% +1, 45% +2, 10% +3
+            if (r < 0.45) targetZone = forwardZone(1);
+            else if (r < 0.90) targetZone = forwardZone(2);
+            else targetZone = forwardZone(3);
+
         } else {
-            if (r < 0.55) targetZone = forwardZone(2);
-            else if (r < 0.90) targetZone = forwardZone(3);
+            // gk-special
+            // 15% +2, 55% +3, 30% +4 (grosse relance + variance)
+            if (r < 0.15) targetZone = forwardZone(2);
+            else if (r < 0.70) targetZone = forwardZone(3);
             else targetZone = forwardZone(4);
         }
 
-        const laneOptions = [originLane];
-        if (originZone <= 2) {
+        // ✅ Variance de lane : plus "safe" en hands, plus variable en special
+        let laneOptions = [originLane];
+
+        if (defenseAction === "hands") {
+            // safe : reste majoritairement dans la même lane
+            if (originZone <= 2) {
+                // petite ouverture seulement
+                if (originLane > 0) laneOptions.push(originLane - 1);
+                if (originLane < laneY.length - 1) laneOptions.push(originLane + 1);
+            }
+        } else if (defenseAction === "punch") {
+            // moyen : ouvre la lane plus souvent
             if (originLane > 0) laneOptions.push(originLane - 1);
             if (originLane < laneY.length - 1) laneOptions.push(originLane + 1);
+        } else {
+            // gk-special : variance max (toutes lanes possibles)
+            laneOptions = [0, 1, 2];
         }
+
         const targetLane = laneOptions[Math.floor(Math.random() * laneOptions.length)];
 
         const receiverNumber = pickReceiverInCell(defenseTeam, targetZone, targetLane, 6, null);
@@ -2550,12 +2574,6 @@ export function initMatchEngine(rootEl, config = {}) {
         if (isKickoff) {
             if (action !== "pass") return;
             resolveKickoffPass(currentTeam);
-            return;
-        }
-
-        // ✅ relance GK = pass only (un tour)
-        if (keeperRestartMustPass && action !== "pass") {
-            setMessage(TEXTS.ui.keeperRestartMain, TEXTS.ui.keeperRestartSub);
             return;
         }
 
