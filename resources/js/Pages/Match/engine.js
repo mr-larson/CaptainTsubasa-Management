@@ -103,6 +103,9 @@ const TEXTS = {
         // ✅ SHOT flow
         shotBlockedMain: "Tir contré !",
         shotBlockedSub: "{team} récupère avec le n°{number}.",
+        shotRecoveredMain: "Tir récupéré !",
+        shotRecoveredSub: "{team} récupère avec le n°{number}.",
+
         shotOnTargetMain: "Tir cadré !",
         shotOnTargetSub: "{team} : le gardien va intervenir.",
         shotGKChoiceSub: "{team} : Arrêt main / Dégagement poing / Special.",
@@ -118,15 +121,22 @@ const TEXTS = {
 
         passSuccessTitle: "Passe réussie",
         passFailTitle: "Passe interceptée",
+        passRecoveredTitle: "Passe récupérée",
 
         dribbleRefusedTitle: "Dribble refusé (face au gardien)",
         dribbleRefusedDetail: "Action non autorisée",
+        dribbleRecoveredTitle: "Dribble récupéré",
+        dribbleSuccessTitle: "Dribble réussi",
+        dribbleFailTitle: "Dribble stoppé",
 
         longShotGoalTitle: "Tir de loin – BUT",
         longShotSavedTitle: "Tir de loin – arrêté",
 
         shotGoalTitle: "Tir – BUT",
         shotSavedTitle: "Tir – arrêté",
+        shotRecoveredTitle: "Tir récupéré",
+        shotBlockedTitle: "Tir contré",
+        specialRecoveredTitle: "Special récupéré",
 
         matchEndTitle: "Fin du match",
         frontOfKeeperTitle: "Dribble réussi – face au gardien",
@@ -134,6 +144,7 @@ const TEXTS = {
         // ✅ optionnels (si tu veux les utiliser)
         shotGKEqualTitle: "Tir vs gardien — égalité",
         shotGoalSpecialTitle: "Tir spécial – BUT",
+        keeperRestartMain: "Relance du gardien",
     },
     cards: {
         attack: {
@@ -1320,7 +1331,7 @@ export function initMatchEngine(rootEl, config = {}) {
         const d = String(defenseAction).toLowerCase();
 
         if (["hands","punch","gk-special"].includes(d)) {
-            return d !== "punch"; // punch = "moins bon" par règle
+            return true;
         }
 
         return (
@@ -1331,10 +1342,53 @@ export function initMatchEngine(rootEl, config = {}) {
         );
     }
 
+    // Retourne un titre de log cohérent avec l'action défensive (intercept/tackle/block) et le RPS.
+    function getLogTitleForDuel(attackAction, defenseAction, duelWinner) {
+        // duelWinner: "attack" | "defense" | "tie"
+        if (duelWinner === "tie") return "Duel équilibré";
+
+        // Si l'attaque gagne, on garde les titres "succès" classiques.
+        if (duelWinner === "attack") {
+            if (attackAction === "pass") return TEXTS.logs.passSuccessTitle;
+            if (attackAction === "dribble") return "Dribble réussi";
+            if (attackAction === "shot") return TEXTS.logs.shotGoalTitle;     // sur champ : "tir cadré" va suivre
+            if (attackAction === "special") return TEXTS.logs.shotGoalTitle;  // idem
+            return "";
+        }
+
+        // Si la défense gagne, on veut un titre qui reflète L'ACTION DEF (RPS), sinon "récupéré".
+        if (attackAction === "pass") {
+            return (defenseAction === "intercept") ? TEXTS.logs.passFailTitle : TEXTS.logs.passRecoveredTitle;
+        }
+
+        if (attackAction === "dribble") {
+            // Bon contre = tackle -> "Dribble stoppé" ok, sinon récupéré.
+            return (defenseAction === "tackle") ? "Dribble stoppé" : TEXTS.logs.dribbleRecoveredTitle;
+        }
+
+        if (attackAction === "shot") {
+            return (defenseAction === "block") ? TEXTS.logs.shotBlockedTitle : TEXTS.logs.shotRecoveredTitle;
+        }
+
+        if (attackAction === "special") {
+            // Bon contre = field-special ou block, sinon récupéré.
+            if (defenseAction === "block") return TEXTS.logs.shotBlockedTitle;
+            return TEXTS.logs.specialRecoveredTitle;
+        }
+
+        return "";
+    }
+
+    // Petit tag lisible pour l'historique, basé sur ton pierre-papier-ciseaux.
+    function getCounterTag(attackAction, defenseAction) {
+        const good = isGoodDefenseChoice(attackAction, defenseAction);
+        return good ? "✅ Bon contre" : "❌ Mauvais choix";
+    }
+
     // Applique bonus/malus selon “good counter” vs “generic attack” (GK ou field).
     function applyDuelBonuses({ attackAction, defenseAction, attackScore, defenseScore, context = {} }) {
         const good = context.isKeeperDuel
-            ? ["hands","gk-special"].includes(defenseAction)
+            ? ["hands", "punch", "gk-special"].includes(defenseAction)
             : isGoodDefenseChoice(attackAction, defenseAction);
 
         return good
@@ -1606,6 +1660,9 @@ export function initMatchEngine(rootEl, config = {}) {
         state.pendingAttack = null;
         state.pendingShotContext = null;
         state.pendingDefenseContext = null;
+
+        showAttackBarForCurrentTeam();
+        refreshUI();
     }
 
     // ==========================
@@ -2153,12 +2210,19 @@ export function initMatchEngine(rootEl, config = {}) {
 
         if (state.keeperRestartMustPass) state.keeperRestartMustPass = false;
 
+        // ==========================
+        //   CAS KICKOFF
+        // ==========================
         if (wasKickoff) {
             if (duelResult === "attack") {
                 const receiver = [5, 6][Math.floor(Math.random() * 2)];
 
                 setMessage("Remise en jeu réussie !", `${TEAMS[attackTeam].label} joue vers le n°${receiver}.`);
-                pushLogEntry("kickoffTitle", [`Vers n°${receiver}`, `Défense: ${defenseAction}`], duel.diceTag);
+                pushLogEntry(
+                    "kickoffTitle",
+                    [`Vers n°${receiver}`, `Défense: ${defenseAction}`, getCounterTag("pass", defenseAction)],
+                    duel.diceTag
+                );
 
                 animateAndThen(() => {
                     restoreBasePositions();
@@ -2170,8 +2234,14 @@ export function initMatchEngine(rootEl, config = {}) {
             } else {
                 const receiver = duel.defenderSlot ?? 6;
 
-                setMessage("Remise en jeu ratée !", `${TEAMS[defenseTeam].label} intercepte avec le n°${receiver}.`);
-                pushLogEntry("kickoffTitle", [`Défense: ${defenseAction}`], duel.diceTag);
+                const verb = (defenseAction === "intercept") ? "intercepte" : "récupère";
+
+                setMessage("Remise en jeu ratée !", `${TEAMS[defenseTeam].label} ${verb} avec le n°${receiver}.`);
+                pushLogEntry(
+                    "kickoffTitle",
+                    [`Défense: ${defenseAction}`, getCounterTag("pass", defenseAction)],
+                    duel.diceTag
+                );
 
                 animateAndThen(() => {
                     restoreBasePositions();
@@ -2184,6 +2254,9 @@ export function initMatchEngine(rootEl, config = {}) {
             return;
         }
 
+        // ==========================
+        //   CIBLE DE PASSE
+        // ==========================
         let targetZone = ball.zoneIndex;
         let targetLane = ball.laneIndex;
 
@@ -2199,6 +2272,9 @@ export function initMatchEngine(rootEl, config = {}) {
             targetLane = [0, 1, 2][Math.floor(Math.random() * 3)];
         }
 
+        // ==========================
+        //   ATTAQUE GAGNE
+        // ==========================
         if (duelResult === "attack") {
             resetLastDribbler();
 
@@ -2213,33 +2289,49 @@ export function initMatchEngine(rootEl, config = {}) {
             moveBallToPlayer(attackTeam, receiver);
 
             setMessage(TEXTS.logs.passSuccessTitle, `${TEAMS[attackTeam].label} trouve le n°${receiver}.`);
-            pushLogEntry("passSuccessTitle", [`Vers n°${receiver}`, `Défense: ${defenseAction}`], duel.diceTag);
+            pushLogEntry(
+                "passSuccessTitle",
+                [`Vers n°${receiver}`, `Défense: ${defenseAction}`, getCounterTag("pass", defenseAction)],
+                duel.diceTag
+            );
 
             animateAndThen(() => {
                 advanceTurn(attackTeam);
                 showAttackBarForCurrentTeam();
                 refreshUI();
             });
-        } else {
-            resetLastDribbler();
-
-            const receiver =
-                duel.defenderSlot ??
-                (duel.defenderId ? parseInt(duel.defenderId.slice(1), 10) : 6);
-
-            moveBallToPlayer(defenseTeam, receiver);
-            syncRecovererCard(defenseTeam, receiver);
-
-            setMessage(TEXTS.logs.passFailTitle, `${TEAMS[defenseTeam].label} récupère avec le n°${receiver}.`);
-            pushLogEntry("passFailTitle", [`Défense: ${defenseAction}`], duel.diceTag);
-
-            animateAndThen(() => {
-                advanceTurn(defenseTeam);
-                showAttackBarForCurrentTeam();
-                refreshUI();
-            });
+            return;
         }
+
+        // ==========================
+        //   DÉFENSE GAGNE
+        // ==========================
+        resetLastDribbler();
+
+        const receiver =
+            duel.defenderSlot ??
+            (duel.defenderId ? parseInt(duel.defenderId.slice(1), 10) : 6);
+
+        moveBallToPlayer(defenseTeam, receiver);
+        syncRecovererCard(defenseTeam, receiver);
+
+        const logTitle = getLogTitleForDuel("pass", defenseAction, "defense");
+        const msgTitle = (defenseAction === "intercept") ? TEXTS.logs.passFailTitle : TEXTS.logs.passRecoveredTitle;
+
+        setMessage(msgTitle, `${TEAMS[defenseTeam].label} récupère avec le n°${receiver}.`);
+        pushLogEntry(
+            logTitle,
+            [`Défense: ${defenseAction}`, getCounterTag("pass", defenseAction)],
+            duel.diceTag
+        );
+
+        animateAndThen(() => {
+            advanceTurn(defenseTeam);
+            showAttackBarForCurrentTeam();
+            refreshUI();
+        });
     }
+
 
     // ==========================
     //   RESOLVE: DRIBBLE
@@ -2283,6 +2375,9 @@ export function initMatchEngine(rootEl, config = {}) {
         const carrierId = getPlayerId(attackTeam, ball.number);
         const carrierEl = rootEl.querySelector(`[data-player="${carrierId}"]`);
 
+        // ==========================
+        //   ATTAQUE GAGNE
+        // ==========================
         if (duelResult === "attack") {
             resetLastDribbler();
             state.lastDribblerId = carrierId;
@@ -2304,7 +2399,11 @@ export function initMatchEngine(rootEl, config = {}) {
                 ball.laneIndex = lane;
 
                 setMessage("Dribble réussi !", `${TEAMS[attackTeam].label} avance en zone ${newZone + 1}.`);
-                pushLogEntry("Dribble réussi", [`Zone ${newZone + 1}`, `Défense: ${defenseAction}`], duel.diceTag);
+                pushLogEntry(
+                    "Dribble réussi",
+                    [`Zone ${newZone + 1}`, `Défense: ${defenseAction}`, getCounterTag("dribble", defenseAction)],
+                    duel.diceTag
+                );
 
                 animateAndThen(() => {
                     advanceTurn(attackTeam);
@@ -2314,6 +2413,9 @@ export function initMatchEngine(rootEl, config = {}) {
                 return;
             }
 
+            // ==========================
+            //   ZONE 3 -> FACE GK
+            // ==========================
             const y = laneY[lane];
             const xFront = FIELD_RULES.GK_FRONT_X[attackTeam];
 
@@ -2327,7 +2429,11 @@ export function initMatchEngine(rootEl, config = {}) {
             ball.frontOfKeeper = true;
 
             setMessage(TEXTS.ui.frontOfKeeperMain, TEXTS.ui.frontOfKeeperSub);
-            pushLogEntry("frontOfKeeperTitle", [`Défense: ${defenseAction}`], duel.diceTag);
+            pushLogEntry(
+                "frontOfKeeperTitle",
+                [`Défense: ${defenseAction}`, getCounterTag("dribble", defenseAction)],
+                duel.diceTag
+            );
 
             animateAndThen(() => {
                 advanceTurn(attackTeam);
@@ -2337,6 +2443,9 @@ export function initMatchEngine(rootEl, config = {}) {
             return;
         }
 
+        // ==========================
+        //   DÉFENSE GAGNE
+        // ==========================
         resetLastDribbler();
 
         const slot =
@@ -2346,8 +2455,15 @@ export function initMatchEngine(rootEl, config = {}) {
         moveBallToPlayer(defenseTeam, slot);
         syncRecovererCard(defenseTeam, slot);
 
-        setMessage("Dribble stoppé !", `${TEAMS[defenseTeam].label} récupère avec le n°${slot}.`);
-        pushLogEntry("Dribble stoppé", [`Défense: ${defenseAction}`], duel.diceTag);
+        const logTitle = getLogTitleForDuel("dribble", defenseAction, "defense");
+        const msgTitle = (defenseAction === "tackle") ? "Dribble stoppé" : TEXTS.logs.dribbleRecoveredTitle;
+
+        setMessage(msgTitle, `${TEAMS[defenseTeam].label} récupère avec le n°${slot}.`);
+        pushLogEntry(
+            logTitle,
+            [`Défense: ${defenseAction}`, getCounterTag("dribble", defenseAction)],
+            duel.diceTag
+        );
 
         animateAndThen(() => {
             advanceTurn(defenseTeam);
@@ -2368,6 +2484,9 @@ export function initMatchEngine(rootEl, config = {}) {
         const attackerId = getPlayerId(attackTeam, ball.number);
         const attackType = isSpecial ? "special" : "shot";
 
+        // ==========================
+        //   FACE GK -> DUEL GK DIRECT
+        // ==========================
         if (ball.frontOfKeeper) {
             resolveShotKeeperDuel({
                 stage: "keeper",
@@ -2382,6 +2501,9 @@ export function initMatchEngine(rootEl, config = {}) {
             return;
         }
 
+        // ==========================
+        //   DUEL vs DÉFENSE DE CHAMP
+        // ==========================
         const duel = runFieldDuel({
             attackTeam,
             defenseTeam,
@@ -2391,7 +2513,11 @@ export function initMatchEngine(rootEl, config = {}) {
         });
 
         if (duel.isTie) {
-            pushLogEntry("Duel équilibré (shot)", [`Défense: ${defenseAction}`], duel.diceTag);
+            pushLogEntry(
+                "Duel équilibré (shot)",
+                [`Défense: ${defenseAction}`, getCounterTag(attackType, defenseAction)],
+                duel.diceTag
+            );
             state.phase = "attack";
             state.pendingAttack = null;
 
@@ -2405,6 +2531,11 @@ export function initMatchEngine(rootEl, config = {}) {
 
         const duelResult = duel.duelResult;
 
+        // ==========================
+        //   DÉFENSE GAGNE
+        //   - block => "Tir contré"
+        //   - sinon => "Tir récupéré"
+        // ==========================
         if (duelResult === "defense") {
             const number =
                 duel.defenderSlot ??
@@ -2413,14 +2544,25 @@ export function initMatchEngine(rootEl, config = {}) {
             moveBallToPlayer(defenseTeam, number);
             syncRecovererCard(defenseTeam, number);
 
+            const isBlock = (defenseAction === "block");
+
+            const main = isBlock ? TEXTS.ui.shotBlockedMain : TEXTS.ui.shotRecoveredMain;
+            const subTpl = isBlock ? TEXTS.ui.shotBlockedSub : TEXTS.ui.shotRecoveredSub;
+
             setMessage(
-                TEXTS.ui.shotBlockedMain,
-                TEXTS.ui.shotBlockedSub
+                main,
+                subTpl
                     .replace("{team}", TEAMS[defenseTeam].label)
                     .replace("{number}", number)
             );
 
-            pushLogEntry(TEXTS.ui.shotBlockedMain, [`Défense: ${defenseAction}`], duel.diceTag);
+            // ✅ Titre log basé sur l'action défensive + RPS (bon/mauvais choix)
+            const logTitle = getLogTitleForDuel(attackType, defenseAction, "defense");
+            pushLogEntry(
+                logTitle,
+                [`Défense: ${defenseAction}`, getCounterTag(attackType, defenseAction)],
+                duel.diceTag
+            );
 
             state.phase = "attack";
             state.pendingAttack = null;
@@ -2433,7 +2575,14 @@ export function initMatchEngine(rootEl, config = {}) {
             return;
         }
 
-        pushLogEntry(TEXTS.ui.shotOnTargetMain, [`Zone ${originZone + 1}`], duel.diceTag);
+        // ==========================
+        //   ATTAQUE GAGNE (tir cadré)
+        // ==========================
+        pushLogEntry(
+            TEXTS.ui.shotOnTargetMain,
+            [`Zone ${originZone + 1}`, `Défense: ${defenseAction}`, getCounterTag(attackType, defenseAction)],
+            duel.diceTag
+        );
         setMessage(TEXTS.ui.shotOnTargetMain, TEXTS.ui.shotOnTargetSub.replace("{team}", TEAMS[defenseTeam].label));
 
         const linesBehind = getFacingZoneIndex(originZone);
@@ -2441,6 +2590,7 @@ export function initMatchEngine(rootEl, config = {}) {
             roster.attackBaseFor(attackType, attackTeam, ball.number) -
             (linesBehind * DUEL_RULES.SHOT_DISTANCE_PENALTY_PER_LINE);
 
+        // mise en scène : zone 4 (index 3)
         const targetZone = 3;
         const center = getCellCenter(attackTeam, targetZone, originLane);
         ball.zoneIndex = targetZone;
@@ -2576,7 +2726,8 @@ export function initMatchEngine(rootEl, config = {}) {
             return;
         }
 
-        pushLogEntry("longShotSavedTitle", [`Zone ${originZone + 1}`, ...logParts], diceTag);
+        pushLogEntry(isSpecial ? "shotSavedTitle" : "shotSavedTitle", [`Zone ${originZone + 1}`, ...logParts], diceTag);
+
 
         performKeeperClearance(defenseTeam, defenseAction, () => {
             advanceTurn(defenseTeam);
