@@ -624,26 +624,6 @@
     color: rgba(15, 23, 42, 0.75);
 }
 
-/* ==========================================================================
-   MODE 1 JOUEUR — état actif
-   ========================================================================== */
-
-#mode-one-player.active {
-    background: linear-gradient(
-        135deg,
-        #64748b, /* slate-500 */
-        #475569  /* slate-600 */
-    );
-    color: #ffffff;
-
-    border: 1px solid rgba(255, 255, 255, 0.3);
-
-    box-shadow:
-        0 4px 6px rgba(0, 0, 0, 0.15),       /* drop-shadow-md */
-        0 0 0 1px rgba(255, 255, 255, 0.35) inset;
-
-    transform: translateY(0); /* cohérence avec active */
-}
 
 /* ==========================================================================
    TEAM BORDER (cards home/away)
@@ -735,7 +715,7 @@
 }
 
 /* ==========================================================================
-   PLAYER CARD PHOTO LAYER (ne remplace pas le gradient existant)
+   PLAYER CARD PHOTO LAYER
    ========================================================================== */
 
 #home-card,
@@ -753,9 +733,28 @@
 }
 #home-portrait,
 #away-portrait,
-#defender-portrait { /* si tu en crées un */
+#defender-portrait {
     position: relative;
     overflow: hidden;
 }
 
+/* ==========================================================================
+   MODE 1 JOUEUR — état actif
+   ========================================================================== */
 
+#mode-one-player.active {
+    background: linear-gradient(
+        135deg,
+        #64748b, /* slate-500 */
+        #475569  /* slate-600 */
+    );
+    color: #ffffff;
+
+    border: 1px solid rgba(255, 255, 255, 0.3);
+
+    box-shadow:
+        0 4px 6px rgba(0, 0, 0, 0.15),       /* drop-shadow-md */
+        0 0 0 1px rgba(255, 255, 255, 0.35) inset;
+
+    transform: translateY(0); /* cohérence avec active */
+}
