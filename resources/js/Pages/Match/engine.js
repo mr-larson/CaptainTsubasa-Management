@@ -191,7 +191,7 @@ const STATS = {
     },
     defenseGK: {
         hands: { power: 10, cost: 10 },
-        punch: { power: 8, cost: 5 },
+        punch: { power: 10, cost: 5 },
         "gk-special": { power: 12, cost: 20 },
     },
 };
@@ -478,7 +478,7 @@ export function initMatchEngine(rootEl, config = {}) {
         pendingClearanceBonus: 0,
         pendingDefenseContext: null,
 
-        basePositions: {}, // ✅ plus jamais undefined
+        basePositions: {},
         lastDribblerId: null,
 
         stamina: {},
@@ -489,6 +489,7 @@ export function initMatchEngine(rootEl, config = {}) {
 
         touchHeat: {},
         lastDuelBreakdown: null,
+        defensePreview: null,
     };
 
     // Accès court à l’objet ballon.
@@ -1140,6 +1141,7 @@ export function initMatchEngine(rootEl, config = {}) {
 
         ball.zoneIndex = zoneIndex;
         ball.laneIndex = bestLane;
+        state.defensePreview = null;
 
         updateTeamCard();
         updateCardsPower();
@@ -1967,6 +1969,13 @@ export function initMatchEngine(rootEl, config = {}) {
 
         const { defenderId, defenderSlot } = picked;
 
+        updateSideCard(attackTeam === "internal" ? "home" : "away", attackTeam, ball.number);
+        updateSideCard(defenseTeam === "internal" ? "home" : "away", defenseTeam, defenderSlot);
+
+
+        syncRecovererCard(defenseTeam, defenderSlot);
+        updateTeamCard();
+
         const attackBaseRaw = roster.attackBaseFor(attackType, attackTeam, ball.number);
         const defenseBaseRaw = roster.defenseBaseFor(defenseAction, defenseTeam, defenderSlot, false);
 
@@ -2758,6 +2767,22 @@ export function initMatchEngine(rootEl, config = {}) {
         }
 
         const picked = pickFieldDefender(defenseTeam, ball.zoneIndex, ball.laneIndex);
+
+        state.defensePreview = picked
+            ? {
+                attackAction: action,
+                defenseTeam,
+                ballSnapshot: {
+                    team: ball.team,
+                    number: ball.number,
+                    zoneIndex: ball.zoneIndex,
+                    laneIndex: ball.laneIndex,
+                    frontOfKeeper: ball.frontOfKeeper,
+                },
+                picked,
+            }
+            : null;
+
         updateSideCard(defenderPrefix, defenseTeam, picked?.defenderSlot || 6);
     }
 
@@ -2815,8 +2840,24 @@ export function initMatchEngine(rootEl, config = {}) {
         const isKeeperChoiceUI = (action === "shot" || action === "special") && ball.frontOfKeeper;
 
         if (!isKeeperChoiceUI) {
-            const picked = pickFieldDefender(defTeam, ball.zoneIndex, ball.laneIndex);
+            const snapOk =
+                state.defensePreview &&
+                state.defensePreview.attackAction === action &&
+                state.defensePreview.defenseTeam === defTeam &&
+                state.defensePreview.ballSnapshot &&
+                state.defensePreview.ballSnapshot.team === ball.team &&
+                state.defensePreview.ballSnapshot.number === ball.number &&
+                state.defensePreview.ballSnapshot.zoneIndex === ball.zoneIndex &&
+                state.defensePreview.ballSnapshot.laneIndex === ball.laneIndex &&
+                state.defensePreview.ballSnapshot.frontOfKeeper === ball.frontOfKeeper;
+
+            const picked = snapOk
+                ? state.defensePreview.picked
+                : pickFieldDefender(defTeam, ball.zoneIndex, ball.laneIndex);
+
             state.pendingDefenseContext = { defenseTeam: defTeam, ...picked };
+
+            state.defensePreview = null;
         } else {
             state.pendingDefenseContext = {
                 defenseTeam: defTeam,
