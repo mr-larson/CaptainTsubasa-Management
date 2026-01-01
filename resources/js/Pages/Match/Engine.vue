@@ -7,6 +7,7 @@
         </template>
 
         <div class="w-full px-4 lg:px-8 mt-4">
+            <div id="duel-dice-tooltip" class="dice-tooltip hidden" aria-hidden="true"></div>
             <div id="game-wrapper" ref="gameRoot" class="mx-auto w-full max-w-[1500px]">
 
                 <!-- =======================================================
@@ -284,12 +285,14 @@
                     </div>
 
                     <!-- RIGHT : log -->
-                    <div class="lg:col-span-2 min-w-0 flex min-h-0">
+                    <!-- RIGHT : log -->
+                    <div class="lg:col-span-2 min-w-0 min-h-0 h-full flex flex-col">
                         <div
                             id="log-card"
-                            class="w-full h-full min-h-0 rounded-2xl bg-white p-3 shadow-lg ring-1 ring-white/80 text-[11px] flex flex-col gap-2"
+                            class="w-full flex-1 min-h-0 rounded-2xl bg-white p-3 shadow-lg ring-1 ring-white/80 text-[11px] flex flex-col gap-2"
                         >
-                            <div id="log-current">
+                            <!-- ✅ shrink-0 : empêche l’entête de “manger” la place scroll -->
+                            <div id="log-current" class="shrink-0">
                                 <div class="flex items-center justify-between gap-2">
                                     <div class="text-[10px] uppercase tracking-widest font-bold text-slate-600">DERNIÈRE ACTION</div>
                                     <div id="duel-dice-display" class="dice-chip"></div>
@@ -298,8 +301,9 @@
                                 <div id="current-action-detail" class="text-slate-600">Les duels et détails apparaîtront ici.</div>
                             </div>
 
-                            <div class="h-px w-full bg-black/10"></div>
+                            <div class="shrink-0 h-px w-full bg-black/10"></div>
 
+                            <!-- ✅ zone scroll : height calculable car parent = flex-1 min-h-0 -->
                             <div id="log-history" class="flex-1 min-h-0 overflow-y-auto">
                                 <div class="text-[10px] uppercase tracking-widest font-bold text-slate-600 mb-2">
                                     Historique (15 derniers coups)

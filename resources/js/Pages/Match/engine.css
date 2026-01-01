@@ -19,6 +19,17 @@
 }
 
 /* ==========================================================================
+   LAYOUT SAFETY (grid/flex/scroll) — évite les collapses
+   ========================================================================== */
+
+#main-row { min-height: 0; }             /* grid container */
+#left-column { min-height: 0; }          /* colonne gauche */
+#field-wrapper { min-height: 0; }        /* terrain */
+#log-card { min-height: 420px; }         /* debug + sécurité : au moins visible */
+#log-history { min-height: 0; }          /* zone scroll */
+
+
+/* ==========================================================================
    TERRAIN
    (gardé en CSS car gradient long + ratio + plein d'éléments positionnés)
    ========================================================================== */
@@ -757,4 +768,27 @@
         0 0 0 1px rgba(255, 255, 255, 0.35) inset;
 
     transform: translateY(0); /* cohérence avec active */
+}
+/* ==========================================================================
+   LOG LAYOUT — FIX FLEX COLLAPSE
+   ========================================================================== */
+
+/* conteneur principal */
+#log-card {
+    min-height: 420px;          /* ← clé */
+    display: flex;
+    flex-direction: column;
+}
+
+/* zone scroll */
+#log-history {
+    flex: 1 1 auto;
+    min-height: 0;              /* ← indispensable */
+    overflow-y: auto;
+}
+
+/* liste */
+#history-list {
+    display: block;
+    min-height: 1px;
 }

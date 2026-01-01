@@ -136,6 +136,8 @@ const TEXTS = {
         shotSavedTitle: "Tir – arrêté",
         shotRecoveredTitle: "Tir récupéré",
         shotBlockedTitle: "Tir contré",
+        shotOnTargetTitle: "Tir cadré",
+        shotTieTitle: "Tir — égalité",
         specialRecoveredTitle: "Special récupéré",
 
         matchEndTitle: "Fin du match",
@@ -542,6 +544,10 @@ export function initMatchEngine(rootEl, config = {}) {
 
         duelTooltipEl: null,
     };
+    function getHistoryListEl() {
+        // ✅ Toujours récupérer le DOM “actuel” (HMR / rerender safe)
+        return document.getElementById("history-list");
+    }
 
     // ==========================
     //   UI helpers
@@ -631,9 +637,30 @@ export function initMatchEngine(rootEl, config = {}) {
         actionHistory.push(shortLine);
         if (actionHistory.length > MAX_HISTORY) actionHistory.shift();
 
-        if (ui.historyListEl) {
-            ui.historyListEl.innerHTML = actionHistory.map((line) => `<li>${line}</li>`).join("");
+        // ✅ robuste : re-sélectionne au moment d’écrire (au cas où Vue a re-render)
+        const historyEl =
+            ui.historyListEl ||
+            rootEl.querySelector("#history-list") ||
+            document.querySelector("#history-list");
+
+// (optionnel) on recache la ref pour la prochaine fois
+        ui.historyListEl = historyEl;
+
+        if (historyEl) {
+            historyEl.innerHTML = actionHistory.map((line) => `<li>${line}</li>`).join("");
+        } else {
+            console.warn("[pushLogEntry] #history-list introuvable");
         }
+
+        console.log("[HISTORY] before render", {
+            hasEl: !!ui.historyListEl,
+            lines: actionHistory?.length,
+            last: actionHistory?.[0],
+        });
+        console.log("[HISTORY] after render", {
+            html: ui.historyListEl?.innerHTML?.slice(0, 80),
+        });
+
     }
 
     // ==========================
@@ -1100,6 +1127,39 @@ export function initMatchEngine(rootEl, config = {}) {
 
         return candidates[candidates.length - 1].id;
     }
+    // ==========================
+//   PICK WEIGHTED PLAYER CLOSEST TO ZONE
+// ==========================
+// Fallback contrôlé : si une zone est vide, on cherche la zone la plus proche
+// (zi-1, zi+1, zi-2, zi+2, ...) en restant "state-only".
+    function pickWeightedPlayerClosestToZone(team, zoneIndex, opts = {}) {
+        const { excludeIds = [] } = opts;
+
+        const zi = Math.max(0, Math.min(MAX_ZONE_INDEX, zoneIndex));
+
+        // 1) tentative strict
+        const strict = pickWeightedPlayerInZone(team, zi, { excludeIds });
+        if (strict) return { id: strict, pickedZone: zi };
+
+        // 2) fallback zones adjacentes
+        for (let d = 1; d <= MAX_ZONE_INDEX; d++) {
+            const leftZ = zi - d;
+            const rightZ = zi + d;
+
+            if (leftZ >= 0) {
+                const idL = pickWeightedPlayerInZone(team, leftZ, { excludeIds });
+                if (idL) return { id: idL, pickedZone: leftZ };
+            }
+
+            if (rightZ <= MAX_ZONE_INDEX) {
+                const idR = pickWeightedPlayerInZone(team, rightZ, { excludeIds });
+                if (idR) return { id: idR, pickedZone: rightZ };
+            }
+        }
+
+        return null;
+    }
+
 
     // Choisit un receveur dans une cellule cible (fallback aléatoire si aucun).
     // ==========================
@@ -1392,16 +1452,25 @@ export function initMatchEngine(rootEl, config = {}) {
     function givePossessionOnTie(defenseTeam) {
         const zi = Math.max(0, Math.min(MAX_ZONE_INDEX, ball.zoneIndex));
 
+        // 1) strict zone
         const candidateId = pickWeightedPlayerInZone(defenseTeam, zi);
 
-        if (!candidateId) {
-            // ⚠️ Cas anormal : aucune présence dans la zone
-            // On NE DONNE PAS la balle ailleurs
-            console.warn("[givePossessionOnTie] Aucun joueur dans la zone", zi);
+        // 2) fallback zone la plus proche (si zone vide)
+        const fallback = candidateId
+            ? { id: candidateId, pickedZone: zi }
+            : pickWeightedPlayerClosestToZone(defenseTeam, zi);
+
+        if (!fallback?.id) {
+            console.warn("[givePossessionOnTie] Aucun joueur trouvable (même fallback)", {
+                defenseTeam,
+                requestedZone: zi,
+            });
+
+            // On NE change PAS la possession.
             return { team: ball.team, number: ball.number };
         }
 
-        const slot = parseInt(candidateId.slice(1), 10);
+        const slot = parseInt(fallback.id.slice(1), 10);
 
         moveBallToPlayer(defenseTeam, slot);
 
@@ -2303,41 +2372,40 @@ export function initMatchEngine(rootEl, config = {}) {
 // Sans lane, sans distance, sans priorité spatiale
 
     function pickFieldDefender(defenseTeam, zoneIndex) {
-        // 🔒 Sécurité zone
         const zi = Math.max(0, Math.min(MAX_ZONE_INDEX, zoneIndex));
 
-        // 🎯 Pick logique UNIQUEMENT via state.players
-        const defenderId = pickWeightedPlayerInZone(defenseTeam, zi);
+        const pick = pickWeightedPlayerClosestToZone(defenseTeam, zi);
 
-        if (!defenderId) {
-            console.warn("[ENGINE] pickFieldDefender: aucun défenseur trouvable", {
+        if (!pick?.id) {
+            console.warn("[ENGINE] pickFieldDefender: aucun défenseur trouvable (même fallback)", {
                 defenseTeam,
                 zoneIndex: zi,
             });
             return null;
         }
 
+        const defenderId = pick.id;
         const defenderState = state.players[defenderId];
+
         if (!defenderState) {
-            console.error("[ENGINE] pickFieldDefender: état joueur manquant", {
-                defenderId,
-            });
+            console.error("[ENGINE] pickFieldDefender: état joueur manquant", { defenderId });
             return null;
         }
 
-        // 🔒 GARANTIE : le défenseur est bien dans la zone demandée
-        if (defenderState.zoneIndex !== zi) {
-            console.error("[ENGINE] pickFieldDefender: incohérence zone", {
+        if (pick.pickedZone !== zi) {
+            console.warn("[ENGINE] pickFieldDefender: zone vide → fallback zone proche", {
+                defenseTeam,
+                requestedZone: zi,
+                pickedZone: pick.pickedZone,
                 defenderId,
-                expectedZone: zi,
-                actualZone: defenderState.zoneIndex,
             });
-            return null;
         }
 
         return {
             defenderId,
             defenderSlot: defenderState.number,
+            pickedZone: pick.pickedZone, // ✅ zone réelle d’où vient le défenseur
+            requestedZone: zi,           // ✅ zone du duel (zone ballon)
         };
     }
 
@@ -2411,7 +2479,6 @@ export function initMatchEngine(rootEl, config = {}) {
 // - défenseur sélectionné STRICTEMENT dans cette zone
 // - aucune logique de lane
 // - aucune modification de possession ici
-
     function runFieldDuel({
                               attackTeam,
                               defenseTeam,
@@ -2422,22 +2489,19 @@ export function initMatchEngine(rootEl, config = {}) {
                           }) {
         const attackerId = getPlayerId(attackTeam, ball.number);
 
-        // ==========================
-        //   ZONE DU DUEL (source unique)
-        // ==========================
         const duelZone = (duelZoneIndex ?? ball.zoneIndex);
 
         // ==========================
         //   DÉFENSEUR DU DUEL
-        //   - utilise le preview si valide
-        //   - sinon repick STRICT dans la zone du duel
         // ==========================
         let picked = defenderPick;
 
+        // ✅ On accepte un pick “fallback” (pickedZone) même si ≠ duelZone
         if (picked?.defenderId) {
             const pState = state.players[picked.defenderId];
-            // 🔒 si le défenseur n'est plus dans la zone logique attendue, on repick
-            if (!pState || pState.zoneIndex !== duelZone) {
+            const expectedZone = Number.isFinite(picked.pickedZone) ? picked.pickedZone : duelZone;
+
+            if (!pState || pState.zoneIndex !== expectedZone) {
                 picked = null;
             }
         }
@@ -2493,16 +2557,12 @@ export function initMatchEngine(rootEl, config = {}) {
         let attackScore = attackBaseRaw * attackStamF;
         let defenseScore = defenseBaseRaw * defenseStamF;
 
-        // Bonus relance GK (consommé 1 seule fois)
         const clearanceBonus = Number(state.pendingClearanceBonus ?? 0) || 0;
         if (clearanceBonus > 0) {
             attackScore += clearanceBonus;
             state.pendingClearanceBonus = 0;
         }
 
-        // ==========================
-        //   D20 + CRITS
-        // ==========================
         const aRoll = rollD20WithCrit();
         const dRoll = rollD20WithCrit();
         const critWinner = resolveCritOutcome(aRoll, dRoll);
@@ -2510,18 +2570,12 @@ export function initMatchEngine(rootEl, config = {}) {
         attackScore += aRoll.bonus;
         defenseScore += dRoll.bonus;
 
-        // ==========================
-        //   BONUS RPS
-        // ==========================
         const isGood = isGoodDefenseChoice(attackType, defenseAction);
         if (isGood) defenseScore += DUEL_RULES.GOOD_COUNTER_BONUS;
         else attackScore += DUEL_RULES.GENERIC_ATTACK_BONUS;
 
         const diceTag = `🎲 ${attackScore.toFixed(1)}-${defenseScore.toFixed(1)}`;
 
-        // ==========================
-        //   UI : DÉS + TOOLTIP breakdown
-        // ==========================
         showDuelDice(
             attackScore,
             defenseScore,
@@ -2541,18 +2595,12 @@ export function initMatchEngine(rootEl, config = {}) {
             })
         );
 
-        // ==========================
-        //   COÛTS STAMINA
-        // ==========================
         applyStaminaCost(attackerId, "attack", attackType);
         applyStaminaCost(defenderId, "defenseField", defenseAction);
 
         if (attackType === "special") markSpecialUsed(attackerId);
         if (defenseAction === "field-special") markSpecialUsed(defenderId);
 
-        // ==========================
-        //   RÉSULTAT
-        // ==========================
         if (critWinner) {
             return {
                 isTie: false,
@@ -2872,7 +2920,6 @@ export function initMatchEngine(rootEl, config = {}) {
         state.isKickoff = false;
 
         const originZone = ball.zoneIndex;
-        const originLane = ball.laneIndex;
 
         const duel = runFieldDuel({
             attackTeam,
@@ -2887,15 +2934,29 @@ export function initMatchEngine(rootEl, config = {}) {
         //   ÉGALITÉ
         // ==========================
         if (duel.isTie) {
-            givePossessionOnTie(defenseTeam);
-            concludeTurn(defenseTeam);
+            pushLogEntry(
+                "duelTieMain",
+                [`Zone ${originZone + 1}`],
+                duel?.diceTag
+            );
+
+            const pos = givePossessionOnTie(defenseTeam);
+            concludeTurn(pos.team);
             return;
         }
+
+        // ✅ LOG duel (attaque ou défense)
+        const logTitle = getLogTitleForDuel("pass", defenseAction, duel.duelResult);
+        pushLogEntry(
+            logTitle,
+            [`Zone ${originZone + 1}`, getCounterTag("pass", defenseAction)],
+            duel?.diceTag
+        );
 
         if (state.keeperRestartMustPass) state.keeperRestartMustPass = false;
 
         // ==========================
-        //   KICKOFF
+        //   KICKOFF (au cas où)
         // ==========================
         if (wasKickoff) {
             if (duel.duelResult === "attack") {
@@ -2926,7 +2987,7 @@ export function initMatchEngine(rootEl, config = {}) {
             const receiver = pickReceiverInCell(
                 attackTeam,
                 targetZone,
-                null,            // lane ignorée en logique
+                null,
                 ball.number,
                 ball.number
             );
@@ -2949,8 +3010,6 @@ export function initMatchEngine(rootEl, config = {}) {
         concludeTurn(defenseTeam);
     }
 
-
-
     // ==========================
     //   RESOLVE: DRIBBLE
     // ==========================
@@ -2961,10 +3020,7 @@ export function initMatchEngine(rootEl, config = {}) {
         //   INTERDIT FACE GK
         // ==========================
         if (ball.frontOfKeeper) {
-            setMessage(
-                TEXTS.ui.dribbleForbiddenMain,
-                TEXTS.ui.dribbleForbiddenSub
-            );
+            setMessage(TEXTS.ui.dribbleForbiddenMain, TEXTS.ui.dribbleForbiddenSub);
             pushLogEntry("dribbleRefusedTitle", ["dribbleRefusedDetail"]);
             concludeTurn(attackTeam);
             return;
@@ -2972,9 +3028,6 @@ export function initMatchEngine(rootEl, config = {}) {
 
         const originZone = ball.zoneIndex;
 
-        // ==========================
-        //   DUEL (ZONE ACTUELLE)
-        // ==========================
         const duel = runFieldDuel({
             attackTeam,
             defenseTeam,
@@ -2988,10 +3041,24 @@ export function initMatchEngine(rootEl, config = {}) {
         //   ÉGALITÉ
         // ==========================
         if (duel.isTie) {
-            givePossessionOnTie(defenseTeam);
-            concludeTurn(defenseTeam);
+            pushLogEntry(
+                "duelTieMain",
+                [`Zone ${originZone + 1}`],
+                duel?.diceTag
+            );
+
+            const pos = givePossessionOnTie(defenseTeam);
+            concludeTurn(pos.team);
             return;
         }
+
+        // ✅ LOG duel (attaque ou défense)
+        const logTitle = getLogTitleForDuel("dribble", defenseAction, duel.duelResult);
+        pushLogEntry(
+            logTitle,
+            [`Zone ${originZone + 1}`, getCounterTag("dribble", defenseAction)],
+            duel?.diceTag
+        );
 
         const carrierId = getPlayerId(attackTeam, ball.number);
         const carrierNumber = ball.number;
@@ -3003,37 +3070,25 @@ export function initMatchEngine(rootEl, config = {}) {
             resetLastDribbler();
             state.lastDribblerId = carrierId;
 
-            // Avancée d’UNE zone max
             if (originZone < PLAY_MAX_ZONE) {
                 const newZone = originZone + 1;
 
                 // ✅ logique
-                if (state.players[carrierId]) {
-                    state.players[carrierId].zoneIndex = newZone;
-                }
+                if (state.players[carrierId]) state.players[carrierId].zoneIndex = newZone;
+
                 ball.zoneIndex = newZone;
                 ball.frontOfKeeper = false;
 
-                // ✅ visuel + synchro complète
                 moveBallToPlayer(attackTeam, carrierNumber);
-
                 concludeTurn(attackTeam);
                 return;
             }
 
-            // ==========================
-            //   DERNIÈRE ZONE → FACE GK
-            // ==========================
+            // Dernière zone => face GK
             ball.frontOfKeeper = true;
 
-            setMessage(
-                TEXTS.ui.frontOfKeeperMain,
-                TEXTS.ui.frontOfKeeperSub
-            );
-            pushLogEntry(
-                "frontOfKeeperTitle",
-                [`Défense: ${defenseAction}`]
-            );
+            setMessage(TEXTS.ui.frontOfKeeperMain, TEXTS.ui.frontOfKeeperSub);
+            pushLogEntry("frontOfKeeperTitle", [`Défense: ${defenseAction}`]);
 
             concludeTurn(attackTeam);
             return;
@@ -3052,16 +3107,12 @@ export function initMatchEngine(rootEl, config = {}) {
         concludeTurn(defenseTeam);
     }
 
+
     // ==========================
     //   RESOLVE: SHOT
     // ==========================
 
     // Résout un tir (field duel puis éventuellement duel gardien) avec gestion contres/cadré/but.
-    // ==========================
-//   RESOLVE: SHOT
-// ==========================
-
-// Résout un tir (field duel puis éventuellement duel gardien) avec gestion contres/cadré/but.
     function resolveShot(
         attackTeam,
         defenseTeam,
@@ -3269,17 +3320,15 @@ export function initMatchEngine(rootEl, config = {}) {
         //   ÉGALITÉ → POSSESSION DÉFENSE
         // ==========================
         if (type === "SHOT_TIE") {
-            givePossessionOnTie(nextTeam);
+            const pos = givePossessionOnTie(nextTeam);
 
-            // ✅ clé manquante dans TEXTS.logs → ajoutée plus bas
             pushLogEntry(
                 "shotTieTitle",
                 [],
                 outcome.duel?.diceTag
             );
 
-            // ✅ FIN DE TOUR ICI (et nulle part ailleurs)
-            concludeTurn(nextTeam);
+            concludeTurn(pos.team);
             if (after) after();
             return;
         }
@@ -3733,6 +3782,8 @@ export function initMatchEngine(rootEl, config = {}) {
         awayCard.classList.remove("team-internal", "team-external");
         awayCard.classList.add("team-external");
     }
+    console.log("[init] history-list:", rootEl.querySelector("#history-list"));
+    console.log("[init] ui.historyListEl:", ui.historyListEl);
 
     init();
 }
