@@ -1008,6 +1008,17 @@ export function initMatchEngine(rootEl, config = {}) {
         return rootEl.querySelector(`[data-player="${getPlayerId(team, number)}"]`);
     }
 
+    // ✅ Retourne X "attaque-side" (internal = x, external = 100-x)
+    function getXInternal(team, x) {
+        return team === "internal" ? x : (100 - x);
+    }
+
+// ✅ Retourne le XInternal d'un joueur DOM
+    function getPlayerXInternal(team, el) {
+        const x = parseFloat(el.style.left);
+        return Number.isNaN(x) ? null : getXInternal(team, x);
+    }
+
     // Sélectionne un joueur proche du centre (pondéré distance + stamina + heat) dans une zone.
     function pickWeightedPlayerInZone(team, zoneIndex, laneIndex, opts = {}) {
         const { excludeIds = [], topK = 4, ignoreLane = false } = opts;
@@ -1064,30 +1075,65 @@ export function initMatchEngine(rootEl, config = {}) {
     }
 
     // Choisit un receveur dans une cellule cible (fallback aléatoire si aucun).
-    function pickReceiverInCell(team, zoneIndex, laneIndex, fallbackNumber, excludeNumber = null) {
+    function pickReceiverInCell(team, zoneIndex, laneIndex, fallbackNumber, excludeNumber = null, opts = {}) {
+        const { forwardOnly = false, forwardFromXInternal = null } = opts;
+
         const excludeId = excludeNumber ? getPlayerId(team, excludeNumber) : null;
 
+        // 1) tentative stricte (zone+lane)
         let receiverId = pickWeightedPlayerInZone(team, zoneIndex, laneIndex, {
-            topK: 5,
+            topK: 6,
             excludeIds: excludeId ? [excludeId] : [],
             ignoreLane: false,
         });
+
+        // 2) si pas trouvé, on élargit (ignoreLane) AVANT fallback random
+        if (!receiverId) {
+            receiverId = pickWeightedPlayerInZone(team, zoneIndex, laneIndex, {
+                topK: 8,
+                excludeIds: excludeId ? [excludeId] : [],
+                ignoreLane: true,
+            });
+        }
+
+        // 3) forward-only : si receveur derrière, on invalide et on retente en élargissant
+        if (forwardOnly && receiverId && forwardFromXInternal !== null) {
+            const el = getCarrierElement(team, parseInt(receiverId.slice(1), 10));
+            if (el) {
+                const rx = getPlayerXInternal(team, el);
+                if (rx !== null && rx < forwardFromXInternal - 0.01) {
+                    receiverId = null;
+                }
+            }
+        }
 
         if (receiverId && excludeNumber !== null) {
             const num = parseInt(receiverId.slice(1), 10);
             if (num === excludeNumber) receiverId = null;
         }
 
+        // fallback : seulement si vraiment personne
         if (!receiverId) {
             const selector = team === "internal" ? ".player.internal" : ".player.external";
             const all = Array.from(rootEl.querySelectorAll(selector)).filter(el => !el.classList.contains("goalkeeper"));
             if (!all.length) return fallbackNumber;
 
-            const filtered = excludeNumber === null
-                ? all
-                : all.filter(el => parseInt(el.dataset.player.slice(1), 10) !== excludeNumber);
+            let pool = all;
 
-            const pool = filtered.length ? filtered : all;
+            if (excludeNumber !== null) {
+                pool = pool.filter(el => parseInt(el.dataset.player.slice(1), 10) !== excludeNumber);
+                if (!pool.length) pool = all;
+            }
+
+            // ✅ forward-only même sur fallback (sinon ça repasse derrière)
+            if (forwardOnly && forwardFromXInternal !== null) {
+                const forwardPool = pool.filter(el => {
+                    const x = getPlayerXInternal(team, el);
+                    return x !== null && x >= forwardFromXInternal - 0.01;
+                });
+                if (forwardPool.length) pool = forwardPool;
+            }
+
             const rand = pool[Math.floor(Math.random() * pool.length)];
             return parseInt(rand.dataset.player.slice(1), 10);
         }
@@ -2325,12 +2371,19 @@ export function initMatchEngine(rootEl, config = {}) {
         if (duelResult === "attack") {
             resetLastDribbler();
 
+            const carrierEl = getCarrierElement(attackTeam, ball.number);
+            const carrierXInternal = carrierEl ? getPlayerXInternal(attackTeam, carrierEl) : null;
+
             const receiver = pickReceiverInCell(
                 attackTeam,
                 targetZone,
                 targetLane,
                 ball.number,
-                ball.number
+                ball.number,
+                {
+                    forwardOnly: true,
+                    forwardFromXInternal: carrierXInternal,
+                }
             );
 
             moveBallToPlayer(attackTeam, receiver);
@@ -2432,6 +2485,38 @@ export function initMatchEngine(rootEl, config = {}) {
             if (oldZone < MAX_ZONE_INDEX) {
                 const newZone = Math.min(MAX_ZONE_INDEX, oldZone + 1);
 
+                // ✅ Si on entre dans la dernière zone, on considère qu'on est "face GK"
+                if (newZone === MAX_ZONE_INDEX) {
+                    const y = laneY[lane];
+                    const xFront = FIELD_RULES.GK_FRONT_X[attackTeam];
+
+                    if (carrierEl && ui.ballEl) {
+                        carrierEl.style.left = `${xFront}%`;
+                        carrierEl.style.top = `${y}%`;
+                        ui.ballEl.style.left = `${xFront}%`;
+                        ui.ballEl.style.top = `${y}%`;
+                    }
+
+                    ball.zoneIndex = newZone;
+                    ball.laneIndex = lane;
+                    ball.frontOfKeeper = true;
+
+                    setMessage(TEXTS.ui.frontOfKeeperMain, TEXTS.ui.frontOfKeeperSub);
+                    pushLogEntry(
+                        "frontOfKeeperTitle",
+                        [`Zone ${newZone + 1}`, `Défense: ${defenseAction}`, getCounterTag("dribble", defenseAction)],
+                        duel.diceTag
+                    );
+
+                    animateAndThen(() => {
+                        advanceTurn(attackTeam);
+                        showAttackBarForCurrentTeam();
+                        refreshUI();
+                    });
+                    return;
+                }
+
+                // ✅ Sinon : simple avancée de zone (pas face GK)
                 if (carrierEl && ui.ballEl) {
                     const currentY = parseFloat(carrierEl.style.top);
                     const center = getCellCenter(attackTeam, newZone, lane);
@@ -2459,33 +2544,6 @@ export function initMatchEngine(rootEl, config = {}) {
                 });
                 return;
             }
-
-            // DERNIÈRE ZONE -> FACE GK
-            const y = laneY[lane];
-            const xFront = FIELD_RULES.GK_FRONT_X[attackTeam];
-
-            if (carrierEl && ui.ballEl) {
-                carrierEl.style.left = `${xFront}%`;
-                carrierEl.style.top = `${y}%`;
-                ui.ballEl.style.left = `${xFront}%`;
-                ui.ballEl.style.top = `${y}%`;
-            }
-
-            ball.frontOfKeeper = true;
-
-            setMessage(TEXTS.ui.frontOfKeeperMain, TEXTS.ui.frontOfKeeperSub);
-            pushLogEntry(
-                "frontOfKeeperTitle",
-                [`Défense: ${defenseAction}`, getCounterTag("dribble", defenseAction)],
-                duel.diceTag
-            );
-
-            animateAndThen(() => {
-                advanceTurn(attackTeam);
-                showAttackBarForCurrentTeam();
-                refreshUI();
-            });
-            return;
 
         }
 
