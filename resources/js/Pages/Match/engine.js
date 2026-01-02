@@ -1756,13 +1756,18 @@ export function initMatchEngine(rootEl, config = {}) {
             return (r < p) ? "special" : "shot";
         }
 
-        const z = ball.zoneIndex;
+        const z = ball.zoneIndex; // 0..MAX_ZONE_INDEX (0..4)
         const aiCarrierId = getPlayerId(state.currentTeam, ball.number);
         const stRatio = getStaminaRatio(aiCarrierId);
 
         if (stRatio < 0.20) return "pass";
-        if (z <= 1) return (Math.random() < (AI_RULES.ATTACK.EARLY_PASS_PROB ?? 0.7)) ? "pass" : "dribble";
 
+        // Z0-Z1 : construction -> passe/dribble
+        if (z <= 1) {
+            return (Math.random() < (AI_RULES.ATTACK.EARLY_PASS_PROB ?? 0.7)) ? "pass" : "dribble";
+        }
+
+        // Z2 : progression -> dribble dominant
         if (z === 2) {
             const r = Math.random();
             if (stRatio >= 0.30) {
@@ -1773,16 +1778,29 @@ export function initMatchEngine(rootEl, config = {}) {
             return (r < 0.80) ? "pass" : "dribble";
         }
 
+        // Z3 : zone dangereuse -> dribble / shot / special parfois
         if (z === 3) {
             const r = Math.random();
             if (stRatio >= 0.35) {
-                if (r < 0.85) return "dribble";
-                if (r < 0.95) return "shot";
+                if (r < 0.60) return "dribble";
+                if (r < 0.85) return "shot";
+                if (r < 0.95) return "pass";
+                return "special";
+            }
+            if (r < 0.50) return "pass";
+            if (r < 0.85) return "shot";
+            return "dribble";
+        }
+
+        // Z4 : très dangereux -> shot/special majoritaires
+        if (z >= 4) {
+            const r = Math.random();
+            if (stRatio >= 0.30) {
+                if (r < 0.55) return "shot";
+                if (r < 0.85) return "special";
                 return "pass";
             }
-            if (r < 0.55) return "dribble";
-            if (r < 0.85) return "shot";
-            return "pass";
+            return (r < 0.70) ? "shot" : "pass";
         }
 
         return "pass";
@@ -2287,15 +2305,17 @@ export function initMatchEngine(rootEl, config = {}) {
         let targetZone = ball.zoneIndex;
         let targetLane = ball.laneIndex;
 
-        if (ball.zoneIndex < 3) {
+        if (ball.zoneIndex < MAX_ZONE_INDEX) {
             targetZone = ball.zoneIndex + 1;
+
             const laneOptions = [ball.laneIndex];
-            if (ball.zoneIndex <= 2) {
-                if (ball.laneIndex > 0) laneOptions.push(ball.laneIndex - 1);
-                if (ball.laneIndex < laneY.length - 1) laneOptions.push(ball.laneIndex + 1);
-            }
+            if (ball.laneIndex > 0) laneOptions.push(ball.laneIndex - 1);
+            if (ball.laneIndex < laneY.length - 1) laneOptions.push(ball.laneIndex + 1);
+
             targetLane = laneOptions[Math.floor(Math.random() * laneOptions.length)];
         } else {
+            // déjà en dernière zone : on varie la lane
+            targetZone = MAX_ZONE_INDEX;
             targetLane = [0, 1, 2][Math.floor(Math.random() * 3)];
         }
 
@@ -2409,8 +2429,8 @@ export function initMatchEngine(rootEl, config = {}) {
             resetLastDribbler();
             state.lastDribblerId = carrierId;
 
-            if (oldZone < 3) {
-                const newZone = Math.min(3, oldZone + 1);
+            if (oldZone < MAX_ZONE_INDEX) {
+                const newZone = Math.min(MAX_ZONE_INDEX, oldZone + 1);
 
                 if (carrierEl && ui.ballEl) {
                     const currentY = parseFloat(carrierEl.style.top);
@@ -2440,9 +2460,7 @@ export function initMatchEngine(rootEl, config = {}) {
                 return;
             }
 
-            // ==========================
-            //   ZONE 3 -> FACE GK
-            // ==========================
+            // DERNIÈRE ZONE -> FACE GK
             const y = laneY[lane];
             const xFront = FIELD_RULES.GK_FRONT_X[attackTeam];
 
@@ -2468,6 +2486,7 @@ export function initMatchEngine(rootEl, config = {}) {
                 refreshUI();
             });
             return;
+
         }
 
         // ==========================
@@ -2612,13 +2631,12 @@ export function initMatchEngine(rootEl, config = {}) {
         );
         setMessage(TEXTS.ui.shotOnTargetMain, TEXTS.ui.shotOnTargetSub.replace("{team}", TEAMS[defenseTeam].label));
 
-        const linesBehind = getFacingZoneIndex(originZone);
+        const zonesToGoal = Math.max(0, MAX_ZONE_INDEX - originZone);
         const gkAttackBase =
             roster.attackBaseFor(attackType, attackTeam, ball.number) -
-            (linesBehind * DUEL_RULES.SHOT_DISTANCE_PENALTY_PER_LINE);
+            (zonesToGoal * DUEL_RULES.SHOT_DISTANCE_PENALTY_PER_LINE);
 
-        // mise en scène : zone 4 (index 3)
-        const targetZone = 3;
+        const targetZone = MAX_ZONE_INDEX;
         const center = getCellCenter(attackTeam, targetZone, originLane);
         ball.zoneIndex = targetZone;
         ball.laneIndex = originLane;
