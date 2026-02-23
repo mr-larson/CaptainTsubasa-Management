@@ -254,31 +254,47 @@
 
                             <div id="ball"></div>
 
-                            <!-- INTERNAL -->
-                            <div class="player internal goalkeeper" data-player="I1" style="left: 7%; top: 50%;">1</div>
-                            <div class="player internal" data-player="I2" style="left: 20%; top: 25%;">2</div>
-                            <div class="player internal" data-player="I3" style="left: 20%; top: 50%;">3</div>
-                            <div class="player internal" data-player="I4" style="left: 20%; top: 75%;">4</div>
-                            <div class="player internal" data-player="I5" style="left: 35%; top: 40%;">5</div>
-                            <div class="player internal" data-player="I6" style="left: 35%; top: 60%;">6</div>
-                            <div class="player internal" data-player="I7" style="left: 55%; top: 20%;">7</div>
-                            <div class="player internal" data-player="I8" style="left: 55%; top: 50%;">8</div>
-                            <div class="player internal" data-player="I9" style="left: 55%; top: 80%;">9</div>
-                            <div class="player internal" data-player="I10" style="left: 75%; top: 35%;">10</div>
-                            <div class="player internal" data-player="I11" style="left: 75%; top: 65%;">11</div>
+                            <!-- ZONE 0 : GARDIEN -->
+                            <div class="player internal goalkeeper" data-player="I1" data-zone="0" style="left: 10%; top: 50%;">1</div>
 
-                            <!-- EXTERNAL -->
-                            <div class="player external goalkeeper" data-player="E1" style="left: 93%; top: 50%;">1</div>
-                            <div class="player external" data-player="E2" style="left: 80%; top: 25%;">2</div>
-                            <div class="player external" data-player="E3" style="left: 80%; top: 50%;">3</div>
-                            <div class="player external" data-player="E4" style="left: 80%; top: 75%;">4</div>
-                            <div class="player external" data-player="E5" style="left: 65%; top: 40%;">5</div>
-                            <div class="player external" data-player="E6" style="left: 65%; top: 60%;">6</div>
-                            <div class="player external" data-player="E7" style="left: 45%; top: 20%;">7</div>
-                            <div class="player external" data-player="E8" style="left: 45%; top: 50%;">8</div>
-                            <div class="player external" data-player="E9" style="left: 45%; top: 80%;">9</div>
-                            <div class="player external" data-player="E10" style="left: 25%; top: 35%;">10</div>
-                            <div class="player external" data-player="E11" style="left: 25%; top: 65%;">11</div>
+                            <!-- ZONE 1 : DÉFENSEURS -->
+                            <div class="player internal" data-player="I2" data-zone="1" style="left: 20%; top: 25%;">2</div>
+                            <div class="player internal" data-player="I3" data-zone="1" style="left: 20%; top: 50%;">3</div>
+                            <div class="player internal" data-player="I4" data-zone="1" style="left: 20%; top: 75%;">4</div>
+
+                            <!-- ZONE 2 : MILIEUX DÉFENSIFS -->
+                            <div class="player internal" data-player="I5" data-zone="2" style="left: 35%; top: 40%;">5</div>
+                            <div class="player internal" data-player="I6" data-zone="2" style="left: 35%; top: 60%;">6</div>
+
+                            <!-- ZONE 3 : MILIEUX OFFENSIFS -->
+                            <div class="player internal" data-player="I7" data-zone="3" style="left: 55%; top: 20%;">7</div>
+                            <div class="player internal" data-player="I8" data-zone="3" style="left: 55%; top: 50%;">8</div>
+                            <div class="player internal" data-player="I9" data-zone="3" style="left: 55%; top: 80%;">9</div>
+
+                            <!-- ZONE 4 : ATTAQUANTS -->
+                            <div class="player internal" data-player="I10" data-zone="4" style="left: 75%; top: 35%;">10</div>
+                            <div class="player internal" data-player="I11" data-zone="4" style="left: 75%; top: 65%;">11</div>
+
+                            <!-- ZONE 0 : GARDIEN -->
+                            <div class="player external goalkeeper" data-player="E1" data-zone="0" style="left: 90%; top: 50%;">1</div>
+
+                            <!-- ZONE 1 : DÉFENSEURS -->
+                            <div class="player external" data-player="E2" data-zone="1" style="left: 80%; top: 25%;">2</div>
+                            <div class="player external" data-player="E3" data-zone="1" style="left: 80%; top: 50%;">3</div>
+                            <div class="player external" data-player="E4" data-zone="1" style="left: 80%; top: 75%;">4</div>
+
+                            <!-- ZONE 2 : MILIEUX DÉFENSIFS -->
+                            <div class="player external" data-player="E5" data-zone="2" style="left: 65%; top: 40%;">5</div>
+                            <div class="player external" data-player="E6" data-zone="2" style="left: 65%; top: 60%;">6</div>
+
+                            <!-- ZONE 3 : MILIEUX OFFENSIFS -->
+                            <div class="player external" data-player="E7" data-zone="3" style="left: 45%; top: 20%;">7</div>
+                            <div class="player external" data-player="E8" data-zone="3" style="left: 45%; top: 50%;">8</div>
+                            <div class="player external" data-player="E9" data-zone="3" style="left: 45%; top: 80%;">9</div>
+
+                            <!-- ZONE 4 : ATTAQUANTS -->
+                            <div class="player external" data-player="E10" data-zone="4" style="left: 25%; top: 35%;">10</div>
+                            <div class="player external" data-player="E11" data-zone="4" style="left: 25%; top: 65%;">11</div>
 
                             <div id="turn-indicator">00</div>
                         </div>

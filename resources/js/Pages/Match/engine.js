@@ -3,10 +3,12 @@
 // ==========================
 //   CONSTANTES
 // ==========================
-const ANIM_MS     = 600; // ralenti pour suivre les transitions CSS
-const AI_THINK_MS = 400; // délai "réflexion IA"
+const ANIM_MS     = 300; // ralenti pour suivre les transitions CSS
+const AI_THINK_MS = 200; // délai "réflexion IA"
+const GK_HOLD_MS = 400; // ralenti pour suivre la récupèration de balle du gardien
+const ACTION_BAR_FADE_MS  = 100 // Durée des transitions fade-in/out de la barre
 const DIE_SIDES   = 20;  // nombre de faces du dé utilisé dans les calculs de duel
-const GK_HOLD_MS = 800; // ralenti pour suivre la récupèration de balle du gardien
+
 
 // ==========================
 //   RÈGLES DE PARTIE
@@ -984,15 +986,27 @@ export function initMatchEngine(rootEl, config = {}) {
 
     // Retourne le centre (x,y) d’une cellule (zone/lane) en miroir selon l’équipe.
     function getCellCenter(team, zoneIndex, laneIndex) {
-        const zi = Math.max(0, Math.min(MAX_ZONE_INDEX, zoneIndex));
-        const li = Math.max(0, Math.min(laneY.length - 1, laneIndex));
 
-        const left = ZONE_BOUNDS_INTERNAL[zi];
-        const right = ZONE_BOUNDS_INTERNAL[zi + 1];
-        const xInternal = (left + right) / 2;
+        // 🔵 NOUVELLES COORDONNÉES (tu peux les ajuster)
+        const ZONE_X = {
+            internal: {
+                0: 10,
+                1: 20,
+                2: 35,
+                3: 55,
+                4: 75,
+            },
+            external: {
+                0: 90,
+                1: 80,
+                2: 65,
+                3: 45,
+                4: 25,
+            }
+        };
 
-        const x = team === "internal" ? xInternal : 100 - xInternal;
-        const y = laneY[li];
+        const x = ZONE_X[team][zoneIndex];
+        const y = laneY[laneIndex];
 
         return { x, y };
     }
@@ -1008,6 +1022,39 @@ export function initMatchEngine(rootEl, config = {}) {
         return rootEl.querySelector(`[data-player="${getPlayerId(team, number)}"]`);
     }
 
+    // Retourne la zone (0..4) d'un joueur à partir de son data-zone.
+    // Fallback : si pas de data-zone, on tente de déduire depuis xInternal (compat old).
+    function getPlayerZoneFromDOM(playerId) {
+        const el = rootEl.querySelector(`.player[data-player="${playerId}"]`);
+        if (!el) return 0;
+
+        const zAttr = el.dataset.zone;
+        if (zAttr !== undefined) {
+            const z = parseInt(zAttr, 10);
+            if (Number.isFinite(z)) return Math.max(0, Math.min(MAX_ZONE_INDEX, z));
+        }
+
+        // 🔁 Fallback compat (au cas où tu aurais oublié un data-zone)
+        const x = parseFloat(el.style.left);
+        if (Number.isNaN(x)) return 0;
+
+        const team = playerId.startsWith("I") ? "internal" : "external";
+        const xInternal = team === "internal" ? x : 100 - x;
+
+        let zoneIndex = 0;
+        const xClamped = Math.max(0, Math.min(100, xInternal));
+        for (let i = 0; i < ZONE_BOUNDS_INTERNAL.length - 1; i++) {
+            const left = ZONE_BOUNDS_INTERNAL[i];
+            const right = ZONE_BOUNDS_INTERNAL[i + 1];
+            const isLast = (i === ZONE_BOUNDS_INTERNAL.length - 2);
+            const inside = isLast
+                ? (xClamped >= left && xClamped <= right)
+                : (xClamped >= left && xClamped < right);
+            if (inside) { zoneIndex = i; break; }
+        }
+        return zoneIndex;
+    }
+
     // ✅ Retourne X "attaque-side" (internal = x, external = 100-x)
     function getXInternal(team, x) {
         return team === "internal" ? x : (100 - x);
@@ -1021,17 +1068,31 @@ export function initMatchEngine(rootEl, config = {}) {
 
     // Sélectionne un joueur proche du centre (pondéré distance + stamina + heat) dans une zone.
     function pickWeightedPlayerInZone(team, zoneIndex, laneIndex, opts = {}) {
-        const { excludeIds = [], topK = 4, ignoreLane = false } = opts;
+        const {
+            excludeIds = [],
+            topK = 4,
+            ignoreLane = false,
+        } = opts;
 
         const selector = team === "internal" ? ".player.internal" : ".player.external";
-        const center = ignoreLane ? getCellCenter(team, zoneIndex, 1) : getCellCenter(team, zoneIndex, laneIndex);
+        const center = ignoreLane
+            ? getCellCenter(team, zoneIndex, 1)
+            : getCellCenter(team, zoneIndex, laneIndex);
 
         const candidates = [];
         rootEl.querySelectorAll(selector).forEach((el) => {
+            // On ne veut jamais choisir le gardien pour un duel de champ
             if (el.classList.contains("goalkeeper")) return;
 
             const id = el.dataset.player;
             if (!id || excludeIds.includes(id)) return;
+
+            // 🔒 Respect strict de la zone par data-zone
+            const zAttr = el.dataset.zone;
+            if (zAttr !== undefined) {
+                const z = parseInt(zAttr, 10);
+                if (Number.isFinite(z) && z !== zoneIndex) return;
+            }
 
             const x = parseFloat(el.style.left);
             const y = parseFloat(el.style.top);
@@ -1076,7 +1137,11 @@ export function initMatchEngine(rootEl, config = {}) {
 
     // Choisit un receveur dans une cellule cible (fallback aléatoire si aucun).
     function pickReceiverInCell(team, zoneIndex, laneIndex, fallbackNumber, excludeNumber = null, opts = {}) {
-        const { forwardOnly = false, forwardFromXInternal = null } = opts;
+        const {
+            forwardOnly = false,
+            forwardFromXInternal = null,
+            ignoreLaneForInitialPick = false,
+        } = opts;
 
         const excludeId = excludeNumber ? getPlayerId(team, excludeNumber) : null;
 
@@ -1084,8 +1149,9 @@ export function initMatchEngine(rootEl, config = {}) {
         let receiverId = pickWeightedPlayerInZone(team, zoneIndex, laneIndex, {
             topK: 6,
             excludeIds: excludeId ? [excludeId] : [],
-            ignoreLane: false,
+            ignoreLane: ignoreLaneForInitialPick,
         });
+
 
         // 2) si pas trouvé, on élargit (ignoreLane) AVANT fallback random
         if (!receiverId) {
@@ -1152,61 +1218,74 @@ export function initMatchEngine(rootEl, config = {}) {
     function moveBallToPlayer(team, number) {
         if (!ui.ballEl) return;
 
-        const el = getCarrierElement(team, number);
+        // 1) Récupération de l'élément DOM du joueur ciblé
+        let targetNumber = number;
+        let el = getCarrierElement(team, targetNumber);
         if (!el) return;
 
-        const x = parseFloat(el.style.left);
-        const y = parseFloat(el.style.top);
+        let x = parseFloat(el.style.left);
+        let y = parseFloat(el.style.top);
         if (Number.isNaN(x) || Number.isNaN(y)) return;
 
+        // 2) Mise à jour de base : visuel sur ce joueur
         ui.ballEl.style.left = x + "%";
         ui.ballEl.style.top = y + "%";
 
-        const info = roster.getPlayerInfo(team, number);
-        ui.ballEl.textContent = info ? String(info.number) : String(number);
+        const info = roster.getPlayerInfo(team, targetNumber);
+        ui.ballEl.textContent = info ? String(info.number) : String(targetNumber);
 
+        // 3) Mise à jour de l'état interne du ballon
         ball.team = team;
-        ball.number = number;
+        ball.number = targetNumber;
 
+        // 4) Règle spéciale : si gardien reçoit la balle alors qu'il n'est pas frontal → passe forcée
         if (ball.number === 1 && !ball.frontOfKeeper) {
             const safe = pickReceiverInCell(team, ball.zoneIndex, ball.laneIndex, 6, 1);
-            ball.number = safe;
+
+            // On redirige la possession vers le joueur "safe"
+            const safeEl = getCarrierElement(team, safe);
+            if (safeEl) {
+                const sx = parseFloat(safeEl.style.left);
+                const sy = parseFloat(safeEl.style.top);
+
+                ui.ballEl.style.left = sx + "%";
+                ui.ballEl.style.top = sy + "%";
+
+                const safeInfo = roster.getPlayerInfo(team, safe);
+                ui.ballEl.textContent = safeInfo ? String(safeInfo.number) : String(safe);
+
+                ball.number = safe;   // état cohérent avec l'affichage
+                el = safeEl;
+                x = sx;
+                y = sy;
+                targetNumber = safe;
+            }
         }
 
+        // 5) Marquage heat pour diversifier les touches
         markTouch(getPlayerId(team, ball.number));
         ball.frontOfKeeper = false;
 
-        const xInternal = team === "internal" ? x : 100 - x;
+        // 6) NOUVEAU : zone depuis data-zone du joueur finalement porteur
+        const playerId = getPlayerId(team, ball.number);
+        const zoneIndex = getPlayerZoneFromDOM(playerId);
 
-        let zoneIndex = 0;
-
-        // Sécurité : clamp xInternal dans [0..100]
-        const xClamped = Math.max(0, Math.min(100, xInternal));
-
-        for (let i = 0; i < ZONE_BOUNDS_INTERNAL.length - 1; i++) {
-            const left = ZONE_BOUNDS_INTERNAL[i];
-            const right = ZONE_BOUNDS_INTERNAL[i + 1];
-
-            // dernier segment inclusif à droite pour capter 100%
-            const isLast = (i === ZONE_BOUNDS_INTERNAL.length - 2);
-            const inside = isLast
-                ? (xClamped >= left && xClamped <= right)
-                : (xClamped >= left && xClamped < right);
-
-            if (inside) { zoneIndex = i; break; }
-        }
-
+        // 7) Lane déterminée via position verticale
         let bestLane = 0;
         let bestLaneDist = Infinity;
         laneY.forEach((vy, i) => {
             const d = Math.abs(vy - y);
-            if (d < bestLaneDist) { bestLaneDist = d; bestLane = i; }
+            if (d < bestLaneDist) {
+                bestLaneDist = d;
+                bestLane = i;
+            }
         });
 
         ball.zoneIndex = zoneIndex;
         ball.laneIndex = bestLane;
         state.defensePreview = null;
 
+        // 8) Mise à jour des cartes et de l'UI
         updateTeamCard();
         updateCardsPower();
     }
@@ -1647,7 +1726,7 @@ export function initMatchEngine(rootEl, config = {}) {
             ui.actionBarEl.classList.add("fade-in");
 
             bindActionButtons();
-        }, 200);
+        }, ACTION_BAR_FADE_MS);
     }
 
     // ==========================
@@ -1690,7 +1769,7 @@ export function initMatchEngine(rootEl, config = {}) {
             if (ui.actionBarEl) {
                 ui.actionBarEl.classList.remove("fade-in");
                 ui.actionBarEl.classList.add("fade-out");
-                setTimeout(() => { ui.actionBarEl.innerHTML = ""; }, 200);
+                setTimeout(() => { ui.actionBarEl.innerHTML = ""; }, ACTION_BAR_FADE_MS);
             }
 
             refreshUI();
@@ -1963,12 +2042,21 @@ export function initMatchEngine(rootEl, config = {}) {
     // ==========================
 
     // Sélectionne un défenseur “réaliste” dans la zone opposée à l’attaque.
-    function pickFieldDefender(defenseTeam, originZone, originLane) {
-        const defZone = getFacingZoneIndex(originZone);
 
+    function mapAttackZoneToDefenseZone(originZone) {
+        if (originZone <= 0) return 1;           // GK -> on considère la 1ère ligne défensive
+        const mapped = 5 - originZone;          // 1->4, 2->3, 3->2, 4->1
+        return Math.max(1, Math.min(4, mapped));
+    }
+
+    function pickFieldDefender(defenseTeam, originZone, originLane) {
+        // 1) Déterminer la zone de défense à partir de la zone d'attaque (règle métier)
+        const defZone = mapAttackZoneToDefenseZone(originZone);
+
+        // 2) Choisir un défenseur dans cette zone, verticalement libre (ignoreLane = true)
         const defenderId = pickWeightedPlayerInZone(defenseTeam, defZone, originLane, {
             topK: 8,
-            ignoreLane: true,
+            ignoreLane: true,   // ✅ variabilité haut / milieu / bas dans la même zone
         });
 
         if (!defenderId) return null;
@@ -2383,6 +2471,7 @@ export function initMatchEngine(rootEl, config = {}) {
                 {
                     forwardOnly: true,
                     forwardFromXInternal: carrierXInternal,
+                    ignoreLaneForInitialPick: true,
                 }
             );
 
@@ -2432,13 +2521,12 @@ export function initMatchEngine(rootEl, config = {}) {
         });
     }
 
-
     // ==========================
     //   RESOLVE: DRIBBLE
     // ==========================
-
     // Résout un dribble (duel champ) et gère l’avancée ou la perte de balle.
     function resolveDribble(attackTeam, defenseTeam, defenseAction, defenderPick = null) {
+        // Si déjà face au gardien, on interdit le dribble
         if (ball.frontOfKeeper) {
             setMessage(TEXTS.ui.dribbleForbiddenMain, TEXTS.ui.dribbleForbiddenSub);
             pushLogEntry("dribbleRefusedTitle", ["dribbleRefusedDetail"]);
@@ -2482,41 +2570,12 @@ export function initMatchEngine(rootEl, config = {}) {
             resetLastDribbler();
             state.lastDribblerId = carrierId;
 
+            // Cas 1 : on n’est pas encore dans la dernière zone → on avance d’UNE zone
             if (oldZone < MAX_ZONE_INDEX) {
                 const newZone = Math.min(MAX_ZONE_INDEX, oldZone + 1);
 
-                // ✅ Si on entre dans la dernière zone, on considère qu'on est "face GK"
-                if (newZone === MAX_ZONE_INDEX) {
-                    const y = laneY[lane];
-                    const xFront = FIELD_RULES.GK_FRONT_X[attackTeam];
-
-                    if (carrierEl && ui.ballEl) {
-                        carrierEl.style.left = `${xFront}%`;
-                        carrierEl.style.top = `${y}%`;
-                        ui.ballEl.style.left = `${xFront}%`;
-                        ui.ballEl.style.top = `${y}%`;
-                    }
-
-                    ball.zoneIndex = newZone;
-                    ball.laneIndex = lane;
-                    ball.frontOfKeeper = true;
-
-                    setMessage(TEXTS.ui.frontOfKeeperMain, TEXTS.ui.frontOfKeeperSub);
-                    pushLogEntry(
-                        "frontOfKeeperTitle",
-                        [`Zone ${newZone + 1}`, `Défense: ${defenseAction}`, getCounterTag("dribble", defenseAction)],
-                        duel.diceTag
-                    );
-
-                    animateAndThen(() => {
-                        advanceTurn(attackTeam);
-                        showAttackBarForCurrentTeam();
-                        refreshUI();
-                    });
-                    return;
-                }
-
-                // ✅ Sinon : simple avancée de zone (pas face GK)
+                // Simple avancée : on NE PASSE PAS encore face au gardien,
+                // même si on entre dans la dernière zone.
                 if (carrierEl && ui.ballEl) {
                     const currentY = parseFloat(carrierEl.style.top);
                     const center = getCellCenter(attackTeam, newZone, lane);
@@ -2527,10 +2586,18 @@ export function initMatchEngine(rootEl, config = {}) {
                     ui.ballEl.style.top = `${currentY}%`;
                 }
 
+                if (carrierEl) {
+                    carrierEl.dataset.zone = String(newZone);
+                }
+
                 ball.zoneIndex = newZone;
                 ball.laneIndex = lane;
+                ball.frontOfKeeper = false; // ⚠ on reste "avant la défense"
 
-                setMessage("Dribble réussi !", `${TEAMS[attackTeam].label} avance en zone ${newZone + 1}.`);
+                setMessage(
+                    "Dribble réussi !",
+                    `${TEAMS[attackTeam].label} avance en zone ${newZone + 1}.`
+                );
                 pushLogEntry(
                     "Dribble réussi",
                     [`Zone ${newZone + 1}`, `Défense: ${defenseAction}`, getCounterTag("dribble", defenseAction)],
@@ -2545,6 +2612,41 @@ export function initMatchEngine(rootEl, config = {}) {
                 return;
             }
 
+            // Cas 2 : on est DÉJÀ dans la dernière zone → 2e dribble gagné => face au gardien
+            if (oldZone === MAX_ZONE_INDEX) {
+                const y = laneY[lane];
+                const xFront = FIELD_RULES.GK_FRONT_X[attackTeam];
+
+                if (carrierEl && ui.ballEl) {
+                    carrierEl.style.left = `${xFront}%`;
+                    carrierEl.style.top = `${y}%`;
+                    ui.ballEl.style.left = `${xFront}%`;
+                    ui.ballEl.style.top = `${y}%`;
+                }
+
+                // Zone inchangée, on reste dans la dernière zone
+                if (carrierEl) {
+                    carrierEl.dataset.zone = String(oldZone);
+                }
+
+                ball.zoneIndex = oldZone;
+                ball.laneIndex = lane;
+                ball.frontOfKeeper = true;
+
+                setMessage(TEXTS.ui.frontOfKeeperMain, TEXTS.ui.frontOfKeeperSub);
+                pushLogEntry(
+                    "frontOfKeeperTitle",
+                    [`Zone ${oldZone + 1}`, `Défense: ${defenseAction}`, getCounterTag("dribble", defenseAction)],
+                    duel.diceTag
+                );
+
+                animateAndThen(() => {
+                    advanceTurn(attackTeam);
+                    showAttackBarForCurrentTeam();
+                    refreshUI();
+                });
+                return;
+            }
         }
 
         // ==========================
@@ -2580,7 +2682,6 @@ export function initMatchEngine(rootEl, config = {}) {
     //   RESOLVE: SHOT
     // ==========================
 
-    // Résout un tir (field duel puis éventuellement duel gardien) avec gestion contres/cadré/but.
     function resolveShot(attackTeam, defenseTeam, defenseAction, isSpecial = false, defenderPick = null) {
         const originZone = ball.zoneIndex;
         const originLane = ball.laneIndex;
@@ -2588,9 +2689,7 @@ export function initMatchEngine(rootEl, config = {}) {
         const attackerId = getPlayerId(attackTeam, ball.number);
         const attackType = isSpecial ? "special" : "shot";
 
-        // ==========================
-        //   FACE GK -> DUEL GK DIRECT
-        // ==========================
+        // CAS 1 : déjà face au gardien -> duel GK direct (inchangé)
         if (ball.frontOfKeeper) {
             resolveShotKeeperDuel({
                 stage: "keeper",
@@ -2605,9 +2704,7 @@ export function initMatchEngine(rootEl, config = {}) {
             return;
         }
 
-        // ==========================
-        //   DUEL vs DÉFENSE DE CHAMP
-        // ==========================
+        //  DUEL CHAMP (inchangé)
         const duel = runFieldDuel({
             attackTeam,
             defenseTeam,
@@ -2635,11 +2732,7 @@ export function initMatchEngine(rootEl, config = {}) {
 
         const duelResult = duel.duelResult;
 
-        // ==========================
-        //   DÉFENSE GAGNE
-        //   - block => "Tir contré"
-        //   - sinon => "Tir récupéré"
-        // ==========================
+        // DÉFENSE GAGNE (inchangé)
         if (duelResult === "defense") {
             const number =
                 duel.defenderSlot ??
@@ -2660,7 +2753,6 @@ export function initMatchEngine(rootEl, config = {}) {
                     .replace("{number}", number)
             );
 
-            // ✅ Titre log basé sur l'action défensive + RPS (bon/mauvais choix)
             const logTitle = getLogTitleForDuel(attackType, defenseAction, "defense");
             pushLogEntry(
                 logTitle,
@@ -2679,15 +2771,16 @@ export function initMatchEngine(rootEl, config = {}) {
             return;
         }
 
-        // ==========================
-        //   ATTAQUE GAGNE (tir cadré)
-        // ==========================
+        // ATTAQUE GAGNE (tir cadré -> passage gardien)
         pushLogEntry(
             TEXTS.ui.shotOnTargetMain,
             [`Zone ${originZone + 1}`, `Défense: ${defenseAction}`, getCounterTag(attackType, defenseAction)],
             duel.diceTag
         );
-        setMessage(TEXTS.ui.shotOnTargetMain, TEXTS.ui.shotOnTargetSub.replace("{team}", TEAMS[defenseTeam].label));
+        setMessage(
+            TEXTS.ui.shotOnTargetMain,
+            TEXTS.ui.shotOnTargetSub.replace("{team}", TEAMS[defenseTeam].label)
+        );
 
         const zonesToGoal = Math.max(0, MAX_ZONE_INDEX - originZone);
         const gkAttackBase =
@@ -2704,6 +2797,7 @@ export function initMatchEngine(rootEl, config = {}) {
             ui.ballEl.style.top = center.y + "%";
         }
 
+        // On marque qu'on entre en phase gardien
         state.pendingShotContext = {
             stage: "keeper",
             attackTeam,
@@ -2715,7 +2809,20 @@ export function initMatchEngine(rootEl, config = {}) {
             logParts: [`Zone ${originZone + 1}`],
         };
 
+        // 🧤 Animation vers le gardien, puis affichage des choix GK
         animateShotToKeeper(defenseTeam, () => {
+            // ✅ NOUVEAU : la défense est désormais le gardien -> on met la carte à jour
+            const defenderPrefix = (defenseTeam === "internal") ? "home" : "away";
+            updateSideCard(defenderPrefix, defenseTeam, 1);
+
+            // ✅ On aligne aussi le contexte défenseur sur le gardien (cohérence état)
+            state.pendingDefenseContext = {
+                defenseTeam,
+                defenderId: getKeeperId(defenseTeam),
+                defenderSlot: 1,
+            };
+
+            // Barre de défense gardien (inchangé)
             setActionBar(buildDefenseGKHTML(), `mode-defense-${defenseTeam}`);
 
             setMessage(
