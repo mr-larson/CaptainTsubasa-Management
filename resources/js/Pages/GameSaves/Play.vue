@@ -259,6 +259,61 @@ const isByeWeek = computed(() => {
     return !myMatchThisWeek.value;
 });
 
+// ==========================
+//   ACTIONS / PERFORMANCES
+// ==========================
+
+// Toutes les actions stockées dans gameSave.state.player_actions (array)
+const playerActions = computed(() => props.gameSave.state?.player_actions ?? []);
+
+// Actions impliquant un joueur donné (attaque ou défense)
+const actionsForPlayer = (playerId) => {
+    if (!playerId) return [];
+    return playerActions.value.filter(ev =>
+        ev.attack?.game_player_id === playerId ||
+        ev.defense?.game_player_id === playerId
+    );
+};
+
+// Actions du joueur actuellement sélectionné (Mon équipe)
+const selectedMyPlayerActions = computed(() => {
+    if (!selectedMyPlayer.value) return [];
+    return actionsForPlayer(selectedMyPlayer.value.id);
+});
+
+// Petit résumé simple (passes/tirs/dribbles du point de vue ATTACK)
+const selectedMyPlayerPerf = computed(() => {
+    const p = selectedMyPlayer.value;
+    if (!p) return null;
+
+    const events = selectedMyPlayerActions.value;
+
+    const stats = {
+        pass:    { attempts: 0, success: 0 },
+        shot:    { attempts: 0, success: 0 },
+        dribble: { attempts: 0, success: 0 },
+        special: { attempts: 0, success: 0 },
+        duelsWon: 0,
+        duelsLost: 0,
+    };
+
+    for (const ev of events) {
+        const isAttacker = ev.attack?.game_player_id === p.id;
+        if (!isAttacker) continue;
+
+        const type = ev.attack.action; // "pass" | "shot" | "dribble" | "special"
+        if (stats[type]) {
+            stats[type].attempts++;
+            if (ev.result === "attack") stats[type].success++;
+        }
+
+        if (ev.result === "attack") stats.duelsWon++;
+        else if (ev.result === "defense") stats.duelsLost++;
+    }
+
+    return stats;
+});
+
 const simulateWeek = () => {
     router.post(
         route('game-saves.simulate-week', { gameSave: props.gameSave.id }),
@@ -878,10 +933,45 @@ const playNextMatch = () => {
                                 </div>
 
                                 <div class="border border-slate-200 rounded-lg bg-slate-50 p-4">
-                                    <h4 class="text-md font-semibold text-slate-700 mb-2">Historique & performance</h4>
-                                    <p class="text-sm text-slate-500">
-                                        Cette section arrive bientôt : historique des matchs, taux de réussite (passes, tirs, dribbles),
-                                        et statistiques par semaine.
+                                    <h4 class="text-md font-semibold text-slate-700 mb-3">Historique & performance</h4>
+
+                                    <template v-if="selectedMyPlayerPerf">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-slate-700">
+                                            <div>
+                                                <p class="font-semibold mb-1">Actions offensives</p>
+                                                <p>Passes : {{ selectedMyPlayerPerf.pass.attempts }} tentées,
+                                                    {{ selectedMyPlayerPerf.pass.success }} réussies
+                                                </p>
+                                                <p>Tirs : {{ selectedMyPlayerPerf.shot.attempts }} tentés,
+                                                    {{ selectedMyPlayerPerf.shot.success }} cadrés / gagnés
+                                                </p>
+                                                <p>Dribbles : {{ selectedMyPlayerPerf.dribble.attempts }} tentés,
+                                                    {{ selectedMyPlayerPerf.dribble.success }} réussis
+                                                </p>
+                                                <p>Spéciaux : {{ selectedMyPlayerPerf.special.attempts }} tentés,
+                                                    {{ selectedMyPlayerPerf.special.success }} réussis
+                                                </p>
+                                            </div>
+
+                                            <div>
+                                                <p class="font-semibold mb-1">Duels</p>
+                                                <p>Duels gagnés : {{ selectedMyPlayerPerf.duelsWon }}</p>
+                                                <p>Duels perdus : {{ selectedMyPlayerPerf.duelsLost }}</p>
+                                                <p class="text-xs text-slate-500 mt-2">
+                                                    Basé sur les actions enregistrées dans les matchs joués de cette sauvegarde.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-4">
+                                            <p class="text-xs text-slate-500">
+                                                (Prochain step possible : lister les dernières actions / matches avec timestamps.)
+                                            </p>
+                                        </div>
+                                    </template>
+
+                                    <p v-else class="text-sm text-slate-500">
+                                        Aucune action enregistrée pour ce joueur dans cette sauvegarde.
                                     </p>
                                 </div>
                             </template>

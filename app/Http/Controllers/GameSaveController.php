@@ -598,6 +598,7 @@ class GameSaveController extends Controller
         $data = $request->validate([
             'scoresByTeamId' => ['required', 'array', 'min:2'],
             'scoresByTeamId.*' => ['integer', 'min:0'],
+            'playerActions' => ['array'],
         ]);
 
         $scores = $data['scoresByTeamId'];
@@ -645,6 +646,16 @@ class GameSaveController extends Controller
         $gameSave->week = max($gameSave->week ?? 1, $match->week + 1);
         $gameSave->save();
 
+        $state = $gameSave->state ?? [];
+
+        $existing = $state['player_actions'] ?? [];
+        $new      = $data['playerActions'] ?? [];
+
+// On concatène
+        $state['player_actions'] = array_merge($existing, $new);
+
+        $gameSave->state = $state;
+        $gameSave->save();
         return redirect()->route('game-saves.play', $gameSave);
     }
 }

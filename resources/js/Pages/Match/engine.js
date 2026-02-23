@@ -438,11 +438,11 @@ export function initMatchEngine(rootEl, config = {}) {
         positionBonus: POSITION_BONUS,
     });
 
-// ==========================
-//   DUEL META (joueurs + actions)
-// ==========================
+    // ==========================
+    //   DUEL META (joueurs + actions)
+    // ==========================
 
-// Retourne un objet 'meta' avec infos attaquant/défenseur + libellés d'actions
+    // Retourne un objet 'meta' avec infos attaquant/défenseur + libellés d'actions
     function buildDuelMeta({
                                attackTeam,
                                attackSlot,
@@ -559,6 +559,7 @@ export function initMatchEngine(rootEl, config = {}) {
         touchHeat: {},
         lastDuelBreakdown: null,
         defensePreview: null,
+        actionEvents: [],
     };
 
     // Accès court à l’objet ballon.
@@ -1887,6 +1888,7 @@ export function initMatchEngine(rootEl, config = {}) {
                             [internalTeamId]: state.score.internal,
                             [externalTeamId]: state.score.external,
                         },
+                        playerActions: state.actionEvents,
                     };
 
                     if (typeof matchConfig.onMatchEnd === "function") {
@@ -2224,6 +2226,57 @@ export function initMatchEngine(rootEl, config = {}) {
     }
 
     // ==========================
+    //   ACTION LOGGING (match)
+    // ==========================
+    function recordDuelEvent({
+                                 attackTeam,
+                                 defenseTeam,
+                                 attackSlot,
+                                 defenseSlot,
+                                 attackAction,
+                                 defenseAction,
+                                 duelResult,       // "attack" | "defense" | "tie"
+                                 breakdown,        // objet breakdown passé au tooltip
+                             }) {
+        const turn = state.turns;
+
+        const attackInfo = roster.getPlayerInfo(attackTeam, attackSlot);
+        const defenseInfo = defenseSlot ? roster.getPlayerInfo(defenseTeam, defenseSlot) : null;
+
+        state.actionEvents.push({
+            gameSaveId: matchConfig.gameSaveId ?? null,
+            matchId:    matchConfig.matchId    ?? null,
+            turn,
+
+            context: {
+                zoneIndex: ball.zoneIndex,
+                laneIndex: ball.laneIndex,
+                frontOfKeeper: ball.frontOfKeeper,
+            },
+
+            attack: {
+                team: attackTeam,
+                slot: attackSlot,
+                game_player_id: attackInfo?.id ?? null,
+                number: attackInfo?.number ?? attackSlot,
+                action: attackAction,
+            },
+
+            defense: defenseSlot ? {
+                team: defenseTeam,
+                slot: defenseSlot,
+                game_player_id: defenseInfo?.id ?? null,
+                number: defenseInfo?.number ?? defenseSlot,
+                action: defenseAction,
+            } : null,
+
+            result: duelResult,             // "attack"/"defense"/"tie"
+            resultWinner: breakdown?.result?.winner ?? null,
+            diff: breakdown?.result?.diff ?? null,
+        });
+    }
+
+    // ==========================
     //   Duel champ
     // ==========================
 
@@ -2294,6 +2347,17 @@ export function initMatchEngine(rootEl, config = {}) {
             defenseScore,
             clearanceBonus,
             meta,
+        });
+
+        recordDuelEvent({
+            attackTeam,
+            defenseTeam,
+            attackSlot: ball.number,
+            defenseSlot: defenderSlot,
+            attackAction: attackType,
+            defenseAction,
+            duelResult: critWinner ? critWinner : (attackScore > defenseScore ? "attack" : attackScore < defenseScore ? "defense" : "tie"),
+            breakdown,
         });
 
         showDuelDice(attackScore, defenseScore, aRoll, dRoll, breakdown);
@@ -3021,7 +3085,19 @@ export function initMatchEngine(rootEl, config = {}) {
             }
         };
 
-        // 🎲 Affichage dans le tooltip (dés + breakdown)
+
+        recordDuelEvent({
+            attackTeam,
+            defenseTeam,
+            attackSlot: ball.number,
+            defenseSlot: 1,
+            attackAction: isSpecial ? "special" : "shot",
+            defenseAction,
+            duelResult: breakdown.result.winner,
+            breakdown,
+        });
+
+        // Affichage dans le tooltip (dés + breakdown)
         showDuelDice(attackScore, defenseScore, aRoll, dRoll, breakdown);
 
         // ⚡ Stamina

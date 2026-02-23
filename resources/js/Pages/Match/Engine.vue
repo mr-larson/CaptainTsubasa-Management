@@ -403,10 +403,13 @@ onMounted(() => {
         ...props.engineConfig,
 
         // Callback fin de match : engine.js appelle ça à la fin
-        onMatchEnd: ({ matchId, gameSaveId, scoresByTeamId }) => {
+        onMatchEnd: ({ matchId, gameSaveId, scoresByTeamId, playerActions }) => {
             router.post(
                 route('game-saves.matches.finish', { gameSave: gameSaveId, match: matchId }),
-                { scoresByTeamId },
+                {
+                    scoresByTeamId,
+                    playerActions,
+                },
                 {
                     preserveScroll: true,
                     onSuccess: () => router.visit(route('game-saves.play', { gameSave: gameSaveId })),
