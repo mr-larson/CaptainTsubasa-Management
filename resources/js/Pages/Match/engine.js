@@ -6,7 +6,7 @@
 const ANIM_MS     = 300; // ralenti pour suivre les transitions CSS
 const AI_THINK_MS = 200; // délai "réflexion IA"
 const GK_HOLD_MS = 400; // ralenti pour suivre la récupèration de balle du gardien
-const ACTION_BAR_FADE_MS  = 100 // Durée des transitions fade-in/out de la barre
+const ACTION_BAR_FADE_MS  = 100; // Durée des transitions fade-in/out de la barre
 const DIE_SIDES   = 20;  // nombre de faces du dé utilisé dans les calculs de duel
 
 
@@ -438,6 +438,68 @@ export function initMatchEngine(rootEl, config = {}) {
         positionBonus: POSITION_BONUS,
     });
 
+// ==========================
+//   DUEL META (joueurs + actions)
+// ==========================
+
+// Retourne un objet 'meta' avec infos attaquant/défenseur + libellés d'actions
+    function buildDuelMeta({
+                               attackTeam,
+                               attackSlot,
+                               attackAction,
+                               defenseTeam,
+                               defenseSlot,
+                               defenseAction,
+                           }) {
+        const aInfo = roster.getPlayerInfo(attackTeam, attackSlot);
+        const dInfo = roster.getPlayerInfo(defenseTeam, defenseSlot);
+
+        const fullName = (info) => {
+            if (!info) return "";
+            const fn = String(info.firstname || "").trim();
+            const ln = String(info.lastname || "").trim();
+            const n = (fn + " " + ln).trim();
+            return n || "";
+        };
+
+        const jerseyNumber = (info) => (info ? info.number : null);
+
+        // Libellés d'actions (attaque / défense)
+        const getAttackActionLabel = (key) => {
+            const cards = TEXTS.cards?.attack || {};
+            const cfg = cards[key];
+            return cfg?.title || key;
+        };
+
+        const getDefenseActionLabel = (key) => {
+            const fieldCards = TEXTS.cards?.defenseField || {};
+            const gkCards = TEXTS.cards?.defenseGK || {};
+            const cfg = fieldCards[key] || gkCards[key];
+            return cfg?.title || key;
+        };
+
+        return {
+            attacker: {
+                team: attackTeam,
+                slot: attackSlot,
+                number: jerseyNumber(aInfo),
+                name: fullName(aInfo),
+                actionKey: attackAction,
+                actionLabel: getAttackActionLabel(attackAction),
+            },
+            defender: defenseSlot
+                ? {
+                    team: defenseTeam,
+                    slot: defenseSlot,
+                    number: jerseyNumber(dInfo),
+                    name: fullName(dInfo),
+                    actionKey: defenseAction,
+                    actionLabel: getDefenseActionLabel(defenseAction),
+                }
+                : null,
+        };
+    }
+
     // ==========================
     //   DOM roster binding
     // ==========================
@@ -683,50 +745,86 @@ export function initMatchEngine(rootEl, config = {}) {
         if (!b) return "";
 
         const row = (label, value) => `
-            <div class="dt-row">
-                <div class="dt-label">${label}</div>
-                <div class="dt-value">${value}</div>
-            </div>
-        `;
+        <div class="dt-row">
+            <div class="dt-label">${label}</div>
+            <div class="dt-value">${value}</div>
+        </div>
+    `;
 
         const section = (title, inner) => `
-            <div class="dt-section">
-                <div class="dt-title">${title}</div>
-                ${inner}
-            </div>
-        `;
+        <div class="dt-section">
+            <div class="dt-title">${title}</div>
+            ${inner}
+        </div>
+    `;
 
         const resultLine = b.result?.critWinner
             ? `Crit: <b>${String(b.result.critWinner).toUpperCase()}</b>`
             : `Diff: <b>${Number(b.result?.diff ?? 0).toFixed(2)}</b> → <b>${String(b.result?.winner ?? "—").toUpperCase()}</b>`;
 
+        // 👤 Contexte (nouveau)
+        let contextHTML = "";
+        if (b.meta && b.meta.attacker) {
+            const a = b.meta.attacker;
+            const d = b.meta.defender;
+
+            const attackerLabel = [
+                a.number != null ? `#${a.number}` : null,
+                a.name || null,
+            ].filter(Boolean).join(" ");
+
+            const attackerValue = [
+                attackerLabel || "—",
+                a.actionLabel ? `— ${a.actionLabel}` : null,
+            ].filter(Boolean).join(" ");
+
+            let defenderValue = "—";
+            if (d) {
+                const defLabel = [
+                    d.number != null ? `#${d.number}` : null,
+                    d.name || null,
+                ].filter(Boolean).join(" ");
+
+                defenderValue = [
+                    defLabel || "—",
+                    d.actionLabel ? `— ${d.actionLabel}` : null,
+                ].filter(Boolean).join(" ");
+            }
+
+            contextHTML = section("👤 Contexte", [
+                row("Attaquant", attackerValue),
+                row("Défenseur", defenderValue),
+            ].join(""));
+        }
+
         return `
-            <div class="dt-wrap">
-                ${section("🎲 Jets", [
+        <div class="dt-wrap">
+            ${contextHTML}
+            ${section("🎲 Jets", [
             row("Attaque d20", `${b.rolls.aTag} (bonus +${Number(b.rolls.aBonus ?? 0).toFixed(1)})`),
             row("Défense d20", `${b.rolls.dTag} (bonus +${Number(b.rolls.dBonus ?? 0).toFixed(1)})`),
         ].join(""))}
 
-                ${section("⚔️ Attaque", [
+            ${section("⚔️ Attaque", [
             row("Base", Number(b.attack.base ?? 0).toFixed(2)),
             row("Stamina factor", `× ${Number(b.attack.staminaFactor ?? 1).toFixed(2)}`),
             ...(b.attack.additions || []).map(x => row(x.label, x.value)).join(""),
             row("Total attaque", `<b>${Number(b.attack.total ?? 0).toFixed(2)}</b>`),
         ].join(""))}
 
-                ${section("🛡️ Défense", [
+            ${section("🛡️ Défense", [
             row("Base", Number(b.defense.base ?? 0).toFixed(2)),
             row("Stamina factor", `× ${Number(b.defense.staminaFactor ?? 1).toFixed(2)}`),
             ...(b.defense.additions || []).map(x => row(x.label, x.value)).join(""),
             row("Total défense", `<b>${Number(b.defense.total ?? 0).toFixed(2)}</b>`),
         ].join(""))}
 
-                ${section("✅ Résultat", [
+            ${section("✅ Résultat", [
             row("Règle bonus", b.result?.bonusRuleLabel || "—"),
             row("Issue", resultLine),
         ].join(""))}
-            </div>
-        `;
+        </div>
+    `;
     }
 
     // Positionne le tooltip près du bloc “dés” en évitant les bords d’écran.
@@ -2084,6 +2182,7 @@ export function initMatchEngine(rootEl, config = {}) {
                                          attackScore,
                                          defenseScore,
                                          clearanceBonus = 0,
+                                         meta = null
                                      }) {
         const aTag = aRoll.critSuccess ? "20!" : (aRoll.critFail ? "1!" : String(aRoll.roll));
         const dTag = dRoll.critSuccess ? "20!" : (dRoll.critFail ? "1!" : String(dRoll.roll));
@@ -2092,6 +2191,7 @@ export function initMatchEngine(rootEl, config = {}) {
         const genericBonus = DUEL_RULES.GENERIC_ATTACK_BONUS ?? 0;
 
         return {
+            meta,
             rolls: { aTag, dTag, aBonus: aRoll.bonus, dBonus: dRoll.bonus },
             attack: {
                 base: attackBaseRaw,
@@ -2172,6 +2272,16 @@ export function initMatchEngine(rootEl, config = {}) {
         if (isGood) defenseScore += DUEL_RULES.GOOD_COUNTER_BONUS;
         else attackScore += DUEL_RULES.GENERIC_ATTACK_BONUS;
 
+
+        const meta = buildDuelMeta({
+            attackTeam,
+            attackSlot: ball.number,
+            attackAction: attackType,
+            defenseTeam,
+            defenseSlot: defenderSlot,
+            defenseAction,
+        });
+
         const breakdown = buildFieldDuelBreakdown({
             attackBaseRaw,
             defenseBaseRaw,
@@ -2183,6 +2293,7 @@ export function initMatchEngine(rootEl, config = {}) {
             attackScore,
             defenseScore,
             clearanceBonus,
+            meta,
         });
 
         showDuelDice(attackScore, defenseScore, aRoll, dRoll, breakdown);
@@ -2869,23 +2980,51 @@ export function initMatchEngine(rootEl, config = {}) {
 
         const diceTag = `🎲 ${attackScore.toFixed(1)}-${defenseScore.toFixed(1)}`;
 
-        showDuelDice(attackScore, defenseScore, aRoll, dRoll, {
+        // 👤 META : infos joueurs + actions
+        const meta = buildDuelMeta({
+            attackTeam,
+            attackSlot: ball.number,
+            attackAction: isSpecial ? "special" : "shot",
+            defenseTeam,
+            defenseSlot: 1,
+            defenseAction,
+        });
+
+        // 📊 Breakdown complet
+        const breakdown = {
+            meta,
             rolls: {
                 aTag: aRoll.critSuccess ? "20!" : (aRoll.critFail ? "1!" : String(aRoll.roll)),
                 dTag: dRoll.critSuccess ? "20!" : (dRoll.critFail ? "1!" : String(dRoll.roll)),
                 aBonus: aRoll.bonus,
                 dBonus: dRoll.bonus,
             },
-            attack: { base: gkAttackBase, staminaFactor: staminaFactor(attackerId), additions: [], total: attackScore },
-            defense: { base: roster.defenseBaseFor(defenseAction, defenseTeam, 1, true), staminaFactor: gkFactor, additions: [], total: defenseScore },
+            attack: {
+                base: gkAttackBase,
+                staminaFactor: staminaFactor(attackerId),
+                additions: [],
+                total: attackScore,
+            },
+            defense: {
+                base: roster.defenseBaseFor(defenseAction, defenseTeam, 1, true),
+                staminaFactor: gkFactor,
+                additions: [],
+                total: defenseScore,
+            },
             result: {
                 bonusRuleLabel: "",
                 critWinner,
                 diff: attackScore - defenseScore,
-                winner: critWinner ? critWinner : (attackScore > defenseScore ? "attack" : attackScore < defenseScore ? "defense" : "tie"),
+                winner: critWinner
+                    ? critWinner
+                    : (attackScore > defenseScore ? "attack" : attackScore < defenseScore ? "defense" : "tie"),
             }
-        });
+        };
 
+        // 🎲 Affichage dans le tooltip (dés + breakdown)
+        showDuelDice(attackScore, defenseScore, aRoll, dRoll, breakdown);
+
+        // ⚡ Stamina
         applyStaminaCost(attackerId, "attack", isSpecial ? "special" : "shot");
         if (keeperId) applyStaminaCost(keeperId, "defenseGK", defenseAction);
 
@@ -2895,6 +3034,7 @@ export function initMatchEngine(rootEl, config = {}) {
         ball.frontOfKeeper = false;
         resetLastDribbler();
 
+        // ⚖️ ÉGALITÉ (keeper)
         if (!critWinner && attackScore === defenseScore) {
             pushLogEntry("shotGKEqualTitle", [`Zone ${originZone + 1}`], diceTag);
 
@@ -2906,6 +3046,7 @@ export function initMatchEngine(rootEl, config = {}) {
             return;
         }
 
+        // 🥅 ATTAQUE MARQUE
         const duelResult = critWinner ?? (attackScore > defenseScore ? "attack" : "defense");
 
         if (duelResult === "attack") {
@@ -2936,8 +3077,8 @@ export function initMatchEngine(rootEl, config = {}) {
             return;
         }
 
+        // 🧤 GARDIEN ARRÊTE
         pushLogEntry(isSpecial ? "shotSavedTitle" : "shotSavedTitle", [`Zone ${originZone + 1}`, ...logParts], diceTag);
-
 
         performKeeperClearance(defenseTeam, defenseAction, () => {
             advanceTurn(defenseTeam);

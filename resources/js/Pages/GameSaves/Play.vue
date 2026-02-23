@@ -900,7 +900,7 @@ const playNextMatch = () => {
                         <div class="w-2/5 border border-slate-200 rounded-lg bg-slate-50 p-3">
                             <h3 class="text-md font-semibold text-slate-700 mb-2">Équipes de la ligue</h3>
 
-                            <div v-if="otherTeams.length" class="max-h-96 overflow-y-auto space-y-1">
+                            <div v-if="otherTeams.length" class=" overflow-y-auto space-y-1">
                                 <button
                                     v-for="t in otherTeams"
                                     :key="t.id"
