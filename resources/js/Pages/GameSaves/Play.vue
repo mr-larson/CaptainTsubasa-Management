@@ -281,7 +281,6 @@ const selectedMyPlayerActions = computed(() => {
     return actionsForPlayer(selectedMyPlayer.value.id);
 });
 
-// Petit résumé simple (passes/tirs/dribbles du point de vue ATTACK)
 const selectedMyPlayerPerf = computed(() => {
     const p = selectedMyPlayer.value;
     if (!p) return null;
@@ -289,26 +288,68 @@ const selectedMyPlayerPerf = computed(() => {
     const events = selectedMyPlayerActions.value;
 
     const stats = {
-        pass:    { attempts: 0, success: 0 },
-        shot:    { attempts: 0, success: 0 },
-        dribble: { attempts: 0, success: 0 },
-        special: { attempts: 0, success: 0 },
+        offense: {
+            pass:    { attempts: 0, success: 0 },
+            shot:    { attempts: 0, success: 0 },
+            dribble: { attempts: 0, success: 0 },
+            special: { attempts: 0, success: 0 },
+        },
+        defense: {
+            intercept: { attempts: 0, success: 0 },
+            tackle:    { attempts: 0, success: 0 },
+            block:     { attempts: 0, success: 0 },
+            hands:     { attempts: 0, success: 0 },
+            punch:     { attempts: 0, success: 0 },
+            gkSpecial: { attempts: 0, success: 0 },
+        },
         duelsWon: 0,
         duelsLost: 0,
     };
 
     for (const ev of events) {
         const isAttacker = ev.attack?.game_player_id === p.id;
-        if (!isAttacker) continue;
+        const isDefender = ev.defense?.game_player_id === p.id;
 
-        const type = ev.attack.action; // "pass" | "shot" | "dribble" | "special"
-        if (stats[type]) {
-            stats[type].attempts++;
-            if (ev.result === "attack") stats[type].success++;
+        const result = ev.result; // "attack" | "defense" | "tie"
+
+        // ============
+        // 🟦 OFFENSIF
+        // ============
+        if (isAttacker) {
+            const type = ev.attack.action;
+            if (stats.offense[type]) {
+                stats.offense[type].attempts++;
+                if (result === "attack") stats.offense[type].success++;
+            }
+
+            if (result === "attack") stats.duelsWon++;
+            else if (result === "defense") stats.duelsLost++;
         }
 
-        if (ev.result === "attack") stats.duelsWon++;
-        else if (ev.result === "defense") stats.duelsLost++;
+        // ============
+        // 🟥 DÉFENSIF
+        // ============
+        if (isDefender) {
+            const def = ev.defense.action; // ex: "intercept", "tackle", "block", "hands", "punch", "gk-special"
+
+            const map = {
+                "intercept": "intercept",
+                "tackle": "tackle",
+                "block": "block",
+                "hands": "hands",
+                "punch": "punch",
+                "gk-special": "gkSpecial",
+            };
+
+            const key = map[def];
+            if (key && stats.defense[key]) {
+                stats.defense[key].attempts++;
+                if (result === "defense") stats.defense[key].success++;
+            }
+
+            if (result === "defense") stats.duelsWon++;
+            else if (result === "attack") stats.duelsLost++;
+        }
     }
 
     return stats;
@@ -781,9 +822,12 @@ const playNextMatch = () => {
                     <!-- ============================== -->
                     <!--        MON ÉQUIPE              -->
                     <!-- ============================== -->
-                    <div v-else-if="activeTab === 'my-team'" class="flex-1 flex gap-4">
-                        <!-- Colonne gauche : liste joueurs -->
-                        <div class="w-1/5 border border-slate-200 rounded-lg bg-slate-50 p-3">
+                    <div v-else-if="activeTab === 'my-team'" class="flex-1 grid grid-cols-12 gap-6">
+
+                        <!-- ========================== -->
+                        <!--   Colonne gauche (joueurs) -->
+                        <!-- ========================== -->
+                        <div class="col-span-3 border border-slate-200 rounded-lg bg-slate-50 p-3 self-start">
                             <h3 class="text-md font-semibold text-slate-700 mb-2">Joueurs</h3>
 
                             <div v-if="roster.length" class="max-h-96 overflow-y-auto space-y-1">
@@ -793,17 +837,15 @@ const playNextMatch = () => {
                                     type="button"
                                     @click="selectMyPlayer(p)"
                                     :class="[
-                                        'w-full text-left text-sm px-2 py-1 rounded',
-                                        selectedMyPlayer && selectedMyPlayer.id === p.id
-                                            ? 'bg-teal-100 text-slate-900'
-                                            : 'bg-white hover:bg-slate-100 text-slate-700'
-                                    ]"
+                    'w-full text-left text-sm px-2 py-1 rounded',
+                    selectedMyPlayer && selectedMyPlayer.id === p.id
+                        ? 'bg-teal-100 text-slate-900'
+                        : 'bg-white hover:bg-slate-100 text-slate-700'
+                ]"
                                 >
-                                    <div class="flex items-center gap-2">
-                                        <div class="flex-1 min-w-0 flex items-center justify-between">
-                                            <span class="truncate">{{ p.firstname }} {{ p.lastname }}</span>
-                                            <span class="text-xs text-slate-400 ml-2 shrink-0">{{ p.position }}</span>
-                                        </div>
+                                    <div class="flex items-center justify-between w-full">
+                                        <span class="truncate">{{ p.firstname }} {{ p.lastname }}</span>
+                                        <span class="text-xs text-slate-400 ml-2 shrink-0">{{ p.position }}</span>
                                     </div>
                                 </button>
                             </div>
@@ -811,10 +853,17 @@ const playNextMatch = () => {
                             <p v-else class="text-sm text-slate-500">Aucun joueur sous contrat.</p>
                         </div>
 
-                        <!-- Colonne droite : profil + stats + historique -->
-                        <div class="flex-1 flex flex-col gap-4">
+
+                        <!-- ========================== -->
+                        <!--  Colonne droite (profil + stats) -->
+                        <!-- ========================== -->
+                        <div class="col-span-9 flex flex-col gap-6">
+
                             <template v-if="selectedMyPlayer">
-                                <!-- Carte profil -->
+
+                                <!-- ========================== -->
+                                <!-- Carte Profil -->
+                                <!-- ========================== -->
                                 <div class="border border-slate-200 rounded-lg bg-slate-50 p-4">
                                     <div class="flex items-start gap-4">
                                         <div class="w-24 h-24 rounded-lg border border-slate-200 bg-white overflow-hidden flex items-center justify-center">
@@ -825,8 +874,8 @@ const playNextMatch = () => {
                                                 alt="Photo joueur"
                                             />
                                             <span v-else class="text-xs text-slate-400 text-center px-2">
-                                                Aucune<br>photo
-                                            </span>
+                            Aucune<br>photo
+                        </span>
                                         </div>
 
                                         <div class="flex-1">
@@ -835,9 +884,11 @@ const playNextMatch = () => {
                                             </h3>
 
                                             <p class="text-sm text-slate-600">
-                                                Poste : <span class="font-semibold">{{ selectedMyPlayer.position }}</span>
+                                                Poste :
+                                                <span class="font-semibold">{{ selectedMyPlayer.position }}</span>
                                                 <span class="text-slate-400 mx-2">•</span>
-                                                Coût : <span class="font-semibold">{{ selectedMyPlayer.cost ?? 0 }} €</span>
+                                                Coût :
+                                                <span class="font-semibold">{{ selectedMyPlayer.cost ?? 0 }} €</span>
                                             </p>
 
                                             <p v-if="selectedMyPlayer.description" class="mt-3 text-sm text-slate-700">
@@ -849,159 +900,214 @@ const playNextMatch = () => {
                                     </div>
                                 </div>
 
-                                <!-- Carte stats -->
+
+                                <!-- ========================== -->
+                                <!-- Carte Statistiques -->
+                                <!-- ========================== -->
                                 <div class="border border-slate-200 rounded-lg bg-slate-50 p-4">
                                     <h4 class="text-md font-semibold text-slate-700 mb-3">Statistiques</h4>
 
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                                         <div class="flex justify-between border-b border-slate-200 pb-1">
                                             <span class="text-slate-600">Vitesse</span>
-                                            <span class="font-semibold text-slate-800">
-                                                {{ selectedMyPlayer.speed ?? selectedMyPlayer.stats?.speed ?? '-' }}
-                                            </span>
+                                            <span class="font-semibold text-slate-800">{{ selectedMyPlayer.speed ?? selectedMyPlayer.stats?.speed ?? '-' }}</span>
                                         </div>
+
                                         <div class="flex justify-between border-b border-slate-200 pb-1">
                                             <span class="text-slate-600">Stamina</span>
-                                            <span class="font-semibold text-slate-800">
-                                                {{ selectedMyPlayer.stamina ?? selectedMyPlayer.stats?.stamina ?? '-' }}
-                                            </span>
+                                            <span class="font-semibold text-slate-800">{{ selectedMyPlayer.stamina ?? selectedMyPlayer.stats?.stamina ?? '-' }}</span>
                                         </div>
+
                                         <div class="flex justify-between border-b border-slate-200 pb-1">
                                             <span class="text-slate-600">Attaque</span>
-                                            <span class="font-semibold text-slate-800">
-                                                {{ selectedMyPlayer.attack ?? selectedMyPlayer.stats?.attack ?? '-' }}
-                                            </span>
+                                            <span class="font-semibold text-slate-800">{{ selectedMyPlayer.attack ?? selectedMyPlayer.stats?.attack ?? '-' }}</span>
                                         </div>
+
                                         <div class="flex justify-between border-b border-slate-200 pb-1">
                                             <span class="text-slate-600">Défense</span>
-                                            <span class="font-semibold text-slate-800">
-                                                {{ selectedMyPlayer.defense ?? selectedMyPlayer.stats?.defense ?? '-' }}
-                                            </span>
+                                            <span class="font-semibold text-slate-800">{{ selectedMyPlayer.defense ?? selectedMyPlayer.stats?.defense ?? '-' }}</span>
                                         </div>
 
                                         <div class="flex justify-between border-b border-slate-200 pb-1">
                                             <span class="text-slate-600">Tir</span>
-                                            <span class="font-semibold text-slate-800">
-                                                {{ selectedMyPlayer.shot ?? selectedMyPlayer.stats?.shot ?? '-' }}
-                                            </span>
+                                            <span class="font-semibold text-slate-800">{{ selectedMyPlayer.shot ?? selectedMyPlayer.stats?.shot ?? '-' }}</span>
                                         </div>
+
                                         <div class="flex justify-between border-b border-slate-200 pb-1">
                                             <span class="text-slate-600">Passe</span>
-                                            <span class="font-semibold text-slate-800">
-                                                {{ selectedMyPlayer.pass ?? selectedMyPlayer.stats?.pass ?? '-' }}
-                                            </span>
+                                            <span class="font-semibold text-slate-800">{{ selectedMyPlayer.pass ?? selectedMyPlayer.stats?.pass ?? '-' }}</span>
                                         </div>
+
                                         <div class="flex justify-between border-b border-slate-200 pb-1">
                                             <span class="text-slate-600">Dribble</span>
-                                            <span class="font-semibold text-slate-800">
-                                                {{ selectedMyPlayer.dribble ?? selectedMyPlayer.stats?.dribble ?? '-' }}
-                                            </span>
+                                            <span class="font-semibold text-slate-800">{{ selectedMyPlayer.dribble ?? selectedMyPlayer.stats?.dribble ?? '-' }}</span>
                                         </div>
 
                                         <div class="flex justify-between border-b border-slate-200 pb-1">
                                             <span class="text-slate-600">Block</span>
-                                            <span class="font-semibold text-slate-800">
-                                                {{ selectedMyPlayer.block ?? selectedMyPlayer.stats?.block ?? '-' }}
-                                            </span>
+                                            <span class="font-semibold text-slate-800">{{ selectedMyPlayer.block ?? selectedMyPlayer.stats?.block ?? '-' }}</span>
                                         </div>
+
                                         <div class="flex justify-between border-b border-slate-200 pb-1">
                                             <span class="text-slate-600">Interception</span>
-                                            <span class="font-semibold text-slate-800">
-                                                {{ selectedMyPlayer.intercept ?? selectedMyPlayer.stats?.intercept ?? '-' }}
-                                            </span>
+                                            <span class="font-semibold text-slate-800">{{ selectedMyPlayer.intercept ?? selectedMyPlayer.stats?.intercept ?? '-' }}</span>
                                         </div>
+
                                         <div class="flex justify-between border-b border-slate-200 pb-1">
                                             <span class="text-slate-600">Tacle</span>
-                                            <span class="font-semibold text-slate-800">
-                                                {{ selectedMyPlayer.tackle ?? selectedMyPlayer.stats?.tackle ?? '-' }}
-                                            </span>
+                                            <span class="font-semibold text-slate-800">{{ selectedMyPlayer.tackle ?? selectedMyPlayer.stats?.tackle ?? '-' }}</span>
                                         </div>
 
                                         <div class="flex justify-between border-b border-slate-200 pb-1">
                                             <span class="text-slate-600">Arrêt main</span>
-                                            <span class="font-semibold text-slate-800">
-                                                {{ selectedMyPlayer.hand_save ?? selectedMyPlayer.stats?.hand_save ?? '-' }}
-                                            </span>
+                                            <span class="font-semibold text-slate-800">{{ selectedMyPlayer.hand_save ?? selectedMyPlayer.stats?.hand_save ?? '-' }}</span>
                                         </div>
+
                                         <div class="flex justify-between border-b border-slate-200 pb-1">
                                             <span class="text-slate-600">Arrêt poings</span>
-                                            <span class="font-semibold text-slate-800">
-                                                {{ selectedMyPlayer.punch_save ?? selectedMyPlayer.stats?.punch_save ?? '-' }}
-                                            </span>
+                                            <span class="font-semibold text-slate-800">{{ selectedMyPlayer.punch_save ?? selectedMyPlayer.stats?.punch_save ?? '-' }}</span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="border border-slate-200 rounded-lg bg-slate-50 p-4">
-                                    <h4 class="text-md font-semibold text-slate-700 mb-3">Historique & performance</h4>
+                            </template>
 
-                                    <template v-if="selectedMyPlayerPerf">
-                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-slate-700">
-                                            <div>
-                                                <p class="font-semibold mb-1">Actions offensives</p>
-                                                <p>Passes : {{ selectedMyPlayerPerf.pass.attempts }} tentées,
-                                                    {{ selectedMyPlayerPerf.pass.success }} réussies
-                                                </p>
-                                                <p>Tirs : {{ selectedMyPlayerPerf.shot.attempts }} tentés,
-                                                    {{ selectedMyPlayerPerf.shot.success }} cadrés / gagnés
-                                                </p>
-                                                <p>Dribbles : {{ selectedMyPlayerPerf.dribble.attempts }} tentés,
-                                                    {{ selectedMyPlayerPerf.dribble.success }} réussis
-                                                </p>
-                                                <p>Spéciaux : {{ selectedMyPlayerPerf.special.attempts }} tentés,
-                                                    {{ selectedMyPlayerPerf.special.success }} réussis
-                                                </p>
-                                            </div>
+                            <p v-else class="text-sm text-slate-500">Sélectionne un joueur dans la liste à gauche.</p>
+                        </div>
 
-                                            <div>
-                                                <p class="font-semibold mb-1">Duels</p>
-                                                <p>Duels gagnés : {{ selectedMyPlayerPerf.duelsWon }}</p>
-                                                <p>Duels perdus : {{ selectedMyPlayerPerf.duelsLost }}</p>
-                                                <p class="text-xs text-slate-500 mt-2">
-                                                    Basé sur les actions enregistrées dans les matchs joués de cette sauvegarde.
-                                                </p>
-                                            </div>
-                                        </div>
 
-                                        <div class="mt-4">
-                                            <p class="text-xs text-slate-500">
-                                                (Prochain step possible : lister les dernières actions / matches avec timestamps.)
-                                            </p>
-                                        </div>
-                                    </template>
+                        <!-- ========================== -->
+                        <!-- Bloc Historique FULL WIDTH -->
+                        <!-- ========================== -->
+                        <div class="col-span-12 border border-slate-200 rounded-lg bg-slate-50 p-6 mt-2">
+                            <h4 class="text-md font-semibold text-slate-800 mb-4">📊 Historique & performance</h4>
 
-                                    <p v-else class="text-sm text-slate-500">
-                                        Aucune action enregistrée pour ce joueur dans cette sauvegarde.
-                                    </p>
+                            <template v-if="selectedMyPlayerPerf">
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm text-slate-700">
+
+                                    <!-- OFFENSIF -->
+                                    <div>
+                                        <p class="font-semibold mb-2 flex items-center gap-1">
+                                            <span>⚽</span> Actions offensives
+                                        </p>
+                                        <ul class="space-y-1">
+                                            <li><span class="font-medium">Tirs :</span>
+                                                {{ selectedMyPlayerPerf.offense.shot.attempts }} tentés,
+                                                {{ selectedMyPlayerPerf.offense.shot.success }} cadrés / gagnés
+                                            </li>
+
+                                            <li><span class="font-medium">Passes :</span>
+                                                {{ selectedMyPlayerPerf.offense.pass.attempts }},
+                                                {{ selectedMyPlayerPerf.offense.pass.success }} réussies
+                                            </li>
+
+                                            <li><span class="font-medium">Dribbles :</span>
+                                                {{ selectedMyPlayerPerf.offense.dribble.attempts }},
+                                                {{ selectedMyPlayerPerf.offense.dribble.success }} réussis
+                                            </li>
+
+                                            <li><span class="font-medium">Spéciaux :</span>
+                                                {{ selectedMyPlayerPerf.offense.special.attempts }},
+                                                {{ selectedMyPlayerPerf.offense.special.success }} réussis
+                                            </li>
+                                        </ul>
+                                    </div>
+
+                                    <!-- DEFENSE -->
+                                    <div>
+                                        <p class="font-semibold mb-2 flex items-center gap-1">
+                                            <span>🛡️</span> Actions défensives
+                                        </p>
+                                        <ul class="space-y-1">
+                                            <li><span class="font-medium">Interceptions :</span>
+                                                {{ selectedMyPlayerPerf.defense.intercept.attempts }},
+                                                {{ selectedMyPlayerPerf.defense.intercept.success }} réussies
+                                            </li>
+
+                                            <li><span class="font-medium">Tacles :</span>
+                                                {{ selectedMyPlayerPerf.defense.tackle.attempts }},
+                                                {{ selectedMyPlayerPerf.defense.tackle.success }} réussis
+                                            </li>
+
+                                            <li><span class="font-medium">Blocks :</span>
+                                                {{ selectedMyPlayerPerf.defense.block.attempts }},
+                                                {{ selectedMyPlayerPerf.defense.block.success }} réussis
+                                            </li>
+                                        </ul>
+                                    </div>
+
+                                    <!-- GK -->
+                                    <div>
+                                        <p class="font-semibold mb-2 flex items-center gap-1">
+                                            <span>🧤</span> Actions gardien
+                                        </p>
+                                        <ul class="space-y-1">
+                                            <li><span class="font-medium">Arrêts main :</span>
+                                                {{ selectedMyPlayerPerf.defense.hands.attempts }},
+                                                {{ selectedMyPlayerPerf.defense.hands.success }} réussis
+                                            </li>
+
+                                            <li><span class="font-medium">Poings :</span>
+                                                {{ selectedMyPlayerPerf.defense.punch.attempts }},
+                                                {{ selectedMyPlayerPerf.defense.punch.success }} réussis
+                                            </li>
+
+                                            <li><span class="font-medium">Special GK :</span>
+                                                {{ selectedMyPlayerPerf.defense.gkSpecial.attempts }},
+                                                {{ selectedMyPlayerPerf.defense.gkSpecial.success }} réussis
+                                            </li>
+                                        </ul>
+                                    </div>
+
+                                    <!-- DUELS -->
+                                    <div>
+                                        <p class="font-semibold mb-2 flex items-center gap-1">
+                                            <span>⚔️</span> Duels
+                                        </p>
+                                        <ul class="space-y-1">
+                                            <li>
+                                                <span class="font-medium">Duels gagnés :</span>
+                                                {{ selectedMyPlayerPerf.duelsWon }}
+                                            </li>
+                                            <li>
+                                                <span class="font-medium">Duels perdus :</span>
+                                                {{ selectedMyPlayerPerf.duelsLost }}
+                                            </li>
+                                        </ul>
+                                    </div>
                                 </div>
                             </template>
 
                             <p v-else class="text-sm text-slate-500">
-                                Sélectionne un joueur dans la liste à gauche.
+                                Aucune action enregistrée pour ce joueur dans cette sauvegarde.
                             </p>
                         </div>
+
                     </div>
 
                     <!-- ============================== -->
                     <!--        AUTRES ÉQUIPES          -->
                     <!-- ============================== -->
-                    <div v-else-if="activeTab === 'other-teams'" class="flex-1 flex gap-4">
-                        <!-- Liste des équipes -->
-                        <div class="w-2/5 border border-slate-200 rounded-lg bg-slate-50 p-3">
+                    <div v-else-if="activeTab === 'other-teams'" class="flex-1 grid grid-cols-12 gap-6">
+
+                        <!-- ========================== -->
+                        <!--   Colonne gauche : équipes -->
+                        <!-- ========================== -->
+                        <div class="col-span-3 border border-slate-200 rounded-lg bg-slate-50 p-3 self-start">
                             <h3 class="text-md font-semibold text-slate-700 mb-2">Équipes de la ligue</h3>
 
-                            <div v-if="otherTeams.length" class=" overflow-y-auto space-y-1">
+                            <div v-if="otherTeams.length" class="max-h-64 overflow-y-auto space-y-1">
                                 <button
                                     v-for="t in otherTeams"
                                     :key="t.id"
                                     type="button"
                                     @click="selectOtherTeam(t)"
                                     :class="[
-                                        'w-full text-left text-sm px-2 py-1 rounded',
-                                        selectedOtherTeam && selectedOtherTeam.id === t.id
-                                            ? 'bg-teal-100 text-slate-900'
-                                            : 'bg-white hover:bg-slate-100 text-slate-700'
-                                    ]"
+                    'w-full text-left text-sm px-2 py-1 rounded',
+                    selectedOtherTeam && selectedOtherTeam.id === t.id
+                        ? 'bg-teal-100 text-slate-900'
+                        : 'bg-white hover:bg-slate-100 text-slate-700'
+                ]"
                                 >
                                     {{ t.name }}
                                 </button>
@@ -1010,13 +1116,15 @@ const playNextMatch = () => {
                             <p v-else class="text-sm text-slate-500">Aucune autre équipe trouvée.</p>
                         </div>
 
-                        <!-- Détail de l'équipe sélectionnée -->
-                        <div v-if="selectedOtherTeam">
-                            <!-- TOP : 3 blocs (Budget/Bilan) | (Description courte) | (Logo) -->
+                        <!-- ========================== -->
+                        <!--   Colonne droite : détails -->
+                        <!-- ========================== -->
+                        <div v-if="selectedOtherTeam" class="col-span-9 flex flex-col gap-6">
+
+                            <!-- TOP : Nom / Bilan / Logo -->
                             <div class="border border-slate-200 rounded-lg bg-slate-50 p-4">
                                 <div class="flex items-start justify-between gap-4">
-                                    <!-- Gauche : Nom + Budget/Bilan -->
-                                    <div class="min-w-0">
+                                    <div class="min-w-0 flex-1">
                                         <h3 class="text-lg font-semibold text-slate-700 mb-2">
                                             {{ selectedOtherTeam.name }}
                                         </h3>
@@ -1024,15 +1132,17 @@ const playNextMatch = () => {
                                         <div class="text-sm text-slate-700 space-y-1">
                                             <p v-if="standings?.length">
                                                 <span class="font-semibold">Place :</span>
-                                                {{ (standings.findIndex(row => row.id === selectedOtherTeam.id) + 1) || '—' }}
+                                                {{ (standings.findIndex(row => row.id === selectedOtherTeam.id)+1) || '—' }}
                                                 <sup>e</sup> / {{ standings.length }}
                                             </p>
-                                            <p class="mt-1">
+
+                                            <p>
                                                 <span class="font-semibold">Bilan :</span>
                                                 {{ selectedOtherTeam.wins ?? 0 }} V /
                                                 {{ selectedOtherTeam.draws ?? 0 }} N /
                                                 {{ selectedOtherTeam.losses ?? 0 }} D
                                             </p>
+
                                             <p>
                                                 <span class="font-semibold">Budget :</span>
                                                 {{ selectedOtherTeam.budget ?? 0 }} €
@@ -1040,150 +1150,150 @@ const playNextMatch = () => {
                                         </div>
                                     </div>
 
-                                    <!-- Milieu : Description -->
+                                    <!-- Description -->
                                     <div class="flex-1 min-w-0 px-6">
                                         <p class="text-sm text-slate-700">
                                             <span class="font-semibold">Description :</span>
-                                            <span class="text-slate-600">{{
-                                                    (selectedOtherTeam.description ?? '-')
-                                                        ? (selectedOtherTeam.description)
-                                                        : (selectedOtherTeam.description ?? '-') }}
-                                            </span>
+                                            <span class="text-slate-600">
+                            {{ selectedOtherTeam.description || '-' }}
+                        </span>
                                         </p>
                                     </div>
 
-                                    <!-- Droite : Logo -->
-                                    <div class="h-24 w-24 rounded-lg  overflow-hidden flex items-center justify-center shrink-0">
+                                    <!-- Logo -->
+                                    <div class="h-24 w-24 rounded-lg overflow-hidden flex items-center justify-center shrink-0">
                                         <img
                                             v-if="selectedOtherTeam?.logo_path"
                                             :src="`/${selectedOtherTeam.logo_path}`"
                                             class="h-full w-full object-contain"
-                                            alt="Logo club"
-                                        />
+                                            alt=""
+                                        >
                                         <span v-else class="text-xs text-slate-400">—</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- STATUT : carte séparée (3 colonnes) -->
-                            <div class="mt-4 border border-slate-200 rounded-lg bg-slate-50 p-4">
+                            <!-- STATUT DU CLUB -->
+                            <div class="border border-slate-200 rounded-lg bg-slate-50 p-4">
                                 <h4 class="text-md font-semibold text-slate-700 mb-3">Statut du club</h4>
 
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-slate-700">
-                                    <!-- Performances -->
+
                                     <div>
                                         <p class="font-semibold mb-1">Performances</p>
-
                                         <p>
                                             Matchs joués :
                                             {{
-                                                (selectedOtherTeam.wins ?? 0) +
-                                                (selectedOtherTeam.draws ?? 0) +
-                                                (selectedOtherTeam.losses ?? 0)
+                                                (selectedOtherTeam.wins ?? 0)
+                                                + (selectedOtherTeam.draws ?? 0)
+                                                + (selectedOtherTeam.losses ?? 0)
                                             }}
                                         </p>
                                     </div>
 
-                                    <!-- Forces moyennes -->
                                     <div>
-                                        <p class="font-semibold mb-1">Forces moyennes de l’équipe</p>
+                                        <p class="font-semibold mb-1">Forces moyennes de l'équipe</p>
                                         <p>Attaque : {{ averageTeamStat(selectedOtherTeamRoster, 'attack') }}</p>
                                         <p>Défense : {{ averageTeamStat(selectedOtherTeamRoster, 'defense') }}</p>
                                         <p>Endurance : {{ averageTeamStat(selectedOtherTeamRoster, 'stamina') }}</p>
                                     </div>
 
-                                    <!-- État de l’effectif -->
                                     <div>
-                                        <p class="font-semibold mb-1">État de l’effectif</p>
+                                        <p class="font-semibold mb-1">État de l'effectif</p>
                                         <p>Blessés : {{ injuriesCountForTeam(selectedOtherTeam.id) }}</p>
                                         <p>Suspensions : {{ suspensionsCountForTeam(selectedOtherTeam.id) }}</p>
-                                        <p>Cartons en cours : {{ cardsCountForTeam(selectedOtherTeam.id) }}</p>
+                                        <p>Cartons : {{ cardsCountForTeam(selectedOtherTeam.id) }}</p>
                                     </div>
+
                                 </div>
-                            </div>
-
-                            <!-- EFFECTIF : carte séparée -->
-                            <div class="mt-4 border border-slate-200 rounded-lg bg-slate-50 p-4">
-                                <h4 class="text-md font-semibold text-slate-700 mb-2">Effectif</h4>
-
-                                <div v-if="selectedOtherTeamRoster.length" class="max-h-72 overflow-y-auto">
-                                    <div class="overflow-x-auto">
-                                        <table class="w-full text-sm text-left min-w-max">
-                                            <thead class="text-xs uppercase text-slate-500 border-b">
-                                            <tr>
-                                                <th class="py-1 pr-2 w-10"></th>
-                                                <th class="py-1 pr-2">Joueur</th>
-                                                <th class="py-1 pr-2">Poste</th>
-
-                                                <th class="py-1 pr-2 text-right">Vit</th>
-                                                <th class="py-1 pr-2 text-right">End</th>
-                                                <th class="py-1 pr-2 text-right">Att</th>
-                                                <th class="py-1 pr-2 text-right">Def</th>
-
-                                                <th class="py-1 pr-2 text-right">Tir</th>
-                                                <th class="py-1 pr-2 text-right">Passe</th>
-                                                <th class="py-1 pr-2 text-right">Dribble</th>
-
-                                                <th class="py-1 pr-2 text-right">Block</th>
-                                                <th class="py-1 pr-2 text-right">Interc.</th>
-                                                <th class="py-1 pr-2 text-right">Tacle</th>
-
-                                                <th class="py-1 pr-2 text-right">Main</th>
-                                                <th class="py-1 pr-2 text-right">Poings</th>
-
-                                                <th class="py-1 pr-2 text-right">Coût</th>
-                                            </tr>
-                                            </thead>
-
-                                            <tbody>
-                                            <tr
-                                                v-for="player in selectedOtherTeamRoster"
-                                                :key="player.id"
-                                                class="border-b last:border-b-0"
-                                            >
-                                                <td class="py-1 pr-2">
-                                                    <div class="h-7 w-7 rounded border bg-white overflow-hidden flex items-center justify-center">
-                                                        <img
-                                                            v-if="playerPhotoUrl(player)"
-                                                            :src="playerPhotoUrl(player)"
-                                                            class="h-full w-full object-cover"
-                                                            alt=""
-                                                        />
-                                                        <span v-else class="text-[10px] text-slate-400">—</span>
-                                                    </div>
-                                                </td>
-
-                                                <td class="py-1 pr-2">{{ player.firstname }} {{ player.lastname }}</td>
-                                                <td class="py-1 pr-2">{{ player.position }}</td>
-
-                                                <td class="py-1 pr-2 text-right">{{ player.speed ?? player.stats?.speed ?? '-' }}</td>
-                                                <td class="py-1 pr-2 text-right">{{ player.stamina ?? player.stats?.stamina ?? '-' }}</td>
-                                                <td class="py-1 pr-2 text-right">{{ player.attack ?? player.stats?.attack ?? '-' }}</td>
-                                                <td class="py-1 pr-2 text-right">{{ player.defense ?? player.stats?.defense ?? '-' }}</td>
-
-                                                <td class="py-1 pr-2 text-right">{{ player.shot ?? player.stats?.shot ?? '-' }}</td>
-                                                <td class="py-1 pr-2 text-right">{{ player.pass ?? player.stats?.pass ?? '-' }}</td>
-                                                <td class="py-1 pr-2 text-right">{{ player.dribble ?? player.stats?.dribble ?? '-' }}</td>
-
-                                                <td class="py-1 pr-2 text-right">{{ player.block ?? player.stats?.block ?? '-' }}</td>
-                                                <td class="py-1 pr-2 text-right">{{ player.intercept ?? player.stats?.intercept ?? '-' }}</td>
-                                                <td class="py-1 pr-2 text-right">{{ player.tackle ?? player.stats?.tackle ?? '-' }}</td>
-
-                                                <td class="py-1 pr-2 text-right">{{ player.hand_save ?? player.stats?.hand_save ?? '-' }}</td>
-                                                <td class="py-1 pr-2 text-right">{{ player.punch_save ?? player.stats?.punch_save ?? '-' }}</td>
-
-                                                <td class="py-1 pr-2 text-right">{{ player.cost ?? '-' }}</td>
-                                            </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-
-                                <p v-else class="text-sm text-slate-500">
-                                    Aucun joueur sous contrat pour cette équipe.
-                                </p>
                             </div>
                         </div>
+
+                        <!-- ============ -->
+                        <!-- EFFECTIF     -->
+                        <!-- ============ -->
+                        <div class="col-span-12 border border-slate-200 rounded-lg bg-slate-50 p-4 h-80 overflow-y-auto">
+
+                            <h4 class="text-md font-semibold text-slate-700 mb-2">Effectif</h4>
+
+                            <div v-if="selectedOtherTeamRoster.length" class="max-h-96 overflow-y-auto">
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-sm min-w-max text-left">
+                                        <thead class="text-xs uppercase text-slate-500 border-b">
+                                        <tr>
+                                            <th class="py-1 pr-2 w-10"></th>
+                                            <th class="py-1 pr-2">Joueur</th>
+                                            <th class="py-1 pr-2">Poste</th>
+
+                                            <th class="py-1 pr-2 text-right">Vit</th>
+                                            <th class="py-1 pr-2 text-right">End</th>
+                                            <th class="py-1 pr-2 text-right">Att</th>
+                                            <th class="py-1 pr-2 text-right">Def</th>
+
+                                            <th class="py-1 pr-2 text-right">Tir</th>
+                                            <th class="py-1 pr-2 text-right">Passe</th>
+                                            <th class="py-1 pr-2 text-right">Dribble</th>
+
+                                            <th class="py-1 pr-2 text-right">Block</th>
+                                            <th class="py-1 pr-2 text-right">Interc.</th>
+                                            <th class="py-1 pr-2 text-right">Tacle</th>
+
+                                            <th class="py-1 pr-2 text-right">Main</th>
+                                            <th class="py-1 pr-2 text-right">Poings</th>
+
+                                            <th class="py-1 pr-2 text-right">Coût</th>
+                                        </tr>
+                                        </thead>
+
+                                        <tbody>
+                                        <tr
+                                            v-for="player in selectedOtherTeamRoster"
+                                            :key="player.id"
+                                            class="border-b last:border-b-0"
+                                        >
+                                            <td class="py-1 pr-2">
+                                                <div class="h-7 w-7 rounded border bg-white overflow-hidden flex items-center justify-center">
+                                                    <img
+                                                        v-if="playerPhotoUrl(player)"
+                                                        :src="playerPhotoUrl(player)"
+                                                        class="h-full w-full object-cover"
+                                                        alt=""
+                                                    >
+                                                    <span v-else class="text-[10px] text-slate-400">—</span>
+                                                </div>
+                                            </td>
+
+                                            <td class="py-1 pr-2">{{ player.firstname }} {{ player.lastname }}</td>
+                                            <td class="py-1 pr-2">{{ player.position }}</td>
+
+                                            <td class="py-1 pr-2 text-right">{{ player.speed ?? player.stats?.speed ?? '-' }}</td>
+                                            <td class="py-1 pr-2 text-right">{{ player.stamina ?? player.stats?.stamina ?? '-' }}</td>
+                                            <td class="py-1 pr-2 text-right">{{ player.attack ?? player.stats?.attack ?? '-' }}</td>
+                                            <td class="py-1 pr-2 text-right">{{ player.defense ?? player.stats?.defense ?? '-' }}</td>
+
+                                            <td class="py-1 pr-2 text-right">{{ player.shot ?? player.stats?.shot ?? '-' }}</td>
+                                            <td class="py-1 pr-2 text-right">{{ player.pass ?? player.stats?.pass ?? '-' }}</td>
+                                            <td class="py-1 pr-2 text-right">{{ player.dribble ?? player.stats?.dribble ?? '-' }}</td>
+
+                                            <td class="py-1 pr-2 text-right">{{ player.block ?? player.stats?.block ?? '-' }}</td>
+                                            <td class="py-1 pr-2 text-right">{{ player.intercept ?? player.stats?.intercept ?? '-' }}</td>
+                                            <td class="py-1 pr-2 text-right">{{ player.tackle ?? player.stats?.tackle ?? '-' }}</td>
+
+                                            <td class="py-1 pr-2 text-right">{{ player.hand_save ?? player.stats?.hand_save ?? '-' }}</td>
+                                            <td class="py-1 pr-2 text-right">{{ player.punch_save ?? player.stats?.punch_save ?? '-' }}</td>
+
+                                            <td class="py-1 pr-2 text-right">{{ player.cost ?? '-' }}</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <p v-else class="text-sm text-slate-500">
+                                Aucun joueur sous contrat pour cette équipe.
+                            </p>
+                        </div>
+
                     </div>
 
                     <!-- ============================== -->

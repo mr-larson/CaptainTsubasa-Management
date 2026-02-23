@@ -588,13 +588,6 @@ class GameSaveController extends Controller
             return redirect()->route('game-saves.play', $gameSave);
         }
 
-        /**
-         * ✅ Format attendu (SOURCE DE VÉRITÉ)
-         * scoresByTeamId = {
-         *   [game_team_id]: score,
-         *   ...
-         * }
-         */
         $data = $request->validate([
             'scoresByTeamId' => ['required', 'array', 'min:2'],
             'scoresByTeamId.*' => ['integer', 'min:0'],
@@ -651,7 +644,7 @@ class GameSaveController extends Controller
         $existing = $state['player_actions'] ?? [];
         $new      = $data['playerActions'] ?? [];
 
-// On concatène
+        // On concatène
         $state['player_actions'] = array_merge($existing, $new);
 
         $gameSave->state = $state;
