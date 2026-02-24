@@ -159,7 +159,7 @@
                             <div class="flex items-center gap-3 min-w-0">
                                 <div
                                     id="home-portrait"
-                                    class="shrink-0 h-[80px] w-[80px] rounded shadow-md bg-gradient-to-br from-slate-100 via-slate-200 to-slate-400 relative overflow-hidden"
+                                    class="shrink-0 h-[90px] w-[90px] rounded shadow-md bg-gradient-to-br from-slate-100 via-slate-200 to-slate-400 relative overflow-hidden"
                                 ></div>
 
                                 <div class="min-w-0 flex-1 text-xs space-y-0.5">
@@ -203,7 +203,7 @@
                             <div class="flex items-center gap-3 min-w-0">
                                 <div
                                     id="away-portrait"
-                                    class="shrink-0 h-[80px] w-[80px] rounded shadow-md bg-gradient-to-br from-slate-100 via-slate-200 to-slate-400 relative overflow-hidden"
+                                    class="shrink-0 h-[90px] w-[90px] rounded shadow-md bg-gradient-to-br from-slate-100 via-slate-200 to-slate-400 relative overflow-hidden"
                                 ></div>
 
                                 <div class="min-w-0 flex-1 text-xs space-y-0.5">

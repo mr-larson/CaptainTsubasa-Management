@@ -1121,10 +1121,12 @@ const playNextMatch = () => {
                         <!-- ========================== -->
                         <div v-if="selectedOtherTeam" class="col-span-9 flex flex-col gap-6">
 
-                            <!-- TOP : Nom / Bilan / Logo -->
+                            <!-- TOP : Nom / Bilan / Description (2 colonnes) / Logo -->
                             <div class="border border-slate-200 rounded-lg bg-slate-50 p-4">
-                                <div class="flex items-start justify-between gap-4">
-                                    <div class="min-w-0 flex-1">
+                                <div class="grid grid-cols-4 gap-6 items-center">
+
+                                    <!-- Bloc 1 : Nom + infos -->
+                                    <div class="col-span-1">
                                         <h3 class="text-lg font-semibold text-slate-700 mb-2">
                                             {{ selectedOtherTeam.name }}
                                         </h3>
@@ -1137,62 +1139,54 @@ const playNextMatch = () => {
                                             </p>
 
                                             <p>
-                                                <span class="font-semibold">Bilan :</span>
-                                                {{ selectedOtherTeam.wins ?? 0 }} V /
-                                                {{ selectedOtherTeam.draws ?? 0 }} N /
-                                                {{ selectedOtherTeam.losses ?? 0 }} D
-                                            </p>
-
-                                            <p>
                                                 <span class="font-semibold">Budget :</span>
                                                 {{ selectedOtherTeam.budget ?? 0 }} €
                                             </p>
                                         </div>
                                     </div>
 
-                                    <!-- Description -->
-                                    <div class="flex-1 min-w-0 px-6">
-                                        <p class="text-sm text-slate-700">
-                                            <span class="font-semibold">Description :</span>
-                                            <span class="text-slate-600">
-                            {{ selectedOtherTeam.description || '-' }}
-                        </span>
+                                    <!-- Bloc 2+3 : Description en 2 colonnes -->
+                                    <div class="col-span-2">
+                                        <p class="text-sm text-slate-700 leading-relaxed ">
+                                            {{ selectedOtherTeam.description || '-' }}
                                         </p>
                                     </div>
 
-                                    <!-- Logo -->
-                                    <div class="h-24 w-24 rounded-lg overflow-hidden flex items-center justify-center shrink-0">
-                                        <img
-                                            v-if="selectedOtherTeam?.logo_path"
-                                            :src="`/${selectedOtherTeam.logo_path}`"
-                                            class="h-full w-full object-contain"
-                                            alt=""
-                                        >
-                                        <span v-else class="text-xs text-slate-400">—</span>
+                                    <!-- Bloc 4 : Logo -->
+                                    <div class="col-span-1 flex items-center justify-center">
+                                        <div class="h-24 w-24 rounded-lg overflow-hidden flex items-center justify-center shrink-0">
+                                            <img
+                                                v-if="selectedOtherTeam?.logo_path"
+                                                :src="`/${selectedOtherTeam.logo_path}`"
+                                                class="h-full w-full object-contain"
+                                                alt=""
+                                            >
+                                            <span v-else class="text-xs text-slate-400">—</span>
+                                        </div>
                                     </div>
+
                                 </div>
                             </div>
 
                             <!-- STATUT DU CLUB -->
-                            <div class="border border-slate-200 rounded-lg bg-slate-50 p-4">
+                            <div class="border border-slate-200 rounded-lg bg-slate-50 mt-1 p-4">
                                 <h4 class="text-md font-semibold text-slate-700 mb-3">Statut du club</h4>
 
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-slate-700">
 
                                     <div>
-                                        <p class="font-semibold mb-1">Performances</p>
-                                        <p>
-                                            Matchs joués :
-                                            {{
+                                        <p class="font-semibold mb-1">Matchs joués {{
                                                 (selectedOtherTeam.wins ?? 0)
                                                 + (selectedOtherTeam.draws ?? 0)
                                                 + (selectedOtherTeam.losses ?? 0)
-                                            }}
-                                        </p>
+                                            }}</p>
+                                        <p>Victoire : {{ selectedOtherTeam.wins ?? 0 }}</p>
+                                        <p>Nul : {{ selectedOtherTeam.draws ?? 0 }}</p>
+                                        <p>Défaite : {{ selectedOtherTeam.losses ?? 0 }}</p>
                                     </div>
 
                                     <div>
-                                        <p class="font-semibold mb-1">Forces moyennes de l'équipe</p>
+                                        <p class="font-semibold mb-1">Stats moyennes</p>
                                         <p>Attaque : {{ averageTeamStat(selectedOtherTeamRoster, 'attack') }}</p>
                                         <p>Défense : {{ averageTeamStat(selectedOtherTeamRoster, 'defense') }}</p>
                                         <p>Endurance : {{ averageTeamStat(selectedOtherTeamRoster, 'stamina') }}</p>
