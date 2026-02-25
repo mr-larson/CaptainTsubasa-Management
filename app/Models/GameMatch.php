@@ -18,6 +18,11 @@ class GameMatch extends Model
         'status',
         'home_score',
         'away_score',
+        'match_stats'
+    ];
+
+    protected $casts = [
+        'match_stats' => 'array',
     ];
 
     public function gameSave(): BelongsTo

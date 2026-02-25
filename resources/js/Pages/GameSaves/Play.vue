@@ -127,6 +127,36 @@ const roster = computed(() => {
         .filter(Boolean);
 });
 
+// Dernier match joué de mon équipe
+const lastPlayedMatch = computed(() => {
+    return myMatches.value
+        .filter(m => m.status === 'played')
+        .sort((a,b) => b.week - a.week)[0] || null;
+});
+
+// Stats du dernier match (format match_stats)
+const lastMatchStats = computed(() => {
+    return lastPlayedMatch.value?.match_stats ?? null;
+});
+
+// Raccourcis
+const myTeamStats = computed(() => {
+    if (!lastMatchStats.value || !team.value) return null;
+    const isHome = lastPlayedMatch.value.home_team_id === team.value.id;
+    return isHome ? lastMatchStats.value.teams.home : lastMatchStats.value.teams.away;
+});
+
+const opponentTeamStats = computed(() => {
+    if (!lastMatchStats.value || !team.value) return null;
+    const isHome = lastPlayedMatch.value.home_team_id === team.value.id;
+    return isHome ? lastMatchStats.value.teams.away : lastMatchStats.value.teams.home;
+});
+
+// Stats des joueurs du match
+const matchPlayersStats = computed(() => {
+    return lastMatchStats.value?.players ?? {};
+});
+
 // ==========================
 //   MON ÉQUIPE - SÉLECTION JOUEUR
 // ==========================
@@ -207,6 +237,48 @@ const calendarTeam = computed(() => {
     const id = Number(selectedCalendarTeamId.value);
     return calendarTeams.value.find(t => Number(t.id) === id) ?? (team.value || calendarTeams.value[0]);
 });
+
+// ✅ Match sélectionné dans le calendrier pour afficher ses stats
+const selectedCalendarMatchId = ref(null);
+
+const selectedCalendarMatch = computed(() => {
+    if (!selectedCalendarMatchId.value) return null;
+    return calendarTeamMatches.value.find(m => m.id === selectedCalendarMatchId.value) ?? null;
+});
+
+const selectedCalendarMatchStats = computed(() => {
+    return selectedCalendarMatch.value?.match_stats ?? null;
+});
+
+const selectedCalendarMyTeamStats = computed(() => {
+    if (!selectedCalendarMatchStats.value || !calendarTeam.value || !selectedCalendarMatch.value) return null;
+    const isHome = selectedCalendarMatch.value.home_team_id === calendarTeam.value.id;
+    return isHome ? selectedCalendarMatchStats.value.teams.home : selectedCalendarMatchStats.value.teams.away;
+});
+
+const selectedCalendarOpponentStats = computed(() => {
+    if (!selectedCalendarMatchStats.value || !calendarTeam.value || !selectedCalendarMatch.value) return null;
+    const isHome = selectedCalendarMatch.value.home_team_id === calendarTeam.value.id;
+    return isHome ? selectedCalendarMatchStats.value.teams.away : selectedCalendarMatchStats.value.teams.home;
+});
+
+const selectedCalendarPlayersStats = computed(() => {
+    return selectedCalendarMatchStats.value?.players ?? {};
+});
+
+// Roster de l'équipe utilisée dans l'onglet calendrier (comme roster mais pour calendarTeam)
+const calendarTeamRoster = computed(() => {
+    if (!calendarTeam.value || !Array.isArray(calendarTeam.value.contracts)) return [];
+    return calendarTeam.value.contracts
+        .map(c => c.game_player ?? c.gamePlayer ?? c.player ?? null)
+        .filter(Boolean);
+});
+
+// Handler pour ouvrir les stats d'un match
+const openMatchStats = (match) => {
+    if (!match || match.status !== 'played' || !match.match_stats) return;
+    selectedCalendarMatchId.value = match.id;
+};
 
 const selectCalendarTeam = (t) => { selectedCalendarTeamId.value = t.id; };
 
@@ -1522,7 +1594,12 @@ const playNextMatch = () => {
                                         </thead>
 
                                         <tbody>
-                                        <tr v-for="match in calendarRows" :key="match.id" class="border-b last:border-b-0">
+                                        <tr
+                                            v-for="match in calendarRows"
+                                            :key="match.id"
+                                            class="border-b last:border-b-0 cursor-pointer hover:bg-teal-50"
+                                            @click="!isByeMatch(match) && match.status === 'played' && match.match_stats && openMatchStats(match)"
+                                        >
                                             <td class="py-1 pr-2 text-right">{{ match.week }}</td>
 
                                             <td class="py-1 pr-2">
@@ -1553,6 +1630,100 @@ const playNextMatch = () => {
                                         </tbody>
                                     </table>
                                 </div>
+                                <!-- ✅ PANEL STATS DU MATCH SÉLECTIONNÉ -->
+                                <div
+                                    v-if="selectedCalendarMatch && selectedCalendarMatchStats"
+                                    class="mt-4 border-t border-slate-200 pt-4"
+                                >
+                                    <h4 class="text-md font-semibold text-slate-700 mb-2">
+                                        Stats du match — Semaine {{ selectedCalendarMatch.week }}
+                                    </h4>
+
+                                    <p class="text-sm text-slate-600 mb-3">
+                                        {{ teamById[selectedCalendarMatch.home_team_id]?.name }}
+                                        {{ selectedCalendarMatch.home_score }} - {{ selectedCalendarMatch.away_score }}
+                                        {{ teamById[selectedCalendarMatch.away_team_id]?.name }}
+                                    </p>
+
+                                    <!-- Stats d'équipe -->
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mb-4">
+                                        <div class="p-3 border rounded bg-white">
+                                            <p class="font-semibold mb-1">Tirs</p>
+                                            <p>Nous : {{ selectedCalendarMyTeamStats?.shots ?? 0 }}</p>
+                                            <p>Adversaire : {{ selectedCalendarOpponentStats?.shots ?? 0 }}</p>
+                                        </div>
+                                        <div class="p-3 border rounded bg-white">
+                                            <p class="font-semibold mb-1">Duels gagnés</p>
+                                            <p>Nous : {{ selectedCalendarMyTeamStats?.duelsWon ?? 0 }}</p>
+                                            <p>Adversaire : {{ selectedCalendarOpponentStats?.duelsWon ?? 0 }}</p>
+                                        </div>
+                                        <div class="p-3 border rounded bg-white">
+                                            <p class="font-semibold mb-1">Duels perdus</p>
+                                            <p>Nous : {{ selectedCalendarMyTeamStats?.duelsLost ?? 0 }}</p>
+                                            <p>Adversaire : {{ selectedCalendarOpponentStats?.duelsLost ?? 0 }}</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Stats par joueur de l'équipe sélectionnée -->
+                                    <h5 class="text-sm font-semibold text-slate-700 mb-2">
+                                        Stats par joueur ({{ calendarTeam.name }})
+                                    </h5>
+
+                                    <div class="overflow-x-auto">
+                                        <table class="w-full text-xs md:text-sm min-w-max text-left">
+                                            <thead class="text-[10px] uppercase text-slate-500 border-b">
+                                            <tr>
+                                                <th class="py-1 pr-2">Joueur</th>
+                                                <th class="py-1 pr-2 text-right">Tirs</th>
+                                                <th class="py-1 pr-2 text-right">Passes</th>
+                                                <th class="py-1 pr-2 text-right">Dribbles</th>
+                                                <th class="py-1 pr-2 text-right">Interc.</th>
+                                                <th class="py-1 pr-2 text-right">Tacles</th>
+                                                <th class="py-1 pr-2 text-right">Blocks</th>
+                                                <th class="py-1 pr-2 text-right">Duels +</th>
+                                                <th class="py-1 pr-2 text-right">Duels -</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <tr
+                                                v-for="p in calendarTeamRoster"
+                                                :key="p.id"
+                                                class="border-b last:border-b-0"
+                                            >
+                                                <td class="py-1 pr-2">{{ p.firstname }} {{ p.lastname }}</td>
+                                                <td class="py-1 pr-2 text-right">
+                                                    {{ selectedCalendarPlayersStats[p.id]?.offense?.shot?.attempts ?? 0 }}
+                                                </td>
+                                                <td class="py-1 pr-2 text-right">
+                                                    {{ selectedCalendarPlayersStats[p.id]?.offense?.pass?.attempts ?? 0 }}
+                                                </td>
+                                                <td class="py-1 pr-2 text-right">
+                                                    {{ selectedCalendarPlayersStats[p.id]?.offense?.dribble?.attempts ?? 0 }}
+                                                </td>
+                                                <td class="py-1 pr-2 text-right">
+                                                    {{ selectedCalendarPlayersStats[p.id]?.defense?.intercept?.attempts ?? 0 }}
+                                                </td>
+                                                <td class="py-1 pr-2 text-right">
+                                                    {{ selectedCalendarPlayersStats[p.id]?.defense?.tackle?.attempts ?? 0 }}
+                                                </td>
+                                                <td class="py-1 pr-2 text-right">
+                                                    {{ selectedCalendarPlayersStats[p.id]?.defense?.block?.attempts ?? 0 }}
+                                                </td>
+                                                <td class="py-1 pr-2 text-right">
+                                                    {{ selectedCalendarPlayersStats[p.id]?.duelsWon ?? 0 }}
+                                                </td>
+                                                <td class="py-1 pr-2 text-right">
+                                                    {{ selectedCalendarPlayersStats[p.id]?.duelsLost ?? 0 }}
+                                                </td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <p v-else class="text-sm text-slate-500 mt-2">
+                                    Clique sur un match joué dans le calendrier pour afficher ses statistiques détaillées.
+                                </p>
 
                                 <p v-else class="text-sm text-slate-500">Aucun match planifié pour le moment.</p>
                             </div>
@@ -1605,6 +1776,130 @@ const playNextMatch = () => {
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+
+                    <!-- ============================== -->
+                    <!--         STATS MATCH            -->
+                    <!-- ============================== -->
+                    <div v-else-if="activeTab === 'match-stats'" class="flex-1 border border-slate-200 rounded-lg bg-slate-50 p-6">
+
+                        <h3 class="text-xl font-bold text-slate-800 mb-4">
+                            📊 Stats du dernier match
+                        </h3>
+
+                        <template v-if="lastPlayedMatch && lastMatchStats">
+
+                            <!-- SCORE -->
+                            <div class="text-lg font-semibold mb-4 text-center">
+                                {{ teamById[lastPlayedMatch.home_team_id].name }}
+                                {{ lastPlayedMatch.home_score }}
+                                -
+                                {{ lastPlayedMatch.away_score }}
+                                {{ teamById[lastPlayedMatch.away_team_id].name }}
+                            </div>
+
+                            <!-- ================= -->
+                            <!-- STATISTIQUES ÉQUIPE -->
+                            <!-- ================= -->
+                            <h4 class="text-md font-semibold text-slate-700 mb-2">Stats d'équipe</h4>
+
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-6">
+                                <div class="p-3 border rounded bg-white">
+                                    <p class="font-medium">Tirs</p>
+                                    <p>{{ myTeamStats.shots }} (nous)</p>
+                                    <p>{{ opponentTeamStats.shots }} (adverse)</p>
+                                </div>
+
+                                <div class="p-3 border rounded bg-white">
+                                    <p class="font-medium">Duels gagnés</p>
+                                    <p>{{ myTeamStats.duelsWon }} (nous)</p>
+                                    <p>{{ opponentTeamStats.duelsWon }} (adverse)</p>
+                                </div>
+
+                                <div class="p-3 border rounded bg-white">
+                                    <p class="font-medium">Duels perdus</p>
+                                    <p>{{ myTeamStats.duelsLost }} (nous)</p>
+                                    <p>{{ opponentTeamStats.duelsLost }} (adverse)</p>
+                                </div>
+
+                                <div class="p-3 border rounded bg-white">
+                                    <p class="font-medium">Dribbles</p>
+                                    <p>{{ myTeamStats.dribbles ?? 0 }} (nous)</p>
+                                    <p>{{ opponentTeamStats.dribbles ?? 0 }} (adverse)</p>
+                                </div>
+                            </div>
+
+                            <!-- ================= -->
+                            <!-- STATISTIQUES JOUEURS -->
+                            <!-- ================= -->
+                            <h4 class="text-md font-semibold text-slate-700 mb-3">Stats par joueur</h4>
+
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm min-w-max text-left">
+                                    <thead class="text-xs uppercase text-slate-500 border-b">
+                                    <tr>
+                                        <th class="py-1 pr-2">Joueur</th>
+                                        <th class="py-1 pr-2 text-right">Tirs</th>
+                                        <th class="py-1 pr-2 text-right">Passes</th>
+                                        <th class="py-1 pr-2 text-right">Dribbles</th>
+                                        <th class="py-1 pr-2 text-right">Interc.</th>
+                                        <th class="py-1 pr-2 text-right">Tacles</th>
+                                        <th class="py-1 pr-2 text-right">Blocks</th>
+                                        <th class="py-1 pr-2 text-right">Duels +</th>
+                                        <th class="py-1 pr-2 text-right">Duels –</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr
+                                        v-for="p in roster"
+                                        :key="p.id"
+                                        class="border-b last:border-b-0"
+                                    >
+                                        <td class="py-1 pr-2">{{ p.firstname }} {{ p.lastname }}</td>
+
+                                        <td class="py-1 pr-2 text-right">
+                                            {{ matchPlayersStats[p.id]?.offense?.shot?.attempts ?? 0 }}
+                                        </td>
+
+                                        <td class="py-1 pr-2 text-right">
+                                            {{ matchPlayersStats[p.id]?.offense?.pass?.attempts ?? 0 }}
+                                        </td>
+
+                                        <td class="py-1 pr-2 text-right">
+                                            {{ matchPlayersStats[p.id]?.offense?.dribble?.attempts ?? 0 }}
+                                        </td>
+
+                                        <td class="py-1 pr-2 text-right">
+                                            {{ matchPlayersStats[p.id]?.defense?.intercept?.attempts ?? 0 }}
+                                        </td>
+
+                                        <td class="py-1 pr-2 text-right">
+                                            {{ matchPlayersStats[p.id]?.defense?.tackle?.attempts ?? 0 }}
+                                        </td>
+
+                                        <td class="py-1 pr-2 text-right">
+                                            {{ matchPlayersStats[p.id]?.defense?.block?.attempts ?? 0 }}
+                                        </td>
+
+                                        <td class="py-1 pr-2 text-right">
+                                            {{ matchPlayersStats[p.id]?.duelsWon ?? 0 }}
+                                        </td>
+
+                                        <td class="py-1 pr-2 text-right">
+                                            {{ matchPlayersStats[p.id]?.duelsLost ?? 0 }}
+                                        </td>
+
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                        </template>
+
+                        <p v-else class="text-slate-500 text-sm">
+                            Aucun match joué encore dans cette sauvegarde.
+                        </p>
+
                     </div>
 
                     <!-- ============================== -->

@@ -595,6 +595,7 @@ class GameSaveController extends Controller
             'scoresByTeamId' => ['required', 'array', 'min:2'],
             'scoresByTeamId.*' => ['integer', 'min:0'],
             'playerActions' => ['array'],
+            'match_stats' => ['nullable', 'array'],
         ]);
 
         $scores = $data['scoresByTeamId'];
@@ -611,11 +612,12 @@ class GameSaveController extends Controller
         $awayScore = (int) $scores[$awayTeamId];
 
         // 1️⃣ Sauvegarde du match (DB = vérité)
-        $match->update([
-            'home_score' => $homeScore,
-            'away_score' => $awayScore,
-            'status'     => 'played',
-        ]);
+        $match->home_score  = $homeScore;
+        $match->away_score  = $awayScore;
+        $match->status      = 'played';
+        $match->match_stats = $data['match_stats'] ?? null;
+        $match->save();
+
 
         // 2️⃣ Mise à jour classement
         $home = GameTeam::where('game_save_id', $gameSave->id)->findOrFail($homeTeamId);

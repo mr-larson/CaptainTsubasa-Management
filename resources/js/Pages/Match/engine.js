@@ -13,7 +13,7 @@ const DIE_SIDES   = 20;  // nombre de faces du dé utilisé dans les calculs de 
 // ==========================
 //   RÈGLES DE PARTIE
 // ==========================
-const GAME_RULES = { MAX_TURNS: 40 };
+const GAME_RULES = { MAX_TURNS: 3 };
 
 // ==========================
 //   RÈGLES DE DUEL
@@ -2010,6 +2010,101 @@ export function initMatchEngine(rootEl, config = {}) {
         updateScoreUI();
         updateTeamCard();
     }
+    function emptyPlayerMatchStats() {
+        return {
+            offense: {
+                pass:    { attempts: 0, success: 0 },
+                shot:    { attempts: 0, success: 0 },
+                dribble: { attempts: 0, success: 0 },
+                special: { attempts: 0, success: 0 },
+            },
+            defense: {
+                intercept: { attempts: 0, success: 0 },
+                tackle:    { attempts: 0, success: 0 },
+                block:     { attempts: 0, success: 0 },
+                hands:     { attempts: 0, success: 0 },
+                punch:     { attempts: 0, success: 0 },
+                gkSpecial: { attempts: 0, success: 0 },
+            },
+            duelsWon:  0,
+            duelsLost: 0,
+        };
+    }
+
+    function buildMatchStats(events) {
+        const out = {
+            players: {},
+            teams: {
+                home: { goals: 0, shots: 0, passes: 0, dribbles: 0, duelsWon: 0, duelsLost: 0 },
+                away: { goals: 0, shots: 0, passes: 0, dribbles: 0, duelsWon: 0, duelsLost: 0 },
+            }
+        };
+
+        for (const ev of events) {
+            // ATTACKER
+            if (ev.attack?.game_player_id) {
+                const pid = ev.attack.game_player_id;
+                if (!out.players[pid]) out.players[pid] = emptyPlayerMatchStats();
+
+                const act = ev.attack.action;
+
+                if (act === "pass")    out.players[pid].offense.pass.attempts++;
+                if (act === "shot")    out.players[pid].offense.shot.attempts++;
+                if (act === "dribble") out.players[pid].offense.dribble.attempts++;
+                if (act === "special") out.players[pid].offense.special.attempts++;
+
+                if (ev.result === "attack") {
+                    if (act === "pass")    out.players[pid].offense.pass.success++;
+                    if (act === "dribble") out.players[pid].offense.dribble.success++;
+                    if (act === "shot" || act === "special") {
+                        out.players[pid].offense.shot.success++;
+                    }
+                    out.players[pid].duelsWon++;
+
+                    const t = ev.attack.team === "internal" ? "home" : "away";
+                    out.teams[t].duelsWon++;
+                    if (act === "shot" || act === "special") out.teams[t].shots++;
+                } else if (ev.result === "defense") {
+                    out.players[pid].duelsLost++;
+                    const t = ev.attack.team === "internal" ? "home" : "away";
+                    out.teams[t].duelsLost++;
+                    if (act === "shot" || act === "special") {
+                        const t2 = ev.attack.team === "internal" ? "home" : "away";
+                        out.teams[t2].shots++;
+                    }
+                }
+            }
+
+            // DEFENDER
+            if (ev.defense?.game_player_id) {
+                const pid = ev.defense.game_player_id;
+                if (!out.players[pid]) out.players[pid] = emptyPlayerMatchStats();
+
+                const def = ev.defense.action;
+
+                if (def === "intercept")  out.players[pid].defense.intercept.attempts++;
+                if (def === "tackle")     out.players[pid].defense.tackle.attempts++;
+                if (def === "block")      out.players[pid].defense.block.attempts++;
+                if (def === "hands")      out.players[pid].defense.hands.attempts++;
+                if (def === "punch")      out.players[pid].defense.punch.attempts++;
+                if (def === "gk-special") out.players[pid].defense.gkSpecial.attempts++;
+
+                if (ev.result === "defense") {
+                    if (def === "intercept")  out.players[pid].defense.intercept.success++;
+                    if (def === "tackle")     out.players[pid].defense.tackle.success++;
+                    if (def === "block")      out.players[pid].defense.block.success++;
+                    if (def === "hands")      out.players[pid].defense.hands.success++;
+                    if (def === "punch")      out.players[pid].defense.punch.success++;
+                    if (def === "gk-special") out.players[pid].defense.gkSpecial.success++;
+                    out.players[pid].duelsWon++;
+                } else if (ev.result === "attack") {
+                    out.players[pid].duelsLost++;
+                }
+            }
+        }
+
+        return out;
+    }
 
     // Avance le tour, gère fin de match, reset phases, et prépare l’attaque.
     function advanceTurn(newTeam) {
@@ -2023,7 +2118,10 @@ export function initMatchEngine(rootEl, config = {}) {
         if (state.turns >= GAME_RULES.MAX_TURNS) {
             state.isGameOver = true;
 
-            setMessage(TEXTS.ui.matchEndMain, `${TEXTS.ui.matchEndPrefix}${state.score.internal} - ${state.score.external}`);
+            setMessage(
+                TEXTS.ui.matchEndMain,
+                `${TEXTS.ui.matchEndPrefix}${state.score.internal} - ${state.score.external}`
+            );
             pushLogEntry("matchEndTitle", [`Score final ${state.score.internal} - ${state.score.external}`]);
 
             if (ui.actionBarEl) {
@@ -2043,8 +2141,8 @@ export function initMatchEngine(rootEl, config = {}) {
                     if (!internalTeamId || !externalTeamId) return;
 
                     const payload = {
-                        matchId: matchConfig.matchId,
-                        gameSaveId: matchConfig.gameSaveId,
+                        matchId:     matchConfig.matchId,
+                        gameSaveId:  matchConfig.gameSaveId,
                         scoresByTeamId: {
                             [internalTeamId]: state.score.internal,
                             [externalTeamId]: state.score.external,
@@ -2053,6 +2151,9 @@ export function initMatchEngine(rootEl, config = {}) {
                     };
 
                     if (typeof matchConfig.onMatchEnd === "function") {
+                        console.log("PAYLOAD SENT:", payload);
+                        const matchStats = buildMatchStats(state.actionEvents);
+                        payload.match_stats = matchStats;
                         matchConfig.onMatchEnd(payload);
                     }
                 };

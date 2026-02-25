@@ -402,12 +402,13 @@ onMounted(() => {
         ...props.engineConfig,
 
         // Callback fin de match : engine.js appelle ça à la fin
-        onMatchEnd: ({ matchId, gameSaveId, scoresByTeamId, playerActions }) => {
+        onMatchEnd: ({ matchId, gameSaveId, scoresByTeamId, playerActions, match_stats }) => {
             router.post(
                 route('game-saves.matches.finish', { gameSave: gameSaveId, match: matchId }),
                 {
                     scoresByTeamId,
                     playerActions,
+                    match_stats, // ✅ ENVOYÉ AU BACKEND
                 },
                 {
                     preserveScroll: true,
@@ -417,6 +418,7 @@ onMounted(() => {
         },
     });
 });
+``
 
 onBeforeUnmount(() => {
     // ✅ si ton engine a besoin de détacher des listeners / timers
