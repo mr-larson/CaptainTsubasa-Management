@@ -1817,7 +1817,15 @@ export function initMatchEngine(rootEl, config = {}) {
 
             if (state.isKickoff && html.includes("attack-strip")) {
                 ui.actionBarEl.querySelectorAll(".skill-card").forEach(btn => {
-                    if (btn.dataset.action !== "pass") btn.style.display = "none";
+                    if (btn.dataset.action !== "pass") {
+                        btn.style.display = "none";
+                    } else {
+                        // Renomme la carte Pass → Coup d'envoi
+                        const titleEl = btn.querySelector('.skill-title');
+                        const subEl   = btn.querySelector('.skill-sub');
+                        if (titleEl) titleEl.textContent = "Coup d'envoi";
+                        if (subEl)   subEl.textContent   = "Passe obligatoire";
+                    }
                 });
             }
 
@@ -2273,6 +2281,24 @@ export function initMatchEngine(rootEl, config = {}) {
             result: duelResult,             // "attack"/"defense"/"tie"
             resultWinner: breakdown?.result?.winner ?? null,
             diff: breakdown?.result?.diff ?? null,
+        });
+    }
+
+    // Event spécial "coup d'envoi" (sans joueur, neutre pour les stats)
+    function recordKickoffEvent(attackTeam) {
+        state.actionEvents.push({
+            gameSaveId: matchConfig.gameSaveId ?? null,
+            matchId:    matchConfig.matchId    ?? null,
+            turn: 0,
+            type: "kickoff",
+            context: {
+                team: attackTeam,
+            },
+            attack: null,
+            defense: null,
+            result: null,
+            resultWinner: null,
+            diff: null,
         });
     }
 
@@ -3414,6 +3440,8 @@ export function initMatchEngine(rootEl, config = {}) {
         updateSideCard("away", "external", 8);
 
         setMessage(TEXTS.ui.gameStartMain, TEXTS.ui.gameStartSub);
+        pushLogEntry('kickoffTitle', ['kickoffDetail']);
+        recordKickoffEvent('internal');
         showAttackBarForCurrentTeam();
         refreshUI();
 

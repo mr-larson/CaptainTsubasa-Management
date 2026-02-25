@@ -281,11 +281,22 @@ const selectedMyPlayerActions = computed(() => {
     return actionsForPlayer(selectedMyPlayer.value.id);
 });
 
+
+const playerSeasonStats = computed(() => props.gameSave.state?.player_stats ?? {});
+
 const selectedMyPlayerPerf = computed(() => {
+
     const p = selectedMyPlayer.value;
     if (!p) return null;
 
+    // Si les stats cumulées existent déjà : on les utilise
+    const s = playerSeasonStats.value[p.id];
+    if (s) return s;
+
+    // Sinon, fallback sur l'ancien calcul depuis playerActions (optionnel)
     const events = selectedMyPlayerActions.value;
+    if (!events.length) return null;
+
 
     const stats = {
         offense: {
@@ -757,7 +768,6 @@ const playNextMatch = () => {
 
                                 <!-- Description descendue (équivalent du bouton dans l’autre carte) -->
                                 <div v-if="team.description" class="mt-6 text-sm text-slate-700">
-                                    <span class="font-semibold">Description :</span>
                                     <span class="text-slate-600">{{ team.description }}</span>
                                 </div>
                             </div>
@@ -892,7 +902,6 @@ const playNextMatch = () => {
                                             </p>
 
                                             <p v-if="selectedMyPlayer.description" class="mt-3 text-sm text-slate-700">
-                                                <span class="font-semibold">Description :</span>
                                                 <span class="text-slate-600">{{ selectedMyPlayer.description }}</span>
                                             </p>
                                             <p v-else class="mt-3 text-sm text-slate-400 italic">Aucune description.</p>
@@ -992,8 +1001,8 @@ const playNextMatch = () => {
                                         </p>
                                         <ul class="space-y-1">
                                             <li><span class="font-medium">Tirs :</span>
-                                                {{ selectedMyPlayerPerf.offense.shot.attempts }} tentés,
-                                                {{ selectedMyPlayerPerf.offense.shot.success }} cadrés / gagnés
+                                                {{ selectedMyPlayerPerf.offense.shot.attempts }},
+                                                {{ selectedMyPlayerPerf.offense.shot.success }} réussis
                                             </li>
 
                                             <li><span class="font-medium">Passes :</span>

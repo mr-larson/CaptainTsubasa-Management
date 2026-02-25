@@ -649,6 +649,98 @@ class GameSaveController extends Controller
 
         $gameSave->state = $state;
         $gameSave->save();
+        $this->accumulatePlayerSeasonStats($gameSave, $new);
         return redirect()->route('game-saves.play', $gameSave);
+    }
+
+    private function accumulatePlayerSeasonStats(GameSave $gameSave, array $newActions): void
+    {
+        $state = $gameSave->state ?? [];
+        $stats = $state['player_stats'] ?? [];
+
+        foreach ($newActions as $ev) {
+            // Attaque
+            if (!empty($ev['attack']['game_player_id'])) {
+                $pid = $ev['attack']['game_player_id'];
+                $action = $ev['attack']['action']; // "pass" | "shot" | "dribble" | "special"
+                $result = $ev['result'] ?? null;
+
+                $stats[$pid] = $stats[$pid] ?? $this->emptyPlayerStats();
+
+                if (isset($stats[$pid]['offense'][$action])) {
+                    $stats[$pid]['offense'][$action]['attempts']++;
+                    if ($result === 'attack') {
+                        $stats[$pid]['offense'][$action]['success']++;
+                    }
+                }
+
+                if ($result === 'attack') {
+                    $stats[$pid]['duelsWon']++;
+                } elseif ($result === 'defense') {
+                    $stats[$pid]['duelsLost']++;
+                }
+            }
+
+            // Défense
+            if (!empty($ev['defense']['game_player_id'])) {
+                $pid = $ev['defense']['game_player_id'];
+                $defAction = $ev['defense']['action']; // ex: "intercept","tackle","block","hands","punch","gk-special"
+                $result = $ev['result'] ?? null;
+
+                $stats[$pid] = $stats[$pid] ?? $this->emptyPlayerStats();
+
+                $map = [
+                    'intercept'  => 'intercept',
+                    'tackle'     => 'tackle',
+                    'block'      => 'block',
+                    'hands'      => 'hands',
+                    'punch'      => 'punch',
+                    'gk-special' => 'gkSpecial',
+                ];
+
+                if (isset($map[$defAction])) {
+                    $key = $map[$defAction];
+                    $stats[$pid]['defense'][$key]['attempts']++;
+                    if ($result === 'defense') {
+                        $stats[$pid]['defense'][$key]['success']++;
+                    }
+                }
+
+                if ($result === 'defense') {
+                    $stats[$pid]['duelsWon']++;
+                } elseif ($result === 'attack') {
+                    $stats[$pid]['duelsLost']++;
+                }
+            }
+        }
+
+        $state['player_stats'] = $stats;
+        $gameSave->state = $state;
+        $gameSave->save();
+    }
+
+    /**
+     * Initialise la structure de stats pour un joueur.
+     */
+    private function emptyPlayerStats(): array
+    {
+        return [
+            'offense' => [
+                'pass'    => ['attempts' => 0, 'success' => 0],
+                'shot'    => ['attempts' => 0, 'success' => 0],
+                'dribble' => ['attempts' => 0, 'success' => 0],
+                'special' => ['attempts' => 0, 'success' => 0],
+            ],
+            'defense' => [
+                'intercept' => ['attempts' => 0, 'success' => 0],
+                'tackle'    => ['attempts' => 0, 'success' => 0],
+                'block'     => ['attempts' => 0, 'success' => 0],
+                'hands'     => ['attempts' => 0, 'success' => 0],
+                'punch'     => ['attempts' => 0, 'success' => 0],
+                'gkSpecial' => ['attempts' => 0, 'success' => 0],
+            ],
+            'duelsWon'  => 0,
+            'duelsLost' => 0,
+        ];
     }
 }
