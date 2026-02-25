@@ -313,6 +313,7 @@ export function initMatchEngine(rootEl, config = {}) {
                                 position: p.position ?? "",
                                 photo: resolvePhoto(p),
                                 stats: resolveStats(p),
+                                specialMoves: Array.isArray(p.special_moves) ? p.special_moves : [],
                             }
                             : {
                                 id: null,
@@ -322,6 +323,7 @@ export function initMatchEngine(rootEl, config = {}) {
                                 position: "",
                                 photo: null,
                                 stats: null,
+                                specialMoves: []
                             }
                     );
                 }
@@ -359,6 +361,13 @@ export function initMatchEngine(rootEl, config = {}) {
             if (p.includes("mid") || p === "mf") return "MF";
             if (p.includes("for") || p.includes("att") || p === "fw") return "FW";
             return null;
+        }
+
+        // Retourne la liste des techniques spéciales d'un joueur (array) ou [].
+        getSpecialMoves(team, slotNumber) {
+            const info = this.getPlayerInfo(team, slotNumber);
+            const moves = info?.specialMoves;
+            return Array.isArray(moves) ? moves : [];
         }
 
         // Retourne le rôle du joueur (via sa position).
@@ -437,6 +446,25 @@ export function initMatchEngine(rootEl, config = {}) {
         statCoef: 0.6,
         positionBonus: POSITION_BONUS,
     });
+
+    // ==========================
+    //   Special base (spécial Tsubasa)
+    // ==========================
+    function specialBaseFor(move, team, slotNumber) {
+        if (!move) return 0;
+
+        const info  = roster.getPlayerInfo(team, slotNumber);
+        const stats = info?.stats ?? {};
+
+        const baseAction = String(move.base_action || "").trim(); // ex: "shot", "pass"
+        const mode       = String(move.mode || "attack").toLowerCase(); // "attack" | "defense"
+
+        const actionStat = Number(stats[baseAction] ?? 0) || 0;
+        const globalKey  = (mode === "defense") ? "defense" : "attack";
+        const globalStat = Number(stats[globalKey] ?? 0) || 0;
+
+        return (actionStat + globalStat) / 2;
+    }
 
     // ==========================
     //   DUEL META (joueurs + actions)
@@ -1687,33 +1715,56 @@ export function initMatchEngine(rootEl, config = {}) {
 
     // Construit la barre d’actions offensives (shot/pass/dribble/special).
     function buildAttackActionsHTML() {
+        console.log('BALL', ball.team, ball.number, roster.getSpecialMoves(ball.team, ball.number));
         const cfg = TEXTS.cards.attack;
-        return `<div id="attack-strip">
+
+        const info = roster.getPlayerInfo(ball.team, ball.number);
+        const specials = roster.getSpecialMoves(ball.team, ball.number)
+            .filter(m => m.mode === "attack");
+
+        const hasSpecial = specials.length > 0;
+
+        return `
+        <div id="attack-strip">
             ${buildSkillCard("shot", cfg.shot)}
             ${buildSkillCard("pass", cfg.pass)}
             ${buildSkillCard("dribble", cfg.dribble)}
-            ${buildSkillCard("special", cfg.special)}
+            ${hasSpecial ? buildSkillCard("special", cfg.special) : ""}
         </div>`;
     }
 
     // Construit la barre de défense de champ (block/intercept/tackle/special).
-    function buildDefenseFieldHTML() {
+    function buildDefenseFieldHTML(defenderTeam, defenderSlot) {
         const cfg = TEXTS.cards.defenseField;
-        return `<div id="defense-strip">
+
+        const specials = roster.getSpecialMoves(defenderTeam, defenderSlot)
+            .filter(m => m.mode === "defense");
+
+        const hasSpecial = specials.length > 0;
+
+        return `
+        <div id="defense-strip">
             ${buildDefCard("block", cfg.block)}
             ${buildDefCard("intercept", cfg.intercept)}
             ${buildDefCard("tackle", cfg.tackle)}
-            ${buildDefCard("field-special", cfg["field-special"])}
+            ${hasSpecial ? buildDefCard("field-special", cfg["field-special"]) : ""}
         </div>`;
     }
 
     // Construit la barre de défense gardien (hands/punch/gk-special).
-    function buildDefenseGKHTML() {
+    function buildDefenseGKHTML(defenderTeam) {
         const cfg = TEXTS.cards.defenseGK;
-        return `<div id="defense-strip">
+
+        const specials = roster.getSpecialMoves(defenderTeam, 1)
+            .filter(m => m.mode === "defense");
+
+        const hasSpecial = specials.length > 0;
+
+        return `
+        <div id="defense-strip">
             ${buildDefCard("hands", cfg.hands)}
             ${buildDefCard("punch", cfg.punch)}
-            ${buildDefCard("gk-special", cfg["gk-special"])}
+            ${hasSpecial ? buildDefCard("gk-special", cfg["gk-special"]) : ""}
         </div>`;
     }
 
@@ -1740,6 +1791,10 @@ export function initMatchEngine(rootEl, config = {}) {
         }
     }
 
+
+    // ==========================
+    //   updateCardsPower
+    // ==========================
     // Met à jour les puissances visibles des actions (attaquant + défenseur en cours).
     function updateCardsPower() {
         if (!ui.actionBarEl) return;
@@ -1747,7 +1802,8 @@ export function initMatchEngine(rootEl, config = {}) {
         const carrier = roster.getPlayerInfo(ball.team, ball.number);
         const carrierStats = carrier?.stats ?? {};
 
-        ui.actionBarEl.querySelectorAll(".skill-card").forEach(btn => {
+        // Puissance des cartes d'attaque
+        ui.actionBarEl.querySelectorAll(".skill-card").forEach((btn) => {
             const a = btn.dataset.action;
             const map = { pass: "pass", dribble: "dribble", shot: "shot", special: "attack" };
             const value = Number(carrierStats[map[a]] ?? 0);
@@ -1755,36 +1811,133 @@ export function initMatchEngine(rootEl, config = {}) {
             if (el) el.textContent = String(value);
         });
 
-        const mode = [...ui.actionBarEl.classList].find(c => c.startsWith("mode-defense-"));
+        // 🔥 Carte Special (attaque) : adapter le label selon les techniques offensives
+        const specialBtn = ui.actionBarEl.querySelector('.skill-card[data-action="special"]');
+        if (specialBtn) {
+            const titleEl = specialBtn.querySelector('.skill-title');
+            const subEl   = specialBtn.querySelector('.skill-sub');
+
+            if (titleEl && subEl) {
+                const specials = roster
+                    .getSpecialMoves(ball.team, ball.number)
+                    .filter(m => m && m.mode === "attack");
+
+                if (specials.length === 0) {
+                    titleEl.textContent = TEXTS.cards.attack.special.title;
+                    subEl.textContent   = TEXTS.cards.attack.special.sub;
+                } else if (specials.length === 1) {
+                    const move = specials[0];
+                    titleEl.textContent = move.label || TEXTS.cards.attack.special.title;
+                    subEl.textContent   = move.description || TEXTS.cards.attack.special.sub;
+                } else {
+                    titleEl.textContent = "Spéciaux";
+                    const shortList = specials
+                        .map(m => m.short_label || m.label)
+                        .filter(Boolean)
+                        .join(" / ");
+                    subEl.textContent = shortList || TEXTS.cards.attack.special.sub;
+                }
+            }
+        }
+
+        // Partie défense : si pas en mode défense, on s'arrête
+        const mode = [...ui.actionBarEl.classList].find((c) => c.startsWith("mode-defense-"));
         if (!mode) return;
 
         const defenseTeam = mode.includes("external") ? "external" : "internal";
         const isGK = !!ui.actionBarEl.querySelector('.def-card[data-defense="hands"]');
 
+        // ==========================
+        //   GK DEFENSE
+        // ==========================
         if (isGK) {
-            const gk = roster.getPlayerInfo(defenseTeam, 1)?.stats ?? {};
+            const gkInfo  = roster.getPlayerInfo(defenseTeam, 1);
+            const gkStats = gkInfo?.stats ?? {};
             const map = { hands: "hand_save", punch: "punch_save", "gk-special": "defense" };
 
-            ui.actionBarEl.querySelectorAll(".def-card").forEach(btn => {
+            ui.actionBarEl.querySelectorAll(".def-card").forEach((btn) => {
                 const def = btn.dataset.defense;
                 const el = btn.querySelector(".def-power");
-                if (el) el.textContent = String(Number(gk[map[def]] ?? 0));
+                if (el) el.textContent = String(Number(gkStats[map[def]] ?? 0));
             });
+
+            // 🔥 Carte Special GK (gk-special) : label selon techniques défensives GK
+            const gkSpecialBtn = ui.actionBarEl.querySelector('.def-card[data-defense="gk-special"]');
+            if (gkSpecialBtn) {
+                const titleEl = gkSpecialBtn.querySelector('.def-title');
+                const subEl   = gkSpecialBtn.querySelector('.def-sub');
+
+                if (titleEl && subEl) {
+                    const specialsGK = roster
+                        .getSpecialMoves(defenseTeam, 1)
+                        .filter(m => m && m.mode === "defense");
+
+                    if (specialsGK.length === 0) {
+                        titleEl.textContent = TEXTS.cards.defenseGK["gk-special"].title;
+                        subEl.textContent   = TEXTS.cards.defenseGK["gk-special"].sub;
+                    } else if (specialsGK.length === 1) {
+                        const move = specialsGK[0];
+                        titleEl.textContent = move.label || TEXTS.cards.defenseGK["gk-special"].title;
+                        subEl.textContent   = move.description || TEXTS.cards.defenseGK["gk-special"].sub;
+                    } else {
+                        titleEl.textContent = "Spéciaux";
+                        const shortList = specialsGK
+                            .map(m => m.short_label || m.label)
+                            .filter(Boolean)
+                            .join(" / ");
+                        subEl.textContent = shortList || TEXTS.cards.defenseGK["gk-special"].sub;
+                    }
+                }
+            }
+
             return;
         }
 
+        // ==========================
+        //   FIELD DEFENSE
+        // ==========================
         const ctx = state.pendingDefenseContext;
         const slot = ctx?.defenderSlot;
         if (!slot) return;
 
-        const dStats = roster.getPlayerInfo(defenseTeam, slot)?.stats ?? {};
+        const dInfo  = roster.getPlayerInfo(defenseTeam, slot);
+        const dStats = dInfo?.stats ?? {};
         const map = { block: "block", intercept: "intercept", tackle: "tackle", "field-special": "defense" };
 
-        ui.actionBarEl.querySelectorAll(".def-card").forEach(btn => {
+        ui.actionBarEl.querySelectorAll(".def-card").forEach((btn) => {
             const def = btn.dataset.defense;
             const el = btn.querySelector(".def-power");
             if (el) el.textContent = String(Number(dStats[map[def]] ?? 0));
         });
+
+        // 🔥 Carte Special DEF FIELD (field-special) : label selon techniques défensives de champ
+        const fieldSpecialBtn = ui.actionBarEl.querySelector('.def-card[data-defense="field-special"]');
+        if (fieldSpecialBtn) {
+            const titleEl = fieldSpecialBtn.querySelector('.def-title');
+            const subEl   = fieldSpecialBtn.querySelector('.def-sub');
+
+            if (titleEl && subEl) {
+                const specialsDef = roster
+                    .getSpecialMoves(defenseTeam, slot)
+                    .filter(m => m && m.mode === "defense");
+
+                if (specialsDef.length === 0) {
+                    titleEl.textContent = TEXTS.cards.defenseField["field-special"].title;
+                    subEl.textContent   = TEXTS.cards.defenseField["field-special"].sub;
+                } else if (specialsDef.length === 1) {
+                    const move = specialsDef[0];
+                    titleEl.textContent = move.label || TEXTS.cards.defenseField["field-special"].title;
+                    subEl.textContent   = move.description || TEXTS.cards.defenseField["field-special"].sub;
+                } else {
+                    titleEl.textContent = "Spéciaux";
+                    const shortList = specialsDef
+                        .map(m => m.short_label || m.label)
+                        .filter(Boolean)
+                        .join(" / ");
+                    subEl.textContent = shortList || TEXTS.cards.defenseField["field-special"].sub;
+                }
+            }
+        }
     }
 
     // Bind les clics sur cartes d’attaque/défense vers les handlers.
@@ -1977,63 +2130,64 @@ export function initMatchEngine(rootEl, config = {}) {
     // ==========================
     //   IA
     // ==========================
-
     // Choisit l’action d’attaque de l’IA selon contexte (kickoff, zones, stamina, GK).
     function computeAIAttackChoice() {
-        if (state.isKickoff) return "pass";
-        if (state.keeperRestartMustPass) return "pass";
+        const team = state.currentTeam;
+        const slot = ball.number;
+        const playerId = getPlayerId(team, slot);
 
+        const specials = roster
+            .getSpecialMoves(team, slot)
+            .filter(m => m.mode === "attack");
+
+        const hasShotSp = specials.some(m => m.base_action === "shot");
+        const hasPassSp = specials.some(m => m.base_action === "pass");
+        const hasDribSp = specials.some(m => m.base_action === "dribble");
+
+        const canSpecial = canUseSpecial(playerId); // cooldown global pour l'instant
+
+        // SPECIAL POSSIBLE ?
+        const allowSpecial = canSpecial && specials.length > 0;
+
+        // KICKOFF / RELANCE GK
+        if (state.isKickoff || state.keeperRestartMustPass) {
+            return hasPassSp && allowSpecial ? "special" : "pass";
+        }
+
+        // Face au gardien
         if (ball.frontOfKeeper) {
-            const r = Math.random();
-            const p = AI_RULES.ATTACK.FRONT_GK_SPECIAL_PROB ?? 0.15;
-            return (r < p) ? "special" : "shot";
+            if (hasShotSp && allowSpecial) return "special";
+            return "shot";
         }
 
-        const z = ball.zoneIndex; // 0..MAX_ZONE_INDEX (0..4)
-        const aiCarrierId = getPlayerId(state.currentTeam, ball.number);
-        const stRatio = getStaminaRatio(aiCarrierId);
+        const z = ball.zoneIndex;
+        const st = getStaminaRatio(playerId);
 
-        if (stRatio < 0.20) return "pass";
-
-        // Z0-Z1 : construction -> passe/dribble
+        // Zone basse -> passe/dribble
         if (z <= 1) {
-            return (Math.random() < (AI_RULES.ATTACK.EARLY_PASS_PROB ?? 0.7)) ? "pass" : "dribble";
+            if (hasPassSp && allowSpecial && Math.random() < 0.30) return "special";
+            if (hasDribSp && allowSpecial && Math.random() < 0.25) return "special";
+            return (Math.random() < 0.65) ? "pass" : "dribble";
         }
 
-        // Z2 : progression -> dribble dominant
+        // Zone 2 -> dribble / passe
         if (z === 2) {
-            const r = Math.random();
-            if (stRatio >= 0.30) {
-                if (r < 0.70) return "dribble";
-                if (r < 0.95) return "pass";
-                return "shot";
-            }
-            return (r < 0.80) ? "pass" : "dribble";
+            if (hasDribSp && allowSpecial && Math.random() < 0.40) return "special";
+            if (hasPassSp && allowSpecial && Math.random() < 0.20) return "special";
+            return (Math.random() < 0.55) ? "dribble" : "pass";
         }
 
-        // Z3 : zone dangereuse -> dribble / shot / special parfois
+        // Zone 3 -> approche zone dangereuse
         if (z === 3) {
-            const r = Math.random();
-            if (stRatio >= 0.35) {
-                if (r < 0.60) return "dribble";
-                if (r < 0.85) return "shot";
-                if (r < 0.95) return "pass";
-                return "special";
-            }
-            if (r < 0.50) return "pass";
-            if (r < 0.85) return "shot";
-            return "dribble";
+            if (hasShotSp && allowSpecial && Math.random() < 0.25) return "special";
+            if (hasDribSp && allowSpecial && Math.random() < 0.20) return "special";
+            return (Math.random() < 0.60) ? "dribble" : "shot";
         }
 
-        // Z4 : très dangereux -> shot/special majoritaires
+        // Zone 4 → tir / spécial tir
         if (z >= 4) {
-            const r = Math.random();
-            if (stRatio >= 0.30) {
-                if (r < 0.55) return "shot";
-                if (r < 0.85) return "special";
-                return "pass";
-            }
-            return (r < 0.70) ? "shot" : "pass";
+            if (hasShotSp && allowSpecial && Math.random() < 0.50) return "special";
+            return "shot";
         }
 
         return "pass";
@@ -2055,48 +2209,53 @@ export function initMatchEngine(rootEl, config = {}) {
     // Choisit l’action défensive IA selon action attaque et contexte GK/field.
     function computeAIDefenseChoice(attackAction, defendingTeam, opts = {}) {
         const { isKeeperDuel = false } = opts;
-        const r = Math.random();
 
+        const slot = isKeeperDuel ? 1 : (state.pendingDefenseContext?.defenderSlot || 6);
+        const defenderId = isKeeperDuel ? getKeeperId(defendingTeam) : getPlayerId(defendingTeam, slot);
+
+        const specials = roster
+            .getSpecialMoves(defendingTeam, isKeeperDuel ? 1 : slot)
+            .filter(m => m.mode === "defense");
+
+        const hasSpecial = specials.length > 0;
+        const canSpecial = hasSpecial && canUseSpecial(defenderId);
+
+        // GK → gérer gk-special
         if (isKeeperDuel) {
-            const attackerTeam = otherTeam(defendingTeam);
-            const shooterSlot = ball.number;
-
-            const threat = Math.max(
-                roster.getStat(attackerTeam, shooterSlot, "shot"),
-                roster.getStat(attackerTeam, shooterSlot, "attack")
-            );
-
-            const keeperId = getKeeperId(defendingTeam);
-            const gkRatio = keeperId ? getStaminaRatio(keeperId) : 1.0;
-
-            if (threat >= 35) {
-                if (gkRatio >= 0.30) return (r < 0.25) ? "gk-special" : "hands";
-                if (gkRatio >= 0.15) return "hands";
-                return "punch";
-            }
-
-            if (gkRatio >= 0.20) return (r < 0.70) ? "hands" : "punch";
-            return "punch";
+            if (canSpecial && Math.random() < 0.35) return "gk-special";
+            return (Math.random() < 0.60) ? "hands" : "punch";
         }
 
+        // FIELD DEFENSE
+        if (canSpecial) {
+            // Bonus : RPS intelligent
+            if (attackAction === "shot" && specials.some(m => m.base_action === "block")) {
+                if (Math.random() < 0.40) return "field-special";
+            }
+            if (attackAction === "pass" && specials.some(m => m.base_action === "intercept")) {
+                if (Math.random() < 0.40) return "field-special";
+            }
+            if (attackAction === "dribble" && specials.some(m => m.base_action === "tackle")) {
+                if (Math.random() < 0.40) return "field-special";
+            }
+
+            // Sinon chance simple
+            if (Math.random() < 0.25) return "field-special";
+        }
+
+        // fallback : logique standard
+        return computeDefenseFallback(attackAction);
+    }
+
+    function computeDefenseFallback(attackAction) {
+        const r = Math.random();
+
         switch (attackAction) {
-            case "pass":
-                if (r < 0.7) return "intercept";
-                if (r < 0.9) return "tackle";
-                return "block";
-            case "dribble":
-                if (r < 0.7) return "tackle";
-                if (r < 0.9) return "intercept";
-                return "block";
-            case "shot":
-                if (r < 0.75) return "block";
-                return "intercept";
-            case "special":
-                if (r < 0.65) return "field-special";
-                if (r < 0.85) return "block";
-                return "intercept";
-            default:
-                return "intercept";
+            case "pass": return r < 0.7 ? "intercept" : (r < 0.9 ? "tackle" : "block");
+            case "dribble": return r < 0.7 ? "tackle" : (r < 0.9 ? "intercept" : "block");
+            case "shot": return r < 0.75 ? "block" : "intercept";
+            case "special": return r < 0.65 ? "field-special" : "block";
+            default: return "intercept";
         }
     }
 
@@ -2305,7 +2464,6 @@ export function initMatchEngine(rootEl, config = {}) {
     // ==========================
     //   Duel champ
     // ==========================
-
     // Exécute un duel de champ (attaque vs défenseur pické), applique stamina, et retourne l’issue.
     function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseAction, defenderPick = null }) {
         const attackerId = getPlayerId(attackTeam, ball.number);
@@ -2321,12 +2479,41 @@ export function initMatchEngine(rootEl, config = {}) {
         updateSideCard(attackTeam === "internal" ? "home" : "away", attackTeam, ball.number);
         updateSideCard(defenseTeam === "internal" ? "home" : "away", defenseTeam, defenderSlot);
 
-
         syncRecovererCard(defenseTeam, defenderSlot);
         updateTeamCard();
 
-        const attackBaseRaw = roster.attackBaseFor(attackType, attackTeam, ball.number);
-        const defenseBaseRaw = roster.defenseBaseFor(defenseAction, defenseTeam, defenderSlot, false);
+        // 🔥 Base attaque : classique ou spéciale selon attackType
+        let attackBaseRaw;
+        if (attackType === "special") {
+            const specials = roster
+                .getSpecialMoves(attackTeam, ball.number)
+                .filter(m => m && m.mode === "attack");
+
+            if (specials.length > 0) {
+                attackBaseRaw = specialBaseFor(specials[0], attackTeam, ball.number);
+            } else {
+                attackBaseRaw = roster.attackBaseFor("special", attackTeam, ball.number);
+            }
+        } else {
+            attackBaseRaw = roster.attackBaseFor(attackType, attackTeam, ball.number);
+        }
+
+        // Base défense : classique ou spéciale selon defenseAction
+        let defenseBaseRaw;
+
+        if (defenseAction === "field-special") {
+            const specialsDef = roster
+                .getSpecialMoves(defenseTeam, defenderSlot)
+                .filter(m => m && m.mode === "defense");
+
+            if (specialsDef.length > 0) {
+                defenseBaseRaw = specialBaseFor(specialsDef[0], defenseTeam, defenderSlot);
+            } else {
+                defenseBaseRaw = roster.defenseBaseFor("field-special", defenseTeam, defenderSlot, false);
+            }
+        } else {
+            defenseBaseRaw = roster.defenseBaseFor(defenseAction, defenseTeam, defenderSlot, false);
+        }
 
         const attackStamF = staminaFactor(attackerId);
         const defenseStamF = staminaFactor(defenderId);
@@ -2350,7 +2537,6 @@ export function initMatchEngine(rootEl, config = {}) {
         const isGood = isGoodDefenseChoice(attackType, defenseAction);
         if (isGood) defenseScore += DUEL_RULES.GOOD_COUNTER_BONUS;
         else attackScore += DUEL_RULES.GENERIC_ATTACK_BONUS;
-
 
         const meta = buildDuelMeta({
             attackTeam,
@@ -2416,7 +2602,6 @@ export function initMatchEngine(rootEl, config = {}) {
     // ==========================
     //   SHOT animations
     // ==========================
-
     // Anime le ballon dans le but puis exécute un callback de reset.
     function animateGoalThenReset(attackTeam, afterGoalCallback) {
         if (!ui.ballEl) { if (afterGoalCallback) afterGoalCallback(); return; }
@@ -2451,7 +2636,6 @@ export function initMatchEngine(rootEl, config = {}) {
     // ==========================
     //   GK clearance (AUTO)
     // ==========================
-
     // Exécute une relance automatique du gardien (choix distance/lane/receveur + bonus).
     function performKeeperClearance(defenseTeam, defenseAction, afterClearance = null) {
         const keeperEl = rootEl.querySelector(
@@ -2559,22 +2743,41 @@ export function initMatchEngine(rootEl, config = {}) {
     // ==========================
     //   RESOLVE: PASS
     // ==========================
-
     // Résout une passe (duel champ), puis déplace la balle et change de tour.
     function resolvePass(attackTeam, defenseTeam, defenseAction, defenderPick = null) {
         const wasKickoff = state.isKickoff;
         state.isKickoff = false;
 
+        // 🔥 Détection d’une passe spéciale (special_moves offensifs base_action="pass")
+        let isSpecialPass = false;
+        let specialPassMove = null;
+
+        const specials = roster
+            .getSpecialMoves(attackTeam, ball.number)
+            .filter(m => m && m.mode === "attack" && m.base_action === "pass");
+
+        if (specials.length > 0) {
+            isSpecialPass = true;
+            specialPassMove = specials[0];
+        }
+
+        const attackType = isSpecialPass ? "special" : "pass";
+
         const duel = runFieldDuel({
             attackTeam,
             defenseTeam,
-            attackType: "pass",
+            attackType,
             defenseAction,
             defenderPick,
         });
 
         if (duel.isTie) {
-            pushLogEntry("Duel équilibré (pass)", [`Défense: ${defenseAction}`], duel.diceTag);
+            pushLogEntry(
+                isSpecialPass ? "Duel équilibré (special pass)" : "Duel équilibré (pass)",
+                [`Défense: ${defenseAction}`, getCounterTag(attackType, defenseAction)],
+                duel.diceTag
+            );
+
             state.phase = "attack";
             state.pendingAttack = null;
 
@@ -2588,7 +2791,10 @@ export function initMatchEngine(rootEl, config = {}) {
 
         const duelResult = duel.duelResult;
 
-        if (state.keeperRestartMustPass) state.keeperRestartMustPass = false;
+        if (isSpecialPass) {
+            const attackerId = getPlayerId(attackTeam, ball.number);
+            markSpecialUsed(attackerId); // cooldown
+        }
 
         // ==========================
         //   CAS KICKOFF
@@ -2597,10 +2803,18 @@ export function initMatchEngine(rootEl, config = {}) {
             if (duelResult === "attack") {
                 const receiver = [5, 6][Math.floor(Math.random() * 2)];
 
-                setMessage("Remise en jeu réussie !", `${TEAMS[attackTeam].label} joue vers le n°${receiver}.`);
+                setMessage(
+                    isSpecialPass ? "Passe spéciale réussie !" : "Remise en jeu réussie !",
+                    `${TEAMS[attackTeam].label} joue vers le n°${receiver}.`
+                );
                 pushLogEntry(
                     "kickoffTitle",
-                    [`Vers n°${receiver}`, `Défense: ${defenseAction}`, getCounterTag("pass", defenseAction)],
+                    [
+                        isSpecialPass ? `(Special pass)` : null,
+                        `Vers n°${receiver}`,
+                        `Défense: ${defenseAction}`,
+                        getCounterTag(attackType, defenseAction)
+                    ].filter(Boolean),
                     duel.diceTag
                 );
 
@@ -2616,10 +2830,17 @@ export function initMatchEngine(rootEl, config = {}) {
 
                 const verb = (defenseAction === "intercept") ? "intercepte" : "récupère";
 
-                setMessage("Remise en jeu ratée !", `${TEAMS[defenseTeam].label} ${verb} avec le n°${receiver}.`);
+                setMessage(
+                    "Remise en jeu ratée !",
+                    `${TEAMS[defenseTeam].label} ${verb} avec le n°${receiver}.`
+                );
                 pushLogEntry(
                     "kickoffTitle",
-                    [`Défense: ${defenseAction}`, getCounterTag("pass", defenseAction)],
+                    [
+                        isSpecialPass ? `(Special pass)` : null,
+                        `Défense: ${defenseAction}`,
+                        getCounterTag(attackType, defenseAction)
+                    ].filter(Boolean),
                     duel.diceTag
                 );
 
@@ -2649,7 +2870,6 @@ export function initMatchEngine(rootEl, config = {}) {
 
             targetLane = laneOptions[Math.floor(Math.random() * laneOptions.length)];
         } else {
-            // déjà en dernière zone : on varie la lane
             targetZone = MAX_ZONE_INDEX;
             targetLane = [0, 1, 2][Math.floor(Math.random() * 3)];
         }
@@ -2678,10 +2898,18 @@ export function initMatchEngine(rootEl, config = {}) {
 
             moveBallToPlayer(attackTeam, receiver);
 
-            setMessage(TEXTS.logs.passSuccessTitle, `${TEAMS[attackTeam].label} trouve le n°${receiver}.`);
+            setMessage(
+                isSpecialPass ? "Passe spéciale réussie !" : TEXTS.logs.passSuccessTitle,
+                `${TEAMS[attackTeam].label} trouve le n°${receiver}.`
+            );
             pushLogEntry(
-                "passSuccessTitle",
-                [`Vers n°${receiver}`, `Défense: ${defenseAction}`, getCounterTag("pass", defenseAction)],
+                isSpecialPass ? "passSuccessTitle" : "passSuccessTitle",
+                [
+                    isSpecialPass ? `(Special pass)` : null,
+                    `Vers n°${receiver}`,
+                    `Défense: ${defenseAction}`,
+                    getCounterTag(attackType, defenseAction)
+                ].filter(Boolean),
                 duel.diceTag
             );
 
@@ -2705,13 +2933,17 @@ export function initMatchEngine(rootEl, config = {}) {
         moveBallToPlayer(defenseTeam, receiver);
         syncRecovererCard(defenseTeam, receiver);
 
-        const logTitle = getLogTitleForDuel("pass", defenseAction, "defense");
+        const logTitle = getLogTitleForDuel(attackType, defenseAction, "defense");
         const msgTitle = (defenseAction === "intercept") ? TEXTS.logs.passFailTitle : TEXTS.logs.passRecoveredTitle;
 
         setMessage(msgTitle, `${TEAMS[defenseTeam].label} récupère avec le n°${receiver}.`);
         pushLogEntry(
             logTitle,
-            [`Défense: ${defenseAction}`, getCounterTag("pass", defenseAction)],
+            [
+                isSpecialPass ? `(Special pass)` : null,
+                `Défense: ${defenseAction}`,
+                getCounterTag(attackType, defenseAction)
+            ].filter(Boolean),
             duel.diceTag
         );
 
@@ -2739,16 +2971,33 @@ export function initMatchEngine(rootEl, config = {}) {
         const oldZone = ball.zoneIndex;
         const lane = ball.laneIndex;
 
+        // 🔥 Détection d’un dribble spécial (special_moves offensifs base_action="dribble")
+        let isSpecialDribble = false;
+
+        const specials = roster
+            .getSpecialMoves(attackTeam, ball.number)
+            .filter(m => m && m.mode === "attack" && m.base_action === "dribble");
+
+        if (specials.length > 0) {
+            isSpecialDribble = true;
+        }
+
+        const attackType = isSpecialDribble ? "special" : "dribble";
+
         const duel = runFieldDuel({
             attackTeam,
             defenseTeam,
-            attackType: "dribble",
+            attackType,
             defenseAction,
             defenderPick,
         });
 
         if (duel.isTie) {
-            pushLogEntry("Duel équilibré (dribble)", [`Défense: ${defenseAction}`], duel.diceTag);
+            pushLogEntry(
+                isSpecialDribble ? "Duel équilibré (special dribble)" : "Duel équilibré (dribble)",
+                [`Défense: ${defenseAction}`, getCounterTag(attackType, defenseAction)],
+                duel.diceTag
+            );
             state.phase = "attack";
             state.pendingAttack = null;
 
@@ -2761,6 +3010,12 @@ export function initMatchEngine(rootEl, config = {}) {
         }
 
         const duelResult = duel.duelResult;
+
+        if (isSpecialDribble) {
+            const attackerId = getPlayerId(attackTeam, ball.number);
+            markSpecialUsed(attackerId); // cooldown
+        }
+
         const carrierId = getPlayerId(attackTeam, ball.number);
         const carrierEl = rootEl.querySelector(`[data-player="${carrierId}"]`);
 
@@ -2775,8 +3030,6 @@ export function initMatchEngine(rootEl, config = {}) {
             if (oldZone < MAX_ZONE_INDEX) {
                 const newZone = Math.min(MAX_ZONE_INDEX, oldZone + 1);
 
-                // Simple avancée : on NE PASSE PAS encore face au gardien,
-                // même si on entre dans la dernière zone.
                 if (carrierEl && ui.ballEl) {
                     const currentY = parseFloat(carrierEl.style.top);
                     const center = getCellCenter(attackTeam, newZone, lane);
@@ -2793,15 +3046,20 @@ export function initMatchEngine(rootEl, config = {}) {
 
                 ball.zoneIndex = newZone;
                 ball.laneIndex = lane;
-                ball.frontOfKeeper = false; // ⚠ on reste "avant la défense"
+                ball.frontOfKeeper = false;
 
                 setMessage(
-                    "Dribble réussi !",
+                    isSpecialDribble ? "Dribble spécial réussi !" : "Dribble réussi !",
                     `${TEAMS[attackTeam].label} avance en zone ${newZone + 1}.`
                 );
                 pushLogEntry(
-                    "Dribble réussi",
-                    [`Zone ${newZone + 1}`, `Défense: ${defenseAction}`, getCounterTag("dribble", defenseAction)],
+                    isSpecialDribble ? "dribbleSuccessTitle" : "dribbleSuccessTitle",
+                    [
+                        isSpecialDribble ? "(Special dribble)" : null,
+                        `Zone ${newZone + 1}`,
+                        `Défense: ${defenseAction}`,
+                        getCounterTag(attackType, defenseAction),
+                    ].filter(Boolean),
                     duel.diceTag
                 );
 
@@ -2825,7 +3083,6 @@ export function initMatchEngine(rootEl, config = {}) {
                     ui.ballEl.style.top = `${y}%`;
                 }
 
-                // Zone inchangée, on reste dans la dernière zone
                 if (carrierEl) {
                     carrierEl.dataset.zone = String(oldZone);
                 }
@@ -2837,7 +3094,12 @@ export function initMatchEngine(rootEl, config = {}) {
                 setMessage(TEXTS.ui.frontOfKeeperMain, TEXTS.ui.frontOfKeeperSub);
                 pushLogEntry(
                     "frontOfKeeperTitle",
-                    [`Zone ${oldZone + 1}`, `Défense: ${defenseAction}`, getCounterTag("dribble", defenseAction)],
+                    [
+                        isSpecialDribble ? "(Special dribble)" : null,
+                        `Zone ${oldZone + 1}`,
+                        `Défense: ${defenseAction}`,
+                        getCounterTag(attackType, defenseAction),
+                    ].filter(Boolean),
                     duel.diceTag
                 );
 
@@ -2862,13 +3124,17 @@ export function initMatchEngine(rootEl, config = {}) {
         moveBallToPlayer(defenseTeam, slot);
         syncRecovererCard(defenseTeam, slot);
 
-        const logTitle = getLogTitleForDuel("dribble", defenseAction, "defense");
+        const logTitle = getLogTitleForDuel(attackType, defenseAction, "defense");
         const msgTitle = (defenseAction === "tackle") ? "Dribble stoppé" : TEXTS.logs.dribbleRecoveredTitle;
 
         setMessage(msgTitle, `${TEAMS[defenseTeam].label} récupère avec le n°${slot}.`);
         pushLogEntry(
             logTitle,
-            [`Défense: ${defenseAction}`, getCounterTag("dribble", defenseAction)],
+            [
+                isSpecialDribble ? "(Special dribble)" : null,
+                `Défense: ${defenseAction}`,
+                getCounterTag(attackType, defenseAction),
+            ].filter(Boolean),
             duel.diceTag
         );
 
@@ -2882,7 +3148,6 @@ export function initMatchEngine(rootEl, config = {}) {
     // ==========================
     //   RESOLVE: SHOT
     // ==========================
-
     function resolveShot(attackTeam, defenseTeam, defenseAction, isSpecial = false, defenderPick = null) {
         const originZone = ball.zoneIndex;
         const originLane = ball.laneIndex;
@@ -2890,8 +3155,19 @@ export function initMatchEngine(rootEl, config = {}) {
         const attackerId = getPlayerId(attackTeam, ball.number);
         const attackType = isSpecial ? "special" : "shot";
 
-        // CAS 1 : déjà face au gardien -> duel GK direct (inchangé)
+        // CAS 1 : déjà face au gardien → duel GK direct
         if (ball.frontOfKeeper) {
+            const baseForKeeper = isSpecial
+                ? (() => {
+                    const moves = roster
+                        .getSpecialMoves(attackTeam, ball.number)
+                        .filter(m => m && m.mode === "attack");
+                    return moves.length > 0
+                        ? specialBaseFor(moves[0], attackTeam, ball.number)
+                        : roster.attackBaseFor("special", attackTeam, ball.number);
+                })()
+                : roster.attackBaseFor("shot", attackTeam, ball.number);
+
             resolveShotKeeperDuel({
                 stage: "keeper",
                 attackTeam,
@@ -2899,19 +3175,19 @@ export function initMatchEngine(rootEl, config = {}) {
                 originZone,
                 originLane,
                 isSpecial,
-                gkAttackBase: roster.attackBaseFor(attackType, attackTeam, ball.number),
+                gkAttackBase: baseForKeeper,
                 logParts: [`Zone ${originZone + 1}`],
             }, defenseAction);
             return;
         }
 
-        //  DUEL CHAMP (inchangé)
+        // DUEL CHAMP (tir ou tir spécial)
         const duel = runFieldDuel({
             attackTeam,
             defenseTeam,
             attackType,
             defenseAction,
-            defenderPick
+            defenderPick,
         });
 
         if (duel.isTie) {
@@ -2933,7 +3209,7 @@ export function initMatchEngine(rootEl, config = {}) {
 
         const duelResult = duel.duelResult;
 
-        // DÉFENSE GAGNE (inchangé)
+        // DÉFENSE GAGNE (tir contré / tir récupéré)
         if (duelResult === "defense") {
             const number =
                 duel.defenderSlot ??
@@ -2972,7 +3248,7 @@ export function initMatchEngine(rootEl, config = {}) {
             return;
         }
 
-        // ATTAQUE GAGNE (tir cadré -> passage gardien)
+        // ATTAQUE GAGNE (tir cadré → passage gardien)
         pushLogEntry(
             TEXTS.ui.shotOnTargetMain,
             [`Zone ${originZone + 1}`, `Défense: ${defenseAction}`, getCounterTag(attackType, defenseAction)],
@@ -2984,9 +3260,21 @@ export function initMatchEngine(rootEl, config = {}) {
         );
 
         const zonesToGoal = Math.max(0, MAX_ZONE_INDEX - originZone);
-        const gkAttackBase =
-            roster.attackBaseFor(attackType, attackTeam, ball.number) -
-            (zonesToGoal * DUEL_RULES.SHOT_DISTANCE_PENALTY_PER_LINE);
+
+        let gkAttackBase;
+        if (isSpecial) {
+            const moves = roster
+                .getSpecialMoves(attackTeam, ball.number)
+                .filter(m => m && m.mode === "attack");
+
+            gkAttackBase = moves.length > 0
+                ? specialBaseFor(moves[0], attackTeam, ball.number)
+                : roster.attackBaseFor("special", attackTeam, ball.number);
+        } else {
+            gkAttackBase =
+                roster.attackBaseFor("shot", attackTeam, ball.number) -
+                (zonesToGoal * DUEL_RULES.SHOT_DISTANCE_PENALTY_PER_LINE);
+        }
 
         const targetZone = MAX_ZONE_INDEX;
         const center = getCellCenter(attackTeam, targetZone, originLane);
@@ -2998,7 +3286,6 @@ export function initMatchEngine(rootEl, config = {}) {
             ui.ballEl.style.top = center.y + "%";
         }
 
-        // On marque qu'on entre en phase gardien
         state.pendingShotContext = {
             stage: "keeper",
             attackTeam,
@@ -3010,21 +3297,17 @@ export function initMatchEngine(rootEl, config = {}) {
             logParts: [`Zone ${originZone + 1}`],
         };
 
-        // 🧤 Animation vers le gardien, puis affichage des choix GK
         animateShotToKeeper(defenseTeam, () => {
-            // ✅ NOUVEAU : la défense est désormais le gardien -> on met la carte à jour
             const defenderPrefix = (defenseTeam === "internal") ? "home" : "away";
             updateSideCard(defenderPrefix, defenseTeam, 1);
 
-            // ✅ On aligne aussi le contexte défenseur sur le gardien (cohérence état)
             state.pendingDefenseContext = {
                 defenseTeam,
                 defenderId: getKeeperId(defenseTeam),
                 defenderSlot: 1,
             };
 
-            // Barre de défense gardien (inchangé)
-            setActionBar(buildDefenseGKHTML(), `mode-defense-${defenseTeam}`);
+            setActionBar(buildDefenseGKHTML(defenseTeam), `mode-defense-${defenseTeam}`);
 
             setMessage(
                 TEXTS.ui.shotOnTargetMain,
@@ -3041,7 +3324,6 @@ export function initMatchEngine(rootEl, config = {}) {
     // ==========================
     //   DUEL GK
     // ==========================
-
     // Résout le duel tireur vs gardien (avec crit, bonus, stamina, but/relance).
     function resolveShotKeeperDuel(ctx, defenseAction) {
         const { attackTeam, defenseTeam, originZone, isSpecial, gkAttackBase, logParts } = ctx;
@@ -3051,7 +3333,24 @@ export function initMatchEngine(rootEl, config = {}) {
 
         let attackScore = gkAttackBase * staminaFactor(attackerId);
         const gkFactor = keeperId ? staminaFactor(keeperId) : 1.0;
-        let defenseScore = roster.defenseBaseFor(defenseAction, defenseTeam, 1, true) * gkFactor;
+        let defenseBase;
+
+        if (defenseAction === "gk-special") {
+            const specialsGK = roster
+                .getSpecialMoves(defenseTeam, 1)
+                .filter(m => m && m.mode === "defense");
+
+            if (specialsGK.length > 0) {
+                defenseBase = specialBaseFor(specialsGK[0], defenseTeam, 1);
+            } else {
+                defenseBase = roster.defenseBaseFor("gk-special", defenseTeam, 1, true);
+            }
+        } else {
+            defenseBase = roster.defenseBaseFor(defenseAction, defenseTeam, 1, true);
+        }
+
+        let defenseScore = defenseBase * gkFactor;
+
 
         const aRoll = rollD20WithCrit();
         const dRoll = rollD20WithCrit();
@@ -3070,7 +3369,7 @@ export function initMatchEngine(rootEl, config = {}) {
 
         const diceTag = `🎲 ${attackScore.toFixed(1)}-${defenseScore.toFixed(1)}`;
 
-        // 👤 META : infos joueurs + actions
+        // META : infos joueurs + actions
         const meta = buildDuelMeta({
             attackTeam,
             attackSlot: ball.number,
@@ -3080,7 +3379,7 @@ export function initMatchEngine(rootEl, config = {}) {
             defenseAction,
         });
 
-        // 📊 Breakdown complet
+        // Breakdown complet
         const breakdown = {
             meta,
             rolls: {
@@ -3111,7 +3410,6 @@ export function initMatchEngine(rootEl, config = {}) {
             }
         };
 
-
         recordDuelEvent({
             attackTeam,
             defenseTeam,
@@ -3123,10 +3421,8 @@ export function initMatchEngine(rootEl, config = {}) {
             breakdown,
         });
 
-        // Affichage dans le tooltip (dés + breakdown)
         showDuelDice(attackScore, defenseScore, aRoll, dRoll, breakdown);
 
-        // ⚡ Stamina
         applyStaminaCost(attackerId, "attack", isSpecial ? "special" : "shot");
         if (keeperId) applyStaminaCost(keeperId, "defenseGK", defenseAction);
 
@@ -3136,7 +3432,7 @@ export function initMatchEngine(rootEl, config = {}) {
         ball.frontOfKeeper = false;
         resetLastDribbler();
 
-        // ⚖️ ÉGALITÉ (keeper)
+        // ÉGALITÉ (keeper)
         if (!critWinner && attackScore === defenseScore) {
             pushLogEntry("shotGKEqualTitle", [`Zone ${originZone + 1}`], diceTag);
 
@@ -3148,7 +3444,7 @@ export function initMatchEngine(rootEl, config = {}) {
             return;
         }
 
-        // 🥅 ATTAQUE MARQUE
+        // ATTAQUE MARQUE
         const duelResult = critWinner ?? (attackScore > defenseScore ? "attack" : "defense");
 
         if (duelResult === "attack") {
@@ -3179,7 +3475,7 @@ export function initMatchEngine(rootEl, config = {}) {
             return;
         }
 
-        // 🧤 GARDIEN ARRÊTE
+        // GARDIEN ARRÊTE
         pushLogEntry(isSpecial ? "shotSavedTitle" : "shotSavedTitle", [`Zone ${originZone + 1}`, ...logParts], diceTag);
 
         performKeeperClearance(defenseTeam, defenseAction, () => {
@@ -3316,20 +3612,20 @@ export function initMatchEngine(rootEl, config = {}) {
         let html;
         if (action === "shot" || action === "special") {
             if (ball.frontOfKeeper) {
-                html = buildDefenseGKHTML();
+                html = buildDefenseGKHTML(defTeam);
                 setMessage(
                     `${TEAMS[state.currentTeam].label} prépare un ${action === "special" ? "TIR SPÉCIAL" : "TIR"} !`,
                     `${TEAMS[defTeam].label} (gardien) : Arrêt main / Poing / Special.`,
                 );
             } else {
-                html = buildDefenseFieldHTML();
+                html = buildDefenseFieldHTML(defTeam, state.pendingDefenseContext.defenderSlot);
                 setMessage(
                     `${TEAMS[state.currentTeam].label} tente un ${action === "special" ? "TIR SPÉCIAL" : "TIR"} !`,
                     `${TEAMS[defTeam].label} : Block / Intercept / Tackle / Special.`,
                 );
             }
         } else {
-            html = buildDefenseFieldHTML();
+            html = buildDefenseFieldHTML(defTeam, state.pendingDefenseContext.defenderSlot);
             setMessage(
                 `${TEAMS[state.currentTeam].label} prépare un ${action.toUpperCase()} !`,
                 `${TEAMS[defTeam].label} : Block / Intercept / Tackle / Special.`,

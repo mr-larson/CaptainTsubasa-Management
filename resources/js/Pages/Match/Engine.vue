@@ -374,7 +374,6 @@ const gameRoot = ref(/** @type {HTMLElement|null} */ (null));
 /** @type {null | (() => void)} */
 let cleanup = null;
 
-
 // ==========================
 //  Helpers (logos / names)
 //  ✅ Source de vérité : engineConfig.teams.internal/external

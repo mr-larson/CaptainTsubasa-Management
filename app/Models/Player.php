@@ -46,6 +46,7 @@ class Player extends Model
         'position',
         'cost',
         'stats',
+        'special_moves',
         'description',
         'photo_path',
     ];
@@ -53,6 +54,7 @@ class Player extends Model
     protected $casts = [
         'stats'    => 'array',
         'position' => PlayerPosition::class,
+        'special_moves' => 'array'
     ];
 
     // ==========================

@@ -34,6 +34,12 @@ class GamePlayer extends Model
         'cost',
         'description',
         'photo_path',
+        'special_moves'
+    ];
+
+
+    protected $casts = [
+        'special_moves' => 'array',
     ];
 
     public function gameSave()

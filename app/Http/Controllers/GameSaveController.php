@@ -148,6 +148,8 @@ class GameSaveController extends Controller
                 'hand_save'  => $player->hand_save  ?? $stats['hand_save']  ?? 0,
                 'punch_save' => $player->punch_save ?? $stats['punch_save'] ?? 0,
 
+                'special_moves' => $player->special_moves ?? [],
+
                 'cost'       => $player->cost ?? 0,
             ]);
 
@@ -449,6 +451,7 @@ class GameSaveController extends Controller
                         'hand_save'  => $p->hand_save,
                         'punch_save' => $p->punch_save,
                     ],
+                    'special_moves' => $p->special_moves ?? [],
                 ];
             })->values();
 
