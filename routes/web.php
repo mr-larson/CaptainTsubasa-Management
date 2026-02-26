@@ -2,12 +2,15 @@
 
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\GameSaveController;
+use App\Http\Controllers\LandingController;
 use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TeamController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Models\Team;
+use App\Models\Player;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,12 +20,21 @@ use Inertia\Inertia;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
-        'canLogin'       => Route::has('login'),
-        'canRegister'    => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion'     => PHP_VERSION,
+        'teams' => Team::select('id','name','budget')
+            ->orderBy('name')
+            ->get(),
+
+        'players' => Player::select('id','firstname','lastname','position','photo_path','stats')
+            ->orderByRaw("JSON_EXTRACT(stats, '$.attack') DESC")
+            ->take(12)
+            ->get(),
+
+        // 🔥 à rajouter :
+        'canLogin'    => Route::has('login'),
+        'canRegister' => Route::has('register'),
     ]);
 })->name('welcome');
+
 
 
 /*

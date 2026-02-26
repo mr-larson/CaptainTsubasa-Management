@@ -199,6 +199,8 @@ const tabs = [
     { key: 'standings',   label: 'Classement' },
     { key: 'training',    label: 'Entraînement' },
     { key: 'cards',       label: 'Cartes bonus' },
+    { key: 'match-stats',    label: 'Stats de match' },
+
 ];
 
 const activeTab = ref('dashboard');
