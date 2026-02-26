@@ -34,6 +34,13 @@ const submit = () => {
     <GuestLayout>
         <Head title="Log in" />
 
+        <h1 class="text-xl font-semibold text-slate-800 mb-1">
+            Connexion
+        </h1>
+        <p class="text-xs text-slate-500 mb-4">
+            Connecte-toi pour reprendre ta partie ou en démarrer une nouvelle.
+        </p>
+
         <div v-if="status" class="mb-4 font-medium text-sm text-green-600">
             {{ status }}
         </div>
@@ -70,25 +77,43 @@ const submit = () => {
                 <InputError class="mt-2" :message="form.errors.password" />
             </div>
 
-            <div class="block mt-4">
-                <label class="flex items-center">
-                    <Checkbox name="remember" v-model:checked="form.remember" />
-                    <span class="ml-2 text-sm text-gray-600">Remember me</span>
-                </label>
-            </div>
 
-            <div class="flex items-center justify-end mt-4">
+            <div class="flex items-center justify-between mt-4">
+                <label class="flex items-center gap-2">
+                    <Checkbox name="remember" v-model:checked="form.remember" />
+                    <span class="text-xs text-slate-600">
+                        Se souvenir de moi
+                    </span>
+                </label>
+
                 <Link
                     v-if="canResetPassword"
                     :href="route('password.request')"
-                    class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    class="text-xs text-teal-600 hover:text-teal-700"
                 >
-                    Forgot your password?
+                    Mot de passe oublié ?
                 </Link>
+            </div>
 
-                <ButtonPrimary class="ml-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
-                    Log in
+            <div class="mt-6 flex flex-col gap-3">
+                <ButtonPrimary
+                    class="w-full justify-center"
+                    :class="{ 'opacity-25': form.processing }"
+                    :disabled="form.processing"
+                >
+                    Se connecter
                 </ButtonPrimary>
+
+                <p class="text-xs text-slate-600 text-center">
+                    Pas encore de compte ?
+                    <Link
+                        :href="route('register')"
+                        class="text-teal-600 hover:text-teal-700 font-semibold"
+                    >
+                        Créer un compte
+
+                    </Link>
+                </p>
             </div>
         </form>
     </GuestLayout>

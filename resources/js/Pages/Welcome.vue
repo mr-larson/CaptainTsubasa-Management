@@ -70,7 +70,7 @@ const { canLogin, canRegister, teams, players } = defineProps({
 
                 <!-- Visuel gauche, même esprit que Show.vue -->
                 <div
-                    class="hidden md:block basis-1/3 rounded-xl border border-slate-700 p-2 bg-cover bg-center bg-no-repeat shadow-lg"
+                    class="hidden md:block basis-1/3 p-2 bg-cover bg-center bg-no-repeat"
                     style="background-image: url('/images/tsubas3.webp')"
                 ></div>
 
@@ -92,7 +92,7 @@ const { canLogin, canRegister, teams, players } = defineProps({
                                 target="_blank"
                                 class="inline-flex items-center gap-2 p-2 rounded-md bg-slate-700/40 border border-slate-600 text-slate-200 hover:bg-slate-700/60 transition"
                             >
-                                📘 Documentation complète du projet (Notion)
+                                📘 Documentation complète du projet
                             </a>
 
                             <a

@@ -22,11 +22,18 @@ const submit = () => {
 
 <template>
     <GuestLayout>
-        <Head title="Register" />
+        <Head title="Inscription" />
 
-        <form @submit.prevent="submit">
-            <div class="">
-                <InputLabel for="name" value="Name" />
+        <h1 class="text-xl font-semibold text-slate-800 mb-1">
+            Créer un compte
+        </h1>
+        <p class="text-xs text-slate-500 mb-4">
+            Inscris-toi pour lancer ta première saison de Captain Tsubasa Management.
+        </p>
+
+        <form @submit.prevent="submit" class="space-y-4">
+            <div>
+                <InputLabel for="name" value="Nom" />
 
                 <InputText
                     id="name"
@@ -38,11 +45,11 @@ const submit = () => {
                     autocomplete="name"
                 />
 
-                <InputError class="mt-2" :message="form.errors.name" />
+                <InputError class="mt-1" :message="form.errors.name" />
             </div>
 
-            <div class="mt-4">
-                <InputLabel for="email" value="Email" />
+            <div>
+                <InputLabel for="email" value="Adresse e‑mail" />
 
                 <InputText
                     id="email"
@@ -53,11 +60,11 @@ const submit = () => {
                     autocomplete="username"
                 />
 
-                <InputError class="mt-2" :message="form.errors.email" />
+                <InputError class="mt-1" :message="form.errors.email" />
             </div>
 
-            <div class="mt-4">
-                <InputLabel for="password" value="Password" />
+            <div>
+                <InputLabel for="password" value="Mot de passe" />
 
                 <InputText
                     id="password"
@@ -68,11 +75,11 @@ const submit = () => {
                     autocomplete="new-password"
                 />
 
-                <InputError class="mt-2" :message="form.errors.password" />
+                <InputError class="mt-1" :message="form.errors.password" />
             </div>
 
-            <div class="mt-4">
-                <InputLabel for="password_confirmation" value="Confirm Password" />
+            <div>
+                <InputLabel for="password_confirmation" value="Confirmer le mot de passe" />
 
                 <InputText
                     id="password_confirmation"
@@ -83,20 +90,27 @@ const submit = () => {
                     autocomplete="new-password"
                 />
 
-                <InputError class="mt-2" :message="form.errors.password_confirmation" />
+                <InputError class="mt-1" :message="form.errors.password_confirmation" />
             </div>
 
-            <div class="flex items-center justify-end mt-4">
-                <Link
-                    :href="route('login')"
-                    class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            <div class="pt-8 flex flex-col gap-3">
+                <ButtonPrimary
+                    class="w-full justify-center"
+                    :class="{ 'opacity-25': form.processing }"
+                    :disabled="form.processing"
                 >
-                    Already registered?
-                </Link>
-
-                <ButtonPrimary class="ml-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
-                    Register
+                    S’inscrire
                 </ButtonPrimary>
+
+                <p class="text-xs text-slate-600 text-center">
+                    Déjà inscrit ?
+                    <Link
+                        :href="route('login')"
+                        class="text-teal-600 hover:text-teal-700 font-semibold"
+                    >
+                        Se connecter
+                    </Link>
+                </p>
             </div>
         </form>
     </GuestLayout>
