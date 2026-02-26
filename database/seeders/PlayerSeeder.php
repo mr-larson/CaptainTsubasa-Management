@@ -38,6 +38,298 @@ class PlayerSeeder extends Seeder
             $storageDisk->makeDirectory($storageDir);
         }
 
+
+        $specialMovesByPlayerSlug = [
+
+            // =======================
+            // NANKATSU
+            // =======================
+
+            'tsubasa-ozora' => [[
+                'key'         => 'tsubasa_feuille_morte',
+                'mode'        => 'attack',
+                'label'       => 'Tir de la feuille morte',
+                'short_label' => 'Feuille morte',
+                'cooldown'    => 2,
+                'base_action' => 'shot',
+                'description' => 'Un tir flottant et imprévisible qui retombe brusquement devant le gardien.',
+            ]],
+
+            'taro-misaki' => [[
+                'key'         => 'misaki_magicien_terrain',
+                'mode'        => 'attack',
+                'label'       => 'Passe du magicien',
+                'short_label' => 'Magicien',
+                'cooldown'    => 2,
+                'base_action' => 'pass',
+                'description' => 'Une passe créative et millimétrée qui casse les lignes défensives.',
+            ]],
+
+            'ryo-ishizaki' => [[
+                'key'         => 'ishizaki_face_block',
+                'mode'        => 'defense',
+                'label'       => 'Face block',
+                'short_label' => 'Face block',
+                'cooldown'    => 3,
+                'base_action' => 'block',
+                'description' => 'Ishizaki se jette tête la première pour bloquer une frappe à bout portant.',
+            ]],
+
+            // =======================
+            // SHUTETSU
+            // =======================
+
+            'genzo-wakabayashi' => [[
+                'key'         => 'wakabayashi_sggk_catch',
+                'mode'        => 'defense',
+                'label'       => 'Arrêt SGGK',
+                'short_label' => 'SGGK',
+                'cooldown'    => 2,
+                'base_action' => 'hand_save',
+                'description' => 'Un arrêt réflexe parfait du Super Great Goalkeeper, même sur des tirs surpuissants.',
+            ]],
+
+            'shingo-takasugi' => [[
+                'key'         => 'takasugi_iron_wall',
+                'mode'        => 'defense',
+                'label'       => 'Mur de Shutetsu',
+                'short_label' => 'Mur',
+                'cooldown'    => 2,
+                'base_action' => 'tackle',
+                'description' => 'Un tacle défensif puissant et parfaitement maîtrisé qui stoppe net l’attaquant.',
+            ]],
+
+            'mamoru-izawa' => [[
+                'key'         => 'izawa_midfield_maestro',
+                'mode'        => 'attack',
+                'label'       => 'Maestro de Shutetsu',
+                'short_label' => 'Maestro',
+                'cooldown'    => 2,
+                'base_action' => 'pass',
+                'description' => 'Une ouverture lumineuse qui met un coéquipier en position idéale.',
+            ]],
+
+            'hajime-taki' => [[
+                'key'         => 'taki_speed_dribble',
+                'mode'        => 'attack',
+                'label'       => 'Dribble supersonique',
+                'short_label' => 'Supersonique',
+                'cooldown'    => 2,
+                'base_action' => 'dribble',
+                'description' => 'Taki accélère brusquement et déborde son vis-à-vis grâce à sa vitesse.',
+            ]],
+
+            'teppei-kisugi' => [[
+                'key'         => 'kisugi_clinical_finish',
+                'mode'        => 'attack',
+                'label'       => 'Frappe clinique',
+                'short_label' => 'Finisseur',
+                'cooldown'    => 2,
+                'base_action' => 'shot',
+                'description' => 'Une frappe précise placée dans le petit filet après un appel intelligent.',
+            ]],
+
+            // =======================
+            // TOHO
+            // =======================
+
+            'kojiro-hyuga' => [[
+                'key'         => 'hyuga_tir_du_tigre',
+                'mode'        => 'attack',
+                'label'       => 'Tir du Tigre',
+                'short_label' => 'Tigre',
+                'cooldown'    => 3,
+                'base_action' => 'shot',
+                'description' => 'Un tir ultra puissant frappé de plein fouet, qui vise à traverser le gardien.',
+            ]],
+
+            'ken-wakashimazu' => [[
+                'key'         => 'wakashimazu_kungfu_save',
+                'mode'        => 'defense',
+                'label'       => 'Arrêt karatéka',
+                'short_label' => 'Karaté',
+                'cooldown'    => 2,
+                'base_action' => 'hand_save',
+                'description' => 'Un arrêt acrobatique utilisant des réflexes de karaté pour repousser le ballon.',
+            ]],
+
+            'takeshi-sawada' => [[
+                'key'         => 'sawada_tohos_brain',
+                'mode'        => 'attack',
+                'label'       => 'Cerveau de Toho',
+                'short_label' => 'Tacticien',
+                'cooldown'    => 2,
+                'base_action' => 'pass',
+                'description' => 'Une passe stratégique qui lance une action dangereuse autour de Hyuga.',
+            ]],
+
+            'kazuki-sorimachi' => [[
+                'key'         => 'sorimachi_poacher_finish',
+                'mode'        => 'attack',
+                'label'       => 'Renard de surface',
+                'short_label' => 'Renard',
+                'cooldown'    => 2,
+                'base_action' => 'shot',
+                'description' => 'Sorimachi profite d’un second ballon pour frapper instantanément dans la surface.',
+            ]],
+
+            // =======================
+            // FURANO
+            // =======================
+
+            'hikaru-matsuyama' => [[
+                'key'         => 'matsuyama_eagle_shot',
+                'mode'        => 'attack',
+                'label'       => 'Tir de l’Aigle',
+                'short_label' => 'Aigle',
+                'cooldown'    => 3,
+                'base_action' => 'shot',
+                'description' => 'Un tir puissant frappé à moyenne distance, symbole de son leadership.',
+            ]],
+
+            // =======================
+            // MUSASHI
+            // =======================
+
+            'jun-misugi' => [[
+                'key'         => 'misugi_field_prince',
+                'mode'        => 'attack',
+                'label'       => 'Prince du terrain',
+                'short_label' => 'Prince',
+                'cooldown'    => 3,
+                'base_action' => 'pass',
+                'description' => 'Une action où Misugi dicte le tempo et délivre une passe décisive parfaite.',
+            ]],
+
+            // =======================
+            // HANAWA (FRÈRES TACHIBANA)
+            // =======================
+
+            'masao-tachibana' => [[
+                'key'         => 'tachibana_acrobatic_twin',
+                'mode'        => 'attack',
+                'label'       => 'Acrobatie aérienne',
+                'short_label' => 'Acrobatie',
+                'cooldown'    => 3,
+                'base_action' => 'shot',
+                'description' => 'Un tir acrobatique après une combinaison aérienne avec son frère.',
+            ]],
+
+            'kazuo-tachibana' => [[
+                'key'         => 'tachibana_twin_jump',
+                'mode'        => 'attack',
+                'label'       => 'Saut combiné',
+                'short_label' => 'Twin',
+                'cooldown'    => 3,
+                'base_action' => 'shot',
+                'description' => 'Un saut coordonné avec Masao pour reprendre un centre en pleine extension.',
+            ]],
+
+            // =======================
+            // HIRADO
+            // =======================
+
+            'hiroshi-jito' => [[
+                'key'         => 'jito_mountain_tackle',
+                'mode'        => 'defense',
+                'label'       => 'Tacle de la montagne',
+                'short_label' => 'Montagne',
+                'cooldown'    => 3,
+                'base_action' => 'tackle',
+                'description' => 'Un tacle d’une puissance colossale qui stoppe physiquement l’attaquant.',
+            ]],
+
+            'mitsuru-sano' => [[
+                'key'         => 'sano_quick_counter',
+                'mode'        => 'attack',
+                'label'       => 'Contre éclair',
+                'short_label' => 'Contre',
+                'cooldown'    => 2,
+                'base_action' => 'dribble',
+                'description' => 'Sano déclenche un contre rapide en éliminant son vis-à-vis en un geste.',
+            ]],
+
+            // =======================
+            // OTOMO
+            // =======================
+
+            'shun-nitta' => [[
+                'key'         => 'nitta_falcon_volley',
+                'mode'        => 'attack',
+                'label'       => 'Volée du Faucon',
+                'short_label' => 'Faucon',
+                'cooldown'    => 3,
+                'base_action' => 'shot',
+                'description' => 'Une volée en mouvement après un appel en profondeur, digne d’un faucon.',
+            ]],
+
+            'hanji-urabe' => [[
+                'key'         => 'urabe_rough_press',
+                'mode'        => 'defense',
+                'label'       => 'Pressing agressif',
+                'short_label' => 'Pressing',
+                'cooldown'    => 2,
+                'base_action' => 'tackle',
+                'description' => 'Urabe harcèle physiquement le porteur de balle jusqu’à lui prendre le ballon.',
+            ]],
+
+            // =======================
+            // AZUMA-ICHI (SODA)
+            // =======================
+
+            'makoto-soda' => [[
+                'key'         => 'soda_kazaguruma_tackle',
+                'mode'        => 'defense',
+                'label'       => 'Tacle moulinet',
+                'short_label' => 'Moulinet',
+                'cooldown'    => 3,
+                'base_action' => 'tackle',
+                'description' => 'Un tacle violent en rotation qui fauche tout sur son passage.',
+            ]],
+
+            // =======================
+            // REAL SEVEN
+            // =======================
+
+            'ryoma-hino' => [[
+                'key'         => 'hino_fire_shot',
+                'mode'        => 'attack',
+                'label'       => 'Tir de Feu',
+                'short_label' => 'Feu',
+                'cooldown'    => 3,
+                'base_action' => 'shot',
+                'description' => 'Un tir surpuissant et brûlant qui semble enflammer le ballon.',
+            ]],
+
+            // =======================
+            // NAKAHARA (AOI)
+            // =======================
+
+            'shingo-aoi' => [[
+                'key'         => 'aoi_euro_step',
+                'mode'        => 'attack',
+                'label'       => 'Dribble européen',
+                'short_label' => 'Euro',
+                'cooldown'    => 2,
+                'base_action' => 'dribble',
+                'description' => 'Un dribble inspiré du football européen pour éliminer son adversaire direct.',
+            ]],
+
+            // =======================
+            // NANIWA (NAKANISHI)
+            // =======================
+
+            'taichi-nakanishi' => [[
+                'key'         => 'nakanishi_giant_wall',
+                'mode'        => 'defense',
+                'label'       => 'Mur géant',
+                'short_label' => 'Géant',
+                'cooldown'    => 2,
+                'base_action' => 'hand_save',
+                'description' => 'Le gardien géant ferme entièrement l’axe et bloque un tir à bout portant.',
+            ]],
+        ];
+
         $players = [
             // Nankatsu
             [
@@ -2166,7 +2458,7 @@ class PlayerSeeder extends Seeder
             $sourcePath = $imagesSourceDir . DIRECTORY_SEPARATOR . $filename;
             $destPath = $storageDir . '/' . $filename; // players/taro-misaki.png
             $photoPathDb = null;
-
+            $specialMoves = $specialMovesByPlayerSlug[$slug] ?? null;
             if (is_file($sourcePath)) {
                 // copie uniquement si pas déjà présent (ou tu peux forcer overwrite)
                 if (!$storageDisk->exists($destPath)) {
@@ -2183,6 +2475,8 @@ class PlayerSeeder extends Seeder
                 'position' => $position,
                 'cost' => $cost,
                 'stats' => json_encode($fullStats, JSON_UNESCAPED_UNICODE),
+                'special_moves' => $specialMoves ? json_encode($specialMoves, JSON_UNESCAPED_UNICODE)
+                    : null,
                 'description' => $desc,
                 'photo_path' => $photoPathDb, // null si image absente
             ]);
