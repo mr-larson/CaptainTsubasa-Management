@@ -149,7 +149,7 @@ class PlayerSeeder extends Seeder
                 'label'       => 'Arrêt karatéka',
                 'short_label' => 'Karaté',
                 'cooldown'    => 2,
-                'base_action' => 'hand_save',
+                'base_action' => 'punch_save',
                 'description' => 'Un arrêt acrobatique utilisant des réflexes de karaté pour repousser le ballon.',
             ]],
 

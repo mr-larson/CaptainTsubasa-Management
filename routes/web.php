@@ -20,13 +20,13 @@ use App\Models\Player;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
-        'teams' => Team::select('id','name','budget')
+        'teams' => Team::select('id','name','budget', 'logo_path')
             ->orderBy('name')
             ->get(),
 
         'players' => Player::select('id','firstname','lastname','position','photo_path','stats')
             ->orderByRaw("JSON_EXTRACT(stats, '$.attack') DESC")
-            ->take(12)
+            ->take(50)
             ->get(),
 
         // 🔥 à rajouter :

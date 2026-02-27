@@ -133,12 +133,17 @@
                             </div>
                         </div>
 
+                        <!-- Moyennes stats -->
                         <p class="text-slate-700">
-                            <span class="font-semibold">Bilan :</span>
-                            {{ selectedTeam.wins ?? 0 }} V /
-                            {{ selectedTeam.draws ?? 0 }} N /
-                            {{ selectedTeam.losses ?? 0 }} D
+                            <span class="font-semibold">Moyenne ATQ :</span>
+                            {{ avgAttack }}
                         </p>
+                        <p class="text-slate-700">
+                            <span class="font-semibold">Moyenne DEF :</span>
+                            {{ avgDefense }}
+                        </p>
+
+                        <!-- Joueurs -->
                         <p class="text-slate-700">
                             <span class="font-semibold">Joueurs sous contrat :</span>
                             {{ roster.length }}
@@ -347,11 +352,25 @@ function startWithTeam() {
     });
 }
 
-/**
- * ✅ LOGO TEAM
- * team.logo_path est stocké en "images/teams/xxx.webp"
- * -> accessible via "/images/teams/xxx.webp"
- */
+const avgAttack = computed(() => {
+    if (!roster.value.length) return 0;
+
+    const sum = roster.value.reduce((acc, p) => {
+        return acc + (p.stats?.attack ?? 0);
+    }, 0);
+
+    return Math.round(sum / roster.value.length);
+});
+
+const avgDefense = computed(() => {
+    if (!roster.value.length) return 0;
+
+    const sum = roster.value.reduce((acc, p) => {
+        return acc + (p.stats?.defense ?? 0);
+    }, 0);
+
+    return Math.round(sum / roster.value.length);
+});
 const teamLogoUrl = (team) => {
     if (!team?.logo_path) return null;
     // logo_path en DB = "teams/naniwa.webp"

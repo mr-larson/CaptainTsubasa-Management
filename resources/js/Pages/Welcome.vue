@@ -1,5 +1,6 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
 const { canLogin, canRegister, teams, players } = defineProps({
     canLogin: {
@@ -19,6 +20,15 @@ const { canLogin, canRegister, teams, players } = defineProps({
         default: () => [],
     },
 });
+
+const teamLogoUrl = (team) => {
+    if (!team?.logo_path) return null;
+    return `/storage/${team.logo_path}`;
+};
+
+const playersWithPhoto = computed(() =>
+    players.filter((p) => !!p.photo_path)
+);
 </script>
 
 <template>
@@ -120,12 +130,27 @@ const { canLogin, canRegister, teams, players } = defineProps({
                                 <div
                                     v-for="team in teams"
                                     :key="team.id"
-                                    class="flex items-center justify-between py-1 border-b border-slate-700/60 last:border-b-0"
+                                    class="flex items-center justify-between gap-2 py-1 border-b border-slate-700/60 last:border-b-0"
                                 >
-                                    <span class="font-medium text-slate-100">
-                                        {{ team.name }}
-                                    </span>
-                                    <span class="text-xs text-slate-400">
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        <!-- Mini logo -->
+                                        <div class="h-8 w-8 rounded border border-slate-600 bg-white overflow-hidden flex items-center justify-center shrink-0">
+                                            <img
+                                                v-if="teamLogoUrl(team)"
+                                                :src="teamLogoUrl(team)"
+                                                class="h-full w-full object-cover"
+                                                alt="Logo équipe"
+                                            >
+                                            <span v-else class="text-[10px] text-slate-400">—</span>
+                                        </div>
+
+                                        <!-- Nom -->
+                                        <span class="font-medium text-slate-100 truncate">
+                                            {{ team.name }}
+                                        </span>
+                                    </div>
+
+                                    <span class="text-xs text-slate-400 shrink-0">
                                         Budget : {{ team.budget ?? 0 }} €
                                     </span>
                                 </div>
@@ -145,18 +170,18 @@ const { canLogin, canRegister, teams, players } = defineProps({
                                 Quelques stars et seconds rôles connus issus de l’univers Captain Tsubasa.
                             </p>
 
-                            <div v-if="players.length" class="grid grid-cols-2 gap-3 max-h-64 overflow-y-auto pr-1">
+                            <div v-if="playersWithPhoto.length" class="grid grid-cols-2 gap-3 max-h-64 overflow-y-auto pr-1">
                                 <div
-                                    v-for="p in players"
+                                    v-for="p in playersWithPhoto"
                                     :key="p.id"
                                     class="bg-slate-900/90 rounded-md border border-slate-700 p-2 text-xs flex flex-col items-center text-center"
                                 >
                                     <img
-                                        v-if="p.photo_path"
                                         :src="`/storage/${p.photo_path}`"
                                         alt="Portrait joueur"
                                         class="w-20 h-20 object-cover rounded mb-1 border border-slate-600"
                                     />
+
                                     <div class="font-semibold text-slate-100 leading-tight">
                                         {{ p.firstname }} {{ p.lastname }}
                                     </div>
@@ -168,6 +193,10 @@ const { canLogin, canRegister, teams, players } = defineProps({
                                     </div>
                                 </div>
                             </div>
+
+                            <p v-else class="text-sm text-slate-400">
+                                Aucun joueur avec image disponible. Ajoute des portraits ou exécute le seeder avec photos.
+                            </p>
 
                             <p v-else class="text-sm text-slate-400">
                                 Aucun joueur n’est encore disponible. Exécute le seeder des joueurs pour remplir la base.

@@ -93,9 +93,18 @@ const playerPhotoUrl = (p) => {
  * ✅ AJOUT : Logo URL (GameTeam.logo_path stocké en public/images/teams/xxx.webp)
  * logo_path = "images/teams/xxx.webp" => URL = "/images/teams/xxx.webp"
  */
-const teamLogoUrl = (t) => {
-    if (!t?.logo_path) return null;
-    return `/${t.logo_path}`;
+const teamLogoUrl = (team) => {
+    // Cas 1 : team directement (Team)
+    if (team?.logo_path) {
+        return `/storage/${team.logo_path}`;
+    }
+
+    // Cas 2 : si Play.vue reçoit GameTeam avec relation team → (Team)
+    if (team?.team?.logo_path) {
+        return `/storage/${team.team.logo_path}`;
+    }
+
+    return null;
 };
 
 // ✅ AJOUT : équipe adverse du prochain match (robuste via IDs)
@@ -785,8 +794,8 @@ const playNextMatch = () => {
                                     <!-- ✅ Logo adversaire à droite (case rouge) -->
                                     <div class="h-24 w-24 rounded-lg overflow-hidden flex items-center justify-center shrink-0">
                                         <img
-                                            v-if="nextMatch && opponentTeamIdFor(nextMatch) && teamById[opponentTeamIdFor(nextMatch)]?.logo_path"
-                                            :src="`/${teamById[opponentTeamIdFor(nextMatch)].logo_path}`"
+                                            v-if="nextMatch && opponentTeamIdFor(nextMatch)"
+                                            :src="teamLogoUrl(teamById[opponentTeamIdFor(nextMatch)])"
                                             class="h-full w-full object-contain"
                                             alt="Logo adversaire"
                                         />
@@ -831,8 +840,8 @@ const playNextMatch = () => {
                                     <!-- Logo équipe à droite -->
                                     <div class="h-24 w-24 rounded-lg overflow-hidden flex items-center justify-center shrink-0">
                                         <img
-                                            v-if="team?.logo_path"
-                                            :src="`/${team.logo_path}`"
+                                            v-if="teamLogoUrl(team)"
+                                            :src="teamLogoUrl(team)"
                                             class="h-full w-full object-contain"
                                             alt="Logo équipe"
                                         />
@@ -1239,8 +1248,8 @@ const playNextMatch = () => {
                                     <div class="col-span-1 flex items-center justify-center">
                                         <div class="h-24 w-24 rounded-lg overflow-hidden flex items-center justify-center shrink-0">
                                             <img
-                                                v-if="selectedOtherTeam?.logo_path"
-                                                :src="`/${selectedOtherTeam.logo_path}`"
+                                                v-if="teamLogoUrl(selectedOtherTeam)"
+                                                :src="teamLogoUrl(selectedOtherTeam)"
                                                 class="h-full w-full object-contain"
                                                 alt=""
                                             >
@@ -1293,7 +1302,7 @@ const playNextMatch = () => {
 
                             <h4 class="text-md font-semibold text-slate-700 mb-2">Effectif</h4>
 
-                            <div v-if="selectedOtherTeamRoster.length" class="max-h-96 overflow-y-auto">
+                            <div v-if="selectedOtherTeamRoster.length">
                                 <div class="overflow-x-auto">
                                     <table class="w-full text-sm min-w-max text-left">
                                         <thead class="text-xs uppercase text-slate-500 border-b">
