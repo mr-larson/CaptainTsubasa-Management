@@ -374,6 +374,34 @@ const gameRoot = ref(/** @type {HTMLElement|null} */ (null));
 /** @type {null | (() => void)} */
 let cleanup = null;
 
+// ...
+
+// ==========================
+//  Helpers généraux
+// ==========================
+const buildLogoUrl = (path) => {
+    if (!path) return null;
+
+    // URL absolue
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+        return path;
+    }
+
+    // Chemin déjà rooté
+    if (path.startsWith('/')) {
+        return path;
+    }
+
+    // 🔧 Cas spécifique actuel : "teams/xxx.webp" => "/images/teams/xxx.webp"
+    if (path.startsWith('teams/')) {
+        return `/images/${path}`;
+        // => "teams/musashi.webp" -> "/images/teams/musashi.webp"
+    }
+
+    // Sinon, on considère que c'est un chemin relatif à la racine
+    return `/${path}`;
+};
+
 // ==========================
 //  Helpers (logos / names)
 //  ✅ Source de vérité : engineConfig.teams.internal/external
@@ -383,12 +411,12 @@ const awayName = computed(() => props.engineConfig?.teams?.external?.name ?? 'Ex
 
 const homeLogoUrl = computed(() => {
     const p = props.engineConfig?.teams?.internal?.logo_path;
-    return p ? `/${p}` : null;
+    return buildLogoUrl(p);
 });
 
 const awayLogoUrl = computed(() => {
     const p = props.engineConfig?.teams?.external?.logo_path;
-    return p ? `/${p}` : null;
+    return buildLogoUrl(p);
 });
 
 // ==========================
@@ -397,18 +425,17 @@ const awayLogoUrl = computed(() => {
 onMounted(() => {
     if (!gameRoot.value) return;
 
-    // initMatchEngine peut (optionnellement) retourner une fonction cleanup
+    console.log('ENGINE CONFIG TEAMS = ', props.engineConfig?.teams);
+
     cleanup = initMatchEngine(gameRoot.value, {
         ...props.engineConfig,
-
-        // Callback fin de match : engine.js appelle ça à la fin
         onMatchEnd: ({ matchId, gameSaveId, scoresByTeamId, playerActions, match_stats }) => {
             router.post(
                 route('game-saves.matches.finish', { gameSave: gameSaveId, match: matchId }),
                 {
                     scoresByTeamId,
                     playerActions,
-                    match_stats, // ✅ ENVOYÉ AU BACKEND
+                    match_stats,
                 },
                 {
                     preserveScroll: true,
@@ -418,10 +445,9 @@ onMounted(() => {
         },
     });
 });
-``
 
 onBeforeUnmount(() => {
-    // ✅ si ton engine a besoin de détacher des listeners / timers
     if (typeof cleanup === 'function') cleanup();
 });
+
 </script>
