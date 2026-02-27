@@ -6,6 +6,7 @@ use App\Http\Controllers\LandingController;
 use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TeamController;
+use App\Http\Controllers\TrainingController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -143,9 +144,10 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{gameSave}', [GameSaveController::class, 'destroy'])->name('destroy');
         Route::post('/{gameSave}/matches/{match}/finish', [GameSaveController::class, 'finishMatch'])
             ->name('matches.finish');
-        Route::post('game-saves/{gameSave}/simulate-week', [GameSaveController::class, 'simulateWeek'])
+        Route::post('/{gameSave}/simulate-week', [GameSaveController::class, 'simulateWeek'])
             ->name('simulate-week');
-
+        Route::post('/{gameSave}/training', [TrainingController::class, 'store'])
+            ->name('training.store');
 
     });
 

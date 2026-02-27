@@ -675,6 +675,98 @@ const confirmTransfer = () => {
 };
 
 // ==========================
+//   ENTRAÎNEMENT
+// ==========================
+
+const trainingState = computed(() => props.gameSave.state?.training ?? null);
+
+const remainingTrainingsThisWeek = computed(() => {
+    const max = 3; // correspond à config('training.max_trainings_per_week')
+    const s = trainingState.value;
+
+    if (!s) return max;
+    if (s.season !== season.value || s.week !== week.value) return max;
+
+    const used = Array.isArray(s.entries) ? s.entries.length : 0;
+    return Math.max(0, max - used);
+});
+
+const hasPlayerBeenTrainedThisWeek = (playerId) => {
+    const s = trainingState.value;
+    if (!s) return false;
+    if (s.season !== season.value || s.week !== week.value) return false;
+    if (!Array.isArray(s.entries)) return false;
+    return s.entries.some(e => Number(e.player_id) === Number(playerId));
+};
+
+// Sélection locale des entraînements à envoyer (max 3)
+const availableTrainingStats = [
+    { key: 'shot',       label: 'Tir' },
+    { key: 'pass',       label: 'Passe' },
+    { key: 'dribble',    label: 'Dribble' },
+    { key: 'attack',     label: 'Attaque' },
+    { key: 'defense',    label: 'Défense' },
+    { key: 'speed',      label: 'Vitesse' },
+    { key: 'block',      label: 'Block' },
+    { key: 'intercept',  label: 'Interception' },
+    { key: 'tackle',     label: 'Tacle' },
+    { key: 'hand_save',  label: 'Arrêt main' },
+    { key: 'punch_save', label: 'Arrêt poings' },
+];
+
+const selectedTrainings = ref([
+    // Exemple d’entrée: { player_id: 12, stat: 'shot' }
+]);
+
+const addTrainingSlot = () => {
+    if (selectedTrainings.value.length >= 3) return;
+    selectedTrainings.value.push({ player_id: null, stat: 'shot' });
+};
+
+const removeTrainingSlot = (index) => {
+    selectedTrainings.value.splice(index, 1);
+};
+
+const canSubmitTraining = computed(() => {
+    if (remainingTrainingsThisWeek.value <= 0) return false;
+    if (!selectedTrainings.value.length) return false;
+
+    const filtered = selectedTrainings.value.filter(t => t.player_id && t.stat);
+    if (!filtered.length) return false;
+
+    // Joueurs distincts dans la sélection locale
+    const ids = filtered.map(t => t.player_id);
+    const uniqueIds = new Set(ids);
+    if (uniqueIds.size !== ids.length) return false;
+
+    return true;
+});
+
+const submitTraining = () => {
+    const payloadTrainings = selectedTrainings.value
+        .filter(t => t.player_id && t.stat)
+        .slice(0, remainingTrainingsThisWeek.value); // on ne dépasse pas la limite
+
+    if (!payloadTrainings.length) return;
+
+    router.post(
+        route('game-saves.training.store', { gameSave: props.gameSave.id }),
+        {
+            season: season.value,
+            week: week.value,
+            trainings: payloadTrainings,
+        },
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                // Reset la sélection après succès
+                selectedTrainings.value = [];
+            },
+        }
+    );
+};
+
+// ==========================
 //   HELPERS GÉNÉRAUX
 // ==========================
 
@@ -1916,9 +2008,177 @@ const playNextMatch = () => {
                     <!-- ============================== -->
                     <!--         ENTRAÎNEMENT          -->
                     <!-- ============================== -->
-                    <div v-else-if="activeTab === 'training'" class="flex-1">
+                    <div v-else-if="activeTab === 'training'" class="flex-1 border border-slate-200 rounded-lg bg-slate-50 p-4 flex flex-col gap-4">
                         <h3 class="text-lg font-semibold text-slate-700 mb-2">Entraînement</h3>
-                        <p class="text-sm text-slate-600">Gestion des entraînements, fatigue, progression (à venir).</p>
+
+                        <p class="text-sm text-slate-600 mb-2">
+                            Semaine {{ week }} — Saison {{ season }}.
+                            Il te reste
+                            <span class="font-semibold">{{ remainingTrainingsThisWeek }}</span>
+                            entraînement(s) possible(s) cette semaine (max 3, joueurs différents).
+                        </p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Colonne gauche : effectif + stamina -->
+                            <div class="border border-slate-200 rounded-lg bg-white p-3 max-h-96 overflow-y-auto">
+                                <h4 class="text-sm font-semibold text-slate-700 mb-2">Effectif</h4>
+
+                                <div v-if="roster.length" class="space-y-1 text-sm">
+                                    <div
+                                        v-for="p in roster"
+                                        :key="p.id"
+                                        class="flex items-center justify-between px-2 py-1 rounded border border-slate-100 bg-slate-50"
+                                        :class="{ 'opacity-60': hasPlayerBeenTrainedThisWeek(p.id) }"
+                                    >
+                                        <div class="flex flex-col">
+                        <span class="font-medium text-slate-800">
+                            {{ p.firstname }} {{ p.lastname }}
+                        </span>
+                                            <span class="text-xs text-slate-500">
+                            Poste : {{ p.position }} • Stamina : {{ p.stamina ?? p.stats?.stamina ?? '-' }}
+                            <span
+                                v-if="hasPlayerBeenTrainedThisWeek(p.id)"
+                                class="ml-1 text-[11px] text-amber-600"
+                            >
+                                (déjà entraîné cette semaine)
+                            </span>
+                        </span>
+                                        </div>
+
+                                        <div class="text-[11px] text-right text-slate-600 leading-tight space-y-0.5">
+
+                                            <!-- Ligne 1 : stats globales -->
+                                            <div>
+                                                Vit : {{ p.speed ?? p.stats?.speed ?? '-' }}
+                                                • End : {{ p.stamina ?? p.stats?.stamina ?? '-' }}
+                                                • Att : {{ p.attack ?? p.stats?.attack ?? '-' }}
+                                                • Def : {{ p.defense ?? p.stats?.defense ?? '-' }}
+                                            </div>
+
+                                            <!-- Ligne 2 : stats de terrain -->
+                                            <div>
+                                                Tir : {{ p.shot ?? p.stats?.shot ?? '-' }}
+                                                • Pas : {{ p.pass ?? p.stats?.pass ?? '-' }}
+                                                • Dri : {{ p.dribble ?? p.stats?.dribble ?? '-' }}
+                                                • Tac : {{ p.tackle ?? p.stats?.tackle ?? '-' }}
+                                                • Int : {{ p.intercept ?? p.stats?.intercept ?? '-' }}
+                                                • Blk : {{ p.block ?? p.stats?.block ?? '-' }}
+                                            </div>
+
+                                            <!-- Ligne 3 : stats gardien (uniquement si > 0) -->
+                                            <div v-if="(p.hand_save ?? p.stats?.hand_save ?? 0) > 0 || (p.punch_save ?? p.stats?.punch_save ?? 0) > 0">
+                                                Main : {{ p.hand_save ?? p.stats?.hand_save ?? '-' }}
+                                                • Poings : {{ p.punch_save ?? p.stats?.punch_save ?? '-' }}
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <p v-else class="text-sm text-slate-500">
+                                    Aucun joueur sous contrat pour cette équipe.
+                                </p>
+                            </div>
+
+                            <!-- Colonne droite : formulaire d'entraînement -->
+                            <div class="border border-slate-200 rounded-lg bg-white p-3 flex flex-col gap-3">
+                                <h4 class="text-sm font-semibold text-slate-700 mb-1">Planifier des entraînements</h4>
+
+                                <p class="text-xs text-slate-500 mb-2">
+                                    Sélectionne 1 à 3 joueurs différents et la statistique à améliorer.
+                                    Chaque entraînement améliore la stat (+1 à +5) et coûte 5 points de stamina.
+                                </p>
+
+                                <div class="space-y-2">
+                                    <div
+                                        v-for="(slot, index) in selectedTrainings"
+                                        :key="index"
+                                        class="flex items-center gap-2"
+                                    >
+                                        <!-- Select joueur -->
+                                        <select
+                                            v-model.number="slot.player_id"
+                                            class="flex-1 border border-slate-300 rounded-md px-2 py-1 text-sm"
+                                        >
+                                            <option :value="null">Choisir un joueur</option>
+                                            <option
+                                                v-for="p in roster"
+                                                :key="p.id"
+                                                :value="p.id"
+                                                :disabled="hasPlayerBeenTrainedThisWeek(p.id)"
+                                            >
+                                                {{ p.firstname }} {{ p.lastname }} — Stamina {{ p.stamina ?? p.stats?.stamina ?? '-' }}
+                                            </option>
+                                        </select>
+
+                                        <!-- Select stat -->
+                                        <select
+                                            v-model="slot.stat"
+                                            class="w-32 border border-slate-300 rounded-md px-2 py-1 text-sm"
+                                        >
+                                            <option
+                                                v-for="s in availableTrainingStats"
+                                                :key="s.key"
+                                                :value="s.key"
+                                            >
+                                                {{ s.label }}
+                                            </option>
+                                        </select>
+
+                                        <!-- Bouton remove -->
+                                        <button
+                                            type="button"
+                                            class="text-xs text-red-600 hover:text-red-700"
+                                            @click="removeTrainingSlot(index)"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center justify-between mt-2">
+                                    <button
+                                        type="button"
+                                        class="text-xs px-3 py-1 rounded-full border border-slate-300 text-slate-600 hover:bg-slate-100 disabled:opacity-50"
+                                        @click="addTrainingSlot"
+                                        :disabled="selectedTrainings.length >= 3 || remainingTrainingsThisWeek <= 0"
+                                    >
+                                        + Ajouter un joueur
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        class="px-4 py-1.5 text-sm rounded-full bg-teal-500 hover:bg-teal-600 text-white font-semibold disabled:opacity-50"
+                                        :disabled="!canSubmitTraining"
+                                        @click="submitTraining"
+                                    >
+                                        Lancer l'entraînement
+                                    </button>
+                                </div>
+
+                                <p v-if="remainingTrainingsThisWeek <= 0" class="mt-2 text-xs text-amber-600">
+                                    Tu as utilisé tous tes entraînements pour cette semaine.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Historique simple des entraînements de la semaine -->
+                        <div
+                            v-if="trainingState && trainingState.season === season && trainingState.week === week && trainingState.entries?.length"
+                            class="mt-4 border border-slate-200 rounded-lg bg-white p-3"
+                        >
+                            <h4 class="text-sm font-semibold text-slate-700 mb-2">Historique de la semaine</h4>
+
+                            <ul class="text-xs text-slate-600 space-y-1 max-h-40 overflow-y-auto">
+                                <li
+                                    v-for="(entry, idx) in trainingState.entries"
+                                    :key="idx"
+                                >
+                                    Joueur ID {{ entry.player_id }} — {{ entry.stat }} :
+                                    +{{ entry.gain }} (stamina -{{ entry.stamina_cost }})
+                                </li>
+                            </ul>
+                        </div>
                     </div>
 
                     <!-- ============================== -->
