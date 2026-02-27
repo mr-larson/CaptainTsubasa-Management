@@ -190,19 +190,29 @@ class PlayerSeeder extends Seeder
             // =======================
             // MUSASHI
             // =======================
-
-            'jun-misugi' => [[
-                'key'         => 'misugi_field_prince',
-                'mode'        => 'attack',
-                'label'       => 'Prince du terrain',
-                'short_label' => 'Prince',
-                'cooldown'    => 3,
-                'base_action' => 'pass',
-                'description' => 'Une action où Misugi dicte le tempo et délivre une passe décisive parfaite.',
-            ]],
+            'jun-misugi' => [
+                [
+                    'key'         => 'misugi_field_prince',
+                    'mode'        => 'attack',
+                    'label'       => 'Prince du terrain',
+                    'short_label' => 'Prince',
+                    'cooldown'    => 3,
+                    'base_action' => 'dribble',
+                    'description' => 'Une action où Misugi dicte le tempo et délivre une passe décisive parfaite.',
+                ],
+                [
+                    'key'         => 'misugi_elegant_block',
+                    'mode'        => 'defense',
+                    'label'       => 'Mur Miraculeux',
+                    'short_label' => 'Miracle',
+                    'cooldown'    => 3,
+                    'base_action' => 'intercept',
+                    'description' => 'Misugi anticipe parfaitement la passe adverse et intercepte le ballon avec une élégance inégalée.',
+                ],
+            ],
 
             // =======================
-            // HANAWA (FRÈRES TACHIBANA)
+            // HANAWA
             // =======================
 
             'masao-tachibana' => [[
@@ -399,6 +409,17 @@ class PlayerSeeder extends Seeder
             ],
 
             [
+                'Kenichi', 'Iwami', 12, 'Midfielder', 240,
+                [
+                    'speed' => 48, 'stamina' => 59, 'defense' => 19, 'attack' => 21,
+                    'shot' => 19, 'pass' => 21, 'dribble' => 19,
+                    'block' => 18, 'intercept' => 18, 'tackle' => 18,
+                    'hand_save' => 15, 'punch_save' => 15
+                ],
+                'Milieu de soutien, Iwami joue un rôle discret mais essentiel dans la circulation du ballon.'
+            ],
+
+            [
                 'Taro', 'Misaki', 12, 'Midfielder', 475,
                 [
                     'speed' => 75, 'stamina' => 80, 'defense' => 29, 'attack' => 37,
@@ -407,17 +428,6 @@ class PlayerSeeder extends Seeder
                     'hand_save' => 15, 'punch_save' => 15
                 ],
                 'Surnommé le « magicien du terrain », Misaki est le partenaire idéal de Tsubasa. Créatif, élégant et altruiste, il excelle dans le jeu collectif.'
-            ],
-
-            [
-                'Tsubasa', 'Ozora', 12, 'Midfielder', 500,
-                [
-                    'speed' => 78, 'stamina' => 85, 'defense' => 30, 'attack' => 39,
-                    'shot' => 30, 'pass' => 29, 'dribble' => 30,
-                    'block' => 20, 'intercept' => 23, 'tackle' => 23,
-                    'hand_save' => 15, 'punch_save' => 15
-                ],
-                'Prodige du football japonais, Tsubasa est le cœur et l’âme de Nankatsu. Doté d’une vision exceptionnelle et d’une technique complète, il élève le niveau de toute l’équipe.'
             ],
 
             [
@@ -432,17 +442,6 @@ class PlayerSeeder extends Seeder
             ],
 
             [
-                'Kenichi', 'Iwami', 12, 'Midfielder', 240,
-                [
-                    'speed' => 48, 'stamina' => 59, 'defense' => 19, 'attack' => 21,
-                    'shot' => 19, 'pass' => 21, 'dribble' => 19,
-                    'block' => 18, 'intercept' => 18, 'tackle' => 18,
-                    'hand_save' => 15, 'punch_save' => 15
-                ],
-                'Milieu de soutien, Iwami joue un rôle discret mais essentiel dans la circulation du ballon.'
-            ],
-
-            [
                 'Yutaka', 'Murashige', 12, 'Forward', 250,
                 [
                     'speed' => 49, 'stamina' => 60, 'defense' => 16, 'attack' => 28,
@@ -451,6 +450,17 @@ class PlayerSeeder extends Seeder
                     'hand_save' => 15, 'punch_save' => 15
                 ],
                 'Attaquant volontaire, Murashige apporte une présence offensive et n’hésite pas à tenter sa chance face au but.'
+            ],
+
+            [
+                'Tsubasa', 'Ozora', 12, 'Midfielder', 500,
+                [
+                    'speed' => 78, 'stamina' => 85, 'defense' => 30, 'attack' => 39,
+                    'shot' => 30, 'pass' => 29, 'dribble' => 30,
+                    'block' => 20, 'intercept' => 23, 'tackle' => 23,
+                    'hand_save' => 15, 'punch_save' => 15
+                ],
+                'Prodige du football japonais, Tsubasa est le cœur et l’âme de Nankatsu. Doté d’une vision exceptionnelle et d’une technique complète, il élève le niveau de toute l’équipe.'
             ],
 
             [
@@ -2293,6 +2303,184 @@ class PlayerSeeder extends Seeder
                     'hand_save' => 15, 'punch_save' => 15
                 ],
                 'Star offensive de Real Seven, Hino est un buteur puissant et agressif. Son tir dévastateur et son mental font de lui une menace constante.'
+            ],
+
+            // Hungry Heart – Not contract
+            [
+                'Kyosuke', 'Kojima', 16, 'Forward', 520,
+                [
+                    'speed' => 82, 'stamina' => 78, 'defense' => 24, 'attack' => 44,
+                    'shot' => 36, 'pass' => 28, 'dribble' => 32,
+                    'block' => 18, 'intercept' => 20, 'tackle' => 18,
+                    'hand_save' => 10, 'punch_save' => 10
+                ],
+                'Héros de Hungry Heart, attaquant fougueux doté d’un tir puissant et d’une détermination explosive.'
+            ],
+
+            [
+                'Seisuke', 'Kojima', 17, 'Forward', 540,
+                [
+                    'speed' => 78, 'stamina' => 82, 'defense' => 26, 'attack' => 42,
+                    'shot' => 34, 'pass' => 30, 'dribble' => 30,
+                    'block' => 18, 'intercept' => 21, 'tackle' => 19,
+                    'hand_save' => 10, 'punch_save' => 10
+                ],
+                'Frère adoptif de Kyosuke, joueur talentueux et calme, doté d’une excellente vision offensive.'
+            ],
+
+            [
+                'Rodrigo', 'Santamaria', 17, 'Midfielder', 495,
+                [
+                    'speed' => 75, 'stamina' => 80, 'defense' => 28, 'attack' => 38,
+                    'shot' => 30, 'pass' => 33, 'dribble' => 31,
+                    'block' => 20, 'intercept' => 24, 'tackle' => 22,
+                    'hand_save' => 10, 'punch_save' => 10
+                ],
+                'Milieu offensif technique et créatif, véritable moteur du jeu collectif.'
+            ],
+
+            [
+                'Hideto', 'Tobi', 16, 'Midfielder', 460,
+                [
+                    'speed' => 82, 'stamina' => 75, 'defense' => 24, 'attack' => 34,
+                    'shot' => 27, 'pass' => 28, 'dribble' => 34,
+                    'block' => 18, 'intercept' => 22, 'tackle' => 20,
+                    'hand_save' => 10, 'punch_save' => 10
+                ],
+                'Ailier rapide et fantasque, capable de déborder et créer des différences en un contre un.'
+            ],
+
+            [
+                'Kazuhiko', 'Mori', 17, 'Goalkeeper', 480,
+                [
+                    'speed' => 62, 'stamina' => 78, 'defense' => 36, 'attack' => 18,
+                    'shot' => 15, 'pass' => 18, 'dribble' => 16,
+                    'block' => 27, 'intercept' => 26, 'tackle' => 22,
+                    'hand_save' => 34, 'punch_save' => 32
+                ],
+                'Gardien fiable doté d’un sens du placement remarquable.'
+            ],
+
+            [
+                'Haruma', 'Katori', 17, 'Midfielder', 430,
+                [
+                    'speed' => 68, 'stamina' => 80, 'defense' => 32, 'attack' => 28,
+                    'shot' => 22, 'pass' => 26, 'dribble' => 25,
+                    'block' => 24, 'intercept' => 26, 'tackle' => 27,
+                    'hand_save' => 10, 'punch_save' => 10
+                ],
+                'Milieu défensif solide, infatigable et précieux dans la récupération.'
+            ],
+
+            [
+                'Jin', 'Kano', 17, 'Defender', 410,
+                [
+                    'speed' => 62, 'stamina' => 75, 'defense' => 34, 'attack' => 22,
+                    'shot' => 18, 'pass' => 20, 'dribble' => 19,
+                    'block' => 30, 'intercept' => 26, 'tackle' => 32,
+                    'hand_save' => 10, 'punch_save' => 10
+                ],
+                'Défenseur central agressif et physique, pilier de la ligne arrière.'
+            ],
+
+            [
+                'Ryo', 'Yoshijogi', 17, 'Defender', 395,
+                [
+                    'speed' => 60, 'stamina' => 70, 'defense' => 32, 'attack' => 20,
+                    'shot' => 16, 'pass' => 19, 'dribble' => 18,
+                    'block' => 28, 'intercept' => 25, 'tackle' => 29,
+                    'hand_save' => 10, 'punch_save' => 10
+                ],
+                'Défenseur calme et discipliné, complément idéal de Kano en défense.'
+            ],
+
+            // Blue Lock – Not contract
+            [
+                'Yoichi', 'Isagi', 16, 'Forward', 520,
+                [
+                    'speed'      => 78, 'stamina'    => 80, 'defense'    => 22, 'attack'     => 44,
+                    'shot'       => 34, 'pass'       => 32, 'dribble'    => 30,
+                    'block'      => 18, 'intercept'  => 22, 'tackle'     => 20,
+                    'hand_save'  => 10, 'punch_save' => 10,
+                ],
+                'Attaquant au sens du but exceptionnel, Isagi brille par sa lecture du jeu et sa capacité à être au bon endroit au bon moment.'
+            ],
+
+            [
+                'Meguru', 'Bachira', 16, 'Midfielder', 500,
+                [
+                    'speed'      => 80, 'stamina'    => 78, 'defense'    => 22, 'attack'     => 40,
+                    'shot'       => 30, 'pass'       => 30, 'dribble'    => 36,
+                    'block'      => 18, 'intercept'  => 22, 'tackle'     => 20,
+                    'hand_save'  => 10, 'punch_save' => 10,
+                ],
+                'Milieu offensif fantasque, Bachira adore le dribble et le jeu instinctif, capable de créer le chaos dans les défenses.'
+            ],
+
+            [
+                'Hyoma', 'Chigiri', 16, 'Forward', 510,
+                [
+                    'speed'      => 90, 'stamina'    => 76, 'defense'    => 20, 'attack'     => 40,
+                    'shot'       => 32, 'pass'       => 26, 'dribble'    => 30,
+                    'block'      => 16, 'intercept'  => 20, 'tackle'     => 18,
+                    'hand_save'  => 10, 'punch_save' => 10,
+                ],
+                'Ailier ultra-rapide, Chigiri mise sur ses accélérations et ses appels pour prendre la profondeur et surprendre la défense.'
+            ],
+
+            [
+                'Rensuke', 'Kunigami', 17, 'Forward', 505,
+                [
+                    'speed'      => 76, 'stamina'    => 82, 'defense'    => 24, 'attack'     => 42,
+                    'shot'       => 35, 'pass'       => 25, 'dribble'    => 26,
+                    'block'      => 19, 'intercept'  => 21, 'tackle'     => 22,
+                    'hand_save'  => 10, 'punch_save' => 10,
+                ],
+                'Attaquant puissant au tir dévastateur, Kunigami combine impact physique et présence dans la surface.'
+            ],
+
+            [
+                'Seishiro', 'Nagi', 16, 'Forward', 540,
+                [
+                    'speed'      => 78, 'stamina'    => 74, 'defense'    => 22, 'attack'     => 46,
+                    'shot'       => 36, 'pass'       => 30, 'dribble'    => 34,
+                    'block'      => 18, 'intercept'  => 21, 'tackle'     => 19,
+                    'hand_save'  => 10, 'punch_save' => 10,
+                ],
+                'Génie naturel du football, Nagi possède un contrôle de balle et une première touche exceptionnels.'
+            ],
+
+            [
+                'Reo', 'Mikage', 16, 'Midfielder', 495,
+                [
+                    'speed'      => 74, 'stamina'    => 80, 'defense'    => 26, 'attack'     => 38,
+                    'shot'       => 28, 'pass'       => 34, 'dribble'    => 29,
+                    'block'      => 20, 'intercept'  => 24, 'tackle'     => 22,
+                    'hand_save'  => 10, 'punch_save' => 10,
+                ],
+                'Milieu polyvalent et intelligent, Reo sait s’adapter à tous les rôles pour sublimer ses coéquipiers.'
+            ],
+
+            [
+                'Shoei', 'Barou', 17, 'Forward', 550,
+                [
+                    'speed'      => 80, 'stamina'    => 82, 'defense'    => 24, 'attack'     => 48,
+                    'shot'       => 38, 'pass'       => 22, 'dribble'    => 32,
+                    'block'      => 19, 'intercept'  => 21, 'tackle'     => 22,
+                    'hand_save'  => 10, 'punch_save' => 10,
+                ],
+                'Avant-centre égoïste et dominant, Barou impose sa loi physiquement et cherche systématiquement le but.'
+            ],
+
+            [
+                'Rin', 'Itoshi', 17, 'Forward', 560,
+                [
+                    'speed'      => 82, 'stamina'    => 84, 'defense'    => 26, 'attack'     => 50,
+                    'shot'       => 40, 'pass'       => 32, 'dribble'    => 34,
+                    'block'      => 20, 'intercept'  => 24, 'tackle'     => 24,
+                    'hand_save'  => 10, 'punch_save' => 10,
+                ],
+                'Attaquant prodige complet, Rin combine technique, vision et mental de tueur pour dominer la surface.'
             ],
 
             // Other – Not contract (filler players)

@@ -112,7 +112,7 @@
                     <div v-if="selectedTeam">
                         <!-- ✅ logo + nom -->
                         <div class="flex items-center gap-3 mb-3">
-                            <div class="h-16 w-16 rounded overflow-hidden flex items-center justify-center ">
+                            <div class="h-20 w-20 rounded overflow-hidden flex items-center justify-center ">
                                 <img
                                     v-if="teamLogoUrl(selectedTeam)"
                                     :src="teamLogoUrl(selectedTeam)"
@@ -354,7 +354,9 @@ function startWithTeam() {
  */
 const teamLogoUrl = (team) => {
     if (!team?.logo_path) return null;
-    return `/${team.logo_path}`;
+    // logo_path en DB = "teams/naniwa.webp"
+    // URL publique     = "/storage/teams/naniwa.webp"
+    return `/storage/${team.logo_path}`;
 };
 
 const playerPhotoUrl = (player) => {
