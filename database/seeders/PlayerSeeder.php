@@ -368,8 +368,8 @@ class PlayerSeeder extends Seeder
                 'Ryo', 'Ishizaki', 12, 'Defender', 425,
                 [
                     'speed' => 65, 'stamina' => 75, 'defense' => 31, 'attack' => 22,
-                    'shot' => 18, 'pass' => 23, 'dribble' => 18,
-                    'block' => 25, 'intercept' => 24, 'tackle' => 27,
+                    'shot' => 18, 'pass' => 23, 'dribble' => 20,
+                    'block' => 25, 'intercept' => 26, 'tackle' => 24,
                     'hand_save' => 15, 'punch_save' => 15
                 ],
                 'Défenseur emblématique de Nankatsu, Ishizaki est connu pour son courage, ses interventions désespérées et son célèbre « face block ». Son mental compense largement ses limites techniques.'
@@ -474,16 +474,16 @@ class PlayerSeeder extends Seeder
                 'Milieu offensif secondaire, Minowa soutient l’attaque et profite des espaces créés par Tsubasa et Misaki.'
             ],
 
-            [
-                'Akira', 'Tsuboi', 12, 'Goalkeeper', 250,
-                [
-                    'speed' => 40, 'stamina' => 60, 'defense' => 24, 'attack' => 16,
-                    'shot' => 15, 'pass' => 16, 'dribble' => 15,
-                    'block' => 16, 'intercept' => 16, 'tackle' => 15,
-                    'hand_save' => 21, 'punch_save' => 18
-                ],
-                'Gardien remplaçant de Nankatsu, Tsuboi manque d’expérience mais reste fiable lors des rotations.'
-            ],
+//            [
+//                'Akira', 'Tsuboi', 12, 'Goalkeeper', 250,
+//                [
+//                    'speed' => 40, 'stamina' => 60, 'defense' => 24, 'attack' => 16,
+//                    'shot' => 15, 'pass' => 16, 'dribble' => 15,
+//                    'block' => 16, 'intercept' => 16, 'tackle' => 15,
+//                    'hand_save' => 21, 'punch_save' => 18
+//                ],
+//                'Gardien remplaçant de Nankatsu, Tsuboi manque d’expérience mais reste fiable lors des rotations.'
+//            ],
 
             // Shutetsu
             [

@@ -159,27 +159,49 @@ class GameSaveController extends Controller
         // -----------------------------
         // 3. Dupliquer tous les contrats
         // -----------------------------
-        $contracts = Contract::with(['team', 'player'])->get();
+        // -----------------------------
+// 3. Dupliquer tous les contrats
+// -----------------------------
+        $contracts = Contract::with(['team', 'player'])
+            ->orderBy('id')
+            ->get();
 
-        foreach ($contracts as $contract) {
-            $baseTeam   = $contract->team;
-            $basePlayer = $contract->player;
+// Regroupement par équipe pour attribuer 11 titulaires par équipe
+        $contractsByTeam = $contracts->groupBy('team_id');
 
-            if (
-                !isset($gameTeamsByBaseId[$baseTeam->id]) ||
-                !isset($gamePlayersByBaseId[$basePlayer->id])
-            ) {
+        foreach ($contractsByTeam as $teamId => $teamContracts) {
+
+            // récupérer le GameTeam associé
+            if (!isset($gameTeamsByBaseId[$teamId])) {
                 continue;
             }
 
-            GameContract::create([
-                'game_save_id'   => $gameSave->id,
-                'game_team_id'   => $gameTeamsByBaseId[$baseTeam->id]->id,
-                'game_player_id' => $gamePlayersByBaseId[$basePlayer->id]->id,
-                'salary'         => $contract->salary ?? 0,
-                'start_week'     => 1,
-                'end_week'       => $seasonLength,
-            ]);
+            $gameTeamId = $gameTeamsByBaseId[$teamId]->id;
+
+            // Les 11 premiers deviennent titulaires
+            $teamContracts = $teamContracts->values(); // réindexation
+            $starterCount = 11;
+
+            foreach ($teamContracts as $index => $contract) {
+
+                $basePlayerId = $contract->player->id;
+
+                if (!isset($gamePlayersByBaseId[$basePlayerId])) {
+                    continue;
+                }
+
+                GameContract::create([
+                    'game_save_id'   => $gameSave->id,
+                    'game_team_id'   => $gameTeamId,
+                    'game_player_id' => $gamePlayersByBaseId[$basePlayerId]->id,
+                    'salary'         => $contract->salary ?? 0,
+                    'start_week'     => 1,
+                    'end_week'       => $seasonLength,
+
+                    // 🎯 AJOUT ICI → 11 premiers = titulaires
+                    'is_starter'     => $index < $starterCount,
+                ]);
+            }
         }
 
         return redirect()

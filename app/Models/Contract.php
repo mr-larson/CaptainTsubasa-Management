@@ -22,6 +22,7 @@ class Contract extends Model
         'matches_played',
         'start_date',      // gardées mais plus utilisées pour le gameplay
         'end_date',
+        'is_starter'
     ];
 
     protected $casts = [
@@ -29,6 +30,7 @@ class Contract extends Model
         'end_date'       => 'date',
         'matches_total'  => 'integer',
         'matches_played' => 'integer',
+        'is_starter' => 'boolean',
     ];
 
     public function team(): BelongsTo

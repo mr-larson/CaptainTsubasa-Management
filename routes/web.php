@@ -3,6 +3,7 @@
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\GameSaveController;
 use App\Http\Controllers\LandingController;
+use App\Http\Controllers\LineupController;
 use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TeamController;
@@ -150,6 +151,9 @@ Route::middleware('auth')->group(function () {
             ->name('training.store');
 
     });
+    Route::patch('/game-contracts/{contract}/toggle-starter',
+        [LineupController::class, 'toggleStarter'])
+        ->name('game-contracts.toggle-starter');
 
     /*
     |----------------------------------------------------------------------

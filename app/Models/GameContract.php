@@ -16,11 +16,13 @@ class GameContract extends Model
         'salary',
         'start_week',
         'end_week',
+        'is_starter',
     ];
     protected $casts = [
         'salary'     => 'integer',
         'start_week' => 'integer',
         'end_week'   => 'integer',
+        'is_starter' => 'boolean',
     ];
 
 

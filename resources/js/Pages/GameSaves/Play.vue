@@ -1,4 +1,3 @@
-<!-- resources/js/Pages/GameSaves/Show.vue -->
 <script setup>
 /**
  * Dashboard de partie Captain Tsubasa
@@ -136,6 +135,24 @@ const roster = computed(() => {
         .filter(Boolean);
 });
 
+// Roster avec statut titulaire/remplaçant (via GameContract)
+const rosterWithStatus = computed(() => {
+    if (!team.value || !Array.isArray(team.value.contracts)) return [];
+
+    return team.value.contracts
+        .map(c => {
+            const p = c.game_player ?? c.gamePlayer ?? c.player ?? null;
+            if (!p) return null;
+
+            return {
+                ...p,
+                contract_id: c.id,
+                is_starter: c.is_starter ?? true,
+            };
+        })
+        .filter(Boolean);
+});
+
 // Dernier match joué de mon équipe
 const lastPlayedMatch = computed(() => {
     return myMatches.value
@@ -172,13 +189,26 @@ const matchPlayersStats = computed(() => {
 
 const selectedMyPlayerId = ref(null);
 
+
 const selectedMyPlayer = computed(() => {
-    if (!roster.value.length) return null;
-    if (!selectedMyPlayerId.value) return roster.value[0];
-    return roster.value.find(p => p.id === selectedMyPlayerId.value) ?? roster.value[0];
+    if (!rosterWithStatus.value.length) return null;
+    if (!selectedMyPlayerId.value) return rosterWithStatus.value[0];
+    return rosterWithStatus.value.find(p => p.id === selectedMyPlayerId.value) ?? rosterWithStatus.value[0];
 });
 
 const selectMyPlayer = (player) => { selectedMyPlayerId.value = player.id; };
+
+const toggleStarter = (contractId) => {
+    if (!contractId) return;
+
+    router.patch(
+        route('game-contracts.toggle-starter', { contract: contractId }),
+        {},
+        {
+            preserveScroll: true,
+        }
+    );
+};
 
 // ==========================
 //   BILAN / BUDGET
@@ -1015,22 +1045,35 @@ const playNextMatch = () => {
                         <div class="col-span-3 border border-slate-200 rounded-lg bg-slate-50 p-3 self-start">
                             <h3 class="text-md font-semibold text-slate-700 mb-2">Joueurs</h3>
 
-                            <div v-if="roster.length" class="max-h-96 overflow-y-auto space-y-1">
+                            <div v-if="rosterWithStatus.length" class="max-h-96 overflow-y-auto space-y-1">
                                 <button
-                                    v-for="p in roster"
+                                    v-for="p in rosterWithStatus"
                                     :key="p.id"
                                     type="button"
                                     @click="selectMyPlayer(p)"
                                     :class="[
-                    'w-full text-left text-sm px-2 py-1 rounded',
-                    selectedMyPlayer && selectedMyPlayer.id === p.id
-                        ? 'bg-teal-100 text-slate-900'
-                        : 'bg-white hover:bg-slate-100 text-slate-700'
-                ]"
+            'w-full text-left text-sm px-2 py-1 rounded',
+            selectedMyPlayer && selectedMyPlayer.id === p.id
+                ? 'bg-teal-100 text-slate-900'
+                : 'bg-white hover:bg-slate-100 text-slate-700'
+        ]"
                                 >
                                     <div class="flex items-center justify-between w-full">
-                                        <span class="truncate">{{ p.firstname }} {{ p.lastname }}</span>
-                                        <span class="text-xs text-slate-400 ml-2 shrink-0">{{ p.position }}</span>
+                                        <div class="flex flex-col">
+                <span class="truncate">
+                    {{ p.firstname }} {{ p.lastname }}
+                </span>
+                                            <span class="text-[11px] text-slate-500">
+                    {{ p.position }}
+                </span>
+                                        </div>
+
+                                        <span
+                                            class="ml-2 shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                                            :class="p.is_starter ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-700'"
+                                        >
+                {{ p.is_starter ? 'Titulaire' : 'Remplaçant' }}
+            </span>
                                     </div>
                                 </button>
                             </div>
@@ -1075,6 +1118,20 @@ const playNextMatch = () => {
                                                 Coût :
                                                 <span class="font-semibold">{{ selectedMyPlayer.cost ?? 0 }} €</span>
                                             </p>
+
+                                            <div class="mt-2">
+                                                <button
+                                                    v-if="selectedMyPlayer.contract_id"
+                                                    type="button"
+                                                    class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm"
+                                                    :class="selectedMyPlayer.is_starter
+                ? 'bg-emerald-500 text-white hover:bg-emerald-600'
+                : 'bg-slate-300 text-slate-800 hover:bg-slate-400'"
+                                                    @click="toggleStarter(selectedMyPlayer.contract_id)"
+                                                >
+                                                    {{ selectedMyPlayer.is_starter ? 'Titulaire' : 'Remplaçant' }}
+                                                </button>
+                                            </div>
 
                                             <p v-if="selectedMyPlayer.description" class="mt-3 text-sm text-slate-700">
                                                 <span class="text-slate-600">{{ selectedMyPlayer.description }}</span>
