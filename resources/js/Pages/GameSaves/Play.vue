@@ -167,6 +167,11 @@ const initialLineupSlots = computed(() => {
 
 const lineupForm = ref([]);
 
+const getSlotForPlayer = (playerId) => {
+    if (!playerId || !Array.isArray(lineupForm.value)) return null;
+    const row = lineupForm.value.find(r => r.player_id === playerId);
+    return row ? row.slot : null;
+};
 const initLineupForm = () => {
     const slots = [];
 
@@ -200,6 +205,35 @@ watch(
     () => initLineupForm()
 );
 
+const changeSelectedPlayerSlot = (newSlotValue) => {
+    const player = selectedMyPlayer.value;
+    if (!player) return;
+
+    const slotNumber = Number(newSlotValue);
+    if (!slotNumber || slotNumber < 1 || slotNumber > 11) return;
+
+    const playerId = player.id;
+
+    // Ligne actuelle (si le joueur a déjà un slot)
+    const currentRow = lineupForm.value.find(r => r.player_id === playerId) || null;
+
+    // Ligne ciblée
+    const targetRow = lineupForm.value.find(r => r.slot === slotNumber) || null;
+    if (!targetRow) return;
+
+    const previousPlayerAtTarget = targetRow.player_id ?? null;
+
+    if (currentRow) {
+        // Swap : l'ancien occupant du nouveau slot prend l'ancien slot
+        const oldSlot = currentRow.slot;
+        currentRow.player_id = previousPlayerAtTarget;
+        targetRow.player_id = playerId;
+    } else {
+        // Le joueur n'avait pas encore de slot -> il prend le nouveau,
+        // l'ancien occupant devient "sans slot" (null)
+        targetRow.player_id = playerId;
+    }
+};
 const saveLineup = () => {
     if (!team.value) return;
 
@@ -259,6 +293,28 @@ const selectedMyPlayer = computed(() => {
 });
 
 const selectMyPlayer = (player) => { selectedMyPlayerId.value = player.id; };
+
+const overallOf = (player) => {
+    if (!player) return 0;
+
+    // Priorité à player.stats si présent, sinon on utilise directement le joueur.
+    const s = player.stats ?? player;
+
+    const keys = [
+        'speed', 'stamina', 'attack', 'defense',
+        'shot', 'pass', 'dribble',
+        'block', 'intercept', 'tackle',
+        'hand_save', 'punch_save',
+    ];
+
+    const values = keys
+        .map(k => Number(s[k] ?? 0))
+        .filter(v => Number.isFinite(v));
+
+    if (!values.length) return 0;
+
+    return Math.round(values.reduce((a, b) => a + b, 0) / values.length);
+};
 
 const toggleStarter = (contractId) => {
     if (!contractId) return;
@@ -1156,6 +1212,8 @@ const playNextMatch = () => {
                                 <!-- ========================== -->
                                 <div class="border border-slate-200 rounded-lg bg-slate-50 p-4">
                                     <div class="flex items-start gap-4">
+
+                                        <!-- PHOTO -->
                                         <div class="w-24 h-24 rounded-lg border border-slate-200 bg-white overflow-hidden flex items-center justify-center">
                                             <img
                                                 v-if="playerPhotoUrl(selectedMyPlayer)"
@@ -1168,37 +1226,83 @@ const playNextMatch = () => {
                         </span>
                                         </div>
 
+                                        <!-- TEXTE + ACTIONS -->
                                         <div class="flex-1">
+
+                                            <!-- NOM -->
                                             <h3 class="text-lg font-semibold text-slate-800">
                                                 {{ selectedMyPlayer.firstname }} {{ selectedMyPlayer.lastname }}
                                             </h3>
 
+                                            <!-- POSTE + COÛT -->
                                             <p class="text-sm text-slate-600">
                                                 Poste :
                                                 <span class="font-semibold">{{ selectedMyPlayer.position }}</span>
                                                 <span class="text-slate-400 mx-2">•</span>
                                                 Coût :
                                                 <span class="font-semibold">{{ selectedMyPlayer.cost ?? 0 }} €</span>
+                                                <span class="text-slate-400 mx-2">•</span>
+                                                <span class="font-semibold mx-2">Overall :</span>
+                                                <span class="text-xs font-semibold px-2 py-0.5 rounded-full" :class="{
+                        'bg-emerald-600 text-white': overallOf(selectedMyPlayer) >= 80,
+                        'bg-emerald-500 text-white': overallOf(selectedMyPlayer) >= 70 && overallOf(selectedMyPlayer) < 80,
+                        'bg-teal-500 text-white': overallOf(selectedMyPlayer) >= 60 && overallOf(selectedMyPlayer) < 70,
+                        'bg-slate-400 text-white': overallOf(selectedMyPlayer) < 60}">{{ overallOf(selectedMyPlayer) }}</span>
                                             </p>
 
-                                            <div class="mt-2">
+                                            <!-- ⭐ OVERALL -->
+                                            <p class="mt-1 text-sm text-slate-700 flex items-center gap-2">
+
+                                            </p>
+
+                                            <!-- Titulaire / Remplaçant + Slot -->
+                                            <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
+
+                                                <!-- BOUTON TITULAIRE -->
                                                 <button
                                                     v-if="selectedMyPlayer.contract_id"
                                                     type="button"
                                                     class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm"
                                                     :class="selectedMyPlayer.is_starter
-                ? 'bg-emerald-500 text-white hover:bg-emerald-600'
-                : 'bg-slate-300 text-slate-800 hover:bg-slate-400'"
+                        ? 'bg-emerald-500 text-white hover:bg-emerald-600'
+                        : 'bg-slate-300 text-slate-800 hover:bg-slate-400'"
                                                     @click="toggleStarter(selectedMyPlayer.contract_id)"
                                                 >
                                                     {{ selectedMyPlayer.is_starter ? 'Titulaire' : 'Remplaçant' }}
                                                 </button>
+
+                                                <!-- SELECT SLOT -->
+                                                <div class="flex items-center gap-2 ml-auto">
+                                                    <label class="text-[11px] text-slate-500">
+                                                        Slot terrain
+                                                    </label>
+
+                                                    <select
+                                                        :value="getSlotForPlayer(selectedMyPlayer.id) ?? ''"
+                                                        :disabled="!selectedMyPlayer.is_starter"
+                                                        @change="changeSelectedPlayerSlot($event.target.value)"
+                                                        class="border border-slate-300 rounded-md px-2 py-1 text-xs bg-white
+                               disabled:bg-slate-100 disabled:text-slate-400
+                               focus:ring focus:ring-teal-200"
+                                                    >
+                                                        <option value="">
+                                                            {{ selectedMyPlayer.is_starter ? '(non assigné)' : 'Titulaire requis' }}
+                                                        </option>
+                                                        <option v-for="n in 11" :key="n" :value="n">
+                                                            {{ n }}
+                                                        </option>
+                                                    </select>
+                                                </div>
                                             </div>
 
+                                            <!-- DESCRIPTION -->
                                             <p v-if="selectedMyPlayer.description" class="mt-3 text-sm text-slate-700">
                                                 <span class="text-slate-600">{{ selectedMyPlayer.description }}</span>
                                             </p>
-                                            <p v-else class="mt-3 text-sm text-slate-400 italic">Aucune description.</p>
+                                            <p v-else class="mt-3 text-sm text-slate-400 italic">
+                                                Aucune description.
+                                            </p>
+
                                         </div>
                                     </div>
                                 </div>
@@ -1383,100 +1487,6 @@ const playNextMatch = () => {
                             <p v-else class="text-sm text-slate-500">
                                 Aucune action enregistrée pour ce joueur dans cette sauvegarde.
                             </p>
-                        </div>
-                        <!-- ========================== -->
-                        <!--   Bloc Composition simple  -->
-                        <!-- ========================== -->
-                        <div class="col-span-12 border border-slate-200 rounded-lg bg-slate-50 p-4 mt-4">
-                            <h4 class="text-md font-semibold text-slate-800 mb-3">
-                                🧩 Composition de l'équipe (slots 1 à 11)
-                            </h4>
-
-                            <p class="text-xs text-slate-500 mb-3">
-                                Assigne chaque titulaire à un numéro de 1 à 11.
-                                Le numéro détermine sa position sur le terrain dans le match
-                                (1 = gardien, 2–4 = défenseurs, 5–6 = milieux défensifs, 7–9 = milieux offensifs, 10–11 = attaquants).
-                            </p>
-
-                            <div v-if="starters.length" class="overflow-x-auto">
-                                <table class="w-full text-xs md:text-sm text-left">
-                                    <thead class="text-[11px] uppercase text-slate-500 border-b">
-                                    <tr>
-                                        <th class="py-1 pr-2">Slot</th>
-                                        <th class="py-1 pr-2">Joueur</th>
-                                        <th class="py-1 pr-2">Poste</th>
-                                        <th class="py-1 pr-2">Choix</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr
-                                        v-for="row in lineupForm"
-                                        :key="row.slot"
-                                        class="border-b last:border-b-0"
-                                    >
-                                        <td class="py-1 pr-2 text-xs font-semibold text-slate-700">
-                                            {{ row.slot }}
-                                        </td>
-
-                                        <td class="py-1 pr-2">
-                        <span v-if="row.player_id">
-                            {{
-                                starters.find(p => p.id === row.player_id)?.firstname
-                                ?? '-'
-                            }}
-                            {{
-                                starters.find(p => p.id === row.player_id)?.lastname
-                                ?? ''
-                            }}
-                        </span>
-                                            <span v-else class="text-slate-400">
-                            (aucun)
-                        </span>
-                                        </td>
-
-                                        <td class="py-1 pr-2 text-slate-500">
-                        <span v-if="row.player_id">
-                            {{
-                                starters.find(p => p.id === row.player_id)?.position
-                                ?? '-'
-                            }}
-                        </span>
-                                            <span v-else>—</span>
-                                        </td>
-
-                                        <td class="py-1 pr-2">
-                                            <select
-                                                v-model.number="row.player_id"
-                                                class="border border-slate-300 rounded-md px-2 py-1 text-xs w-full"
-                                            >
-                                                <option :value="null">(slot vide)</option>
-                                                <option
-                                                    v-for="p in starters"
-                                                    :key="p.id"
-                                                    :value="p.id"
-                                                >
-                                                    {{ p.firstname }} {{ p.lastname }} ({{ p.position }})
-                                                </option>
-                                            </select>
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <p v-else class="text-xs text-slate-500">
-                                Aucun titulaire défini. Passe des joueurs en “Titulaire” dans la liste de gauche.
-                            </p>
-
-                            <div class="mt-3 flex justify-end">
-                                <button
-                                    type="button"
-                                    class="px-4 py-1.5 text-xs md:text-sm rounded-full bg-teal-500 hover:bg-teal-600 text-white font-semibold"
-                                    @click="saveLineup"
-                                >
-                                    Sauvegarder la composition
-                                </button>
-                            </div>
                         </div>
                     </div>
 
