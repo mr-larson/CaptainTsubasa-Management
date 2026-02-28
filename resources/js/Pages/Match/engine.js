@@ -295,10 +295,25 @@ export function initMatchEngine(rootEl, config = {}) {
             };
 
             // Alimente un roster (internal/external) avec 11 slots (fallback si manquant).
-            const seedTeam = (teamKey) => {
-                const players = normalizePlayers(matchConfig.teams?.[teamKey]?.players);
-                const take = players.slice(0, 11);
+            // Dans class RosterService, à l'intérieur de static create(matchConfig, { statCoef, positionBonus }) { ... }
 
+            const seedTeam = (teamKey) => {
+                // 1) Récupère la liste brute de joueurs envoyée par le backend
+                const playersRaw = normalizePlayers(matchConfig.teams?.[teamKey]?.players);
+
+                // 2) On garde en priorité uniquement les titulaires
+                let starters = playersRaw.filter(p => p && p.is_starter === true);
+
+                // 3) Fallback compatibilité : si aucune info de titulaire,
+                //    on considère tous les joueurs (ancien comportement)
+                if (!starters.length) {
+                    starters = playersRaw;
+                }
+
+                // 4) On ne garde que les 11 premiers titulaires (ou moins si pas assez)
+                const take = starters.slice(0, 11);
+
+                // 5) Remplit les 11 slots du roster (1..11)
                 for (let slot = 1; slot <= 11; slot++) {
                     const p = take[slot - 1] ?? null;
 
@@ -316,6 +331,7 @@ export function initMatchEngine(rootEl, config = {}) {
                                 specialMoves: Array.isArray(p.special_moves) ? p.special_moves : [],
                             }
                             : {
+                                // Slot vide si pas assez de titulaires
                                 id: null,
                                 number: slot,
                                 firstname: "Joueur",
@@ -323,7 +339,7 @@ export function initMatchEngine(rootEl, config = {}) {
                                 position: "",
                                 photo: null,
                                 stats: null,
-                                specialMoves: []
+                                specialMoves: [],
                             }
                     );
                 }

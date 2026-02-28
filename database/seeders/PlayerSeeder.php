@@ -474,16 +474,16 @@ class PlayerSeeder extends Seeder
                 'Milieu offensif secondaire, Minowa soutient l’attaque et profite des espaces créés par Tsubasa et Misaki.'
             ],
 
-//            [
-//                'Akira', 'Tsuboi', 12, 'Goalkeeper', 250,
-//                [
-//                    'speed' => 40, 'stamina' => 60, 'defense' => 24, 'attack' => 16,
-//                    'shot' => 15, 'pass' => 16, 'dribble' => 15,
-//                    'block' => 16, 'intercept' => 16, 'tackle' => 15,
-//                    'hand_save' => 21, 'punch_save' => 18
-//                ],
-//                'Gardien remplaçant de Nankatsu, Tsuboi manque d’expérience mais reste fiable lors des rotations.'
-//            ],
+            [
+                'Akira', 'Tsuboi', 12, 'Goalkeeper', 250,
+                [
+                    'speed' => 40, 'stamina' => 60, 'defense' => 24, 'attack' => 16,
+                    'shot' => 15, 'pass' => 16, 'dribble' => 15,
+                    'block' => 16, 'intercept' => 16, 'tackle' => 15,
+                    'hand_save' => 21, 'punch_save' => 18
+                ],
+                'Gardien remplaçant de Nankatsu, Tsuboi manque d’expérience mais reste fiable lors des rotations.'
+            ],
 
             // Shutetsu
             [

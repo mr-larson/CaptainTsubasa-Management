@@ -451,21 +451,24 @@ class GameSaveController extends Controller
         }
 
         $mapPlayers = fn($team) => $team->contracts
+            // ✅ titulaires d’abord, juste pour avoir un ordre cohérent
+            ->sortByDesc('is_starter')
             ->values()
             ->map(function ($c, $idx) {
                 $p = $c->gamePlayer;
 
-                // ✅ URL publique de la photo (si stockée dans storage/app/public)
                 $photoUrl = $p->photo_path ? Storage::url($p->photo_path) : null;
 
                 return [
-                    'id'        => $p->id,
-                    'number'    => $idx + 1,
-                    'firstname' => $p->firstname,
-                    'lastname'  => $p->lastname,
-                    'position'  => $p->position,
+                    'id'         => $p->id,
+                    'number'     => $idx + 1,
+                    'firstname'  => $p->firstname,
+                    'lastname'   => $p->lastname,
+                    'position'   => $p->position,
 
-                    // ✅ AJOUT: champs photo pour le front
+                    // ✅ info essentielle pour l’engine
+                    'is_starter' => (bool) $c->is_starter,
+
                     'photo_path' => $p->photo_path,
                     'photo_url'  => $photoUrl,
 
