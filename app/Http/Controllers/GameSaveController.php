@@ -295,6 +295,15 @@ class GameSaveController extends Controller
         $startWeek = $gameSave->week ?? 1;
         $endWeek   = $startWeek + $data['matches_total'] - 1;
 
+        // Compter combien de titulaires cette équipe a déjà dans cette sauvegarde
+        $starterCount = GameContract::where('game_save_id', $gameSave->id)
+            ->where('game_team_id', $team->id)
+            ->where('is_starter', true)
+            ->count();
+
+        // Si moins de 11 titulaires -> le nouveau peut être titulaire, sinon remplaçant
+        $isStarter = $starterCount < 11;
+
         GameContract::create([
             'game_save_id'   => $gameSave->id,
             'game_team_id'   => $team->id,
@@ -302,8 +311,8 @@ class GameSaveController extends Controller
             'salary'         => $data['salary'],
             'start_week'     => $startWeek,
             'end_week'       => $endWeek,
-            // si tu as une colonne matches_total dans game_contracts, ajoute-la ici
-            // 'matches_total'  => $data['matches_total'],
+            'is_starter'     => $isStarter, // 👈 on écrase le default(true)
+            // 'matches_total' => $data['matches_total'], // si tu l'ajoutes un jour
         ]);
 
         // Mise à jour du budget
