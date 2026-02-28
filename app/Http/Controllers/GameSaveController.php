@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\GameSaveRequest;
+use App\Services\AITrainingService;
 use App\Services\MatchSimulator;
 use App\Models\GameSave;
 use App\Models\Team;
@@ -557,6 +558,8 @@ class GameSaveController extends Controller
         // Simule tous les matchs jouables de la semaine
         app(MatchSimulator::class)->simulateMatchesCollection($matches);
 
+        app(AITrainingService::class)->trainForWeek($gameSave);
+
         // Avance la semaine
         $gameSave->week = $week + 1;
         $gameSave->save();
@@ -661,6 +664,7 @@ class GameSaveController extends Controller
 
         // 3️⃣ Simulation autres matchs de la semaine
         app(MatchSimulator::class)->simulateOtherMatchesOfWeek($match);
+        app(AITrainingService::class)->trainForWeek($gameSave);
 
         // 4️⃣ Avancer la semaine
         $gameSave->week = max($gameSave->week ?? 1, $match->week + 1);
