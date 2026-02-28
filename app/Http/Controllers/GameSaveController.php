@@ -450,23 +450,92 @@ class GameSaveController extends Controller
             $controlledSide = $isControlledHome ? 'internal' : 'external';
         }
 
-        $mapPlayers = fn($team) => $team->contracts
-            // ✅ titulaires d’abord, juste pour avoir un ordre cohérent
-            ->sortByDesc('is_starter')
-            ->values()
-            ->map(function ($c, $idx) {
-                $p = $c->gamePlayer;
+        $mapPlayers = function ($team) use ($gameSave) {
 
+            // -------- 1) Charger l'état de la save pour trouver une compo éventuelle --------
+            $state = $gameSave->state ?? [];
+            $lineups = $state['lineup'] ?? [];
+            $teamLineup = $lineups[$team->id]['slots'] ?? null; // ex: [1 => 256, 2 => 244, ...]
+
+
+            // -------- 2) Récupération des contrats titulaires --------
+            $contracts = $team->contracts->loadMissing('gamePlayer');
+
+            $starters = $contracts
+                ->where('is_starter', true)
+                ->values();
+
+
+            // -------- 3) Si une compo existe → on respecte strictement les slots 1..11 --------
+            $ordered = collect();
+
+            if ($teamLineup) {
+
+                for ($slot = 1; $slot <= 11; $slot++) {
+
+                    $pid = $teamLineup[$slot] ?? null;
+
+                    if ($pid) {
+                        // Trouver le contrat du titulaire correspondant
+                        $c = $starters->firstWhere('game_player_id', $pid);
+
+                        if ($c) {
+                            $ordered->push([$slot, $c]);
+
+                            // éviter doublon
+                            $starters = $starters
+                                ->reject(fn($cc) => $cc->id === $c->id)
+                                ->values();
+
+                            continue;
+                        }
+                    }
+
+                    // Slot vide
+                    $ordered->push([$slot, null]);
+                }
+
+            } else {
+
+                // -------- 4) Pas de compo → fallback actuel (titulaire dans l'ordre) --------
+                $starters = $contracts->where('is_starter', true)->values();
+
+                for ($slot = 1; $slot <= 11; $slot++) {
+                    $c = $starters[$slot - 1] ?? null;
+                    $ordered->push([$slot, $c]);
+                }
+            }
+
+
+            // -------- 5) Construction finale du format attendu par l'engine --------
+            return $ordered->map(function (array $row) {
+
+                [$slot, $c] = $row;
+
+                if (!$c || !$c->gamePlayer) {
+                    return [
+                        'id'         => null,
+                        'number'     => $slot,
+                        'firstname'  => '',
+                        'lastname'   => '',
+                        'position'   => '',
+                        'is_starter' => false,
+                        'photo_path' => null,
+                        'photo_url'  => null,
+                        'stats'      => null,
+                        'special_moves' => [],
+                    ];
+                }
+
+                $p = $c->gamePlayer;
                 $photoUrl = $p->photo_path ? Storage::url($p->photo_path) : null;
 
                 return [
                     'id'         => $p->id,
-                    'number'     => $idx + 1,
+                    'number'     => $slot, // 👈 le slot = numéro de terrain (clé essentielle)
                     'firstname'  => $p->firstname,
                     'lastname'   => $p->lastname,
                     'position'   => $p->position,
-
-                    // ✅ info essentielle pour l’engine
                     'is_starter' => (bool) $c->is_starter,
 
                     'photo_path' => $p->photo_path,
@@ -489,6 +558,7 @@ class GameSaveController extends Controller
                     'special_moves' => $p->special_moves ?? [],
                 ];
             })->values();
+        };
 
         // ✅ AJOUT: URLs prêtes pour la vue (tailwind <img :src="...">)
         // logo_path = "images/teams/xxx.webp" => url = "/images/teams/xxx.webp"

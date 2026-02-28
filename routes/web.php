@@ -149,11 +149,13 @@ Route::middleware('auth')->group(function () {
             ->name('simulate-week');
         Route::post('/{gameSave}/training', [TrainingController::class, 'store'])
             ->name('training.store');
-
+        Route::post('/{gameSave}/lineup', [LineupController::class, 'update'])
+            ->name('lineup.update');
     });
     Route::patch('/game-contracts/{contract}/toggle-starter',
         [LineupController::class, 'toggleStarter'])
         ->name('game-contracts.toggle-starter');
+
 
     /*
     |----------------------------------------------------------------------

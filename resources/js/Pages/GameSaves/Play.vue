@@ -138,7 +138,6 @@ const roster = computed(() => {
 // Roster avec statut titulaire/remplaçant (via GameContract)
 const rosterWithStatus = computed(() => {
     if (!team.value || !Array.isArray(team.value.contracts)) return [];
-
     return team.value.contracts
         .map(c => {
             const p = c.game_player ?? c.gamePlayer ?? c.player ?? null;
@@ -152,6 +151,69 @@ const rosterWithStatus = computed(() => {
         })
         .filter(Boolean);
 });
+
+// Titulaires uniquement
+const starters = computed(() =>
+    rosterWithStatus.value.filter(p => p.is_starter)
+);
+
+// Lineup initiale depuis le state (si déjà enregistrée)
+const initialLineupSlots = computed(() => {
+    const state = props.gameSave.state ?? {};
+    const lineup = state.lineup ?? {};
+    if (!team.value) return {};
+    return (lineup[team.value.id]?.slots ?? {}) || {};
+});
+
+const lineupForm = ref([]);
+
+const initLineupForm = () => {
+    const slots = [];
+
+    // 1..11 : on remplit d’abord à partir du state
+    for (let slot = 1; slot <= 11; slot++) {
+        const mappedPlayerId = initialLineupSlots.value[slot] ?? null;
+        slots.push({
+            slot,
+            player_id: mappedPlayerId,
+        });
+    }
+
+    // Si aucune compo n'existe, on préremplit avec les titulaires dans l'ordre
+    if (!Object.keys(initialLineupSlots.value).length) {
+        starters.value.forEach((p, index) => {
+            if (index < 11) {
+                slots[index].player_id = p.id;
+            }
+        });
+    }
+
+    lineupForm.value = slots;
+};
+
+// Init au chargement
+initLineupForm();
+
+// Si l'équipe contrôlée ou le state changent (nouvelle save / reload), on réinitialise
+watch(
+    () => [team.value?.id, props.gameSave.state],
+    () => initLineupForm()
+);
+
+const saveLineup = () => {
+    if (!team.value) return;
+
+    router.post(
+        route('game-saves.lineup.update', { gameSave: props.gameSave.id }),
+        {
+            team_id: team.value.id,
+            slots: lineupForm.value,
+        },
+        {
+            preserveScroll: true,
+        }
+    );
+};
 
 // Dernier match joué de mon équipe
 const lastPlayedMatch = computed(() => {
@@ -1141,7 +1203,6 @@ const playNextMatch = () => {
                                     </div>
                                 </div>
 
-
                                 <!-- ========================== -->
                                 <!-- Carte Statistiques -->
                                 <!-- ========================== -->
@@ -1323,7 +1384,100 @@ const playNextMatch = () => {
                                 Aucune action enregistrée pour ce joueur dans cette sauvegarde.
                             </p>
                         </div>
+                        <!-- ========================== -->
+                        <!--   Bloc Composition simple  -->
+                        <!-- ========================== -->
+                        <div class="col-span-12 border border-slate-200 rounded-lg bg-slate-50 p-4 mt-4">
+                            <h4 class="text-md font-semibold text-slate-800 mb-3">
+                                🧩 Composition de l'équipe (slots 1 à 11)
+                            </h4>
 
+                            <p class="text-xs text-slate-500 mb-3">
+                                Assigne chaque titulaire à un numéro de 1 à 11.
+                                Le numéro détermine sa position sur le terrain dans le match
+                                (1 = gardien, 2–4 = défenseurs, 5–6 = milieux défensifs, 7–9 = milieux offensifs, 10–11 = attaquants).
+                            </p>
+
+                            <div v-if="starters.length" class="overflow-x-auto">
+                                <table class="w-full text-xs md:text-sm text-left">
+                                    <thead class="text-[11px] uppercase text-slate-500 border-b">
+                                    <tr>
+                                        <th class="py-1 pr-2">Slot</th>
+                                        <th class="py-1 pr-2">Joueur</th>
+                                        <th class="py-1 pr-2">Poste</th>
+                                        <th class="py-1 pr-2">Choix</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr
+                                        v-for="row in lineupForm"
+                                        :key="row.slot"
+                                        class="border-b last:border-b-0"
+                                    >
+                                        <td class="py-1 pr-2 text-xs font-semibold text-slate-700">
+                                            {{ row.slot }}
+                                        </td>
+
+                                        <td class="py-1 pr-2">
+                        <span v-if="row.player_id">
+                            {{
+                                starters.find(p => p.id === row.player_id)?.firstname
+                                ?? '-'
+                            }}
+                            {{
+                                starters.find(p => p.id === row.player_id)?.lastname
+                                ?? ''
+                            }}
+                        </span>
+                                            <span v-else class="text-slate-400">
+                            (aucun)
+                        </span>
+                                        </td>
+
+                                        <td class="py-1 pr-2 text-slate-500">
+                        <span v-if="row.player_id">
+                            {{
+                                starters.find(p => p.id === row.player_id)?.position
+                                ?? '-'
+                            }}
+                        </span>
+                                            <span v-else>—</span>
+                                        </td>
+
+                                        <td class="py-1 pr-2">
+                                            <select
+                                                v-model.number="row.player_id"
+                                                class="border border-slate-300 rounded-md px-2 py-1 text-xs w-full"
+                                            >
+                                                <option :value="null">(slot vide)</option>
+                                                <option
+                                                    v-for="p in starters"
+                                                    :key="p.id"
+                                                    :value="p.id"
+                                                >
+                                                    {{ p.firstname }} {{ p.lastname }} ({{ p.position }})
+                                                </option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <p v-else class="text-xs text-slate-500">
+                                Aucun titulaire défini. Passe des joueurs en “Titulaire” dans la liste de gauche.
+                            </p>
+
+                            <div class="mt-3 flex justify-end">
+                                <button
+                                    type="button"
+                                    class="px-4 py-1.5 text-xs md:text-sm rounded-full bg-teal-500 hover:bg-teal-600 text-white font-semibold"
+                                    @click="saveLineup"
+                                >
+                                    Sauvegarder la composition
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- ============================== -->
