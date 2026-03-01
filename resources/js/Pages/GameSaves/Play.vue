@@ -214,6 +214,14 @@ const changeSelectedPlayerSlot = (newSlotValue) => {
 
     const playerId = player.id;
 
+    // Slot actuel du joueur (s'il en a un)
+    const currentSlot = getSlotForPlayer(playerId);
+
+    // Si le slot ne change pas véritablement, on ne fait rien
+    if (currentSlot === slotNumber) {
+        return;
+    }
+
     // Ligne actuelle (si le joueur a déjà un slot)
     const currentRow = lineupForm.value.find(r => r.player_id === playerId) || null;
 
@@ -233,7 +241,56 @@ const changeSelectedPlayerSlot = (newSlotValue) => {
         // l'ancien occupant devient "sans slot" (null)
         targetRow.player_id = playerId;
     }
+
+    // ✅ Sauvegarde automatique après changement
+    saveLineup();
 };
+
+// Donne les infos de rôle + coordonnée sur le mini terrain pour un slot donné (1..11)
+function slotRoleInfo(slot) {
+    const s = Number(slot);
+    switch (s) {
+        case 1:
+            return { label: 'Gardien', x: 10, y: 50 };
+        case 2:
+            return { label: 'Défenseur', x: 30, y: 20 };
+        case 3:
+            return { label: 'Défenseur', x: 30, y: 50 };
+        case 4:
+            return { label: 'Défenseur', x: 30, y: 80 };
+        case 5:
+            return { label: 'Milieu défensif', x: 50, y: 35 };
+        case 6:
+            return { label: 'Milieu défensif', x: 50, y: 65 };
+        case 7:
+            return { label: 'Milieu offensif', x: 70, y: 20 };
+        case 8:
+            return { label: 'Milieu offensif', x: 70, y: 50 };
+        case 9:
+            return { label: 'Milieu offensif', x: 70, y: 80 };
+        case 10:
+            return { label: 'Attaquant', x: 88, y: 35 };
+        case 11:
+            return { label: 'Attaquant', x: 88, y: 65 };
+        default:
+            return { label: '—', x: 50, y: 50 };
+    }
+}
+
+// Style du marqueur sur le mini terrain (left/top en %)
+const miniPitchMarkerStyle = computed(() => {
+    const p = selectedMyPlayer.value;
+    if (!p) return {};
+
+    const slot = getSlotForPlayer(p.id);
+    if (!slot) return {};
+
+    const info = slotRoleInfo(slot);
+    return {
+        left: `${info.x}%`,
+        top: `${info.y}%`,
+    };
+});
 const saveLineup = () => {
     if (!team.value) return;
 
@@ -259,6 +316,54 @@ const lastPlayedMatch = computed(() => {
 // Stats du dernier match (format match_stats)
 const lastMatchStats = computed(() => {
     return lastPlayedMatch.value?.match_stats ?? null;
+});
+
+const teamStats = computed(() => {
+    const t = selectedStatsTeam.value;
+    if (!t) {
+        return {
+            shots: 0,
+            passes: 0,
+            dribbles: 0,
+            intercepts: 0,
+            tackles: 0,
+            blocks: 0,
+            duelsWon: 0,
+            duelsLost: 0,
+        };
+    }
+
+    const allStats = playerSeasonStats.value ?? {};
+    const playerIds = (t.contracts ?? [])
+        .map(c => c.game_player?.id ?? c.gamePlayer?.id ?? c.player?.id)
+        .filter(Boolean);
+
+    const totals = {
+        shots: 0,
+        passes: 0,
+        dribbles: 0,
+        intercepts: 0,
+        tackles: 0,
+        blocks: 0,
+        duelsWon: 0,
+        duelsLost: 0,
+    };
+
+    playerIds.forEach(pid => {
+        const s = allStats[pid];
+        if (!s) return;
+
+        totals.shots      += s.offense?.shot?.attempts ?? 0;
+        totals.passes     += s.offense?.pass?.attempts ?? 0;
+        totals.dribbles   += s.offense?.dribble?.attempts ?? 0;
+        totals.intercepts += s.defense?.intercept?.attempts ?? 0;
+        totals.tackles    += s.defense?.tackle?.attempts ?? 0;
+        totals.blocks     += s.defense?.block?.attempts ?? 0;
+        totals.duelsWon   += s.duelsWon ?? 0;
+        totals.duelsLost  += s.duelsLost ?? 0;
+    });
+
+    return totals;
 });
 
 // Raccourcis
@@ -351,13 +456,13 @@ const tabs = [
     { key: 'dashboard',   label: 'Dashboard' },
     { key: 'my-team',     label: 'Mon équipe' },
     { key: 'other-teams', label: 'Autres équipes' },
-    { key: 'transfers',   label: 'Transferts' },
     { key: 'calendar',    label: 'Calendrier' },
     { key: 'standings',   label: 'Classement' },
+    { key: 'match-stats',    label: 'Stats' },
     { key: 'training',    label: 'Entraînement' },
+    { key: 'transfers',   label: 'Transferts' },
     { key: 'cards',       label: 'Cartes bonus' },
-    { key: 'match-stats',    label: 'Stats de match' },
-
+    { key: 'management',  label: 'Gestion' },
 ];
 
 const activeTab = ref('dashboard');
@@ -747,7 +852,19 @@ const cardsCount       = computed(() => cards.value.length);
 // ==========================
 //   MOYENNES DES STATS
 // ==========================
+const selectedStatsTeamId = ref(null);
 
+const selectedStatsTeam = computed(() => {
+    if (!props.teams?.length) return null;
+
+    if (!selectedStatsTeamId.value) {
+        // par défaut : ton équipe contrôlée
+        return team.value || props.teams[0];
+    }
+
+    const id = Number(selectedStatsTeamId.value);
+    return props.teams.find(t => Number(t.id) === id) ?? (team.value || props.teams[0]);
+});
 const statValue = (p, key) => {
     if (!p) return 0;
     const stats = p.stats ?? {};
@@ -865,6 +982,20 @@ const availableTrainingStats = [
 const selectedTrainings = ref([
     // Exemple d’entrée: { player_id: 12, stat: 'shot' }
 ]);
+const selectedTeamPlayerStats = computed(() => {
+    const t = selectedStatsTeam.value;
+    if (!t || !Array.isArray(t.contracts)) return [];
+
+    const allStats = playerSeasonStats.value ?? {};
+
+    return t.contracts
+        .map(c => c.game_player ?? c.gamePlayer ?? c.player ?? null)
+        .filter(Boolean)
+        .map(p => ({
+            ...p,
+            stats: allStats[p.id] ?? null,
+        }));
+});
 
 const addTrainingSlot = () => {
     if (selectedTrainings.value.length >= 3) return;
@@ -912,6 +1043,22 @@ const submitTraining = () => {
             },
         }
     );
+};
+
+// ==========================
+//   GESTION (onglet management)
+// ==========================
+const managementSections = [
+    { key: 'dataBase',  label: 'Base de données' },
+    { key: 'profil',    label: 'Profil' },
+    { key: 'config',   label: 'Configuration' },
+];
+
+
+const activeManagementSection = ref('dataBase');
+
+const goToManagementSection = (key) => {
+    activeManagementSection.value = key;
 };
 
 // ==========================
@@ -1208,13 +1355,13 @@ const playNextMatch = () => {
                             <template v-if="selectedMyPlayer">
 
                                 <!-- ========================== -->
-                                <!-- Carte Profil -->
+                                <!-- Carte Profil complète -->
                                 <!-- ========================== -->
                                 <div class="border border-slate-200 rounded-lg bg-slate-50 p-4">
-                                    <div class="flex items-start gap-4">
+                                    <div class="flex items-start gap-6">
 
-                                        <!-- PHOTO -->
-                                        <div class="w-24 h-24 rounded-lg border border-slate-200 bg-white overflow-hidden flex items-center justify-center">
+                                        <!-- PHOTO + BADGE OVERALL -->
+                                        <div class="relative w-24 h-24 rounded-lg border border-slate-200 bg-white overflow-hidden flex items-center justify-center">
                                             <img
                                                 v-if="playerPhotoUrl(selectedMyPlayer)"
                                                 :src="playerPhotoUrl(selectedMyPlayer)"
@@ -1222,12 +1369,31 @@ const playNextMatch = () => {
                                                 alt="Photo joueur"
                                             />
                                             <span v-else class="text-xs text-slate-400 text-center px-2">
-                            Aucune<br>photo
-                        </span>
+                Aucune<br>photo
+            </span>
+
+                                            <!-- ⭐ Badge Overall - coin supérieur gauche -->
+                                            <div
+                                                v-if="overallOf(selectedMyPlayer) > 0"
+                                                :class="[
+                    'absolute -top-2 -left-2 h-9 w-9 rounded-full border-2 border-white flex items-center justify-center shadow-md',
+                    overallOf(selectedMyPlayer) >= 80
+                        ? 'bg-emerald-600'
+                        : overallOf(selectedMyPlayer) >= 70
+                            ? 'bg-emerald-500'
+                            : overallOf(selectedMyPlayer) >= 60
+                                ? 'bg-teal-500'
+                                : 'bg-slate-500'
+                ]"
+                                            >
+                <span class="text-xs font-extrabold text-white">
+                    {{ overallOf(selectedMyPlayer) }}
+                </span>
+                                            </div>
                                         </div>
 
                                         <!-- TEXTE + ACTIONS -->
-                                        <div class="flex-1">
+                                        <div class="flex-1 flex flex-col gap-2">
 
                                             <!-- NOM -->
                                             <h3 class="text-lg font-semibold text-slate-800">
@@ -1241,24 +1407,12 @@ const playNextMatch = () => {
                                                 <span class="text-slate-400 mx-2">•</span>
                                                 Coût :
                                                 <span class="font-semibold">{{ selectedMyPlayer.cost ?? 0 }} €</span>
-                                                <span class="text-slate-400 mx-2">•</span>
-                                                <span class="font-semibold mx-2">Overall :</span>
-                                                <span class="text-xs font-semibold px-2 py-0.5 rounded-full" :class="{
-                        'bg-emerald-600 text-white': overallOf(selectedMyPlayer) >= 80,
-                        'bg-emerald-500 text-white': overallOf(selectedMyPlayer) >= 70 && overallOf(selectedMyPlayer) < 80,
-                        'bg-teal-500 text-white': overallOf(selectedMyPlayer) >= 60 && overallOf(selectedMyPlayer) < 70,
-                        'bg-slate-400 text-white': overallOf(selectedMyPlayer) < 60}">{{ overallOf(selectedMyPlayer) }}</span>
-                                            </p>
-
-                                            <!-- ⭐ OVERALL -->
-                                            <p class="mt-1 text-sm text-slate-700 flex items-center gap-2">
-
                                             </p>
 
                                             <!-- Titulaire / Remplaçant + Slot -->
-                                            <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
+                                            <div class="mt-2 flex flex-wrap items-center justify-between gap-3">
 
-                                                <!-- BOUTON TITULAIRE -->
+                                                <!-- Bouton Titulaire -->
                                                 <button
                                                     v-if="selectedMyPlayer.contract_id"
                                                     type="button"
@@ -1271,11 +1425,9 @@ const playNextMatch = () => {
                                                     {{ selectedMyPlayer.is_starter ? 'Titulaire' : 'Remplaçant' }}
                                                 </button>
 
-                                                <!-- SELECT SLOT -->
+                                                <!-- Sélecteur de slot -->
                                                 <div class="flex items-center gap-2 ml-auto">
-                                                    <label class="text-[11px] text-slate-500">
-                                                        Slot terrain
-                                                    </label>
+                                                    <label class="text-[11px] text-slate-500">Slot terrain</label>
 
                                                     <select
                                                         :value="getSlotForPlayer(selectedMyPlayer.id) ?? ''"
@@ -1288,6 +1440,7 @@ const playNextMatch = () => {
                                                         <option value="">
                                                             {{ selectedMyPlayer.is_starter ? '(non assigné)' : 'Titulaire requis' }}
                                                         </option>
+
                                                         <option v-for="n in 11" :key="n" :value="n">
                                                             {{ n }}
                                                         </option>
@@ -1302,8 +1455,52 @@ const playNextMatch = () => {
                                             <p v-else class="mt-3 text-sm text-slate-400 italic">
                                                 Aucune description.
                                             </p>
-
                                         </div>
+
+                                        <!-- ========================== -->
+                                        <!--  MINI TERRAIN (DROITE)    -->
+                                        <!-- ========================== -->
+                                        <div class="w-40 h-32 relative rounded-lg overflow-hidden border border-slate-300 shadow-sm">
+
+                                            <!-- Fond terrain cohérent avec ton exemple -->
+                                            <div class="absolute inset-0 bg-gradient-to-r from-green-700 via-green-600 to-green-700"></div>
+
+                                            <!-- Bandes verticales -->
+                                            <div
+                                                v-for="i in 6"
+                                                :key="i"
+                                                class="absolute top-0 h-full w-[16.66%] bg-green-800/20"
+                                                :style="{ left: ((i-1)*16.66)+'%' }"
+                                            ></div>
+
+                                            <!-- Lignes blanches -->
+                                            <div class="absolute inset-0 border-2 border-white/70 pointer-events-none"></div>
+
+                                            <!-- Ligne médiane -->
+                                            <div class="absolute left-1/2 top-0 h-full w-px bg-white/60"></div>
+
+                                            <!-- Cercle central -->
+                                            <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
+                        w-16 h-16 rounded-full border border-white/70"></div>
+
+                                            <!-- Surface gauche -->
+                                            <div class="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-24 border border-white/60"></div>
+                                            <div class="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-12 border border-white/70"></div>
+
+                                            <!-- Surface droite -->
+                                            <div class="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-24 border border-white/60"></div>
+                                            <div class="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-12 border border-white/70"></div>
+
+                                            <!-- Marqueur du joueur -->
+                                            <div
+                                                v-if="selectedMyPlayer.is_starter && getSlotForPlayer(selectedMyPlayer.id)"
+                                                class="absolute h-5 w-5 rounded-full border-2 border-white bg-yellow-300 shadow-md flex items-center justify-center text-[10px] font-bold"
+                                                :style="miniPitchMarkerStyle"
+                                            >
+                                                {{ getSlotForPlayer(selectedMyPlayer.id) }}
+                                            </div>
+                                        </div>
+
                                     </div>
                                 </div>
 
@@ -1895,8 +2092,8 @@ const playNextMatch = () => {
                             <p v-else class="text-sm text-slate-500">Aucune équipe trouvée.</p>
                         </div>
 
-                        <div class="flex-1 border border-slate-200 rounded-lg bg-slate-50 p-4">
-                            <div v-if="calendarTeam">
+                        <div class="flex-1">
+                            <div v-if="calendarTeam" class="border border-slate-200 rounded-lg bg-slate-50 p-4">
                                 <h3 class="text-lg font-semibold text-slate-700 mb-2">
                                     Calendrier : {{ calendarTeam.name }}
                                 </h3>
@@ -1954,103 +2151,103 @@ const playNextMatch = () => {
                                         </tbody>
                                     </table>
                                 </div>
-                                <!-- ✅ PANEL STATS DU MATCH SÉLECTIONNÉ -->
-                                <div
-                                    v-if="selectedCalendarMatch && selectedCalendarMatchStats"
-                                    class="mt-4 border-t border-slate-200 pt-4"
-                                >
-                                    <h4 class="text-md font-semibold text-slate-700 mb-2">
-                                        Stats du match — Semaine {{ selectedCalendarMatch.week }}
-                                    </h4>
+                            </div>
+                            <!-- ✅ PANEL STATS DU MATCH SÉLECTIONNÉ -->
+                            <div
+                                v-if="selectedCalendarMatch && selectedCalendarMatchStats"
+                                class="border border-slate-200 rounded-lg bg-slate-50 p-4 mt-4"
+                            >
+                                <h4 class="text-md font-semibold text-slate-700 mb-2">
+                                    Stats du match — Semaine {{ selectedCalendarMatch.week }}
+                                </h4>
 
-                                    <p class="text-sm text-slate-600 mb-3">
-                                        {{ teamById[selectedCalendarMatch.home_team_id]?.name }}
-                                        {{ selectedCalendarMatch.home_score }} - {{ selectedCalendarMatch.away_score }}
-                                        {{ teamById[selectedCalendarMatch.away_team_id]?.name }}
-                                    </p>
+                                <p class="text-sm text-slate-600 mb-3">
+                                    {{ teamById[selectedCalendarMatch.home_team_id]?.name }}
+                                    {{ selectedCalendarMatch.home_score }} - {{ selectedCalendarMatch.away_score }}
+                                    {{ teamById[selectedCalendarMatch.away_team_id]?.name }}
+                                </p>
 
-                                    <!-- Stats d'équipe -->
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mb-4">
-                                        <div class="p-3 border rounded bg-white">
-                                            <p class="font-semibold mb-1">Tirs</p>
-                                            <p>Nous : {{ selectedCalendarMyTeamStats?.shots ?? 0 }}</p>
-                                            <p>Adversaire : {{ selectedCalendarOpponentStats?.shots ?? 0 }}</p>
-                                        </div>
-                                        <div class="p-3 border rounded bg-white">
-                                            <p class="font-semibold mb-1">Duels gagnés</p>
-                                            <p>Nous : {{ selectedCalendarMyTeamStats?.duelsWon ?? 0 }}</p>
-                                            <p>Adversaire : {{ selectedCalendarOpponentStats?.duelsWon ?? 0 }}</p>
-                                        </div>
-                                        <div class="p-3 border rounded bg-white">
-                                            <p class="font-semibold mb-1">Duels perdus</p>
-                                            <p>Nous : {{ selectedCalendarMyTeamStats?.duelsLost ?? 0 }}</p>
-                                            <p>Adversaire : {{ selectedCalendarOpponentStats?.duelsLost ?? 0 }}</p>
-                                        </div>
+                                <!-- Stats d'équipe -->
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mb-4">
+                                    <div class="p-3 border rounded bg-white">
+                                        <p class="font-semibold mb-1">Tirs</p>
+                                        <p>Nous : {{ selectedCalendarMyTeamStats?.shots ?? 0 }}</p>
+                                        <p>Adversaire : {{ selectedCalendarOpponentStats?.shots ?? 0 }}</p>
                                     </div>
-
-                                    <!-- Stats par joueur de l'équipe sélectionnée -->
-                                    <h5 class="text-sm font-semibold text-slate-700 mb-2">
-                                        Stats par joueur ({{ calendarTeam.name }})
-                                    </h5>
-
-                                    <div class="overflow-x-auto">
-                                        <table class="w-full text-xs md:text-sm min-w-max text-left">
-                                            <thead class="text-[10px] uppercase text-slate-500 border-b">
-                                            <tr>
-                                                <th class="py-1 pr-2">Joueur</th>
-                                                <th class="py-1 pr-2 text-right">Tirs</th>
-                                                <th class="py-1 pr-2 text-right">Passes</th>
-                                                <th class="py-1 pr-2 text-right">Dribbles</th>
-                                                <th class="py-1 pr-2 text-right">Interc.</th>
-                                                <th class="py-1 pr-2 text-right">Tacles</th>
-                                                <th class="py-1 pr-2 text-right">Blocks</th>
-                                                <th class="py-1 pr-2 text-right">Duels +</th>
-                                                <th class="py-1 pr-2 text-right">Duels -</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            <tr
-                                                v-for="p in calendarTeamRoster"
-                                                :key="p.id"
-                                                class="border-b last:border-b-0"
-                                            >
-                                                <td class="py-1 pr-2">{{ p.firstname }} {{ p.lastname }}</td>
-                                                <td class="py-1 pr-2 text-right">
-                                                    {{ selectedCalendarPlayersStats[p.id]?.offense?.shot?.attempts ?? 0 }}
-                                                </td>
-                                                <td class="py-1 pr-2 text-right">
-                                                    {{ selectedCalendarPlayersStats[p.id]?.offense?.pass?.attempts ?? 0 }}
-                                                </td>
-                                                <td class="py-1 pr-2 text-right">
-                                                    {{ selectedCalendarPlayersStats[p.id]?.offense?.dribble?.attempts ?? 0 }}
-                                                </td>
-                                                <td class="py-1 pr-2 text-right">
-                                                    {{ selectedCalendarPlayersStats[p.id]?.defense?.intercept?.attempts ?? 0 }}
-                                                </td>
-                                                <td class="py-1 pr-2 text-right">
-                                                    {{ selectedCalendarPlayersStats[p.id]?.defense?.tackle?.attempts ?? 0 }}
-                                                </td>
-                                                <td class="py-1 pr-2 text-right">
-                                                    {{ selectedCalendarPlayersStats[p.id]?.defense?.block?.attempts ?? 0 }}
-                                                </td>
-                                                <td class="py-1 pr-2 text-right">
-                                                    {{ selectedCalendarPlayersStats[p.id]?.duelsWon ?? 0 }}
-                                                </td>
-                                                <td class="py-1 pr-2 text-right">
-                                                    {{ selectedCalendarPlayersStats[p.id]?.duelsLost ?? 0 }}
-                                                </td>
-                                            </tr>
-                                            </tbody>
-                                        </table>
+                                    <div class="p-3 border rounded bg-white">
+                                        <p class="font-semibold mb-1">Duels gagnés</p>
+                                        <p>Nous : {{ selectedCalendarMyTeamStats?.duelsWon ?? 0 }}</p>
+                                        <p>Adversaire : {{ selectedCalendarOpponentStats?.duelsWon ?? 0 }}</p>
+                                    </div>
+                                    <div class="p-3 border rounded bg-white">
+                                        <p class="font-semibold mb-1">Duels perdus</p>
+                                        <p>Nous : {{ selectedCalendarMyTeamStats?.duelsLost ?? 0 }}</p>
+                                        <p>Adversaire : {{ selectedCalendarOpponentStats?.duelsLost ?? 0 }}</p>
                                     </div>
                                 </div>
 
-                                <p v-else class="text-sm text-slate-500 mt-2">
-                                    Clique sur un match joué dans le calendrier pour afficher ses statistiques détaillées.
-                                </p>
+                                <!-- Stats par joueur de l'équipe sélectionnée -->
+                                <h5 class="text-sm font-semibold text-slate-700 mb-2">
+                                    Stats par joueur ({{ calendarTeam.name }})
+                                </h5>
 
-                                <p v-else class="text-sm text-slate-500">Aucun match planifié pour le moment.</p>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-xs md:text-sm min-w-max text-left">
+                                        <thead class="text-[10px] uppercase text-slate-500 border-b">
+                                        <tr>
+                                            <th class="py-1 pr-2">Joueur</th>
+                                            <th class="py-1 pr-2 text-right">Tirs</th>
+                                            <th class="py-1 pr-2 text-right">Passes</th>
+                                            <th class="py-1 pr-2 text-right">Dribbles</th>
+                                            <th class="py-1 pr-2 text-right">Interc.</th>
+                                            <th class="py-1 pr-2 text-right">Tacles</th>
+                                            <th class="py-1 pr-2 text-right">Blocks</th>
+                                            <th class="py-1 pr-2 text-right">Duels +</th>
+                                            <th class="py-1 pr-2 text-right">Duels -</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr
+                                            v-for="p in calendarTeamRoster"
+                                            :key="p.id"
+                                            class="border-b last:border-b-0"
+                                        >
+                                            <td class="py-1 pr-2">{{ p.firstname }} {{ p.lastname }}</td>
+                                            <td class="py-1 pr-2 text-right">
+                                                {{ selectedCalendarPlayersStats[p.id]?.offense?.shot?.attempts ?? 0 }}
+                                            </td>
+                                            <td class="py-1 pr-2 text-right">
+                                                {{ selectedCalendarPlayersStats[p.id]?.offense?.pass?.attempts ?? 0 }}
+                                            </td>
+                                            <td class="py-1 pr-2 text-right">
+                                                {{ selectedCalendarPlayersStats[p.id]?.offense?.dribble?.attempts ?? 0 }}
+                                            </td>
+                                            <td class="py-1 pr-2 text-right">
+                                                {{ selectedCalendarPlayersStats[p.id]?.defense?.intercept?.attempts ?? 0 }}
+                                            </td>
+                                            <td class="py-1 pr-2 text-right">
+                                                {{ selectedCalendarPlayersStats[p.id]?.defense?.tackle?.attempts ?? 0 }}
+                                            </td>
+                                            <td class="py-1 pr-2 text-right">
+                                                {{ selectedCalendarPlayersStats[p.id]?.defense?.block?.attempts ?? 0 }}
+                                            </td>
+                                            <td class="py-1 pr-2 text-right">
+                                                {{ selectedCalendarPlayersStats[p.id]?.duelsWon ?? 0 }}
+                                            </td>
+                                            <td class="py-1 pr-2 text-right">
+                                                {{ selectedCalendarPlayersStats[p.id]?.duelsLost ?? 0 }}
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
+
+                            <p v-else class="text-sm text-slate-500 mt-2">
+                                Clique sur un match joué dans le calendrier pour afficher ses statistiques détaillées.
+                            </p>
+
+                            <p v-else class="text-sm text-slate-500">Aucun match planifié pour le moment.</p>
 
                             <p v-else class="text-sm text-slate-500">
                                 Sélectionne une équipe dans la liste à gauche.
@@ -2101,131 +2298,160 @@ const playNextMatch = () => {
                             </table>
                         </div>
                     </div>
-
                     <!-- ============================== -->
-                    <!--         STATS MATCH            -->
+                    <!--         STATS D'ÉQUIPE        -->
                     <!-- ============================== -->
-                    <div v-else-if="activeTab === 'match-stats'" class="flex-1 border border-slate-200 rounded-lg bg-slate-50 p-6">
+                    <div v-else-if="activeTab === 'match-stats'" class="flex-1 flex gap-4">
 
-                        <h3 class="text-xl font-bold text-slate-800 mb-4">
-                            📊 Stats du dernier match
-                        </h3>
+                        <!-- Barre gauche : sélection d'équipe -->
+                        <div class="w-1/5 border border-slate-200 rounded-lg bg-slate-50 p-3">
+                            <h3 class="text-md font-semibold text-slate-700 mb-2">Équipes</h3>
 
-                        <template v-if="lastPlayedMatch && lastMatchStats">
-
-                            <!-- SCORE -->
-                            <div class="text-lg font-semibold mb-4 text-center">
-                                {{ teamById[lastPlayedMatch.home_team_id].name }}
-                                {{ lastPlayedMatch.home_score }}
-                                -
-                                {{ lastPlayedMatch.away_score }}
-                                {{ teamById[lastPlayedMatch.away_team_id].name }}
+                            <div v-if="teams.length" class="max-h-96 overflow-y-auto space-y-1">
+                                <button
+                                    v-for="t in teams"
+                                    :key="t.id"
+                                    type="button"
+                                    @click="selectedStatsTeamId = t.id"
+                                    :class="[
+                    'w-full text-left text-sm px-2 py-1 rounded',
+                    selectedStatsTeamId === t.id
+                        ? 'bg-teal-100 text-slate-900'
+                        : 'bg-white hover:bg-slate-100 text-slate-700'
+                ]"
+                                >
+                                    {{ t.name }}
+                                </button>
                             </div>
 
-                            <!-- ================= -->
-                            <!-- STATISTIQUES ÉQUIPE -->
-                            <!-- ================= -->
-                            <h4 class="text-md font-semibold text-slate-700 mb-2">Stats d'équipe</h4>
+                            <p v-else class="text-sm text-slate-500">
+                                Aucune équipe trouvée.
+                            </p>
+                        </div>
 
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-6">
-                                <div class="p-3 border rounded bg-white">
-                                    <p class="font-medium">Tirs</p>
-                                    <p>{{ myTeamStats.shots }} (nous)</p>
-                                    <p>{{ opponentTeamStats.shots }} (adverse)</p>
+                        <!-- Colonne droite : stats cumulées -->
+                        <div class="flex-1 border border-slate-200 rounded-lg bg-slate-50 p-6">
+
+                            <h3 class="text-xl font-bold text-slate-800 mb-4">
+                                📊 Stats d'équipe
+                                <span v-if="selectedStatsTeam">— {{ selectedStatsTeam.name }}</span>
+                            </h3>
+
+                            <template v-if="selectedStatsTeam">
+
+                                <!-- Stats globales de l'équipe -->
+                                <h4 class="text-md font-semibold text-slate-700 mb-2">Stats globales</h4>
+
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-6">
+                                    <div class="p-3 border rounded bg-white">
+                                        <p class="font-medium">Tirs</p>
+                                        <p>{{ teamStats.shots }}</p>
+                                    </div>
+
+                                    <div class="p-3 border rounded bg-white">
+                                        <p class="font-medium">Passes</p>
+                                        <p>{{ teamStats.passes }}</p>
+                                    </div>
+
+                                    <div class="p-3 border rounded bg-white">
+                                        <p class="font-medium">Dribbles</p>
+                                        <p>{{ teamStats.dribbles }}</p>
+                                    </div>
+
+                                    <div class="p-3 border rounded bg-white">
+                                        <p class="font-medium">Interceptions</p>
+                                        <p>{{ teamStats.intercepts }}</p>
+                                    </div>
+
+                                    <div class="p-3 border rounded bg-white">
+                                        <p class="font-medium">Tacles</p>
+                                        <p>{{ teamStats.tackles }}</p>
+                                    </div>
+
+                                    <div class="p-3 border rounded bg-white">
+                                        <p class="font-medium">Blocks</p>
+                                        <p>{{ teamStats.blocks }}</p>
+                                    </div>
+
+                                    <div class="p-3 border rounded bg-white">
+                                        <p class="font-medium">Duels gagnés</p>
+                                        <p>{{ teamStats.duelsWon }}</p>
+                                    </div>
+
+                                    <div class="p-3 border rounded bg-white">
+                                        <p class="font-medium">Duels perdus</p>
+                                        <p>{{ teamStats.duelsLost }}</p>
+                                    </div>
                                 </div>
 
-                                <div class="p-3 border rounded bg-white">
-                                    <p class="font-medium">Duels gagnés</p>
-                                    <p>{{ myTeamStats.duelsWon }} (nous)</p>
-                                    <p>{{ opponentTeamStats.duelsWon }} (adverse)</p>
+                                <!-- Stats des joueurs -->
+                                <h4 class="text-md font-semibold text-slate-700 mb-3">Stats des joueurs</h4>
+
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-sm min-w-max text-left">
+                                        <thead class="text-xs uppercase text-slate-500 border-b">
+                                        <tr>
+                                            <th class="py-1 pr-2">Joueur</th>
+                                            <th class="py-1 pr-2 text-right">Tirs</th>
+                                            <th class="py-1 pr-2 text-right">Passes</th>
+                                            <th class="py-1 pr-2 text-right">Dribbles</th>
+                                            <th class="py-1 pr-2 text-right">Interc.</th>
+                                            <th class="py-1 pr-2 text-right">Tacles</th>
+                                            <th class="py-1 pr-2 text-right">Blocks</th>
+                                            <th class="py-1 pr-2 text-right">Duels +</th>
+                                            <th class="py-1 pr-2 text-right">Duels –</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr
+                                            v-for="p in selectedTeamPlayerStats"
+                                            :key="p.id"
+                                            class="border-b last:border-b-0"
+                                        >
+                                            <td class="py-1 pr-2">
+                                                {{ p.firstname }} {{ p.lastname }}
+                                            </td>
+
+                                            <td class="py-1 pr-2 text-right">
+                                                {{ p.stats?.offense?.shot?.attempts ?? 0 }}
+                                            </td>
+                                            <td class="py-1 pr-2 text-right">
+                                                {{ p.stats?.offense?.pass?.attempts ?? 0 }}
+                                            </td>
+                                            <td class="py-1 pr-2 text-right">
+                                                {{ p.stats?.offense?.dribble?.attempts ?? 0 }}
+                                            </td>
+
+                                            <td class="py-1 pr-2 text-right">
+                                                {{ p.stats?.defense?.intercept?.attempts ?? 0 }}
+                                            </td>
+                                            <td class="py-1 pr-2 text-right">
+                                                {{ p.stats?.defense?.tackle?.attempts ?? 0 }}
+                                            </td>
+                                            <td class="py-1 pr-2 text-right">
+                                                {{ p.stats?.defense?.block?.attempts ?? 0 }}
+                                            </td>
+
+                                            <td class="py-1 pr-2 text-right">
+                                                {{ p.stats?.duelsWon ?? 0 }}
+                                            </td>
+                                            <td class="py-1 pr-2 text-right">
+                                                {{ p.stats?.duelsLost ?? 0 }}
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
 
-                                <div class="p-3 border rounded bg-white">
-                                    <p class="font-medium">Duels perdus</p>
-                                    <p>{{ myTeamStats.duelsLost }} (nous)</p>
-                                    <p>{{ opponentTeamStats.duelsLost }} (adverse)</p>
-                                </div>
+                            </template>
 
-                                <div class="p-3 border rounded bg-white">
-                                    <p class="font-medium">Dribbles</p>
-                                    <p>{{ myTeamStats.dribbles ?? 0 }} (nous)</p>
-                                    <p>{{ opponentTeamStats.dribbles ?? 0 }} (adverse)</p>
-                                </div>
-                            </div>
+                            <p v-else class="text-slate-500 text-sm">
+                                Sélectionne une équipe dans la liste à gauche pour voir ses stats cumulées.
+                            </p>
 
-                            <!-- ================= -->
-                            <!-- STATISTIQUES JOUEURS -->
-                            <!-- ================= -->
-                            <h4 class="text-md font-semibold text-slate-700 mb-3">Stats par joueur</h4>
-
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-sm min-w-max text-left">
-                                    <thead class="text-xs uppercase text-slate-500 border-b">
-                                    <tr>
-                                        <th class="py-1 pr-2">Joueur</th>
-                                        <th class="py-1 pr-2 text-right">Tirs</th>
-                                        <th class="py-1 pr-2 text-right">Passes</th>
-                                        <th class="py-1 pr-2 text-right">Dribbles</th>
-                                        <th class="py-1 pr-2 text-right">Interc.</th>
-                                        <th class="py-1 pr-2 text-right">Tacles</th>
-                                        <th class="py-1 pr-2 text-right">Blocks</th>
-                                        <th class="py-1 pr-2 text-right">Duels +</th>
-                                        <th class="py-1 pr-2 text-right">Duels –</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr
-                                        v-for="p in roster"
-                                        :key="p.id"
-                                        class="border-b last:border-b-0"
-                                    >
-                                        <td class="py-1 pr-2">{{ p.firstname }} {{ p.lastname }}</td>
-
-                                        <td class="py-1 pr-2 text-right">
-                                            {{ matchPlayersStats[p.id]?.offense?.shot?.attempts ?? 0 }}
-                                        </td>
-
-                                        <td class="py-1 pr-2 text-right">
-                                            {{ matchPlayersStats[p.id]?.offense?.pass?.attempts ?? 0 }}
-                                        </td>
-
-                                        <td class="py-1 pr-2 text-right">
-                                            {{ matchPlayersStats[p.id]?.offense?.dribble?.attempts ?? 0 }}
-                                        </td>
-
-                                        <td class="py-1 pr-2 text-right">
-                                            {{ matchPlayersStats[p.id]?.defense?.intercept?.attempts ?? 0 }}
-                                        </td>
-
-                                        <td class="py-1 pr-2 text-right">
-                                            {{ matchPlayersStats[p.id]?.defense?.tackle?.attempts ?? 0 }}
-                                        </td>
-
-                                        <td class="py-1 pr-2 text-right">
-                                            {{ matchPlayersStats[p.id]?.defense?.block?.attempts ?? 0 }}
-                                        </td>
-
-                                        <td class="py-1 pr-2 text-right">
-                                            {{ matchPlayersStats[p.id]?.duelsWon ?? 0 }}
-                                        </td>
-
-                                        <td class="py-1 pr-2 text-right">
-                                            {{ matchPlayersStats[p.id]?.duelsLost ?? 0 }}
-                                        </td>
-
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-
-                        </template>
-
-                        <p v-else class="text-slate-500 text-sm">
-                            Aucun match joué encore dans cette sauvegarde.
-                        </p>
+                        </div>
 
                     </div>
-
                     <!-- ============================== -->
                     <!--         ENTRAÎNEMENT          -->
                     <!-- ============================== -->
@@ -2408,6 +2634,152 @@ const playNextMatch = () => {
                     <div v-else-if="activeTab === 'cards'" class="flex-1">
                         <h3 class="text-lg font-semibold text-slate-700 mb-2">Cartes bonus</h3>
                         <p class="text-sm text-slate-600">Système de cartes bonus / malus (à venir).</p>
+                    </div>
+
+                    <!-- ============================== -->
+                    <!--            GESTION            -->
+                    <!-- ============================== -->
+                    <div v-else-if="activeTab === 'management'" class="flex-1 flex gap-4">
+
+                        <!-- Sidebar gauche -->
+                        <div class="w-1/5 border border-slate-200 rounded-lg bg-slate-50 p-3">
+                            <h3 class="text-md font-semibold text-slate-700 mb-2">Gestion</h3>
+
+                            <nav class="space-y-1">
+                                <button
+                                    v-for="sec in managementSections"
+                                    :key="sec.key"
+                                    type="button"
+                                    @click="goToManagementSection(sec.key)"
+                                    :class="[
+                    'w-full text-left text-sm px-2 py-1 rounded',
+                    activeManagementSection === sec.key
+                        ? 'bg-teal-100 text-slate-900'
+                        : 'bg-white hover:bg-slate-100 text-slate-700'
+                ]"
+                                >
+                                    {{ sec.label }}
+                                </button>
+                            </nav>
+                        </div>
+
+                        <!-- Panneau droit -->
+                        <div class="flex-1 border border-slate-200 rounded-lg bg-slate-50 p-4 flex flex-col gap-4">
+
+                            <!-- ====================== -->
+                            <!-- 1. Gestion des joueurs -->
+                            <!-- ====================== -->
+                            <div v-if="activeManagementSection === 'dataBase'" class="flex-1 flex flex-col gap-3">
+                                <h3 class="text-lg font-semibold text-slate-800 mb-1">
+                                    Base de données
+                                </h3>
+                                <p class="text-sm text-slate-600 mb-2">
+                                    Ici tu gères les joueurs et équipes de ta partie : création, édition, et assignation de contrats à des équipes.
+                                </p>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                                    <!-- Bloc joueurs -->
+                                    <div class="border border-slate-200 rounded-lg bg-white p-3 flex flex-col gap-2">
+                                        <h4 class="text-sm font-semibold text-slate-700">Joueurs</h4>
+                                        <p class="text-xs text-slate-500">
+                                            Crée, édite et supprime les joueurs de la base de données (tous modes de jeu confondus).
+                                        </p>
+                                        <div class="mt-2 flex gap-2">
+                                            <button
+                                                type="button"
+                                                class="px-3 py-1.5 text-xs rounded-full bg-teal-500 hover:bg-teal-600 text-white font-semibold"
+                                                @click="$inertia.visit(route('players.index'))"
+                                            >
+                                                Gérer les joueurs
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Bloc contrats -->
+                                    <div class="border border-slate-200 rounded-lg bg-white p-3 flex flex-col gap-2">
+                                        <h4 class="text-sm font-semibold text-slate-700">Contrats</h4>
+                                        <p class="text-xs text-slate-500">
+                                            Assigne des joueurs à des équipes, ajuste les durées et les coûts des contrats.
+                                        </p>
+                                        <div class="mt-2 flex gap-2">
+                                            <button
+                                                type="button"
+                                                class="px-3 py-1.5 text-xs rounded-full bg-teal-500 hover:bg-teal-600 text-white font-semibold"
+                                                @click="$inertia.visit(route('contracts.index'))"
+                                            >
+                                                Gérer les contrats
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="border border-slate-200 rounded-lg bg-white p-3 flex flex-col gap-2">
+                                        <h4 class="text-sm font-semibold text-slate-700">Équipes</h4>
+                                        <p class="text-xs text-slate-500">
+                                            Accéder à la gestion complète des équipes.
+                                        </p>
+                                        <div class="mt-2 flex gap-2">
+                                            <button
+                                                type="button"
+                                                class="px-3 py-1.5 text-xs rounded-full bg-teal-500 hover:bg-teal-600 text-white font-semibold"
+                                                @click="$inertia.visit(route('teams.index'))"
+                                            >
+                                                Gérer les équipes
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ====================== -->
+                            <!-- 2. Gestion de profil -->
+                            <!-- ====================== -->
+                            <div v-else-if="activeManagementSection === 'profil'" class="flex-1 flex flex-col gap-3">
+                                <h3 class="text-lg font-semibold text-slate-800 mb-1">
+                                    Mon profil
+                                </h3>
+                                <div class="border border-slate-200 rounded-lg bg-white p-3 flex flex-col gap-2">
+                                    <h4 class="text-sm font-semibold text-slate-700">Édition de mon profil</h4>
+
+                                    <p class="text-xs text-slate-500">
+                                        Accéder aux informations de ton compte et les modifier (nom, email, mot de passe…).
+                                    </p>
+
+                                    <div class="mt-2 flex gap-2">
+                                        <button
+                                            type="button"
+                                            class="px-3 py-1.5 text-xs rounded-full bg-teal-500 hover:bg-teal-600 text-white font-semibold"
+                                            @click="$inertia.visit(route('profile.edit'))"
+                                        >
+                                            Modifier mon profil
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ====================== -->
+                            <!-- 3. Configuration du jeu -->
+                            <!-- ====================== -->
+                            <div v-else-if="activeManagementSection === 'config'" class="flex-1 flex flex-col gap-3">
+                                <h3 class="text-lg font-semibold text-slate-800 mb-1">
+                                    Configuration du jeu
+                                </h3>
+                                <p class="text-sm text-slate-600 mb-2">
+                                    Paramètres globaux du jeu (balancing, règles, etc.). Pour l’instant, cette section est en chantier,
+                                    mais tu pourras y exposer les valeurs de <code>config/training.php</code>, des règles IA, etc.
+                                </p>
+
+                                <div class="border border-dashed border-slate-300 rounded-lg bg-white p-4 text-sm text-slate-500">
+                                    Zone de configuration à implémenter :
+                                    <ul class="list-disc pl-5 mt-2 text-xs">
+                                        <li>Coefficients de training (gain min/max, stamina cost…)</li>
+                                        <li>Paramètres IA (probabilités, bonus/malus)</li>
+                                        <li>Règles de match (nombre de tours, etc.)</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                        </div>
+
                     </div>
                 </div>
             </div>

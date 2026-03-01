@@ -5,7 +5,7 @@ return [
     'min_stamina_to_train' => 10,
 
     // Coût en stamina par entraînement
-    'stamina_cost' => 5,
+    'stamina_cost' => 2,
 
     // Gain aléatoire min/max sur la stat entraînée
     'gain_min' => 1,

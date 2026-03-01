@@ -13,7 +13,7 @@ const DIE_SIDES   = 20;  // nombre de faces du dé utilisé dans les calculs de 
 // ==========================
 //   RÈGLES DE PARTIE
 // ==========================
-const GAME_RULES = { MAX_TURNS: 3 };
+const GAME_RULES = { MAX_TURNS: 40 };
 
 // ==========================
 //   RÈGLES DE DUEL
