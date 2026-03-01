@@ -2683,7 +2683,7 @@ const playNextMatch = () => {
                                     <div class="border border-slate-200 rounded-lg bg-white p-3 flex flex-col gap-2">
                                         <h4 class="text-sm font-semibold text-slate-700">Joueurs</h4>
                                         <p class="text-xs text-slate-500">
-                                            Crée, édite et supprime les joueurs de la base de données (tous modes de jeu confondus).
+                                            Crée, édite et supprime les joueurs de la base de données.
                                         </p>
                                         <div class="mt-2 flex gap-2">
                                             <button

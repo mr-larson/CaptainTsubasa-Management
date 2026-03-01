@@ -13,6 +13,7 @@ use App\Models\GameTeam;
 use App\Models\GamePlayer;
 use App\Models\GameContract;
 use App\Models\GameMatch;
+use App\Services\StaminaService;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Collection;
 use Illuminate\Http\Request;
@@ -699,10 +700,10 @@ class GameSaveController extends Controller
         }
 
         $data = $request->validate([
-            'scoresByTeamId' => ['required', 'array', 'min:2'],
+            'scoresByTeamId'   => ['required', 'array', 'min:2'],
             'scoresByTeamId.*' => ['integer', 'min:0'],
-            'playerActions' => ['array'],
-            'match_stats' => ['nullable', 'array'],
+            'playerActions'    => ['array'],
+            'match_stats'      => ['nullable', 'array'],
         ]);
 
         $scores = $data['scoresByTeamId'];
@@ -724,7 +725,6 @@ class GameSaveController extends Controller
         $match->status      = 'played';
         $match->match_stats = $data['match_stats'] ?? null;
         $match->save();
-
 
         // 2️⃣ Mise à jour classement
         $home = GameTeam::where('game_save_id', $gameSave->id)->findOrFail($homeTeamId);
@@ -752,20 +752,24 @@ class GameSaveController extends Controller
         $gameSave->week = max($gameSave->week ?? 1, $match->week + 1);
         $gameSave->save();
 
-        $state = $gameSave->state ?? [];
-
+        // 5️⃣ Accumuler les stats saison pour ce match
+        $state    = $gameSave->state ?? [];
         $existing = $state['player_actions'] ?? [];
         $new      = $data['playerActions'] ?? [];
 
-        // On concatène
+        // On concatène les events
         $state['player_actions'] = array_merge($existing, $new);
-
         $gameSave->state = $state;
         $gameSave->save();
+
+        // Met à jour state['player_stats'] (cumul saison)
         $this->accumulatePlayerSeasonStats($gameSave, $new);
+
+        // 6️⃣ Appliquer la logique de stamina d’après-match (-2 pour ceux qui ont joué, +10 pour les autres)
+        StaminaService::applyAfterMatch($gameSave);
+
         return redirect()->route('game-saves.play', $gameSave);
     }
-
     private function accumulatePlayerSeasonStats(GameSave $gameSave, array $newActions): void
     {
         $state = $gameSave->state ?? [];
