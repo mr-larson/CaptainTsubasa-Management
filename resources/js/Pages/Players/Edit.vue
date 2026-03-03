@@ -1,4 +1,4 @@
-<!-- resources/js/Pages/Players/Edit.vue -->
+<!-- resources/js/Pages/Players/Index.vue -->
 <template>
     <Head title="Players"/>
 

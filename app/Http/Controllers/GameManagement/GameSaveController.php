@@ -1,26 +1,27 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\GameManagement;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\GameSaveRequest;
-use App\Services\AITrainingService;
-use App\Services\MatchSimulator;
-use App\Models\GameSave;
-use App\Models\Team;
-use App\Models\Player;
 use App\Models\Contract;
-use App\Models\GameTeam;
-use App\Models\GamePlayer;
 use App\Models\GameContract;
 use App\Models\GameMatch;
+use App\Models\GamePlayer;
+use App\Models\GameSave;
+use App\Models\GameTeam;
+use App\Models\Player;
+use App\Models\Team;
+use App\Services\AITrainingService;
+use App\Services\MatchSimulator;
 use App\Services\StaminaService;
-use Illuminate\Validation\Rule;
-use Illuminate\Support\Collection;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Support\Facades\Storage;
 
 
 class GameSaveController extends Controller

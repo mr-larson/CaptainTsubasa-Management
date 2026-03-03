@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\GameManagement;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Training\StoreTrainingRequest;
 use App\Models\GameSave;
 use App\Services\TrainingService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 
 class TrainingController extends Controller
 {

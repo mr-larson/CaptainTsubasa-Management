@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\GameManagement;
 
+use App\Http\Controllers\Controller;
 use App\Models\GameContract;
 use App\Models\GameSave;
 use Illuminate\Http\Request;

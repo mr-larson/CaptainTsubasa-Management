@@ -2721,7 +2721,7 @@ const playNextMatch = () => {
                                             <button
                                                 type="button"
                                                 class="px-3 py-1.5 text-xs rounded-full bg-teal-500 hover:bg-teal-600 text-white font-semibold"
-                                                @click="$inertia.visit(route('teams.index'))"
+                                                @click="router.get(route('game-saves.teams.index', { gameSave: props.gameSave.id }))"
                                             >
                                                 Gérer les équipes
                                             </button>

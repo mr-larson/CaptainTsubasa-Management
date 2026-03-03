@@ -1,18 +1,19 @@
 <?php
 
 use App\Http\Controllers\ContractController;
-use App\Http\Controllers\GameSaveController;
-use App\Http\Controllers\LandingController;
-use App\Http\Controllers\LineupController;
+use App\Http\Controllers\GameManagement\GameContractController;
+use App\Http\Controllers\GameManagement\GamePlayerController;
+use App\Http\Controllers\GameManagement\GameSaveController;
+use App\Http\Controllers\GameManagement\GameTeamController;
+use App\Http\Controllers\GameManagement\LineupController;
+use App\Http\Controllers\GameManagement\TrainingController;
 use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TeamController;
-use App\Http\Controllers\TrainingController;
-use Illuminate\Foundation\Application;
+use App\Models\Player;
+use App\Models\Team;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Models\Team;
-use App\Models\Player;
 
 /*
 |--------------------------------------------------------------------------
@@ -151,6 +152,17 @@ Route::middleware('auth')->group(function () {
             ->name('training.store');
         Route::post('/{gameSave}/lineup', [LineupController::class, 'update'])
             ->name('lineup.update');
+
+        Route::get('/{gameSave}/teams',            [GameTeamController::class, 'index'])->name('teams.index');
+        Route::get('/{gameSave}/teams/create',     [GameTeamController::class, 'create'])->name('teams.create');
+        Route::post('/{gameSave}/teams',           [GameTeamController::class, 'store'])->name('teams.store');
+        Route::get('/{gameSave}/teams/{team}/edit',[GameTeamController::class, 'edit'])->name('teams.edit');
+        Route::post('/{gameSave}/teams/{team}',    [GameTeamController::class, 'update'])->name('teams.update');
+        Route::delete('/{gameSave}/teams/{team}',  [GameTeamController::class, 'destroy'])->name('teams.destroy');
+
+        Route::get('/{gameSave}/players',  [GamePlayerController::class,  'index'])->name('players.index');
+        Route::get('/{gameSave}/contracts',[GameContractController::class,'index'])->name('contracts.index');
+
     });
     Route::patch('/game-contracts/{contract}/toggle-starter',
         [LineupController::class, 'toggleStarter'])
