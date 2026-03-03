@@ -2,9 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\SoccerMatch;
+use App\Models\GameSaves\SoccerMatch;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class SoccerMatchPolicy
 {

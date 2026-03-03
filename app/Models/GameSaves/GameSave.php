@@ -1,7 +1,9 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\GameSaves;
 
+use App\Models\Team;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 

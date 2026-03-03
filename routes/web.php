@@ -1,12 +1,12 @@
 <?php
 
 use App\Http\Controllers\ContractController;
-use App\Http\Controllers\GameManagement\GameContractController;
-use App\Http\Controllers\GameManagement\GamePlayerController;
-use App\Http\Controllers\GameManagement\GameSaveController;
-use App\Http\Controllers\GameManagement\GameTeamController;
-use App\Http\Controllers\GameManagement\LineupController;
-use App\Http\Controllers\GameManagement\TrainingController;
+use App\Http\Controllers\GameSaves\GameContractController;
+use App\Http\Controllers\GameSaves\GamePlayerController;
+use App\Http\Controllers\GameSaves\GameSaveController;
+use App\Http\Controllers\GameSaves\GameTeamController;
+use App\Http\Controllers\GameSaves\LineupController;
+use App\Http\Controllers\GameSaves\TrainingController;
 use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TeamController;
@@ -160,7 +160,13 @@ Route::middleware('auth')->group(function () {
         Route::post('/{gameSave}/teams/{team}',    [GameTeamController::class, 'update'])->name('teams.update');
         Route::delete('/{gameSave}/teams/{team}',  [GameTeamController::class, 'destroy'])->name('teams.destroy');
 
-        Route::get('/{gameSave}/players',  [GamePlayerController::class,  'index'])->name('players.index');
+        Route::get('/{gameSave}/players', [GamePlayerController::class, 'index'])->name('players.index');
+        Route::get('/{gameSave}/players/create', [GamePlayerController::class, 'create'])->name('players.create');
+        Route::post('/{gameSave}/players', [GamePlayerController::class, 'store'])->name('players.store');
+        Route::get('/{gameSave}/players/{player}/edit', [GamePlayerController::class, 'edit'])->name('players.edit');
+        Route::put('/{gameSave}/players/{player}', [GamePlayerController::class, 'update'])->name('players.update');
+        Route::delete('/{gameSave}/players/{player}', [GamePlayerController::class, 'destroy'])->name('players.destroy');
+
         Route::get('/{gameSave}/contracts',[GameContractController::class,'index'])->name('contracts.index');
 
     });

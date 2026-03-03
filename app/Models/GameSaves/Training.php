@@ -1,7 +1,9 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\GameSaves;
 
+use App\Models\Player;
+use App\Models\TrainingType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;

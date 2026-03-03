@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Http\Controllers\GameManagement;
+namespace App\Http\Controllers\GameSaves;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\GameSaveRequest;
+use App\Http\Requests\GameSaves\GameSaveRequest;
 use App\Models\Contract;
-use App\Models\GameContract;
-use App\Models\GameMatch;
-use App\Models\GamePlayer;
-use App\Models\GameSave;
-use App\Models\GameTeam;
+use App\Models\GameSaves\GameContract;
+use App\Models\GameSaves\GameMatch;
+use App\Models\GameSaves\GamePlayer;
+use App\Models\GameSaves\GameSave;
+use App\Models\GameSaves\GameTeam;
 use App\Models\Player;
 use App\Models\Team;
 use App\Services\AITrainingService;

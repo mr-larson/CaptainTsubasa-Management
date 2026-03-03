@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\GameSave;
-use App\Models\GamePlayer;
-use App\Models\GameTeam;
+use App\Models\GameSaves\GamePlayer;
+use App\Models\GameSaves\GameSave;
+use App\Models\GameSaves\GameTeam;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 

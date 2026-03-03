@@ -2,9 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\Sanction;
+use App\Models\GameSaves\Sanction;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class SanctionPolicy
 {

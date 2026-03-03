@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\GameManagement;
+namespace App\Http\Controllers\GameSaves;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;

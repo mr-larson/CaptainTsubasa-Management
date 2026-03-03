@@ -8,13 +8,13 @@
 
         <div class="p-4">
             <div class="flex justify-center">
-                <h1 class="text-3xl font-bold text-slate-600 mb-6">Création (partie)</h1>
+                <h1 class="text-3xl font-bold text-slate-600 mb-6">Création</h1>
             </div>
 
             <div class="flex flex-row">
                 <div
                     class="hidden md:block basis-1/3 p-4 bg-contain bg-center bg-no-repeat"
-                    style="background-image: url('/images/Mamoru_Izawa_(Shutetsu_ES-SR-Tq)_Full.webp')"
+                    style="background-image: url('/images/Taro_Misaki.webp')"
                 ></div>
 
                 <div class="basis-2/3 min-h-[500px] p-4 border border-slate-300 rounded-lg mx-6 bg-white">
@@ -94,10 +94,6 @@
                                     {{ form.errors.draws }}
                                 </p>
                             </FormCol>
-                        </FormRaw>
-
-                        <!-- LOGO UPLOAD -->
-                        <FormRaw>
                             <FormCol>
                                 <InputLabel value="Logo" />
 
@@ -146,6 +142,22 @@
                                 <p v-if="form.errors.logo" class="text-sm text-red-600 mt-1">
                                     {{ form.errors.logo }}
                                 </p>
+                            </FormCol>
+                        </FormRaw>
+
+
+                        <FormRaw>
+                            <FormCol>
+                                <InputLabel value="Description" />
+                                <textarea
+                                    id="description"
+                                    v-model="form.description"
+                                    rows="3"
+                                    placeholder="Description du joueur (optionnel)"
+                                    class="mt-1 w-full rounded border border-gray-300 bg-stone-50 text-sm text-gray-900 leading-tight focus:outline-none focus:bg-white focus:border-purple-300"
+                                >
+                                    {{ form.description }}
+                                </textarea>
                             </FormCol>
                         </FormRaw>
 

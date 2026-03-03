@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\GameManagement;
+namespace App\Http\Controllers\GameSaves;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Training\StoreTrainingRequest;
-use App\Models\GameSave;
+use App\Models\GameSaves\GameSave;
 use App\Services\TrainingService;
 use Illuminate\Http\RedirectResponse;
 

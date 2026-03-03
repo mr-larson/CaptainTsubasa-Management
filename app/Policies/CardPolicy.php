@@ -2,9 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\Card;
+use App\Models\GameSaves\Card;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class CardPolicy
 {

@@ -2,9 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\GameSave;
+use App\Models\GameSaves\GameSave;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class GameSavePolicy
 {

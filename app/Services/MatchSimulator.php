@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\GameMatch;
-use App\Models\GameTeam;
+use App\Models\GameSaves\GameMatch;
+use App\Models\GameSaves\GameTeam;
 use Illuminate\Support\Collection;
 
 class MatchSimulator

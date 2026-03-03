@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\GameManagement;
+namespace App\Http\Controllers\GameSaves;
 
 use App\Http\Controllers\Controller;
-use App\Models\GameContract;
-use App\Models\GameSave;
+use App\Models\GameSaves\GameContract;
+use App\Models\GameSaves\GameSave;
 use Illuminate\Http\Request;
 
 class LineupController extends Controller

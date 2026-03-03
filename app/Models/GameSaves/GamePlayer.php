@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\GameSaves;
 
+use App\Models\Player;
 use App\Models\Traits\HasSoccerStats;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
 
 
 class GamePlayer extends Model

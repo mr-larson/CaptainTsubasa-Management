@@ -2,9 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\GameSave;
-use App\Models\GameTeam;
-use App\Models\GameContract;
+use App\Models\GameSaves\GameSave;
+use App\Models\GameSaves\GameTeam;
 use Illuminate\Support\Facades\DB;
 
 class AITrainingService

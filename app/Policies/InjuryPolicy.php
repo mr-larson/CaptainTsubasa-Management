@@ -2,9 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\Injury;
+use App\Models\GameSaves\Injury;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class InjuryPolicy
 {
