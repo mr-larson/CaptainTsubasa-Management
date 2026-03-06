@@ -167,7 +167,9 @@ Route::middleware('auth')->group(function () {
         Route::put('/{gameSave}/players/{player}', [GamePlayerController::class, 'update'])->name('players.update');
         Route::delete('/{gameSave}/players/{player}', [GamePlayerController::class, 'destroy'])->name('players.destroy');
 
-        Route::get('/{gameSave}/contracts',[GameContractController::class,'index'])->name('contracts.index');
+        Route::post('/{gameSave}/players/{player}/contracts', [GameContractController::class, 'store'])->name('contracts.store');
+        Route::put('/{gameSave}/contracts/{contract}', [GameContractController::class, 'update'])->name('contracts.update');
+        Route::delete('/{gameSave}/contracts/{contract}', [GameContractController::class, 'destroy'])->name('contracts.destroy');
 
     });
     Route::patch('/game-contracts/{contract}/toggle-starter',

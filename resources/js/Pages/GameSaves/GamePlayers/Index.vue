@@ -91,238 +91,307 @@
         </aside>
 
         <!-- CONTENU PRINCIPAL -->
-        <div class="p-4 sm:ml-64">
+        <div class="p-6 sm:ml-64 bg-slate-200 min-h-screen">
             <H1>Édition des joueurs de la partie</H1>
 
-            <FormContainer>
-                <form @submit.prevent="submit">
+            <div class="bg-white rounded-2xl shadow p-6 md:p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-lg font-semibold text-slate-800">Joueur</h2>
 
-                    <!-- Ligne 1 : prénom / nom -->
-                    <FormRaw>
-                        <FormCol>
-                            <InputLabel value="Prénom" />
-                            <InputText v-model="form.firstname" class="mt-1 w-full" />
-                            <p v-if="form.errors.firstname" class="text-sm text-red-600 mt-1">
-                                {{ form.errors.firstname }}
-                            </p>
-                        </FormCol>
+                    <!-- + Création joueur -->
+                    <Link
+                        :href="route('game-saves.players.create', { gameSave: gameSave.id })"
+                        class="flex items-center justify-center h-9 px-3 rounded-full bg-teal-500 text-white text-sm font-medium hover:bg-teal-600 shadow-md"
+                        title="Créer un joueur"
+                    >
+                        + Ajouter
+                    </Link>
 
-                        <FormCol>
-                            <InputLabel value="Nom" />
-                            <InputText v-model="form.lastname" class="mt-1 w-full" />
-                            <p v-if="form.errors.lastname" class="text-sm text-red-600 mt-1">
-                                {{ form.errors.lastname }}
-                            </p>
-                        </FormCol>
-                    </FormRaw>
+                </div>
+                <FormContainer>
+                    <form @submit.prevent="submit">
 
-                    <!-- Ligne 2 : position / coût -->
-                    <FormRaw>
-                        <FormCol>
-                            <InputLabel value="Position" />
-                            <InputSelect
-                                id="position"
-                                v-model="form.position"
-                                class="mt-1"
-                                required
-                            >
-                                <option disabled value="">Choisir...</option>
-                                <option v-for="p in positions" :key="p" :value="p">
-                                    {{ p }}
-                                </option>
-                            </InputSelect>
-                        </FormCol>
+                        <!-- Ligne 1 : prénom / nom -->
+                        <FormRaw>
+                            <FormCol>
+                                <InputLabel value="Prénom" />
+                                <InputText v-model="form.firstname" class="mt-1 w-full" />
+                                <p v-if="form.errors.firstname" class="text-sm text-red-600 mt-1">
+                                    {{ form.errors.firstname }}
+                                </p>
+                            </FormCol>
 
-                        <FormCol>
-                            <InputLabel value="Coût" />
-                            <InputText type="number" v-model="form.cost" class="mt-1 w-full" />
-                            <p v-if="form.errors.cost" class="text-sm text-red-600 mt-1">
-                                {{ form.errors.cost }}
-                            </p>
-                        </FormCol>
-                    </FormRaw>
+                            <FormCol>
+                                <InputLabel value="Nom" />
+                                <InputText v-model="form.lastname" class="mt-1 w-full" />
+                                <p v-if="form.errors.lastname" class="text-sm text-red-600 mt-1">
+                                    {{ form.errors.lastname }}
+                                </p>
+                            </FormCol>
+                        </FormRaw>
 
-                    <!-- Ligne 3 : photo -->
-                    <FormRaw>
-                        <FormCol>
-                            <InputLabel value="Photo du joueur" />
+                        <!-- Ligne 2 : position / coût -->
+                        <FormRaw>
+                            <FormCol>
+                                <InputLabel value="Position" />
+                                <InputSelect
+                                    id="position"
+                                    v-model="form.position"
+                                    class="mt-1"
+                                    required
+                                >
+                                    <option disabled value="">Choisir...</option>
+                                    <option v-for="p in positions" :key="p" :value="p">
+                                        {{ p }}
+                                    </option>
+                                </InputSelect>
+                            </FormCol>
 
-                            <div class="flex items-center gap-3 mt-1">
-                                <!-- input file caché -->
-                                <input
-                                    ref="photoInput"
-                                    type="file"
-                                    class="hidden"
-                                    accept="image/*"
-                                    @change="onPhotoChange"
-                                />
+                            <FormCol>
+                                <InputLabel value="Coût" />
+                                <InputText type="number" v-model="form.cost" class="mt-1 w-full" />
+                                <p v-if="form.errors.cost" class="text-sm text-red-600 mt-1">
+                                    {{ form.errors.cost }}
+                                </p>
+                            </FormCol>
+                        </FormRaw>
 
-                                <!-- faux input -->
-                                <div class="flex items-center w-full md:w-56">
-                                    <button
-                                        type="button"
-                                        class="shrink-0 px-3 py-1.5 rounded-l-full border border-gray-300 bg-stone-50 text-sm text-gray-900 hover:bg-white"
-                                        @click="openPhotoPicker"
-                                    >
-                                        Choisir
-                                    </button>
+                        <!-- Ligne 3 : photo -->
+                        <FormRaw>
+                            <FormCol>
+                                <InputLabel value="Photo du joueur" />
 
-                                    <div
-                                        class="flex-1 px-3 py-1.5 rounded-r-full border border-l-0 border-gray-300 bg-stone-50 text-sm text-slate-600 truncate"
-                                    >
-                                        {{ selectedPhotoName || 'Aucun fichier choisi' }}
+                                <div class="flex items-center gap-3 mt-1">
+                                    <!-- input file caché -->
+                                    <input
+                                        ref="photoInput"
+                                        type="file"
+                                        class="hidden"
+                                        accept="image/*"
+                                        @change="onPhotoChange"
+                                    />
+
+                                    <!-- faux input -->
+                                    <div class="flex items-center w-full md:w-56">
+                                        <button
+                                            type="button"
+                                            class="shrink-0 px-3 py-1.5 rounded-l-full border border-gray-300 bg-stone-50 text-sm text-gray-900 hover:bg-white"
+                                            @click="openPhotoPicker"
+                                        >
+                                            Choisir
+                                        </button>
+
+                                        <div
+                                            class="flex-1 px-3 py-1.5 rounded-r-full border border-l-0 border-gray-300 bg-stone-50 text-sm text-slate-600 truncate"
+                                        >
+                                            {{ selectedPhotoName || 'Aucun fichier choisi' }}
+                                        </div>
+                                    </div>
+
+                                    <!-- preview -->
+                                    <div class="h-16 w-16 rounded border bg-white overflow-hidden flex items-center justify-center">
+                                        <img
+                                            v-if="photoPreviewUrl || form.photo_path"
+                                            :src="photoPreviewUrl ? photoPreviewUrl : `/storage/${form.photo_path}`"
+                                            class="h-full w-full object-cover"
+                                        />
+                                        <span v-else class="text-xs text-slate-400">Aucune</span>
                                     </div>
                                 </div>
 
-                                <!-- preview -->
-                                <div class="h-16 w-16 rounded border bg-white overflow-hidden flex items-center justify-center">
-                                    <img
-                                        v-if="photoPreviewUrl || form.photo_path"
-                                        :src="photoPreviewUrl ? photoPreviewUrl : `/storage/${form.photo_path}`"
-                                        class="h-full w-full object-cover"
-                                    />
-                                    <span v-else class="text-xs text-slate-400">Aucune</span>
-                                </div>
+                                <p v-if="form.errors.photo" class="text-sm text-red-600 mt-1">
+                                    {{ form.errors.photo }}
+                                </p>
+                            </FormCol>
+                        </FormRaw>
+
+                        <!-- Stats  -->
+                        <FormRaw>
+                            <FormCol>
+                                <InputLabel value="Vitesse" />
+                                <InputText type="number" v-model="form.speed" class="mt-1 w-full" />
+                            </FormCol>
+
+                            <FormCol>
+                                <InputLabel value="Attaque" />
+                                <InputText type="number" v-model="form.attack" class="mt-1 w-full" />
+                            </FormCol>
+                        </FormRaw>
+
+                        <FormRaw>
+                            <FormCol>
+                                <InputLabel value="Défense" />
+                                <InputText type="number" v-model="form.defense" class="mt-1 w-full" />
+                            </FormCol>
+
+                            <FormCol>
+                                <InputLabel value="Endurance" />
+                                <InputText type="number" v-model="form.stamina" class="mt-1 w-full" />
+                            </FormCol>
+                        </FormRaw>
+                        <FormRaw>
+                            <FormCol>
+                                <InputLabel value="Tir" />
+                                <InputText
+                                    type="number"
+                                    v-model="form.shot"
+                                    class="mt-1 w-full"
+                                />
+                            </FormCol>
+
+                            <FormCol>
+                                <InputLabel value="Passe" />
+                                <InputText
+                                    type="number"
+                                    v-model="form.pass"
+                                    class="mt-1 w-full"
+                                />
+                            </FormCol>
+                        </FormRaw>
+                        <FormRaw>
+                            <FormCol>
+                                <InputLabel value="Dribble" />
+                                <InputText
+                                    type="number"
+                                    v-model="form.dribble"
+                                    class="mt-1 w-full"
+                                />
+                            </FormCol>
+
+                            <FormCol>
+                                <InputLabel value="Block" />
+                                <InputText
+                                    type="number"
+                                    v-model="form.block"
+                                    class="mt-1 w-full"
+                                />
+                            </FormCol>
+                        </FormRaw>
+                        <FormRaw>
+                            <FormCol>
+                                <InputLabel value="Interception" />
+                                <InputText
+                                    type="number"
+                                    v-model="form.intercept"
+                                    class="mt-1 w-full"
+                                />
+                            </FormCol>
+
+                            <FormCol>
+                                <InputLabel value="Tacle" />
+                                <InputText
+                                    type="number"
+                                    v-model="form.tackle"
+                                    class="mt-1 w-full"
+                                />
+                            </FormCol>
+                        </FormRaw>
+                        <FormRaw>
+                            <FormCol>
+                                <InputLabel value="Arrêt main" />
+                                <InputText
+                                    type="number"
+                                    v-model="form.hand_save"
+                                    class="mt-1 w-full"
+                                />
+                            </FormCol>
+
+                            <FormCol>
+                                <InputLabel value="Arrêt poings" />
+                                <InputText
+                                    type="number"
+                                    v-model="form.punch_save"
+                                    class="mt-1 w-full"
+                                />
+                            </FormCol>
+                        </FormRaw>
+
+                        <!-- Description -->
+                        <FormRaw>
+                            <FormCol>
+                                <InputLabel value="Description" />
+                                <textarea
+                                    v-model="form.description"
+                                    rows="3"
+                                    class="mt-1 w-full rounded border border-gray-300 bg-stone-50 text-sm"
+                                ></textarea>
+
+                                <p v-if="form.errors.description" class="text-sm text-red-600 mt-1">
+                                    {{ form.errors.description }}
+                                </p>
+                            </FormCol>
+                        </FormRaw>
+
+
+
+                        <!-- ACTIONS -->
+                        <ButtonGroup>
+                            <ButtonPrimary :disabled="form.processing || !form.id">
+                                Mettre à jour
+                            </ButtonPrimary>
+
+                            <ButtonDanger
+                                :disabled="form.processing || !form.id"
+                                type="button"
+                                class="w-36"
+                                @click="deletePlayer"
+                            >
+                                Supprimer
+                            </ButtonDanger>
+                        </ButtonGroup>
+                    </form>
+                </FormContainer>
+            </div>
+            <!-- CARTES Techniques spéciales + Contrat côte à côte -->
+            <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- CARTE TECHNIQUES SPÉCIALES -->
+                <FormContainer>
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-semibold text-slate-800">
+                            Techniques spéciales
+                        </h2>
+
+                        <!-- Bouton + en haut à droite -->
+                        <button
+                            type="button"
+                            class="flex items-center justify-center h-9 px-3 rounded-full bg-teal-500 text-white text-sm font-medium hover:bg-teal-600 shadow-md"
+                            @click="addSpecialMove"
+                        >
+                            + Ajouter
+                        </button>
+                    </div>
+
+                    <!-- Liste des techniques -->
+                    <div class="flex flex-col gap-4 max-h-[520px] overflow-y-auto pr-1">
+                        <div
+                            v-for="(move, index) in form.special_moves"
+                            :key="index"
+                            class="border border-slate-200 bg-white rounded-xl shadow-sm px-4 py-3"
+                        >
+                            <!-- Header de la technique -->
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="text-sm font-semibold text-slate-800">
+                                    Technique #{{ index + 1 }}
+                                    <span v-if="move.label" class="text-slate-500 font-normal">
+                        — {{ move.label }}
+                    </span>
+                                </h3>
+
+                                <!-- Bouton supprimer compact -->
+                                <button
+                                    type="button"
+                                    class="text-xs px-2 py-1 rounded-full bg-red-50 text-red-600 hover:bg-red-100 border border-red-200"
+                                    @click="removeSpecialMove(index)"
+                                >
+                                    Supprimer
+                                </button>
                             </div>
 
-                            <p v-if="form.errors.photo" class="text-sm text-red-600 mt-1">
-                                {{ form.errors.photo }}
-                            </p>
-                        </FormCol>
-                    </FormRaw>
-
-                    <!-- Stats  -->
-                    <FormRaw>
-                        <FormCol>
-                            <InputLabel value="Vitesse" />
-                            <InputText type="number" v-model="form.speed" class="mt-1 w-full" />
-                        </FormCol>
-
-                        <FormCol>
-                            <InputLabel value="Attaque" />
-                            <InputText type="number" v-model="form.attack" class="mt-1 w-full" />
-                        </FormCol>
-                    </FormRaw>
-
-                    <FormRaw>
-                        <FormCol>
-                            <InputLabel value="Défense" />
-                            <InputText type="number" v-model="form.defense" class="mt-1 w-full" />
-                        </FormCol>
-
-                        <FormCol>
-                            <InputLabel value="Endurance" />
-                            <InputText type="number" v-model="form.stamina" class="mt-1 w-full" />
-                        </FormCol>
-                    </FormRaw>
-                    <FormRaw>
-                        <FormCol>
-                            <InputLabel value="Tir" />
-                            <InputText
-                                type="number"
-                                v-model="form.shot"
-                                class="mt-1 w-full"
-                            />
-                        </FormCol>
-
-                        <FormCol>
-                            <InputLabel value="Passe" />
-                            <InputText
-                                type="number"
-                                v-model="form.pass"
-                                class="mt-1 w-full"
-                            />
-                        </FormCol>
-                    </FormRaw>
-                    <FormRaw>
-                        <FormCol>
-                            <InputLabel value="Dribble" />
-                            <InputText
-                                type="number"
-                                v-model="form.dribble"
-                                class="mt-1 w-full"
-                            />
-                        </FormCol>
-
-                        <FormCol>
-                            <InputLabel value="Block" />
-                            <InputText
-                                type="number"
-                                v-model="form.block"
-                                class="mt-1 w-full"
-                            />
-                        </FormCol>
-                    </FormRaw>
-                    <FormRaw>
-                        <FormCol>
-                            <InputLabel value="Interception" />
-                            <InputText
-                                type="number"
-                                v-model="form.intercept"
-                                class="mt-1 w-full"
-                            />
-                        </FormCol>
-
-                        <FormCol>
-                            <InputLabel value="Tacle" />
-                            <InputText
-                                type="number"
-                                v-model="form.tackle"
-                                class="mt-1 w-full"
-                            />
-                        </FormCol>
-                    </FormRaw>
-                    <FormRaw>
-                        <FormCol>
-                            <InputLabel value="Arrêt main" />
-                            <InputText
-                                type="number"
-                                v-model="form.hand_save"
-                                class="mt-1 w-full"
-                            />
-                        </FormCol>
-
-                        <FormCol>
-                            <InputLabel value="Arrêt poings" />
-                            <InputText
-                                type="number"
-                                v-model="form.punch_save"
-                                class="mt-1 w-full"
-                            />
-                        </FormCol>
-                    </FormRaw>
-
-                    <!-- Description -->
-                    <FormRaw>
-                        <FormCol>
-                            <InputLabel value="Description" />
-                            <textarea
-                                v-model="form.description"
-                                rows="3"
-                                class="mt-1 w-full rounded border border-gray-300 bg-stone-50 text-sm"
-                            ></textarea>
-
-                            <p v-if="form.errors.description" class="text-sm text-red-600 mt-1">
-                                {{ form.errors.description }}
-                            </p>
-                        </FormCol>
-                        <FormCol>
-                            <InputLabel value="Techniques spéciales" />
-
-                            <div class="flex flex-col gap-4 bg-slate-100 p-3 rounded">
-
-                                <!-- Affichage dynamique des moves -->
-                                <div
-                                    v-for="(move, index) in form.special_moves"
-                                    :key="index"
-                                    class="p-3 rounded border bg-white shadow-sm"
-                                >
-                                    <h3 class="font-semibold text-sm mb-2">
-                                        Technique #{{ index + 1 }}
-                                    </h3>
-
-                                    <!-- Label -->
-                                    <div class="mb-2">
+                            <!-- Contenu du formulaire de la technique -->
+                            <div class="space-y-3">
+                                <!-- Label + Clé -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <div>
                                         <InputLabel value="Label" />
                                         <InputText
                                             v-model="move.label"
@@ -330,33 +399,37 @@
                                         />
                                     </div>
 
-                                    <!-- Key -->
-                                    <div class="mb-2">
+                                    <div>
                                         <InputLabel value="Clé (identifiant)" />
                                         <InputText
                                             v-model="move.key"
                                             class="mt-1 w-full"
                                         />
                                     </div>
+                                </div>
 
-                                    <!-- Mode -->
-                                    <div class="mb-2">
+                                <!-- Mode + Action de base -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <div>
                                         <InputLabel value="Mode" />
-                                        <select
+                                        <InputSelect
+                                            id="mode"
                                             v-model="move.mode"
-                                            class="mt-1 w-full rounded border border-gray-300 bg-stone-50 text-sm"
+                                            class="mt-1"
+                                            required
                                         >
                                             <option value="attack">Attaque</option>
                                             <option value="defense">Défense</option>
-                                        </select>
+                                        </InputSelect>
                                     </div>
 
-                                    <!-- Base action -->
-                                    <div class="mb-2">
+                                    <div>
                                         <InputLabel value="Action de base" />
-                                        <select
+                                        <InputSelect
+                                            id="mode"
                                             v-model="move.base_action"
-                                            class="mt-1 w-full rounded border border-gray-300 bg-stone-50 text-sm"
+                                            class="mt-1"
+                                            required
                                         >
                                             <option value="shot">Tir</option>
                                             <option value="pass">Passe</option>
@@ -366,21 +439,23 @@
                                             <option value="tackle">Tacle</option>
                                             <option value="hand_save">Arrêt main</option>
                                             <option value="punch_save">Arrêt poing</option>
-                                        </select>
+                                        </InputSelect>
                                     </div>
+                                </div>
 
-                                    <!-- Cooldown -->
-                                    <div class="mb-2">
+                                <!-- Cooldown + Description -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <div>
                                         <InputLabel value="Cooldown (tours)" />
                                         <InputText
                                             type="number"
                                             v-model="move.cooldown"
+                                            min="0"
                                             class="mt-1 w-full"
                                         />
                                     </div>
 
-                                    <!-- Description -->
-                                    <div class="mb-2">
+                                    <div class="md:col-span-1">
                                         <InputLabel value="Description" />
                                         <textarea
                                             v-model="move.description"
@@ -388,46 +463,144 @@
                                             class="mt-1 w-full rounded border border-gray-300 bg-stone-50 text-sm"
                                         ></textarea>
                                     </div>
-
-                                    <!-- Bouton suppression -->
-                                    <button
-                                        type="button"
-                                        class="px-3 py-1.5 rounded-full bg-red-100 text-sm text-red-700 hover:bg-red-200"
-                                        @click="removeSpecialMove(index)"
-                                    >
-                                        Supprimer cette technique
-                                    </button>
                                 </div>
-
-                                <!-- Bouton ajout -->
-                                <button
-                                    type="button"
-                                    class="px-3 py-1.5 rounded bg-teal-500 text-white text-sm hover:bg-teal-600"
-                                    @click="addSpecialMove"
-                                >
-                                    Ajouter une technique spéciale
-                                </button>
                             </div>
-                        </FormCol>
-                    </FormRaw>
+                        </div>
 
-                    <!-- ACTIONS -->
-                    <ButtonGroup>
-                        <ButtonPrimary :disabled="form.processing || !form.id">
-                            Mettre à jour
-                        </ButtonPrimary>
-
-                        <ButtonDanger
-                            :disabled="form.processing || !form.id"
-                            type="button"
-                            class="w-36"
-                            @click="deletePlayer"
+                        <!-- Message si aucune technique -->
+                        <p
+                            v-if="form.special_moves.length === 0"
+                            class="text-sm text-slate-500 italic"
                         >
-                            Supprimer
-                        </ButtonDanger>
-                    </ButtonGroup>
-                </form>
-            </FormContainer>
+                            Aucune technique spéciale définie pour ce joueur.
+                        </p>
+                    </div>
+                </FormContainer>
+
+                <!-- CARTE CONTRAT -->
+                <FormContainer>
+                    <!-- Header de la carte -->
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-semibold text-slate-800">
+                            Contrat
+                        </h2>
+
+                        <!-- Bouton + pour créer un contrat si aucun -->
+                        <button
+                            v-if="!form.contract"
+                            type="button"
+                            class="flex items-center justify-center h-9 px-3 rounded-full bg-teal-500 text-white text-sm font-medium hover:bg-teal-600 shadow-md"
+                            @click="startNewContract"
+                        >
+                            + Ajouter
+                        </button>
+                    </div>
+                    <div
+                        v-if="contractCreatedMessage"
+                        class="mb-4 px-3 py-2 rounded-lg bg-teal-50 border border-teal-200 text-teal-700 text-sm font-medium"
+                    >
+                        {{ contractCreatedMessage }}
+                    </div>
+
+                    <!-- Si un contrat existe : formulaire d’édition -->
+                    <form v-if="form.contract" @submit.prevent="updateContract" class="space-y-4">
+                        <!-- Ligne 1 : Équipe + Salaire -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <InputLabel value="Équipe" />
+                                <InputSelect
+                                    v-model="form.contract.game_team_id"
+                                    class="mt-1 w-full"
+                                    required
+                                >
+                                    <option disabled value="">Choisir...</option>
+                                    <option
+                                        v-for="team in props.teams"
+                                        :key="team.id"
+                                        :value="team.id"
+                                    >
+                                        {{ team.name }}
+                                    </option>
+                                </InputSelect>
+                            </div>
+
+                            <div>
+                                <InputLabel value="Salaire" class="block text-start"/>
+                                <InputText
+                                    type="number"
+                                    v-model="form.contract.salary"
+                                    class="mt-1 w-full"
+                                />
+                            </div>
+                        </div>
+
+                        <!-- Ligne 2 : Début / Fin -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <InputLabel value="Début (semaine)" />
+                                <InputText
+                                    type="number"
+                                    v-model="form.contract.start_week"
+                                    class="mt-1 w-full"
+                                />
+                            </div>
+
+                            <div>
+                                <InputLabel value="Fin (semaine)" />
+                                <InputText
+                                    type="number"
+                                    v-model="form.contract.end_week"
+                                    class="mt-1 w-full"
+                                />
+                            </div>
+                        </div>
+
+                        <!-- Ligne 3 : Titulaire -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <InputLabel value="Titulaire ?" />
+                                <InputSelect
+                                    v-model="form.contract.is_starter"
+                                    class="mt-1 w-full"
+                                >
+                                    <option :value="true">Oui</option>
+                                    <option :value="false">Non</option>
+                                </InputSelect>
+                            </div>
+
+                            <!-- Colonne libre (pour future info ou juste alignement) -->
+                            <div class="hidden md:block"></div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="mt-4">
+                            <ButtonGroup>
+                                <ButtonPrimary
+                                    type="submit"
+                                    :disabled="contractProcessing || !form.contract"
+                                >
+                                    {{ form.contract.id ? 'Mettre à jour' : 'Créer' }}
+                                </ButtonPrimary>
+
+                                <ButtonDanger
+                                    v-if="form.contract.id"
+                                    type="button"
+                                    class="w-36"
+                                    :disabled="contractProcessing || !form.contract"
+                                    @click="deleteContract"
+                                >
+                                    Supprimer
+                                </ButtonDanger>
+                            </ButtonGroup>
+                        </div>
+                    </form>
+
+                    <!-- Si aucun contrat encore défini -->
+                    <div v-else class="text-sm text-slate-500 italic">
+                        Aucun contrat défini pour ce joueur. Cliquez sur “+ Créer” pour ajouter un contrat.
+                    </div>
+                </FormContainer>
+            </div>
         </div>
     </AuthenticatedLayout>
 </template>
@@ -452,6 +625,7 @@ import InputSelect from "@/Components/InputSelect.vue";
 const props = defineProps({
     gameSave: Object,
     players: Array,
+    teams:   Array,
 })
 
 const positions = [
@@ -465,6 +639,8 @@ const searchQuery = ref('')
 const photoInput = ref(null)
 const photoPreviewUrl = ref(null)
 const selectedPhotoName = ref('')
+const contractProcessing = ref(false)
+const contractCreatedMessage = ref('')
 
 const form = useForm({
     id: null,
@@ -475,6 +651,7 @@ const form = useForm({
     description: '',
     photo_path: null,
     photo: null,
+    remove_photo: false,
     speed: 0,
     attack: 0,
     defense: 0,
@@ -488,6 +665,7 @@ const form = useForm({
     hand_save: 0,
     punch_save: 0,
     special_moves: [],
+    contract: null,
 })
 
 
@@ -513,7 +691,7 @@ onBeforeUnmount(() => revokePreview())
 // SELECT PLAYER
 function selectPlayer(player) {
     revokePreview()
-
+    form.contract = player.contracts?.[0] ?? null
     form.selectedPlayerId = player.id
     form.id = player.id
     form.firstname = player.firstname
@@ -573,6 +751,89 @@ function addSpecialMove() {
 
 function removeSpecialMove(index) {
     form.special_moves.splice(index, 1)
+}
+
+function startNewContract() {
+    if (!form.id) return // pas de joueur sélectionné => sécurité
+
+    form.contract = {
+        id: null,
+        game_team_id: '',
+        salary: 0,
+        start_week: null,
+        end_week: null,
+        is_starter: false,
+    }
+}
+function updateContract() {
+    if (!form.contract) return
+
+    contractProcessing.value = true
+
+    const payload = {
+        game_team_id: form.contract.game_team_id,
+        salary: form.contract.salary,
+        start_week: form.contract.start_week,
+        end_week: form.contract.end_week,
+        is_starter: form.contract.is_starter,
+    }
+
+    const options = {
+        preserveScroll: true,
+        onSuccess: () => {
+            contractProcessing.value = false
+
+            // 🎉 Message de succès
+            contractCreatedMessage.value = form.contract.id
+                ? 'Contrat mis à jour.'
+                : 'Contrat créé avec succès.'
+
+            // 🧹 Nettoie après 3 secondes
+            setTimeout(() => {
+                contractCreatedMessage.value = ''
+            }, 3000)
+        }
+    }
+
+    if (form.contract.id) {
+        // UPDATE
+        router.put(
+            route('game-saves.contracts.update', {
+                gameSave: props.gameSave.id,
+                contract: form.contract.id,
+            }),
+            payload,
+            options
+        )
+    } else {
+        // CREATE
+        router.post(
+            route('game-saves.contracts.store', {
+                gameSave: props.gameSave.id,
+                player: form.id,
+            }),
+            payload,
+            options
+        )
+    }
+}
+
+function deleteContract() {
+    if (!form.contract || !form.contract.id) return
+    if (!confirm('Supprimer ce contrat ?')) return
+
+    router.delete(
+        route('game-saves.contracts.destroy', {
+            gameSave: props.gameSave.id,
+            contract: form.contract.id
+        }),
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                form.contract = null   // <= Reset immédiat
+            }
+        }
+    )
 }
 ``
 

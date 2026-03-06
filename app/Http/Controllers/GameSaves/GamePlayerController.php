@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\GamePlayerRequest;
 use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSave;
+use App\Models\GameSaves\GameTeam;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -25,15 +26,20 @@ class GamePlayerController extends Controller
             abort(403);
         }
 
-        $players = GamePlayer::with(['basePlayer', 'contracts'])
+        $players = GamePlayer::with(['contracts.gameTeam'])
             ->where('game_save_id', $gameSave->id)
             ->orderBy('lastname')
-            ->orderBy('firstname')
             ->get();
+
+        $teams = GameTeam::where('game_save_id', $gameSave->id)
+            ->orderBy('name')
+            ->get();
+
 
         return Inertia::render('GameSaves/GamePlayers/Index', [
             'gameSave' => $gameSave,
             'players'  => $players,
+            'teams'    => $teams,
         ]);
     }
 
