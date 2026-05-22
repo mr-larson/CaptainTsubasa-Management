@@ -42,8 +42,12 @@ let _canUseSpecial           = null;
 let _markSpecialUsed         = null;
 let _bindActionButtons       = null;
 
-export function initResolversModule({ state, roster, ui, TEAMS, rootEl, basePos, advanceTurn, showAttackBarForCurrentTeam, refreshUI, animateAndThen, scheduleAIDefense, isAITeam, canUseSpecial, markSpecialUsed, bindActionButtons,})
-{
+export function initResolversModule({
+                                        state, roster, ui, TEAMS, rootEl, basePos,
+                                        advanceTurn, showAttackBarForCurrentTeam, refreshUI,
+                                        animateAndThen, scheduleAIDefense, isAITeam,
+                                        canUseSpecial, markSpecialUsed, bindActionButtons,
+                                    }) {
     _state      = state;
     _roster     = roster;
     _ui         = ui;
@@ -65,7 +69,7 @@ export function initResolversModule({ state, roster, ui, TEAMS, rootEl, basePos,
 // -----------------------------------------------------------
 //   Helpers locaux
 // -----------------------------------------------------------
-const ball = () => _state.ball;
+const ball = () => _state.ball; // raccourci lisible
 
 function resetLastDribbler() {
     if (!_state.lastDribblerId) return;
@@ -350,14 +354,14 @@ export function performKeeperClearance(defenseTeam, defenseAction, afterClearanc
 
     const r = Math.random();
     let targetZone;
-    if      (defenseAction === "hands") targetZone = forward(r < 0.8  ? 1 : 2);
-    else if (defenseAction === "punch") targetZone = forward(r < 0.45 ? 1 : r < 0.9 ? 2 : 3);
-    else                                targetZone = forward(r < 0.15 ? 2 : r < 0.7 ? 3 : 4);
+    if      (defenseAction === "hands") targetZone = forward(r < 0.6 ? 2 : 3);               // arrêt main → milieu défensif/offensif
+    else if (defenseAction === "punch") targetZone = forward(1);                              // dégagement poing → ligne défensive (court)
+    else                                targetZone = forward(r < 0.15 ? 2 : r < 0.7 ? 3 : 4); // gk-special → loin
 
     let laneOptions = [originLane];
-    if (defenseAction !== "hands") {
-        if (originLane > 0)                    laneOptions.push(originLane - 1);
-        if (originLane < laneY.length - 1)     laneOptions.push(originLane + 1);
+    if (defenseAction !== "punch") {
+        if (originLane > 0)                laneOptions.push(originLane - 1);
+        if (originLane < laneY.length - 1) laneOptions.push(originLane + 1);
     }
     if (defenseAction === "gk-special") laneOptions = [0, 1, 2];
 
