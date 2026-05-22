@@ -27,6 +27,7 @@ export const DUEL_RULES = {
 //   ENDURANCE
 // ==========================
 export const ENDURANCE_DEFAULT = 100;
+export const CRIT_STAMINA_BOOST = 10; // points récupérés sur un 20 naturel
 
 export const STAMINA_FACTORS = {
     HIGH:      1.0,   // ≥ 75%
