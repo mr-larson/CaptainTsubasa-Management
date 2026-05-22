@@ -425,8 +425,6 @@ const awayLogoUrl = computed(() => {
 onMounted(() => {
     if (!gameRoot.value) return;
 
-    console.log('ENGINE CONFIG TEAMS = ', props.engineConfig?.teams);
-
     cleanup = initMatchEngine(gameRoot.value, {
         ...props.engineConfig,
         onMatchEnd: ({ matchId, gameSaveId, scoresByTeamId, playerActions, match_stats }) => {
