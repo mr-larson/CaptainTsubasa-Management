@@ -13,6 +13,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
 import H2 from '@/Components/H2.vue';
+import { FORMATIONS, DEFAULT_FORMATION, FORMATION_LIST } from '@/Pages/Match/engine/formations.js';
 
 // ==========================
 //   PROPS INERTIA
@@ -196,6 +197,38 @@ const initLineupForm = () => {
     lineupForm.value = slots;
 };
 
+// Formation actuelle de l'équipe contrôlée
+const currentFormation = ref(
+    props.gameSave.state?.lineup?.[team.value?.id]?.formation ?? DEFAULT_FORMATION
+);
+
+// Sync si l'équipe change
+watch(
+    () => team.value?.id,
+    () => {
+        currentFormation.value =
+            props.gameSave.state?.lineup?.[team.value?.id]?.formation ?? DEFAULT_FORMATION;
+    }
+);
+
+// Données de la formation active
+const formationData = computed(() => FORMATIONS[currentFormation.value] ?? FORMATIONS[DEFAULT_FORMATION]);
+
+// Sauvegarde la formation via la nouvelle route
+const saveFormation = (formationKey) => {
+    if (!team.value) return;
+    currentFormation.value = formationKey;
+
+    router.post(
+        route('game-saves.lineup.formation', { gameSave: props.gameSave.id }),
+        {
+            team_id:   team.value.id,
+            formation: formationKey,
+        },
+        { preserveScroll: true }
+    );
+};
+
 // Init au chargement
 initLineupForm();
 
@@ -248,33 +281,22 @@ const changeSelectedPlayerSlot = (newSlotValue) => {
 
 // Donne les infos de rôle + coordonnée sur le mini terrain pour un slot donné (1..11)
 function slotRoleInfo(slot) {
-    const s = Number(slot);
-    switch (s) {
-        case 1:
-            return { label: 'Gardien', x: 10, y: 50 };
-        case 2:
-            return { label: 'Défenseur', x: 30, y: 20 };
-        case 3:
-            return { label: 'Défenseur', x: 30, y: 50 };
-        case 4:
-            return { label: 'Défenseur', x: 30, y: 80 };
-        case 5:
-            return { label: 'Milieu défensif', x: 50, y: 35 };
-        case 6:
-            return { label: 'Milieu défensif', x: 50, y: 65 };
-        case 7:
-            return { label: 'Milieu offensif', x: 70, y: 20 };
-        case 8:
-            return { label: 'Milieu offensif', x: 70, y: 50 };
-        case 9:
-            return { label: 'Milieu offensif', x: 70, y: 80 };
-        case 10:
-            return { label: 'Attaquant', x: 88, y: 35 };
-        case 11:
-            return { label: 'Attaquant', x: 88, y: 65 };
-        default:
-            return { label: '—', x: 50, y: 50 };
-    }
+    const s    = Number(slot);
+    const def  = formationData.value?.slots?.[s];
+    if (!def) return { label: '—', x: 50, y: 50 };
+
+    const zoneLabels = {
+        0: 'Gardien', 1: 'Défenseur',
+        2: 'Milieu défensif', 3: 'Milieu offensif', 4: 'Attaquant',
+    };
+    const ZONE_X = { 0: 8, 1: 25, 2: 45, 3: 65, 4: 85 };
+    const LANE_Y = { 0: 8, 1: 27, 2: 50, 3: 73, 4: 92 };
+
+    return {
+        label: zoneLabels[def.zone] ?? '—',
+        x:     ZONE_X[def.zone]     ?? 50,
+        y:     LANE_Y[def.laneIndex] ?? 50,
+    };
 }
 
 // Style du marqueur sur le mini terrain (left/top en %)
@@ -1304,6 +1326,59 @@ const playNextMatch = () => {
                     <!-- ============================== -->
                     <div v-else-if="activeTab === 'my-team'" class="flex-1 grid grid-cols-12 gap-6">
 
+                        <!-- ========================== -->
+                        <!-- Sélecteur de formation     -->
+                        <!-- ========================== -->
+                        <div class="col-span-12 border border-slate-200 rounded-lg bg-slate-50 p-4 mb-2">
+                            <div class="flex items-center gap-6 flex-wrap">
+                                <div>
+                                    <h3 class="text-md font-semibold text-slate-700 mb-1">Formation</h3>
+                                    <div class="flex gap-2 flex-wrap">
+                                        <button
+                                            v-for="f in FORMATION_LIST"
+                                            :key="f.key"
+                                            type="button"
+                                            @click="saveFormation(f.key)"
+                                            :class="[
+                        'px-4 py-1.5 rounded-full text-sm font-semibold border transition',
+                        currentFormation === f.key
+                            ? 'bg-teal-500 text-white border-teal-600'
+                            : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
+                    ]"
+                                        >
+                                            {{ f.label }}
+                                        </button>
+                                    </div>
+                                    <p class="mt-1 text-xs text-slate-500">
+                                        {{ FORMATIONS[currentFormation]?.description }}
+                                    </p>
+                                </div>
+
+                                <!-- Aperçu terrain miniature avec positions -->
+                                <div class="relative w-48 h-32 rounded-lg overflow-hidden border border-slate-300 shadow-sm shrink-0">
+                                    <div class="absolute inset-0 bg-gradient-to-r from-green-700 via-green-600 to-green-700"></div>
+                                    <div class="absolute inset-0 border-2 border-white/70 pointer-events-none"></div>
+                                    <div class="absolute left-1/2 top-0 h-full w-px bg-white/60"></div>
+                                    <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full border border-white/50"></div>
+
+                                    <!-- Marqueurs de tous les slots -->
+                                    <template v-if="formationData">
+                                        <div
+                                            v-for="(slotDef, slot) in formationData.slots"
+                                            :key="slot"
+                                            class="absolute h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white flex items-center justify-center text-[9px] font-bold shadow"
+                                            :class="slotDef.zone === 0 ? 'bg-yellow-400' : slotDef.zone <= 1 ? 'bg-blue-400' : slotDef.zone <= 2 ? 'bg-green-400' : slotDef.zone <= 3 ? 'bg-orange-400' : 'bg-red-400'"
+                                            :style="{
+                        left: slotRoleInfo(slot).x + '%',
+                        top:  slotRoleInfo(slot).y + '%',
+                    }"
+                                        >
+                                            {{ slot }}
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
                         <!-- ========================== -->
                         <!--   Colonne gauche (joueurs) -->
                         <!-- ========================== -->

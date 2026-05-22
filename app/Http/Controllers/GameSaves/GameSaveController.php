@@ -405,9 +405,6 @@ class GameSaveController extends Controller
     /**
      * Écran de match pour une session.
      */
-    /**
-     * Écran de match pour une session.
-     */
     public function match(Request $request, GameSave $gameSave): Response
     {
         $this->authorizeSave($request, $gameSave);
@@ -433,20 +430,16 @@ class GameSaveController extends Controller
         $homeTeam = $match->homeTeam;
         $awayTeam = $match->awayTeam;
 
-        // ✅ IMPORTANT: on ne swap plus internal/external.
-        // internal = home (DB), external = away (DB)
         $internalTeam = $homeTeam;
         $externalTeam = $awayTeam;
 
-        // Déterminer si l'équipe contrôlée est home ou away (DB)
         $isControlledHome = ((int) $controlledGameTeam->id === (int) $homeTeam->id);
 
-        $controlMode = $request->query('controlMode', 'both'); // both|single
+        $controlMode = $request->query('controlMode', 'both');
         if (!in_array($controlMode, ['both', 'single'], true)) {
             $controlMode = 'both';
         }
 
-        // ✅ controlledSide par défaut = côté réel en DB
         $controlledSide = $request->query('controlledSide', $isControlledHome ? 'internal' : 'external');
         if (!in_array($controlledSide, ['internal', 'external'], true)) {
             $controlledSide = $isControlledHome ? 'internal' : 'external';
@@ -454,96 +447,70 @@ class GameSaveController extends Controller
 
         $mapPlayers = function ($team) use ($gameSave) {
 
-            // -------- 1) Charger l'état de la save pour trouver une compo éventuelle --------
-            $state = $gameSave->state ?? [];
-            $lineups = $state['lineup'] ?? [];
-            $teamLineup = $lineups[$team->id]['slots'] ?? null; // ex: [1 => 256, 2 => 244, ...]
+            $state      = $gameSave->state ?? [];
+            $lineups    = $state['lineup'] ?? [];
+            $teamLineup = $lineups[$team->id]['slots'] ?? null;
 
-
-            // -------- 2) Récupération des contrats titulaires --------
             $contracts = $team->contracts->loadMissing('gamePlayer');
+            $starters  = $contracts->where('is_starter', true)->values();
 
-            $starters = $contracts
-                ->where('is_starter', true)
-                ->values();
-
-
-            // -------- 3) Si une compo existe → on respecte strictement les slots 1..11 --------
             $ordered = collect();
 
             if ($teamLineup) {
-
                 for ($slot = 1; $slot <= 11; $slot++) {
-
                     $pid = $teamLineup[$slot] ?? null;
 
                     if ($pid) {
-                        // Trouver le contrat du titulaire correspondant
                         $c = $starters->firstWhere('game_player_id', $pid);
 
                         if ($c) {
                             $ordered->push([$slot, $c]);
-
-                            // éviter doublon
-                            $starters = $starters
-                                ->reject(fn($cc) => $cc->id === $c->id)
-                                ->values();
-
+                            $starters = $starters->reject(fn($cc) => $cc->id === $c->id)->values();
                             continue;
                         }
                     }
 
-                    // Slot vide
                     $ordered->push([$slot, null]);
                 }
-
             } else {
-
-                // -------- 4) Pas de compo → fallback actuel (titulaire dans l'ordre) --------
                 $starters = $contracts->where('is_starter', true)->values();
-
                 for ($slot = 1; $slot <= 11; $slot++) {
                     $c = $starters[$slot - 1] ?? null;
                     $ordered->push([$slot, $c]);
                 }
             }
 
-
-            // -------- 5) Construction finale du format attendu par l'engine --------
             return $ordered->map(function (array $row) {
-
                 [$slot, $c] = $row;
 
                 if (!$c || !$c->gamePlayer) {
                     return [
-                        'id'         => null,
-                        'number'     => $slot,
-                        'firstname'  => '',
-                        'lastname'   => '',
-                        'position'   => '',
-                        'is_starter' => false,
-                        'photo_path' => null,
-                        'photo_url'  => null,
-                        'stats'      => null,
+                        'id'            => null,
+                        'number'        => $slot,
+                        'firstname'     => '',
+                        'lastname'      => '',
+                        'position'      => '',
+                        'is_starter'    => false,
+                        'photo_path'    => null,
+                        'photo_url'     => null,
+                        'stats'         => null,
                         'special_moves' => [],
                     ];
                 }
 
-                $p = $c->gamePlayer;
+                $p        = $c->gamePlayer;
                 $photoUrl = $p->photo_path ? Storage::url($p->photo_path) : null;
 
                 return [
-                    'id'         => $p->id,
-                    'number'     => $slot, // 👈 le slot = numéro de terrain (clé essentielle)
-                    'firstname'  => $p->firstname,
-                    'lastname'   => $p->lastname,
-                    'position'   => $p->position,
-                    'is_starter' => (bool) $c->is_starter,
-
-                    'photo_path' => $p->photo_path,
-                    'photo_url'  => $photoUrl,
-
-                    'stats'     => [
+                    'id'            => $p->id,
+                    'number'        => $slot,
+                    'firstname'     => $p->firstname,
+                    'lastname'      => $p->lastname,
+                    'position'      => $p->position,
+                    'is_starter'    => (bool) $c->is_starter,
+                    'photo_path'    => $p->photo_path,
+                    'photo_url'     => $photoUrl,
+                    'stats'         => [
                         'speed'      => $p->speed,
                         'stamina'    => $p->stamina,
                         'attack'     => $p->attack,
@@ -562,8 +529,13 @@ class GameSaveController extends Controller
             })->values();
         };
 
-        // ✅ AJOUT: URLs prêtes pour la vue (tailwind <img :src="...">)
-        // logo_path = "images/teams/xxx.webp" => url = "/images/teams/xxx.webp"
+        // ─── Récupération des formations depuis game_saves.state ───
+        $state    = $gameSave->state ?? [];
+        $lineups  = $state['lineup'] ?? [];
+
+        $internalFormation = $lineups[$internalTeam->id]['formation'] ?? '4-4-2';
+        $externalFormation = $lineups[$externalTeam->id]['formation'] ?? '4-4-2';
+
         $homeLogoUrl = $homeTeam->logo_path ? '/' . ltrim($homeTeam->logo_path, '/') : null;
         $awayLogoUrl = $awayTeam->logo_path ? '/' . ltrim($awayTeam->logo_path, '/') : null;
 
@@ -572,24 +544,21 @@ class GameSaveController extends Controller
                 'gameSaveId'     => $gameSave->id,
                 'matchId'        => $match->id,
                 'week'           => $match->week,
-                'maxTurns'       => 30,
+                'maxTurns'       => 40,
                 'controlMode'    => $controlMode,
-                'controlledSide' => $controlledSide, // internal|external
+                'controlledSide' => $controlledSide,
 
-                // ✅ AJOUT: champs simples pour le score-strip (nom + logo)
                 'homeTeamName'   => $homeTeam->name,
                 'awayTeamName'   => $awayTeam->name,
                 'homeLogoUrl'    => $homeLogoUrl,
                 'awayLogoUrl'    => $awayLogoUrl,
 
-                // vérité DB
                 'homeTeamId'     => $match->home_team_id,
                 'awayTeamId'     => $match->away_team_id,
 
-                // mapping UI → DB (maintenu)
                 'sides' => [
-                    'internalTeamId' => $internalTeam->id, // == home_team_id
-                    'externalTeamId' => $externalTeam->id, // == away_team_id
+                    'internalTeamId' => $internalTeam->id,
+                    'externalTeamId' => $externalTeam->id,
                 ],
 
                 'teams' => [
@@ -597,12 +566,14 @@ class GameSaveController extends Controller
                         'id'        => $internalTeam->id,
                         'name'      => $internalTeam->name,
                         'logo_path' => $internalTeam->logo_path,
+                        'formation' => $internalFormation, // ← NOUVEAU
                         'players'   => $mapPlayers($internalTeam),
                     ],
                     'external' => [
                         'id'        => $externalTeam->id,
                         'name'      => $externalTeam->name,
                         'logo_path' => $externalTeam->logo_path,
+                        'formation' => $externalFormation, // ← NOUVEAU
                         'players'   => $mapPlayers($externalTeam),
                     ],
                 ],

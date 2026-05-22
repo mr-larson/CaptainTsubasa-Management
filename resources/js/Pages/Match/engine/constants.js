@@ -169,7 +169,7 @@ export const TEXTS = {
 //   GRILLE TERRAIN
 // ==========================
 export const ZONE_BOUNDS_INTERNAL = [0, 20, 40, 60, 80, 100]; // 5 zones, index 0..4
-export const laneY                = [25, 50, 75];              // 3 lanes, index 0..2
+export const laneY = [10, 28, 50, 72, 90]; // 5 lanes
 export const MAX_ZONE_INDEX       = ZONE_BOUNDS_INTERNAL.length - 2; // = 4
 
 // ==========================

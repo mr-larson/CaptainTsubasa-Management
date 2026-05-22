@@ -1,8 +1,7 @@
 // resources/js/Pages/Match/engine/field.js
-import {
-    ZONE_BOUNDS_INTERNAL, laneY, MAX_ZONE_INDEX,
-} from './constants.js';
+import { ZONE_BOUNDS_INTERNAL, laneY, MAX_ZONE_INDEX,} from './constants.js';
 import { getStamina, getStaminaMax } from './stamina.js';
+import { FORMATIONS, DEFAULT_FORMATION } from './formations.js';
 
 // -----------------------------------------------------------
 //   Dépendances injectées à l'init
@@ -18,7 +17,25 @@ export function initFieldModule(rootEl, roster, state, ui) {
     _state  = state;
     _ui     = ui;
 }
+// Retourne le facteur de densité d'une zone pour une équipe donnée.
+// Plus une formation a de joueurs dans une zone, plus le facteur est élevé.
+// Normalisé autour de 1.0 (moyenne = 1, max ~1.5, min ~0.5)
+function getZoneDensityFactor(team, zoneIndex) {
+    const formKey   = _state._matchConfig?.teams?.[team]?.formation ?? DEFAULT_FORMATION;
+    const formation = FORMATIONS[formKey] ?? FORMATIONS[DEFAULT_FORMATION];
 
+    // Calcul automatique depuis les slots
+    const density = {};
+    Object.values(formation.slots).forEach(def => {
+        if (def.laneIndex === null) return; // ignore GK
+        density[def.zone] = (density[def.zone] ?? 0) + 1;
+    });
+
+    const zoneCount = density[zoneIndex] ?? 0;
+    const avg = [1, 2, 3, 4].reduce((s, z) => s + (density[z] ?? 0), 0) / 4;
+
+    return avg > 0 ? zoneCount / avg : 1;
+}
 // -----------------------------------------------------------
 //   Helpers généraux
 // -----------------------------------------------------------
@@ -152,11 +169,16 @@ export function pickWeightedPlayerInZone(team, zoneIndex, laneIndex, opts = {}) 
     const EPS  = 1e-6;
 
     const weights = pool.map(({ id, d2 }) => {
-        const distW      = 1 / (d2 + EPS);
-        const stMax      = getStaminaMax(id) || 100;
-        const staminaR   = stMax > 0 ? getStamina(id) / stMax : 1;
-        const heatPenalty= 1 / (1 + heatOf(id) * 0.75);
-        return distW * (0.85 + 0.15 * staminaR) * heatPenalty;
+        const distW        = 1 / (d2 + EPS);
+        const stMax        = getStaminaMax(id) || 100;
+        const staminaR     = stMax > 0 ? getStamina(id) / stMax : 1;
+        const heatPenalty  = 1 / (1 + heatOf(id) * 0.75);
+
+        // Bonus de densité : une zone bien couverte par la formation
+        // augmente la probabilité de trouver un défenseur disponible
+        const densityBonus = getZoneDensityFactor(team, zoneIndex);
+
+        return distW * (0.85 + 0.15 * staminaR) * heatPenalty * densityBonus;
     });
 
     const sum = weights.reduce((a, b) => a + b, 0);

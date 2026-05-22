@@ -152,6 +152,8 @@ Route::middleware('auth')->group(function () {
             ->name('training.store');
         Route::post('/{gameSave}/lineup', [LineupController::class, 'update'])
             ->name('lineup.update');
+        Route::post('/{gameSave}/lineup/formation', [LineupController::class, 'updateFormation'])
+            ->name('lineup.formation');
 
         Route::get('/{gameSave}/teams',            [GameTeamController::class, 'index'])->name('teams.index');
         Route::get('/{gameSave}/teams/create',     [GameTeamController::class, 'create'])->name('teams.create');
