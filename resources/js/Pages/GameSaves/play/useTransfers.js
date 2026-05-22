@@ -1,0 +1,65 @@
+// resources/js/Pages/GameSaves/play/useTransfers.js
+import { ref, computed } from 'vue';
+import { router } from '@inertiajs/vue3';
+
+export function useTransfers({ gameSave, freePlayers, team }) {
+
+    // ==========================
+    //   AGENTS LIBRES
+    // ==========================
+    const freeAgentSignings   = computed(() => gameSave.value.state?.free_agent_signings ?? []);
+    const signedFreePlayerIds = computed(() => freeAgentSignings.value.map(s => s.player_id));
+
+    const availableFreePlayers = computed(() => {
+        if (!Array.isArray(freePlayers.value)) return [];
+        return freePlayers.value.filter(p => !signedFreePlayerIds.value.includes(p.id));
+    });
+
+    // ==========================
+    //   MODAL
+    // ==========================
+    const showTransferModal = ref(false);
+    const transferTarget    = ref(null);
+    const transferMatches   = ref(10);
+    const transferSalary    = ref(0);
+    const transferReason    = ref('');
+
+    const transferTotalCost = computed(() =>
+        (Number(transferMatches.value) || 0) * (Number(transferSalary.value) || 0)
+    );
+
+    const openTransferModal = (player) => {
+        transferTarget.value    = player;
+        transferMatches.value   = 10;
+        transferSalary.value    = player.cost ?? 0;
+        transferReason.value    = '';
+        showTransferModal.value = true;
+    };
+
+    const closeTransferModal = () => {
+        showTransferModal.value = false;
+        transferTarget.value    = null;
+    };
+
+    const confirmTransfer = () => {
+        if (!team.value || !transferTarget.value) return;
+        router.post(
+            route('game-saves.free-agents.sign', { gameSave: gameSave.value.id, player: transferTarget.value.id }),
+            {
+                team_id:       team.value.id,
+                salary:        transferSalary.value,
+                matches_total: transferMatches.value,
+                reason:        transferReason.value,
+            },
+            { preserveScroll: true, onSuccess: () => closeTransferModal() }
+        );
+    };
+
+    return {
+        availableFreePlayers,
+        showTransferModal, transferTarget,
+        transferMatches, transferSalary, transferReason,
+        transferTotalCost,
+        openTransferModal, closeTransferModal, confirmTransfer,
+    };
+}
