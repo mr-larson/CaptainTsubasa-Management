@@ -3,10 +3,10 @@
 // ==========================
 //   CONSTANTES
 // ==========================
-const ANIM_MS     = 300; // ralenti pour suivre les transitions CSS
-const AI_THINK_MS = 200; // délai "réflexion IA"
-const GK_HOLD_MS = 400; // ralenti pour suivre la récupèration de balle du gardien
-const ACTION_BAR_FADE_MS  = 100; // Durée des transitions fade-in/out de la barre
+const ANIM_MS     = 250; // ralenti pour suivre les transitions CSS
+const AI_THINK_MS = 150; // délai "réflexion IA"
+const GK_HOLD_MS = 300; // ralenti pour suivre la récupèration de balle du gardien
+const ACTION_BAR_FADE_MS  = 150; // Durée des transitions fade-in/out de la barre
 const DIE_SIDES   = 20;  // nombre de faces du dé utilisé dans les calculs de duel
 
 
@@ -31,14 +31,14 @@ const DUEL_RULES = {
 const ENDURANCE_DEFAULT = 100;
 
 const STAMINA_FACTORS = {
-    HIGH: 1.0,
-    MID: 0.95,
-    LOW: 0.88,
-    CRIT: 0.8,
-    EXHAUSTED: 0.75,
+    HIGH: 1.0,      // ≥ 75% — performance pleine
+    MID: 0.88,      // 50-75% — légère fatigue perceptible (était 0.95)
+    LOW: 0.72,      // 25-50% — fatigue marquée, perte notable (était 0.88)
+    CRIT: 0.55,     // >0-25% — joueur à bout, très pénalisé (était 0.80)
+    EXHAUSTED: 0.40,// = 0    — épuisé total, quasi hors-jeu (était 0.75)
 };
 
-const STAMINA_COST_GLOBAL_SCALE = 0.85;
+const STAMINA_COST_GLOBAL_SCALE = 1.0; // Plus de réduction globale : les coûts sont calibrés directement.
 
 // ==========================
 //   RÈGLES TERRAIN
@@ -183,23 +183,28 @@ const MAX_ZONE_INDEX = ZONE_BOUNDS_INTERNAL.length - 2;
 // ==========================
 //   STATS "MATCH" (UI costs + base powers)
 // ==========================
+// Coûts calibrés pour stamina max ~80 sur 40 tours :
+//   - Passe  : action économique, viable en défense/reconstruction (coût 7)
+//   - Dribble: engagement physique élevé, fatigue rapide (coût 12)
+//   - Tir    : effort explosif, impact notable (coût 14)
+//   - Spécial: effort maximum, cooldown + coût élevé (coût 28)
 const STATS = {
     attack: {
-        shot: { power: 10, cost: 10 },
-        pass: { power: 10, cost: 5 },
-        dribble: { power: 10, cost: 5 },
-        special: { power: 12, cost: 20 },
+        shot:    { power: 10, cost: 14 },
+        pass:    { power: 10, cost: 10  },
+        dribble: { power: 10, cost: 8 },
+        special: { power: 12, cost: 25 },
     },
     defenseField: {
-        block: { power: 10, cost: 5 },
-        intercept: { power: 10, cost: 5 },
-        tackle: { power: 10, cost: 5 },
-        "field-special": { power: 12, cost: 20 },
+        block:          { power: 10, cost: 5  },
+        intercept:      { power: 10, cost: 5  },
+        tackle:         { power: 10, cost: 5 },
+        "field-special":{ power: 12, cost: 15 },
     },
     defenseGK: {
-        hands: { power: 10, cost: 10 },
-        punch: { power: 10, cost: 5 },
-        "gk-special": { power: 12, cost: 20 },
+        hands:       { power: 10, cost: 14 },
+        punch:       { power: 10, cost: 10 },
+        "gk-special":{ power: 12, cost: 20 },
     },
 };
 
@@ -2865,6 +2870,10 @@ export function initMatchEngine(rootEl, config = {}) {
         const wasKickoff = state.isKickoff;
         state.isKickoff = false;
 
+        // Consomme le drapeau de relance gardien dès la première passe exécutée.
+        // Sans ce reset, l'IA resterait bloquée en mode "passe forcée" pour tout le match.
+        state.keeperRestartMustPass = false;
+
         // 🔥 Détection d’une passe spéciale (special_moves offensifs base_action="pass")
         let isSpecialPass = false;
         let specialPassMove = null;
@@ -3674,6 +3683,12 @@ export function initMatchEngine(rootEl, config = {}) {
         if (state.isKickoff) {
             if (action !== "pass") return;
             resolveKickoffPass(state.currentTeam);
+            return;
+        }
+
+        // Après une relance gardien, seule la passe est autorisée (idem kickoff).
+        if (state.keeperRestartMustPass && action !== "pass") {
+            setMessage(TEXTS.ui.keeperRestartMain, TEXTS.ui.keeperRestartSub + " — passe obligatoire.");
             return;
         }
 
