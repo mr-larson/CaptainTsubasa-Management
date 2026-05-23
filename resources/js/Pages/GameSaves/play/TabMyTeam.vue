@@ -129,7 +129,7 @@ const perfChips = computed(() => {
 </script>
 
 <template>
-    <div class="flex-1 flex flex-col gap-4 overflow-y-auto max-h-[75vh] pr-1">
+    <div class="flex-1 flex flex-col gap-4 overflow-y-auto max-h-[72vh] pr-1">
 
         <!-- LIGNE 1 : Formation + Terrain unifié -->
         <div class="grid grid-cols-12 gap-4">

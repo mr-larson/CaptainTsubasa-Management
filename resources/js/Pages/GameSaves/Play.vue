@@ -36,7 +36,8 @@ const props = defineProps({
     teams:          { type: Array,  required: true },
     freePlayers:    { type: Array,  required: true },
     matches:        { type: Array,  required: true },
-    controlledTeam: { type: Object, required: false, default: null },
+    controlledTeam:    { type: Object, required: false, default: null },
+    playerSeasonStats: { type: Object, default: () => ({}) },
 });
 
 // ==========================
@@ -94,13 +95,15 @@ const {
     selectedCalendarPlayersStats, openMatchStats,
 } = useCalendar({ matches: matchesRef, teams: teamsRef, team: teamRef, week });
 
+const playerSeasonStatsRef = computed(() => props.playerSeasonStats ?? {});
+
 const {
     playerSeasonStats,
     selectedMyPlayerPerf: _selectedMyPlayerPerf,
     selectedStatsTeamId, selectedStatsTeam,
     selectedTeamPlayerStats, teamStats,
     averageTeamStat,
-} = useStats({ gameSave: gameSaveRef, teams: teamsRef, team: teamRef, roster });
+} = useStats({ gameSave: gameSaveRef, teams: teamsRef, team: teamRef, roster, playerSeasonStats: playerSeasonStatsRef });
 
 // selectedMyPlayerPerf est une fonction qui retourne un computed
 const selectedMyPlayerPerf = computed(() => _selectedMyPlayerPerf(selectedMyPlayer).value);
@@ -280,7 +283,7 @@ const saveGame = () => {
                                    :suspensionsCountForTeam="suspensionsCountForTeam"
                                    :cardsCountForTeam="cardsCountForTeam"
                                    :averageTeamStat="averageTeamStat"
-                                   :playerSeasonStats="playerSeasonStats"
+                                   :playerSeasonStats="props.playerSeasonStats"
                                    @select-team="selectOtherTeam"
                                    @select-player="selectOtherPlayer"
                                    @toggle-starter="toggleOtherStarter"
@@ -315,11 +318,8 @@ const saveGame = () => {
                     <!-- ======== STATS ======== -->
                     <TabStats v-else-if="activeTab === 'match-stats'"
                               :teams="teams"
-                              :selectedStatsTeamId="selectedStatsTeamId"
-                              :selectedStatsTeam="selectedStatsTeam"
-                              :teamStats="teamStats"
-                              :selectedTeamPlayerStats="selectedTeamPlayerStats"
-                              @select-team="(id) => selectedStatsTeamId = id"
+                              :team="team"
+                              :playerSeasonStats="props.playerSeasonStats"
                     />
 
                     <!-- ======== ENTRAÎNEMENT ======== -->

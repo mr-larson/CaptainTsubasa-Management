@@ -116,7 +116,7 @@ const radarAxes = computed(() => {
 const perfChips = computed(() => {
     const p = props.selectedOtherPlayer;
     if (!p) return [];
-    const perf = props.playerSeasonStats?.[p.id];
+    const perf = props.playerSeasonStats?.[p.id] ?? props.playerSeasonStats?.[String(p.id)];
     if (!perf) return [];
     return [
         { icon: '⚽', label: 'Tirs',     val: perf.offense?.shot?.attempts      ?? 0, sub: perf.offense?.shot?.success      ?? 0, color: 'bg-blue-100 text-blue-700' },
@@ -132,7 +132,7 @@ const perfChips = computed(() => {
 </script>
 
 <template>
-    <div class="flex-1 flex flex-col gap-4 overflow-y-auto max-h-[75vh] pr-1">
+    <div class="flex-1 flex flex-col gap-4 overflow-y-auto max-h-[72vh] pr-1">
 
         <!-- LIGNE 1 : Sélecteur équipe (chips horizontales) -->
         <div class="border border-slate-200 rounded-xl bg-slate-50 p-3">

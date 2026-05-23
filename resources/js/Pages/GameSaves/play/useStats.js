@@ -1,12 +1,13 @@
 // resources/js/Pages/GameSaves/play/useStats.js
 import { ref, computed } from 'vue';
 
-export function useStats({ gameSave, teams, team, roster }) {
+export function useStats({ gameSave, teams, team, roster, playerSeasonStats: playerSeasonStatsProp }) {
 
     // ==========================
     //   STATS SAISON (cumulées)
     // ==========================
-    const playerSeasonStats = computed(() => gameSave.value.state?.player_stats ?? {});
+    // Agrégé côté PHP depuis game_matches.match_stats — passé comme prop Inertia dédiée
+    const playerSeasonStats = computed(() => playerSeasonStatsProp?.value ?? {});
 
     // ==========================
     //   STATS JOUEUR SÉLECTIONNÉ
@@ -16,7 +17,7 @@ export function useStats({ gameSave, teams, team, roster }) {
         if (!p) return null;
 
         // Stats cumulées disponibles → on les utilise directement
-        const s = playerSeasonStats.value[p.id];
+        const s = playerSeasonStats.value[p.id] ?? playerSeasonStats.value[String(p.id)];
         if (s) return s;
 
         // Fallback : calcul depuis playerActions
@@ -93,7 +94,7 @@ export function useStats({ gameSave, teams, team, roster }) {
         return t.contracts
             .map(c => c.game_player ?? c.gamePlayer ?? c.player ?? null)
             .filter(Boolean)
-            .map(p => ({ ...p, stats: allStats[p.id] ?? null }));
+            .map(p => ({ ...p, stats: allStats[p.id] ?? allStats[String(p.id)] ?? null }));
     });
 
     const teamStats = computed(() => {
@@ -107,7 +108,7 @@ export function useStats({ gameSave, teams, team, roster }) {
             .filter(Boolean);
 
         playerIds.forEach(pid => {
-            const s = allStats[pid];
+            const s = allStats[pid] ?? allStats[String(pid)];
             if (!s) return;
             totals.shots      += s.offense?.shot?.attempts      ?? 0;
             totals.passes     += s.offense?.pass?.attempts      ?? 0;
