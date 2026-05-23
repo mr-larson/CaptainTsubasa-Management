@@ -13,6 +13,7 @@ import { useCalendar }  from './play/useCalendar.js';
 import { useStats }     from './play/useStats.js';
 import { useTraining }  from './play/useTraining.js';
 import { useTransfers } from './play/useTransfers.js';
+import { useOtherTeam } from './play/useOtherTeam.js';
 
 // ==========================
 //   COMPOSANTS TABS
@@ -120,26 +121,20 @@ const {
 } = useTransfers({ gameSave: gameSaveRef, freePlayers: freePlayersRef, team: teamRef });
 
 // ==========================
-//   AUTRES ÉQUIPES (non extrait en composable — simple)
+//   AUTRES ÉQUIPES
 // ==========================
-const otherTeams = computed(() => {
-    const currentId = teamRef.value?.id ?? null;
-    return (props.teams ?? []).filter(t => t.id !== currentId);
+const {
+    otherTeams, selectedOtherTeam, selectOtherTeam,
+    otherRosterWithStatus, selectedOtherPlayer, selectOtherPlayer,
+    toggleOtherStarter,
+    otherLineupForm, getOtherSlotForPlayer, changeOtherPlayerSlot,
+    otherFormation, otherFormationData, saveOtherFormation,
+    otherPlayerPosition, otherPlayerForSlot, otherSelectedSlot,
+} = useOtherTeam({
+    gameSave: gameSaveRef,
+    teams: teamsRef,
+    controlledTeamId: computed(() => teamRef.value?.id ?? null),
 });
-
-const selectedOtherTeamId  = ref(null);
-const selectedOtherTeam    = computed(() => {
-    if (!otherTeams.value.length) return null;
-    if (!selectedOtherTeamId.value) return otherTeams.value[0];
-    return otherTeams.value.find(t => t.id === selectedOtherTeamId.value) ?? otherTeams.value[0];
-});
-const selectedOtherTeamRoster = computed(() => {
-    if (!selectedOtherTeam.value || !Array.isArray(selectedOtherTeam.value.contracts)) return [];
-    return selectedOtherTeam.value.contracts
-        .map(c => c.game_player ?? c.gamePlayer ?? c.player ?? null)
-        .filter(Boolean);
-});
-const selectOtherTeam = (t) => { selectedOtherTeamId.value = t.id; };
 
 // ==========================
 //   ONGLETS
@@ -271,13 +266,26 @@ const saveGame = () => {
                     <TabOtherTeams v-else-if="activeTab === 'other-teams'"
                                    :otherTeams="otherTeams"
                                    :selectedOtherTeam="selectedOtherTeam"
-                                   :selectedOtherTeamRoster="selectedOtherTeamRoster"
+                                   :otherRosterWithStatus="otherRosterWithStatus"
+                                   :selectedOtherPlayer="selectedOtherPlayer"
+                                   :otherLineupForm="otherLineupForm"
+                                   :otherSelectedSlot="otherSelectedSlot"
+                                   :otherPlayerPosition="otherPlayerPosition"
+                                   :otherPlayerForSlot="otherPlayerForSlot"
+                                   :getOtherSlotForPlayer="getOtherSlotForPlayer"
+                                   :otherFormation="otherFormation"
+                                   :otherFormationData="otherFormationData"
                                    :standings="standings"
                                    :injuriesCountForTeam="injuriesCountForTeam"
                                    :suspensionsCountForTeam="suspensionsCountForTeam"
                                    :cardsCountForTeam="cardsCountForTeam"
                                    :averageTeamStat="averageTeamStat"
+                                   :playerSeasonStats="playerSeasonStats"
                                    @select-team="selectOtherTeam"
+                                   @select-player="selectOtherPlayer"
+                                   @toggle-starter="toggleOtherStarter"
+                                   @change-slot="changeOtherPlayerSlot"
+                                   @save-formation="saveOtherFormation"
                     />
 
                     <!-- ======== CALENDRIER ======== -->
