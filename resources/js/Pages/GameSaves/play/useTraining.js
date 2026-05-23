@@ -70,6 +70,14 @@ export function useTraining({ gameSave, season, week }) {
         );
     };
 
+    // Entraînements IA sur l'équipe contrôlée cette semaine
+    const aiTrainingEntries = computed(() => {
+        const s = trainingState.value;
+        if (!s) return [];
+        if (Number(s.season) !== Number(season.value) || Number(s.week) !== Number(week.value)) return [];
+        return Array.isArray(s.ai_entries) ? s.ai_entries : [];
+    });
+
     return {
         trainingState,
         remainingTrainingsThisWeek,
@@ -78,5 +86,6 @@ export function useTraining({ gameSave, season, week }) {
         selectedTrainings,
         addTrainingSlot, removeTrainingSlot,
         canSubmitTraining, submitTraining,
+        aiTrainingEntries,
     };
 }

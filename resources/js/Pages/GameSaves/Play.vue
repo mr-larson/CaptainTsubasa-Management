@@ -113,6 +113,7 @@ const {
     hasPlayerBeenTrainedThisWeek, availableTrainingStats,
     selectedTrainings, addTrainingSlot, removeTrainingSlot,
     canSubmitTraining, submitTraining,
+    aiTrainingEntries,
 } = useTraining({ gameSave: gameSaveRef, season, week });
 
 const {
@@ -318,8 +319,11 @@ const saveGame = () => {
                     <!-- ======== STATS ======== -->
                     <TabStats v-else-if="activeTab === 'match-stats'"
                               :teams="teams"
-                              :team="team"
-                              :playerSeasonStats="props.playerSeasonStats"
+                              :selectedStatsTeamId="selectedStatsTeamId"
+                              :selectedStatsTeam="selectedStatsTeam"
+                              :teamStats="teamStats"
+                              :selectedTeamPlayerStats="selectedTeamPlayerStats"
+                              @select-team="(id) => selectedStatsTeamId = id"
                     />
 
                     <!-- ======== ENTRAÎNEMENT ======== -->
@@ -333,6 +337,7 @@ const saveGame = () => {
                                  :availableTrainingStats="availableTrainingStats"
                                  :selectedTrainings="selectedTrainings"
                                  :canSubmitTraining="canSubmitTraining"
+                                 :aiTrainingEntries="aiTrainingEntries"
                                  @add-slot="addTrainingSlot"
                                  @remove-slot="removeTrainingSlot"
                                  @submit-training="submitTraining"
