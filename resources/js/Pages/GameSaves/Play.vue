@@ -352,6 +352,7 @@ const saveGame = () => {
                                   :transferSalary="transferSalary"
                                   :transferReason="transferReason"
                                   :transferTotalCost="transferTotalCost"
+                                  :roster="roster"
                                   @open-modal="openTransferModal"
                                   @close-modal="closeTransferModal"
                                   @confirm-transfer="confirmTransfer"
