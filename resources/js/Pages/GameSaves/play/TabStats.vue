@@ -45,7 +45,7 @@ const allPlayers = computed(() => {
 const allPlayersWithStats = computed(() =>
     allPlayers.value.map(p => ({
         ...p,
-        perf: props.playerSeasonStats?.[p.id] ?? props.playerSeasonStats?.[String(p.id)] ?? null,
+        perf: props.playerSeasonStats?.[p.id] ?? props.playerSeasonStats?.[String(p.id)] ?? props.playerSeasonStats?.[+p.id] ?? null,
     }))
 );
 
@@ -140,7 +140,8 @@ const myPlayersRanking = computed(() => {
 </script>
 
 <template>
-    <div class="flex-1 flex flex-col gap-4 overflow-y-auto max-h-[72vh] pr-1">
+    <div class="flex-1 flex flex-col gap-4 overflow-y-auto max-h-[75vh] pr-1">
+
         <!-- Pas de stats disponibles -->
         <div v-if="!hasAnyStats"
              class="flex-1 flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 p-12 text-center gap-3">

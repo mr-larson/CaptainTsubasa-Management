@@ -319,11 +319,8 @@ const saveGame = () => {
                     <!-- ======== STATS ======== -->
                     <TabStats v-else-if="activeTab === 'match-stats'"
                               :teams="teams"
-                              :selectedStatsTeamId="selectedStatsTeamId"
-                              :selectedStatsTeam="selectedStatsTeam"
-                              :teamStats="teamStats"
-                              :selectedTeamPlayerStats="selectedTeamPlayerStats"
-                              @select-team="(id) => selectedStatsTeamId = id"
+                              :team="team"
+                              :playerSeasonStats="props.playerSeasonStats"
                     />
 
                     <!-- ======== ENTRAÎNEMENT ======== -->
