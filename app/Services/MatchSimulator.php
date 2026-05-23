@@ -15,46 +15,209 @@ class MatchSimulator
             ->where('week', $playedMatch->week)
             ->where('status', 'scheduled')
             ->where('id', '!=', $playedMatch->id)
-            ->with(['homeTeam', 'awayTeam', 'homeTeam.contracts.gamePlayer', 'awayTeam.contracts.gamePlayer'])
+            ->with(['homeTeam.contracts.gamePlayer', 'awayTeam.contracts.gamePlayer'])
             ->get();
 
         foreach ($others as $m) {
-            [$hs, $as] = $this->simulateScore($m->homeTeam, $m->awayTeam);
-
-            $m->home_score = $hs;
-            $m->away_score = $as;
-            $m->status     = 'played';
-            $m->save();
-
-            $this->applyResultToStandings($m);
+            $this->simulateAndSave($m);
         }
     }
 
-    private function simulateScore(GameTeam $home, GameTeam $away): array
+    public function simulateMatchesCollection(Collection $matches): void
     {
-        // ratings
-        $homeR = $this->teamRatings($home);
-        $awayR = $this->teamRatings($away);
+        $matches->loadMissing(['homeTeam.contracts.gamePlayer', 'awayTeam.contracts.gamePlayer']);
 
-        // occasions (MVP)
+        foreach ($matches as $m) {
+            if ($m->status !== 'scheduled') continue;
+            $this->simulateAndSave($m);
+        }
+    }
+
+    // ==========================
+    //   SIMULATION PRINCIPALE
+    // ==========================
+
+    private function simulateAndSave(GameMatch $m): void
+    {
+        [$homeScore, $awayScore, $matchStats] = $this->simulateMatch(
+            $m->homeTeam,
+            $m->awayTeam
+        );
+
+        $m->home_score  = $homeScore;
+        $m->away_score  = $awayScore;
+        $m->status      = 'played';
+        $m->match_stats = $matchStats;
+        $m->save();
+
+        $this->applyResultToStandings($m);
+    }
+
+    /**
+     * Simule un match complet et retourne [homeScore, awayScore, matchStats].
+     * matchStats est au même format que celui produit par engine.js côté client.
+     */
+    private function simulateMatch(GameTeam $home, GameTeam $away): array
+    {
+        $homePlayers = $this->getStarters($home);
+        $awayPlayers = $this->getStarters($away);
+
+        $homeRatings = $this->teamRatings($homePlayers);
+        $awayRatings = $this->teamRatings($awayPlayers);
+
+        // Stats par joueur (indexées par game_player_id)
+        $playerStats = [];
+        $teamStats   = [
+            'home' => ['goals' => 0, 'shots' => 0, 'passes' => 0, 'dribbles' => 0, 'duelsWon' => 0, 'duelsLost' => 0],
+            'away' => ['goals' => 0, 'shots' => 0, 'passes' => 0, 'dribbles' => 0, 'duelsWon' => 0, 'duelsLost' => 0],
+        ];
+
+        $homeGoals = 0;
+        $awayGoals = 0;
+
+        // Chances pour chaque équipe
         $homeChances = 8 + random_int(-2, 2);
         $awayChances = 7 + random_int(-2, 2);
 
-        $homeGoals = $this->goalsFromChances($homeR, $awayR, $homeChances, true);
-        $awayGoals = $this->goalsFromChances($awayR, $homeR, $awayChances, false);
+        // Simuler les chances HOME
+        for ($i = 0; $i < max(1, $homeChances); $i++) {
+            $attacker  = $this->randomAttacker($homePlayers);
+            $defender  = $this->randomDefender($awayPlayers);
+            $gk        = $this->getGoalkeeper($awayPlayers);
+            $action    = $this->randomOffenseAction();
 
-        return [$homeGoals, $awayGoals];
+            $attackRoll  = $homeRatings['att'] + $this->d20() + 2; // avantage domicile
+            $defenseRoll = $awayRatings['def'] + (int) round($awayRatings['gk'] * 0.5) + $this->d20();
+
+            $success = $attackRoll > $defenseRoll + 2;
+
+            // Stats attaquant
+            if ($attacker) {
+                $pid = (string) $attacker->id;
+                $playerStats[$pid] = $playerStats[$pid] ?? $this->emptyPlayerStats();
+                $playerStats[$pid]['offense'][$action]['attempts']++;
+                if ($success) $playerStats[$pid]['offense'][$action]['success']++;
+                $success ? $playerStats[$pid]['duelsWon']++ : $playerStats[$pid]['duelsLost']++;
+            }
+
+            // Stats défenseur
+            $defAction = $this->randomDefenseAction();
+            if ($defender) {
+                $pid = (string) $defender->id;
+                $playerStats[$pid] = $playerStats[$pid] ?? $this->emptyPlayerStats();
+                $playerStats[$pid]['defense'][$defAction]['attempts']++;
+                if (!$success) $playerStats[$pid]['defense'][$defAction]['success']++;
+                $success ? $playerStats[$pid]['duelsLost']++ : $playerStats[$pid]['duelsWon']++;
+            }
+
+            // Stats gardien si tir
+            if ($action === 'shot' && $gk) {
+                $pid = (string) $gk->id;
+                $playerStats[$pid] = $playerStats[$pid] ?? $this->emptyPlayerStats();
+                $gkAction = random_int(0, 1) ? 'hands' : 'punch';
+                $playerStats[$pid]['defense'][$gkAction]['attempts']++;
+                if (!$success) $playerStats[$pid]['defense'][$gkAction]['success']++;
+                $success ? $playerStats[$pid]['duelsLost']++ : $playerStats[$pid]['duelsWon']++;
+            }
+
+            // Stats équipe
+            $teamStats['home']['shots']++;
+            $teamStats['home'][$action === 'pass' ? 'passes' : ($action === 'dribble' ? 'dribbles' : 'shots')]++;
+            if ($success) {
+                $teamStats['home']['duelsWon']++;
+                $teamStats['away']['duelsLost']++;
+                if ($action === 'shot') {
+                    $homeGoals++;
+                    $teamStats['home']['goals']++;
+                }
+            } else {
+                $teamStats['home']['duelsLost']++;
+                $teamStats['away']['duelsWon']++;
+            }
+        }
+
+        // Simuler les chances AWAY
+        for ($i = 0; $i < max(1, $awayChances); $i++) {
+            $attacker  = $this->randomAttacker($awayPlayers);
+            $defender  = $this->randomDefender($homePlayers);
+            $gk        = $this->getGoalkeeper($homePlayers);
+            $action    = $this->randomOffenseAction();
+
+            $attackRoll  = $awayRatings['att'] + $this->d20();
+            $defenseRoll = $homeRatings['def'] + (int) round($homeRatings['gk'] * 0.5) + $this->d20();
+
+            $success = $attackRoll > $defenseRoll + 2;
+
+            if ($attacker) {
+                $pid = (string) $attacker->id;
+                $playerStats[$pid] = $playerStats[$pid] ?? $this->emptyPlayerStats();
+                $playerStats[$pid]['offense'][$action]['attempts']++;
+                if ($success) $playerStats[$pid]['offense'][$action]['success']++;
+                $success ? $playerStats[$pid]['duelsWon']++ : $playerStats[$pid]['duelsLost']++;
+            }
+
+            $defAction = $this->randomDefenseAction();
+            if ($defender) {
+                $pid = (string) $defender->id;
+                $playerStats[$pid] = $playerStats[$pid] ?? $this->emptyPlayerStats();
+                $playerStats[$pid]['defense'][$defAction]['attempts']++;
+                if (!$success) $playerStats[$pid]['defense'][$defAction]['success']++;
+                $success ? $playerStats[$pid]['duelsLost']++ : $playerStats[$pid]['duelsWon']++;
+            }
+
+            if ($action === 'shot' && $gk) {
+                $pid = (string) $gk->id;
+                $playerStats[$pid] = $playerStats[$pid] ?? $this->emptyPlayerStats();
+                $gkAction = random_int(0, 1) ? 'hands' : 'punch';
+                $playerStats[$pid]['defense'][$gkAction]['attempts']++;
+                if (!$success) $playerStats[$pid]['defense'][$gkAction]['success']++;
+                $success ? $playerStats[$pid]['duelsLost']++ : $playerStats[$pid]['duelsWon']++;
+            }
+
+            $teamStats['away']['shots']++;
+            $teamStats['away'][$action === 'pass' ? 'passes' : ($action === 'dribble' ? 'dribbles' : 'shots')]++;
+            if ($success) {
+                $teamStats['away']['duelsWon']++;
+                $teamStats['home']['duelsLost']++;
+                if ($action === 'shot') {
+                    $awayGoals++;
+                    $teamStats['away']['goals']++;
+                }
+            } else {
+                $teamStats['away']['duelsLost']++;
+                $teamStats['home']['duelsWon']++;
+            }
+        }
+
+        // Clamp scores
+        $homeGoals = min($homeGoals, 6);
+        $awayGoals = min($awayGoals, 6);
+        $teamStats['home']['goals'] = $homeGoals;
+        $teamStats['away']['goals'] = $awayGoals;
+
+        $matchStats = [
+            'teams'   => $teamStats,
+            'players' => $playerStats,
+        ];
+
+        return [$homeGoals, $awayGoals, $matchStats];
     }
 
-    private function teamRatings(GameTeam $team): array
+    // ==========================
+    //   HELPERS JOUEURS
+    // ==========================
+
+    private function getStarters(GameTeam $team): Collection
     {
-        // on prend les 11 premiers joueurs sous contrat (MVP)
-        $players = $team->contracts
+        return $team->contracts
+            ->filter(fn($c) => $c->is_starter && $c->gamePlayer)
             ->map(fn($c) => $c->gamePlayer)
-            ->filter()
             ->values()
             ->take(11);
+    }
 
+    private function teamRatings(Collection $players): array
+    {
         if ($players->isEmpty()) {
             return ['att' => 40, 'def' => 40, 'gk' => 40];
         }
@@ -67,83 +230,107 @@ class MatchSimulator
                 ($p->defense ?? 0) + ($p->tackle ?? 0) + ($p->intercept ?? 0) + ($p->block ?? 0)
             ) / 4);
 
-        // gardien = meilleur GK trouvé (ou fallback)
-        $gkBest = $players->max(fn($p) => (($p->hand_save ?? 0) + ($p->punch_save ?? 0)));
+        $gkBest = $players->max(fn($p) => ($p->hand_save ?? 0) + ($p->punch_save ?? 0));
         $gk     = (int) max(20, round(($gkBest ?: 0) / 2));
 
         return ['att' => $att, 'def' => $def, 'gk' => $gk];
     }
 
-    private function goalsFromChances(array $atk, array $def, int $chances, bool $isHome): int
+    private function randomAttacker(Collection $players)
     {
-        $goals = 0;
+        // Préfère les joueurs avec attack/shot élevés
+        $attackers = $players->filter(fn($p) => ($p->attack ?? 0) > 30 || ($p->shot ?? 0) > 30);
+        $pool = $attackers->isNotEmpty() ? $attackers : $players;
+        return $pool->isEmpty() ? null : $pool->random();
+    }
 
-        for ($i = 0; $i < max(1, $chances); $i++) {
-            $attackRoll  = $atk['att'] + $this->d20() + ($isHome ? 2 : 0);
-            $defenseRoll = $def['def'] + (int) round($def['gk'] * 0.5) + $this->d20();
+    private function randomDefender(Collection $players)
+    {
+        $defenders = $players->filter(fn($p) => ($p->defense ?? 0) > 30 || ($p->tackle ?? 0) > 30);
+        $pool = $defenders->isNotEmpty() ? $defenders : $players;
+        return $pool->isEmpty() ? null : $pool->random();
+    }
 
-            // seuil MVP
-            if ($attackRoll > $defenseRoll + 2) {
-                $goals++;
-            }
-        }
+    private function getGoalkeeper(Collection $players)
+    {
+        // Le gardien = joueur avec le plus de hand_save + punch_save
+        return $players->sortByDesc(fn($p) => ($p->hand_save ?? 0) + ($p->punch_save ?? 0))->first();
+    }
 
-        // petit clamp MVP (évite les 9-8 trop souvent)
-        return min($goals, 6);
+    private function randomOffenseAction(): string
+    {
+        // Distribution réaliste : beaucoup de passes, dribbles, quelques tirs
+        $roll = random_int(1, 10);
+        if ($roll <= 4) return 'pass';
+        if ($roll <= 7) return 'dribble';
+        return 'shot';
+    }
+
+    private function randomDefenseAction(): string
+    {
+        $roll = random_int(1, 6);
+        if ($roll <= 2) return 'intercept';
+        if ($roll <= 4) return 'tackle';
+        return 'block';
     }
 
     private function d20(): int
     {
         return random_int(1, 20);
     }
-    public function simulateMatchesCollection(Collection $matches): void
-    {
-        // On suppose que la collection contient des GameMatch
-        // et qu'on peut charger les relations si pas déjà fait.
-        $matches->loadMissing(['homeTeam.contracts.gamePlayer', 'awayTeam.contracts.gamePlayer']);
 
-        foreach ($matches as $m) {
-            if ($m->status !== 'scheduled') {
-                continue;
-            }
-
-            [$hs, $as] = $this->simulateScore($m->homeTeam, $m->awayTeam);
-
-            $m->home_score = $hs;
-            $m->away_score = $as;
-            $m->status     = 'played';
-            $m->save();
-
-            // Ici homeTeam/awayTeam sont déjà en mémoire
-            $this->applyResultToStandings($m);
-        }
-    }
+    // ==========================
+    //   STANDINGS
+    // ==========================
 
     private function applyResultToStandings(GameMatch $m): void
     {
-        // sécurité
         if ($m->status !== 'played') return;
         if ($m->home_score === null || $m->away_score === null) return;
 
-        // on part des relations déjà chargées si dispo
         $home = $m->relationLoaded('homeTeam') ? $m->homeTeam : $m->homeTeam()->first();
         $away = $m->relationLoaded('awayTeam') ? $m->awayTeam : $m->awayTeam()->first();
 
         if (!$home || !$away) return;
 
         if ($m->home_score > $m->away_score) {
-            $home->wins   = ($home->wins ?? 0) + 1;
+            $home->wins   = ($home->wins   ?? 0) + 1;
             $away->losses = ($away->losses ?? 0) + 1;
         } elseif ($m->home_score < $m->away_score) {
-            $away->wins   = ($away->wins ?? 0) + 1;
+            $away->wins   = ($away->wins   ?? 0) + 1;
             $home->losses = ($home->losses ?? 0) + 1;
         } else {
-            $home->draws  = ($home->draws ?? 0) + 1;
-            $away->draws  = ($away->draws ?? 0) + 1;
+            $home->draws  = ($home->draws  ?? 0) + 1;
+            $away->draws  = ($away->draws  ?? 0) + 1;
         }
 
         $home->save();
         $away->save();
     }
 
+    // ==========================
+    //   STATS VIDES
+    // ==========================
+
+    private function emptyPlayerStats(): array
+    {
+        return [
+            'offense' => [
+                'pass'    => ['attempts' => 0, 'success' => 0],
+                'shot'    => ['attempts' => 0, 'success' => 0],
+                'dribble' => ['attempts' => 0, 'success' => 0],
+                'special' => ['attempts' => 0, 'success' => 0],
+            ],
+            'defense' => [
+                'intercept' => ['attempts' => 0, 'success' => 0],
+                'tackle'    => ['attempts' => 0, 'success' => 0],
+                'block'     => ['attempts' => 0, 'success' => 0],
+                'hands'     => ['attempts' => 0, 'success' => 0],
+                'punch'     => ['attempts' => 0, 'success' => 0],
+                'gkSpecial' => ['attempts' => 0, 'success' => 0],
+            ],
+            'duelsWon'  => 0,
+            'duelsLost' => 0,
+        ];
+    }
 }
