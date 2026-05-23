@@ -57,6 +57,7 @@ const teamsRef       = computed(() => props.teams);
 const matchesRef     = computed(() => props.matches);
 const freePlayersRef = computed(() => props.freePlayers);
 const teamRef        = computed(() => props.controlledTeam || null);
+const team           = computed(() => props.controlledTeam || null); // alias lisible pour le template
 
 // ==========================
 //   COMPOSABLES
@@ -68,7 +69,8 @@ const {
     lineupForm, getSlotForPlayer, saveLineup, changeSelectedPlayerSlot,
     currentFormation, formationData, saveFormation,
     slotRoleInfo, miniPitchMarkerStyle,
-    playerPhotoUrl,
+    playerPhotoUrl, teamLogoUrl,
+    playerPosition, slotToPlayer, playerForSlot, selectedSlot,
     FORMATIONS, FORMATION_LIST,
 } = useTeam({ gameSave: gameSaveRef, team: teamRef });
 
@@ -171,11 +173,6 @@ const saveGame = () => {
     );
 };
 
-const teamLogoUrl = (t) => {
-    if (t?.logo_path)       return `/storage/${t.logo_path}`;
-    if (t?.team?.logo_path) return `/storage/${t.team.logo_path}`;
-    return null;
-};
 </script>
 
 <template>
@@ -250,6 +247,20 @@ const teamLogoUrl = (t) => {
                                :miniPitchMarkerStyle="miniPitchMarkerStyle"
                                :selectedMyPlayerPerf="selectedMyPlayerPerf"
                                :lineupForm="lineupForm"
+                               :playerPosition="playerPosition"
+                               :playerForSlot="playerForSlot"
+                               :selectedSlot="selectedSlot"
+                               :team="team"
+                               :teamRecord="teamRecord"
+                               :teamBudget="teamBudget"
+                               :clubStanding="clubStanding"
+                               :standings="standings"
+                               :injuriesCount="injuriesCount"
+                               :suspensionsCount="suspensionsCount"
+                               :cardsCount="cardsCount"
+                               :averageAttack="averageAttack"
+                               :averageDefense="averageDefense"
+                               :averageStamina="averageStamina"
                                @select-player="selectMyPlayer"
                                @toggle-starter="toggleStarter"
                                @change-slot="changeSelectedPlayerSlot"
