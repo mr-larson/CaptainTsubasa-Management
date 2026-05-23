@@ -314,6 +314,7 @@ const saveGame = () => {
                     <TabStandings v-else-if="activeTab === 'standings'"
                                   :standings="standings"
                                   :team="teamRef"
+                                  :matches="matches"
                     />
 
                     <!-- ======== STATS ======== -->

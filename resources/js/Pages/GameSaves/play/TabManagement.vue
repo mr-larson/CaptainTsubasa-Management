@@ -15,7 +15,7 @@ const activeSection = ref('dataBase');
 </script>
 
 <template>
-    <div class="flex-1 flex gap-4">
+    <div class="flex-1 flex gap-4 ">
         <!-- Sidebar -->
         <div class="w-1/5 border border-slate-200 rounded-lg bg-slate-50 p-3">
             <h3 class="text-md font-semibold text-slate-700 mb-2">Gestion</h3>
