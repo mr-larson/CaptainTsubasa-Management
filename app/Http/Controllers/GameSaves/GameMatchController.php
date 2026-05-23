@@ -8,6 +8,7 @@ use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
 use App\Services\AITrainingService;
 use App\Services\MatchSimulator;
+use App\Services\Aitransferservice;
 use App\Services\StaminaService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -165,6 +166,7 @@ class GameMatchController extends Controller
         // 3. Simuler les autres matchs de la semaine
         app(MatchSimulator::class)->simulateOtherMatchesOfWeek($match);
         app(AITrainingService::class)->trainForWeek($gameSave);
+        app(Aitransferservice::class)->recruitForWeek($gameSave);
 
         // 4. Avancer la semaine
         $gameSave->week = max($gameSave->week ?? 1, $match->week + 1);
@@ -200,6 +202,7 @@ class GameMatchController extends Controller
 
         app(MatchSimulator::class)->simulateMatchesCollection($matches);
         app(AITrainingService::class)->trainForWeek($gameSave);
+        app(Aitransferservice::class)->recruitForWeek($gameSave);
 
         $gameSave->week = $week + 1;
         $gameSave->save();
