@@ -183,7 +183,7 @@ const saveGame = () => {
         </template>
 
         <div class="p-4">
-            <div class="flex justify-center mb-6">
+            <div class="flex justify-center mb-3">
                 <h1 class="text-3xl font-bold text-slate-600">Session de jeu</h1>
             </div>
 
