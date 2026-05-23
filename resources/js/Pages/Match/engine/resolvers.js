@@ -338,7 +338,7 @@ export function performKeeperClearance(defenseTeam, defenseAction, afterClearanc
         b.frontOfKeeper = false;
         resetLastDribbler();
         _moveBall(defenseTeam, receiver);
-        _state.keeperRestartMustPass = true;
+        
         if (afterClearance) afterClearance();
     };
 
@@ -400,7 +400,7 @@ export function performKeeperClearance(defenseTeam, defenseAction, afterClearanc
             b.frontOfKeeper = false;
             resetLastDribbler();
             _moveBall(defenseTeam, receiver);
-            _state.keeperRestartMustPass = true;
+            
             if (afterClearance) afterClearance();
         });
     }, GK_HOLD);

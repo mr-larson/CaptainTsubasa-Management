@@ -47,17 +47,16 @@ class GameMatchController extends Controller
 
         $isControlledHome = ((int) $controlledGameTeam->id === (int) $homeTeam->id);
 
-        $controlMode = $request->query('controlMode', 'both');
+        // Par défaut : mode single, côté selon domicile/extérieur de l'équipe contrôlée
+        $controlMode = $request->query('controlMode', 'single');
         if (!in_array($controlMode, ['both', 'single'], true)) {
-            $controlMode = 'both';
+            $controlMode = 'single';
         }
 
-        $controlledSide = $request->query(
-            'controlledSide',
-            $isControlledHome ? 'internal' : 'external'
-        );
+        $defaultSide    = $isControlledHome ? 'internal' : 'external';
+        $controlledSide = $request->query('controlledSide', $defaultSide);
         if (!in_array($controlledSide, ['internal', 'external'], true)) {
-            $controlledSide = $isControlledHome ? 'internal' : 'external';
+            $controlledSide = $defaultSide;
         }
 
         $internalTeam = $isControlledHome ? $homeTeam : $awayTeam;
@@ -115,7 +114,7 @@ class GameMatchController extends Controller
     }
 
     /**
-     * ✅ FINALISATION DU MATCH — VERSION CORRIGÉE
+     * Finalise un match joué manuellement.
      */
     public function finishMatch(Request $request, GameSave $gameSave, GameMatch $match): RedirectResponse
     {
@@ -138,54 +137,32 @@ class GameMatchController extends Controller
         $homeTeamId = (int) $match->home_team_id;
         $awayTeamId = (int) $match->away_team_id;
 
-        if (!isset($scores[$homeTeamId], $scores[$awayTeamId])) {
+        if (!array_key_exists($homeTeamId, $scores) || !array_key_exists($awayTeamId, $scores)) {
             abort(422, 'Scores incomplets pour ce match.');
         }
 
         $homeScore = (int) $scores[$homeTeamId];
         $awayScore = (int) $scores[$awayTeamId];
 
-        /**
-         * ✅ CORRECTION CLÉ :
-         * Un match PLAYED ne peut JAMAIS avoir match_stats = NULL
-         */
-        $safeMatchStats = $data['match_stats'] ?? [
-            'teams'   => [],
-            'players' => [],
-        ];
-
-        if (!isset($safeMatchStats['players']) || !is_array($safeMatchStats['players'])) {
-            $safeMatchStats['players'] = [];
-        }
-
-        if (!isset($safeMatchStats['teams']) || !is_array($safeMatchStats['teams'])) {
-            $safeMatchStats['teams'] = [];
-        }
-
-        // 1. Sauvegarde du match
-        $match->update([
-            'home_score'  => $homeScore,
-            'away_score'  => $awayScore,
-            'status'      => 'played',
-            'match_stats' => $safeMatchStats,
-        ]);
+        // 1. Sauvegarder le match avec match_stats (source de vérité)
+        $match->home_score  = $homeScore;
+        $match->away_score  = $awayScore;
+        $match->status      = 'played';
+        $match->match_stats = $data['match_stats'] ?? null;
+        $match->save();
 
         // 2. Classement
         $home = GameTeam::where('game_save_id', $gameSave->id)->findOrFail($homeTeamId);
         $away = GameTeam::where('game_save_id', $gameSave->id)->findOrFail($awayTeamId);
 
-        if ($homeScore > $awayScore) {
-            $home->wins++; $away->losses++;
-        } elseif ($homeScore < $awayScore) {
-            $away->wins++; $home->losses++;
-        } else {
-            $home->draws++; $away->draws++;
-        }
+        if ($homeScore > $awayScore)      { $home->wins++;   $away->losses++; }
+        elseif ($homeScore < $awayScore)  { $away->wins++;   $home->losses++; }
+        else                              { $home->draws++;  $away->draws++;  }
 
         $home->save();
         $away->save();
 
-        // 3. Autres matchs + entraînement
+        // 3. Simuler les autres matchs de la semaine
         app(MatchSimulator::class)->simulateOtherMatchesOfWeek($match);
         app(AITrainingService::class)->trainForWeek($gameSave);
 
@@ -193,16 +170,13 @@ class GameMatchController extends Controller
         $gameSave->week = max($gameSave->week ?? 1, $match->week + 1);
         $gameSave->save();
 
-        // 5. Historique des actions
-        $state                   = $gameSave->state ?? [];
-        $state['player_actions'] = array_merge(
-            $state['player_actions'] ?? [],
-            $data['playerActions'] ?? []
-        );
-        $gameSave->state = $state;
+        // 5. Conserver player_actions dans le state (pour replay futur)
+        $state                     = $gameSave->state ?? [];
+        $state['player_actions']   = array_merge($state['player_actions'] ?? [], $data['playerActions'] ?? []);
+        $gameSave->state           = $state;
         $gameSave->save();
 
-        // 6. Stamina
+        // 6. Stamina après match
         StaminaService::applyAfterMatch($gameSave);
 
         return redirect()->route('game-saves.play', $gameSave);
@@ -237,7 +211,7 @@ class GameMatchController extends Controller
     //   HELPERS PRIVÉS
     // ==========================
 
-    private function mapPlayers(GameTeam $team, GameSave $gameSave)
+    private function mapPlayers(GameTeam $team, GameSave $gameSave): \Illuminate\Support\Collection
     {
         $state      = $gameSave->state ?? [];
         $lineups    = $state['lineup'] ?? [];
@@ -250,11 +224,15 @@ class GameMatchController extends Controller
         if ($teamLineup) {
             for ($slot = 1; $slot <= 11; $slot++) {
                 $pid = $teamLineup[$slot] ?? null;
-                $c   = $pid ? $starters->firstWhere('game_player_id', $pid) : null;
-                $ordered->push([$slot, $c]);
-                if ($c) {
-                    $starters = $starters->reject(fn ($cc) => $cc->id === $c->id)->values();
+                if ($pid) {
+                    $c = $starters->firstWhere('game_player_id', $pid);
+                    if ($c) {
+                        $ordered->push([$slot, $c]);
+                        $starters = $starters->reject(fn($cc) => $cc->id === $c->id)->values();
+                        continue;
+                    }
                 }
+                $ordered->push([$slot, null]);
             }
         } else {
             for ($slot = 1; $slot <= 11; $slot++) {
@@ -267,43 +245,29 @@ class GameMatchController extends Controller
 
             if (!$c || !$c->gamePlayer) {
                 return [
-                    'id' => null,
-                    'number' => $slot,
-                    'firstname' => '',
-                    'lastname' => '',
-                    'position' => '',
-                    'is_starter' => false,
-                    'photo_path' => null,
-                    'photo_url' => null,
-                    'stats' => null,
-                    'special_moves' => [],
+                    'id' => null, 'number' => $slot,
+                    'firstname' => '', 'lastname' => '', 'position' => '',
+                    'is_starter' => false, 'photo_path' => null, 'photo_url' => null,
+                    'stats' => null, 'special_moves' => [],
                 ];
             }
 
             $p = $c->gamePlayer;
-
             return [
-                'id'         => $p->id,
-                'number'     => $slot,
-                'firstname'  => $p->firstname,
-                'lastname'   => $p->lastname,
-                'position'   => $p->position,
-                'is_starter' => (bool) $c->is_starter,
-                'photo_path' => $p->photo_path,
-                'photo_url'  => $p->photo_path ? Storage::url($p->photo_path) : null,
-                'stats' => [
-                    'speed' => $p->speed,
-                    'stamina' => $p->stamina,
-                    'attack' => $p->attack,
-                    'defense' => $p->defense,
-                    'shot' => $p->shot,
-                    'pass' => $p->pass,
-                    'dribble' => $p->dribble,
-                    'block' => $p->block,
-                    'intercept' => $p->intercept,
-                    'tackle' => $p->tackle,
-                    'hand_save' => $p->hand_save,
-                    'punch_save' => $p->punch_save,
+                'id'            => $p->id,
+                'number'        => $slot,
+                'firstname'     => $p->firstname,
+                'lastname'      => $p->lastname,
+                'position'      => $p->position,
+                'is_starter'    => (bool) $c->is_starter,
+                'photo_path'    => $p->photo_path,
+                'photo_url'     => $p->photo_path ? Storage::url($p->photo_path) : null,
+                'stats'         => [
+                    'speed' => $p->speed, 'stamina' => $p->stamina,
+                    'attack' => $p->attack, 'defense' => $p->defense,
+                    'shot' => $p->shot, 'pass' => $p->pass, 'dribble' => $p->dribble,
+                    'block' => $p->block, 'intercept' => $p->intercept, 'tackle' => $p->tackle,
+                    'hand_save' => $p->hand_save, 'punch_save' => $p->punch_save,
                 ],
                 'special_moves' => $p->special_moves ?? [],
             ];
