@@ -125,6 +125,7 @@ export function initMatchEngine(rootEl, config = {}) {
         SPECIAL_COOLDOWN_TURNS: 2,
         touchHeat:      {},
         actionEvents:   [],
+        foulEvents:     [],
         defensePreview: null,
         // Références injectées pour les modules (évite imports circulaires)
         _matchConfig:    matchConfig,
@@ -307,6 +308,7 @@ export function initMatchEngine(rootEl, config = {}) {
                             [externalTeamId]: state.score.external,
                         },
                         playerActions: state.actionEvents,
+                        foulEvents:    state.foulEvents,
                     };
 
                     if (typeof matchConfig.onMatchEnd === "function") {
@@ -357,6 +359,46 @@ export function initMatchEngine(rootEl, config = {}) {
     }
 
     // ==========================
+    //   FAUTES / CARTONS / BLESSURES
+    // ==========================
+    function resolveFoulOutcome({ attackerId, defenderId, duelResult, aRoll, dRoll }) {
+        const isCritFailAttack  = aRoll?.critFail  ?? false;
+        const isCritFailDefense = dRoll?.critFail  ?? false;
+        const isTie             = duelResult === 'tie';
+
+        // CritFail attaquant → 30% blessure légère/modérée
+        if (isCritFailAttack && Math.random() < 0.30) {
+            const severity = Math.random() < 0.7 ? 'light' : 'moderate';
+            state.foulEvents.push({ type: 'injury', player_id: attackerId, severity });
+            pushLogEntry('foulInjuryTitle', ['🤕 Blessure (' + (severity === 'light' ? 'légère' : 'modérée') + ')', 'Attaquant touché'], null, state);
+        }
+
+        // CritFail défenseur → faute + carton possible
+        if (isCritFailDefense) {
+            state.foulEvents.push({ type: 'foul', fouler_player_id: defenderId, victim_player_id: attackerId, is_crit_fail: true });
+            const r = Math.random();
+            if (r < 0.15) {
+                state.foulEvents.push({ type: 'card', player_id: defenderId, card_type: 'red' });
+                pushLogEntry('foulCardTitle', ['🟥 Carton rouge !', 'Faute grave'], null, state);
+            } else if (r < 0.60) {
+                state.foulEvents.push({ type: 'card', player_id: defenderId, card_type: 'yellow' });
+                pushLogEntry('foulCardTitle', ['🟨 Carton jaune', 'Faute dangereuse'], null, state);
+            } else {
+                pushLogEntry('foulTitle', ['⚠️ Faute (crit)', 'Défenseur fautif'], null, state);
+            }
+        }
+
+        // Tie → faute simple 25% + carton jaune 20%
+        if (isTie && Math.random() < 0.25) {
+            state.foulEvents.push({ type: 'foul', fouler_player_id: defenderId, victim_player_id: attackerId, is_crit_fail: false });
+            if (Math.random() < 0.20) {
+                state.foulEvents.push({ type: 'card', player_id: defenderId, card_type: 'yellow' });
+                pushLogEntry('foulCardTitle', ['🟨 Carton jaune', 'Faute'], null, state);
+            }
+        }
+    }
+
+    // ==========================
     //   INIT RESOLVERS (après avoir toutes les fonctions locales)
     // ==========================
     initResolversModule({
@@ -370,6 +412,7 @@ export function initMatchEngine(rootEl, config = {}) {
         isAITeam,
         canUseSpecial,
         markSpecialUsed,
+        resolveFoulOutcome,
         bindActionButtons: () => {
             rootEl.querySelectorAll(".skill-card").forEach(btn =>
                 btn.addEventListener("click", () => handleAttackClick(btn.dataset.action))
@@ -604,7 +647,6 @@ export function initMatchEngine(rootEl, config = {}) {
         applyRosterToDOM(roster, rootEl);
         initStamina(ball, () => updateTeamCard(ball));
 
-        // Bind clics joueurs (card preview)
         rootEl.querySelectorAll(".player").forEach((el) => {
             el.addEventListener("click", () => {
                 const id     = el.dataset.player;
@@ -630,6 +672,7 @@ export function initMatchEngine(rootEl, config = {}) {
         state.pendingShotContext    = null;
         state.pendingDefenseContext = null;
         state.pendingClearanceBonus = 0;
+        state.foulEvents   = [];
 
         applyKickoffPositions(basePositions);
         state._moveBallFn("internal", 8);
@@ -640,7 +683,6 @@ export function initMatchEngine(rootEl, config = {}) {
         setMessage(TEXTS.ui.gameStartMain, TEXTS.ui.gameStartSub);
         pushLogEntry("kickoffTitle", ["kickoffDetail"], null, state);
 
-        // Kickoff event (neutre)
         state.actionEvents.push({
             gameSaveId: matchConfig.gameSaveId ?? null,
             matchId:    matchConfig.matchId    ?? null,
@@ -652,7 +694,6 @@ export function initMatchEngine(rootEl, config = {}) {
         showAttackBarForCurrentTeam();
         refreshUI();
 
-        // Mode 1 joueur
         if (ui.modeOnePlayerBtn) {
             const sync = () => {
                 ui.modeOnePlayerBtn.classList.toggle("active", onePlayerMode);
@@ -672,7 +713,6 @@ export function initMatchEngine(rootEl, config = {}) {
         if (ui.teamNameInternalEl) ui.teamNameInternalEl.textContent = TEAMS.internal.label;
         if (ui.teamNameExternalEl) ui.teamNameExternalEl.textContent = TEAMS.external.label;
 
-        // Classes cards home/away
         const homeCard = rootEl.querySelector("#home-card");
         const awayCard = rootEl.querySelector("#away-card");
         homeCard?.classList.replace("team-external", "team-internal") || homeCard?.classList.add("team-internal");

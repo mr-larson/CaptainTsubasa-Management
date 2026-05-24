@@ -103,7 +103,7 @@ class AITransferService
             // Signer le contrat
             $isStarter = $starterCount < 11;
 
-            DB::transaction(function () use ($gameSave, $team, $candidate, $salary, $gameSave, $remainingWeeks, $isStarter) {
+            DB::transaction(function () use ($gameSave, $team, $candidate, $salary, $remainingWeeks, $isStarter) {
                 GameContract::create([
                     'game_save_id'   => $gameSave->id,
                     'game_team_id'   => $team->id,

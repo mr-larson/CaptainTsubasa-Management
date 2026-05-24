@@ -254,35 +254,47 @@
 
                             <div id="ball"></div>
 
-                            <!-- Joueurs internes -->
-                            <template v-for="slot in 11" :key="'I' + slot">
-                                <div
-                                    v-if="playerPositions['I' + slot]"
-                                    class="player internal"
-                                    :class="{ goalkeeper: slot === 1 }"
-                                    :data-player="'I' + slot"
-                                    :data-zone="playerPositions['I' + slot].zone"
-                                    :style="{
-            left: playerPositions['I' + slot].x + '%',
-            top:  playerPositions['I' + slot].y + '%',
-        }"
-                                >{{ slot }}</div>
-                            </template>
+                            <!-- ZONE 0 : GARDIEN -->
+                            <div class="player internal goalkeeper" data-player="I1" data-zone="0" style="left: 10%; top: 50%;">1</div>
 
-                            <!-- Joueurs externes -->
-                            <template v-for="slot in 11" :key="'E' + slot">
-                                <div
-                                    v-if="playerPositions['E' + slot]"
-                                    class="player external"
-                                    :class="{ goalkeeper: slot === 1 }"
-                                    :data-player="'E' + slot"
-                                    :data-zone="playerPositions['E' + slot].zone"
-                                    :style="{
-            left: playerPositions['E' + slot].x + '%',
-            top:  playerPositions['E' + slot].y + '%',
-        }"
-                                >{{ slot }}</div>
-                            </template>
+                            <!-- ZONE 1 : DÉFENSEURS -->
+                            <div class="player internal" data-player="I2" data-zone="1" style="left: 20%; top: 25%;">2</div>
+                            <div class="player internal" data-player="I3" data-zone="1" style="left: 20%; top: 50%;">3</div>
+                            <div class="player internal" data-player="I4" data-zone="1" style="left: 20%; top: 75%;">4</div>
+
+                            <!-- ZONE 2 : MILIEUX DÉFENSIFS -->
+                            <div class="player internal" data-player="I5" data-zone="2" style="left: 35%; top: 40%;">5</div>
+                            <div class="player internal" data-player="I6" data-zone="2" style="left: 35%; top: 60%;">6</div>
+
+                            <!-- ZONE 3 : MILIEUX OFFENSIFS -->
+                            <div class="player internal" data-player="I7" data-zone="3" style="left: 55%; top: 20%;">7</div>
+                            <div class="player internal" data-player="I8" data-zone="3" style="left: 55%; top: 50%;">8</div>
+                            <div class="player internal" data-player="I9" data-zone="3" style="left: 55%; top: 80%;">9</div>
+
+                            <!-- ZONE 4 : ATTAQUANTS -->
+                            <div class="player internal" data-player="I10" data-zone="4" style="left: 75%; top: 35%;">10</div>
+                            <div class="player internal" data-player="I11" data-zone="4" style="left: 75%; top: 65%;">11</div>
+
+                            <!-- ZONE 0 : GARDIEN -->
+                            <div class="player external goalkeeper" data-player="E1" data-zone="0" style="left: 90%; top: 50%;">1</div>
+
+                            <!-- ZONE 1 : DÉFENSEURS -->
+                            <div class="player external" data-player="E2" data-zone="1" style="left: 80%; top: 25%;">2</div>
+                            <div class="player external" data-player="E3" data-zone="1" style="left: 80%; top: 50%;">3</div>
+                            <div class="player external" data-player="E4" data-zone="1" style="left: 80%; top: 75%;">4</div>
+
+                            <!-- ZONE 2 : MILIEUX DÉFENSIFS -->
+                            <div class="player external" data-player="E5" data-zone="2" style="left: 65%; top: 40%;">5</div>
+                            <div class="player external" data-player="E6" data-zone="2" style="left: 65%; top: 60%;">6</div>
+
+                            <!-- ZONE 3 : MILIEUX OFFENSIFS -->
+                            <div class="player external" data-player="E7" data-zone="3" style="left: 45%; top: 20%;">7</div>
+                            <div class="player external" data-player="E8" data-zone="3" style="left: 45%; top: 50%;">8</div>
+                            <div class="player external" data-player="E9" data-zone="3" style="left: 45%; top: 80%;">9</div>
+
+                            <!-- ZONE 4 : ATTAQUANTS -->
+                            <div class="player external" data-player="E10" data-zone="4" style="left: 25%; top: 35%;">10</div>
+                            <div class="player external" data-player="E11" data-zone="4" style="left: 25%; top: 65%;">11</div>
 
                             <div id="turn-indicator">00</div>
                         </div>
@@ -339,7 +351,6 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { onMounted, onBeforeUnmount, ref, computed } from 'vue';
 import H2 from '@/Components/H2.vue';
-import { FORMATIONS, DEFAULT_FORMATION } from './engine/formations.js';
 
 // ==========================
 //  Engine
@@ -414,15 +425,18 @@ const awayLogoUrl = computed(() => {
 onMounted(() => {
     if (!gameRoot.value) return;
 
+    console.log('ENGINE CONFIG TEAMS = ', props.engineConfig?.teams);
+
     cleanup = initMatchEngine(gameRoot.value, {
         ...props.engineConfig,
-        onMatchEnd: ({ matchId, gameSaveId, scoresByTeamId, playerActions, match_stats }) => {
+        onMatchEnd: ({ matchId, gameSaveId, scoresByTeamId, playerActions, match_stats, foulEvents }) => {
             router.post(
                 route('game-saves.matches.finish', { gameSave: gameSaveId, match: matchId }),
                 {
                     scoresByTeamId,
                     playerActions,
                     match_stats,
+                    foulEvents: foulEvents ?? [],
                 },
                 {
                     preserveScroll: true,
@@ -436,31 +450,5 @@ onMounted(() => {
 onBeforeUnmount(() => {
     if (typeof cleanup === 'function') cleanup();
 });
-// Calcule les positions CSS (left%, top%) de tous les joueurs
-// selon la formation de chaque équipe
-const playerPositions = computed(() => {
-    const positions = {};
-    const ZONE_X = {
-        internal: { 0: 10, 1: 20, 2: 35, 3: 55, 4: 75 },
-        external: { 0: 90, 1: 80, 2: 65, 3: 45, 4: 25 },
-    };
-    const LANE_Y = { 0: 10, 1: 28, 2: 50, 3: 72, 4: 90 };
 
-    for (const side of ['internal', 'external']) {
-        const prefix    = side === 'internal' ? 'I' : 'E';
-        const formKey   = props.engineConfig?.teams?.[side]?.formation ?? DEFAULT_FORMATION;
-        const formation = FORMATIONS[formKey] ?? FORMATIONS[DEFAULT_FORMATION];
-
-        for (let slot = 1; slot <= 11; slot++) {
-            const def = formation.slots[slot];
-            if (!def) continue;
-            positions[`${prefix}${slot}`] = {
-                x:    ZONE_X[side][def.zone] ?? 50,
-                y:    LANE_Y[def.laneIndex]  ?? 50,
-                zone: def.zone,
-            };
-        }
-    }
-    return positions;
-});
 </script>

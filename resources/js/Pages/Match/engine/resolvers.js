@@ -41,12 +41,14 @@ let _isAITeam                    = null;
 let _canUseSpecial               = null;
 let _markSpecialUsed             = null;
 let _bindActionButtons           = null;
+let _resolveFoulOutcome          = null;
 
 export function initResolversModule({
                                         state, roster, ui, TEAMS, rootEl, basePos,
                                         advanceTurn, showAttackBarForCurrentTeam, refreshUI,
                                         animateAndThen, scheduleAIDefense, isAITeam,
                                         canUseSpecial, markSpecialUsed, bindActionButtons,
+                                        resolveFoulOutcome,
                                     }) {
     _state      = state;
     _roster     = roster;
@@ -64,6 +66,7 @@ export function initResolversModule({
     _canUseSpecial               = canUseSpecial;
     _markSpecialUsed             = markSpecialUsed;
     _bindActionButtons           = bindActionButtons;
+    _resolveFoulOutcome          = resolveFoulOutcome ?? null;
 }
 
 // -----------------------------------------------------------
@@ -304,6 +307,18 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
         breakdown,
     });
 
+    // Fautes / cartons / blessures
+    if (_resolveFoulOutcome) {
+        const finalResult = critWinner ?? (attackScore > defenseScore ? "attack" : attackScore < defenseScore ? "defense" : "tie");
+        _resolveFoulOutcome({
+            attackerId,
+            defenderId,
+            duelResult: finalResult,
+            aRoll,
+            dRoll,
+        });
+    }
+
     showDuelDice(attackScore, defenseScore, aRoll, dRoll, breakdown);
     applyStaminaCost(attackerId, "attack", attackType);
     applyStaminaCost(defenderId, "defenseField", defenseAction);
@@ -338,7 +353,7 @@ export function performKeeperClearance(defenseTeam, defenseAction, afterClearanc
         b.frontOfKeeper = false;
         resetLastDribbler();
         _moveBall(defenseTeam, receiver);
-        
+        _state.keeperRestartMustPass = true;
         if (afterClearance) afterClearance();
     };
 
@@ -400,7 +415,7 @@ export function performKeeperClearance(defenseTeam, defenseAction, afterClearanc
             b.frontOfKeeper = false;
             resetLastDribbler();
             _moveBall(defenseTeam, receiver);
-            
+            _state.keeperRestartMustPass = true;
             if (afterClearance) afterClearance();
         });
     }, GK_HOLD);
