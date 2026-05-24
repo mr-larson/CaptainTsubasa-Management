@@ -362,25 +362,32 @@ export function initMatchEngine(rootEl, config = {}) {
     //   FAUTES / CARTONS
     // ==========================
     function resolveFoulOutcome({ attackerId, defenderId, duelResult, aRoll, dRoll }) {
-        const isCritFailAttack  = aRoll?.critFail  ?? false;
-        const isCritFailDefense = dRoll?.critFail  ?? false;
+        // Convertir les IDs DOM (ex: "I5", "E3") en vrais game_player_id DB
+        const getDbId = (domId) => {
+            if (!domId) return null;
+            const team = domId.startsWith('I') ? 'internal' : 'external';
+            const slot = parseInt(domId.slice(1), 10);
+            return roster.getPlayerInfo(team, slot)?.id ?? null;
+        };
+        const attackerDbId = getDbId(attackerId);
+        const defenderDbId = getDbId(defenderId);
+
+        const isCritFailDefense = dRoll?.critFail ?? false;
         const isTie             = duelResult === 'tie';
 
         // CritFail défenseur → faute + carton possible
         if (isCritFailDefense) {
-            state.foulEvents.push({ type: 'foul', fouler_player_id: defenderId, victim_player_id: attackerId, is_crit_fail: true });
+            state.foulEvents.push({ type: 'foul', fouler_player_id: defenderDbId, victim_player_id: attackerDbId, is_crit_fail: true });
             const r = Math.random();
             if (r < 0.15) {
-                // 15% rouge
-                state.foulEvents.push({ type: 'card', player_id: defenderId, card_type: 'red' });
+                state.foulEvents.push({ type: 'card', player_id: defenderDbId, card_type: 'red' });
                 const el = rootEl.querySelector(`[data-player="${defenderId}"]`);
                 if (el) el.classList.add('unavailable');
                 pushLogEntry('foulCardTitle', ['🟥 Carton rouge ! Expulsé !', 'Faute grave'], null, state);
             } else if (r < 0.90) {
-                // 75% jaune
-                state.foulEvents.push({ type: 'card', player_id: defenderId, card_type: 'yellow' });
+                state.foulEvents.push({ type: 'card', player_id: defenderDbId, card_type: 'yellow' });
                 const matchYellows = state.foulEvents.filter(
-                    e => e.type === 'card' && e.card_type === 'yellow' && e.player_id === defenderId
+                    e => e.type === 'card' && e.card_type === 'yellow' && e.player_id === defenderDbId
                 ).length;
                 if (matchYellows >= 2) {
                     const el = rootEl.querySelector(`[data-player="${defenderId}"]`);
@@ -390,18 +397,17 @@ export function initMatchEngine(rootEl, config = {}) {
                     pushLogEntry('foulCardTitle', ['🟨 Carton jaune', 'Faute dangereuse'], null, state);
                 }
             } else {
-                // 10% faute simple
                 pushLogEntry('foulTitle', ['⚠️ Faute', 'Défenseur fautif'], null, state);
             }
         }
 
         // Tie → faute simple 25% + carton jaune 20%
         if (isTie && Math.random() < 0.25) {
-            state.foulEvents.push({ type: 'foul', fouler_player_id: defenderId, victim_player_id: attackerId, is_crit_fail: false });
+            state.foulEvents.push({ type: 'foul', fouler_player_id: defenderDbId, victim_player_id: attackerDbId, is_crit_fail: false });
             if (Math.random() < 0.20) {
-                state.foulEvents.push({ type: 'card', player_id: defenderId, card_type: 'yellow' });
+                state.foulEvents.push({ type: 'card', player_id: defenderDbId, card_type: 'yellow' });
                 const matchYellows = state.foulEvents.filter(
-                    e => e.type === 'card' && e.card_type === 'yellow' && e.player_id === defenderId
+                    e => e.type === 'card' && e.card_type === 'yellow' && e.player_id === defenderDbId
                 ).length;
                 if (matchYellows >= 2) {
                     const el = rootEl.querySelector(`[data-player="${defenderId}"]`);

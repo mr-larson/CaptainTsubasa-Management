@@ -65,8 +65,8 @@ class FoulAndInjuryService
 
     protected function processFoulEvent(GameSave $gameSave, GameMatch $match, array $event, int $week): void
     {
-        $foulerId   = $event['fouler_player_id']  ?? null; // défenseur fautif
-        $victimId   = $event['victim_player_id']  ?? null; // attaquant victime
+        $foulerId   = isset($event['fouler_player_id']) ? (int) $event['fouler_player_id'] : null;
+        $victimId   = isset($event['victim_player_id']) ? (int) $event['victim_player_id'] : null;
         $isCritFail = $event['is_crit_fail']      ?? false;
 
         // Carton pour le fautif
@@ -90,7 +90,7 @@ class FoulAndInjuryService
 
     protected function processInjuryEvent(GameSave $gameSave, GameMatch $match, array $event, int $week): void
     {
-        $playerId = $event['player_id'] ?? null;
+        $playerId = isset($event['player_id']) ? (int) $event['player_id'] : null;
         $severity = $event['severity']  ?? 'light';
 
         if (!$playerId) return;
@@ -104,7 +104,7 @@ class FoulAndInjuryService
 
     protected function processCardEvent(GameSave $gameSave, GameMatch $match, array $event, int $week): void
     {
-        $playerId = $event['player_id'] ?? null;
+        $playerId = isset($event['player_id']) ? (int) $event['player_id'] : null;
         $cardType = $event['card_type'] ?? 'yellow'; // 'yellow' | 'red'
 
         if (!$playerId) return;
@@ -127,6 +127,7 @@ class FoulAndInjuryService
         bool $isCritFail,
         int $week
     ): void {
+        $playerId = (int) $playerId;
         $roll = mt_rand(1, 100);
 
         if ($isCritFail) {
@@ -144,6 +145,7 @@ class FoulAndInjuryService
 
     protected function giveYellowCard(GameSave $gameSave, GameMatch $match, int $playerId, int $week): void
     {
+        $playerId = (int) $playerId;
         DB::transaction(function () use ($gameSave, $match, $playerId, $week) {
             // Compter les cartons jaunes existants cette saison
             $yellowCount = GameSanction::where('game_save_id', $gameSave->id)
@@ -174,6 +176,7 @@ class FoulAndInjuryService
 
     protected function giveRedCard(GameSave $gameSave, GameMatch $match, int $playerId, int $week): void
     {
+        $playerId = (int) $playerId;
         DB::transaction(function () use ($gameSave, $match, $playerId, $week) {
             $weeksSuspended = rand(2, 3);
 

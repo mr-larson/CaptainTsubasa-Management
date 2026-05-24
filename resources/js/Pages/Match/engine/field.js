@@ -196,6 +196,12 @@ export function pickReceiverInCell(team, zoneIndex, laneIndex, fallbackNumber, e
     const { forwardOnly = false, forwardFromXInternal = null, ignoreLaneForInitialPick = false } = opts;
 
     const excludeId = excludeNumber ? getPlayerId(team, excludeNumber) : null;
+    // Exclure les joueurs indisponibles des receveurs
+    const unavailableExcludes = [];
+    _rootEl.querySelectorAll(`.player.${team === 'internal' ? 'internal' : 'external'}.unavailable`).forEach(el => {
+        if (el.dataset.player) unavailableExcludes.push(el.dataset.player);
+    });
+    const allExcludeIds = excludeId ? [excludeId, ...unavailableExcludes] : unavailableExcludes;
 
     let receiverId = pickWeightedPlayerInZone(team, zoneIndex, laneIndex, {
         topK: 6, excludeIds: excludeId ? [excludeId] : [], ignoreLane: ignoreLaneForInitialPick,
@@ -221,8 +227,9 @@ export function pickReceiverInCell(team, zoneIndex, laneIndex, fallbackNumber, e
 
     if (!receiverId) {
         const selector = team === "internal" ? ".player.internal" : ".player.external";
-        let pool = Array.from(_rootEl.querySelectorAll(selector)).filter(el => !el.classList.contains("goalkeeper"));
-
+        let pool = Array.from(_rootEl.querySelectorAll(selector)).filter(el =>
+            !el.classList.contains("goalkeeper") && !el.classList.contains("unavailable")
+        );
         if (!pool.length) return fallbackNumber;
         if (excludeNumber !== null) {
             const filtered = pool.filter(el => parseInt(el.dataset.player.slice(1), 10) !== excludeNumber);
@@ -283,6 +290,24 @@ export function moveBallToPlayer(team, number, updateTeamCardFn) {
 
     ball.team   = team;
     ball.number = targetNumber;
+
+    // Si le joueur cible est unavailable, rediriger vers un disponible
+    const targetEl = getCarrierElement(team, targetNumber);
+    if (targetEl?.classList.contains('unavailable')) {
+        const safeId = pickWeightedPlayerInZone(team, ball.zoneIndex, ball.laneIndex);
+        if (safeId) {
+            targetNumber = parseInt(safeId.slice(1), 10);
+            ball.number = targetNumber;
+            el = getCarrierElement(team, targetNumber);
+            if (!el) return;
+            x = parseFloat(el.style.left);
+            y = parseFloat(el.style.top);
+            _ui.ballEl.style.left = x + "%";
+            _ui.ballEl.style.top  = y + "%";
+            const info2 = _roster.getPlayerInfo(team, targetNumber);
+            _ui.ballEl.textContent = info2 ? String(info2.number) : String(targetNumber);
+        }
+    }
 
     // Gardien sans frontOfKeeper → redirection
     if (ball.number === 1 && !ball.frontOfKeeper) {

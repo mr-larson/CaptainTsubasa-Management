@@ -186,7 +186,7 @@ export const STATS = {
         block:           { power: 10, cost: 5  },
         intercept:       { power: 10, cost: 5  },
         tackle:          { power: 10, cost: 5  },
-        "field-special": { power: 12, cost: 15 },
+        "field-special": { power: 12, cost: 10 },
     },
     defenseGK: {
         hands:       { power: 10, cost: 10 },

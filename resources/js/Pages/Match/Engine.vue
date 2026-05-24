@@ -422,13 +422,14 @@ onMounted(() => {
 
     cleanup = initMatchEngine(gameRoot.value, {
         ...props.engineConfig,
-        onMatchEnd: ({ matchId, gameSaveId, scoresByTeamId, playerActions, match_stats }) => {
+        onMatchEnd: ({ matchId, gameSaveId, scoresByTeamId, playerActions, match_stats, foulEvents }) => {
             router.post(
                 route('game-saves.matches.finish', { gameSave: gameSaveId, match: matchId }),
                 {
                     scoresByTeamId,
                     playerActions,
                     match_stats,
+                    foulEvents: foulEvents ?? [],
                 },
                 {
                     preserveScroll: true,
