@@ -493,6 +493,11 @@ export function applyRosterToDOM(roster, rootEl) {
             el.dataset.firstname= info.firstname;
             el.dataset.lastname = info.lastname;
             el.dataset.position = info.position;
+            if (info.isAvailable === false) {
+                el.classList.add('unavailable');
+            } else {
+                el.classList.remove('unavailable');
+            }
         }
     }
 }

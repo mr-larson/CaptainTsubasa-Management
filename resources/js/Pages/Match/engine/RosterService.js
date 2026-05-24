@@ -62,6 +62,7 @@ export class RosterService {
                         photo:        resolvePhoto(p),
                         stats:        resolveStats(p),
                         specialMoves: Array.isArray(p.special_moves) ? p.special_moves : [],
+                        isAvailable:  p.is_available !== false,
                     } : {
                         id: null, number: slot,
                         firstname: "Joueur", lastname: `#${slot}`,

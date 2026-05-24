@@ -144,6 +144,7 @@ export function pickWeightedPlayerInZone(team, zoneIndex, laneIndex, opts = {}) 
     const candidates = [];
     _rootEl.querySelectorAll(selector).forEach((el) => {
         if (el.classList.contains("goalkeeper")) return;
+        if (el.classList.contains("unavailable")) return;
         const id = el.dataset.player;
         if (!id || excludeIds.includes(id)) return;
 
