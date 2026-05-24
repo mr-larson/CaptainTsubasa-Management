@@ -50,25 +50,145 @@ export function updateScoreUI(state) {
 }
 
 // -----------------------------------------------------------
-//   Historique actions
+//   LOGS ENRICHIS
 // -----------------------------------------------------------
-const actionHistory = [];
-const MAX_HISTORY   = 15;
 
+// Config : types d'actions → icône + couleur CSS
+const LOG_TYPES = {
+    kickoff:           { icon: '🚀', color: 'slate'  },
+    'pass-success':    { icon: '✅', color: 'blue'   },
+    'pass-failed':     { icon: '❌', color: 'red'    },
+    'pass-recovered':  { icon: '✋', color: 'orange' },
+    'dribble-success': { icon: '🌀', color: 'blue'   },
+    'dribble-failed':  { icon: '❌', color: 'red'    },
+    'dribble-face-gk': { icon: '🌀', color: 'blue'   },
+    'shot-goal':       { icon: '⚽', color: 'gold'   },
+    'shot-saved':      { icon: '🧤', color: 'amber'  },
+    'shot-blocked':    { icon: '🧱', color: 'slate'  },
+    'shot-recovered':  { icon: '🔄', color: 'slate'  },
+    'special-goal':    { icon: '🔥', color: 'gold'   },
+    'special-saved':   { icon: '🔥', color: 'amber'  },
+    'gk-restart':      { icon: '🥅', color: 'slate'  },
+    matchend:          { icon: '🏁', color: 'slate'  },
+    injury:            { icon: '🤕', color: 'red'    },
+    'card-yellow':     { icon: '🟨', color: 'yellow' },
+    'card-red':        { icon: '🟥', color: 'red'    },
+    foul:              { icon: '⚠️', color: 'yellow' },
+    unknown:           { icon: '▸',  color: 'slate'  },
+};
+
+class LogEntry {
+    constructor({ turn = 0, actionType = 'unknown', team = null, result = 'neutral', mainText = '–', details = [], diceTag = null } = {}) {
+        this.turn       = turn;
+        this.actionType = actionType;
+        this.team       = team;
+        this.result     = result;
+        this.mainText   = mainText;
+        this.details    = details;
+        this.diceTag    = diceTag;
+    }
+
+    get _cfg() {
+        return LOG_TYPES[this.actionType] ?? LOG_TYPES.unknown;
+    }
+
+    toHTML() {
+        const pad    = n => String(n).padStart(2, '0');
+        const badge  = `<span class="log-turn-badge">T${pad(this.turn)}</span>`;
+        const dot    = this.team
+            ? `<span class="log-team-dot log-team-${this.team}"></span>`
+            : '';
+        const dice   = this.diceTag
+            ? `<span class="log-dice">${this.diceTag}</span>`
+            : '';
+        const detail = this.details.length
+            ? `<div class="log-line-2">${this.details.join(' · ')}</div>`
+            : '';
+
+        return `<li class="log-entry log-result-${this.result} log-${this._cfg.color}">
+            <div class="log-left">${badge}${dot}</div>
+            <div class="log-center">
+                <span class="log-icon">${this._cfg.icon}</span>
+                <div class="log-text">
+                    <div class="log-line-1"><span class="log-main">${this.mainText}</span>${dice}</div>
+                    ${detail}
+                </div>
+            </div>
+        </li>`;
+    }
+}
+
+const logHistory  = [];
+const MAX_HISTORY = 30;
+
+function _pushLog(entry) {
+    logHistory.push(entry);
+    if (logHistory.length > MAX_HISTORY) logHistory.shift();
+    if (_ui?.historyListEl) {
+        _ui.historyListEl.innerHTML = logHistory.map(e => e.toHTML()).join('');
+    }
+}
+
+// Détecte le type d'action et le résultat depuis la clé TEXTS.logs
+function _detectType(key, details) {
+    const k = (key  || '').toLowerCase();
+    const d = (details || []).join(' ').toLowerCase();
+
+    if (k.includes('kickoff'))                                 return ['kickoff',          'neutral'];
+    if (k.includes('matchend'))                                return ['matchend',          'neutral'];
+
+    // passes
+    if (k === 'passsuccesstitle')                              return ['pass-success',      'success'];
+    if (k === 'passrecoveredtitle')                            return ['pass-recovered',    'success'];
+    if (k === 'passfailtitle' || d.includes('intercept'))     return ['pass-failed',       'failed' ];
+
+    // dribbles
+    if (k === 'dribblesuccesstitle')                           return ['dribble-success',   'success'];
+    if (k === 'frontofkeepертitle' || k === 'shotgkequaltitle') return ['dribble-face-gk', 'success'];
+    if (k.includes('dribblerecovered'))                        return ['pass-recovered',    'success'];
+    if (k.includes('dribble') && k.includes('refus'))          return ['dribble-failed',   'failed' ];
+    if (k.includes('dribblefail'))                             return ['dribble-failed',    'failed' ];
+
+    // tirs / buts
+    if (k.includes('goalspecial') || (k.includes('goal') && d.includes('special')))
+        return ['special-goal',      'success'];
+    if (k.includes('goal'))                                    return ['shot-goal',         'success'];
+    if (k.includes('saved') && d.includes('special'))         return ['special-saved',     'neutral'];
+    if (k.includes('saved'))                                   return ['shot-saved',        'neutral'];
+    if (k.includes('blocked'))                                 return ['shot-blocked',      'neutral'];
+    if (k.includes('recovered') && k.includes('shot'))        return ['shot-recovered',    'neutral'];
+
+    // gardien
+    if (k.includes('keeperrestart'))                           return ['gk-restart',        'neutral'];
+
+    // événements
+    if (k.includes('injury') || d.includes('blessure'))       return ['injury',            'failed' ];
+    if (d.includes('🟥') || d.includes('rouge'))              return ['card-red',          'failed' ];
+    if (d.includes('🟨') || d.includes('jaune'))              return ['card-yellow',       'failed' ];
+    if (k.includes('foul') || k.includes('faute'))             return ['foul',             'neutral'];
+
+    return ['unknown', 'neutral'];
+}
+
+// -----------------------------------------------------------
+//   pushLogEntry — export public (signature inchangée)
+// -----------------------------------------------------------
 export function pushLogEntry(logKeyOrText, details = [], diceTag = null, state) {
     const main = TEXTS.logs[logKeyOrText] ?? logKeyOrText;
-    const d    = (details || []).map(x => typeof x === "string" ? (TEXTS.logs[x] ?? x) : x).filter(Boolean);
+    const d    = (details || [])
+        .map(x => typeof x === 'string' ? (TEXTS.logs[x] ?? x) : x)
+        .filter(Boolean);
 
-    if (_ui.currentActionTitleEl)  _ui.currentActionTitleEl.textContent  = main || "–";
-    if (_ui.currentActionDetailEl) _ui.currentActionDetailEl.textContent = d.length ? d.join(" | ") : "";
+    // Mettre à jour le panneau "DERNIÈRE ACTION"
+    if (_ui?.currentActionTitleEl)  _ui.currentActionTitleEl.textContent  = main || '–';
+    if (_ui?.currentActionDetailEl) _ui.currentActionDetailEl.textContent = d.length ? d.join(' | ') : '';
 
-    const turns    = state?.turns ?? 0;
-    const turnLabel= `T${String(turns + 1).padStart(2, "0")}`;
-    const line     = diceTag ? `${turnLabel} — ${main} (${diceTag})` : `${turnLabel} — ${main}`;
+    const turns = state?.turns ?? 0;
+    const team  = state?.currentTeam ?? null;
 
-    actionHistory.push(line);
-    if (actionHistory.length > MAX_HISTORY) actionHistory.shift();
-    if (_ui.historyListEl) _ui.historyListEl.innerHTML = actionHistory.map(l => `<li>${l}</li>`).join("");
+    const [actionType, result] = _detectType(logKeyOrText, d);
+
+    _pushLog(new LogEntry({ turn: turns, actionType, team, result, mainText: main, details: d, diceTag }));
 }
 
 // -----------------------------------------------------------

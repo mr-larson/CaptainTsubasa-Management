@@ -49,20 +49,16 @@ class GameMatchController extends Controller
 
         $isControlledHome = ((int) $controlledGameTeam->id === (int) $homeTeam->id);
 
-        // Par défaut : mode single, côté selon domicile/extérieur de l'équipe contrôlée
+// Par défaut : mode single, côté selon domicile/extérieur de l'équipe contrôlée
         $controlMode = $request->query('controlMode', 'single');
         if (!in_array($controlMode, ['both', 'single'], true)) {
             $controlMode = 'single';
         }
 
-        $defaultSide    = $isControlledHome ? 'internal' : 'external';
-        $controlledSide = $request->query('controlledSide', $defaultSide);
-        if (!in_array($controlledSide, ['internal', 'external'], true)) {
-            $controlledSide = $defaultSide;
-        }
-
-        $internalTeam = $isControlledHome ? $homeTeam : $awayTeam;
-        $externalTeam = $isControlledHome ? $awayTeam : $homeTeam;
+// Home = toujours internal (bleu gauche), Away = toujours external (orange droite)
+        $internalTeam   = $homeTeam;
+        $externalTeam   = $awayTeam;
+        $controlledSide = $isControlledHome ? 'internal' : 'external';
 
         $state   = $gameSave->state ?? [];
         $lineups = $state['lineup'] ?? [];

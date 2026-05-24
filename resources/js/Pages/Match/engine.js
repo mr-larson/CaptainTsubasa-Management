@@ -681,7 +681,6 @@ export function initMatchEngine(rootEl, config = {}) {
         updateSideCard("away", "external", 8);
 
         setMessage(TEXTS.ui.gameStartMain, TEXTS.ui.gameStartSub);
-        pushLogEntry("kickoffTitle", ["kickoffDetail"], null, state);
 
         state.actionEvents.push({
             gameSaveId: matchConfig.gameSaveId ?? null,
