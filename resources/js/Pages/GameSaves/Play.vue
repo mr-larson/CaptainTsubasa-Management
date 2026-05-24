@@ -196,7 +196,7 @@ const saveGame = () => {
         </template>
 
         <div class="p-4">
-            <div class="flex justify-center mb-6">
+            <div class="flex justify-center mb-3">
                 <h1 class="text-3xl font-bold text-slate-600">Session de jeu</h1>
             </div>
 
@@ -303,6 +303,9 @@ const saveGame = () => {
                                    :cardsCountForTeam="cardsCountForTeam"
                                    :averageTeamStat="averageTeamStat"
                                    :playerSeasonStats="props.playerSeasonStats"
+                                   :isPlayerInjured="isPlayerInjured"
+                                   :isPlayerSuspended="isPlayerSuspended"
+                                   :playerYellowCards="playerYellowCards"
                                    @select-team="selectOtherTeam"
                                    @select-player="selectOtherPlayer"
                                    @toggle-starter="toggleOtherStarter"

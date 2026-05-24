@@ -268,6 +268,25 @@ export function updateSideCard(prefix, team, slotNumber) {
 
     const portraitEl = _rootEl.querySelector(`#${prefix}-portrait`);
     if (portraitEl) setCardPhoto(portraitEl, info?.photo);
+
+    // Badge cartons jaunes
+    const badgeEl = _rootEl.querySelector(`#${prefix}-portrait`);
+    const existing = badgeEl?.querySelector('.card-badge');
+    if (existing) existing.remove();
+    if (info?.yellowCards > 0 && badgeEl) {
+        const badge = document.createElement('div');
+        badge.className = 'card-badge';
+        badge.style.cssText = 'position:absolute;bottom:2px;right:2px;background:#eab308;color:#1c1917;font-size:9px;font-weight:900;padding:1px 4px;border-radius:4px;z-index:60;';
+        badge.textContent = `${info.yellowCards}🟨`;
+        badgeEl.appendChild(badge);
+    }
+    if (info?.isAvailable === false && badgeEl) {
+        const badge = document.createElement('div');
+        badge.className = 'card-badge';
+        badge.style.cssText = 'position:absolute;top:2px;right:2px;background:#ef4444;color:#fff;font-size:9px;font-weight:900;padding:1px 4px;border-radius:4px;z-index:60;';
+        badge.textContent = info?.yellowCards >= 2 ? '🚫' : '🤕';
+        badgeEl.appendChild(badge);
+    }
 }
 
 export function syncRecovererCard(defenseTeam, slot) {

@@ -25,6 +25,9 @@ const props = defineProps({
     cardsCountForTeam:      { type: Function, required: true },
     averageTeamStat:        { type: Function, required: true },
     playerSeasonStats:      { type: Object,   default: () => ({}) },
+    isPlayerInjured:        { type: Function, default: () => () => false },
+    isPlayerSuspended:      { type: Function, default: () => () => false },
+    playerYellowCards:      { type: Function, default: () => () => 0 },
 });
 
 const emit = defineEmits([
@@ -132,7 +135,7 @@ const perfChips = computed(() => {
 </script>
 
 <template>
-    <div class="flex-1 flex flex-col gap-4 overflow-y-auto max-h-[72vh] pr-1">
+    <div class="flex-1 flex flex-col gap-4 overflow-y-auto max-h-[75vh] pr-1">
 
         <!-- LIGNE 1 : Sélecteur équipe (chips horizontales) -->
         <div class="border border-slate-200 rounded-xl bg-slate-50 p-3">
@@ -329,6 +332,16 @@ const perfChips = computed(() => {
                             <div class="flex-1 min-w-0">
                                 <div class="text-xs font-semibold truncate">{{ p.lastname }}</div>
                                 <div class="text-[10px] opacity-60 truncate">{{ p.position }}</div>
+                            </div>
+                            <!-- Badges statut -->
+                            <div class="flex items-center gap-1 shrink-0">
+                                <span v-if="isPlayerInjured(p.id)" title="Blessé" class="text-xs">🤕</span>
+                                <span v-if="isPlayerSuspended(p.id)" title="Suspendu" class="text-xs">🚫</span>
+                                <span v-else-if="playerYellowCards(p.id) > 0"
+                                      :title="`${playerYellowCards(p.id)} carton(s) jaune`"
+                                      class="text-[9px] font-black bg-yellow-400 text-yellow-900 px-1 rounded">
+                                    {{ playerYellowCards(p.id) }}🟨
+                                </span>
                             </div>
                             <div class="w-2 h-2 rounded-full shrink-0" :class="p.is_starter ? 'bg-emerald-400' : 'bg-slate-300'"></div>
                         </div>

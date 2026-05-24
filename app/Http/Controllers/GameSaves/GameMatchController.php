@@ -294,6 +294,10 @@ class GameMatchController extends Controller
                 ],
                 'special_moves' => $p->special_moves ?? [],
                 'is_available'  => !in_array($p->id, $unavailableIds),
+                'yellow_cards' => GameSanction::where('game_save_id', $gameSave->id)
+                    ->where('game_player_id', $p->id)
+                    ->where('type', 'yellow')
+                    ->count(),
             ];
         })->values();
     }
