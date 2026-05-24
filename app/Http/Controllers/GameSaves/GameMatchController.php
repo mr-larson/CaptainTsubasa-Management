@@ -180,8 +180,8 @@ class GameMatchController extends Controller
         $gameSave->state           = $state;
         $gameSave->save();
 
-        // 6. Stamina après match
-        StaminaService::applyAfterMatch($gameSave);
+        // 6. Stamina après match (source : match_stats du match joué)
+        StaminaService::applyAfterMatch($gameSave, $match);
 
         // 7. Fautes, cartons et blessures
         $foulEvents = $data['foulEvents'] ?? [];

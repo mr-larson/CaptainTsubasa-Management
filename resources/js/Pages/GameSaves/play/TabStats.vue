@@ -168,7 +168,7 @@ const myPlayersRanking = computed(() => {
                         { label: 'Buteurs',    icon: '⚽', color: 'border-blue-200 bg-blue-50',    badge: 'bg-blue-500',    players: topShooters,  stat: p => p.perf?.offense?.shot?.success ?? 0,    unit: 'buts' },
                         { label: 'Passeurs',   icon: '🎯', color: 'border-sky-200 bg-sky-50',      badge: 'bg-sky-500',     players: topPassers,   stat: p => p.perf?.offense?.pass?.success ?? 0,    unit: 'passes' },
                         { label: 'Dribbleurs', icon: '🔥', color: 'border-orange-200 bg-orange-50',badge: 'bg-orange-500',  players: topDribblers, stat: p => p.perf?.offense?.dribble?.success ?? 0, unit: 'dribbles' },
-                        { label: 'Défenseurs', icon: '⚔️', color: 'border-emerald-200 bg-emerald-50',badge:'bg-emerald-500',players: topDefenders, stat: p => p.perf?.duelsWon ?? 0,                  unit: 'duels' },
+                        { label: 'Duel', icon: '⚔️', color: 'border-emerald-200 bg-emerald-50',badge:'bg-emerald-500',players: topDefenders, stat: p => p.perf?.duelsWon ?? 0,                  unit: 'duels' },
                     ]" :key="ci"
                          class="border rounded-xl p-3 flex flex-col gap-2"
                          :class="category.color"
