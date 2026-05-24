@@ -25,7 +25,7 @@ const recentFormFor = (teamId) => {
     const played = props.matches
         .filter(m =>
             m.status === 'played' &&
-            (m.home_team_id === teamId || m.away_team_id === teamId)
+            (Number(m.home_team_id) === teamId || Number(m.away_team_id) === teamId)
         )
         .slice(-5);
 
