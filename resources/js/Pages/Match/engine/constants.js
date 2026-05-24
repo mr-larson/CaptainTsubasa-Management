@@ -27,7 +27,6 @@ export const DUEL_RULES = {
 //   ENDURANCE
 // ==========================
 export const ENDURANCE_DEFAULT = 100;
-export const CRIT_STAMINA_BOOST = 10; // points récupérés sur un 20 naturel
 
 export const STAMINA_FACTORS = {
     HIGH:      1.0,   // ≥ 75%
@@ -38,6 +37,7 @@ export const STAMINA_FACTORS = {
 };
 
 export const STAMINA_COST_GLOBAL_SCALE = 1.0;
+export const CRIT_STAMINA_BOOST        = 10; // points récupérés sur un 20 naturel
 
 // ==========================
 //   RÈGLES TERRAIN
@@ -143,6 +143,11 @@ export const TEXTS = {
         shotGKEqualTitle:    "Tir vs gardien — égalité",
         shotGoalSpecialTitle:"Tir spécial – BUT",
         keeperRestartMain:   "Relance du gardien",
+        substitutionTitle:   "Remplacement",
+
+        foulCardTitle:    "Carton",
+        foulTitle:        "Faute",
+        foulInjuryTitle:  "Blessure",
     },
     cards: {
         attack: {
@@ -169,7 +174,7 @@ export const TEXTS = {
 //   GRILLE TERRAIN
 // ==========================
 export const ZONE_BOUNDS_INTERNAL = [0, 20, 40, 60, 80, 100]; // 5 zones, index 0..4
-export const laneY = [10, 28, 50, 72, 90]; // 5 lanes
+export const laneY                = [25, 50, 75];              // 3 lanes, index 0..2
 export const MAX_ZONE_INDEX       = ZONE_BOUNDS_INTERNAL.length - 2; // = 4
 
 // ==========================
@@ -177,20 +182,20 @@ export const MAX_ZONE_INDEX       = ZONE_BOUNDS_INTERNAL.length - 2; // = 4
 // ==========================
 export const STATS = {
     attack: {
-        shot:    { power: 10, cost: 15 },
+        shot:    { power: 10, cost: 14 },
         pass:    { power: 10, cost: 10 },
-        dribble: { power: 10, cost: 5  },
-        special: { power: 12, cost: 20 },
+        dribble: { power: 10, cost: 8  },
+        special: { power: 12, cost: 25 },
     },
     defenseField: {
         block:           { power: 10, cost: 5  },
         intercept:       { power: 10, cost: 5  },
         tackle:          { power: 10, cost: 5  },
-        "field-special": { power: 12, cost: 10 },
+        "field-special": { power: 12, cost: 15 },
     },
     defenseGK: {
-        hands:       { power: 10, cost: 10 },
-        punch:       { power: 10, cost: 5 },
+        hands:       { power: 10, cost: 14 },
+        punch:       { power: 10, cost: 10 },
         "gk-special":{ power: 12, cost: 20 },
     },
 };

@@ -30,7 +30,7 @@ import {
     setMessage, setAIOverlay, updateScoreUI, pushLogEntry,
     updateSideCard, syncRecovererCard, updateTeamCard, updateCardsPower,
     buildAttackActionsHTML, buildDefenseFieldHTML, buildDefenseGKHTML,
-    setActionBar, applyRosterToDOM,
+    setActionBar, applyRosterToDOM, resetLogHistory
 } from './engine/ui.js';
 
 import {
@@ -126,15 +126,18 @@ export function initMatchEngine(rootEl, config = {}) {
         touchHeat:      {},
         actionEvents:   [],
         foulEvents:     [],
+        substitutions:      [],
+        substitutionCount:  0,
+        MAX_SUBSTITUTIONS:  3,
         defensePreview: null,
-        // Références injectées pour les modules (évite imports circulaires)
         _matchConfig:    matchConfig,
         _GK_HOLD_MS:     GK_HOLD_MS,
-        _moveBallFn:     null, // branché après init
-        _applyKickoffFn: null, // branché après init
+        _moveBallFn:     null,
+        _applyKickoffFn: null,
+        _performSubstitution: null,
     };
 
-    const ball = state.ball; // raccourci
+    const ball = state.ball;
 
     // ==========================
     //   HELPERS LOCAUX
@@ -178,7 +181,6 @@ export function initMatchEngine(rootEl, config = {}) {
     initUIModule(rootEl, roster, ui, state, TEAMS);
     initAIModule(state, roster);
 
-    // Branche le callback moveBall pour resolvers (évite import circulaire field ↔ resolvers)
     state._moveBallFn = (team, number) => moveBallToPlayer(team, number, () => updateTeamCard(ball));
     state._applyKickoffFn = () => applyKickoffPositions(basePositions);
 
@@ -267,6 +269,106 @@ export function initMatchEngine(rootEl, config = {}) {
     }
 
     // ==========================
+    //   REMPLACEMENTS
+    // ==========================
+    function performSubstitution(team, outSlot, inSlot) {
+        if (state.substitutionCount >= state.MAX_SUBSTITUTIONS) return false;
+        if (outSlot === inSlot) return false;
+
+        const outId = getPlayerId(team, outSlot);
+        const inId  = getPlayerId(team, inSlot);
+        const outEl = rootEl.querySelector(`[data-player="${outId}"]`);
+        const inEl  = rootEl.querySelector(`[data-player="${inId}"]`);
+        if (!outEl || !inEl) return false;
+        if (inEl.classList.contains('unavailable')) return false;
+
+        // Le remplaçant prend la position du sortant
+        inEl.style.left = outEl.style.left;
+        inEl.style.top  = outEl.style.top;
+        if (outEl.dataset.zone) inEl.dataset.zone = outEl.dataset.zone;
+
+        // Griser le sortant
+        outEl.classList.add('unavailable');
+
+        // Si le ballon était chez le sortant → passer au remplaçant
+        if (state.ball.team === team && state.ball.number === outSlot) {
+            state._moveBallFn(team, inSlot);
+        }
+
+        const outInfo = roster.getPlayerInfo(team, outSlot);
+        const inInfo  = roster.getPlayerInfo(team, inSlot);
+
+        state.substitutions.push({
+            team, outSlot, inSlot,
+            turn:        state.turns,
+            outPlayerId: outInfo?.id ?? null,
+            inPlayerId:  inInfo?.id  ?? null,
+        });
+        state.substitutionCount++;
+
+        pushLogEntry('substitutionTitle', [
+            `🔄 ${outInfo?.lastname ?? '#' + outSlot} → ${inInfo?.lastname ?? '#' + inSlot}`,
+        ], null, state);
+
+        refreshUI();
+        return true;
+    }
+
+    // IA — remplacements automatiques stamina < 50%
+    function aiCheckSubstitutions() {
+        if (state.isGameOver) return;
+        if (state.substitutionCount >= state.MAX_SUBSTITUTIONS) return;
+
+        for (const aiTeam of ['internal', 'external']) {
+            if (!isAITeam(aiTeam)) continue;
+
+            for (let outSlot = 1; outSlot <= 11; outSlot++) {
+                const outId = getPlayerId(aiTeam, outSlot);
+                const outEl = rootEl.querySelector(`[data-player="${outId}"]`);
+                if (!outEl || outEl.classList.contains('unavailable')) continue;
+
+                const stMax  = state.staminaMax[outId] ?? 100;
+                const stCur  = state.stamina[outId]    ?? stMax;
+                const ratio  = stMax > 0 ? stCur / stMax : 1;
+                if (ratio >= 0.5) continue;
+
+                const outInfo = roster.getPlayerInfo(aiTeam, outSlot);
+                const outPos  = outInfo?.position ?? '';
+
+                let bestInSlot = null;
+                let bestRatio  = 0;
+
+                for (let inSlot = 1; inSlot <= 11; inSlot++) {
+                    if (inSlot === outSlot) continue;
+                    const inId = getPlayerId(aiTeam, inSlot);
+                    const inEl = rootEl.querySelector(`[data-player="${inId}"]`);
+                    if (!inEl || inEl.classList.contains('unavailable')) continue;
+
+                    const inStMax = state.staminaMax[inId] ?? 100;
+                    const inStCur = state.stamina[inId]    ?? inStMax;
+                    const inRatio = inStMax > 0 ? inStCur / inStMax : 1;
+                    if (inRatio <= ratio) continue;
+
+                    const inInfo  = roster.getPlayerInfo(aiTeam, inSlot);
+                    const samePos = inInfo?.position === outPos;
+
+                    if (samePos && inRatio > bestRatio) {
+                        bestRatio  = inRatio;
+                        bestInSlot = inSlot;
+                    } else if (!bestInSlot && inRatio > 0.8) {
+                        bestInSlot = inSlot;
+                    }
+                }
+
+                if (bestInSlot !== null) {
+                    performSubstitution(aiTeam, outSlot, bestInSlot);
+                    break;
+                }
+            }
+        }
+    }
+
+    // ==========================
     //   ADVANCE TURN
     // ==========================
     function advanceTurn(newTeam) {
@@ -326,6 +428,7 @@ export function initMatchEngine(rootEl, config = {}) {
         state.pendingShotContext = null;
         state.pendingDefenseContext = null;
 
+        aiCheckSubstitutions();
         showAttackBarForCurrentTeam();
         refreshUI();
     }
@@ -362,7 +465,6 @@ export function initMatchEngine(rootEl, config = {}) {
     //   FAUTES / CARTONS
     // ==========================
     function resolveFoulOutcome({ attackerId, defenderId, duelResult, aRoll, dRoll }) {
-        // Convertir les IDs DOM (ex: "I5", "E3") en vrais game_player_id DB
         const getDbId = (domId) => {
             if (!domId) return null;
             const team = domId.startsWith('I') ? 'internal' : 'external';
@@ -375,7 +477,6 @@ export function initMatchEngine(rootEl, config = {}) {
         const isCritFailDefense = dRoll?.critFail ?? false;
         const isTie             = duelResult === 'tie';
 
-        // CritFail défenseur → faute + carton possible
         if (isCritFailDefense) {
             state.foulEvents.push({ type: 'foul', fouler_player_id: defenderDbId, victim_player_id: attackerDbId, is_crit_fail: true });
             const r = Math.random();
@@ -401,7 +502,6 @@ export function initMatchEngine(rootEl, config = {}) {
             }
         }
 
-        // Tie → faute simple 25% + carton jaune 20%
         if (isTie && Math.random() < 0.25) {
             state.foulEvents.push({ type: 'foul', fouler_player_id: defenderDbId, victim_player_id: attackerDbId, is_crit_fail: false });
             if (Math.random() < 0.20) {
@@ -421,7 +521,7 @@ export function initMatchEngine(rootEl, config = {}) {
     }
 
     // ==========================
-    //   INIT RESOLVERS (après avoir toutes les fonctions locales)
+    //   INIT RESOLVERS
     // ==========================
     initResolversModule({
         state, roster, ui, TEAMS, rootEl,
@@ -445,8 +545,11 @@ export function initMatchEngine(rootEl, config = {}) {
         },
     });
 
+    // Brancher performSubstitution dans state pour ui.js
+    state._performSubstitution = performSubstitution;
+
     // ==========================
-    //   KICKOFF AUTO (passe obligatoire)
+    //   KICKOFF AUTO
     // ==========================
     function resolveKickoffPass(attackTeam) {
         if (!state.isKickoff) return;
@@ -675,7 +778,6 @@ export function initMatchEngine(rootEl, config = {}) {
 
         bindDuelTooltipEvents();
 
-        // Reset state
         state.turns        = 0;
         state.currentTeam  = "internal";
         state.score        = { internal: 0, external: 0 };
@@ -688,7 +790,10 @@ export function initMatchEngine(rootEl, config = {}) {
         state.pendingShotContext    = null;
         state.pendingDefenseContext = null;
         state.pendingClearanceBonus = 0;
-        state.foulEvents   = [];
+        state.foulEvents        = [];
+        resetLogHistory();
+        state.substitutions     = [];
+        state.substitutionCount = 0;
 
         applyKickoffPositions(basePositions);
         state._moveBallFn("internal", 8);
@@ -719,7 +824,7 @@ export function initMatchEngine(rootEl, config = {}) {
         }
 
         if (ui.controlledTeamSelect) {
-            ui.controlledTeamSelect.value = controlledTeam;
+            setTimeout(() => { ui.controlledTeamSelect.value = controlledTeam; }, 0);
             ui.controlledTeamSelect.addEventListener("change", () => {
                 controlledTeam = ui.controlledTeamSelect.value === "external" ? "external" : "internal";
             });

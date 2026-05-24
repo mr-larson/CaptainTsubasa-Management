@@ -3,9 +3,6 @@ import { TEXTS, STATS, ACTION_BAR_FADE_MS } from './constants.js';
 import { getStaminaRatio, getStaminaTier } from './stamina.js';
 import { getPlayerId } from './field.js';
 
-// -----------------------------------------------------------
-//   Dépendances injectées
-// -----------------------------------------------------------
 let _rootEl = null;
 let _roster = null;
 let _ui     = null;
@@ -20,9 +17,6 @@ export function initUIModule(rootEl, roster, ui, state, TEAMS) {
     _TEAMS  = TEAMS;
 }
 
-// -----------------------------------------------------------
-//   Messages
-// -----------------------------------------------------------
 export function setMessage(main, sub) {
     if (_ui.msgMainEl && main !== undefined) _ui.msgMainEl.textContent = main;
     if (_ui.msgSubEl  && sub  !== undefined) _ui.msgSubEl.textContent  = sub;
@@ -38,9 +32,6 @@ export function setAIOverlay(visible, text) {
     }
 }
 
-// -----------------------------------------------------------
-//   Score / tours
-// -----------------------------------------------------------
 export function updateScoreUI(state) {
     if (_ui.scoreInternalEl) _ui.scoreInternalEl.textContent = state.score.internal;
     if (_ui.scoreExternalEl) _ui.scoreExternalEl.textContent = state.score.external;
@@ -49,11 +40,6 @@ export function updateScoreUI(state) {
     if (_ui.turnIndicatorEl)  _ui.turnIndicatorEl.textContent = t;
 }
 
-// -----------------------------------------------------------
-//   LOGS ENRICHIS
-// -----------------------------------------------------------
-
-// Config : types d'actions → icône + couleur CSS
 const LOG_TYPES = {
     kickoff:           { icon: '🚀', color: 'slate'  },
     'pass-success':    { icon: '✅', color: 'blue'   },
@@ -73,7 +59,8 @@ const LOG_TYPES = {
     injury:            { icon: '🤕', color: 'red'    },
     'card-yellow':     { icon: '🟨', color: 'yellow' },
     'card-red':        { icon: '🟥', color: 'red'    },
-    foul:              { icon: '⚠️', color: 'yellow' },
+    foul:              { icon: '⚠️', color: 'slate'  },
+    substitution:      { icon: '🔄', color: 'blue'   },
     unknown:           { icon: '▸',  color: 'slate'  },
 };
 
@@ -121,6 +108,10 @@ class LogEntry {
 const logHistory  = [];
 const MAX_HISTORY = 30;
 
+export function resetLogHistory() {
+    logHistory.length = 0;
+}
+
 function _pushLog(entry) {
     logHistory.push(entry);
     if (logHistory.length > MAX_HISTORY) logHistory.shift();
@@ -129,27 +120,21 @@ function _pushLog(entry) {
     }
 }
 
-// Détecte le type d'action et le résultat depuis la clé TEXTS.logs
 function _detectType(key, details) {
     const k = (key  || '').toLowerCase();
     const d = (details || []).join(' ').toLowerCase();
 
     if (k.includes('kickoff'))                                 return ['kickoff',          'neutral'];
     if (k.includes('matchend'))                                return ['matchend',          'neutral'];
-
-    // passes
+    if (k.includes('substitution'))                            return ['substitution',      'neutral'];
     if (k === 'passsuccesstitle')                              return ['pass-success',      'success'];
     if (k === 'passrecoveredtitle')                            return ['pass-recovered',    'success'];
     if (k === 'passfailtitle' || d.includes('intercept'))     return ['pass-failed',       'failed' ];
-
-    // dribbles
     if (k === 'dribblesuccesstitle')                           return ['dribble-success',   'success'];
     if (k === 'frontofkeepертitle' || k === 'shotgkequaltitle') return ['dribble-face-gk', 'success'];
     if (k.includes('dribblerecovered'))                        return ['pass-recovered',    'success'];
     if (k.includes('dribble') && k.includes('refus'))          return ['dribble-failed',   'failed' ];
     if (k.includes('dribblefail'))                             return ['dribble-failed',    'failed' ];
-
-    // tirs / buts
     if (k.includes('goalspecial') || (k.includes('goal') && d.includes('special')))
         return ['special-goal',      'success'];
     if (k.includes('goal'))                                    return ['shot-goal',         'success'];
@@ -157,11 +142,7 @@ function _detectType(key, details) {
     if (k.includes('saved'))                                   return ['shot-saved',        'neutral'];
     if (k.includes('blocked'))                                 return ['shot-blocked',      'neutral'];
     if (k.includes('recovered') && k.includes('shot'))        return ['shot-recovered',    'neutral'];
-
-    // gardien
     if (k.includes('keeperrestart'))                           return ['gk-restart',        'neutral'];
-
-    // événements
     if (k.includes('injury') || d.includes('blessure'))       return ['injury',            'failed' ];
     if (d.includes('🟥') || d.includes('rouge'))              return ['card-red',          'failed' ];
     if (d.includes('🟨') || d.includes('jaune'))              return ['card-yellow',       'failed' ];
@@ -170,19 +151,14 @@ function _detectType(key, details) {
     return ['unknown', 'neutral'];
 }
 
-// -----------------------------------------------------------
-//   pushLogEntry — export public (signature inchangée)
-// -----------------------------------------------------------
 export function pushLogEntry(logKeyOrText, details = [], diceTag = null, state) {
     const main = TEXTS.logs[logKeyOrText] ?? logKeyOrText;
 
-    // Filtrer les détails techniques (Zone X, Defense: xxx, Bon/Mauvais choix)
     const TECHNICAL_PATTERNS = [/^zone \d/i, /^defense:/i, /^ok bon/i, /^x mauvais/i, /^\(special/i];
     const d = (details || [])
         .map(x => typeof x === 'string' ? (TEXTS.logs[x] ?? x) : x)
         .filter(x => x && !TECHNICAL_PATTERNS.some(p => p.test(String(x))));
 
-    // Mettre à jour le panneau "DERNIÈRE ACTION" — titre seulement, pas de détails
     if (_ui?.currentActionTitleEl)  _ui.currentActionTitleEl.textContent  = main || '–';
     if (_ui?.currentActionDetailEl) _ui.currentActionDetailEl.textContent = '';
 
@@ -194,9 +170,6 @@ export function pushLogEntry(logKeyOrText, details = [], diceTag = null, state) 
     _pushLog(new LogEntry({ turn: turns, actionType, team, result, mainText: main, details: d, diceTag }));
 }
 
-// -----------------------------------------------------------
-//   Photo card
-// -----------------------------------------------------------
 function ensureCardPhotoLayer(cardEl) {
     if (!cardEl) return null;
     if (getComputedStyle(cardEl).position === "static") cardEl.style.position = "relative";
@@ -228,9 +201,6 @@ function setCardPhoto(cardEl, photoUrl) {
     img.classList.remove("hidden");
 }
 
-// -----------------------------------------------------------
-//   Side card
-// -----------------------------------------------------------
 export function updateSideCard(prefix, team, slotNumber) {
     const info = _roster.getPlayerInfo(team, slotNumber);
     const setText = (id, value) => {
@@ -269,7 +239,7 @@ export function updateSideCard(prefix, team, slotNumber) {
     const portraitEl = _rootEl.querySelector(`#${prefix}-portrait`);
     if (portraitEl) setCardPhoto(portraitEl, info?.photo);
 
-    // Badges cartons/statut — combine DB (yellowCards) + match en cours (foulEvents)
+    // Badges cartons/statut
     const matchYellows = (_state?.foulEvents ?? [])
         .filter(e => e.type === 'card' && e.card_type === 'yellow' && e.player_id === playerId)
         .length;
@@ -292,6 +262,82 @@ export function updateSideCard(prefix, team, slotNumber) {
         badge.textContent = totalYellows >= 2 ? '🚫' : '🤕';
         badgeEl.appendChild(badge);
     }
+
+    // Bouton remplacement — seulement pour l'équipe contrôlée, stamina < 50%
+    const cardEl = _rootEl.querySelector(`#${prefix}-card`);
+    _rootEl.querySelector(`#${prefix}-sub-panel`)?.remove();
+
+    const controlledTeamId = _state?._matchConfig?.teams?.[_state?._matchConfig?.controlledSide]?.id;
+    const currentTeamId    = _state?._matchConfig?.teams?.[team]?.id;
+    const isControlledTeam = (
+        controlledTeamId === currentTeamId ||
+        _state?._matchConfig?.controlMode === 'both'
+    );
+    const staminaRatio = getStaminaRatio(playerId);
+    const canSub = (
+        isControlledTeam &&
+        !_state?.isGameOver &&
+        staminaRatio < 0.5 &&
+        (_state?.substitutionCount ?? 0) < (_state?.MAX_SUBSTITUTIONS ?? 3) &&
+        !(_state?.substitutions ?? []).some(s => s.outSlot === slotNumber && s.team === team) &&
+        !_state?.isKickoff
+    );
+
+    if (canSub && cardEl) {
+        const panel = document.createElement('div');
+        panel.id = `${prefix}-sub-panel`;
+
+        const subs = [];
+        for (let s = 1; s <= 11; s++) {
+            if (s === slotNumber) continue;
+            const subDomId = getPlayerId(team, s);
+            const subEl    = _rootEl.querySelector(`[data-player="${subDomId}"]`);
+            if (!subEl || subEl.classList.contains('unavailable')) continue;
+            const subInfo = _roster.getPlayerInfo(team, s);
+            if (!subInfo) continue;
+            subs.push({ slot: s, info: subInfo });
+        }
+
+        if (subs.length > 0) {
+            const remaining = (_state.MAX_SUBSTITUTIONS ?? 3) - (_state.substitutionCount ?? 0);
+            const btn = document.createElement('button');
+            btn.textContent = `🔄 Remplacer (${remaining} restant${remaining > 1 ? 's' : ''})`;
+            btn.style.cssText = 'width:100%;padding:4px 8px;background:#0ea5e9;color:#fff;border:none;border-radius:8px;font-size:10px;font-weight:700;cursor:pointer;margin-top:4px;margin-bottom:2px;';
+
+            const list = document.createElement('div');
+            list.style.cssText = 'display:none;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;margin-top:2px;max-height:120px;overflow-y:auto;';
+
+            subs.forEach(({ slot, info: subInfo }) => {
+                const subPid  = getPlayerId(team, slot);
+                const stMax   = _state.staminaMax[subPid] ?? 100;
+                const stCur   = _state.stamina[subPid]    ?? stMax;
+                const pct     = stMax > 0 ? Math.round(stCur / stMax * 100) : 100;
+                const item    = document.createElement('button');
+                item.style.cssText = 'width:100%;padding:4px 8px;text-align:left;font-size:10px;border:none;background:transparent;cursor:pointer;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;';
+                item.innerHTML = `<span>${subInfo.number}. ${subInfo.lastname}</span><span style="color:#64748b;font-size:9px;">${subInfo.position} · ${pct}%⚡</span>`;
+                item.onmouseenter = () => item.style.background = '#e0f2fe';
+                item.onmouseleave = () => item.style.background = 'transparent';
+                item.onclick = () => {
+                    if (_state._performSubstitution) {
+                        const ok = _state._performSubstitution(team, slotNumber, slot);
+                        if (ok) panel.remove();
+                    }
+                };
+                list.appendChild(item);
+            });
+
+            let open = false;
+            btn.onclick = () => {
+                open = !open;
+                list.style.display = open ? 'block' : 'none';
+                btn.style.background = open ? '#0284c7' : '#0ea5e9';
+            };
+
+            panel.appendChild(btn);
+            panel.appendChild(list);
+            cardEl.appendChild(panel);
+        }
+    }
 }
 
 export function syncRecovererCard(defenseTeam, slot) {
@@ -305,9 +351,6 @@ export function updateTeamCard(ball) {
     updateCardsPower(ball);
 }
 
-// -----------------------------------------------------------
-//   Puissances cartes
-// -----------------------------------------------------------
 export function updateCardsPower(ball) {
     if (!_ui.actionBarEl) return;
 
@@ -321,7 +364,6 @@ export function updateCardsPower(ball) {
         if (el) el.textContent = String(Number(carrierStats[map[a]] ?? 0));
     });
 
-    // Label special attaque
     const specialBtn = _ui.actionBarEl.querySelector('.skill-card[data-action="special"]');
     if (specialBtn) {
         const titleEl = specialBtn.querySelector('.skill-title');
@@ -389,9 +431,6 @@ function _updateSpecialDefLabel(btn, team, slot, mode, defaultCfg) {
     }
 }
 
-// -----------------------------------------------------------
-//   Construction HTML barre d'actions
-// -----------------------------------------------------------
 function buildSkillCard(actionKey, cfg) {
     return `<button class="skill-card" data-action="${actionKey}">
         <div class="skill-icon">${cfg.icon}</div>
@@ -500,9 +539,6 @@ export function setActionBar(html, modeClass, ball, roster, bindFn, isKickoff) {
     }, ACTION_BAR_FADE_MS);
 }
 
-// -----------------------------------------------------------
-//   Roster → DOM (numéros)
-// -----------------------------------------------------------
 export function applyRosterToDOM(roster, rootEl) {
     for (const team of ["internal", "external"]) {
         for (let slot = 1; slot <= 11; slot++) {
