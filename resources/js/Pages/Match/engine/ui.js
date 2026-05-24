@@ -125,7 +125,7 @@ function _pushLog(entry) {
     logHistory.push(entry);
     if (logHistory.length > MAX_HISTORY) logHistory.shift();
     if (_ui?.historyListEl) {
-        _ui.historyListEl.innerHTML = logHistory.map(e => e.toHTML()).join('');
+        _ui.historyListEl.innerHTML = [...logHistory].reverse().map(e => e.toHTML()).join('');
     }
 }
 
@@ -175,13 +175,16 @@ function _detectType(key, details) {
 // -----------------------------------------------------------
 export function pushLogEntry(logKeyOrText, details = [], diceTag = null, state) {
     const main = TEXTS.logs[logKeyOrText] ?? logKeyOrText;
-    const d    = (details || [])
-        .map(x => typeof x === 'string' ? (TEXTS.logs[x] ?? x) : x)
-        .filter(Boolean);
 
-    // Mettre à jour le panneau "DERNIÈRE ACTION"
+    // Filtrer les détails techniques (Zone X, Defense: xxx, Bon/Mauvais choix)
+    const TECHNICAL_PATTERNS = [/^zone \d/i, /^defense:/i, /^ok bon/i, /^x mauvais/i, /^\(special/i];
+    const d = (details || [])
+        .map(x => typeof x === 'string' ? (TEXTS.logs[x] ?? x) : x)
+        .filter(x => x && !TECHNICAL_PATTERNS.some(p => p.test(String(x))));
+
+    // Mettre à jour le panneau "DERNIÈRE ACTION" — titre seulement, pas de détails
     if (_ui?.currentActionTitleEl)  _ui.currentActionTitleEl.textContent  = main || '–';
-    if (_ui?.currentActionDetailEl) _ui.currentActionDetailEl.textContent = d.length ? d.join(' | ') : '';
+    if (_ui?.currentActionDetailEl) _ui.currentActionDetailEl.textContent = '';
 
     const turns = state?.turns ?? 0;
     const team  = state?.currentTeam ?? null;

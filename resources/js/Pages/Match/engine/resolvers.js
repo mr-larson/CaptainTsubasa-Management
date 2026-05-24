@@ -511,6 +511,7 @@ export function resolvePass(attackTeam, defenseTeam, defenseAction, defenderPick
 // -----------------------------------------------------------
 export function resolveDribble(attackTeam, defenseTeam, defenseAction, defenderPick = null) {
     const b = ball();
+    _state.keeperRestartMustPass = false;
 
     if (b.frontOfKeeper) {
         setMessage(TEXTS.ui.dribbleForbiddenMain, TEXTS.ui.dribbleForbiddenSub);
@@ -602,6 +603,7 @@ export function resolveDribble(attackTeam, defenseTeam, defenseAction, defenderP
 // -----------------------------------------------------------
 export function resolveShot(attackTeam, defenseTeam, defenseAction, isSpecial = false, defenderPick = null) {
     const b          = ball();
+    _state.keeperRestartMustPass = false;
     const originZone = b.zoneIndex;
     const originLane = b.laneIndex;
     const attackType = isSpecial ? "special" : "shot";
