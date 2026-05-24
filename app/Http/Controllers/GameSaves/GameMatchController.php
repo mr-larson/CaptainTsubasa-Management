@@ -263,7 +263,7 @@ class GameMatchController extends Controller
             }
         }
 
-        return $ordered->map(function (array $row) use ($unavailableIds) {
+        return $ordered->map(function (array $row) use ($unavailableIds, $gameSave) {
             [$slot, $c] = $row;
 
             if (!$c || !$c->gamePlayer) {

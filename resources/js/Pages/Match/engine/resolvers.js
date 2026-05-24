@@ -307,7 +307,7 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
         breakdown,
     });
 
-    // Fautes / cartons / blessures
+    // Fautes / cartons
     if (_resolveFoulOutcome) {
         const finalResult = critWinner ?? (attackScore > defenseScore ? "attack" : attackScore < defenseScore ? "defense" : "tie");
         _resolveFoulOutcome({
@@ -322,6 +322,20 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
     showDuelDice(attackScore, defenseScore, aRoll, dRoll, breakdown);
     applyStaminaCost(attackerId, "attack", attackType);
     applyStaminaCost(defenderId, "defenseField", defenseAction);
+    // blessures
+    const checkInjury = (pid) => {
+        if (!pid) return;
+        const stamina = _state.stamina[pid] ?? 0;
+        if (stamina <= 0 && Math.random() < 0.35) {
+            _state.foulEvents.push({ type: 'injury', player_id: pid, severity: 'moderate' });
+            const el = _rootEl.querySelector(`[data-player="${pid}"]`);
+            if (el) el.classList.add('unavailable');
+            pushLogEntry('foulInjuryTitle', ['🤕 Blessure (épuisement)'], null, _state);
+        }
+    };
+    checkInjury(attackerId);
+    checkInjury(defenderId);
+
     if (attackType    === "special")       _markSpecialUsed(attackerId);
     if (defenseAction === "field-special") _markSpecialUsed(defenderId);
 
@@ -353,7 +367,6 @@ export function performKeeperClearance(defenseTeam, defenseAction, afterClearanc
         b.frontOfKeeper = false;
         resetLastDribbler();
         _moveBall(defenseTeam, receiver);
-        _state.keeperRestartMustPass = true;
         if (afterClearance) afterClearance();
     };
 
@@ -415,7 +428,6 @@ export function performKeeperClearance(defenseTeam, defenseAction, afterClearanc
             b.frontOfKeeper = false;
             resetLastDribbler();
             _moveBall(defenseTeam, receiver);
-            _state.keeperRestartMustPass = true;
             if (afterClearance) afterClearance();
         });
     }, GK_HOLD);
@@ -752,6 +764,19 @@ export function resolveShotKeeperDuel(ctx, defenseAction) {
 
     showDuelDice(attackScore, defenseScore, aRoll, dRoll, breakdown);
     applyStaminaCost(attackerId, "attack", isSpecial ? "special" : "shot");
+    // Blessures
+    const checkInjury = (pid) => {
+        if (!pid) return;
+        const stamina = _state.stamina[pid] ?? 0;
+        if (stamina <= 0 && Math.random() < 0.35) {
+            _state.foulEvents.push({ type: 'injury', player_id: pid, severity: 'moderate' });
+            const el = _rootEl.querySelector(`[data-player="${pid}"]`);
+            if (el) el.classList.add('unavailable');
+            pushLogEntry('foulInjuryTitle', ['🤕 Blessure (épuisement)'], null, _state);
+        }
+    };
+    checkInjury(attackerId);
+    checkInjury(keeperId);
     if (keeperId) applyStaminaCost(keeperId, "defenseGK", defenseAction);
     if (isSpecial) _markSpecialUsed(attackerId);
     if (defenseAction === "gk-special" && keeperId) _markSpecialUsed(keeperId);
