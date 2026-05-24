@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\GameSaves;
 
 use App\Http\Controllers\Controller;
+use App\Models\GameSaves\GameInjury;
 use App\Models\GameSaves\GameMatch;
+use App\Models\GameSaves\GameSanction;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
-use App\Models\GameSaves\GameInjury;
-use App\Models\GameSaves\GameSanction;
 use App\Services\AITrainingService;
 use App\Services\MatchSimulator;
 use App\Services\AITransferService;
@@ -51,20 +51,16 @@ class GameMatchController extends Controller
 
         $isControlledHome = ((int) $controlledGameTeam->id === (int) $homeTeam->id);
 
-        // Par défaut : mode single, côté selon domicile/extérieur de l'équipe contrôlée
+// Par défaut : mode single, côté selon domicile/extérieur de l'équipe contrôlée
         $controlMode = $request->query('controlMode', 'single');
         if (!in_array($controlMode, ['both', 'single'], true)) {
             $controlMode = 'single';
         }
 
-        $defaultSide    = $isControlledHome ? 'internal' : 'external';
-        $controlledSide = $request->query('controlledSide', $defaultSide);
-        if (!in_array($controlledSide, ['internal', 'external'], true)) {
-            $controlledSide = $defaultSide;
-        }
-
-        $internalTeam = $isControlledHome ? $homeTeam : $awayTeam;
-        $externalTeam = $isControlledHome ? $awayTeam : $homeTeam;
+// Home = toujours internal (bleu gauche), Away = toujours external (orange droite)
+        $internalTeam   = $homeTeam;
+        $externalTeam   = $awayTeam;
+        $controlledSide = $isControlledHome ? 'internal' : 'external';
 
         $state   = $gameSave->state ?? [];
         $lineups = $state['lineup'] ?? [];
@@ -267,7 +263,7 @@ class GameMatchController extends Controller
             }
         }
 
-        return $ordered->map(function (array $row) {
+        return $ordered->map(function (array $row) use ($unavailableIds) {
             [$slot, $c] = $row;
 
             if (!$c || !$c->gamePlayer) {
