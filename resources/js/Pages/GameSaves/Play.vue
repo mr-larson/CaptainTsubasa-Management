@@ -32,12 +32,15 @@ import TabManagement from './play/TabManagement.vue';
 //   PROPS INERTIA
 // ==========================
 const props = defineProps({
-    gameSave:       { type: Object, required: true },
-    teams:          { type: Array,  required: true },
-    freePlayers:    { type: Array,  required: true },
-    matches:        { type: Array,  required: true },
+    gameSave:          { type: Object, required: true },
+    teams:             { type: Array,  required: true },
+    freePlayers:       { type: Array,  required: true },
+    matches:           { type: Array,  required: true },
     controlledTeam:    { type: Object, required: false, default: null },
     playerSeasonStats: { type: Object, default: () => ({}) },
+    activeInjuries:    { type: Array,  default: () => [] },
+    activeSuspensions: { type: Array,  default: () => [] },
+    activeYellowCards: { type: Object, default: () => ({}) },
 });
 
 // ==========================
@@ -76,13 +79,23 @@ const {
     FORMATIONS, FORMATION_LIST,
 } = useTeam({ gameSave: gameSaveRef, team: teamRef });
 
+const activeInjuriesRef    = computed(() => props.activeInjuries    ?? []);
+const activeSuspensionsRef = computed(() => props.activeSuspensions ?? []);
+const activeYellowCardsRef = computed(() => props.activeYellowCards ?? {});
+
 const {
     standings, clubStanding,
     teamRecord, teamBudget,
     injuriesCount, suspensionsCount, cardsCount,
     injuriesCountForTeam, suspensionsCountForTeam, cardsCountForTeam,
+    isPlayerInjured, isPlayerSuspended, playerYellowCards, playerInjury, playerSuspension,
     averageAttack, averageDefense, averageStamina, averageSpeed,
-} = useDashboard({ teams: teamsRef, gameSave: gameSaveRef, team: teamRef, roster });
+} = useDashboard({
+    teams: teamsRef, gameSave: gameSaveRef, team: teamRef, roster,
+    activeInjuries: activeInjuriesRef,
+    activeSuspensions: activeSuspensionsRef,
+    activeYellowCards: activeYellowCardsRef,
+});
 
 const {
     isByeMatch, teamById,
@@ -183,7 +196,7 @@ const saveGame = () => {
         </template>
 
         <div class="p-4">
-            <div class="flex justify-center mb-3">
+            <div class="flex justify-center mb-6">
                 <h1 class="text-3xl font-bold text-slate-600">Session de jeu</h1>
             </div>
 
@@ -260,6 +273,11 @@ const saveGame = () => {
                                :averageAttack="averageAttack"
                                :averageDefense="averageDefense"
                                :averageStamina="averageStamina"
+                               :isPlayerInjured="isPlayerInjured"
+                               :isPlayerSuspended="isPlayerSuspended"
+                               :playerYellowCards="playerYellowCards"
+                               :playerInjury="playerInjury"
+                               :playerSuspension="playerSuspension"
                                @select-player="selectMyPlayer"
                                @toggle-starter="toggleStarter"
                                @change-slot="changeSelectedPlayerSlot"

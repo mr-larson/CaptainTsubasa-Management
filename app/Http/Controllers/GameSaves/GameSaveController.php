@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\GameSaves\GameSaveRequest;
 use App\Models\Contract;
 use App\Models\GameSaves\GameContract;
+use App\Models\GameSaves\GameInjury;
 use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSave;
+use App\Models\GameSaves\GameSanction;
 use App\Models\GameSaves\GameTeam;
 use App\Models\Player;
 use App\Models\Team;
@@ -16,7 +18,6 @@ use App\Services\PlayerStatsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -198,13 +199,49 @@ class GameSaveController extends Controller
         // ─── Stats saison agrégées depuis game_matches.match_stats ───
         $playerSeasonStats = PlayerStatsService::aggregateForSave($gameSave);
 
+        // ─── Blessures et suspensions actives ───
+        $currentWeek = $gameSave->week ?? 1;
+
+        $activeInjuries = GameInjury::where('game_save_id', $gameSave->id)
+            ->where('week_return', '>', $currentWeek)
+            ->with('gamePlayer')
+            ->get()
+            ->map(fn($i) => [
+                'game_player_id' => $i->game_player_id,
+                'severity'       => $i->severity,
+                'weeks_out'      => $i->weeks_out,
+                'week_return'    => $i->week_return,
+                'description'    => $i->description,
+            ]);
+
+        $activeSuspensions = GameSanction::where('game_save_id', $gameSave->id)
+            ->where('week_return', '>', $currentWeek)
+            ->where('weeks_suspended', '>', 0)
+            ->get()
+            ->map(fn($s) => [
+                'game_player_id'  => $s->game_player_id,
+                'type'            => $s->type,
+                'weeks_suspended' => $s->weeks_suspended,
+                'week_return'     => $s->week_return,
+            ]);
+
+        $activeYellowCards = GameSanction::where('game_save_id', $gameSave->id)
+            ->where('type', 'yellow')
+            ->where('week_match', '>=', $currentWeek - 20)
+            ->get()
+            ->groupBy('game_player_id')
+            ->map(fn($cards) => $cards->count());
+
         return Inertia::render('GameSaves/Play', [
             'gameSave'          => $gameSave,
             'teams'             => $gameTeams,
             'matches'           => $matches,
             'freePlayers'       => $freePlayers,
             'controlledTeam'    => $controlledTeam,
-            'playerSeasonStats' => $playerSeasonStats, // ← depuis DB, pas depuis state
+            'playerSeasonStats' => $playerSeasonStats,
+            'activeInjuries'    => $activeInjuries,
+            'activeSuspensions' => $activeSuspensions,
+            'activeYellowCards' => $activeYellowCards,
         ]);
     }
 

@@ -1,7 +1,7 @@
 // resources/js/Pages/GameSaves/play/useDashboard.js
 import { computed } from 'vue';
 
-export function useDashboard({ teams, gameSave, team, roster }) {
+export function useDashboard({ teams, gameSave, team, roster, activeInjuries, activeSuspensions, activeYellowCards }) {
 
     // ==========================
     //   CLASSEMENT
@@ -40,26 +40,54 @@ export function useDashboard({ teams, gameSave, team, roster }) {
     const teamBudget = computed(() => team.value?.budget ?? 0);
 
     // ==========================
-    //   BLESSURES / CARTONS
+    //   BLESSURES / SUSPENSIONS / CARTONS
+    //   Source : game_injuries + game_sanctions (via props Inertia)
     // ==========================
-    const injuries    = computed(() => gameSave.value.state?.injuries    ?? []);
-    const suspensions = computed(() => gameSave.value.state?.suspensions ?? []);
-    const cards       = computed(() => gameSave.value.state?.cards       ?? []);
+    const injuries    = computed(() => activeInjuries?.value    ?? []);
+    const suspensions = computed(() => activeSuspensions?.value ?? []);
+    const yellowCards = computed(() => activeYellowCards?.value ?? {});
 
     const injuriesCount    = computed(() => injuries.value.length);
     const suspensionsCount = computed(() => suspensions.value.length);
-    const cardsCount       = computed(() => cards.value.length);
+    const cardsCount       = computed(() => Object.keys(yellowCards.value).length);
 
-    const countByTeamIdOrAll = (items, teamId) => {
-        if (!Array.isArray(items)) return 0;
-        const hasTeamId = items.some(x => x && Object.prototype.hasOwnProperty.call(x, 'team_id'));
-        if (!hasTeamId) return items.length;
-        return items.filter(x => Number(x.team_id) === Number(teamId)).length;
+    // Par équipe — filtre par les joueurs de l'équipe
+    const injuriesCountForTeam = (teamId) => {
+        const t = (teams.value ?? []).find(t => t.id === teamId);
+        if (!t) return 0;
+        const playerIds = new Set((t.contracts ?? []).map(c => c.game_player_id));
+        return injuries.value.filter(i => playerIds.has(i.game_player_id)).length;
     };
 
-    const injuriesCountForTeam    = (teamId) => countByTeamIdOrAll(injuries.value,    teamId);
-    const suspensionsCountForTeam = (teamId) => countByTeamIdOrAll(suspensions.value, teamId);
-    const cardsCountForTeam       = (teamId) => countByTeamIdOrAll(cards.value,       teamId);
+    const suspensionsCountForTeam = (teamId) => {
+        const t = (teams.value ?? []).find(t => t.id === teamId);
+        if (!t) return 0;
+        const playerIds = new Set((t.contracts ?? []).map(c => c.game_player_id));
+        return suspensions.value.filter(s => playerIds.has(s.game_player_id)).length;
+    };
+
+    const cardsCountForTeam = (teamId) => {
+        const t = (teams.value ?? []).find(t => t.id === teamId);
+        if (!t) return 0;
+        const playerIds = new Set((t.contracts ?? []).map(c => c.game_player_id));
+        return [...playerIds].filter(id => yellowCards.value[id] > 0).length;
+    };
+
+    // Helpers pour vérifier le statut d'un joueur spécifique
+    const isPlayerInjured = (playerId) =>
+        injuries.value.some(i => i.game_player_id === playerId);
+
+    const isPlayerSuspended = (playerId) =>
+        suspensions.value.some(s => s.game_player_id === playerId);
+
+    const playerYellowCards = (playerId) =>
+        yellowCards.value[playerId] ?? 0;
+
+    const playerInjury = (playerId) =>
+        injuries.value.find(i => i.game_player_id === playerId) ?? null;
+
+    const playerSuspension = (playerId) =>
+        suspensions.value.find(s => s.game_player_id === playerId) ?? null;
 
     // ==========================
     //   STATS MOYENNES
@@ -83,9 +111,11 @@ export function useDashboard({ teams, gameSave, team, roster }) {
     return {
         standings, clubStanding,
         teamRecord, teamBudget,
-        injuries, suspensions, cards,
+        injuries, suspensions, yellowCards,
         injuriesCount, suspensionsCount, cardsCount,
         injuriesCountForTeam, suspensionsCountForTeam, cardsCountForTeam,
+        isPlayerInjured, isPlayerSuspended,
+        playerYellowCards, playerInjury, playerSuspension,
         averageAttack, averageDefense, averageStamina, averageSpeed,
     };
 }

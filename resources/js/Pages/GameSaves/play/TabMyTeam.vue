@@ -4,6 +4,11 @@ import { FORMATIONS, FORMATION_LIST } from '@/Pages/Match/engine/formations.js';
 
 const props = defineProps({
     rosterWithStatus:     { type: Array,   required: true },
+    isPlayerInjured:      { type: Function, default: () => () => false },
+    isPlayerSuspended:    { type: Function, default: () => () => false },
+    playerYellowCards:    { type: Function, default: () => () => 0 },
+    playerInjury:         { type: Function, default: () => () => null },
+    playerSuspension:     { type: Function, default: () => () => null },
     selectedMyPlayer:     { type: Object,  default: null },
     currentFormation:     { type: String,  required: true },
     formationData:        { type: Object,  default: null },
@@ -129,7 +134,7 @@ const perfChips = computed(() => {
 </script>
 
 <template>
-    <div class="flex-1 flex flex-col gap-4 overflow-y-auto max-h-[72vh] pr-1">
+    <div class="flex-1 flex flex-col gap-4 overflow-y-auto max-h-[75vh] pr-1">
 
         <!-- LIGNE 1 : Formation + Terrain unifié -->
         <div class="grid grid-cols-12 gap-4">
@@ -161,6 +166,15 @@ const perfChips = computed(() => {
                             </span>
                         </template>
                     </div>
+                </div>
+
+                <!-- Légende couleurs -->
+                <div class="border-t border-slate-200 pt-3 text-[10px] text-slate-400 space-y-0.5">
+                    <p><span class="inline-block w-2 h-2 rounded-full bg-yellow-500 mr-1"></span>Gardien</p>
+                    <p><span class="inline-block w-2 h-2 rounded-full bg-blue-500 mr-1"></span>Défenseur</p>
+                    <p><span class="inline-block w-2 h-2 rounded-full bg-green-500 mr-1"></span>Milieu déf.</p>
+                    <p><span class="inline-block w-2 h-2 rounded-full bg-orange-500 mr-1"></span>Milieu off.</p>
+                    <p><span class="inline-block w-2 h-2 rounded-full bg-red-500 mr-1"></span>Attaquant</p>
                 </div>
             </div>
 
@@ -274,7 +288,7 @@ const perfChips = computed(() => {
         <div class="grid grid-cols-12 gap-4">
 
             <!-- Liste joueurs -->
-            <div class="col-span-3 border border-slate-200 rounded-xl bg-slate-50 p-3 max-h-[630px] overflow-y-auto">
+            <div class="col-span-3 border border-slate-200 rounded-xl bg-slate-50 p-3 max-h-[500px] overflow-y-auto">
                 <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Effectif</h3>
                 <div v-if="rosterWithStatus.length" class="space-y-1">
                     <button v-for="p in rosterWithStatus" :key="p.id" type="button"
@@ -292,6 +306,16 @@ const perfChips = computed(() => {
                                 <div class="text-xs font-semibold truncate">{{ p.lastname }}</div>
                                 <div class="text-[10px] opacity-60 truncate">{{ p.position }}</div>
                             </div>
+                            <!-- Badges statut -->
+                            <div class="flex items-center gap-1 shrink-0">
+                                <span v-if="isPlayerInjured(p.id)" title="Blessé" class="text-xs">🤕</span>
+                                <span v-if="isPlayerSuspended(p.id)" title="Suspendu" class="text-xs">🚫</span>
+                                <span v-else-if="playerYellowCards(p.id) > 0"
+                                      :title="`${playerYellowCards(p.id)} carton(s) jaune`"
+                                      class="text-[9px] font-black bg-yellow-400 text-yellow-900 px-1 rounded">
+                                    {{ playerYellowCards(p.id) }}🟨
+                                </span>
+                            </div>
                             <div class="w-2 h-2 rounded-full shrink-0" :class="p.is_starter ? 'bg-emerald-400' : 'bg-slate-300'"></div>
                         </div>
                     </button>
@@ -302,6 +326,25 @@ const perfChips = computed(() => {
             <!-- Profil joueur -->
             <div class="col-span-9 flex flex-col gap-3">
                 <template v-if="selectedMyPlayer">
+
+                    <!-- Alerte blessure/suspension -->
+                    <div v-if="isPlayerInjured(selectedMyPlayer.id)" class="border border-rose-200 rounded-xl bg-rose-50 px-4 py-2.5 flex items-center gap-2">
+                        <span class="text-lg">🤕</span>
+                        <div>
+                            <div class="text-xs font-bold text-rose-700">Joueur blessé</div>
+                            <div class="text-[10px] text-rose-500">
+                                {{ playerInjury(selectedMyPlayer.id)?.description ?? 'Blessure' }}
+                                — Retour semaine {{ playerInjury(selectedMyPlayer.id)?.week_return }}
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else-if="isPlayerSuspended(selectedMyPlayer.id)" class="border border-amber-200 rounded-xl bg-amber-50 px-4 py-2.5 flex items-center gap-2">
+                        <span class="text-lg">🚫</span>
+                        <div>
+                            <div class="text-xs font-bold text-amber-700">Joueur suspendu</div>
+                            <div class="text-[10px] text-amber-500">Disponible semaine {{ playerSuspension ? playerSuspension(selectedMyPlayer.id)?.week_return : '—' }}</div>
+                        </div>
+                    </div>
 
                     <!-- Identité + actions -->
                     <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
