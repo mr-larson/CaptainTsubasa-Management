@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Models\GameSaves\GameContract;
+use App\Models\GameSaves\GameInjury;
 use App\Models\GameSaves\GamePlayer;
+use App\Models\GameSaves\GameSanction;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
 use Illuminate\Support\Collection;
@@ -47,8 +49,20 @@ class AITransferService
 
         if ($freePlayers->isEmpty()) return;
 
+        // Joueurs indisponibles (blessés/suspendus) cette semaine
+        $injuredIds = GameInjury::where('game_save_id', $gameSave->id)
+            ->where('week_return', '>', $week)
+            ->pluck('game_player_id')->toArray();
+
+        $suspendedIds = GameSanction::where('game_save_id', $gameSave->id)
+            ->where('week_return', '>', $week)
+            ->where('weeks_suspended', '>', 0)
+            ->pluck('game_player_id')->toArray();
+
+        $unavailableIds = array_unique(array_merge($injuredIds, $suspendedIds));
+
         foreach ($aiTeams as $team) {
-            $this->recruitForTeam($team, $freePlayers, $gameSave, $remainingWeeks);
+            $this->recruitForTeam($team, $freePlayers, $gameSave, $remainingWeeks, $unavailableIds);
 
             // Rafraîchir la liste des joueurs libres après chaque équipe
             $freePlayers = GamePlayer::where('game_save_id', $gameSave->id)
@@ -63,15 +77,21 @@ class AITransferService
         GameTeam $team,
         Collection $freePlayers,
         GameSave $gameSave,
-        int $remainingWeeks
+        int $remainingWeeks,
+        array $unavailableIds = []
     ): void {
         $contracts    = $team->contracts->filter(fn($c) => $c->gamePlayer !== null);
         $squadPlayers = $contracts->map(fn($c) => $c->gamePlayer)->filter();
         $squadSize    = $squadPlayers->count();
         $starterCount = $contracts->where('is_starter', true)->count();
 
-        // Analyse des besoins
-        $needs = $this->analyzeNeeds($squadPlayers, $squadSize, $starterCount);
+        // Titulaires indisponibles cette semaine
+        $unavailableStarters = $contracts->filter(fn($c) =>
+            $c->is_starter && in_array($c->gamePlayer?->id, $unavailableIds)
+        )->count();
+
+        // Analyse des besoins (inclut les indisponibles)
+        $needs = $this->analyzeNeeds($squadPlayers, $squadSize, $starterCount, $unavailableStarters);
 
         if (empty($needs)) return;
 
@@ -103,7 +123,7 @@ class AITransferService
             // Signer le contrat
             $isStarter = $starterCount < 11;
 
-            DB::transaction(function () use ($gameSave, $team, $candidate, $salary, $remainingWeeks, $isStarter) {
+            DB::transaction(function () use ($gameSave, $team, $candidate, $salary, $gameSave, $remainingWeeks, $isStarter) {
                 GameContract::create([
                     'game_save_id'   => $gameSave->id,
                     'game_team_id'   => $team->id,
@@ -138,7 +158,7 @@ class AITransferService
      * Retourne une liste de besoins prioritaires pour l'équipe.
      * Chaque besoin = ['position_group' => 'GK'|'DEF'|'MID'|'ATT', 'priority' => int]
      */
-    protected function analyzeNeeds(Collection $players, int $squadSize, int $starterCount): array
+    protected function analyzeNeeds(Collection $players, int $squadSize, int $starterCount, int $unavailableStarters = 0): array
     {
         $needs = [];
 
@@ -152,7 +172,18 @@ class AITransferService
             return $this->sortNeeds($needs);
         }
 
-        // Besoin 2 : pas assez de titulaires (< 11)
+        // Besoin 2 : titulaires indisponibles → recruter au même poste
+        if ($unavailableStarters > 0) {
+            $missing = $this->getMissingPositions($players);
+            foreach ($missing as $pos => $count) {
+                $needs[] = ['position_group' => $pos, 'priority' => 8 + $count];
+            }
+            if (empty($needs)) {
+                $needs[] = ['position_group' => 'ANY', 'priority' => 7];
+            }
+        }
+
+        // Besoin 3 : pas assez de titulaires (< 11)
         if ($starterCount < 11) {
             $missing = $this->getMissingPositions($players);
             foreach ($missing as $pos => $count) {
@@ -160,9 +191,9 @@ class AITransferService
             }
         }
 
-        // Besoin 3 : overall de l'équipe trop bas (< 45 de moyenne)
+        // Besoin 4 : overall de l'équipe trop bas (< 45 de moyenne)
         $avgOverall = $this->avgOverall($players);
-        if ($avgOverall < 45 && $needs === []) {
+        if ($avgOverall < 45 && empty($needs)) {
             // Recrute un joueur fort peu importe le poste
             $needs[] = ['position_group' => 'ANY', 'priority' => 3];
         }

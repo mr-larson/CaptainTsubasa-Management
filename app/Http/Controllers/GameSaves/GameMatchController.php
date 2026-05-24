@@ -3,14 +3,15 @@
 namespace App\Http\Controllers\GameSaves;
 
 use App\Http\Controllers\Controller;
-use App\Models\GameSaves\GameInjury;
 use App\Models\GameSaves\GameMatch;
-use App\Models\GameSaves\GameSanction;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
+use App\Models\GameSaves\GameInjury;
+use App\Models\GameSaves\GameSanction;
 use App\Services\AITrainingService;
 use App\Services\MatchSimulator;
 use App\Services\AITransferService;
+use App\Services\AILineupService;
 use App\Services\FoulAndInjuryService;
 use App\Services\StaminaService;
 use Illuminate\Http\RedirectResponse;
@@ -51,16 +52,20 @@ class GameMatchController extends Controller
 
         $isControlledHome = ((int) $controlledGameTeam->id === (int) $homeTeam->id);
 
-// Par défaut : mode single, côté selon domicile/extérieur de l'équipe contrôlée
+        // Par défaut : mode single, côté selon domicile/extérieur de l'équipe contrôlée
         $controlMode = $request->query('controlMode', 'single');
         if (!in_array($controlMode, ['both', 'single'], true)) {
             $controlMode = 'single';
         }
 
-// Home = toujours internal (bleu gauche), Away = toujours external (orange droite)
-        $internalTeam   = $homeTeam;
-        $externalTeam   = $awayTeam;
-        $controlledSide = $isControlledHome ? 'internal' : 'external';
+        $defaultSide    = $isControlledHome ? 'internal' : 'external';
+        $controlledSide = $request->query('controlledSide', $defaultSide);
+        if (!in_array($controlledSide, ['internal', 'external'], true)) {
+            $controlledSide = $defaultSide;
+        }
+
+        $internalTeam = $isControlledHome ? $homeTeam : $awayTeam;
+        $externalTeam = $isControlledHome ? $awayTeam : $homeTeam;
 
         $state   = $gameSave->state ?? [];
         $lineups = $state['lineup'] ?? [];
@@ -163,25 +168,28 @@ class GameMatchController extends Controller
         $home->save();
         $away->save();
 
-        // 3. Simuler les autres matchs de la semaine
+        // 3. Ajuster les lineups des équipes IA (remplacements blessés/suspendus)
+        app(AILineupService::class)->adjustLineupsForWeek($gameSave);
+
+        // 4. Simuler les autres matchs de la semaine
         app(MatchSimulator::class)->simulateOtherMatchesOfWeek($match);
         app(AITrainingService::class)->trainForWeek($gameSave);
         app(AITransferService::class)->recruitForWeek($gameSave);
 
-        // 4. Avancer la semaine
+        // 5. Avancer la semaine
         $gameSave->week = max($gameSave->week ?? 1, $match->week + 1);
         $gameSave->save();
 
-        // 5. Conserver player_actions dans le state (pour replay futur)
+        // 6. Conserver player_actions dans le state (pour replay futur)
         $state                     = $gameSave->state ?? [];
         $state['player_actions']   = array_merge($state['player_actions'] ?? [], $data['playerActions'] ?? []);
         $gameSave->state           = $state;
         $gameSave->save();
 
-        // 6. Stamina après match (source : match_stats du match joué)
+        // 7. Stamina après match (source : match_stats du match joué)
         StaminaService::applyAfterMatch($gameSave, $match);
 
-        // 7. Fautes, cartons et blessures
+        // 8. Fautes, cartons et blessures
         $foulEvents = $data['foulEvents'] ?? [];
         app(FoulAndInjuryService::class)->processMatchEvents($gameSave, $match, $foulEvents);
 
@@ -263,7 +271,7 @@ class GameMatchController extends Controller
             }
         }
 
-        return $ordered->map(function (array $row) use ($unavailableIds, $gameSave) {
+        return $ordered->map(function (array $row) {
             [$slot, $c] = $row;
 
             if (!$c || !$c->gamePlayer) {
@@ -294,10 +302,6 @@ class GameMatchController extends Controller
                 ],
                 'special_moves' => $p->special_moves ?? [],
                 'is_available'  => !in_array($p->id, $unavailableIds),
-                'yellow_cards' => GameSanction::where('game_save_id', $gameSave->id)
-                    ->where('game_player_id', $p->id)
-                    ->where('type', 'yellow')
-                    ->count(),
             ];
         })->values();
     }
