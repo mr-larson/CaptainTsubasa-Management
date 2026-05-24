@@ -81,7 +81,7 @@ class AITrainingService
     protected function trainTeam(GameTeam $team, int $gainMax = 3, array $excludePlayerIds = []): array
     {
         $contracts = $team->contracts->filter(fn($c) => $c->gamePlayer !== null);
-        if ($contracts->isEmpty()) return;
+        if ($contracts->isEmpty()) return [];
 
         $minStamina  = config('training.min_stamina_to_train', 10);
         $staminaCost = config('training.stamina_cost', 5);
@@ -100,7 +100,7 @@ class AITrainingService
             !in_array($c->gamePlayer->id, $excludePlayerIds)
         );
 
-        if ($eligiblePool->isEmpty()) return;
+        if ($eligiblePool->isEmpty()) return [];
 
         // Garder un suivi des joueurs déjà entraînés ce tour pour éviter les doublons
         $trainedThisRound = [];

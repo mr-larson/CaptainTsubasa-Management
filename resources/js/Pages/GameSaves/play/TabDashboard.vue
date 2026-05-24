@@ -168,7 +168,7 @@ const matchesPlayed = computed(() =>
         <!-- LIGNE 2 : Prochain match (hero)              -->
         <!-- ============================================ -->
         <div class="border border-slate-200 rounded-xl overflow-hidden"
-             :class="isByeWeek ? 'bg-slate-50' : 'bg-gradient-to-br from-slate-800 to-slate-900'">
+             :class="isByeWeek ? 'bg-slate-50' : 'bg-gradient-to-br from-slate-600 to-slate-700'">
 
             <div v-if="!isByeWeek && nextMatch && nextMatchInfo" class="p-5">
                 <!-- Label -->
@@ -192,9 +192,19 @@ const matchesPlayed = computed(() =>
                         <div class="text-[10px] text-white/50">{{ clubStanding ? `${clubStanding.position}e au classement` : '' }}</div>
                     </div>
 
-                    <!-- VS -->
-                    <div class="text-center shrink-0">
+                    <!-- VS + Bouton central -->
+                    <div class="text-center shrink-0 flex flex-col items-center gap-3">
                         <div class="text-3xl font-black text-white/20">VS</div>
+                        <button v-if="isByeWeek" type="button"
+                                class="px-5 py-2 rounded-full font-bold text-xs bg-slate-500 hover:bg-slate-400 text-white transition-all"
+                                @click="emit('simulate-week')">
+                            ⏭ Simuler S{{ week }}
+                        </button>
+                        <button v-else type="button"
+                                class="px-6 py-2.5 rounded-full font-bold text-sm bg-teal-500 hover:bg-teal-400 text-white shadow-lg shadow-teal-900/30 transition-all hover:scale-105 active:scale-95"
+                                @click="emit('play-next-match')">
+                            ▶ Jouer
+                        </button>
                     </div>
 
                     <!-- Adversaire -->
@@ -215,7 +225,7 @@ const matchesPlayed = computed(() =>
                 <!-- Bouton jouer -->
                 <div class="flex justify-center mt-5">
                     <button type="button"
-                            class="px-8 py-2.5 rounded-full font-bold text-sm bg-teal-500 hover:bg-teal-400 text-white shadow-lg shadow-teal-900/30 transition-all hover:scale-105 active:scale-95"
+                            class="px-6 py-2.5 rounded-full font-bold text-sm bg-teal-500 hover:bg-teal-400 text-white shadow-lg shadow-teal-900/30 transition-all hover:scale-105 active:scale-95"
                             @click="emit('play-next-match')">
                         ▶ Jouer le match
                     </button>
