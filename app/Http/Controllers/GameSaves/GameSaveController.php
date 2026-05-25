@@ -348,6 +348,9 @@ class GameSaveController extends Controller
         $teamCount = count($teamIds);
         if ($teamCount < 2) return;
 
+        // Mélanger pour éviter que la même équipe soit toujours extérieure
+        shuffle($teamIds);
+
         if ($teamCount % 2 === 1) {
             $teamIds[] = null;
             $teamCount++;
@@ -356,6 +359,7 @@ class GameSaveController extends Controller
         $rounds = $teamCount - 1;
         $half   = $teamCount / 2;
         $ids    = $teamIds;
+        $matches = [];
 
         for ($round = 0; $round < $rounds; $round++) {
             $weekAller  = $round + 1;
@@ -366,14 +370,30 @@ class GameSaveController extends Controller
                 $away = $ids[$teamCount - 1 - $i];
                 if ($home === null || $away === null) continue;
 
-                GameMatch::create(['game_save_id' => $gameSave->id, 'week' => $weekAller,  'home_team_id' => $home, 'away_team_id' => $away, 'status' => 'scheduled']);
-                GameMatch::create(['game_save_id' => $gameSave->id, 'week' => $weekRetour, 'home_team_id' => $away, 'away_team_id' => $home, 'status' => 'scheduled']);
+                // Alterner qui reçoit à l'aller vs retour
+                if ($round % 2 === 0) {
+                    $matches[] = ['week' => $weekAller,  'home' => $home, 'away' => $away];
+                    $matches[] = ['week' => $weekRetour, 'home' => $away, 'away' => $home];
+                } else {
+                    $matches[] = ['week' => $weekAller,  'home' => $away, 'away' => $home];
+                    $matches[] = ['week' => $weekRetour, 'home' => $home, 'away' => $away];
+                }
             }
 
             $fixed = array_shift($ids);
             $last  = array_pop($ids);
             array_unshift($ids, $fixed);
             array_splice($ids, 1, 0, [$last]);
+        }
+
+        foreach ($matches as $m) {
+            GameMatch::create([
+                'game_save_id' => $gameSave->id,
+                'week'         => $m['week'],
+                'home_team_id' => $m['home'],
+                'away_team_id' => $m['away'],
+                'status'       => 'scheduled',
+            ]);
         }
     }
 
