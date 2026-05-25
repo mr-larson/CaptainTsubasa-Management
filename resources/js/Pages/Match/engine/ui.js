@@ -108,10 +108,6 @@ class LogEntry {
 const logHistory  = [];
 const MAX_HISTORY = 30;
 
-export function resetLogHistory() {
-    logHistory.length = 0;
-}
-
 function _pushLog(entry) {
     logHistory.push(entry);
     if (logHistory.length > MAX_HISTORY) logHistory.shift();
@@ -263,80 +259,95 @@ export function updateSideCard(prefix, team, slotNumber) {
         badgeEl.appendChild(badge);
     }
 
-    // Bouton remplacement — seulement pour l'équipe contrôlée, stamina < 50%
-    const cardEl = _rootEl.querySelector(`#${prefix}-card`);
+    // Bouton remplacement — icône 🔄 à côté du ⚽ dans le coin de la carte
+    _rootEl.querySelector(`#${prefix}-sub-btn`)?.remove();
     _rootEl.querySelector(`#${prefix}-sub-panel`)?.remove();
 
-    const controlledTeamId = _state?._matchConfig?.teams?.[_state?._matchConfig?.controlledSide]?.id;
-    const currentTeamId    = _state?._matchConfig?.teams?.[team]?.id;
     const isControlledTeam = (
-        controlledTeamId === currentTeamId ||
+        _state?._matchConfig?.controlledSide === team ||
         _state?._matchConfig?.controlMode === 'both'
     );
     const staminaRatio = getStaminaRatio(playerId);
     const canSub = (
         isControlledTeam &&
         !_state?.isGameOver &&
-        staminaRatio < 0.5 &&
         (_state?.substitutionCount ?? 0) < (_state?.MAX_SUBSTITUTIONS ?? 3) &&
         !(_state?.substitutions ?? []).some(s => s.outSlot === slotNumber && s.team === team) &&
         !_state?.isKickoff
     );
 
-    if (canSub && cardEl) {
-        const panel = document.createElement('div');
-        panel.id = `${prefix}-sub-panel`;
+    if (canSub) {
+        const cardEl = _rootEl.querySelector(`#${prefix}-card`);
+        if (!cardEl) return;
 
+        // Construire la liste des remplaçants
         const subs = [];
         for (let s = 1; s <= 11; s++) {
             if (s === slotNumber) continue;
             const subDomId = getPlayerId(team, s);
             const subEl    = _rootEl.querySelector(`[data-player="${subDomId}"]`);
             if (!subEl || subEl.classList.contains('unavailable')) continue;
-            const subInfo = _roster.getPlayerInfo(team, s);
+            const subInfo  = _roster.getPlayerInfo(team, s);
             if (!subInfo) continue;
             subs.push({ slot: s, info: subInfo });
         }
+        if (!subs.length) return;
 
-        if (subs.length > 0) {
-            const remaining = (_state.MAX_SUBSTITUTIONS ?? 3) - (_state.substitutionCount ?? 0);
-            const btn = document.createElement('button');
-            btn.textContent = `🔄 Remplacer (${remaining} restant${remaining > 1 ? 's' : ''})`;
-            btn.style.cssText = 'width:100%;padding:4px 8px;background:#0ea5e9;color:#fff;border:none;border-radius:8px;font-size:10px;font-weight:700;cursor:pointer;margin-top:4px;margin-bottom:2px;';
+        // Bouton icône positionné à côté du ballon
+        const subBtn = document.createElement('button');
+        subBtn.id = `${prefix}-sub-btn`;
+        subBtn.title = `Remplacer (${(_state.MAX_SUBSTITUTIONS ?? 3) - (_state.substitutionCount ?? 0)} restant(s))`;
+        subBtn.textContent = '🔄';
+        subBtn.style.cssText = 'position:absolute;top:8px;right:30px;background:none;border:none;cursor:pointer;font-size:16px;padding:0;line-height:1;z-index:70;opacity:0.85;transition:opacity 0.15s;';
+        subBtn.onmouseenter = () => subBtn.style.opacity = '1';
+        subBtn.onmouseleave = () => subBtn.style.opacity = '0.85';
 
-            const list = document.createElement('div');
-            list.style.cssText = 'display:none;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;margin-top:2px;max-height:120px;overflow-y:auto;';
+        // Panel liste remplaçants
+        const panel = document.createElement('div');
+        panel.id = `${prefix}-sub-panel`;
+        panel.style.cssText = 'display:none;position:absolute;top:32px;right:4px;z-index:80;background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 8px 20px rgba(0,0,0,0.15);min-width:180px;overflow:hidden;';
 
-            subs.forEach(({ slot, info: subInfo }) => {
-                const subPid  = getPlayerId(team, slot);
-                const stMax   = _state.staminaMax[subPid] ?? 100;
-                const stCur   = _state.stamina[subPid]    ?? stMax;
-                const pct     = stMax > 0 ? Math.round(stCur / stMax * 100) : 100;
-                const item    = document.createElement('button');
-                item.style.cssText = 'width:100%;padding:4px 8px;text-align:left;font-size:10px;border:none;background:transparent;cursor:pointer;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;';
-                item.innerHTML = `<span>${subInfo.number}. ${subInfo.lastname}</span><span style="color:#64748b;font-size:9px;">${subInfo.position} · ${pct}%⚡</span>`;
-                item.onmouseenter = () => item.style.background = '#e0f2fe';
-                item.onmouseleave = () => item.style.background = 'transparent';
-                item.onclick = () => {
-                    if (_state._performSubstitution) {
-                        const ok = _state._performSubstitution(team, slotNumber, slot);
-                        if (ok) panel.remove();
-                    }
-                };
-                list.appendChild(item);
-            });
+        const header = document.createElement('div');
+        header.style.cssText = 'padding:6px 10px;background:#0ea5e9;color:#fff;font-size:10px;font-weight:700;';
+        header.textContent = `🔄 Choisir remplaçant`;
+        panel.appendChild(header);
 
-            let open = false;
-            btn.onclick = () => {
-                open = !open;
-                list.style.display = open ? 'block' : 'none';
-                btn.style.background = open ? '#0284c7' : '#0ea5e9';
+        subs.forEach(({ slot, info: subInfo }) => {
+            const subPid = getPlayerId(team, slot);
+            const stMax  = _state.staminaMax[subPid] ?? 100;
+            const stCur  = _state.stamina[subPid]    ?? stMax;
+            const pct    = stMax > 0 ? Math.round(stCur / stMax * 100) : 100;
+            const color  = pct >= 75 ? '#22c55e' : pct >= 50 ? '#f59e0b' : '#ef4444';
+
+            const item = document.createElement('button');
+            item.style.cssText = 'width:100%;padding:6px 10px;text-align:left;font-size:11px;border:none;border-bottom:1px solid #f1f5f9;background:transparent;cursor:pointer;display:flex;justify-content:space-between;align-items:center;';
+            item.innerHTML = `<span style="font-weight:600;">${subInfo.number}. ${subInfo.lastname}</span><span style="color:${color};font-size:10px;font-weight:700;">${pct}%⚡</span>`;
+            item.onmouseenter = () => item.style.background = '#f0f9ff';
+            item.onmouseleave = () => item.style.background = 'transparent';
+            item.onclick = () => {
+                if (_state._performSubstitution) {
+                    const ok = _state._performSubstitution(team, slotNumber, slot);
+                    if (ok) { subBtn.remove(); panel.remove(); }
+                }
             };
+            panel.appendChild(item);
+        });
 
-            panel.appendChild(btn);
-            panel.appendChild(list);
-            cardEl.appendChild(panel);
-        }
+        let open = false;
+        subBtn.onclick = (e) => {
+            e.stopPropagation();
+            open = !open;
+            panel.style.display = open ? 'block' : 'none';
+        };
+
+        // Fermer si clic ailleurs
+        document.addEventListener('click', () => {
+            open = false;
+            panel.style.display = 'none';
+        }, { once: true });
+
+        cardEl.appendChild(subBtn);
+        cardEl.appendChild(panel);
     }
 }
 
