@@ -164,30 +164,30 @@ class GameMatchController extends Controller
         $home->save();
         $away->save();
 
-        // 3. Ajuster les lineups des équipes IA (remplacements blessés/suspendus)
+        // 3. Fautes, cartons et blessures EN PREMIER
+        $foulEvents = $data['foulEvents'] ?? [];
+        app(FoulAndInjuryService::class)->processMatchEvents($gameSave, $match, $foulEvents);
+
+        // 4. Ajuster les lineups IA APRÈS (pour la semaine suivante)
         app(AILineupService::class)->adjustLineupsForWeek($gameSave);
 
-        // 4. Simuler les autres matchs de la semaine
+        // 5. Simuler les autres matchs
         app(MatchSimulator::class)->simulateOtherMatchesOfWeek($match);
         app(AITrainingService::class)->trainForWeek($gameSave);
         app(AITransferService::class)->recruitForWeek($gameSave);
 
-        // 5. Avancer la semaine
+        // 6. Avancer la semaine
         $gameSave->week = max($gameSave->week ?? 1, $match->week + 1);
         $gameSave->save();
 
-        // 6. Conserver player_actions dans le state (pour replay futur)
-        $state                     = $gameSave->state ?? [];
-        $state['player_actions']   = array_merge($state['player_actions'] ?? [], $data['playerActions'] ?? []);
-        $gameSave->state           = $state;
+        // 7. Conserver player_actions
+        $state = $gameSave->state ?? [];
+        $state['player_actions'] = array_merge($state['player_actions'] ?? [], $data['playerActions'] ?? []);
+        $gameSave->state = $state;
         $gameSave->save();
 
-        // 7. Stamina après match (source : match_stats du match joué)
+        // 8. Stamina après match
         StaminaService::applyAfterMatch($gameSave, $match);
-
-        // 8. Fautes, cartons et blessures
-        $foulEvents = $data['foulEvents'] ?? [];
-        app(FoulAndInjuryService::class)->processMatchEvents($gameSave, $match, $foulEvents);
 
         return redirect()->route('game-saves.play', $gameSave);
     }
