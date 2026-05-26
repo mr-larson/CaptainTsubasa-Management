@@ -241,8 +241,9 @@ export function updateSideCard(prefix, team, slotNumber) {
     if (portraitEl) setCardPhoto(portraitEl, info?.photo);
 
     // Badges cartons/statut
+    const playerDbId = _roster.getPlayerInfo(team, slotNumber)?.id ?? null;
     const matchYellows = (_state?.foulEvents ?? [])
-        .filter(e => e.type === 'card' && e.card_type === 'yellow' && e.player_id === playerId)
+        .filter(e => e.type === 'card' && e.card_type === 'yellow' && e.player_id === playerDbId)
         .length;
     const totalYellows = (info?.yellowCards ?? 0) + matchYellows;
 
