@@ -1,70 +1,82 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
-
-// Components
 import H2 from '@/Components/H2.vue';
-import H1 from '@/Components/H1.vue';
 </script>
 
 <template>
-    <Head title="MainMenu" />
+    <Head title="Menu principal" />
 
     <AuthenticatedLayout>
         <template #header>
-            <H2>Main Menu</H2>
+            <H2>Menu principal</H2>
         </template>
 
-        <div class="mt-12">
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <div class="flex">
+        <div class="min-h-[calc(100vh-64px)] flex items-center">
+            <div class="max-w-5xl mx-auto px-6 w-full">
+                <div class="flex items-center gap-12">
+
                     <!-- Illustration -->
-                    <div
-                        class="hidden md:block flex-1 p-2 bg-contain bg-center bg-no-repeat"
-                        style="background-image: url('/images/tsubas3.webp')"
-                    ></div>
+                    <div class="hidden md:block flex-1">
+                        <img src="/images/tsubas3.webp" alt="Captain Tsubasa"
+                             class="max-h-[480px] object-contain drop-shadow-xl" />
+                    </div>
 
-                    <!-- Zone de boutons -->
-                    <div class="flex-1 p-2 flex flex-col">
-                        <h1 class="text-4xl font-bold text-slate-600 mb-6">Captain Tsubasa</h1>
-                        <h2 class="text-3xl font-bold text-slate-600 mb-6">Management</h2>
+                    <!-- Contenu -->
+                    <div class="flex-1 flex flex-col gap-8">
 
-                        <div class="h-64 mt-6 flex flex-col items-center md:items-start justify-between">
-                            <!-- Nouvelle partie = création d’une sauvegarde -->
-                            <Link
-                                :href="route('game-saves.create')"
-                                class="w-60 h-12 bg-sky-300 hover:bg-sky-400 text-center text-xl text-sky-800 font-bold py-2 px-5 border-2 border-sky-600 rounded-full drop-shadow-md"
-                            >
-                                Nouvelle Partie
+                        <!-- Titre -->
+                        <div>
+                            <div class="text-xs font-bold text-teal-500 uppercase tracking-widest mb-2">Bienvenue</div>
+                            <h1 class="text-4xl font-extrabold text-slate-800 leading-tight">
+                                Captain Tsubasa<br>
+                                <span class="text-teal-500">Management</span>
+                            </h1>
+                            <p class="text-slate-400 text-sm mt-2">Gère ton club, dispute des championnats, bats l'IA.</p>
+                        </div>
+
+                        <!-- Boutons -->
+                        <div class="flex flex-col gap-3">
+
+                            <Link :href="route('game-saves.create')"
+                                  class="group flex items-center gap-4 px-6 py-4 bg-teal-500 hover:bg-teal-400 text-white rounded-2xl font-bold text-base transition-all shadow-sm hover:shadow-md active:scale-[0.98]">
+                                <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl shrink-0">
+                                    ⚽
+                                </div>
+                                <div>
+                                    <div class="text-base font-bold">Nouvelle partie</div>
+                                    <div class="text-xs text-white/70 font-normal">Créer une nouvelle sauvegarde</div>
+                                </div>
+                                <div class="ml-auto text-white/50 group-hover:text-white transition-all">→</div>
                             </Link>
 
-                            <!-- Charger partie = liste des sauvegardes -->
-                            <Link
-                                :href="route('game-saves.index')"
-                                class="w-60 h-12 bg-cyan-300 hover:bg-cyan-400 text-center text-xl text-cyan-800 font-bold py-2 px-5 border-2 border-cyan-600 rounded-full drop-shadow-md"
-                            >
-                                Charger Partie
+                            <Link :href="route('game-saves.index')"
+                                  class="group flex items-center gap-4 px-6 py-4 bg-white hover:bg-slate-50 text-slate-800 rounded-2xl font-bold text-base transition-all border border-slate-200 hover:border-teal-300 shadow-sm active:scale-[0.98]">
+                                <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-xl shrink-0">
+                                    💾
+                                </div>
+                                <div>
+                                    <div class="text-base font-bold text-slate-700">Charger une partie</div>
+                                    <div class="text-xs text-slate-400 font-normal">Reprendre une sauvegarde existante</div>
+                                </div>
+                                <div class="ml-auto text-slate-300 group-hover:text-teal-400 transition-all">→</div>
                             </Link>
 
-                            <!-- Accès au menu d’édition de la base de données -->
-                            <Link
-                                :href="route('dataBaseMenu')"
-                                class="w-60 h-12 bg-fuchsia-300 hover:bg-fuchsia-400 text-xl text-fuchsia-800 text-center font-bold py-2 px-5 border-2 border-fuchsia-600 rounded-full drop-shadow-md"
-                            >
-                                Éditer les Données
+                            <Link :href="route('dataBaseMenu')"
+                                  class="group flex items-center gap-4 px-6 py-4 bg-white hover:bg-slate-50 text-slate-800 rounded-2xl font-bold text-base transition-all border border-slate-200 hover:border-slate-300 shadow-sm active:scale-[0.98]">
+                                <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-xl shrink-0">
+                                    🗂️
+                                </div>
+                                <div>
+                                    <div class="text-base font-bold text-slate-700">Éditer les données</div>
+                                    <div class="text-xs text-slate-400 font-normal">Équipes, joueurs, contrats</div>
+                                </div>
+                                <div class="ml-auto text-slate-300 group-hover:text-slate-500 transition-all">→</div>
                             </Link>
                         </div>
                     </div>
-                </div>
-
-                <div class="h-32 p-2 flex items-end justify-center text-lg font-bold text-slate-400">
-
                 </div>
             </div>
         </div>
     </AuthenticatedLayout>
 </template>
-
-<style scoped>
-/* Styles spécifiques éventuels */
-</style>
