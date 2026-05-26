@@ -119,7 +119,7 @@ class GameSaveController extends Controller
                 'description'    => $player->description,
                 'photo_path'     => $player->photo_path,
                 'speed'          => $player->speed      ?? $s['speed']      ?? 50,
-                'stamina'        => $player->stamina    ?? $s['stamina']    ?? 50,
+                'stamina'        => rand(60, 100),
                 'attack'         => $player->attack     ?? $s['attack']     ?? 50,
                 'defense'        => $player->defense    ?? $s['defense']    ?? 50,
                 'shot'           => $player->shot       ?? $s['shot']       ?? 50,

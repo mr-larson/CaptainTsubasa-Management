@@ -862,7 +862,10 @@ function deletePlayer() {
 function submit() {
     if (!form.id) return
 
-    form.post(
+    form.transform(data => ({
+        ...data,
+        _method: 'PUT',
+    })).post(
         route('game-saves.players.update', {
             gameSave: props.gameSave.id,
             player: form.id
