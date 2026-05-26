@@ -352,6 +352,13 @@ export function updateSideCard(prefix, team, slotNumber) {
         cardEl.appendChild(subBtn);
         cardEl.appendChild(panel);
     }
+    // Gérer l'icône ballon — visible seulement sur le porteur actuel
+    const ballIconEl = _rootEl.querySelector(`#${prefix}-ball-icon`);
+    if (ballIconEl) {
+        const b = _state?.ball;
+        const isCarrier = b && b.team === team && b.number === slotNumber;
+        ballIconEl.classList.toggle('hidden', !isCarrier);
+    }
 }
 
 export function syncRecovererCard(defenseTeam, slot) {

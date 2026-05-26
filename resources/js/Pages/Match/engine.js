@@ -498,7 +498,6 @@ export function initMatchEngine(rootEl, config = {}) {
             return roster.getPlayerInfo(team, slot)?.id ?? null;
         };
 
-        // Récupérer les noms pour les logs
         const getPlayerName = (domId) => {
             if (!domId) return '?';
             const team = domId.startsWith('I') ? 'internal' : 'external';
@@ -507,9 +506,9 @@ export function initMatchEngine(rootEl, config = {}) {
             return info ? `${info.firstname} ${info.lastname}`.trim() : domId;
         };
 
-        const attackerDbId   = getDbId(attackerId);
-        const defenderDbId   = getDbId(defenderId);
-        const defenderName   = getPlayerName(defenderId);
+        const attackerDbId = getDbId(attackerId);
+        const defenderDbId = getDbId(defenderId);
+        const defenderName = getPlayerName(defenderId);
 
         const isCritFailDefense = dRoll?.critFail ?? false;
         const isTie             = duelResult === 'tie';
@@ -554,6 +553,14 @@ export function initMatchEngine(rootEl, config = {}) {
                     pushLogEntry('foulCardTitle', [`🟨 ${defenderName} — Carton jaune`], null, state);
                 }
             }
+        }
+
+        // Un seul updateSideCard à la fin
+        if (defenderId) {
+            const defTeam   = defenderId.startsWith('I') ? 'internal' : 'external';
+            const defSlot   = parseInt(defenderId.slice(1), 10);
+            const defPrefix = defTeam === 'internal' ? 'home' : 'away';
+            updateSideCard(defPrefix, defTeam, defSlot);
         }
     }
 
