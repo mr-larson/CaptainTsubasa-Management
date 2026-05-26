@@ -206,4 +206,33 @@ class GamePlayerController extends Controller
     {
         Storage::disk('public')->delete($path);
     }
+
+    public function updateNumber(Request $request, GameSave $gameSave, GamePlayer $player): \Illuminate\Http\RedirectResponse
+    {
+        $this->authorizeSave($request, $gameSave);
+
+        $data = $request->validate([
+            'number' => ['required', 'integer', 'min:1', 'max:99'],
+        ]);
+
+        // Vérifier que le numéro n'est pas déjà pris dans cette équipe
+        $teamId = $player->contracts()
+            ->where('game_save_id', $gameSave->id)
+            ->value('game_team_id');
+
+        $alreadyTaken = \App\Models\GameSaves\GamePlayer::where('game_save_id', $gameSave->id)
+            ->where('id', '!=', $player->id)
+            ->whereHas('contracts', fn($q) => $q->where('game_team_id', $teamId))
+            ->where('number', $data['number'])
+            ->exists();
+
+        if ($alreadyTaken) {
+            return back()->withErrors(['number' => 'Ce numéro est déjà utilisé dans cette équipe.']);
+        }
+
+        $player->number = $data['number'];
+        $player->save();
+
+        return back()->with('success', 'Numéro mis à jour.');
+    }
 }

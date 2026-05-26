@@ -185,6 +185,16 @@ const saveGame = () => {
     );
 };
 
+function updatePlayerNumber(playerId, number) {
+    router.patch(
+        route('game-saves.players.update-number', {
+            gameSave: props.gameSave.id,
+            player: playerId,
+        }),
+        { number: parseInt(number) },
+        { preserveScroll: true }
+    );
+}
 </script>
 
 <template>
@@ -282,6 +292,7 @@ const saveGame = () => {
                                @toggle-starter="toggleStarter"
                                @change-slot="changeSelectedPlayerSlot"
                                @save-formation="saveFormation"
+                               @update-number="updatePlayerNumber"
                     />
 
                     <!-- ======== AUTRES ÉQUIPES ======== -->

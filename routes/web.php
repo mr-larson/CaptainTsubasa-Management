@@ -134,6 +134,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/{gameSave}/players/{player}/edit',     [GamePlayerController::class, 'edit'])->name('players.edit');
         Route::put('/{gameSave}/players/{player}',          [GamePlayerController::class, 'update'])->name('players.update');
         Route::delete('/{gameSave}/players/{player}',       [GamePlayerController::class, 'destroy'])->name('players.destroy');
+        Route::patch('game-saves/{gameSave}/players/{player}/number', [GamePlayerController::class, 'updateNumber'])
+            ->name('game-saves.players.update-number');
 
         // Contrats de partie
         Route::post('/{gameSave}/players/{player}/contracts',

@@ -324,7 +324,7 @@ export function updateSideCard(prefix, team, slotNumber) {
 
             const item = document.createElement('button');
             item.style.cssText = 'width:100%;padding:6px 10px;text-align:left;font-size:11px;border:none;border-bottom:1px solid #f1f5f9;background:transparent;cursor:pointer;display:flex;justify-content:space-between;align-items:center;';
-            item.innerHTML = `<span style="font-weight:600;">${subInfo.number}. ${subInfo.lastname}</span><span style="color:${color};font-size:10px;font-weight:700;">${pct}%⚡</span>`;
+            item.innerHTML = `<span style="font-weight:600;">${subInfo.lastname}</span><span style="color:${color};font-size:10px;font-weight:700;">${pct}%⚡</span>`;
             item.onmouseenter = () => item.style.background = '#f0f9ff';
             item.onmouseleave = () => item.style.background = 'transparent';
             item.onclick = () => {

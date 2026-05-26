@@ -61,6 +61,17 @@ export function useTeam({ gameSave, team }) {
         router.patch(route('game-contracts.toggle-starter', { contract: contractId }), {}, { preserveScroll: true });
     };
 
+    const updatePlayerNumber = (playerId, number) => {
+        router.patch(
+            route('game-saves.players.update-number', {
+                gameSave: gameSave.id,
+                player: playerId,
+            }),
+            { number: parseInt(number) },
+            { preserveScroll: true }
+        );
+    };
+
     // ==========================
     //   LINEUP (slots)
     // ==========================
@@ -236,7 +247,7 @@ export function useTeam({ gameSave, team }) {
     return {
         roster, rosterWithStatus, starters,
         selectedMyPlayerId, selectedMyPlayer, selectMyPlayer,
-        overallOf, toggleStarter,
+        overallOf, toggleStarter, updatePlayerNumber,
         lineupForm, getSlotForPlayer, saveLineup, changeSelectedPlayerSlot,
         currentFormation, formationData, saveFormation,
         slotRoleInfo, miniPitchMarkerStyle,

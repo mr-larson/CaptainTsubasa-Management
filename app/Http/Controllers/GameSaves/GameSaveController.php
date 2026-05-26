@@ -136,19 +136,28 @@ class GameSaveController extends Controller
             $gamePlayersByBaseId[$player->id] = $gamePlayer;
         }
 
-        // 3. Dupliquer les contrats
+        // 3. Dupliquer les contrats + assigner numéros de maillot
         $contracts       = Contract::with(['team', 'player'])->orderBy('id')->get();
         $contractsByTeam = $contracts->groupBy('team_id');
 
         foreach ($contractsByTeam as $teamId => $teamContracts) {
             if (!isset($gameTeamsByBaseId[$teamId])) continue;
-
-            $gameTeamId   = $gameTeamsByBaseId[$teamId]->id;
+            $gameTeamId    = $gameTeamsByBaseId[$teamId]->id;
             $teamContracts = $teamContracts->values();
+
+            $starterNumber = 1;   // numéros 1-11 pour les titulaires
+            $subNumber     = 12;  // numéros 12+ pour les remplaçants
 
             foreach ($teamContracts as $index => $contract) {
                 $basePlayerId = $contract->player->id;
                 if (!isset($gamePlayersByBaseId[$basePlayerId])) continue;
+
+                $isStarter    = $index < 11;
+                $jerseyNumber = $isStarter ? $starterNumber++ : $subNumber++;
+
+                // Assigner le numéro au game_player
+                $gamePlayersByBaseId[$basePlayerId]->number = $jerseyNumber;
+                $gamePlayersByBaseId[$basePlayerId]->save();
 
                 GameContract::create([
                     'game_save_id'   => $gameSave->id,
@@ -157,7 +166,7 @@ class GameSaveController extends Controller
                     'salary'         => $contract->salary ?? 0,
                     'start_week'     => 1,
                     'end_week'       => $seasonLength,
-                    'is_starter'     => $index < 11,
+                    'is_starter'     => $isStarter,
                 ]);
             }
         }

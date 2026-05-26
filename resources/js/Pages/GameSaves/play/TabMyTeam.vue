@@ -33,7 +33,7 @@ const props = defineProps({
     averageStamina:       { type: Number,  default: 0 },
 });
 
-const emit = defineEmits(['select-player', 'toggle-starter', 'change-slot', 'save-formation']);
+const emit = defineEmits(['select-player', 'toggle-starter', 'change-slot', 'save-formation', 'update-number']);
 
 const playerPhotoUrl = (p) => {
     if (!p) return null;
@@ -375,6 +375,17 @@ const perfChips = computed(() => {
                                             : 'bg-white text-slate-500 border-slate-300 hover:bg-slate-50'">
                                         {{ selectedMyPlayer.is_starter ? '✓ Titulaire' : '+ Titulariser' }}
                                     </button>
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-xs text-slate-500 font-semibold">N°</span>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max="99"
+                                            :value="selectedMyPlayer.number"
+                                            @change="emit('update-number', selectedMyPlayer.id, $event.target.value)"
+                                            class="w-14 border border-slate-300 rounded-lg px-2 py-1 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-teal-300 focus:outline-none"
+                                        />
+                                    </div>
                                 </div>
 
                                 <!-- Sélecteur de slot (grille de boutons numérotés) -->
