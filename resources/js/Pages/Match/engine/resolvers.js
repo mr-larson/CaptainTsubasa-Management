@@ -326,7 +326,7 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
     const checkInjury = (pid) => {
         if (!pid) return;
         const stamina = _state.stamina[pid] ?? 0;
-        if (stamina <= 0 && Math.random() < 0.35) {
+        if (stamina <= 0 && Math.random() < 0.30) {
             // Convertir ID DOM en vrai game_player_id DB
             const team   = pid.startsWith('I') ? 'internal' : 'external';
             const slot   = parseInt(pid.slice(1), 10);
@@ -774,7 +774,7 @@ export function resolveShotKeeperDuel(ctx, defenseAction) {
     const checkInjury = (pid) => {
         if (!pid) return;
         const stamina = _state.stamina[pid] ?? 0;
-        if (stamina <= 0 && Math.random() < 0.35) {
+        if (stamina <= 0 && Math.random() < 0.40) {
             // Convertir ID DOM en vrai game_player_id DB
             const team   = pid.startsWith('I') ? 'internal' : 'external';
             const slot   = parseInt(pid.slice(1), 10);

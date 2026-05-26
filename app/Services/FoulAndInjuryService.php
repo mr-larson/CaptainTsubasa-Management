@@ -12,12 +12,12 @@ use Illuminate\Support\Facades\DB;
 class FoulAndInjuryService
 {
     // Probabilités de blessure selon la sévérité du crit
-    private const INJURY_CHANCE_CRIT_FAIL  = 0.40; // 40% chance sur critFail
+    private const INJURY_CHANCE_CRIT_FAIL  = 0.30; // 40% chance sur critFail
     private const INJURY_CHANCE_FOUL       = 0.10; // 10% chance sur faute simple
 
     // Probabilités carton
     private const YELLOW_CHANCE_FOUL       = 0.25; // 25% sur faute simple
-    private const YELLOW_CHANCE_CRIT       = 0.60; // 60% sur critFail défenseur
+    private const YELLOW_CHANCE_CRIT       = 0.50; // 50% sur critFail défenseur
     private const RED_CHANCE_CRIT          = 0.15; // 15% carton rouge direct sur critFail défenseur
 
     // Durées blessures (en semaines)
