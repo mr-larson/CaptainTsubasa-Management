@@ -276,23 +276,40 @@ export function initMatchEngine(rootEl, config = {}) {
         if (outSlot === inSlot) return false;
 
         const outId = getPlayerId(team, outSlot);
-        const inId  = getPlayerId(team, inSlot);
         const outEl = rootEl.querySelector(`[data-player="${outId}"]`);
+        if (!outEl) return false;
+
+        // Remplaçant peut être slot 12+ (pas de pion DOM)
+        const inId  = getPlayerId(team, inSlot);
         const inEl  = rootEl.querySelector(`[data-player="${inId}"]`);
-        if (!outEl || !inEl) return false;
-        if (inEl.classList.contains('unavailable')) return false;
 
-        // Le remplaçant prend la position du sortant
-        inEl.style.left = outEl.style.left;
-        inEl.style.top  = outEl.style.top;
-        if (outEl.dataset.zone) inEl.dataset.zone = outEl.dataset.zone;
+        if (inEl) {
+            // Remplaçant a un pion sur le terrain → ancien comportement
+            if (inEl.classList.contains('unavailable')) return false;
+            inEl.style.left = outEl.style.left;
+            inEl.style.top  = outEl.style.top;
+            if (outEl.dataset.zone) inEl.dataset.zone = outEl.dataset.zone;
+            outEl.classList.add('unavailable');
+        } else {
+            // Remplaçant slot 12+ → mettre à jour le pion du sortant
+            const inInfo = roster.getPlayerInfo(team, inSlot);
+            if (!inInfo) return false;
+            roster.rosters[team].set(outSlot, { ...inInfo, isStarter: true });
+            roster.rosters[team].set(inSlot, { ...inInfo, isAvailable: false });
+            const subNumber = 11 + state.substitutionCount + 1; // 12, 13, 14...
+            outEl.textContent       = String(subNumber);
+            outEl.dataset.jersey    = String(subNumber);
+            outEl.dataset.firstname = inInfo.firstname;
+            outEl.dataset.lastname  = inInfo.lastname;
+            outEl.dataset.position  = inInfo.position;
+            const inStamina = inInfo.stats?.stamina ?? 80;
+            state.stamina[outId]    = inStamina;
+            state.staminaMax[outId] = inStamina;
+            updateStaminaUI(outId, ball, () => updateTeamCard(ball));
+        }
 
-        // Griser le sortant
-        outEl.classList.add('unavailable');
-
-        // Si le ballon était chez le sortant → passer au remplaçant
         if (state.ball.team === team && state.ball.number === outSlot) {
-            state._moveBallFn(team, inSlot);
+            state._moveBallFn(team, outSlot);
         }
 
         const outInfo = roster.getPlayerInfo(team, outSlot);
@@ -313,7 +330,6 @@ export function initMatchEngine(rootEl, config = {}) {
         refreshUI();
         return true;
     }
-
     // IA — remplacements automatiques stamina < 50%
     function aiCheckSubstitutions() {
         if (state.isGameOver) return;
@@ -327,9 +343,9 @@ export function initMatchEngine(rootEl, config = {}) {
                 const outEl = rootEl.querySelector(`[data-player="${outId}"]`);
                 if (!outEl || outEl.classList.contains('unavailable')) continue;
 
-                const stMax  = state.staminaMax[outId] ?? 100;
-                const stCur  = state.stamina[outId]    ?? stMax;
-                const ratio  = stMax > 0 ? stCur / stMax : 1;
+                const stMax = state.staminaMax[outId] ?? 100;
+                const stCur = state.stamina[outId]    ?? stMax;
+                const ratio = stMax > 0 ? stCur / stMax : 1;
                 if (ratio >= 0.5) continue;
 
                 const outInfo = roster.getPlayerInfo(aiTeam, outSlot);
@@ -338,24 +354,21 @@ export function initMatchEngine(rootEl, config = {}) {
                 let bestInSlot = null;
                 let bestRatio  = 0;
 
-                for (let inSlot = 1; inSlot <= 11; inSlot++) {
-                    if (inSlot === outSlot) continue;
-                    const inId = getPlayerId(aiTeam, inSlot);
-                    const inEl = rootEl.querySelector(`[data-player="${inId}"]`);
-                    if (!inEl || inEl.classList.contains('unavailable')) continue;
+                const subsPool = roster.getSubs(aiTeam);
+                for (const { slot: inSlot, info: inInfo } of subsPool) {
+                    if (inInfo.isAvailable === false) continue;
+                    // Vérifier que ce remplaçant n'a pas déjà été utilisé
+                    if (state.substitutions.some(s => s.inSlot === inSlot && s.team === aiTeam)) continue;
 
-                    const inStMax = state.staminaMax[inId] ?? 100;
-                    const inStCur = state.stamina[inId]    ?? inStMax;
+                    const inStMax = state.staminaMax[getPlayerId(aiTeam, inSlot)] ?? 100;
+                    const inStCur = state.stamina[getPlayerId(aiTeam, inSlot)]    ?? inStMax;
                     const inRatio = inStMax > 0 ? inStCur / inStMax : 1;
-                    if (inRatio <= ratio) continue;
 
-                    const inInfo  = roster.getPlayerInfo(aiTeam, inSlot);
-                    const samePos = inInfo?.position === outPos;
-
+                    const samePos = inInfo.position === outPos;
                     if (samePos && inRatio > bestRatio) {
                         bestRatio  = inRatio;
                         bestInSlot = inSlot;
-                    } else if (!bestInSlot && inRatio > 0.8) {
+                    } else if (!bestInSlot) {
                         bestInSlot = inSlot;
                     }
                 }
@@ -471,8 +484,19 @@ export function initMatchEngine(rootEl, config = {}) {
             const slot = parseInt(domId.slice(1), 10);
             return roster.getPlayerInfo(team, slot)?.id ?? null;
         };
-        const attackerDbId = getDbId(attackerId);
-        const defenderDbId = getDbId(defenderId);
+
+        // Récupérer les noms pour les logs
+        const getPlayerName = (domId) => {
+            if (!domId) return '?';
+            const team = domId.startsWith('I') ? 'internal' : 'external';
+            const slot = parseInt(domId.slice(1), 10);
+            const info = roster.getPlayerInfo(team, slot);
+            return info ? `${info.firstname} ${info.lastname}`.trim() : domId;
+        };
+
+        const attackerDbId   = getDbId(attackerId);
+        const defenderDbId   = getDbId(defenderId);
+        const defenderName   = getPlayerName(defenderId);
 
         const isCritFailDefense = dRoll?.critFail ?? false;
         const isTie             = duelResult === 'tie';
@@ -484,7 +508,7 @@ export function initMatchEngine(rootEl, config = {}) {
                 state.foulEvents.push({ type: 'card', player_id: defenderDbId, card_type: 'red' });
                 const el = rootEl.querySelector(`[data-player="${defenderId}"]`);
                 if (el) el.classList.add('unavailable');
-                pushLogEntry('foulCardTitle', ['🟥 Carton rouge ! Expulsé !', 'Faute grave'], null, state);
+                pushLogEntry('foulCardTitle', [`🟥 ${defenderName} — Carton rouge ! Expulsé !`], null, state);
             } else if (r < 0.90) {
                 state.foulEvents.push({ type: 'card', player_id: defenderDbId, card_type: 'yellow' });
                 const matchYellows = state.foulEvents.filter(
@@ -493,12 +517,12 @@ export function initMatchEngine(rootEl, config = {}) {
                 if (matchYellows >= 2) {
                     const el = rootEl.querySelector(`[data-player="${defenderId}"]`);
                     if (el) el.classList.add('unavailable');
-                    pushLogEntry('foulCardTitle', ['🟨🟨 Double jaune ! Expulsé !', 'Faute dangereuse'], null, state);
+                    pushLogEntry('foulCardTitle', [`🟨🟨 ${defenderName} — Double jaune ! Expulsé !`], null, state);
                 } else {
-                    pushLogEntry('foulCardTitle', ['🟨 Carton jaune', 'Faute dangereuse'], null, state);
+                    pushLogEntry('foulCardTitle', [`🟨 ${defenderName} — Carton jaune`], null, state);
                 }
             } else {
-                pushLogEntry('foulTitle', ['⚠️ Faute', 'Défenseur fautif'], null, state);
+                pushLogEntry('foulTitle', [`⚠️ ${defenderName} — Faute`], null, state);
             }
         }
 
@@ -512,9 +536,9 @@ export function initMatchEngine(rootEl, config = {}) {
                 if (matchYellows >= 2) {
                     const el = rootEl.querySelector(`[data-player="${defenderId}"]`);
                     if (el) el.classList.add('unavailable');
-                    pushLogEntry('foulCardTitle', ['🟨🟨 Double jaune ! Expulsé !', 'Faute'], null, state);
+                    pushLogEntry('foulCardTitle', [`🟨🟨 ${defenderName} — Double jaune ! Expulsé !`], null, state);
                 } else {
-                    pushLogEntry('foulCardTitle', ['🟨 Carton jaune', 'Faute'], null, state);
+                    pushLogEntry('foulCardTitle', [`🟨 ${defenderName} — Carton jaune`], null, state);
                 }
             }
         }
@@ -763,6 +787,10 @@ export function initMatchEngine(rootEl, config = {}) {
     //   INIT
     // ==========================
     function init() {
+
+        window.__matchState = state;
+        window.__matchRoster = roster;
+
         initBasePositions(basePositions);
         applyRosterToDOM(roster, rootEl);
         initStamina(ball, () => updateTeamCard(ball));

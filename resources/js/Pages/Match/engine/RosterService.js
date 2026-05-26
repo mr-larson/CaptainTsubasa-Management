@@ -3,14 +3,11 @@ import { STATS, POSITION_BONUS } from './constants.js';
 
 export class RosterService {
     constructor({ rosters, statCoef, positionBonus }) {
-        this.rosters       = rosters;
-        this.STAT_COEF     = statCoef;
+        this.rosters        = rosters;
+        this.STAT_COEF      = statCoef;
         this.POSITION_BONUS = positionBonus;
     }
 
-    // -----------------------------------------------------------
-    //   Factory
-    // -----------------------------------------------------------
     static create(matchConfig, { statCoef, positionBonus }) {
         const rosters = { internal: new Map(), external: new Map() };
 
@@ -43,33 +40,52 @@ export class RosterService {
         const seedTeam = (teamKey) => {
             const playersRaw = normalizePlayers(matchConfig.teams?.[teamKey]?.players);
 
+            // Séparer titulaires et remplaçants
             let starters = playersRaw.filter(p => p && p.is_starter === true);
-            if (!starters.length) starters = playersRaw;
+            if (!starters.length) starters = playersRaw.slice(0, 11);
 
-            const take = starters.slice(0, 11);
+            const subs = playersRaw.filter(p => p && p.is_starter === false);
 
+            // Slots 1-11 = titulaires sur le terrain
             for (let slot = 1; slot <= 11; slot++) {
-                const p = take[slot - 1] ?? null;
+                const p = starters[slot - 1] ?? null;
+                rosters[teamKey].set(slot, p ? {
+                    id:           p.id        ?? null,
+                    number:       p.number    ?? slot,
+                    firstname:    p.firstname ?? "",
+                    lastname:     p.lastname  ?? "",
+                    position:     p.position  ?? "",
+                    photo:        resolvePhoto(p),
+                    stats:        resolveStats(p),
+                    specialMoves: Array.isArray(p.special_moves) ? p.special_moves : [],
+                    isAvailable:  p.is_available !== false,
+                    yellowCards:  p.yellow_cards ?? 0,
+                    isStarter:    true,
+                } : {
+                    id: null, number: slot,
+                    firstname: "Joueur", lastname: `#${slot}`,
+                    position: "", photo: null, stats: null, specialMoves: [],
+                    isAvailable: true, yellowCards: 0, isStarter: true,
+                });
+            }
 
-                rosters[teamKey].set(
-                    slot,
-                    p ? {
-                        id:           p.id       ?? null,
-                        number:       p.number   ?? slot,
-                        firstname:    p.firstname ?? "",
-                        lastname:     p.lastname  ?? "",
-                        position:     p.position  ?? "",
-                        photo:        resolvePhoto(p),
-                        stats:        resolveStats(p),
-                        specialMoves: Array.isArray(p.special_moves) ? p.special_moves : [],
-                        isAvailable:  p.is_available !== false,
-                        yellowCards:  p.yellow_cards ?? 0,
-                    } : {
-                        id: null, number: slot,
-                        firstname: "Joueur", lastname: `#${slot}`,
-                        position: "", photo: null, stats: null, specialMoves: [],
-                    }
-                );
+            // Slots 12+ = remplaçants (pas sur le terrain)
+            for (let i = 0; i < subs.length; i++) {
+                const p    = subs[i];
+                const slot = 12 + i;
+                rosters[teamKey].set(slot, {
+                    id:           p.id        ?? null,
+                    number:       p.number    ?? slot,
+                    firstname:    p.firstname ?? "",
+                    lastname:     p.lastname  ?? "",
+                    position:     p.position  ?? "",
+                    photo:        resolvePhoto(p),
+                    stats:        resolveStats(p),
+                    specialMoves: Array.isArray(p.special_moves) ? p.special_moves : [],
+                    isAvailable:  p.is_available !== false,
+                    yellowCards:  p.yellow_cards ?? 0,
+                    isStarter:    false,
+                });
             }
         };
 
@@ -84,6 +100,19 @@ export class RosterService {
     // -----------------------------------------------------------
     getPlayerInfo(team, slotNumber) {
         return this.rosters[team]?.get(slotNumber) ?? null;
+    }
+
+    // Retourne tous les remplaçants (slots 12+) d'une équipe
+    getSubs(team) {
+        const result = [];
+        const map = this.rosters[team];
+        if (!map) return result;
+        for (const [slot, info] of map.entries()) {
+            if (slot >= 12 && info && !info.isStarter) {
+                result.push({ slot, info });
+            }
+        }
+        return result;
     }
 
     clampStat(v) {
@@ -151,7 +180,7 @@ export class RosterService {
         const role      = this.getPlayerRole(defenseTeam, defenseSlotNumber);
 
         if (isKeeper) {
-            const mapGK = { hands: "hand_save", punch: "punch_save", "gk-special": "defense" };
+            const mapGK   = { hands: "hand_save", punch: "punch_save", "gk-special": "defense" };
             const statKey = mapGK[defenseAction] ?? null;
             let raw = base + (statKey ? this.getStat(defenseTeam, defenseSlotNumber, statKey) * this.STAT_COEF : 0);
             raw *= this.positionBonusMultiplier(role, "gk");

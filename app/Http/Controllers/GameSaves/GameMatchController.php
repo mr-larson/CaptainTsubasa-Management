@@ -58,11 +58,7 @@ class GameMatchController extends Controller
             $controlMode = 'single';
         }
 
-        $defaultSide    = $isControlledHome ? 'internal' : 'external';
-        $controlledSide = $request->query('controlledSide', $defaultSide);
-        if (!in_array($controlledSide, ['internal', 'external'], true)) {
-            $controlledSide = $defaultSide;
-        }
+        $controlledSide = 'internal';
 
         $internalTeam = $isControlledHome ? $homeTeam : $awayTeam;
         $externalTeam = $isControlledHome ? $awayTeam : $homeTeam;
@@ -249,7 +245,7 @@ class GameMatchController extends Controller
         $unavailableIds = array_unique(array_merge($injuredPlayerIds, $suspendedPlayerIds));
 
         $contracts = $team->contracts->loadMissing('gamePlayer');
-        $starters  = $contracts->where('is_starter', true)->values();
+        $starters = $contracts->sortByDesc('is_starter')->values();
         $ordered   = collect();
 
         if ($teamLineup) {
@@ -271,18 +267,17 @@ class GameMatchController extends Controller
             }
         }
 
-        return $ordered->map(function (array $row) use ($unavailableIds) {
+        $starters11 = $ordered->map(function (array $row) use ($unavailableIds) {
             [$slot, $c] = $row;
-
             if (!$c || !$c->gamePlayer) {
                 return [
                     'id' => null, 'number' => $slot,
                     'firstname' => '', 'lastname' => '', 'position' => '',
                     'is_starter' => false, 'photo_path' => null, 'photo_url' => null,
-                    'stats' => null, 'special_moves' => [],
+                    'stats' => null, 'special_moves' => [], 'is_available' => true,
+                    'yellow_cards' => 0,
                 ];
             }
-
             $p = $c->gamePlayer;
             return [
                 'id'            => $p->id,
@@ -290,7 +285,7 @@ class GameMatchController extends Controller
                 'firstname'     => $p->firstname,
                 'lastname'      => $p->lastname,
                 'position'      => $p->position,
-                'is_starter'    => (bool) $c->is_starter,
+                'is_starter'    => true,
                 'photo_path'    => $p->photo_path,
                 'photo_url'     => $p->photo_path ? Storage::url($p->photo_path) : null,
                 'stats'         => [
@@ -302,8 +297,40 @@ class GameMatchController extends Controller
                 ],
                 'special_moves' => $p->special_moves ?? [],
                 'is_available'  => !in_array($p->id, $unavailableIds),
+                'yellow_cards'  => 0,
             ];
         })->values();
+
+// Ajouter les remplaçants
+        $subContracts = $team->contracts
+            ->filter(fn($c) => !$c->is_starter && $c->gamePlayer)
+            ->values();
+
+        $subs = $subContracts->map(function ($c) use ($unavailableIds) {
+            $p = $c->gamePlayer;
+            return [
+                'id'            => $p->id,
+                'number'        => $p->number ?? $p->id,
+                'firstname'     => $p->firstname,
+                'lastname'      => $p->lastname,
+                'position'      => $p->position,
+                'is_starter'    => false,
+                'photo_path'    => $p->photo_path,
+                'photo_url'     => $p->photo_path ? Storage::url($p->photo_path) : null,
+                'stats'         => [
+                    'speed' => $p->speed, 'stamina' => $p->stamina,
+                    'attack' => $p->attack, 'defense' => $p->defense,
+                    'shot' => $p->shot, 'pass' => $p->pass, 'dribble' => $p->dribble,
+                    'block' => $p->block, 'intercept' => $p->intercept, 'tackle' => $p->tackle,
+                    'hand_save' => $p->hand_save, 'punch_save' => $p->punch_save,
+                ],
+                'special_moves' => $p->special_moves ?? [],
+                'is_available'  => !in_array($p->id, $unavailableIds),
+                'yellow_cards'  => 0,
+            ];
+        })->values();
+
+        return $starters11->concat($subs);
     }
 
     private function authorizeSave(Request $request, GameSave $gameSave): void

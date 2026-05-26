@@ -108,6 +108,11 @@ class LogEntry {
 const logHistory  = [];
 const MAX_HISTORY = 30;
 
+export function resetLogHistory() {
+    logHistory.length = 0;
+    if (_ui?.historyListEl) _ui.historyListEl.innerHTML = '';
+}
+
 function _pushLog(entry) {
     logHistory.push(entry);
     if (logHistory.length > MAX_HISTORY) logHistory.shift();
@@ -282,13 +287,11 @@ export function updateSideCard(prefix, team, slotNumber) {
 
         // Construire la liste des remplaçants
         const subs = [];
-        for (let s = 1; s <= 11; s++) {
+        // Remplace la boucle for (let s = 1; s <= 11; s++)
+        const subsPool = _roster.getSubs(team);
+        for (const { slot: s, info: subInfo } of subsPool) {
             if (s === slotNumber) continue;
-            const subDomId = getPlayerId(team, s);
-            const subEl    = _rootEl.querySelector(`[data-player="${subDomId}"]`);
-            if (!subEl || subEl.classList.contains('unavailable')) continue;
-            const subInfo  = _roster.getPlayerInfo(team, s);
-            if (!subInfo) continue;
+            if (subInfo.isAvailable === false) continue;
             subs.push({ slot: s, info: subInfo });
         }
         if (!subs.length) return;
