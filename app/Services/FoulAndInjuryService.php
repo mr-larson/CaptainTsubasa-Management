@@ -67,14 +67,9 @@ class FoulAndInjuryService
     {
         $foulerId   = isset($event['fouler_player_id']) ? (int) $event['fouler_player_id'] : null;
         $victimId   = isset($event['victim_player_id']) ? (int) $event['victim_player_id'] : null;
-        $isCritFail = $event['is_crit_fail']      ?? false;
+        $isCritFail = $event['is_crit_fail'] ?? false;
 
-        // Carton pour le fautif
-        if ($foulerId) {
-            $this->maybeGiveCard($gameSave, $match, $foulerId, $isCritFail, $week);
-        }
-
-        // Blessure pour la victime
+        // Blessure pour la victime seulement
         if ($victimId) {
             $chance = $isCritFail ? self::INJURY_CHANCE_CRIT_FAIL : self::INJURY_CHANCE_FOUL;
             if (mt_rand(1, 100) <= ($chance * 100)) {
@@ -279,7 +274,7 @@ class FoulAndInjuryService
     {
         return GameSanction::where('game_save_id', $gameSaveId)
             ->where('type', 'yellow')
-            ->where('week_match', '>=', $currentWeek - 10) // fenêtre saison
+            ->where('week_return', '>', $currentWeek)
             ->get();
     }
 }
