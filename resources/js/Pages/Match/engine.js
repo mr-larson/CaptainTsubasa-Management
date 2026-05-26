@@ -194,6 +194,7 @@ export function initMatchEngine(rootEl, config = {}) {
                 shot:    { attempts: 0, success: 0 },
                 dribble: { attempts: 0, success: 0 },
                 special: { attempts: 0, success: 0 },
+                goals:   0,
             },
             defense: {
                 intercept: { attempts: 0, success: 0 },
@@ -230,10 +231,21 @@ export function initMatchEngine(rootEl, config = {}) {
                 if (ev.result === "attack") {
                     if (act === "pass")    out.players[pid].offense.pass.success++;
                     if (act === "dribble") out.players[pid].offense.dribble.success++;
-                    if (act === "shot" || act === "special") out.players[pid].offense.shot.success++;
+
+                    // Tir réussi = passe le défenseur (pas forcément un but)
+                    if (act === "shot" || act === "special") {
+                        out.players[pid].offense.shot.success++;
+                        out.teams[t].shots++;
+                    }
+
+                    // But = duel gardien gagné (defenseSlot === 1)
+                    if ((act === "shot" || act === "special") && ev.result === "attack" && ev.defense?.slot === 1) {
+                        out.players[pid].offense.goals = (out.players[pid].offense.goals ?? 0) + 1;
+                        out.teams[t].goals++;
+                    }
+
                     out.players[pid].duelsWon++;
                     out.teams[t].duelsWon++;
-                    if (act === "shot" || act === "special") out.teams[t].shots++;
                 } else if (ev.result === "defense") {
                     out.players[pid].duelsLost++;
                     out.teams[t].duelsLost++;

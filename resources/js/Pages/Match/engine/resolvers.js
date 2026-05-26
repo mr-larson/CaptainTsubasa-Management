@@ -765,6 +765,7 @@ export function resolveShotKeeperDuel(ctx, defenseAction) {
         attackSlot: b.number, defenseSlot: 1,
         attackAction: isSpecial ? "special" : "shot", defenseAction,
         duelResult: breakdown.result.winner, breakdown,
+        context: { isKeeperDuel: true },
     });
 
     showDuelDice(attackScore, defenseScore, aRoll, dRoll, breakdown);
@@ -804,6 +805,12 @@ export function resolveShotKeeperDuel(ctx, defenseAction) {
 
     if (duelResult === "attack") {
         _state.score[attackTeam]++;
+        const scorerId = getPlayerId(attackTeam, ball().number);
+        const scorerInfo = _roster.getPlayerInfo(attackTeam, ball().number);
+        if (scorerInfo?.id) {
+            _state.goalEvents = _state.goalEvents ?? [];
+            _state.goalEvents.push({ player_id: scorerInfo.id, turn: _state.turns });
+        }
         setMessage(
             (isSpecial ? TEXTS.ui.goalSpecialMain : TEXTS.ui.goalMain).replace("{team}", _TEAMS[attackTeam].label),
             TEXTS.ui.goalSub.replace("{scoreInternal}", _state.score.internal).replace("{scoreExternal}", _state.score.external)

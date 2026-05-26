@@ -60,7 +60,7 @@ const topBy = (getter, n = 5) =>
         .sort((a, b) => getter(b) - getter(a))
         .slice(0, n);
 
-const topShooters  = computed(() => topBy(p => p.perf?.offense?.shot?.success    ?? 0));
+const topShooters = computed(() => topBy(p => p.perf?.offense?.goals ?? 0));
 const topPassers   = computed(() => topBy(p => p.perf?.offense?.pass?.success    ?? 0));
 const topDribblers = computed(() => topBy(p => p.perf?.offense?.dribble?.success ?? 0));
 const topDefenders = computed(() => topBy(p => p.perf?.duelsWon                 ?? 0));
@@ -165,7 +165,7 @@ const myPlayersRanking = computed(() => {
 
                     <!-- Colonne top -->
                     <div v-for="(category, ci) in [
-                        { label: 'Buteurs',    icon: '⚽', color: 'border-blue-200 bg-blue-50',    badge: 'bg-blue-500',    players: topShooters,  stat: p => p.perf?.offense?.shot?.success ?? 0,    unit: 'buts' },
+                        { label: 'Buteurs',    icon: '⚽', color: 'border-blue-200 bg-blue-50',    badge: 'bg-blue-500',    players: topShooters,  stat: p => p.perf?.offense?.goals ?? 0, unit: 'buts' },
                         { label: 'Passeurs',   icon: '🎯', color: 'border-sky-200 bg-sky-50',      badge: 'bg-sky-500',     players: topPassers,   stat: p => p.perf?.offense?.pass?.success ?? 0,    unit: 'passes' },
                         { label: 'Dribbleurs', icon: '🔥', color: 'border-orange-200 bg-orange-50',badge: 'bg-orange-500',  players: topDribblers, stat: p => p.perf?.offense?.dribble?.success ?? 0, unit: 'dribbles' },
                         { label: 'Duel', icon: '⚔️', color: 'border-emerald-200 bg-emerald-50',badge:'bg-emerald-500',players: topDefenders, stat: p => p.perf?.duelsWon ?? 0,                  unit: 'duels' },
