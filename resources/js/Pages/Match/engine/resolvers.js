@@ -327,10 +327,15 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
         if (!pid) return;
         const stamina = _state.stamina[pid] ?? 0;
         if (stamina <= 0 && Math.random() < 0.35) {
-            _state.foulEvents.push({ type: 'injury', player_id: pid, severity: 'moderate' });
+            // Convertir ID DOM en vrai game_player_id DB
+            const team   = pid.startsWith('I') ? 'internal' : 'external';
+            const slot   = parseInt(pid.slice(1), 10);
+            const dbId   = _roster.getPlayerInfo(team, slot)?.id ?? null;
+            const name   = _roster.getPlayerInfo(team, slot)?.lastname ?? pid;
+            _state.foulEvents.push({ type: 'injury', player_id: dbId, severity: 'light' });
             const el = _rootEl.querySelector(`[data-player="${pid}"]`);
             if (el) el.classList.add('unavailable');
-            pushLogEntry('foulInjuryTitle', ['🤕 Blessure (épuisement)'], null, _state);
+            pushLogEntry('foulInjuryTitle', [`🤕 ${name} — Blessure (épuisement)`], null, _state);
         }
     };
     checkInjury(attackerId);
@@ -769,10 +774,15 @@ export function resolveShotKeeperDuel(ctx, defenseAction) {
         if (!pid) return;
         const stamina = _state.stamina[pid] ?? 0;
         if (stamina <= 0 && Math.random() < 0.35) {
-            _state.foulEvents.push({ type: 'injury', player_id: pid, severity: 'moderate' });
+            // Convertir ID DOM en vrai game_player_id DB
+            const team   = pid.startsWith('I') ? 'internal' : 'external';
+            const slot   = parseInt(pid.slice(1), 10);
+            const dbId   = _roster.getPlayerInfo(team, slot)?.id ?? null;
+            const name   = _roster.getPlayerInfo(team, slot)?.lastname ?? pid;
+            _state.foulEvents.push({ type: 'injury', player_id: dbId, severity: 'light' });
             const el = _rootEl.querySelector(`[data-player="${pid}"]`);
             if (el) el.classList.add('unavailable');
-            pushLogEntry('foulInjuryTitle', ['🤕 Blessure (épuisement)'], null, _state);
+            pushLogEntry('foulInjuryTitle', [`🤕 ${name} — Blessure (épuisement)`], null, _state);
         }
     };
     checkInjury(attackerId);
