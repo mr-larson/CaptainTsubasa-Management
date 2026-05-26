@@ -167,15 +167,6 @@ const perfChips = computed(() => {
                         </template>
                     </div>
                 </div>
-
-                <!-- Légende couleurs -->
-                <div class="border-t border-slate-200 pt-3 text-[10px] text-slate-400 space-y-0.5">
-                    <p><span class="inline-block w-2 h-2 rounded-full bg-yellow-500 mr-1"></span>Gardien</p>
-                    <p><span class="inline-block w-2 h-2 rounded-full bg-blue-500 mr-1"></span>Défenseur</p>
-                    <p><span class="inline-block w-2 h-2 rounded-full bg-green-500 mr-1"></span>Milieu déf.</p>
-                    <p><span class="inline-block w-2 h-2 rounded-full bg-orange-500 mr-1"></span>Milieu off.</p>
-                    <p><span class="inline-block w-2 h-2 rounded-full bg-red-500 mr-1"></span>Attaquant</p>
-                </div>
             </div>
 
             <!-- Grand terrain unifié -->
@@ -288,7 +279,7 @@ const perfChips = computed(() => {
         <div class="grid grid-cols-12 gap-4">
 
             <!-- Liste joueurs -->
-            <div class="col-span-3 border border-slate-200 rounded-xl bg-slate-50 p-3 max-h-[500px] overflow-y-auto">
+            <div class="col-span-3 border border-slate-200 rounded-xl bg-slate-50 p-3 max-h-[630px] overflow-y-auto">
                 <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Effectif</h3>
                 <div v-if="rosterWithStatus.length" class="space-y-1">
                     <button v-for="p in rosterWithStatus" :key="p.id" type="button"

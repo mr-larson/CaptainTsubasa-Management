@@ -102,7 +102,7 @@ const {
     opponentTeamIdFor, opponentNameFor, opponentNameForTeam,
     myMatches, isByeWeek, nextMatch, nextMatchInfo,
     selectedCalendarTeamId, calendarTeams, calendarTeam, selectCalendarTeam,
-    calendarRows, calendarTeamRoster,
+    calendarRows, calendarTeamRoster, calendarOpponentRoster,
     selectedCalendarMatch, selectedCalendarMatchStats,
     selectedCalendarMyTeamStats, selectedCalendarOpponentStats,
     selectedCalendarPlayersStats, openMatchStats,
@@ -264,6 +264,7 @@ function updateOtherPlayerNumber(playerId, number) {
                                   :isByeWeek="isByeWeek"
                                   :teamById="teamById"
                                   :saving="saving"
+                                  :matches="matches"
                                   @play-next-match="playNextMatch"
                                   @simulate-week="simulateWeek"
                                   @save-game="saveGame"
@@ -351,6 +352,7 @@ function updateOtherPlayerNumber(playerId, number) {
                                  :opponentNameForTeam="opponentNameForTeam"
                                  @select-team="selectCalendarTeam"
                                  @open-match-stats="openMatchStats"
+                                 :calendarOpponentRoster="calendarOpponentRoster"
                     />
 
                     <!-- ======== CLASSEMENT ======== -->
@@ -405,7 +407,7 @@ function updateOtherPlayerNumber(playerId, number) {
                     />
 
                     <!-- ======== CARTES BONUS ======== -->
-                    <div v-else-if="activeTab === 'cards'" class="flex-1">
+                    <div v-else-if="activeTab === 'cards'" class="flex-1 min-h-[75vh]">
                         <h3 class="text-lg font-semibold text-slate-700 mb-2">Cartes bonus</h3>
                         <p class="text-sm text-slate-600">Système de cartes bonus / malus (à venir).</p>
                     </div>

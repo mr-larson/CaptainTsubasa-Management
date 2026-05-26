@@ -1,11 +1,12 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
 const props = defineProps({
     calendarTeams:                 { type: Array,    required: true },
     calendarTeam:                  { type: Object,   default: null },
     calendarRows:                  { type: Array,    required: true },
     calendarTeamRoster:            { type: Array,    required: true },
+    calendarOpponentRoster: { type: Array, default: () => [] },
     teamById:                      { type: Object,   required: true },
     selectedCalendarMatch:         { type: Object,   default: null },
     selectedCalendarMatchStats:    { type: Object,   default: null },
@@ -62,6 +63,20 @@ const opponentTeam = (match, teamId) => {
     return props.teamById[oppId] ?? null;
 };
 
+const selectedStatsTeam = ref('home'); // 'home' ou 'away'
+
+const statsTeamId = computed(() => {
+    if (!props.selectedCalendarMatch) return null;
+    return selectedStatsTeam.value === 'home'
+        ? props.selectedCalendarMatch.home_team_id
+        : props.selectedCalendarMatch.away_team_id;
+});
+
+const statsTeamName = computed(() => {
+    if (!props.selectedCalendarMatch) return '—';
+    return props.teamById[statsTeamId.value]?.name ?? '—';
+});
+
 // Barres comparatives pour les stats équipe
 const statBars = computed(() => {
     if (!props.selectedCalendarMyTeamStats || !props.selectedCalendarOpponentStats) return [];
@@ -92,7 +107,7 @@ const playerMatchStat = (playerId, path) => {
 </script>
 
 <template>
-    <div class="flex-1 flex flex-col gap-4 overflow-y-auto max-h-[72vh] pr-1">
+    <div class="flex-1 flex flex-col gap-4 overflow-y-auto max-h-[75vh] pr-1">
 
         <!-- Sélecteur équipes — chips horizontales -->
         <div class="border border-slate-200 rounded-xl bg-slate-50 p-3">
@@ -128,7 +143,7 @@ const playerMatchStat = (playerId, path) => {
                     <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">{{ calendarTeam.name }}</h3>
                 </div>
 
-                <div class="space-y-1 max-h-[480px] overflow-y-auto pr-1">
+                <div class="space-y-1 max-h-[830px] overflow-y-auto pr-1">
                     <div v-for="match in calendarRows" :key="match.id"
                          class="flex items-center gap-3 px-3 py-2 rounded-lg border transition-all"
                          :class="[
@@ -267,17 +282,31 @@ const playerMatchStat = (playerId, path) => {
                             <div class="w-14 text-[10px] text-slate-400 text-right">{{ bar.label }}</div>
                         </div>
                     </div>
-                    <div class="flex justify-between mt-2 text-[10px] text-slate-400">
-                        <span class="font-semibold text-teal-600">{{ calendarTeam?.name }}</span>
+                    <div class="flex justify-between mt-2 text-[12px] text-orange-500">
+                        <span class="font-semibold text-blue-500">{{ calendarTeam?.name }}</span>
                         <span>{{ opponentNameForTeam(selectedCalendarMatch, calendarTeam?.id) }}</span>
                     </div>
                 </div>
 
                 <!-- Stats joueurs -->
                 <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
-                    <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">
-                        Joueurs — {{ calendarTeam?.name }}
-                    </h4>
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                            Joueurs — {{ statsTeamName }}
+                        </h4>
+                        <div class="flex rounded-lg overflow-hidden border border-slate-200 text-[11px] font-semibold">
+                            <button type="button" @click="selectedStatsTeam = 'home'"
+                                    class="px-3 py-1 transition-all"
+                                    :class="selectedStatsTeam === 'home' ? 'bg-teal-500 text-white' : 'bg-white text-slate-500 hover:bg-slate-50'">
+                                {{ teamById[selectedCalendarMatch.home_team_id]?.name }}
+                            </button>
+                            <button type="button" @click="selectedStatsTeam = 'away'"
+                                    class="px-3 py-1 transition-all border-l border-slate-200"
+                                    :class="selectedStatsTeam === 'away' ? 'bg-teal-500 text-white' : 'bg-white text-slate-500 hover:bg-slate-50'">
+                                {{ teamById[selectedCalendarMatch.away_team_id]?.name }}
+                            </button>
+                        </div>
+                    </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-xs min-w-max text-left">
                             <thead class="border-b border-slate-200">
@@ -288,7 +317,10 @@ const playerMatchStat = (playerId, path) => {
                             </tr>
                             </thead>
                             <tbody>
-                            <tr v-for="p in calendarTeamRoster" :key="p.id"
+                            <tr v-for="p in (selectedStatsTeam === 'home'
+                    ? (selectedCalendarMatch.home_team_id === calendarTeam?.id ? calendarTeamRoster : calendarOpponentRoster)
+                    : (selectedCalendarMatch.away_team_id === calendarTeam?.id ? calendarTeamRoster : calendarOpponentRoster)
+                )" :key="p.id"
                                 class="border-b border-slate-100 last:border-0 hover:bg-white transition-colors">
                                 <td class="py-1.5 pr-3">
                                     <div class="flex items-center gap-2">
@@ -313,7 +345,6 @@ const playerMatchStat = (playerId, path) => {
                     </div>
                 </div>
             </div>
-
             <!-- Message si aucun match sélectionné -->
             <div v-else class="col-span-7 flex items-center justify-center rounded-xl border border-dashed border-slate-300 text-slate-400 text-sm">
                 <div class="text-center p-8">

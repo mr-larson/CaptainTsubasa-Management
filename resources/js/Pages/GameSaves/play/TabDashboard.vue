@@ -51,6 +51,29 @@ const opponentTeam = computed(() => {
     return oppId ? props.teamById[oppId] ?? null : null;
 });
 
+const opponentContracts = computed(() => {
+    if (!opponentTeam.value) return [];
+    return opponentTeam.value.contracts ?? [];
+});
+
+const opponentAvgAttack = computed(() => {
+    const players = opponentContracts.value.map(c => c.game_player ?? c.gamePlayer).filter(Boolean);
+    if (!players.length) return 0;
+    return Math.round(players.reduce((s, p) => s + Number(p.attack ?? 0), 0) / players.length);
+});
+
+const opponentAvgDefense = computed(() => {
+    const players = opponentContracts.value.map(c => c.game_player ?? c.gamePlayer).filter(Boolean);
+    if (!players.length) return 0;
+    return Math.round(players.reduce((s, p) => s + Number(p.defense ?? 0), 0) / players.length);
+});
+
+const opponentAvgStamina = computed(() => {
+    const players = opponentContracts.value.map(c => c.game_player ?? c.gamePlayer).filter(Boolean);
+    if (!players.length) return 0;
+    return Math.round(players.reduce((s, p) => s + Number(p.stamina ?? 0), 0) / players.length);
+});
+
 // ==========================
 //   SAISON PROGRESSION
 // ==========================
@@ -100,7 +123,7 @@ const matchesPlayed = computed(() =>
 </script>
 
 <template>
-    <div class="flex-1 flex flex-col gap-4 overflow-y-auto max-h-[72vh] pr-1">
+    <div class="flex-1 flex flex-col gap-4 overflow-y-auto min-h-[75vh] max-h-[75vh] pr-1">
 
         <!-- ============================================ -->
         <!-- LIGNE 1 : Contexte + progression saison      -->
@@ -108,7 +131,7 @@ const matchesPlayed = computed(() =>
         <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
             <div class="flex items-center justify-between gap-4 mb-3">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl overflow-hidden bg-white border border-slate-200 shrink-0">
+                    <div class="w-10 h-10 rounded-xl overflow-hidden shrink-0">
                         <img v-if="teamLogoUrl(team)" :src="teamLogoUrl(team)" class="w-full h-full object-contain" alt=""/>
                         <span v-else class="w-full h-full flex items-center justify-center text-lg">🏟️</span>
                     </div>
@@ -165,80 +188,7 @@ const matchesPlayed = computed(() =>
         </div>
 
         <!-- ============================================ -->
-        <!-- LIGNE 2 : Prochain match (hero)              -->
-        <!-- ============================================ -->
-        <div class="border border-slate-200 rounded-xl overflow-hidden"
-             :class="isByeWeek ? 'bg-slate-50' : 'bg-gradient-to-br from-slate-600 to-slate-700'">
-
-            <div v-if="!isByeWeek && nextMatch && nextMatchInfo" class="p-5">
-                <!-- Label -->
-                <div class="text-center mb-4">
-                    <span class="text-[10px] font-bold uppercase tracking-widest"
-                          :class="nextMatchInfo.isHome ? 'text-teal-400' : 'text-orange-400'">
-                        {{ nextMatchInfo.isHome ? '🏠 Domicile' : '✈️ Extérieur' }}
-                        &nbsp;•&nbsp; Semaine {{ nextMatchInfo.week }}
-                    </span>
-                </div>
-
-                <!-- Affrontement -->
-                <div class="flex items-center justify-around gap-4">
-                    <!-- Mon équipe -->
-                    <div class="flex flex-col items-center gap-2 flex-1">
-                        <div class="w-16 h-16 rounded-2xl overflow-hidden bg-white border border-white/20 flex items-center justify-center">
-                            <img v-if="teamLogoUrl(team)" :src="teamLogoUrl(team)" class="w-full h-full object-contain" alt=""/>
-                            <span v-else class="text-2xl">🏟️</span>
-                        </div>
-                        <div class="text-sm font-bold text-white text-center">{{ team?.name ?? '—' }}</div>
-                        <div class="text-[10px] text-white/50">{{ clubStanding ? `${clubStanding.position}e au classement` : '' }}</div>
-                    </div>
-
-                    <!-- VS + Bouton central -->
-                    <div class="text-center shrink-0 flex flex-col items-center gap-3">
-                        <div class="text-3xl font-black text-white/20">VS</div>
-                        <button v-if="isByeWeek" type="button"
-                                class="px-5 py-2 rounded-full font-bold text-xs bg-slate-500 hover:bg-slate-400 text-white transition-all"
-                                @click="emit('simulate-week')">
-                            ⏭ Simuler S{{ week }}
-                        </button>
-                        <button v-else type="button"
-                                class="px-6 py-2.5 rounded-full font-bold text-sm bg-teal-500 hover:bg-teal-400 text-white shadow-lg shadow-teal-900/30 transition-all hover:scale-105 active:scale-95"
-                                @click="emit('play-next-match')">
-                            ▶ Jouer
-                        </button>
-                    </div>
-
-                    <!-- Adversaire -->
-                    <div class="flex flex-col items-center gap-2 flex-1">
-                        <div class="w-16 h-16 rounded-2xl overflow-hidden bg-white border border-white/20 flex items-center justify-center">
-                            <img v-if="teamLogoUrl(opponentTeam)" :src="teamLogoUrl(opponentTeam)" class="w-full h-full object-contain" alt=""/>
-                            <span v-else class="text-2xl">⚽</span>
-                        </div>
-                        <div class="text-sm font-bold text-white text-center">{{ nextMatchInfo.opponentName }}</div>
-                        <div class="text-[10px] text-white/50">
-                            {{ standings.findIndex(r => r.id === opponentTeam?.id) + 1 > 0
-                            ? `${standings.findIndex(r => r.id === opponentTeam?.id) + 1}e au classement`
-                            : '' }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Semaine sans match -->
-            <div v-else class="p-5 flex items-center justify-between gap-4">
-                <div>
-                    <div class="text-sm font-semibold text-slate-600">Semaine {{ week }} — Pas de match</div>
-                    <div class="text-xs text-slate-400 mt-0.5">Semaine de repos ou en attente du calendrier</div>
-                </div>
-                <button type="button"
-                        class="px-6 py-2 rounded-full font-semibold text-sm bg-slate-200 hover:bg-slate-300 text-slate-600 transition-all"
-                        @click="emit('simulate-week')">
-                    ⏭ Simuler la semaine
-                </button>
-            </div>
-        </div>
-
-        <!-- ============================================ -->
-        <!-- LIGNE 3 : 4 tuiles                          -->
+        <!-- LIGNE 2 : 4 tuiles                          -->
         <!-- ============================================ -->
         <div class="grid grid-cols-4 gap-3">
 
@@ -313,6 +263,84 @@ const matchesPlayed = computed(() =>
         </div>
 
         <!-- ============================================ -->
+        <!-- LIGNE 3 : Prochain match (hero)              -->
+        <!-- ============================================ -->
+        <div class="rounded-xl overflow-hidden bg-slate-50"
+             :class="{
+         'border-2 border-teal-400':   !isByeWeek && nextMatchInfo?.isHome,
+         'border-2 border-orange-400': !isByeWeek && !nextMatchInfo?.isHome,
+         'border border-slate-200':    isByeWeek,
+     }">
+
+            <div v-if="!isByeWeek && nextMatch && nextMatchInfo" class="p-5">
+                <!-- Label -->
+                <div class="text-center">
+            <span class="text-[10px] font-bold uppercase tracking-widest"
+                  :class="nextMatchInfo.isHome ? 'text-teal-500' : 'text-orange-500'">
+                {{ nextMatchInfo.isHome ? '🏠 Domicile' : '✈️ Extérieur' }}
+                &nbsp;•&nbsp; Semaine {{ nextMatchInfo.week }}
+            </span>
+                </div>
+
+                <!-- Affrontement -->
+                <div class="flex items-center justify-around gap-4">
+                    <!-- Mon équipe -->
+                    <div class="flex flex-col items-center gap-2 flex-1">
+                        <div class="w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center">
+                            <img v-if="teamLogoUrl(team)" :src="teamLogoUrl(team)" class="w-full h-full object-contain" alt=""/>
+                            <span v-else class="text-2xl">🏟️</span>
+                        </div>
+                        <div class="text-sm font-bold text-slate-800 text-center">{{ team?.name ?? '—' }}</div>
+                        <div class="text-[10px] text-slate-400">{{ clubStanding ? `${clubStanding.position}e au classement` : '' }}</div>
+                    </div>
+
+                    <!-- VS + Bouton central -->
+                    <div class="text-center shrink-0 flex flex-col items-center gap-3">
+                        <div class="text-3xl font-black text-slate-300">VS</div>
+                        <button v-if="isByeWeek" type="button"
+                                class="px-5 py-2 rounded-full font-bold text-xs bg-slate-200 hover:bg-slate-300 text-slate-600 transition-all"
+                                @click="emit('simulate-week')">
+                            ⏭ Simuler S{{ week }}
+                        </button>
+                        <button v-else type="button"
+                                class="px-6 py-1.5 rounded-full font-bold text-sm text-white shadow-sm transition-all hover:scale-105 active:scale-95"
+                                :class="nextMatchInfo.isHome ? 'bg-teal-500 hover:bg-teal-400' : 'bg-orange-500 hover:bg-orange-400'"
+                                @click="emit('play-next-match')">
+                            ▶ Jouer
+                        </button>
+                    </div>
+
+                    <!-- Adversaire -->
+                    <div class="flex flex-col items-center gap-2 flex-1">
+                        <div class="w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center">
+                            <img v-if="teamLogoUrl(opponentTeam)" :src="teamLogoUrl(opponentTeam)" class="w-full h-full object-contain" alt=""/>
+                            <span v-else class="text-2xl">⚽</span>
+                        </div>
+                        <div class="text-sm font-bold text-slate-800 text-center">{{ nextMatchInfo.opponentName }}</div>
+                        <div class="text-[10px] text-slate-400">
+                            {{ standings.findIndex(r => r.id === opponentTeam?.id) + 1 > 0
+                            ? `${standings.findIndex(r => r.id === opponentTeam?.id) + 1}e au classement`
+                            : '' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Semaine sans match -->
+            <div v-else class="p-5 flex items-center justify-between gap-4">
+                <div>
+                    <div class="text-sm font-semibold text-slate-600">Semaine {{ week }} — Pas de match</div>
+                    <div class="text-xs text-slate-400 mt-0.5">Semaine de repos ou en attente du calendrier</div>
+                </div>
+                <button type="button"
+                        class="px-6 py-2 rounded-full font-semibold text-sm bg-slate-200 hover:bg-slate-300 text-slate-600 transition-all"
+                        @click="emit('simulate-week')">
+                    ⏭ Simuler la semaine
+                </button>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
         <!-- LIGNE 4 : Forces + Forme récente            -->
         <!-- ============================================ -->
         <div class="grid grid-cols-2 gap-3">
@@ -335,28 +363,46 @@ const matchesPlayed = computed(() =>
                         <span class="w-8 text-right text-xs font-black text-slate-700">{{ stat.val }}</span>
                     </div>
                 </div>
-            </div>
-
-            <!-- Forme récente -->
-            <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
-                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">Forme récente</h4>
-                <div v-if="recentForm.length" class="flex items-center gap-2 flex-wrap">
-                    <div v-for="(r, i) in recentForm" :key="i"
-                         class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-black shadow-sm"
-                         :class="[r.bg, r.text]">
-                        {{ r.label }}
-                    </div>
-                    <div class="ml-2 text-xs text-slate-400 italic">
-                        {{ recentForm.filter(r => r.label === 'V').length }} victoire(s) sur {{ recentForm.length }} dernier(s) match(s)
-                    </div>
-                </div>
-                <div v-else class="flex items-center justify-center h-16 text-slate-400 text-xs italic">
-                    Aucun match joué pour le moment
-                </div>
-
                 <!-- Description équipe -->
                 <div v-if="team?.description" class="mt-3 pt-3 border-t border-slate-200">
                     <p class="text-xs text-slate-400 italic leading-relaxed line-clamp-2">{{ team.description }}</p>
+                </div>
+            </div>
+
+            <!-- Forces adversaire -->
+            <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">
+                    Adversaire · {{ nextMatchInfo?.opponentName ?? '—' }}
+                </h4>
+
+                <template v-if="opponentTeam && !isByeWeek">
+
+                    <div class="space-y-2">
+                        <div v-for="stat in [
+                { label: 'Attaque',  val: opponentAvgAttack,  color: 'bg-orange-400' },
+                { label: 'Défense',  val: opponentAvgDefense, color: 'bg-blue-400'   },
+                { label: 'Stamina',  val: opponentAvgStamina, color: 'bg-emerald-400'},
+            ]" :key="stat.label" class="flex items-center gap-3">
+                            <span class="w-16 text-xs text-slate-500 shrink-0">{{ stat.label }}</span>
+                            <div class="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
+                                <div class="h-full rounded-full" :class="stat.color"
+                                     :style="{ width: Math.min(stat.val, 100) + '%' }">
+                                </div>
+                            </div>
+                            <span class="w-8 text-right text-xs font-black"
+                                  :class="stat.val > (stat.label === 'Attaque' ? averageDefense : stat.label === 'Défense' ? averageAttack : averageStamina) ? 'text-rose-500' : 'text-emerald-600'">
+                    {{ stat.val }}
+                </span>
+                        </div>
+                    </div>
+
+                    <div v-if="opponentTeam?.description" class="mt-3 pt-3 border-t border-slate-200">
+                        <p class="text-xs text-slate-400 italic leading-relaxed line-clamp-2">{{ opponentTeam.description }}</p>
+                    </div>
+                </template>
+
+                <div v-else class="flex items-center justify-center h-16 text-slate-400 text-xs italic">
+                    Aucun match prévu cette semaine
                 </div>
             </div>
         </div>

@@ -313,7 +313,7 @@ const perfChips = computed(() => {
         <div class="grid grid-cols-12 gap-4" v-if="selectedOtherTeam">
 
             <!-- Liste joueurs -->
-            <div class="col-span-3 border border-slate-200 rounded-xl bg-slate-50 p-3 max-h-[500px] overflow-y-auto">
+            <div class="col-span-3 border border-slate-200 rounded-xl bg-slate-50 p-3 max-h-[630px] overflow-y-auto">
                 <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Effectif</h3>
                 <div v-if="otherRosterWithStatus.length" class="space-y-1">
                     <button

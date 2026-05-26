@@ -140,7 +140,7 @@ const myPlayersRanking = computed(() => {
 </script>
 
 <template>
-    <div class="flex-1 flex flex-col gap-4 overflow-y-auto max-h-[72vh] pr-1">
+    <div class="flex-1 flex flex-col gap-4 overflow-y-auto max-h-[75vh] pr-1">
 
         <!-- Pas de stats disponibles -->
         <div v-if="!hasAnyStats"

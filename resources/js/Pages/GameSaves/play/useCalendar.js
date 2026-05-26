@@ -124,6 +124,22 @@ export function useCalendar({ matches, teams, team, week }) {
             .map(c => c.game_player ?? c.gamePlayer ?? c.player ?? null)
             .filter(Boolean);
     });
+    const calendarOpponentRoster = computed(() => {
+        if (!selectedCalendarMatch.value) return [];
+        const isHome = selectedCalendarMatch.value.home_team_id === calendarTeam.value?.id;
+        const oppId  = isHome
+            ? selectedCalendarMatch.value.away_team_id
+            : selectedCalendarMatch.value.home_team_id;
+        const oppTeam = teams.value?.find(t => Number(t.id) === Number(oppId)) ?? null;
+        console.log('oppId:', oppId, 'oppTeam:', oppTeam?.name, 'contracts:', oppTeam?.contracts?.length);
+        if (!oppTeam?.contracts?.length) return [];
+        const first = oppTeam.contracts[0];
+        console.log('first contract keys:', Object.keys(first));
+        if (!oppTeam || !Array.isArray(oppTeam.contracts)) return [];
+        return oppTeam.contracts
+            .map(c => c.game_player ?? c.gamePlayer ?? c.player ?? null)
+            .filter(Boolean);
+    });
 
     // ==========================
     //   STATS MATCH SÉLECTIONNÉ
@@ -163,7 +179,7 @@ export function useCalendar({ matches, teams, team, week }) {
         myMatchThisWeek, isByeWeek,
         nextMatch, nextMatchInfo,
         selectedCalendarTeamId, calendarTeams, calendarTeam, selectCalendarTeam,
-        calendarTeamMatches, calendarRows, calendarTeamRoster,
+        calendarTeamMatches, calendarRows, calendarTeamRoster, calendarOpponentRoster,
         selectedCalendarMatchId, selectedCalendarMatch,
         selectedCalendarMatchStats, selectedCalendarPlayersStats,
         selectedCalendarMyTeamStats, selectedCalendarOpponentStats,
