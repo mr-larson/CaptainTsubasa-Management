@@ -317,6 +317,7 @@ export function initMatchEngine(rootEl, config = {}) {
             const inStamina = inInfo.stats?.stamina ?? 80;
             state.stamina[outId]    = inStamina;
             state.staminaMax[outId] = inStamina;
+            outEl.classList.remove('unavailable');
             updateStaminaUI(outId, ball, () => updateTeamCard(ball));
         }
 
