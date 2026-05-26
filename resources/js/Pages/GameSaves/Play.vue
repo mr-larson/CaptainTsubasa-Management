@@ -195,6 +195,16 @@ function updatePlayerNumber(playerId, number) {
         { preserveScroll: true }
     );
 }
+function updateOtherPlayerNumber(playerId, number) {
+    router.patch(
+        route('game-saves.players.update-number', {
+            gameSave: props.gameSave.id,
+            player: playerId,
+        }),
+        { number: parseInt(number) },
+        { preserveScroll: true }
+    );
+}
 </script>
 
 <template>
@@ -322,6 +332,7 @@ function updatePlayerNumber(playerId, number) {
                                    @toggle-starter="toggleOtherStarter"
                                    @change-slot="changeOtherPlayerSlot"
                                    @save-formation="saveOtherFormation"
+                                   @update-number="updateOtherPlayerNumber"
                     />
 
                     <!-- ======== CALENDRIER ======== -->

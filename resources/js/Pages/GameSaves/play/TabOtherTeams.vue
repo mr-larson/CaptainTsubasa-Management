@@ -36,6 +36,7 @@ const emit = defineEmits([
     'toggle-starter',
     'change-slot',
     'save-formation',
+    'update-number',
 ]);
 
 // ==========================
@@ -380,6 +381,18 @@ const perfChips = computed(() => {
                                             : 'bg-white text-slate-500 border-slate-300 hover:bg-slate-50'">
                                         {{ selectedOtherPlayer.is_starter ? '✓ Titulaire' : '+ Titulariser' }}
                                     </button>
+                                    <!-- Numéro de maillot -->
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-xs text-slate-500 font-semibold">N°</span>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max="99"
+                                            :value="selectedOtherPlayer.number"
+                                            @change="emit('update-number', selectedOtherPlayer.id, $event.target.value)"
+                                            class="w-14 border border-slate-300 rounded-lg px-2 py-1 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-teal-300 focus:outline-none"
+                                        />
+                                    </div>
                                 </div>
 
                                 <div v-if="selectedOtherPlayer.is_starter" class="mt-3">

@@ -168,13 +168,13 @@ const matchesPlayed = computed(() =>
         <!-- LIGNE 2 : Prochain match (hero)              -->
         <!-- ============================================ -->
         <div class="border border-slate-200 rounded-xl overflow-hidden"
-             :class="isByeWeek ? 'bg-slate-50' : 'bg-gradient-to-br from-slate-600 to-slate-700'">
+             :class="isByeWeek ? 'bg-slate-50' : 'bg-gradient-to-br from-slate-100 to-slate-300'">
 
             <div v-if="!isByeWeek && nextMatch && nextMatchInfo" class="p-5">
                 <!-- Label -->
                 <div class="text-center mb-4">
                     <span class="text-[10px] font-bold uppercase tracking-widest"
-                          :class="nextMatchInfo.isHome ? 'text-teal-400' : 'text-orange-400'">
+                          :class="nextMatchInfo.isHome ? 'text-teal-400' : 'text-blue-400'">
                         {{ nextMatchInfo.isHome ? '🏠 Domicile' : '✈️ Extérieur' }}
                         &nbsp;•&nbsp; Semaine {{ nextMatchInfo.week }}
                     </span>
@@ -184,17 +184,17 @@ const matchesPlayed = computed(() =>
                 <div class="flex items-center justify-around gap-4">
                     <!-- Mon équipe -->
                     <div class="flex flex-col items-center gap-2 flex-1">
-                        <div class="w-16 h-16 rounded-2xl overflow-hidden bg-white/10 border border-white/20 flex items-center justify-center">
+                        <div class="w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center">
                             <img v-if="teamLogoUrl(team)" :src="teamLogoUrl(team)" class="w-full h-full object-contain" alt=""/>
                             <span v-else class="text-2xl">🏟️</span>
                         </div>
-                        <div class="text-sm font-bold text-white text-center">{{ team?.name ?? '—' }}</div>
-                        <div class="text-[10px] text-white/50">{{ clubStanding ? `${clubStanding.position}e au classement` : '' }}</div>
+                        <div class="text-sm font-bold text-slate-700 text-center">{{ team?.name ?? '—' }}</div>
+                        <div class="text-[10px] text-slate-500">{{ clubStanding ? `${clubStanding.position}e au classement` : '' }}</div>
                     </div>
 
                     <!-- VS + Bouton central -->
                     <div class="text-center shrink-0 flex flex-col items-center gap-3">
-                        <div class="text-3xl font-black text-white/20">VS</div>
+                        <div class="text-3xl text-slate-600">VS</div>
                         <button v-if="isByeWeek" type="button"
                                 class="px-5 py-2 rounded-full font-bold text-xs bg-slate-500 hover:bg-slate-400 text-white transition-all"
                                 @click="emit('simulate-week')">
@@ -209,26 +209,17 @@ const matchesPlayed = computed(() =>
 
                     <!-- Adversaire -->
                     <div class="flex flex-col items-center gap-2 flex-1">
-                        <div class="w-16 h-16 rounded-2xl overflow-hidden bg-white/10 border border-white/20 flex items-center justify-center">
+                        <div class="w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center">
                             <img v-if="teamLogoUrl(opponentTeam)" :src="teamLogoUrl(opponentTeam)" class="w-full h-full object-contain" alt=""/>
                             <span v-else class="text-2xl">⚽</span>
                         </div>
-                        <div class="text-sm font-bold text-white text-center">{{ nextMatchInfo.opponentName }}</div>
-                        <div class="text-[10px] text-white/50">
+                        <div class="text-sm font-bold text-slate-700 text-center">{{ nextMatchInfo.opponentName }}</div>
+                        <div class="text-[10px] text-slate-500">
                             {{ standings.findIndex(r => r.id === opponentTeam?.id) + 1 > 0
                             ? `${standings.findIndex(r => r.id === opponentTeam?.id) + 1}e au classement`
                             : '' }}
                         </div>
                     </div>
-                </div>
-
-                <!-- Bouton jouer -->
-                <div class="flex justify-center mt-5">
-                    <button type="button"
-                            class="px-6 py-2.5 rounded-full font-bold text-sm bg-teal-500 hover:bg-teal-400 text-white shadow-lg shadow-teal-900/30 transition-all hover:scale-105 active:scale-95"
-                            @click="emit('play-next-match')">
-                        ▶ Jouer le match
-                    </button>
                 </div>
             </div>
 
