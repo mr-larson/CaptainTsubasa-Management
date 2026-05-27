@@ -52,18 +52,29 @@ const allPlayersWithStats = computed(() =>
 const isMyTeam = (teamId) => teamId === props.team?.id;
 
 // ==========================
-//   TOP PERFORMERS
+//   FILTRE ÉQUIPE
 // ==========================
-const topBy = (getter, n = 5) =>
-    [...allPlayersWithStats.value]
+const selectedTeamFilter = ref(null)
+
+const filteredPlayersWithStats = computed(() =>
+    selectedTeamFilter.value
+        ? allPlayersWithStats.value.filter(p => p.teamId === selectedTeamFilter.value)
+        : allPlayersWithStats.value
+)
+
+const topByFiltered = (getter, n = 5) =>
+    [...filteredPlayersWithStats.value]
         .filter(p => p.perf)
         .sort((a, b) => getter(b) - getter(a))
-        .slice(0, n);
+        .slice(0, n)
 
-const topShooters = computed(() => topBy(p => p.perf?.offense?.goals ?? 0));
-const topPassers   = computed(() => topBy(p => p.perf?.offense?.pass?.success    ?? 0));
-const topDribblers = computed(() => topBy(p => p.perf?.offense?.dribble?.success ?? 0));
-const topDefenders = computed(() => topBy(p => p.perf?.duelsWon                 ?? 0));
+// ==========================
+//   TOP PERFORMERS
+// ==========================
+const topShooters  = computed(() => topByFiltered(p => p.perf?.offense?.goals ?? 0));
+const topPassers   = computed(() => topByFiltered(p => p.perf?.offense?.pass?.success ?? 0));
+const topDribblers = computed(() => topByFiltered(p => p.perf?.offense?.dribble?.success ?? 0));
+const topDefenders = computed(() => topByFiltered(p => p.perf?.duelsWon ?? 0));
 
 const hasAnyStats = computed(() =>
     allPlayersWithStats.value.some(p => p.perf)
@@ -158,6 +169,31 @@ const myPlayersRanking = computed(() => {
             <!-- ============================================ -->
             <!-- BLOC 1 : TOP PERFORMERS                      -->
             <!-- ============================================ -->
+            <!-- Filtre équipe -->
+            <div class="border border-slate-200 rounded-xl bg-slate-50 p-3">
+                <div class="flex flex-wrap gap-1.5 items-center">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1">Filtrer :</span>
+                    <button type="button"
+                            @click="selectedTeamFilter = null"
+                            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all"
+                            :class="selectedTeamFilter === null
+                    ? 'bg-teal-500 text-white border-teal-600'
+                    : 'bg-white text-slate-600 border-slate-200 hover:border-teal-300'">
+                        🌍 Toutes les équipes
+                    </button>
+                    <button v-for="t in teams" :key="t.id" type="button"
+                            @click="selectedTeamFilter = selectedTeamFilter === t.id ? null : t.id"
+                            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all"
+                            :class="selectedTeamFilter === t.id
+            ? 'bg-teal-500 text-white border-teal-600'
+            : 'bg-white text-slate-600 border-slate-200 hover:border-teal-300 hover:text-teal-600'">
+                        <div class="w-4 h-4 rounded-full overflow-hidden shrink-0 bg-slate-100">
+                            <img v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" class="w-full h-full object-contain" alt=""/>
+                        </div>
+                        {{ t.name }}
+                    </button>
+                </div>
+            </div>
             <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
                 <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">🏆 Top performers</h3>
 
