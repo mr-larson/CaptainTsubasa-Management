@@ -148,6 +148,7 @@ const {
     otherLineupForm, getOtherSlotForPlayer, changeOtherPlayerSlot,
     otherFormation, otherFormationData, saveOtherFormation,
     otherPlayerPosition, otherPlayerForSlot, otherSelectedSlot,
+    updatePlayerNumber,
 } = useOtherTeam({
     gameSave: gameSaveRef,
     teams: teamsRef,
@@ -186,16 +187,7 @@ const saveGame = () => {
     );
 };
 
-function updatePlayerNumber(playerId, number) {
-    router.patch(
-        route('game-saves.players.update-number', {
-            gameSave: props.gameSave.id,
-            player: playerId,
-        }),
-        { number: parseInt(number) },
-        { preserveScroll: true }
-    );
-}
+
 function updateOtherPlayerNumber(playerId, number) {
     router.patch(
         route('game-saves.players.update-number', {

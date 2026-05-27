@@ -187,6 +187,17 @@ export function useOtherTeam({ gameSave, teams, controlledTeamId }) {
         return getOtherSlotForPlayer(selectedOtherPlayer.value.id);
     });
 
+    const updatePlayerNumber = (playerId, number) => {
+        router.patch(
+            route('game-saves.players.update-number', {
+                gameSave: gameSave.value.id,
+                player: playerId,
+            }),
+            { number: parseInt(number) },
+            { preserveScroll: true }
+        );
+    };
+
     return {
         otherTeams, selectedOtherTeamId, selectedOtherTeam, selectOtherTeam,
         otherRosterWithStatus, selectedOtherPlayer, selectOtherPlayer,
@@ -194,6 +205,7 @@ export function useOtherTeam({ gameSave, teams, controlledTeamId }) {
         otherLineupForm, getOtherSlotForPlayer, changeOtherPlayerSlot,
         otherFormation, otherFormationData, saveOtherFormation,
         otherPlayerPosition, otherPlayerForSlot, otherSelectedSlot,
+        updatePlayerNumber,
         FORMATIONS, FORMATION_LIST,
     };
 }
