@@ -325,7 +325,7 @@ class GameMatchController extends Controller
             $p = $c->gamePlayer;
             return [
                 'id'            => $p->id,
-                'number'        => $slot,
+                'number'        => $p->number ?? $slot,
                 'firstname'     => $p->firstname,
                 'lastname'      => $p->lastname,
                 'position'      => $p->position,

@@ -270,7 +270,7 @@
             left: playerPositions['I' + slot].x + '%',
             top:  playerPositions['I' + slot].y + '%',
         }"
-                                >{{ slot }}</div>
+                                ></div>
                             </template>
 
                             <!-- Joueurs externes -->
