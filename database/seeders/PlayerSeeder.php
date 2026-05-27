@@ -1241,17 +1241,6 @@ class PlayerSeeder extends Seeder
             ],
 
             [
-                'Hiroshi', 'Jito', 13, 'Defender', 440,
-                [
-                    'speed' => 65, 'stamina' => 85, 'defense' => 36, 'attack' => 26,
-                    'shot' => 22, 'pass' => 24, 'dribble' => 23,
-                    'block' => 30, 'intercept' => 28, 'tackle' => 30,
-                    'hand_save' => 15, 'punch_save' => 15
-                ],
-                'Capitaine et pilier de Hirado, Jito est un défenseur puissant et intimidant. Redoutable dans les duels, il impose sa présence physique et coupe les attaques par la force et l’anticipation.'
-            ],
-
-            [
                 'Toshio', 'Akizawa', 12, 'Defender', 240,
                 [
                     'speed' => 58, 'stamina' => 68, 'defense' => 29, 'attack' => 21,
@@ -1263,25 +1252,36 @@ class PlayerSeeder extends Seeder
             ],
 
             [
-                'Shinji', 'Noda', 12, 'Midfielder', 230,
+                'Hiroshi', 'Jito', 13, 'Defender', 440,
                 [
-                    'speed' => 57, 'stamina' => 66, 'defense' => 26, 'attack' => 22,
-                    'shot' => 21, 'pass' => 23, 'dribble' => 21,
-                    'block' => 20, 'intercept' => 21, 'tackle' => 20,
+                    'speed' => 65, 'stamina' => 85, 'defense' => 36, 'attack' => 26,
+                    'shot' => 22, 'pass' => 24, 'dribble' => 23,
+                    'block' => 30, 'intercept' => 28, 'tackle' => 30,
                     'hand_save' => 15, 'punch_save' => 15
                 ],
-                'Milieu de terrain travailleur, Noda soutient la récupération et relance de manière simple. Il privilégie le collectif et l’équilibre.'
+                'Capitaine et pilier de Hirado, Jito est un défenseur puissant et intimidant. Redoutable dans les duels, il impose sa présence physique et coupe les attaques par la force et l’anticipation.'
             ],
 
             [
-                'Tsutomu', 'Nagaoka', 12, 'Midfielder', 225,
+                'Shinji', 'Noda', 12, 'Defender', 230,
                 [
-                    'speed' => 56, 'stamina' => 65, 'defense' => 26, 'attack' => 21,
-                    'shot' => 20, 'pass' => 22, 'dribble' => 20,
-                    'block' => 19, 'intercept' => 20, 'tackle' => 19,
+                    'speed' => 57, 'stamina' => 66, 'defense' => 26, 'attack' => 19,
+                    'shot' => 21, 'pass' => 23, 'dribble' => 21,
+                    'block' => 21, 'intercept' => 23, 'tackle' => 22,
                     'hand_save' => 15, 'punch_save' => 15
                 ],
-                'Milieu de soutien, Nagaoka assure la continuité du jeu et renforce le bloc compact de Hirado.'
+                'Défenseur travailleur, Noda soutient la récupération et relance de manière simple. Il privilégie le collectif et l’équilibre.'
+            ],
+
+            [
+                'Tsutomu', 'Nagaoka', 12, 'Defender', 225,
+                [
+                    'speed' => 56, 'stamina' => 65, 'defense' => 26, 'attack' => 21,
+                    'shot' => 12, 'pass' => 22, 'dribble' => 19,
+                    'block' => 24, 'intercept' => 23, 'tackle' => 22,
+                    'hand_save' => 15, 'punch_save' => 15
+                ],
+                'Défenseur, Nagaoka assure la continuité du jeu et renforce le bloc compact de Hirado.'
             ],
 
             [
@@ -2128,36 +2128,14 @@ class PlayerSeeder extends Seeder
             ],
 
             [
-                'Koji', 'Ishikawa', 12, 'Midfielder', 240,
+                'Koji', 'Ishikawa', 12, 'Defender', 240,
                 [
-                    'speed' => 48, 'stamina' => 59, 'defense' => 21, 'attack' => 21,
-                    'shot' => 20, 'pass' => 21, 'dribble' => 20,
-                    'block' => 19, 'intercept' => 19, 'tackle' => 19,
+                    'speed' => 48, 'stamina' => 59, 'defense' => 21, 'attack' => 15,
+                    'shot' => 14, 'pass' => 21, 'dribble' => 20,
+                    'block' => 21, 'intercept' => 22, 'tackle' => 23,
                     'hand_save' => 15, 'punch_save' => 15
                 ],
-                'Milieu travailleur, Ishikawa soutient la récupération et participe à la conservation du ballon.'
-            ],
-
-            [
-                'Takushi', 'Hashimoto', 12, 'Forward', 235,
-                [
-                    'speed' => 46, 'stamina' => 57, 'defense' => 20, 'attack' => 24,
-                    'shot' => 23, 'pass' => 21, 'dribble' => 22,
-                    'block' => 17, 'intercept' => 17, 'tackle' => 17,
-                    'hand_save' => 15, 'punch_save' => 15
-                ],
-                'Attaquant mobile, Hashimoto cherche à provoquer et à créer des espaces par ses déplacements.'
-            ],
-
-            [
-                'Junichi', 'Nagasaki', 12, 'Forward', 250,
-                [
-                    'speed' => 59, 'stamina' => 60, 'defense' => 20, 'attack' => 26,
-                    'shot' => 24, 'pass' => 21, 'dribble' => 22,
-                    'block' => 17, 'intercept' => 17, 'tackle' => 17,
-                    'hand_save' => 15, 'punch_save' => 15
-                ],
-                'Avant-centre de Shimada, Nagasaki est un finisseur correct qui tente de convertir les rares occasions.'
+                'Défenseur travailleur, Ishikawa soutient la récupération et participe à la conservation du ballon.'
             ],
 
             [
@@ -2172,6 +2150,17 @@ class PlayerSeeder extends Seeder
             ],
 
             [
+                'Junichi', 'Nagasaki', 12, 'Midfielder', 250,
+                [
+                    'speed' => 59, 'stamina' => 60, 'defense' => 23, 'attack' => 26,
+                    'shot' => 24, 'pass' => 26, 'dribble' => 26,
+                    'block' => 20, 'intercept' => 25, 'tackle' => 24,
+                    'hand_save' => 15, 'punch_save' => 15
+                ],
+                'Avant-centre de Shimada, Nagasaki est un finisseur correct qui tente de convertir les rares occasions.'
+            ],
+
+            [
                 'Masayuki', 'Jinbo', 12, 'Midfielder', 245,
                 [
                     'speed' => 50, 'stamina' => 59, 'defense' => 22, 'attack' => 22,
@@ -2183,7 +2172,7 @@ class PlayerSeeder extends Seeder
             ],
 
             [
-                'Naoki', 'Wesugi', 12, 'Forward', 250,
+                'Naoki', 'Wesugi', 12, 'Midfielder', 250,
                 [
                     'speed' => 50, 'stamina' => 60, 'defense' => 20, 'attack' => 25,
                     'shot' => 24, 'pass' => 21, 'dribble' => 22,
@@ -2191,6 +2180,17 @@ class PlayerSeeder extends Seeder
                     'hand_save' => 15, 'punch_save' => 15
                 ],
                 'Attaquant de complément, Wesugi accompagne Nagasaki et tente d’exister par son activité.'
+            ],
+
+            [
+                'Takushi', 'Hashimoto', 12, 'Forward', 235,
+                [
+                    'speed' => 46, 'stamina' => 57, 'defense' => 20, 'attack' => 24,
+                    'shot' => 23, 'pass' => 21, 'dribble' => 22,
+                    'block' => 17, 'intercept' => 17, 'tackle' => 17,
+                    'hand_save' => 15, 'punch_save' => 15
+                ],
+                'Attaquant mobile, Hashimoto cherche à provoquer et à créer des espaces par ses déplacements.'
             ],
 
             // =======================

@@ -83,6 +83,25 @@ class GameSaveController extends Controller
         $seasonLength      = max(1, ($teamCount - 1) * 2);
         $gameTeamsByBaseId = [];
 
+        // Mapping formation par équipe
+        $formationByTeam = [
+            'Nankatsu'  => '4-1-3-2',
+            'Toho'      => '4-2-2-2',
+            'Hanawa'    => '3-2-2-3',
+            'Furano'    => '3-2-3-2',
+            'Otomo'     => '4-2-2-2',
+            'Azumaichi' => '3-2-2-3',
+            'Musashi'   => '3-1-3-3',
+            'Shutetsu'  => '4-2-2-2',
+            'Meiwa'     => '4-3-1-2',
+            'Hirado'    => '5-2-2-1',
+            'Naniwa'    => '4-3-1-2',
+            'Minawi'    => '4-2-2-2',
+            'Nakahara'  => '3-3-2-2',
+            'Shimizu'   => '5-1-2-2',
+            'Shimada'   => '5-3-1-1',
+        ];
+
         foreach ($teams as $team) {
             $gameTeam = GameTeam::create([
                 'game_save_id' => $gameSave->id,
@@ -94,6 +113,7 @@ class GameSaveController extends Controller
                 'draws'        => 0,
                 'losses'       => 0,
                 'logo_path'    => $team->logo_path,
+                'formation'    => $formationByTeam[$team->name] ?? '3-2-3-2',
             ]);
             $gameTeamsByBaseId[$team->id] = $gameTeam;
         }

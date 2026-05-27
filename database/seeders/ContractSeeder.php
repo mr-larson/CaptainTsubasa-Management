@@ -29,7 +29,7 @@ class ContractSeeder extends Seeder
                 'Akira Tsuboi', 'Manabu Okawa', 'Kenji Tomo'
             ],
             'Shutetsu' => [
-                'Genzo Wakabayashi', 'Shingo Takasugi', 'Kenta Shimada', 'Kazuma Matsumo',
+                'Genzo Wakabayashi', 'Kenta Shimada', 'Shingo Takasugi', 'Kazuma Matsumo',
                 'Kohei Nakamoto', 'Jun Kurata', 'Takumi Osaki', 'Kaito Inamura',
                 'Mamoru Izawa', 'Teppei Kisugi', 'Hajime Taki',
                 // Remplaçants (3)
@@ -44,7 +44,7 @@ class ContractSeeder extends Seeder
             ],
             'Furano' => [
                 'Masanori Kato', 'Susumu Honda', 'Tsuyoshi Kondo', 'Kentaro Kamata',
-                'Hisashi Matsuda', 'Haruo Kaneda', 'Hikaru Matsuyama', 'Koichi Wakamatsu',
+                'Hisashi Matsuda', 'Haruo Kaneda', 'Koichi Wakamatsu', 'Hikaru Matsuyama',
                 'Seiji Nakagawa', 'Kazumasa Oda', 'Shuichi Yamamuro',
                 // Remplaçants (3)
                 'Sosuke Maeda', 'Tetsuya Iida', 'Noboru Hayashi',
@@ -64,7 +64,7 @@ class ContractSeeder extends Seeder
                 'Takuro Fujimoto', 'Yuki Ozawa', 'Osamu Miyata',
             ],
             'Azumaichi' => [
-                'Ryota Tsuji', 'Makoto Soda', 'Junji Yamada', 'Daigo Sasaki',
+                'Ryota Tsuji', 'Junji Yamada', 'Makoto Soda', 'Daigo Sasaki',
                 'Tatsuya Hayashi', 'Koji Yoshida', 'Yohei Kuramochi', 'Toru Nakai',
                 'Kazuyasu Onodera', 'Mitsuru Ide', 'Shohei Mihashi',
                 // Remplaçants (3)
@@ -79,7 +79,7 @@ class ContractSeeder extends Seeder
             ],
             'Otomo' => [
                 'Isamu Ichijo', 'Masaki Yoshikawa', 'Koji Nishio', 'Masao Nakayama',
-                'Kozo Kawada', 'Toru Hiraoka', 'Takeshi Kishida', 'Hanji Urabe',
+                'Kozo Kawada', 'Hanji Urabe', 'Takeshi Kishida', 'Toru Hiraoka',
                 'Shingo Tadami', 'Akio Nakao', 'Shun Nitta',
                 // Remplaçants (3)
                 'Shunsuke Wada', 'Yuya Saeki', 'Kazuki Hara',
@@ -92,8 +92,8 @@ class ContractSeeder extends Seeder
                 'Tomohiro Abe', 'Nobuhiro Suzuki', 'Fumihiro Kato',
             ],
             'Nakahara' => [
-                'Goro Kawakami', 'Yuichi Masumoto', 'Keisuke Haranashi', 'Takamasa Fujita',
-                'Jin Toda', 'Ken Nagatani', 'Shunta Harukawa', 'Susumu Itao',
+                'Goro Kawakami', 'Keisuke Haranashi', 'Takamasa Fujita', 'Jin Toda',
+                'Yuichi Masumoto', 'Ken Nagatani', 'Shunta Harukawa', 'Susumu Itao',
                 'Goro Kurita', 'Takeshi Asada', 'Shingo Aoi',
                 // Remplaçants (3)
                 'Ikki Miura', 'Toshiki Ono', 'Hiroki Tanaka',
