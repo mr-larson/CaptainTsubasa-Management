@@ -433,9 +433,9 @@ class PlayerSeeder extends Seeder
             [
                 'Tsuyoshi', 'Oda', 12, 'Midfielder', 245,
                 [
-                    'speed' => 50, 'stamina' => 60, 'defense' => 20, 'attack' => 22,
+                    'speed' => 50, 'stamina' => 60, 'defense' => 24, 'attack' => 20,
                     'shot' => 20, 'pass' => 22, 'dribble' => 20,
-                    'block' => 18, 'intercept' => 19, 'tackle' => 18,
+                    'block' => 20, 'intercept' => 23, 'tackle' => 24,
                     'hand_save' => 15, 'punch_save' => 15
                 ],
                 'Milieu de terrain polyvalent, Oda participe autant à la récupération qu’à la construction du jeu.'
@@ -453,7 +453,7 @@ class PlayerSeeder extends Seeder
             ],
 
             [
-                'Tsubasa', 'Ozora', 12, 'Midfielder', 500,
+                'Tsubasa', 'Ozora', 12, 'Forward', 500,
                 [
                     'speed' => 78, 'stamina' => 85, 'defense' => 30, 'attack' => 39,
                     'shot' => 30, 'pass' => 29, 'dribble' => 30,
@@ -2193,6 +2193,258 @@ class PlayerSeeder extends Seeder
                 'Attaquant de complément, Wesugi accompagne Nagasaki et tente d’exister par son activité.'
             ],
 
+            // =======================
+            // REMPLAÇANTS ÉQUIPES
+            // =======================
+
+            // Nankatsu (1 remplaçant)
+            ['Kenji', 'Tomo', 12, 'Midfielder', 180, [
+                'speed' => 45, 'stamina' => 65, 'defense' => 20, 'attack' => 22,
+                'shot' => 20, 'pass' => 21, 'dribble' => 20, 'block' => 17,
+                'intercept' => 18, 'tackle' => 17, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Remplaçant polyvalent de Nankatsu.'],
+
+            // Shutetsu (3 remplaçants)
+            ['Hiroki', 'Fujii', 12, 'Defender', 160, [
+                'speed' => 42, 'stamina' => 60, 'defense' => 24, 'attack' => 17,
+                'shot' => 16, 'pass' => 16, 'dribble' => 15, 'block' => 21,
+                'intercept' => 19, 'tackle' => 21, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Défenseur remplaçant de Shutetsu.'],
+            ['Daisuke', 'Mori', 12, 'Midfielder', 165, [
+                'speed' => 44, 'stamina' => 62, 'defense' => 20, 'attack' => 20,
+                'shot' => 19, 'pass' => 21, 'dribble' => 19, 'block' => 17,
+                'intercept' => 18, 'tackle' => 17, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Milieu remplaçant de Shutetsu.'],
+            ['Yosuke', 'Kimura', 12, 'Forward', 170, [
+                'speed' => 46, 'stamina' => 60, 'defense' => 16, 'attack' => 23,
+                'shot' => 22, 'pass' => 18, 'dribble' => 20, 'block' => 15,
+                'intercept' => 15, 'tackle' => 15, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Attaquant remplaçant de Shutetsu.'],
+
+            // Toho (3 remplaçants)
+            ['Ryuji', 'Endo', 12, 'Defender', 165, [
+                'speed' => 55, 'stamina' => 65, 'defense' => 26, 'attack' => 19,
+                'shot' => 17, 'pass' => 18, 'dribble' => 16, 'block' => 22,
+                'intercept' => 20, 'tackle' => 23, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Défenseur remplaçant de Toho.'],
+            ['Masashi', 'Goto', 12, 'Midfielder', 170, [
+                'speed' => 56, 'stamina' => 63, 'defense' => 22, 'attack' => 21,
+                'shot' => 20, 'pass' => 22, 'dribble' => 20, 'block' => 18,
+                'intercept' => 19, 'tackle' => 18, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Milieu remplaçant de Toho.'],
+            ['Keita', 'Ogawa', 12, 'Forward', 175, [
+                'speed' => 60, 'stamina' => 62, 'defense' => 17, 'attack' => 25,
+                'shot' => 23, 'pass' => 19, 'dribble' => 21, 'block' => 15,
+                'intercept' => 15, 'tackle' => 16, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Attaquant remplaçant de Toho.'],
+
+            // Furano (3 remplaçants)
+            ['Sosuke', 'Maeda', 12, 'Defender', 160, [
+                'speed' => 52, 'stamina' => 68, 'defense' => 25, 'attack' => 18,
+                'shot' => 16, 'pass' => 17, 'dribble' => 15, 'block' => 21,
+                'intercept' => 20, 'tackle' => 22, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Défenseur remplaçant de Furano.'],
+            ['Tetsuya', 'Iida', 12, 'Midfielder', 165, [
+                'speed' => 55, 'stamina' => 66, 'defense' => 22, 'attack' => 21,
+                'shot' => 19, 'pass' => 22, 'dribble' => 20, 'block' => 18,
+                'intercept' => 19, 'tackle' => 18, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Milieu remplaçant de Furano.'],
+            ['Noboru', 'Hayashi', 12, 'Forward', 170, [
+                'speed' => 58, 'stamina' => 64, 'defense' => 17, 'attack' => 24,
+                'shot' => 22, 'pass' => 19, 'dribble' => 21, 'block' => 15,
+                'intercept' => 15, 'tackle' => 16, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Attaquant remplaçant de Furano.'],
+
+            // Musashi (3 remplaçants)
+            ['Hiroyuki', 'Noda', 12, 'Defender', 160, [
+                'speed' => 42, 'stamina' => 62, 'defense' => 25, 'attack' => 18,
+                'shot' => 16, 'pass' => 17, 'dribble' => 15, 'block' => 21,
+                'intercept' => 19, 'tackle' => 21, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Défenseur remplaçant de Musashi.'],
+            ['Junpei', 'Aoki', 12, 'Midfielder', 165, [
+                'speed' => 44, 'stamina' => 63, 'defense' => 21, 'attack' => 20,
+                'shot' => 19, 'pass' => 21, 'dribble' => 19, 'block' => 17,
+                'intercept' => 18, 'tackle' => 17, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Milieu remplaçant de Musashi.'],
+            ['Satoru', 'Koyama', 12, 'Forward', 170, [
+                'speed' => 57, 'stamina' => 61, 'defense' => 16, 'attack' => 23,
+                'shot' => 22, 'pass' => 18, 'dribble' => 20, 'block' => 15,
+                'intercept' => 15, 'tackle' => 15, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Attaquant remplaçant de Musashi.'],
+
+            // Hanawa (3 remplaçants)
+            ['Takuro', 'Fujimoto', 12, 'Defender', 155, [
+                'speed' => 50, 'stamina' => 60, 'defense' => 24, 'attack' => 17,
+                'shot' => 15, 'pass' => 16, 'dribble' => 15, 'block' => 21,
+                'intercept' => 19, 'tackle' => 21, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Défenseur remplaçant de Hanawa.'],
+            ['Yuki', 'Ozawa', 12, 'Midfielder', 160, [
+                'speed' => 52, 'stamina' => 61, 'defense' => 21, 'attack' => 20,
+                'shot' => 19, 'pass' => 21, 'dribble' => 19, 'block' => 17,
+                'intercept' => 18, 'tackle' => 17, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Milieu remplaçant de Hanawa.'],
+            ['Osamu', 'Miyata', 12, 'Forward', 165, [
+                'speed' => 55, 'stamina' => 60, 'defense' => 16, 'attack' => 22,
+                'shot' => 21, 'pass' => 18, 'dribble' => 19, 'block' => 15,
+                'intercept' => 15, 'tackle' => 15, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Attaquant remplaçant de Hanawa.'],
+
+            // Azumaichi (3 remplaçants)
+            ['Kengo', 'Ueda', 12, 'Defender', 160, [
+                'speed' => 53, 'stamina' => 63, 'defense' => 25, 'attack' => 18,
+                'shot' => 16, 'pass' => 17, 'dribble' => 15, 'block' => 21,
+                'intercept' => 19, 'tackle' => 22, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Défenseur remplaçant d\'Azumaichi.'],
+            ['Shohei', 'Kawai', 12, 'Midfielder', 165, [
+                'speed' => 50, 'stamina' => 62, 'defense' => 21, 'attack' => 20,
+                'shot' => 19, 'pass' => 21, 'dribble' => 19, 'block' => 18,
+                'intercept' => 19, 'tackle' => 18, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Milieu remplaçant d\'Azumaichi.'],
+            ['Tomoya', 'Ishida', 12, 'Forward', 170, [
+                'speed' => 56, 'stamina' => 61, 'defense' => 16, 'attack' => 23,
+                'shot' => 22, 'pass' => 18, 'dribble' => 20, 'block' => 15,
+                'intercept' => 15, 'tackle' => 15, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Attaquant remplaçant d\'Azumaichi.'],
+
+            // Hirado (3 remplaçants)
+            ['Makoto', 'Fukuda', 12, 'Defender', 160, [
+                'speed' => 52, 'stamina' => 64, 'defense' => 25, 'attack' => 18,
+                'shot' => 16, 'pass' => 17, 'dribble' => 15, 'block' => 22,
+                'intercept' => 20, 'tackle' => 22, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Défenseur remplaçant de Hirado.'],
+            ['Ryo', 'Kawamoto', 12, 'Midfielder', 165, [
+                'speed' => 49, 'stamina' => 63, 'defense' => 21, 'attack' => 20,
+                'shot' => 19, 'pass' => 21, 'dribble' => 19, 'block' => 17,
+                'intercept' => 18, 'tackle' => 17, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Milieu remplaçant de Hirado.'],
+            ['Tatsuya', 'Kimura', 12, 'Forward', 170, [
+                'speed' => 55, 'stamina' => 62, 'defense' => 16, 'attack' => 23,
+                'shot' => 22, 'pass' => 18, 'dribble' => 20, 'block' => 15,
+                'intercept' => 15, 'tackle' => 15, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Attaquant remplaçant de Hirado.'],
+
+            // Otomo (3 remplaçants)
+            ['Shunsuke', 'Wada', 12, 'Defender', 165, [
+                'speed' => 46, 'stamina' => 63, 'defense' => 26, 'attack' => 18,
+                'shot' => 16, 'pass' => 17, 'dribble' => 15, 'block' => 22,
+                'intercept' => 20, 'tackle' => 22, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Défenseur remplaçant d\'Otomo.'],
+            ['Yuya', 'Saeki', 12, 'Midfielder', 170, [
+                'speed' => 48, 'stamina' => 64, 'defense' => 22, 'attack' => 21,
+                'shot' => 20, 'pass' => 22, 'dribble' => 20, 'block' => 18,
+                'intercept' => 19, 'tackle' => 18, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Milieu remplaçant d\'Otomo.'],
+            ['Kazuki', 'Hara', 12, 'Forward', 175, [
+                'speed' => 54, 'stamina' => 62, 'defense' => 17, 'attack' => 24,
+                'shot' => 23, 'pass' => 19, 'dribble' => 21, 'block' => 15,
+                'intercept' => 15, 'tackle' => 16, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Attaquant remplaçant d\'Otomo.'],
+
+            // Meiwa (3 remplaçants)
+            ['Tomohiro', 'Abe', 12, 'Defender', 160, [
+                'speed' => 53, 'stamina' => 62, 'defense' => 25, 'attack' => 18,
+                'shot' => 16, 'pass' => 17, 'dribble' => 15, 'block' => 22,
+                'intercept' => 20, 'tackle' => 22, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Défenseur remplaçant de Meiwa.'],
+            ['Nobuhiro', 'Suzuki', 12, 'Midfielder', 165, [
+                'speed' => 55, 'stamina' => 63, 'defense' => 22, 'attack' => 21,
+                'shot' => 20, 'pass' => 22, 'dribble' => 20, 'block' => 18,
+                'intercept' => 19, 'tackle' => 18, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Milieu remplaçant de Meiwa.'],
+            ['Fumihiro', 'Kato', 12, 'Forward', 170, [
+                'speed' => 57, 'stamina' => 62, 'defense' => 17, 'attack' => 24,
+                'shot' => 23, 'pass' => 19, 'dribble' => 21, 'block' => 15,
+                'intercept' => 15, 'tackle' => 16, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Attaquant remplaçant de Meiwa.'],
+
+            // Nakahara (3 remplaçants)
+            ['Ikki', 'Miura', 12, 'Defender', 155, [
+                'speed' => 40, 'stamina' => 58, 'defense' => 23, 'attack' => 17,
+                'shot' => 15, 'pass' => 16, 'dribble' => 15, 'block' => 20,
+                'intercept' => 18, 'tackle' => 20, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Défenseur remplaçant de Nakahara.'],
+            ['Toshiki', 'Ono', 12, 'Midfielder', 160, [
+                'speed' => 42, 'stamina' => 59, 'defense' => 20, 'attack' => 20,
+                'shot' => 19, 'pass' => 20, 'dribble' => 19, 'block' => 17,
+                'intercept' => 17, 'tackle' => 17, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Milieu remplaçant de Nakahara.'],
+            ['Hiroki', 'Tanaka', 12, 'Forward', 165, [
+                'speed' => 46, 'stamina' => 58, 'defense' => 15, 'attack' => 22,
+                'shot' => 21, 'pass' => 17, 'dribble' => 19, 'block' => 15,
+                'intercept' => 15, 'tackle' => 15, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Attaquant remplaçant de Nakahara.'],
+
+            // Naniwa (3 remplaçants)
+            ['Atsushi', 'Goto', 12, 'Defender', 155, [
+                'speed' => 40, 'stamina' => 57, 'defense' => 23, 'attack' => 17,
+                'shot' => 15, 'pass' => 16, 'dribble' => 15, 'block' => 20,
+                'intercept' => 18, 'tackle' => 20, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Défenseur remplaçant de Naniwa.'],
+            ['Kohei', 'Imai', 12, 'Midfielder', 160, [
+                'speed' => 41, 'stamina' => 58, 'defense' => 20, 'attack' => 19,
+                'shot' => 18, 'pass' => 20, 'dribble' => 18, 'block' => 17,
+                'intercept' => 17, 'tackle' => 17, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Milieu remplaçant de Naniwa.'],
+            ['Daizo', 'Shimizu', 12, 'Forward', 165, [
+                'speed' => 44, 'stamina' => 57, 'defense' => 15, 'attack' => 21,
+                'shot' => 20, 'pass' => 17, 'dribble' => 18, 'block' => 15,
+                'intercept' => 15, 'tackle' => 15, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Attaquant remplaçant de Naniwa.'],
+
+            // Minawi (3 remplaçants)
+            ['Ryo', 'Fujita', 12, 'Defender', 155, [
+                'speed' => 51, 'stamina' => 60, 'defense' => 24, 'attack' => 17,
+                'shot' => 15, 'pass' => 16, 'dribble' => 15, 'block' => 20,
+                'intercept' => 18, 'tackle' => 20, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Défenseur remplaçant de Minawi.'],
+            ['Kenta', 'Wada', 12, 'Midfielder', 160, [
+                'speed' => 52, 'stamina' => 60, 'defense' => 20, 'attack' => 20,
+                'shot' => 19, 'pass' => 21, 'dribble' => 19, 'block' => 17,
+                'intercept' => 18, 'tackle' => 17, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Milieu remplaçant de Minawi.'],
+            ['Yuji', 'Morita', 12, 'Forward', 165, [
+                'speed' => 55, 'stamina' => 59, 'defense' => 15, 'attack' => 22,
+                'shot' => 21, 'pass' => 17, 'dribble' => 19, 'block' => 15,
+                'intercept' => 15, 'tackle' => 15, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Attaquant remplaçant de Minawi.'],
+
+            // Shimizu (3 remplaçants)
+            ['Naoto', 'Kishi', 12, 'Defender', 155, [
+                'speed' => 40, 'stamina' => 56, 'defense' => 23, 'attack' => 17,
+                'shot' => 15, 'pass' => 16, 'dribble' => 15, 'block' => 20,
+                'intercept' => 18, 'tackle' => 20, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Défenseur remplaçant de Shimizu.'],
+            ['Yosuke', 'Murata', 12, 'Midfielder', 160, [
+                'speed' => 42, 'stamina' => 57, 'defense' => 20, 'attack' => 19,
+                'shot' => 18, 'pass' => 20, 'dribble' => 18, 'block' => 17,
+                'intercept' => 17, 'tackle' => 17, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Milieu remplaçant de Shimizu.'],
+            ['Kazuya', 'Nishida', 12, 'Forward', 165, [
+                'speed' => 46, 'stamina' => 58, 'defense' => 15, 'attack' => 22,
+                'shot' => 21, 'pass' => 17, 'dribble' => 19, 'block' => 15,
+                'intercept' => 15, 'tackle' => 15, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Attaquant remplaçant de Shimizu.'],
+
+            // Shimada (3 remplaçants)
+            ['Hiroshi', 'Okamoto', 12, 'Defender', 155, [
+                'speed' => 41, 'stamina' => 57, 'defense' => 23, 'attack' => 17,
+                'shot' => 15, 'pass' => 16, 'dribble' => 15, 'block' => 20,
+                'intercept' => 18, 'tackle' => 20, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Défenseur remplaçant de Shimada.'],
+            ['Kenji', 'Tsuda', 12, 'Midfielder', 160, [
+                'speed' => 43, 'stamina' => 58, 'defense' => 20, 'attack' => 20,
+                'shot' => 19, 'pass' => 20, 'dribble' => 19, 'block' => 17,
+                'intercept' => 17, 'tackle' => 17, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Milieu remplaçant de Shimada.'],
+            ['Takuya', 'Nozaki', 12, 'Forward', 165, [
+                'speed' => 47, 'stamina' => 58, 'defense' => 15, 'attack' => 22,
+                'shot' => 21, 'pass' => 17, 'dribble' => 19, 'block' => 15,
+                'intercept' => 15, 'tackle' => 15, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Attaquant remplaçant de Shimada.'],
+
+            // =======================
+            // JOUEURS LIBRE
+            // =======================
 
             // Real Seven – Not contract
             [
