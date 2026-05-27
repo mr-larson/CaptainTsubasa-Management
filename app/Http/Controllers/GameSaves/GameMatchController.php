@@ -176,17 +176,21 @@ class GameMatchController extends Controller
         app(AITrainingService::class)->trainForWeek($gameSave);
         app(AITransferService::class)->recruitForWeek($gameSave);
 
-        // 6. Avancer la semaine
+        // 6. Revenus hebdomadaires AVANT d'incrémenter la semaine
+        $playedWeek = $match->week;
+        $this->applyWeeklyIncome($gameSave, $playedWeek);
+
+        // 7. Avancer la semaine
         $gameSave->week = max($gameSave->week ?? 1, $match->week + 1);
         $gameSave->save();
 
-        // 7. Conserver player_actions
+        // 8. Conserver player_actions
         $state = $gameSave->state ?? [];
         $state['player_actions'] = array_merge($state['player_actions'] ?? [], $data['playerActions'] ?? []);
         $gameSave->state = $state;
         $gameSave->save();
 
-        // 8. Stamina après match
+        // 9. Stamina après match
         StaminaService::applyAfterMatch($gameSave, $match);
 
         return redirect()->route('game-saves.play', $gameSave);
@@ -212,10 +216,50 @@ class GameMatchController extends Controller
         app(AITrainingService::class)->trainForWeek($gameSave);
         app(AITransferService::class)->recruitForWeek($gameSave);
 
+        // Revenus hebdomadaires AVANT d'incrémenter la semaine
+        $this->applyWeeklyIncome($gameSave, $week);
+
         $gameSave->week = $week + 1;
         $gameSave->save();
 
         return redirect()->route('game-saves.play', $gameSave);
+    }
+
+    /**
+     * Applique les revenus hebdomadaires à toutes les équipes.
+     */
+    private function applyWeeklyIncome(GameSave $gameSave, int $week): void
+    {
+        $BASE_INCOME = 500;
+        $WIN_BONUS   = 300;
+        $DRAW_BONUS  = 100;
+
+        $teams = GameTeam::where('game_save_id', $gameSave->id)->get();
+
+        foreach ($teams as $team) {
+            $income = $BASE_INCOME;
+
+            $match = GameMatch::where('game_save_id', $gameSave->id)
+                ->where('week', $week)
+                ->where('status', 'played')
+                ->where(function ($q) use ($team) {
+                    $q->where('home_team_id', $team->id)
+                        ->orWhere('away_team_id', $team->id);
+                })
+                ->first();
+
+            if ($match) {
+                $isHome  = (int) $match->home_team_id === (int) $team->id;
+                $scored  = $isHome ? $match->home_score : $match->away_score;
+                $against = $isHome ? $match->away_score : $match->home_score;
+
+                if ($scored > $against)       $income += $WIN_BONUS;
+                elseif ($scored === $against)  $income += $DRAW_BONUS;
+            }
+
+            $team->budget = ($team->budget ?? 0) + $income;
+            $team->save();
+        }
     }
 
     // ==========================
