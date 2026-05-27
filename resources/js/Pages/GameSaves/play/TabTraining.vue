@@ -197,8 +197,15 @@ const playerForManualEntry = (entry) =>
 
                 <!-- Entraînements IA cette semaine -->
                 <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
-                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
-                        🤖 Entraînement automatique cette semaine
+                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center justify-between">
+                        <span>🤖 Entraînement automatique</span>
+                        <div class="flex items-center gap-2">
+                            <button @click="emit('prev-ai-week')" :disabled="aiCurrentDisplayWeek <= 1"
+                                    class="w-6 h-6 rounded-full bg-slate-200 hover:bg-slate-300 disabled:opacity-30 text-xs font-bold">←</button>
+                            <span class="text-xs text-slate-500">Semaine {{ aiCurrentDisplayWeek }}</span>
+                            <button @click="emit('next-ai-week')" :disabled="aiCurrentDisplayWeek >= aiWeekMax"
+                                    class="w-6 h-6 rounded-full bg-slate-200 hover:bg-slate-300 disabled:opacity-30 text-xs font-bold">→</button>
+                        </div>
                     </h4>
 
                     <div v-if="aiTrainingEntries.length" class="space-y-2">

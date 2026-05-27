@@ -70,7 +70,17 @@ class AITrainingService
 
         // Toujours écrire ai_entries (vide ou non)
         $training['ai_entries'] = $aiEntries;
-        $state['training']      = $training;
+
+        // Historique cumulatif
+        $history = $state['ai_training_history'] ?? [];
+        foreach ($aiEntries as $entry) {
+            $history[] = array_merge($entry, [
+                'season' => $season,
+                'week'   => $week,
+            ]);
+        }
+        $state['ai_training_history'] = $history;
+        $state['training'] = $training;
 
         // Marquer cette semaine comme traitée
         $state[$aiWeekKey] = $week;

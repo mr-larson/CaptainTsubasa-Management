@@ -71,12 +71,21 @@ export function useTraining({ gameSave, season, week }) {
     };
 
     // Entraînements IA sur l'équipe contrôlée cette semaine
+    // Semaine affichée pour les entraînements IA
+    const aiDisplayWeek = ref(null)
+    const aiCurrentDisplayWeek = computed(() => aiDisplayWeek.value ?? Math.max(1, week.value - 1))
+    const aiWeekMax = computed(() => week.value)
+
     const aiTrainingEntries = computed(() => {
-        const s = trainingState.value;
-        if (!s) return [];
-        if (Number(s.season) !== Number(season.value) || Number(s.week) !== Number(week.value)) return [];
-        return Array.isArray(s.ai_entries) ? s.ai_entries : [];
-    });
+        const history = gameSave.value.state?.ai_training_history ?? []
+        return history.filter(e =>
+            Number(e.season) === Number(season.value) &&
+            Number(e.week)   === Number(aiCurrentDisplayWeek.value)
+        )
+    })
+
+    const prevAiWeek = () => { if (aiCurrentDisplayWeek.value > 1) aiDisplayWeek.value = aiCurrentDisplayWeek.value - 1 }
+    const nextAiWeek = () => { if (aiCurrentDisplayWeek.value < aiWeekMax.value) aiDisplayWeek.value = aiCurrentDisplayWeek.value + 1 }
 
     return {
         trainingState,
@@ -86,6 +95,6 @@ export function useTraining({ gameSave, season, week }) {
         selectedTrainings,
         addTrainingSlot, removeTrainingSlot,
         canSubmitTraining, submitTraining,
-        aiTrainingEntries,
+        aiTrainingEntries, aiCurrentDisplayWeek, aiWeekMax, prevAiWeek, nextAiWeek,
     };
 }
