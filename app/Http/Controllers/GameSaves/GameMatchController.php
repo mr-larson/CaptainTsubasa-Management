@@ -66,8 +66,8 @@ class GameMatchController extends Controller
         $state   = $gameSave->state ?? [];
         $lineups = $state['lineup'] ?? [];
 
-        $internalFormation = $lineups[$internalTeam->id]['formation'] ?? '3-2-3-2';
-        $externalFormation = $lineups[$externalTeam->id]['formation'] ?? '3-2-3-2';
+        $internalFormation = $internalTeam->formation ?? '3-2-3-2';
+        $externalFormation = $externalTeam->formation ?? '3-2-3-2';
 
         $homeLogoUrl = $homeTeam->logo_path ? '/' . ltrim($homeTeam->logo_path, '/') : null;
         $awayLogoUrl = $awayTeam->logo_path ? '/' . ltrim($awayTeam->logo_path, '/') : null;
