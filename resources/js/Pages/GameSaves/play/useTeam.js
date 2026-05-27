@@ -139,8 +139,8 @@ export function useTeam({ gameSave, team }) {
     // ==========================
     //   FORMATION
     // ==========================
-    const currentFormation = ref(
-        gameSave.value.state?.lineup?.[team.value?.id]?.formation ?? DEFAULT_FORMATION
+    const currentFormation = computed(() =>
+        team.value?.formation ?? DEFAULT_FORMATION
     );
 
     watch(() => team.value?.id, () => {

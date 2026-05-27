@@ -139,7 +139,7 @@ export function useOtherTeam({ gameSave, teams, controlledTeamId }) {
     //   FORMATION
     // ==========================
     const otherFormation = computed(() =>
-        gameSave.value.state?.lineup?.[selectedOtherTeam.value?.id]?.formation ?? DEFAULT_FORMATION
+        selectedOtherTeam.value?.formation ?? DEFAULT_FORMATION
     );
 
     const otherFormationData = computed(() =>
