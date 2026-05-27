@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue';
 import { router } from '@inertiajs/vue3';
 
-export function useTransfers({ gameSave, freePlayers, team }) {
+export function useTransfers({ gameSave, freePlayers, team, teams }) {
 
     // ==========================
     //   AGENTS LIBRES
@@ -55,11 +55,35 @@ export function useTransfers({ gameSave, freePlayers, team }) {
         );
     };
 
+    // ==========================
+    //   HISTORIQUE TRANSFERTS
+    // ==========================
+    const transferHistory = computed(() => {
+        const history = [];
+        for (const t of (teams?.value ?? [])) {
+            for (const c of (t.contracts ?? [])) {
+                if ((c.start_week ?? 1) <= 1) continue;
+                const p = c.game_player ?? c.gamePlayer ?? null;
+                if (!p) continue;
+                history.push({
+                    player:     p,
+                    team:       t,
+                    start_week: c.start_week,
+                    salary:     c.salary,
+                    is_starter: c.is_starter,
+                });
+            }
+        }
+        return history.sort((a, b) => b.start_week - a.start_week);
+    });
+
+
     return {
         availableFreePlayers,
         showTransferModal, transferTarget,
         transferMatches, transferSalary, transferReason,
         transferTotalCost,
         openTransferModal, closeTransferModal, confirmTransfer,
+        transferHistory,
     };
 }

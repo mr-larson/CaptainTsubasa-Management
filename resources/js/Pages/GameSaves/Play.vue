@@ -135,7 +135,8 @@ const {
     transferMatches, transferSalary, transferReason,
     transferTotalCost,
     openTransferModal, closeTransferModal, confirmTransfer,
-} = useTransfers({ gameSave: gameSaveRef, freePlayers: freePlayersRef, team: teamRef });
+    transferHistory,
+} = useTransfers({ gameSave: gameSaveRef, freePlayers: freePlayersRef, team: teamRef, teams: teamsRef });
 
 // ==========================
 //   AUTRES ÉQUIPES
@@ -404,6 +405,7 @@ function updateOtherPlayerNumber(playerId, number) {
                                   @update:transferMatches="transferMatches = $event"
                                   @update:transferSalary="transferSalary = $event"
                                   @update:transferReason="transferReason = $event"
+                                  :transferHistory="transferHistory"
                     />
 
                     <!-- ======== CARTES BONUS ======== -->

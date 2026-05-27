@@ -11,6 +11,7 @@ const props = defineProps({
     transferSalary:       { type: Number,  required: true },
     transferReason:       { type: String,  required: true },
     transferTotalCost:    { type: Number,  required: true },
+    transferHistory:      { type: Array, default: () => [] },
     roster:               { type: Array,   default: () => [] },
 });
 
@@ -157,6 +158,25 @@ const radarPolygon = (player) =>
 // ==========================
 const budgetAfter = computed(() => props.teamBudget - props.transferTotalCost);
 const canAfford   = computed(() => budgetAfter.value >= 0);
+
+const historyTeamFilter = ref(null);
+
+const historyTeams = computed(() => {
+    const seen = new Set();
+    return props.transferHistory
+        .filter(e => {
+            if (seen.has(e.team.id)) return false;
+            seen.add(e.team.id);
+            return true;
+        })
+        .map(e => e.team);
+});
+
+const filteredHistory = computed(() =>
+    historyTeamFilter.value !== null
+        ? props.transferHistory.filter(e => Number(e.team.id) === Number(historyTeamFilter.value))
+        : props.transferHistory
+);
 </script>
 
 <template>
@@ -426,6 +446,51 @@ const canAfford   = computed(() => budgetAfter.value >= 0);
                     <div class="text-3xl mb-2">👤</div>
                     <p>Sélectionne un joueur pour voir son profil et faire une offre</p>
                 </div>
+            </div>
+        </div>
+        <!-- ============================================ -->
+        <!-- HISTORIQUE TRANSFERTS                         -->
+        <!-- ============================================ -->
+        <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 mt-4">
+            <div class="flex items-center justify-between mb-3">
+                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider">📋 Historique des transferts</h4>
+                <!-- Filtre équipe -->
+                <select :value="historyTeamFilter ?? 'null'"
+                        @change="historyTeamFilter = $event.target.value === 'null' ? null : $event.target.value"
+                        class="border border-slate-300 rounded-lg px-3 py-1 text-xs bg-white focus:ring-2 focus:ring-teal-300 focus:outline-none">
+                    <option value="null">Toutes les équipes  </option>
+                    <option v-for="t in historyTeams" :key="t.id" :value="t.id">{{ t.name }}</option>
+                </select>
+            </div>
+
+            <div v-if="filteredHistory.length" class="space-y-1.5 max-h-[300px] overflow-y-auto pr-1">
+                <div v-for="entry in filteredHistory" :key="entry.player.id + '-' + entry.start_week"
+                     class="flex items-center gap-3 px-3 py-2 rounded-lg bg-white border border-slate-100">
+                    <!-- Photo -->
+                    <div class="w-8 h-8 rounded-full overflow-hidden bg-slate-200 shrink-0">
+                        <img v-if="playerPhotoUrl(entry.player)" :src="playerPhotoUrl(entry.player)" class="w-full h-full object-cover" alt=""/>
+                        <div v-else class="w-full h-full flex items-center justify-center text-[9px] text-slate-400">?</div>
+                    </div>
+                    <!-- Nom -->
+                    <div class="flex-1 min-w-0">
+                        <div class="text-xs font-semibold text-slate-700 truncate">
+                            {{ entry.player.firstname }} {{ entry.player.lastname }}
+                        </div>
+                        <div class="text-[10px] text-slate-400">{{ entry.player.position }}</div>
+                    </div>
+                    <!-- Équipe -->
+                    <div class="flex items-center gap-1.5 shrink-0">
+                        <span class="text-xs text-slate-600 font-semibold">→ {{ entry.team.name }}</span>
+                    </div>
+                    <!-- Semaine -->
+                    <div class="text-[10px] text-slate-400 shrink-0">S{{ entry.start_week }}</div>
+                    <!-- Salaire -->
+                    <div class="text-xs font-bold text-teal-600 shrink-0">{{ entry.salary }} €</div>
+                </div>
+            </div>
+
+            <div v-else class="text-xs text-slate-400 italic py-3 text-center">
+                Aucun transfert enregistré pour le moment.
             </div>
         </div>
     </div>
