@@ -209,7 +209,9 @@ class GamePlayerController extends Controller
 
     public function updateNumber(Request $request, GameSave $gameSave, GamePlayer $player): \Illuminate\Http\RedirectResponse
     {
-        $this->authorizeSave($request, $gameSave);
+        if ($gameSave->user_id !== $request->user()->id) {
+            abort(403);
+        }
 
         $data = $request->validate([
             'number' => ['required', 'integer', 'min:1', 'max:99'],

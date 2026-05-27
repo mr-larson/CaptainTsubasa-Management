@@ -64,7 +64,7 @@ export function useTeam({ gameSave, team }) {
     const updatePlayerNumber = (playerId, number) => {
         router.patch(
             route('game-saves.players.update-number', {
-                gameSave: gameSave.id,
+                gameSave: gameSave.value.id,
                 player: playerId,
             }),
             { number: parseInt(number) },
