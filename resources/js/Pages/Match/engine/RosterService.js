@@ -154,6 +154,21 @@ export class RosterService {
         return 1.0 + (Number.isFinite(b) ? b : 0);
     }
 
+    globalAttackMultiplier(team, slotNumber) {
+        const attackStat = this.getStat(team, slotNumber, "attack");
+        return 1.0 + (attackStat / 100) * 0.1;
+    }
+
+    globalDefenseMultiplier(team, slotNumber) {
+        const defenseStat = this.getStat(team, slotNumber, "defense");
+        return 1.0 + (defenseStat / 100) * 0.1;
+    }
+
+    speedStaminaCostReduction(team, slotNumber) {
+        const speedStat = this.getStat(team, slotNumber, "speed");
+        return 1.0 - (speedStat / 100) * 0.1;
+    }
+
     // -----------------------------------------------------------
     //   Bases de calcul duel
     // -----------------------------------------------------------
@@ -170,6 +185,7 @@ export class RosterService {
         let raw = base;
         if (m) raw = base + this.getStat(team, slotNumber, m.stat) * this.STAT_COEF;
         if (m) raw *= this.positionBonusMultiplier(role, m.bonus);
+        raw *= this.globalAttackMultiplier(team, slotNumber);
         return raw;
     }
 
@@ -184,6 +200,7 @@ export class RosterService {
             const statKey = mapGK[defenseAction] ?? null;
             let raw = base + (statKey ? this.getStat(defenseTeam, defenseSlotNumber, statKey) * this.STAT_COEF : 0);
             raw *= this.positionBonusMultiplier(role, "gk");
+            raw *= this.globalDefenseMultiplier(defenseTeam, defenseSlotNumber);
             return raw;
         }
 
@@ -192,6 +209,7 @@ export class RosterService {
         let raw = base + (statKey ? this.getStat(defenseTeam, defenseSlotNumber, statKey) * this.STAT_COEF : 0);
         const bonusTag = (defenseAction === "block") ? "block" : "defend";
         raw *= this.positionBonusMultiplier(role, bonusTag);
+        raw *= this.globalDefenseMultiplier(defenseTeam, defenseSlotNumber);
         return raw;
     }
 }

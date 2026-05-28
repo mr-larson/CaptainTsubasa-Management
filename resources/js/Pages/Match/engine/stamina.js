@@ -62,6 +62,14 @@ function staminaCostMultiplierFor(category) {
     return 1.0;
 }
 
+function getSpeedStaminaReduction(playerId) {
+    if (!playerId || !_roster) return 1.0;
+    const team = playerId.startsWith("I") ? "internal" : "external";
+    const slot = parseInt(playerId.slice(1), 10);
+    const speedStat = _roster.getStat(team, slot, "speed");
+    return 1.0 - (speedStat / 100) * 0.1;
+}
+
 // -----------------------------------------------------------
 //   Application coût
 // -----------------------------------------------------------
@@ -69,8 +77,9 @@ export function applyStaminaCost(playerId, category, actionKey) {
     if (!playerId) return;
     const cfg      = STATS?.[category]?.[actionKey];
     const baseCost = cfg ? cfg.cost : 0;
+    const speedReduction = getSpeedStaminaReduction(playerId);
     const cost     = Math.max(0, Math.round(
-        baseCost * staminaCostMultiplierFor(category) * STAMINA_COST_GLOBAL_SCALE
+        baseCost * staminaCostMultiplierFor(category) * STAMINA_COST_GLOBAL_SCALE * speedReduction
     ));
     _state.stamina[playerId] = Math.max(0, getStamina(playerId) - cost);
     updateStaminaUI(playerId);
