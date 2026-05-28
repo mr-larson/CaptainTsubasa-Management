@@ -240,46 +240,57 @@ export function updateSideCard(prefix, team, slotNumber) {
     const portraitEl = _rootEl.querySelector(`#${prefix}-portrait`);
     if (portraitEl) setCardPhoto(portraitEl, info?.photo);
 
-    // Badge capitaine 👑
-    const captainBadgeId = `${prefix}-captain-badge`;
-    _rootEl.querySelector(`#${captainBadgeId}`)?.remove();
-    if (info?.isCaptain) {
-        const rerolls = _state?.captainReroll?.[team]?.rerollsRemaining ?? 0;
-        const badge = document.createElement('div');
-        badge.id = captainBadgeId;
-        badge.setAttribute('data-captain-reroll', team);
-        badge.style.cssText = 'position:absolute;top:2px;left:2px;background:#f59e0b;color:#fff;font-size:9px;font-weight:900;padding:1px 5px;border-radius:4px;z-index:60;cursor:default;';
-        badge.textContent = `👑 ${rerolls}`;
-        badge.title = `Capitaine — ${rerolls} relance(s) restante(s)`;
-        portraitEl?.appendChild(badge);
-    }
 
-    // Badges cartons/statut
+    // ── STATUS BAR — tous les badges regroupés ──────────────────
     const playerDbId = _roster.getPlayerInfo(team, slotNumber)?.id ?? null;
     const matchYellows = (_state?.foulEvents ?? [])
         .filter(e => e.type === 'card' && e.card_type === 'yellow' && e.player_id === playerDbId)
         .length;
     const totalYellows = (info?.yellowCards ?? 0) + matchYellows;
 
-    const badgeEl = _rootEl.querySelector(`#${prefix}-portrait`);
-    badgeEl?.querySelectorAll('.card-badge').forEach(b => b.remove());
+    // Nettoyer les anciens badges du portrait
+    const portraitBadges = _rootEl.querySelector(`#${prefix}-portrait`);
+    portraitBadges?.querySelectorAll('.card-badge').forEach(b => b.remove());
 
-    if (totalYellows > 0 && badgeEl) {
-        const badge = document.createElement('div');
-        badge.className = 'card-badge';
-        badge.style.cssText = 'position:absolute;bottom:2px;right:2px;background:#eab308;color:#1c1917;font-size:9px;font-weight:900;padding:1px 4px;border-radius:4px;z-index:60;';
-        badge.textContent = `${totalYellows}🟨`;
-        badgeEl.appendChild(badge);
-    }
-    if (info?.isAvailable === false && badgeEl) {
-        const badge = document.createElement('div');
-        badge.className = 'card-badge';
-        badge.style.cssText = 'position:absolute;top:2px;right:2px;background:#ef4444;color:#fff;font-size:9px;font-weight:900;padding:1px 4px;border-radius:4px;z-index:60;';
-        badge.textContent = totalYellows >= 2 ? '🚫' : '🤕';
-        badgeEl.appendChild(badge);
+    // Nettoyer les anciens badges dynamiques de la status-bar
+    const statusBar = _rootEl.querySelector(`#${prefix}-status-bar`);
+    statusBar?.querySelectorAll('.status-badge').forEach(b => b.remove());
+
+    if (statusBar) {
+        // 🤕 Indisponible (inséré en premier = apparaît à gauche)
+        if (info?.isAvailable === false) {
+            const b = document.createElement('div');
+            b.className = 'status-badge';
+            b.style.cssText = 'background:#ef4444;color:#fff;font-size:9px;font-weight:900;padding:1px 4px;border-radius:4px;white-space:nowrap;';
+            b.textContent = totalYellows >= 2 ? '🚫' : '🤕';
+            b.title = totalYellows >= 2 ? 'Expulsé' : 'Blessé / Indisponible';
+            statusBar.insertBefore(b, statusBar.firstChild);
+        }
+
+        // 🟨 Cartons jaunes
+        if (totalYellows > 0) {
+            const b = document.createElement('div');
+            b.className = 'status-badge';
+            b.style.cssText = 'background:#eab308;color:#1c1917;font-size:9px;font-weight:900;padding:1px 4px;border-radius:4px;white-space:nowrap;';
+            b.textContent = `${totalYellows}🟨`;
+            b.title = `${totalYellows} carton(s) jaune`;
+            statusBar.insertBefore(b, statusBar.firstChild);
+        }
+
+        // 👑 Capitaine
+        if (info?.isCaptain) {
+            const rerolls = _state?.captainReroll?.[team]?.rerollsRemaining ?? 0;
+            const b = document.createElement('div');
+            b.className = 'status-badge';
+            b.setAttribute('data-captain-reroll', team);
+            b.style.cssText = 'background:#f59e0b;color:#fff;font-size:9px;font-weight:900;padding:1px 5px;border-radius:4px;white-space:nowrap;cursor:default;';
+            b.textContent = `👑 ${rerolls}`;
+            b.title = `Capitaine — ${rerolls} relance(s) restante(s)`;
+            statusBar.insertBefore(b, statusBar.firstChild);
+        }
     }
 
-    // Bouton remplacement — icône 🔄 à côté du ⚽ dans le coin de la carte
+    // Bouton remplacement
     _rootEl.querySelector(`#${prefix}-sub-btn`)?.remove();
     _rootEl.querySelector(`#${prefix}-sub-panel`)?.remove();
 
@@ -287,7 +298,6 @@ export function updateSideCard(prefix, team, slotNumber) {
         _state?._matchConfig?.controlledSide === team ||
         _state?._matchConfig?.controlMode === 'both'
     );
-    const staminaRatio = getStaminaRatio(playerId);
     const canSub = (
         isControlledTeam &&
         !_state?.isGameOver &&
@@ -300,9 +310,7 @@ export function updateSideCard(prefix, team, slotNumber) {
         const cardEl = _rootEl.querySelector(`#${prefix}-card`);
         if (!cardEl) return;
 
-        // Construire la liste des remplaçants
         const subs = [];
-        // Remplace la boucle for (let s = 1; s <= 11; s++)
         const subsPool = _roster.getSubs(team);
         for (const { slot: s, info: subInfo } of subsPool) {
             if (s === slotNumber) continue;
@@ -311,16 +319,14 @@ export function updateSideCard(prefix, team, slotNumber) {
         }
         if (!subs.length) return;
 
-        // Bouton icône positionné à côté du ballon
         const subBtn = document.createElement('button');
         subBtn.id = `${prefix}-sub-btn`;
         subBtn.title = `Remplacer (${(_state.MAX_SUBSTITUTIONS ?? 3) - (_state.substitutionCount ?? 0)} restant(s))`;
         subBtn.textContent = '🔄';
-        subBtn.style.cssText = 'position:absolute;top:8px;right:30px;background:none;border:none;cursor:pointer;font-size:16px;padding:0;line-height:1;z-index:70;opacity:0.85;transition:opacity 0.15s;';
+        subBtn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:14px;padding:0;line-height:1;opacity:0.85;transition:opacity 0.15s;';
         subBtn.onmouseenter = () => subBtn.style.opacity = '1';
         subBtn.onmouseleave = () => subBtn.style.opacity = '0.85';
 
-        // Panel liste remplaçants
         const panel = document.createElement('div');
         panel.id = `${prefix}-sub-panel`;
         panel.style.cssText = 'display:none;position:absolute;top:32px;right:4px;z-index:80;background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 8px 20px rgba(0,0,0,0.15);min-width:180px;overflow:hidden;';
@@ -339,7 +345,12 @@ export function updateSideCard(prefix, team, slotNumber) {
 
             const item = document.createElement('button');
             item.style.cssText = 'width:100%;padding:6px 10px;text-align:left;font-size:11px;border:none;border-bottom:1px solid #f1f5f9;background:transparent;cursor:pointer;display:flex;justify-content:space-between;align-items:center;';
-            item.innerHTML = `<span style="font-weight:600;">${subInfo.lastname}</span><span style="color:${color};font-size:10px;font-weight:700;">${pct}%⚡</span>`;
+            item.innerHTML = `
+            <div>
+                <div style="font-weight:700;">${subInfo.lastname}</div>
+                <div style="font-size:9px;color:#94a3b8;">${subInfo.position ?? '—'}</div>
+            </div>
+            <span style="color:${color};font-size:10px;font-weight:700;">${pct}%⚡</span>`;
             item.onmouseenter = () => item.style.background = '#f0f9ff';
             item.onmouseleave = () => item.style.background = 'transparent';
             item.onclick = () => {
@@ -358,16 +369,19 @@ export function updateSideCard(prefix, team, slotNumber) {
             panel.style.display = open ? 'block' : 'none';
         };
 
-        // Fermer si clic ailleurs
         document.addEventListener('click', () => {
             open = false;
             panel.style.display = 'none';
         }, { once: true });
 
-        cardEl.appendChild(subBtn);
+        // 🔄 dans la status-bar, panel ancré sur la card
+        const subBtnContainer = _rootEl.querySelector(`#${prefix}-status-bar`);
+        if (subBtnContainer) subBtnContainer.appendChild(subBtn);
+        else cardEl.appendChild(subBtn);
         cardEl.appendChild(panel);
     }
-    // Gérer l'icône ballon — visible seulement sur le porteur actuel
+
+    // ⚽ Ballon — visible seulement sur le porteur actuel
     const ballIconEl = _rootEl.querySelector(`#${prefix}-ball-icon`);
     if (ballIconEl) {
         const b = _state?.ball;

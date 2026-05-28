@@ -393,10 +393,10 @@ function showCaptainRerollPrompt(attackTeam) {
             </div>
         </div>`;
 
-    setActionBar(html, "mode-captain-reroll", b, _roster, (rootEl) => {
-        rootEl.querySelector('[data-action="captain-reroll-confirm"]')
+    setActionBar(html, "mode-captain-reroll", b, _roster, () => {
+        _rootEl.querySelector('[data-action="captain-reroll-confirm"]')
             ?.addEventListener('click', onCaptainRerollConfirm);
-        rootEl.querySelector('[data-action="captain-reroll-skip"]')
+        _rootEl.querySelector('[data-action="captain-reroll-skip"]')
             ?.addEventListener('click', onCaptainRerollSkip);
     }, false);
 }

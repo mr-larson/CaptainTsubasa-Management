@@ -154,18 +154,15 @@
                             id="home-card"
                             class="min-w-0 rounded-2xl bg-white p-4 shadow-lg ring-1 ring-white/80 flex flex-col gap-3 relative"
                         >
-                            <div
-                                id="home-ball-icon"
-                                class="hidden absolute top-2 right-2 h-5 w-5 flex items-center justify-center text-sm"
-                                title="Porte le ballon"
-                            >⚽</div>
+                            <div id="home-status-bar" class="absolute top-2 right-2 flex items-center gap-1">
+                                <div id="home-ball-icon" class="hidden h-5 w-5 flex items-center justify-center text-sm" title="Porte le ballon">⚽</div>
+                            </div>
 
                             <div class="flex items-center gap-3 min-w-0">
                                 <div
                                     id="home-portrait"
                                     class="shrink-0 h-[90px] w-[90px] rounded shadow-md bg-gradient-to-br from-slate-100 via-slate-200 to-slate-400 relative overflow-hidden"
                                 ></div>
-
                                 <div class="min-w-0 flex-1 text-xs space-y-0.5">
                                     <div id="home-name" class="text-base font-bold truncate">—</div>
                                     <div>Poste : <span id="home-role" class="font-semibold">—</span></div>
@@ -183,7 +180,6 @@
                                 <div class="flex justify-between"><span>Tackle :</span> <strong id="home-stat-tackle">—</strong></div>
                                 <div class="flex justify-between"><span>Attack :</span> <strong id="home-stat-attack">—</strong></div>
                                 <div class="flex justify-between"><span>Défense :</span> <strong id="home-stat-defense">—</strong></div>
-
                                 <div class="flex justify-between"><span>Arrêt :</span> <strong id="home-stat-hand_save">—</strong></div>
                                 <div class="flex justify-between"><span>Poings :</span> <strong id="home-stat-punch_save">—</strong></div>
                             </div>
@@ -198,18 +194,15 @@
                             id="away-card"
                             class="min-w-0 rounded-2xl bg-white p-4 shadow-lg ring-1 ring-white/80 flex flex-col gap-3 relative"
                         >
-                            <div
-                                id="away-ball-icon"
-                                class="hidden absolute top-2 right-2 h-5 w-5 flex items-center justify-center text-sm"
-                                title="Porte le ballon"
-                            >⚽</div>
+                            <div id="away-status-bar" class="absolute top-2 right-2 flex items-center gap-1">
+                                <div id="away-ball-icon" class="hidden h-5 w-5 flex items-center justify-center text-sm" title="Porte le ballon">⚽</div>
+                            </div>
 
                             <div class="flex items-center gap-3 min-w-0">
                                 <div
                                     id="away-portrait"
                                     class="shrink-0 h-[90px] w-[90px] rounded shadow-md bg-gradient-to-br from-slate-100 via-slate-200 to-slate-400 relative overflow-hidden"
                                 ></div>
-
                                 <div class="min-w-0 flex-1 text-xs space-y-0.5">
                                     <div id="away-name" class="text-base font-bold truncate">—</div>
                                     <div>Poste : <span id="away-role" class="font-semibold">—</span></div>
@@ -227,7 +220,6 @@
                                 <div class="flex justify-between"><span>Tackle :</span> <strong id="away-stat-tackle">—</strong></div>
                                 <div class="flex justify-between"><span>Attack :</span> <strong id="away-stat-attack">—</strong></div>
                                 <div class="flex justify-between"><span>Défense :</span> <strong id="away-stat-defense">—</strong></div>
-
                                 <div class="flex justify-between"><span>Arrêt :</span> <strong id="away-stat-hand_save">—</strong></div>
                                 <div class="flex justify-between"><span>Poings :</span> <strong id="away-stat-punch_save">—</strong></div>
                             </div>
@@ -236,6 +228,7 @@
                                 <div id="away-energy-fill" class="h-full w-full e-high"></div>
                             </div>
                         </div>
+
                     </div>
 
                     <!-- CENTER : field -->
@@ -302,7 +295,7 @@
                             <!-- ✅ shrink-0 : empêche l’entête de “manger” la place scroll -->
                             <div id="log-current" class="shrink-0">
                                 <div class="flex items-center justify-between gap-2">
-                                    <div class="text-[10px] uppercase tracking-widest font-bold text-slate-600">DERNIÈRE ACTION</div>
+                                    <div class="text-[10px] uppercase tracking-widest font-bold text-slate-600 whitespace-nowrap">DERNIÈRE ACTION</div>
                                     <div id="duel-dice-display" class="dice-chip"></div>
                                 </div>
                                 <div id="current-action-title" class="mt-2 font-bold text-slate-900">–</div>
@@ -313,8 +306,8 @@
 
                             <!-- ✅ zone scroll : height calculable car parent = flex-1 min-h-0 -->
                             <div id="log-history" class="flex-1 min-h-0 overflow-y-auto">
-                                <div class="text-[8px] uppercase tracking-widest font-bold text-slate-600 mb-2">
-                                    Historique
+                                <div class="text-[8px] uppercase tracking-widest font-bold text-slate-600 mb-2 whitespace-nowrap">
+                                    HISTORIQUE
                                 </div>
                                 <ul id="history-list" class="space-y-1"></ul>
                             </div>

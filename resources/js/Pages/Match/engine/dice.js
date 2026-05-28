@@ -228,40 +228,25 @@ function formatBreakdownHTML(b) {
 //   Affichage duel
 // -----------------------------------------------------------
 export function showDuelDice(attackScore, defenseScore, aRoll, dRoll, breakdown) {
+    _lastBreakdown = breakdown ?? null;
+
     const duelDiceEl = document.getElementById("duel-dice-display");
     if (!duelDiceEl) return;
 
     const winner = attackScore > defenseScore ? "attack"
-        : attackScore < defenseScore ? "defense"
-            : "tie";
+        : attackScore < defenseScore ? "defense" : "tie";
 
-    const row = (label, value) => `<tr><td class="px-1 py-0.5 text-slate-500 text-[10px]">${label}</td><td class="px-1 py-0.5 text-right font-bold text-[10px]">${value}</td></tr>`;
+    const aTag = breakdown?.rolls?.aTag ?? String(aRoll.roll);
+    const dTag = breakdown?.rolls?.dTag ?? String(dRoll.roll);
 
-    const captainTag = breakdown?.captainReroll
-        ? `<div class="text-[10px] font-bold text-amber-500 text-center mb-1">👑 Captain Reroll!</div>`
-        : '';
+    // Chip compact — juste les scores
+    duelDiceEl.textContent = `${aTag} vs ${dTag}`;
+    duelDiceEl.classList.add("visible", "pop");
+    setTimeout(() => duelDiceEl.classList.remove("pop"), 500);
 
-    duelDiceEl.innerHTML = `
-        <div class="bg-white border border-slate-200 rounded-xl shadow-lg p-2 text-xs min-w-[160px]">
-            ${captainTag}
-            <div class="flex justify-around mb-1">
-                <div class="text-center">
-                    <div class="text-[10px] text-slate-400 mb-0.5">Attaque</div>
-                    <div class="text-lg font-black ${winner === 'attack' ? 'text-emerald-500' : 'text-slate-700'}">
-                        ${breakdown?.rolls?.aTag ?? aRoll.roll}
-                    </div>
-                    <div class="text-[9px] text-slate-400">${Number(attackScore).toFixed(1)}</div>
-                </div>
-                <div class="text-slate-300 self-center font-black">vs</div>
-                <div class="text-center">
-                    <div class="text-[10px] text-slate-400 mb-0.5">Défense</div>
-                    <div class="text-lg font-black ${winner === 'defense' ? 'text-rose-500' : 'text-slate-700'}">
-                        ${breakdown?.rolls?.dTag ?? dRoll.roll}
-                    </div>
-                    <div class="text-[9px] text-slate-400">${Number(defenseScore).toFixed(1)}</div>
-                </div>
-            </div>
-        </div>`;
+    // Tooltip détaillé mis à jour pour le hover
+    const tip = ensureTooltip();
+    if (tip) tip.innerHTML = formatBreakdownHTML(breakdown);
 }
 
 export function bindDuelTooltipEvents() {
