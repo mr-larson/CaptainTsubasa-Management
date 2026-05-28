@@ -409,8 +409,8 @@ const awayLogoUrl = computed(() => {
 //  Lifecycle : mount / unmount
 // ==========================
 onMounted(() => {
-    console.log('controlledSide:', props.engineConfig.controlledSide)
-    console.log('controlMode:', props.engineConfig.controlMode)
+    const captain = props.engineConfig.teams.internal.players.find(p => p.is_captain);
+    console.log('Captain:', captain?.lastname, 'isCaptain:', captain?.is_captain);
     if (!gameRoot.value) return;
 
     cleanup = initMatchEngine(gameRoot.value, {

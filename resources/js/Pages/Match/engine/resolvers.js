@@ -561,7 +561,33 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
     if (defenseAction === "field-special") _markSpecialUsed(defenderId);
 
     const diceTag    = attackScore.toFixed(1) + "-" + defenseScore.toFixed(1);
-    if (critWinner) return { isTie: false, duelResult: critWinner, defenderId, defenderSlot, diceTag };
+    if (critWinner) {
+        // Si crit defense ET capitaine peut reroller
+        if (critWinner === "defense" && canAttackerReroll(attackTeam, b.number)) {
+            if (_isAITeam(attackTeam)) {
+                if (aiShouldReroll(attackTeam)) {
+                    return doReroll({
+                        attackTeam, defenseTeam, attackType, defenseAction,
+                        attackBaseRaw, defenseBaseRaw, attackStamF, defenseStamF,
+                        defenderId, defenderSlot, clearanceBonus,
+                    });
+                }
+                _state.captainReroll[attackTeam].usedOnCurrentAction = true;
+            } else {
+                _state.pendingCaptainReroll = {
+                    attackTeam, defenseTeam, attackType, defenseAction,
+                    attackBaseRaw, defenseBaseRaw, attackStamF, defenseStamF,
+                    defenderId, defenderSlot, diceTag, clearanceBonus,
+                    isSpecial: attackType === "special",
+                    oldZone: b.zoneIndex, lane: b.laneIndex,
+                    originZone: b.zoneIndex, originLane: b.laneIndex,
+                };
+                showCaptainRerollPrompt(attackTeam);
+                return { isTie: false, duelResult: "pending_reroll", defenderId, defenderSlot, diceTag };
+            }
+        }
+        return { isTie: false, duelResult: critWinner, defenderId, defenderSlot, diceTag };
+    }
 
     const diff = attackScore - defenseScore;
     if (diff === 0) {

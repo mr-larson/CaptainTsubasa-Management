@@ -69,9 +69,9 @@ export class RosterService {
                     firstname: "Joueur", lastname: `#${slot}`,
                     position: "", photo: null, stats: null, specialMoves: [],
                     isAvailable: true, yellowCards: 0, isStarter: true,
-                    isCaptain:    p.is_captain ?? false,
-                    contractId:   p.contract_id ?? null,
-                    captainRerollsRemaining: p.captain_rerolls_remaining ?? 3,
+                    isCaptain:    false,   // ← pas de p ici
+                    contractId:   null,
+                    captainRerollsRemaining: 3,
                 });
             }
 
