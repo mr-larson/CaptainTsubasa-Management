@@ -520,7 +520,7 @@ class PlayerSeeder extends Seeder
             ],
 
             [
-                'Kazuma', 'Matsumo', 12, 'Defender', 225,
+                'Wanatabe', 'Matsumo', 12, 'Defender', 225,
                 [
                     'speed' => 48, 'stamina' => 58, 'defense' => 24, 'attack' => 17,
                     'shot' => 16, 'pass' => 16, 'dribble' => 15,
@@ -542,7 +542,7 @@ class PlayerSeeder extends Seeder
             ],
 
             [
-                'Jun', 'Kurata', 12, 'Midfielder', 260,
+                'Yoshioka', 'Kurata', 12, 'Midfielder', 260,
                 [
                     'speed' => 52, 'stamina' => 63, 'defense' => 21, 'attack' => 23,
                     'shot' => 20, 'pass' => 22, 'dribble' => 21,
@@ -553,7 +553,7 @@ class PlayerSeeder extends Seeder
             ],
 
             [
-                'Takumi', 'Osaki', 12, 'Midfielder', 270,
+                'Akiyoshi', 'Osaki', 12, 'Midfielder', 270,
                 [
                     'speed' => 54, 'stamina' => 65, 'defense' => 22, 'attack' => 24,
                     'shot' => 21, 'pass' => 23, 'dribble' => 22,
@@ -575,7 +575,7 @@ class PlayerSeeder extends Seeder
             ],
 
             [
-                'Kaito', 'Inamura', 12, 'Midfielder', 290,
+                'Kitajima', 'Inamura', 12, 'Midfielder', 290,
                 [
                     'speed' => 55, 'stamina' => 67, 'defense' => 23, 'attack' => 25,
                     'shot' => 22, 'pass' => 24, 'dribble' => 23,

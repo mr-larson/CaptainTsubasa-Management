@@ -180,13 +180,16 @@ class GameSaveController extends Controller
                 $gamePlayersByBaseId[$basePlayerId]->save();
 
                 GameContract::create([
-                    'game_save_id'   => $gameSave->id,
-                    'game_team_id'   => $gameTeamId,
-                    'game_player_id' => $gamePlayersByBaseId[$basePlayerId]->id,
-                    'salary'         => $contract->salary ?? 0,
-                    'start_week'     => 1,
-                    'end_week'       => $seasonLength,
-                    'is_starter'     => $isStarter,
+                    'game_save_id'                    => $gameSave->id,
+                    'game_team_id'                    => $gameTeamId,
+                    'game_player_id'                  => $gamePlayersByBaseId[$basePlayerId]->id,
+                    'salary'                          => $contract->salary ?? 0,
+                    'start_week'                      => 1,
+                    'end_week'                        => $seasonLength,
+                    'is_starter'                      => $isStarter,
+                    'is_captain'                      => $contract->is_captain ?? false,
+                    'captain_rerolls_remaining'       => 3,
+                    'captain_reroll_used_this_action' => false,
                 ]);
             }
         }
@@ -303,13 +306,16 @@ class GameSaveController extends Controller
             ->count();
 
         GameContract::create([
-            'game_save_id'   => $gameSave->id,
-            'game_team_id'   => $team->id,
-            'game_player_id' => $player->id,
-            'salary'         => $data['salary'],
-            'start_week'     => $startWeek,
-            'end_week'       => $endWeek,
-            'is_starter'     => $starterCount < 11,
+            'game_save_id'                    => $gameSave->id,
+            'game_team_id'                    => $team->id,
+            'game_player_id'                  => $player->id,
+            'salary'                          => $data['salary'],
+            'start_week'                      => $startWeek,
+            'end_week'                        => $endWeek,
+            'is_starter'                      => $starterCount < 11,
+            'is_captain'                      => false,
+            'captain_rerolls_remaining'       => 3,
+            'captain_reroll_used_this_action' => false,
         ]);
 
         $totalCost    = $data['salary'] * $data['matches_total'];

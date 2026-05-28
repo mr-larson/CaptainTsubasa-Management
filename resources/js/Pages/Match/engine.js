@@ -43,6 +43,7 @@ import {
     isGoodDefenseChoice, givePossessionOnTie,
     resolvePass, resolveDribble, resolveShot, resolveShotKeeperDuel,
     performKeeperClearance, recordDuelEvent,
+    resetCaptainRerollActionFlag,
 } from './engine/resolvers.js';
 
 // ==========================
@@ -118,6 +119,7 @@ export function initMatchEngine(rootEl, config = {}) {
         pendingShotContext:    null,
         pendingClearanceBonus: 0,
         pendingDefenseContext: null,
+        pendingCaptainReroll:  null,
         lastDribblerId: null,
         stamina:        {},
         staminaMax:     {},
@@ -135,9 +137,30 @@ export function initMatchEngine(rootEl, config = {}) {
         _moveBallFn:     null,
         _applyKickoffFn: null,
         _performSubstitution: null,
+
+        // ── Captain Reroll ───────────────────────────────────────
+        captainReroll: {
+            internal: { contractId: null, rerollsRemaining: 0, usedOnCurrentAction: false },
+            external: { contractId: null, rerollsRemaining: 0, usedOnCurrentAction: false },
+        },
     };
 
     const ball = state.ball;
+
+    // ==========================
+    //   INIT CAPTAIN REROLL
+    //   (depuis matchConfig.teams)
+    // ==========================
+    ;['internal', 'external'].forEach(team => {
+        const captain = matchConfig.teams?.[team]?.players?.find(p => p.is_captain);
+        if (captain) {
+            state.captainReroll[team] = {
+                contractId:          captain.contract_id ?? null,
+                rerollsRemaining:    captain.captain_rerolls_remaining ?? 3,
+                usedOnCurrentAction: false,
+            };
+        }
+    });
 
     // ==========================
     //   HELPERS LOCAUX
@@ -232,13 +255,11 @@ export function initMatchEngine(rootEl, config = {}) {
                     if (act === "pass")    out.players[pid].offense.pass.success++;
                     if (act === "dribble") out.players[pid].offense.dribble.success++;
 
-                    // Tir réussi = passe le défenseur (pas forcément un but)
                     if (act === "shot" || act === "special") {
                         out.players[pid].offense.shot.success++;
                         out.teams[t].shots++;
                     }
 
-                    // But = duel gardien gagné (defenseSlot === 1)
                     if ((act === "shot" || act === "special") && ev.result === "attack" && ev.defense?.slot === 1) {
                         out.players[pid].offense.goals = (out.players[pid].offense.goals ?? 0) + 1;
                         out.teams[t].goals++;
@@ -291,24 +312,21 @@ export function initMatchEngine(rootEl, config = {}) {
         const outEl = rootEl.querySelector(`[data-player="${outId}"]`);
         if (!outEl) return false;
 
-        // Remplaçant peut être slot 12+ (pas de pion DOM)
         const inId  = getPlayerId(team, inSlot);
         const inEl  = rootEl.querySelector(`[data-player="${inId}"]`);
 
         if (inEl) {
-            // Remplaçant a un pion sur le terrain → ancien comportement
             if (inEl.classList.contains('unavailable')) return false;
             inEl.style.left = outEl.style.left;
             inEl.style.top  = outEl.style.top;
             if (outEl.dataset.zone) inEl.dataset.zone = outEl.dataset.zone;
             outEl.classList.add('unavailable');
         } else {
-            // Remplaçant slot 12+ → mettre à jour le pion du sortant
             const inInfo = roster.getPlayerInfo(team, inSlot);
             if (!inInfo) return false;
             roster.rosters[team].set(outSlot, { ...inInfo, isStarter: true });
             roster.rosters[team].set(inSlot, { ...inInfo, isAvailable: false });
-            const subNumber = 11 + state.substitutionCount + 1; // 12, 13, 14...
+            const subNumber = 11 + state.substitutionCount + 1;
             outEl.textContent       = String(subNumber);
             outEl.dataset.jersey    = String(subNumber);
             outEl.dataset.firstname = inInfo.firstname;
@@ -343,7 +361,7 @@ export function initMatchEngine(rootEl, config = {}) {
         refreshUI();
         return true;
     }
-    // IA — remplacements automatiques stamina < 50%
+
     function aiCheckSubstitutions() {
         if (state.isGameOver) return;
         if (state.substitutionCount >= state.MAX_SUBSTITUTIONS) return;
@@ -370,7 +388,6 @@ export function initMatchEngine(rootEl, config = {}) {
                 const subsPool = roster.getSubs(aiTeam);
                 for (const { slot: inSlot, info: inInfo } of subsPool) {
                     if (inInfo.isAvailable === false) continue;
-                    // Vérifier que ce remplaçant n'a pas déjà été utilisé
                     if (state.substitutions.some(s => s.inSlot === inSlot && s.team === aiTeam)) continue;
 
                     const inStMax = state.staminaMax[getPlayerId(aiTeam, inSlot)] ?? 100;
@@ -555,7 +572,6 @@ export function initMatchEngine(rootEl, config = {}) {
             }
         }
 
-        // Un seul updateSideCard à la fin
         if (defenderId) {
             const defTeam   = defenderId.startsWith('I') ? 'internal' : 'external';
             const defSlot   = parseInt(defenderId.slice(1), 10);
@@ -589,7 +605,6 @@ export function initMatchEngine(rootEl, config = {}) {
         },
     });
 
-    // Brancher performSubstitution dans state pour ui.js
     state._performSubstitution = performSubstitution;
 
     // ==========================
@@ -651,6 +666,9 @@ export function initMatchEngine(rootEl, config = {}) {
     // ==========================
     function showAttackBarForCurrentTeam() {
         if (state.isGameOver) return;
+
+        // ── Reset du flag reroll capitaine avant chaque nouvelle action ──
+        resetCaptainRerollActionFlag(state.currentTeam);
 
         const bindFn = () => {
             rootEl.querySelectorAll(".skill-card").forEach(btn =>
@@ -837,6 +855,7 @@ export function initMatchEngine(rootEl, config = {}) {
         state.isGameOver   = false;
         state.pendingShotContext    = null;
         state.pendingDefenseContext = null;
+        state.pendingCaptainReroll  = null;
         state.pendingClearanceBonus = 0;
         state.foulEvents        = [];
         resetLogHistory();

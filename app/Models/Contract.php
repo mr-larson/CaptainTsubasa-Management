@@ -17,12 +17,13 @@ class Contract extends Model
     protected $fillable = [
         'team_id',
         'player_id',
-        'salary',          // devient "cost_per_match"
+        'salary',
         'matches_total',
         'matches_played',
-        'start_date',      // gardées mais plus utilisées pour le gameplay
+        'start_date',
         'end_date',
-        'is_starter'
+        'is_starter',
+        'is_captain',
     ];
 
     protected $casts = [
@@ -30,7 +31,8 @@ class Contract extends Model
         'end_date'       => 'date',
         'matches_total'  => 'integer',
         'matches_played' => 'integer',
-        'is_starter' => 'boolean',
+        'is_starter'     => 'boolean',
+        'is_captain'     => 'boolean',
     ];
 
     public function team(): BelongsTo
@@ -43,36 +45,21 @@ class Contract extends Model
         return $this->belongsTo(Player::class);
     }
 
-    // --- Helpers gameplay ---
-
-    /**
-     * Matchs restants avant fin de contrat.
-     */
     public function getMatchesRemainingAttribute(): int
     {
         return max(0, ($this->matches_total ?? 0) - ($this->matches_played ?? 0));
     }
 
-    /**
-     * Le contrat est-il expiré (en termes de matchs) ?
-     */
     public function isExpired(): bool
     {
         return ($this->matches_played ?? 0) >= ($this->matches_total ?? 0);
     }
 
-    /**
-     * Contrat en cours (non expiré).
-     */
     public function isCurrent(): bool
     {
         return ! $this->isExpired();
     }
 
-    /**
-     * Ancienne méthode si tu l’utilisais (basée sur dates).
-     * Tu peux soit la retirer, soit la laisser obsolète.
-     */
     public function hasEnded(): bool
     {
         return $this->isExpired();

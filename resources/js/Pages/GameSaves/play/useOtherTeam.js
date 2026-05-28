@@ -31,8 +31,14 @@ export function useOtherTeam({ gameSave, teams, controlledTeamId }) {
             .map(c => {
                 const p = c.game_player ?? c.gamePlayer ?? c.player ?? null;
                 if (!p) return null;
-                return { ...p, contract_id: c.id, is_starter: c.is_starter ?? true };
-            })
+                return {
+                    ...p,
+                    contract_id:                      c.id,
+                    is_starter:                       c.is_starter ?? true,
+                    is_captain:                       c.is_captain ?? false,
+                    captain_rerolls_remaining:        c.captain_rerolls_remaining ?? 3,
+                    captain_reroll_used_this_action:  c.captain_reroll_used_this_action ?? false,
+                };            })
             .filter(Boolean);
     });
 
@@ -65,6 +71,11 @@ export function useOtherTeam({ gameSave, teams, controlledTeamId }) {
             {},
             { preserveScroll: true }
         );
+    };
+
+    const toggleOtherCaptain = (contractId) => {
+        if (!contractId) return;
+        router.patch(route('game-contracts.toggle-captain', { contract: contractId }), {}, { preserveScroll: true });
     };
 
     // ==========================
@@ -201,7 +212,7 @@ export function useOtherTeam({ gameSave, teams, controlledTeamId }) {
     return {
         otherTeams, selectedOtherTeamId, selectedOtherTeam, selectOtherTeam,
         otherRosterWithStatus, selectedOtherPlayer, selectOtherPlayer,
-        toggleOtherStarter,
+        toggleOtherStarter,toggleOtherCaptain,
         otherLineupForm, getOtherSlotForPlayer, changeOtherPlayerSlot,
         otherFormation, otherFormationData, saveOtherFormation,
         otherPlayerPosition, otherPlayerForSlot, otherSelectedSlot,

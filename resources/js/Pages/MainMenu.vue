@@ -18,7 +18,7 @@ import H2 from '@/Components/H2.vue';
 
                     <!-- Illustration -->
                     <div class="hidden md:block flex-1">
-                        <img src="/images/tsubas3.webp" alt="Captain Tsubasa"
+                        <img src="/images/Ryo_Ishizaki.webp" alt="Captain Tsubasa"
                              class="max-h-[480px] object-contain drop-shadow-xl" />
                     </div>
 

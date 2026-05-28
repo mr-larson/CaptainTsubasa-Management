@@ -29,8 +29,8 @@ class ContractSeeder extends Seeder
                 'Akira Tsuboi', 'Manabu Okawa', 'Kenji Tomo'
             ],
             'Shutetsu' => [
-                'Genzo Wakabayashi', 'Kenta Shimada', 'Shingo Takasugi', 'Kazuma Matsumo',
-                'Kohei Nakamoto', 'Jun Kurata', 'Takumi Osaki', 'Kaito Inamura',
+                'Genzo Wakabayashi', 'Kenta Shimada', 'Shingo Takasugi', 'Wanatabe Matsumo',
+                'Kohei Nakamoto', 'Yoshioka Kurata', 'Akiyoshi Osaki', 'Kitajima Inamura',
                 'Mamoru Izawa', 'Teppei Kisugi', 'Hajime Taki',
                 // Remplaçants (3)
                 'Hiroki Fujii', 'Daisuke Mori', 'Yosuke Kimura',

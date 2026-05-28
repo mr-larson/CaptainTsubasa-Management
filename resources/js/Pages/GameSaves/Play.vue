@@ -70,7 +70,7 @@ const team           = computed(() => props.controlledTeam || null); // alias li
 const {
     roster, rosterWithStatus, starters,
     selectedMyPlayer, selectMyPlayer,
-    overallOf, toggleStarter,
+    overallOf, toggleStarter, toggleCaptain,
     lineupForm, getSlotForPlayer, saveLineup, changeSelectedPlayerSlot,
     currentFormation, formationData, saveFormation,
     slotRoleInfo, miniPitchMarkerStyle,
@@ -144,7 +144,7 @@ const {
 const {
     otherTeams, selectedOtherTeam, selectOtherTeam,
     otherRosterWithStatus, selectedOtherPlayer, selectOtherPlayer,
-    toggleOtherStarter,
+    toggleOtherStarter, toggleOtherCaptain,
     otherLineupForm, getOtherSlotForPlayer, changeOtherPlayerSlot,
     otherFormation, otherFormationData, saveOtherFormation,
     otherPlayerPosition, otherPlayerForSlot, otherSelectedSlot,
@@ -294,6 +294,7 @@ function updateOtherPlayerNumber(playerId, number) {
                                :playerSuspension="playerSuspension"
                                @select-player="selectMyPlayer"
                                @toggle-starter="toggleStarter"
+                               @toggle-captain="toggleCaptain"
                                @change-slot="changeSelectedPlayerSlot"
                                @save-formation="saveFormation"
                                @update-number="updatePlayerNumber"
@@ -324,6 +325,7 @@ function updateOtherPlayerNumber(playerId, number) {
                                    @select-team="selectOtherTeam"
                                    @select-player="selectOtherPlayer"
                                    @toggle-starter="toggleOtherStarter"
+                                   @toggle-captain="toggleOtherCaptain"
                                    @change-slot="changeOtherPlayerSlot"
                                    @save-formation="saveOtherFormation"
                                    @update-number="updateOtherPlayerNumber"

@@ -21,7 +21,14 @@ export function useTeam({ gameSave, team }) {
             .map(c => {
                 const p = c.game_player ?? c.gamePlayer ?? c.player ?? null;
                 if (!p) return null;
-                return { ...p, contract_id: c.id, is_starter: c.is_starter ?? true };
+                return {
+                    ...p,
+                    contract_id:                      c.id,
+                    is_starter:                       c.is_starter ?? true,
+                    is_captain:                       c.is_captain ?? false,
+                    captain_rerolls_remaining:        c.captain_rerolls_remaining ?? 3,
+                    captain_reroll_used_this_action:  c.captain_reroll_used_this_action ?? false,
+                };
             })
             .filter(Boolean);
     });
@@ -59,6 +66,11 @@ export function useTeam({ gameSave, team }) {
     const toggleStarter = (contractId) => {
         if (!contractId) return;
         router.patch(route('game-contracts.toggle-starter', { contract: contractId }), {}, { preserveScroll: true });
+    };
+
+    const toggleCaptain = (contractId) => {
+        if (!contractId) return;
+        router.patch(route('game-contracts.toggle-captain', { contract: contractId }), {}, { preserveScroll: true });
     };
 
     const updatePlayerNumber = (playerId, number) => {
@@ -247,7 +259,7 @@ export function useTeam({ gameSave, team }) {
     return {
         roster, rosterWithStatus, starters,
         selectedMyPlayerId, selectedMyPlayer, selectMyPlayer,
-        overallOf, toggleStarter, updatePlayerNumber,
+        overallOf, toggleStarter, toggleCaptain, updatePlayerNumber,
         lineupForm, getSlotForPlayer, saveLineup, changeSelectedPlayerSlot,
         currentFormation, formationData, saveFormation,
         slotRoleInfo, miniPitchMarkerStyle,

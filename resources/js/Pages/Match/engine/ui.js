@@ -240,6 +240,20 @@ export function updateSideCard(prefix, team, slotNumber) {
     const portraitEl = _rootEl.querySelector(`#${prefix}-portrait`);
     if (portraitEl) setCardPhoto(portraitEl, info?.photo);
 
+    // Badge capitaine 👑
+    const captainBadgeId = `${prefix}-captain-badge`;
+    _rootEl.querySelector(`#${captainBadgeId}`)?.remove();
+    if (info?.isCaptain) {
+        const rerolls = _state?.captainReroll?.[team]?.rerollsRemaining ?? 0;
+        const badge = document.createElement('div');
+        badge.id = captainBadgeId;
+        badge.setAttribute('data-captain-reroll', team);
+        badge.style.cssText = 'position:absolute;top:2px;left:2px;background:#f59e0b;color:#fff;font-size:9px;font-weight:900;padding:1px 5px;border-radius:4px;z-index:60;cursor:default;';
+        badge.textContent = `👑 ${rerolls}`;
+        badge.title = `Capitaine — ${rerolls} relance(s) restante(s)`;
+        portraitEl?.appendChild(badge);
+    }
+
     // Badges cartons/statut
     const playerDbId = _roster.getPlayerInfo(team, slotNumber)?.id ?? null;
     const matchYellows = (_state?.foulEvents ?? [])

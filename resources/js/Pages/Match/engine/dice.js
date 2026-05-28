@@ -12,9 +12,29 @@ export function rollD20WithCrit() {
     const roll = rollDie();
     return {
         roll,
-        bonus:      roll / 2,
+        bonus:       roll / 2,
         critSuccess: roll === 20,
         critFail:    roll === 1,
+        isAdvantage: false,
+    };
+}
+
+/**
+ * Lancer 2d20 et prendre le meilleur (Advantage — D&D style).
+ * Utilisé lors de la relance capitaine.
+ */
+export function rollD20Advantage() {
+    const roll1 = rollDie();
+    const roll2 = rollDie();
+    const roll  = Math.max(roll1, roll2);
+    return {
+        roll,
+        roll1,
+        roll2,
+        bonus:       roll / 2,
+        critSuccess: roll === 20,
+        critFail:    roll === 1,
+        isAdvantage: true,
     };
 }
 
@@ -64,37 +84,41 @@ export function buildFieldDuelBreakdown({
                                             aRoll, dRoll, isGood,
                                             attackScore, defenseScore,
                                             clearanceBonus = 0, meta = null,
+                                            captainReroll = false,
                                         }) {
-    const aTag       = aRoll.critSuccess ? "20!" : (aRoll.critFail ? "1!" : String(aRoll.roll));
-    const dTag       = dRoll.critSuccess ? "20!" : (dRoll.critFail ? "1!" : String(dRoll.roll));
-    const goodBonus  = DUEL_RULES.GOOD_COUNTER_BONUS    ?? 0;
-    const genBonus   = DUEL_RULES.GENERIC_ATTACK_BONUS  ?? 0;
-    const diff       = attackScore - defenseScore;
+    const aTag      = aRoll.critSuccess ? "20!" : (aRoll.critFail ? "1!" : String(aRoll.roll));
+    const dTag      = dRoll.critSuccess ? "20!" : (dRoll.critFail ? "1!" : String(dRoll.roll));
+    const goodBonus = DUEL_RULES.GOOD_COUNTER_BONUS   ?? 0;
+    const genBonus  = DUEL_RULES.GENERIC_ATTACK_BONUS ?? 0;
+    const diff      = attackScore - defenseScore;
+
+    // Libellé pour le 2d20 advantage
+    const aDisplayTag = aRoll.isAdvantage
+        ? `2d20(${aRoll.roll1},${aRoll.roll2})=${aRoll.roll}${aRoll.critSuccess ? '!' : ''}`
+        : aTag;
 
     return {
         meta,
-        rolls:   { aTag, dTag, aBonus: aRoll.bonus, dBonus: dRoll.bonus },
+        captainReroll,
+        rolls:   { aTag: aDisplayTag, dTag, aBonus: aRoll.bonus, dBonus: dRoll.bonus },
         attack: {
             base: attackBaseRaw, staminaFactor: attackStamF,
             additions: [
                 ...(clearanceBonus ? [{ label: "Clearance bonus", value: `+ ${Number(clearanceBonus).toFixed(2)}` }] : []),
-                { label: "d20 bonus", value: `+ ${aRoll.bonus.toFixed(2)}` },
-                ...(!isGood ? [{ label: "Generic bonus", value: `+ ${genBonus.toFixed(2)}` }] : []),
+                ...(captainReroll  ? [{ label: "👑 Captain Reroll", value: "Advantage!" }] : []),
+                { label: isGood ? "X Mauvais contre" : "✓ Bonus attaque", value: isGood ? `—` : `+ ${genBonus}` },
             ],
             total: attackScore,
         },
         defense: {
             base: defenseBaseRaw, staminaFactor: defenseStamF,
             additions: [
-                { label: "d20 bonus", value: `+ ${dRoll.bonus.toFixed(2)}` },
-                ...(isGood ? [{ label: "Good counter bonus", value: `+ ${goodBonus.toFixed(2)}` }] : []),
+                { label: isGood ? "✓ Bon contre" : "X Mauvais choix", value: isGood ? `+ ${goodBonus}` : "—" },
             ],
             total: defenseScore,
         },
         result: {
-            bonusRuleLabel: isGood
-                ? `Good counter (+${goodBonus} defense)`
-                : `Generic attack (+${genBonus} attack)`,
+            bonusRuleLabel: isGood ? "Bon contre (+2 défense)" : "Mauvais contre (+2 attaque)",
             critWinner: null,
             diff,
             winner: diff > 0 ? "attack" : diff < 0 ? "defense" : "tie",
@@ -200,28 +224,44 @@ function formatBreakdownHTML(b) {
     </div>`;
 }
 
-export function showDuelDice(attackScore, defenseScore, aRoll = null, dRoll = null, breakdown = null) {
-    if (!_duelDiceEl) return;
+// -----------------------------------------------------------
+//   Affichage duel
+// -----------------------------------------------------------
+export function showDuelDice(attackScore, defenseScore, aRoll, dRoll, breakdown) {
+    const duelDiceEl = document.getElementById("duel-dice-display");
+    if (!duelDiceEl) return;
 
-    const a     = Number(attackScore).toFixed(1);
-    const d     = Number(defenseScore).toFixed(1);
-    let extra   = "";
-    if (aRoll && dRoll) {
-        const aTag = aRoll.critSuccess ? "20!" : (aRoll.critFail ? "1!" : String(aRoll.roll));
-        const dTag = dRoll.critSuccess ? "20!" : (dRoll.critFail ? "1!" : String(dRoll.roll));
-        extra = `  (d20: ${aTag}-${dTag})`;
-    }
+    const winner = attackScore > defenseScore ? "attack"
+        : attackScore < defenseScore ? "defense"
+            : "tie";
 
-    _duelDiceEl.textContent = `🎲 ${a} - ${d}${extra}`;
-    _duelDiceEl.classList.add("visible");
-    _duelDiceEl.classList.remove("pop");
-    void _duelDiceEl.offsetWidth;
-    _duelDiceEl.classList.add("pop");
+    const row = (label, value) => `<tr><td class="px-1 py-0.5 text-slate-500 text-[10px]">${label}</td><td class="px-1 py-0.5 text-right font-bold text-[10px]">${value}</td></tr>`;
 
-    if (breakdown) {
-        _lastBreakdown = breakdown;
-        ensureTooltip().innerHTML = formatBreakdownHTML(breakdown);
-    }
+    const captainTag = breakdown?.captainReroll
+        ? `<div class="text-[10px] font-bold text-amber-500 text-center mb-1">👑 Captain Reroll!</div>`
+        : '';
+
+    duelDiceEl.innerHTML = `
+        <div class="bg-white border border-slate-200 rounded-xl shadow-lg p-2 text-xs min-w-[160px]">
+            ${captainTag}
+            <div class="flex justify-around mb-1">
+                <div class="text-center">
+                    <div class="text-[10px] text-slate-400 mb-0.5">Attaque</div>
+                    <div class="text-lg font-black ${winner === 'attack' ? 'text-emerald-500' : 'text-slate-700'}">
+                        ${breakdown?.rolls?.aTag ?? aRoll.roll}
+                    </div>
+                    <div class="text-[9px] text-slate-400">${Number(attackScore).toFixed(1)}</div>
+                </div>
+                <div class="text-slate-300 self-center font-black">vs</div>
+                <div class="text-center">
+                    <div class="text-[10px] text-slate-400 mb-0.5">Défense</div>
+                    <div class="text-lg font-black ${winner === 'defense' ? 'text-rose-500' : 'text-slate-700'}">
+                        ${breakdown?.rolls?.dTag ?? dRoll.roll}
+                    </div>
+                    <div class="text-[9px] text-slate-400">${Number(defenseScore).toFixed(1)}</div>
+                </div>
+            </div>
+        </div>`;
 }
 
 export function bindDuelTooltipEvents() {

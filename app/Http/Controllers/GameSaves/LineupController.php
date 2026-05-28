@@ -23,6 +23,35 @@ class LineupController extends Controller
     }
 
     /**
+     * Toggle capitaine sur un contrat.
+     * Un seul capitaine par équipe : désigne le nouveau et retire l'ancien.
+     */
+    public function toggleCaptain(Request $request, GameContract $contract)
+    {
+        $gameSave = $contract->gameSave;
+        if ($gameSave->user_id !== $request->user()->id) abort(403);
+
+        // Si ce joueur est déjà capitaine → on le retire simplement
+        if ($contract->is_captain) {
+            $contract->is_captain = false;
+            $contract->save();
+            return back()->with('success', 'Capitaine retiré.');
+        }
+
+        // Sinon : retirer le capitaine actuel de la même équipe
+        GameContract::where('game_team_id', $contract->game_team_id)
+            ->where('is_captain', true)
+            ->where('id', '!=', $contract->id)
+            ->update(['is_captain' => false]);
+
+        // Désigner le nouveau
+        $contract->is_captain = true;
+        $contract->save();
+
+        return back()->with('success', 'Nouveau capitaine désigné.');
+    }
+
+    /**
      * Sauvegarde la composition (slots) ET la formation d'une équipe.
      */
     public function update(Request $request, GameSave $gameSave)
@@ -40,7 +69,6 @@ class LineupController extends Controller
         $teamId = (int) $data['team_id'];
         $team   = $gameSave->gameTeams()->where('id', $teamId)->firstOrFail();
 
-        // Slots → state (inchangé)
         $slots = [];
         foreach ($data['slots'] as $row) {
             $slots[(int) $row['slot']] = $row['player_id'] ? (int) $row['player_id'] : null;
@@ -53,7 +81,6 @@ class LineupController extends Controller
         $gameSave->state = $state;
         $gameSave->save();
 
-        // Formation → game_teams.formation
         if (!empty($data['formation'])) {
             $team->formation = $data['formation'];
             $team->save();
@@ -77,7 +104,6 @@ class LineupController extends Controller
         $teamId = (int) $data['team_id'];
         $team   = $gameSave->gameTeams()->where('id', $teamId)->firstOrFail();
 
-        // Formation → game_teams.formation uniquement
         $team->formation = $data['formation'];
         $team->save();
 

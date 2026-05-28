@@ -5,7 +5,7 @@ import {
     CRIT_STAMINA_BOOST,
 } from './constants.js';
 import {
-    rollD20WithCrit, resolveCritOutcome,
+    rollD20WithCrit, rollD20Advantage, resolveCritOutcome,
     buildDuelMeta, buildFieldDuelBreakdown, showDuelDice,
 } from './dice.js';
 import { staminaFactor, applyStaminaCost } from './stamina.js';
@@ -91,7 +91,6 @@ function restoreBasePositions() {
     });
 }
 
-// Boost stamina sur un 20 naturel
 function applyCritBoost(playerId) {
     if (!playerId) return;
     const current = _state.stamina[playerId] ?? 0;
@@ -221,6 +220,232 @@ export function recordDuelEvent({ attackTeam, defenseTeam, attackSlot, defenseSl
 }
 
 // -----------------------------------------------------------
+//   CAPTAIN REROLL — helpers
+// -----------------------------------------------------------
+
+/**
+ * Reset le flag "used this action" au début de chaque nouvelle action.
+ * À appeler depuis engine.js avant showAttackBarForCurrentTeam().
+ */
+export function resetCaptainRerollActionFlag(team) {
+    if (_state.captainReroll?.[team]) {
+        _state.captainReroll[team].usedOnCurrentAction = false;
+    }
+}
+
+/**
+ * Vérifie si l'attaquant (capitaine) peut relancer.
+ */
+function canAttackerReroll(attackTeam, attackSlot) {
+    const info = _roster.getPlayerInfo(attackTeam, attackSlot);
+    if (!info?.isCaptain) return false;
+    const reroll = _state.captainReroll?.[attackTeam];
+    if (!reroll) return false;
+    return reroll.rerollsRemaining > 0 && !reroll.usedOnCurrentAction;
+}
+
+/**
+ * L'IA décide si elle utilise sa relance selon le contexte du match.
+ */
+function aiShouldReroll(attackTeam) {
+    const reroll = _state.captainReroll?.[attackTeam];
+    if (!reroll || reroll.rerollsRemaining <= 0) return false;
+
+    const turn      = _state.turns ?? 0;
+    const selfScore = _state.score?.[attackTeam] ?? 0;
+    const oppTeam   = attackTeam === "internal" ? "external" : "internal";
+    const oppScore  = _state.score?.[oppTeam] ?? 0;
+
+    if (turn >= 35)              return Math.random() < 0.85; // Late game
+    if (selfScore < oppScore)    return Math.random() < 0.65; // En retard
+    if (selfScore === oppScore)  return Math.random() < 0.50; // Egalité
+    return Math.random() < 0.25;                              // En avance → économiser
+}
+
+/**
+ * Consomme une relance localement et envoie la requête au serveur.
+ */
+function consumeReroll(attackTeam) {
+    const reroll = _state.captainReroll[attackTeam];
+    reroll.rerollsRemaining--;
+    reroll.usedOnCurrentAction = true;
+
+    const contractId = reroll.contractId;
+    const gameSaveId = _state._matchConfig?.gameSaveId;
+    if (contractId && gameSaveId) {
+        fetch(`/game-saves/${gameSaveId}/captain-reroll/${contractId}`, {
+            method:  'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '',
+                'Content-Type': 'application/json',
+            },
+        }).catch(() => {/* silencieux — ne pas bloquer le moteur */});
+    }
+
+    // Mettre à jour l'indicateur UI (badge sur la card capitaine)
+    const el = _rootEl?.querySelector(`[data-captain-reroll="${attackTeam}"]`);
+    if (el) el.textContent = reroll.rerollsRemaining;
+}
+
+/**
+ * Effectue la relance : 2d20 advantage pour l'attaque, 1d20 normal pour la défense.
+ * Retourne un objet duel identique à runFieldDuel.
+ */
+function doReroll(ctx) {
+    const {
+        attackTeam, defenseTeam, attackType, defenseAction,
+        attackBaseRaw, defenseBaseRaw, attackStamF, defenseStamF,
+        defenderId, defenderSlot, clearanceBonus,
+    } = ctx;
+
+    consumeReroll(attackTeam);
+
+    const b = ball();
+
+    const newAroll = rollD20Advantage();  // 2d20 — prend le meilleur
+    const newDroll = rollD20WithCrit();   // 1d20 normal
+
+    let newAttackScore  = attackBaseRaw * attackStamF;
+    let newDefenseScore = defenseBaseRaw * defenseStamF;
+
+    if (clearanceBonus) newAttackScore += clearanceBonus;
+
+    newAttackScore  += newAroll.bonus;
+    newDefenseScore += newDroll.bonus;
+
+    const isGood = isGoodDefenseChoice(attackType, defenseAction);
+    if (isGood) newDefenseScore += DUEL_RULES.GOOD_COUNTER_BONUS;
+    else        newAttackScore  += DUEL_RULES.GENERIC_ATTACK_BONUS;
+
+    const newCritWinner = resolveCritOutcome(newAroll, newDroll);
+
+    const meta = buildDuelMeta(
+        { attackTeam, attackSlot: b.number, attackAction: attackType, defenseTeam, defenseSlot: defenderSlot, defenseAction },
+        _roster, TEXTS
+    );
+
+    const breakdown = buildFieldDuelBreakdown({
+        attackBaseRaw, defenseBaseRaw,
+        attackStamF, defenseStamF,
+        aRoll: newAroll, dRoll: newDroll, isGood,
+        attackScore: newAttackScore, defenseScore: newDefenseScore,
+        clearanceBonus: clearanceBonus ?? 0, meta,
+    });
+
+    showDuelDice(newAttackScore, newDefenseScore, newAroll, newDroll, breakdown);
+
+    const newDiceTag   = newAttackScore.toFixed(1) + "-" + newDefenseScore.toFixed(1);
+    const newRawResult = newCritWinner ?? (newAttackScore > newDefenseScore ? "attack" : newAttackScore < newDefenseScore ? "defense" : "tie");
+
+    const captainInfo  = _roster.getPlayerInfo(attackTeam, b.number);
+    const captainName  = ((captainInfo?.firstname ?? '') + ' ' + (captainInfo?.lastname ?? '')).trim();
+    const rerollsLeft  = _state.captainReroll[attackTeam].rerollsRemaining;
+    const resultLabel  = newRawResult === "attack" ? "✓ Réussi!" : "✗ Echec";
+
+    pushLogEntry(
+        `👑 Captain Reroll — ${captainName}`,
+        [
+            `2d20 (${newAroll.roll1}, ${newAroll.roll2}) → ${newAroll.roll}`,
+            `${resultLabel} — Score: ${newDiceTag}`,
+            `Relances restantes : ${rerollsLeft}`,
+        ],
+        newDiceTag,
+        _state
+    );
+
+    if (newRawResult === "tie") {
+        givePossessionOnTie(defenseTeam, defenderId);
+        return { isTie: true, duelResult: "tie", defenderId, defenderSlot, diceTag: newDiceTag };
+    }
+    return { isTie: false, duelResult: newRawResult, defenderId, defenderSlot, diceTag: newDiceTag };
+}
+
+/**
+ * Affiche le prompt "Relancer ?" dans la barre d'action.
+ * Injecte deux boutons et attache les handlers.
+ */
+function showCaptainRerollPrompt(attackTeam) {
+    const b           = ball();
+    const captainInfo = _roster.getPlayerInfo(attackTeam, b.number);
+    const captainName = ((captainInfo?.firstname ?? '') + ' ' + (captainInfo?.lastname ?? '')).trim();
+    const rerollsLeft = _state.captainReroll[attackTeam].rerollsRemaining;
+
+    const html = `
+        <div class="flex flex-col items-center gap-3 p-3 w-full">
+            <div class="text-center">
+                <p class="text-sm font-bold text-amber-600">👑 Captain Reroll!</p>
+                <p class="text-xs text-slate-500">${captainName} peut relancer les dés</p>
+                <p class="text-xs text-slate-400">${rerollsLeft} relance${rerollsLeft > 1 ? 's' : ''} restante${rerollsLeft > 1 ? 's' : ''} ce match</p>
+            </div>
+            <div class="flex gap-2 w-full justify-center">
+                <button
+                    data-action="captain-reroll-confirm"
+                    class="flex-1 max-w-[140px] px-3 py-2 rounded-xl text-xs font-bold bg-amber-400 text-white hover:bg-amber-500 transition-all shadow-sm"
+                >
+                    ⚡ Relancer (2d20)
+                </button>
+                <button
+                    data-action="captain-reroll-skip"
+                    class="flex-1 max-w-[140px] px-3 py-2 rounded-xl text-xs font-semibold bg-slate-200 text-slate-600 hover:bg-slate-300 transition-all"
+                >
+                    Accepter
+                </button>
+            </div>
+        </div>`;
+
+    setActionBar(html, "mode-captain-reroll", b, _roster, (rootEl) => {
+        rootEl.querySelector('[data-action="captain-reroll-confirm"]')
+            ?.addEventListener('click', onCaptainRerollConfirm);
+        rootEl.querySelector('[data-action="captain-reroll-skip"]')
+            ?.addEventListener('click', onCaptainRerollSkip);
+    }, false);
+}
+
+function onCaptainRerollConfirm() {
+    const ctx = _state.pendingCaptainReroll;
+    if (!ctx) return;
+    _state.pendingCaptainReroll = null;
+
+    const duel = doReroll(ctx);
+    continuePendingAction(ctx, duel);
+}
+
+function onCaptainRerollSkip() {
+    const ctx = _state.pendingCaptainReroll;
+    if (!ctx) return;
+    _state.pendingCaptainReroll = null;
+
+    // Marquer comme utilisé pour bloquer un éventuel second prompt
+    if (_state.captainReroll?.[ctx.attackTeam]) {
+        _state.captainReroll[ctx.attackTeam].usedOnCurrentAction = true;
+    }
+
+    // Continuer avec le résultat "defense" original
+    continuePendingAction(ctx, {
+        isTie: false,
+        duelResult: "defense",
+        defenderId: ctx.defenderId,
+        defenderSlot: ctx.defenderSlot,
+        diceTag: ctx.diceTag,
+    });
+}
+
+/**
+ * Reprend le flux de l'action (pass/dribble/shot) après décision reroll.
+ */
+function continuePendingAction(ctx, duel) {
+    const { attackTeam, defenseTeam, attackType, defenseAction, isSpecial } = ctx;
+
+    if (attackType === "pass" || attackType === "special") {
+        continuePass(attackTeam, defenseTeam, attackType, defenseAction, isSpecial, duel);
+    } else if (attackType === "dribble") {
+        continueDribble(attackTeam, defenseTeam, attackType, defenseAction, isSpecial, duel, ctx.oldZone, ctx.lane);
+    } else if (attackType === "shot") {
+        continueShot(attackTeam, defenseTeam, defenseAction, isSpecial, duel, ctx.originZone, ctx.originLane);
+    }
+}
+
+// -----------------------------------------------------------
 //   runFieldDuel
 // -----------------------------------------------------------
 export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseAction, defenderPick = null }) {
@@ -282,7 +507,6 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
     if (isGood) defenseScore += DUEL_RULES.GOOD_COUNTER_BONUS;
     else        attackScore  += DUEL_RULES.GENERIC_ATTACK_BONUS;
 
-    // Boost stamina sur crit reussi (avant tout return)
     if (aRoll.critSuccess) applyCritBoost(attackerId);
     if (dRoll.critSuccess) applyCritBoost(defenderId);
 
@@ -307,31 +531,23 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
         breakdown,
     });
 
-    // Fautes / cartons
     if (_resolveFoulOutcome) {
         const finalResult = critWinner ?? (attackScore > defenseScore ? "attack" : attackScore < defenseScore ? "defense" : "tie");
-        _resolveFoulOutcome({
-            attackerId,
-            defenderId,
-            duelResult: finalResult,
-            aRoll,
-            dRoll,
-        });
+        _resolveFoulOutcome({ attackerId, defenderId, duelResult: finalResult, aRoll, dRoll });
     }
 
     showDuelDice(attackScore, defenseScore, aRoll, dRoll, breakdown);
     applyStaminaCost(attackerId, "attack", attackType);
     applyStaminaCost(defenderId, "defenseField", defenseAction);
-    // blessures
+
     const checkInjury = (pid) => {
         if (!pid) return;
         const stamina = _state.stamina[pid] ?? 0;
         if (stamina <= 0 && Math.random() < 0.30) {
-            // Convertir ID DOM en vrai game_player_id DB
-            const team   = pid.startsWith('I') ? 'internal' : 'external';
-            const slot   = parseInt(pid.slice(1), 10);
-            const dbId   = _roster.getPlayerInfo(team, slot)?.id ?? null;
-            const name   = _roster.getPlayerInfo(team, slot)?.lastname ?? pid;
+            const team  = pid.startsWith('I') ? 'internal' : 'external';
+            const slot  = parseInt(pid.slice(1), 10);
+            const dbId  = _roster.getPlayerInfo(team, slot)?.id ?? null;
+            const name  = _roster.getPlayerInfo(team, slot)?.lastname ?? pid;
             _state.foulEvents.push({ type: 'injury', player_id: dbId, severity: 'light' });
             const el = _rootEl.querySelector(`[data-player="${pid}"]`);
             if (el) el.classList.add('unavailable');
@@ -344,7 +560,7 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
     if (attackType    === "special")       _markSpecialUsed(attackerId);
     if (defenseAction === "field-special") _markSpecialUsed(defenderId);
 
-    const diceTag = attackScore.toFixed(1) + "-" + defenseScore.toFixed(1);
+    const diceTag    = attackScore.toFixed(1) + "-" + defenseScore.toFixed(1);
     if (critWinner) return { isTie: false, duelResult: critWinner, defenderId, defenderSlot, diceTag };
 
     const diff = attackScore - defenseScore;
@@ -352,7 +568,40 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
         givePossessionOnTie(defenseTeam, defenderId);
         return { isTie: true, duelResult: "tie", defenderId, defenderSlot, diceTag };
     }
-    return { isTie: false, duelResult: diff > 0 ? "attack" : "defense", defenderId, defenderSlot, diceTag };
+
+    const rawResult = diff > 0 ? "attack" : "defense";
+
+    // ── CAPTAIN REROLL ──────────────────────────────────────────
+    if (rawResult === "defense" && canAttackerReroll(attackTeam, b.number)) {
+        if (_isAITeam(attackTeam)) {
+            if (aiShouldReroll(attackTeam)) {
+                return doReroll({
+                    attackTeam, defenseTeam, attackType, defenseAction,
+                    attackBaseRaw, defenseBaseRaw, attackStamF, defenseStamF,
+                    defenderId, defenderSlot, clearanceBonus,
+                });
+            }
+            // IA décline → marquer quand même pour ne pas re-proposer
+            _state.captainReroll[attackTeam].usedOnCurrentAction = true;
+        } else {
+            // Joueur humain : stocker le contexte et afficher le prompt
+            _state.pendingCaptainReroll = {
+                attackTeam, defenseTeam, attackType, defenseAction,
+                attackBaseRaw, defenseBaseRaw, attackStamF, defenseStamF,
+                defenderId, defenderSlot, diceTag, clearanceBonus,
+                isSpecial: attackType === "special",
+                oldZone:   b.zoneIndex,
+                lane:      b.laneIndex,
+                originZone: b.zoneIndex,
+                originLane: b.laneIndex,
+            };
+            showCaptainRerollPrompt(attackTeam);
+            return { isTie: false, duelResult: "pending_reroll", defenderId, defenderSlot, diceTag };
+        }
+    }
+    // ── FIN CAPTAIN REROLL ──────────────────────────────────────
+
+    return { isTie: false, duelResult: rawResult, defenderId, defenderSlot, diceTag };
 }
 
 // -----------------------------------------------------------
@@ -439,7 +688,7 @@ export function performKeeperClearance(defenseTeam, defenseAction, afterClearanc
 }
 
 // -----------------------------------------------------------
-//   resolvePass
+//   resolvePass + continuePass
 // -----------------------------------------------------------
 export function resolvePass(attackTeam, defenseTeam, defenseAction, defenderPick = null) {
     const b          = ball();
@@ -452,6 +701,9 @@ export function resolvePass(attackTeam, defenseTeam, defenseAction, defenderPick
     const attackType = isSpecial ? "special" : "pass";
 
     const duel = runFieldDuel({ attackTeam, defenseTeam, attackType, defenseAction, defenderPick });
+
+    // Reroll en attente → on stoppe ici, continuePendingAction reprendra
+    if (duel.duelResult === "pending_reroll") return;
 
     if (duel.isTie) {
         pushLogEntry(
@@ -466,7 +718,7 @@ export function resolvePass(attackTeam, defenseTeam, defenseAction, defenderPick
 
     if (isSpecial) _markSpecialUsed(getPlayerId(attackTeam, b.number));
 
-    // --- KICKOFF ---
+    // Kickoff
     if (wasKickoff) {
         if (duel.duelResult === "attack") {
             const receiver = [5, 6][Math.floor(Math.random() * 2)];
@@ -483,7 +735,12 @@ export function resolvePass(attackTeam, defenseTeam, defenseAction, defenderPick
         return;
     }
 
-    // --- Cible de passe ---
+    continuePass(attackTeam, defenseTeam, attackType, defenseAction, isSpecial, duel);
+}
+
+function continuePass(attackTeam, defenseTeam, attackType, defenseAction, isSpecial, duel) {
+    const b = ball();
+
     let targetZone = b.zoneIndex;
     let targetLane = b.laneIndex;
     if (b.zoneIndex < MAX_ZONE_INDEX) {
@@ -496,7 +753,6 @@ export function resolvePass(attackTeam, defenseTeam, defenseAction, defenderPick
         targetLane = [0, 1, 2][Math.floor(Math.random() * 3)];
     }
 
-    // --- ATTAQUE GAGNE ---
     if (duel.duelResult === "attack") {
         resetLastDribbler();
         const carrierEl        = getCarrierElement(attackTeam, b.number);
@@ -510,7 +766,6 @@ export function resolvePass(attackTeam, defenseTeam, defenseAction, defenderPick
         return;
     }
 
-    // --- DEFENSE GAGNE ---
     resetLastDribbler();
     const receiver = duel.defenderSlot ?? (duel.defenderId ? parseInt(duel.defenderId.slice(1), 10) : 6);
     _moveBall(defenseTeam, receiver);
@@ -524,7 +779,7 @@ export function resolvePass(attackTeam, defenseTeam, defenseAction, defenderPick
 }
 
 // -----------------------------------------------------------
-//   resolveDribble
+//   resolveDribble + continueDribble
 // -----------------------------------------------------------
 export function resolveDribble(attackTeam, defenseTeam, defenseAction, defenderPick = null) {
     const b = ball();
@@ -545,6 +800,16 @@ export function resolveDribble(attackTeam, defenseTeam, defenseAction, defenderP
 
     const duel = runFieldDuel({ attackTeam, defenseTeam, attackType, defenseAction, defenderPick });
 
+    // Reroll en attente → stocker aussi oldZone/lane pour la continuation
+    if (duel.duelResult === "pending_reroll") {
+        if (_state.pendingCaptainReroll) {
+            _state.pendingCaptainReroll.oldZone = oldZone;
+            _state.pendingCaptainReroll.lane    = lane;
+            _state.pendingCaptainReroll.isSpecial = isSpecial;
+        }
+        return;
+    }
+
     if (duel.isTie) {
         pushLogEntry(
             isSpecial ? "Duel equilibre (special dribble)" : "Duel equilibre (dribble)",
@@ -558,10 +823,14 @@ export function resolveDribble(attackTeam, defenseTeam, defenseAction, defenderP
 
     if (isSpecial) _markSpecialUsed(getPlayerId(attackTeam, b.number));
 
+    continueDribble(attackTeam, defenseTeam, attackType, defenseAction, isSpecial, duel, oldZone, lane);
+}
+
+function continueDribble(attackTeam, defenseTeam, attackType, defenseAction, isSpecial, duel, oldZone, lane) {
+    const b         = ball();
     const carrierId = getPlayerId(attackTeam, b.number);
     const carrierEl = _rootEl.querySelector('[data-player="' + carrierId + '"]');
 
-    // --- ATTAQUE GAGNE ---
     if (duel.duelResult === "attack") {
         resetLastDribbler();
         _state.lastDribblerId = carrierId;
@@ -602,7 +871,6 @@ export function resolveDribble(attackTeam, defenseTeam, defenseAction, defenderP
         }
     }
 
-    // --- DEFENSE GAGNE ---
     resetLastDribbler();
     const slot = duel.defenderSlot ?? (duel.defenderId ? parseInt(duel.defenderId.slice(1), 10) : 6);
     _moveBall(defenseTeam, slot);
@@ -616,7 +884,7 @@ export function resolveDribble(attackTeam, defenseTeam, defenseAction, defenderP
 }
 
 // -----------------------------------------------------------
-//   resolveShot
+//   resolveShot + continueShot
 // -----------------------------------------------------------
 export function resolveShot(attackTeam, defenseTeam, defenseAction, isSpecial = false, defenderPick = null) {
     const b          = ball();
@@ -630,12 +898,21 @@ export function resolveShot(attackTeam, defenseTeam, defenseAction, isSpecial = 
         const gkAttBase = isSpecial
             ? (moves.length > 0 ? specialBaseFor(moves[0], attackTeam, b.number, _roster) : _roster.attackBaseFor("special", attackTeam, b.number))
             : _roster.attackBaseFor("shot", attackTeam, b.number);
-
         resolveShotKeeperDuel({ stage: "keeper", attackTeam, defenseTeam, originZone, originLane, isSpecial, gkAttackBase: gkAttBase, logParts: ["Zone " + (originZone + 1)] }, defenseAction);
         return;
     }
 
     const duel = runFieldDuel({ attackTeam, defenseTeam, attackType, defenseAction, defenderPick });
+
+    if (duel.duelResult === "pending_reroll") {
+        if (_state.pendingCaptainReroll) {
+            _state.pendingCaptainReroll.originZone = originZone;
+            _state.pendingCaptainReroll.originLane = originLane;
+            _state.pendingCaptainReroll.isSpecial  = isSpecial;
+            _state.pendingCaptainReroll.attackType = attackType;
+        }
+        return;
+    }
 
     if (duel.isTie) {
         pushLogEntry("Duel equilibre (shot)", ["Defense: " + defenseAction, getCounterTag(attackType, defenseAction)], duel.diceTag, _state);
@@ -643,6 +920,13 @@ export function resolveShot(attackTeam, defenseTeam, defenseAction, isSpecial = 
         _animateAndThen(() => { _advanceTurn(defenseTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
         return;
     }
+
+    continueShot(attackTeam, defenseTeam, defenseAction, isSpecial, duel, originZone, originLane);
+}
+
+function continueShot(attackTeam, defenseTeam, defenseAction, isSpecial, duel, originZone, originLane) {
+    const b          = ball();
+    const attackType = isSpecial ? "special" : "shot";
 
     if (duel.duelResult === "defense") {
         const number = duel.defenderSlot ?? (duel.defenderId ? parseInt(duel.defenderId.slice(1), 10) : 6);
@@ -732,7 +1016,6 @@ export function resolveShotKeeperDuel(ctx, defenseAction) {
         context: { isKeeperDuel: true },
     }));
 
-    // Boost stamina sur crit reussi (avant tout return)
     if (aRoll.critSuccess) applyCritBoost(attackerId);
     if (dRoll.critSuccess && keeperId) applyCritBoost(keeperId);
 
@@ -770,16 +1053,15 @@ export function resolveShotKeeperDuel(ctx, defenseAction) {
 
     showDuelDice(attackScore, defenseScore, aRoll, dRoll, breakdown);
     applyStaminaCost(attackerId, "attack", isSpecial ? "special" : "shot");
-    // Blessures
+
     const checkInjury = (pid) => {
         if (!pid) return;
         const stamina = _state.stamina[pid] ?? 0;
         if (stamina <= 0 && Math.random() < 0.40) {
-            // Convertir ID DOM en vrai game_player_id DB
-            const team   = pid.startsWith('I') ? 'internal' : 'external';
-            const slot   = parseInt(pid.slice(1), 10);
-            const dbId   = _roster.getPlayerInfo(team, slot)?.id ?? null;
-            const name   = _roster.getPlayerInfo(team, slot)?.lastname ?? pid;
+            const team  = pid.startsWith('I') ? 'internal' : 'external';
+            const slot  = parseInt(pid.slice(1), 10);
+            const dbId  = _roster.getPlayerInfo(team, slot)?.id ?? null;
+            const name  = _roster.getPlayerInfo(team, slot)?.lastname ?? pid;
             _state.foulEvents.push({ type: 'injury', player_id: dbId, severity: 'light' });
             const el = _rootEl.querySelector(`[data-player="${pid}"]`);
             if (el) el.classList.add('unavailable');
@@ -805,7 +1087,6 @@ export function resolveShotKeeperDuel(ctx, defenseAction) {
 
     if (duelResult === "attack") {
         _state.score[attackTeam]++;
-        const scorerId = getPlayerId(attackTeam, ball().number);
         const scorerInfo = _roster.getPlayerInfo(attackTeam, ball().number);
         if (scorerInfo?.id) {
             _state.goalEvents = _state.goalEvents ?? [];

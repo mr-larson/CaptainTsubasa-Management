@@ -332,6 +332,7 @@ const perfChips = computed(() => {
                             </div>
                             <div class="flex-1 min-w-0">
                                 <div class="text-xs font-semibold truncate">{{ p.lastname }}</div>
+                                <span v-if="p.is_captain" class="ml-1 text-amber-400 text-[10px]" title="Capitaine">👑</span>
                                 <div class="text-[10px] opacity-60 truncate">{{ p.position }}</div>
                             </div>
                             <!-- Badges statut -->
@@ -370,6 +371,14 @@ const perfChips = computed(() => {
                             </div>
                             <div class="flex-1 min-w-0">
                                 <h3 class="text-base font-bold text-slate-800">{{ selectedOtherPlayer.firstname }} {{ selectedOtherPlayer.lastname }}</h3>
+                                <div v-if="selectedOtherPlayer.is_captain" class="flex items-center gap-1.5 mt-1">
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold uppercase tracking-wide">
+                                        👑 Capitaine
+                                    </span>
+                                    <span class="text-[10px] text-slate-400">
+                                        {{ selectedOtherPlayer.captain_rerolls_remaining ?? 3 }} relances/match
+                                    </span>
+                                </div>
                                 <p class="text-xs text-slate-400 mt-0.5">{{ selectedOtherPlayer.position }} • {{ selectedOtherPlayer.cost ?? 0 }} €</p>
 
                                 <div class="mt-3 flex flex-wrap items-center gap-2">
@@ -380,6 +389,18 @@ const perfChips = computed(() => {
                                             ? 'bg-emerald-500 text-white border-emerald-600 hover:bg-emerald-600'
                                             : 'bg-white text-slate-500 border-slate-300 hover:bg-slate-50'">
                                         {{ selectedOtherPlayer.is_starter ? '✓ Titulaire' : '+ Titulariser' }}
+                                    </button>
+                                    <button
+                                        v-if="selectedOtherPlayer.contract_id"
+                                        type="button"
+                                        @click="emit('toggle-captain', selectedOtherPlayer.contract_id)"
+                                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all"
+                                        :class="selectedOtherPlayer.is_captain
+        ? 'bg-amber-400 text-white border-amber-500 hover:bg-amber-500'
+        : 'bg-white text-slate-500 border-slate-300 hover:bg-slate-50'"
+                                        :title="selectedOtherPlayer.is_captain ? 'Retirer le brassard' : 'Nommer capitaine'"
+                                    >
+                                        {{ selectedOtherPlayer.is_captain ? '👑 Capitaine' : '👑 Nommer capitaine' }}
                                     </button>
                                     <!-- Numéro de maillot -->
                                     <div class="flex items-center gap-1.5">

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\GameSaves;
 
 use App\Http\Controllers\Controller;
+use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
@@ -14,6 +15,7 @@ use App\Services\AITransferService;
 use App\Services\AILineupService;
 use App\Services\FoulAndInjuryService;
 use App\Services\StaminaService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -320,12 +322,16 @@ class GameMatchController extends Controller
                     'is_starter' => false, 'photo_path' => null, 'photo_url' => null,
                     'stats' => null, 'special_moves' => [], 'is_available' => true,
                     'yellow_cards' => 0,
+                    'is_captain'                => $c->is_captain ?? false,
+                    'contract_id'               => $c->id,
+                    'captain_rerolls_remaining' => $c->captain_rerolls_remaining ?? 3,
+                    'captain_reroll_used_this_action' => false,
                 ];
             }
             $p = $c->gamePlayer;
             return [
                 'id'            => $p->id,
-                'number'        => $p->number ?? $slot,
+                'number'        => $slot,
                 'firstname'     => $p->firstname,
                 'lastname'      => $p->lastname,
                 'position'      => $p->position,
@@ -342,14 +348,16 @@ class GameMatchController extends Controller
                 'special_moves' => $p->special_moves ?? [],
                 'is_available'  => !in_array($p->id, $unavailableIds),
                 'yellow_cards'  => 0,
+                // ── Captain ──
+                'is_captain'                      => $c->is_captain,
+                'captain_rerolls_remaining'       => $c->captain_rerolls_remaining,
+                'captain_reroll_used_this_action' => $c->captain_reroll_used_this_action,
             ];
         })->values();
 
-// Ajouter les remplaçants
         $subContracts = $team->contracts
             ->filter(fn($c) => !$c->is_starter && $c->gamePlayer)
             ->values();
-
         $subs = $subContracts->map(function ($c) use ($unavailableIds) {
             $p = $c->gamePlayer;
             return [
@@ -371,10 +379,44 @@ class GameMatchController extends Controller
                 'special_moves' => $p->special_moves ?? [],
                 'is_available'  => !in_array($p->id, $unavailableIds),
                 'yellow_cards'  => 0,
+                // ── Captain ──
+                'is_captain'                      => $c->is_captain,
+                'captain_rerolls_remaining'       => $c->captain_rerolls_remaining,
+                'captain_reroll_used_this_action' => $c->captain_reroll_used_this_action,
             ];
         })->values();
 
         return $starters11->concat($subs);
+    }
+
+    public function useCaptainReroll(Request $request, GameSave $gameSave, GameContract $contract): JsonResponse
+    {
+        $this->authorizeSave($request, $gameSave);
+
+        if ($contract->game_save_id !== $gameSave->id) abort(403);
+
+        if (! $contract->useReroll()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Reroll indisponible.',
+            ], 400);
+        }
+
+        return response()->json([
+            'success'           => true,
+            'rerollsRemaining'  => $contract->captain_rerolls_remaining,
+        ]);
+    }
+
+    public function resetCaptainRerollActionFlag(Request $request, GameSave $gameSave, GameContract $contract): JsonResponse
+    {
+        $this->authorizeSave($request, $gameSave);
+
+        if ($contract->game_save_id !== $gameSave->id) abort(403);
+
+        $contract->resetRerollActionFlag();
+
+        return response()->json(['success' => true]);
     }
 
     private function authorizeSave(Request $request, GameSave $gameSave): void
