@@ -240,7 +240,12 @@ export function showDuelDice(attackScore, defenseScore, aRoll, dRoll, breakdown)
     const dTag = breakdown?.rolls?.dTag ?? String(dRoll.roll);
 
     // Chip compact — juste les scores
-    duelDiceEl.textContent = `${aTag} vs ${dTag}`;
+    const winnerLabel = winner === 'attack' ? '✓ Attaque' : winner === 'defense' ? '✗ Défense' : '= Égalité';
+    const winnerColor = winner === 'attack' ? '#22c55e' : winner === 'defense' ? '#ef4444' : '#94a3b8';
+
+    duelDiceEl.textContent = `${aTag} vs ${dTag} — ${winnerLabel}`;
+    duelDiceEl.style.color = winnerColor;
+    duelDiceEl.style.fontWeight = '700';
     duelDiceEl.classList.add("visible", "pop");
     setTimeout(() => duelDiceEl.classList.remove("pop"), 500);
 
