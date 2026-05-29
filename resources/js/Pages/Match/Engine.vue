@@ -95,7 +95,30 @@
 
                         <!-- Right: turns -->
                         <div class="flex items-center justify-end text-xs opacity-80">
-                            Tours : <span id="turns-display" class="ml-1 tabular-nums">00</span>
+                            <div class="flex items-center gap-2">
+                                <svg id="match-clock" width="36" height="36" viewBox="0 0 36 36" class="shrink-0">
+                                    <!-- Fond -->
+                                    <circle cx="18" cy="18" r="15" fill="white" stroke="#e2e8f0" stroke-width="1.5"/>
+                                    <!-- Graduations (statiques) -->
+                                    <line x1="18" y1="4"  x2="18" y2="6"  stroke="#cbd5e1" stroke-width="1"/>
+                                    <line x1="32" y1="18" x2="30" y2="18" stroke="#cbd5e1" stroke-width="1"/>
+                                    <line x1="18" y1="32" x2="18" y2="30" stroke="#cbd5e1" stroke-width="1"/>
+                                    <line x1="4"  y1="18" x2="6"  y2="18" stroke="#cbd5e1" stroke-width="1"/>
+                                    <!-- Arc de progression -->
+                                    <circle id="clock-arc" cx="18" cy="18" r="11"
+                                            fill="none" stroke="#14b8a6" stroke-width="2.5"
+                                            stroke-linecap="round"
+                                            stroke-dasharray="0 69.1"
+                                            transform="rotate(-90 18 18)"
+                                            style="transition: stroke-dasharray 0.3s ease"/>
+                                    <!-- Aiguille -->
+                                    <line id="clock-hand" x1="18" y1="18" x2="18" y2="9"
+                                          stroke="#0f172a" stroke-width="1.5" stroke-linecap="round"/>
+                                    <!-- Centre -->
+                                    <circle cx="18" cy="18" r="1.5" fill="#0f172a"/>
+                                </svg>
+                                <span id="turns-display" class="tabular-nums font-black text-sm text-slate-700">00'</span>
+                            </div>
                         </div>
                     </div>
 

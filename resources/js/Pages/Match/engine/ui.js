@@ -33,10 +33,29 @@ export function setAIOverlay(visible, text) {
 }
 
 export function updateScoreUI(state) {
+    if (_ui.scoreInternalEl) _ui.scoreInternalEl.textContent = state.score.internal;
+    if (_ui.scoreExternalEl) _ui.scoreExternalEl.textContent = state.score.external;
+
     const minutes = state.turns * 2;
     const t = String(minutes).padStart(2, "0");
-    if (_ui.turnsDisplayEl) _ui.turnsDisplayEl.textContent = t + "'";
-    if (_ui.turnIndicatorEl) _ui.turnIndicatorEl.textContent = t + "'";
+    if (_ui.turnsDisplayEl)   _ui.turnsDisplayEl.textContent = t + "'";
+    if (_ui.turnIndicatorEl)  _ui.turnIndicatorEl.textContent = t + "'";
+
+    // Mise à jour horloge SVG
+    const arc  = document.getElementById('clock-arc');
+    const hand = document.getElementById('clock-hand');
+    if (arc) {
+        const progress = (minutes / 90) * 69.1;
+        arc.setAttribute('stroke-dasharray', `${progress} 69.1`);
+    }
+    if (hand) {
+        const angle = (minutes / 90) * 360 - 90;
+        const rad   = angle * Math.PI / 180;
+        const x2    = 18 + 9 * Math.cos(rad);
+        const y2    = 18 + 9 * Math.sin(rad);
+        hand.setAttribute('x2', x2.toFixed(2));
+        hand.setAttribute('y2', y2.toFixed(2));
+    }
 }
 
 const LOG_TYPES = {
