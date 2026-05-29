@@ -305,6 +305,21 @@ class GameSaveController extends Controller
             ->where('is_starter', true)
             ->count();
 
+        // Premier numéro disponible dans l'équipe
+        $usedNumbers = GamePlayer::where('game_save_id', $gameSave->id)
+            ->whereHas('contracts', fn($q) => $q->where('game_team_id', $team->id))
+            ->pluck('number')
+            ->filter()
+            ->toArray();
+
+        $nextNumber = 1;
+        while (in_array($nextNumber, $usedNumbers)) {
+            $nextNumber++;
+        }
+
+        $player->number = $nextNumber;
+        $player->save();
+
         GameContract::create([
             'game_save_id'                    => $gameSave->id,
             'game_team_id'                    => $team->id,

@@ -182,20 +182,20 @@ export const MAX_ZONE_INDEX       = ZONE_BOUNDS_INTERNAL.length - 2; // = 4
 // ==========================
 export const STATS = {
     attack: {
-        shot:    { power: 10, cost: 15 },
-        pass:    { power: 10, cost: 10 },
-        dribble: { power: 10, cost: 5  },
-        special: { power: 12, cost: 20 },
+        shot:    { power: 10, cost: 10 },
+        pass:    { power: 10, cost: 5 },
+        dribble: { power: 10, cost: 4  },
+        special: { power: 12, cost: 15 },
     },
     defenseField: {
-        block:           { power: 10, cost: 5  },
-        intercept:       { power: 10, cost: 5  },
-        tackle:          { power: 10, cost: 5  },
-        "field-special": { power: 12, cost: 15 },
+        block:           { power: 10, cost: 4  },
+        intercept:       { power: 10, cost: 3  },
+        tackle:          { power: 10, cost: 3  },
+        "field-special": { power: 12, cost: 10 },
     },
     defenseGK: {
         hands:       { power: 10, cost: 5 },
-        punch:       { power: 10, cost: 10 },
-        "gk-special":{ power: 12, cost: 20 },
+        punch:       { power: 10, cost: 3 },
+        "gk-special":{ power: 12, cost: 10 },
     },
 };
