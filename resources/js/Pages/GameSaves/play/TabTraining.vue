@@ -1,5 +1,21 @@
 <script setup>
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
+
+const aiTeamFilter = ref(null)
+
+const aiTeams = computed(() => {
+    const teams = new Map()
+    props.aiTrainingEntries.forEach(e => {
+        if (e.team_id && e.team_name) teams.set(e.team_id, e.team_name)
+    })
+    return [...teams.entries()].map(([id, name]) => ({ id, name }))
+})
+
+const filteredAiEntries = computed(() =>
+    aiTeamFilter.value
+        ? props.aiTrainingEntries.filter(e => e.team_id === aiTeamFilter.value)
+        : props.aiTrainingEntries
+)
 
 const props = defineProps({
     season:                      { type: Number,   required: true },
@@ -195,7 +211,6 @@ const playerForManualEntry = (entry) =>
                     </p>
                 </div>
 
-                <!-- Entraînements IA cette semaine -->
                 <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
                     <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center justify-between">
                         <span>🤖 Entraînement automatique</span>
@@ -208,30 +223,42 @@ const playerForManualEntry = (entry) =>
                         </div>
                     </h4>
 
-                    <div v-if="aiTrainingEntries.length" class="space-y-2">
-                        <div v-for="entry in aiTrainingEntries" :key="entry.player_id + entry.stat"
+                    <!-- Filtre équipe -->
+                    <div class="flex flex-wrap gap-1.5 mb-3">
+                        <button type="button"
+                                @click="aiTeamFilter = null"
+                                class="px-2.5 py-1 rounded-full text-[10px] font-semibold border transition-all"
+                                :class="aiTeamFilter === null ? 'bg-amber-400 text-white border-amber-500' : 'bg-white text-slate-500 border-slate-200 hover:border-amber-300'">
+                            Toutes
+                        </button>
+                        <button v-for="t in aiTeams" :key="t.id" type="button"
+                                @click="aiTeamFilter = aiTeamFilter === t.id ? null : t.id"
+                                class="px-2.5 py-1 rounded-full text-[10px] font-semibold border transition-all"
+                                :class="aiTeamFilter === t.id ? 'bg-amber-400 text-white border-amber-500' : 'bg-white text-slate-500 border-slate-200 hover:border-amber-300'">
+                            {{ t.name }}
+                        </button>
+                    </div>
+
+                    <div v-if="filteredAiEntries.length" class="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+                        <div v-for="entry in filteredAiEntries" :key="entry.player_id + entry.stat + entry.team_id"
                              class="flex items-center gap-3 px-3 py-2 rounded-lg bg-amber-50 border border-amber-100">
 
-                            <!-- Photo -->
                             <div class="w-8 h-8 rounded-full overflow-hidden bg-slate-200 shrink-0">
-                                <img v-if="playerForEntry(entry) && playerPhotoUrl(playerForEntry(entry))"
-                                     :src="playerPhotoUrl(playerForEntry(entry))" class="w-full h-full object-cover" alt=""/>
-                                <div v-else class="w-full h-full flex items-center justify-center text-[9px] text-slate-400">?</div>
+                                <div class="w-full h-full flex items-center justify-center text-[9px] text-slate-400">
+                                    {{ entry.player_name?.charAt(0) ?? '?' }}
+                                </div>
                             </div>
 
-                            <!-- Nom -->
                             <div class="flex-1 min-w-0">
                                 <div class="text-xs font-semibold text-slate-700 truncate">{{ entry.player_name }}</div>
-                                <div class="text-[10px] text-slate-400">Stamina -{{ entry.stamina_cost }}</div>
+                                <div class="text-[10px] text-amber-600 font-semibold truncate">{{ entry.team_name }}</div>
                             </div>
 
-                            <!-- Stat entraînée -->
                             <div class="flex items-center gap-1.5">
                                 <div class="w-2 h-2 rounded-full" :class="statColor(entry.stat)"></div>
                                 <span class="text-xs text-slate-600 font-medium">{{ statLabel(entry.stat) }}</span>
                             </div>
 
-                            <!-- Gain -->
                             <div class="px-2 py-0.5 rounded-full text-xs font-black bg-amber-200 text-amber-700">
                                 +{{ entry.gain }}
                             </div>

@@ -863,7 +863,9 @@ export function initMatchEngine(rootEl, config = {}) {
         state.substitutionCount = 0;
 
         applyKickoffPositions(basePositions);
-        state._moveBallFn("internal", 8);
+        const kickoffTeam = matchConfig.isControlledHome ? "internal" : "external";
+        state.currentTeam = kickoffTeam;
+        state._moveBallFn(kickoffTeam, 8);
 
         updateSideCard("home", "internal", 8);
         updateSideCard("away", "external", 8);

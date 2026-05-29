@@ -87,6 +87,7 @@ class GameMatchController extends Controller
                 'awayTeamName' => $awayTeam->name,
                 'homeLogoUrl'  => $homeLogoUrl,
                 'awayLogoUrl'  => $awayLogoUrl,
+                'isControlledHome' => $isControlledHome,
 
                 'homeTeamId' => $match->home_team_id,
                 'awayTeamId' => $match->away_team_id,

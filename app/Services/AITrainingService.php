@@ -43,16 +43,23 @@ class AITrainingService
         $controlledTeamId = $gameSave->controlled_game_team_id;
         $aiEntries        = [];
 
+        $allEntries = []; // historique complet toutes équipes
+
+        $allEntries = [];
+
         foreach ($allTeams as $team) {
             $isControlled = ((int) $team->id === (int) $controlledTeamId);
-
             if ($isControlled) {
-                // Équipe contrôlée : gain légèrement réduit, exclure joueurs déjà entraînés manuellement
-                $results = $this->trainTeam($team, gainMax: 2, excludePlayerIds: $manuallyTrainedIds);
-                // Stocker les résultats pour l'affichage dans TabTraining
+                $results   = $this->trainTeam($team, gainMax: 2, excludePlayerIds: $manuallyTrainedIds);
                 $aiEntries = $results;
+                foreach ($results as $entry) {
+                    $allEntries[] = array_merge($entry, ['team_id' => $team->id, 'team_name' => $team->name]);
+                }
             } else {
-                $this->trainTeam($team, gainMax: 3);
+                $results = $this->trainTeam($team, gainMax: 3);
+                foreach ($results as $entry) {
+                    $allEntries[] = array_merge($entry, ['team_id' => $team->id, 'team_name' => $team->name]);
+                }
             }
         }
 
@@ -73,7 +80,7 @@ class AITrainingService
 
         // Historique cumulatif
         $history = $state['ai_training_history'] ?? [];
-        foreach ($aiEntries as $entry) {
+        foreach ($allEntries as $entry) {
             $history[] = array_merge($entry, [
                 'season' => $season,
                 'week'   => $week,
