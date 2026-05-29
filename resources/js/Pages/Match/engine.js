@@ -312,6 +312,17 @@ export function initMatchEngine(rootEl, config = {}) {
         const outEl = rootEl.querySelector(`[data-player="${outId}"]`);
         if (!outEl) return false;
 
+        // ── Vérifier si le joueur a été expulsé (carton rouge) ──
+        const outDbId = roster.getPlayerInfo(team, outSlot)?.id ?? null;
+        const isRedCarded = state.foulEvents.some(
+            e => e.type === 'card' && e.card_type === 'red' && e.player_id === outDbId
+        );
+        const isDoubleYellow = state.foulEvents.filter(
+            e => e.type === 'card' && e.card_type === 'yellow' && e.player_id === outDbId
+        ).length >= 2;
+
+        if (isRedCarded || isDoubleYellow) return false;
+
         const inId  = getPlayerId(team, inSlot);
         const inEl  = rootEl.querySelector(`[data-player="${inId}"]`);
 
@@ -373,6 +384,15 @@ export function initMatchEngine(rootEl, config = {}) {
                 const outId = getPlayerId(aiTeam, outSlot);
                 const outEl = rootEl.querySelector(`[data-player="${outId}"]`);
                 if (!outEl || outEl.classList.contains('unavailable')) continue;
+
+                // ── Ne pas remplacer un expulsé ──
+                const outDbId = roster.getPlayerInfo(aiTeam, outSlot)?.id ?? null;
+                const isExpulsed = state.foulEvents.some(
+                    e => e.type === 'card' && e.card_type === 'red' && e.player_id === outDbId
+                ) || state.foulEvents.filter(
+                    e => e.type === 'card' && e.card_type === 'yellow' && e.player_id === outDbId
+                ).length >= 2;
+                if (isExpulsed) continue;
 
                 const stMax = state.staminaMax[outId] ?? 100;
                 const stCur = state.stamina[outId]    ?? stMax;
