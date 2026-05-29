@@ -260,12 +260,12 @@ export function initMatchEngine(rootEl, config = {}) {
                         out.teams[t].shots++;
                     }
 
-                    if ((act === "shot" || act === "special") && ev.result === "attack" && ev.defense?.slot === 1) {
+                    if ((act === "shot" || act === "special") && ev.result === "attack" && ev.defense?.defenseSlot === 1) {
                         out.players[pid].offense.goals = (out.players[pid].offense.goals ?? 0) + 1;
                         out.teams[t].goals++;
                     }
 
-                    out.players[pid].duelsWon++;
+                        out.players[pid].duelsWon++;
                     out.teams[t].duelsWon++;
                 } else if (ev.result === "defense") {
                     out.players[pid].duelsLost++;

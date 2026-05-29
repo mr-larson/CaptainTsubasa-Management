@@ -104,6 +104,7 @@ const playerMatchStat = (playerId, path) => {
     if (!s) return 0;
     return path.split('.').reduce((o, k) => o?.[k] ?? 0, s);
 };
+const isGK = (p) => p?.position?.toLowerCase().includes('goalkeeper');
 </script>
 
 <template>
@@ -312,15 +313,22 @@ const playerMatchStat = (playerId, path) => {
                             <thead class="border-b border-slate-200">
                             <tr>
                                 <th class="py-1.5 pr-3 text-slate-500 font-semibold">Joueur</th>
-                                <th v-for="h in ['Tirs','Passes','Drib.','Interc.','Tacles','Blocks','D+','D-']"
-                                    :key="h" class="py-1.5 px-2 text-right text-slate-500 font-semibold">{{ h }}</th>
+                                <th class="py-1.5 px-2 text-right text-slate-500 font-semibold">Tirs</th>
+                                <th class="py-1.5 px-2 text-right text-slate-500 font-semibold">Passes</th>
+                                <th class="py-1.5 px-2 text-right text-slate-500 font-semibold">Drib.</th>
+                                <th class="py-1.5 px-2 text-right text-slate-500 font-semibold">Arrêts</th>
+                                <th class="py-1.5 px-2 text-right text-slate-500 font-semibold">Interc.</th>
+                                <th class="py-1.5 px-2 text-right text-slate-500 font-semibold">Tacles</th>
+                                <th class="py-1.5 px-2 text-right text-slate-500 font-semibold">Blocks</th>
+                                <th class="py-1.5 px-2 text-right text-slate-500 font-semibold">D+</th>
+                                <th class="py-1.5 px-2 text-right text-slate-500 font-semibold">D-</th>
                             </tr>
                             </thead>
                             <tbody>
                             <tr v-for="p in (selectedStatsTeam === 'home'
-                    ? (selectedCalendarMatch.home_team_id === calendarTeam?.id ? calendarTeamRoster : calendarOpponentRoster)
-                    : (selectedCalendarMatch.away_team_id === calendarTeam?.id ? calendarTeamRoster : calendarOpponentRoster)
-                )" :key="p.id"
+            ? (selectedCalendarMatch.home_team_id === calendarTeam?.id ? calendarTeamRoster : calendarOpponentRoster)
+            : (selectedCalendarMatch.away_team_id === calendarTeam?.id ? calendarTeamRoster : calendarOpponentRoster)
+        )" :key="p.id"
                                 class="border-b border-slate-100 last:border-0 hover:bg-white transition-colors">
                                 <td class="py-1.5 pr-3">
                                     <div class="flex items-center gap-2">
@@ -328,17 +336,52 @@ const playerMatchStat = (playerId, path) => {
                                             <img v-if="playerPhotoUrl(p)" :src="playerPhotoUrl(p)" class="w-full h-full object-cover" alt=""/>
                                             <div v-else class="w-full h-full flex items-center justify-center text-[8px] text-slate-400">?</div>
                                         </div>
-                                        <span class="font-medium text-slate-700 truncate max-w-[80px]">{{ p.lastname }}</span>
+                                        <div>
+                                            <div class="font-medium text-slate-700 truncate max-w-[80px]">{{ p.lastname }}</div>
+                                        </div>
                                     </div>
                                 </td>
-                                <td class="py-1.5 px-2 text-right font-semibold text-slate-600">{{ playerMatchStat(p.id, 'offense.shot.attempts') }}</td>
-                                <td class="py-1.5 px-2 text-right font-semibold text-slate-600">{{ playerMatchStat(p.id, 'offense.pass.attempts') }}</td>
-                                <td class="py-1.5 px-2 text-right font-semibold text-slate-600">{{ playerMatchStat(p.id, 'offense.dribble.attempts') }}</td>
-                                <td class="py-1.5 px-2 text-right font-semibold text-slate-600">{{ playerMatchStat(p.id, 'defense.intercept.attempts') }}</td>
-                                <td class="py-1.5 px-2 text-right font-semibold text-slate-600">{{ playerMatchStat(p.id, 'defense.tackle.attempts') }}</td>
-                                <td class="py-1.5 px-2 text-right font-semibold text-slate-600">{{ playerMatchStat(p.id, 'defense.block.attempts') }}</td>
-                                <td class="py-1.5 px-2 text-right font-bold text-emerald-600">{{ playerMatchStat(p.id, 'duelsWon') }}</td>
-                                <td class="py-1.5 px-2 text-right font-bold text-rose-500">{{ playerMatchStat(p.id, 'duelsLost') }}</td>
+                                <!-- Tirs — masqué pour GK -->
+                                <td class="py-1.5 px-2 text-right font-semibold"
+                                    :class="isGK(p) ? 'text-slate-300' : 'text-slate-600'">
+                                    {{ isGK(p) ? '—' : playerMatchStat(p.id, 'offense.shot.attempts') }}
+                                </td>
+                                <!-- Passes -->
+                                <td class="py-1.5 px-2 text-right font-semibold text-slate-600">
+                                    {{ playerMatchStat(p.id, 'offense.pass.attempts') }}
+                                </td>
+                                <!-- Dribbles — masqué pour GK -->
+                                <td class="py-1.5 px-2 text-right font-semibold"
+                                    :class="isGK(p) ? 'text-slate-300' : 'text-slate-600'">
+                                    {{ isGK(p) ? '—' : playerMatchStat(p.id, 'offense.dribble.attempts') }}
+                                </td>
+                                <!-- Arrêts — uniquement pour GK, sinon — -->
+                                <td class="py-1.5 px-2 text-right font-semibold"
+                                    :class="isGK(p) ? 'text-violet-600' : 'text-slate-300'">
+                                    {{ isGK(p) ? playerMatchStat(p.id, 'defense.hands.attempts') : '—' }}
+                                </td>
+                                <!-- Interceptions — masqué pour GK -->
+                                <td class="py-1.5 px-2 text-right font-semibold"
+                                    :class="isGK(p) ? 'text-slate-300' : 'text-slate-600'">
+                                    {{ isGK(p) ? '—' : playerMatchStat(p.id, 'defense.intercept.attempts') }}
+                                </td>
+                                <!-- Tacles — masqué pour GK -->
+                                <td class="py-1.5 px-2 text-right font-semibold"
+                                    :class="isGK(p) ? 'text-slate-300' : 'text-slate-600'">
+                                    {{ isGK(p) ? '—' : playerMatchStat(p.id, 'defense.tackle.attempts') }}
+                                </td>
+                                <!-- Blocks -->
+                                <td class="py-1.5 px-2 text-right font-semibold text-slate-600">
+                                    {{ playerMatchStat(p.id, 'defense.block.attempts') }}
+                                </td>
+                                <!-- D+ -->
+                                <td class="py-1.5 px-2 text-right font-bold text-emerald-600">
+                                    {{ playerMatchStat(p.id, 'duelsWon') }}
+                                </td>
+                                <!-- D- -->
+                                <td class="py-1.5 px-2 text-right font-bold text-rose-500">
+                                    {{ playerMatchStat(p.id, 'duelsLost') }}
+                                </td>
                             </tr>
                             </tbody>
                         </table>

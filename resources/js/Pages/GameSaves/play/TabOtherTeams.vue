@@ -122,6 +122,17 @@ const perfChips = computed(() => {
     if (!p) return [];
     const perf = props.playerSeasonStats?.[p.id] ?? props.playerSeasonStats?.[String(p.id)];
     if (!perf) return [];
+    const isGK = p.position?.toLowerCase().includes('goalkeeper');
+
+    if (isGK) return [
+        { icon: '🧤', label: 'Arrêts',  val: perf.defense?.hands?.attempts     ?? 0, sub: perf.defense?.hands?.success     ?? 0, color: 'bg-violet-100 text-violet-700' },
+        { icon: '👊', label: 'Poings',     val: perf.defense?.gkSpecial?.attempts ?? 0, sub: perf.defense?.gkSpecial?.success ?? 0, color: 'bg-fuchsia-100 text-fuchsia-700' },
+        { icon: '🧱', label: 'Blocks',     val: perf.defense?.block?.attempts     ?? 0, sub: perf.defense?.block?.success     ?? 0, color: 'bg-slate-100 text-slate-600' },
+        { icon: '🎯', label: 'Passes',     val: perf.offense?.pass?.attempts      ?? 0, sub: perf.offense?.pass?.success      ?? 0, color: 'bg-sky-100 text-sky-700' },
+        { icon: '⚔️', label: 'Gagnés',     val: perf.duelsWon  ?? 0, sub: null, color: 'bg-teal-100 text-teal-700' },
+        { icon: '💔', label: 'Perdus',     val: perf.duelsLost ?? 0, sub: null, color: 'bg-rose-100 text-rose-700' },
+    ];
+
     return [
         { icon: '⚽', label: 'Tirs',     val: perf.offense?.shot?.attempts      ?? 0, sub: perf.offense?.shot?.success      ?? 0, color: 'bg-blue-100 text-blue-700' },
         { icon: '🎯', label: 'Passes',   val: perf.offense?.pass?.attempts      ?? 0, sub: perf.offense?.pass?.success      ?? 0, color: 'bg-sky-100 text-sky-700' },
@@ -322,30 +333,53 @@ const perfChips = computed(() => {
                         @click="emit('select-player', p)"
                         class="w-full text-left rounded-lg px-2 py-1.5 transition-all"
                         :class="selectedOtherPlayer?.id === p.id
-                            ? 'bg-teal-500 text-white shadow-sm'
-                            : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-100'"
+        ? 'bg-teal-500 text-white shadow-sm'
+        : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-100'"
                     >
                         <div class="flex items-center gap-2">
+                            <!-- Photo -->
                             <div class="w-7 h-7 rounded-full overflow-hidden bg-slate-200 shrink-0">
                                 <img v-if="playerPhotoUrl(p)" :src="playerPhotoUrl(p)" class="w-full h-full object-cover" alt=""/>
                                 <div v-else class="w-full h-full flex items-center justify-center text-[9px] text-slate-400">?</div>
                             </div>
+
+                            <!-- Nom + poste -->
                             <div class="flex-1 min-w-0">
                                 <div class="text-xs font-semibold truncate">{{ p.lastname }}</div>
-                                <span v-if="p.is_captain" class="ml-1 text-amber-400 text-[10px]" title="Capitaine">👑</span>
                                 <div class="text-[10px] opacity-60 truncate">{{ p.position }}</div>
                             </div>
-                            <!-- Badges statut -->
-                            <div class="flex items-center gap-1 shrink-0">
-                                <span v-if="isPlayerInjured(p.id)" title="Blessé" class="text-xs">🤕</span>
-                                <span v-if="isPlayerSuspended(p.id)" title="Suspendu" class="text-xs">🚫</span>
+
+                            <!-- Icônes statut sur une ligne à droite du nom -->
+                            <div class="flex items-center gap-0.5 shrink-0">
+                                <span v-if="p.is_captain" title="Capitaine" class="text-[11px]">👑</span>
+                                <span v-if="isPlayerInjured(p.id)" title="Blessé" class="text-[11px]">🤕</span>
+                                <span v-else-if="isPlayerSuspended(p.id)" title="Suspendu" class="text-[11px]">🚫</span>
                                 <span v-else-if="playerYellowCards(p.id) > 0"
                                       :title="`${playerYellowCards(p.id)} carton(s) jaune`"
                                       class="text-[9px] font-black bg-yellow-400 text-yellow-900 px-1 rounded">
-                                    {{ playerYellowCards(p.id) }}🟨
-                                </span>
+                {{ playerYellowCards(p.id) }}🟨
+            </span>
                             </div>
-                            <div class="w-2 h-2 rounded-full shrink-0" :class="p.is_starter ? 'bg-emerald-400' : 'bg-slate-300'"></div>
+
+                            <!-- Stamina bar + valeur -->
+                            <div class="w-12 flex flex-col items-end gap-0.5 shrink-0">
+                                <div class="text-[10px] font-bold"
+                                     :class="selectedOtherPlayer?.id === p.id ? 'text-white/80' : 'text-slate-500'">
+                                    {{ p.stamina ?? p.stats?.stamina ?? '—' }}
+                                </div>
+                                <div class="w-full h-1 rounded-full overflow-hidden"
+                                     :class="selectedOtherPlayer?.id === p.id ? 'bg-white/30' : 'bg-slate-200'">
+                                    <div class="h-full rounded-full transition-all"
+                                         :class="(p.stamina ?? p.stats?.stamina ?? 0) >= 60 ? 'bg-emerald-400'
+                           : (p.stamina ?? p.stats?.stamina ?? 0) >= 30 ? 'bg-amber-400' : 'bg-rose-400'"
+                                         :style="{ width: Math.min(p.stamina ?? p.stats?.stamina ?? 0, 100) + '%' }">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Titulaire dot -->
+                            <div class="w-2 h-2 rounded-full shrink-0"
+                                 :class="p.is_starter ? 'bg-emerald-400' : 'bg-slate-300'"></div>
                         </div>
                     </button>
                 </div>
@@ -450,7 +484,15 @@ const perfChips = computed(() => {
                         <div class="border border-slate-200 rounded-xl bg-slate-50 p-3">
                             <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Statistiques</h4>
                             <div class="space-y-1.5">
-                                <div v-for="stat in [
+                                <div v-for="stat in (selectedOtherPlayer?.position?.toLowerCase().includes('goalkeeper') ? [
+                                    {label:'Vitesse',  key:'speed',      color:'bg-sky-400'},
+                                    {label:'Stamina',  key:'stamina',     color:'bg-emerald-400'},
+                                    {label:'Défense',  key:'defense',     color:'bg-blue-400'},
+                                    {label:'Arrêt ✋', key:'hand_save',   color:'bg-violet-400'},
+                                    {label:'Arrêt 👊', key:'punch_save',  color:'bg-fuchsia-400'},
+                                    {label:'Attaque',  key:'attack',      color:'bg-orange-400'},
+                                    {label:'Block',    key:'block',       color:'bg-indigo-400'},
+                                ] : [
                                     {label:'Vitesse', key:'speed',    color:'bg-sky-400'},
                                     {label:'Stamina', key:'stamina',  color:'bg-emerald-400'},
                                     {label:'Attaque', key:'attack',   color:'bg-orange-400'},
@@ -461,8 +503,8 @@ const perfChips = computed(() => {
                                     {label:'Block',   key:'block',    color:'bg-indigo-400'},
                                     {label:'Interc.', key:'intercept',color:'bg-purple-400'},
                                     {label:'Tacle',   key:'tackle',   color:'bg-pink-400'},
-                                ]" :key="stat.key" class="flex items-center gap-2 text-xs">
-                                    <span class="w-14 text-slate-500 shrink-0 text-[11px]">{{ stat.label }}</span>
+                                ])" :key="stat.key" class="flex items-center gap-2 text-xs">
+                                    <span class="w-16 text-slate-500 shrink-0 text-[11px]">{{ stat.label }}</span>
                                     <div class="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden">
                                         <div class="h-full rounded-full" :class="stat.color"
                                              :style="{width: Math.min((selectedOtherPlayer[stat.key] ?? selectedOtherPlayer.stats?.[stat.key] ?? 0), 100)+'%'}">

@@ -62,10 +62,10 @@ const filteredPlayersWithStats = computed(() =>
         : allPlayersWithStats.value
 )
 
-const topByFiltered = (getter, n = 5) =>
+const topByFiltered = (getter, n = 5, filter = null) =>
     [...filteredPlayersWithStats.value]
-        .filter(p => p.perf)
-        .sort((a, b) => getter(b) - getter(a))
+        .filter(p => p.perf && (filter ? filter(p) : true))
+        .sort((a, b) => getter(b) - getter(a) || (b.perf?.duelsWon ?? 0) - (a.perf?.duelsWon ?? 0))
         .slice(0, n)
 
 // ==========================
@@ -74,8 +74,12 @@ const topByFiltered = (getter, n = 5) =>
 const topShooters  = computed(() => topByFiltered(p => p.perf?.offense?.goals ?? 0));
 const topPassers   = computed(() => topByFiltered(p => p.perf?.offense?.pass?.success ?? 0));
 const topDribblers = computed(() => topByFiltered(p => p.perf?.offense?.dribble?.success ?? 0));
-const topDefenders = computed(() => topByFiltered(p => p.perf?.duelsWon ?? 0));
-
+const topDefenders = computed(() => topByFiltered(p => p.perf?.duelsWon ?? 0, 5, p => !p.position?.toLowerCase().includes('goalkeeper')));
+const topKeepers = computed(() => topByFiltered(
+    p => (p.perf?.defense?.hands?.attempts ?? 0) + (p.perf?.defense?.punch?.attempts ?? 0),
+    5,
+    p => p.position?.toLowerCase().includes('goalkeeper')
+));
 const hasAnyStats = computed(() =>
     allPlayersWithStats.value.some(p => p.perf)
 );
@@ -197,15 +201,14 @@ const myPlayersRanking = computed(() => {
             <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
                 <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">🏆 Top performers</h3>
 
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-
-                    <!-- Colonne top -->
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
                     <div v-for="(category, ci) in [
-                        { label: 'Buteurs',    icon: '⚽', color: 'border-blue-200 bg-blue-50',    badge: 'bg-blue-500',    players: topShooters,  stat: p => p.perf?.offense?.goals ?? 0, unit: 'buts' },
-                        { label: 'Passeurs',   icon: '🎯', color: 'border-sky-200 bg-sky-50',      badge: 'bg-sky-500',     players: topPassers,   stat: p => p.perf?.offense?.pass?.success ?? 0,    unit: 'passes' },
-                        { label: 'Dribbleurs', icon: '🔥', color: 'border-orange-200 bg-orange-50',badge: 'bg-orange-500',  players: topDribblers, stat: p => p.perf?.offense?.dribble?.success ?? 0, unit: 'dribbles' },
-                        { label: 'Duel', icon: '⚔️', color: 'border-emerald-200 bg-emerald-50',badge:'bg-emerald-500',players: topDefenders, stat: p => p.perf?.duelsWon ?? 0,                  unit: 'duels' },
-                    ]" :key="ci"
+                            { label: 'Buteurs',    icon: '⚽', color: 'border-blue-200 bg-blue-50',     badge: 'bg-blue-500',    players: topShooters,  stat: p => p.perf?.offense?.goals ?? p.perf?.offense?.shot?.success ?? 0,            unit: 'buts' },
+                            { label: 'Passeurs',   icon: '🎯', color: 'border-sky-200 bg-sky-50',       badge: 'bg-sky-500',     players: topPassers,   stat: p => p.perf?.offense?.pass?.success ?? 0,     unit: 'passes' },
+                            { label: 'Dribbleurs', icon: '🔥', color: 'border-orange-200 bg-orange-50', badge: 'bg-orange-500',  players: topDribblers, stat: p => p.perf?.offense?.dribble?.success ?? 0,  unit: 'dribbles' },
+                            { label: 'Duel',       icon: '⚔️', color: 'border-emerald-200 bg-emerald-50',badge:'bg-emerald-500', players: topDefenders, stat: p => p.perf?.duelsWon ?? 0,                   unit: 'duels' },
+                            { label: 'Gardiens', icon: '🧤', color: 'border-violet-200 bg-violet-50', badge: 'bg-violet-500', players: topKeepers, stat: p => (p.perf?.defense?.hands?.attempts ?? 0) + (p.perf?.defense?.punch?.attempts ?? 0), unit: 'arrêts' },
+                        ]" :key="ci"
                          class="border rounded-xl p-3 flex flex-col gap-2"
                          :class="category.color"
                     >
