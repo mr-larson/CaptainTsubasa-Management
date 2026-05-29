@@ -95,7 +95,7 @@
 
                         <!-- Right: turns -->
                         <div class="flex items-center justify-end text-xs opacity-80">
-                            Tours : <span id="turns-display" class="ml-1 tabular-nums">00</span>/40
+                            Tours : <span id="turns-display" class="ml-1 tabular-nums">00</span>
                         </div>
                     </div>
 

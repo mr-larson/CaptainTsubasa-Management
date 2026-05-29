@@ -12,7 +12,7 @@ export const DIE_SIDES          = 20;
 // ==========================
 //   RÈGLES DE PARTIE
 // ==========================
-export const GAME_RULES = { MAX_TURNS: 40 };
+export const GAME_RULES = { MAX_TURNS: 45 };
 
 // ==========================
 //   RÈGLES DE DUEL

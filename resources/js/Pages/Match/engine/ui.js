@@ -33,11 +33,10 @@ export function setAIOverlay(visible, text) {
 }
 
 export function updateScoreUI(state) {
-    if (_ui.scoreInternalEl) _ui.scoreInternalEl.textContent = state.score.internal;
-    if (_ui.scoreExternalEl) _ui.scoreExternalEl.textContent = state.score.external;
-    const t = String(state.turns).padStart(2, "0");
-    if (_ui.turnsDisplayEl)   _ui.turnsDisplayEl.textContent  = t;
-    if (_ui.turnIndicatorEl)  _ui.turnIndicatorEl.textContent = t;
+    const minutes = state.turns * 2;
+    const t = String(minutes).padStart(2, "0");
+    if (_ui.turnsDisplayEl) _ui.turnsDisplayEl.textContent = t + "'";
+    if (_ui.turnIndicatorEl) _ui.turnIndicatorEl.textContent = t + "'";
 }
 
 const LOG_TYPES = {
