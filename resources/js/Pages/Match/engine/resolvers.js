@@ -716,14 +716,12 @@ export function performKeeperClearance(defenseTeam, defenseAction, afterClearanc
 // -----------------------------------------------------------
 //   resolvePass + continuePass
 // -----------------------------------------------------------
-export function resolvePass(attackTeam, defenseTeam, defenseAction, defenderPick = null) {
+export function resolvePass(attackTeam, defenseTeam, defenseAction, defenderPick = null, isSpecial = false) {
     const b          = ball();
     const wasKickoff = _state.isKickoff;
     _state.isKickoff             = false;
     _state.keeperRestartMustPass = false;
 
-    const specials   = _roster.getSpecialMoves(attackTeam, b.number).filter(m => m?.mode === "attack" && m.base_action === "pass");
-    const isSpecial  = specials.length > 0;
     const attackType = isSpecial ? "special" : "pass";
 
     const duel = runFieldDuel({ attackTeam, defenseTeam, attackType, defenseAction, defenderPick });
@@ -807,7 +805,7 @@ function continuePass(attackTeam, defenseTeam, attackType, defenseAction, isSpec
 // -----------------------------------------------------------
 //   resolveDribble + continueDribble
 // -----------------------------------------------------------
-export function resolveDribble(attackTeam, defenseTeam, defenseAction, defenderPick = null) {
+export function resolveDribble(attackTeam, defenseTeam, defenseAction, defenderPick = null, isSpecial = false) {
     const b = ball();
     _state.keeperRestartMustPass = false;
 
@@ -820,8 +818,6 @@ export function resolveDribble(attackTeam, defenseTeam, defenseAction, defenderP
 
     const oldZone    = b.zoneIndex;
     const lane       = b.laneIndex;
-    const specials   = _roster.getSpecialMoves(attackTeam, b.number).filter(m => m?.mode === "attack" && m.base_action === "dribble");
-    const isSpecial  = specials.length > 0;
     const attackType = isSpecial ? "special" : "dribble";
 
     const duel = runFieldDuel({ attackTeam, defenseTeam, attackType, defenseAction, defenderPick });

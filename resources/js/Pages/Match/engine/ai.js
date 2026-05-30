@@ -36,36 +36,47 @@ export function computeAIAttackChoice(ball, specialCooldown) {
     const hasDribSp   = specials.some(m => m.base_action === "dribble");
     const allowSpecial= canUseSpecial(playerId, specialCooldown, turns) && specials.length > 0;
 
+    // Helper : retourne le bon type d'action selon le base_action du move
+    const specialAction = (move) => {
+        if (move?.base_action === "pass")    return "special-pass";
+        if (move?.base_action === "dribble") return "special-dribble";
+        return "special"; // base_action === "shot" ou autre
+    };
+
+    const passSp = specials.find(m => m.base_action === "pass");
+    const dribSp = specials.find(m => m.base_action === "dribble");
+    const shotSp = specials.find(m => m.base_action === "shot");
+
     if (_state.isKickoff || _state.keeperRestartMustPass) {
-        return (hasPassSp && allowSpecial) ? "special" : "pass";
+        return (hasPassSp && allowSpecial) ? specialAction(passSp) : "pass";
     }
 
     if (ball.frontOfKeeper) {
-        return (hasShotSp && allowSpecial) ? "special" : "shot";
+        return (hasShotSp && allowSpecial) ? specialAction(shotSp) : "shot";
     }
 
-    const z  = ball.zoneIndex;
+    const z = ball.zoneIndex;
 
     if (z <= 1) {
-        if (hasPassSp && allowSpecial && Math.random() < 0.30) return "special";
-        if (hasDribSp && allowSpecial && Math.random() < 0.25) return "special";
+        if (hasPassSp && allowSpecial && Math.random() < 0.30) return specialAction(passSp);
+        if (hasDribSp && allowSpecial && Math.random() < 0.25) return specialAction(dribSp);
         return Math.random() < 0.65 ? "pass" : "dribble";
     }
 
     if (z === 2) {
-        if (hasDribSp && allowSpecial && Math.random() < 0.40) return "special";
-        if (hasPassSp && allowSpecial && Math.random() < 0.20) return "special";
+        if (hasDribSp && allowSpecial && Math.random() < 0.40) return specialAction(dribSp);
+        if (hasPassSp && allowSpecial && Math.random() < 0.20) return specialAction(passSp);
         return Math.random() < 0.55 ? "dribble" : "pass";
     }
 
     if (z === 3) {
-        if (hasShotSp && allowSpecial && Math.random() < 0.25) return "special";
-        if (hasDribSp && allowSpecial && Math.random() < 0.20) return "special";
+        if (hasShotSp && allowSpecial && Math.random() < 0.25) return specialAction(shotSp);
+        if (hasDribSp && allowSpecial && Math.random() < 0.20) return specialAction(dribSp);
         return Math.random() < 0.60 ? "dribble" : "shot";
     }
 
     // zone 4 → tir
-    if (hasShotSp && allowSpecial && Math.random() < 0.50) return "special";
+    if (hasShotSp && allowSpecial && Math.random() < 0.50) return specialAction(shotSp);
     return "shot";
 }
 
@@ -103,7 +114,9 @@ function _computeDefenseFallback(attackAction) {
         case "pass":    return r < 0.7 ? "intercept" : (r < 0.9 ? "tackle" : "block");
         case "dribble": return r < 0.7 ? "tackle"    : (r < 0.9 ? "intercept" : "block");
         case "shot":    return r < 0.75 ? "block" : "intercept";
-        case "special": return r < 0.65 ? "field-special" : "block";
+        case "special":
+        case "special-pass":
+        case "special-dribble": return r < 0.65 ? "field-special" : "block";
         default:        return "intercept";
     }
 }

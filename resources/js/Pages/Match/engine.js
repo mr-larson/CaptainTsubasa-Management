@@ -713,13 +713,19 @@ export function initMatchEngine(rootEl, config = {}) {
         updateCardsPower(ball);
     }
 
+    // Helper : récupère le base_action du special du porteur actuel
+    function getSpecialBaseAction(team, slotNumber) {
+        const moves = roster.getSpecialMoves(team, slotNumber).filter(m => m?.mode === "attack");
+        return moves[0]?.base_action ?? "shot";
+    }
+
     // ==========================
     //   HANDLERS CLICKS
     // ==========================
     function handleAttackClick(action) {
         if (state.isGameOver || state.isAnimating) return;
         if (state.turns >= GAME_RULES.MAX_TURNS || state.phase !== "attack") return;
-        if (!["shot","pass","dribble","special"].includes(action)) return;
+        if (!["shot","pass","dribble","special","special-pass","special-dribble"].includes(action)) return;
 
         if (state.isKickoff) {
             if (action !== "pass") return;
@@ -729,6 +735,7 @@ export function initMatchEngine(rootEl, config = {}) {
 
         if (ball.frontOfKeeper && action !== "shot" && action !== "special") return;
 
+        // Après
         if (action === "special") {
             const attackerId = getPlayerId(state.currentTeam, ball.number);
             if (!canUseSpecial(attackerId)) {
@@ -738,11 +745,25 @@ export function initMatchEngine(rootEl, config = {}) {
             }
         }
 
+        if (action === "special") {
+            const baseAction = getSpecialBaseAction(state.currentTeam, ball.number);
+            // Réorienter : pass/dribble spéciaux ne vont pas vers le gardien
+            if ((baseAction === "pass" || baseAction === "dribble") && ball.frontOfKeeper) {
+                // Devant le gardien, on force tir même pour pass/dribble spéciaux
+                // (pas de passe logique face au gardien)
+            } else if (baseAction === "pass") {
+                action = "special-pass";
+            } else if (baseAction === "dribble") {
+                action = "special-dribble";
+            }
+            // base_action === "shot" → reste "special", comportement inchangé
+        }
+
         state.pendingAttack = action;
         state.phase = "defense";
 
         const defTeam          = otherTeam(state.currentTeam);
-        const isKeeperChoiceUI = (action === "shot" || action === "special") && ball.frontOfKeeper;
+        const isKeeperChoiceUI = (action === "shot" || action === "special" || action === "special-pass" || action === "special-dribble") && ball.frontOfKeeper;
 
         if (!isKeeperChoiceUI) {
             const snap = state.defensePreview;
@@ -775,20 +796,36 @@ export function initMatchEngine(rootEl, config = {}) {
         };
 
         let html;
+        // Après
+        const specialMoves = roster.getSpecialMoves(state.currentTeam, ball.number).filter(m => m?.mode === "attack");
+        const specialLabel = specialMoves[0]?.label ?? "ACTION SPÉCIALE";
+
         if (action === "shot" || action === "special") {
             if (ball.frontOfKeeper) {
                 html = buildDefenseGKHTML(defTeam, roster);
                 setMessage(
-                    `${TEAMS[state.currentTeam].label} prépare un ${action === "special" ? "TIR SPÉCIAL" : "TIR"} !`,
+                    `${TEAMS[state.currentTeam].label} : ${action === "special" ? specialLabel.toUpperCase() : "TIR"} !`,
                     `${TEAMS[defTeam].label} (gardien) : Arrêt main / Poing / Special.`
                 );
             } else {
                 html = buildDefenseFieldHTML(defTeam, state.pendingDefenseContext.defenderSlot, roster);
                 setMessage(
-                    `${TEAMS[state.currentTeam].label} tente un ${action === "special" ? "TIR SPÉCIAL" : "TIR"} !`,
+                    `${TEAMS[state.currentTeam].label} : ${action === "special" ? specialLabel.toUpperCase() : "TIR"} !`,
                     `${TEAMS[defTeam].label} : Block / Intercept / Tackle / Special.`
                 );
             }
+        } else if (action === "special-pass") {
+            html = buildDefenseFieldHTML(defTeam, state.pendingDefenseContext.defenderSlot, roster);
+            setMessage(
+                `${TEAMS[state.currentTeam].label} : ${specialLabel.toUpperCase()} !`,
+                `${TEAMS[defTeam].label} : Block / Intercept / Tackle / Special.`
+            );
+        } else if (action === "special-dribble") {
+            html = buildDefenseFieldHTML(defTeam, state.pendingDefenseContext.defenderSlot, roster);
+            setMessage(
+                `${TEAMS[state.currentTeam].label} : ${specialLabel.toUpperCase()} !`,
+                `${TEAMS[defTeam].label} : Block / Intercept / Tackle / Special.`
+            );
         } else {
             html = buildDefenseFieldHTML(defTeam, state.pendingDefenseContext.defenderSlot, roster);
             setMessage(
@@ -823,7 +860,7 @@ export function initMatchEngine(rootEl, config = {}) {
             if (keeperId && !canUseSpecial(keeperId)) defense = "hands";
         }
 
-        if ((attack === "shot" || attack === "special") &&
+        if ((attack === "shot" || attack === "special" || attack === "special-pass" || attack === "special-dribble") &&
             state.pendingShotContext?.stage === "keeper") {
             resolveShotKeeperDuel(state.pendingShotContext, defense);
             state.pendingShotContext = null;
@@ -835,10 +872,12 @@ export function initMatchEngine(rootEl, config = {}) {
         const defenderPick = state.pendingDefenseContext;
         state.pendingDefenseContext = null;
 
-        if (attack === "pass")         resolvePass(attackTeam, defenseTeam, defense, defenderPick);
-        else if (attack === "dribble") resolveDribble(attackTeam, defenseTeam, defense, defenderPick);
-        else if (attack === "shot")    resolveShot(attackTeam, defenseTeam, defense, false, defenderPick);
-        else if (attack === "special") resolveShot(attackTeam, defenseTeam, defense, true,  defenderPick);
+        if (attack === "pass")              resolvePass(attackTeam, defenseTeam, defense, defenderPick, false);
+        else if (attack === "dribble")      resolveDribble(attackTeam, defenseTeam, defense, defenderPick, false);
+        else if (attack === "shot")         resolveShot(attackTeam, defenseTeam, defense, false, defenderPick);
+        else if (attack === "special")      resolveShot(attackTeam, defenseTeam, defense, true,  defenderPick);
+        else if (attack === "special-pass") resolvePass(attackTeam, defenseTeam, defense, defenderPick, true);
+        else if (attack === "special-dribble") resolveDribble(attackTeam, defenseTeam, defense, defenderPick, true);
     }
 
     // ==========================
