@@ -71,9 +71,11 @@ const topByFiltered = (getter, n = 5, filter = null) =>
 // ==========================
 //   TOP PERFORMERS
 // ==========================
-const topShooters  = computed(() => topByFiltered(p => p.perf?.offense?.goals ?? 0));
-const topPassers   = computed(() => topByFiltered(p => p.perf?.offense?.pass?.success ?? 0));
-const topDribblers = computed(() => topByFiltered(p => p.perf?.offense?.dribble?.success ?? 0));
+const isGK = (p) => p?.position?.toLowerCase().includes('goalkeeper');
+
+const topShooters  = computed(() => topByFiltered(p => p.perf?.offense?.goals ?? p.perf?.offense?.shot?.success ?? 0, 5, p => !isGK(p)));
+const topPassers   = computed(() => topByFiltered(p => p.perf?.offense?.pass?.success ?? 0, 5, p => !isGK(p)));
+const topDribblers = computed(() => topByFiltered(p => p.perf?.offense?.dribble?.success ?? 0, 5, p => !isGK(p)));
 const topDefenders = computed(() => topByFiltered(p => p.perf?.duelsWon ?? 0, 5, p => !p.position?.toLowerCase().includes('goalkeeper')));
 const topKeepers = computed(() => topByFiltered(
     p => (p.perf?.defense?.hands?.attempts ?? 0) + (p.perf?.defense?.punch?.attempts ?? 0),
@@ -96,7 +98,7 @@ const teamComparative = computed(() => {
             .map(c => c.game_player?.id ?? c.gamePlayer?.id ?? c.player?.id)
             .filter(Boolean);
 
-        const totals = { shots: 0, shotSuccess: 0, passes: 0, dribbles: 0, intercepts: 0, tackles: 0, blocks: 0, duelsWon: 0, duelsLost: 0 };
+        const totals = { shots: 0, shotSuccess: 0, passes: 0, dribbles: 0, intercepts: 0, tackles: 0, blocks: 0, saves: 0, duelsWon: 0, duelsLost: 0 };
 
         for (const pid of playerIds) {
             const s = props.playerSeasonStats?.[pid];
@@ -108,6 +110,7 @@ const teamComparative = computed(() => {
             totals.intercepts += s.defense?.intercept?.attempts ?? 0;
             totals.tackles    += s.defense?.tackle?.attempts    ?? 0;
             totals.blocks     += s.defense?.block?.attempts     ?? 0;
+            totals.saves += (s.defense?.hands?.attempts ?? 0) + (s.defense?.punch?.attempts ?? 0);
             totals.duelsWon   += s.duelsWon  ?? 0;
             totals.duelsLost  += s.duelsLost ?? 0;
         }
@@ -133,16 +136,17 @@ const myPlayersRanking = computed(() => {
     if (!props.team) return [];
 
     const categories = [
-        { label: 'Tirs réussis',   icon: '⚽', getter: p => p.perf?.offense?.shot?.success    ?? 0 },
-        { label: 'Passes réussies',icon: '🎯', getter: p => p.perf?.offense?.pass?.success    ?? 0 },
-        { label: 'Dribbles réussis',icon:'🔥', getter: p => p.perf?.offense?.dribble?.success ?? 0 },
-        { label: 'Duels gagnés',   icon: '⚔️', getter: p => p.perf?.duelsWon                 ?? 0 },
-        { label: 'Interceptions',  icon: '🛡️', getter: p => p.perf?.defense?.intercept?.success ?? 0 },
+        { label: 'Tirs réussis',    icon: '⚽', getter: p => p.perf?.offense?.goals ?? p.perf?.offense?.shot?.success ?? 0, posFilter: p => !isGK(p) },
+        { label: 'Passes réussies', icon: '🎯', getter: p => p.perf?.offense?.pass?.success    ?? 0, posFilter: p => !isGK(p) },
+        { label: 'Dribbles réussis',icon: '🔥', getter: p => p.perf?.offense?.dribble?.success ?? 0, posFilter: p => !isGK(p) },
+        { label: 'Duels gagnés',    icon: '⚔️', getter: p => p.perf?.duelsWon                  ?? 0, posFilter: p => !isGK(p) },
+        { label: 'Interceptions',   icon: '🛡️', getter: p => p.perf?.defense?.intercept?.success ?? 0, posFilter: p => !isGK(p) },
+        { label: 'Arrêts',          icon: '🧤', getter: p => (p.perf?.defense?.hands?.attempts ?? 0) + (p.perf?.defense?.punch?.attempts ?? 0), posFilter: isGK },
     ];
 
     return categories.map(cat => {
         const sorted = [...allPlayersWithStats.value]
-            .filter(p => p.perf)
+            .filter(p => p.perf && cat.posFilter(p))
             .sort((a, b) => cat.getter(b) - cat.getter(a));
 
         const myBest = sorted.find(p => p.teamId === props.team.id);
@@ -264,7 +268,6 @@ const myPlayersRanking = computed(() => {
                 <div class="flex flex-wrap gap-2">
                     <div v-for="entry in myPlayersRanking" :key="entry.label"
                          class="flex items-center gap-2 px-3 py-2 rounded-xl border border-teal-200 bg-teal-50">
-                        <span>{{ entry.icon }}</span>
                         <div class="w-6 h-6 rounded-full overflow-hidden bg-slate-200 shrink-0">
                             <img v-if="playerPhotoUrl(entry.player)" :src="playerPhotoUrl(entry.player)" class="w-full h-full object-cover" alt=""/>
                             <div v-else class="w-full h-full flex items-center justify-center text-[8px] text-slate-400">?</div>
@@ -301,6 +304,7 @@ const myPlayersRanking = computed(() => {
                                     { key: 'shotSuccess',label: '⚽ Buts' },
                                     { key: 'passes',    label: 'Passes'  },
                                     { key: 'dribbles',  label: 'Dribbles'},
+                                    { key: 'saves', label: '🧤 Arrêts' },
                                     { key: 'intercepts',label: 'Interc.' },
                                     { key: 'tackles',   label: 'Tacles'  },
                                     { key: 'blocks',    label: 'Blocks'  },
@@ -336,7 +340,7 @@ const myPlayersRanking = computed(() => {
                                 </div>
                             </td>
 
-                            <td v-for="col in ['shots','shotSuccess','passes','dribbles','intercepts','tackles','blocks','duelsWon','duelsLost']"
+                            <td v-for="col in ['shots','shotSuccess','passes','dribbles','saves','intercepts','tackles','blocks','duelsWon','duelsLost']"
                                 :key="col"
                                 class="py-2 px-2 text-right font-semibold"
                                 :class="[
