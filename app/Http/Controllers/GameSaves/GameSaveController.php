@@ -5,6 +5,7 @@ namespace App\Http\Controllers\GameSaves;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\GameSaves\GameSaveRequest;
 use App\Models\Contract;
+use App\Models\GameSaves\GameBonusCard;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameInjury;
 use App\Models\GameSaves\GameMatch;
@@ -14,6 +15,7 @@ use App\Models\GameSaves\GameSanction;
 use App\Models\GameSaves\GameTeam;
 use App\Models\Player;
 use App\Models\Team;
+use App\Services\BonusCardShopService;
 use App\Services\PlayerStatsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -264,16 +266,50 @@ class GameSaveController extends Controller
             ->groupBy('game_player_id')
             ->map(fn($cards) => $cards->count());
 
+        // ─── Bonus cards ───
+        $controlledTeamId = $gameSave->controlled_game_team_id;
+
+        $bonusCardOffers = $controlledTeamId
+            ? app(BonusCardShopService::class)->getOffersForTeam($gameSave, $controlledTeamId)
+            : [];
+
+        $bonusCardInventory = $controlledTeamId
+            ? GameBonusCard::where('game_save_id', $gameSave->id)
+                ->where('game_team_id', $controlledTeamId)
+                ->with('bonusCard')
+                ->orderByDesc('purchased_week')
+                ->get()
+                ->map(fn($c) => [
+                    'id'               => $c->id,
+                    'status'           => $c->status,
+                    'tier'             => $c->tier,
+                    'cost_paid'        => $c->cost_paid,
+                    'purchased_week'   => $c->purchased_week,
+                    'purchased_season' => $c->purchased_season,
+                    'used_week'        => $c->used_week,
+                    'used_season'      => $c->used_season,
+                    'name'             => $c->bonusCard->name,
+                    'description'      => $c->bonusCard->description,
+                    'icon'             => $c->bonusCard->icon,
+                    'target'           => $c->bonusCard->target,
+                    'execution_phase'  => $c->bonusCard->execution_phase,
+                    'effect_type'      => $c->bonusCard->effect_type,
+                    'effect_value'     => $c->bonusCard->effect_value,
+                ])
+            : collect();
+
         return Inertia::render('GameSaves/Play', [
-            'gameSave'          => $gameSave,
-            'teams'             => $gameTeams,
-            'matches'           => $matches,
-            'freePlayers'       => $freePlayers,
-            'controlledTeam'    => $controlledTeam,
-            'playerSeasonStats' => $playerSeasonStats,
-            'activeInjuries'    => $activeInjuries,
-            'activeSuspensions' => $activeSuspensions,
-            'activeYellowCards' => $activeYellowCards,
+            'gameSave'            => $gameSave,
+            'teams'               => $gameTeams,
+            'matches'             => $matches,
+            'freePlayers'         => $freePlayers,
+            'controlledTeam'      => $controlledTeam,
+            'playerSeasonStats'   => $playerSeasonStats,
+            'activeInjuries'      => $activeInjuries,
+            'activeSuspensions'   => $activeSuspensions,
+            'activeYellowCards'   => $activeYellowCards,
+            'bonusCardOffers'     => $bonusCardOffers,
+            'bonusCardInventory'  => $bonusCardInventory,
         ]);
     }
 

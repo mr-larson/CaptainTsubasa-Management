@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             TeamSeeder::class,
             PlayerSeeder::class,
             ContractSeeder::class,
+            BonusCardSeeder::class,
         ]);
     }
 }

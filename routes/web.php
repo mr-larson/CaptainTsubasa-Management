@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ContractController;
+use App\Http\Controllers\GameSaves\BonusCardController;
 use App\Http\Controllers\GameSaves\GameContractController;
 use App\Http\Controllers\GameSaves\GameMatchController;
 use App\Http\Controllers\GameSaves\GamePlayerController;
@@ -144,20 +145,29 @@ Route::middleware('auth')->group(function () {
             [GameContractController::class, 'update'])->name('contracts.update');
         Route::delete('/{gameSave}/contracts/{contract}',
             [GameContractController::class, 'destroy'])->name('contracts.destroy');
+
+        // Routes JSON pour le match engine
+        Route::post('/{gameSave}/captain-reroll/{contract}',
+            [GameMatchController::class, 'useCaptainReroll'])->name('captain-reroll.use');
+
+        Route::post('/{gameSave}/captain-reroll/{contract}/reset-action-flag',
+            [GameMatchController::class, 'resetCaptainRerollActionFlag'])->name('captain-reroll.reset-flag');
+
+        // Bonus Card
+        Route::post('/{gameSave}/bonus-cards/buy',
+            [BonusCardController::class, 'buy'])
+            ->name('bonus-cards.buy');
+
+        Route::post('/{gameSave}/bonus-cards/{gameBonusCard}/activate',
+            [BonusCardController::class, 'activate'])
+            ->name('bonus-cards.activate');
     });
 
-    // Toggle titulaire (hors préfixe game-saves pour rester simple)
+    // Toggle titulaire
     Route::patch('/game-contracts/{contract}/toggle-starter',
         [LineupController::class, 'toggleStarter'])->name('game-contracts.toggle-starter');
     Route::patch('/game-contracts/{contract}/toggle-captain',
         [LineupController::class, 'toggleCaptain'])->name('game-contracts.toggle-captain');
-
-    // Routes JSON pour le match engine
-    Route::post('/game-saves/{gameSave}/captain-reroll/{contract}',
-        [GameMatchController::class, 'useCaptainReroll'])->name('game-saves.captain-reroll.use');
-
-    Route::post('/game-saves/{gameSave}/captain-reroll/{contract}/reset-action-flag',
-        [GameMatchController::class, 'resetCaptainRerollActionFlag'])->name('game-saves.captain-reroll.reset-flag');
 
     // Match démo
     Route::get('/match/demo', fn() => Inertia::render('Match/Engine'))->name('match.demo');

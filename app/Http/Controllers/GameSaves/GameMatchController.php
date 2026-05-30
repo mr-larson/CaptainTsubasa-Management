@@ -9,7 +9,10 @@ use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
 use App\Models\GameSaves\GameInjury;
 use App\Models\GameSaves\GameSanction;
+use App\Services\AiBonusCardService;
 use App\Services\AITrainingService;
+use App\Services\BonusCardActivationService;
+use App\Services\BonusCardShopService;
 use App\Services\MatchSimulator;
 use App\Services\AITransferService;
 use App\Services\AILineupService;
@@ -196,6 +199,16 @@ class GameMatchController extends Controller
         // 9. Stamina après match
         StaminaService::applyAfterMatch($gameSave, $match);
 
+        // 10. Consommer les cartes pre_match de l'équipe contrôlée
+        $controlledTeamId = $gameSave->controlled_game_team_id;
+        if ($controlledTeamId) {
+            app(BonusCardActivationService::class)->consumePreMatchCards($gameSave, $controlledTeamId);
+        }
+
+        // 11. Générer la boutique + IA cartes pour la nouvelle semaine
+        app(BonusCardShopService::class)->generateWeeklyOffers($gameSave);
+        app(AIBonusCardService::class)->processWeek($gameSave);
+
         return redirect()->route('game-saves.play', $gameSave);
     }
 
@@ -224,6 +237,10 @@ class GameMatchController extends Controller
 
         $gameSave->week = $week + 1;
         $gameSave->save();
+
+        // Générer la boutique + IA cartes pour la nouvelle semaine
+        app(BonusCardShopService::class)->generateWeeklyOffers($gameSave);
+        app(AIBonusCardService::class)->processWeek($gameSave);
 
         return redirect()->route('game-saves.play', $gameSave);
     }

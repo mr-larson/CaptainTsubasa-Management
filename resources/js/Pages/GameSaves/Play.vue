@@ -14,6 +14,7 @@ import { useStats }     from './play/useStats.js';
 import { useTraining }  from './play/useTraining.js';
 import { useTransfers } from './play/useTransfers.js';
 import { useOtherTeam } from './play/useOtherTeam.js';
+import { useBonusCards } from './play/useBonusCards.js';
 
 // ==========================
 //   COMPOSANTS TABS
@@ -26,6 +27,7 @@ import TabStandings  from './play/TabStandings.vue';
 import TabStats      from './play/TabStats.vue';
 import TabTraining   from './play/TabTraining.vue';
 import TabTransfers  from './play/TabTransfers.vue';
+import TabBonusCards     from './play/TabBonusCards.vue';
 import TabManagement from './play/TabManagement.vue';
 
 // ==========================
@@ -41,6 +43,8 @@ const props = defineProps({
     activeInjuries:    { type: Array,  default: () => [] },
     activeSuspensions: { type: Array,  default: () => [] },
     activeYellowCards: { type: Object, default: () => ({}) },
+    bonusCardOffers:    { type: Array, default: () => [] },
+    bonusCardInventory: { type: Array, default: () => [] },
 });
 
 // ==========================
@@ -153,6 +157,23 @@ const {
     gameSave: gameSaveRef,
     teams: teamsRef,
     controlledTeamId: computed(() => teamRef.value?.id ?? null),
+});
+
+// ==========================
+//   CARTES BONUS
+// ==========================
+const bonusCardOffersRef    = computed(() => props.bonusCardOffers    ?? []);
+const bonusCardInventoryRef = computed(() => props.bonusCardInventory ?? []);
+
+const {
+    weeklyOffers, canAfford, buyCard,
+    inventory, availableCards, usedCards,
+    selectedCard, selectCard, activateCard,
+    tierColor, tierBadge, phaseLabel, targetLabel,
+} = useBonusCards({
+    gameSave: gameSaveRef,
+    bonusCardOffers:    bonusCardOffersRef,
+    bonusCardInventory: bonusCardInventoryRef,
 });
 
 // ==========================
@@ -403,10 +424,17 @@ function updateOtherPlayerNumber(playerId, number) {
                     />
 
                     <!-- ======== CARTES BONUS ======== -->
-                    <div v-else-if="activeTab === 'cards'" class="flex-1 min-h-[75vh]">
-                        <h3 class="text-lg font-semibold text-slate-700 mb-2">Cartes bonus</h3>
-                        <p class="text-sm text-slate-600">Système de cartes bonus / malus (à venir).</p>
-                    </div>
+                    <TabBonusCards v-else-if="activeTab === 'cards'"
+                                   :weeklyOffers="weeklyOffers"
+                                   :inventory="inventory"
+                                   :teamBudget="teamBudget"
+                                   :rosterWithStatus="rosterWithStatus"
+                                   :season="season"
+                                   :week="week"
+                                   :isAlreadyBought="isAlreadyBought"
+                                   @buy="buyCard"
+                                   @activate="activateCard"
+                    />
 
                     <!-- ======== GESTION ======== -->
                     <TabManagement v-else-if="activeTab === 'management'"

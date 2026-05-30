@@ -1,0 +1,170 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\BonusCard;
+use Illuminate\Database\Seeder;
+
+class BonusCardSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $cards = [
+            // ── Stamina (Self) ─────────────────────────────────
+            [
+                'name'            => 'Séance de récupération',
+                'description'     => 'Restaure 20 points de stamina à tous les joueurs de l\'effectif.',
+                'tier'            => 'bronze',
+                'target'          => 'self',
+                'execution_phase' => 'immediate',
+                'effect_type'     => 'stamina_boost',
+                'effect_value'    => ['amount' => 20],
+                'cost'            => 200,
+                'base_weight'     => 150,
+                'icon'            => '💊',
+            ],
+            [
+                'name'            => 'Stage intensif',
+                'description'     => 'Restaure 30 points de stamina à tous les joueurs de l\'effectif.',
+                'tier'            => 'silver',
+                'target'          => 'self',
+                'execution_phase' => 'immediate',
+                'effect_type'     => 'stamina_boost',
+                'effect_value'    => ['amount' => 30],
+                'cost'            => 400,
+                'base_weight'     => 100,
+                'icon'            => '🏃',
+            ],
+            [
+                'name'            => 'Préparation olympique',
+                'description'     => 'Restaure 40 points de stamina à tous les joueurs de l\'effectif.',
+                'tier'            => 'gold',
+                'target'          => 'self',
+                'execution_phase' => 'immediate',
+                'effect_type'     => 'stamina_boost',
+                'effect_value'    => ['amount' => 40],
+                'cost'            => 700,
+                'base_weight'     => 50,
+                'icon'            => '🏅',
+            ],
+
+            // ── Blessure (Player) ──────────────────────────────
+            [
+                'name'            => 'Kiné express',
+                'description'     => 'Réduit de 2 semaines la durée d\'indisponibilité d\'un joueur blessé.',
+                'tier'            => 'bronze',
+                'target'          => 'player',
+                'execution_phase' => 'immediate',
+                'effect_type'     => 'injury_reduce',
+                'effect_value'    => ['weeks' => 2],
+                'cost'            => 250,
+                'base_weight'     => 120,
+                'icon'            => '🩹',
+            ],
+            [
+                'name'            => 'Chirurgie accélérée',
+                'description'     => 'Réduit de 4 semaines la durée d\'indisponibilité d\'un joueur blessé.',
+                'tier'            => 'silver',
+                'target'          => 'player',
+                'execution_phase' => 'immediate',
+                'effect_type'     => 'injury_reduce',
+                'effect_value'    => ['weeks' => 4],
+                'cost'            => 500,
+                'base_weight'     => 80,
+                'icon'            => '🏥',
+            ],
+            [
+                'name'            => 'Miracle médical',
+                'description'     => 'Guérit immédiatement un joueur blessé, quelle que soit la durée restante.',
+                'tier'            => 'gold',
+                'target'          => 'player',
+                'execution_phase' => 'immediate',
+                'effect_type'     => 'injury_cure',
+                'effect_value'    => ['weeks' => 999],
+                'cost'            => 800,
+                'base_weight'     => 30,
+                'icon'            => '✨',
+            ],
+
+            // ── Finance ────────────────────────────────────────
+            [
+                'name'            => 'Bonus sponsors',
+                'description'     => 'Ajoute 500 € au budget de l\'équipe.',
+                'tier'            => 'bronze',
+                'target'          => 'finance',
+                'execution_phase' => 'immediate',
+                'effect_type'     => 'revenue_boost',
+                'effect_value'    => ['amount' => 500],
+                'cost'            => 150,
+                'base_weight'     => 130,
+                'icon'            => '💰',
+            ],
+            [
+                'name'            => 'Contrat TV',
+                'description'     => 'Ajoute 1000 € au budget de l\'équipe.',
+                'tier'            => 'silver',
+                'target'          => 'finance',
+                'execution_phase' => 'immediate',
+                'effect_type'     => 'revenue_boost',
+                'effect_value'    => ['amount' => 1000],
+                'cost'            => 300,
+                'base_weight'     => 90,
+                'icon'            => '📺',
+            ],
+            [
+                'name'            => 'Méga-sponsor',
+                'description'     => 'Ajoute 2000 € au budget de l\'équipe.',
+                'tier'            => 'gold',
+                'target'          => 'finance',
+                'execution_phase' => 'immediate',
+                'effect_type'     => 'revenue_boost',
+                'effect_value'    => ['amount' => 2000],
+                'cost'            => 600,
+                'base_weight'     => 40,
+                'icon'            => '🏦',
+            ],
+
+            // ── Boost match (Match / pre_match) ────────────────
+            [
+                'name'            => 'Motivation pré-match',
+                'description'     => '+5 en attaque pour tous les joueurs lors du prochain match.',
+                'tier'            => 'bronze',
+                'target'          => 'match',
+                'execution_phase' => 'pre_match',
+                'effect_type'     => 'stat_boost',
+                'effect_value'    => ['stat' => 'attack', 'amount' => 5],
+                'cost'            => 200,
+                'base_weight'     => 120,
+                'icon'            => '📣',
+            ],
+            [
+                'name'            => 'Discours du coach',
+                'description'     => '+10 en attaque pour tous les joueurs lors du prochain match.',
+                'tier'            => 'silver',
+                'target'          => 'match',
+                'execution_phase' => 'pre_match',
+                'effect_type'     => 'stat_boost',
+                'effect_value'    => ['stat' => 'attack', 'amount' => 10],
+                'cost'            => 400,
+                'base_weight'     => 80,
+                'icon'            => '🎤',
+            ],
+            [
+                'name'            => 'Mental d\'acier',
+                'description'     => '+15 en attaque et +20 stamina pour tous les joueurs lors du prochain match.',
+                'tier'            => 'gold',
+                'target'          => 'match',
+                'execution_phase' => 'pre_match',
+                'effect_type'     => 'stat_boost_and_stamina',
+                'effect_value'    => ['stat' => 'attack', 'amount' => 15, 'stamina_bonus' => 20],
+                'cost'            => 700,
+                'base_weight'     => 30,
+                'icon'            => '🔥',
+            ],
+        ];
+
+        foreach ($cards as $card) {
+            BonusCard::firstOrCreate(['name' => $card['name']], $card);
+        }
+    }
+}
