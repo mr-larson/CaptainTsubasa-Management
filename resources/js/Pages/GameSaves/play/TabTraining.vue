@@ -28,9 +28,11 @@ const props = defineProps({
     selectedTrainings:           { type: Array,    required: true },
     canSubmitTraining:           { type: Boolean,  required: true },
     aiTrainingEntries:           { type: Array,    default: () => [] },
+    aiCurrentDisplayWeek: { type: Number, default: 1 },
+    aiWeekMax:            { type: Number, default: 1 },
 });
 
-const emit = defineEmits(['add-slot', 'remove-slot', 'submit-training']);
+const emit = defineEmits(['add-slot', 'remove-slot', 'submit-training', 'prev-ai-week', 'next-ai-week']);
 
 const playerPhotoUrl = (p) => {
     if (!p) return null;
@@ -66,6 +68,36 @@ const manualEntries = computed(() => {
 
 const playerForManualEntry = (entry) =>
     props.roster.find(p => Number(p.id) === Number(entry.player_id)) ?? null;
+
+// Stats autorisées par poste (aligné avec AITrainingService)
+const STATS_BY_POSITION = {
+    GK:      ['hand_save', 'punch_save', 'defense', 'block', 'stamina', 'speed'],
+    DEF:     ['defense', 'tackle', 'block', 'intercept', 'stamina', 'speed'],
+    MDF:     ['pass', 'intercept', 'tackle', 'defense', 'attack', 'stamina'],
+    MOF:     ['pass', 'dribble', 'attack', 'intercept', 'shot', 'stamina'],
+    ATT:     ['shot', 'dribble', 'attack', 'pass', 'speed', 'stamina'],
+    DEFAULT: ['speed', 'attack', 'defense', 'pass', 'dribble', 'shot', 'tackle', 'intercept'],
+};
+
+const positionGroup = (position) => {
+    const p = (position ?? '').toUpperCase();
+    if (p.includes('GK') || p.includes('GOAL'))    return 'GK';
+    if (p.includes('DEF') || p.includes('BACK'))   return 'DEF';
+    if (p.includes('MDF') || p.includes('DEFENSIVE MID')) return 'MDF';
+    if (p.includes('MOF') || p.includes('MID'))    return 'MOF';
+    if (p.includes('ATT') || p.includes('FOR') || p.includes('FORWARD')) return 'ATT';
+    return 'DEFAULT';
+};
+
+// Stats filtrées selon le joueur sélectionné dans un slot
+const statsForSlot = (slot) => {
+    if (!slot?.player_id) return props.availableTrainingStats;
+    const player = props.roster.find(p => Number(p.id) === Number(slot.player_id));
+    if (!player) return props.availableTrainingStats;
+    const allowed = STATS_BY_POSITION[positionGroup(player.position)] ?? STATS_BY_POSITION.DEFAULT;
+    return props.availableTrainingStats.filter(s => allowed.includes(s.key));
+};
+
 </script>
 
 <template>
@@ -177,7 +209,7 @@ const playerForManualEntry = (entry) =>
                             </select>
                             <select v-model="slot.stat"
                                     class="w-36 border border-slate-300 rounded-lg px-3 py-1.5 text-sm bg-white focus:ring-2 focus:ring-teal-300 focus:outline-none">
-                                <option v-for="s in availableTrainingStats" :key="s.key" :value="s.key">
+                                <option v-for="s in statsForSlot(slot)" :key="s.key" :value="s.key">
                                     {{ s.label }}
                                 </option>
                             </select>

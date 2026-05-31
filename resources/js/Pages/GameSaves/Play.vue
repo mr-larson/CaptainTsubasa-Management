@@ -130,7 +130,7 @@ const {
     hasPlayerBeenTrainedThisWeek, availableTrainingStats,
     selectedTrainings, addTrainingSlot, removeTrainingSlot,
     canSubmitTraining, submitTraining,
-    aiTrainingEntries,
+    aiTrainingEntries, aiCurrentDisplayWeek, aiWeekMax, prevAiWeek, nextAiWeek,
 } = useTraining({ gameSave: gameSaveRef, season, week });
 
 const {
@@ -398,9 +398,13 @@ function updateOtherPlayerNumber(playerId, number) {
                                  :selectedTrainings="selectedTrainings"
                                  :canSubmitTraining="canSubmitTraining"
                                  :aiTrainingEntries="aiTrainingEntries"
+                                 :aiCurrentDisplayWeek="aiCurrentDisplayWeek"
+                                 :aiWeekMax="aiWeekMax"
                                  @add-slot="addTrainingSlot"
                                  @remove-slot="removeTrainingSlot"
                                  @submit-training="submitTraining"
+                                 @prev-ai-week="prevAiWeek"
+                                 @next-ai-week="nextAiWeek"
                     />
 
                     <!-- ======== TRANSFERTS ======== -->

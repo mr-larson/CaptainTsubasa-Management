@@ -100,7 +100,7 @@ class AITrainingService
         $contracts = $team->contracts->filter(fn($c) => $c->gamePlayer !== null);
         if ($contracts->isEmpty()) return [];
 
-        $minStamina  = config('training.min_stamina_to_train', 10);
+        $minStamina  = config('training.min_stamina_to_train', 40);
         $staminaCost = config('training.stamina_cost', 5);
         $statMin     = config('training.stat_min', 0);
         $statMax     = config('training.stat_max', 100);
