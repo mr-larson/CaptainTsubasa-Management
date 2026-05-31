@@ -4,7 +4,7 @@
 //   CONSTANTES TIMING
 // ==========================
 export const ANIM_MS            = 250;
-export const AI_THINK_MS        = 150;
+export const AI_THINK_MS        = 200;
 export const GK_HOLD_MS         = 300;
 export const ACTION_BAR_FADE_MS = 150;
 export const DIE_SIDES          = 20;
@@ -183,12 +183,12 @@ export const MAX_ZONE_INDEX       = ZONE_BOUNDS_INTERNAL.length - 2; // = 4
 export const STATS = {
     attack: {
         shot:    { power: 10, cost: 10 },
-        pass:    { power: 10, cost: 5 },
+        pass:    { power: 10, cost: 6 },
         dribble: { power: 10, cost: 4  },
         special: { power: 12, cost: 15 },
     },
     defenseField: {
-        block:           { power: 10, cost: 4  },
+        block:           { power: 10, cost: 5  },
         intercept:       { power: 10, cost: 3  },
         tackle:          { power: 10, cost: 3  },
         "field-special": { power: 12, cost: 10 },
