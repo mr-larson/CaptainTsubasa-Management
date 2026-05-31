@@ -13,28 +13,46 @@ use Illuminate\Support\Facades\DB;
 
 class AITransferService
 {
-    // Nombre max de recrutements IA par semaine et par équipe
+    // Effectif cible idéal
+    private const TARGET_SQUAD = 18;
+    private const SQUAD_EMERGENCY = 11; // 100% budget
+    private const SQUAD_LOW       = 13; // 85% budget
+    // Sinon : 70% budget
+
+    // Max recrutements par semaine par équipe
     private const MAX_SIGNINGS_PER_WEEK = 2;
 
-    // Seuil d'effectif minimum — en dessous l'équipe recrute en priorité
-    private const MIN_SQUAD_SIZE = 11;
+    // Seuil de stamina moyenne des titulaires pour recruter en urgence fatigue
+    private const FATIGUE_THRESHOLD = 37;
 
-    // Stats pour calculer l'overall d'un joueur
+    // Stats pour l'overall
     private const OVERALL_KEYS = [
         'speed', 'stamina', 'attack', 'defense',
         'shot', 'pass', 'dribble', 'block', 'intercept', 'tackle',
     ];
 
+    // Composition cible par groupe de poste
+    // [titulaires, remplaçants] => total cible
+    private const TARGET_BY_POSITION = [
+        'GK'  => 2,  // 1 tit + 1 remplaçant
+        'DEF' => 6,  // 4 tit + 2 remplaçants
+        'MID' => 6,  // 4 tit + 2 remplaçants
+        'ATT' => 4,  // 2 tit + 2 remplaçants
+    ];
+
+    // Priorité de recrutement par poste (plus bas = plus urgent)
+    private const POSITION_PRIORITY = [
+        'GK'  => 1,
+        'DEF' => 2,
+        'MID' => 2,
+        'ATT' => 2,
+    ];
+
     public function recruitForWeek(GameSave $gameSave): void
     {
-        $week   = $gameSave->week ?? 1;
-        $season = $gameSave->season ?? 1;
-
-        // Calcul de la durée de saison pour les contrats
-        $seasonLength = $this->getSeasonLength($gameSave);
+        $week           = $gameSave->week ?? 1;
+        $seasonLength   = $this->getSeasonLength($gameSave);
         $remainingWeeks = max(1, $seasonLength - $week + 1);
-
-        // Équipes IA (toutes sauf l'équipe contrôlée)
         $controlledTeamId = $gameSave->controlled_game_team_id;
 
         $aiTeams = GameTeam::where('game_save_id', $gameSave->id)
@@ -42,14 +60,12 @@ class AITransferService
             ->with(['contracts.gamePlayer'])
             ->get();
 
-        // Joueurs libres disponibles (sans contrat dans cette save)
         $freePlayers = GamePlayer::where('game_save_id', $gameSave->id)
             ->whereDoesntHave('contracts', fn($q) => $q->where('game_save_id', $gameSave->id))
             ->get();
 
         if ($freePlayers->isEmpty()) return;
 
-        // Joueurs indisponibles (blessés/suspendus) cette semaine
         $injuredIds = GameInjury::where('game_save_id', $gameSave->id)
             ->where('week_return', '>', $week)
             ->pluck('game_player_id')->toArray();
@@ -64,7 +80,7 @@ class AITransferService
         foreach ($aiTeams as $team) {
             $this->recruitForTeam($team, $freePlayers, $gameSave, $remainingWeeks, $unavailableIds);
 
-            // Rafraîchir la liste des joueurs libres après chaque équipe
+            // Rafraîchir les joueurs libres après chaque équipe
             $freePlayers = GamePlayer::where('game_save_id', $gameSave->id)
                 ->whereDoesntHave('contracts', fn($q) => $q->where('game_save_id', $gameSave->id))
                 ->get();
@@ -84,68 +100,77 @@ class AITransferService
         $squadPlayers = $contracts->map(fn($c) => $c->gamePlayer)->filter();
         $squadSize    = $squadPlayers->count();
         $starterCount = $contracts->where('is_starter', true)->count();
+        $budget       = $team->budget ?? 0;
 
-        // Titulaires indisponibles cette semaine
-        $unavailableStarters = $contracts->filter(fn($c) =>
-            $c->is_starter && in_array($c->gamePlayer?->id, $unavailableIds)
-        )->count();
+        // Ne jamais dépasser 18 joueurs
+        if ($squadSize >= self::TARGET_SQUAD) return;
 
-        // Analyse des besoins (inclut les indisponibles)
-        $needs = $this->analyzeNeeds($squadPlayers, $squadSize, $starterCount, $unavailableStarters);
+        // Calcul du budget disponible selon taille effectif
+        $budgetRatio = match(true) {
+            $squadSize < self::SQUAD_EMERGENCY => 1.0,
+            $squadSize < self::SQUAD_LOW       => 0.85,
+            default                            => 0.70,
+        };
+        $availableBudget = (int) floor($budget * $budgetRatio);
+
+        if ($availableBudget <= 0) return;
+
+        // Construire la liste de priorités de recrutement
+        $needs = $this->buildRecruitmentNeeds(
+            $contracts, $squadPlayers, $squadSize, $unavailableIds
+        );
 
         if (empty($needs)) return;
 
-        $budget        = $team->budget ?? 0;
-        $signingsMade  = 0;
+        $signingsMade = 0;
 
         foreach ($needs as $need) {
             if ($signingsMade >= self::MAX_SIGNINGS_PER_WEEK) break;
-            if ($budget <= 0) break;
+            if ($availableBudget <= 0) break;
+            if ($squadSize >= self::TARGET_SQUAD) break;
 
-            // Trouver le meilleur joueur libre pour ce besoin
             $candidate = $this->findBestCandidate(
                 $freePlayers,
                 $need['position_group'],
                 $squadPlayers,
-                $budget,
+                $availableBudget,
                 $remainingWeeks
             );
 
             if (!$candidate) continue;
 
-            // Calculer le salaire offert (basé sur le coût du joueur, ajusté au budget)
-            $salary     = min($candidate->cost ?? 0, (int) ($budget / max($remainingWeeks, 1)));
-            $salary     = max(0, $salary);
-            $totalCost  = $salary * $remainingWeeks;
+            $salary    = min($candidate->cost ?? 0, (int) ($availableBudget / max($remainingWeeks, 1)));
+            $salary    = max(0, $salary);
+            $totalCost = $salary * $remainingWeeks;
 
-            if ($totalCost > $budget && $salary > 0) continue;
+            if ($totalCost > $availableBudget && $salary > 0) continue;
 
-            // Signer le contrat
             $isStarter = $starterCount < 11;
 
             DB::transaction(function () use ($gameSave, $team, $candidate, $salary, $remainingWeeks, $isStarter) {
                 GameContract::create([
-                    'game_save_id'   => $gameSave->id,
-                    'game_team_id'   => $team->id,
-                    'game_player_id' => $candidate->id,
-                    'salary'         => $salary,
-                    'start_week'     => $gameSave->week ?? 1,
-                    'end_week'       => ($gameSave->week ?? 1) + $remainingWeeks - 1,
-                    'is_starter'     => $isStarter,
+                    'game_save_id'                    => $gameSave->id,
+                    'game_team_id'                    => $team->id,
+                    'game_player_id'                  => $candidate->id,
+                    'salary'                          => $salary,
+                    'start_week'                      => $gameSave->week ?? 1,
+                    'end_week'                        => ($gameSave->week ?? 1) + $remainingWeeks - 1,
+                    'is_starter'                      => $isStarter,
+                    'is_captain'                      => false,
+                    'captain_rerolls_remaining'       => 3,
+                    'captain_reroll_used_this_action' => false,
                 ]);
 
-                // Déduire du budget
                 $team->budget = max(0, ($team->budget ?? 0) - ($salary * $remainingWeeks));
                 $team->save();
             });
 
-            // Mettre à jour le tracking local
             $squadPlayers->push($candidate);
-            $budget -= $totalCost;
+            $availableBudget -= $totalCost;
+            $budget          -= $totalCost;
+            $squadSize++;
             $signingsMade++;
             $starterCount += $isStarter ? 1 : 0;
-
-            // Retirer ce joueur de la liste des libres pour les prochaines équipes
             $freePlayers = $freePlayers->reject(fn($p) => $p->id === $candidate->id);
         }
     }
@@ -155,76 +180,83 @@ class AITransferService
     // ==========================
 
     /**
-     * Retourne une liste de besoins prioritaires pour l'équipe.
-     * Chaque besoin = ['position_group' => 'GK'|'DEF'|'MID'|'ATT', 'priority' => int]
+     * Construit une liste ordonnée de besoins de recrutement.
+     * Prend en compte :
+     * - La composition cible par poste
+     * - Les indisponibles (blessés/suspendus)
+     * - La fatigue accrue des titulaires
      */
-    protected function analyzeNeeds(Collection $players, int $squadSize, int $starterCount, int $unavailableStarters = 0): array
-    {
+    protected function buildRecruitmentNeeds(
+        Collection $contracts,
+        Collection $squadPlayers,
+        int $squadSize,
+        array $unavailableIds
+    ): array {
         $needs = [];
 
-        // Besoin 1 : effectif trop petit
-        if ($squadSize < self::MIN_SQUAD_SIZE) {
-            // Cherche le poste le plus manquant
-            $missing = $this->getMissingPositions($players);
-            foreach ($missing as $pos => $count) {
-                $needs[] = ['position_group' => $pos, 'priority' => 10 + $count];
-            }
-            return $this->sortNeeds($needs);
-        }
-
-        // Besoin 2 : titulaires indisponibles → recruter au même poste
-        if ($unavailableStarters > 0) {
-            $missing = $this->getMissingPositions($players);
-            foreach ($missing as $pos => $count) {
-                $needs[] = ['position_group' => $pos, 'priority' => 8 + $count];
-            }
-            if (empty($needs)) {
-                $needs[] = ['position_group' => 'ANY', 'priority' => 7];
-            }
-        }
-
-        // Besoin 3 : pas assez de titulaires (< 11)
-        if ($starterCount < 11) {
-            $missing = $this->getMissingPositions($players);
-            foreach ($missing as $pos => $count) {
-                $needs[] = ['position_group' => $pos, 'priority' => 5 + $count];
-            }
-        }
-
-        // Besoin 4 : overall de l'équipe trop bas (< 45 de moyenne)
-        $avgOverall = $this->avgOverall($players);
-        if ($avgOverall < 45 && empty($needs)) {
-            // Recrute un joueur fort peu importe le poste
-            $needs[] = ['position_group' => 'ANY', 'priority' => 3];
-        }
-
-        return $this->sortNeeds($needs);
-    }
-
-    protected function getMissingPositions(Collection $players): array
-    {
-        $counts = ['GK' => 0, 'DEF' => 0, 'MID' => 0, 'ATT' => 0];
-
-        foreach ($players as $p) {
+        // Compter les joueurs par poste
+        $countByPos = ['GK' => 0, 'DEF' => 0, 'MID' => 0, 'ATT' => 0];
+        foreach ($squadPlayers as $p) {
             $g = $this->positionGroup($p->position ?? '');
-            if (isset($counts[$g])) $counts[$g]++;
+            if (isset($countByPos[$g])) $countByPos[$g]++;
         }
 
-        $ideal  = ['GK' => 1, 'DEF' => 4, 'MID' => 4, 'ATT' => 2];
-        $missing = [];
-
-        foreach ($ideal as $pos => $target) {
-            if ($counts[$pos] < $target) {
-                $missing[$pos] = $target - $counts[$pos];
+        // Priorité 1 : postes manquants par rapport à la cible
+        foreach (self::TARGET_BY_POSITION as $pos => $target) {
+            $current = $countByPos[$pos] ?? 0;
+            if ($current < $target) {
+                $missing  = $target - $current;
+                $priority = self::POSITION_PRIORITY[$pos] ?? 3;
+                // GK remplaçant manquant = priorité absolue
+                if ($pos === 'GK' && $current === 0) $priority = 0; // pas de GK du tout
+                if ($pos === 'GK' && $current === 1) $priority = 1; // GK mais pas de remplaçant
+                for ($i = 0; $i < $missing; $i++) {
+                    $needs[] = ['position_group' => $pos, 'priority' => $priority];
+                }
             }
         }
 
-        return $missing;
-    }
+        // Priorité 2 : titulaires indisponibles → recruter même poste
+        $unavailableStarters = $contracts->filter(fn($c) =>
+            $c->is_starter && in_array($c->gamePlayer?->id, $unavailableIds)
+        );
+        foreach ($unavailableStarters as $c) {
+            $pos = $this->positionGroup($c->gamePlayer->position ?? '');
+            // Seulement si pas déjà couvert par un remplaçant au même poste
+            $subs = $contracts->filter(fn($sub) =>
+                !$sub->is_starter &&
+                $this->positionGroup($sub->gamePlayer?->position ?? '') === $pos
+            );
+            if ($subs->isEmpty()) {
+                $needs[] = ['position_group' => $pos, 'priority' => 1];
+            }
+        }
 
-    protected function sortNeeds(array $needs): array
-    {
-        usort($needs, fn($a, $b) => $b['priority'] - $a['priority']);
+        // Priorité 3 : fatigue accrue des titulaires → recruter si < seuil
+        $starters       = $contracts->where('is_starter', true)->filter(fn($c) => $c->gamePlayer !== null);
+        $avgStamina     = $starters->avg(fn($c) => $c->gamePlayer->stamina ?? 100) ?? 100;
+        $maxStamina     = $starters->avg(fn($c) => $c->gamePlayer->stamina ?? 100) ?? 100; // approximation
+        $staminaPercent = $maxStamina > 0 ? ($avgStamina / 100) * 100 : 100;
+
+        if ($staminaPercent <= self::FATIGUE_THRESHOLD && $squadSize < self::TARGET_SQUAD) {
+            // Recruter un joueur de renfort au poste le plus fatigué
+            $mostFatiguedPos = $starters
+                ->groupBy(fn($c) => $this->positionGroup($c->gamePlayer->position ?? ''))
+                ->map(fn($group) => $group->avg(fn($c) => $c->gamePlayer->stamina ?? 100))
+                ->sortKeys()
+                ->keys()
+                ->first();
+
+            if ($mostFatiguedPos) {
+                $needs[] = ['position_group' => $mostFatiguedPos, 'priority' => 4];
+            }
+        }
+
+        if (empty($needs)) return [];
+
+        // Dédupliquer et trier par priorité
+        usort($needs, fn($a, $b) => $a['priority'] - $b['priority']);
+
         return $needs;
     }
 
@@ -242,26 +274,21 @@ class AITransferService
         $teamAvgOverall = $this->avgOverall($squadPlayers);
 
         $candidates = $freePlayers->filter(function ($p) use ($positionGroup, $budget, $remainingWeeks) {
-            // Filtre poste
             if ($positionGroup !== 'ANY' && $this->positionGroup($p->position ?? '') !== $positionGroup) {
                 return false;
             }
-            // Filtre budget : le coût total ne dépasse pas le budget
             $salary    = min($p->cost ?? 0, (int) ($budget / max($remainingWeeks, 1)));
             $totalCost = $salary * $remainingWeeks;
             return $totalCost <= $budget;
         });
 
-        if ($candidates->isEmpty()) {
-            // Si aucun candidat au bon poste, chercher n'importe quel poste
-            if ($positionGroup !== 'ANY') {
-                return $this->findBestCandidate($freePlayers, 'ANY', $squadPlayers, $budget, $remainingWeeks);
-            }
-            return null;
+        if ($candidates->isEmpty() && $positionGroup !== 'ANY') {
+            return $this->findBestCandidate($freePlayers, 'ANY', $squadPlayers, $budget, $remainingWeeks);
         }
 
-        // Choisir le joueur dont l'overall est le plus proche de la moyenne de l'équipe
-        // (évite de sur-recruter ou de prendre des joueurs trop faibles)
+        if ($candidates->isEmpty()) return null;
+
+        // Choisir le joueur dont l'overall est le plus proche de la moyenne équipe
         return $candidates
             ->sortBy(fn($p) => abs($this->overallOf($p) - $teamAvgOverall))
             ->first();
@@ -278,15 +305,12 @@ class AITransferService
         if (str_contains($p, 'DEF') || str_contains($p, 'BACK'))   return 'DEF';
         if (str_contains($p, 'MDF') || str_contains($p, 'MID') || str_contains($p, 'MOF')) return 'MID';
         if (str_contains($p, 'ATT') || str_contains($p, 'FOR'))    return 'ATT';
-        return 'MID'; // fallback
+        return 'MID';
     }
 
     protected function overallOf(GamePlayer $player): float
     {
-        $values = array_map(
-            fn($k) => (int) ($player->{$k} ?? 0),
-            self::OVERALL_KEYS
-        );
+        $values = array_map(fn($k) => (int) ($player->{$k} ?? 0), self::OVERALL_KEYS);
         $values = array_filter($values, fn($v) => $v > 0);
         if (empty($values)) return 0;
         return array_sum($values) / count($values);
