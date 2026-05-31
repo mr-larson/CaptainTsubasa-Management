@@ -85,43 +85,58 @@ export function buildFieldDuelBreakdown({
                                             attackScore, defenseScore,
                                             clearanceBonus = 0, meta = null,
                                             captainReroll = false,
+                                            homeBonus = 0,
+                                            homeSide = null,       // 'attack' | 'defense' | null
+                                            critWinner = null,
                                         }) {
-    const aTag      = aRoll.critSuccess ? "20!" : (aRoll.critFail ? "1!" : String(aRoll.roll));
-    const dTag      = dRoll.critSuccess ? "20!" : (dRoll.critFail ? "1!" : String(dRoll.roll));
     const goodBonus = DUEL_RULES.GOOD_COUNTER_BONUS   ?? 0;
     const genBonus  = DUEL_RULES.GENERIC_ATTACK_BONUS ?? 0;
     const diff      = attackScore - defenseScore;
 
-    // Libellé pour le 2d20 advantage
-    const aDisplayTag = aRoll.isAdvantage
-        ? `2d20(${aRoll.roll1},${aRoll.roll2})=${aRoll.roll}${aRoll.critSuccess ? '!' : ''}`
-        : aTag;
+    // Tag dé — affiche les deux dés si advantage (2d20)
+    const aTag = aRoll.isAdvantage
+        ? `2d20(${aRoll.roll1},${aRoll.roll2})→${aRoll.roll}${aRoll.critSuccess ? '!' : ''}`
+        : (aRoll.critSuccess ? "20!" : (aRoll.critFail ? "1!" : String(aRoll.roll)));
+    const dTag = dRoll.isAdvantage
+        ? `2d20(${dRoll.roll1},${dRoll.roll2})→${dRoll.roll}${dRoll.critSuccess ? '!' : ''}`
+        : (dRoll.critSuccess ? "20!" : (dRoll.critFail ? "1!" : String(dRoll.roll)));
 
     return {
         meta,
         captainReroll,
-        rolls:   { aTag: aDisplayTag, dTag, aBonus: aRoll.bonus, dBonus: dRoll.bonus },
+        rolls: { aTag, dTag, aBonus: aRoll.bonus, dBonus: dRoll.bonus },
         attack: {
-            base: attackBaseRaw, staminaFactor: attackStamF,
+            base: attackBaseRaw,
+            staminaFactor: attackStamF,
             additions: [
-                ...(clearanceBonus ? [{ label: "Clearance bonus", value: `+ ${Number(clearanceBonus).toFixed(2)}` }] : []),
-                ...(captainReroll  ? [{ label: "👑 Captain Reroll", value: "Advantage!" }] : []),
-                { label: isGood ? "X Mauvais contre" : "✓ Bonus attaque", value: isGood ? `—` : `+ ${genBonus}` },
+                { label: "🎲 Bonus dé", value: `+ ${aRoll.bonus.toFixed(1)}` },
+                ...(!isGood ? [{ label: "⚔️ Bonus attaque", value: `+ ${genBonus.toFixed(1)}` }] : []),
+                ...(clearanceBonus ? [{ label: "💨 Dégagement", value: `+ ${Number(clearanceBonus).toFixed(1)}` }] : []),
+                ...(captainReroll  ? [{ label: "👑 Reroll capitaine", value: "2d20 avantage" }] : []),
+                ...(homeSide === 'attack' && homeBonus ? [{ label: "🏠 Avantage domicile", value: `+ ${Number(homeBonus).toFixed(1)}` }] : []),
             ],
             total: attackScore,
         },
         defense: {
-            base: defenseBaseRaw, staminaFactor: defenseStamF,
+            base: defenseBaseRaw,
+            staminaFactor: defenseStamF,
             additions: [
-                { label: isGood ? "✓ Bon contre" : "X Mauvais choix", value: isGood ? `+ ${goodBonus}` : "—" },
+                { label: "🎲 Bonus dé", value: `+ ${dRoll.bonus.toFixed(1)}` },
+                ...(isGood
+                        ? [{ label: "✅ Bon contre", value: `+ ${goodBonus.toFixed(1)}` }]
+                        : [{ label: "❌ Mauvais contre", value: "—" }]
+                ),
+                ...(homeSide === 'defense' && homeBonus ? [{ label: "🏠 Avantage domicile", value: `+ ${Number(homeBonus).toFixed(1)}` }] : []),
             ],
             total: defenseScore,
         },
         result: {
-            bonusRuleLabel: isGood ? "Bon contre (+2 défense)" : "Mauvais contre (+2 attaque)",
-            critWinner: null,
+            bonusRuleLabel: isGood
+                ? `Bon contre (+${goodBonus} défense)`
+                : `Mauvais contre (+${genBonus} attaque)`,
+            critWinner,
             diff,
-            winner: diff > 0 ? "attack" : diff < 0 ? "defense" : "tie",
+            winner: critWinner ?? (diff > 0 ? "attack" : diff < 0 ? "defense" : "tie"),
         },
     };
 }
@@ -187,39 +202,69 @@ function formatBreakdownHTML(b) {
     const row     = (label, value) => `<div class="dt-row"><div class="dt-label">${label}</div><div class="dt-value">${value}</div></div>`;
     const section = (title, inner) => `<div class="dt-section"><div class="dt-title">${title}</div>${inner}</div>`;
 
-    const resultLine = b.result?.critWinner
-        ? `Crit: <b>${String(b.result.critWinner).toUpperCase()}</b>`
-        : `Diff: <b>${Number(b.result?.diff ?? 0).toFixed(2)}</b> → <b>${String(b.result?.winner ?? "—").toUpperCase()}</b>`;
+    // Résultat avec couleur
+    const winner      = b.result?.critWinner ?? b.result?.winner ?? "tie";
+    const winnerLabel = winner === "attack"  ? "✓ Attaque gagne"
+        : winner === "defense" ? "✗ Défense gagne"
+            : "= Égalité";
+    const winnerColor = winner === "attack"  ? "#22c55e"
+        : winner === "defense" ? "#ef4444"
+            : "#94a3b8";
 
+    const resultLine = b.result?.critWinner
+        ? `<span style="color:${winnerColor};font-weight:700">CRITIQUE — ${winnerLabel}</span>`
+        : `<span style="color:${winnerColor};font-weight:700">${winnerLabel}</span>`
+        + ` <span style="color:#94a3b8">(diff: ${Number(b.result?.diff ?? 0).toFixed(1)})</span>`;
+
+    // Badge captain reroll
+    const rerollBadge = b.captainReroll
+        ? `<div style="background:#f59e0b;color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;margin-bottom:6px;text-align:center;letter-spacing:0.05em;">👑 CAPTAIN REROLL — 2d20 Avantage</div>`
+        : "";
+
+    // Contexte joueurs
     let contextHTML = "";
     if (b.meta?.attacker) {
-        const a = b.meta.attacker;
-        const d = b.meta.defender;
-        const fmt = (x) => [x?.number != null ? `#${x.number}` : null, x?.name, x?.actionLabel ? `— ${x.actionLabel}` : null].filter(Boolean).join(" ");
-        contextHTML = section("👤 Contexte", [row("Attaquant", fmt(a)), row("Défenseur", d ? fmt(d) : "—")].join(""));
+        const a   = b.meta.attacker;
+        const d   = b.meta.defender;
+        const fmt = (x) => [
+            x?.number != null ? `<span style="color:#94a3b8">#${x.number}</span>` : null,
+            x?.name ? `<b>${x.name}</b>` : null,
+            x?.actionLabel ? `<span style="color:#64748b"> — ${x.actionLabel}</span>` : null,
+        ].filter(Boolean).join(" ");
+        contextHTML = section("👤 Joueurs", [
+            row("Attaquant", fmt(a)),
+            row("Défenseur", d ? fmt(d) : `<span style="color:#94a3b8">—</span>`),
+        ].join(""));
     }
 
+    // Calcul intermédiaire affiché
+    const aBase    = Number(b.attack?.base  ?? 0);
+    const aStam    = Number(b.attack?.staminaFactor ?? 1);
+    const dBase    = Number(b.defense?.base ?? 0);
+    const dStam    = Number(b.defense?.staminaFactor ?? 1);
+
     return `<div class="dt-wrap">
+        ${rerollBadge}
         ${contextHTML}
-        ${section("🎲 Jets", [
-        row("Attaque d20",  `${b.rolls.aTag} (bonus +${Number(b.rolls.aBonus ?? 0).toFixed(1)})`),
-        row("Défense d20",  `${b.rolls.dTag} (bonus +${Number(b.rolls.dBonus ?? 0).toFixed(1)})`),
+        ${section("🎲 Jets de dés", [
+        row("Attaque", `<b style="font-size:12px">${b.rolls?.aTag ?? "?"}</b> → +${Number(b.rolls?.aBonus ?? 0).toFixed(1)}`),
+        row("Défense", `<b style="font-size:12px">${b.rolls?.dTag ?? "?"}</b> → +${Number(b.rolls?.dBonus ?? 0).toFixed(1)}`),
     ].join(""))}
         ${section("⚔️ Attaque", [
-        row("Base",           Number(b.attack.base  ?? 0).toFixed(2)),
-        row("Stamina factor", `× ${Number(b.attack.staminaFactor ?? 1).toFixed(2)}`),
-        ...(b.attack.additions  || []).map(x => row(x.label, x.value)),
-        row("Total attaque",  `<b>${Number(b.attack.total  ?? 0).toFixed(2)}</b>`),
+        row("Base", `${aBase.toFixed(1)}`),
+        row("× Stamina", `${aStam.toFixed(2)} = <b>${(aBase * aStam).toFixed(1)}</b>`),
+        ...(b.attack?.additions || []).map(x => row(x.label, `<span style="color:#0ea5e9">${x.value}</span>`)),
+        row("Total", `<b style="font-size:12px;color:#1e293b">${Number(b.attack?.total ?? 0).toFixed(1)}</b>`),
     ].join(""))}
         ${section("🛡️ Défense", [
-        row("Base",           Number(b.defense.base ?? 0).toFixed(2)),
-        row("Stamina factor", `× ${Number(b.defense.staminaFactor ?? 1).toFixed(2)}`),
-        ...(b.defense.additions || []).map(x => row(x.label, x.value)),
-        row("Total défense",  `<b>${Number(b.defense.total ?? 0).toFixed(2)}</b>`),
+        row("Base", `${dBase.toFixed(1)}`),
+        row("× Stamina", `${dStam.toFixed(2)} = <b>${(dBase * dStam).toFixed(1)}</b>`),
+        ...(b.defense?.additions || []).map(x => row(x.label, `<span style="color:#8b5cf6">${x.value}</span>`)),
+        row("Total", `<b style="font-size:12px;color:#1e293b">${Number(b.defense?.total ?? 0).toFixed(1)}</b>`),
     ].join(""))}
         ${section("✅ Résultat", [
-        row("Règle bonus", b.result?.bonusRuleLabel || "—"),
-        row("Issue",       resultLine),
+        row("Règle RPS", b.result?.bonusRuleLabel || "—"),
+        row("Issue", resultLine),
     ].join(""))}
     </div>`;
 }

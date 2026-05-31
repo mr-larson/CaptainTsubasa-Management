@@ -93,6 +93,7 @@ class GameMatchController extends Controller
                 'isControlledHome' => $isControlledHome,
 
                 'homeTeamId' => $match->home_team_id,
+                'internalIsHome' => $internalTeam->id === $match->home_team_id,
                 'awayTeamId' => $match->away_team_id,
 
                 'sides' => [

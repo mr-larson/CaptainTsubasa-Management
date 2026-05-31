@@ -41,7 +41,8 @@ let _isAITeam                    = null;
 let _canUseSpecial               = null;
 let _markSpecialUsed             = null;
 let _bindActionButtons           = null;
-let _resolveFoulOutcome          = null;
+let _resolveFoulOutcome = null;
+let _homeTeam           = null;
 
 export function initResolversModule({
                                         state, roster, ui, TEAMS, rootEl, basePos,
@@ -67,6 +68,8 @@ export function initResolversModule({
     _markSpecialUsed             = markSpecialUsed;
     _bindActionButtons           = bindActionButtons;
     _resolveFoulOutcome          = resolveFoulOutcome ?? null;
+    _homeTeam = state.homeTeam ?? 'internal';
+
 }
 
 // -----------------------------------------------------------
@@ -324,12 +327,16 @@ function doReroll(ctx) {
         _roster, TEXTS
     );
 
+    const HOME_BONUS = 0.5;
     const breakdown = buildFieldDuelBreakdown({
         attackBaseRaw, defenseBaseRaw,
         attackStamF, defenseStamF,
-        aRoll: newAroll, dRoll: newDroll, isGood,
-        attackScore: newAttackScore, defenseScore: newDefenseScore,
-        clearanceBonus: clearanceBonus ?? 0, meta,
+        aRoll, dRoll, isGood,
+        attackScore, defenseScore,
+        clearanceBonus, meta,
+        critWinner,
+        homeBonus: HOME_BONUS,
+        homeSide: attackTeam === _homeTeam ? 'attack' : defenseTeam === _homeTeam ? 'defense' : null,
     });
 
     showDuelDice(newAttackScore, newDefenseScore, newAroll, newDroll, breakdown);
@@ -496,8 +503,13 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
     const clearanceBonus = _state.pendingClearanceBonus > 0 ? _state.pendingClearanceBonus : 0;
     if (_state.pendingClearanceBonus > 0) { attackScore += _state.pendingClearanceBonus; _state.pendingClearanceBonus = 0; }
 
+    const HOME_BONUS = 0.5; // Léger avantage domicile
     const aRoll      = rollD20WithCrit();
     const dRoll      = rollD20WithCrit();
+
+    // Bonus domicile : +1 sur le score final de l'équipe qui joue à domicile
+    if (attackTeam  === _homeTeam) attackScore  += HOME_BONUS;
+    if (defenseTeam === _homeTeam) defenseScore += HOME_BONUS;
     const critWinner = resolveCritOutcome(aRoll, dRoll);
 
     attackScore  += aRoll.bonus;
@@ -515,12 +527,16 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
         _roster, TEXTS
     );
 
+    const HOME_BONUS_VALUE = 0.5;
     const breakdown = buildFieldDuelBreakdown({
         attackBaseRaw, defenseBaseRaw,
         attackStamF, defenseStamF,
         aRoll, dRoll, isGood,
         attackScore, defenseScore,
         clearanceBonus, meta,
+        critWinner,
+        homeBonus:  HOME_BONUS_VALUE,
+        homeSide:   attackTeam === _homeTeam ? 'attack' : defenseTeam === _homeTeam ? 'defense' : null,
     });
 
     recordDuelEvent({
@@ -1102,6 +1118,11 @@ export function resolveShotKeeperDuel(ctx, defenseAction) {
     attackScore  += aRoll.bonus;
     defenseScore += dRoll.bonus;
 
+    // Bonus domicile
+    const HOME_BONUS = 0.5;
+    if (attackTeam  === _homeTeam) attackScore  += HOME_BONUS;
+    if (defenseTeam === _homeTeam) defenseScore += HOME_BONUS;
+
     ({ attackScore, defenseScore } = applyDuelBonuses({
         attackAction: isSpecial ? "special" : "shot",
         defenseAction, attackScore, defenseScore,
@@ -1118,22 +1139,21 @@ export function resolveShotKeeperDuel(ctx, defenseAction) {
         _roster, TEXTS
     );
 
-    const breakdown = {
+    const isGoodGK = ["hands", "punch", "gk-special"].includes(defenseAction);
+    const HOME_BONUS_VALUE = 0.5;
+    const breakdown = buildFieldDuelBreakdown({
+        attackBaseRaw:  gkAttackBase,
+        defenseBaseRaw: _roster.defenseBaseFor(defenseAction, defenseTeam, 1, true),
+        attackStamF:    staminaFactor(attackerId),
+        defenseStamF:   gkFactor,
+        aRoll, dRoll,
+        isGood: isGoodGK,
+        attackScore, defenseScore,
         meta,
-        rolls: {
-            aTag: aRoll.critSuccess ? "20!" : (aRoll.critFail ? "1!" : String(aRoll.roll)),
-            dTag: dRoll.critSuccess ? "20!" : (dRoll.critFail ? "1!" : String(dRoll.roll)),
-            aBonus: aRoll.bonus, dBonus: dRoll.bonus,
-        },
-        attack:  { base: gkAttackBase, staminaFactor: staminaFactor(attackerId), additions: [], total: attackScore },
-        defense: { base: _roster.defenseBaseFor(defenseAction, defenseTeam, 1, true), staminaFactor: gkFactor, additions: [], total: defenseScore },
-        result:  {
-            bonusRuleLabel: "",
-            critWinner,
-            diff:   attackScore - defenseScore,
-            winner: critWinner ?? (attackScore > defenseScore ? "attack" : attackScore < defenseScore ? "defense" : "tie"),
-        },
-    };
+        critWinner,
+        homeBonus:  HOME_BONUS_VALUE,
+        homeSide:   attackTeam === _homeTeam ? 'attack' : defenseTeam === _homeTeam ? 'defense' : null,
+    });
 
     recordDuelEvent({
         attackTeam, defenseTeam,

@@ -62,6 +62,7 @@ export function initMatchEngine(rootEl, config = {}) {
     const controlMode    = matchConfig.controlMode ?? "both";
     let onePlayerMode    = (controlMode === "single");
     let controlledTeam   = matchConfig.controlledSide ?? "internal";
+    const internalIsHome = matchConfig.internalIsHome ?? true;
 
     const $ = (sel) => rootEl.querySelector(sel);
 
@@ -108,6 +109,7 @@ export function initMatchEngine(rootEl, config = {}) {
     const state = {
         ball: { team: "internal", zoneIndex: 1, laneIndex: 1, number: 8, frontOfKeeper: false },
         currentTeam:   "internal",
+        homeTeam: internalIsHome ? 'internal' : 'external',
         score:         { internal: 0, external: 0 },
         turns:         0,
         phase:         "attack",
