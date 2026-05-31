@@ -170,6 +170,7 @@ const {
     inventory, availableCards, usedCards,
     selectedCard, selectCard, activateCard,
     tierColor, tierBadge, phaseLabel, targetLabel,
+    isAlreadyBought,
 } = useBonusCards({
     gameSave: gameSaveRef,
     bonusCardOffers:    bonusCardOffersRef,

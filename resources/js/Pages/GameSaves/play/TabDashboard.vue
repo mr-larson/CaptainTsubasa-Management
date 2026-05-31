@@ -56,6 +56,49 @@ const opponentContracts = computed(() => {
     return opponentTeam.value.contracts ?? [];
 });
 
+// ==========================
+//   PRÉ-MATCH CHECKLIST
+// ==========================
+const preMatchReminders = computed(() => {
+    const reminders = [];
+    const state = props.gameSave?.state ?? {};
+
+    // Cartes bonus disponibles non utilisées
+    const bonusCards = (props.gameSave?.state?.bonus_cards_inventory ?? [])
+        .filter(c => !c.used && c.phase === 'pre_match');
+    if (bonusCards.length > 0) {
+        reminders.push({
+            icon: '🃏',
+            color: 'text-violet-600 bg-violet-50 border-violet-200',
+            text: `${bonusCards.length} carte(s) bonus pré-match disponible(s)`,
+        });
+    }
+
+    // Pas sauvegardé récemment (si le state a un dirty flag)
+    const freeSignings = state.free_agent_signings ?? [];
+    if (freeSignings.length > 0) {
+        reminders.push({
+            icon: '✅',
+            color: 'text-teal-600 bg-teal-50 border-teal-200',
+            text: `${freeSignings.length} recrutement(s) effectué(s) cette semaine`,
+        });
+    }
+
+    // Blessés dans l'effectif titulaire
+    const injuredStarters = props.roster.filter(p =>
+        (p.is_starter === true || p.is_starter === 1) && p.is_injured
+    );
+    if (injuredStarters.length > 0) {
+        reminders.push({
+            icon: '🤕',
+            color: 'text-red-600 bg-red-50 border-red-200',
+            text: `${injuredStarters.length} titulaire(s) blessé(s) dans le onze`,
+        });
+    }
+
+    return reminders;
+});
+
 const opponentAvgAttack = computed(() => {
     const players = opponentContracts.value.map(c => c.game_player ?? c.gamePlayer).filter(Boolean);
     if (!players.length) return 0;
@@ -307,6 +350,17 @@ const matchesPlayed = computed(() =>
                                 @click="emit('play-next-match')">
                             ▶ Jouer
                         </button>
+
+                        <!-- Rappels pré-match -->
+                        <div v-if="preMatchReminders.length > 0"
+                             class="mt-3 flex flex-col gap-1.5 w-full">
+                            <div v-for="(r, i) in preMatchReminders" :key="i"
+                                 class="flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-medium"
+                                 :class="r.color">
+                                <span>{{ r.icon }}</span>
+                                <span>{{ r.text }}</span>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Adversaire -->

@@ -281,6 +281,7 @@ class GameSaveController extends Controller
                 ->get()
                 ->map(fn($c) => [
                     'id'               => $c->id,
+                    'bonus_card_id'    => $c->bonus_card_id,
                     'status'           => $c->status,
                     'tier'             => $c->tier,
                     'cost_paid'        => $c->cost_paid,

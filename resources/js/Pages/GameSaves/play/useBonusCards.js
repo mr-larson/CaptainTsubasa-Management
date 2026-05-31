@@ -13,16 +13,23 @@ export function useBonusCards({ gameSave, bonusCardOffers, bonusCardInventory })
     const weeklyOffers = computed(() => bonusCardOffers?.value ?? []);
 
     const purchasedThisWeek = computed(() => {
-        const s = gameSave.value?.season;
-        const w = gameSave.value?.week;
+        const s = Number(gameSave.value?.season ?? 0);
+        const w = Number(gameSave.value?.week   ?? 0);
+        if (s === 0 || w === 0) return [];
+
         return (bonusCardInventory?.value ?? [])
-            .filter(c => c.purchased_season === s && c.purchased_week === w)
-            .map(c => c.bonus_card_id ?? null)
-            .filter(Boolean);
+            .filter(c =>
+                Number(c.purchased_season) === s &&
+                Number(c.purchased_week)   === w
+            )
+            .map(c => Number(c.bonus_card_id))
+            .filter(id => id > 0);
     });
 
+// Une offre est "déjà achetée cette semaine" si son bonus_card_id
+// figure dans les achats de la semaine courante
     const isAlreadyBought = (offer) =>
-        purchasedThisWeek.value.includes(offer.bonus_card_id);
+        purchasedThisWeek.value.includes(Number(offer.bonus_card_id));
 
     const canAfford = (offer) => {
         const budget = gameSave.value?.controlledTeam?.budget
