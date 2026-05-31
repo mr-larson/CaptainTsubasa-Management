@@ -1001,6 +1001,76 @@ function continueShot(attackTeam, defenseTeam, defenseAction, isSpecial, duel, o
     });
 }
 
+function _showKeeperRerollPrompt(defenseTeam, gkInfo, onConfirm, onSkip) {
+    const reroll      = _state.captainReroll[defenseTeam];
+    const captainName = ((gkInfo?.firstname ?? '') + ' ' + (gkInfo?.lastname ?? '')).trim();
+    const rerollsLeft = reroll.rerollsRemaining;
+
+    const html = `
+        <div class="flex flex-col items-center gap-3 p-3 w-full">
+            <div class="text-center">
+                <p class="text-sm font-bold text-amber-600">👑 Captain Reroll — Gardien !</p>
+                <p class="text-xs text-slate-500">${captainName} peut tenter un nouvel arrêt</p>
+                <p class="text-xs text-slate-400">${rerollsLeft} relance${rerollsLeft > 1 ? 's' : ''} restante${rerollsLeft > 1 ? 's' : ''}</p>
+            </div>
+            <div class="flex gap-2 w-full justify-center">
+                <button data-action="captain-reroll-confirm"
+                    class="flex-1 max-w-[140px] px-3 py-2 rounded-xl text-xs font-bold bg-amber-400 text-white hover:bg-amber-500 transition-all shadow-sm">
+                    🧤 Relancer (2d20)
+                </button>
+                <button data-action="captain-reroll-skip"
+                    class="flex-1 max-w-[140px] px-3 py-2 rounded-xl text-xs font-semibold bg-slate-200 text-slate-600 hover:bg-slate-300 transition-all">
+                    Accepter le but
+                </button>
+            </div>
+        </div>`;
+
+    const b = ball();
+    setActionBar(html, "mode-captain-reroll-gk", b, _roster, () => {
+        _rootEl.querySelector('[data-action="captain-reroll-confirm"]')
+            ?.addEventListener('click', () => onConfirm());
+        _rootEl.querySelector('[data-action="captain-reroll-skip"]')
+            ?.addEventListener('click', () => onSkip());
+    }, false);
+}
+
+function _continueKeeperDuelResult(duelResult, attackTeam, defenseTeam, isSpecial, originZone, logParts, diceTag) {
+    const b = ball();
+    b.frontOfKeeper = false;
+    resetLastDribbler();
+
+    if (duelResult === "attack") {
+        _state.score[attackTeam]++;
+        const scorerInfo = _roster.getPlayerInfo(attackTeam, b.number);
+        if (scorerInfo?.id) {
+            _state.goalEvents = _state.goalEvents ?? [];
+            _state.goalEvents.push({ player_id: scorerInfo.id, turn: _state.turns });
+        }
+        setMessage(
+            (isSpecial ? TEXTS.ui.goalSpecialMain : TEXTS.ui.goalMain).replace("{team}", _TEAMS[attackTeam].label),
+            TEXTS.ui.goalSub.replace("{scoreInternal}", _state.score.internal).replace("{scoreExternal}", _state.score.external)
+        );
+        pushLogEntry(isSpecial ? "shotGoalSpecialTitle" : "shotGoalTitle", ["Zone " + (originZone + 1)].concat(logParts), diceTag, _state);
+        animateGoalThenReset(attackTeam, () => {
+            _state.isKickoff = true;
+            _state.keeperRestartMustPass = false;
+            _state._applyKickoffFn?.();
+            _moveBall(defenseTeam, 8);
+            _advanceTurn(defenseTeam);
+            _showAttackBarForCurrentTeam();
+            _refreshUI();
+        });
+        return;
+    }
+
+    pushLogEntry("shotSavedTitle", ["Zone " + (originZone + 1)].concat(logParts), diceTag, _state);
+    performKeeperClearance(defenseTeam, "hands", () => {
+        _advanceTurn(defenseTeam);
+        _showAttackBarForCurrentTeam();
+        _refreshUI();
+    });
+}
+
 // -----------------------------------------------------------
 //   resolveShotKeeperDuel
 // -----------------------------------------------------------
@@ -1105,7 +1175,86 @@ export function resolveShotKeeperDuel(ctx, defenseAction) {
         return;
     }
 
-    const duelResult = critWinner ?? (attackScore > defenseScore ? "attack" : "defense");
+    let duelResult = critWinner ?? (attackScore > defenseScore ? "attack" : "defense");
+
+    // ── CAPTAIN REROLL — Gardien capitaine qui encaisse un tir ──
+    if (duelResult === "attack" && keeperId) {
+        const gkInfo = _roster.getPlayerInfo(defenseTeam, 1);
+        if (gkInfo?.isCaptain) {
+            const reroll = _state.captainReroll?.[defenseTeam];
+            if (reroll && reroll.rerollsRemaining > 0 && !reroll.usedOnCurrentAction) {
+                if (_isAITeam(defenseTeam)) {
+                    // IA : décision automatique
+                    if (aiShouldReroll(defenseTeam)) {
+                        // Reroll GK : 2d20 advantage pour la défense
+                        consumeReroll(defenseTeam);
+                        const newDroll       = rollD20Advantage();
+                        let newDefenseScore  = defenseBase * gkFactor + newDroll.bonus;
+                        let newAttackScore   = attackScore - dRoll.bonus + aRoll.bonus; // recalcul sans le vieux dRoll
+                        // Réappliquer les bonus
+                        ({ attackScore: newAttackScore, defenseScore: newDefenseScore } = applyDuelBonuses({
+                            attackAction: isSpecial ? "special" : "shot",
+                            defenseAction, attackScore: gkAttackBase * staminaFactor(attackerId) + aRoll.bonus,
+                            defenseScore: defenseBase * gkFactor + newDroll.bonus,
+                            context: { isKeeperDuel: true },
+                        }));
+                        const newCrit = resolveCritOutcome(aRoll, newDroll);
+                        duelResult = newCrit ?? (newAttackScore > newDefenseScore ? "attack" : "defense");
+                        showDuelDice(newAttackScore, newDefenseScore, aRoll, newDroll, { ...breakdown, captainReroll: true });
+                        pushLogEntry(`👑 Captain Reroll GK — ${gkInfo.lastname}`, [
+                            `2d20 (${newDroll.roll1}, ${newDroll.roll2}) → ${newDroll.roll}`,
+                            duelResult === "defense" ? "✓ Arrêt !" : "✗ But quand même",
+                        ], null, _state);
+                    }
+                } else {
+                    // Joueur humain : stocker le contexte GK et afficher le prompt
+                    _state.pendingCaptainReroll = {
+                        attackTeam, defenseTeam,
+                        attackType: isSpecial ? "special" : "shot",
+                        defenseAction, isSpecial,
+                        // Données pour recalculer
+                        gkAttackBase, attackerId, keeperId,
+                        gkFactor, defenseBase,
+                        aRoll, dRoll,
+                        originZone, logParts,
+                        isKeeperReroll: true,
+                    };
+                    _showKeeperRerollPrompt(defenseTeam, gkInfo, () => {
+                        // Confirm
+                        const ctx = _state.pendingCaptainReroll;
+                        _state.pendingCaptainReroll = null;
+                        consumeReroll(defenseTeam);
+                        const newDroll2      = rollD20Advantage();
+                        let newAScore, newDScore;
+                        ({ attackScore: newAScore, defenseScore: newDScore } = applyDuelBonuses({
+                            attackAction: isSpecial ? "special" : "shot",
+                            defenseAction,
+                            attackScore: gkAttackBase * staminaFactor(attackerId) + aRoll.bonus,
+                            defenseScore: defenseBase * gkFactor + newDroll2.bonus,
+                            context: { isKeeperDuel: true },
+                        }));
+                        const newCrit2  = resolveCritOutcome(aRoll, newDroll2);
+                        const newResult = newCrit2 ?? (newAScore > newDScore ? "attack" : "defense");
+                        showDuelDice(newAScore, newDScore, aRoll, newDroll2, { ...breakdown, captainReroll: true });
+                        pushLogEntry(`👑 Captain Reroll GK — ${gkInfo.lastname}`, [
+                            `2d20 (${newDroll2.roll1}, ${newDroll2.roll2}) → ${newDroll2.roll}`,
+                            newResult === "defense" ? "✓ Arrêt !" : "✗ But quand même",
+                        ], null, _state);
+                        _continueKeeperDuelResult(newResult, attackTeam, defenseTeam, isSpecial, originZone, logParts, newAScore.toFixed(1) + "-" + newDScore.toFixed(1));
+                    }, () => {
+                        // Skip
+                        _state.pendingCaptainReroll = null;
+                        if (_state.captainReroll?.[defenseTeam]) {
+                            _state.captainReroll[defenseTeam].usedOnCurrentAction = true;
+                        }
+                        _continueKeeperDuelResult(duelResult, attackTeam, defenseTeam, isSpecial, originZone, logParts, diceTag);
+                    });
+                    return; // Attendre le choix du joueur
+                }
+            }
+        }
+    }
+    // ── FIN CAPTAIN REROLL GARDIEN ──
 
     if (duelResult === "attack") {
         _state.score[attackTeam]++;
