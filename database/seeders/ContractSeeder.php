@@ -128,6 +128,24 @@ class ContractSeeder extends Seeder
             ],
         ];
 
+        $captains = [
+            'Nankatsu' => 'Tsubasa Ozora',
+            'Shutetsu' => 'Genzo Wakabayashi',
+            'Toho'     => 'Kojiro Hyuga',
+            'Furano'   => 'Hikaru Matsuyama',
+            'Musashi'  => 'Jun Misugi',
+            'Hanawa'   => 'Yuichiro Daimaru',
+            'Azumaichi'=> 'Ryota Tsuji',
+            'Hirado'   => 'Hiroshi Jito',
+            'Otomo'    => 'Akio Nakao',
+            'Meiwa'    => 'Noboru Sawaki',
+            'Nakahara' => 'Takeshi Asada',
+            'Naniwa'   => 'Taichi Nakanishi',
+            'Minawi'   => 'Kazuki Seto',
+            'Shimizu'  => 'Koji Murakami',
+            'Shimada'  => 'Masayuki Jinbo',
+        ];
+
         $contracts = [];
 
         foreach ($teamsPlayers as $teamName => $playerNames) {
@@ -150,6 +168,7 @@ class ContractSeeder extends Seeder
                     'salary'     => $player->cost,
                     'start_date' => now()->subMonths(rand(1, 12))->subDays(rand(1, 30)),
                     'end_date'   => now()->addMonths(rand(1, 12))->addDays(rand(1, 30)),
+                    'is_captain' => isset($captains[$teamName]) && $captains[$teamName] === $fullName ? 1 : 0,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];

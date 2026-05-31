@@ -68,8 +68,8 @@ class MatchSimulator
         // Stats par joueur (indexées par game_player_id)
         $playerStats = [];
         $teamStats   = [
-            'home' => ['goals' => 0, 'shots' => 0, 'passes' => 0, 'dribbles' => 0, 'duelsWon' => 0, 'duelsLost' => 0],
-            'away' => ['goals' => 0, 'shots' => 0, 'passes' => 0, 'dribbles' => 0, 'duelsWon' => 0, 'duelsLost' => 0],
+            'home' => ['goals' => 0, 'shots' => 0, 'passes' => 0, 'dribbles' => 0, 'saves' => 0, 'duelsWon' => 0, 'duelsLost' => 0],
+            'away' => ['goals' => 0, 'shots' => 0, 'passes' => 0, 'dribbles' => 0, 'saves' => 0, 'duelsWon' => 0, 'duelsLost' => 0],
         ];
 
         $homeGoals = 0;
@@ -86,10 +86,13 @@ class MatchSimulator
             $gk        = $this->getGoalkeeper($awayPlayers);
             $action    = $this->randomOffenseAction();
 
+            $isShot      = $action === 'shot';
             $attackRoll  = $homeRatings['att'] + $this->d20() + 2; // avantage domicile
-            $defenseRoll = $awayRatings['def'] + (int) round($awayRatings['gk'] * 0.5) + $this->d20();
-
-            $success = $attackRoll > $defenseRoll + 2;
+            $defenseRoll = $isShot
+                ? $awayRatings['gk']  + $this->d20()
+                : $awayRatings['def'] + $this->d20();
+            $success  = $attackRoll > $defenseRoll;
+            $isGoal   = $success && $isShot;
 
             // Stats attaquant
             if ($attacker) {
@@ -97,6 +100,7 @@ class MatchSimulator
                 $playerStats[$pid] = $playerStats[$pid] ?? $this->emptyPlayerStats();
                 $playerStats[$pid]['offense'][$action]['attempts']++;
                 if ($success) $playerStats[$pid]['offense'][$action]['success']++;
+                if ($isGoal)  $playerStats[$pid]['offense']['goals'] = ($playerStats[$pid]['offense']['goals'] ?? 0) + 1;
                 $success ? $playerStats[$pid]['duelsWon']++ : $playerStats[$pid]['duelsLost']++;
             }
 
@@ -116,13 +120,15 @@ class MatchSimulator
                 $playerStats[$pid] = $playerStats[$pid] ?? $this->emptyPlayerStats();
                 $gkAction = random_int(0, 1) ? 'hands' : 'punch';
                 $playerStats[$pid]['defense'][$gkAction]['attempts']++;
+                $teamStats['away']['saves'] = ($teamStats['away']['saves'] ?? 0) + ($success ? 0 : 1);
                 if (!$success) $playerStats[$pid]['defense'][$gkAction]['success']++;
                 $success ? $playerStats[$pid]['duelsLost']++ : $playerStats[$pid]['duelsWon']++;
             }
 
             // Stats équipe
-            $teamStats['home']['shots']++;
-            $teamStats['home'][$action === 'pass' ? 'passes' : ($action === 'dribble' ? 'dribbles' : 'shots')]++;
+            if ($action === 'pass')         $teamStats['home']['passes']++;
+            elseif ($action === 'dribble')  $teamStats['home']['dribbles']++;
+            else                            $teamStats['home']['shots']++;
             if ($success) {
                 $teamStats['home']['duelsWon']++;
                 $teamStats['away']['duelsLost']++;
@@ -143,16 +149,20 @@ class MatchSimulator
             $gk        = $this->getGoalkeeper($homePlayers);
             $action    = $this->randomOffenseAction();
 
+            $isShot      = $action === 'shot';
             $attackRoll  = $awayRatings['att'] + $this->d20();
-            $defenseRoll = $homeRatings['def'] + (int) round($homeRatings['gk'] * 0.5) + $this->d20();
-
-            $success = $attackRoll > $defenseRoll + 2;
+            $defenseRoll = $isShot
+                ? $homeRatings['gk']  + $this->d20()
+                : $homeRatings['def'] + $this->d20();
+            $success  = $attackRoll > $defenseRoll;
+            $isGoal   = $success && $isShot;
 
             if ($attacker) {
                 $pid = (string) $attacker->id;
                 $playerStats[$pid] = $playerStats[$pid] ?? $this->emptyPlayerStats();
                 $playerStats[$pid]['offense'][$action]['attempts']++;
                 if ($success) $playerStats[$pid]['offense'][$action]['success']++;
+                if ($isGoal)  $playerStats[$pid]['offense']['goals'] = ($playerStats[$pid]['offense']['goals'] ?? 0) + 1;
                 $success ? $playerStats[$pid]['duelsWon']++ : $playerStats[$pid]['duelsLost']++;
             }
 
@@ -170,12 +180,14 @@ class MatchSimulator
                 $playerStats[$pid] = $playerStats[$pid] ?? $this->emptyPlayerStats();
                 $gkAction = random_int(0, 1) ? 'hands' : 'punch';
                 $playerStats[$pid]['defense'][$gkAction]['attempts']++;
+                $teamStats['home']['saves'] = ($teamStats['home']['saves'] ?? 0) + ($success ? 0 : 1);
                 if (!$success) $playerStats[$pid]['defense'][$gkAction]['success']++;
                 $success ? $playerStats[$pid]['duelsLost']++ : $playerStats[$pid]['duelsWon']++;
             }
 
-            $teamStats['away']['shots']++;
-            $teamStats['away'][$action === 'pass' ? 'passes' : ($action === 'dribble' ? 'dribbles' : 'shots')]++;
+            if ($action === 'pass')         $teamStats['away']['passes']++;
+            elseif ($action === 'dribble')  $teamStats['away']['dribbles']++;
+            else                            $teamStats['away']['shots']++;
             if ($success) {
                 $teamStats['away']['duelsWon']++;
                 $teamStats['home']['duelsLost']++;
@@ -194,6 +206,35 @@ class MatchSimulator
         $awayGoals = min($awayGoals, 6);
         $teamStats['home']['goals'] = $homeGoals;
         $teamStats['away']['goals'] = $awayGoals;
+
+        // Cohérence playerStats goals vs teamStats goals
+        // Si teamStats a des buts mais playerStats n'en a pas (attaquant null),
+        // attribuer les buts au meilleur attaquant disponible
+        foreach (['home' => $homePlayers, 'away' => $awayPlayers] as $side => $sidePlayers) {
+            $teamGoals = $teamStats[$side]['goals'] ?? 0;
+            if ($teamGoals <= 0) continue;
+
+            // Compter uniquement les buts des joueurs de CETTE équipe
+            $sidePlayerIds = $sidePlayers->map(fn($p) => (string) $p->id)->toArray();
+            $playerGoals   = array_sum(array_map(
+                fn($pid) => $playerStats[$pid]['offense']['goals'] ?? 0,
+                array_filter($sidePlayerIds, fn($pid) => isset($playerStats[$pid]))
+            ));
+
+            if ($playerGoals < $teamGoals) {
+                $bestAttacker = $sidePlayers
+                    ->filter(fn($p) => isset($playerStats[(string) $p->id]))
+                    ->sortByDesc(fn($p) => ($p->shot ?? 0) + ($p->attack ?? 0))
+                    ->first();
+
+                if ($bestAttacker) {
+                    $pid     = (string) $bestAttacker->id;
+                    $missing = $teamGoals - $playerGoals;
+                    $playerStats[$pid]['offense']['goals'] =
+                        ($playerStats[$pid]['offense']['goals'] ?? 0) + $missing;
+                }
+            }
+        }
 
         $matchStats = [
             'teams'   => $teamStats,
@@ -320,6 +361,7 @@ class MatchSimulator
                 'shot'    => ['attempts' => 0, 'success' => 0],
                 'dribble' => ['attempts' => 0, 'success' => 0],
                 'special' => ['attempts' => 0, 'success' => 0],
+                'goals'   => 0,
             ],
             'defense' => [
                 'intercept' => ['attempts' => 0, 'success' => 0],

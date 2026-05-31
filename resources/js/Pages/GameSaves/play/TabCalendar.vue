@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 const props = defineProps({
     calendarTeams:                 { type: Array,    required: true },
@@ -105,6 +105,91 @@ const playerMatchStat = (playerId, path) => {
     return path.split('.').reduce((o, k) => o?.[k] ?? 0, s);
 };
 const isGK = (p) => p?.position?.toLowerCase().includes('goalkeeper');
+// ==========================
+//   REPLAY
+// ==========================
+const showReplay = ref(false);
+
+watch(() => props.selectedCalendarMatch?.id, () => { showReplay.value = false; });
+
+const replayEvents = computed(() => {
+    const stats = props.selectedCalendarMatchStats;
+    if (!stats) return [];
+    const players = stats.players ?? {};
+    const events  = [];
+
+    for (const [pid, pStats] of Object.entries(players)) {
+        const allRosters = [...props.calendarTeamRoster, ...props.calendarOpponentRoster];
+        const player = allRosters.find(p => String(p.id) === String(pid));
+        if (!player) continue;
+
+        const isHome = props.selectedCalendarMatch.home_team_id ===
+            props.calendarTeams.find(t => t.contracts?.some(c =>
+                (c.game_player ?? c.gamePlayer ?? c.player)?.id == pid
+            ))?.id;
+        const teamSide = isHome ? 'home' : 'away';
+
+        const goals = pStats.offense?.goals ?? 0;
+        for (let i = 0; i < goals; i++) {
+            events.push({ type: 'goal', teamSide, priority: 0, icon: '⚽', color: 'bg-emerald-500', text: `⚽ But de ${player.lastname} !`, detail: null });
+        }
+
+        const hands = pStats.defense?.hands?.attempts ?? 0;
+        const punch = pStats.defense?.punch?.attempts ?? 0;
+        const saves = hands + punch;
+        if (saves > 0 && isGK(player)) {
+            const savesSuccess = (pStats.defense?.hands?.success ?? 0) + (pStats.defense?.punch?.success ?? 0);
+            events.push({ type: 'save', teamSide, priority: 1, icon: '🧤', color: 'bg-violet-500', text: `${player.lastname} : ${savesSuccess} arrêt(s) sur ${saves} tir(s)`, detail: `Mains ${hands} · Poings ${punch}` });
+        }
+
+        const shotAttempts = pStats.offense?.shot?.attempts ?? 0;
+        const shotSuccess  = pStats.offense?.shot?.success  ?? 0;
+        if (shotAttempts > 0 && !isGK(player)) {
+            events.push({ type: 'shot', teamSide, priority: 2, icon: '🔥', color: 'bg-orange-400', text: `${player.lastname} : ${shotAttempts} tir(s)`, detail: shotSuccess > 0 ? `${shotSuccess} cadré(s)` : 'Aucun cadré' });
+        }
+
+        const passAttempts = pStats.offense?.pass?.attempts ?? 0;
+        const passSuccess  = pStats.offense?.pass?.success  ?? 0;
+        if (passSuccess >= 1) {
+            events.push({ type: 'pass', teamSide, priority: 3, icon: '🎯', color: 'bg-sky-400', text: `${player.lastname} : ${passSuccess}/${passAttempts} passes`, detail: null });
+        }
+
+        const dribAttempts = pStats.offense?.dribble?.attempts ?? 0;
+        const dribSuccess  = pStats.offense?.dribble?.success  ?? 0;
+        if (dribSuccess >= 1) {
+            events.push({ type: 'dribble', teamSide, priority: 3, icon: '🌀', color: 'bg-yellow-400', text: `${player.lastname} : ${dribSuccess}/${dribAttempts} dribbles`, detail: null });
+        }
+
+        const interceptAttempts = pStats.defense?.intercept?.attempts ?? 0;
+        const intercepts        = pStats.defense?.intercept?.success  ?? 0;
+        if (interceptAttempts >= 1) {
+            events.push({ type: 'intercept', teamSide, priority: 4, icon: '🛡️', color: 'bg-emerald-400', text: `${player.lastname} : ${intercepts}/${interceptAttempts} interception(s)`, detail: null });
+        }
+
+        const tackleAttempts = pStats.defense?.tackle?.attempts ?? 0;
+        const tackles        = pStats.defense?.tackle?.success  ?? 0;
+        if (tackleAttempts >= 1) {
+            events.push({ type: 'tackle', teamSide, priority: 4, icon: '⚡', color: 'bg-amber-400', text: `${player.lastname} : ${tackles}/${tackleAttempts} tacle(s)`, detail: null });
+        }
+
+        const blockAttempts = pStats.defense?.block?.attempts ?? 0;
+        const blocks        = pStats.defense?.block?.success  ?? 0;
+        if (blockAttempts >= 1) {
+            events.push({ type: 'block', teamSide, priority: 4, icon: '🧱', color: 'bg-slate-500', text: `${player.lastname} : ${blocks}/${blockAttempts} bloc(s)`, detail: null });
+        }
+
+        const duelsWon  = pStats.duelsWon  ?? 0;
+        const duelsLost = pStats.duelsLost ?? 0;
+        if (duelsWon > 0) {
+            events.push({ type: 'duels', teamSide, priority: 5, icon: '⚔️', color: 'bg-teal-500', text: `${player.lastname} : ${duelsWon} duel(s) gagné(s)`, detail: `${duelsLost} perdu(s)` });
+        }
+    }
+
+    return events.sort((a, b) => a.priority - b.priority);
+});
+
+const homeTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide === 'home'));
+const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide === 'away'));
 </script>
 
 <template>
@@ -233,7 +318,7 @@ const isGK = (p) => p?.position?.toLowerCase().includes('goalkeeper');
                             </div>
                         </div>
 
-                        <!-- Score -->
+                        <!-- Score + bouton replay -->
                         <div class="text-center shrink-0">
                             <div class="text-3xl font-black text-slate-800">
                                 {{ selectedCalendarMatch.home_score }}
@@ -241,6 +326,11 @@ const isGK = (p) => p?.position?.toLowerCase().includes('goalkeeper');
                                 {{ selectedCalendarMatch.away_score }}
                             </div>
                             <div class="text-[10px] text-slate-400 font-semibold mt-1">Semaine {{ selectedCalendarMatch.week }}</div>
+                            <button type="button"
+                                    @click="showReplay = true"
+                                    class="mt-2 flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold bg-slate-800 text-white hover:bg-slate-700 transition-all mx-auto">
+                                ▶ Résumé
+                            </button>
                         </div>
 
                         <!-- Équipe extérieure -->
@@ -403,4 +493,121 @@ const isGK = (p) => p?.position?.toLowerCase().includes('goalkeeper');
             Sélectionne une équipe ci-dessus
         </div>
     </div>
+    <!-- ================================================ -->
+    <!-- MODAL REPLAY                                      -->
+    <!-- ================================================ -->
+    <Teleport to="body">
+        <div v-if="showReplay"
+             class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+             @click.self="showReplay = false">
+
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden">
+
+                <!-- Header -->
+                <div class="p-4 bg-slate-800 text-white flex items-center justify-between shrink-0">
+                    <div class="flex items-center gap-3">
+                        <span class="text-lg">▶</span>
+                        <div>
+                            <div class="font-black text-sm">
+                                {{ teamById[selectedCalendarMatch.home_team_id]?.name }}
+                                <span class="mx-2 text-slate-400">{{ selectedCalendarMatch.home_score }} - {{ selectedCalendarMatch.away_score }}</span>
+                                {{ teamById[selectedCalendarMatch.away_team_id]?.name }}
+                            </div>
+                            <div class="text-[10px] text-slate-400">Semaine {{ selectedCalendarMatch.week }}</div>
+                        </div>
+                    </div>
+                    <button type="button" @click="showReplay = false"
+                            class="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-sm transition-all">
+                        ✕
+                    </button>
+                </div>
+
+                <!-- Corps — deux colonnes home/away -->
+                <div class="flex-1 overflow-y-auto p-4">
+                    <div class="grid grid-cols-2 gap-4">
+
+                        <!-- HOME -->
+                        <div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <div class="w-6 h-6 rounded overflow-hidden bg-slate-100 shrink-0">
+                                    <img v-if="teamLogoUrl(teamById[selectedCalendarMatch.home_team_id])"
+                                         :src="teamLogoUrl(teamById[selectedCalendarMatch.home_team_id])"
+                                         class="w-full h-full object-contain" alt=""/>
+                                </div>
+                                <span class="text-xs font-black text-slate-700">
+                                        {{ teamById[selectedCalendarMatch.home_team_id]?.name }}
+                                    </span>
+                                <span class="text-lg font-black text-emerald-600 ml-auto">
+                                        {{ selectedCalendarMatch.home_score }}
+                                    </span>
+                            </div>
+
+                            <div v-if="homeTeamEvents.length" class="space-y-2">
+                                <div v-for="(ev, i) in homeTeamEvents" :key="i"
+                                     class="flex items-start gap-2 p-2 rounded-lg bg-slate-50 border border-slate-100">
+                                    <div class="w-6 h-6 rounded-full flex items-center justify-center text-white text-[11px] shrink-0"
+                                         :class="ev.color">
+                                        {{ ev.icon }}
+                                    </div>
+                                    <div class="min-w-0">
+                                        <div class="text-xs font-semibold text-slate-700">{{ ev.text }}</div>
+                                        <div v-if="ev.detail" class="text-[10px] text-slate-400">{{ ev.detail }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p v-else class="text-xs text-slate-400 italic">Aucun événement notable.</p>
+                        </div>
+
+                        <!-- AWAY -->
+                        <div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <div class="w-6 h-6 rounded overflow-hidden bg-slate-100 shrink-0">
+                                    <img v-if="teamLogoUrl(teamById[selectedCalendarMatch.away_team_id])"
+                                         :src="teamLogoUrl(teamById[selectedCalendarMatch.away_team_id])"
+                                         class="w-full h-full object-contain" alt=""/>
+                                </div>
+                                <span class="text-xs font-black text-slate-700">
+                                        {{ teamById[selectedCalendarMatch.away_team_id]?.name }}
+                                    </span>
+                                <span class="text-lg font-black text-emerald-600 ml-auto">
+                                        {{ selectedCalendarMatch.away_score }}
+                                    </span>
+                            </div>
+
+                            <div v-if="awayTeamEvents.length" class="space-y-2">
+                                <div v-for="(ev, i) in awayTeamEvents" :key="i"
+                                     class="flex items-start gap-2 p-2 rounded-lg bg-slate-50 border border-slate-100">
+                                    <div class="w-6 h-6 rounded-full flex items-center justify-center text-white text-[11px] shrink-0"
+                                         :class="ev.color">
+                                        {{ ev.icon }}
+                                    </div>
+                                    <div class="min-w-0">
+                                        <div class="text-xs font-semibold text-slate-700">{{ ev.text }}</div>
+                                        <div v-if="ev.detail" class="text-[10px] text-slate-400">{{ ev.detail }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p v-else class="text-xs text-slate-400 italic">Aucun événement notable.</p>
+                        </div>
+                    </div>
+
+                    <!-- Stats équipe résumé -->
+                    <div class="mt-4 pt-4 border-t border-slate-100 grid grid-cols-2 gap-4 text-center text-xs">
+                        <div class="flex justify-around text-slate-500">
+                            <div><div class="font-black text-slate-800">{{ selectedCalendarMatchStats?.teams?.home?.shots ?? 0 }}</div><div>Tirs</div></div>
+                            <div><div class="font-black text-slate-800">{{ selectedCalendarMatchStats?.teams?.home?.passes ?? 0 }}</div><div>Passes</div></div>
+                            <div><div class="font-black text-slate-800">{{ selectedCalendarMatchStats?.teams?.home?.saves ?? 0 }}</div><div>Arrêts</div></div>
+                            <div><div class="font-black text-slate-800">{{ selectedCalendarMatchStats?.teams?.home?.duelsWon ?? 0 }}</div><div>D+</div></div>
+                        </div>
+                        <div class="flex justify-around text-slate-500">
+                            <div><div class="font-black text-slate-800">{{ selectedCalendarMatchStats?.teams?.away?.shots ?? 0 }}</div><div>Tirs</div></div>
+                            <div><div class="font-black text-slate-800">{{ selectedCalendarMatchStats?.teams?.away?.passes ?? 0 }}</div><div>Passes</div></div>
+                            <div><div class="font-black text-slate-800">{{ selectedCalendarMatchStats?.teams?.away?.saves ?? 0 }}</div><div>Arrêts</div></div>
+                            <div><div class="font-black text-slate-800">{{ selectedCalendarMatchStats?.teams?.away?.duelsWon ?? 0 }}</div><div>D+</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </Teleport>
 </template>
