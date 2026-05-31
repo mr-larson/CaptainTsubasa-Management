@@ -252,7 +252,13 @@ export function initMatchEngine(rootEl, config = {}) {
                 if (act === "dribble") out.players[pid].offense.dribble.attempts++;
                 if (act === "special") out.players[pid].offense.special.attempts++;
 
+                // Après
                 const t = ev.attack.team === "internal" ? "home" : "away";
+
+                // Compter toutes les tentatives dans teamStats (succès + échecs)
+                if (act === "pass")    out.teams[t].passes++;
+                if (act === "dribble") out.teams[t].dribbles++;
+
                 if (ev.result === "attack") {
                     if (act === "pass")    out.players[pid].offense.pass.success++;
                     if (act === "dribble") out.players[pid].offense.dribble.success++;
@@ -262,12 +268,13 @@ export function initMatchEngine(rootEl, config = {}) {
                         out.teams[t].shots++;
                     }
 
-                    if ((act === "shot" || act === "special") && ev.result === "attack" && ev.defense?.defenseSlot === 1) {
+                    if ((act === "shot" || act === "special") &&
+                        ["hands", "punch", "gk-special"].includes(ev.defense?.action)) {
                         out.players[pid].offense.goals = (out.players[pid].offense.goals ?? 0) + 1;
                         out.teams[t].goals++;
                     }
 
-                        out.players[pid].duelsWon++;
+                    out.players[pid].duelsWon++;
                     out.teams[t].duelsWon++;
                 } else if (ev.result === "defense") {
                     out.players[pid].duelsLost++;
