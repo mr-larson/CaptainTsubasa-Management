@@ -287,3 +287,95 @@
 .log-detail-text { font-size: 10px; color: #64748b; }
 
 .duel-tooltip-container { background: linear-gradient(to bottom, rgba(15,23,42,0.98) 0%, rgba(30,41,59,0.98) 100%); color: #e2e8f0; border-radius: 10px; padding: 12px; border: 1px solid rgba(71,85,105,0.4); box-shadow: 0 20px 40px rgba(0,0,0,0.5); font-size: 11px; min-width: 280px; }
+
+/* ==========================================================================
+   EVENT NOTIFICATIONS
+   ========================================================================== */
+
+/* Toast — slide depuis le haut du terrain */
+.event-toast {
+    position: absolute;
+    top: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 20px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 800;
+    color: #fff;
+    white-space: nowrap;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    pointer-events: none;
+    opacity: 0;
+    transition: top 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+}
+.event-toast.visible  { top: 12px; opacity: 1; }
+.event-toast.hiding   { top: -60px; opacity: 0; transition: top 0.3s ease, opacity 0.3s ease; }
+
+.event-toast--goal   { background: linear-gradient(135deg, #16a34a, #22c55e); }
+.event-toast--foul   { background: linear-gradient(135deg, #92400e, #f59e0b); }
+.event-toast--yellow { background: linear-gradient(135deg, #92400e, #eab308); }
+
+/* Overlay plein terrain — carton rouge et blessure */
+.event-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 210;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+.event-overlay.visible  { opacity: 1; }
+.event-overlay--red     { background: rgba(185, 28, 28, 0.82); }
+.event-overlay--injury  { background: rgba(15, 23, 42, 0.80); }
+
+.event-overlay__icon {
+    font-size: 52px;
+    line-height: 1;
+    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.4));
+    animation: overlay-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.event-overlay__text {
+    font-size: 16px;
+    font-weight: 900;
+    color: #fff;
+    text-align: center;
+    letter-spacing: 0.03em;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+.event-overlay__sub {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.75);
+    text-align: center;
+}
+
+/* Flash side-card */
+@keyframes flash-yellow {
+    0%,100% { box-shadow: 0 12px 22px rgba(249,115,22,0.22), 0 0 0 1px rgba(249,115,22,0.10) inset; }
+    30%      { box-shadow: 0 0 0 3px #eab308, 0 0 20px #fde047, 0 12px 22px rgba(249,115,22,0.22); }
+    70%      { box-shadow: 0 0 0 2px #ca8a04, 0 0 10px #fde047, 0 12px 22px rgba(249,115,22,0.22); }
+}
+@keyframes flash-red {
+    0%,100% { box-shadow: 0 12px 22px rgba(249,115,22,0.22), 0 0 0 1px rgba(249,115,22,0.10) inset; }
+    25%      { box-shadow: 0 0 0 4px #dc2626, 0 0 24px #ef4444; }
+    75%      { box-shadow: 0 0 0 3px #b91c1c, 0 0 12px #ef4444; }
+}
+
+.flash-yellow { animation: flash-yellow 0.65s ease 2; }
+.flash-red    { animation: flash-red    0.65s ease 3; }
+
+@keyframes overlay-pop {
+    0%   { transform: scale(0.3); opacity: 0; }
+    100% { transform: scale(1);   opacity: 1; }
+}

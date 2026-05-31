@@ -232,7 +232,6 @@ const matchesPlayed = computed(() =>
             <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 flex flex-col items-center gap-1">
                 <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Budget</div>
                 <div class="text-2xl font-black text-teal-600 mt-1">{{ teamBudget }}</div>
-                <div class="text-[10px] text-slate-400">euros</div>
                 <div class="text-[10px] text-slate-500 mt-1">{{ roster.length }} joueur(s)</div>
             </div>
 

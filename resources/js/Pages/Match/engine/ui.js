@@ -17,6 +17,115 @@ export function initUIModule(rootEl, roster, ui, state, TEAMS) {
     _TEAMS  = TEAMS;
 }
 
+// -----------------------------------------------------------
+//   Event Notifications
+// -----------------------------------------------------------
+let _toastEl    = null;
+let _overlayEl  = null;
+let _toastTimer = null;
+
+function _ensureToastEl() {
+    if (_toastEl) return _toastEl;
+    const fieldWrapper = _rootEl?.querySelector('#field-wrapper');
+    if (!fieldWrapper) return null;
+    if (getComputedStyle(fieldWrapper).position === 'static') {
+        fieldWrapper.style.position = 'relative';
+    }
+    _toastEl = document.createElement('div');
+    _toastEl.className = 'event-toast';
+    fieldWrapper.appendChild(_toastEl);
+    return _toastEl;
+}
+
+function _ensureOverlayEl() {
+    if (_overlayEl) return _overlayEl;
+    const fieldEl = _rootEl?.querySelector('#field');
+    if (!fieldEl) return null;
+    _overlayEl = document.createElement('div');
+    _overlayEl.className = 'event-overlay';
+    fieldEl.appendChild(_overlayEl);
+    return _overlayEl;
+}
+
+export function showEventNotification(type, text, subText = null) {
+    if (type === 'goal' || type === 'foul' || type === 'yellow') {
+        const toast = _ensureToastEl();
+        if (!toast) return;
+        if (_toastTimer) { clearTimeout(_toastTimer); _toastTimer = null; }
+        toast.className = `event-toast event-toast--${type}`;
+        toast.innerHTML = text;
+        toast.getBoundingClientRect(); // force reflow
+        toast.classList.add('visible');
+        _toastTimer = setTimeout(() => {
+            toast.classList.add('hiding');
+            toast.classList.remove('visible');
+            setTimeout(() => toast.classList.remove('hiding'), 350);
+        }, 2500);
+
+    } else if (type === 'red' || type === 'injury') {
+        const overlay = _ensureOverlayEl();
+        if (!overlay) return;
+        overlay.className = `event-overlay event-overlay--${type}`;
+        overlay.innerHTML = `
+            <div class="event-overlay__icon">${type === 'red' ? '🟥' : '🤕'}</div>
+            <div class="event-overlay__text">${text}</div>
+            ${subText ? `<div class="event-overlay__sub">${subText}</div>` : ''}
+        `;
+        overlay.getBoundingClientRect();
+        overlay.classList.add('visible');
+        setTimeout(() => overlay.classList.remove('visible'), 2200);
+    }
+}
+
+function _triggerEventNotification(actionType, main, details) {
+    const firstDetail = (details || [])[0] ?? '';
+
+    // Nettoyer les emojis et caractères parasites pour extraire le nom
+    const extractName = (str) => str
+        .replace(/🟥|🟨|🤕|⚽|⚠️|Carton rouge|Carton jaune|Double jaune|Expulsé|Blessure|épuisement|!/g, '')
+        .split('—')[0]
+        .trim();
+
+    if (actionType === 'shot-goal' || actionType === 'special-goal') {
+        // firstDetail contient "Lastname n°X (TeamName)"
+        const scorer = extractName(firstDetail);
+        const icon   = actionType === 'special-goal' ? '🔥' : '⚽';
+        showEventNotification('goal', `${icon} But ! ${scorer}`);
+
+    } else if (actionType === 'card-red') {
+        const name = extractName(firstDetail);
+        showEventNotification('red', main, name || null);
+        _flashCard('red');
+
+    } else if (actionType === 'injury') {
+        const name = extractName(firstDetail);
+        showEventNotification('injury', main, name || null);
+
+    } else if (actionType === 'card-yellow') {
+        const name = extractName(firstDetail);
+        showEventNotification('yellow', `🟨 ${name}`);
+        _flashCard('yellow');
+
+    } else if (actionType === 'foul') {
+        const name = extractName(firstDetail);
+        showEventNotification('foul', `⚠️ Faute — ${name}`);
+        _flashCard('yellow');
+    }
+}
+
+function _flashCard(type) {
+    if (!_state) return;
+    // La faute vient du défenseur → flash sur la card adverse à l'équipe courante
+    const defTeam = _state.currentTeam === 'internal' ? 'external' : 'internal';
+    const prefix  = defTeam === 'internal' ? 'home' : 'away';
+    const cardEl  = _rootEl?.querySelector(`#${prefix}-card`);
+    if (!cardEl) return;
+    cardEl.classList.remove('flash-yellow', 'flash-red');
+    cardEl.getBoundingClientRect();
+    cardEl.classList.add(type === 'red' ? 'flash-red' : 'flash-yellow');
+    setTimeout(() => cardEl.classList.remove('flash-yellow', 'flash-red'), 1400);
+}
+
 export function setMessage(main, sub) {
     if (_ui.msgMainEl && main !== undefined) _ui.msgMainEl.textContent = main;
     if (_ui.msgSubEl  && sub  !== undefined) _ui.msgSubEl.textContent  = sub;
@@ -186,7 +295,9 @@ export function pushLogEntry(logKeyOrText, details = [], diceTag = null, state) 
 
     const [actionType, result] = _detectType(logKeyOrText, d);
 
+    // Après
     _pushLog(new LogEntry({ turn: turns, actionType, team, result, mainText: main, details: d, diceTag }));
+    _triggerEventNotification(actionType, main, d);
 }
 
 function ensureCardPhotoLayer(cardEl) {

@@ -1066,7 +1066,18 @@ function _continueKeeperDuelResult(duelResult, attackTeam, defenseTeam, isSpecia
             (isSpecial ? TEXTS.ui.goalSpecialMain : TEXTS.ui.goalMain).replace("{team}", _TEAMS[attackTeam].label),
             TEXTS.ui.goalSub.replace("{scoreInternal}", _state.score.internal).replace("{scoreExternal}", _state.score.external)
         );
-        pushLogEntry(isSpecial ? "shotGoalSpecialTitle" : "shotGoalTitle", ["Zone " + (originZone + 1)].concat(logParts), diceTag, _state);
+
+        const scorerName2 = (() => {
+            const info = _roster.getPlayerInfo(attackTeam, b.number);
+            if (!info) return null;
+            return `${info.lastname} n°${info.number} (${_TEAMS[attackTeam].label})`;
+        })();
+        pushLogEntry(
+            isSpecial ? "shotGoalSpecialTitle" : "shotGoalTitle",
+            [scorerName2, "Zone " + (originZone + 1)].concat(logParts).filter(Boolean),
+            diceTag, _state
+        );
+
         animateGoalThenReset(attackTeam, () => {
             _state.isKickoff = true;
             _state.keeperRestartMustPass = false;
@@ -1287,7 +1298,18 @@ export function resolveShotKeeperDuel(ctx, defenseAction) {
             (isSpecial ? TEXTS.ui.goalSpecialMain : TEXTS.ui.goalMain).replace("{team}", _TEAMS[attackTeam].label),
             TEXTS.ui.goalSub.replace("{scoreInternal}", _state.score.internal).replace("{scoreExternal}", _state.score.external)
         );
-        pushLogEntry(isSpecial ? "shotGoalSpecialTitle" : "shotGoalTitle", ["Zone " + (originZone + 1)].concat(logParts), diceTag, _state);
+
+        const scorerName = (() => {
+            const info = _roster.getPlayerInfo(attackTeam, ball().number);
+            if (!info) return null;
+            const teamLabel = _TEAMS[attackTeam].label;
+            return `${info.lastname} n°${info.number} (${teamLabel})`;
+        })();
+        pushLogEntry(
+            isSpecial ? "shotGoalSpecialTitle" : "shotGoalTitle",
+            [scorerName, "Zone " + (originZone + 1)].concat(logParts).filter(Boolean),
+            diceTag, _state
+        );
 
         animateGoalThenReset(attackTeam, () => {
             _state.isKickoff = true;
