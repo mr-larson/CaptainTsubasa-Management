@@ -2557,185 +2557,798 @@ class PlayerSeeder extends Seeder
                 'Star offensive de Real Seven, Hino est un buteur puissant et agressif. Son tir dévastateur et son mental font de lui une menace constante.'
             ],
 
-            // Hungry Heart – Not contract
+            // L'École des Champions – Not contract
+
+// Columbus / Gênes / Ailes de Jupiter
             [
-                'Kyosuke', 'Kojima', 16, 'Forward', 520,
+                'Benjamin', 'Lefranc', 13, 'Forward', 420,
                 [
-                    'speed' => 82, 'stamina' => 78, 'defense' => 24, 'attack' => 44,
-                    'shot' => 36, 'pass' => 28, 'dribble' => 32,
-                    'block' => 18, 'intercept' => 20, 'tackle' => 18,
-                    'hand_save' => 10, 'punch_save' => 10
+                    'speed' => 68, 'stamina' => 74, 'defense' => 20, 'attack' => 36,
+                    'shot' => 28, 'pass' => 26, 'dribble' => 27,
+                    'block' => 17, 'intercept' => 18, 'tackle' => 18,
+                    'hand_save' => 10, 'punch_save' => 10,
                 ],
-                'Héros de Hungry Heart, attaquant fougueux doté d’un tir puissant et d’une détermination explosive.'
+                'Capitaine charismatique des Ailes de Jupiter. Benjamin se distingue par sa détermination, sa vision du jeu et sa capacité à élever son niveau dans les grands moments.'
+            ],
+            [
+                'Eric', 'Townsend', 13, 'Forward', 390,
+                [
+                    'speed' => 72, 'stamina' => 70, 'defense' => 19, 'attack' => 33,
+                    'shot' => 26, 'pass' => 24, 'dribble' => 28,
+                    'block' => 16, 'intercept' => 17, 'tackle' => 17,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Capitaine de Columbus devenu lieutenant fidèle de Benjamin. Il se dépasse régulièrement face aux frappes puissantes de Cesare, payant de sa personne pour sauver son équipe.'
+            ],
+            [
+                'Lucas', 'Rondi', 13, 'Defender', 385,
+                [
+                    'speed' => 70, 'stamina' => 68, 'defense' => 26, 'attack' => 22,
+                    'shot' => 17, 'pass' => 20, 'dribble' => 28,
+                    'block' => 24, 'intercept' => 22, 'tackle' => 23,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Libéro acrobate, fils d\'une famille de circassiens. Dribbleur hors pair, il se distingue par ses acrobaties spectaculaires et rivalise d\'inventivité avec Papan.'
+            ],
+            [
+                'Cesare', 'Gatti', 13, 'Forward', 440,
+                [
+                    'speed' => 70, 'stamina' => 76, 'defense' => 22, 'attack' => 38,
+                    'shot' => 30, 'pass' => 22, 'dribble' => 26,
+                    'block' => 17, 'intercept' => 18, 'tackle' => 18,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Attaquant puissant au sang chaud, rival et partenaire de Benjamin. Son tir dévastateur est l\'un des plus redoutables de sa génération.'
+            ],
+            [
+                'Roberto', 'Concini', 13, 'Midfielder', 350,
+                [
+                    'speed' => 62, 'stamina' => 68, 'defense' => 23, 'attack' => 28,
+                    'shot' => 21, 'pass' => 26, 'dribble' => 23,
+                    'block' => 19, 'intercept' => 21, 'tackle' => 20,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Milieu de Columbus devenu un joueur fiable au contact de Benjamin. Sympathique et impliqué, il soutient activement le jeu collectif.'
+            ],
+            [
+                'Macaroni', 'Giotti', 13, 'Defender', 345,
+                [
+                    'speed' => 58, 'stamina' => 70, 'defense' => 28, 'attack' => 18,
+                    'shot' => 14, 'pass' => 17, 'dribble' => 16,
+                    'block' => 26, 'intercept' => 22, 'tackle' => 26,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Défenseur de Columbus qui a progressé grâce à Benjamin. Ses efforts ont été récompensés par une sélection à Gênes. Il parvient même à repousser les tirs de l\'aigle en finale.'
+            ],
+            [
+                'Giorgio', 'Fornari', 13, 'Goalkeeper', 280,
+                [
+                    'speed' => 50, 'stamina' => 62, 'defense' => 22, 'attack' => 12,
+                    'shot' => 10, 'pass' => 14, 'dribble' => 12,
+                    'block' => 20, 'intercept' => 18, 'tackle' => 16,
+                    'hand_save' => 24, 'punch_save' => 22,
+                ],
+                'Gardien de Columbus, peu sûr de lui mais qui progresse grâce aux conseils de Benjamin. Il apprend à surmonter sa peur face aux tirs puissants de Cesare.'
+            ],
+            [
+                'Antonio', 'Solozzo', 13, 'Midfielder', 270,
+                [
+                    'speed' => 54, 'stamina' => 62, 'defense' => 20, 'attack' => 22,
+                    'shot' => 18, 'pass' => 21, 'dribble' => 19,
+                    'block' => 17, 'intercept' => 18, 'tackle' => 17,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Milieu discret de Columbus qui manque de confiance en lui. L\'arrivée de Benjamin l\'encourage à se surpasser lors des entraînements.'
             ],
 
+// San Podesta Jr
             [
-                'Seisuke', 'Kojima', 17, 'Forward', 540,
+                'Mario', 'Santis', 13, 'Midfielder', 395,
                 [
-                    'speed' => 78, 'stamina' => 82, 'defense' => 26, 'attack' => 42,
-                    'shot' => 34, 'pass' => 30, 'dribble' => 30,
-                    'block' => 18, 'intercept' => 21, 'tackle' => 19,
-                    'hand_save' => 10, 'punch_save' => 10
-                ],
-                'Frère adoptif de Kyosuke, joueur talentueux et calme, doté d’une excellente vision offensive.'
-            ],
-
-            [
-                'Rodrigo', 'Santamaria', 17, 'Midfielder', 495,
-                [
-                    'speed' => 75, 'stamina' => 80, 'defense' => 28, 'attack' => 38,
-                    'shot' => 30, 'pass' => 33, 'dribble' => 31,
+                    'speed' => 64, 'stamina' => 72, 'defense' => 26, 'attack' => 30,
+                    'shot' => 22, 'pass' => 28, 'dribble' => 24,
                     'block' => 20, 'intercept' => 24, 'tackle' => 22,
-                    'hand_save' => 10, 'punch_save' => 10
+                    'hand_save' => 10, 'punch_save' => 10,
                 ],
-                'Milieu offensif technique et créatif, véritable moteur du jeu collectif.'
+                'Meneur de jeu de San Podesta Jr, lieutenant de Julian. Son intelligence tactique hors norme lui permet d\'anticiper les plans adverses et de lancer ses partenaires dans les meilleures conditions.'
+            ],
+            [
+                'Renato', 'Salgari', 13, 'Forward', 400,
+                [
+                    'speed' => 70, 'stamina' => 64, 'defense' => 18, 'attack' => 34,
+                    'shot' => 27, 'pass' => 23, 'dribble' => 26,
+                    'block' => 16, 'intercept' => 17, 'tackle' => 16,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Attaquant incroyablement doué capable de reproduire les tirs de Julian et Hikaru même en déséquilibre. Manque encore d\'expérience et se fatigue vite dans les grands matchs.'
+            ],
+            [
+                'Renzo', 'Rotta', 13, 'Forward', 370,
+                [
+                    'speed' => 66, 'stamina' => 68, 'defense' => 18, 'attack' => 31,
+                    'shot' => 25, 'pass' => 22, 'dribble' => 23,
+                    'block' => 16, 'intercept' => 17, 'tackle' => 16,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Attaquant de San Podesta Jr, remplaçant de Julian. Sélectionné à Gênes, il marque plusieurs buts précieux avant de s\'imposer comme titulaire à son retour.'
+            ],
+            [
+                'Coloni', 'Bottini', 13, 'Goalkeeper', 320,
+                [
+                    'speed' => 52, 'stamina' => 66, 'defense' => 24, 'attack' => 12,
+                    'shot' => 10, 'pass' => 15, 'dribble' => 12,
+                    'block' => 22, 'intercept' => 20, 'tackle' => 17,
+                    'hand_save' => 27, 'punch_save' => 25,
+                ],
+                'Gardien de San Podesta Jr, fiable et régulier dans ses interventions. Il soutient solidement son équipe lors des grands matchs.'
+            ],
+            [
+                'Bruno', 'Moricone', 13, 'Midfielder', 360,
+                [
+                    'speed' => 66, 'stamina' => 68, 'defense' => 24, 'attack' => 30,
+                    'shot' => 23, 'pass' => 26, 'dribble' => 25,
+                    'block' => 19, 'intercept' => 22, 'tackle' => 21,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Joueur vedette de Margherita, individualiste au départ. Il adopte l\'esprit d\'équipe après le premier match de Gênes et devient un atout collectif précieux.'
+            ],
+            [
+                'Alfredo', 'Pettri', 13, 'Defender', 340,
+                [
+                    'speed' => 58, 'stamina' => 72, 'defense' => 27, 'attack' => 16,
+                    'shot' => 13, 'pass' => 16, 'dribble' => 15,
+                    'block' => 26, 'intercept' => 22, 'tackle' => 26,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Défenseur de petite stature mais extrêmement tenace. Il voue un culte à Cesare et est capable de stopper les meilleurs joueurs par sa ténacité acharnée.'
             ],
 
+// Jumeaux Biancchi
             [
-                'Hideto', 'Tobi', 16, 'Midfielder', 460,
+                'Nino', 'Biancchi', 13, 'Forward', 355,
                 [
-                    'speed' => 82, 'stamina' => 75, 'defense' => 24, 'attack' => 34,
-                    'shot' => 27, 'pass' => 28, 'dribble' => 34,
-                    'block' => 18, 'intercept' => 22, 'tackle' => 20,
-                    'hand_save' => 10, 'punch_save' => 10
+                    'speed' => 64, 'stamina' => 68, 'defense' => 18, 'attack' => 30,
+                    'shot' => 26, 'pass' => 24, 'dribble' => 22,
+                    'block' => 16, 'intercept' => 17, 'tackle' => 16,
+                    'hand_save' => 10, 'punch_save' => 10,
                 ],
-                'Ailier rapide et fantasque, capable de déborder et créer des différences en un contre un.'
+                'Jumeau attaquant de Corvette. Grand et doté d\'une excellente détente, il excelle dans le jeu de tête et les une-deux foudroyants avec son frère Riki.'
+            ],
+            [
+                'Riki', 'Biancchi', 13, 'Forward', 355,
+                [
+                    'speed' => 64, 'stamina' => 68, 'defense' => 18, 'attack' => 30,
+                    'shot' => 26, 'pass' => 24, 'dribble' => 22,
+                    'block' => 16, 'intercept' => 17, 'tackle' => 16,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Jumeau attaquant de Corvette. En duo avec Nino, leur synchronisation parfaite et leur jeu aérien font d\'eux une menace constante sur les phases arrêtées.'
             ],
 
+// Naples
             [
-                'Kazuhiko', 'Mori', 17, 'Goalkeeper', 480,
+                'Woltz', 'Hoffmann', 13, 'Goalkeeper', 420,
                 [
-                    'speed' => 62, 'stamina' => 78, 'defense' => 36, 'attack' => 18,
-                    'shot' => 15, 'pass' => 18, 'dribble' => 16,
-                    'block' => 27, 'intercept' => 26, 'tackle' => 22,
-                    'hand_save' => 34, 'punch_save' => 32
+                    'speed' => 62, 'stamina' => 74, 'defense' => 30, 'attack' => 14,
+                    'shot' => 12, 'pass' => 16, 'dribble' => 14,
+                    'block' => 26, 'intercept' => 24, 'tackle' => 20,
+                    'hand_save' => 33, 'punch_save' => 30,
                 ],
-                'Gardien fiable doté d’un sens du placement remarquable.'
+                'Gardien allemand grand et massif mais très agile. Il anticipe la direction des tirs en observant les pieds des tireurs, ce qui lui permet des réactions fulgurantes.'
+            ],
+            [
+                'Ricardo', 'Costello', 13, 'Midfielder', 360,
+                [
+                    'speed' => 64, 'stamina' => 68, 'defense' => 24, 'attack' => 28,
+                    'shot' => 21, 'pass' => 24, 'dribble' => 22,
+                    'block' => 19, 'intercept' => 21, 'tackle' => 20,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Lieutenant de Cesare à Naples. Joueur au sang chaud, il est le seul personnage de la série expulsé suite à un carton rouge face à l\'équipe de Trente.'
             ],
 
+// Ailes de Jupiter
             [
-                'Haruma', 'Katori', 17, 'Midfielder', 430,
+                'Papan', 'Correia Da Silva', 13, 'Midfielder', 430,
                 [
-                    'speed' => 68, 'stamina' => 80, 'defense' => 32, 'attack' => 28,
-                    'shot' => 22, 'pass' => 26, 'dribble' => 25,
-                    'block' => 24, 'intercept' => 26, 'tackle' => 27,
-                    'hand_save' => 10, 'punch_save' => 10
+                    'speed' => 74, 'stamina' => 62, 'defense' => 20, 'attack' => 36,
+                    'shot' => 26, 'pass' => 28, 'dribble' => 32,
+                    'block' => 17, 'intercept' => 19, 'tackle' => 18,
+                    'hand_save' => 10, 'punch_save' => 10,
                 ],
-                'Milieu défensif solide, infatigable et précieux dans la récupération.'
+                'Milieu acrobatique au talent immense mais à la discipline aléatoire. Renvoyé de 14 équipes, il rejoint les Ailes de Jupiter et se lie d\'amitié avec Lucas après leur rivalité acrobatique.'
             ],
-
             [
-                'Jin', 'Kano', 17, 'Defender', 410,
+                'Ash', 'Rodrigues', 13, 'Defender', 375,
                 [
-                    'speed' => 62, 'stamina' => 75, 'defense' => 34, 'attack' => 22,
-                    'shot' => 18, 'pass' => 20, 'dribble' => 19,
-                    'block' => 30, 'intercept' => 26, 'tackle' => 32,
-                    'hand_save' => 10, 'punch_save' => 10
-                ],
-                'Défenseur central agressif et physique, pilier de la ligne arrière.'
-            ],
-
-            [
-                'Ryo', 'Yoshijogi', 17, 'Defender', 395,
-                [
-                    'speed' => 60, 'stamina' => 70, 'defense' => 32, 'attack' => 20,
+                    'speed' => 68, 'stamina' => 70, 'defense' => 28, 'attack' => 20,
                     'shot' => 16, 'pass' => 19, 'dribble' => 18,
-                    'block' => 28, 'intercept' => 25, 'tackle' => 29,
-                    'hand_save' => 10, 'punch_save' => 10
+                    'block' => 26, 'intercept' => 24, 'tackle' => 26,
+                    'hand_save' => 10, 'punch_save' => 10,
                 ],
-                'Défenseur calme et discipliné, complément idéal de Kano en défense.'
+                'Libéro brésilien évoluant en Allemagne. Il souffre d\'un blocage psychologique suite à un accident mais surmonte sa peur grâce à Yann, devenant un défenseur solide des Ailes de Jupiter.'
+            ],
+            [
+                'Yann', 'Haarden', 13, 'Forward', 420,
+                [
+                    'speed' => 70, 'stamina' => 76, 'defense' => 24, 'attack' => 36,
+                    'shot' => 28, 'pass' => 22, 'dribble' => 26,
+                    'block' => 19, 'intercept' => 20, 'tackle' => 22,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Attaquant très physique des Pays-Bas. Stratège redoutable, il utilise Cesare à son insu pour faire le ménage dans les défenses. Il forme un trio de choc avec Cesare et Ash.'
+            ],
+            [
+                'Peter', 'Shilton', 13, 'Defender', 380,
+                [
+                    'speed' => 62, 'stamina' => 72, 'defense' => 30, 'attack' => 18,
+                    'shot' => 14, 'pass' => 18, 'dribble' => 16,
+                    'block' => 28, 'intercept' => 25, 'tackle' => 28,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Capitaine de l\'équipe nationale d\'Angleterre. Défenseur imposant et autoritaire, il rejoint les Ailes de Jupiter pour la Coupe du monde des clubs.'
+            ],
+            [
+                'Marcel', 'Beauregard', 13, 'Midfielder', 395,
+                [
+                    'speed' => 65, 'stamina' => 72, 'defense' => 24, 'attack' => 31,
+                    'shot' => 22, 'pass' => 30, 'dribble' => 25,
+                    'block' => 19, 'intercept' => 23, 'tackle' => 21,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Capitaine de l\'équipe de France, réputé pour la précision millimétrée de ses passes. Il rejoint les Ailes de Jupiter après avoir surpassé Eric, qui l\'avait humilié par le passé.'
             ],
 
+// Milan
+            [
+                'Jean', 'Levaillant', 13, 'Midfielder', 430,
+                [
+                    'speed' => 68, 'stamina' => 74, 'defense' => 26, 'attack' => 34,
+                    'shot' => 24, 'pass' => 30, 'dribble' => 28,
+                    'block' => 20, 'intercept' => 24, 'tackle' => 22,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Capitaine de Milan, surnommé "Le magicien". L\'un des joueurs les plus techniques de la série, il sait pratiquement tout faire avec un ballon.'
+            ],
+
+// Rome
+            [
+                'Nero', 'Martella', 13, 'Forward', 370,
+                [
+                    'speed' => 66, 'stamina' => 68, 'defense' => 19, 'attack' => 31,
+                    'shot' => 24, 'pass' => 26, 'dribble' => 23,
+                    'block' => 16, 'intercept' => 18, 'tackle' => 17,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Capitaine de Rome, attaquant jouant collectivement. Avec Erio et Bento, il pratique un jeu de passes très efficace qui déstabilise les défenses adverses.'
+            ],
+            [
+                'Erio', 'Caruso', 13, 'Forward', 355,
+                [
+                    'speed' => 64, 'stamina' => 66, 'defense' => 18, 'attack' => 29,
+                    'shot' => 22, 'pass' => 25, 'dribble' => 22,
+                    'block' => 15, 'intercept' => 17, 'tackle' => 16,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Attaquant de Rome faisant partie du trio offensif avec Nero et Bento. Leur jeu collectif et leurs passes rapides sont leur principale force.'
+            ],
+            [
+                'Bento', 'Capone', 13, 'Forward', 355,
+                [
+                    'speed' => 64, 'stamina' => 66, 'defense' => 18, 'attack' => 29,
+                    'shot' => 22, 'pass' => 25, 'dribble' => 22,
+                    'block' => 15, 'intercept' => 17, 'tackle' => 16,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Attaquant de Rome, troisième élément du trio offensif avec Nero et Erio. Ensemble ils pratiquent un football collectif basé sur des échanges rapides et précis.'
+            ],
+
+// Falcon Jr
+            [
+                'Carlos', 'Oliveira Tavares', 13, 'Forward', 395,
+                [
+                    'speed' => 68, 'stamina' => 72, 'defense' => 18, 'attack' => 34,
+                    'shot' => 28, 'pass' => 20, 'dribble' => 24,
+                    'block' => 16, 'intercept' => 17, 'tackle' => 17,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Capitaine de Falcon Jr. Attaquant brésilien spécialiste des tirs à effet, redouté dans les duels offensifs et les situations de coup de pied arrêté.'
+            ],
+            [
+                'Giovanni', 'Barbossa-Perreira', 13, 'Forward', 360,
+                [
+                    'speed' => 66, 'stamina' => 68, 'defense' => 17, 'attack' => 30,
+                    'shot' => 24, 'pass' => 22, 'dribble' => 22,
+                    'block' => 15, 'intercept' => 16, 'tackle' => 16,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Lieutenant de Carlos au sein de Falcon Jr. Attaquant combatif et fidèle second de son capitaine.'
+            ],
+
+// Pegasus FC
+            [
+                'Ken', 'Hinamori', 13, 'Midfielder', 400,
+                [
+                    'speed' => 70, 'stamina' => 72, 'defense' => 28, 'attack' => 32,
+                    'shot' => 24, 'pass' => 26, 'dribble' => 26,
+                    'block' => 24, 'intercept' => 26, 'tackle' => 26,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Capitaine du Dragon Rouge de Pegasus FC et ceinture noire de karaté. Il s\'inspire de cet art martial dans son jeu et admire profondément Hikaru, rêvant de le surpasser.'
+            ],
+            [
+                'Ryo', 'Sakura', 13, 'Goalkeeper', 415,
+                [
+                    'speed' => 60, 'stamina' => 72, 'defense' => 28, 'attack' => 12,
+                    'shot' => 10, 'pass' => 15, 'dribble' => 13,
+                    'block' => 24, 'intercept' => 22, 'tackle' => 18,
+                    'hand_save' => 32, 'punch_save' => 30,
+                ],
+                'Gardien de Pegasus FC s\'inspirant du karaté pour ses parades. Avec Woltz, il est sans doute l\'un des deux meilleurs gardiens de la série.'
+            ],
+
+            //-------------------------------
+            // Hungry Heart – Not contract
+            //-------------------------------
+            [
+                'Kyosuke', 'Kano', 13, 'Forward', 380,
+                [
+                    'speed' => 68, 'stamina' => 68, 'defense' => 16, 'attack' => 30,
+                    'shot' => 24, 'pass' => 20, 'dribble' => 24,
+                    'block' => 14, 'intercept' => 15, 'tackle' => 14,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Attaquant fougueux de Jyoyo, surnommé Orangehead. Formé par son frère Seisuke, il retrouve sa passion du football au contact de ses coéquipiers et s\'impose comme l\'attaquant vedette de l\'équipe.'
+            ],
+
+//            [
+//                'Seisuke', 'Kano', 17, 'Midfielder', 460,
+//                [
+//                    'speed' => 72, 'stamina' => 76, 'defense' => 24, 'attack' => 38,
+//                    'shot' => 28, 'pass' => 32, 'dribble' => 28,
+//                    'block' => 18, 'intercept' => 22, 'tackle' => 20,
+//                    'hand_save' => 10, 'punch_save' => 10,
+//                ],
+//                'Frère aîné de Kyosuke, prodige reconnu. Il a guidé ses équipes aux nationaux et vise déjà une carrière professionnelle. Meneur de jeu technique et visionnaire.'
+//            ],
+
+            [
+                'Rafael', 'Del Franco', 13, 'Midfielder', 355,
+                [
+                    'speed' => 64, 'stamina' => 66, 'defense' => 20, 'attack' => 28,
+                    'shot' => 20, 'pass' => 26, 'dribble' => 23,
+                    'block' => 16, 'intercept' => 19, 'tackle' => 17,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Meneur de jeu brésilien de Jyoyo. D\'abord individualiste et motivé par l\'argent pour aider sa famille, il évolue au contact de Kyosuke et devient le cerveau de son équipe.'
+            ],
+
+            [
+                'Koji', 'Sakai', 13, 'Goalkeeper', 330,
+                [
+                    'speed' => 52, 'stamina' => 64, 'defense' => 22, 'attack' => 12,
+                    'shot' => 10, 'pass' => 14, 'dribble' => 12,
+                    'block' => 20, 'intercept' => 18, 'tackle' => 15,
+                    'hand_save' => 26, 'punch_save' => 24,
+                ],
+                'Gardien mi-japonais mi-suédén de Jyoyo. Apprécié des filles, il surmonte sa peur des blessures grâce à ses coéquipiers et s\'affirme progressivement comme un gardien fiable.'
+            ],
+
+            [
+                'Gohzo', 'Kamata', 13, 'Defender', 305,
+                [
+                    'speed' => 56, 'stamina' => 66, 'defense' => 25, 'attack' => 16,
+                    'shot' => 13, 'pass' => 15, 'dribble' => 14,
+                    'block' => 23, 'intercept' => 20, 'tackle' => 23,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Défenseur et vice-capitaine de Jyoyo, ancien avant reconverti. Leader défensif sérieux et respecté de ses coéquipiers.'
+            ],
+
+            [
+                'Yoshiya', 'Sako', 13, 'Midfielder', 295,
+                [
+                    'speed' => 58, 'stamina' => 62, 'defense' => 22, 'attack' => 23,
+                    'shot' => 17, 'pass' => 23, 'dribble' => 19,
+                    'block' => 16, 'intercept' => 19, 'tackle' => 18,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Capitaine et meneur de jeu de Jyoyo avant l\'arrivée de Rodrigo. Posé et intelligent, il aide toujours ses coéquipiers et reste un joueur fiable.'
+            ],
+
+            [
+                'Hiroshi', 'Ichikawa', 13, 'Midfielder', 280,
+                [
+                    'speed' => 60, 'stamina' => 60, 'defense' => 20, 'attack' => 22,
+                    'shot' => 17, 'pass' => 20, 'dribble' => 19,
+                    'block' => 16, 'intercept' => 18, 'tackle' => 17,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Milieu fougueux de Jyoyo. Il croit profondément au jeu collectif et s\'oppose d\'abord à l\'individualisme de Rodrigo avant de s\'imposer comme vice-capitaine.'
+            ],
+
+            [
+                'Masashi', 'Esaka', 13, 'Midfielder', 270,
+                [
+                    'speed' => 56, 'stamina' => 62, 'defense' => 19, 'attack' => 21,
+                    'shot' => 16, 'pass' => 20, 'dribble' => 18,
+                    'block' => 15, 'intercept' => 17, 'tackle' => 16,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Milieu jovial de Jyoyo, passionné par le bien-être de l\'équipe. Sako et Kamata le choisissent comme nouveau capitaine pour son attitude exemplaire.'
+            ],
+
+            [
+                'Yuya', 'Kiba', 13, 'Forward', 320,
+                [
+                    'speed' => 72, 'stamina' => 62, 'defense' => 14, 'attack' => 26,
+                    'shot' => 21, 'pass' => 16, 'dribble' => 22,
+                    'block' => 13, 'intercept' => 14, 'tackle' => 13,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Attaquant rapide rival de Kyosuke, surnommé Nesthead. Sa vitesse et sa frappe sont ses principaux atouts, mais il manque encore de maturité.'
+            ],
+
+            [
+                'Masahiko', 'Shinkawa', 13, 'Midfielder', 300,
+                [
+                    'speed' => 76, 'stamina' => 58, 'defense' => 16, 'attack' => 22,
+                    'shot' => 16, 'pass' => 18, 'dribble' => 24,
+                    'block' => 14, 'intercept' => 15, 'tackle' => 14,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Milieu ultra-rapide et ami proche de Yuya. Sa vitesse et ses dribbles en font un joueur difficile à stopper malgré son jeune âge.'
+            ],
+
+            [
+                'Kazuya', 'Muroi', 13, 'Defender', 270,
+                [
+                    'speed' => 58, 'stamina' => 62, 'defense' => 23, 'attack' => 14,
+                    'shot' => 12, 'pass' => 14, 'dribble' => 13,
+                    'block' => 22, 'intercept' => 18, 'tackle' => 22,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Défenseur reconnaissable à sa coupe mohawk. Il joue au football pour aider Yuya à réaliser son rêve, apportant solidité et engagement défensif.'
+            ],
+
+            //-------------------------------
             // Blue Lock – Not contract
+            //-------------------------------
             [
-                'Yoichi', 'Isagi', 16, 'Forward', 520,
+                'Yoichi', 'Isagi', 13, 'Forward', 400,
                 [
-                    'speed'      => 78, 'stamina'    => 80, 'defense'    => 22, 'attack'     => 44,
-                    'shot'       => 34, 'pass'       => 32, 'dribble'    => 30,
-                    'block'      => 18, 'intercept'  => 22, 'tackle'     => 20,
-                    'hand_save'  => 10, 'punch_save' => 10,
+                    'speed' => 68, 'stamina' => 70, 'defense' => 18, 'attack' => 32,
+                    'shot' => 26, 'pass' => 26, 'dribble' => 24,
+                    'block' => 15, 'intercept' => 18, 'tackle' => 16,
+                    'hand_save' => 10, 'punch_save' => 10,
                 ],
-                'Attaquant au sens du but exceptionnel, Isagi brille par sa lecture du jeu et sa capacité à être au bon endroit au bon moment.'
+                'Attaquant au sens du but exceptionnel. Isagi brille par sa lecture du jeu et sa capacité à analyser le terrain pour être toujours au bon endroit au bon moment.'
             ],
 
             [
-                'Meguru', 'Bachira', 16, 'Midfielder', 500,
+                'Meguru', 'Bachira', 13, 'Midfielder', 385,
                 [
-                    'speed'      => 80, 'stamina'    => 78, 'defense'    => 22, 'attack'     => 40,
-                    'shot'       => 30, 'pass'       => 30, 'dribble'    => 36,
-                    'block'      => 18, 'intercept'  => 22, 'tackle'     => 20,
-                    'hand_save'  => 10, 'punch_save' => 10,
+                    'speed' => 70, 'stamina' => 68, 'defense' => 18, 'attack' => 30,
+                    'shot' => 22, 'pass' => 24, 'dribble' => 30,
+                    'block' => 15, 'intercept' => 18, 'tackle' => 16,
+                    'hand_save' => 10, 'punch_save' => 10,
                 ],
-                'Milieu offensif fantasque, Bachira adore le dribble et le jeu instinctif, capable de créer le chaos dans les défenses.'
+                'Milieu offensif instinctif, Bachira joue en suivant son instinct et ses dribbles imprévisibles créent le chaos dans les défenses adverses.'
             ],
 
             [
-                'Hyoma', 'Chigiri', 16, 'Forward', 510,
+                'Hyoma', 'Chigiri', 13, 'Forward', 390,
                 [
-                    'speed'      => 90, 'stamina'    => 76, 'defense'    => 20, 'attack'     => 40,
-                    'shot'       => 32, 'pass'       => 26, 'dribble'    => 30,
-                    'block'      => 16, 'intercept'  => 20, 'tackle'     => 18,
-                    'hand_save'  => 10, 'punch_save' => 10,
+                    'speed' => 84, 'stamina' => 64, 'defense' => 16, 'attack' => 30,
+                    'shot' => 24, 'pass' => 20, 'dribble' => 24,
+                    'block' => 13, 'intercept' => 16, 'tackle' => 14,
+                    'hand_save' => 10, 'punch_save' => 10,
                 ],
-                'Ailier ultra-rapide, Chigiri mise sur ses accélérations et ses appels pour prendre la profondeur et surprendre la défense.'
+                'Ailier prodige doté d\'une vitesse à couper le souffle. Fragilisé par une blessure au genou, il se surpasse malgré tout pour devenir un joueur exceptionnel.'
             ],
 
             [
-                'Rensuke', 'Kunigami', 17, 'Forward', 505,
+                'Rensuke', 'Kunigami', 13, 'Forward', 388,
                 [
-                    'speed'      => 76, 'stamina'    => 82, 'defense'    => 24, 'attack'     => 42,
-                    'shot'       => 35, 'pass'       => 25, 'dribble'    => 26,
-                    'block'      => 19, 'intercept'  => 21, 'tackle'     => 22,
-                    'hand_save'  => 10, 'punch_save' => 10,
+                    'speed' => 66, 'stamina' => 72, 'defense' => 20, 'attack' => 32,
+                    'shot' => 28, 'pass' => 19, 'dribble' => 20,
+                    'block' => 16, 'intercept' => 17, 'tackle' => 18,
+                    'hand_save' => 10, 'punch_save' => 10,
                 ],
-                'Attaquant puissant au tir dévastateur, Kunigami combine impact physique et présence dans la surface.'
+                'Attaquant puissant spécialiste des frappes longues. Son tir gauche dévastateur de 27 mètres est sa marque de fabrique. Il rêve de devenir un super-héros du football.'
             ],
 
             [
-                'Seishiro', 'Nagi', 16, 'Forward', 540,
+                'Seishiro', 'Nagi', 13, 'Forward', 415,
                 [
-                    'speed'      => 78, 'stamina'    => 74, 'defense'    => 22, 'attack'     => 46,
-                    'shot'       => 36, 'pass'       => 30, 'dribble'    => 34,
-                    'block'      => 18, 'intercept'  => 21, 'tackle'     => 19,
-                    'hand_save'  => 10, 'punch_save' => 10,
+                    'speed' => 68, 'stamina' => 64, 'defense' => 18, 'attack' => 36,
+                    'shot' => 28, 'pass' => 24, 'dribble' => 28,
+                    'block' => 15, 'intercept' => 17, 'tackle' => 15,
+                    'hand_save' => 10, 'punch_save' => 10,
                 ],
-                'Génie naturel du football, Nagi possède un contrôle de balle et une première touche exceptionnels.'
+                'Génie naturel du football découvert par Reo. Ses amortis et son contrôle de balle exceptionnels font de lui un joueur unique, capable de dominer sans effort apparent.'
             ],
 
             [
-                'Reo', 'Mikage', 16, 'Midfielder', 495,
+                'Reo', 'Mikage', 13, 'Midfielder', 378,
                 [
-                    'speed'      => 74, 'stamina'    => 80, 'defense'    => 26, 'attack'     => 38,
-                    'shot'       => 28, 'pass'       => 34, 'dribble'    => 29,
-                    'block'      => 20, 'intercept'  => 24, 'tackle'     => 22,
-                    'hand_save'  => 10, 'punch_save' => 10,
+                    'speed' => 64, 'stamina' => 70, 'defense' => 22, 'attack' => 28,
+                    'shot' => 20, 'pass' => 28, 'dribble' => 23,
+                    'block' => 17, 'intercept' => 20, 'tackle' => 18,
+                    'hand_save' => 10, 'punch_save' => 10,
                 ],
-                'Milieu polyvalent et intelligent, Reo sait s’adapter à tous les rôles pour sublimer ses coéquipiers.'
+                'Héritier de la Mikage Corporation. Polyvalent et intelligent, il a tout pour réussir et son seul désir est de gagner la Coupe du monde avec Nagi.'
             ],
 
             [
-                'Shoei', 'Barou', 17, 'Forward', 550,
+                'Shoei', 'Baro', 13, 'Forward', 420,
                 [
-                    'speed'      => 80, 'stamina'    => 82, 'defense'    => 24, 'attack'     => 48,
-                    'shot'       => 38, 'pass'       => 22, 'dribble'    => 32,
-                    'block'      => 19, 'intercept'  => 21, 'tackle'     => 22,
-                    'hand_save'  => 10, 'punch_save' => 10,
+                    'speed' => 70, 'stamina' => 72, 'defense' => 20, 'attack' => 36,
+                    'shot' => 30, 'pass' => 16, 'dribble' => 26,
+                    'block' => 16, 'intercept' => 17, 'tackle' => 18,
+                    'hand_save' => 10, 'punch_save' => 10,
                 ],
-                'Avant-centre égoïste et dominant, Barou impose sa loi physiquement et cherche systématiquement le but.'
+                'Surnommé le Roi du terrain. Avant-centre égoïste et dominant, Baro cherche systématiquement le but par la puissance physique et l\'endurance.'
             ],
 
             [
-                'Rin', 'Itoshi', 17, 'Forward', 560,
+                'Rin', 'Itoshi', 13, 'Forward', 435,
                 [
-                    'speed'      => 82, 'stamina'    => 84, 'defense'    => 26, 'attack'     => 50,
-                    'shot'       => 40, 'pass'       => 32, 'dribble'    => 34,
-                    'block'      => 20, 'intercept'  => 24, 'tackle'     => 24,
-                    'hand_save'  => 10, 'punch_save' => 10,
+                    'speed' => 72, 'stamina' => 74, 'defense' => 22, 'attack' => 38,
+                    'shot' => 30, 'pass' => 26, 'dribble' => 28,
+                    'block' => 17, 'intercept' => 20, 'tackle' => 20,
+                    'hand_save' => 10, 'punch_save' => 10,
                 ],
-                'Attaquant prodige complet, Rin combine technique, vision et mental de tueur pour dominer la surface.'
+                'Frère cadet de Sae Itoshi, déterminé à le surpasser. Attaquant complet capable d\'atteindre un état de flow qui le propulse à un niveau supérieur lors des grands matchs.'
             ],
 
+            [
+                'Ryosuke', 'Kira', 13, 'Forward', 340,
+                [
+                    'speed' => 64, 'stamina' => 62, 'defense' => 16, 'attack' => 26,
+                    'shot' => 21, 'pass' => 20, 'dribble' => 21,
+                    'block' => 13, 'intercept' => 14, 'tackle' => 14,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Attaquant de Matsukaze Kokuo invité au Blue Lock. Il sympathise avec Isagi mais est éliminé dès la première épreuve par ce dernier.'
+            ],
+
+            [
+                'Jingo', 'Raichi', 13, 'Forward', 295,
+                [
+                    'speed' => 60, 'stamina' => 64, 'defense' => 14, 'attack' => 22,
+                    'shot' => 18, 'pass' => 14, 'dribble' => 17,
+                    'block' => 12, 'intercept' => 13, 'tackle' => 13,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Attaquant grande gueule de Blue Lock. Beau parleur au niveau de jeu modeste, il compense par son énergie et sa détermination affichée.'
+            ],
+
+            [
+                'Gin', 'Gagamaru', 13, 'Goalkeeper', 350,
+                [
+                    'speed' => 56, 'stamina' => 66, 'defense' => 24, 'attack' => 12,
+                    'shot' => 10, 'pass' => 14, 'dribble' => 12,
+                    'block' => 22, 'intercept' => 20, 'tackle' => 16,
+                    'hand_save' => 28, 'punch_save' => 26,
+                ],
+                'Reconverti gardien de but après avoir été attaquant. Sa polyvalence et ses réflexes surprenants lui permettent de réaliser des arrêts décisifs dans les grands matchs.'
+            ],
+
+            //-------------------------------
+            // Ao Ashi – Not contract
+            //-------------------------------
+            [
+                'Ashito', 'Aoi', 13, 'Defender', 390,
+                [
+                    'speed' => 72, 'stamina' => 74, 'defense' => 28, 'attack' => 26,
+                    'shot' => 20, 'pass' => 22, 'dribble' => 24,
+                    'block' => 24, 'intercept' => 26, 'tackle' => 25,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Latéral gauche d\'Esperion, reconverti d\'attaquant par le coach Fukuda. Sa vision exceptionnelle du jeu et sa détermination sans faille compensent son inexpérience au poste défensif.'
+            ],
+
+            [
+                'Eisaku', 'Ohtomo', 13, 'Midfielder', 355,
+                [
+                    'speed' => 60, 'stamina' => 70, 'defense' => 26, 'attack' => 24,
+                    'shot' => 18, 'pass' => 28, 'dribble' => 20,
+                    'block' => 20, 'intercept' => 23, 'tackle' => 22,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Milieu défensif de l\'équipe B d\'Esperion et premier ami d\'Ashito. Derrière une apparence de couard se cache un meneur composé, salué pour sa vision du jeu et sa capacité à faire le lien.'
+            ],
+
+            [
+                'Soichiro', 'Tachibana', 13, 'Forward', 360,
+                [
+                    'speed' => 66, 'stamina' => 66, 'defense' => 16, 'attack' => 30,
+                    'shot' => 24, 'pass' => 22, 'dribble' => 22,
+                    'block' => 14, 'intercept' => 15, 'tackle' => 15,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Avant-centre de l\'équipe B d\'Esperion, ancien joueur de Tokyo Musashino. Ami d\'Ashito, il apporte de la présence dans la surface et un bon sens du placement.'
+            ],
+
+            [
+                'Keiji', 'Togashi', 13, 'Defender', 340,
+                [
+                    'speed' => 58, 'stamina' => 68, 'defense' => 28, 'attack' => 16,
+                    'shot' => 13, 'pass' => 17, 'dribble' => 15,
+                    'block' => 26, 'intercept' => 22, 'tackle' => 26,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Défenseur central de l\'équipe B d\'Esperion et colocataire d\'Ashito. Solide et discipliné, il assure la stabilité de la ligne arrière par son sens du placement.'
+            ],
+
+            [
+                'Kanpei', 'Kuroda', 13, 'Midfielder', 345,
+                [
+                    'speed' => 62, 'stamina' => 68, 'defense' => 24, 'attack' => 25,
+                    'shot' => 18, 'pass' => 26, 'dribble' => 21,
+                    'block' => 18, 'intercept' => 22, 'tackle' => 20,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Milieu central formé à l\'académie Esperion. Technique et bien formé tactiquement, il apporte de la qualité dans la conservation du ballon et la construction du jeu.'
+            ],
+
+            [
+                'Jun', 'Asari', 13, 'Defender', 330,
+                [
+                    'speed' => 66, 'stamina' => 66, 'defense' => 25, 'attack' => 20,
+                    'shot' => 15, 'pass' => 20, 'dribble' => 18,
+                    'block' => 23, 'intercept' => 21, 'tackle' => 23,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Latéral formé à l\'académie Esperion. Polyvalent et appliqué, il peut évoluer des deux côtés de la défense et participe activement aux phases offensives.'
+            ],
+
+            [
+                'Yuma', 'Motoki', 13, 'Forward', 395,
+                [
+                    'speed' => 68, 'stamina' => 68, 'defense' => 17, 'attack' => 32,
+                    'shot' => 26, 'pass' => 22, 'dribble' => 24,
+                    'block' => 14, 'intercept' => 16, 'tackle' => 15,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Attaquant promu en équipe A d\'Esperion. Formé à l\'académie, il a su s\'imposer par sa technique et son efficacité offensive pour franchir le cap vers l\'équipe première.'
+            ],
+
+            [
+                'Ryuichi', 'Takeshima', 13, 'Defender', 350,
+                [
+                    'speed' => 60, 'stamina' => 70, 'defense' => 29, 'attack' => 17,
+                    'shot' => 13, 'pass' => 17, 'dribble' => 15,
+                    'block' => 27, 'intercept' => 23, 'tackle' => 27,
+                    'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Défenseur central formé à l\'académie Esperion. Solide dans les duels et bien organisé, il est l\'un des piliers de la défense de l\'équipe B.'
+            ],
+
+            //-------------------------------
             // Other – Not contract (filler players)
+            //-------------------------------
+            ['Kenji', 'Nakashima', 13, 'Goalkeeper', 240, [
+                'speed' => 52, 'stamina' => 62, 'defense' => 28, 'attack' => 15,
+                'shot' => 15, 'pass' => 17, 'dribble' => 15, 'block' => 23,
+                'intercept' => 22, 'tackle' => 18, 'hand_save' => 26, 'punch_save' => 24
+            ], 'Gardien athlétique au bon sens du placement, fiable dans les situations de un contre un.'],
+
+            ['Ryusei', 'Ogata', 13, 'Goalkeeper', 225, [
+                'speed' => 50, 'stamina' => 60, 'defense' => 26, 'attack' => 15,
+                'shot' => 15, 'pass' => 16, 'dribble' => 15, 'block' => 22,
+                'intercept' => 21, 'tackle' => 17, 'hand_save' => 25, 'punch_save' => 23
+            ], 'Gardien calme et constant, apprécié pour sa communication avec sa défense.'],
+
+            ['Hiroki', 'Matsunaga', 13, 'Goalkeeper', 210, [
+                'speed' => 48, 'stamina' => 58, 'defense' => 25, 'attack' => 15,
+                'shot' => 15, 'pass' => 16, 'dribble' => 15, 'block' => 21,
+                'intercept' => 20, 'tackle' => 17, 'hand_save' => 24, 'punch_save' => 22
+            ], 'Gardien réflexe, capable de sortir des arrêts décisifs dans les moments importants.'],
+
+            ['Daiki', 'Kuroiwa', 13, 'Goalkeeper', 195, [
+                'speed' => 46, 'stamina' => 56, 'defense' => 24, 'attack' => 15,
+                'shot' => 15, 'pass' => 16, 'dribble' => 15, 'block' => 21,
+                'intercept' => 20, 'tackle' => 16, 'hand_save' => 23, 'punch_save' => 21
+            ], 'Gardien travailleur qui compense un manque d\'explosivité par son sérieux et sa rigueur.'],
+
+            ['Sosuke', 'Tamura', 13, 'Goalkeeper', 185, [
+                'speed' => 44, 'stamina' => 54, 'defense' => 23, 'attack' => 15,
+                'shot' => 15, 'pass' => 15, 'dribble' => 15, 'block' => 20,
+                'intercept' => 19, 'tackle' => 16, 'hand_save' => 22, 'punch_save' => 20
+            ], 'Gardien discret mais régulier, qui assure l\'essentiel sans prise de risque.'],
+
+            ['Wataru', 'Aoyama', 12, 'Goalkeeper', 175, [
+                'speed' => 42, 'stamina' => 52, 'defense' => 22, 'attack' => 15,
+                'shot' => 15, 'pass' => 15, 'dribble' => 15, 'block' => 19,
+                'intercept' => 19, 'tackle' => 16, 'hand_save' => 21, 'punch_save' => 19
+            ], 'Jeune gardien encore en développement, prometteur sur les phases de réflexe.'],
+
+            ['Tomoki', 'Fujioka', 12, 'Goalkeeper', 162, [
+                'speed' => 40, 'stamina' => 50, 'defense' => 21, 'attack' => 15,
+                'shot' => 15, 'pass' => 15, 'dribble' => 15, 'block' => 19,
+                'intercept' => 18, 'tackle' => 15, 'hand_save' => 20, 'punch_save' => 19
+            ], 'Gardien de complément, appliqué et discipliné dans son couloir.'],
+
+            ['Nobuki', 'Shimomura', 12, 'Goalkeeper', 148, [
+                'speed' => 38, 'stamina' => 48, 'defense' => 20, 'attack' => 15,
+                'shot' => 15, 'pass' => 15, 'dribble' => 15, 'block' => 18,
+                'intercept' => 18, 'tackle' => 15, 'hand_save' => 19, 'punch_save' => 18
+            ], 'Gardien modeste mais sérieux, fait le travail sans briller.'],
+
+            ['Isamu', 'Terada', 12, 'Goalkeeper', 132, [
+                'speed' => 36, 'stamina' => 45, 'defense' => 19, 'attack' => 15,
+                'shot' => 15, 'pass' => 15, 'dribble' => 15, 'block' => 17,
+                'intercept' => 17, 'tackle' => 15, 'hand_save' => 18, 'punch_save' => 17
+            ], 'Gardien en début de formation, montre de la volonté mais manque encore d\'expérience.'],
+
+            ['Haruki', 'Enomoto', 12, 'Goalkeeper', 118, [
+                'speed' => 34, 'stamina' => 43, 'defense' => 18, 'attack' => 15,
+                'shot' => 15, 'pass' => 15, 'dribble' => 15, 'block' => 17,
+                'intercept' => 17, 'tackle' => 15, 'hand_save' => 18, 'punch_save' => 17
+            ], 'Gardien débutant, encore loin du niveau requis mais plein de bonne volonté.'],
+
+            ['Kazuki', 'Oshiro', 13, 'Defender', 235, [
+                'speed' => 56, 'stamina' => 64, 'defense' => 28, 'attack' => 19,
+                'shot' => 16, 'pass' => 18, 'dribble' => 16, 'block' => 24,
+                'intercept' => 22, 'tackle' => 24, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Défenseur central robuste, excelle dans les duels aériens et le marquage serré.'],
+
+            ['Takuto', 'Shinohara', 13, 'Defender', 220, [
+                'speed' => 58, 'stamina' => 62, 'defense' => 27, 'attack' => 18,
+                'shot' => 15, 'pass' => 17, 'dribble' => 16, 'block' => 23,
+                'intercept' => 21, 'tackle' => 23, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Défenseur latéral rapide, capable de participer à la relance et de soutenir les phases offensives.'],
+
+            ['Yusuke', 'Nohara', 12, 'Defender', 205, [
+                'speed' => 54, 'stamina' => 60, 'defense' => 26, 'attack' => 18,
+                'shot' => 15, 'pass' => 17, 'dribble' => 15, 'block' => 22,
+                'intercept' => 20, 'tackle' => 22, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Défenseur appliqué et discipliné, sécurise son couloir et coupe les trajectoires adverses.'],
+
+            ['Shogo', 'Iwata', 12, 'Defender', 188, [
+                'speed' => 50, 'stamina' => 58, 'defense' => 25, 'attack' => 17,
+                'shot' => 15, 'pass' => 16, 'dribble' => 15, 'block' => 21,
+                'intercept' => 19, 'tackle' => 21, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Défenseur sobre et peu spectaculaire, mais fiable dans les tâches défensives de base.'],
+
+            ['Rento', 'Kawashima', 12, 'Defender', 170, [
+                'speed' => 46, 'stamina' => 55, 'defense' => 23, 'attack' => 16,
+                'shot' => 15, 'pass' => 16, 'dribble' => 15, 'block' => 20,
+                'intercept' => 18, 'tackle' => 20, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Défenseur jeune encore en développement, montre de bonnes dispositions défensives.'],
+
+            ['Haruto', 'Mizuno', 13, 'Midfielder', 240, [
+                'speed' => 58, 'stamina' => 64, 'defense' => 24, 'attack' => 26,
+                'shot' => 22, 'pass' => 24, 'dribble' => 22, 'block' => 19,
+                'intercept' => 21, 'tackle' => 20, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Milieu box-to-box actif, capable de participer aussi bien à la récupération qu\'à la finition.'],
+
+            ['Sora', 'Takigawa', 13, 'Midfielder', 222, [
+                'speed' => 60, 'stamina' => 62, 'defense' => 22, 'attack' => 25,
+                'shot' => 21, 'pass' => 23, 'dribble' => 23, 'block' => 18,
+                'intercept' => 20, 'tackle' => 19, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Milieu offensif technique, aime s\'infiltrer entre les lignes et décaler ses partenaires.'],
+
+            ['Riku', 'Hasumi', 12, 'Midfielder', 200, [
+                'speed' => 55, 'stamina' => 58, 'defense' => 21, 'attack' => 23,
+                'shot' => 20, 'pass' => 22, 'dribble' => 21, 'block' => 17,
+                'intercept' => 19, 'tackle' => 18, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Milieu polyvalent, fait le lien entre défense et attaque sans éclat particulier mais avec sérieux.'],
+
+            ['Yuto', 'Sekiguchi', 12, 'Midfielder', 182, [
+                'speed' => 52, 'stamina' => 56, 'defense' => 20, 'attack' => 22,
+                'shot' => 19, 'pass' => 21, 'dribble' => 20, 'block' => 17,
+                'intercept' => 18, 'tackle' => 17, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Milieu de terrain discret, applique les consignes et maintient l\'équilibre collectif.'],
+
+            ['Kaito', 'Nishida', 12, 'Midfielder', 165, [
+                'speed' => 48, 'stamina' => 52, 'defense' => 19, 'attack' => 20,
+                'shot' => 18, 'pass' => 20, 'dribble' => 19, 'block' => 16,
+                'intercept' => 17, 'tackle' => 16, 'hand_save' => 15, 'punch_save' => 15
+            ], 'Milieu en développement, manque encore de régularité mais montre de bonnes intentions.'],
+
             ['Masaru', 'Ito', 12, 'Midfielder', 210, [
                 'speed' => 50, 'stamina' => 55, 'defense' => 22, 'attack' => 24, 'shot' => 21, 'pass' => 22, 'dribble' => 21, 'block' => 18, 'intercept' => 19, 'tackle' => 18, 'hand_save' => 15, 'punch_save' => 15
             ]],

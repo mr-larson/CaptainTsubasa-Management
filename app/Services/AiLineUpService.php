@@ -9,7 +9,7 @@ use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
 use Illuminate\Support\Collection;
 
-class AILineupService
+class AiLineUpService
 {
     /**
      * Ajuste le lineup de toutes les équipes IA avant un match.
