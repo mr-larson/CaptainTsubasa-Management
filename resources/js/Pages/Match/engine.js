@@ -233,7 +233,7 @@ export function initMatchEngine(rootEl, config = {}) {
         };
     }
 
-    function buildMatchStats(events) {
+    function buildMatchStats(events, goalEvents = []) {
         const out = {
             players: {},
             teams: {
@@ -242,20 +242,23 @@ export function initMatchEngine(rootEl, config = {}) {
             },
         };
 
+        // Pour résoudre l'équipe d'un buteur depuis son first action event
+        const playerTeamCache = {};
+
         for (const ev of events) {
             if (ev.attack?.game_player_id) {
                 const pid = ev.attack.game_player_id;
                 if (!out.players[pid]) out.players[pid] = emptyPlayerMatchStats();
+                if (!playerTeamCache[pid]) playerTeamCache[pid] = ev.attack.team;
+
                 const act = ev.attack.action;
                 if (act === "pass")    out.players[pid].offense.pass.attempts++;
                 if (act === "shot")    out.players[pid].offense.shot.attempts++;
                 if (act === "dribble") out.players[pid].offense.dribble.attempts++;
                 if (act === "special") out.players[pid].offense.special.attempts++;
 
-                // Après
                 const t = ev.attack.team === "internal" ? "home" : "away";
 
-                // Compter toutes les tentatives dans teamStats (succès + échecs)
                 if (act === "pass")    out.teams[t].passes++;
                 if (act === "dribble") out.teams[t].dribbles++;
 
@@ -267,13 +270,7 @@ export function initMatchEngine(rootEl, config = {}) {
                         out.players[pid].offense.shot.success++;
                         out.teams[t].shots++;
                     }
-
-                    if ((act === "shot" || act === "special") &&
-                        ["hands", "punch", "gk-special"].includes(ev.defense?.action)) {
-                        out.players[pid].offense.goals = (out.players[pid].offense.goals ?? 0) + 1;
-                        out.teams[t].goals++;
-                    }
-
+                    // ⚠️ Les buts ne sont PLUS comptés ici — voir étape 2 ci-dessous
                     out.players[pid].duelsWon++;
                     out.teams[t].duelsWon++;
                 } else if (ev.result === "defense") {
@@ -286,6 +283,8 @@ export function initMatchEngine(rootEl, config = {}) {
             if (ev.defense?.game_player_id) {
                 const pid = ev.defense.game_player_id;
                 if (!out.players[pid]) out.players[pid] = emptyPlayerMatchStats();
+                if (!playerTeamCache[pid]) playerTeamCache[pid] = ev.defense.team;
+
                 const def = ev.defense.action;
                 if (def === "intercept")  out.players[pid].defense.intercept.attempts++;
                 if (def === "tackle")     out.players[pid].defense.tackle.attempts++;
@@ -307,6 +306,21 @@ export function initMatchEngine(rootEl, config = {}) {
                 }
             }
         }
+
+        // ── Étape 2 : compter les buts depuis goalEvents (source de vérité) ──
+        for (const gev of goalEvents) {
+            const pid = gev.player_id;
+            if (!pid) continue;
+            if (!out.players[pid]) out.players[pid] = emptyPlayerMatchStats();
+            out.players[pid].offense.goals = (out.players[pid].offense.goals ?? 0) + 1;
+
+            const team = playerTeamCache[pid];
+            if (team) {
+                const t = team === "internal" ? "home" : "away";
+                out.teams[t].goals++;
+            }
+        }
+
         return out;
     }
 
@@ -486,7 +500,7 @@ export function initMatchEngine(rootEl, config = {}) {
                     };
 
                     if (typeof matchConfig.onMatchEnd === "function") {
-                        payload.match_stats = buildMatchStats(state.actionEvents);
+                        payload.match_stats = buildMatchStats(state.actionEvents, state.goalEvents);
                         matchConfig.onMatchEnd(payload);
                     }
                 };

@@ -331,10 +331,14 @@ function doReroll(ctx) {
     const breakdown = buildFieldDuelBreakdown({
         attackBaseRaw, defenseBaseRaw,
         attackStamF, defenseStamF,
-        aRoll, dRoll, isGood,
-        attackScore, defenseScore,
+        aRoll: newAroll,
+        dRoll: newDroll,
+        isGood,
+        attackScore: newAttackScore,
+        defenseScore: newDefenseScore,
         clearanceBonus, meta,
-        critWinner,
+        critWinner: newCritWinner,
+        captainReroll: true,
         homeBonus: HOME_BONUS,
         homeSide: attackTeam === _homeTeam ? 'attack' : defenseTeam === _homeTeam ? 'defense' : null,
     });
