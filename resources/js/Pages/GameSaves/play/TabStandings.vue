@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import { usePlayerUtils } from './usePlayerUtils.js';
 
 const props = defineProps({
     standings: { type: Array,  required: true },
@@ -7,14 +8,7 @@ const props = defineProps({
     matches:   { type: Array,  default: () => [] },
 });
 
-const teamLogoUrl = (t) => {
-    const path = t?.logo_path ?? t?.team?.logo_path;
-    if (!path) return null;
-    if (path.startsWith('http')) return path;
-    if (path.startsWith('/'))    return path;
-    if (path.startsWith('teams/')) return '/images/' + path;
-    return '/' + path;
-};
+const { teamLogoUrl } = usePlayerUtils();
 
 const maxPoints = computed(() =>
     Math.max(1, ...props.standings.map(r => r.points ?? 0))

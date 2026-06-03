@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue';
+import { usePlayerUtils } from './usePlayerUtils.js';
 
 const aiTeamFilter = ref(null)
 
@@ -34,13 +35,6 @@ const props = defineProps({
 
 const emit = defineEmits(['add-slot', 'remove-slot', 'submit-training', 'prev-ai-week', 'next-ai-week']);
 
-const playerPhotoUrl = (p) => {
-    if (!p) return null;
-    if (p.photo_path)         return `/storage/${p.photo_path}`;
-    if (p.player?.photo_path) return `/storage/${p.player.photo_path}`;
-    return null;
-};
-
 const statLabel = (key) => ({
     shot: 'Tir', pass: 'Passe', dribble: 'Dribble', attack: 'Attaque',
     defense: 'Défense', speed: 'Vitesse', block: 'Block',
@@ -48,12 +42,7 @@ const statLabel = (key) => ({
     hand_save: 'Main', punch_save: 'Poings',
 }[key] ?? key);
 
-const statColor = (key) => ({
-    shot: 'bg-red-400', pass: 'bg-teal-400', dribble: 'bg-yellow-400',
-    attack: 'bg-orange-400', defense: 'bg-blue-400', speed: 'bg-sky-400',
-    block: 'bg-indigo-400', intercept: 'bg-purple-400', tackle: 'bg-pink-400',
-    stamina: 'bg-emerald-400', hand_save: 'bg-violet-400', punch_save: 'bg-fuchsia-400',
-}[key] ?? 'bg-slate-400');
+const { playerPhotoUrl, statColor } = usePlayerUtils();
 
 // Joueur correspondant à un ai_entry
 const playerForEntry = (entry) =>

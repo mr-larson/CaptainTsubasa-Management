@@ -280,6 +280,8 @@ function updateOtherPlayerNumber(playerId, number) {
                                   :teamById="teamById"
                                   :saving="saving"
                                   :matches="matches"
+                                  :bonusCardInventory="bonusCardInventory"
+                                  :isPlayerInjured="isPlayerInjured"
                                   @play-next-match="playNextMatch"
                                   @simulate-week="simulateWeek"
                                   @save-game="saveGame"

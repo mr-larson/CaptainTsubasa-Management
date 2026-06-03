@@ -233,17 +233,19 @@ class AITransferService
         }
 
         // Priorité 3 : fatigue accrue des titulaires → recruter si < seuil
-        $starters       = $contracts->where('is_starter', true)->filter(fn($c) => $c->gamePlayer !== null);
-        $avgStamina     = $starters->avg(fn($c) => $c->gamePlayer->stamina ?? 100) ?? 100;
-        $maxStamina     = $starters->avg(fn($c) => $c->gamePlayer->stamina ?? 100) ?? 100; // approximation
-        $staminaPercent = $maxStamina > 0 ? ($avgStamina / 100) * 100 : 100;
+        $starters = $contracts->where('is_starter', true)
+            ->filter(fn($c) => $c->gamePlayer !== null);
 
-        if ($staminaPercent <= self::FATIGUE_THRESHOLD && $squadSize < self::TARGET_SQUAD) {
-            // Recruter un joueur de renfort au poste le plus fatigué
+        $avgStaminaPercent = $starters->isEmpty()
+            ? 100
+            : (float) $starters->avg(fn($c) => $c->gamePlayer->stamina ?? 100);
+
+        if ($avgStaminaPercent <= self::FATIGUE_THRESHOLD && $squadSize < self::TARGET_SQUAD) {
+            // Trouver le poste dont la stamina moyenne est la plus basse
             $mostFatiguedPos = $starters
                 ->groupBy(fn($c) => $this->positionGroup($c->gamePlayer->position ?? ''))
-                ->map(fn($group) => $group->avg(fn($c) => $c->gamePlayer->stamina ?? 100))
-                ->sortKeys()
+                ->map(fn($group) => (float) $group->avg(fn($c) => $c->gamePlayer->stamina ?? 100))
+                ->sortBy(fn($avg) => $avg) // ASC : le plus bas d'abord
                 ->keys()
                 ->first();
 

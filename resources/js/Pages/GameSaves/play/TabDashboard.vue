@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import { usePlayerUtils } from './usePlayerUtils.js';
 
 const props = defineProps({
     gameSave:      { type: Object, required: true },
@@ -23,6 +24,8 @@ const props = defineProps({
     teamById:       { type: Object, required: true },
     saving:         { type: Boolean, required: true },
     matches:        { type: Array,   default: () => [] },
+    bonusCardInventory: { type: Array, default: () => [] },
+    isPlayerInjured:    { type: Function, default: () => () => false },
 });
 
 const emit = defineEmits(['play-next-match', 'simulate-week', 'save-game', 'quit']);
@@ -32,13 +35,7 @@ const emit = defineEmits(['play-next-match', 'simulate-week', 'save-game', 'quit
 // ==========================
 const periodLabel = (p) => ({ college: 'Collège', highschool: 'Lycée', pro: 'Professionnel' }[p] ?? p);
 
-const teamLogoUrl = (t) => {
-    const path = t?.logo_path ?? t?.team?.logo_path;
-    if (!path) return null;
-    if (path.startsWith('http') || path.startsWith('/')) return path;
-    if (path.startsWith('teams/')) return '/images/' + path;
-    return '/' + path;
-};
+const { teamLogoUrl } = usePlayerUtils();
 
 const opponentTeamIdFor = (match) => {
     if (!match || !props.team) return null;
@@ -61,38 +58,47 @@ const opponentContracts = computed(() => {
 // ==========================
 const preMatchReminders = computed(() => {
     const reminders = [];
-    const state = props.gameSave?.state ?? {};
 
-    // Cartes bonus disponibles non utilisées
-    const bonusCards = (props.gameSave?.state?.bonus_cards_inventory ?? [])
-        .filter(c => !c.used && c.phase === 'pre_match');
-    if (bonusCards.length > 0) {
+    // Cartes bonus pre_match disponibles (lit la prop, pas state)
+    const availablePreMatch = (props.bonusCardInventory ?? [])
+        .filter(c => c.status === 'available' && c.execution_phase === 'pre_match');
+    if (availablePreMatch.length > 0) {
         reminders.push({
             icon: '🃏',
             color: 'text-violet-600 bg-violet-50 border-violet-200',
-            text: `${bonusCards.length} carte(s) bonus pré-match disponible(s)`,
+            text: `${availablePreMatch.length} carte(s) bonus pré-match`,
         });
     }
 
-    // Pas sauvegardé récemment (si le state a un dirty flag)
-    const freeSignings = state.free_agent_signings ?? [];
-    if (freeSignings.length > 0) {
+    // Lineup incomplet : moins de 11 titulaires
+    const starters = props.roster.filter(p => p.is_starter === true || p.is_starter === 1);
+    if (starters.length < 11) {
         reminders.push({
-            icon: '✅',
-            color: 'text-teal-600 bg-teal-50 border-teal-200',
-            text: `${freeSignings.length} recrutement(s) effectué(s) cette semaine`,
+            icon: '⚠️',
+            color: 'text-amber-600 bg-amber-50 border-amber-200',
+            text: `Onze incomplet (${starters.length}/11 titulaires)`,
         });
     }
 
-    // Blessés dans l'effectif titulaire
-    const injuredStarters = props.roster.filter(p =>
-        (p.is_starter === true || p.is_starter === 1) && p.is_injured
+    // Titulaires indisponibles (blessés ou suspendus)
+    const unavailableStarters = starters.filter(p =>
+        props.isPlayerInjured(p.id) || p.is_injured || p.is_suspended
     );
-    if (injuredStarters.length > 0) {
+    if (unavailableStarters.length > 0) {
         reminders.push({
             icon: '🤕',
             color: 'text-red-600 bg-red-50 border-red-200',
-            text: `${injuredStarters.length} titulaire(s) blessé(s) dans le onze`,
+            text: `${unavailableStarters.length} titulaire(s) indisponible(s)`,
+        });
+    }
+
+    // Aucun capitaine désigné
+    const hasCaptain = starters.some(p => p.is_captain === true || p.is_captain === 1);
+    if (starters.length > 0 && !hasCaptain) {
+        reminders.push({
+            icon: '👑',
+            color: 'text-orange-600 bg-orange-50 border-orange-200',
+            text: `Aucun capitaine désigné`,
         });
     }
 

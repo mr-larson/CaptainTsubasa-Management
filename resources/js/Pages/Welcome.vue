@@ -72,7 +72,7 @@ const features = [
                     <div class="hstat-sep"></div>
                     <div class="hstat"><span class="hstat-n">{{ players.length }}</span><span class="hstat-l">Joueurs</span></div>
                     <div class="hstat-sep"></div>
-                    <div class="hstat"><span class="hstat-n">40</span><span class="hstat-l">Tours / match</span></div>
+                    <div class="hstat"><span class="hstat-n">45</span><span class="hstat-l">Tours / match</span></div>
                 </div>
             </div>
             <div class="hero-visual">

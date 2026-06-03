@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { FORMATIONS, FORMATION_LIST } from '@/Pages/Match/engine/formations.js';
+import { usePlayerUtils } from './usePlayerUtils.js';
 
 const props = defineProps({
     rosterWithStatus:     { type: Array,   required: true },
@@ -34,30 +35,8 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['select-player', 'toggle-starter', 'toggle-captain', 'change-slot', 'save-formation', 'update-number']);
-const playerPhotoUrl = (p) => {
-    if (!p) return null;
-    if (p.photo_path)         return `/storage/${p.photo_path}`;
-    if (p.player?.photo_path) return `/storage/${p.player.photo_path}`;
-    return null;
-};
 
-const teamLogoUrl = (t) => {
-    const path = t?.logo_path ?? t?.team?.logo_path;
-    if (!path) return null;
-    if (path.startsWith('http')) return path;
-    if (path.startsWith('/')) return path;
-    if (path.startsWith('teams/')) return '/images/' + path;
-    return '/' + path;
-};
-
-const overallOf = (player) => {
-    if (!player) return 0;
-    const s = player.stats ?? player;
-    const keys = ['speed','stamina','attack','defense','shot','pass','dribble','block','intercept','tackle','hand_save','punch_save'];
-    const values = keys.map(k => Number(s[k] ?? 0)).filter(v => Number.isFinite(v));
-    if (!values.length) return 0;
-    return Math.round(values.reduce((a, b) => a + b, 0) / values.length);
-};
+const { overallOf, playerPhotoUrl, teamLogoUrl } = usePlayerUtils();
 
 const getSlotForPlayer = (playerId) => {
     if (!playerId || !Array.isArray(props.lineupForm)) return null;

@@ -197,8 +197,8 @@ class GameMatchController extends Controller
         $gameSave->state = $state;
         $gameSave->save();
 
-        // 9. Stamina après match
-        StaminaService::applyAfterMatch($gameSave, $match);
+        // 9. Stamina après match — agrégation de TOUS les matchs joués cette semaine
+        StaminaService::applyAfterWeek($gameSave, $playedWeek);
 
         // 10. Consommer les cartes pre_match de l'équipe contrôlée
         $controlledTeamId = $gameSave->controlled_game_team_id;
@@ -230,16 +230,20 @@ class GameMatchController extends Controller
             ->get();
 
         app(MatchSimulator::class)->simulateMatchesCollection($matches);
+        app(AILineupService::class)->adjustLineupsForWeek($gameSave);
         app(AITrainingService::class)->trainForWeek($gameSave);
         app(AITransferService::class)->recruitForWeek($gameSave);
 
-        // Revenus hebdomadaires AVANT d'incrémenter la semaine
+        // Revenus AVANT incrément
         $this->applyWeeklyIncome($gameSave, $week);
+
+        // Stamina AVANT incrément (sinon on récupère l'historique d'une autre semaine)
+        StaminaService::applyAfterWeek($gameSave, $week);
 
         $gameSave->week = $week + 1;
         $gameSave->save();
 
-        // Générer la boutique + IA cartes pour la nouvelle semaine
+        // Boutique + IA cartes pour la nouvelle semaine
         app(BonusCardShopService::class)->generateWeeklyOffers($gameSave);
         app(AIBonusCardService::class)->processWeek($gameSave);
 
