@@ -117,8 +117,16 @@ const statsForSlot = (slot) => {
     if (!slot?.player_id) return props.availableTrainingStats;
     const player = props.roster.find(p => Number(p.id) === Number(slot.player_id));
     if (!player) return props.availableTrainingStats;
+
+    // Toutes les stats sont entraînables, mais celles pertinentes au poste
+    // remontent en haut de la liste
     const allowed = STATS_BY_POSITION[positionGroup(player.position)] ?? STATS_BY_POSITION.DEFAULT;
-    return props.availableTrainingStats.filter(s => allowed.includes(s.key));
+    const allowedSet = new Set(allowed);
+
+    return [
+        ...props.availableTrainingStats.filter(s => allowedSet.has(s.key)),
+        ...props.availableTrainingStats.filter(s => !allowedSet.has(s.key)),
+    ];
 };
 
 // ── Radar du joueur sélectionné ────────────────────────────
