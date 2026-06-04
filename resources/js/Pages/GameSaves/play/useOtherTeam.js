@@ -209,6 +209,99 @@ export function useOtherTeam({ gameSave, teams, controlledTeamId }) {
         );
     };
 
+    // ==========================
+    //   SWAP VISUEL (drag & click-to-swap) — mode debug édition complète
+    // ==========================
+    const pickedUpOtherPlayerId = ref(null);
+
+    const isOtherPickedUp = (player) => !!player && pickedUpOtherPlayerId.value === player.id;
+
+    // Reset le pickup quand on change d'équipe sélectionnée
+    watch(() => selectedOtherTeam.value?.id, () => {
+        pickedUpOtherPlayerId.value = null;
+    });
+
+    const swapOtherPitchPlayers = (playerAId, playerBId) => {
+        if (!playerAId || !playerBId || playerAId === playerBId) return;
+        const rowA = otherLineupForm.value.find(r => r.player_id === playerAId);
+        const rowB = otherLineupForm.value.find(r => r.player_id === playerBId);
+        if (!rowA || !rowB) return;
+
+        [rowA.player_id, rowB.player_id] = [rowB.player_id, rowA.player_id];
+        saveOtherLineup();
+    };
+
+    const substituteOtherPlayer = (starterId, substituteId) => {
+        if (!starterId || !substituteId || starterId === substituteId) return;
+        if (!selectedOtherTeam.value) return;
+        router.post(
+            route('game-saves.lineup.substitute', { gameSave: gameSave.value.id }),
+            { team_id: selectedOtherTeam.value.id, starter_id: starterId, substitute_id: substituteId },
+            { preserveScroll: true }
+        );
+    };
+
+    /**
+     * 4 cas : starter↔starter (swap), banc→terrain (sub), terrain→banc (sub), banc↔banc (no-op).
+     */
+    const resolveOtherPlayerInteraction = (source, target) => {
+        if (source.is_starter && target.is_starter) {
+            swapOtherPitchPlayers(source.id, target.id);
+        } else if (!source.is_starter && target.is_starter) {
+            substituteOtherPlayer(target.id, source.id);
+        } else if (source.is_starter && !target.is_starter) {
+            substituteOtherPlayer(source.id, target.id);
+        }
+    };
+
+    const handleOtherPlayerClick = (player) => {
+        if (!player) return;
+
+        if (pickedUpOtherPlayerId.value === player.id) {
+            pickedUpOtherPlayerId.value = null;
+            return;
+        }
+
+        if (!pickedUpOtherPlayerId.value) {
+            pickedUpOtherPlayerId.value = player.id;
+            selectOtherPlayer(player);
+            return;
+        }
+
+        const picked = otherRosterWithStatus.value.find(p => p.id === pickedUpOtherPlayerId.value);
+        pickedUpOtherPlayerId.value = null;
+        if (!picked) return;
+
+        resolveOtherPlayerInteraction(picked, player);
+    };
+
+    const handleOtherDragStart = (player, ev) => {
+        if (!player) return;
+        pickedUpOtherPlayerId.value = player.id;
+        ev.dataTransfer.effectAllowed = 'move';
+        ev.dataTransfer.setData('text/plain', String(player.id));
+    };
+
+    const handleOtherDragOver = (ev) => {
+        if (!pickedUpOtherPlayerId.value) return;
+        ev.preventDefault();
+        ev.dataTransfer.dropEffect = 'move';
+    };
+
+    const handleOtherDrop = (targetPlayer, ev) => {
+        ev.preventDefault();
+        const sourceId = pickedUpOtherPlayerId.value;
+        pickedUpOtherPlayerId.value = null;
+        if (!sourceId || !targetPlayer || sourceId === targetPlayer.id) return;
+
+        const source = otherRosterWithStatus.value.find(p => p.id === sourceId);
+        if (!source) return;
+
+        resolveOtherPlayerInteraction(source, targetPlayer);
+    };
+
+    const cancelOtherPickup = () => { pickedUpOtherPlayerId.value = null; };
+
     return {
         otherTeams, selectedOtherTeamId, selectedOtherTeam, selectOtherTeam,
         otherRosterWithStatus, selectedOtherPlayer, selectOtherPlayer,
@@ -216,7 +309,9 @@ export function useOtherTeam({ gameSave, teams, controlledTeamId }) {
         otherLineupForm, getOtherSlotForPlayer, changeOtherPlayerSlot,
         otherFormation, otherFormationData, saveOtherFormation,
         otherPlayerPosition, otherPlayerForSlot, otherSelectedSlot,
-        updatePlayerNumber,
+        pickedUpOtherPlayerId, isOtherPickedUp,
+        handleOtherPlayerClick, handleOtherDragStart, handleOtherDragOver, handleOtherDrop, cancelOtherPickup,
+        swapOtherPitchPlayers, substituteOtherPlayer, updatePlayerNumber,
         FORMATIONS, FORMATION_LIST,
     };
 }

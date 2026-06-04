@@ -16,7 +16,7 @@ const props = defineProps({
     miniPitchMarkerStyle: { type: Object,  required: true },
     selectedMyPlayerPerf: { type: Object,  default: null },
     lineupForm:           { type: Array,   required: true },
-    isPickedUp: { type: Function, default: () => () => false },
+    isPickedUp: { type: Function, default: () => false },
     // Fonctions terrain (depuis useTeam)
     playerPosition:       { type: Function, required: true },
     playerForSlot:        { type: Function, required: true },

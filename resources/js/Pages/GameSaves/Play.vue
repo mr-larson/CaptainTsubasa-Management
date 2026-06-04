@@ -153,7 +153,8 @@ const {
     otherLineupForm, getOtherSlotForPlayer, changeOtherPlayerSlot,
     otherFormation, otherFormationData, saveOtherFormation,
     otherPlayerPosition, otherPlayerForSlot, otherSelectedSlot,
-    updatePlayerNumber,
+    updatePlayerNumber, isOtherPickedUp,
+    handleOtherPlayerClick, handleOtherDragStart, handleOtherDragOver, handleOtherDrop,
 } = useOtherTeam({
     gameSave: gameSaveRef,
     teams: teamsRef,
@@ -352,6 +353,11 @@ function updateOtherPlayerNumber(playerId, number) {
                                    :isPlayerInjured="isPlayerInjured"
                                    :isPlayerSuspended="isPlayerSuspended"
                                    :playerYellowCards="playerYellowCards"
+                                   :isOtherPickedUp="isOtherPickedUp"
+                                   @player-click="handleOtherPlayerClick"
+                                   @drag-start="handleOtherDragStart"
+                                   @drag-over="handleOtherDragOver"
+                                   @drop-on="handleOtherDrop"
                                    @select-team="selectOtherTeam"
                                    @select-player="selectOtherPlayer"
                                    @toggle-starter="toggleOtherStarter"
