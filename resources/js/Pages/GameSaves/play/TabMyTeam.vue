@@ -40,6 +40,8 @@ const emit = defineEmits([
     'player-click', 'drag-start', 'drag-over', 'drop-on',
 ]);
 
+const substitutes = computed(() => props.rosterWithStatus.filter(p => !p.is_starter));
+
 const { overallOf, playerPhotoUrl, teamLogoUrl } = usePlayerUtils();
 
 const getSlotForPlayer = (playerId) => {
@@ -129,10 +131,10 @@ const perfChips = computed(() => {
 <template>
     <div class="flex-1 flex flex-col gap-4 overflow-y-auto max-h-[75vh] pr-1">
 
-        <!-- LIGNE 1 : Formation + Terrain unifié -->
+        <!-- LIGNE 1 : Formation + Terrain + Banc -->
         <div class="grid grid-cols-12 gap-4">
 
-            <!-- Select formation -->
+            <!-- Select formation (inchangé, col-span-4) -->
             <div class="col-span-4 border border-slate-200 rounded-xl bg-slate-50 p-4 flex flex-col gap-3">
                 <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Formation</h3>
 
@@ -152,18 +154,18 @@ const perfChips = computed(() => {
                     <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Répartition</h4>
                     <div class="flex gap-1.5 flex-wrap">
                         <template v-if="formationData">
-                            <span v-for="(label, zone) in ['GK','DEF','MDF','MOF','ATT']" :key="zone"
-                                  class="px-2 py-0.5 rounded-full text-[10px] font-bold"
-                                  :class="[zone==0?'bg-yellow-100 text-yellow-700':zone==1?'bg-blue-100 text-blue-700':zone==2?'bg-green-100 text-green-700':zone==3?'bg-orange-100 text-orange-700':'bg-red-100 text-red-700']">
-                                {{ label }} ×{{ Object.values(formationData.slots).filter(s => s.zone === zone).length }}
-                            </span>
+                    <span v-for="(label, zone) in ['GK','DEF','MDF','MOF','ATT']" :key="zone"
+                          class="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                          :class="[zone==0?'bg-yellow-100 text-yellow-700':zone==1?'bg-blue-100 text-blue-700':zone==2?'bg-green-100 text-green-700':zone==3?'bg-orange-100 text-orange-700':'bg-red-100 text-red-700']">
+                        {{ label }} ×{{ Object.values(formationData.slots).filter(s => s.zone === zone).length }}
+                    </span>
                         </template>
                     </div>
                 </div>
             </div>
 
-            <!-- Grand terrain unifié -->
-            <div class="col-span-8 border border-slate-200 rounded-xl overflow-hidden shadow-sm" style="height:240px;">
+            <!-- Terrain -->
+            <div class="col-span-6 border border-slate-200 rounded-xl overflow-hidden shadow-sm" style="height:240px;">
                 <div class="relative w-full h-full">
                     <div class="absolute inset-0 bg-gradient-to-r from-green-800 via-green-700 to-green-800"></div>
                     <div v-for="i in 8" :key="i" class="absolute top-0 h-full bg-green-900/15" :style="{ left:((i-1)*12.5)+'%', width:'12.5%' }"></div>
@@ -190,38 +192,85 @@ const perfChips = computed(() => {
                         >
                             <div class="flex flex-col items-center transition-transform duration-150"
                                  :class="[
-                isPickedUp(playerForSlot(slot)) ? 'scale-125' : selectedSlot === Number(slot) ? 'scale-110' : 'hover:scale-110'
-             ]">
-
+                            isPickedUp(playerForSlot(slot)) ? 'scale-125'
+                                : selectedSlot === Number(slot) ? 'scale-110'
+                                : 'hover:scale-110'
+                         ]">
                                 <div class="w-8 h-8 rounded-full border-2 flex items-center justify-center overflow-hidden shadow-md transition-all"
                                      :class="[
-                    isPickedUp(playerForSlot(slot))
-                        ? 'border-amber-300 ring-4 ring-amber-300/60 animate-pulse'
-                        : selectedSlot === Number(slot)
-                            ? 'border-yellow-300 ring-2 ring-yellow-200'
-                            : 'border-white/70',
-                    slotDef.zone===0?'bg-yellow-500':slotDef.zone===1?'bg-blue-500':slotDef.zone===2?'bg-green-500':slotDef.zone===3?'bg-orange-500':'bg-red-500'
-                ]">
+                                isPickedUp(playerForSlot(slot))
+                                    ? 'border-amber-300 ring-4 ring-amber-300/60 animate-pulse'
+                                    : selectedSlot === Number(slot)
+                                        ? 'border-yellow-300 ring-2 ring-yellow-200'
+                                        : 'border-white/70',
+                                slotDef.zone===0?'bg-yellow-500':slotDef.zone===1?'bg-blue-500':slotDef.zone===2?'bg-green-500':slotDef.zone===3?'bg-orange-500':'bg-red-500'
+                            ]">
                                     <img v-if="playerForSlot(slot) && playerPhotoUrl(playerForSlot(slot))"
                                          :src="playerPhotoUrl(playerForSlot(slot))" class="w-full h-full object-cover pointer-events-none" alt=""/>
                                     <span v-else class="text-[9px] font-bold text-white">{{ slot }}</span>
                                 </div>
-
                                 <div class="mt-0.5 px-1 rounded text-[7px] font-semibold leading-tight text-center max-w-[48px] truncate pointer-events-none"
                                      :class="isPickedUp(playerForSlot(slot))
-                    ? 'bg-amber-300 text-slate-900'
-                    : selectedSlot === Number(slot) ? 'bg-yellow-300 text-slate-900' : 'bg-black/50 text-white'">
+                                ? 'bg-amber-300 text-slate-900'
+                                : selectedSlot === Number(slot) ? 'bg-yellow-300 text-slate-900' : 'bg-black/50 text-white'">
                                     {{ playerForSlot(slot)?.lastname ?? '—' }}
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Bandeau d'aide quand un joueur est soulevé -->
                         <div v-if="rosterWithStatus.some(p => isPickedUp(p))"
                              class="absolute top-1 left-1/2 -translate-x-1/2 bg-amber-400/95 text-slate-900 text-[10px] font-bold px-3 py-1 rounded-full shadow-md pointer-events-none">
                             ⚡ Tap un autre joueur pour échanger / titulariser
                         </div>
                     </template>
+                </div>
+            </div>
+
+            <!-- Banc -->
+            <div class="col-span-2 border border-slate-200 rounded-xl bg-slate-100 overflow-hidden shadow-sm flex flex-col" style="height:240px;">
+                <div class="px-3 py-1.5 bg-slate-200/60 border-b border-slate-200 flex items-center justify-between shrink-0">
+                    <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Banc</h4>
+                    <span class="text-[10px] font-bold text-slate-400">{{ substitutes.length }}</span>
+                </div>
+
+                <div class="flex-1 overflow-y-auto p-2">
+                    <div v-if="substitutes.length" class="grid grid-cols-3 gap-2">
+                        <div
+                            v-for="p in substitutes" :key="p.id"
+                            class="cursor-grab active:cursor-grabbing flex justify-center"
+                            :draggable="true"
+                            @click.stop="emit('player-click', p)"
+                            @dragstart.stop="emit('drag-start', p, $event)"
+                            @dragover="emit('drag-over', $event)"
+                            @drop.stop="emit('drop-on', p, $event)"
+                        >
+                            <div class="flex flex-col items-center transition-transform duration-150"
+                                 :class="isPickedUp(p) ? 'scale-110' : 'hover:scale-105'">
+                                <div class="w-8 h-8 rounded-full border-2 flex items-center justify-center overflow-hidden shadow-md transition-all bg-slate-400"
+                                     :class="[
+                                isPickedUp(p)
+                                    ? 'border-amber-300 ring-4 ring-amber-300/60 animate-pulse'
+                                    : selectedMyPlayer?.id === p.id
+                                        ? 'border-teal-400 ring-2 ring-teal-300'
+                                        : 'border-white/70'
+                             ]">
+                                    <img v-if="playerPhotoUrl(p)" :src="playerPhotoUrl(p)" class="w-full h-full object-cover pointer-events-none" alt=""/>
+                                    <span v-else class="text-[9px] font-bold text-white">?</span>
+                                </div>
+                                <div class="mt-0.5 px-1 rounded text-[7px] font-semibold leading-tight text-center max-w-[48px] truncate pointer-events-none"
+                                     :class="isPickedUp(p)
+                                ? 'bg-amber-300 text-slate-900'
+                                : selectedMyPlayer?.id === p.id
+                                    ? 'bg-teal-300 text-slate-900'
+                                    : 'bg-slate-300 text-slate-700'">
+                                    {{ p.lastname }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p v-else class="text-[10px] text-slate-400 text-center py-4 italic">
+                        Aucun remplaçant
+                    </p>
                 </div>
             </div>
         </div>
