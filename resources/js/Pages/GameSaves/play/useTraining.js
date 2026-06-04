@@ -40,9 +40,19 @@ export function useTraining({ gameSave, season, week }) {
 
     const selectedTrainings = ref([]);
 
-    const addTrainingSlot = () => {
-        if (selectedTrainings.value.length >= MAX_TRAININGS_PER_WEEK) return;
-        selectedTrainings.value.push({ player_id: null, stat: 'shot' });
+    const addTrainingSlot = (playerId = null) => {
+        if (selectedTrainings.value.length >= 3) return;
+        if (remainingTrainingsThisWeek.value <= 0) return;
+
+        // Évite doublons : un joueur ne peut pas occuper 2 slots
+        if (playerId && selectedTrainings.value.some(s => Number(s.player_id) === Number(playerId))) {
+            return;
+        }
+
+        selectedTrainings.value.push({
+            player_id: playerId,
+            stat:      availableTrainingStats.value[0]?.key ?? null,
+        });
     };
 
     const removeTrainingSlot = (index) => {

@@ -289,10 +289,10 @@ const myPlayersRanking = computed(() => {
                             <th class="py-2 pr-4 text-slate-500 font-semibold">Équipe</th>
                             <th v-for="col in [
                                     { key: 'shots',     label: 'Tirs'    },
-                                    { key: 'shotSuccess',label: '⚽ Buts' },
+                                    { key: 'shotSuccess',label: 'Buts' },
                                     { key: 'passes',    label: 'Passes'  },
                                     { key: 'dribbles',  label: 'Dribbles'},
-                                    { key: 'saves', label: '🧤 Arrêts' },
+                                    { key: 'saves', label: 'Arrêts' },
                                     { key: 'intercepts',label: 'Interc.' },
                                     { key: 'tackles',   label: 'Tacles'  },
                                     { key: 'blocks',    label: 'Blocks'  },
