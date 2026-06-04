@@ -20,6 +20,9 @@ const props = defineProps({
     otherFormation:       { type: String,   required: true },
     otherFormationData:   { type: Object,   default: null },
     isOtherPickedUp: { type: Function, default: () => false },
+    // Absence
+    playerInjury:        { type: Function, default: () => () => null },
+    playerSuspension:    { type: Function, default: () => () => null },
     // Classement / club
     standings:            { type: Array,    required: true },
     injuriesCountForTeam:   { type: Function, required: true },
@@ -43,7 +46,7 @@ const otherSubstitutes = computed(() => props.otherRosterWithStatus.filter(p => 
 // ==========================
 //   HELPERS
 // ==========================
-const { overallOf, playerPhotoUrl, teamLogoUrl } = usePlayerUtils();
+const { overallOf, playerPhotoUrl, teamLogoUrl, sanctionTypeLabel } = usePlayerUtils();
 
 // ==========================
 //   RADAR CHART
@@ -436,6 +439,33 @@ const perfChips = computed(() => {
             <!-- Profil joueur -->
             <div class="col-span-9 flex flex-col gap-3">
                 <template v-if="selectedOtherPlayer">
+
+                    <!-- Alerte blessure/suspension -->
+                    <div v-if="isPlayerInjured(selectedOtherPlayer.id)"
+                         class="border border-rose-200 rounded-xl bg-rose-50 px-4 py-2.5 flex items-center gap-2">
+                        <span class="text-lg">🤕</span>
+                        <div>
+                            <div class="text-xs font-bold text-rose-700">Joueur blessé</div>
+                            <div class="text-[10px] text-rose-500">
+                                {{ playerInjury(selectedOtherPlayer.id)?.description ?? 'Blessure' }}
+                                — Retour semaine {{ playerInjury(selectedOtherPlayer.id)?.week_return ?? '—' }}
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else-if="isPlayerSuspended(selectedOtherPlayer.id)"
+                         class="border border-amber-200 rounded-xl bg-amber-50 px-4 py-2.5 flex items-center gap-2">
+                        <span class="text-lg">🚫</span>
+                        <div>
+                            <div class="text-xs font-bold text-amber-700">Joueur suspendu</div>
+                            <div class="text-[10px] text-amber-500">
+                                {{ sanctionTypeLabel(playerSuspension(selectedOtherPlayer.id)?.type) }}
+                                <template v-if="playerSuspension(selectedOtherPlayer.id)?.weeks_suspended">
+                                    — {{ playerSuspension(selectedOtherPlayer.id).weeks_suspended }} semaine(s)
+                                </template>
+                                — Retour semaine {{ playerSuspension(selectedOtherPlayer.id)?.week_return ?? '—' }}
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Identité + actions -->
                     <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">

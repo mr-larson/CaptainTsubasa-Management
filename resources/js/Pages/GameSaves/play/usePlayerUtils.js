@@ -70,8 +70,17 @@ export function usePlayerUtils() {
     const statLabel = (k) => STAT_LABELS[k] ?? k;
     const statColor = (k) => STAT_COLORS[k] ?? 'bg-slate-400';
 
+    const sanctionTypeLabel = (type) => {
+        switch (type) {
+            case 'red':           return 'Carton rouge';
+            case 'double_yellow': return 'Cumul de cartons jaunes';
+            case 'yellow':        return 'Carton jaune';
+            default:              return 'Sanction';
+        }
+    };
+
     return {
-        overallOf, playerPhotoUrl, teamLogoUrl,
+        overallOf, playerPhotoUrl, teamLogoUrl, sanctionTypeLabel,
         positionGroup, keyStatsFor, statLabel, statColor,
         STAT_KEYS, STAT_LABELS, STAT_COLORS,
     };

@@ -348,6 +348,8 @@ function updateOtherPlayerNumber(playerId, number) {
                                    :injuriesCountForTeam="injuriesCountForTeam"
                                    :suspensionsCountForTeam="suspensionsCountForTeam"
                                    :cardsCountForTeam="cardsCountForTeam"
+                                   :playerInjury="playerInjury"
+                                   :playerSuspension="playerSuspension"
                                    :averageTeamStat="averageTeamStat"
                                    :playerSeasonStats="props.playerSeasonStats"
                                    :isPlayerInjured="isPlayerInjured"

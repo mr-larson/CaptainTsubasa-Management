@@ -42,7 +42,7 @@ const emit = defineEmits([
 
 const substitutes = computed(() => props.rosterWithStatus.filter(p => !p.is_starter));
 
-const { overallOf, playerPhotoUrl, teamLogoUrl } = usePlayerUtils();
+const { overallOf, playerPhotoUrl, teamLogoUrl, sanctionTypeLabel } = usePlayerUtils();
 
 const getSlotForPlayer = (playerId) => {
     if (!playerId || !Array.isArray(props.lineupForm)) return null;
@@ -414,11 +414,18 @@ const perfChips = computed(() => {
                             </div>
                         </div>
                     </div>
-                    <div v-else-if="isPlayerSuspended(selectedMyPlayer.id)" class="border border-amber-200 rounded-xl bg-amber-50 px-4 py-2.5 flex items-center gap-2">
+                    <div v-else-if="isPlayerSuspended(selectedMyPlayer.id)"
+                         class="border border-amber-200 rounded-xl bg-amber-50 px-4 py-2.5 flex items-center gap-2">
                         <span class="text-lg">🚫</span>
                         <div>
                             <div class="text-xs font-bold text-amber-700">Joueur suspendu</div>
-                            <div class="text-[10px] text-amber-500">Disponible semaine {{ playerSuspension ? playerSuspension(selectedMyPlayer.id)?.week_return : '—' }}</div>
+                            <div class="text-[10px] text-amber-500">
+                                {{ sanctionTypeLabel(playerSuspension(selectedMyPlayer.id)?.type) }}
+                                <template v-if="playerSuspension(selectedMyPlayer.id)?.weeks_suspended">
+                                    — {{ playerSuspension(selectedMyPlayer.id).weeks_suspended }} semaine(s)
+                                </template>
+                                — Retour semaine {{ playerSuspension(selectedMyPlayer.id)?.week_return ?? '—' }}
+                            </div>
                         </div>
                     </div>
 
