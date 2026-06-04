@@ -377,34 +377,27 @@ const perfChips = computed(() => {
                     <button
                         v-for="p in otherRosterWithStatus" :key="p.id"
                         type="button"
-                        :draggable="true"
-                        @click="emit('player-click', p)"
-                        @dragstart.stop="emit('drag-start', p, $event)"
-                        @dragover="emit('drag-over', $event)"
-                        @drop.stop="emit('drop-on', p, $event)"
-                        class="w-full text-left rounded-lg px-2 py-1.5 transition-all cursor-grab active:cursor-grabbing"
-                        :class="[
-        selectedOtherPlayer?.id === p.id
-            ? 'bg-teal-500 text-white shadow-sm'
-            : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-100',
-        isOtherPickedUp(p) ? 'ring-2 ring-amber-300 ring-offset-1 animate-pulse' : ''
-    ]"
+                        @click="emit('select-player', p)"
+                        class="w-full text-left rounded-lg px-2 py-1.5 transition-all"
+                        :class="selectedOtherPlayer?.id === p.id
+        ? 'bg-teal-500 text-white shadow-sm'
+        : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-100'"
                     >
                         <div class="flex items-center gap-2">
                             <!-- Photo -->
-                            <div class="w-7 h-7 rounded-full overflow-hidden bg-slate-200 shrink-0 pointer-events-none">
+                            <div class="w-7 h-7 rounded-full overflow-hidden bg-slate-200 shrink-0">
                                 <img v-if="playerPhotoUrl(p)" :src="playerPhotoUrl(p)" class="w-full h-full object-cover" alt=""/>
                                 <div v-else class="w-full h-full flex items-center justify-center text-[9px] text-slate-400">?</div>
                             </div>
 
                             <!-- Nom + poste -->
-                            <div class="flex-1 min-w-0 pointer-events-none">
+                            <div class="flex-1 min-w-0">
                                 <div class="text-xs font-semibold truncate">{{ p.lastname }}</div>
                                 <div class="text-[10px] opacity-60 truncate">{{ p.position }}</div>
                             </div>
 
                             <!-- Icônes statut -->
-                            <div class="flex items-center gap-0.5 shrink-0 pointer-events-none">
+                            <div class="flex items-center gap-0.5 shrink-0">
                                 <span v-if="p.is_captain" title="Capitaine" class="text-[11px]">👑</span>
                                 <span v-if="isPlayerInjured(p.id)" title="Blessé" class="text-[11px]">🤕</span>
                                 <span v-else-if="isPlayerSuspended(p.id)" title="Suspendu" class="text-[11px]">🚫</span>
@@ -416,7 +409,7 @@ const perfChips = computed(() => {
                             </div>
 
                             <!-- Stamina bar + valeur -->
-                            <div class="w-12 flex flex-col items-end gap-0.5 shrink-0 pointer-events-none">
+                            <div class="w-12 flex flex-col items-end gap-0.5 shrink-0">
                                 <div class="text-[10px] font-bold"
                                      :class="selectedOtherPlayer?.id === p.id ? 'text-white/80' : 'text-slate-500'">
                                     {{ p.stamina ?? p.stats?.stamina ?? '—' }}
@@ -432,7 +425,7 @@ const perfChips = computed(() => {
                             </div>
 
                             <!-- Titulaire dot -->
-                            <div class="w-2 h-2 rounded-full shrink-0 pointer-events-none"
+                            <div class="w-2 h-2 rounded-full shrink-0"
                                  :class="p.is_starter ? 'bg-emerald-400' : 'bg-slate-300'"></div>
                         </div>
                     </button>
