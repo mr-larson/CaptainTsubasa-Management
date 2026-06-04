@@ -119,6 +119,8 @@ Route::middleware('auth')->group(function () {
             [LineupController::class, 'update'])->name('lineup.update');
         Route::post('/{gameSave}/lineup/formation',
             [LineupController::class, 'updateFormation'])->name('lineup.formation');
+        Route::post('/{gameSave}/lineup/substitute', [LineupController::class, 'substitute'])
+            ->name('lineup.substitute');
 
         // Équipes de partie
         Route::get('/{gameSave}/teams',             [GameTeamController::class, 'index'])->name('teams.index');

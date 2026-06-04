@@ -256,6 +256,103 @@ export function useTeam({ gameSave, team }) {
         return '/' + path;
     };
 
+    // ==========================
+    //   SWAP VISUEL (drag & click-to-swap)
+    // ==========================
+    const pickedUpPlayerId = ref(null);
+
+    const isPickedUp = (player) => !!player && pickedUpPlayerId.value === player.id;
+
+    const swapPitchPlayers = (playerAId, playerBId) => {
+        if (!playerAId || !playerBId || playerAId === playerBId) return;
+        const rowA = lineupForm.value.find(r => r.player_id === playerAId);
+        const rowB = lineupForm.value.find(r => r.player_id === playerBId);
+        if (!rowA || !rowB) return; // les deux doivent être titulaires
+
+        [rowA.player_id, rowB.player_id] = [rowB.player_id, rowA.player_id];
+        saveLineup();
+    };
+
+    const substitutePlayer = (starterId, substituteId) => {
+        if (!starterId || !substituteId || starterId === substituteId) return;
+        if (!team.value) return;
+        router.post(
+            route('game-saves.lineup.substitute', { gameSave: gameSave.value.id }),
+            { team_id: team.value.id, starter_id: starterId, substitute_id: substituteId },
+            { preserveScroll: true }
+        );
+    };
+
+    const handlePlayerClick = (player) => {
+        if (!player) return;
+
+        // Re-clic sur le pion soulevé → annule
+        if (pickedUpPlayerId.value === player.id) {
+            pickedUpPlayerId.value = null;
+            return;
+        }
+
+        // Rien de soulevé → on prend ce joueur
+        if (!pickedUpPlayerId.value) {
+            pickedUpPlayerId.value = player.id;
+            selectMyPlayer(player);
+            return;
+        }
+
+        // Un joueur est déjà soulevé → on résout selon les statuts
+        const picked = rosterWithStatus.value.find(p => p.id === pickedUpPlayerId.value);
+        pickedUpPlayerId.value = null;
+        if (!picked) return;
+
+        resolvePlayerInteraction(picked, player);
+    };
+
+    const handleDragStart = (player, ev) => {
+        if (!player) return;
+        pickedUpPlayerId.value = player.id;
+        ev.dataTransfer.effectAllowed = 'move';
+        ev.dataTransfer.setData('text/plain', String(player.id));
+        // ghost image transparent pour un effet plus propre (optionnel)
+    };
+
+    const handleDragOver = (ev) => {
+        if (!pickedUpPlayerId.value) return;
+        ev.preventDefault();
+        ev.dataTransfer.dropEffect = 'move';
+    };
+
+    const handleDrop = (targetPlayer, ev) => {
+        ev.preventDefault();
+        const sourceId = pickedUpPlayerId.value;
+        pickedUpPlayerId.value = null;
+        if (!sourceId || !targetPlayer || sourceId === targetPlayer.id) return;
+
+        const source = rosterWithStatus.value.find(p => p.id === sourceId);
+        if (!source) return;
+
+        resolvePlayerInteraction(source, targetPlayer);
+    };
+
+    /**
+     * Détermine l'action selon les statuts source / target :
+     * - 2 titulaires    → swap des positions (slot ↔ slot)
+     * - banc → terrain  → substitution (le banc monte, le titulaire descend)
+     * - terrain → banc  → substitution inversée (même résultat)
+     * - 2 remplaçants   → no-op
+     */
+    const resolvePlayerInteraction = (source, target) => {
+        if (source.is_starter && target.is_starter) {
+            swapPitchPlayers(source.id, target.id);
+        } else if (!source.is_starter && target.is_starter) {
+            substitutePlayer(target.id, source.id);
+        } else if (source.is_starter && !target.is_starter) {
+            substitutePlayer(source.id, target.id);
+        }
+        // banc ↔ banc → rien
+    };
+
+    const cancelPickup = () => { pickedUpPlayerId.value = null; };
+
     return {
         roster, rosterWithStatus, starters,
         selectedMyPlayerId, selectedMyPlayer, selectMyPlayer,
@@ -265,6 +362,9 @@ export function useTeam({ gameSave, team }) {
         slotRoleInfo, miniPitchMarkerStyle,
         playerPhotoUrl, teamLogoUrl,
         playerPosition, slotToPlayer, playerForSlot, selectedSlot,
+        pickedUpPlayerId, isPickedUp,
+        handlePlayerClick, handleDragStart, handleDragOver, handleDrop, cancelPickup,
+        swapPitchPlayers, substitutePlayer,
         FORMATIONS, FORMATION_LIST,
     };
 }

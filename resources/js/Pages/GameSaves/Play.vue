@@ -80,6 +80,7 @@ const {
     slotRoleInfo, miniPitchMarkerStyle,
     playerPhotoUrl, teamLogoUrl,
     playerPosition, slotToPlayer, playerForSlot, selectedSlot,
+    isPickedUp, handlePlayerClick, handleDragStart, handleDragOver, handleDrop,
     FORMATIONS, FORMATION_LIST,
 } = useTeam({ gameSave: gameSaveRef, team: teamRef });
 
@@ -303,6 +304,11 @@ function updateOtherPlayerNumber(playerId, number) {
                                :team="team"
                                :teamRecord="teamRecord"
                                :teamBudget="teamBudget"
+                               :isPickedUp="isPickedUp"
+                               @player-click="handlePlayerClick"
+                               @drag-start="handleDragStart"
+                               @drag-over="handleDragOver"
+                               @drop-on="handleDrop"
                                :clubStanding="clubStanding"
                                :standings="standings"
                                :injuriesCount="injuriesCount"

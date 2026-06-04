@@ -6,6 +6,7 @@ use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class LineupController extends Controller
 {
@@ -108,5 +109,61 @@ class LineupController extends Controller
         $team->save();
 
         return back()->with('success', 'Formation mise à jour.');
+    }
+
+    /**
+     * Substitution : échange un titulaire avec un remplaçant.
+     * - swap is_starter sur les deux contrats
+     * - réassigne le slot du sortant vers le rentrant
+     * Atomique en transaction.
+     */
+    public function substitute(Request $request, GameSave $gameSave)
+    {
+        if ($gameSave->user_id !== $request->user()->id) abort(403);
+
+        $data = $request->validate([
+            'team_id'       => ['required', 'integer'],
+            'starter_id'    => ['required', 'integer'],  // game_player_id qui sort
+            'substitute_id' => ['required', 'integer'],  // game_player_id qui entre
+        ]);
+
+        $teamId       = (int) $data['team_id'];
+        $starterId    = (int) $data['starter_id'];
+        $substituteId = (int) $data['substitute_id'];
+
+        if ($starterId === $substituteId) return back();
+
+        $team = $gameSave->gameTeams()->where('id', $teamId)->firstOrFail();
+
+        DB::transaction(function () use ($gameSave, $team, $starterId, $substituteId) {
+            // 1. Swap is_starter (deux UPDATE explicites pour portabilité MySQL/PG)
+            GameContract::where('game_team_id', $team->id)
+                ->where('game_player_id', $starterId)
+                ->update(['is_starter' => false]);
+
+            GameContract::where('game_team_id', $team->id)
+                ->where('game_player_id', $substituteId)
+                ->update(['is_starter' => true]);
+
+            // 2. Réassigner le slot du sortant vers le rentrant
+            $state      = $gameSave->state ?? [];
+            $lineup     = $state['lineup'] ?? [];
+            $teamLineup = $lineup[$team->id] ?? ['slots' => []];
+            $slots      = $teamLineup['slots'] ?? [];
+
+            foreach ($slots as $slot => $pid) {
+                if ((int) $pid === $starterId) {
+                    $slots[$slot] = $substituteId;
+                }
+            }
+
+            $teamLineup['slots'] = $slots;
+            $lineup[$team->id]   = $teamLineup;
+            $state['lineup']     = $lineup;
+            $gameSave->state     = $state;
+            $gameSave->save();
+        });
+
+        return back()->with('success', 'Substitution effectuée.');
     }
 }

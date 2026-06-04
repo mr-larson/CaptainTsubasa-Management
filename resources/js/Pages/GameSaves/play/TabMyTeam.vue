@@ -16,6 +16,7 @@ const props = defineProps({
     miniPitchMarkerStyle: { type: Object,  required: true },
     selectedMyPlayerPerf: { type: Object,  default: null },
     lineupForm:           { type: Array,   required: true },
+    isPickedUp: { type: Function, default: () => () => false },
     // Fonctions terrain (depuis useTeam)
     playerPosition:       { type: Function, required: true },
     playerForSlot:        { type: Function, required: true },
@@ -34,7 +35,10 @@ const props = defineProps({
     averageStamina:       { type: Number,  default: 0 },
 });
 
-const emit = defineEmits(['select-player', 'toggle-starter', 'toggle-captain', 'change-slot', 'save-formation', 'update-number']);
+const emit = defineEmits([
+    'select-player', 'toggle-starter', 'toggle-captain', 'save-formation', 'update-number',
+    'player-click', 'drag-start', 'drag-over', 'drop-on',
+]);
 
 const { overallOf, playerPhotoUrl, teamLogoUrl } = usePlayerUtils();
 
@@ -175,28 +179,47 @@ const perfChips = computed(() => {
                         <div
                             v-for="(slotDef, slot) in formationData.slots"
                             :key="slot"
-                            class="absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer"
+                            class="absolute -translate-x-1/2 -translate-y-1/2"
+                            :class="playerForSlot(slot) ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'"
                             :style="{ left: playerPosition(slot).x+'%', top: playerPosition(slot).y+'%' }"
-                            @click="playerForSlot(slot) && emit('select-player', playerForSlot(slot))"
+                            :draggable="!!playerForSlot(slot)"
+                            @click.stop="playerForSlot(slot) && emit('player-click', playerForSlot(slot))"
+                            @dragstart.stop="playerForSlot(slot) && emit('drag-start', playerForSlot(slot), $event)"
+                            @dragover="emit('drag-over', $event)"
+                            @drop.stop="playerForSlot(slot) && emit('drop-on', playerForSlot(slot), $event)"
                         >
                             <div class="flex flex-col items-center transition-transform duration-150"
-                                 :class="selectedSlot === Number(slot) ? 'scale-125' : 'hover:scale-110'">
+                                 :class="[
+                isPickedUp(playerForSlot(slot)) ? 'scale-125' : selectedSlot === Number(slot) ? 'scale-110' : 'hover:scale-110'
+             ]">
 
-                                <div class="w-8 h-8 rounded-full border-2 flex items-center justify-center overflow-hidden shadow-md"
+                                <div class="w-8 h-8 rounded-full border-2 flex items-center justify-center overflow-hidden shadow-md transition-all"
                                      :class="[
-                                        selectedSlot === Number(slot) ? 'border-yellow-300 ring-2 ring-yellow-200' : 'border-white/70',
-                                        slotDef.zone===0?'bg-yellow-500':slotDef.zone===1?'bg-blue-500':slotDef.zone===2?'bg-green-500':slotDef.zone===3?'bg-orange-500':'bg-red-500'
-                                    ]">
+                    isPickedUp(playerForSlot(slot))
+                        ? 'border-amber-300 ring-4 ring-amber-300/60 animate-pulse'
+                        : selectedSlot === Number(slot)
+                            ? 'border-yellow-300 ring-2 ring-yellow-200'
+                            : 'border-white/70',
+                    slotDef.zone===0?'bg-yellow-500':slotDef.zone===1?'bg-blue-500':slotDef.zone===2?'bg-green-500':slotDef.zone===3?'bg-orange-500':'bg-red-500'
+                ]">
                                     <img v-if="playerForSlot(slot) && playerPhotoUrl(playerForSlot(slot))"
-                                         :src="playerPhotoUrl(playerForSlot(slot))" class="w-full h-full object-cover" alt=""/>
+                                         :src="playerPhotoUrl(playerForSlot(slot))" class="w-full h-full object-cover pointer-events-none" alt=""/>
                                     <span v-else class="text-[9px] font-bold text-white">{{ slot }}</span>
                                 </div>
 
-                                <div class="mt-0.5 px-1 rounded text-[7px] font-semibold leading-tight text-center max-w-[48px] truncate"
-                                     :class="selectedSlot === Number(slot) ? 'bg-yellow-300 text-slate-900' : 'bg-black/50 text-white'">
+                                <div class="mt-0.5 px-1 rounded text-[7px] font-semibold leading-tight text-center max-w-[48px] truncate pointer-events-none"
+                                     :class="isPickedUp(playerForSlot(slot))
+                    ? 'bg-amber-300 text-slate-900'
+                    : selectedSlot === Number(slot) ? 'bg-yellow-300 text-slate-900' : 'bg-black/50 text-white'">
                                     {{ playerForSlot(slot)?.lastname ?? '—' }}
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Bandeau d'aide quand un joueur est soulevé -->
+                        <div v-if="rosterWithStatus.some(p => isPickedUp(p))"
+                             class="absolute top-1 left-1/2 -translate-x-1/2 bg-amber-400/95 text-slate-900 text-[10px] font-bold px-3 py-1 rounded-full shadow-md pointer-events-none">
+                            ⚡ Tap un autre joueur pour échanger / titulariser
                         </div>
                     </template>
                 </div>
@@ -272,26 +295,33 @@ const perfChips = computed(() => {
                 <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Effectif</h3>
                 <div v-if="rosterWithStatus.length" class="space-y-1">
                     <button v-for="p in rosterWithStatus" :key="p.id" type="button"
-                            @click="emit('select-player', p)"
-                            class="w-full text-left rounded-lg px-2 py-1.5 transition-all"
-                            :class="selectedMyPlayer?.id === p.id
-        ? 'bg-teal-500 text-white shadow-sm'
-        : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-100'">
+                            :draggable="true"
+                            @click="emit('player-click', p)"
+                            @dragstart.stop="emit('drag-start', p, $event)"
+                            @dragover="emit('drag-over', $event)"
+                            @drop.stop="emit('drop-on', p, $event)"
+                            class="w-full text-left rounded-lg px-2 py-1.5 transition-all cursor-grab active:cursor-grabbing"
+                            :class="[
+            selectedMyPlayer?.id === p.id
+                ? 'bg-teal-500 text-white shadow-sm'
+                : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-100',
+            isPickedUp(p) ? 'ring-2 ring-amber-300 ring-offset-1 animate-pulse' : ''
+        ]">
                         <div class="flex items-center gap-2">
                             <!-- Photo -->
-                            <div class="w-7 h-7 rounded-full overflow-hidden bg-slate-200 shrink-0">
+                            <div class="w-7 h-7 rounded-full overflow-hidden bg-slate-200 shrink-0 pointer-events-none">
                                 <img v-if="playerPhotoUrl(p)" :src="playerPhotoUrl(p)" class="w-full h-full object-cover" alt=""/>
                                 <div v-else class="w-full h-full flex items-center justify-center text-[9px] text-slate-400">?</div>
                             </div>
 
                             <!-- Nom + poste -->
-                            <div class="flex-1 min-w-0">
+                            <div class="flex-1 min-w-0 pointer-events-none">
                                 <div class="text-xs font-semibold truncate">{{ p.lastname }}</div>
                                 <div class="text-[10px] opacity-60 truncate">{{ p.position }}</div>
                             </div>
 
-                            <!-- Icônes statut sur une ligne à droite du nom -->
-                            <div class="flex items-center gap-0.5 shrink-0">
+                            <!-- Icônes statut -->
+                            <div class="flex items-center gap-0.5 shrink-0 pointer-events-none">
                                 <span v-if="p.is_captain" title="Capitaine" class="text-[11px]">👑</span>
                                 <span v-if="isPlayerInjured(p.id)" title="Blessé" class="text-[11px]">🤕</span>
                                 <span v-else-if="isPlayerSuspended(p.id)" title="Suspendu" class="text-[11px]">🚫</span>
@@ -303,7 +333,7 @@ const perfChips = computed(() => {
                             </div>
 
                             <!-- Stamina bar + valeur -->
-                            <div class="w-12 flex flex-col items-end gap-0.5 shrink-0">
+                            <div class="w-12 flex flex-col items-end gap-0.5 shrink-0 pointer-events-none">
                                 <div class="text-[10px] font-bold"
                                      :class="selectedMyPlayer?.id === p.id ? 'text-white/80' : 'text-slate-500'">
                                     {{ p.stamina ?? p.stats?.stamina ?? '—' }}
@@ -312,14 +342,14 @@ const perfChips = computed(() => {
                                      :class="selectedMyPlayer?.id === p.id ? 'bg-white/30' : 'bg-slate-200'">
                                     <div class="h-full rounded-full transition-all"
                                          :class="(p.stamina ?? p.stats?.stamina ?? 0) >= 60 ? 'bg-emerald-400'
-                           : (p.stamina ?? p.stats?.stamina ?? 0) >= 30 ? 'bg-amber-400' : 'bg-rose-400'"
+                       : (p.stamina ?? p.stats?.stamina ?? 0) >= 30 ? 'bg-amber-400' : 'bg-rose-400'"
                                          :style="{ width: Math.min(p.stamina ?? p.stats?.stamina ?? 0, 100) + '%' }">
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Titulaire dot -->
-                            <div class="w-2 h-2 rounded-full shrink-0"
+                            <div class="w-2 h-2 rounded-full shrink-0 pointer-events-none"
                                  :class="p.is_starter ? 'bg-emerald-400' : 'bg-slate-300'"></div>
                         </div>
                     </button>
@@ -414,19 +444,12 @@ const perfChips = computed(() => {
                                 </div>
 
                                 <!-- Sélecteur de slot (grille de boutons numérotés) -->
-                                <div v-if="selectedMyPlayer.is_starter" class="mt-3">
-                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Position sur le terrain</p>
-                                    <div class="flex gap-1 flex-wrap">
-                                        <button v-for="n in 11" :key="n" type="button"
-                                                @click="emit('change-slot', n)"
-                                                class="w-7 h-7 rounded-lg text-[11px] font-bold border transition-all"
-                                                :class="getSlotForPlayer(selectedMyPlayer.id) === n
-                                                ? 'bg-teal-500 text-white border-teal-600 shadow-sm'
-                                                : 'bg-white text-slate-500 border-slate-200 hover:border-teal-300 hover:text-teal-600'">
-                                            {{ n }}
-                                        </button>
-                                    </div>
-                                </div>
+                                <p v-if="selectedMyPlayer.is_starter" class="mt-3 text-[10px] text-slate-400 italic">
+                                    💡 Glisse ce joueur sur un titulaire pour échanger les positions, ou sur un remplaçant pour le sortir.
+                                </p>
+                                <p v-else class="mt-3 text-[10px] text-emerald-600 italic">
+                                    💡 Glisse ce remplaçant sur un titulaire pour le faire entrer en jeu.
+                                </p>
 
                                 <p v-if="selectedMyPlayer.description" class="mt-2 text-xs text-slate-400 italic">{{ selectedMyPlayer.description }}</p>
                             </div>
