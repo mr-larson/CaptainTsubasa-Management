@@ -102,6 +102,13 @@ const {
     activeYellowCards: activeYellowCardsRef,
 });
 
+// Compteurs pour la checklist pré-match du dashboard
+const unboughtCardsCount = computed(() =>
+    (weeklyOffers.value ?? []).filter(o => !isAlreadyBought(o)).length
+);
+
+const freePlayersCount = computed(() => (availableFreePlayers.value ?? []).length);
+
 const {
     isByeMatch, teamById,
     opponentTeamIdFor, opponentNameFor, opponentNameForTeam,
@@ -265,7 +272,7 @@ function updateOtherPlayerNumber(playerId, number) {
                                   :team="teamRef"
                                   :season="season"
                                   :week="week"
-                                  :roster="roster"
+                                  :roster="rosterWithStatus"
                                   :clubStanding="clubStanding"
                                   :standings="standings"
                                   :teamRecord="teamRecord"
@@ -282,7 +289,9 @@ function updateOtherPlayerNumber(playerId, number) {
                                   :teamById="teamById"
                                   :saving="saving"
                                   :matches="matches"
-                                  :bonusCardInventory="bonusCardInventory"
+                                  :unboughtCardsCount="unboughtCardsCount"
+                                  :freePlayersCount="freePlayersCount"
+                                  @change-tab="activeTab = $event"
                                   :isPlayerInjured="isPlayerInjured"
                                   @play-next-match="playNextMatch"
                                   @simulate-week="simulateWeek"

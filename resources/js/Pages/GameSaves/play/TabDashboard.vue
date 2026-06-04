@@ -24,11 +24,13 @@ const props = defineProps({
     teamById:       { type: Object, required: true },
     saving:         { type: Boolean, required: true },
     matches:        { type: Array,   default: () => [] },
-    bonusCardInventory: { type: Array, default: () => [] },
-    isPlayerInjured:    { type: Function, default: () => () => false },
+    unboughtCardsCount:  { type: Number,   default: 0 },
+    freePlayersCount:    { type: Number,   default: 0 },
+    isPlayerInjured:    { type: Function, default: () => false },
+    isPlayerSuspended:  { type: Function, default: () => false },
 });
 
-const emit = defineEmits(['play-next-match', 'simulate-week', 'save-game', 'quit']);
+const emit = defineEmits(['play-next-match', 'simulate-week', 'save-game', 'quit', 'change-tab']);
 
 // ==========================
 //   HELPERS
@@ -59,46 +61,53 @@ const opponentContracts = computed(() => {
 const preMatchReminders = computed(() => {
     const reminders = [];
 
-    // Cartes bonus pre_match disponibles (lit la prop, pas state)
-    const availablePreMatch = (props.bonusCardInventory ?? [])
-        .filter(c => c.status === 'available' && c.execution_phase === 'pre_match');
-    if (availablePreMatch.length > 0) {
+    // ─── 1. Boutique : cartes bonus à acheter ─────────────────
+    if (props.unboughtCardsCount > 0) {
         reminders.push({
             icon: '🃏',
-            color: 'text-violet-600 bg-violet-50 border-violet-200',
-            text: `${availablePreMatch.length} carte(s) bonus pré-match`,
+            label: 'Boutique de cartes',
+            detail: `${props.unboughtCardsCount} carte(s) disponible(s) cette semaine`,
+            color: 'text-emerald-700 bg-emerald-50 border-emerald-200 hover:bg-emerald-100 hover:border-emerald-300',
+            targetTab: 'cards',
         });
     }
 
-    // Lineup incomplet : moins de 11 titulaires
+    // ─── 2. Effectif : titulaires indisponibles, lineup, capitaine ─────────
     const starters = props.roster.filter(p => p.is_starter === true || p.is_starter === 1);
+    const issues = [];
+
     if (starters.length < 11) {
-        reminders.push({
-            icon: '⚠️',
-            color: 'text-amber-600 bg-amber-50 border-amber-200',
-            text: `Onze incomplet (${starters.length}/11 titulaires)`,
-        });
+        issues.push(`Onze incomplet (${starters.length}/11)`);
     }
-
-    // Titulaires indisponibles (blessés ou suspendus)
-    const unavailableStarters = starters.filter(p =>
-        props.isPlayerInjured(p.id) || p.is_injured || p.is_suspended
+    const unavailable = starters.filter(p =>
+        props.isPlayerInjured(p.id) || props.isPlayerSuspended(p.id)
     );
-    if (unavailableStarters.length > 0) {
-        reminders.push({
-            icon: '🤕',
-            color: 'text-red-600 bg-red-50 border-red-200',
-            text: `${unavailableStarters.length} titulaire(s) indisponible(s)`,
-        });
+    if (unavailable.length > 0) {
+        issues.push(`${unavailable.length} titulaire(s) indisponible(s)`);
     }
-
-    // Aucun capitaine désigné
     const hasCaptain = starters.some(p => p.is_captain === true || p.is_captain === 1);
     if (starters.length > 0 && !hasCaptain) {
+        issues.push('Aucun capitaine désigné');
+    }
+
+    if (issues.length > 0) {
         reminders.push({
-            icon: '👑',
-            color: 'text-orange-600 bg-orange-50 border-orange-200',
-            text: `Aucun capitaine désigné`,
+            icon: '👥',
+            label: 'Effectif à revoir',
+            detail: issues.join(' • '),
+            color: 'text-orange-700 bg-orange-50 border-orange-200 hover:bg-orange-100 hover:border-orange-300',
+            targetTab: 'my-team',
+        });
+    }
+
+    // ─── 3. Marché : joueurs libres à recruter ────────────────
+    if (props.freePlayersCount > 0) {
+        reminders.push({
+            icon: '💼',
+            label: 'Marché des transferts',
+            detail: `${props.freePlayersCount} joueur(s) libre(s)`,
+            color: 'text-blue-700 bg-blue-50 border-blue-200 hover:bg-blue-100 hover:border-blue-300',
+            targetTab: 'transfers',
         });
     }
 
@@ -242,7 +251,7 @@ const matchesPlayed = computed(() =>
         <div class="grid grid-cols-4 gap-3">
 
             <!-- Classement -->
-            <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 flex flex-col items-center gap-1">
+            <div class="border border-slate-200 rounded-xl bg-slate-50 p-2 flex flex-col items-center gap-1">
                 <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Classement</div>
                 <div class="text-3xl font-black mt-1" :class="rankStyle">
                     {{ clubStanding?.position ?? '—' }}<sup v-if="clubStanding" class="text-base">e</sup>
@@ -256,7 +265,7 @@ const matchesPlayed = computed(() =>
             </div>
 
             <!-- Bilan -->
-            <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+            <div class="border border-slate-200 rounded-xl bg-slate-50 p-2">
                 <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Bilan</div>
                 <div class="flex gap-2">
                     <div class="flex-1 text-center bg-emerald-50 rounded-lg py-1.5">
@@ -278,14 +287,14 @@ const matchesPlayed = computed(() =>
             </div>
 
             <!-- Budget -->
-            <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 flex flex-col items-center gap-1">
+            <div class="border border-slate-200 rounded-xl bg-slate-50 p-2 flex flex-col items-center gap-1">
                 <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Budget</div>
                 <div class="text-2xl font-black text-teal-600 mt-1">{{ teamBudget }}</div>
                 <div class="text-[10px] text-slate-500 mt-1">{{ roster.length }} joueur(s)</div>
             </div>
 
             <!-- Effectif -->
-            <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+            <div class="border border-slate-200 rounded-xl bg-slate-50 p-2">
                 <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Effectif</div>
                 <div class="space-y-1.5 text-xs">
                     <div class="flex justify-between items-center">
@@ -320,7 +329,7 @@ const matchesPlayed = computed(() =>
          'border border-slate-200':    isByeWeek,
      }">
 
-            <div v-if="!isByeWeek && nextMatch && nextMatchInfo" class="p-5">
+            <div v-if="!isByeWeek && nextMatch && nextMatchInfo" class="p-1.5">
                 <!-- Label -->
                 <div class="text-center">
             <span class="text-[10px] font-bold uppercase tracking-widest"
@@ -334,7 +343,7 @@ const matchesPlayed = computed(() =>
                 <div class="flex items-center justify-around gap-4">
                     <!-- Mon équipe -->
                     <div class="flex flex-col items-center gap-2 flex-1">
-                        <div class="w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center">
+                        <div class="w-14 h-14 rounded-2xl overflow-hidden flex items-center justify-center">
                             <img v-if="teamLogoUrl(team)" :src="teamLogoUrl(team)" class="w-full h-full object-contain" alt=""/>
                             <span v-else class="text-2xl">🏟️</span>
                         </div>
@@ -356,17 +365,6 @@ const matchesPlayed = computed(() =>
                                 @click="emit('play-next-match')">
                             ▶ Jouer
                         </button>
-
-                        <!-- Rappels pré-match -->
-                        <div v-if="preMatchReminders.length > 0"
-                             class="mt-3 flex flex-col gap-1.5 w-full">
-                            <div v-for="(r, i) in preMatchReminders" :key="i"
-                                 class="flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-medium"
-                                 :class="r.color">
-                                <span>{{ r.icon }}</span>
-                                <span>{{ r.text }}</span>
-                            </div>
-                        </div>
                     </div>
 
                     <!-- Adversaire -->
@@ -397,6 +395,27 @@ const matchesPlayed = computed(() =>
                     ⏭ Simuler la semaine
                 </button>
             </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- LIGNE 3.5 : Checklist pré-match (CTA)        -->
+        <!-- ============================================ -->
+        <div v-if="!isByeWeek && preMatchReminders.length > 0" class="grid gap-3"
+             :class="preMatchReminders.length === 1 ? 'grid-cols-1'
+           : preMatchReminders.length === 2 ? 'grid-cols-2'
+           : 'grid-cols-3'">
+            <button v-for="(r, i) in preMatchReminders" :key="i"
+                    type="button"
+                    @click="emit('change-tab', r.targetTab)"
+                    class="group flex items-center gap-3 p-1.5 rounded-xl border-2 transition-all text-left cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+                    :class="r.color">
+                <div class="text-2xl shrink-0">{{ r.icon }}</div>
+                <div class="flex-1 min-w-0">
+                    <div class="text-xs font-bold">{{ r.label }}</div>
+                    <div class="text-[10px] opacity-75 truncate">{{ r.detail }}</div>
+                </div>
+                <span class="text-base opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all shrink-0">→</span>
+            </button>
         </div>
 
         <!-- ============================================ -->
