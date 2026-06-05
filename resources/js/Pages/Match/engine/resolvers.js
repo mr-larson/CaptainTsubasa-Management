@@ -21,7 +21,7 @@ import {
     updateSideCard, syncRecovererCard, updateTeamCard,
     buildDefenseGKHTML, buildDefenseFieldHTML, setActionBar,
 } from './ui.js';
-
+import { playPlayerAnimation } from './playerAnim.js';
 // -----------------------------------------------------------
 //   Dépendances injectées
 // -----------------------------------------------------------
@@ -803,6 +803,10 @@ function continuePass(attackTeam, defenseTeam, attackType, defenseAction, isSpec
         const carrierXInternal = carrierEl ? getPlayerXInternal(attackTeam, carrierEl) : null;
         const receiver = pickReceiverInCell(attackTeam, targetZone, targetLane, b.number, b.number, { forwardOnly: true, forwardFromXInternal: carrierXInternal, ignoreLaneForInitialPick: true });
 
+        // ── Animations passeur + receveur
+        playPlayerAnimation(attackTeam, b.number, 'passer');
+        playPlayerAnimation(attackTeam, receiver, 'receiver');
+
         _moveBall(attackTeam, receiver);
         setMessage(isSpecial ? "Passe speciale reussie !" : TEXTS.logs.passSuccessTitle, _TEAMS[attackTeam].label + " trouve le n " + receiver);
         pushLogEntry("passSuccessTitle", [isSpecial ? "(Special pass)" : null, "Vers n " + receiver, "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, _state);
@@ -810,8 +814,14 @@ function continuePass(attackTeam, defenseTeam, attackType, defenseAction, isSpec
         return;
     }
 
+    const passerSlot = b.number;  // capturer avant que _moveBall ne change b
     resetLastDribbler();
     const receiver = duel.defenderSlot ?? (duel.defenderId ? parseInt(duel.defenderId.slice(1), 10) : 6);
+
+    // ── Animations passeur + intercepteur
+    playPlayerAnimation(attackTeam, passerSlot, 'passer');
+    playPlayerAnimation(defenseTeam, receiver, 'receiver');
+
     _moveBall(defenseTeam, receiver);
     syncRecovererCard(defenseTeam, receiver);
 
@@ -874,6 +884,9 @@ function continueDribble(attackTeam, defenseTeam, attackType, defenseAction, isS
     const carrierEl = _rootEl.querySelector('[data-player="' + carrierId + '"]');
 
     if (duel.duelResult === "attack") {
+        // ── Animation du dribbleur (feinte latérale)
+        playPlayerAnimation(attackTeam, b.number, 'dribble');
+
         resetLastDribbler();
         _state.lastDribblerId = carrierId;
 
@@ -913,8 +926,14 @@ function continueDribble(attackTeam, defenseTeam, attackType, defenseAction, isS
         }
     }
 
+    const dribblerSlot = b.number;  // capturer avant _moveBall
     resetLastDribbler();
     const slot = duel.defenderSlot ?? (duel.defenderId ? parseInt(duel.defenderId.slice(1), 10) : 6);
+
+// ── L'attaquant a feinté, le défenseur a tacklé
+    playPlayerAnimation(attackTeam, dribblerSlot, 'dribble');
+    playPlayerAnimation(defenseTeam, slot, 'tackle');
+
     _moveBall(defenseTeam, slot);
     syncRecovererCard(defenseTeam, slot);
 
@@ -936,6 +955,9 @@ export function resolveShot(attackTeam, defenseTeam, defenseAction, isSpecial = 
     const attackType = isSpecial ? "special" : "shot";
 
     if (b.frontOfKeeper) {
+        // ── Tir face au gardien
+        playPlayerAnimation(attackTeam, b.number, 'shoot');
+
         const moves     = _roster.getSpecialMoves(attackTeam, b.number).filter(m => m?.mode === "attack");
         const gkAttBase = isSpecial
             ? (moves.length > 0 ? specialBaseFor(moves[0], attackTeam, b.number, _roster) : _roster.attackBaseFor("special", attackTeam, b.number))
@@ -971,7 +993,13 @@ function continueShot(attackTeam, defenseTeam, defenseAction, isSpecial, duel, o
     const attackType = isSpecial ? "special" : "shot";
 
     if (duel.duelResult === "defense") {
+        const shooterSlot = b.number;  // capturer avant _moveBall
         const number = duel.defenderSlot ?? (duel.defenderId ? parseInt(duel.defenderId.slice(1), 10) : 6);
+
+        // ── Le tireur frappe, le défenseur block/intercept
+        playPlayerAnimation(attackTeam, shooterSlot, 'shoot');
+        playPlayerAnimation(defenseTeam, number, 'tackle');
+
         _moveBall(defenseTeam, number);
         syncRecovererCard(defenseTeam, number);
 
@@ -1000,6 +1028,9 @@ function continueShot(attackTeam, defenseTeam, defenseAction, isSpecial, duel, o
     } else {
         gkAttackBase = _roster.attackBaseFor("shot", attackTeam, b.number) - (zonesToGoal * DUEL_RULES.SHOT_DISTANCE_PENALTY_PER_LINE);
     }
+
+    // ── Animation du tireur AVANT le déplacement du ballon
+    playPlayerAnimation(attackTeam, b.number, 'shoot');
 
     const center = getCellCenter(attackTeam, MAX_ZONE_INDEX, originLane);
     b.zoneIndex = MAX_ZONE_INDEX; b.laneIndex = originLane;
@@ -1058,6 +1089,11 @@ function _continueKeeperDuelResult(duelResult, attackTeam, defenseTeam, isSpecia
     const b = ball();
     b.frontOfKeeper = false;
     resetLastDribbler();
+
+    // ── Animation du plongeon du gardien si arrêt (path captain reroll)
+    if (duelResult === "defense") {
+        playPlayerAnimation(defenseTeam, 1, 'save', { direction: Math.random() < 0.5 ? -1 : 1 });
+    }
 
     if (duelResult === "attack") {
         _state.score[attackTeam]++;
@@ -1290,6 +1326,11 @@ export function resolveShotKeeperDuel(ctx, defenseAction) {
         }
     }
     // ── FIN CAPTAIN REROLL GARDIEN ──
+
+    // ── Animation du plongeon du gardien si arrêt
+    if (duelResult === "defense") {
+        playPlayerAnimation(defenseTeam, 1, 'save', { direction: Math.random() < 0.5 ? -1 : 1 });
+    }
 
     if (duelResult === "attack") {
         _state.score[attackTeam]++;

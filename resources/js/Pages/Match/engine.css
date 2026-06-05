@@ -101,6 +101,86 @@
     opacity: 0.9;
 }
 
+/* ============================================ */
+/*   Animations expressives des joueurs         */
+/* ============================================ */
+
+/* Variable de direction par joueur (défaut +1, override en JS) */
+.player { --anim-dir: 1; }
+
+/* Quand un joueur s'anime, il passe au-dessus des autres */
+.player[class*="player-anim-"] { z-index: 4; }
+
+/* — Dribble : oscillation latérale (feinte) — */
+@keyframes player-anim-dribble {
+    0%, 100% { transform: translate(-50%, -50%); }
+    25%      { transform: translate(calc(-50% - 7px), -50%); }
+    75%      { transform: translate(calc(-50% + 7px), -50%); }
+}
+.player.player-anim-dribble {
+    animation: player-anim-dribble 400ms ease-in-out;
+}
+
+/* — Tacle : plongée vers l'avant avec tilt — */
+@keyframes player-anim-tackle {
+    0%   { transform: translate(-50%, -50%) rotate(0); }
+    45%  { transform: translate(calc(-50% + (12px * var(--anim-dir))), calc(-50% + 2px))
+    rotate(calc(20deg * var(--anim-dir))); }
+    100% { transform: translate(-50%, -50%) rotate(0); }
+}
+.player.player-anim-tackle {
+    animation: player-anim-tackle 380ms cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+/* — Passe : step avant puis retour position initiale — */
+@keyframes player-anim-passer {
+    0%   { transform: translate(-50%, -50%); }
+    40%  { transform: translate(calc(-50% + (9px * var(--anim-dir))), -50%); }
+    100% { transform: translate(-50%, -50%); }
+}
+.player.player-anim-passer {
+    animation: player-anim-passer 320ms ease-out;
+}
+
+/* — Réception : avance vers le ballon (côté opposé) + petit pop — */
+@keyframes player-anim-receiver {
+    0%   { transform: translate(-50%, -50%) scale(1); }
+    50%  { transform: translate(calc(-50% - (7px * var(--anim-dir))), -50%) scale(1.08); }
+    100% { transform: translate(-50%, -50%) scale(1); }
+}
+.player.player-anim-receiver {
+    animation: player-anim-receiver 380ms ease-out;
+}
+
+/* — Tir : recul (armer) puis frappe en avant + flash brightness — */
+@keyframes player-anim-shoot {
+    0%   { transform: translate(-50%, -50%) scale(1);    filter: brightness(1); }
+    22%  { transform: translate(calc(-50% - (5px * var(--anim-dir))), -50%) scale(0.95);
+        filter: brightness(1.05); }
+    55%  { transform: translate(calc(-50% + (14px * var(--anim-dir))), -50%) scale(1.14);
+        filter: brightness(1.35); }
+    100% { transform: translate(-50%, -50%) scale(1);    filter: brightness(1); }
+}
+.player.player-anim-shoot {
+    animation: player-anim-shoot 450ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 5;
+}
+
+/* — Arrêt gardien : plongée latérale avec rotation + glow — */
+@keyframes player-anim-save {
+    0%   { transform: translate(-50%, -50%) rotate(0);
+        filter: brightness(1); box-shadow: 0 0 8px rgba(255,255,0,0.9), 0 3px 6px rgba(0,0,0,0.55); }
+    45%  { transform: translate(calc(-50% + (18px * var(--anim-dir))), calc(-50% - 8px))
+    rotate(calc(30deg * var(--anim-dir)));
+        filter: brightness(1.5); box-shadow: 0 0 18px rgba(255,255,150,1), 0 4px 8px rgba(0,0,0,0.6); }
+    100% { transform: translate(-50%, -50%) rotate(0);
+        filter: brightness(1); box-shadow: 0 0 8px rgba(255,255,0,0.9), 0 3px 6px rgba(0,0,0,0.55); }
+}
+.player.player-anim-save {
+    animation: player-anim-save 480ms cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 5;
+}
+
 .player .endurance-shell {
     position: absolute; left: 50%; bottom: -5px; transform: translateX(-50%);
     width: 70%; height: 4px; border-radius: 999px; background: rgba(0,0,0,0.35);
