@@ -4,6 +4,50 @@ import { getStamina, getStaminaMax } from './stamina.js';
 import { FORMATIONS, DEFAULT_FORMATION } from './formations.js';
 
 // -----------------------------------------------------------
+//   Profils d'animation du ballon
+// -----------------------------------------------------------
+const BALL_PROFILES = {
+    short:  { durationMs: 280, easing: 'cubic-bezier(0.4, 0, 0.2, 1)',     className: 'ball-pass-short' },
+    medium: { durationMs: 500, easing: 'cubic-bezier(0.22, 0.61, 0.36, 1)', className: 'ball-pass-medium' },
+    long:   { durationMs: 750, easing: 'cubic-bezier(0.22, 0.8, 0.36, 1)',  className: 'ball-pass-long' },
+};
+
+function getBallProfile(distance) {
+    if (distance < 18) return BALL_PROFILES.short;
+    if (distance < 40) return BALL_PROFILES.medium;
+    return BALL_PROFILES.long;
+}
+
+let _ballClassTimer = null;
+
+function applyBallMotion(targetX, targetY) {
+    if (!_ui.ballEl) return;
+
+    const currentX = parseFloat(_ui.ballEl.style.left) || targetX;
+    const currentY = parseFloat(_ui.ballEl.style.top)  || targetY;
+    const distance = Math.hypot(targetX - currentX, targetY - currentY);
+    const profile  = getBallProfile(distance);
+
+    // Reset classes
+    _ui.ballEl.classList.remove('ball-pass-short', 'ball-pass-medium', 'ball-pass-long');
+    _ui.ballEl.classList.add(profile.className);
+
+    // Override de la transition CSS pour cette frame
+    _ui.ballEl.style.transition =
+        `left ${profile.durationMs}ms ${profile.easing}, ` +
+        `top  ${profile.durationMs}ms ${profile.easing}, ` +
+        `transform 0.15s ease-out`;
+
+    _ui.ballEl.style.left = targetX + '%';
+    _ui.ballEl.style.top  = targetY + '%';
+
+    // Nettoyer la classe en fin d'anim
+    if (_ballClassTimer) clearTimeout(_ballClassTimer);
+    _ballClassTimer = setTimeout(() => {
+        _ui.ballEl?.classList.remove(profile.className);
+    }, profile.durationMs + 50);
+}
+// -----------------------------------------------------------
 //   Dépendances injectées à l'init
 // -----------------------------------------------------------
 let _rootEl  = null;
@@ -282,8 +326,7 @@ export function moveBallToPlayer(team, number, updateTeamCardFn) {
     let y = parseFloat(el.style.top);
     if (Number.isNaN(x) || Number.isNaN(y)) return;
 
-    _ui.ballEl.style.left = x + "%";
-    _ui.ballEl.style.top  = y + "%";
+    applyBallMotion(x, y);
 
     const info = _roster.getPlayerInfo(team, targetNumber);
     _ui.ballEl.textContent = info ? String(info.number) : String(targetNumber);
@@ -302,8 +345,7 @@ export function moveBallToPlayer(team, number, updateTeamCardFn) {
             if (!el) return;
             x = parseFloat(el.style.left);
             y = parseFloat(el.style.top);
-            _ui.ballEl.style.left = x + "%";
-            _ui.ballEl.style.top  = y + "%";
+            applyBallMotion(x, y);
             const info2 = _roster.getPlayerInfo(team, targetNumber);
             _ui.ballEl.textContent = info2 ? String(info2.number) : String(targetNumber);
         }
@@ -316,8 +358,7 @@ export function moveBallToPlayer(team, number, updateTeamCardFn) {
         if (safeEl) {
             const sx = parseFloat(safeEl.style.left);
             const sy = parseFloat(safeEl.style.top);
-            _ui.ballEl.style.left = sx + "%";
-            _ui.ballEl.style.top  = sy + "%";
+            applyBallMotion(x, y);
             const safeInfo = _roster.getPlayerInfo(team, safe);
             _ui.ballEl.textContent = safeInfo ? String(safeInfo.number) : String(safe);
             ball.number   = safe;

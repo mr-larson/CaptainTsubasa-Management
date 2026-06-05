@@ -122,8 +122,36 @@
     box-shadow: 0 4px 8px rgba(0,0,0,0.6); z-index: 5;
     display: flex; align-items: center; justify-content: center;
     font-size: 11px; font-weight: 700; text-shadow: 0 0 2px rgba(0,0,0,0.8);
-    transition: left 0.70s cubic-bezier(0.22,0.61,0.36,1), top 0.70s cubic-bezier(0.22,0.61,0.36,1), transform 0.15s ease-out;
+    /* transition gérée dynamiquement en JS pour adapter selon la distance */
 }
+
+/* Ombre au sol — suggère le vol du ballon */
+#ball::after {
+    content: '';
+    position: absolute; left: 50%; top: 145%;
+    width: 14px; height: 4px;
+    background: radial-gradient(ellipse, rgba(0,0,0,0.5) 0%, transparent 70%);
+    transform: translateX(-50%);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s, width 0.2s;
+}
+
+/* Effets visuels par profil */
+.ball-pass-short  { box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+
+.ball-pass-medium { box-shadow: 0 6px 12px rgba(0,0,0,0.55); filter: brightness(1.05); }
+.ball-pass-medium::after { opacity: 0.4; width: 12px; }
+
+.ball-pass-long   { box-shadow: 0 10px 16px rgba(0,0,0,0.6); filter: brightness(1.1); }
+.ball-pass-long::after { opacity: 0.6; width: 10px; animation: ball-shadow-pulse var(--ball-shadow-dur, 750ms) ease-out; }
+
+@keyframes ball-shadow-pulse {
+    0%, 100% { width: 14px; opacity: 0.5; }
+    50%      { width: 8px;  opacity: 0.25; }
+}
+
+.ball-kick { transform: translate(-50%, -52%) scale(1.05); }
 .ball-kick { transform: translate(-50%, -52%) scale(1.05); }
 
 #turn-indicator {
@@ -137,7 +165,7 @@
    ETATS / ANIMATIONS JS
    ========================================================================== */
 .dice-chip {
-    font-size: 10px; padding: 2px 8px; border-radius: 999px; background: rgba(0,0,0,0.06);
+    font-size: 10px; padding: 2px 8px; border-radius: 999px; background: rgba(248, 242, 242, 0.06);
     color: #222; font-variant-numeric: tabular-nums; opacity: 0; transform: scale(0.8);
     transition: opacity 0.25s ease, transform 0.25s ease; white-space: nowrap; cursor: help; position: relative;
 }
