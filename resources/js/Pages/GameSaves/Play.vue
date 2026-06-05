@@ -468,6 +468,7 @@ function updateOtherPlayerNumber(playerId, number) {
                                    :season="season"
                                    :week="week"
                                    :isAlreadyBought="isAlreadyBought"
+                                   :isPlayerInjured="isPlayerInjured"
                                    @buy="buyCard"
                                    @activate="activateCard"
                     />

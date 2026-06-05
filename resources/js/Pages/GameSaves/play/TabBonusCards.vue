@@ -2,13 +2,14 @@
 import { ref, computed } from 'vue';
 
 const props = defineProps({
-    weeklyOffers:    { type: Array,  default: () => [] },
-    inventory:       { type: Array,  default: () => [] },
-    teamBudget:      { type: Number, default: 0 },
-    rosterWithStatus:{ type: Array,  default: () => [] },
-    season:          { type: Number, required: true },
-    week:            { type: Number, required: true },
-    isAlreadyBought: { type: Function, default: () => () => false },
+    weeklyOffers:     { type: Array,    default: () => [] },
+    inventory:        { type: Array,    default: () => [] },
+    teamBudget:       { type: Number,   default: 0 },
+    rosterWithStatus: { type: Array,    default: () => [] },
+    season:           { type: Number,   required: true },
+    week:             { type: Number,   required: true },
+    isAlreadyBought:  { type: Function, default: () => false },
+    isPlayerInjured:  { type: Function, default: () => false },
 });
 
 const emit = defineEmits(['buy', 'activate']);
@@ -25,7 +26,7 @@ const usedCards      = computed(() => props.inventory.filter(c => c.status === '
 
 // Joueurs blessés disponibles comme cible
 const injuredPlayers = computed(() =>
-    props.rosterWithStatus.filter(p => p.is_injured)
+    props.rosterWithStatus.filter(p => props.isPlayerInjured(p.id))
 );
 
 // ==========================
