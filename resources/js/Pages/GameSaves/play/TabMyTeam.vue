@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { FORMATIONS, FORMATION_LIST } from '@/Pages/Match/engine/formations.js';
 import { usePlayerUtils } from './usePlayerUtils.js';
+import TeamStyleBadges from "@/Pages/GameSaves/play/TeamStyleBadges.vue";
 
 const props = defineProps({
     rosterWithStatus:     { type: Array,   required: true },
@@ -294,6 +295,7 @@ const perfChips = computed(() => {
                     <p v-if="team?.description" class="text-xs text-slate-400 leading-relaxed line-clamp-3">
                         {{ team.description }}
                     </p>
+                    <TeamStyleBadges :team="team" size="sm" />
                 </div>
             </div>
 

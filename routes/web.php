@@ -173,6 +173,12 @@ Route::middleware('auth')->group(function () {
 
     // Match démo
     Route::get('/match/demo', fn() => Inertia::render('Match/Engine'))->name('match.demo');
+
+    //Test
+    Route::get('/debug/styles/{gameSave}', function (\App\Models\GameSaves\GameSave $gameSave) {
+        return \App\Models\GameSaves\GameTeam::where('game_save_id', $gameSave->id)
+            ->get(['name', 'tactical_style', 'management_philosophy']);
+    });
 });
 
 require __DIR__.'/auth.php';

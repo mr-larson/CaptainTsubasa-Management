@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\TeamStyle;
 use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GameTeam;
 use Illuminate\Support\Collection;
@@ -89,7 +90,7 @@ class MatchSimulator
             $attacker  = $this->randomAttacker($homePlayers);
             $defender  = $this->randomDefender($awayPlayers);
             $gk        = $this->getGoalkeeper($awayPlayers);
-            $action    = $this->randomOffenseAction();
+            $action    = $this->randomOffenseAction($home->tactical_style);
 
             $isShot      = $action === 'shot';
             $attackRoll  = $homeRatings['att'] + $this->d20() + 2; // avantage domicile
@@ -110,7 +111,7 @@ class MatchSimulator
             }
 
             // Stats défenseur
-            $defAction = $this->randomDefenseAction();
+            $defAction = $this->randomDefenseAction($away->tactical_style);
             if ($defender) {
                 $pid = (string) $defender->id;
                 $playerStats[$pid] = $playerStats[$pid] ?? $this->emptyPlayerStats();
@@ -152,7 +153,7 @@ class MatchSimulator
             $attacker  = $this->randomAttacker($awayPlayers);
             $defender  = $this->randomDefender($homePlayers);
             $gk        = $this->getGoalkeeper($homePlayers);
-            $action    = $this->randomOffenseAction();
+            $action    = $this->randomOffenseAction($away->tactical_style);
 
             $isShot      = $action === 'shot';
             $attackRoll  = $awayRatings['att'] + $this->d20();
@@ -171,7 +172,7 @@ class MatchSimulator
                 $success ? $playerStats[$pid]['duelsWon']++ : $playerStats[$pid]['duelsLost']++;
             }
 
-            $defAction = $this->randomDefenseAction();
+            $defAction = $this->randomDefenseAction($home->tactical_style);
             if ($defender) {
                 $pid = (string) $defender->id;
                 $playerStats[$pid] = $playerStats[$pid] ?? $this->emptyPlayerStats();
@@ -302,21 +303,50 @@ class MatchSimulator
         // Le gardien = joueur avec le plus de hand_save + punch_save
         return $players->sortByDesc(fn($p) => ($p->hand_save ?? 0) + ($p->punch_save ?? 0))->first();
     }
-
-    private function randomOffenseAction(): string
+    /**
+     * Retourne la distribution d'actions offensives [pass_weight, dribble_weight, shot_weight]
+     * sur 10 selon le style tactique d'une équipe.
+     */
+    private function offenseDistributionFor(?string $tacticalStyle): array
     {
-        // Distribution réaliste : beaucoup de passes, dribbles, quelques tirs
-        $roll = random_int(1, 10);
-        if ($roll <= 4) return 'pass';
-        if ($roll <= 7) return 'dribble';
+        return match ($tacticalStyle) {
+            TeamStyle::TACTICAL_OFFENSIVE  => [3, 3, 4], // tirs +++
+            TeamStyle::TACTICAL_DEFENSIVE  => [5, 3, 2], // passes sécurisées, peu de tirs
+            TeamStyle::TACTICAL_POSSESSION => [6, 2, 2], // passes ++++
+            TeamStyle::TACTICAL_COUNTER    => [3, 2, 5], // tirs rapides quand la balle arrive
+            TeamStyle::TACTICAL_BALANCED   => [4, 3, 3], // distribution actuelle
+            default                        => [4, 3, 3],
+        };
+    }
+
+    private function defenseDistributionFor(?string $tacticalStyle): array
+    {
+        return match ($tacticalStyle) {
+            TeamStyle::TACTICAL_OFFENSIVE  => [3, 2, 1], // intercept >= tackle, peu de blocks
+            TeamStyle::TACTICAL_DEFENSIVE  => [2, 2, 2], // équilibré avec bias blocks
+            TeamStyle::TACTICAL_POSSESSION => [3, 2, 1], // intercept prioritaire (récup haute)
+            TeamStyle::TACTICAL_COUNTER    => [1, 3, 2], // tackle ++ (récup basse pour repartir)
+            TeamStyle::TACTICAL_BALANCED   => [2, 2, 2],
+            default                        => [2, 2, 2],
+        };
+    }
+    private function randomOffenseAction(?string $tacticalStyle = null): string
+    {
+        [$pass, $dribble, $shot] = $this->offenseDistributionFor($tacticalStyle);
+        $total = $pass + $dribble + $shot;
+        $roll  = random_int(1, $total);
+        if ($roll <= $pass)               return 'pass';
+        if ($roll <= $pass + $dribble)    return 'dribble';
         return 'shot';
     }
 
-    private function randomDefenseAction(): string
+    private function randomDefenseAction(?string $tacticalStyle = null): string
     {
-        $roll = random_int(1, 6);
-        if ($roll <= 2) return 'intercept';
-        if ($roll <= 4) return 'tackle';
+        [$intercept, $tackle, $block] = $this->defenseDistributionFor($tacticalStyle);
+        $total = $intercept + $tackle + $block;
+        $roll  = random_int(1, $total);
+        if ($roll <= $intercept)              return 'intercept';
+        if ($roll <= $intercept + $tackle)    return 'tackle';
         return 'block';
     }
 

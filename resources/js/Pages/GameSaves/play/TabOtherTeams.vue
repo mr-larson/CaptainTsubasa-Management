@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { FORMATIONS, FORMATION_LIST } from '@/Pages/Match/engine/formations.js';
 import { usePlayerUtils } from './usePlayerUtils.js';
+import TeamStyleBadges from "@/Pages/GameSaves/play/TeamStyleBadges.vue";
 
 const props = defineProps({
     // Équipes
@@ -313,6 +314,7 @@ const hasNoPerf = computed(() => perfChips.value.every(c => c.val === 0));
                     <p v-if="selectedOtherTeam.description" class="text-xs text-slate-400 leading-relaxed line-clamp-3">
                         {{ selectedOtherTeam.description }}
                     </p>
+                    <TeamStyleBadges :team="selectedOtherTeam" size="sm" />
                 </div>
             </div>
 

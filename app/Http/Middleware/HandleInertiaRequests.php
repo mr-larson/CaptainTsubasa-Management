@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\TeamStyle;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Tightenco\Ziggy\Ziggy;
@@ -39,6 +40,16 @@ class HandleInertiaRequests extends Middleware
                     'location' => $request->url(),
                 ]);
             },
+            'teamStyles' => fn () => [
+                'tactical' => [
+                    'labels' => TeamStyle::TACTICAL_LABELS,
+                    'icons'  => TeamStyle::TACTICAL_ICONS,
+                ],
+                'philosophy' => [
+                    'labels' => TeamStyle::PHILOSOPHY_LABELS,
+                    'icons'  => TeamStyle::PHILOSOPHY_ICONS,
+                ],
+            ],
         ]);
     }
 }

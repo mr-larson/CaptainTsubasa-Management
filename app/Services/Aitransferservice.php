@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\TeamStyle;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameInjury;
 use App\Models\GameSaves\GamePlayer;
@@ -134,7 +135,8 @@ class AITransferService
                 $need['position_group'],
                 $squadPlayers,
                 $availableBudget,
-                $remainingWeeks
+                $remainingWeeks,
+                $team->management_philosophy
             );
 
             if (!$candidate) continue;
@@ -265,13 +267,13 @@ class AITransferService
     // ==========================
     //   SÉLECTION DU CANDIDAT
     // ==========================
-
     protected function findBestCandidate(
         Collection $freePlayers,
         string $positionGroup,
         Collection $squadPlayers,
         int $budget,
-        int $remainingWeeks
+        int $remainingWeeks,
+        ?string $philosophy = null
     ): ?GamePlayer {
         $teamAvgOverall = $this->avgOverall($squadPlayers);
 
@@ -285,15 +287,32 @@ class AITransferService
         });
 
         if ($candidates->isEmpty() && $positionGroup !== 'ANY') {
-            return $this->findBestCandidate($freePlayers, 'ANY', $squadPlayers, $budget, $remainingWeeks);
+            return $this->findBestCandidate($freePlayers, 'ANY', $squadPlayers, $budget, $remainingWeeks, $philosophy);
         }
 
         if ($candidates->isEmpty()) return null;
 
-        // Choisir le joueur dont l'overall est le plus proche de la moyenne équipe
-        return $candidates
-            ->sortBy(fn($p) => abs($this->overallOf($p) - $teamAvgOverall))
-            ->first();
+        return match ($philosophy) {
+            // Stars : le meilleur joueur absolu, peu importe le prix
+            TeamStyle::PHILOSOPHY_STARS => $candidates
+                ->sortByDesc(fn($p) => $this->overallOf($p))
+                ->first(),
+
+            // Collectif : le plus proche de la moyenne équipe (homogénéité)
+            TeamStyle::PHILOSOPHY_COLLECTIVE => $candidates
+                ->sortBy(fn($p) => abs($this->overallOf($p) - $teamAvgOverall))
+                ->first(),
+
+            // Économe : meilleur ratio overall / coût (bonnes affaires)
+            TeamStyle::PHILOSOPHY_ECONOMIST => $candidates
+                ->sortByDesc(fn($p) => $this->overallOf($p) / max(1, $p->cost ?? 1))
+                ->first(),
+
+            // Équilibré : préfère légèrement au-dessus de la moyenne, sans excès
+            default => $candidates
+                ->sortByDesc(fn($p) => $this->scoreBalanced($p, $teamAvgOverall))
+                ->first(),
+        };
     }
 
     // ==========================
@@ -329,5 +348,21 @@ class AITransferService
         $teamCount = GameTeam::where('game_save_id', $gameSave->id)->count();
         if ($teamCount < 2) return 28;
         return $teamCount % 2 === 1 ? $teamCount * 2 : ($teamCount - 1) * 2;
+    }
+
+    /**
+     * Score de sélection "Équilibré" : favorise les joueurs légèrement
+     * au-dessus de la moyenne, pénalise les trop chers ou trop faibles.
+     */
+    protected function scoreBalanced(GamePlayer $player, float $teamAvg): float
+    {
+        $overall = $this->overallOf($player);
+        $cost    = max(1, $player->cost ?? 1);
+
+        // Bonus si au-dessus de la moyenne (plafonné à +20)
+        $aboveAvg = min(20, max(0, $overall - $teamAvg));
+
+        // Score : overall + bonus moyenne - pénalité coût
+        return $overall + ($aboveAvg * 2) - ($cost / 50);
     }
 }

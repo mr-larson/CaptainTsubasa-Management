@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\TeamStyle;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameInjury;
 use App\Models\GameSaves\GameSanction;
@@ -12,16 +13,26 @@ use Illuminate\Support\Collection;
 class AiLineUpService
 {
     /**
+     * Seuils de stamina par philosophie.
+     * En dessous du seuil, l'IA préfère faire tourner.
+     */
+    private const STAMINA_THRESHOLDS = [
+        TeamStyle::PHILOSOPHY_STARS      => 30,  // Pousse les stars, rotate seulement si épuisé
+        TeamStyle::PHILOSOPHY_COLLECTIVE => 60,  // Rotation régulière
+        TeamStyle::PHILOSOPHY_BALANCED   => 50,  // Mix raisonnable
+        TeamStyle::PHILOSOPHY_ECONOMIST  => 65,  // Rotation agressive, préserve tout le monde
+    ];
+
+    /**
      * Ajuste le lineup de toutes les équipes IA avant un match.
-     * Remplace les titulaires indisponibles (blessés/suspendus) par
-     * des remplaçants disponibles au même poste.
+     * 1) Réévalue les titulaires selon philosophie + stamina
+     * 2) Remplace les indisponibles (blessés/suspendus)
      */
     public function adjustLineupsForWeek(GameSave $gameSave): void
     {
         $currentWeek      = $gameSave->week ?? 1;
         $controlledTeamId = $gameSave->controlled_game_team_id;
 
-        // Joueurs blessés et suspendus cette semaine
         $injuredIds = GameInjury::where('game_save_id', $gameSave->id)
             ->where('week_return', '>', $currentWeek)
             ->pluck('game_player_id')
@@ -35,9 +46,6 @@ class AiLineUpService
 
         $unavailableIds = array_unique(array_merge($injuredIds, $suspendedIds));
 
-        if (empty($unavailableIds)) return;
-
-        // Toutes les équipes IA
         $aiTeams = GameTeam::where('game_save_id', $gameSave->id)
             ->when($controlledTeamId, fn($q) => $q->where('id', '!=', $controlledTeamId))
             ->with(['contracts.gamePlayer'])
@@ -46,10 +54,11 @@ class AiLineUpService
         $state = $gameSave->state ?? [];
 
         foreach ($aiTeams as $team) {
-            $changed = $this->adjustTeamLineup($team, $unavailableIds, $state);
-            if ($changed) {
-                // Sauvegarder le lineup ajusté dans state
-            }
+            // Étape 1 : rotation proactive selon philosophie
+            $this->applyPhilosophyRotation($team, $unavailableIds);
+
+            // Étape 2 : remplacement des indisponibles restants
+            $this->adjustTeamLineup($team, $unavailableIds, $state);
         }
 
         $gameSave->state = $state;
@@ -57,21 +66,89 @@ class AiLineUpService
     }
 
     /**
-     * Ajuste le lineup d'une équipe en remplaçant les indisponibles.
-     * Retourne true si des changements ont été effectués.
+     * Réévalue les titulaires selon la philosophie de gestion.
+     * Compare chaque titulaire fatigué à un remplaçant frais du même poste.
+     */
+    protected function applyPhilosophyRotation(GameTeam $team, array $unavailableIds): void
+    {
+        $philosophy = $team->management_philosophy ?? 'balanced';
+        $threshold  = self::STAMINA_THRESHOLDS[$philosophy] ?? 50;
+
+        $contracts = $team->contracts->filter(fn($c) => $c->gamePlayer !== null);
+
+        // Titulaires disponibles mais fatigués
+        $tiredStarters = $contracts->filter(fn($c) =>
+            $c->is_starter
+            && !in_array($c->gamePlayer->id, $unavailableIds)
+            && ($c->gamePlayer->stamina ?? 100) < $threshold
+        );
+
+        if ($tiredStarters->isEmpty()) return;
+
+        // Remplaçants disponibles et frais
+        $freshSubs = $contracts->filter(fn($c) =>
+            !$c->is_starter
+            && !in_array($c->gamePlayer->id, $unavailableIds)
+            && ($c->gamePlayer->stamina ?? 100) >= $threshold
+        );
+
+        if ($freshSubs->isEmpty()) return;
+
+        foreach ($tiredStarters as $starterContract) {
+            $starterPlayer   = $starterContract->gamePlayer;
+            $starterPosition = $this->positionGroup($starterPlayer->position ?? '');
+            $starterOverall  = $this->playerOverall($starterPlayer);
+
+            // Cherche un remplaçant frais au même poste
+            $candidate = $freshSubs
+                ->filter(fn($c) => $this->positionGroup($c->gamePlayer->position ?? '') === $starterPosition)
+                ->sortByDesc(fn($c) => $this->playerOverall($c->gamePlayer))
+                ->first();
+
+            if (!$candidate) continue;
+
+            $candidateOverall = $this->playerOverall($candidate->gamePlayer);
+
+            // Décision selon philosophie
+            $shouldSwap = match ($philosophy) {
+                // Stars : ne rotate que si le remplaçant est au moins aussi bon
+                TeamStyle::PHILOSOPHY_STARS      => $candidateOverall >= $starterOverall,
+                // Collectif : rotate dès que le seuil est franchi, peu importe le niveau
+                TeamStyle::PHILOSOPHY_COLLECTIVE => true,
+                // Économe : rotate toujours (préserve la stamina)
+                TeamStyle::PHILOSOPHY_ECONOMIST  => true,
+                // Équilibré : rotate si le remplaçant n'est pas trop en dessous (-10 max)
+                default                          => $candidateOverall >= ($starterOverall - 10),
+            };
+
+            if (!$shouldSwap) continue;
+
+            // Swap
+            $starterContract->is_starter = false;
+            $candidate->is_starter       = true;
+            $starterContract->save();
+            $candidate->save();
+
+            // Retirer du pool
+            $freshSubs = $freshSubs->reject(fn($c) => $c->id === $candidate->id);
+
+            if ($freshSubs->isEmpty()) break;
+        }
+    }
+
+    /**
+     * Remplace les titulaires indisponibles (blessés/suspendus).
      */
     protected function adjustTeamLineup(GameTeam $team, array $unavailableIds, array &$state): bool
     {
         $contracts = $team->contracts->filter(fn($c) => $c->gamePlayer !== null);
 
-        // Titulaires indisponibles
         $unavailableStarters = $contracts->filter(fn($c) =>
             $c->is_starter && in_array($c->gamePlayer->id, $unavailableIds)
         );
 
         if ($unavailableStarters->isEmpty()) return false;
 
-        // Remplaçants disponibles
         $availableSubs = $contracts->filter(fn($c) =>
             !$c->is_starter && !in_array($c->gamePlayer->id, $unavailableIds)
         );
@@ -84,25 +161,24 @@ class AiLineUpService
             $starterPlayer   = $starterContract->gamePlayer;
             $starterPosition = $this->positionGroup($starterPlayer->position ?? '');
 
-            // Cherche un remplaçant au même poste
-            $replacement = $availableSubs->first(fn($c) =>
-                $this->positionGroup($c->gamePlayer->position ?? '') === $starterPosition
-            );
+            $replacement = $availableSubs
+                ->filter(fn($c) => $this->positionGroup($c->gamePlayer->position ?? '') === $starterPosition)
+                ->sortByDesc(fn($c) => $this->playerOverall($c->gamePlayer))
+                ->first();
 
-            // Si pas de remplaçant au même poste, prend n'importe quel remplaçant disponible
             if (!$replacement) {
-                $replacement = $availableSubs->first();
+                $replacement = $availableSubs
+                    ->sortByDesc(fn($c) => $this->playerOverall($c->gamePlayer))
+                    ->first();
             }
 
             if (!$replacement) continue;
 
-            // Swap is_starter en DB
-            $starterContract->is_starter     = false;
-            $replacement->is_starter         = true;
+            $starterContract->is_starter = false;
+            $replacement->is_starter     = true;
             $starterContract->save();
             $replacement->save();
 
-            // Mettre à jour le lineup dans state si défini
             $lineup = $state['lineup'][$team->id] ?? null;
             if ($lineup && isset($lineup['slots'])) {
                 foreach ($lineup['slots'] as $slot => $playerId) {
@@ -113,7 +189,6 @@ class AiLineUpService
                 }
             }
 
-            // Retirer ce remplaçant du pool
             $availableSubs = $availableSubs->reject(fn($c) => $c->id === $replacement->id);
             $changed = true;
         }
@@ -133,5 +208,18 @@ class AiLineUpService
         if (str_contains($p, 'MDF') || str_contains($p, 'MID') || str_contains($p, 'MOF')) return 'MID';
         if (str_contains($p, 'ATT') || str_contains($p, 'FOR'))    return 'ATT';
         return 'MID';
+    }
+
+    protected function playerOverall($player): int
+    {
+        if (!$player) return 0;
+        $stats = [
+            $player->attack   ?? 0, $player->defense  ?? 0,
+            $player->shot     ?? 0, $player->pass     ?? 0,
+            $player->dribble  ?? 0, $player->speed    ?? 0,
+            $player->tackle   ?? 0, $player->block    ?? 0,
+            $player->intercept ?? 0,
+        ];
+        return (int) round(array_sum($stats) / max(1, count($stats)));
     }
 }

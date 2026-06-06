@@ -21,6 +21,8 @@ class GameTeam extends Model
         'losses',
         'logo_path',
         'formation',
+        'tactical_style',
+        'management_philosophy',
     ];
 
     public function gameSave()

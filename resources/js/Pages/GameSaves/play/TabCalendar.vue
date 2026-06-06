@@ -228,9 +228,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
             <!-- ============================================ -->
             <!-- CALENDRIER                                    -->
             <!-- ============================================ -->
-            <div class="border border-slate-200 rounded-xl bg-slate-50 p-4"
-                 :class="selectedCalendarMatch && selectedCalendarMatchStats ? 'col-span-4' : 'col-span-12'">
-
+            <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 col-span-4">
                 <div class="flex items-center gap-3 mb-3">
                     <div class="w-8 h-8 rounded-lg overflow-hidden bg-white border border-slate-200 shrink-0">
                         <img v-if="teamLogoUrl(calendarTeam)" :src="teamLogoUrl(calendarTeam)" class="w-full h-full object-contain" alt=""/>
@@ -391,7 +389,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                 <!-- ============================================ -->
                 <!-- BLOC : Progression des joueurs               -->
                 <!-- ============================================ -->
-                <div v-if="selectedCalendarProgression.length" class="border border-slate-200 rounded-xl bg-gradient-to-br from-emerald-50 to-teal-50 p-4">
+                <div v-if="selectedCalendarProgression.length" class="border border-slate-200 rounded-xl bg-slate-50 p-4">
                     <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3">
                         📈 Progression suite à ce match
                     </h4>
@@ -476,10 +474,10 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                 </div>
             </div>
             <!-- Message si aucun match sélectionné -->
-            <div v-else class="col-span-7 flex items-center justify-center rounded-xl border border-dashed border-slate-300 text-slate-400 text-sm">
+            <div v-else class="col-span-8 flex items-center justify-center rounded-xl border border-dashed border-slate-300 text-slate-400 text-sm">
                 <div class="text-center p-8">
                     <div class="text-3xl mb-2">📊</div>
-                    <p>Clique sur un match joué (📊) pour voir les statistiques</p>
+                    <p>Clique sur un match joué pour voir les statistiques</p>
                 </div>
             </div>
         </div>

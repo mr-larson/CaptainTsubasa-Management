@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
+import TeamStyleBadges from "@/Pages/GameSaves/play/TeamStyleBadges.vue";
 
 const props = defineProps({
     gameSave:      { type: Object, required: true },
@@ -195,7 +196,8 @@ const matchesPlayed = computed(() =>
                     </div>
                     <div>
                         <div class="text-sm font-bold text-slate-800">{{ team?.name ?? '—' }}</div>
-                        <div class="text-xs text-slate-400">{{ periodLabel(gameSave.period) }}</div>
+                        <div class="text-xs text-slate-400 mb-1">{{ periodLabel(gameSave.period) }}</div>
+                        <TeamStyleBadges :team="team" size="sm" />
                     </div>
                 </div>
 

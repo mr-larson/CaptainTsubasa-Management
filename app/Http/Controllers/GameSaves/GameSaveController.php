@@ -106,16 +106,18 @@ class GameSaveController extends Controller
 
         foreach ($teams as $team) {
             $gameTeam = GameTeam::create([
-                'game_save_id' => $gameSave->id,
-                'base_team_id' => $team->id,
-                'name'         => $team->name,
-                'description'  => $team->description,
-                'budget'       => $team->budget,
-                'wins'         => 0,
-                'draws'        => 0,
-                'losses'       => 0,
-                'logo_path'    => $team->logo_path,
-                'formation'    => $formationByTeam[$team->name] ?? '3-2-3-2',
+                'game_save_id'          => $gameSave->id,
+                'base_team_id'          => $team->id,
+                'name'                  => $team->name,
+                'description'           => $team->description,
+                'budget'                => $team->budget,
+                'wins'                  => 0,
+                'draws'                 => 0,
+                'losses'                => 0,
+                'logo_path'             => $team->logo_path,
+                'formation'             => $formationByTeam[$team->name] ?? '3-2-3-2',
+                'tactical_style'        => $team->tactical_style        ?? 'balanced',
+                'management_philosophy' => $team->management_philosophy ?? 'collective',
             ]);
             $gameTeamsByBaseId[$team->id] = $gameTeam;
         }

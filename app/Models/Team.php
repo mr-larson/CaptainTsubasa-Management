@@ -34,7 +34,10 @@ class Team extends Model
         'wins',
         'draws',
         'losses',
+        'formation',
         'logo_path',
+        'tactical_style',
+        'management_philosophy',
     ];
 
     /**

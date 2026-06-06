@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\TeamStyle;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
 use Illuminate\Support\Facades\DB;
@@ -17,6 +18,15 @@ class AITrainingService
         'ATT' => ['shot', 'dribble', 'attack', 'pass', 'speed', 'stamina'],
         // Fallback pour postes non reconnus
         'DEFAULT' => ['speed', 'attack', 'defense', 'pass', 'dribble', 'shot', 'tackle', 'intercept'],
+    ];
+
+    // Stats boostées en priorité par style tactique (bias -15 sur leur valeur apparente)
+    private const STYLE_PRIORITY_STATS = [
+        TeamStyle::TACTICAL_OFFENSIVE  => ['shot', 'dribble', 'attack', 'speed'],
+        TeamStyle::TACTICAL_DEFENSIVE  => ['defense', 'tackle', 'block', 'intercept'],
+        TeamStyle::TACTICAL_POSSESSION => ['pass', 'intercept', 'stamina', 'dribble'],
+        TeamStyle::TACTICAL_COUNTER    => ['speed', 'shot', 'defense', 'tackle'],
+        TeamStyle::TACTICAL_BALANCED   => [],
     ];
 
     public function trainForWeek(GameSave $gameSave): void
@@ -50,13 +60,13 @@ class AITrainingService
         foreach ($allTeams as $team) {
             $isControlled = ((int) $team->id === (int) $controlledTeamId);
             if ($isControlled) {
-                $results   = $this->trainTeam($team, gainMax: 2, excludePlayerIds: $manuallyTrainedIds);
+                $results   = $this->trainTeam($team, gainMax: 2, excludePlayerIds: $manuallyTrainedIds, tacticalStyle: $team->tactical_style);
                 $aiEntries = $results;
                 foreach ($results as $entry) {
                     $allEntries[] = array_merge($entry, ['team_id' => $team->id, 'team_name' => $team->name]);
                 }
             } else {
-                $results = $this->trainTeam($team, gainMax: 3);
+                $results = $this->trainTeam($team, gainMax: 3, tacticalStyle: $team->tactical_style);
                 foreach ($results as $entry) {
                     $allEntries[] = array_merge($entry, ['team_id' => $team->id, 'team_name' => $team->name]);
                 }
@@ -95,7 +105,7 @@ class AITrainingService
         $gameSave->save();
     }
 
-    protected function trainTeam(GameTeam $team, int $gainMax = 3, array $excludePlayerIds = []): array
+    protected function trainTeam(GameTeam $team, int $gainMax = 3, array $excludePlayerIds = [], ?string $tacticalStyle = null): array
     {
         $contracts = $team->contracts->filter(fn($c) => $c->gamePlayer !== null);
         if ($contracts->isEmpty()) return [];
@@ -152,7 +162,7 @@ class AITrainingService
             }
 
             $player  = $contract->gamePlayer;
-            $statKey = $this->bestStatToTrain($player);
+            $statKey = $this->bestStatToTrain($player, $tacticalStyle);
 
             if (!$statKey) continue;
 
@@ -203,27 +213,34 @@ class AITrainingService
 
     /**
      * Choisit la meilleure stat à entraîner pour ce joueur selon son poste.
-     * Prend la stat la plus basse parmi les stats pertinentes du poste,
-     * avec une légère randomisation (pas toujours la même).
+     * Applique un biais vers les stats alignées au style tactique de l'équipe.
      */
-    protected function bestStatToTrain($player): ?string
+    protected function bestStatToTrain($player, ?string $tacticalStyle = null): ?string
     {
         $stats = $this->relevantStatsForPosition($player->position ?? '');
         if (empty($stats)) return null;
 
-        // Calculer les valeurs actuelles
+        // Stats prioritaires selon le style tactique
+        $priorityStats = self::STYLE_PRIORITY_STATS[$tacticalStyle] ?? [];
+        $styleBias     = 15; // Points soustraits aux stats prioritaires (les rend "plus basses" → plus ciblées)
+
+        // Calculer les valeurs actuelles avec biais de style
         $values = [];
         foreach ($stats as $k) {
             $val = (int) ($player->{$k} ?? 0);
-            // Ignorer les stats déjà au max
-            if ($val < 100) {
-                $values[$k] = $val;
+            if ($val >= 100) continue;
+
+            // Appliquer le biais : les stats alignées au style paraissent plus basses
+            if (in_array($k, $priorityStats)) {
+                $val = max(0, $val - $styleBias);
             }
+
+            $values[$k] = $val;
         }
 
         if (empty($values)) return null;
 
-        // Trier par valeur croissante
+        // Trier par valeur croissante (biaisée)
         asort($values);
         $sorted = array_keys($values);
 
