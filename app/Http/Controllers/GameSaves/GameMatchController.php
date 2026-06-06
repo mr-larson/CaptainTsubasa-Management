@@ -5,6 +5,7 @@ namespace App\Http\Controllers\GameSaves;
 use App\Http\Controllers\Controller;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameMatch;
+use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
 use App\Models\GameSaves\GameInjury;
@@ -17,6 +18,7 @@ use App\Services\MatchSimulator;
 use App\Services\AITransferService;
 use App\Services\AILineupService;
 use App\Services\FoulAndInjuryService;
+use App\Services\PostMatchProgressionService;
 use App\Services\StaminaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -178,35 +180,39 @@ class GameMatchController extends Controller
         // 4. Ajuster les lineups IA APRÈS (pour la semaine suivante)
         app(AILineupService::class)->adjustLineupsForWeek($gameSave);
 
-        // 5. Simuler les autres matchs
+        // 5. Progression post-match
+        app(PostMatchProgressionService::class)->applyForMatch($gameSave, $match);
+        $gameSave->refresh();
+
+        // 6. Simuler les autres matchs
         app(MatchSimulator::class)->simulateOtherMatchesOfWeek($match);
         app(AITrainingService::class)->trainForWeek($gameSave);
         app(AITransferService::class)->recruitForWeek($gameSave);
 
-        // 6. Revenus hebdomadaires AVANT d'incrémenter la semaine
+        // 7. Revenus hebdomadaires AVANT d'incrémenter la semaine
         $playedWeek = $match->week;
         $this->applyWeeklyIncome($gameSave, $playedWeek);
 
-        // 7. Avancer la semaine
+        // 8. Avancer la semaine
         $gameSave->week = max($gameSave->week ?? 1, $match->week + 1);
         $gameSave->save();
 
-        // 8. Conserver player_actions
+        // 9. Conserver player_actions
         $state = $gameSave->state ?? [];
         $state['player_actions'] = array_merge($state['player_actions'] ?? [], $data['playerActions'] ?? []);
         $gameSave->state = $state;
         $gameSave->save();
 
-        // 9. Stamina après match — agrégation de TOUS les matchs joués cette semaine
+        // 10. Stamina après match — agrégation de TOUS les matchs joués cette semaine
         StaminaService::applyAfterWeek($gameSave, $playedWeek);
 
-        // 10. Consommer les cartes pre_match de l'équipe contrôlée
+        // 11. Consommer les cartes pre_match de l'équipe contrôlée
         $controlledTeamId = $gameSave->controlled_game_team_id;
         if ($controlledTeamId) {
             app(BonusCardActivationService::class)->consumePreMatchCards($gameSave, $controlledTeamId);
         }
 
-        // 11. Générer la boutique + IA cartes pour la nouvelle semaine
+        // 12. Générer la boutique + IA cartes pour la nouvelle semaine
         app(BonusCardShopService::class)->generateWeeklyOffers($gameSave);
         app(AIBonusCardService::class)->processWeek($gameSave);
 

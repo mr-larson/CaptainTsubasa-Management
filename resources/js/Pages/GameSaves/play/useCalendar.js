@@ -131,10 +131,6 @@ export function useCalendar({ matches, teams, team, week }) {
             ? selectedCalendarMatch.value.away_team_id
             : selectedCalendarMatch.value.home_team_id;
         const oppTeam = teams.value?.find(t => Number(t.id) === Number(oppId)) ?? null;
-        console.log('oppId:', oppId, 'oppTeam:', oppTeam?.name, 'contracts:', oppTeam?.contracts?.length);
-        if (!oppTeam?.contracts?.length) return [];
-        const first = oppTeam.contracts[0];
-        console.log('first contract keys:', Object.keys(first));
         if (!oppTeam || !Array.isArray(oppTeam.contracts)) return [];
         return oppTeam.contracts
             .map(c => c.game_player ?? c.gamePlayer ?? c.player ?? null)
@@ -154,6 +150,9 @@ export function useCalendar({ matches, teams, team, week }) {
 
     const selectedCalendarMatchStats      = computed(() => selectedCalendarMatch.value?.match_stats ?? null);
     const selectedCalendarPlayersStats    = computed(() => selectedCalendarMatchStats.value?.players ?? {});
+    const selectedCalendarProgression = computed(() =>
+        selectedCalendarMatchStats.value?.progression ?? []
+    );
 
     const selectedCalendarMyTeamStats = computed(() => {
         if (!selectedCalendarMatchStats.value || !calendarTeam.value || !selectedCalendarMatch.value) return null;
@@ -181,8 +180,9 @@ export function useCalendar({ matches, teams, team, week }) {
         selectedCalendarTeamId, calendarTeams, calendarTeam, selectCalendarTeam,
         calendarTeamMatches, calendarRows, calendarTeamRoster, calendarOpponentRoster,
         selectedCalendarMatchId, selectedCalendarMatch,
-        selectedCalendarMatchStats, selectedCalendarPlayersStats,
         selectedCalendarMyTeamStats, selectedCalendarOpponentStats,
+        selectedCalendarMatchStats, selectedCalendarPlayersStats,
+        selectedCalendarProgression,
         openMatchStats,
     };
 }

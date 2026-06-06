@@ -36,7 +36,6 @@ class MatchSimulator
     // ==========================
     //   SIMULATION PRINCIPALE
     // ==========================
-
     private function simulateAndSave(GameMatch $m): void
     {
         [$homeScore, $awayScore, $matchStats] = $this->simulateMatch(
@@ -49,6 +48,12 @@ class MatchSimulator
         $m->status      = 'played';
         $m->match_stats = $matchStats;
         $m->save();
+
+        // Progression post-match pour les joueurs IA
+        $gameSave = $m->gameSave ?? \App\Models\GameSaves\GameSave::find($m->game_save_id);
+        if ($gameSave) {
+            app(PostMatchProgressionService::class)->applyForMatch($gameSave, $m);
+        }
 
         $this->applyResultToStandings($m);
     }

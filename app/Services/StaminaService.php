@@ -8,7 +8,7 @@ use App\Models\GameSaves\GameTeam;
 
 class StaminaService
 {
-    const MATCH_STAMINA_COST    = 2;   // -2 pour ceux qui ont joué
+    const MATCH_STAMINA_COST    = 5;   // -5 pour ceux qui ont joué
     const REST_STAMINA_RECOVERY = 10;  // +10 pour ceux qui n'ont pas joué
 
     /**

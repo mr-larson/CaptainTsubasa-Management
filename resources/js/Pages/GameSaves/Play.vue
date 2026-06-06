@@ -117,7 +117,7 @@ const {
     calendarRows, calendarTeamRoster, calendarOpponentRoster,
     selectedCalendarMatch, selectedCalendarMatchStats,
     selectedCalendarMyTeamStats, selectedCalendarOpponentStats,
-    selectedCalendarPlayersStats, openMatchStats,
+    selectedCalendarPlayersStats, openMatchStats, selectedCalendarProgression,
 } = useCalendar({ matches: matchesRef, teams: teamsRef, team: teamRef, week });
 
 const playerSeasonStatsRef = computed(() => props.playerSeasonStats ?? {});
@@ -384,17 +384,18 @@ function updateOtherPlayerNumber(playerId, number) {
                                  :calendarTeam="calendarTeam"
                                  :calendarRows="calendarRows"
                                  :calendarTeamRoster="calendarTeamRoster"
+                                 :calendarOpponentRoster="calendarOpponentRoster"
                                  :teamById="teamById"
                                  :selectedCalendarMatch="selectedCalendarMatch"
                                  :selectedCalendarMatchStats="selectedCalendarMatchStats"
                                  :selectedCalendarMyTeamStats="selectedCalendarMyTeamStats"
                                  :selectedCalendarOpponentStats="selectedCalendarOpponentStats"
                                  :selectedCalendarPlayersStats="selectedCalendarPlayersStats"
+                                 :selectedCalendarProgression="selectedCalendarProgression"
                                  :isByeMatch="isByeMatch"
                                  :opponentNameForTeam="opponentNameForTeam"
                                  @select-team="selectCalendarTeam"
                                  @open-match-stats="openMatchStats"
-                                 :calendarOpponentRoster="calendarOpponentRoster"
                     />
 
                     <!-- ======== CLASSEMENT ======== -->
