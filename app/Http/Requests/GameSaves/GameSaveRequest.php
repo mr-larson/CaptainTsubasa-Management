@@ -53,6 +53,8 @@ class GameSaveRequest extends FormRequest
                 'nullable',
                 'array',
             ],
+
+            'game_mode' => ['nullable', 'string', 'in:prebuilt,draft'],
         ];
 
         // Différence création / mise à jour :

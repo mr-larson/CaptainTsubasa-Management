@@ -343,7 +343,7 @@ class PlayerSeeder extends Seeder
         $players = [
             // Nankatsu
             [
-                'Yuzo', 'Morisaki', 12, 'Goalkeeper', 340,
+                'Yuzo', 'Morisaki', 12, 'Goalkeeper', 34,
                 [
                     'speed' => 60, 'stamina' => 80, 'defense' => 32, 'attack' => 18,
                     'shot' => 16, 'pass' => 18, 'dribble' => 16,
@@ -354,7 +354,7 @@ class PlayerSeeder extends Seeder
             ],
 
             [
-                'Masato', 'Nakazato', 12, 'Defender', 240,
+                'Masato', 'Nakazato', 12, 'Defender', 24,
                 [
                     'speed' => 45, 'stamina' => 55, 'defense' => 22, 'attack' => 18,
                     'shot' => 16, 'pass' => 17, 'dribble' => 16,
@@ -365,7 +365,7 @@ class PlayerSeeder extends Seeder
             ],
 
             [
-                'Ryo', 'Ishizaki', 12, 'Defender', 425,
+                'Ryo', 'Ishizaki', 12, 'Defender', 42,
                 [
                     'speed' => 65, 'stamina' => 75, 'defense' => 31, 'attack' => 22,
                     'shot' => 18, 'pass' => 23, 'dribble' => 20,
@@ -376,7 +376,7 @@ class PlayerSeeder extends Seeder
             ],
 
             [
-                'Hiroshi', 'Nagano', 12, 'Defender', 235,
+                'Hiroshi', 'Nagano', 12, 'Defender', 23,
                 [
                     'speed' => 43, 'stamina' => 58, 'defense' => 23, 'attack' => 17,
                     'shot' => 16, 'pass' => 17, 'dribble' => 16,
@@ -387,7 +387,7 @@ class PlayerSeeder extends Seeder
             ],
 
             [
-                'Manabu', 'Okawa', 12, 'Defender', 230,
+                'Manabu', 'Okawa', 12, 'Defender', 23,
                 [
                     'speed' => 44, 'stamina' => 57, 'defense' => 22, 'attack' => 17,
                     'shot' => 16, 'pass' => 17, 'dribble' => 16,
@@ -3497,7 +3497,7 @@ class PlayerSeeder extends Seeder
             $lastname = $player[1];
             $age = $player[2];
             $position = $player[3];
-            $cost = $player[4];
+            $cost = $this->calculateWeeklyCost($player[5]);
             $baseStats = $player[5];
             $desc = $player[6] ?? null;
 
@@ -3535,7 +3535,15 @@ class PlayerSeeder extends Seeder
             ]);
         }
     }
+    private function calculateWeeklyCost(array $baseStats): int
+    {
+        $keys = ['speed', 'stamina', 'attack', 'defense', 'shot', 'pass', 'dribble', 'block', 'intercept', 'tackle'];
+        $values = array_map(fn($k) => (int) ($baseStats[$k] ?? 0), $keys);
+        $values = array_filter($values, fn($v) => $v > 0);
+        $overall = empty($values) ? 20 : array_sum($values) / count($values);
 
+        return max(10, (int) round($overall * 1.375));
+    }
     /**
      * Génère les stats détaillées à partir des stats de base + position.
      */

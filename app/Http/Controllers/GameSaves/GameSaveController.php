@@ -17,6 +17,8 @@ use App\Models\Player;
 use App\Models\Team;
 use App\Services\BonusCardShopService;
 use App\Services\PlayerStatsService;
+use App\Services\DraftService;
+use App\Services\DraftAIService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -49,8 +51,9 @@ class GameSaveController extends Controller
     public function store(Request $request): Response
     {
         $data = $request->validate([
-            'label'  => ['nullable', 'string', 'max:255'],
-            'period' => ['required', 'string', 'in:college'],
+            'label'     => ['nullable', 'string', 'max:255'],
+            'period'    => ['required', 'string', 'in:college'],
+            'game_mode' => ['nullable', 'string', 'in:prebuilt,draft'],
         ]);
 
         $teams = Team::with(['contracts.player'])->orderBy('name')->get();
@@ -59,15 +62,172 @@ class GameSaveController extends Controller
             'label'  => $data['label'] ?? null,
             'period' => $data['period'],
             'teams'  => $teams,
+            'gameMode' => $data['game_mode'] ?? 'prebuilt',
         ]);
     }
 
     /**
      * Étape 2 : crée la sauvegarde et duplique équipes/joueurs/contrats.
      */
+    public function draft(Request $request, GameSave $gameSave): Response
+    {
+        $this->authorizeSave($request, $gameSave);
+
+        if ($gameSave->phase !== 'draft') {
+            return redirect()->route('game-saves.play', $gameSave);
+        }
+
+        $gameTeams = GameTeam::with(['contracts.gamePlayer'])
+            ->where('game_save_id', $gameSave->id)
+            ->orderBy('name')
+            ->get();
+
+        $freePlayers = GamePlayer::where('game_save_id', $gameSave->id)
+            ->whereDoesntHave('contracts')
+            ->orderBy('lastname')
+            ->get();
+
+        return Inertia::render('GameSaves/Draft', [
+            'gameSave'     => $gameSave,
+            'teams'        => $gameTeams,
+            'freePlayers'  => $freePlayers,
+            'draftState'   => $gameSave->state['draft'] ?? null,
+            'controlledTeamId' => $gameSave->controlled_game_team_id,
+        ]);
+    }
+
+    /**
+     * Exécute un pick IA (appelé par le frontend pour chaque tour IA).
+     */
+    public function draftAiPick(Request $request, GameSave $gameSave)
+    {
+        $this->authorizeSave($request, $gameSave);
+
+        if ($gameSave->phase !== 'draft') {
+            return response()->json(['error' => 'Not in draft phase'], 400);
+        }
+
+        $draftService = app(DraftService::class);
+
+        // Vérifier que ce n'est PAS le tour du joueur humain
+        if ($draftService->isHumanTurn($gameSave)) {
+            return response()->json(['error' => 'It is your turn to pick'], 400);
+        }
+
+        $draft = ($gameSave->state ?? [])['draft'] ?? null;
+        if (!$draft || ($draft['completed'] ?? false)) {
+            // Draft terminé → finaliser
+            $draftService->finalizeDraft($gameSave);
+            return response()->json(['completed' => true]);
+        }
+
+        // L'IA choisit un joueur
+        $aiService     = app(DraftAIService::class);
+        $currentTeamId = $draftService->getCurrentTeamId($gameSave);
+        $team          = GameTeam::find($currentTeamId);
+
+        if (!$team) {
+            return response()->json(['error' => 'Team not found'], 400);
+        }
+
+        // Vérifier si l'IA veut arrêter
+        $squadSize = GameContract::where('game_save_id', $gameSave->id)
+            ->where('game_team_id', $team->id)
+            ->count();
+
+        if ($aiService->shouldFinishDraft($team, $squadSize, $team->budget ?? 0)) {
+            $draftService->finishTeamDraft($gameSave, $team->id);
+            $gameSave->refresh();
+            $draftState = $gameSave->state['draft'] ?? [];
+
+            return response()->json([
+                'pick'       => null,
+                'finished'   => true,
+                'team_name'  => $team->name,
+                'draftState' => $draftState,
+                'completed'  => $draftState['completed'] ?? false,
+            ]);
+        }
+
+        $playerId = $aiService->chooseBestPlayer($gameSave, $team);
+
+        if (!$playerId) {
+            // Aucun joueur trouvable → cette équipe a fini (budget insuffisant)
+            $draftService->finishTeamDraft($gameSave, $team->id);
+            $gameSave->refresh();
+            $draftState = $gameSave->state['draft'] ?? [];
+
+            return response()->json([
+                'pick'       => null,
+                'finished'   => true,
+                'team_name'  => $team->name,
+                'draftState' => $draftState,
+                'completed'  => $draftState['completed'] ?? false,
+            ]);
+        }
+
+        $pick = $draftService->executePick($gameSave, $playerId);
+        $gameSave->refresh();
+
+        $draftState = $gameSave->state['draft'] ?? [];
+
+        if ($draftState['completed'] ?? false) {
+            $draftService->finalizeDraft($gameSave);
+        }
+
+        return response()->json([
+            'pick'       => $pick,
+            'draftState' => $draftState,
+            'completed'  => $draftState['completed'] ?? false,
+        ]);
+    }
+
+    /**
+     * Le joueur humain pioche un joueur.
+     */
+    public function draftPick(Request $request, GameSave $gameSave)
+    {
+        $this->authorizeSave($request, $gameSave);
+
+        if ($gameSave->phase !== 'draft') {
+            return response()->json(['error' => 'Not in draft phase'], 400);
+        }
+
+        $data = $request->validate([
+            'player_id' => ['required', 'integer'],
+        ]);
+
+        $draftService = app(DraftService::class);
+
+        if (!$draftService->isHumanTurn($gameSave)) {
+            return response()->json(['error' => 'Not your turn'], 400);
+        }
+
+        $pick = $draftService->executePick($gameSave, $data['player_id']);
+
+        if (!$pick) {
+            return response()->json(['error' => 'Invalid pick (player taken, too expensive, or squad full)'], 422);
+        }
+
+        $gameSave->refresh();
+        $draftState = $gameSave->state['draft'] ?? [];
+
+        if ($draftState['completed'] ?? false) {
+            $draftService->finalizeDraft($gameSave);
+        }
+
+        return response()->json([
+            'pick'       => $pick,
+            'draftState' => $draftState,
+            'completed'  => $draftState['completed'] ?? false,
+        ]);
+    }
+
     public function start(GameSaveRequest $request): RedirectResponse
     {
         $data = $request->validated();
+        $gameMode = $data['game_mode'] ?? 'prebuilt';
+        $isDraft  = $gameMode === 'draft';
 
         $gameSave = GameSave::create([
             'user_id' => $request->user()->id,
@@ -75,6 +235,7 @@ class GameSaveController extends Controller
             'period'  => $data['period'],
             'season'  => 1,
             'week'    => 1,
+            'phase'   => $isDraft ? 'draft' : 'season',
             'label'   => $data['label'] ?? null,
             'state'   => null,
         ]);
@@ -85,7 +246,6 @@ class GameSaveController extends Controller
         $seasonLength      = max(1, ($teamCount - 1) * 2);
         $gameTeamsByBaseId = [];
 
-        // Mapping formation par équipe
         $formationByTeam = [
             'Nankatsu'  => '4-1-3-2',
             'Toho'      => '4-2-2-2',
@@ -160,45 +320,87 @@ class GameSaveController extends Controller
             $gamePlayersByBaseId[$player->id] = $gamePlayer;
         }
 
-        // 3. Dupliquer les contrats + assigner numéros de maillot
-        $contracts       = Contract::with(['team', 'player'])->orderBy('id')->get();
-        $contractsByTeam = $contracts->groupBy('team_id');
+        // 3. Dupliquer les contrats (mode prebuilt uniquement)
+        if (!$isDraft) {
+            $contracts       = Contract::with(['team', 'player'])->orderBy('id')->get();
+            $contractsByTeam = $contracts->groupBy('team_id');
 
-        foreach ($contractsByTeam as $teamId => $teamContracts) {
-            if (!isset($gameTeamsByBaseId[$teamId])) continue;
-            $gameTeamId    = $gameTeamsByBaseId[$teamId]->id;
-            $teamContracts = $teamContracts->values();
+            foreach ($contractsByTeam as $teamId => $teamContracts) {
+                if (!isset($gameTeamsByBaseId[$teamId])) continue;
+                $gameTeamId    = $gameTeamsByBaseId[$teamId]->id;
+                $teamContracts = $teamContracts->values();
 
-            $starterNumber = 1;   // numéros 1-11 pour les titulaires
-            $subNumber     = 12;  // numéros 12+ pour les remplaçants
+                $starterNumber = 1;
+                $subNumber     = 12;
 
-            foreach ($teamContracts as $index => $contract) {
-                $basePlayerId = $contract->player->id;
-                if (!isset($gamePlayersByBaseId[$basePlayerId])) continue;
+                foreach ($teamContracts as $index => $contract) {
+                    $basePlayerId = $contract->player->id;
+                    if (!isset($gamePlayersByBaseId[$basePlayerId])) continue;
 
-                $isStarter    = $index < 11;
-                $jerseyNumber = $isStarter ? $starterNumber++ : $subNumber++;
+                    $isStarter    = $index < 11;
+                    $jerseyNumber = $isStarter ? $starterNumber++ : $subNumber++;
 
-                // Assigner le numéro au game_player
-                $gamePlayersByBaseId[$basePlayerId]->number = $jerseyNumber;
-                $gamePlayersByBaseId[$basePlayerId]->save();
+                    $gamePlayersByBaseId[$basePlayerId]->number = $jerseyNumber;
+                    $gamePlayersByBaseId[$basePlayerId]->save();
 
-                GameContract::create([
-                    'game_save_id'                    => $gameSave->id,
-                    'game_team_id'                    => $gameTeamId,
-                    'game_player_id'                  => $gamePlayersByBaseId[$basePlayerId]->id,
-                    'salary'                          => $contract->salary ?? 0,
-                    'start_week'                      => 1,
-                    'end_week'                        => $seasonLength,
-                    'is_starter'                      => $isStarter,
-                    'is_captain'                      => $contract->is_captain ?? false,
-                    'captain_rerolls_remaining'       => 3,
-                    'captain_reroll_used_this_action' => false,
-                ]);
+                    GameContract::create([
+                        'game_save_id'                    => $gameSave->id,
+                        'game_team_id'                    => $gameTeamId,
+                        'game_player_id'                  => $gamePlayersByBaseId[$basePlayerId]->id,
+                        'salary'                          => $contract->salary ?? 0,
+                        'start_week'                      => 1,
+                        'end_week'                        => $seasonLength,
+                        'is_starter'                      => $isStarter,
+                        'is_captain'                      => $contract->is_captain ?? false,
+                        'captain_rerolls_remaining'       => 3,
+                        'captain_reroll_used_this_action' => false,
+                    ]);
+                }
             }
         }
 
+        // 4. Mode draft : bonus budget + init draft state
+        if ($isDraft) {
+            $draftBonus = 5000;
+            foreach ($gameTeamsByBaseId as $gameTeam) {
+                $gameTeam->budget = ($gameTeam->budget ?? 0) + $draftBonus;
+                $gameTeam->save();
+            }
+
+            $teamIds = array_values(array_map(fn($t) => $t->id, $gameTeamsByBaseId));
+            shuffle($teamIds);
+
+            $state = $gameSave->state ?? [];
+            $state['draft'] = [
+                'order'              => $teamIds,
+                'current_pick_index' => 0,
+                'round'              => 1,
+                'picks'              => [],
+                'completed'          => false,
+            ];
+            $gameSave->state = $state;
+            $gameSave->save();
+
+            return redirect()->route('game-saves.draft', $gameSave)
+                ->with('success', 'Partie créée — le draft commence !');
+        }
+
         return redirect()->route('game-saves.play', $gameSave)->with('success', 'Partie créée');
+    }
+
+    public function draftFinish(Request $request, GameSave $gameSave)
+    {
+        $this->authorizeSave($request, $gameSave);
+
+        $draftService = app(DraftService::class);
+        $allDone = $draftService->finishTeamDraft($gameSave, $gameSave->controlled_game_team_id);
+
+        $gameSave->refresh();
+
+        return response()->json([
+            'draftState' => $gameSave->state['draft'] ?? [],
+            'completed'  => $allDone || ($gameSave->state['draft']['completed'] ?? false),
+        ]);
     }
 
     /**

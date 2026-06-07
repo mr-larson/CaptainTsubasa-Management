@@ -2,15 +2,11 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import H2 from '@/Components/H2.vue';
-import FormRaw from '@/Components/FormRaw.vue';
-import FormCol from '@/Components/FormCol.vue';
-import InputLabel from '@/Components/InputLabel.vue';
-import InputText from '@/Components/InputText.vue';
-import InputSelect from '@/Components/InputSelect.vue';
 
 const form = useForm({
     label: '',
     period: 'college',
+    game_mode: 'prebuilt',
 });
 
 function submit() {
@@ -76,6 +72,63 @@ function submit() {
                             <p v-if="form.errors.period" class="text-xs text-rose-500">{{ form.errors.period }}</p>
                         </div>
 
+                        <!-- Mode de jeu -->
+                        <div class="flex flex-col gap-2">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                Mode de démarrage
+                            </label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <!-- Effectifs pré-faits -->
+                                <button type="button"
+                                        @click="form.game_mode = 'prebuilt'"
+                                        class="relative flex flex-col gap-2 p-4 rounded-xl border-2 transition-all text-left"
+                                        :class="form.game_mode === 'prebuilt'
+                                            ? 'border-teal-500 bg-teal-50 shadow-sm'
+                                            : 'border-slate-200 bg-white hover:border-slate-300'">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-xl">🏟️</span>
+                                        <span class="text-sm font-bold"
+                                              :class="form.game_mode === 'prebuilt' ? 'text-teal-700' : 'text-slate-700'">
+                                            Effectifs pré-faits
+                                        </span>
+                                    </div>
+                                    <p class="text-[11px] leading-relaxed"
+                                       :class="form.game_mode === 'prebuilt' ? 'text-teal-600' : 'text-slate-400'">
+                                        Chaque équipe démarre avec son effectif Captain Tsubasa classique. Idéal pour jouer directement.
+                                    </p>
+                                    <div v-if="form.game_mode === 'prebuilt'"
+                                         class="absolute top-2 right-2 w-5 h-5 rounded-full bg-teal-500 flex items-center justify-center">
+                                        <span class="text-white text-[10px] font-bold">✓</span>
+                                    </div>
+                                </button>
+
+                                <!-- Draft -->
+                                <button type="button"
+                                        @click="form.game_mode = 'draft'"
+                                        class="relative flex flex-col gap-2 p-4 rounded-xl border-2 transition-all text-left"
+                                        :class="form.game_mode === 'draft'
+                                            ? 'border-amber-500 bg-amber-50 shadow-sm'
+                                            : 'border-slate-200 bg-white hover:border-slate-300'">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-xl">🎯</span>
+                                        <span class="text-sm font-bold"
+                                              :class="form.game_mode === 'draft' ? 'text-amber-700' : 'text-slate-700'">
+                                            Draft initial
+                                        </span>
+                                    </div>
+                                    <p class="text-[11px] leading-relaxed"
+                                       :class="form.game_mode === 'draft' ? 'text-amber-600' : 'text-slate-400'">
+                                        Toutes les équipes partent à zéro. Chaque manager pioche ses joueurs tour par tour. Mode gestionnaire pur.
+                                    </p>
+                                    <div v-if="form.game_mode === 'draft'"
+                                         class="absolute top-2 right-2 w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center">
+                                        <span class="text-white text-[10px] font-bold">✓</span>
+                                    </div>
+                                </button>
+                            </div>
+                            <p v-if="form.errors.game_mode" class="text-xs text-rose-500">{{ form.errors.game_mode }}</p>
+                        </div>
+
                         <!-- Spacer -->
                         <div class="flex-1"></div>
 
@@ -88,8 +141,12 @@ function submit() {
                             <button
                                 type="submit"
                                 :disabled="form.processing"
-                                class="flex items-center gap-2 px-6 py-2.5 bg-teal-500 hover:bg-teal-400 text-white text-sm font-bold rounded-xl transition-all disabled:opacity-50 active:scale-[0.98]">
+                                class="flex items-center gap-2 px-6 py-2.5 text-white text-sm font-bold rounded-xl transition-all disabled:opacity-50 active:scale-[0.98]"
+                                :class="form.game_mode === 'draft'
+                                    ? 'bg-amber-500 hover:bg-amber-400'
+                                    : 'bg-teal-500 hover:bg-teal-400'">
                                 <span v-if="form.processing">Création...</span>
+                                <span v-else-if="form.game_mode === 'draft'">🎯 Lancer le draft</span>
                                 <span v-else>⚽ Démarrer la partie</span>
                             </button>
                         </div>

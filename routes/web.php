@@ -92,7 +92,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/',       [GameSaveController::class, 'store'])->name('store');
         Route::post('/start',  [GameSaveController::class, 'start'])->name('start');
         Route::get('/continue',[GameSaveController::class, 'continue'])->name('continue');
-
+        Route::get('/{gameSave}/draft', [GameSaveController::class, 'draft'])->name('draft');
+        Route::post('/{gameSave}/draft/ai-pick', [GameSaveController::class, 'draftAiPick'])->name('draft.ai-pick');
+        Route::post('/{gameSave}/draft/pick', [GameSaveController::class, 'draftPick'])->name('draft.pick');
+        Route::post('/{gameSave}/draft/finish', [GameSaveController::class, 'draftFinish'])->name('draft.finish');
         Route::get('/{gameSave}',      [GameSaveController::class, 'show'])->name('show');
         Route::get('/{gameSave}/play', [GameSaveController::class, 'play'])->name('play');
         Route::put('/{gameSave}',      [GameSaveController::class, 'update'])->name('update');

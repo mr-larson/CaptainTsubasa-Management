@@ -21,11 +21,14 @@ class GameSave extends Model
         'week',
         'label',
         'state',
+        'phase' => 'string',
+        'phase'
     ];
 
 
     protected $casts = [
         'state' => 'array',
+        'phase' => 'string',
     ];
 
     public function user()
