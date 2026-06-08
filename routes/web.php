@@ -3,6 +3,8 @@
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\GameSaves\BonusCardController;
 use App\Http\Controllers\GameSaves\GameContractController;
+use App\Http\Controllers\GameSaves\GameDraftController;
+use App\Http\Controllers\GameSaves\GameSeasonController;
 use App\Http\Controllers\GameSaves\GameMatchController;
 use App\Http\Controllers\GameSaves\GamePlayerController;
 use App\Http\Controllers\GameSaves\GameSaveController;
@@ -92,12 +94,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/',       [GameSaveController::class, 'store'])->name('store');
         Route::post('/start',  [GameSaveController::class, 'start'])->name('start');
         Route::get('/continue',[GameSaveController::class, 'continue'])->name('continue');
-        Route::get('/{gameSave}/draft', [GameSaveController::class, 'draft'])->name('draft');
-        Route::post('/{gameSave}/draft/ai-pick', [GameSaveController::class, 'draftAiPick'])->name('draft.ai-pick');
-        Route::post('/{gameSave}/draft/pick', [GameSaveController::class, 'draftPick'])->name('draft.pick');
-        Route::post('/{gameSave}/draft/finish', [GameSaveController::class, 'draftFinish'])->name('draft.finish');
-        Route::get('/{gameSave}/season-end',  [GameSaveController::class, 'seasonEnd'])->name('season-end');
-        Route::post('/{gameSave}/season-end/continue', [GameSaveController::class, 'startNewSeason'])->name('season-end.continue');
+        Route::get('/{gameSave}/draft', [GameDraftController::class, 'show'])->name('draft');
+        Route::post('/{gameSave}/draft/ai-pick', [GameDraftController::class, 'aiPick'])->name('draft.ai-pick');
+        Route::post('/{gameSave}/draft/pick', [GameDraftController::class, 'pick'])->name('draft.pick');
+        Route::post('/{gameSave}/draft/finish', [GameDraftController::class, 'finish'])->name('draft.finish');
+        Route::get('/{gameSave}/season-end',  [GameSeasonController::class, 'show'])->name('season-end');
+        Route::post('/{gameSave}/season-end/continue', [GameSeasonController::class, 'continue'])->name('season-end.continue');
         Route::get('/{gameSave}',      [GameSaveController::class, 'show'])->name('show');
         Route::get('/{gameSave}/play', [GameSaveController::class, 'play'])->name('play');
         Route::put('/{gameSave}',      [GameSaveController::class, 'update'])->name('update');
