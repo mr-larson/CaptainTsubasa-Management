@@ -4,98 +4,112 @@
     <AuthenticatedLayout>
         <template #header></template>
 
-        <!-- SIDEBAR -->
-        <aside
-            id="separator-sidebar"
-            class="fixed top-0 left-0 z-40 w-64 h-screen transition-transform -translate-x-full sm:translate-x-0"
-            aria-label="Sidebar"
-        >
-            <div class="h-full px-3 py-2 overflow-y-auto bg-slate-700">
-                <div class="p-3 pb-5 mb-3 border-b text-center text-gray-200">
-                    <H2>Équipes</H2>
+        <!-- CONTENU PRINCIPAL -->
+        <div class="p-4 sm:p-6 max-w-8xl mx-auto flex flex-col gap-4">
+            <H1>Édition des équipes de la partie</H1>
 
-                </div>
+            <!-- SOUS-NAVIGATION GESTION -->
+            <div class="flex flex-wrap items-center gap-2">
+                <Link :href="route('game-saves.Play', { gameSave: gameSave.id })"
+                      class="text-xs font-semibold px-3 py-1.5 rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 transition-all">
+                    ← Retour à la partie
+                </Link>
+                <span class="w-px h-5 bg-slate-200"></span>
+                <Link :href="route('game-saves.players.index', { gameSave: gameSave.id })"
+                      class="text-xs font-bold px-3 py-1.5 rounded-full border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all">
+                    Joueurs
+                </Link>
+                <Link :href="route('game-saves.teams.index', { gameSave: gameSave.id })"
+                      class="text-xs font-bold px-3 py-1.5 rounded-full bg-teal-500 text-white shadow-sm">
+                    Équipes
+                </Link>
+            </div>
 
-                <!-- Recherche -->
-                <div class="mb-2">
-                    <form>
-                        <label
-                            for="default-search"
-                            class="mb-2 text-sm font-medium text-gray-900 sr-only"
-                        >
-                            Search
-                        </label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                <svg
-                                    class="w-4 h-4 text-gray-500"
-                                    aria-hidden="true"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 20 20"
-                                >
-                                    <path
-                                        stroke="currentColor"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
-                                    />
-                                </svg>
-                            </div>
-                            <input
-                                type="search"
-                                id="default-search"
-                                v-model="searchQuery"
-                                class="block w-full p-1 pl-10 text-sm text-gray-900 border border-gray-300 bg-gray-100 focus:ring-blue-500 focus:border-blue-500 rounded"
-                                placeholder="Recherche"
-                            >
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Liste -->
-                <ul class="space-y-1 font-medium">
-                    <li
-                        v-for="team in filteredTeams"
-                        :key="team.id"
-                        @click="selectTeam(team)"
-                    >
-                        <a
-                            href="#"
-                            :class="{ 'bg-slate-500': form.selectedTeamId === team.id }"
-                            class="flex items-center p-1 text-gray-100 transition duration-75 rounded-lg hover:bg-slate-500"
-                        >
-                            <span class="ml-3 truncate">{{ team.name }}</span>
-                        </a>
-                    </li>
-                </ul>
-
-                <!-- Actions bas -->
-                <ul class="pt-3 mt-2 space-y-1 font-medium border-t border-gray-200">
-                    <li class="pt-1 flex">
+            <div class="flex flex-col lg:flex-row gap-4">
+                <!-- LISTE ÉQUIPES -->
+                <div class="lg:w-72 shrink-0 border border-slate-200 rounded-xl bg-slate-50 p-3 flex flex-col gap-3 lg:max-h-[calc(100vh-13rem)]">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-semibold text-slate-700">Équipes <span class="text-slate-400 font-normal">({{ teams.length }})</span></h3>
                         <Link
                             :href="route('game-saves.teams.create', { gameSave: gameSave.id })"
-                            class="bg-teal-500 hover:bg-teal-600 border border-teal-300 text-white p-1 w-full rounded text-center text-xs"
+                            class="flex items-center justify-center h-7 px-2.5 rounded-full bg-teal-500 text-white text-xs font-bold hover:bg-teal-600 shadow-sm"
+                            title="Créer une équipe"
                         >
-                            Créer une équipe
+                            + Ajouter
                         </Link>
-                    </li>
-                    <li class="pt-2 flex">
-                        <Link
-                            :href="route('game-saves.Play', { gameSave: gameSave.id })"
-                            class="bg-slate-500 hover:bg-slate-600 border border-slate-300 text-white p-1 w-full rounded text-center text-xs"
-                        >
-                            Retour à la partie
-                        </Link>
-                    </li>
-                </ul>
-            </div>
-        </aside>
+                    </div>
 
-        <!-- CONTENU PRINCIPAL -->
-        <div class="p-4 sm:ml-64">
-            <H1>Édition des équipes de la partie</H1>
+                    <!-- Recherche -->
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <svg class="w-4 h-4 text-slate-400" aria-hidden="true" fill="none" viewBox="0 0 20 20">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                      stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                            </svg>
+                        </div>
+                        <input
+                            type="search"
+                            v-model="searchQuery"
+                            class="block w-full py-1.5 pl-9 pr-3 text-sm text-slate-700 bg-white border border-slate-200 rounded-full focus:ring-2 focus:ring-teal-300 focus:border-teal-300 focus:outline-none"
+                            placeholder="Rechercher une équipe"
+                        >
+                    </div>
+
+                    <!-- Liste -->
+                    <ul class="space-y-1 overflow-y-auto pr-1">
+                        <li v-for="team in filteredTeams" :key="team.id">
+                            <a
+                                href="#"
+                                @click.prevent="selectTeam(team)"
+                                :class="form.selectedTeamId === team.id
+                                    ? 'bg-teal-500 text-white border-teal-500 shadow-sm'
+                                    : 'bg-white text-slate-700 border-slate-200 hover:border-teal-300 hover:bg-teal-50'"
+                                class="flex items-center gap-2 px-3 py-2 border rounded-lg transition-all"
+                            >
+                                <div class="h-6 w-6 rounded-full bg-white/80 border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
+                                    <img v-if="team.logo_path" :src="`/storage/${team.logo_path}`" class="h-full w-full object-cover" />
+                                    <span v-else class="text-[9px] text-slate-400">{{ (team.name || '?').charAt(0) }}</span>
+                                </div>
+                                <span class="truncate text-sm font-medium">{{ team.name }}</span>
+                            </a>
+                        </li>
+                        <li v-if="filteredTeams.length === 0" class="text-xs text-slate-400 italic px-2 py-3 text-center">
+                            Aucune équipe trouvée.
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- PANNEAU DROIT -->
+                <div class="flex-1 min-w-0 flex flex-col gap-4">
+
+            <!-- Carte récap stats équipe -->
+            <div v-if="form.id" class="border border-slate-200 rounded-2xl bg-white shadow-sm p-4 md:p-6 flex flex-col gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="h-12 w-12 rounded-full bg-slate-50 border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
+                        <img v-if="form.logo_path || logoPreviewUrl" :src="logoPreviewUrl || `/storage/${form.logo_path}`" class="h-full w-full object-cover" />
+                        <span v-else class="text-sm text-slate-400">{{ (form.name || '?').charAt(0) }}</span>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-semibold text-slate-800">{{ form.name || 'Équipe' }}</h2>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                            Budget : {{ Number(form.budget || 0).toLocaleString('fr-FR') }} €
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Barres de stats : bilan -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-2 mt-1">
+                    <div v-for="stat in recordBars" :key="stat.key" class="flex items-center gap-2">
+                        <span class="w-20 text-[11px] text-slate-500 shrink-0">{{ stat.label }}</span>
+                        <div class="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
+                            <div class="h-full rounded-full transition-all" :class="stat.color"
+                                 :style="{ width: stat.percent + '%' }">
+                            </div>
+                        </div>
+                        <span class="w-7 text-right text-[11px] font-bold text-slate-700">{{ stat.value }}</span>
+                    </div>
+                </div>
+            </div>
 
             <FormContainer>
                 <form @submit.prevent="submit">
@@ -107,7 +121,7 @@
                                 type="text"
                                 class="mt-1 w-full"
                                 v-model="form.name"
-                                autocomplete="name"
+                                autocomplete="off"
                             />
                             <p v-if="form.errors.name" class="text-sm text-red-600 mt-1">
                                 {{ form.errors.name }}
@@ -278,6 +292,8 @@
                     </ButtonGroup>
                 </form>
             </FormContainer>
+                </div>
+            </div>
         </div>
     </AuthenticatedLayout>
 </template>
@@ -288,7 +304,6 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref, defineProps, computed, onMounted } from 'vue';
 
 // Components
-import H2 from '@/Components/H2.vue';
 import H1 from '@/Components/H1.vue';
 import FormContainer from '@/Components/FormContainer.vue';
 import FormRaw from '@/Components/FormRaw.vue';
@@ -319,6 +334,18 @@ const form = useForm({
 });
 
 const searchQuery = ref('');
+
+const recordBars = computed(() => {
+    const wins = Number(form.wins ?? 0);
+    const draws = Number(form.draws ?? 0);
+    const losses = Number(form.losses ?? 0);
+    const total = Math.max(wins + draws + losses, 1);
+    return [
+        { key: 'wins',   label: 'Victoires',   value: wins,   color: 'bg-emerald-400', percent: Math.round((wins / total) * 100) },
+        { key: 'draws',  label: 'Nuls',        value: draws,  color: 'bg-amber-400',   percent: Math.round((draws / total) * 100) },
+        { key: 'losses', label: 'Défaites',    value: losses, color: 'bg-rose-400',    percent: Math.round((losses / total) * 100) },
+    ];
+});
 
 const filteredTeams = computed(() => {
     if (!searchQuery.value) return props.teams;

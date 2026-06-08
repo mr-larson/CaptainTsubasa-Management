@@ -4,99 +4,97 @@
     <AuthenticatedLayout>
         <template #header></template>
 
-        <!-- SIDEBAR -->
-        <aside
-            id="separator-sidebar"
-            class="fixed top-0 left-0 z-40 w-64 h-screen transition-transform -translate-x-full sm:translate-x-0"
-            aria-label="Sidebar"
-        >
-            <div class="h-full px-3 py-2 overflow-y-auto bg-slate-700">
-
-                <!-- HEADER -->
-                <div class="p-3 mb-3 border-b text-center text-gray-200">
-                    <H2>Joueurs</H2>
-                </div>
-
-                <!-- SEARCH -->
-                <div class="mb-2">
-                    <form>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                <svg
-                                    class="w-4 h-4 text-gray-500"
-                                    aria-hidden="true"
-                                    fill="none"
-                                    viewBox="0 0 20 20"
-                                >
-                                    <path
-                                        stroke="currentColor"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
-                                    />
-                                </svg>
-                            </div>
-
-                            <input
-                                type="search"
-                                v-model="searchQuery"
-                                class="block w-full p-1 pl-10 text-sm text-gray-900 border border-gray-300 bg-gray-100 rounded focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Recherche"
-                            >
-                        </div>
-                    </form>
-                </div>
-
-                <!-- LISTE JOUEURS -->
-                <ul class="space-y-1 font-medium">
-                    <li
-                        v-for="player in filteredPlayers"
-                        :key="player.id"
-                        @click="selectPlayer(player)"
-                    >
-                        <a
-                            href="#"
-                            :class="{ 'bg-slate-500': form.selectedPlayerId === player.id }"
-                            class="flex items-center p-1 text-gray-100 transition duration-75 rounded-lg hover:bg-slate-500"
-                        >
-                            <span class="ml-3 truncate">
-                                {{ player.firstname }} {{ player.lastname }}
-                            </span>
-                        </a>
-                    </li>
-                </ul>
-
-                <!-- ACTIONS -->
-                <ul class="pt-3 mt-2 space-y-1 font-medium border-t border-gray-200">
-                    <li class="pt-1 flex">
-                        <Link
-                            :href="route('game-saves.players.create', { gameSave: gameSave.id })"
-                            class="bg-teal-500 hover:bg-teal-600 border border-teal-300 text-white p-1 w-full rounded text-center"
-                        >
-                            Créer un joueur
-                        </Link>
-                    </li>
-
-                    <li class="pt-2 flex">
-                        <Link
-                            :href="route('game-saves.Play', { gameSave: gameSave.id })"
-                            class="bg-slate-500 hover:bg-slate-600 border border-slate-300 shadow-gray-100 text-white p-1 w-full rounded text-center"
-                        >
-                            Retour à la partie
-                        </Link>
-                    </li>
-                </ul>
-            </div>
-        </aside>
-
         <!-- CONTENU PRINCIPAL -->
-        <div class="p-6 sm:ml-64 bg-slate-200 min-h-screen">
+        <div class="p-4 sm:p-6 max-w-8xl mx-auto flex flex-col gap-4">
             <H1>Édition des joueurs de la partie</H1>
 
-            <div class="bg-white rounded-2xl shadow p-6 md:p-8">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-lg font-semibold text-slate-800">Joueur</h2>
+            <!-- SOUS-NAVIGATION GESTION -->
+            <div class="flex flex-wrap items-center gap-2">
+                <Link :href="route('game-saves.Play', { gameSave: gameSave.id })"
+                      class="text-xs font-semibold px-3 py-1.5 rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 transition-all">
+                    ← Retour à la partie
+                </Link>
+                <span class="w-px h-5 bg-slate-200"></span>
+                <Link :href="route('game-saves.players.index', { gameSave: gameSave.id })"
+                      class="text-xs font-bold px-3 py-1.5 rounded-full bg-teal-500 text-white shadow-sm">
+                    Joueurs
+                </Link>
+                <Link :href="route('game-saves.teams.index', { gameSave: gameSave.id })"
+                      class="text-xs font-bold px-3 py-1.5 rounded-full border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all">
+                    Équipes
+                </Link>
+            </div>
+
+            <div class="flex flex-col lg:flex-row gap-2">
+                <!-- LISTE JOUEURS -->
+                <div class="lg:w-72 shrink-0 border border-slate-200 rounded-xl bg-slate-50 p-3 flex flex-col gap-3 lg:max-h-[calc(100vh-13rem)]">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-semibold text-slate-700">Joueurs <span class="text-slate-400 font-normal">({{ players.length }})</span></h3>
+                        <Link
+                            :href="route('game-saves.players.create', { gameSave: gameSave.id })"
+                            class="flex items-center justify-center h-7 px-2.5 rounded-full bg-teal-500 text-white text-xs font-bold hover:bg-teal-600 shadow-sm"
+                            title="Créer un joueur"
+                        >
+                            + Ajouter
+                        </Link>
+                    </div>
+
+                    <!-- SEARCH -->
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <svg class="w-4 h-4 text-slate-400" aria-hidden="true" fill="none" viewBox="0 0 20 20">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                      stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                            </svg>
+                        </div>
+                        <input
+                            type="search"
+                            v-model="searchQuery"
+                            class="block w-full py-1.5 pl-9 pr-3 text-sm text-slate-700 bg-white border border-slate-200 rounded-full focus:ring-2 focus:ring-teal-300 focus:border-teal-300 focus:outline-none"
+                            placeholder="Rechercher un joueur"
+                        >
+                    </div>
+
+                    <!-- LISTE -->
+                    <ul class="space-y-1 overflow-y-auto pr-1">
+                        <li v-for="player in filteredPlayers" :key="player.id">
+                            <a
+                                href="#"
+                                @click.prevent="selectPlayer(player)"
+                                :class="form.selectedPlayerId === player.id
+                                    ? 'bg-teal-500 text-white border-teal-500 shadow-sm'
+                                    : 'bg-white text-slate-700 border-slate-200 hover:border-teal-300 hover:bg-teal-50'"
+                                class="flex items-center justify-between gap-2 px-3 py-2 border rounded-lg transition-all"
+                            >
+                                <span class="truncate text-sm font-medium">{{ player.firstname }} {{ player.lastname }}</span>
+                                <span v-if="player.position"
+                                      :class="form.selectedPlayerId === player.id ? 'bg-white/20 text-white' : positionBadgeClass(player.position)"
+                                      class="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0">
+                                    {{ positionShort(player.position) }}
+                                </span>
+                            </a>
+                        </li>
+                        <li v-if="filteredPlayers.length === 0" class="text-xs text-slate-400 italic px-2 py-3 text-center">
+                            Aucun joueur trouvé.
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- PANNEAU DROIT -->
+                <div class="flex-1 flex flex-col gap-4 min-w-0">
+
+            <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 md:p-8">
+                <div class="flex items-center justify-between mb-6 flex-wrap gap-2">
+                    <div class="flex items-center gap-3">
+                        <h2 class="text-lg font-semibold text-slate-800">Joueur</h2>
+                        <span v-if="form.position" :class="positionBadgeClass(form.position)"
+                              class="text-[10px] font-bold px-2 py-0.5 rounded-full">
+                            {{ form.position }}
+                        </span>
+                        <span v-if="overall" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                            OVR {{ overall }}
+                        </span>
+                    </div>
 
                     <!-- + Création joueur -->
                     <Link
@@ -204,6 +202,22 @@
                                 </p>
                             </FormCol>
                         </FormRaw>
+
+                        <!-- Aperçu visuel des stats -->
+                        <div v-if="form.id" class="mb-4 border border-slate-200 rounded-xl bg-slate-50 p-3">
+                            <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Aperçu des statistiques</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1.5">
+                                <div v-for="stat in statBars" :key="stat.key" class="flex items-center gap-2">
+                                    <span class="w-16 text-[11px] text-slate-500 shrink-0">{{ stat.label }}</span>
+                                    <div class="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
+                                        <div class="h-full rounded-full transition-all" :class="stat.color"
+                                             :style="{ width: Math.min(stat.value, 100) + '%' }">
+                                        </div>
+                                    </div>
+                                    <span class="w-7 text-right text-[11px] font-bold text-slate-700">{{ stat.value }}</span>
+                                </div>
+                            </div>
+                        </div>
 
                         <!-- Stats  -->
                         <FormRaw>
@@ -343,7 +357,7 @@
                 </FormContainer>
             </div>
             <!-- CARTES Techniques spéciales + Contrat côte à côte -->
-            <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="mt-6 grid grid-cols-1 md:grid-cols-2">
                 <!-- CARTE TECHNIQUES SPÉCIALES -->
                 <FormContainer>
                     <div class="flex items-center justify-between mb-4">
@@ -508,10 +522,10 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <InputLabel value="Équipe" />
-                                <InputSelect
+                                <select
                                     v-model="form.contract.game_team_id"
-                                    class="mt-1 w-full"
                                     required
+                                    class="mt-1 block w-full appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full px-3 py-1.5 leading-tight focus:outline-none focus:bg-white focus:border-slate-700"
                                 >
                                     <option disabled value="">Choisir...</option>
                                     <option
@@ -521,15 +535,15 @@
                                     >
                                         {{ team.name }}
                                     </option>
-                                </InputSelect>
+                                </select>
                             </div>
 
                             <div>
                                 <InputLabel value="Salaire" class="block text-start"/>
-                                <InputText
+                                <input
                                     type="number"
                                     v-model="form.contract.salary"
-                                    class="mt-1 w-full"
+                                    class="mt-1 block w-full appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full px-3 py-1.5 leading-tight focus:outline-none focus:bg-white focus:border-slate-700"
                                 />
                             </div>
                         </div>
@@ -538,19 +552,19 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <InputLabel value="Début (semaine)" />
-                                <InputText
+                                <input
                                     type="number"
                                     v-model="form.contract.start_week"
-                                    class="mt-1 w-full"
+                                    class="mt-1 block w-full appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full px-3 py-1.5 leading-tight focus:outline-none focus:bg-white focus:border-slate-700"
                                 />
                             </div>
 
                             <div>
                                 <InputLabel value="Fin (semaine)" />
-                                <InputText
+                                <input
                                     type="number"
                                     v-model="form.contract.end_week"
-                                    class="mt-1 w-full"
+                                    class="mt-1 block w-full appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full px-3 py-1.5 leading-tight focus:outline-none focus:bg-white focus:border-slate-700"
                                 />
                             </div>
                         </div>
@@ -559,13 +573,13 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <InputLabel value="Titulaire ?" />
-                                <InputSelect
+                                <select
                                     v-model="form.contract.is_starter"
-                                    class="mt-1 w-full"
+                                    class="mt-1 block w-full appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full px-3 py-1.5 leading-tight focus:outline-none focus:bg-white focus:border-slate-700"
                                 >
                                     <option :value="true">Oui</option>
                                     <option :value="false">Non</option>
-                                </InputSelect>
+                                </select>
                             </div>
 
                             <!-- Colonne libre (pour future info ou juste alignement) -->
@@ -601,6 +615,8 @@
                     </div>
                 </FormContainer>
             </div>
+                </div>
+            </div>
         </div>
     </AuthenticatedLayout>
 </template>
@@ -611,7 +627,6 @@ import { ref, computed, defineProps, onMounted, onBeforeUnmount } from 'vue'
 
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import H1 from '@/Components/H1.vue'
-import H2 from '@/Components/H2.vue'
 import FormContainer from '@/Components/FormContainer.vue'
 import FormRaw from '@/Components/FormRaw.vue'
 import FormCol from '@/Components/FormCol.vue'
@@ -676,6 +691,54 @@ const filteredPlayers = computed(() => {
     return props.players.filter(
         p => `${p.firstname} ${p.lastname}`.toLowerCase().includes(q)
     )
+})
+
+// BADGES & STATS VISUELS
+const POSITION_BADGES = {
+    Goalkeeper: 'bg-amber-50 text-amber-700',
+    Defender:   'bg-blue-50 text-blue-700',
+    Midfielder: 'bg-emerald-50 text-emerald-700',
+    Forward:    'bg-rose-50 text-rose-700',
+}
+const POSITION_SHORT = {
+    Goalkeeper: 'GB',
+    Defender:   'DEF',
+    Midfielder: 'MIL',
+    Forward:    'ATT',
+}
+function positionBadgeClass(position) {
+    return POSITION_BADGES[position] ?? 'bg-slate-100 text-slate-600'
+}
+function positionShort(position) {
+    return POSITION_SHORT[position] ?? position
+}
+
+const STAT_BAR_DEFS = [
+    { key: 'speed',      label: 'Vitesse',     color: 'bg-sky-400' },
+    { key: 'attack',     label: 'Attaque',     color: 'bg-orange-400' },
+    { key: 'defense',    label: 'Défense',     color: 'bg-blue-400' },
+    { key: 'stamina',    label: 'Endurance',   color: 'bg-emerald-400' },
+    { key: 'shot',       label: 'Tir',         color: 'bg-red-400' },
+    { key: 'pass',       label: 'Passe',       color: 'bg-teal-400' },
+    { key: 'dribble',    label: 'Dribble',     color: 'bg-yellow-400' },
+    { key: 'block',      label: 'Block',       color: 'bg-indigo-400' },
+    { key: 'intercept',  label: 'Interception',color: 'bg-purple-400' },
+    { key: 'tackle',     label: 'Tacle',       color: 'bg-pink-400' },
+    { key: 'hand_save',  label: 'Arrêt main',  color: 'bg-violet-400' },
+    { key: 'punch_save', label: 'Arrêt poing', color: 'bg-fuchsia-400' },
+]
+
+const statBars = computed(() => STAT_BAR_DEFS
+    .map(def => ({ ...def, value: Number(form[def.key] ?? 0) }))
+    .filter(stat => stat.value > 0)
+)
+
+const overall = computed(() => {
+    const values = STAT_BAR_DEFS
+        .map(def => Number(form[def.key] ?? 0))
+        .filter(v => Number.isFinite(v) && v > 0)
+    if (!values.length) return 0
+    return Math.round(values.reduce((a, b) => a + b, 0) / values.length)
 })
 
 // PREVIEW RESET
