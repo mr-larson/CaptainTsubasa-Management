@@ -46,14 +46,6 @@ const activeSection = ref('dataBase');
                         </button>
                     </div>
                     <div class="border border-slate-200 rounded-lg bg-white p-3 flex flex-col gap-2">
-                        <h4 class="text-sm font-semibold text-slate-700">Contrats</h4>
-                        <p class="text-xs text-slate-500">Assigne des joueurs à des équipes, ajuste les contrats.</p>
-                        <button type="button" class="mt-2 px-3 py-1.5 text-xs rounded-full bg-teal-500 hover:bg-teal-600 text-white font-semibold"
-                                @click="router.get(route('contracts.index'))">
-                            Gérer les contrats
-                        </button>
-                    </div>
-                    <div class="border border-slate-200 rounded-lg bg-white p-3 flex flex-col gap-2">
                         <h4 class="text-sm font-semibold text-slate-700">Équipes</h4>
                         <p class="text-xs text-slate-500">Accéder à la gestion complète des équipes.</p>
                         <button type="button" class="mt-2 px-3 py-1.5 text-xs rounded-full bg-teal-500 hover:bg-teal-600 text-white font-semibold"
