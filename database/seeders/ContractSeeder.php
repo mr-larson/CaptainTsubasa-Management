@@ -4,12 +4,15 @@ namespace Database\Seeders;
 
 use App\Models\Player;
 use App\Models\Team;
+use Database\Seeders\Concerns\CalculatesWeeklyCost;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class ContractSeeder extends Seeder
 {
+    use CalculatesWeeklyCost;
+
     public function run(): void
     {
         Schema::disableForeignKeyConstraints();
@@ -165,7 +168,7 @@ class ContractSeeder extends Seeder
                 $contracts[] = [
                     'player_id'  => $player->id,
                     'team_id'    => $teamId,
-                    'salary'     => $player->cost,
+                    'salary'     => $this->calculateWeeklyCost(json_decode($player->stats, true) ?? []),
                     'start_date' => now()->subMonths(rand(1, 12))->subDays(rand(1, 30)),
                     'end_date'   => now()->addMonths(rand(1, 12))->addDays(rand(1, 30)),
                     'is_captain' => isset($captains[$teamName]) && $captains[$teamName] === $fullName ? 1 : 0,

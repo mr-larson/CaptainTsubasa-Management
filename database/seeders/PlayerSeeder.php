@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\Concerns\CalculatesWeeklyCost;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -10,6 +11,8 @@ use Illuminate\Support\Str;
 
 class PlayerSeeder extends Seeder
 {
+    use CalculatesWeeklyCost;
+
     /**
      * Run the database seeds.
      */
@@ -3534,15 +3537,6 @@ class PlayerSeeder extends Seeder
                 'photo_path' => $photoPathDb, // null si image absente
             ]);
         }
-    }
-    private function calculateWeeklyCost(array $baseStats): int
-    {
-        $keys = ['speed', 'stamina', 'attack', 'defense', 'shot', 'pass', 'dribble', 'block', 'intercept', 'tackle'];
-        $values = array_map(fn($k) => (int) ($baseStats[$k] ?? 0), $keys);
-        $values = array_filter($values, fn($v) => $v > 0);
-        $overall = empty($values) ? 20 : array_sum($values) / count($values);
-
-        return max(10, (int) round($overall * 1.375));
     }
     /**
      * Génère les stats détaillées à partir des stats de base + position.
