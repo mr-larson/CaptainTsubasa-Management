@@ -9,6 +9,15 @@ use Illuminate\Support\Collection;
 
 class MatchSimulator
 {
+    // Miroir des constantes du moteur client (resources/js/Pages/Match/engine/constants.js)
+    private const MAX_TURNS                       = 45;
+    private const MAX_ZONE_INDEX                  = 4;   // 5 zones, index 0..4
+    private const ENDURANCE_DEFAULT               = 100;
+    private const CRIT_STAMINA_BOOST              = 10;
+    private const GOOD_COUNTER_BONUS              = 2;
+    private const HOME_BONUS                      = 0.5;
+    private const SHOT_DISTANCE_PENALTY_PER_ZONE  = 1;
+
     public function simulateOtherMatchesOfWeek(GameMatch $playedMatch): void
     {
         $others = GameMatch::query()
@@ -63,55 +72,121 @@ class MatchSimulator
      * Simule un match complet et retourne [homeScore, awayScore, matchStats].
      * matchStats est au même format que celui produit par engine.js côté client.
      */
+    /**
+     * Moteur de simulation "complet" en 45 tours, miroir du moteur client
+     * (resources/js/Pages/Match/engine/*) : progression par zones (0..4),
+     * duels RPS (pierre-feuille-ciseaux) attaque/défense, gestion de la
+     * stamina et bonus du domicile. Produit un `match_stats` strictement
+     * compatible avec celui généré par `buildMatchStats` côté client
+     * (mêmes clés consommées par PlayerStatsService / PostMatchProgressionService / TabCalendar).
+     */
     private function simulateMatch(GameTeam $home, GameTeam $away): array
     {
         $homePlayers = $this->getStarters($home);
         $awayPlayers = $this->getStarters($away);
 
-        $homeRatings = $this->teamRatings($homePlayers);
-        $awayRatings = $this->teamRatings($awayPlayers);
+        $homeGK = $this->getGoalkeeper($homePlayers);
+        $awayGK = $this->getGoalkeeper($awayPlayers);
 
-        // Stats par joueur (indexées par game_player_id)
         $playerStats = [];
-        $teamStats   = [
-            'home' => ['goals' => 0, 'shots' => 0, 'passes' => 0, 'dribbles' => 0, 'saves' => 0, 'duelsWon' => 0, 'duelsLost' => 0],
-            'away' => ['goals' => 0, 'shots' => 0, 'passes' => 0, 'dribbles' => 0, 'saves' => 0, 'duelsWon' => 0, 'duelsLost' => 0],
+        $stamina     = [];
+        foreach ($homePlayers->concat($awayPlayers) as $p) {
+            $stamina[(string) $p->id] = (float) self::ENDURANCE_DEFAULT;
+        }
+
+        $teamStats = [
+            'home' => ['goals' => 0, 'shots' => 0, 'passes' => 0, 'dribbles' => 0, 'duelsWon' => 0, 'duelsLost' => 0],
+            'away' => ['goals' => 0, 'shots' => 0, 'passes' => 0, 'dribbles' => 0, 'duelsWon' => 0, 'duelsLost' => 0],
         ];
+        $goalEvents = [];
 
-        $homeGoals = 0;
-        $awayGoals = 0;
+        // État du ballon : équipe possédant, index de zone (0..MAX_ZONE_INDEX), face au gardien ?
+        $side          = random_int(0, 1) ? 'home' : 'away';
+        $zone          = 0;
+        $frontOfKeeper = false;
 
-        // Chances pour chaque équipe
-        $homeChances = 8 + random_int(-2, 2);
-        $awayChances = 7 + random_int(-2, 2);
+        for ($turn = 1; $turn <= self::MAX_TURNS; $turn++) {
+            $isHomeAttacking = $side === 'home';
+            $attTeam    = $isHomeAttacking ? $home       : $away;
+            $defTeam    = $isHomeAttacking ? $away       : $home;
+            $attPlayers = $isHomeAttacking ? $homePlayers: $awayPlayers;
+            $defPlayers = $isHomeAttacking ? $awayPlayers: $homePlayers;
+            $defGK      = $isHomeAttacking ? $awayGK     : $homeGK;
+            $defSide    = $isHomeAttacking ? 'away'      : 'home';
 
-        // Simuler les chances HOME
-        for ($i = 0; $i < max(1, $homeChances); $i++) {
-            $attacker  = $this->randomAttacker($homePlayers);
-            $defender  = $this->randomDefender($awayPlayers);
-            $gk        = $this->getGoalkeeper($awayPlayers);
-            $action    = $this->randomOffenseAction($home->tactical_style);
+            // ----- Choix de l'action offensive -----
+            if ($frontOfKeeper || $zone >= self::MAX_ZONE_INDEX) {
+                $action = $frontOfKeeper
+                    ? 'shot'
+                    : (random_int(1, 10) <= 6 ? 'shot' : 'dribble');
+            } else {
+                $action = $this->randomOffenseAction($attTeam->tactical_style);
+            }
 
-            $isShot      = $action === 'shot';
-            $attackRoll  = $homeRatings['att'] + $this->d20() + 2; // avantage domicile
-            $defenseRoll = $isShot
-                ? $awayRatings['gk']  + $this->d20()
-                : $awayRatings['def'] + $this->d20();
-            $success  = $attackRoll > $defenseRoll;
-            $isGoal   = $success && $isShot;
+            $attacker = $this->pickPlayerForAction($attPlayers, $action);
 
-            // Stats attaquant
+            // ----- Choix du défenseur (miroir RPS du client) -----
+            if ($action === 'shot') {
+                $defender    = $defGK;
+                $defAction   = random_int(0, 1) ? 'hands' : 'punch';
+                $defCategory = 'defenseGK';
+            } else {
+                $defAction   = $action === 'pass' ? 'intercept' : 'tackle';
+                $defender    = $this->pickPlayerForAction($defPlayers, $defAction);
+                $defCategory = 'defenseField';
+            }
+
+            // ----- Calcul des scores de duel (RPS + stamina + bonus domicile) -----
+            $attackBase = $this->statForAction($attacker, $action, 'attack')
+                * $this->staminaFactor($stamina[(string) ($attacker->id ?? 0)] ?? self::ENDURANCE_DEFAULT);
+
+            if ($action === 'shot' && !$frontOfKeeper) {
+                $zonesToGoal = self::MAX_ZONE_INDEX - $zone;
+                $attackBase -= $zonesToGoal * self::SHOT_DISTANCE_PENALTY_PER_ZONE;
+            }
+
+            $defenseBase = $this->statForAction($defender, $defAction, $defCategory)
+                * $this->staminaFactor($stamina[(string) ($defender->id ?? 0)] ?? self::ENDURANCE_DEFAULT);
+
+            // RPS : la défense "attendue" (intercept/tackle/gardien) compte comme bon contre
+            $defenseBase += self::GOOD_COUNTER_BONUS;
+
+            // Bonus du domicile : ajouté au score de l'équipe à domicile, qu'elle attaque ou défende
+            if ($isHomeAttacking) $attackBase  += self::HOME_BONUS;
+            else                  $defenseBase += self::HOME_BONUS;
+
+            $attackRoll  = $this->d20();
+            $defenseRoll = $this->d20();
+
+            $attackScore  = $attackBase  + $attackRoll;
+            $defenseScore = $defenseBase + $defenseRoll;
+
+            // Critique naturel : un 20 force la victoire de ce côté et restaure de la stamina
+            $attackCrit  = $attackRoll  === 20;
+            $defenseCrit = $defenseRoll === 20;
+
+            if ($attackCrit && !$defenseCrit)      $success = true;
+            elseif ($defenseCrit && !$attackCrit)  $success = false;
+            else                                   $success = $attackScore > $defenseScore;
+
+            if ($attackCrit)  $stamina[(string) ($attacker->id ?? 0)] = min(self::ENDURANCE_DEFAULT, ($stamina[(string) ($attacker->id ?? 0)] ?? self::ENDURANCE_DEFAULT) + self::CRIT_STAMINA_BOOST);
+            if ($defenseCrit) $stamina[(string) ($defender->id ?? 0)] = min(self::ENDURANCE_DEFAULT, ($stamina[(string) ($defender->id ?? 0)] ?? self::ENDURANCE_DEFAULT) + self::CRIT_STAMINA_BOOST);
+
+            $isGoal = $success && $action === 'shot';
+
+            // ----- Enregistrement des stats joueurs -----
             if ($attacker) {
                 $pid = (string) $attacker->id;
                 $playerStats[$pid] = $playerStats[$pid] ?? $this->emptyPlayerStats();
                 $playerStats[$pid]['offense'][$action]['attempts']++;
                 if ($success) $playerStats[$pid]['offense'][$action]['success']++;
-                if ($isGoal)  $playerStats[$pid]['offense']['goals'] = ($playerStats[$pid]['offense']['goals'] ?? 0) + 1;
+                if ($isGoal) {
+                    $playerStats[$pid]['offense']['goals']++;
+                    $goalEvents[] = ['player_id' => $attacker->id, 'turn' => $turn];
+                }
                 $success ? $playerStats[$pid]['duelsWon']++ : $playerStats[$pid]['duelsLost']++;
             }
 
-            // Stats défenseur
-            $defAction = $this->randomDefenseAction($away->tactical_style);
             if ($defender) {
                 $pid = (string) $defender->id;
                 $playerStats[$pid] = $playerStats[$pid] ?? $this->emptyPlayerStats();
@@ -120,125 +195,42 @@ class MatchSimulator
                 $success ? $playerStats[$pid]['duelsLost']++ : $playerStats[$pid]['duelsWon']++;
             }
 
-            // Stats gardien si tir
-            if ($action === 'shot' && $gk) {
-                $pid = (string) $gk->id;
-                $playerStats[$pid] = $playerStats[$pid] ?? $this->emptyPlayerStats();
-                $gkAction = random_int(0, 1) ? 'hands' : 'punch';
-                $playerStats[$pid]['defense'][$gkAction]['attempts']++;
-                $teamStats['away']['saves'] = ($teamStats['away']['saves'] ?? 0) + ($success ? 0 : 1);
-                if (!$success) $playerStats[$pid]['defense'][$gkAction]['success']++;
-                $success ? $playerStats[$pid]['duelsLost']++ : $playerStats[$pid]['duelsWon']++;
+            // ----- Stats d'équipe (tentatives, indépendamment du résultat) -----
+            if ($action === 'pass')         $teamStats[$side]['passes']++;
+            elseif ($action === 'dribble')  $teamStats[$side]['dribbles']++;
+            else                            $teamStats[$side]['shots']++;
+
+            if ($success) {
+                $teamStats[$side]['duelsWon']++;
+                $teamStats[$defSide]['duelsLost']++;
+                if ($isGoal) $teamStats[$side]['goals']++;
+            } else {
+                $teamStats[$side]['duelsLost']++;
+                $teamStats[$defSide]['duelsWon']++;
             }
 
-            // Stats équipe
-            if ($action === 'pass')         $teamStats['home']['passes']++;
-            elseif ($action === 'dribble')  $teamStats['home']['dribbles']++;
-            else                            $teamStats['home']['shots']++;
-            if ($success) {
-                $teamStats['home']['duelsWon']++;
-                $teamStats['away']['duelsLost']++;
-                if ($action === 'shot') {
-                    $homeGoals++;
-                    $teamStats['home']['goals']++;
+            // ----- Coût de stamina (action + déplacement de balle) -----
+            $this->applyStaminaCost($stamina, $attacker, $action, 'attack');
+            $this->applyStaminaCost($stamina, $defender, $defAction, $defCategory);
+
+            // ----- Progression / changement de possession -----
+            if ($action === 'shot') {
+                // Le ballon repart de zéro côté défenseur, qu'il y ait but ou arrêt
+                $side          = $defSide;
+                $zone          = 0;
+                $frontOfKeeper = false;
+            } elseif ($success) {
+                if ($action === 'pass') {
+                    $zone = min(self::MAX_ZONE_INDEX, $zone + 1);
+                } elseif ($action === 'dribble') {
+                    if ($zone < self::MAX_ZONE_INDEX) $zone++;
+                    else                              $frontOfKeeper = true;
                 }
             } else {
-                $teamStats['home']['duelsLost']++;
-                $teamStats['away']['duelsWon']++;
-            }
-        }
-
-        // Simuler les chances AWAY
-        for ($i = 0; $i < max(1, $awayChances); $i++) {
-            $attacker  = $this->randomAttacker($awayPlayers);
-            $defender  = $this->randomDefender($homePlayers);
-            $gk        = $this->getGoalkeeper($homePlayers);
-            $action    = $this->randomOffenseAction($away->tactical_style);
-
-            $isShot      = $action === 'shot';
-            $attackRoll  = $awayRatings['att'] + $this->d20();
-            $defenseRoll = $isShot
-                ? $homeRatings['gk']  + $this->d20()
-                : $homeRatings['def'] + $this->d20();
-            $success  = $attackRoll > $defenseRoll;
-            $isGoal   = $success && $isShot;
-
-            if ($attacker) {
-                $pid = (string) $attacker->id;
-                $playerStats[$pid] = $playerStats[$pid] ?? $this->emptyPlayerStats();
-                $playerStats[$pid]['offense'][$action]['attempts']++;
-                if ($success) $playerStats[$pid]['offense'][$action]['success']++;
-                if ($isGoal)  $playerStats[$pid]['offense']['goals'] = ($playerStats[$pid]['offense']['goals'] ?? 0) + 1;
-                $success ? $playerStats[$pid]['duelsWon']++ : $playerStats[$pid]['duelsLost']++;
-            }
-
-            $defAction = $this->randomDefenseAction($home->tactical_style);
-            if ($defender) {
-                $pid = (string) $defender->id;
-                $playerStats[$pid] = $playerStats[$pid] ?? $this->emptyPlayerStats();
-                $playerStats[$pid]['defense'][$defAction]['attempts']++;
-                if (!$success) $playerStats[$pid]['defense'][$defAction]['success']++;
-                $success ? $playerStats[$pid]['duelsLost']++ : $playerStats[$pid]['duelsWon']++;
-            }
-
-            if ($action === 'shot' && $gk) {
-                $pid = (string) $gk->id;
-                $playerStats[$pid] = $playerStats[$pid] ?? $this->emptyPlayerStats();
-                $gkAction = random_int(0, 1) ? 'hands' : 'punch';
-                $playerStats[$pid]['defense'][$gkAction]['attempts']++;
-                $teamStats['home']['saves'] = ($teamStats['home']['saves'] ?? 0) + ($success ? 0 : 1);
-                if (!$success) $playerStats[$pid]['defense'][$gkAction]['success']++;
-                $success ? $playerStats[$pid]['duelsLost']++ : $playerStats[$pid]['duelsWon']++;
-            }
-
-            if ($action === 'pass')         $teamStats['away']['passes']++;
-            elseif ($action === 'dribble')  $teamStats['away']['dribbles']++;
-            else                            $teamStats['away']['shots']++;
-            if ($success) {
-                $teamStats['away']['duelsWon']++;
-                $teamStats['home']['duelsLost']++;
-                if ($action === 'shot') {
-                    $awayGoals++;
-                    $teamStats['away']['goals']++;
-                }
-            } else {
-                $teamStats['away']['duelsLost']++;
-                $teamStats['home']['duelsWon']++;
-            }
-        }
-
-        // Clamp scores
-        $homeGoals = min($homeGoals, 6);
-        $awayGoals = min($awayGoals, 6);
-        $teamStats['home']['goals'] = $homeGoals;
-        $teamStats['away']['goals'] = $awayGoals;
-
-        // Cohérence playerStats goals vs teamStats goals
-        // Si teamStats a des buts mais playerStats n'en a pas (attaquant null),
-        // attribuer les buts au meilleur attaquant disponible
-        foreach (['home' => $homePlayers, 'away' => $awayPlayers] as $side => $sidePlayers) {
-            $teamGoals = $teamStats[$side]['goals'] ?? 0;
-            if ($teamGoals <= 0) continue;
-
-            // Compter uniquement les buts des joueurs de CETTE équipe
-            $sidePlayerIds = $sidePlayers->map(fn($p) => (string) $p->id)->toArray();
-            $playerGoals   = array_sum(array_map(
-                fn($pid) => $playerStats[$pid]['offense']['goals'] ?? 0,
-                array_filter($sidePlayerIds, fn($pid) => isset($playerStats[$pid]))
-            ));
-
-            if ($playerGoals < $teamGoals) {
-                $bestAttacker = $sidePlayers
-                    ->filter(fn($p) => isset($playerStats[(string) $p->id]))
-                    ->sortByDesc(fn($p) => ($p->shot ?? 0) + ($p->attack ?? 0))
-                    ->first();
-
-                if ($bestAttacker) {
-                    $pid     = (string) $bestAttacker->id;
-                    $missing = $teamGoals - $playerGoals;
-                    $playerStats[$pid]['offense']['goals'] =
-                        ($playerStats[$pid]['offense']['goals'] ?? 0) + $missing;
-                }
+                // Perte de balle : possession inversée, la zone est mise en miroir
+                $side          = $defSide;
+                $zone          = self::MAX_ZONE_INDEX - $zone;
+                $frontOfKeeper = false;
             }
         }
 
@@ -247,7 +239,99 @@ class MatchSimulator
             'players' => $playerStats,
         ];
 
-        return [$homeGoals, $awayGoals, $matchStats];
+        return [$teamStats['home']['goals'], $teamStats['away']['goals'], $matchStats];
+    }
+
+    // ==========================
+    //   HELPERS DUEL / STAMINA
+    // ==========================
+
+    /** Retourne la statistique pertinente du joueur pour une action donnée (mêmes clés que STATS côté client). */
+    private function statForAction($player, string $action, string $category): float
+    {
+        if (!$player) return 20.0;
+
+        return match ($category) {
+            'attack' => match ($action) {
+                'shot'    => (float) ($player->shot    ?? 0),
+                'pass'    => (float) ($player->pass    ?? 0),
+                'dribble' => (float) ($player->dribble ?? 0),
+                'special' => (float) ($player->attack  ?? 0),
+                default   => (float) ($player->attack  ?? 0),
+            },
+            'defenseField' => match ($action) {
+                'intercept' => (float) ($player->intercept ?? 0),
+                'tackle'    => (float) ($player->tackle    ?? 0),
+                'block'     => (float) ($player->block     ?? 0),
+                default     => (float) ($player->defense   ?? 0),
+            },
+            'defenseGK' => match ($action) {
+                'hands' => (float) ($player->hand_save  ?? 0),
+                'punch' => (float) ($player->punch_save ?? 0),
+                default => (float) ($player->hand_save  ?? 0),
+            },
+            default => 20.0,
+        };
+    }
+
+    /**
+     * Facteur multiplicatif appliqué à la base d'attaque/défense selon le ratio
+     * de stamina restante — paliers identiques à `STAMINA_FACTORS` côté client.
+     */
+    private function staminaFactor(float $stamina): float
+    {
+        $ratio = $stamina / self::ENDURANCE_DEFAULT;
+
+        if ($ratio <= 0)    return 0.40; // EXHAUSTED
+        if ($ratio < 0.25)  return 0.55; // CRIT
+        if ($ratio < 0.50)  return 0.72; // LOW
+        if ($ratio < 0.75)  return 0.88; // MID
+        return 1.0;                      // HIGH
+    }
+
+    /** Coût en stamina d'une action, pondéré par la vitesse du joueur (miroir de `applyStaminaCost`). */
+    private function applyStaminaCost(array &$stamina, $player, string $action, string $category): void
+    {
+        if (!$player) return;
+
+        $costs = match ($category) {
+            'attack'       => ['shot' => 10, 'pass' => 6, 'dribble' => 4, 'special' => 15],
+            'defenseField' => ['intercept' => 3, 'tackle' => 3, 'block' => 5, 'field-special' => 10],
+            'defenseGK'    => ['hands' => 5, 'punch' => 3, 'gk-special' => 10],
+            default        => [],
+        };
+        $baseCost = $costs[$action] ?? 5;
+
+        $categoryMultiplier = $category === 'defenseGK' ? 0.6 : 1.0;
+        $speedReduction     = 1 - (((float) ($player->speed ?? 0)) / 100) * 0.1;
+
+        $pid = (string) $player->id;
+        $stamina[$pid] = max(0.0, ($stamina[$pid] ?? self::ENDURANCE_DEFAULT) - $baseCost * $categoryMultiplier * $speedReduction);
+    }
+
+    /** Sélectionne un joueur de champ adapté à l'action (biaisé vers les profils pertinents, comme côté client). */
+    private function pickPlayerForAction(Collection $players, string $action)
+    {
+        if ($players->isEmpty()) return null;
+
+        $statKey = match ($action) {
+            'shot', 'special'     => 'shot',
+            'pass'                => 'pass',
+            'dribble'             => 'dribble',
+            'intercept'           => 'intercept',
+            'tackle'              => 'tackle',
+            'block'               => 'block',
+            default               => null,
+        };
+
+        if ($statKey === null) {
+            return $players->random();
+        }
+
+        $candidates = $players->filter(fn($p) => ($p->{$statKey} ?? 0) > 30);
+        $pool       = $candidates->isNotEmpty() ? $candidates : $players;
+
+        return $pool->random();
     }
 
     // ==========================
@@ -261,41 +345,6 @@ class MatchSimulator
             ->map(fn($c) => $c->gamePlayer)
             ->values()
             ->take(11);
-    }
-
-    private function teamRatings(Collection $players): array
-    {
-        if ($players->isEmpty()) {
-            return ['att' => 40, 'def' => 40, 'gk' => 40];
-        }
-
-        $att = (int) round($players->avg(fn($p) =>
-                ($p->attack ?? 0) + ($p->shot ?? 0) + ($p->dribble ?? 0) + ($p->pass ?? 0)
-            ) / 4);
-
-        $def = (int) round($players->avg(fn($p) =>
-                ($p->defense ?? 0) + ($p->tackle ?? 0) + ($p->intercept ?? 0) + ($p->block ?? 0)
-            ) / 4);
-
-        $gkBest = $players->max(fn($p) => ($p->hand_save ?? 0) + ($p->punch_save ?? 0));
-        $gk     = (int) max(20, round(($gkBest ?: 0) / 2));
-
-        return ['att' => $att, 'def' => $def, 'gk' => $gk];
-    }
-
-    private function randomAttacker(Collection $players)
-    {
-        // Préfère les joueurs avec attack/shot élevés
-        $attackers = $players->filter(fn($p) => ($p->attack ?? 0) > 30 || ($p->shot ?? 0) > 30);
-        $pool = $attackers->isNotEmpty() ? $attackers : $players;
-        return $pool->isEmpty() ? null : $pool->random();
-    }
-
-    private function randomDefender(Collection $players)
-    {
-        $defenders = $players->filter(fn($p) => ($p->defense ?? 0) > 30 || ($p->tackle ?? 0) > 30);
-        $pool = $defenders->isNotEmpty() ? $defenders : $players;
-        return $pool->isEmpty() ? null : $pool->random();
     }
 
     private function getGoalkeeper(Collection $players)
@@ -338,16 +387,6 @@ class MatchSimulator
         if ($roll <= $pass)               return 'pass';
         if ($roll <= $pass + $dribble)    return 'dribble';
         return 'shot';
-    }
-
-    private function randomDefenseAction(?string $tacticalStyle = null): string
-    {
-        [$intercept, $tackle, $block] = $this->defenseDistributionFor($tacticalStyle);
-        $total = $intercept + $tackle + $block;
-        $roll  = random_int(1, $total);
-        if ($roll <= $intercept)              return 'intercept';
-        if ($roll <= $intercept + $tackle)    return 'tackle';
-        return 'block';
     }
 
     private function d20(): int
