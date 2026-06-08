@@ -239,7 +239,10 @@ class GameMatchController extends Controller
             ->where('game_save_id', $gameSave->id)
             ->where('week', $week)
             ->where('status', 'scheduled')
-            ->with(['homeTeam.contracts.gamePlayer', 'awayTeam.contracts.gamePlayer'])
+            ->with([
+                'homeTeam' => fn($q) => $q->with(['contracts' => fn($cq) => $cq->activeAt($week)->with('gamePlayer')]),
+                'awayTeam' => fn($q) => $q->with(['contracts' => fn($cq) => $cq->activeAt($week)->with('gamePlayer')]),
+            ])
             ->get();
 
         app(MatchSimulator::class)->simulateMatchesCollection($matches);

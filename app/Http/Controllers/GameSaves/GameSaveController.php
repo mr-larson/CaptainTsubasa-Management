@@ -220,7 +220,9 @@ class GameSaveController extends Controller
     {
         $this->authorizeSave($request, $gameSave);
 
-        $gameTeams = GameTeam::with(['contracts.gamePlayer'])
+        $currentWeek = $gameSave->week ?? 1;
+
+        $gameTeams = GameTeam::with(['contracts' => fn($q) => $q->activeAt($currentWeek)->with('gamePlayer')])
             ->where('game_save_id', $gameSave->id)
             ->orderBy('name')
             ->get();
@@ -238,7 +240,7 @@ class GameSaveController extends Controller
             ->get();
 
         $freePlayers = GamePlayer::where('game_save_id', $gameSave->id)
-            ->whereDoesntHave('contracts')
+            ->whereDoesntHave('contracts', fn($q) => $q->activeAt($currentWeek))
             ->orderBy('lastname')
             ->orderBy('firstname')
             ->get();
@@ -247,7 +249,6 @@ class GameSaveController extends Controller
         $playerSeasonStats = PlayerStatsService::aggregateForSave($gameSave);
 
         // ─── Blessures et suspensions actives ───
-        $currentWeek = $gameSave->week ?? 1;
 
         $activeInjuries = GameInjury::where('game_save_id', $gameSave->id)
             ->where('week_return', '>', $currentWeek)
@@ -374,24 +375,27 @@ class GameSaveController extends Controller
 
         $team = GameTeam::where('game_save_id', $gameSave->id)->findOrFail($data['team_id']);
 
+        $startWeek = $gameSave->week ?? 1;
+
         $alreadyHasContract = GameContract::where('game_save_id', $gameSave->id)
             ->where('game_player_id', $player->id)
+            ->activeAt($startWeek)
             ->exists();
 
         if ($alreadyHasContract) {
             return back()->with('info', 'Ce joueur a déjà un contrat en cours dans cette partie.');
         }
 
-        $startWeek    = $gameSave->week ?? 1;
         $endWeek      = $startWeek + $data['matches_total'] - 1;
         $starterCount = GameContract::where('game_save_id', $gameSave->id)
             ->where('game_team_id', $team->id)
             ->where('is_starter', true)
+            ->activeAt($startWeek)
             ->count();
 
         // Premier numéro disponible dans l'équipe
         $usedNumbers = GamePlayer::where('game_save_id', $gameSave->id)
-            ->whereHas('contracts', fn($q) => $q->where('game_team_id', $team->id))
+            ->whereHas('contracts', fn($q) => $q->where('game_team_id', $team->id)->activeAt($startWeek))
             ->pluck('number')
             ->filter()
             ->toArray();

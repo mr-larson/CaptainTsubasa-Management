@@ -63,6 +63,14 @@ class GameContract extends Model
         return $currentWeek >= $this->start_week;
     }
 
+    public function scopeActiveAt($query, int $currentWeek)
+    {
+        return $query->where('start_week', '<=', $currentWeek)
+            ->where(function ($q) use ($currentWeek) {
+                $q->whereNull('end_week')->orWhere('end_week', '>=', $currentWeek);
+            });
+    }
+
     // ──────────────────────────────────────────────
     //   Captain Reroll
     // ──────────────────────────────────────────────

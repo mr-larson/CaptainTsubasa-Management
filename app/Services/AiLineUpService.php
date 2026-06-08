@@ -48,7 +48,7 @@ class AiLineUpService
 
         $aiTeams = GameTeam::where('game_save_id', $gameSave->id)
             ->when($controlledTeamId, fn($q) => $q->where('id', '!=', $controlledTeamId))
-            ->with(['contracts.gamePlayer'])
+            ->with(['contracts' => fn($q) => $q->activeAt($currentWeek)->with('gamePlayer')])
             ->get();
 
         $state = $gameSave->state ?? [];

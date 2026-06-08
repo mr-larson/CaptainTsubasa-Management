@@ -169,7 +169,7 @@ class GamePlayerController extends Controller
         }
 
         // Règle métier : interdiction de supprimer un joueur sous contrat
-        if ($player->contracts()->exists()) {
+        if ($player->contracts()->activeAt($gameSave->week ?? 1)->exists()) {
             abort(403, 'Impossible de supprimer un joueur qui possède un contrat dans cette partie.');
         }
 
@@ -220,11 +220,12 @@ class GamePlayerController extends Controller
         // Vérifier que le numéro n'est pas déjà pris dans cette équipe
         $teamId = $player->contracts()
             ->where('game_save_id', $gameSave->id)
+            ->activeAt($gameSave->week ?? 1)
             ->value('game_team_id');
 
         $alreadyTaken = \App\Models\GameSaves\GamePlayer::where('game_save_id', $gameSave->id)
             ->where('id', '!=', $player->id)
-            ->whereHas('contracts', fn($q) => $q->where('game_team_id', $teamId))
+            ->whereHas('contracts', fn($q) => $q->where('game_team_id', $teamId)->activeAt($gameSave->week ?? 1))
             ->where('number', $data['number'])
             ->exists();
 

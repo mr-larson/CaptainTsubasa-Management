@@ -58,11 +58,11 @@ class AITransferService
 
         $aiTeams = GameTeam::where('game_save_id', $gameSave->id)
             ->when($controlledTeamId, fn($q) => $q->where('id', '!=', $controlledTeamId))
-            ->with(['contracts.gamePlayer'])
+            ->with(['contracts' => fn($q) => $q->activeAt($week)->with('gamePlayer')])
             ->get();
 
         $freePlayers = GamePlayer::where('game_save_id', $gameSave->id)
-            ->whereDoesntHave('contracts', fn($q) => $q->where('game_save_id', $gameSave->id))
+            ->whereDoesntHave('contracts', fn($q) => $q->where('game_save_id', $gameSave->id)->activeAt($week))
             ->get();
 
         if ($freePlayers->isEmpty()) return;
@@ -83,7 +83,7 @@ class AITransferService
 
             // Rafraîchir les joueurs libres après chaque équipe
             $freePlayers = GamePlayer::where('game_save_id', $gameSave->id)
-                ->whereDoesntHave('contracts', fn($q) => $q->where('game_save_id', $gameSave->id))
+                ->whereDoesntHave('contracts', fn($q) => $q->where('game_save_id', $gameSave->id)->activeAt($week))
                 ->get();
 
             if ($freePlayers->isEmpty()) break;

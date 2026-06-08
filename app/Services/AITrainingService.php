@@ -47,7 +47,7 @@ class AITrainingService
 
         // Toutes les équipes de la save
         $allTeams = GameTeam::where('game_save_id', $gameSave->id)
-            ->with(['contracts.gamePlayer'])
+            ->with(['contracts' => fn($q) => $q->activeAt($week)->with('gamePlayer')])
             ->get();
 
         $controlledTeamId = $gameSave->controlled_game_team_id;

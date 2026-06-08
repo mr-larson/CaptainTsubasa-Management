@@ -25,7 +25,10 @@ class MatchSimulator
             ->where('week', $playedMatch->week)
             ->where('status', 'scheduled')
             ->where('id', '!=', $playedMatch->id)
-            ->with(['homeTeam.contracts.gamePlayer', 'awayTeam.contracts.gamePlayer'])
+            ->with([
+                'homeTeam' => fn($q) => $q->with(['contracts' => fn($cq) => $cq->activeAt($playedMatch->week)->with('gamePlayer')]),
+                'awayTeam' => fn($q) => $q->with(['contracts' => fn($cq) => $cq->activeAt($playedMatch->week)->with('gamePlayer')]),
+            ])
             ->get();
 
         foreach ($others as $m) {
@@ -35,10 +38,14 @@ class MatchSimulator
 
     public function simulateMatchesCollection(Collection $matches): void
     {
-        $matches->loadMissing(['homeTeam.contracts.gamePlayer', 'awayTeam.contracts.gamePlayer']);
-
         foreach ($matches as $m) {
             if ($m->status !== 'scheduled') continue;
+
+            $m->loadMissing([
+                'homeTeam' => fn($q) => $q->with(['contracts' => fn($cq) => $cq->activeAt($m->week)->with('gamePlayer')]),
+                'awayTeam' => fn($q) => $q->with(['contracts' => fn($cq) => $cq->activeAt($m->week)->with('gamePlayer')]),
+            ]);
+
             $this->simulateAndSave($m);
         }
     }

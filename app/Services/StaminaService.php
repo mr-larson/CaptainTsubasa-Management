@@ -76,8 +76,10 @@ class StaminaService
     {
         $playedSet = array_flip($playedPlayerIds);
 
+        $week = $gameSave->week ?? 1;
+
         $teams = GameTeam::where('game_save_id', $gameSave->id)
-            ->with('contracts.gamePlayer')
+            ->with(['contracts' => fn($q) => $q->activeAt($week)->with('gamePlayer')])
             ->get();
 
         foreach ($teams as $team) {
