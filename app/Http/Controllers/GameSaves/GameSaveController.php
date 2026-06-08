@@ -19,6 +19,7 @@ use App\Services\BonusCardShopService;
 use App\Services\PlayerStatsService;
 use App\Services\DraftService;
 use App\Services\DraftAIService;
+use App\Services\SeasonService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -73,7 +74,7 @@ class GameSaveController extends Controller
     {
         $this->authorizeSave($request, $gameSave);
 
-        if ($gameSave->phase !== 'draft') {
+        if (!in_array($gameSave->phase, ['draft', 'intersaison_draft'], true)) {
             return redirect()->route('game-saves.play', $gameSave);
         }
 
@@ -103,7 +104,7 @@ class GameSaveController extends Controller
     {
         $this->authorizeSave($request, $gameSave);
 
-        if ($gameSave->phase !== 'draft') {
+        if (!in_array($gameSave->phase, ['draft', 'intersaison_draft'], true)) {
             return response()->json(['error' => 'Not in draft phase'], 400);
         }
 
@@ -189,7 +190,7 @@ class GameSaveController extends Controller
     {
         $this->authorizeSave($request, $gameSave);
 
-        if ($gameSave->phase !== 'draft') {
+        if (!in_array($gameSave->phase, ['draft', 'intersaison_draft'], true)) {
             return response()->json(['error' => 'Not in draft phase'], 400);
         }
 
@@ -401,6 +402,43 @@ class GameSaveController extends Controller
             'draftState' => $gameSave->state['draft'] ?? [],
             'completed'  => $allDone || ($gameSave->state['draft']['completed'] ?? false),
         ]);
+    }
+
+    /**
+     * Écran de fin de saison : champion, MVP, primes de classement.
+     */
+    public function seasonEnd(Request $request, GameSave $gameSave): Response
+    {
+        $this->authorizeSave($request, $gameSave);
+
+        if ($gameSave->phase !== 'season_end') {
+            return redirect()->route('game-saves.play', $gameSave);
+        }
+
+        $state = $gameSave->state ?? [];
+
+        return Inertia::render('GameSaves/SeasonEnd', [
+            'gameSave' => $gameSave,
+            'recap'    => $state['last_season_recap'] ?? null,
+        ]);
+    }
+
+    /**
+     * Lance la saison suivante : expiration des contrats, reset du classement,
+     * et démarrage d'une nouvelle draft (ordre inverse du classement final).
+     */
+    public function startNewSeason(Request $request, GameSave $gameSave): RedirectResponse
+    {
+        $this->authorizeSave($request, $gameSave);
+
+        if ($gameSave->phase !== 'season_end') {
+            return redirect()->route('game-saves.play', $gameSave);
+        }
+
+        app(SeasonService::class)->startNewSeason($gameSave);
+
+        return redirect()->route('game-saves.draft', $gameSave)
+            ->with('success', "Saison {$gameSave->season} — la draft commence !");
     }
 
     /**

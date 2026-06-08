@@ -19,6 +19,7 @@ use App\Services\AITransferService;
 use App\Services\AILineupService;
 use App\Services\FoulAndInjuryService;
 use App\Services\PostMatchProgressionService;
+use App\Services\SeasonService;
 use App\Services\StaminaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -216,6 +217,12 @@ class GameMatchController extends Controller
         app(BonusCardShopService::class)->generateWeeklyOffers($gameSave);
         app(AIBonusCardService::class)->processWeek($gameSave);
 
+        $seasonService = app(SeasonService::class);
+        if ($seasonService->isSeasonOver($gameSave)) {
+            $seasonService->endSeason($gameSave);
+            return redirect()->route('game-saves.season-end', $gameSave);
+        }
+
         return redirect()->route('game-saves.play', $gameSave);
     }
 
@@ -252,6 +259,12 @@ class GameMatchController extends Controller
         // Boutique + IA cartes pour la nouvelle semaine
         app(BonusCardShopService::class)->generateWeeklyOffers($gameSave);
         app(AIBonusCardService::class)->processWeek($gameSave);
+
+        $seasonService = app(SeasonService::class);
+        if ($seasonService->isSeasonOver($gameSave)) {
+            $seasonService->endSeason($gameSave);
+            return redirect()->route('game-saves.season-end', $gameSave);
+        }
 
         return redirect()->route('game-saves.play', $gameSave);
     }

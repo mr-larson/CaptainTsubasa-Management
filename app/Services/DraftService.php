@@ -17,6 +17,35 @@ class DraftService
     public const DRAFT_DISCOUNT = 0.5; // Les joueurs coûtent moitié prix au draft
 
     /**
+     * Initialise un état de draft pour l'ordre d'équipes donné :
+     * applique le bonus budget de draft et crée draft state dans le state.
+     * Utilisé pour la draft initiale et les drafts d'intersaison.
+     */
+    public function initDraft(GameSave $gameSave, array $teamIdsOrder): void
+    {
+        $teams = GameTeam::where('game_save_id', $gameSave->id)
+            ->whereIn('id', $teamIdsOrder)
+            ->get();
+
+        foreach ($teams as $gameTeam) {
+            $gameTeam->budget = ($gameTeam->budget ?? 0) + self::DRAFT_BONUS;
+            $gameTeam->save();
+        }
+
+        $state = $gameSave->state ?? [];
+        $state['draft'] = [
+            'order'              => array_values($teamIdsOrder),
+            'current_pick_index' => 0,
+            'round'              => 1,
+            'picks'              => [],
+            'completed'          => false,
+            'finished_teams'     => [],
+        ];
+        $gameSave->state = $state;
+        $gameSave->save();
+    }
+
+    /**
      * Exécute un pick : assigne un joueur libre à l'équipe courante.
      * Retourne le pick enregistré ou null si invalide.
      */

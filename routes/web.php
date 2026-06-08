@@ -96,6 +96,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/{gameSave}/draft/ai-pick', [GameSaveController::class, 'draftAiPick'])->name('draft.ai-pick');
         Route::post('/{gameSave}/draft/pick', [GameSaveController::class, 'draftPick'])->name('draft.pick');
         Route::post('/{gameSave}/draft/finish', [GameSaveController::class, 'draftFinish'])->name('draft.finish');
+        Route::get('/{gameSave}/season-end',  [GameSaveController::class, 'seasonEnd'])->name('season-end');
+        Route::post('/{gameSave}/season-end/continue', [GameSaveController::class, 'startNewSeason'])->name('season-end.continue');
         Route::get('/{gameSave}',      [GameSaveController::class, 'show'])->name('show');
         Route::get('/{gameSave}/play', [GameSaveController::class, 'play'])->name('play');
         Route::put('/{gameSave}',      [GameSaveController::class, 'update'])->name('update');
