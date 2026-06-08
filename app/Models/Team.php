@@ -35,6 +35,7 @@ class Team extends Model
         'draws',
         'losses',
         'formation',
+        'default_formation',
         'logo_path',
         'tactical_style',
         'management_philosophy',

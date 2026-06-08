@@ -254,13 +254,13 @@ function formatBreakdownHTML(b) {
         row("Base", `${aBase.toFixed(1)}`),
         row("× Stamina", `${aStam.toFixed(2)} = <b>${(aBase * aStam).toFixed(1)}</b>`),
         ...(b.attack?.additions || []).map(x => row(x.label, `<span style="color:#0ea5e9">${x.value}</span>`)),
-        row("Total", `<b style="font-size:12px;color:#1e293b">${Number(b.attack?.total ?? 0).toFixed(1)}</b>`),
+        row("Total", `<b style="font-size:12px;color:#ffffff">${Number(b.attack?.total ?? 0).toFixed(1)}</b>`),
     ].join(""))}
         ${section("🛡️ Défense", [
         row("Base", `${dBase.toFixed(1)}`),
         row("× Stamina", `${dStam.toFixed(2)} = <b>${(dBase * dStam).toFixed(1)}</b>`),
         ...(b.defense?.additions || []).map(x => row(x.label, `<span style="color:#8b5cf6">${x.value}</span>`)),
-        row("Total", `<b style="font-size:12px;color:#1e293b">${Number(b.defense?.total ?? 0).toFixed(1)}</b>`),
+        row("Total", `<b style="font-size:12px;color:#ffffff">${Number(b.defense?.total ?? 0).toFixed(1)}</b>`),
     ].join(""))}
         ${section("✅ Résultat", [
         row("Règle RPS", b.result?.bonusRuleLabel || "—"),

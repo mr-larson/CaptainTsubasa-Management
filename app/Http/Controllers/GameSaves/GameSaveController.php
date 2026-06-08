@@ -87,24 +87,6 @@ class GameSaveController extends Controller
         $seasonLength      = max(1, ($teamCount - 1) * 2);
         $gameTeamsByBaseId = [];
 
-        $formationByTeam = [
-            'Nankatsu'  => '4-1-3-2',
-            'Toho'      => '4-2-2-2',
-            'Hanawa'    => '3-2-2-3',
-            'Furano'    => '3-2-3-2',
-            'Otomo'     => '4-2-2-2',
-            'Azumaichi' => '3-2-2-3',
-            'Musashi'   => '3-1-3-3',
-            'Shutetsu'  => '4-2-2-2',
-            'Meiwa'     => '4-3-1-2',
-            'Hirado'    => '5-2-2-1',
-            'Naniwa'    => '4-3-1-2',
-            'Minawi'    => '4-2-2-2',
-            'Nakahara'  => '3-3-2-2',
-            'Shimizu'   => '5-1-2-2',
-            'Shimada'   => '5-3-1-1',
-        ];
-
         foreach ($teams as $team) {
             $gameTeam = GameTeam::create([
                 'game_save_id'          => $gameSave->id,
@@ -116,7 +98,7 @@ class GameSaveController extends Controller
                 'draws'                 => 0,
                 'losses'                => 0,
                 'logo_path'             => $team->logo_path,
-                'formation'             => $formationByTeam[$team->name] ?? '3-2-3-2',
+                'formation'             => $team->default_formation ?? '3-2-3-2',
                 'tactical_style'        => $team->tactical_style        ?? 'balanced',
                 'management_philosophy' => $team->management_philosophy ?? 'collective',
             ]);
@@ -296,6 +278,39 @@ class GameSaveController extends Controller
             ->groupBy('game_player_id')
             ->map(fn($cards) => $cards->count());
 
+        // ─── Récap de la semaine écoulée (blessures et suspensions survenues) ───
+        $previousWeek = $currentWeek - 1;
+
+        $weeklyRecap = collect();
+
+        if ($previousWeek >= 1) {
+            $weeklyRecap = $weeklyRecap
+                ->merge(
+                    GameInjury::where('game_save_id', $gameSave->id)
+                        ->where('week_injured', $previousWeek)
+                        ->with('gamePlayer')
+                        ->get()
+                        ->map(fn($i) => [
+                            'type'    => 'injury',
+                            'player'  => $i->gamePlayer?->full_name ?? 'Joueur inconnu',
+                            'message' => "{$i->gamePlayer?->full_name} blessé " . ($i->weeks_out > 1 ? "{$i->weeks_out} semaines" : "1 semaine"),
+                        ])
+                )
+                ->merge(
+                    GameSanction::where('game_save_id', $gameSave->id)
+                        ->whereIn('type', ['red', 'double_yellow'])
+                        ->where('week_match', $previousWeek)
+                        ->with('gamePlayer')
+                        ->get()
+                        ->map(fn($s) => [
+                            'type'    => 'suspension',
+                            'player'  => $s->gamePlayer?->full_name ?? 'Joueur inconnu',
+                            'message' => "{$s->gamePlayer?->full_name} suspendu " . ($s->weeks_suspended > 1 ? "{$s->weeks_suspended} matchs" : "1 match"),
+                        ])
+                )
+                ->values();
+        }
+
         // ─── Bonus cards ───
         $controlledTeamId = $gameSave->controlled_game_team_id;
 
@@ -339,6 +354,7 @@ class GameSaveController extends Controller
             'activeInjuries'      => $activeInjuries,
             'activeSuspensions'   => $activeSuspensions,
             'activeYellowCards'   => $activeYellowCards,
+            'weeklyRecap'         => $weeklyRecap,
             'bonusCardOffers'     => $bonusCardOffers,
             'bonusCardInventory'  => $bonusCardInventory,
         ]);

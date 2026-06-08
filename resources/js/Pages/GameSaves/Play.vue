@@ -87,6 +87,7 @@ const {
 const activeInjuriesRef    = computed(() => props.activeInjuries    ?? []);
 const activeSuspensionsRef = computed(() => props.activeSuspensions ?? []);
 const activeYellowCardsRef = computed(() => props.activeYellowCards ?? {});
+const weeklyRecapRef       = computed(() => props.weeklyRecap ?? []);
 
 const {
     standings, clubStanding,
@@ -292,6 +293,7 @@ function updateOtherPlayerNumber(playerId, number) {
                                   :matches="matches"
                                   :unboughtCardsCount="unboughtCardsCount"
                                   :freePlayersCount="freePlayersCount"
+                                  :weeklyRecap="weeklyRecapRef"
                                   @change-tab="activeTab = $event"
                                   :isPlayerInjured="isPlayerInjured"
                                   @play-next-match="playNextMatch"

@@ -361,14 +361,15 @@ function doReroll(ctx) {
             `Relances restantes : ${rerollsLeft}`,
         ],
         newDiceTag,
-        _state
+        _state,
+        breakdown
     );
 
     if (newRawResult === "tie") {
         givePossessionOnTie(defenseTeam, defenderId);
-        return { isTie: true, duelResult: "tie", defenderId, defenderSlot, diceTag: newDiceTag };
+        return { isTie: true, duelResult: "tie", defenderId, defenderSlot, diceTag: newDiceTag, attackerId: getPlayerId(attackTeam, b.number), breakdown };
     }
-    return { isTie: false, duelResult: newRawResult, defenderId, defenderSlot, diceTag: newDiceTag };
+    return { isTie: false, duelResult: newRawResult, defenderId, defenderSlot, diceTag: newDiceTag, attackerId: getPlayerId(attackTeam, b.number), breakdown };
 }
 
 /**
@@ -466,7 +467,7 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
     const picked = defenderPick ?? pickFieldDefender(defenseTeam, b.zoneIndex, b.laneIndex);
     if (!picked) {
         givePossessionOnTie(defenseTeam);
-        return { isTie: true, duelResult: "tie", diceTag: "" };
+        return { isTie: true, duelResult: "tie", diceTag: "", attackerId };
     }
 
     const { defenderId, defenderSlot } = picked;
@@ -603,16 +604,16 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
                     originZone: b.zoneIndex, originLane: b.laneIndex,
                 };
                 showCaptainRerollPrompt(attackTeam);
-                return { isTie: false, duelResult: "pending_reroll", defenderId, defenderSlot, diceTag };
+                return { isTie: false, duelResult: "pending_reroll", defenderId, defenderSlot, diceTag, attackerId, breakdown };
             }
         }
-        return { isTie: false, duelResult: critWinner, defenderId, defenderSlot, diceTag };
+        return { isTie: false, duelResult: critWinner, defenderId, defenderSlot, diceTag, attackerId, breakdown };
     }
 
     const diff = attackScore - defenseScore;
     if (diff === 0) {
         givePossessionOnTie(defenseTeam, defenderId);
-        return { isTie: true, duelResult: "tie", defenderId, defenderSlot, diceTag };
+        return { isTie: true, duelResult: "tie", defenderId, defenderSlot, diceTag, attackerId, breakdown };
     }
 
     const rawResult = diff > 0 ? "attack" : "defense";
@@ -642,12 +643,12 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
                 originLane: b.laneIndex,
             };
             showCaptainRerollPrompt(attackTeam);
-            return { isTie: false, duelResult: "pending_reroll", defenderId, defenderSlot, diceTag };
+            return { isTie: false, duelResult: "pending_reroll", defenderId, defenderSlot, diceTag, attackerId, breakdown };
         }
     }
     // ── FIN CAPTAIN REROLL ──────────────────────────────────────
 
-    return { isTie: false, duelResult: rawResult, defenderId, defenderSlot, diceTag };
+    return { isTie: false, duelResult: rawResult, defenderId, defenderSlot, diceTag, attackerId, breakdown };
 }
 
 // -----------------------------------------------------------
@@ -753,7 +754,7 @@ export function resolvePass(attackTeam, defenseTeam, defenseAction, defenderPick
         pushLogEntry(
             isSpecial ? "Duel equilibre (special pass)" : "Duel equilibre (pass)",
             ["Defense: " + defenseAction, getCounterTag(attackType, defenseAction)],
-            duel.diceTag, _state
+            duel.diceTag, _state, duel.breakdown ?? null
         );
         _state.phase = "attack"; _state.pendingAttack = null;
         _animateAndThen(() => { _advanceTurn(defenseTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
@@ -767,13 +768,13 @@ export function resolvePass(attackTeam, defenseTeam, defenseAction, defenderPick
         if (duel.duelResult === "attack") {
             const receiver = [5, 6][Math.floor(Math.random() * 2)];
             setMessage(isSpecial ? "Passe speciale reussie !" : "Remise en jeu reussie !", _TEAMS[attackTeam].label + " joue vers le n " + receiver);
-            pushLogEntry("kickoffTitle", [isSpecial ? "(Special pass)" : null, "Vers n " + receiver, "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, _state);
+            pushLogEntry("kickoffTitle", [isSpecial ? "(Special pass)" : null, "Vers n " + receiver, "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, _state, duel.breakdown ?? null);
             _animateAndThen(() => { restoreBasePositions(); _moveBall(attackTeam, receiver); _advanceTurn(attackTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
         } else {
             const receiver = duel.defenderSlot ?? 6;
             const verb     = defenseAction === "intercept" ? "intercepte" : "recupere";
             setMessage("Remise en jeu ratee !", _TEAMS[defenseTeam].label + " " + verb + " avec le n " + receiver);
-            pushLogEntry("kickoffTitle", [isSpecial ? "(Special pass)" : null, "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, _state);
+            pushLogEntry("kickoffTitle", [isSpecial ? "(Special pass)" : null, "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, _state, duel.breakdown ?? null);
             _animateAndThen(() => { restoreBasePositions(); _moveBall(defenseTeam, receiver); _advanceTurn(defenseTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
         }
         return;
@@ -809,7 +810,7 @@ function continuePass(attackTeam, defenseTeam, attackType, defenseAction, isSpec
 
         _moveBall(attackTeam, receiver);
         setMessage(isSpecial ? "Passe speciale reussie !" : TEXTS.logs.passSuccessTitle, _TEAMS[attackTeam].label + " trouve le n " + receiver);
-        pushLogEntry("passSuccessTitle", [isSpecial ? "(Special pass)" : null, "Vers n " + receiver, "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, _state);
+        pushLogEntry("passSuccessTitle", [isSpecial ? "(Special pass)" : null, "Vers n " + receiver, "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, _state, duel.breakdown ?? null);
         _animateAndThen(() => { _advanceTurn(attackTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
         return;
     }
@@ -828,7 +829,7 @@ function continuePass(attackTeam, defenseTeam, attackType, defenseAction, isSpec
     const logTitle = getLogTitleForDuel(attackType, defenseAction, "defense");
     const msgTitle = defenseAction === "intercept" ? TEXTS.logs.passFailTitle : TEXTS.logs.passRecoveredTitle;
     setMessage(msgTitle, _TEAMS[defenseTeam].label + " recupere avec le n " + receiver);
-    pushLogEntry(logTitle, [isSpecial ? "(Special pass)" : null, "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, _state);
+    pushLogEntry(logTitle, [isSpecial ? "(Special pass)" : null, "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, _state, duel.breakdown ?? null);
     _animateAndThen(() => { _advanceTurn(defenseTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
 }
 
@@ -866,7 +867,7 @@ export function resolveDribble(attackTeam, defenseTeam, defenseAction, defenderP
         pushLogEntry(
             isSpecial ? "Duel equilibre (special dribble)" : "Duel equilibre (dribble)",
             ["Defense: " + defenseAction, getCounterTag(attackType, defenseAction)],
-            duel.diceTag, _state
+            duel.diceTag, _state, duel.breakdown ?? null
         );
         _state.phase = "attack"; _state.pendingAttack = null;
         _animateAndThen(() => { _advanceTurn(defenseTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
@@ -904,7 +905,7 @@ function continueDribble(attackTeam, defenseTeam, attackType, defenseAction, isS
             b.zoneIndex = newZone; b.laneIndex = lane; b.frontOfKeeper = false;
 
             setMessage(isSpecial ? "Dribble special reussi !" : "Dribble reussi !", _TEAMS[attackTeam].label + " avance en zone " + (newZone + 1));
-            pushLogEntry("dribbleSuccessTitle", [isSpecial ? "(Special dribble)" : null, "Zone " + (newZone + 1), "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, _state);
+            pushLogEntry("dribbleSuccessTitle", [isSpecial ? "(Special dribble)" : null, "Zone " + (newZone + 1), "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, _state, duel.breakdown ?? null);
             _animateAndThen(() => { _advanceTurn(attackTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
             return;
         }
@@ -920,7 +921,7 @@ function continueDribble(attackTeam, defenseTeam, attackType, defenseAction, isS
             b.zoneIndex = oldZone; b.laneIndex = lane; b.frontOfKeeper = true;
 
             setMessage(TEXTS.ui.frontOfKeeperMain, TEXTS.ui.frontOfKeeperSub);
-            pushLogEntry("frontOfKeeperTitle", [isSpecial ? "(Special dribble)" : null, "Zone " + (oldZone + 1), "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, _state);
+            pushLogEntry("frontOfKeeperTitle", [isSpecial ? "(Special dribble)" : null, "Zone " + (oldZone + 1), "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, _state, duel.breakdown ?? null);
             _animateAndThen(() => { _advanceTurn(attackTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
             return;
         }
@@ -940,7 +941,7 @@ function continueDribble(attackTeam, defenseTeam, attackType, defenseAction, isS
     const logTitle = getLogTitleForDuel(attackType, defenseAction, "defense");
     const msgTitle = defenseAction === "tackle" ? "Dribble stoppe" : TEXTS.logs.dribbleRecoveredTitle;
     setMessage(msgTitle, _TEAMS[defenseTeam].label + " recupere avec le n " + slot);
-    pushLogEntry(logTitle, [isSpecial ? "(Special dribble)" : null, "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, _state);
+    pushLogEntry(logTitle, [isSpecial ? "(Special dribble)" : null, "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, _state, duel.breakdown ?? null);
     _animateAndThen(() => { _advanceTurn(defenseTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
 }
 
@@ -979,7 +980,7 @@ export function resolveShot(attackTeam, defenseTeam, defenseAction, isSpecial = 
     }
 
     if (duel.isTie) {
-        pushLogEntry("Duel equilibre (shot)", ["Defense: " + defenseAction, getCounterTag(attackType, defenseAction)], duel.diceTag, _state);
+        pushLogEntry("Duel equilibre (shot)", ["Defense: " + defenseAction, getCounterTag(attackType, defenseAction)], duel.diceTag, _state, duel.breakdown ?? null);
         _state.phase = "attack"; _state.pendingAttack = null;
         _animateAndThen(() => { _advanceTurn(defenseTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
         return;
@@ -1009,13 +1010,13 @@ function continueShot(attackTeam, defenseTeam, defenseAction, isSpecial, duel, o
             (isBlock ? TEXTS.ui.shotBlockedSub : TEXTS.ui.shotRecoveredSub)
                 .replace("{team}", _TEAMS[defenseTeam].label).replace("{number}", number)
         );
-        pushLogEntry(getLogTitleForDuel(attackType, defenseAction, "defense"), ["Defense: " + defenseAction, getCounterTag(attackType, defenseAction)], duel.diceTag, _state);
+        pushLogEntry(getLogTitleForDuel(attackType, defenseAction, "defense"), ["Defense: " + defenseAction, getCounterTag(attackType, defenseAction)], duel.diceTag, _state, duel.breakdown ?? null);
         _state.phase = "attack"; _state.pendingAttack = null;
         _animateAndThen(() => { _advanceTurn(defenseTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
         return;
     }
 
-    pushLogEntry(TEXTS.ui.shotOnTargetMain, ["Zone " + (originZone + 1), "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)], duel.diceTag, _state);
+    pushLogEntry(TEXTS.ui.shotOnTargetMain, ["Zone " + (originZone + 1), "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)], duel.diceTag, _state, duel.breakdown ?? null);
     setMessage(TEXTS.ui.shotOnTargetMain, TEXTS.ui.shotOnTargetSub.replace("{team}", _TEAMS[defenseTeam].label));
 
     const zonesToGoal = Math.max(0, MAX_ZONE_INDEX - originZone);

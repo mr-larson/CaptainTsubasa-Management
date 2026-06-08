@@ -29,6 +29,7 @@ const props = defineProps({
     freePlayersCount:    { type: Number,   default: 0 },
     isPlayerInjured:    { type: Function, default: () => false },
     isPlayerSuspended:  { type: Function, default: () => false },
+    weeklyRecap:        { type: Array, default: () => [] },
 });
 
 const emit = defineEmits(['Play-next-match', 'simulate-week', 'save-game', 'quit', 'change-tab']);
@@ -183,6 +184,19 @@ const matchesPlayed = computed(() =>
 
 <template>
     <div class="flex-1 flex flex-col gap-4 overflow-y-auto min-h-[75vh] max-h-[75vh] pr-1">
+
+        <!-- ============================================ -->
+        <!-- RÉCAP DE LA SEMAINE : blessures / suspensions -->
+        <!-- ============================================ -->
+        <div v-if="weeklyRecap.length" class="border border-amber-200 rounded-xl bg-amber-50 p-3">
+            <div class="text-[10px] font-bold text-amber-600 uppercase tracking-wider mb-1.5">Cette semaine</div>
+            <ul class="space-y-1">
+                <li v-for="(entry, idx) in weeklyRecap" :key="idx" class="flex items-center gap-2 text-xs text-amber-800">
+                    <span>{{ entry.type === 'injury' ? '🤕' : '🟥' }}</span>
+                    <span>{{ entry.message }}</span>
+                </li>
+            </ul>
+        </div>
 
         <!-- ============================================ -->
         <!-- LIGNE 1 : Contexte + progression saison      -->

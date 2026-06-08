@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
+import MatchReplayPitch from './MatchReplayPitch.vue';
 
 const props = defineProps({
     calendarTeams:                 { type: Array,    required: true },
@@ -675,7 +676,21 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
 
                 <!-- Corps — deux colonnes home/away -->
                 <div class="flex-1 overflow-y-auto p-4">
-                    <div class="grid grid-cols-2 gap-4">
+
+                    <!-- Replay visuel basé sur le déroulé action par action (engine.js / MatchSimulator) -->
+                    <MatchReplayPitch
+                        v-if="selectedCalendarEvents.length"
+                        :events="selectedCalendarEvents"
+                        :home-name="teamById[selectedCalendarMatch.home_team_id]?.name ?? 'Domicile'"
+                        :away-name="teamById[selectedCalendarMatch.away_team_id]?.name ?? 'Extérieur'"
+                        :home-logo="teamLogoUrl(teamById[selectedCalendarMatch.home_team_id])"
+                        :away-logo="teamLogoUrl(teamById[selectedCalendarMatch.away_team_id])"
+                        :final-home-score="selectedCalendarMatch.home_score"
+                        :final-away-score="selectedCalendarMatch.away_score"
+                    />
+
+                    <!-- Repli : ancien résumé statique (matchs sans 'events' enregistrés) -->
+                    <div v-else class="grid grid-cols-2 gap-4">
 
                         <!-- HOME -->
                         <div>

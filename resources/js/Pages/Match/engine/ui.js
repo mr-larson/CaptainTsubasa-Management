@@ -279,7 +279,7 @@ function _detectType(key, details) {
     return ['unknown', 'neutral'];
 }
 
-export function pushLogEntry(logKeyOrText, details = [], diceTag = null, state) {
+export function pushLogEntry(logKeyOrText, details = [], diceTag = null, state, meta = null) {
     const main = TEXTS.logs[logKeyOrText] ?? logKeyOrText;
 
     const TECHNICAL_PATTERNS = [/^zone \d/i, /^defense:/i, /^ok bon/i, /^x mauvais/i, /^\(special/i];
@@ -310,6 +310,10 @@ export function pushLogEntry(logKeyOrText, details = [], diceTag = null, state) 
             text:       entry.mainText,
             details:    entry.details,
             diceTag:    entry.diceTag,
+            // Données structurées (IDs, zone, dés, stats) pour un futur replay
+            // visuel fidèle (positions des joueurs, jets de dés détaillés…).
+            // Peut être absent pour les anciens matchs / actions sans duel (kickoff, etc.).
+            meta:       meta ?? null,
         });
     }
 
