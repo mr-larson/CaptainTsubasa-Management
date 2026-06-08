@@ -7,7 +7,7 @@ const props = defineProps({
     gameSaves: { type: Array, required: true },
 });
 
-const play = (save) => router.get(route('game-saves.play', save.id));
+const play = (save) => router.get(route('game-saves.Play', save.id));
 
 const destroySave = (save) => {
     if (!confirm('Voulez-vous vraiment supprimer cette sauvegarde ?')) return;

@@ -1,4 +1,4 @@
-// resources/js/Pages/GameSaves/play/useTraining.js
+// resources/js/Pages/GameSaves/Play/useTraining.js
 import { ref, computed } from 'vue';
 import { router } from '@inertiajs/vue3';
 

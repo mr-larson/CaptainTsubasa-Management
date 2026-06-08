@@ -134,7 +134,7 @@ class GameMatchController extends Controller
         abort_unless((int) $match->game_save_id === (int) $gameSave->id, 404);
 
         if ($match->status === 'played') {
-            return redirect()->route('game-saves.play', $gameSave);
+            return redirect()->route('game-saves.Play', $gameSave);
         }
 
         $data = $request->validate([
@@ -223,7 +223,7 @@ class GameMatchController extends Controller
             return redirect()->route('game-saves.season-end', $gameSave);
         }
 
-        return redirect()->route('game-saves.play', $gameSave);
+        return redirect()->route('game-saves.Play', $gameSave);
     }
 
     /**
@@ -266,7 +266,7 @@ class GameMatchController extends Controller
             return redirect()->route('game-saves.season-end', $gameSave);
         }
 
-        return redirect()->route('game-saves.play', $gameSave);
+        return redirect()->route('game-saves.Play', $gameSave);
     }
 
     /**

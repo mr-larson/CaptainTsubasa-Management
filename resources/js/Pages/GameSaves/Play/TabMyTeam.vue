@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { FORMATIONS, FORMATION_LIST } from '@/Pages/Match/engine/formations.js';
 import { usePlayerUtils } from './usePlayerUtils.js';
-import TeamStyleBadges from "@/Pages/GameSaves/play/TeamStyleBadges.vue";
+import TeamStyleBadges from "@/Pages/GameSaves/Play/TeamStyleBadges.vue";
 
 const props = defineProps({
     rosterWithStatus:     { type: Array,   required: true },

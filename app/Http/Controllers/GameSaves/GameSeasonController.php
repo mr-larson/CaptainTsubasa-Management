@@ -20,7 +20,7 @@ class GameSeasonController extends Controller
         $this->authorizeSave($request, $gameSave);
 
         if ($gameSave->phase !== 'season_end') {
-            return redirect()->route('game-saves.play', $gameSave);
+            return redirect()->route('game-saves.Play', $gameSave);
         }
 
         $state = $gameSave->state ?? [];
@@ -40,7 +40,7 @@ class GameSeasonController extends Controller
         $this->authorizeSave($request, $gameSave);
 
         if ($gameSave->phase !== 'season_end') {
-            return redirect()->route('game-saves.play', $gameSave);
+            return redirect()->route('game-saves.Play', $gameSave);
         }
 
         app(SeasonService::class)->startNewSeason($gameSave);

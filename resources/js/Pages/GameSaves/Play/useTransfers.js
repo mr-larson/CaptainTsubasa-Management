@@ -1,4 +1,4 @@
-// resources/js/Pages/GameSaves/play/useTransfers.js
+// resources/js/Pages/GameSaves/Play/useTransfers.js
 import { ref, computed } from 'vue';
 import { router } from '@inertiajs/vue3';
 

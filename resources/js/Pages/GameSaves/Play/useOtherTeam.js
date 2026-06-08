@@ -1,4 +1,4 @@
-// resources/js/Pages/GameSaves/play/useOtherTeam.js
+// resources/js/Pages/GameSaves/Play/useOtherTeam.js
 import { ref, computed, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { FORMATIONS, DEFAULT_FORMATION, FORMATION_LIST } from '@/Pages/Match/engine/formations.js';

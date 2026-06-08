@@ -83,7 +83,7 @@
                     </li>
                     <li class="pt-2 flex">
                         <Link
-                            :href="route('game-saves.play', { gameSave: gameSave.id })"
+                            :href="route('game-saves.Play', { gameSave: gameSave.id })"
                             class="bg-slate-500 hover:bg-slate-600 border border-slate-300 text-white p-1 w-full rounded text-center text-xs"
                         >
                             Retour à la partie

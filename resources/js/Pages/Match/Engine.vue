@@ -26,7 +26,7 @@
                         <!-- Left: actions -->
                         <div class="flex items-center gap-3 justify-start">
                             <Link
-                                :href="route('game-saves.play', { gameSave: engineConfig.gameSaveId })"
+                                :href="route('game-saves.Play', { gameSave: engineConfig.gameSaveId })"
                                 class="bg-gradient-to-br from-slate-500 to-slate-600 hover:from-slate-600 hover:to-slate-700
                        font-semibold text-white py-1 px-5 border border-white/30 rounded-full drop-shadow-md"
                             >
@@ -449,7 +449,7 @@ onMounted(() => {
                 },
                 {
                     preserveScroll: true,
-                    onSuccess: () => router.visit(route('game-saves.play', { gameSave: gameSaveId })),
+                    onSuccess: () => router.visit(route('game-saves.Play', { gameSave: gameSaveId })),
                 }
             );
         },

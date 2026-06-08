@@ -23,7 +23,7 @@ class GameDraftController extends Controller
         $this->authorizeSave($request, $gameSave);
 
         if (!in_array($gameSave->phase, ['draft', 'intersaison_draft'], true)) {
-            return redirect()->route('game-saves.play', $gameSave);
+            return redirect()->route('game-saves.Play', $gameSave);
         }
 
         $gameTeams = GameTeam::with(['contracts.gamePlayer'])

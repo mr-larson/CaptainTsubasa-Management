@@ -277,7 +277,7 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import H2 from '@/Components/H2.vue';
 import H1 from '@/Components/H1.vue';
-import TeamStyleBadges from '@/Pages/GameSaves/play/TeamStyleBadges.vue';
+import TeamStyleBadges from '@/Pages/GameSaves/Play/TeamStyleBadges.vue';
 
 const props = defineProps({
     label:    { type: String, default: null },

@@ -101,7 +101,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/{gameSave}/season-end',  [GameSeasonController::class, 'show'])->name('season-end');
         Route::post('/{gameSave}/season-end/continue', [GameSeasonController::class, 'continue'])->name('season-end.continue');
         Route::get('/{gameSave}',      [GameSaveController::class, 'show'])->name('show');
-        Route::get('/{gameSave}/play', [GameSaveController::class, 'play'])->name('play');
+        Route::get('/{gameSave}/Play', [GameSaveController::class, 'play'])->name('Play');
         Route::put('/{gameSave}',      [GameSaveController::class, 'update'])->name('update');
         Route::delete('/{gameSave}',   [GameSaveController::class, 'destroy'])->name('destroy');
 

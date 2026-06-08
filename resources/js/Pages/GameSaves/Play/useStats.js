@@ -1,4 +1,4 @@
-// resources/js/Pages/GameSaves/play/useStats.js
+// resources/js/Pages/GameSaves/Play/useStats.js
 import { ref, computed } from 'vue';
 
 export function useStats({ gameSave, teams, team, roster, playerSeasonStats: playerSeasonStatsProp }) {

@@ -1,9 +1,12 @@
-// resources/js/Pages/GameSaves/play/useTeam.js
+// resources/js/Pages/GameSaves/Play/useTeam.js
 import { ref, computed, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { FORMATIONS, DEFAULT_FORMATION, FORMATION_LIST } from '@/Pages/Match/engine/formations.js';
+import { usePlayerUtils } from './usePlayerUtils.js';
 
 export function useTeam({ gameSave, team }) {
+    const { overallOf, playerPhotoUrl, teamLogoUrl } = usePlayerUtils();
+
 
     // ==========================
     //   ROSTER
@@ -51,14 +54,6 @@ export function useTeam({ gameSave, team }) {
     // ==========================
     //   OVERALL
     // ==========================
-    const overallOf = (player) => {
-        if (!player) return 0;
-        const s = player.stats ?? player;
-        const keys = ['speed','stamina','attack','defense','shot','pass','dribble','block','intercept','tackle','hand_save','punch_save'];
-        const values = keys.map(k => Number(s[k] ?? 0)).filter(v => Number.isFinite(v));
-        if (!values.length) return 0;
-        return Math.round(values.reduce((a, b) => a + b, 0) / values.length);
-    };
 
     // ==========================
     //   TOGGLE STARTER
@@ -202,14 +197,6 @@ export function useTeam({ gameSave, team }) {
     // ==========================
     //   HELPERS
     // ==========================
-    const playerPhotoUrl = (p) => {
-        if (!p) return null;
-        if (p.photo_path)        return `/storage/${p.photo_path}`;
-        if (p.player?.photo_path) return `/storage/${p.player.photo_path}`;
-        return null;
-    };
-
-
     // ==========================
     //   TERRAIN UNIFIÉ (coordonnées visuelles)
     // ==========================
@@ -245,17 +232,6 @@ export function useTeam({ gameSave, team }) {
     // ==========================
     //   HELPERS URL
     // ==========================
-    const teamLogoUrl = (t) => {
-        const path = t?.logo_path ?? t?.team?.logo_path;
-        if (!path) return null;
-        if (path.startsWith('http')) return path;
-        if (path.startsWith('/')) return path;
-        // logo_path = "teams/xxx.png" → "/images/teams/xxx.png"
-        if (path.startsWith('teams/')) return '/images/' + path;
-        // logo_path = "images/teams/xxx.webp" → "/images/teams/xxx.webp"
-        return '/' + path;
-    };
-
     // ==========================
     //   SWAP VISUEL (drag & click-to-swap)
     // ==========================

@@ -1,4 +1,4 @@
-// resources/js/Pages/GameSaves/play/usePlayerUtils.js
+// resources/js/Pages/GameSaves/Play/usePlayerUtils.js
 
 const STAT_KEYS = [
     'speed', 'stamina', 'attack', 'defense',

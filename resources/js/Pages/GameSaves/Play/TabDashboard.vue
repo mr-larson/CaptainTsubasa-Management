@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
-import TeamStyleBadges from "@/Pages/GameSaves/play/TeamStyleBadges.vue";
+import TeamStyleBadges from "@/Pages/GameSaves/Play/TeamStyleBadges.vue";
 
 const props = defineProps({
     gameSave:      { type: Object, required: true },
@@ -31,7 +31,7 @@ const props = defineProps({
     isPlayerSuspended:  { type: Function, default: () => false },
 });
 
-const emit = defineEmits(['play-next-match', 'simulate-week', 'save-game', 'quit', 'change-tab']);
+const emit = defineEmits(['Play-next-match', 'simulate-week', 'save-game', 'quit', 'change-tab']);
 
 // ==========================
 //   HELPERS
@@ -364,7 +364,7 @@ const matchesPlayed = computed(() =>
                         <button v-else type="button"
                                 class="px-6 py-1.5 rounded-full font-bold text-sm text-white shadow-sm transition-all hover:scale-105 active:scale-95"
                                 :class="nextMatchInfo.isHome ? 'bg-teal-500 hover:bg-teal-400' : 'bg-orange-500 hover:bg-orange-400'"
-                                @click="emit('play-next-match')">
+                                @click="emit('Play-next-match')">
                             ▶ Jouer
                         </button>
                     </div>

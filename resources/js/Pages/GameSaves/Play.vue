@@ -7,28 +7,28 @@ import H2 from '@/Components/H2.vue';
 // ==========================
 //   COMPOSABLES
 // ==========================
-import { useTeam }      from './play/useTeam.js';
-import { useDashboard } from './play/useDashboard.js';
-import { useCalendar }  from './play/useCalendar.js';
-import { useStats }     from './play/useStats.js';
-import { useTraining }  from './play/useTraining.js';
-import { useTransfers } from './play/useTransfers.js';
-import { useOtherTeam } from './play/useOtherTeam.js';
-import { useBonusCards } from './play/useBonusCards.js';
+import { useTeam }      from '@/Pages/GameSaves/Play/useTeam.js';
+import { useDashboard } from '@/Pages/GameSaves/Play/useDashboard.js';
+import { useCalendar }  from '@/Pages/GameSaves/Play/useCalendar.js';
+import { useStats }     from '@/Pages/GameSaves/Play/useStats.js';
+import { useTraining }  from '@/Pages/GameSaves/Play/useTraining.js';
+import { useTransfers } from '@/Pages/GameSaves/Play/useTransfers.js';
+import { useOtherTeam } from '@/Pages/GameSaves/Play/useOtherTeam.js';
+import { useBonusCards } from '@/Pages/GameSaves/Play/useBonusCards.js';
 
 // ==========================
 //   COMPOSANTS TABS
 // ==========================
-import TabDashboard  from './play/TabDashboard.vue';
-import TabMyTeam     from './play/TabMyTeam.vue';
-import TabOtherTeams from './play/TabOtherTeams.vue';
-import TabCalendar   from './play/TabCalendar.vue';
-import TabStandings  from './play/TabStandings.vue';
-import TabStats      from './play/TabStats.vue';
-import TabTraining   from './play/TabTraining.vue';
-import TabTransfers  from './play/TabTransfers.vue';
-import TabBonusCards     from './play/TabBonusCards.vue';
-import TabManagement from './play/TabManagement.vue';
+import TabDashboard  from '@/Pages/GameSaves/Play/TabDashboard.vue';
+import TabMyTeam     from '@/Pages/GameSaves/Play/TabMyTeam.vue';
+import TabOtherTeams from '@/Pages/GameSaves/Play/TabOtherTeams.vue';
+import TabCalendar   from '@/Pages/GameSaves/Play/TabCalendar.vue';
+import TabStandings  from '@/Pages/GameSaves/Play/TabStandings.vue';
+import TabStats      from '@/Pages/GameSaves/Play/TabStats.vue';
+import TabTraining   from '@/Pages/GameSaves/Play/TabTraining.vue';
+import TabTransfers  from '@/Pages/GameSaves/Play/TabTransfers.vue';
+import TabBonusCards     from '@/Pages/GameSaves/Play/TabBonusCards.vue';
+import TabManagement from '@/Pages/GameSaves/Play/TabManagement.vue';
 
 // ==========================
 //   PROPS INERTIA

@@ -226,7 +226,7 @@ class GameSaveController extends Controller
                 ->with('success', 'Partie créée — le draft commence !');
         }
 
-        return redirect()->route('game-saves.play', $gameSave)->with('success', 'Partie créée');
+        return redirect()->route('game-saves.Play', $gameSave)->with('success', 'Partie créée');
     }
 
     /**
@@ -450,7 +450,7 @@ class GameSaveController extends Controller
             return redirect()->route('game-saves.create')->with('info', 'Aucune partie existante.');
         }
 
-        return redirect()->route('game-saves.play', $lastSave);
+        return redirect()->route('game-saves.Play', $lastSave);
     }
 
     // ==========================
