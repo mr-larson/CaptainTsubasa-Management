@@ -22,7 +22,8 @@ class GameSave extends Model
         'label',
         'state',
         'phase' => 'string',
-        'phase'
+        'phase',
+        'game_mode',
     ];
 
 

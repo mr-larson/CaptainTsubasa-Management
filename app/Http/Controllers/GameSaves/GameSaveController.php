@@ -77,6 +77,7 @@ class GameSaveController extends Controller
             'season'  => 1,
             'week'    => 1,
             'phase'   => $isDraft ? 'draft' : 'season',
+            'game_mode' => $gameMode,
             'label'   => $data['label'] ?? null,
             'state'   => null,
         ]);
