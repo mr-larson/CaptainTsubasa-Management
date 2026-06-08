@@ -154,6 +154,12 @@ export function useCalendar({ matches, teams, team, week }) {
         selectedCalendarMatchStats.value?.progression ?? []
     );
 
+    // Déroulé du match (action par action) — disponible pour les matchs joués
+    // ET les matchs simulés par l'IA (voir buildMatchStats / MatchSimulator::buildEventEntry)
+    const selectedCalendarEvents = computed(() =>
+        selectedCalendarMatchStats.value?.events ?? []
+    );
+
     const selectedCalendarMyTeamStats = computed(() => {
         if (!selectedCalendarMatchStats.value || !calendarTeam.value || !selectedCalendarMatch.value) return null;
         const isHome = selectedCalendarMatch.value.home_team_id === calendarTeam.value.id;
@@ -183,6 +189,7 @@ export function useCalendar({ matches, teams, team, week }) {
         selectedCalendarMyTeamStats, selectedCalendarOpponentStats,
         selectedCalendarMatchStats, selectedCalendarPlayersStats,
         selectedCalendarProgression,
+        selectedCalendarEvents,
         openMatchStats,
     };
 }

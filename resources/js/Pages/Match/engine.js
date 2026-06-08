@@ -138,6 +138,7 @@ export function initMatchEngine(rootEl, config = {}) {
         specialCooldown:{},
         SPECIAL_COOLDOWN_TURNS: 2,
         touchHeat:      {},
+        matchLog:       [],
         actionEvents:   [],
         foulEvents:     [],
         substitutions:      [],
@@ -319,6 +320,8 @@ export function initMatchEngine(rootEl, config = {}) {
 
                     if (typeof matchConfig.onMatchEnd === "function") {
                         payload.match_stats = buildMatchStats(state.actionEvents, state.goalEvents);
+                        // Déroulé complet du match (action par action), pour le résumé post-match
+                        payload.match_stats.events = state.matchLog;
                         matchConfig.onMatchEnd(payload);
                     }
                 };

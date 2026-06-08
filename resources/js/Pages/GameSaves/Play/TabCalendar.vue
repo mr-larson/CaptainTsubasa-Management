@@ -17,6 +17,7 @@ const props = defineProps({
     isByeMatch:                    { type: Function, required: true },
     opponentNameForTeam:           { type: Function, required: true },
     selectedCalendarProgression: { type: Array, default: () => [] },
+    selectedCalendarEvents:      { type: Array, default: () => [] },
 });
 
 const emit = defineEmits(['select-team', 'open-match-stats']);
@@ -120,6 +121,30 @@ const isGK = (p) => p?.position?.toLowerCase().includes('goalkeeper');
 const showReplay = ref(false);
 
 watch(() => props.selectedCalendarMatch?.id, () => { showReplay.value = false; });
+
+// ==========================
+//   DÉROULÉ DU MATCH (action par action)
+//   Alimenté par `match_stats.events`, produit aussi bien par le moteur
+//   client (state.matchLog → buildMatchStats) que par MatchSimulator (PHP),
+//   afin d'afficher le même play-by-play pour les matchs joués et simulés.
+// ==========================
+const PLAY_LOG_ICONS = {
+    goal: '⚽', shot: '🔥', pass: '🎯', dribble: '🌀',
+    intercept: '🛡️', tackle: '⚔️', block: '🧱',
+    'card-yellow': '🟨', 'card-red': '🟥', foul: '⚠️',
+    kickoff: '🚩', injury: '🤕', substitution: '🔄',
+};
+
+function playLogIcon(ev) {
+    return PLAY_LOG_ICONS[ev?.actionType] ?? '▫️';
+}
+
+function playLogRowClass(ev) {
+    if (ev?.actionType === 'goal')                      return 'bg-emerald-100/80 border border-emerald-200';
+    if (ev?.result === 'attack')                        return 'bg-white/70';
+    if (ev?.result === 'defense' || ev?.result === 'failed') return 'bg-slate-100/70';
+    return 'bg-white/50';
+}
 
 const replayEvents = computed(() => {
     const stats = props.selectedCalendarMatchStats;
@@ -470,6 +495,39 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                             </div>
                         </div>
 
+                    </div>
+                </div>
+
+                <!-- ============================================ -->
+                <!-- BLOC : Déroulé du match (action par action)  -->
+                <!-- ============================================ -->
+                <div v-if="selectedCalendarEvents.length" class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                            📋 Déroulé du match (action par action)
+                        </h4>
+                        <span class="text-[10px] text-slate-400">
+                            {{ selectedCalendarEvents.length }} action{{ selectedCalendarEvents.length > 1 ? 's' : '' }}
+                        </span>
+                    </div>
+
+                    <div class="max-h-72 overflow-y-auto space-y-1 pr-1">
+                        <div v-for="(ev, i) in [...selectedCalendarEvents].reverse()" :key="i"
+                             class="flex items-start gap-2 px-2 py-1.5 rounded-lg text-[11px]"
+                             :class="playLogRowClass(ev)">
+                            <span class="shrink-0 font-mono text-[9px] px-1 py-0.5 rounded bg-white/70 text-slate-500">
+                                T{{ String(ev.turn).padStart(2, '0') }}
+                            </span>
+                            <span v-if="ev.team" class="w-2 h-2 rounded-full mt-1 shrink-0"
+                                  :class="ev.team === 'internal' ? 'bg-blue-400' : 'bg-orange-400'"></span>
+                            <span class="shrink-0">{{ playLogIcon(ev) }}</span>
+                            <div class="min-w-0">
+                                <div class="font-semibold text-slate-700">{{ ev.text }}</div>
+                                <div v-if="ev.details?.length" class="text-[10px] text-slate-400">
+                                    {{ ev.details.join(' · ') }}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

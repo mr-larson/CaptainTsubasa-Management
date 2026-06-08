@@ -118,6 +118,7 @@ const {
     selectedCalendarMatch, selectedCalendarMatchStats,
     selectedCalendarMyTeamStats, selectedCalendarOpponentStats,
     selectedCalendarPlayersStats, openMatchStats, selectedCalendarProgression,
+    selectedCalendarEvents,
 } = useCalendar({ matches: matchesRef, teams: teamsRef, team: teamRef, week });
 
 const playerSeasonStatsRef = computed(() => props.playerSeasonStats ?? {});
@@ -392,6 +393,7 @@ function updateOtherPlayerNumber(playerId, number) {
                                  :selectedCalendarOpponentStats="selectedCalendarOpponentStats"
                                  :selectedCalendarPlayersStats="selectedCalendarPlayersStats"
                                  :selectedCalendarProgression="selectedCalendarProgression"
+                                 :selectedCalendarEvents="selectedCalendarEvents"
                                  :isByeMatch="isByeMatch"
                                  :opponentNameForTeam="opponentNameForTeam"
                                  @select-team="selectCalendarTeam"

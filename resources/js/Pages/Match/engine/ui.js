@@ -296,7 +296,23 @@ export function pushLogEntry(logKeyOrText, details = [], diceTag = null, state) 
     const [actionType, result] = _detectType(logKeyOrText, d);
 
     // Après
-    _pushLog(new LogEntry({ turn: turns, actionType, team, result, mainText: main, details: d, diceTag }));
+    const entry = new LogEntry({ turn: turns, actionType, team, result, mainText: main, details: d, diceTag });
+    _pushLog(entry);
+
+    // Historique COMPLET (non plafonné par MAX_HISTORY) du déroulé du match,
+    // exploitable pour le résumé post-match (action par action) côté Tab Calendar.
+    if (state?.matchLog) {
+        state.matchLog.push({
+            turn:       entry.turn,
+            actionType: entry.actionType,
+            team:       entry.team,
+            result:     entry.result,
+            text:       entry.mainText,
+            details:    entry.details,
+            diceTag:    entry.diceTag,
+        });
+    }
+
     _triggerEventNotification(actionType, main, d);
 }
 

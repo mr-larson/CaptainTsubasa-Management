@@ -99,6 +99,7 @@ class MatchSimulator
             'away' => ['goals' => 0, 'shots' => 0, 'passes' => 0, 'dribbles' => 0, 'duelsWon' => 0, 'duelsLost' => 0],
         ];
         $goalEvents = [];
+        $events     = [];
 
         // État du ballon : équipe possédant, index de zone (0..MAX_ZONE_INDEX), face au gardien ?
         $side          = random_int(0, 1) ? 'home' : 'away';
@@ -174,6 +175,10 @@ class MatchSimulator
 
             $isGoal = $success && $action === 'shot';
 
+            // ----- Déroulé du match (action par action), miroir de `state.matchLog`
+            //       côté moteur client : exploité par le résumé de match (TabCalendar). -----
+            $events[] = $this->buildEventEntry($turn, $side, $action, $defAction, $success, $isGoal, $attacker, $defender, $zone, $frontOfKeeper);
+
             // ----- Enregistrement des stats joueurs -----
             if ($attacker) {
                 $pid = (string) $attacker->id;
@@ -237,9 +242,67 @@ class MatchSimulator
         $matchStats = [
             'teams'   => $teamStats,
             'players' => $playerStats,
+            'events'  => $events,
         ];
 
         return [$teamStats['home']['goals'], $teamStats['away']['goals'], $matchStats];
+    }
+
+    /**
+     * Construit une entrée de "déroulé du match" (action par action), au format
+     * miroir de `state.matchLog` côté moteur client (ui.js::pushLogEntry), pour
+     * que le résumé de match (TabCalendar) puisse afficher le play-by-play aussi
+     * bien pour les matchs simulés par l'IA que pour les matchs joués.
+     *
+     * Forme : { turn, actionType, team, result, text, details, diceTag }
+     */
+    private function buildEventEntry(
+        int $turn, string $side, string $action, string $defAction,
+        bool $success, bool $isGoal, $attacker, $defender, int $zone, bool $frontOfKeeper
+    ): array {
+        $actionLabels = [
+            'pass' => 'Passe', 'dribble' => 'Dribble', 'shot' => 'Tir',
+            'intercept' => 'Interception', 'tackle' => 'Tacle',
+            'block' => 'Contre', 'hands' => 'Arrêt (mains)', 'punch' => 'Dégagement (poing)',
+        ];
+
+        $attackerName = $attacker?->lastname ?? 'Joueur';
+        $defenderName = $defender?->lastname ?? 'Adversaire';
+        $actionLabel  = $actionLabels[$action] ?? ucfirst($action);
+
+        if ($isGoal) {
+            $actionType = 'goal';
+            $result     = 'attack';
+            $text       = "⚽ BUT ! {$attackerName} marque";
+        } elseif ($action === 'shot') {
+            $actionType = 'shot';
+            $result     = $success ? 'attack' : 'defense';
+            $text       = $success
+                ? "{$actionLabel} de {$attackerName} — cadré"
+                : "{$actionLabel} de {$attackerName} — arrêté par {$defenderName}";
+        } else {
+            $actionType = $action; // 'pass' | 'dribble'
+            $result     = $success ? 'attack' : 'defense';
+            $text       = $success
+                ? "{$actionLabel} réussi(e) par {$attackerName}"
+                : "{$actionLabel} de {$attackerName} contré(e) par {$defenderName}";
+        }
+
+        $details = [
+            "Zone " . ($zone + 1),
+            "Défense : {$actionLabels[$defAction]} ({$defenderName})",
+        ];
+        if ($frontOfKeeper) $details[] = 'Face au gardien';
+
+        return [
+            'turn'       => $turn,
+            'actionType' => $actionType,
+            'team'       => $side === 'home' ? 'internal' : 'external',
+            'result'     => $result,
+            'text'       => $text,
+            'details'    => $details,
+            'diceTag'    => null,
+        ];
     }
 
     // ==========================
