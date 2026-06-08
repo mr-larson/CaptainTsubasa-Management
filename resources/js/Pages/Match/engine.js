@@ -46,6 +46,16 @@ import {
     resetCaptainRerollActionFlag,
 } from './engine/resolvers.js';
 
+import { buildMatchStats } from './engine/matchStats.js';
+
+import {
+    initFoulsModule, resolveFoulOutcome,
+} from './engine/fouls.js';
+
+import {
+    initSubstitutionsModule, performSubstitution, aiCheckSubstitutions,
+} from './engine/substitutions.js';
+
 // ==========================
 //   EXPORT PRINCIPAL
 // ==========================
@@ -197,6 +207,17 @@ export function initMatchEngine(rootEl, config = {}) {
         updateTeamCard(ball);
     }
 
+    // Lie les boutons d'action (attaque/défense) générés dans la barre d'actions
+    // à leurs handlers. Réutilisé à chaque (re)génération de la barre.
+    function bindActionButtons() {
+        rootEl.querySelectorAll(".skill-card").forEach(btn =>
+            btn.addEventListener("click", () => handleAttackClick(btn.dataset.action))
+        );
+        rootEl.querySelectorAll(".def-card").forEach(btn =>
+            btn.addEventListener("click", () => handleDefenseClick(btn.dataset.defense))
+        );
+    }
+
     // ==========================
     //   INIT MODULES
     // ==========================
@@ -206,253 +227,18 @@ export function initMatchEngine(rootEl, config = {}) {
     initUIModule(rootEl, roster, ui, state, TEAMS);
     initAIModule(state, roster);
 
+    initFoulsModule({
+        state, roster, rootEl,
+        updateSideCard, pushLogEntry,
+    });
+
+    initSubstitutionsModule({
+        state, roster, rootEl,
+        getPlayerId, updateStaminaUI, updateTeamCard, pushLogEntry, refreshUI, isAITeam,
+    });
+
     state._moveBallFn = (team, number) => moveBallToPlayer(team, number, () => updateTeamCard(ball));
     state._applyKickoffFn = () => applyKickoffPositions(basePositions);
-
-    // ==========================
-    //   STATS DE FIN DE MATCH
-    // ==========================
-    function emptyPlayerMatchStats() {
-        return {
-            offense: {
-                pass:    { attempts: 0, success: 0 },
-                shot:    { attempts: 0, success: 0 },
-                dribble: { attempts: 0, success: 0 },
-                special: { attempts: 0, success: 0 },
-                goals:   0,
-            },
-            defense: {
-                intercept: { attempts: 0, success: 0 },
-                tackle:    { attempts: 0, success: 0 },
-                block:     { attempts: 0, success: 0 },
-                hands:     { attempts: 0, success: 0 },
-                punch:     { attempts: 0, success: 0 },
-                gkSpecial: { attempts: 0, success: 0 },
-            },
-            duelsWon: 0, duelsLost: 0,
-        };
-    }
-
-    function buildMatchStats(events, goalEvents = []) {
-        const out = {
-            players: {},
-            teams: {
-                home: { goals: 0, shots: 0, passes: 0, dribbles: 0, duelsWon: 0, duelsLost: 0 },
-                away: { goals: 0, shots: 0, passes: 0, dribbles: 0, duelsWon: 0, duelsLost: 0 },
-            },
-        };
-
-        // Pour résoudre l'équipe d'un buteur depuis son first action event
-        const playerTeamCache = {};
-
-        for (const ev of events) {
-            if (ev.attack?.game_player_id) {
-                const pid = ev.attack.game_player_id;
-                if (!out.players[pid]) out.players[pid] = emptyPlayerMatchStats();
-                if (!playerTeamCache[pid]) playerTeamCache[pid] = ev.attack.team;
-
-                const act = ev.attack.action;
-                if (act === "pass")    out.players[pid].offense.pass.attempts++;
-                if (act === "shot")    out.players[pid].offense.shot.attempts++;
-                if (act === "dribble") out.players[pid].offense.dribble.attempts++;
-                if (act === "special") out.players[pid].offense.special.attempts++;
-
-                const t = ev.attack.team === "internal" ? "home" : "away";
-
-                if (act === "pass")    out.teams[t].passes++;
-                if (act === "dribble") out.teams[t].dribbles++;
-
-                if (ev.result === "attack") {
-                    if (act === "pass")    out.players[pid].offense.pass.success++;
-                    if (act === "dribble") out.players[pid].offense.dribble.success++;
-
-                    if (act === "shot" || act === "special") {
-                        out.players[pid].offense.shot.success++;
-                        out.teams[t].shots++;
-                    }
-                    // ⚠️ Les buts ne sont PLUS comptés ici — voir étape 2 ci-dessous
-                    out.players[pid].duelsWon++;
-                    out.teams[t].duelsWon++;
-                } else if (ev.result === "defense") {
-                    out.players[pid].duelsLost++;
-                    out.teams[t].duelsLost++;
-                    if (act === "shot" || act === "special") out.teams[t].shots++;
-                }
-            }
-
-            if (ev.defense?.game_player_id) {
-                const pid = ev.defense.game_player_id;
-                if (!out.players[pid]) out.players[pid] = emptyPlayerMatchStats();
-                if (!playerTeamCache[pid]) playerTeamCache[pid] = ev.defense.team;
-
-                const def = ev.defense.action;
-                if (def === "intercept")  out.players[pid].defense.intercept.attempts++;
-                if (def === "tackle")     out.players[pid].defense.tackle.attempts++;
-                if (def === "block")      out.players[pid].defense.block.attempts++;
-                if (def === "hands")      out.players[pid].defense.hands.attempts++;
-                if (def === "punch")      out.players[pid].defense.punch.attempts++;
-                if (def === "gk-special") out.players[pid].defense.gkSpecial.attempts++;
-
-                if (ev.result === "defense") {
-                    if (def === "intercept")  out.players[pid].defense.intercept.success++;
-                    if (def === "tackle")     out.players[pid].defense.tackle.success++;
-                    if (def === "block")      out.players[pid].defense.block.success++;
-                    if (def === "hands")      out.players[pid].defense.hands.success++;
-                    if (def === "punch")      out.players[pid].defense.punch.success++;
-                    if (def === "gk-special") out.players[pid].defense.gkSpecial.success++;
-                    out.players[pid].duelsWon++;
-                } else if (ev.result === "attack") {
-                    out.players[pid].duelsLost++;
-                }
-            }
-        }
-
-        // ── Étape 2 : compter les buts depuis goalEvents (source de vérité) ──
-        for (const gev of goalEvents) {
-            const pid = gev.player_id;
-            if (!pid) continue;
-            if (!out.players[pid]) out.players[pid] = emptyPlayerMatchStats();
-            out.players[pid].offense.goals = (out.players[pid].offense.goals ?? 0) + 1;
-
-            const team = playerTeamCache[pid];
-            if (team) {
-                const t = team === "internal" ? "home" : "away";
-                out.teams[t].goals++;
-            }
-        }
-
-        return out;
-    }
-
-    // ==========================
-    //   REMPLACEMENTS
-    // ==========================
-    function performSubstitution(team, outSlot, inSlot) {
-        if (state.substitutionCount >= state.MAX_SUBSTITUTIONS) return false;
-        if (outSlot === inSlot) return false;
-
-        const outId = getPlayerId(team, outSlot);
-        const outEl = rootEl.querySelector(`[data-player="${outId}"]`);
-        if (!outEl) return false;
-
-        // ── Vérifier si le joueur a été expulsé (carton rouge) ──
-        const outDbId = roster.getPlayerInfo(team, outSlot)?.id ?? null;
-        const isRedCarded = state.foulEvents.some(
-            e => e.type === 'card' && e.card_type === 'red' && e.player_id === outDbId
-        );
-        const isDoubleYellow = state.foulEvents.filter(
-            e => e.type === 'card' && e.card_type === 'yellow' && e.player_id === outDbId
-        ).length >= 2;
-
-        if (isRedCarded || isDoubleYellow) return false;
-
-        const inId  = getPlayerId(team, inSlot);
-        const inEl  = rootEl.querySelector(`[data-player="${inId}"]`);
-
-        if (inEl) {
-            if (inEl.classList.contains('unavailable')) return false;
-            inEl.style.left = outEl.style.left;
-            inEl.style.top  = outEl.style.top;
-            if (outEl.dataset.zone) inEl.dataset.zone = outEl.dataset.zone;
-            outEl.classList.add('unavailable');
-        } else {
-            const inInfo = roster.getPlayerInfo(team, inSlot);
-            if (!inInfo) return false;
-            roster.rosters[team].set(outSlot, { ...inInfo, isStarter: true });
-            roster.rosters[team].set(inSlot, { ...inInfo, isAvailable: false });
-            const subNumber = 11 + state.substitutionCount + 1;
-            outEl.textContent       = String(subNumber);
-            outEl.dataset.jersey    = String(subNumber);
-            outEl.dataset.firstname = inInfo.firstname;
-            outEl.dataset.lastname  = inInfo.lastname;
-            outEl.dataset.position  = inInfo.position;
-            const inStamina = inInfo.stats?.stamina ?? 80;
-            state.stamina[outId]    = inStamina;
-            state.staminaMax[outId] = inStamina;
-            outEl.classList.remove('unavailable');
-            updateStaminaUI(outId, ball, () => updateTeamCard(ball));
-        }
-
-        if (state.ball.team === team && state.ball.number === outSlot) {
-            state._moveBallFn(team, outSlot);
-        }
-
-        const outInfo = roster.getPlayerInfo(team, outSlot);
-        const inInfo  = roster.getPlayerInfo(team, inSlot);
-
-        state.substitutions.push({
-            team, outSlot, inSlot,
-            turn:        state.turns,
-            outPlayerId: outInfo?.id ?? null,
-            inPlayerId:  inInfo?.id  ?? null,
-        });
-        state.substitutionCount++;
-
-        pushLogEntry('substitutionTitle', [
-            `🔄 ${outInfo?.lastname ?? '#' + outSlot} → ${inInfo?.lastname ?? '#' + inSlot}`,
-        ], null, state);
-
-        refreshUI();
-        return true;
-    }
-
-    function aiCheckSubstitutions() {
-        if (state.isGameOver) return;
-        if (state.substitutionCount >= state.MAX_SUBSTITUTIONS) return;
-
-        for (const aiTeam of ['internal', 'external']) {
-            if (!isAITeam(aiTeam)) continue;
-
-            for (let outSlot = 1; outSlot <= 11; outSlot++) {
-                const outId = getPlayerId(aiTeam, outSlot);
-                const outEl = rootEl.querySelector(`[data-player="${outId}"]`);
-                if (!outEl || outEl.classList.contains('unavailable')) continue;
-
-                // ── Ne pas remplacer un expulsé ──
-                const outDbId = roster.getPlayerInfo(aiTeam, outSlot)?.id ?? null;
-                const isExpulsed = state.foulEvents.some(
-                    e => e.type === 'card' && e.card_type === 'red' && e.player_id === outDbId
-                ) || state.foulEvents.filter(
-                    e => e.type === 'card' && e.card_type === 'yellow' && e.player_id === outDbId
-                ).length >= 2;
-                if (isExpulsed) continue;
-
-                const stMax = state.staminaMax[outId] ?? 100;
-                const stCur = state.stamina[outId]    ?? stMax;
-                const ratio = stMax > 0 ? stCur / stMax : 1;
-                if (ratio >= 0.5) continue;
-
-                const outInfo = roster.getPlayerInfo(aiTeam, outSlot);
-                const outPos  = outInfo?.position ?? '';
-
-                let bestInSlot = null;
-                let bestRatio  = 0;
-
-                const subsPool = roster.getSubs(aiTeam);
-                for (const { slot: inSlot, info: inInfo } of subsPool) {
-                    if (inInfo.isAvailable === false) continue;
-                    if (state.substitutions.some(s => s.inSlot === inSlot && s.team === aiTeam)) continue;
-
-                    const inStMax = state.staminaMax[getPlayerId(aiTeam, inSlot)] ?? 100;
-                    const inStCur = state.stamina[getPlayerId(aiTeam, inSlot)]    ?? inStMax;
-                    const inRatio = inStMax > 0 ? inStCur / inStMax : 1;
-
-                    const samePos = inInfo.position === outPos;
-                    if (samePos && inRatio > bestRatio) {
-                        bestRatio  = inRatio;
-                        bestInSlot = inSlot;
-                    } else if (!bestInSlot) {
-                        bestInSlot = inSlot;
-                    }
-                }
-
-                if (bestInSlot !== null) {
-                    performSubstitution(aiTeam, outSlot, bestInSlot);
-                    break;
-                }
-            }
-        }
-    }
 
     // ==========================
     //   ADVANCE TURN
@@ -548,82 +334,6 @@ export function initMatchEngine(rootEl, config = {}) {
     }
 
     // ==========================
-    //   FAUTES / CARTONS
-    // ==========================
-    function resolveFoulOutcome({ attackerId, defenderId, duelResult, aRoll, dRoll }) {
-        const getDbId = (domId) => {
-            if (!domId) return null;
-            const team = domId.startsWith('I') ? 'internal' : 'external';
-            const slot = parseInt(domId.slice(1), 10);
-            return roster.getPlayerInfo(team, slot)?.id ?? null;
-        };
-
-        const getPlayerName = (domId) => {
-            if (!domId) return '?';
-            const team = domId.startsWith('I') ? 'internal' : 'external';
-            const slot = parseInt(domId.slice(1), 10);
-            const info = roster.getPlayerInfo(team, slot);
-            return info ? `${info.firstname} ${info.lastname}`.trim() : domId;
-        };
-
-        const attackerDbId = getDbId(attackerId);
-        const defenderDbId = getDbId(defenderId);
-        const defenderName = getPlayerName(defenderId);
-
-        const isCritFailDefense = dRoll?.critFail ?? false;
-        const isTie             = duelResult === 'tie';
-
-        if (isCritFailDefense) {
-            state.foulEvents.push({ type: 'foul', fouler_player_id: defenderDbId, victim_player_id: attackerDbId, is_crit_fail: true });
-            const r = Math.random();
-            if (r < 0.15) {
-                state.foulEvents.push({ type: 'card', player_id: defenderDbId, card_type: 'red' });
-                const el = rootEl.querySelector(`[data-player="${defenderId}"]`);
-                if (el) el.classList.add('unavailable');
-                pushLogEntry('foulCardTitle', [`🟥 ${defenderName} — Carton rouge ! Expulsé !`], null, state);
-            } else if (r < 0.90) {
-                state.foulEvents.push({ type: 'card', player_id: defenderDbId, card_type: 'yellow' });
-                const matchYellows = state.foulEvents.filter(
-                    e => e.type === 'card' && e.card_type === 'yellow' && e.player_id === defenderDbId
-                ).length;
-                if (matchYellows >= 2) {
-                    const el = rootEl.querySelector(`[data-player="${defenderId}"]`);
-                    if (el) el.classList.add('unavailable');
-                    pushLogEntry('foulCardTitle', [`🟨🟨 ${defenderName} — Double jaune ! Expulsé !`], null, state);
-                } else {
-                    pushLogEntry('foulCardTitle', [`🟨 ${defenderName} — Carton jaune`], null, state);
-                }
-            } else {
-                pushLogEntry('foulTitle', [`⚠️ ${defenderName} — Faute`], null, state);
-            }
-        }
-
-        if (isTie && Math.random() < 0.25) {
-            state.foulEvents.push({ type: 'foul', fouler_player_id: defenderDbId, victim_player_id: attackerDbId, is_crit_fail: false });
-            if (Math.random() < 0.20) {
-                state.foulEvents.push({ type: 'card', player_id: defenderDbId, card_type: 'yellow' });
-                const matchYellows = state.foulEvents.filter(
-                    e => e.type === 'card' && e.card_type === 'yellow' && e.player_id === defenderDbId
-                ).length;
-                if (matchYellows >= 2) {
-                    const el = rootEl.querySelector(`[data-player="${defenderId}"]`);
-                    if (el) el.classList.add('unavailable');
-                    pushLogEntry('foulCardTitle', [`🟨🟨 ${defenderName} — Double jaune ! Expulsé !`], null, state);
-                } else {
-                    pushLogEntry('foulCardTitle', [`🟨 ${defenderName} — Carton jaune`], null, state);
-                }
-            }
-        }
-
-        if (defenderId) {
-            const defTeam   = defenderId.startsWith('I') ? 'internal' : 'external';
-            const defSlot   = parseInt(defenderId.slice(1), 10);
-            const defPrefix = defTeam === 'internal' ? 'home' : 'away';
-            updateSideCard(defPrefix, defTeam, defSlot);
-        }
-    }
-
-    // ==========================
     //   INIT RESOLVERS
     // ==========================
     initResolversModule({
@@ -638,14 +348,7 @@ export function initMatchEngine(rootEl, config = {}) {
         canUseSpecial,
         markSpecialUsed,
         resolveFoulOutcome,
-        bindActionButtons: () => {
-            rootEl.querySelectorAll(".skill-card").forEach(btn =>
-                btn.addEventListener("click", () => handleAttackClick(btn.dataset.action))
-            );
-            rootEl.querySelectorAll(".def-card").forEach(btn =>
-                btn.addEventListener("click", () => handleDefenseClick(btn.dataset.defense))
-            );
-        },
+        bindActionButtons,
     });
 
     state._performSubstitution = performSubstitution;
@@ -713,19 +416,10 @@ export function initMatchEngine(rootEl, config = {}) {
         // ── Reset du flag reroll capitaine avant chaque nouvelle action ──
         resetCaptainRerollActionFlag(state.currentTeam);
 
-        const bindFn = () => {
-            rootEl.querySelectorAll(".skill-card").forEach(btn =>
-                btn.addEventListener("click", () => handleAttackClick(btn.dataset.action))
-            );
-            rootEl.querySelectorAll(".def-card").forEach(btn =>
-                btn.addEventListener("click", () => handleDefenseClick(btn.dataset.defense))
-            );
-        };
-
         setActionBar(
             buildAttackActionsHTML(ball, roster),
             `mode-attack-${state.currentTeam}`,
-            ball, roster, bindFn, state.isKickoff
+            ball, roster, bindActionButtons, state.isKickoff
         );
 
         const defTeam      = otherTeam(state.currentTeam);
@@ -809,15 +503,6 @@ export function initMatchEngine(rootEl, config = {}) {
         const defPrefix = defTeam === "internal" ? "home" : "away";
         updateSideCard(defPrefix, defTeam, state.pendingDefenseContext.defenderSlot || 6);
 
-        const bindFn = () => {
-            rootEl.querySelectorAll(".skill-card").forEach(btn =>
-                btn.addEventListener("click", () => handleAttackClick(btn.dataset.action))
-            );
-            rootEl.querySelectorAll(".def-card").forEach(btn =>
-                btn.addEventListener("click", () => handleDefenseClick(btn.dataset.defense))
-            );
-        };
-
         let html;
         // Après
         const specialMoves = roster.getSpecialMoves(state.currentTeam, ball.number).filter(m => m?.mode === "attack");
@@ -857,7 +542,7 @@ export function initMatchEngine(rootEl, config = {}) {
             );
         }
 
-        setActionBar(html, `mode-defense-${defTeam}`, ball, roster, bindFn, false);
+        setActionBar(html, `mode-defense-${defTeam}`, ball, roster, bindActionButtons, false);
         if (isAITeam(defTeam)) scheduleAIDefense(action, defTeam);
     }
 
