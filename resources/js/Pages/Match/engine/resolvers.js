@@ -578,7 +578,7 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
     checkInjury(defenderId);
 
     if (attackType    === "special")       _markSpecialUsed(attackerId);
-    if (defenseAction === "field-special") _markSpecialUsed(defenderId);
+    if (defenseAction === "field-special") _markSpecialUsed(defenderId, "defense");
 
     const diceTag    = attackScore.toFixed(1) + "-" + defenseScore.toFixed(1);
     if (critWinner) {
@@ -1235,7 +1235,7 @@ export function resolveShotKeeperDuel(ctx, defenseAction) {
     checkInjury(keeperId);
     if (keeperId) applyStaminaCost(keeperId, "defenseGK", defenseAction);
     if (isSpecial) _markSpecialUsed(attackerId);
-    if (defenseAction === "gk-special" && keeperId) _markSpecialUsed(keeperId);
+    if (defenseAction === "gk-special" && keeperId) _markSpecialUsed(keeperId, "defense");
 
     b.frontOfKeeper = false;
     resetLastDribbler();

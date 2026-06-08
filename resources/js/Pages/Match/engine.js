@@ -181,14 +181,46 @@ export function initMatchEngine(rootEl, config = {}) {
         return onePlayerMode && team !== controlledTeam;
     }
 
-    function canUseSpecial(playerId) {
-        if (!playerId) return false;
-        return state.turns >= (state.specialCooldown[playerId] ?? 0);
+    // ── Cooldown PAR TECHNIQUE ───────────────────────────────
+    // state.specialCooldown[playerId] = { [moveKey]: turnDispoÀPartirDe }
+    // Chaque technique (Feuille morte, Passe fantôme, Dribble tornado,
+    // GK hand special, …) a son propre cooldown (champ `cooldown` du JSON
+    // special_moves), indépendant des autres techniques du joueur.
+    function teamSlotFromPlayerId(playerId) {
+        if (!playerId) return null;
+        return {
+            team: playerId.startsWith("I") ? "internal" : "external",
+            slot: parseInt(playerId.slice(1), 10),
+        };
     }
 
-    function markSpecialUsed(playerId) {
+    function specialMovesFor(playerId, mode) {
+        const ts = teamSlotFromPlayerId(playerId);
+        if (!ts) return [];
+        return roster.getSpecialMoves(ts.team, ts.slot).filter(m => m?.mode === mode);
+    }
+
+    function isMoveOffCooldown(playerId, move) {
+        if (!move) return false;
+        const readyAt = state.specialCooldown[playerId]?.[move.key];
+        return !readyAt || state.turns >= readyAt;
+    }
+
+    function canUseSpecial(playerId, mode = "attack") {
+        if (!playerId) return false;
+        const moves = specialMovesFor(playerId, mode);
+        return moves.some(move => isMoveOffCooldown(playerId, move));
+    }
+
+    function markSpecialUsed(playerId, mode = "attack") {
         if (!playerId) return;
-        state.specialCooldown[playerId] = state.turns + state.SPECIAL_COOLDOWN_TURNS;
+        const moves = specialMovesFor(playerId, mode);
+        if (!moves.length) return;
+        // On marque la technique effectivement disponible (donc utilisée) ;
+        // à défaut (déjà toutes en cooldown), on retombe sur la première.
+        const move = moves.find(m => isMoveOffCooldown(playerId, m)) ?? moves[0];
+        state.specialCooldown[playerId] = state.specialCooldown[playerId] ?? {};
+        state.specialCooldown[playerId][move.key] = state.turns + (move.cooldown ?? state.SPECIAL_COOLDOWN_TURNS);
     }
 
     function animateAndThen(cb) {
@@ -561,11 +593,11 @@ export function initMatchEngine(rootEl, config = {}) {
 
         if (defense === "field-special") {
             const defenderId = state.pendingDefenseContext?.defenderId ?? null;
-            if (defenderId && !canUseSpecial(defenderId)) defense = "block";
+            if (defenderId && !canUseSpecial(defenderId, "defense")) defense = "block";
         }
         if (defense === "gk-special") {
             const keeperId = getKeeperId(defenseTeam);
-            if (keeperId && !canUseSpecial(keeperId)) defense = "hands";
+            if (keeperId && !canUseSpecial(keeperId, "defense")) defense = "hands";
         }
 
         if ((attack === "shot" || attack === "special" || attack === "special-pass" || attack === "special-dribble") &&

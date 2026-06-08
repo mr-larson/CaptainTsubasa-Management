@@ -17,8 +17,16 @@ export function initAIModule(state, roster) {
 // -----------------------------------------------------------
 //   Helpers spéciaux
 // -----------------------------------------------------------
-function canUseSpecial(playerId, specialCooldown, turns) {
-    return turns >= (specialCooldown[playerId] ?? 0);
+// Cooldown PAR TECHNIQUE : specialCooldown[playerId] = { [moveKey]: turnDispoÀPartirDe }
+function moveIsReady(playerId, specialCooldown, turns, move) {
+    if (!move) return false;
+    const readyAt = specialCooldown[playerId]?.[move.key];
+    return !readyAt || turns >= readyAt;
+}
+
+// Vrai si AU MOINS UNE des techniques fournies est disponible (hors cooldown)
+function canUseSpecial(playerId, specialCooldown, turns, moves = []) {
+    return moves.some(move => moveIsReady(playerId, specialCooldown, turns, move));
 }
 
 // -----------------------------------------------------------
@@ -30,11 +38,7 @@ export function computeAIAttackChoice(ball, specialCooldown) {
     const playerId = getPlayerId(team, slot);
     const turns    = _state.turns;
 
-    const specials    = _roster.getSpecialMoves(team, slot).filter(m => m.mode === "attack");
-    const hasShotSp   = specials.some(m => m.base_action === "shot");
-    const hasPassSp   = specials.some(m => m.base_action === "pass");
-    const hasDribSp   = specials.some(m => m.base_action === "dribble");
-    const allowSpecial= canUseSpecial(playerId, specialCooldown, turns) && specials.length > 0;
+    const specials = _roster.getSpecialMoves(team, slot).filter(m => m.mode === "attack");
 
     // Helper : retourne le bon type d'action selon le base_action du move
     const specialAction = (move) => {
@@ -47,36 +51,39 @@ export function computeAIAttackChoice(ball, specialCooldown) {
     const dribSp = specials.find(m => m.base_action === "dribble");
     const shotSp = specials.find(m => m.base_action === "shot");
 
+    // Disponibilité PAR TECHNIQUE (cooldown indépendant pour chaque move)
+    const canUse = (move) => moveIsReady(playerId, specialCooldown, turns, move);
+
     if (_state.isKickoff || _state.keeperRestartMustPass) {
-        return (hasPassSp && allowSpecial) ? specialAction(passSp) : "pass";
+        return canUse(passSp) ? specialAction(passSp) : "pass";
     }
 
     if (ball.frontOfKeeper) {
-        return (hasShotSp && allowSpecial) ? specialAction(shotSp) : "shot";
+        return canUse(shotSp) ? specialAction(shotSp) : "shot";
     }
 
     const z = ball.zoneIndex;
 
     if (z <= 1) {
-        if (hasPassSp && allowSpecial && Math.random() < 0.30) return specialAction(passSp);
-        if (hasDribSp && allowSpecial && Math.random() < 0.25) return specialAction(dribSp);
+        if (canUse(passSp) && Math.random() < 0.30) return specialAction(passSp);
+        if (canUse(dribSp) && Math.random() < 0.25) return specialAction(dribSp);
         return Math.random() < 0.65 ? "pass" : "dribble";
     }
 
     if (z === 2) {
-        if (hasDribSp && allowSpecial && Math.random() < 0.40) return specialAction(dribSp);
-        if (hasPassSp && allowSpecial && Math.random() < 0.20) return specialAction(passSp);
+        if (canUse(dribSp) && Math.random() < 0.40) return specialAction(dribSp);
+        if (canUse(passSp) && Math.random() < 0.20) return specialAction(passSp);
         return Math.random() < 0.55 ? "dribble" : "pass";
     }
 
     if (z === 3) {
-        if (hasShotSp && allowSpecial && Math.random() < 0.25) return specialAction(shotSp);
-        if (hasDribSp && allowSpecial && Math.random() < 0.20) return specialAction(dribSp);
+        if (canUse(shotSp) && Math.random() < 0.25) return specialAction(shotSp);
+        if (canUse(dribSp) && Math.random() < 0.20) return specialAction(dribSp);
         return Math.random() < 0.60 ? "dribble" : "shot";
     }
 
     // zone 4 → tir
-    if (hasShotSp && allowSpecial && Math.random() < 0.50) return specialAction(shotSp);
+    if (canUse(shotSp) && Math.random() < 0.50) return specialAction(shotSp);
     return "shot";
 }
 
@@ -91,7 +98,7 @@ export function computeAIDefenseChoice(attackAction, defendingTeam, opts, specia
         : getPlayerId(defendingTeam, slot);
 
     const specials   = _roster.getSpecialMoves(defendingTeam, slot).filter(m => m.mode === "defense");
-    const canSpecial = specials.length > 0 && canUseSpecial(defenderId, specialCooldown, turns);
+    const canSpecial = canUseSpecial(defenderId, specialCooldown, turns, specials);
 
     if (isKeeperDuel) {
         if (canSpecial && Math.random() < 0.35) return "gk-special";
