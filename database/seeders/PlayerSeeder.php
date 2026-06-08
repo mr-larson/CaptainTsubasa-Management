@@ -2735,7 +2735,7 @@ class PlayerSeeder extends Seeder
                     'speed' => 62, 'stamina' => 74, 'defense' => 30, 'attack' => 14,
                     'shot' => 12, 'pass' => 16, 'dribble' => 14,
                     'block' => 26, 'intercept' => 24, 'tackle' => 20,
-                    'hand_save' => 33, 'punch_save' => 30,
+                    'hand_save' => 24, 'punch_save' => 25,
                 ],
                 'Gardien allemand grand et massif mais très agile. Il anticipe la direction des tirs en observant les pieds des tireurs, ce qui lui permet des réactions fulgurantes.'
             ],

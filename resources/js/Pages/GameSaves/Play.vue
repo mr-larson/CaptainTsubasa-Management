@@ -45,6 +45,7 @@ const props = defineProps({
     activeYellowCards: { type: Object, default: () => ({}) },
     bonusCardOffers:    { type: Array, default: () => [] },
     bonusCardInventory: { type: Array, default: () => [] },
+    managementStats:    { type: Object, default: () => ({}) },
 });
 
 // ==========================
@@ -481,6 +482,7 @@ function updateOtherPlayerNumber(playerId, number) {
                     <!-- ======== GESTION ======== -->
                     <TabManagement v-else-if="activeTab === 'management'"
                                    :gameSave="gameSave"
+                                   :managementStats="props.managementStats"
                     />
 
                 </div>

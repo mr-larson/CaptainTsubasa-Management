@@ -245,6 +245,27 @@ class GameSaveController extends Controller
             ->orderBy('firstname')
             ->get();
 
+        // ─── Récap pour l'onglet Gestion ───
+        $expiringContracts = GameContract::where('game_save_id', $gameSave->id)
+            ->whereBetween('end_week', [$currentWeek, $currentWeek + 4])
+            ->with(['gamePlayer', 'gameTeam'])
+            ->orderBy('end_week')
+            ->get()
+            ->map(fn($c) => [
+                'id'          => $c->id,
+                'player'      => $c->gamePlayer?->full_name ?? 'Joueur inconnu',
+                'team'        => $c->gameTeam?->name ?? 'Équipe inconnue',
+                'end_week'    => $c->end_week,
+            ]);
+
+        $managementStats = [
+            'playersCount'           => GamePlayer::where('game_save_id', $gameSave->id)->count(),
+            'teamsCount'             => $gameTeams->count(),
+            'activeContractsCount'   => $gameTeams->sum(fn($team) => $team->contracts->count()),
+            'freePlayersCount'       => $freePlayers->count(),
+            'expiringContracts'      => $expiringContracts,
+        ];
+
         // ─── Stats saison agrégées depuis game_matches.match_stats ───
         $playerSeasonStats = PlayerStatsService::aggregateForSave($gameSave);
 
@@ -348,6 +369,7 @@ class GameSaveController extends Controller
 
         return Inertia::render('GameSaves/Play', [
             'gameSave'            => $gameSave,
+            'managementStats'     => $managementStats,
             'teams'               => $gameTeams,
             'matches'             => $matches,
             'freePlayers'         => $freePlayers,

@@ -169,6 +169,47 @@ function positionColor(pos) {
     }[g] ?? 'bg-slate-100 text-slate-700';
 }
 
+const compareList = ref([]);
+
+function isComparing(player) {
+    return compareList.value.some(p => p.id === player.id);
+}
+
+function toggleCompare(player) {
+    const idx = compareList.value.findIndex(p => p.id === player.id);
+    if (idx !== -1) {
+        compareList.value.splice(idx, 1);
+        return;
+    }
+    if (compareList.value.length >= 2) compareList.value.shift();
+    compareList.value.push(player);
+}
+
+function clearCompare() {
+    compareList.value = [];
+}
+
+const compareStatRows = [
+    { key: 'overall', label: 'OVR', overall: true },
+    { key: 'speed', label: 'Vitesse' },
+    { key: 'stamina', label: 'Endurance' },
+    { key: 'shot', label: 'Tir' },
+    { key: 'pass', label: 'Passe' },
+    { key: 'dribble', label: 'Dribble' },
+    { key: 'attack', label: 'Attaque' },
+    { key: 'defense', label: 'Défense' },
+    { key: 'tackle', label: 'Tacle' },
+    { key: 'intercept', label: 'Interception' },
+    { key: 'block', label: 'Blocage' },
+    { key: 'hand_save', label: 'Main' },
+    { key: 'punch_save', label: 'Poing' },
+];
+
+function compareStatValue(player, key) {
+    if (key === 'overall') return overallOf(player);
+    return Number(player?.[key] ?? 0);
+}
+
 function canAfford(player) {
     return Math.floor((player.cost ?? 0) * seasonLength.value * 0.5) <= myBudget.value;
 }
@@ -583,10 +624,12 @@ onMounted(() => {
                                     <table class="w-full text-xs">
                                         <thead class="sticky top-0 bg-slate-50 border-b border-slate-200 z-10">
                                         <tr class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                                            <th class="text-left py-2 pl-3 pr-2">Joueur</th>
+                                            <th class="py-2 pl-3 pr-1 w-8 text-center" title="Comparer">⚖️</th>
+                                            <th class="text-left py-2 pl-1 pr-2">Joueur</th>
                                             <th class="text-center py-2 px-1 w-12">Poste</th>
                                             <th class="text-center py-2 px-1 w-10">OVR</th>
                                             <th class="text-center py-2 px-1 w-10">Vit</th>
+                                            <th class="text-center py-2 px-1 w-10">End</th>
                                             <th class="text-center py-2 px-1 w-10">Tir</th>
                                             <th class="text-center py-2 px-1 w-10">Pass</th>
                                             <th class="text-center py-2 px-1 w-10">Drib</th>
@@ -608,8 +651,16 @@ onMounted(() => {
                         ? 'hover:bg-amber-50 cursor-pointer'
                         : 'opacity-40'">
 
+                                            <!-- Comparer -->
+                                            <td class="py-1.5 pl-3 pr-1 text-center" @click.stop>
+                                                <input type="checkbox"
+                                                       :checked="isComparing(player)"
+                                                       @change="toggleCompare(player)"
+                                                       class="w-3.5 h-3.5 rounded border-slate-300 text-amber-500 focus:ring-amber-400 cursor-pointer"/>
+                                            </td>
+
                                             <!-- Joueur -->
-                                            <td class="py-1.5 pl-3 pr-2">
+                                            <td class="py-1.5 pl-1 pr-2">
                                                 <div class="flex items-center gap-2">
                                                     <div class="w-7 h-7 rounded-full overflow-hidden bg-slate-200 shrink-0">
                                                         <img v-if="player.photo_path" :src="`/storage/${player.photo_path}`"
@@ -643,6 +694,7 @@ onMounted(() => {
 
                                             <!-- Stats -->
                                             <td class="py-1.5 px-1 text-center text-slate-600 font-semibold">{{ player.speed ?? 0 }}</td>
+                                            <td class="py-1.5 px-1 text-center text-slate-600 font-semibold">{{ player.stamina ?? 0 }}</td>
                                             <td class="py-1.5 px-1 text-center text-slate-600 font-semibold">{{ player.shot ?? 0 }}</td>
                                             <td class="py-1.5 px-1 text-center text-slate-600 font-semibold">{{ player.pass ?? 0 }}</td>
                                             <td class="py-1.5 px-1 text-center text-slate-600 font-semibold">{{ player.dribble ?? 0 }}</td>
@@ -686,6 +738,48 @@ onMounted(() => {
                         </div>
                     </div>
                 </template>
+            </div>
+        </div>
+
+        <!-- Panneau de comparaison -->
+        <div v-if="compareList.length > 0"
+             class="fixed bottom-4 inset-x-0 z-50 flex justify-center px-4">
+            <div class="bg-white border border-slate-200 shadow-2xl rounded-2xl p-4 w-full max-w-2xl">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-bold text-slate-700">Comparaison de joueurs</h3>
+                    <button @click="clearCompare" class="text-xs text-slate-400 hover:text-slate-600 font-semibold">
+                        ✕ Fermer
+                    </button>
+                </div>
+
+                <div v-if="compareList.length < 2" class="text-xs text-slate-400 text-center py-4">
+                    Sélectionne un second joueur (⚖️) pour comparer.
+                </div>
+
+                <table v-else class="w-full text-xs">
+                    <thead>
+                    <tr class="text-slate-500">
+                        <th class="text-left py-1 px-2 font-semibold">Stat</th>
+                        <th class="text-center py-1 px-2 font-bold">{{ compareList[0].lastname }}</th>
+                        <th class="text-center py-1 px-2 font-bold">{{ compareList[1].lastname }}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="row in compareStatRows" :key="row.key" class="border-t border-slate-50">
+                        <td class="py-1 px-2 text-slate-500">{{ row.label }}</td>
+                        <td class="py-1 px-2 text-center font-semibold"
+                            :class="compareStatValue(compareList[0], row.key) > compareStatValue(compareList[1], row.key)
+                                ? 'text-emerald-600' : 'text-slate-600'">
+                            {{ compareStatValue(compareList[0], row.key) }}
+                        </td>
+                        <td class="py-1 px-2 text-center font-semibold"
+                            :class="compareStatValue(compareList[1], row.key) > compareStatValue(compareList[0], row.key)
+                                ? 'text-emerald-600' : 'text-slate-600'">
+                            {{ compareStatValue(compareList[1], row.key) }}
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </AuthenticatedLayout>
