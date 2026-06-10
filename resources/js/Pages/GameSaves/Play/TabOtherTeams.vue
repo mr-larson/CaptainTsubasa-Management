@@ -578,6 +578,7 @@ const hasNoPerf = computed(() => perfChips.value.every(c => c.val === 0));
                                     {label:'Block',   key:'block',    color:'bg-indigo-400'},
                                     {label:'Interc.', key:'intercept',color:'bg-purple-400'},
                                     {label:'Tacle',   key:'tackle',   color:'bg-pink-400'},
+                                    {label:'Tête',    key:'heading',  color:'bg-cyan-400'},
                                 ])" :key="stat.key" class="flex items-center gap-2 text-xs">
                                     <span class="w-16 text-slate-500 shrink-0 text-[11px]">{{ stat.label }}</span>
                                     <div class="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden">

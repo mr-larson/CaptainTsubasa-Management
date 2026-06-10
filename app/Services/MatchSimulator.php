@@ -128,7 +128,17 @@ class MatchSimulator
                     ? 'shot'
                     : (random_int(1, 10) <= 6 ? 'shot' : 'dribble');
             } else {
-                $action = $this->randomOffenseAction($attTeam->tactical_style);
+                $action = $this->randomOffenseAction($attTeam->tactical_style, $zone, $attPlayers);
+            }
+
+            // ----- Centre / Passe longue : résolution dédiée (checks multiples) -----
+            if ($action === 'cross' || $action === 'long_pass') {
+                $this->resolveCrossOrLongPass(
+                    $action, $attPlayers, $defPlayers, $defGK, $stamina,
+                    $playerStats, $teamStats, $events, $goalEvents,
+                    $side, $defSide, $zone, $frontOfKeeper, $turn, $isHomeAttacking
+                );
+                continue;
             }
 
             $attacker = $this->pickPlayerForAction($attPlayers, $action);
@@ -333,6 +343,7 @@ class MatchSimulator
                 'intercept' => (float) ($player->intercept ?? 0),
                 'tackle'    => (float) ($player->tackle    ?? 0),
                 'block'     => (float) ($player->block     ?? 0),
+                'heading'   => (float) ($player->heading   ?? 0),
                 default     => (float) ($player->defense   ?? 0),
             },
             'defenseGK' => match ($action) {
@@ -365,8 +376,8 @@ class MatchSimulator
         if (!$player) return;
 
         $costs = match ($category) {
-            'attack'       => ['shot' => 10, 'pass' => 6, 'dribble' => 4, 'special' => 15],
-            'defenseField' => ['intercept' => 3, 'tackle' => 3, 'block' => 5, 'field-special' => 10],
+            'attack'       => ['shot' => 10, 'pass' => 6, 'dribble' => 4, 'special' => 15, 'cross' => 18, 'long_pass' => 15],
+            'defenseField' => ['intercept' => 3, 'tackle' => 3, 'block' => 5, 'heading' => 5, 'field-special' => 10],
             'defenseGK'    => ['hands' => 5, 'punch' => 3, 'gk-special' => 10],
             default        => [],
         };
@@ -426,16 +437,25 @@ class MatchSimulator
      * Retourne la distribution d'actions offensives [pass_weight, dribble_weight, shot_weight]
      * sur 10 selon le style tactique d'une équipe.
      */
+    /**
+     * Distribution [pass, dribble, shot, cross] selon le style tactique.
+     */
     private function offenseDistributionFor(?string $tacticalStyle): array
     {
         return match ($tacticalStyle) {
-            TeamStyle::TACTICAL_OFFENSIVE  => [3, 3, 4], // tirs +++
-            TeamStyle::TACTICAL_DEFENSIVE  => [5, 3, 2], // passes sécurisées, peu de tirs
-            TeamStyle::TACTICAL_POSSESSION => [6, 2, 2], // passes ++++
-            TeamStyle::TACTICAL_COUNTER    => [3, 2, 5], // tirs rapides quand la balle arrive
-            TeamStyle::TACTICAL_BALANCED   => [4, 3, 3], // distribution actuelle
-            default                        => [4, 3, 3],
+            TeamStyle::TACTICAL_OFFENSIVE  => [2, 2, 3, 3], // centre fréquent
+            TeamStyle::TACTICAL_DEFENSIVE  => [4, 2, 2, 2], // centre rare
+            TeamStyle::TACTICAL_POSSESSION => [5, 2, 1, 2], // préfère construire
+            TeamStyle::TACTICAL_COUNTER    => [2, 1, 3, 4], // centre dominant
+            TeamStyle::TACTICAL_BALANCED   => [3, 2, 3, 2], // usage normal
+            default                        => [3, 2, 3, 2],
         };
+    }
+
+    /** Convertit l'index de zone du ballon (0..4) en zone "rôle" 1..4 (DEF..ATT). */
+    private function getPlayerZone(int $zoneIndex): int
+    {
+        return min(4, $zoneIndex + 1);
     }
 
     private function defenseDistributionFor(?string $tacticalStyle): array
@@ -449,14 +469,279 @@ class MatchSimulator
             default                        => [2, 2, 2],
         };
     }
-    private function randomOffenseAction(?string $tacticalStyle = null): string
+    /**
+     * Choisit l'action offensive en fonction du style tactique et de la zone
+     * (rôle) du porteur de balle. Cross/Long pass ne sont disponibles que
+     * pour certains rôles (cf. specs Centre / Passe longue).
+     */
+    private function randomOffenseAction(?string $tacticalStyle, int $zoneIndex, Collection $attPlayers): string
     {
-        [$pass, $dribble, $shot] = $this->offenseDistributionFor($tacticalStyle);
-        $total = $pass + $dribble + $shot;
+        [$pass, $dribble, $shot, $cross] = $this->offenseDistributionFor($tacticalStyle);
+        $zone = $this->getPlayerZone($zoneIndex);
+
+        $weights = ['pass' => $pass, 'dribble' => $dribble];
+
+        if ($zone === 1) {
+            // DEF : pas de tir/centre, mais passe longue possible
+            $weights['long_pass'] = $cross;
+        } elseif ($zone === 2) {
+            // MDF : centre possible, pas de tir
+            $weights['cross'] = $cross;
+        } elseif ($zone === 3) {
+            // MOF : tir + centre
+            $weights['shot']  = $shot;
+            $weights['cross'] = $cross;
+        } else {
+            // ATT : tir, et centre si 2+ attaquants titulaires
+            $weights['shot'] = $shot;
+            $attCount = $attPlayers->filter(fn($p) => (string) ($p->position ?? '') === 'Forward')->count();
+            if ($attCount >= 2) $weights['cross'] = $cross;
+        }
+
+        $total = array_sum($weights);
         $roll  = random_int(1, $total);
-        if ($roll <= $pass)               return 'pass';
-        if ($roll <= $pass + $dribble)    return 'dribble';
-        return 'shot';
+        $acc   = 0;
+        foreach ($weights as $action => $weight) {
+            $acc += $weight;
+            if ($roll <= $acc) return $action;
+        }
+
+        return 'pass';
+    }
+
+    /**
+     * Résout une action "Centre" (MDF/MOF/ATT) ou "Passe longue" (DEF),
+     * met à jour les stats joueurs/équipes, le déroulé du match, la stamina
+     * et l'état du ballon (zone, possession), miroir du moteur client.
+     */
+    private function resolveCrossOrLongPass(
+        string $action,
+        Collection $attPlayers,
+        Collection $defPlayers,
+        $defGK,
+        array &$stamina,
+        array &$playerStats,
+        array &$teamStats,
+        array &$events,
+        array &$goalEvents,
+        string &$side,
+        string $defSide,
+        int &$zone,
+        bool &$frontOfKeeper,
+        int $turn,
+        bool $isHomeAttacking
+    ): void {
+        $staminaOf = fn($p) => $stamina[(string) ($p->id ?? 0)] ?? self::ENDURANCE_DEFAULT;
+        $homeBonus = $isHomeAttacking ? self::HOME_BONUS : 0.0;
+        $awayBonus = $isHomeAttacking ? 0.0 : self::HOME_BONUS;
+
+        if ($action === 'long_pass') {
+            $attacker = $this->pickPlayerForAction($attPlayers, 'pass');
+
+            // Cible : meilleur allié par (pass + attack)
+            $target = $attPlayers
+                ->filter(fn($p) => $p->id !== ($attacker->id ?? null))
+                ->sortByDesc(fn($p) => ($p->pass ?? 0) + ($p->attack ?? 0))
+                ->first() ?? $attacker;
+
+            // Défenseur : meilleur intercepteur adverse
+            $defender = $defPlayers->sortByDesc(fn($p) => $p->intercept ?? 0)->first();
+
+            $attackScore  = ($attacker->pass ?? 0) * $this->staminaFactor($staminaOf($attacker)) + $homeBonus + $this->d20();
+            $defenseScore = ($defender->intercept ?? 0) * $this->staminaFactor($staminaOf($defender)) + self::GOOD_COUNTER_BONUS + $awayBonus + $this->d20();
+
+            $success = $attackScore > $defenseScore;
+
+            if ($attacker) {
+                $pid = (string) $attacker->id;
+                $playerStats[$pid] = $playerStats[$pid] ?? $this->emptyPlayerStats();
+                $playerStats[$pid]['offense']['long_pass']['attempts']++;
+                if ($success) $playerStats[$pid]['offense']['long_pass']['success']++;
+                $success ? $playerStats[$pid]['duelsWon']++ : $playerStats[$pid]['duelsLost']++;
+            }
+            if ($defender) {
+                $pid = (string) $defender->id;
+                $playerStats[$pid] = $playerStats[$pid] ?? $this->emptyPlayerStats();
+                $playerStats[$pid]['defense']['intercept']['attempts']++;
+                if (!$success) $playerStats[$pid]['defense']['intercept']['success']++;
+                $success ? $playerStats[$pid]['duelsLost']++ : $playerStats[$pid]['duelsWon']++;
+            }
+
+            $teamStats[$side]['passes']++;
+            if ($success) {
+                $teamStats[$side]['duelsWon']++;
+                $teamStats[$defSide]['duelsLost']++;
+            } else {
+                $teamStats[$side]['duelsLost']++;
+                $teamStats[$defSide]['duelsWon']++;
+            }
+
+            $this->applyStaminaCost($stamina, $attacker, 'long_pass', 'attack');
+            $this->applyStaminaCost($stamina, $defender, 'intercept', 'defenseField');
+
+            $events[] = [
+                'turn'       => $turn,
+                'actionType' => 'long_pass',
+                'team'       => $side === 'home' ? 'internal' : 'external',
+                'result'     => $success ? 'attack' : 'defense',
+                'text'       => $success
+                    ? "Passe longue de {$attacker?->lastname} trouve {$target?->lastname}"
+                    : "Passe longue de {$attacker?->lastname} interceptée par {$defender?->lastname}",
+                'details'    => ['Zone ' . ($zone + 1)],
+                'diceTag'    => null,
+            ];
+
+            if ($success) {
+                $zone = 2; // le MOF reçoit en zone 3 (1-indexée)
+            } else {
+                $side = $defSide;
+                $zone = self::MAX_ZONE_INDEX - $zone;
+            }
+            $frontOfKeeper = false;
+            return;
+        }
+
+        // ----- Centre -----
+        $crosser = $this->pickPlayerForAction($attPlayers, 'pass');
+        $crosserScore = ($crosser->pass ?? 0) * 0.7 + ($crosser->attack ?? 0) * 0.3;
+
+        $success = true;
+        $defenderForLog = null;
+
+        // MDF (zoneIndex 1 -> rôle MDF) : 1er check vs intercept du MOF adverse
+        if ($this->getPlayerZone($zone) === 2) {
+            $interceptDef = $defPlayers->sortByDesc(fn($p) => $p->intercept ?? 0)->first();
+            $defenderForLog = $interceptDef;
+            $attackScore  = $crosserScore * $this->staminaFactor($staminaOf($crosser)) + $homeBonus + $this->d20();
+            $defenseScore = ($interceptDef->intercept ?? 0) * $this->staminaFactor($staminaOf($interceptDef)) + self::GOOD_COUNTER_BONUS + $awayBonus + $this->d20();
+            $success = $attackScore > $defenseScore;
+
+            if ($interceptDef) {
+                $pid = (string) $interceptDef->id;
+                $playerStats[$pid] = $playerStats[$pid] ?? $this->emptyPlayerStats();
+                $playerStats[$pid]['defense']['intercept']['attempts']++;
+                if (!$success) $playerStats[$pid]['defense']['intercept']['success']++;
+            }
+            $this->applyStaminaCost($stamina, $interceptDef, 'intercept', 'defenseField');
+        }
+
+        // 2e check (ou seul check pour MOF/ATT) : heading du DEF adverse
+        $headingDef = null;
+        if ($success) {
+            $headingDef = $defPlayers->sortByDesc(fn($p) => (($p->heading ?? 0) * 0.8) + (($p->speed ?? 0) * 0.2))->first();
+            $defenderForLog = $headingDef ?? $defenderForLog;
+            $headingScore = (($headingDef->heading ?? 0) * 0.8) + (($headingDef->speed ?? 0) * 0.2);
+
+            $attackScore  = $crosserScore * $this->staminaFactor($staminaOf($crosser)) + $homeBonus + $this->d20();
+            $defenseScore = $headingScore * $this->staminaFactor($staminaOf($headingDef)) + self::GOOD_COUNTER_BONUS + $awayBonus + $this->d20();
+            $success = $attackScore > $defenseScore;
+
+            if ($headingDef) {
+                $pid = (string) $headingDef->id;
+                $playerStats[$pid] = $playerStats[$pid] ?? $this->emptyPlayerStats();
+                $playerStats[$pid]['defense']['heading']['attempts']++;
+                if (!$success) $playerStats[$pid]['defense']['heading']['success']++;
+            }
+            $this->applyStaminaCost($stamina, $headingDef, 'heading', 'defenseField');
+        }
+
+        if ($crosser) {
+            $pid = (string) $crosser->id;
+            $playerStats[$pid] = $playerStats[$pid] ?? $this->emptyPlayerStats();
+            $playerStats[$pid]['offense']['cross']['attempts']++;
+            if ($success) $playerStats[$pid]['offense']['cross']['success']++;
+            $success ? $playerStats[$pid]['duelsWon']++ : $playerStats[$pid]['duelsLost']++;
+        }
+        $this->applyStaminaCost($stamina, $crosser, 'cross', 'attack');
+
+        $teamStats[$side]['passes']++;
+        if ($success) {
+            $teamStats[$side]['duelsWon']++;
+            $teamStats[$defSide]['duelsLost']++;
+        } else {
+            $teamStats[$side]['duelsLost']++;
+            $teamStats[$defSide]['duelsWon']++;
+        }
+
+        if (!$success) {
+            $events[] = [
+                'turn'       => $turn,
+                'actionType' => 'cross',
+                'team'       => $side === 'home' ? 'internal' : 'external',
+                'result'     => 'defense',
+                'text'       => "Centre de {$crosser?->lastname} dégagé par {$defenderForLog?->lastname}",
+                'details'    => ['Zone ' . ($zone + 1)],
+                'diceTag'    => null,
+            ];
+            $side = $defSide;
+            $zone = self::MAX_ZONE_INDEX - $zone;
+            $frontOfKeeper = false;
+            return;
+        }
+
+        // Centre réussi : l'ATT receveur tire automatiquement avec bonus
+        $receiver = $attPlayers
+            ->sortByDesc(fn($p) => ($p->attack ?? 0) + ($p->shot ?? 0))
+            ->first() ?? $crosser;
+
+        $crosserZone = $this->getPlayerZone($zone);
+        $receiverIsForward = (string) ($receiver->position ?? '') === 'Forward';
+        $crosserIsForward  = (string) ($crosser->position ?? '') === 'Forward';
+        $shotBonus = ($crosserZone <= 2)
+            ? 1.15
+            : (($crosserIsForward && $receiverIsForward) ? 1.10 : 1.0);
+
+        $attackScore  = ($receiver->shot ?? 0) * $shotBonus * $this->staminaFactor($staminaOf($receiver)) + $homeBonus + $this->d20();
+        $defenseScore = ($defGK->hand_save ?? 0) * 0.9 * $this->staminaFactor($staminaOf($defGK)) + $awayBonus + $this->d20();
+
+        $isGoal = $attackScore > $defenseScore;
+
+        if ($receiver) {
+            $pid = (string) $receiver->id;
+            $playerStats[$pid] = $playerStats[$pid] ?? $this->emptyPlayerStats();
+            $playerStats[$pid]['offense']['shot']['attempts']++;
+            if ($isGoal) {
+                $playerStats[$pid]['offense']['shot']['success']++;
+                $playerStats[$pid]['offense']['goals']++;
+                $goalEvents[] = ['player_id' => $receiver->id, 'turn' => $turn];
+            }
+        }
+        if ($defGK) {
+            $pid = (string) $defGK->id;
+            $playerStats[$pid] = $playerStats[$pid] ?? $this->emptyPlayerStats();
+            $playerStats[$pid]['defense']['hands']['attempts']++;
+            if (!$isGoal) $playerStats[$pid]['defense']['hands']['success']++;
+        }
+        $this->applyStaminaCost($stamina, $receiver, 'shot', 'attack');
+        $this->applyStaminaCost($stamina, $defGK, 'hands', 'defenseGK');
+
+        if ($isGoal) {
+            $teamStats[$side]['goals']++;
+            $teamStats[$side]['shots']++;
+            $teamStats[$side]['duelsWon']++;
+            $teamStats[$defSide]['duelsLost']++;
+        } else {
+            $teamStats[$side]['shots']++;
+            $teamStats[$side]['duelsLost']++;
+            $teamStats[$defSide]['duelsWon']++;
+        }
+
+        $events[] = [
+            'turn'       => $turn,
+            'actionType' => $isGoal ? 'goal' : 'shot',
+            'team'       => $side === 'home' ? 'internal' : 'external',
+            'result'     => $isGoal ? 'attack' : 'defense',
+            'text'       => $isGoal
+                ? "⚽ BUT ! Centre de {$crosser?->lastname} repris par {$receiver?->lastname}"
+                : "Centre de {$crosser?->lastname} repris par {$receiver?->lastname} — arrêté",
+            'details'    => ['Zone ' . ($zone + 1)],
+            'diceTag'    => null,
+        ];
+
+        // La balle repart de zéro côté défenseur, but ou non
+        $side          = $defSide;
+        $zone          = 0;
+        $frontOfKeeper = false;
     }
 
     private function d20(): int
@@ -501,16 +786,19 @@ class MatchSimulator
     {
         return [
             'offense' => [
-                'pass'    => ['attempts' => 0, 'success' => 0],
-                'shot'    => ['attempts' => 0, 'success' => 0],
-                'dribble' => ['attempts' => 0, 'success' => 0],
-                'special' => ['attempts' => 0, 'success' => 0],
-                'goals'   => 0,
+                'pass'      => ['attempts' => 0, 'success' => 0],
+                'shot'      => ['attempts' => 0, 'success' => 0],
+                'dribble'   => ['attempts' => 0, 'success' => 0],
+                'special'   => ['attempts' => 0, 'success' => 0],
+                'cross'     => ['attempts' => 0, 'success' => 0],
+                'long_pass' => ['attempts' => 0, 'success' => 0],
+                'goals'     => 0,
             ],
             'defense' => [
                 'intercept' => ['attempts' => 0, 'success' => 0],
                 'tackle'    => ['attempts' => 0, 'success' => 0],
                 'block'     => ['attempts' => 0, 'success' => 0],
+                'heading'   => ['attempts' => 0, 'success' => 0],
                 'hands'     => ['attempts' => 0, 'success' => 0],
                 'punch'     => ['attempts' => 0, 'success' => 0],
                 'gkSpecial' => ['attempts' => 0, 'success' => 0],

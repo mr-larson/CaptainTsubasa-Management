@@ -201,6 +201,7 @@ const compareStatRows = [
     { key: 'tackle', label: 'Tacle' },
     { key: 'intercept', label: 'Interception' },
     { key: 'block', label: 'Blocage' },
+    { key: 'heading', label: 'Heading' },
     { key: 'hand_save', label: 'Main' },
     { key: 'punch_save', label: 'Poing' },
 ];
@@ -638,6 +639,7 @@ onMounted(() => {
                                             <th class="text-center py-2 px-1 w-10">Tac</th>
                                             <th class="text-center py-2 px-1 w-10">Int</th>
                                             <th class="text-center py-2 px-1 w-10">Blk</th>
+                                            <th class="text-center py-2 px-1 w-10">Hdg</th>
                                             <th class="text-center py-2 px-1 w-10">Main</th>
                                             <th class="text-center py-2 px-1 w-10">Poing</th>
                                             <th class="text-right py-2 px-2 w-16">Coût</th>
@@ -703,6 +705,7 @@ onMounted(() => {
                                             <td class="py-1.5 px-1 text-center text-slate-600 font-semibold">{{ player.tackle ?? 0 }}</td>
                                             <td class="py-1.5 px-1 text-center text-slate-600 font-semibold">{{ player.intercept ?? 0 }}</td>
                                             <td class="py-1.5 px-1 text-center text-slate-600 font-semibold">{{ player.block ?? 0 }}</td>
+                                            <td class="py-1.5 px-1 text-center text-slate-600 font-semibold">{{ player.heading ?? 0 }}</td>
                                             <td class="py-1.5 px-1 text-center text-violet-600 font-semibold">{{ player.hand_save ?? 0 }}</td>
                                             <td class="py-1.5 px-1 text-center text-fuchsia-600 font-semibold">{{ player.punch_save ?? 0 }}</td>
 

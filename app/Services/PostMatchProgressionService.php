@@ -123,7 +123,9 @@ class PostMatchProgressionService
         $shot = (int) min(self::STAT_MAX_PER_MATCH, round($shotScore));
         if ($shot > 0) $gains['shot'] = $shot;
 
-        $passScore = ($offense['pass']['success'] ?? 0) * 0.3;
+        $passScore = ($offense['pass']['success'] ?? 0) * 0.3
+            + ($offense['cross']['success'] ?? 0) * 0.3
+            + ($offense['long_pass']['success'] ?? 0) * 0.3;
         $pass = (int) min(self::STAT_MAX_PER_MATCH, round($passScore));
         if ($pass > 0) $gains['pass'] = $pass;
 

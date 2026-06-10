@@ -136,6 +136,7 @@ class GameSaveController extends Controller
                 'block'          => $player->block      ?? $s['block']      ?? 50,
                 'intercept'      => $player->intercept  ?? $s['intercept']  ?? 50,
                 'tackle'         => $player->tackle     ?? $s['tackle']     ?? 50,
+                'heading'        => $player->heading    ?? $s['heading']    ?? 15,
                 'hand_save'      => $player->hand_save  ?? $s['hand_save']  ?? 0,
                 'punch_save'     => $player->punch_save ?? $s['punch_save'] ?? 0,
                 'special_moves'  => $player->special_moves ?? [],

@@ -34,6 +34,7 @@ class Player extends Model
         'block'      => 50,
         'intercept'  => 50,
         'tackle'     => 50,
+        'heading'    => 15,
 
         'hand_save'  => 0,
         'punch_save' => 0,

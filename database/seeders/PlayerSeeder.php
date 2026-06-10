@@ -3500,7 +3500,7 @@ class PlayerSeeder extends Seeder
             $lastname = $player[1];
             $age = $player[2];
             $position = $player[3];
-            $cost = $this->calculateWeeklyCost($player[5]);
+            $cost = $this->calculateWeeklyCost($player[5], $position);
             $baseStats = $player[5];
             $desc = $player[6] ?? null;
 
@@ -3510,6 +3510,11 @@ class PlayerSeeder extends Seeder
             // PHOTO AUTO (si fichier existe)
             // -----------------------------
             $slug = Str::slug($firstname . ' ' . $lastname); // ex: taro-misaki
+
+            $headingOverride = $this->getHeadingOverride($slug);
+            if ($headingOverride !== null) {
+                $fullStats['heading'] = $headingOverride;
+            }
             $filename = $slug . '.png';
             $sourcePath = $imagesSourceDir . DIRECTORY_SEPARATOR . $filename;
             $destPath = $storageDir . '/' . $filename; // players/taro-misaki.png
@@ -3560,6 +3565,9 @@ class PlayerSeeder extends Seeder
         $handSave = max(5, (int)round($defense * 0.2));
         $punchSave = max(5, (int)round($defense * 0.15));
 
+        // par défaut, faible (attaquants/gardiens n'interviennent pas sur les centres)
+        $heading = 15;
+
         switch ($position) {
             case 'Forward':
                 $shot = (int)round(min(100, $attack * 1.05));
@@ -3570,12 +3578,14 @@ class PlayerSeeder extends Seeder
             case 'Midfielder':
                 $pass = (int)round(min(100, ($attack * 0.9 + $speed * 0.4) / 1.1));
                 $dribble = (int)round(min(100, ($attack * 0.85 + $speed * 0.4) / 1.1));
+                $heading = (int)round($defense * 0.3 + $block * 0.2 + $stamina * 0.1) + 15;
                 break;
 
             case 'Defender':
                 $block = (int)round(min(100, $block * 1.05));
                 $tackle = (int)round(min(100, $tackle * 1.05));
                 $intercept = (int)round(($defense * 0.8 + $speed * 0.3) / 1.1);
+                $heading = (int)round(min(100, $defense * 0.5 + $block * 0.3 + $stamina * 0.2));
                 break;
 
             case 'Goalkeeper':
@@ -3600,8 +3610,30 @@ class PlayerSeeder extends Seeder
                 'block' => $block,
                 'intercept' => $intercept,
                 'tackle' => $tackle,
+                'heading' => $heading,
                 'hand_save' => $handSave,
                 'punch_save' => $punchSave,
             ];
+    }
+
+    /**
+     * Overrides manuels de la stat heading pour des joueurs connus
+     * (slug "firstname-lastname"), au-delà du calcul automatique.
+     */
+    private function getHeadingOverride(string $slug): ?int
+    {
+        $overrides = [
+            'jito' => 42,
+            'soda' => 40,
+            'matsuyama' => 35,
+        ];
+
+        foreach ($overrides as $needle => $value) {
+            if (str_contains($slug, $needle)) {
+                return $value;
+            }
+        }
+
+        return null;
     }
 }

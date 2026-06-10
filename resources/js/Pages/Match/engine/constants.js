@@ -36,6 +36,8 @@ export const STAMINA_FACTORS = {
     EXHAUSTED: 0.40,  // = 0
 };
 
+export const STAMINA_COST_CROSS     = 18;
+export const STAMINA_COST_LONG_PASS = 15;
 export const STAMINA_COST_GLOBAL_SCALE = 1.0;
 export const CRIT_STAMINA_BOOST        = 10; // points récupérés sur un 20 naturel
 
@@ -155,6 +157,8 @@ export const TEXTS = {
             pass:    { icon: "➡️",  title: "Pass",    sub: "Passe avant" },
             dribble: { icon: "🌀",  title: "Dribble", sub: "Dribble un adversaire" },
             special: { icon: "🔥",  title: "Special", sub: "Action spéciale" },
+            cross:     { icon: "🎯", title: "Centre",       sub: "Centre dans la surface" },
+            long_pass: { icon: "🚀", title: "Passe longue", sub: "Lancement vers le milieu offensif" },
         },
         defenseField: {
             block:          { icon: "🧱", title: "Block",     sub: "Contre de tir" },
@@ -186,11 +190,14 @@ export const STATS = {
         pass:    { power: 10, cost: 6 },
         dribble: { power: 10, cost: 4  },
         special: { power: 12, cost: 15 },
+        cross:     { power: 10, cost: 18 },
+        long_pass: { power: 10, cost: 15 },
     },
     defenseField: {
         block:           { power: 10, cost: 5  },
         intercept:       { power: 10, cost: 3  },
         tackle:          { power: 10, cost: 3  },
+        heading:         { power: 10, cost: 5  },
         "field-special": { power: 12, cost: 10 },
     },
     defenseGK: {

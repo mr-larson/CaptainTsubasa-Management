@@ -34,6 +34,7 @@ export class RosterService {
                 stamina:    src.stamina    ?? 0,
                 hand_save:  src.hand_save  ?? 0,
                 punch_save: src.punch_save ?? 0,
+                heading:    src.heading    ?? 0,
             };
         };
 
@@ -187,6 +188,16 @@ export class RosterService {
             shot:    { stat: "shot",    bonus: "shot"    },
             special: { stat: "attack",  bonus: "attack"  },
         };
+        if (actionKey === "cross" || actionKey === "long_pass") {
+            const passStat   = this.getStat(team, slotNumber, "pass");
+            const attackStat = this.getStat(team, slotNumber, "attack");
+            const combined   = passStat * 0.7 + attackStat * 0.3;
+            let raw = base + combined * this.STAT_COEF;
+            raw *= this.positionBonusMultiplier(role, "pass");
+            raw *= this.globalAttackMultiplier(team, slotNumber);
+            return raw;
+        }
+
         const m = map[actionKey] ?? null;
         let raw = base;
         if (m) raw = base + this.getStat(team, slotNumber, m.stat) * this.STAT_COEF;
@@ -206,6 +217,16 @@ export class RosterService {
             const statKey = mapGK[defenseAction] ?? null;
             let raw = base + (statKey ? this.getStat(defenseTeam, defenseSlotNumber, statKey) * this.STAT_COEF : 0);
             raw *= this.positionBonusMultiplier(role, "gk");
+            raw *= this.globalDefenseMultiplier(defenseTeam, defenseSlotNumber);
+            return raw;
+        }
+
+        if (defenseAction === "heading") {
+            const headingStat = this.getStat(defenseTeam, defenseSlotNumber, "heading");
+            const speedStat   = this.getStat(defenseTeam, defenseSlotNumber, "speed");
+            const combined    = headingStat * 0.8 + speedStat * 0.2;
+            let raw = base + combined * this.STAT_COEF;
+            raw *= this.positionBonusMultiplier(role, "defend");
             raw *= this.globalDefenseMultiplier(defenseTeam, defenseSlotNumber);
             return raw;
         }

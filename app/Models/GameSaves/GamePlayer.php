@@ -29,6 +29,7 @@ class GamePlayer extends Model
         'block',
         'intercept',
         'tackle',
+        'heading',
         'hand_save',
         'punch_save',
         'cost',

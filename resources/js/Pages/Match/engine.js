@@ -42,6 +42,7 @@ import {
     initResolversModule,
     isGoodDefenseChoice, givePossessionOnTie,
     resolvePass, resolveDribble, resolveShot, resolveShotKeeperDuel,
+    resolveCross, resolveLongPass,
     performKeeperClearance, recordDuelEvent,
     resetCaptainRerollActionFlag,
 } from './engine/resolvers.js';
@@ -477,7 +478,7 @@ export function initMatchEngine(rootEl, config = {}) {
     function handleAttackClick(action) {
         if (state.isGameOver || state.isAnimating) return;
         if (state.turns >= GAME_RULES.MAX_TURNS || state.phase !== "attack") return;
-        if (!["shot","pass","dribble","special","special-pass","special-dribble"].includes(action)) return;
+        if (!["shot","pass","dribble","special","special-pass","special-dribble","cross","long_pass"].includes(action)) return;
 
         if (state.isKickoff) {
             if (action !== "pass") return;
@@ -486,6 +487,15 @@ export function initMatchEngine(rootEl, config = {}) {
         }
 
         if (ball.frontOfKeeper && action !== "shot" && action !== "special") return;
+
+        if (action === "cross" || action === "long_pass") {
+            const defTeam = otherTeam(state.currentTeam);
+            state.phase = "defense";
+            state.pendingAttack = action;
+            if (action === "cross") resolveCross(state.currentTeam, defTeam);
+            else resolveLongPass(state.currentTeam, defTeam);
+            return;
+        }
 
         // Après
         if (action === "special") {

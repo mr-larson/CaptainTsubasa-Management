@@ -44,6 +44,11 @@ trait HasSoccerStats
         return $this->getBaseStat('tackle');
     }
 
+    public function headingStat(): int
+    {
+        return $this->getBaseStat('heading');
+    }
+
     // --- Spé offensif / défensif ---
 
     public function offensiveSpecialStat(): int

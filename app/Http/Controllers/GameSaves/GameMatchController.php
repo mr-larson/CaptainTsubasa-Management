@@ -352,6 +352,17 @@ class GameMatchController extends Controller
                 }
                 $ordered->push([$slot, null]);
             }
+
+            // Comble les slots non résolus (lineup obsolète / IDs périmés) avec
+            // les titulaires restants, pour ne jamais afficher de slot vide
+            // tant qu'il reste des titulaires disponibles.
+            $ordered = $ordered->map(function (array $row) use (&$starters) {
+                [$slot, $c] = $row;
+                if ($c === null && $starters->isNotEmpty()) {
+                    $c = $starters->shift();
+                }
+                return [$slot, $c];
+            });
         } else {
             for ($slot = 1; $slot <= 11; $slot++) {
                 $ordered->push([$slot, $starters[$slot - 1] ?? null]);
@@ -367,9 +378,9 @@ class GameMatchController extends Controller
                     'is_starter' => false, 'photo_path' => null, 'photo_url' => null,
                     'stats' => null, 'special_moves' => [], 'is_available' => true,
                     'yellow_cards' => 0,
-                    'is_captain'                => $c->is_captain ?? false,
-                    'contract_id'               => $c->id,
-                    'captain_rerolls_remaining' => $c->captain_rerolls_remaining ?? 3,
+                    'is_captain'                => $c?->is_captain ?? false,
+                    'contract_id'               => $c?->id,
+                    'captain_rerolls_remaining' => $c?->captain_rerolls_remaining ?? 3,
                     'captain_reroll_used_this_action' => false,
                 ];
             }

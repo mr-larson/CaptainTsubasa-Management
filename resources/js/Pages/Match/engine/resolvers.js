@@ -834,6 +834,97 @@ function continuePass(attackTeam, defenseTeam, attackType, defenseAction, isSpec
 }
 
 // -----------------------------------------------------------
+//   resolveCross / resolveLongPass
+// -----------------------------------------------------------
+export function resolveCross(attackTeam, defenseTeam) {
+    const b = ball();
+    const duel = runFieldDuel({ attackTeam, defenseTeam, attackType: "cross", defenseAction: "heading" });
+    if (duel.duelResult === "pending_reroll") return;
+
+    if (duel.isTie) {
+        pushLogEntry("Duel equilibre (centre)", ["Defense: heading", getCounterTag("cross", "heading")], duel.diceTag, _state, duel.breakdown ?? null);
+        _state.phase = "attack"; _state.pendingAttack = null;
+        _animateAndThen(() => { _advanceTurn(defenseTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
+        return;
+    }
+
+    if (duel.duelResult === "attack") {
+        resetLastDribbler();
+        const passerSlot       = b.number;
+        const targetZone       = MAX_ZONE_INDEX;
+        const targetLane       = [0, 1, 2][Math.floor(Math.random() * 3)];
+        const receiver = pickReceiverInCell(attackTeam, targetZone, targetLane, passerSlot, passerSlot, { forwardOnly: true });
+
+        playPlayerAnimation(attackTeam, passerSlot, 'passer');
+        playPlayerAnimation(attackTeam, receiver, 'receiver');
+
+        _moveBall(attackTeam, receiver);
+        setMessage("Centre reussi !", _TEAMS[attackTeam].label + " trouve le n " + receiver + " dans la surface");
+        pushLogEntry("Centre reussi", ["Vers n " + receiver, "Defense: heading", getCounterTag("cross", "heading")], duel.diceTag, _state, duel.breakdown ?? null);
+        _animateAndThen(() => { _advanceTurn(attackTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
+        return;
+    }
+
+    const passerSlot = b.number;
+    resetLastDribbler();
+    const receiver = duel.defenderSlot ?? 5;
+
+    playPlayerAnimation(attackTeam, passerSlot, 'passer');
+    playPlayerAnimation(defenseTeam, receiver, 'receiver');
+
+    _moveBall(defenseTeam, receiver);
+    syncRecovererCard(defenseTeam, receiver);
+
+    setMessage("Centre repousse !", _TEAMS[defenseTeam].label + " degage avec le n " + receiver);
+    pushLogEntry("Centre repousse (tete)", ["Defense: heading", getCounterTag("cross", "heading")], duel.diceTag, _state, duel.breakdown ?? null);
+    _animateAndThen(() => { _advanceTurn(defenseTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
+}
+
+export function resolveLongPass(attackTeam, defenseTeam) {
+    const b = ball();
+    const duel = runFieldDuel({ attackTeam, defenseTeam, attackType: "long_pass", defenseAction: "intercept" });
+    if (duel.duelResult === "pending_reroll") return;
+
+    if (duel.isTie) {
+        pushLogEntry("Duel equilibre (passe longue)", ["Defense: intercept", getCounterTag("long_pass", "intercept")], duel.diceTag, _state, duel.breakdown ?? null);
+        _state.phase = "attack"; _state.pendingAttack = null;
+        _animateAndThen(() => { _advanceTurn(defenseTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
+        return;
+    }
+
+    if (duel.duelResult === "attack") {
+        resetLastDribbler();
+        const passerSlot = b.number;
+        const targetZone = 2; // zone MOF (index 0..4 → 2)
+        const targetLane = [0, 1, 2][Math.floor(Math.random() * 3)];
+        const receiver = pickReceiverInCell(attackTeam, targetZone, targetLane, passerSlot, passerSlot, { forwardOnly: true });
+
+        playPlayerAnimation(attackTeam, passerSlot, 'passer');
+        playPlayerAnimation(attackTeam, receiver, 'receiver');
+
+        _moveBall(attackTeam, receiver);
+        setMessage("Passe longue reussie !", _TEAMS[attackTeam].label + " trouve le n " + receiver);
+        pushLogEntry("Passe longue reussie", ["Vers n " + receiver, "Defense: intercept", getCounterTag("long_pass", "intercept")], duel.diceTag, _state, duel.breakdown ?? null);
+        _animateAndThen(() => { _advanceTurn(attackTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
+        return;
+    }
+
+    const passerSlot = b.number;
+    resetLastDribbler();
+    const receiver = duel.defenderSlot ?? 6;
+
+    playPlayerAnimation(attackTeam, passerSlot, 'passer');
+    playPlayerAnimation(defenseTeam, receiver, 'receiver');
+
+    _moveBall(defenseTeam, receiver);
+    syncRecovererCard(defenseTeam, receiver);
+
+    setMessage("Passe longue interceptee !", _TEAMS[defenseTeam].label + " recupere avec le n " + receiver);
+    pushLogEntry("Passe longue interceptee", ["Defense: intercept", getCounterTag("long_pass", "intercept")], duel.diceTag, _state, duel.breakdown ?? null);
+    _animateAndThen(() => { _advanceTurn(defenseTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
+}
+
+// -----------------------------------------------------------
 //   resolveDribble + continueDribble
 // -----------------------------------------------------------
 export function resolveDribble(attackTeam, defenseTeam, defenseAction, defenderPick = null, isSpecial = false) {

@@ -365,11 +365,11 @@ export function updateSideCard(prefix, team, slotNumber) {
     setText(`#${prefix}-team`,   _TEAMS[team].label);
 
     const stat = (k) => Number(info?.stats?.[k] ?? 0) || 0;
-    ["shot","pass","dribble","attack","block","intercept","tackle","defense","hand_save","punch_save"]
+    ["shot","pass","dribble","attack","block","intercept","tackle","heading","defense","hand_save","punch_save"]
         .forEach(k => setText(`#${prefix}-stat-${k}`, String(stat(k))));
 
     const isGK = (info?.position || "").toLowerCase().includes("goalkeeper");
-    ["block","intercept","tackle","dribble"].forEach(k => {
+    ["block","intercept","tackle","heading","dribble"].forEach(k => {
         const el = _rootEl.querySelector(`#${prefix}-stat-${k}`)?.parentElement;
         if (el) el.classList.toggle("hidden", isGK);
     });
@@ -558,7 +558,7 @@ export function updateCardsPower(ball) {
 
     _ui.actionBarEl.querySelectorAll(".skill-card").forEach((btn) => {
         const a   = btn.dataset.action;
-        const map = { pass: "pass", dribble: "dribble", shot: "shot", special: "attack" };
+        const map = { pass: "pass", dribble: "dribble", shot: "shot", special: "attack", cross: "pass", long_pass: "pass" };
         const el  = btn.querySelector(".skill-power");
         if (el) el.textContent = String(Number(carrierStats[map[a]] ?? 0));
     });
@@ -657,10 +657,32 @@ function buildDefCard(defKey, cfg) {
 export function buildAttackActionsHTML(ball, roster) {
     const cfg      = TEXTS.cards.attack;
     const specials = roster.getSpecialMoves(ball.team, ball.number).filter(m => m?.mode === "attack");
+    const zone     = Math.min(4, (ball.zoneIndex ?? 0) + 1); // 1=DEF,2=MDF,3=MOF,4=ATT
+
+    let forwardCount = 0;
+    for (const p of roster.rosters[ball.team].values()) {
+        if (p?.isStarter && (p.position || "").toLowerCase().includes("forward")) forwardCount++;
+    }
+
+    let extraHTML = "";
+    if (zone === 1) {
+        extraHTML = buildSkillCard("long_pass", cfg.long_pass);
+    } else if (zone === 2) {
+        extraHTML = buildSkillCard("cross", cfg.cross);
+    } else if (zone === 3) {
+        extraHTML = buildSkillCard("cross", cfg.cross);
+    } else {
+        if (forwardCount >= 2) {
+            extraHTML = buildSkillCard("cross", cfg.cross);
+        }
+    }
+
+    const showShot = zone >= 3;
     return `<div id="attack-strip">
-        ${buildSkillCard("shot",    cfg.shot)}
+        ${showShot ? buildSkillCard("shot", cfg.shot) : ""}
         ${buildSkillCard("pass",    cfg.pass)}
         ${buildSkillCard("dribble", cfg.dribble)}
+        ${extraHTML}
         ${specials.length ? buildSkillCard("special", cfg.special) : ""}
     </div>`;
 }

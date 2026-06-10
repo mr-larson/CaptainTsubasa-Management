@@ -292,6 +292,7 @@
 }
 
 #attack-strip, #defense-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; align-items: stretch; }
+#attack-strip:has(.skill-card:nth-child(5)) { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 #defense-strip:has(.def-card[data-defense="hands"]), #defense-strip:has(.def-card[data-defense="punch"]) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 @media (max-width: 900px) { #attack-strip, #defense-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
