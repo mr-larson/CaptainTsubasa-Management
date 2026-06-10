@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\TeamStyle;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -37,6 +38,9 @@ class TeamRequest extends FormRequest
 
             'logo'        => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'remove_logo' => ['nullable', 'boolean'],
+
+            'tactical_style'         => ['nullable', Rule::in(TeamStyle::TACTICAL_STYLES)],
+            'management_philosophy'  => ['nullable', Rule::in(TeamStyle::PHILOSOPHIES)],
         ];
     }
 }

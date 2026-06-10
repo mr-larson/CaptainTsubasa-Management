@@ -168,6 +168,38 @@
                             </p>
                         </FormCol>
                         <FormCol>
+                            <InputLabel for="tactical_style" value="Style tactique" />
+                            <select
+                                id="tactical_style"
+                                v-model="form.tactical_style"
+                                class="mt-1 w-full rounded border border-gray-300 bg-stone-50 text-sm text-gray-900 focus:outline-none focus:bg-white focus:border-purple-300"
+                            >
+                                <option v-for="style in tacticalStyles" :key="style" :value="style">
+                                    {{ tacticalLabel(style) }} {{ tacticalIcon(style) }}
+                                </option>
+                            </select>
+                            <p v-if="form.errors.tactical_style" class="text-sm text-red-600 mt-1">
+                                {{ form.errors.tactical_style }}
+                            </p>
+                        </FormCol>
+
+                        <FormCol>
+                            <InputLabel for="management_philosophy" value="Philosophie de gestion" />
+                            <select
+                                id="management_philosophy"
+                                v-model="form.management_philosophy"
+                                class="mt-1 w-full rounded border border-gray-300 bg-stone-50 text-sm text-gray-900 focus:outline-none focus:bg-white focus:border-purple-300"
+                            >
+                                <option v-for="philosophy in philosophies" :key="philosophy" :value="philosophy">
+                                    {{ philosophyLabel(philosophy) }} {{ philosophyIcon(philosophy) }}
+                                </option>
+                            </select>
+                            <p v-if="form.errors.management_philosophy" class="text-sm text-red-600 mt-1">
+                                {{ form.errors.management_philosophy }}
+                            </p>
+                        </FormCol>
+
+                        <FormCol>
                             <InputLabel value="Logo" />
 
                             <div class="mt-1 flex flex-col gap-2">
@@ -294,6 +326,12 @@ import InputText from '@/Components/InputText.vue';
 import ButtonGroup from '@/Components/ButtonGroup.vue';
 import ButtonPrimary from '@/Components/ButtonPrimary.vue';
 import ButtonDanger from '@/Components/ButtonDanger.vue';
+import { useTeamStyles } from '@/Pages/GameSaves/Play/useTeamStyles.js';
+import { TACTICAL_STYLES, PHILOSOPHIES } from '@/Enums/teamStyle.js';
+
+const { tacticalLabel, tacticalIcon, philosophyLabel, philosophyIcon } = useTeamStyles();
+const tacticalStyles = TACTICAL_STYLES;
+const philosophies = PHILOSOPHIES;
 
 const props = defineProps({
     teams: {
@@ -314,6 +352,8 @@ const form = useForm({
     logo: null,
     remove_logo: false,
     logo_path: null,
+    tactical_style: 'balanced',
+    management_philosophy: 'collective',
 });
 
 const searchQuery = ref('');
@@ -374,6 +414,9 @@ function selectTeam(team) {
     form.wins           = team.wins ?? 0;
     form.draws          = team.draws ?? 0;
     form.losses         = team.losses ?? 0;
+
+    form.tactical_style        = team.tactical_style ?? 'balanced';
+    form.management_philosophy = team.management_philosophy ?? 'collective';
 
     // AJOUT LOGO
     form.logo_path      = team.logo_path ?? null;

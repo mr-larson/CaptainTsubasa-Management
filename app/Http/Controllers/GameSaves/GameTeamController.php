@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\GameSaves;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\GameTeamRequest;
+use App\Http\Requests\GameSaves\GameTeamRequest;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
 use Illuminate\Http\Request;

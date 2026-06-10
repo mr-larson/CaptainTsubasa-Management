@@ -180,6 +180,13 @@
 
                         <FormRaw>
                             <FormCol>
+                                <InputLabel value="Tête" />
+                                <InputText type="number" v-model="form.heading" class="mt-1 w-full" />
+                            </FormCol>
+                        </FormRaw>
+
+                        <FormRaw>
+                            <FormCol>
                                 <InputLabel value="Arrêt main" />
                                 <InputText type="number" v-model="form.hand_save" class="mt-1 w-full" />
                             </FormCol>
@@ -349,6 +356,7 @@ const form = useForm({
     block: 0,
     intercept: 0,
     tackle: 0,
+    heading: 0,
     hand_save: 0,
     punch_save: 0,
     special_moves: [],

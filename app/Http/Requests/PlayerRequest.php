@@ -44,6 +44,7 @@ class PlayerRequest extends FormRequest
             'stats.block'      => ['nullable', 'integer', 'min:0', 'max:100'],
             'stats.intercept'  => ['nullable', 'integer', 'min:0', 'max:100'],
             'stats.tackle'     => ['nullable', 'integer', 'min:0', 'max:100'],
+            'stats.heading'    => ['nullable', 'integer', 'min:0', 'max:100'],
             'stats.hand_save'  => ['nullable', 'integer', 'min:0', 'max:100'],
             'stats.punch_save' => ['nullable', 'integer', 'min:0', 'max:100'],
 

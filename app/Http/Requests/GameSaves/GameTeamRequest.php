@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\GameSaves;
 
+use App\Enums\TeamStyle;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class GameTeamRequest extends FormRequest
 {
@@ -29,6 +31,9 @@ class GameTeamRequest extends FormRequest
 
             // Seulement en cas de préparation pour edit()
             'logo_path'   => ['nullable', 'string'],
+
+            'tactical_style'        => ['nullable', Rule::in(TeamStyle::TACTICAL_STYLES)],
+            'management_philosophy' => ['nullable', Rule::in(TeamStyle::PHILOSOPHIES)],
         ];
     }
 }

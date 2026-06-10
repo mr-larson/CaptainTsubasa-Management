@@ -41,6 +41,7 @@ class GamePlayerRequest extends FormRequest
             'block'        => ['nullable', 'integer', 'min:0', 'max:100'],
             'intercept'    => ['nullable', 'integer', 'min:0', 'max:100'],
             'tackle'       => ['nullable', 'integer', 'min:0', 'max:100'],
+            'heading'      => ['nullable', 'integer', 'min:0', 'max:100'],
             'hand_save'    => ['nullable', 'integer', 'min:0', 'max:100'],
             'punch_save'   => ['nullable', 'integer', 'min:0', 'max:100'],
 

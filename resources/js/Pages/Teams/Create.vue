@@ -97,6 +97,40 @@
                             </FormCol>
                         </FormRaw>
 
+                        <FormRaw>
+                            <FormCol>
+                                <InputLabel for="tactical_style" value="Style tactique" />
+                                <select
+                                    id="tactical_style"
+                                    v-model="form.tactical_style"
+                                    class="mt-1 w-full rounded border border-gray-300 bg-stone-50 text-sm text-gray-900 focus:outline-none focus:bg-white focus:border-purple-300"
+                                >
+                                    <option v-for="style in tacticalStyles" :key="style" :value="style">
+                                        {{ tacticalLabel(style) }} {{ tacticalIcon(style) }}
+                                    </option>
+                                </select>
+                                <p v-if="form.errors.tactical_style" class="text-sm text-red-600 mt-1">
+                                    {{ form.errors.tactical_style }}
+                                </p>
+                            </FormCol>
+
+                            <FormCol>
+                                <InputLabel for="management_philosophy" value="Philosophie de gestion" />
+                                <select
+                                    id="management_philosophy"
+                                    v-model="form.management_philosophy"
+                                    class="mt-1 w-full rounded border border-gray-300 bg-stone-50 text-sm text-gray-900 focus:outline-none focus:bg-white focus:border-purple-300"
+                                >
+                                    <option v-for="philosophy in philosophies" :key="philosophy" :value="philosophy">
+                                        {{ philosophyLabel(philosophy) }} {{ philosophyIcon(philosophy) }}
+                                    </option>
+                                </select>
+                                <p v-if="form.errors.management_philosophy" class="text-sm text-red-600 mt-1">
+                                    {{ form.errors.management_philosophy }}
+                                </p>
+                            </FormCol>
+                        </FormRaw>
+
                         <!-- ✅ LOGO UPLOAD -->
                         <FormRaw>
                             <FormCol>
@@ -184,6 +218,12 @@ import FormRaw from '@/Components/FormRaw.vue';
 import FormCol from '@/Components/FormCol.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import InputText from '@/Components/InputText.vue';
+import { useTeamStyles } from '@/Pages/GameSaves/Play/useTeamStyles.js';
+import { TACTICAL_STYLES, PHILOSOPHIES } from '@/Enums/teamStyle.js';
+
+const { tacticalLabel, tacticalIcon, philosophyLabel, philosophyIcon } = useTeamStyles();
+const tacticalStyles = TACTICAL_STYLES;
+const philosophies = PHILOSOPHIES;
 
 const form = useForm({
     name: '',
@@ -191,6 +231,8 @@ const form = useForm({
     wins: 0,
     losses: 0,
     draws: 0,
+    tactical_style: 'balanced',
+    management_philosophy: 'collective',
     logo: null, // ✅ AJOUT
 });
 

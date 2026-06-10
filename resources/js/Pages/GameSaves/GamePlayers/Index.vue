@@ -302,6 +302,16 @@
                         </FormRaw>
                         <FormRaw>
                             <FormCol>
+                                <InputLabel value="Tête" />
+                                <InputText
+                                    type="number"
+                                    v-model="form.heading"
+                                    class="mt-1 w-full"
+                                />
+                            </FormCol>
+                        </FormRaw>
+                        <FormRaw>
+                            <FormCol>
                                 <InputLabel value="Arrêt main" />
                                 <InputText
                                     type="number"
@@ -677,6 +687,7 @@ const form = useForm({
     block: 0,
     intercept: 0,
     tackle: 0,
+    heading: 0,
     hand_save: 0,
     punch_save: 0,
     special_moves: [],
@@ -724,6 +735,7 @@ const STAT_BAR_DEFS = [
     { key: 'block',      label: 'Block',       color: 'bg-indigo-400' },
     { key: 'intercept',  label: 'Interception',color: 'bg-purple-400' },
     { key: 'tackle',     label: 'Tacle',       color: 'bg-pink-400' },
+    { key: 'heading',    label: 'Tête',        color: 'bg-cyan-400' },
     { key: 'hand_save',  label: 'Arrêt main',  color: 'bg-violet-400' },
     { key: 'punch_save', label: 'Arrêt poing', color: 'bg-fuchsia-400' },
 ]
@@ -773,6 +785,7 @@ function selectPlayer(player) {
     form.block = player.block ?? 0
     form.intercept = player.intercept ?? 0
     form.tackle = player.tackle ?? 0
+    form.heading = player.heading ?? 0
     form.hand_save = player.hand_save ?? 0
     form.punch_save = player.punch_save ?? 0
 
