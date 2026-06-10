@@ -109,33 +109,46 @@
                 <FormContainer>
                     <form @submit.prevent="submit">
 
-                        <!-- Ligne 1 : prénom / nom -->
-                        <FormRaw>
-                            <FormCol>
-                                <InputLabel value="Prénom" />
+                        <!-- Aperçu visuel des stats -->
+                        <div v-if="form.id" class="mb-4 border border-slate-200 rounded-xl bg-slate-50 p-3">
+                            <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Aperçu des statistiques</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1.5">
+                                <div v-for="stat in statBars" :key="stat.key" class="flex items-center gap-2">
+                                    <span class="w-16 text-[11px] text-slate-500 shrink-0">{{ stat.label }}</span>
+                                    <div class="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
+                                        <div class="h-full rounded-full transition-all" :class="stat.color"
+                                             :style="{ width: Math.min(stat.value, 100) + '%' }">
+                                        </div>
+                                    </div>
+                                    <span class="w-7 text-right text-[11px] font-bold text-slate-700">{{ stat.value }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Infos générales -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-500 mb-1">Prénom</label>
                                 <InputText v-model="form.firstname" class="mt-1 w-full" />
                                 <p v-if="form.errors.firstname" class="text-sm text-red-600 mt-1">
                                     {{ form.errors.firstname }}
                                 </p>
-                            </FormCol>
+                            </div>
 
-                            <FormCol>
-                                <InputLabel value="Nom" />
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-500 mb-1">Nom</label>
                                 <InputText v-model="form.lastname" class="mt-1 w-full" />
                                 <p v-if="form.errors.lastname" class="text-sm text-red-600 mt-1">
                                     {{ form.errors.lastname }}
                                 </p>
-                            </FormCol>
-                        </FormRaw>
+                            </div>
 
-                        <!-- Ligne 2 : position / coût -->
-                        <FormRaw>
-                            <FormCol>
-                                <InputLabel value="Position" />
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-500 mb-1">Position</label>
                                 <InputSelect
                                     id="position"
                                     v-model="form.position"
-                                    class="mt-1"
+                                    class="mt-1 w-full"
                                     required
                                 >
                                     <option disabled value="">Choisir...</option>
@@ -143,21 +156,18 @@
                                         {{ p }}
                                     </option>
                                 </InputSelect>
-                            </FormCol>
+                            </div>
 
-                            <FormCol>
-                                <InputLabel value="Coût" />
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-500 mb-1">Coût</label>
                                 <InputText type="number" v-model="form.cost" class="mt-1 w-full" />
                                 <p v-if="form.errors.cost" class="text-sm text-red-600 mt-1">
                                     {{ form.errors.cost }}
                                 </p>
-                            </FormCol>
-                        </FormRaw>
+                            </div>
 
-                        <!-- Ligne 3 : photo -->
-                        <FormRaw>
-                            <FormCol>
-                                <InputLabel value="Photo du joueur" />
+                            <div class="sm:col-span-2">
+                                <label class="block text-sm font-semibold text-slate-500 mb-1">Photo du joueur</label>
 
                                 <div class="flex items-center gap-3 mt-1">
                                     <!-- input file caché -->
@@ -200,140 +210,10 @@
                                 <p v-if="form.errors.photo" class="text-sm text-red-600 mt-1">
                                     {{ form.errors.photo }}
                                 </p>
-                            </FormCol>
-                        </FormRaw>
-
-                        <!-- Aperçu visuel des stats -->
-                        <div v-if="form.id" class="mb-4 border border-slate-200 rounded-xl bg-slate-50 p-3">
-                            <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Aperçu des statistiques</h4>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1.5">
-                                <div v-for="stat in statBars" :key="stat.key" class="flex items-center gap-2">
-                                    <span class="w-16 text-[11px] text-slate-500 shrink-0">{{ stat.label }}</span>
-                                    <div class="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
-                                        <div class="h-full rounded-full transition-all" :class="stat.color"
-                                             :style="{ width: Math.min(stat.value, 100) + '%' }">
-                                        </div>
-                                    </div>
-                                    <span class="w-7 text-right text-[11px] font-bold text-slate-700">{{ stat.value }}</span>
-                                </div>
                             </div>
-                        </div>
 
-                        <!-- Stats  -->
-                        <FormRaw>
-                            <FormCol>
-                                <InputLabel value="Vitesse" />
-                                <InputText type="number" v-model="form.speed" class="mt-1 w-full" />
-                            </FormCol>
-
-                            <FormCol>
-                                <InputLabel value="Attaque" />
-                                <InputText type="number" v-model="form.attack" class="mt-1 w-full" />
-                            </FormCol>
-                        </FormRaw>
-
-                        <FormRaw>
-                            <FormCol>
-                                <InputLabel value="Défense" />
-                                <InputText type="number" v-model="form.defense" class="mt-1 w-full" />
-                            </FormCol>
-
-                            <FormCol>
-                                <InputLabel value="Endurance" />
-                                <InputText type="number" v-model="form.stamina" class="mt-1 w-full" />
-                            </FormCol>
-                        </FormRaw>
-                        <FormRaw>
-                            <FormCol>
-                                <InputLabel value="Tir" />
-                                <InputText
-                                    type="number"
-                                    v-model="form.shot"
-                                    class="mt-1 w-full"
-                                />
-                            </FormCol>
-
-                            <FormCol>
-                                <InputLabel value="Passe" />
-                                <InputText
-                                    type="number"
-                                    v-model="form.pass"
-                                    class="mt-1 w-full"
-                                />
-                            </FormCol>
-                        </FormRaw>
-                        <FormRaw>
-                            <FormCol>
-                                <InputLabel value="Dribble" />
-                                <InputText
-                                    type="number"
-                                    v-model="form.dribble"
-                                    class="mt-1 w-full"
-                                />
-                            </FormCol>
-
-                            <FormCol>
-                                <InputLabel value="Block" />
-                                <InputText
-                                    type="number"
-                                    v-model="form.block"
-                                    class="mt-1 w-full"
-                                />
-                            </FormCol>
-                        </FormRaw>
-                        <FormRaw>
-                            <FormCol>
-                                <InputLabel value="Interception" />
-                                <InputText
-                                    type="number"
-                                    v-model="form.intercept"
-                                    class="mt-1 w-full"
-                                />
-                            </FormCol>
-
-                            <FormCol>
-                                <InputLabel value="Tacle" />
-                                <InputText
-                                    type="number"
-                                    v-model="form.tackle"
-                                    class="mt-1 w-full"
-                                />
-                            </FormCol>
-                        </FormRaw>
-                        <FormRaw>
-                            <FormCol>
-                                <InputLabel value="Tête" />
-                                <InputText
-                                    type="number"
-                                    v-model="form.heading"
-                                    class="mt-1 w-full"
-                                />
-                            </FormCol>
-                        </FormRaw>
-                        <FormRaw>
-                            <FormCol>
-                                <InputLabel value="Arrêt main" />
-                                <InputText
-                                    type="number"
-                                    v-model="form.hand_save"
-                                    class="mt-1 w-full"
-                                />
-                            </FormCol>
-
-                            <FormCol>
-                                <InputLabel value="Arrêt poings" />
-                                <InputText
-                                    type="number"
-                                    v-model="form.punch_save"
-                                    class="mt-1 w-full"
-                                />
-                            </FormCol>
-                        </FormRaw>
-
-                        <!-- Description -->
-                        <FormRaw>
-                            <FormCol>
-                                <InputLabel value="Description" />
+                            <div class="sm:col-span-3">
+                                <label class="block text-sm font-semibold text-slate-500 mb-1">Description</label>
                                 <textarea
                                     v-model="form.description"
                                     rows="3"
@@ -343,8 +223,17 @@
                                 <p v-if="form.errors.description" class="text-sm text-red-600 mt-1">
                                     {{ form.errors.description }}
                                 </p>
-                            </FormCol>
-                        </FormRaw>
+                            </div>
+                        </div>
+
+                        <!-- Stats  -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                            <div v-for="stat in statInputs" :key="stat.key">
+                                <label class="block text-sm font-semibold text-slate-500 mb-1">{{ stat.label }}</label>
+                                <InputText type="number" v-model="form[stat.key]" class="mt-1 w-full" />
+                            </div>
+                        </div>
+
 
 
 
@@ -480,7 +369,7 @@
                                     </div>
 
                                     <div class="md:col-span-1">
-                                        <InputLabel value="Description" />
+                                        <label class="block text-sm font-semibold text-slate-500 mb-1">Description</label>
                                         <textarea
                                             v-model="move.description"
                                             rows="3"
@@ -638,8 +527,6 @@ import { ref, computed, defineProps, onMounted, onBeforeUnmount } from 'vue'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import H1 from '@/Components/H1.vue'
 import FormContainer from '@/Components/FormContainer.vue'
-import FormRaw from '@/Components/FormRaw.vue'
-import FormCol from '@/Components/FormCol.vue'
 import InputLabel from '@/Components/InputLabel.vue'
 import InputText from '@/Components/InputText.vue'
 import ButtonGroup from '@/Components/ButtonGroup.vue'
@@ -738,6 +625,22 @@ const STAT_BAR_DEFS = [
     { key: 'heading',    label: 'Tête',        color: 'bg-cyan-400' },
     { key: 'hand_save',  label: 'Arrêt main',  color: 'bg-violet-400' },
     { key: 'punch_save', label: 'Arrêt poing', color: 'bg-fuchsia-400' },
+]
+
+const statInputs = [
+    { key: 'speed',      label: 'Vitesse' },
+    { key: 'attack',     label: 'Attaque' },
+    { key: 'defense',    label: 'Défense' },
+    { key: 'stamina',    label: 'Endurance' },
+    { key: 'shot',       label: 'Tir' },
+    { key: 'pass',       label: 'Passe' },
+    { key: 'dribble',    label: 'Dribble' },
+    { key: 'block',      label: 'Block' },
+    { key: 'intercept',  label: 'Interception' },
+    { key: 'tackle',     label: 'Tacle' },
+    { key: 'heading',    label: 'Tête' },
+    { key: 'hand_save',  label: 'Arrêt main' },
+    { key: 'punch_save', label: 'Arrêt poings' },
 ]
 
 const statBars = computed(() => STAT_BAR_DEFS

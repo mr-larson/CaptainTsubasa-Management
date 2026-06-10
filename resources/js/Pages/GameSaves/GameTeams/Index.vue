@@ -82,40 +82,49 @@
                 <!-- PANNEAU DROIT -->
                 <div class="flex-1 min-w-0 flex flex-col gap-4">
 
-            <!-- Carte récap stats équipe -->
-            <div v-if="form.id" class="border border-slate-200 rounded-2xl bg-white shadow-sm p-4 md:p-6 flex flex-col gap-3">
-                <div class="flex items-center gap-3">
-                    <div class="h-12 w-12 rounded-full bg-slate-50 border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
-                        <img v-if="form.logo_path || logoPreviewUrl" :src="logoPreviewUrl || `/storage/${form.logo_path}`" class="h-full w-full object-cover" />
-                        <span v-else class="text-sm text-slate-400">{{ (form.name || '?').charAt(0) }}</span>
-                    </div>
-                    <div>
-                        <h2 class="text-lg font-semibold text-slate-800">{{ form.name || 'Équipe' }}</h2>
-                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
-                            Budget : {{ Number(form.budget || 0).toLocaleString('fr-FR') }} €
-                        </span>
-                    </div>
-                </div>
+            <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 md:p-8">
+                <!-- En-tête : récap équipe + ajout -->
+                <div class="flex items-center justify-between mb-6 pb-6 border-b border-slate-200 flex-wrap gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="h-12 w-12 rounded-full bg-slate-50 border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
+                            <img v-if="form.logo_path || logoPreviewUrl" :src="logoPreviewUrl || `/storage/${form.logo_path}`" class="h-full w-full object-cover" />
+                            <span v-else class="text-sm text-slate-400">{{ (form.name || '?').charAt(0) }}</span>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-semibold text-slate-800">{{ form.name || 'Équipe' }}</h2>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                                Budget : {{ Number(form.budget || 0).toLocaleString('fr-FR') }} €
+                            </span>
+                        </div>
 
-                <!-- Barres de stats : bilan -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-2 mt-1">
-                    <div v-for="stat in recordBars" :key="stat.key" class="flex items-center gap-2">
-                        <span class="w-20 text-[11px] text-slate-500 shrink-0">{{ stat.label }}</span>
-                        <div class="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
-                            <div class="h-full rounded-full transition-all" :class="stat.color"
-                                 :style="{ width: stat.percent + '%' }">
+                        <!-- Barres de stats : bilan -->
+                        <div class="hidden md:grid grid-cols-3 gap-x-6 gap-y-2 ml-6">
+                            <div v-for="stat in recordBars" :key="stat.key" class="flex items-center gap-2">
+                                <span class="w-20 text-[11px] text-slate-500 shrink-0">{{ stat.label }}</span>
+                                <div class="w-24 h-2 bg-slate-200 rounded-full overflow-hidden">
+                                    <div class="h-full rounded-full transition-all" :class="stat.color"
+                                         :style="{ width: stat.percent + '%' }">
+                                    </div>
+                                </div>
+                                <span class="w-7 text-right text-[11px] font-bold text-slate-700">{{ stat.value }}</span>
                             </div>
                         </div>
-                        <span class="w-7 text-right text-[11px] font-bold text-slate-700">{{ stat.value }}</span>
                     </div>
-                </div>
-            </div>
 
-            <FormContainer>
+                    <!-- + Création équipe -->
+                    <Link
+                        :href="route('game-saves.teams.create', { gameSave: gameSave.id })"
+                        class="flex items-center justify-center h-9 px-3 rounded-full bg-teal-500 text-white text-sm font-medium hover:bg-teal-600 shadow-md"
+                        title="Créer une équipe"
+                    >
+                        + Ajouter
+                    </Link>
+                </div>
+
                 <form @submit.prevent="submit">
-                    <FormRaw>
-                        <FormCol>
-                            <InputLabel for="name" value="Nom" />
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-500 mb-1">Nom</label>
                             <InputText
                                 id="name"
                                 type="text"
@@ -126,10 +135,10 @@
                             <p v-if="form.errors.name" class="text-sm text-red-600 mt-1">
                                 {{ form.errors.name }}
                             </p>
-                        </FormCol>
+                        </div>
 
-                        <FormCol>
-                            <InputLabel for="budget" value="Budget" />
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-500 mb-1">Budget</label>
                             <InputText
                                 type="number"
                                 id="budget"
@@ -141,10 +150,10 @@
                             <p v-if="form.errors.budget" class="text-sm text-red-600 mt-1">
                                 {{ form.errors.budget }}
                             </p>
-                        </FormCol>
+                        </div>
 
-                        <FormCol>
-                            <InputLabel for="wins" value="Victoire(s)" />
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-500 mb-1">Victoire(s)</label>
                             <InputText
                                 type="number"
                                 id="wins"
@@ -155,10 +164,10 @@
                             <p v-if="form.errors.wins" class="text-sm text-red-600 mt-1">
                                 {{ form.errors.wins }}
                             </p>
-                        </FormCol>
+                        </div>
 
-                        <FormCol>
-                            <InputLabel for="losses" value="Défaite(s)" />
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-500 mb-1">Défaite(s)</label>
                             <InputText
                                 type="number"
                                 id="losses"
@@ -169,10 +178,10 @@
                             <p v-if="form.errors.losses" class="text-sm text-red-600 mt-1">
                                 {{ form.errors.losses }}
                             </p>
-                        </FormCol>
+                        </div>
 
-                        <FormCol>
-                            <InputLabel for="draws" value="Matchs nuls" />
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-500 mb-1">Matchs nuls</label>
                             <InputText
                                 type="number"
                                 id="draws"
@@ -183,10 +192,10 @@
                             <p v-if="form.errors.draws" class="text-sm text-red-600 mt-1">
                                 {{ form.errors.draws }}
                             </p>
-                        </FormCol>
+                        </div>
 
-                        <FormCol>
-                            <InputLabel for="tactical_style" value="Style tactique" />
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-500 mb-1">Style tactique</label>
                             <select
                                 id="tactical_style"
                                 v-model="form.tactical_style"
@@ -199,10 +208,10 @@
                             <p v-if="form.errors.tactical_style" class="text-sm text-red-600 mt-1">
                                 {{ form.errors.tactical_style }}
                             </p>
-                        </FormCol>
+                        </div>
 
-                        <FormCol>
-                            <InputLabel for="management_philosophy" value="Philosophie de gestion" />
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-500 mb-1">Philosophie de gestion</label>
                             <select
                                 id="management_philosophy"
                                 v-model="form.management_philosophy"
@@ -215,10 +224,10 @@
                             <p v-if="form.errors.management_philosophy" class="text-sm text-red-600 mt-1">
                                 {{ form.errors.management_philosophy }}
                             </p>
-                        </FormCol>
+                        </div>
 
-                        <FormCol>
-                            <InputLabel value="Logo" />
+                        <div class="sm:col-span-2">
+                            <label class="block text-sm font-semibold text-slate-500 mb-1">Logo</label>
 
                             <div class="mt-1 flex flex-col gap-2">
                                 <div class="flex items-center gap-3">
@@ -275,12 +284,10 @@
                             <p v-if="form.errors.logo" class="text-sm text-red-600 mt-1">
                                 {{ form.errors.logo }}
                             </p>
-                        </FormCol>
-                    </FormRaw>
+                        </div>
 
-                    <FormRaw>
-                        <FormCol>
-                            <InputLabel for="description" value="Description" />
+                        <div class="sm:col-span-3">
+                            <label class="block text-sm font-semibold text-slate-500 mb-1">Description</label>
                             <textarea
                                 id="description"
                                 v-model="form.description"
@@ -291,8 +298,8 @@
                             <p v-if="form.errors.description" class="text-sm text-red-600 mt-1">
                                 {{ form.errors.description }}
                             </p>
-                        </FormCol>
-                    </FormRaw>
+                        </div>
+                    </div>
 
                     <ButtonGroup>
                         <ButtonPrimary :disabled="form.processing || !form.id">
@@ -323,7 +330,7 @@
                         </ButtonDanger>
                     </ButtonGroup>
                 </form>
-            </FormContainer>
+            </div>
                 </div>
             </div>
         </div>
@@ -337,10 +344,6 @@ import { ref, defineProps, computed, onMounted } from 'vue';
 
 // Components
 import H1 from '@/Components/H1.vue';
-import FormContainer from '@/Components/FormContainer.vue';
-import FormRaw from '@/Components/FormRaw.vue';
-import FormCol from '@/Components/FormCol.vue';
-import InputLabel from '@/Components/InputLabel.vue';
 import InputText from '@/Components/InputText.vue';
 import ButtonGroup from '@/Components/ButtonGroup.vue';
 import ButtonPrimary from '@/Components/ButtonPrimary.vue';
