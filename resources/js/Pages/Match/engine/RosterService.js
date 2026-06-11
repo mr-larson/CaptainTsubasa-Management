@@ -1,5 +1,5 @@
 // resources/js/Pages/Match/engine/RosterService.js
-import { STATS, POSITION_BONUS, SECONDARY_POSITION_BONUS_FACTOR, OFF_POSITION_MALUS } from './constants.js';
+import { STATS, POSITION_BONUS, SECONDARY_POSITION_BONUS_FACTOR, OFF_POSITION_MALUS, MORALE_FACTORS, MORALE_DEFAULT } from './constants.js';
 import { FORMATIONS, DEFAULT_FORMATION } from './formations.js';
 
 export class RosterService {
@@ -64,6 +64,7 @@ export class RosterService {
                     specialMoves: Array.isArray(p.special_moves) ? p.special_moves : [],
                     isAvailable:  p.is_available !== false,
                     yellowCards:  p.yellow_cards ?? 0,
+                    morale:       p.morale ?? MORALE_DEFAULT,
                     isStarter:    true,
                     isCaptain:    p.is_captain ?? false,
                     contractId:   p.contract_id ?? null,
@@ -72,7 +73,7 @@ export class RosterService {
                     id: null, number: slot,
                     firstname: "Joueur", lastname: `#${slot}`,
                     position: "", secondaryPositions: [], photo: null, stats: null, specialMoves: [],
-                    isAvailable: true, yellowCards: 0, isStarter: true,
+                    isAvailable: true, yellowCards: 0, morale: MORALE_DEFAULT, isStarter: true,
                     isCaptain:    false,   // ← pas de p ici
                     contractId:   null,
                     captainRerollsRemaining: 3,
@@ -95,6 +96,7 @@ export class RosterService {
                     specialMoves: Array.isArray(p.special_moves) ? p.special_moves : [],
                     isAvailable:  p.is_available !== false,
                     yellowCards:  p.yellow_cards ?? 0,
+                    morale:       p.morale ?? MORALE_DEFAULT,
                     isStarter:    false,
                 });
             }
@@ -201,6 +203,14 @@ export class RosterService {
         return { role: slotRole, level: "off" };
     }
 
+    /** Facteur de moral appliqué aux bases de duel (miroir de MoraleService::matchFactor). */
+    moraleFactor(team, slotNumber) {
+        const info   = this.getPlayerInfo(team, slotNumber);
+        const morale = Number(info?.morale ?? MORALE_DEFAULT);
+        const tier   = MORALE_FACTORS.find(t => morale <= t.max);
+        return tier ? tier.factor : 1.0;
+    }
+
     positionBonusMultiplier(team, slotNumber, tag) {
         const { role, level } = this.positionMastery(team, slotNumber);
 
@@ -249,6 +259,7 @@ export class RosterService {
             let raw = base + combined * this.STAT_COEF;
             raw *= this.positionBonusMultiplier(team, slotNumber, "pass");
             raw *= this.globalAttackMultiplier(team, slotNumber);
+            raw *= this.moraleFactor(team, slotNumber);
             return raw;
         }
 
@@ -257,6 +268,7 @@ export class RosterService {
         if (m) raw = base + this.getStat(team, slotNumber, m.stat) * this.STAT_COEF;
         if (m) raw *= this.positionBonusMultiplier(team, slotNumber, m.bonus);
         raw *= this.globalAttackMultiplier(team, slotNumber);
+        raw *= this.moraleFactor(team, slotNumber);
         return raw;
     }
 
@@ -271,6 +283,7 @@ export class RosterService {
             let raw = base + (statKey ? this.getStat(defenseTeam, defenseSlotNumber, statKey) * this.STAT_COEF : 0);
             raw *= this.positionBonusMultiplier(defenseTeam, defenseSlotNumber, "gk");
             raw *= this.globalDefenseMultiplier(defenseTeam, defenseSlotNumber);
+            raw *= this.moraleFactor(defenseTeam, defenseSlotNumber);
             return raw;
         }
 
@@ -281,6 +294,7 @@ export class RosterService {
             let raw = base + combined * this.STAT_COEF;
             raw *= this.positionBonusMultiplier(defenseTeam, defenseSlotNumber, "defend");
             raw *= this.globalDefenseMultiplier(defenseTeam, defenseSlotNumber);
+            raw *= this.moraleFactor(defenseTeam, defenseSlotNumber);
             return raw;
         }
 
@@ -290,6 +304,7 @@ export class RosterService {
         const bonusTag = (defenseAction === "block") ? "block" : "defend";
         raw *= this.positionBonusMultiplier(defenseTeam, defenseSlotNumber, bonusTag);
         raw *= this.globalDefenseMultiplier(defenseTeam, defenseSlotNumber);
+        raw *= this.moraleFactor(defenseTeam, defenseSlotNumber);
         return raw;
     }
 }
@@ -306,5 +321,5 @@ export function specialBaseFor(move, team, slotNumber, roster) {
     const actionStat = Number(stats[baseAction] ?? 0) || 0;
     const globalKey  = (mode === "defense") ? "defense" : "attack";
     const globalStat = Number(stats[globalKey] ?? 0) || 0;
-    return (actionStat + globalStat) / 2;
+    return ((actionStat + globalStat) / 2) * roster.moraleFactor(team, slotNumber);
 }

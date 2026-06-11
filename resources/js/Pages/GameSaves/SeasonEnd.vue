@@ -90,6 +90,30 @@ function startNewSeason() {
                     </table>
                 </div>
 
+                <!-- Joueurs en rupture avec le coach / le club -->
+                <div v-if="recap?.transfer_requests?.length" class="bg-white rounded-2xl shadow-lg overflow-hidden border-l-4 border-rose-400">
+                    <div class="px-6 py-4 border-b border-slate-100">
+                        <h3 class="font-semibold text-slate-700">⚠️ Joueurs en rupture</h3>
+                        <p class="text-xs text-slate-400 mt-0.5">
+                            Ces joueurs finissent la saison en rupture. Ceux fâchés contre le coach
+                            refuseront d'être draftés par ton équipe la saison prochaine.
+                        </p>
+                    </div>
+                    <ul class="divide-y divide-slate-50">
+                        <li v-for="req in recap.transfer_requests" :key="req.player_id" class="px-6 py-3 flex items-center gap-3">
+                            <img v-if="req.photo_path" :src="`/storage/${req.photo_path}`" class="w-10 h-10 rounded-full object-cover bg-slate-100" />
+                            <div v-else class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-300">👤</div>
+                            <div class="flex-1">
+                                <p class="font-semibold text-slate-700">{{ req.name }}</p>
+                                <p class="text-xs text-rose-500">
+                                    {{ req.reason === 'coach' ? 'Fâché contre le coach — refusera ta draft' : 'Révolté contre le club' }}
+                                    · moral {{ req.morale }} · relation {{ req.affinity > 0 ? '+' : '' }}{{ req.affinity }}
+                                </p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
                 <div class="text-center pb-10">
                     <p class="text-sm text-slate-500 mb-3">
                         Tous les contrats arrivent à expiration. Une nouvelle draft va commencer —

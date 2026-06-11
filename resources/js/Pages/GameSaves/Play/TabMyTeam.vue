@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { FORMATIONS, FORMATION_LIST } from '@/Pages/Match/engine/formations.js';
 import { usePlayerUtils } from './usePlayerUtils.js';
 import TeamStyleBadges from "@/Pages/GameSaves/Play/TeamStyleBadges.vue";
+import RosterList from "@/Pages/GameSaves/Play/RosterList.vue";
 
 const props = defineProps({
     rosterWithStatus:     { type: Array,   required: true },
@@ -34,16 +35,91 @@ const props = defineProps({
     averageAttack:        { type: Number,  default: 0 },
     averageDefense:       { type: Number,  default: 0 },
     averageStamina:       { type: Number,  default: 0 },
+    moraleLogs:           { type: Object,  default: () => ({}) },
+    playerPromises:       { type: Object,  default: () => ({}) },
+    playerDeclarations:   { type: Object,  default: () => ({}) },
+    currentWeek:          { type: Number,  default: 1 },
 });
 
 const emit = defineEmits([
     'select-player', 'toggle-starter', 'toggle-captain', 'save-formation', 'update-number',
-    'player-click', 'drag-start', 'drag-over', 'drop-on',
+    'player-click', 'drag-start', 'drag-over', 'drop-on', 'make-promise', 'make-declaration',
 ]);
 
 const substitutes = computed(() => props.rosterWithStatus.filter(p => !p.is_starter));
 
-const { overallOf, playerPhotoUrl, teamLogoUrl, sanctionTypeLabel } = usePlayerUtils();
+const { overallOf, playerPhotoUrl, teamLogoUrl, sanctionTypeLabel, moraleState, moraleSourceLabel, moraleMatchEffect, HEROIC_MORALE_THRESHOLD } = usePlayerUtils();
+
+// ── Moral ────────────────────────────────────────────────────
+const selectedPlayerMorale = computed(() => moraleState(props.selectedMyPlayer?.morale));
+
+const selectedPlayerMoraleLogs = computed(() =>
+    props.moraleLogs?.[props.selectedMyPlayer?.id] ?? []
+);
+
+const selectedPlayerMoraleEffect = computed(() => moraleMatchEffect(props.selectedMyPlayer?.morale));
+
+const selectedPlayerIsHeroic = computed(() =>
+    Number(props.selectedMyPlayer?.morale ?? 60) > HEROIC_MORALE_THRESHOLD
+);
+
+// ── Relation coach + promesses ───────────────────────────────
+const selectedPlayerAffinity = computed(() => Number(props.selectedMyPlayer?.coach_affinity ?? 0));
+
+const affinityDisplay = computed(() => {
+    const a = selectedPlayerAffinity.value;
+    if (a <= -50) return { label: 'Rupture',    text: 'text-rose-600',    bar: 'bg-rose-500' };
+    if (a <= -30) return { label: 'Tendue',     text: 'text-orange-500',  bar: 'bg-orange-400' };
+    if (a <   30) return { label: 'Neutre',     text: 'text-slate-500',   bar: 'bg-slate-400' };
+    if (a <   50) return { label: 'Bonne',      text: 'text-teal-600',    bar: 'bg-teal-400' };
+    return         { label: 'Excellente', text: 'text-emerald-600', bar: 'bg-emerald-500' };
+});
+
+const selectedPlayerPromises = computed(() =>
+    props.playerPromises?.[props.selectedMyPlayer?.id] ?? []
+);
+
+const activePromise = computed(() =>
+    selectedPlayerPromises.value.find(p => p.status === 'pending') ?? null
+);
+
+const lastResolvedPromise = computed(() =>
+    selectedPlayerPromises.value.find(p => p.status !== 'pending') ?? null
+);
+
+const PROMISE_TYPES = [
+    { type: 'playing_time', icon: '🤝', label: 'Temps de jeu',  hint: 'Il jouera 3 matchs dans les 5 prochaines semaines' },
+    { type: 'starter',      icon: '⭐', label: 'Titularisation', hint: 'Il jouera 4 matchs dans les 5 prochaines semaines' },
+    { type: 'renewal',      icon: '📜', label: 'Prolongation',   hint: 'Tu lui signeras un nouveau contrat sous 4 semaines' },
+];
+
+const promiseTypeLabel = (type) => PROMISE_TYPES.find(t => t.type === type)?.label ?? type;
+
+// ── Déclarations publiques ───────────────────────────────────
+const DECLARATION_COOLDOWN_WEEKS = 3;
+
+const lastDeclaration = computed(() =>
+    (props.playerDeclarations?.[props.selectedMyPlayer?.id] ?? [])[0] ?? null
+);
+
+const declarationOnCooldown = computed(() =>
+    lastDeclaration.value
+    && lastDeclaration.value.week > (props.currentWeek - DECLARATION_COOLDOWN_WEEKS)
+);
+
+const lastDeclarationSummary = computed(() => {
+    const d = lastDeclaration.value;
+    if (!d) return null;
+    if (d.type === 'praise') return { text: '📣 Félicité', positive: true };
+    if (d.outcome === 'proud_reaction') return { text: '📢 Critiqué — réaction d\'orgueil', positive: true };
+    return { text: '📢 Critiqué — mal vécu', positive: false };
+});
+
+const averageMorale = computed(() => {
+    if (!props.rosterWithStatus.length) return 0;
+    const sum = props.rosterWithStatus.reduce((a, p) => a + Number(p.morale ?? 60), 0);
+    return Math.round(sum / props.rosterWithStatus.length);
+});
 
 const getSlotForPlayer = (playerId) => {
     if (!playerId || !Array.isArray(props.lineupForm)) return null;
@@ -361,6 +437,9 @@ const perfChips = computed(() => {
                         <span class="font-bold" :class="suspensionsCount > 0 ? 'text-amber-500' : 'text-slate-800'">{{ suspensionsCount }}</span>
                     </div>
                     <div class="flex justify-between"><span>Stamina moy.</span><span class="font-bold text-slate-800">{{ averageStamina }}</span></div>
+                    <div class="flex justify-between"><span>Moral moy.</span>
+                        <span class="font-bold" :class="moraleState(averageMorale).text">{{ moraleState(averageMorale).emoji }} {{ averageMorale }}</span>
+                    </div>
                     <div class="flex justify-between"><span>Cartons</span>
                         <span class="font-bold" :class="cardsCount > 0 ? 'text-yellow-500' : 'text-slate-800'">{{ cardsCount }}</span>
                     </div>
@@ -372,64 +451,15 @@ const perfChips = computed(() => {
         <div class="grid grid-cols-12 gap-4">
 
             <!-- Liste joueurs -->
-            <div class="col-span-3 border border-slate-200 rounded-xl bg-slate-50 p-3 max-h-[630px] overflow-y-auto">
-                <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Effectif</h3>
-                <div v-if="rosterWithStatus.length" class="space-y-1">
-                    <button v-for="p in rosterWithStatus" :key="p.id" type="button"
-                            @click="emit('select-player', p)"
-                            class="w-full text-left rounded-lg px-2 py-1.5 transition-all"
-                            :class="selectedMyPlayer?.id === p.id
-            ? 'bg-teal-500 text-white shadow-sm'
-            : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-100'">
-                        <div class="flex items-center gap-2">
-                            <!-- Photo -->
-                            <div class="w-7 h-7 rounded-full overflow-hidden bg-slate-200 shrink-0">
-                                <img v-if="playerPhotoUrl(p)" :src="playerPhotoUrl(p)" class="w-full h-full object-cover" alt=""/>
-                                <div v-else class="w-full h-full flex items-center justify-center text-[9px] text-slate-400">?</div>
-                            </div>
-
-                            <!-- Nom + poste -->
-                            <div class="flex-1 min-w-0">
-                                <div class="text-xs font-semibold truncate">{{ p.lastname }}</div>
-                                <div class="text-[10px] opacity-60 truncate">{{ p.position }}</div>
-                            </div>
-
-                            <!-- Icônes statut -->
-                            <div class="flex items-center gap-0.5 shrink-0">
-                                <span v-if="p.is_captain" title="Capitaine" class="text-[11px]">👑</span>
-                                <span v-if="isPlayerInjured(p.id)" title="Blessé" class="text-[11px]">🤕</span>
-                                <span v-else-if="isPlayerSuspended(p.id)" title="Suspendu" class="text-[11px]">🚫</span>
-                                <span v-else-if="playerYellowCards(p.id) > 0"
-                                      :title="`${playerYellowCards(p.id)} carton(s) jaune`"
-                                      class="text-[9px] font-black bg-yellow-400 text-yellow-900 px-1 rounded">
-                {{ playerYellowCards(p.id) }}🟨
-            </span>
-                            </div>
-
-                            <!-- Stamina bar + valeur -->
-                            <div class="w-12 flex flex-col items-end gap-0.5 shrink-0">
-                                <div class="text-[10px] font-bold"
-                                     :class="selectedMyPlayer?.id === p.id ? 'text-white/80' : 'text-slate-500'">
-                                    {{ p.stamina ?? p.stats?.stamina ?? '—' }}
-                                </div>
-                                <div class="w-full h-1 rounded-full overflow-hidden"
-                                     :class="selectedMyPlayer?.id === p.id ? 'bg-white/30' : 'bg-slate-200'">
-                                    <div class="h-full rounded-full transition-all"
-                                         :class="(p.stamina ?? p.stats?.stamina ?? 0) >= 60 ? 'bg-emerald-400'
-                       : (p.stamina ?? p.stats?.stamina ?? 0) >= 30 ? 'bg-amber-400' : 'bg-rose-400'"
-                                         :style="{ width: Math.min(p.stamina ?? p.stats?.stamina ?? 0, 100) + '%' }">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Titulaire dot -->
-                            <div class="w-2 h-2 rounded-full shrink-0"
-                                 :class="p.is_starter ? 'bg-emerald-400' : 'bg-slate-300'"></div>
-                        </div>
-                    </button>
-                </div>
-                <p v-else class="text-xs text-slate-400">Aucun joueur.</p>
-            </div>
+            <RosterList class="col-span-3 max-h-[630px]"
+                        :players="rosterWithStatus"
+                        :selectedId="selectedMyPlayer?.id"
+                        :isPlayerInjured="isPlayerInjured"
+                        :isPlayerSuspended="isPlayerSuspended"
+                        :playerYellowCards="playerYellowCards"
+                        :playerInjury="playerInjury"
+                        :playerSuspension="playerSuspension"
+                        @select="p => emit('select-player', p)" />
 
             <!-- Profil joueur -->
             <div class="col-span-9 flex flex-col gap-3">
@@ -535,6 +565,134 @@ const perfChips = computed(() => {
                                 <p v-if="selectedMyPlayer.description" class="mt-2 text-xs text-slate-400 italic">{{ selectedMyPlayer.description }}</p>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Moral -->
+                    <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Moral</h4>
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold"
+                                  :class="selectedPlayerMorale.chip">
+                                {{ selectedPlayerMorale.emoji }} {{ selectedPlayerMorale.label }}
+                                <span class="opacity-60">{{ selectedMyPlayer.morale ?? 60 }}/100</span>
+                            </span>
+                        </div>
+
+                        <div class="h-2 bg-slate-200 rounded-full overflow-hidden mb-2">
+                            <div class="h-full rounded-full transition-all"
+                                 :class="selectedPlayerMorale.bar"
+                                 :style="{ width: Math.min(selectedMyPlayer.morale ?? 60, 100) + '%' }"></div>
+                        </div>
+
+                        <!-- Effets en match -->
+                        <div class="flex flex-wrap items-center gap-1.5 mb-3">
+                            <span v-if="selectedPlayerMoraleEffect"
+                                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold"
+                                  :class="selectedPlayerMoraleEffect.positive ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'"
+                                  title="Appliqué à toutes les actions en match (duels, tirs, arrêts)">
+                                ⚔️ Effet en match : {{ selectedPlayerMoraleEffect.pct }}
+                            </span>
+                            <span v-else class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-500">
+                                ⚔️ Aucun effet en match
+                            </span>
+                            <span v-if="selectedPlayerIsHeroic"
+                                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700"
+                                  title="5 % de chance de relancer gratuitement un duel perdu (une fois par match)">
+                                🔥 Dépassement de soi
+                            </span>
+                        </div>
+
+                        <!-- Relation coach -->
+                        <div class="border-t border-slate-200 pt-3 mb-3">
+                            <div class="flex items-center justify-between mb-1.5">
+                                <h5 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Relation coach</h5>
+                                <span class="text-[11px] font-bold" :class="affinityDisplay.text">
+                                    {{ affinityDisplay.label }}
+                                    <span class="opacity-60">{{ selectedPlayerAffinity > 0 ? '+' : '' }}{{ selectedPlayerAffinity }}</span>
+                                </span>
+                            </div>
+                            <div class="relative h-1.5 bg-slate-200 rounded-full overflow-hidden mb-2">
+                                <div class="absolute top-0 bottom-0 w-px bg-slate-400/60 left-1/2"></div>
+                                <div class="h-full rounded-full transition-all"
+                                     :class="affinityDisplay.bar"
+                                     :style="{ width: ((selectedPlayerAffinity + 100) / 2) + '%' }"></div>
+                            </div>
+
+                            <!-- Promesses -->
+                            <div class="flex flex-wrap items-center gap-1.5 mb-2">
+                                <span v-if="activePromise"
+                                      class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-100 text-sky-700"
+                                      :title="activePromise.type === 'renewal'
+                                          ? `Signe-lui un nouveau contrat avant la semaine ${activePromise.due_week}`
+                                          : `Il doit jouer ${activePromise.target_matches} matchs entre la semaine ${activePromise.start_week} et la semaine ${activePromise.due_week}`">
+                                    🤝 Promesse en cours — {{ promiseTypeLabel(activePromise.type) }}
+                                    <template v-if="activePromise.type !== 'renewal'">: {{ activePromise.target_matches }} matchs</template>
+                                    avant S{{ activePromise.due_week }}
+                                </span>
+                                <template v-else>
+                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Promettre :</span>
+                                    <button v-for="pt in PROMISE_TYPES" :key="pt.type" type="button"
+                                            @click="emit('make-promise', selectedMyPlayer, pt.type)"
+                                            class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold border border-sky-300 bg-white text-sky-600 hover:bg-sky-50 transition-all"
+                                            :title="`${pt.hint}. Tenue : +15 relation, +5 moral. Rompue : −25 relation, −10 moral.`">
+                                        {{ pt.icon }} {{ pt.label }}
+                                    </button>
+                                </template>
+                                <span v-if="lastResolvedPromise"
+                                      class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                                      :class="lastResolvedPromise.status === 'kept' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'">
+                                    {{ lastResolvedPromise.status === 'kept' ? '✓ Promesse tenue' : '✗ Promesse rompue' }}
+                                    <template v-if="lastResolvedPromise.type !== 'renewal'">
+                                        ({{ lastResolvedPromise.played_matches ?? 0 }}/{{ lastResolvedPromise.target_matches }})
+                                    </template>
+                                </span>
+                            </div>
+
+                            <!-- Déclarations publiques -->
+                            <div class="flex flex-wrap items-center gap-1.5">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Presse :</span>
+                                <template v-if="!declarationOnCooldown">
+                                    <button type="button"
+                                            @click="emit('make-declaration', selectedMyPlayer, 'praise')"
+                                            class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold border border-emerald-300 bg-white text-emerald-600 hover:bg-emerald-50 transition-all"
+                                            title="Féliciter publiquement. Mérité (en forme) : +8 relation, +4 moral. Immérité : +4 relation seulement.">
+                                        📣 Féliciter
+                                    </button>
+                                    <button type="button"
+                                            @click="emit('make-declaration', selectedMyPlayer, 'criticize')"
+                                            class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold border border-rose-300 bg-white text-rose-600 hover:bg-rose-50 transition-all"
+                                            title="Critiquer publiquement. En méforme : peut provoquer une réaction d'orgueil (+5 moral)… ou être mal vécu. En forme : toujours injuste (−15 relation, −8 moral).">
+                                        📢 Critiquer
+                                    </button>
+                                </template>
+                                <span v-else class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-400"
+                                      :title="`Prochaine déclaration possible en semaine ${lastDeclaration.week + 3}`">
+                                    ⏳ Déjà exprimé récemment
+                                </span>
+                                <span v-if="lastDeclarationSummary"
+                                      class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                                      :class="lastDeclarationSummary.positive ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'">
+                                    {{ lastDeclarationSummary.text }} (S{{ lastDeclaration.week }})
+                                </span>
+                            </div>
+                        </div>
+
+                        <div v-if="selectedPlayerMoraleLogs.length" class="space-y-1">
+                            <h5 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Derniers changements</h5>
+                            <div v-for="(log, i) in selectedPlayerMoraleLogs" :key="i"
+                                 class="flex items-center gap-2 text-xs">
+                                <span class="w-8 text-right font-black shrink-0"
+                                      :class="log.value > 0 ? 'text-emerald-600' : 'text-rose-500'">
+                                    {{ log.value > 0 ? '+' : '' }}{{ log.value }}
+                                </span>
+                                <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 text-[10px] font-semibold shrink-0">
+                                    {{ moraleSourceLabel(log.source) }}
+                                </span>
+                                <span class="text-slate-600 truncate">{{ log.label }}</span>
+                                <span class="ml-auto text-[10px] text-slate-400 shrink-0">S{{ log.week }}</span>
+                            </div>
+                        </div>
+                        <p v-else class="text-xs text-slate-400 italic">Aucun changement de moral pour l'instant.</p>
                     </div>
 
                     <!-- Radar + Barres -->

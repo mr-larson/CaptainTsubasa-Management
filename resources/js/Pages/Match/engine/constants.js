@@ -79,6 +79,24 @@ export const SECONDARY_POSITION_BONUS_FACTOR = 0.5;
 export const OFF_POSITION_MALUS = 0.08;
 
 // ==========================
+//   MORAL
+// ==========================
+// Paliers alignés sur MoraleService::matchFactor côté serveur.
+export const MORALE_FACTORS = [
+    { max: 20,  factor: 0.90 }, // Révolté
+    { max: 40,  factor: 0.95 }, // Mécontent
+    { max: 60,  factor: 1.0  }, // Neutre
+    { max: 80,  factor: 1.02 }, // Satisfait
+    { max: 100, factor: 1.05 }, // Très satisfait
+];
+export const MORALE_DEFAULT = 60;
+
+// Moment héroïque : un joueur à plus de 85 de moral peut relancer
+// gratuitement un duel perdu (une fois par match).
+export const HEROIC_MORALE_THRESHOLD = 85;
+export const HEROIC_CHANCE           = 0.05;
+
+// ==========================
 //   TEXTES UI / LOGS / CARTES
 // ==========================
 export const TEXTS = {

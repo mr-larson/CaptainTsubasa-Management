@@ -18,7 +18,9 @@ use App\Services\MatchSimulator;
 use App\Services\AITransferService;
 use App\Services\AILineupService;
 use App\Services\FoulAndInjuryService;
+use App\Services\MoraleService;
 use App\Services\PostMatchProgressionService;
+use App\Services\PromiseService;
 use App\Services\SeasonService;
 use App\Services\StaminaService;
 use Illuminate\Http\JsonResponse;
@@ -207,6 +209,12 @@ class GameMatchController extends Controller
         // 10. Stamina après match — agrégation de TOUS les matchs joués cette semaine
         StaminaService::applyAfterWeek($gameSave, $playedWeek);
 
+        // 10bis. Moral après match (résultats, temps de jeu, salaire)
+        app(MoraleService::class)->applyAfterWeek($gameSave, $playedWeek);
+
+        // 10ter. Promesses arrivées à échéance
+        app(PromiseService::class)->evaluateForWeek($gameSave, $playedWeek);
+
         // 11. Consommer les cartes pre_match de l'équipe contrôlée
         $controlledTeamId = $gameSave->controlled_game_team_id;
         if ($controlledTeamId) {
@@ -255,6 +263,12 @@ class GameMatchController extends Controller
 
         // Stamina AVANT incrément (sinon on récupère l'historique d'une autre semaine)
         StaminaService::applyAfterWeek($gameSave, $week);
+
+        // Moral AVANT incrément (résultats, temps de jeu, salaire)
+        app(MoraleService::class)->applyAfterWeek($gameSave, $week);
+
+        // Promesses arrivées à échéance
+        app(PromiseService::class)->evaluateForWeek($gameSave, $week);
 
         $gameSave->week = $week + 1;
         $gameSave->save();
@@ -400,11 +414,12 @@ class GameMatchController extends Controller
                     'attack' => $p->attack, 'defense' => $p->defense,
                     'shot' => $p->shot, 'pass' => $p->pass, 'dribble' => $p->dribble,
                     'block' => $p->block, 'intercept' => $p->intercept, 'tackle' => $p->tackle,
-                    'hand_save' => $p->hand_save, 'punch_save' => $p->punch_save,
+                    'heading' => $p->heading, 'hand_save' => $p->hand_save, 'punch_save' => $p->punch_save,
                 ],
                 'special_moves' => $p->special_moves ?? [],
                 'is_available'  => !in_array($p->id, $unavailableIds),
                 'yellow_cards'  => 0,
+                'morale'        => (int) ($p->morale ?? 60),
                 // ── Captain ──
                 'is_captain'                      => $c->is_captain,
                 'captain_rerolls_remaining'       => $c->captain_rerolls_remaining,
@@ -432,11 +447,12 @@ class GameMatchController extends Controller
                     'attack' => $p->attack, 'defense' => $p->defense,
                     'shot' => $p->shot, 'pass' => $p->pass, 'dribble' => $p->dribble,
                     'block' => $p->block, 'intercept' => $p->intercept, 'tackle' => $p->tackle,
-                    'hand_save' => $p->hand_save, 'punch_save' => $p->punch_save,
+                    'heading' => $p->heading, 'hand_save' => $p->hand_save, 'punch_save' => $p->punch_save,
                 ],
                 'special_moves' => $p->special_moves ?? [],
                 'is_available'  => !in_array($p->id, $unavailableIds),
                 'yellow_cards'  => 0,
+                'morale'        => (int) ($p->morale ?? 60),
                 // ── Captain ──
                 'is_captain'                      => $c->is_captain,
                 'captain_rerolls_remaining'       => $c->captain_rerolls_remaining,

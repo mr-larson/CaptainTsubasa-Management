@@ -126,6 +126,7 @@ class MatchSimulator
         ];
         $goalEvents = [];
         $events     = [];
+        $heroicUsed = []; // "Dépassement de soi" : une seule fois par joueur et par match
 
         // État du ballon : équipe possédant, index de zone (0..MAX_ZONE_INDEX), face au gardien ?
         $side          = random_int(0, 1) ? 'home' : 'away';
@@ -208,6 +209,37 @@ class MatchSimulator
 
             if ($attackCrit)  $stamina[(string) ($attacker->id ?? 0)] = min(self::ENDURANCE_DEFAULT, ($stamina[(string) ($attacker->id ?? 0)] ?? self::ENDURANCE_DEFAULT) + self::CRIT_STAMINA_BOOST);
             if ($defenseCrit) $stamina[(string) ($defender->id ?? 0)] = min(self::ENDURANCE_DEFAULT, ($stamina[(string) ($defender->id ?? 0)] ?? self::ENDURANCE_DEFAULT) + self::CRIT_STAMINA_BOOST);
+
+            // ----- Moment héroïque : un joueur très satisfait peut relancer un duel perdu -----
+            if (
+                !$success && $attacker
+                && (int) ($attacker->morale ?? MoraleService::NEUTRAL_MORALE) > MoraleService::HEROIC_MORALE_THRESHOLD
+                && empty($heroicUsed[(string) $attacker->id])
+                && random_int(1, 100) <= (int) round(MoraleService::HEROIC_CHANCE * 100)
+            ) {
+                $heroicUsed[(string) $attacker->id] = true;
+
+                $attackRoll  = $this->d20();
+                $defenseRoll = $this->d20();
+                $attackScore  = $attackBase  + $attackRoll;
+                $defenseScore = $defenseBase + $defenseRoll;
+                $attackCrit  = $attackRoll  === 20;
+                $defenseCrit = $defenseRoll === 20;
+
+                if ($attackCrit && !$defenseCrit)      $success = true;
+                elseif ($defenseCrit && !$attackCrit)  $success = false;
+                else                                   $success = $attackScore > $defenseScore;
+
+                $events[] = [
+                    'turn'       => $turn,
+                    'actionType' => 'heroic',
+                    'team'       => $side,
+                    'result'     => $success ? 'success' : 'fail',
+                    'text'       => "🔥 Dépassement de soi — {$attacker->lastname}",
+                    'details'    => [$success ? '✓ Le duel est renversé !' : '✗ Le duel reste perdu'],
+                    'diceTag'    => round($attackScore, 1) . '-' . round($defenseScore, 1),
+                ];
+            }
 
             $isGoal = $success && $action === 'shot';
 
@@ -420,7 +452,9 @@ class MatchSimulator
     {
         if (!$player) return 20.0;
 
-        return $this->positionMultiplier($player, $this->positionTagForAction($action, $category)) * match ($category) {
+        return $this->positionMultiplier($player, $this->positionTagForAction($action, $category))
+            * MoraleService::matchFactor($player->morale ?? null)
+            * match ($category) {
             'attack' => match ($action) {
                 'shot'    => (float) ($player->shot    ?? 0),
                 'pass'    => (float) ($player->pass    ?? 0),

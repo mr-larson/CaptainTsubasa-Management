@@ -85,6 +85,7 @@ export function buildFieldDuelBreakdown({
                                             attackScore, defenseScore,
                                             clearanceBonus = 0, meta = null,
                                             captainReroll = false,
+                                            heroic = false,
                                             homeBonus = 0,
                                             homeSide = null,       // 'attack' | 'defense' | null
                                             critWinner = null,
@@ -113,6 +114,7 @@ export function buildFieldDuelBreakdown({
                 ...(!isGood ? [{ label: "⚔️ Bonus attaque", value: `+ ${genBonus.toFixed(1)}` }] : []),
                 ...(clearanceBonus ? [{ label: "💨 Dégagement", value: `+ ${Number(clearanceBonus).toFixed(1)}` }] : []),
                 ...(captainReroll  ? [{ label: "👑 Reroll capitaine", value: "2d20 avantage" }] : []),
+                ...(heroic         ? [{ label: "🔥 Dépassement de soi", value: "2d20 avantage" }] : []),
                 ...(homeSide === 'attack' && homeBonus ? [{ label: "🏠 Avantage domicile", value: `+ ${Number(homeBonus).toFixed(1)}` }] : []),
             ],
             total: attackScore,

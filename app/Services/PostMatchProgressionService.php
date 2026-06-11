@@ -38,6 +38,16 @@ class PostMatchProgressionService
 
                 $remainingCap = self::SEASON_CAP_PER_PLAYER - $alreadyGained;
                 $gains        = $this->computeGains($playerStats);
+
+                // Le moral module la progression (un joueur frustré apprend moins vite)
+                $moraleXpFactor = MoraleService::xpFactor($player->morale ?? null);
+                if ($moraleXpFactor !== 1.0) {
+                    $gains = array_filter(array_map(
+                        fn($g) => (int) round($g * $moraleXpFactor),
+                        $gains
+                    ));
+                }
+
                 if (empty($gains)) continue;
 
                 $totalRequested = array_sum($gains);

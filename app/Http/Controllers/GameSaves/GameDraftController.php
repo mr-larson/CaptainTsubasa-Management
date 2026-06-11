@@ -152,6 +152,15 @@ class GameDraftController extends Controller
             return response()->json(['error' => 'Not your turn'], 400);
         }
 
+        // Message explicite si le joueur refuse l'équipe contrôlée (rancune coach)
+        $pickedPlayer  = \App\Models\GameSaves\GamePlayer::where('game_save_id', $gameSave->id)->find($data['player_id']);
+        $currentTeamId = $draftService->getCurrentTeamId($gameSave);
+        if ($pickedPlayer && $currentTeamId && $draftService->playerRefusesTeam($gameSave, $pickedPlayer, (int) $currentTeamId)) {
+            return response()->json([
+                'error' => "{$pickedPlayer->full_name} refuse de jouer pour ton équipe (relation en rupture avec le coach).",
+            ], 422);
+        }
+
         $pick = $draftService->executePick($gameSave, $data['player_id']);
 
         if (!$pick) {

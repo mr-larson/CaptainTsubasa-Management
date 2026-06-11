@@ -58,6 +58,31 @@ class SeasonService
             ];
         }
 
+        // Joueurs de l'équipe contrôlée en rupture : ils ne re-signeront pas
+        // et refuseront d'être draftés la saison prochaine.
+        $transferRequests = [];
+        $controlledTeamId = (int) ($gameSave->controlled_game_team_id ?? 0);
+        if ($controlledTeamId) {
+            $playerIds = GameContract::where('game_save_id', $gameSave->id)
+                ->where('game_team_id', $controlledTeamId)
+                ->pluck('game_player_id');
+
+            foreach (GamePlayer::whereIn('id', $playerIds)->get() as $p) {
+                if (!MoraleService::refusesToSign($p)) continue;
+
+                $transferRequests[] = [
+                    'player_id'  => $p->id,
+                    'name'       => $p->full_name,
+                    'photo_path' => $p->photo_path,
+                    'morale'     => (int) $p->morale,
+                    'affinity'   => (int) $p->coach_affinity,
+                    'reason'     => (int) $p->coach_affinity <= MoraleService::AFFINITY_REFUSAL_THRESHOLD
+                        ? 'coach'   // fâché contre toi
+                        : 'morale', // révolté contre le club
+                ];
+            }
+        }
+
         $recap = [
             'season'    => $gameSave->season,
             'champion'  => $champion ? [
@@ -67,6 +92,7 @@ class SeasonService
             ] : null,
             'mvp'       => $mvp,
             'standings' => $standingsRecap,
+            'transfer_requests' => $transferRequests,
         ];
 
         $state = $gameSave->state ?? [];

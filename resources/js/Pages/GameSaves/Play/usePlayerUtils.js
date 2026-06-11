@@ -70,6 +70,38 @@ export function usePlayerUtils() {
     const statLabel = (k) => STAT_LABELS[k] ?? k;
     const statColor = (k) => STAT_COLORS[k] ?? 'bg-slate-400';
 
+    // Moral : 0-20 révolté, 21-40 mécontent, 41-60 neutre, 61-80 satisfait, 81-100 très satisfait
+    const moraleState = (value) => {
+        const v = Number(value ?? 60);
+        if (v <= 20) return { label: 'Révolté',        emoji: '😡', text: 'text-rose-600',    bar: 'bg-rose-500',    chip: 'bg-rose-100 text-rose-700' };
+        if (v <= 40) return { label: 'Mécontent',      emoji: '😞', text: 'text-orange-500',  bar: 'bg-orange-400',  chip: 'bg-orange-100 text-orange-700' };
+        if (v <= 60) return { label: 'Neutre',         emoji: '😐', text: 'text-slate-500',   bar: 'bg-slate-400',   chip: 'bg-slate-100 text-slate-600' };
+        if (v <= 80) return { label: 'Satisfait',      emoji: '🙂', text: 'text-teal-600',    bar: 'bg-teal-400',    chip: 'bg-teal-100 text-teal-700' };
+        return        { label: 'Très satisfait', emoji: '🤩', text: 'text-emerald-600', bar: 'bg-emerald-500', chip: 'bg-emerald-100 text-emerald-700' };
+    };
+
+    // Effet du moral en match (miroir de MORALE_FACTORS du moteur / MoraleService::matchFactor)
+    const moraleMatchEffect = (value) => {
+        const v = Number(value ?? 60);
+        if (v <= 20) return { pct: '-10 %', positive: false };
+        if (v <= 40) return { pct: '-5 %',  positive: false };
+        if (v <= 60) return null; // neutre : aucun effet
+        if (v <= 80) return { pct: '+2 %',  positive: true };
+        return { pct: '+5 %', positive: true };
+    };
+
+    // Seuil du moment héroïque ("Dépassement de soi") — moral strictement supérieur
+    const HEROIC_MORALE_THRESHOLD = 85;
+
+    const moraleSourceLabel = (source) => {
+        switch (source) {
+            case 'result':       return 'Résultats';
+            case 'playing_time': return 'Temps de jeu';
+            case 'salary':       return 'Salaire';
+            default:             return source;
+        }
+    };
+
     const sanctionTypeLabel = (type) => {
         switch (type) {
             case 'red':           return 'Carton rouge';
@@ -81,6 +113,7 @@ export function usePlayerUtils() {
 
     return {
         overallOf, playerPhotoUrl, teamLogoUrl, sanctionTypeLabel,
+        moraleState, moraleSourceLabel, moraleMatchEffect, HEROIC_MORALE_THRESHOLD,
         positionGroup, keyStatsFor, statLabel, statColor,
         STAT_KEYS, STAT_LABELS, STAT_COLORS,
     };

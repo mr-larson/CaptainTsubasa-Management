@@ -3,6 +3,7 @@ import {
     TEXTS, DUEL_RULES, FIELD_RULES,
     MAX_ZONE_INDEX, ZONE_BOUNDS_INTERNAL, laneY,
     CRIT_STAMINA_BOOST,
+    HEROIC_MORALE_THRESHOLD, HEROIC_CHANCE, MORALE_DEFAULT,
 } from './constants.js';
 import {
     rollD20WithCrit, rollD20Advantage, resolveCritOutcome,
@@ -237,6 +238,26 @@ export function resetCaptainRerollActionFlag(team) {
 }
 
 /**
+ * Moment héroïque ("Dépassement de soi") : un joueur à plus de 85 de moral
+ * a une chance de relancer gratuitement un duel perdu, une fois par match.
+ * Retourne true si le moment se déclenche (et le consomme).
+ */
+function tryHeroicMoment(attackTeam, attackSlot) {
+    const info = _roster.getPlayerInfo(attackTeam, attackSlot);
+    if (!info?.id) return false;
+    if (Number(info.morale ?? MORALE_DEFAULT) <= HEROIC_MORALE_THRESHOLD) return false;
+
+    _state.heroicUsed ??= {};
+    const playerId = getPlayerId(attackTeam, attackSlot);
+    if (_state.heroicUsed[playerId]) return false;
+
+    if (Math.random() >= HEROIC_CHANCE) return false;
+
+    _state.heroicUsed[playerId] = true;
+    return true;
+}
+
+/**
  * Vérifie si l'attaquant (capitaine) peut relancer.
  */
 function canAttackerReroll(attackTeam, attackSlot) {
@@ -293,15 +314,16 @@ function consumeReroll(attackTeam) {
 /**
  * Effectue la relance : 2d20 advantage pour l'attaque, 1d20 normal pour la défense.
  * Retourne un objet duel identique à runFieldDuel.
+ * `heroic` = relance gratuite "Dépassement de soi" (ne consomme pas de reroll capitaine).
  */
-function doReroll(ctx) {
+function doReroll(ctx, heroic = false) {
     const {
         attackTeam, defenseTeam, attackType, defenseAction,
         attackBaseRaw, defenseBaseRaw, attackStamF, defenseStamF,
         defenderId, defenderSlot, clearanceBonus,
     } = ctx;
 
-    consumeReroll(attackTeam);
+    if (!heroic) consumeReroll(attackTeam);
 
     const b = ball();
 
@@ -338,7 +360,8 @@ function doReroll(ctx) {
         defenseScore: newDefenseScore,
         clearanceBonus, meta,
         critWinner: newCritWinner,
-        captainReroll: true,
+        captainReroll: !heroic,
+        heroic,
         homeBonus: HOME_BONUS,
         homeSide: attackTeam === _homeTeam ? 'attack' : defenseTeam === _homeTeam ? 'defense' : null,
     });
@@ -348,22 +371,36 @@ function doReroll(ctx) {
     const newDiceTag   = newAttackScore.toFixed(1) + "-" + newDefenseScore.toFixed(1);
     const newRawResult = newCritWinner ?? (newAttackScore > newDefenseScore ? "attack" : newAttackScore < newDefenseScore ? "defense" : "tie");
 
-    const captainInfo  = _roster.getPlayerInfo(attackTeam, b.number);
-    const captainName  = ((captainInfo?.firstname ?? '') + ' ' + (captainInfo?.lastname ?? '')).trim();
-    const rerollsLeft  = _state.captainReroll[attackTeam].rerollsRemaining;
+    const attackerInfo = _roster.getPlayerInfo(attackTeam, b.number);
+    const attackerName = ((attackerInfo?.firstname ?? '') + ' ' + (attackerInfo?.lastname ?? '')).trim();
     const resultLabel  = newRawResult === "attack" ? "✓ Réussi!" : "✗ Echec";
 
-    pushLogEntry(
-        `👑 Captain Reroll — ${captainName}`,
-        [
-            `2d20 (${newAroll.roll1}, ${newAroll.roll2}) → ${newAroll.roll}`,
-            `${resultLabel} — Score: ${newDiceTag}`,
-            `Relances restantes : ${rerollsLeft}`,
-        ],
-        newDiceTag,
-        _state,
-        breakdown
-    );
+    if (heroic) {
+        pushLogEntry(
+            `🔥 Dépassement de soi — ${attackerName}`,
+            [
+                `Porté par son moral, il relance le duel !`,
+                `2d20 (${newAroll.roll1}, ${newAroll.roll2}) → ${newAroll.roll}`,
+                `${resultLabel} — Score: ${newDiceTag}`,
+            ],
+            newDiceTag,
+            _state,
+            breakdown
+        );
+    } else {
+        const rerollsLeft = _state.captainReroll[attackTeam].rerollsRemaining;
+        pushLogEntry(
+            `👑 Captain Reroll — ${attackerName}`,
+            [
+                `2d20 (${newAroll.roll1}, ${newAroll.roll2}) → ${newAroll.roll}`,
+                `${resultLabel} — Score: ${newDiceTag}`,
+                `Relances restantes : ${rerollsLeft}`,
+            ],
+            newDiceTag,
+            _state,
+            breakdown
+        );
+    }
 
     if (newRawResult === "tie") {
         givePossessionOnTie(defenseTeam, defenderId);
@@ -583,6 +620,14 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
 
     const diceTag    = attackScore.toFixed(1) + "-" + defenseScore.toFixed(1);
     if (critWinner) {
+        // Moment héroïque : relance gratuite avant le reroll capitaine
+        if (critWinner === "defense" && tryHeroicMoment(attackTeam, b.number)) {
+            return doReroll({
+                attackTeam, defenseTeam, attackType, defenseAction,
+                attackBaseRaw, defenseBaseRaw, attackStamF, defenseStamF,
+                defenderId, defenderSlot, clearanceBonus,
+            }, true);
+        }
         // Si crit defense ET capitaine peut reroller
         if (critWinner === "defense" && canAttackerReroll(attackTeam, b.number)) {
             if (_isAITeam(attackTeam)) {
@@ -617,6 +662,15 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
     }
 
     const rawResult = diff > 0 ? "attack" : "defense";
+
+    // ── MOMENT HÉROÏQUE ─────────────────────────────────────────
+    if (rawResult === "defense" && tryHeroicMoment(attackTeam, b.number)) {
+        return doReroll({
+            attackTeam, defenseTeam, attackType, defenseAction,
+            attackBaseRaw, defenseBaseRaw, attackStamF, defenseStamF,
+            defenderId, defenderSlot, clearanceBonus,
+        }, true);
+    }
 
     // ── CAPTAIN REROLL ──────────────────────────────────────────
     if (rawResult === "defense" && canAttackerReroll(attackTeam, b.number)) {

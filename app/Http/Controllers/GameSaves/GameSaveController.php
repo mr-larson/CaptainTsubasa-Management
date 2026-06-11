@@ -10,12 +10,16 @@ use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameInjury;
 use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GamePlayer;
+use App\Models\GameSaves\GamePlayerMoraleLog;
+use App\Models\GameSaves\GameDeclaration;
+use App\Models\GameSaves\GamePromise;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameSanction;
 use App\Models\GameSaves\GameTeam;
 use App\Models\Player;
 use App\Models\Team;
 use App\Services\BonusCardShopService;
+use App\Services\MoraleService;
 use App\Services\PlayerStatsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -336,6 +340,59 @@ class GameSaveController extends Controller
                 ->values();
         }
 
+        // ─── Moral : derniers changements par joueur (équipe contrôlée) ───
+        $controlledPlayerIds = $controlledTeam
+            ? $controlledTeam->contracts->pluck('game_player_id')
+            : collect();
+
+        $moraleLogs = GamePlayerMoraleLog::where('game_save_id', $gameSave->id)
+            ->whereIn('game_player_id', $controlledPlayerIds)
+            ->orderByDesc('id')
+            ->limit(200)
+            ->get()
+            ->groupBy('game_player_id')
+            ->map(fn($logs) => $logs->take(6)->map(fn($l) => [
+                'source' => $l->source,
+                'value'  => $l->value,
+                'label'  => $l->label,
+                'week'   => $l->week,
+                'season' => $l->season,
+            ])->values());
+
+        // ─── Promesses (équipe contrôlée) : en cours + dernières évaluées ───
+        $playerPromises = GamePromise::where('game_save_id', $gameSave->id)
+            ->whereIn('game_player_id', $controlledPlayerIds)
+            ->orderByDesc('id')
+            ->limit(100)
+            ->get()
+            ->groupBy('game_player_id')
+            ->map(fn($promises) => $promises->take(2)->map(fn($p) => [
+                'id'             => $p->id,
+                'type'           => $p->type,
+                'start_week'     => $p->start_week,
+                'due_week'       => $p->due_week,
+                'target_matches' => $p->target_matches,
+                'played_matches' => $p->played_matches,
+                'status'         => $p->status,
+            ])->values());
+
+        // ─── Déclarations publiques (équipe contrôlée) : dernière par joueur ───
+        $playerDeclarations = GameDeclaration::where('game_save_id', $gameSave->id)
+            ->whereIn('game_player_id', $controlledPlayerIds)
+            ->orderByDesc('id')
+            ->limit(100)
+            ->get()
+            ->groupBy('game_player_id')
+            ->map(fn($declarations) => $declarations->take(1)->map(fn($d) => [
+                'type'           => $d->type,
+                'deserved'       => $d->deserved,
+                'outcome'        => $d->outcome,
+                'affinity_delta' => $d->affinity_delta,
+                'morale_delta'   => $d->morale_delta,
+                'week'           => $d->week,
+                'season'         => $d->season,
+            ])->values());
+
         // ─── Bonus cards ───
         $controlledTeamId = $gameSave->controlled_game_team_id;
 
@@ -381,6 +438,9 @@ class GameSaveController extends Controller
             'activeSuspensions'   => $activeSuspensions,
             'activeYellowCards'   => $activeYellowCards,
             'weeklyRecap'         => $weeklyRecap,
+            'moraleLogs'          => $moraleLogs,
+            'playerPromises'      => $playerPromises,
+            'playerDeclarations'  => $playerDeclarations,
             'bonusCardOffers'     => $bonusCardOffers,
             'bonusCardInventory'  => $bonusCardInventory,
         ]);
@@ -408,6 +468,25 @@ class GameSaveController extends Controller
 
         if ($alreadyHasContract) {
             return back()->with('info', 'Ce joueur a déjà un contrat en cours dans cette partie.');
+        }
+
+        // Conséquences du moral : un révolté refuse de re-signer avec son ancien club ;
+        // signer ailleurs repart sur un moral neutre.
+        $lastContract = GameContract::where('game_save_id', $gameSave->id)
+            ->where('game_player_id', $player->id)
+            ->orderByDesc('end_week')
+            ->first();
+        $sameTeam = $lastContract && (int) $lastContract->game_team_id === (int) $team->id;
+
+        if ($sameTeam && MoraleService::refusesToSign($player)) {
+            return back()->withErrors([
+                'contract' => "{$player->full_name} refuse de re-signer avec ce club (moral ou relation avec le coach au plus bas).",
+            ]);
+        }
+
+        if ($lastContract && !$sameTeam) {
+            $player->morale         = MoraleService::NEUTRAL_MORALE;
+            $player->coach_affinity = 0;
         }
 
         $endWeek      = $startWeek + $data['matches_total'] - 1;

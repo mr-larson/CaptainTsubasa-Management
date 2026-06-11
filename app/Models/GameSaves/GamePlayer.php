@@ -34,6 +34,8 @@ class GamePlayer extends Model
         'hand_save',
         'punch_save',
         'cost',
+        'morale',
+        'coach_affinity',
         'description',
         'photo_path',
         'special_moves'
@@ -62,6 +64,16 @@ class GamePlayer extends Model
     public function contracts()
     {
         return $this->hasMany(GameContract::class, 'game_player_id');
+    }
+
+    public function moraleLogs()
+    {
+        return $this->hasMany(GamePlayerMoraleLog::class, 'game_player_id');
+    }
+
+    public function promises()
+    {
+        return $this->hasMany(GamePromise::class, 'game_player_id');
     }
 
     /**

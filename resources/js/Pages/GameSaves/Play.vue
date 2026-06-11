@@ -43,10 +43,32 @@ const props = defineProps({
     activeInjuries:    { type: Array,  default: () => [] },
     activeSuspensions: { type: Array,  default: () => [] },
     activeYellowCards: { type: Object, default: () => ({}) },
+    weeklyRecap:       { type: Array,  default: () => [] },
     bonusCardOffers:    { type: Array, default: () => [] },
     bonusCardInventory: { type: Array, default: () => [] },
     managementStats:    { type: Object, default: () => ({}) },
+    moraleLogs:         { type: Object, default: () => ({}) },
+    playerPromises:     { type: Object, default: () => ({}) },
+    playerDeclarations: { type: Object, default: () => ({}) },
 });
+
+// Promesse au joueur (relation coach) — type : playing_time | starter | renewal
+const makePromise = (player, type = 'playing_time') => {
+    router.post(
+        route('game-saves.players.promises.store', { gameSave: props.gameSave.id, player: player.id }),
+        { type },
+        { preserveScroll: true }
+    );
+};
+
+// Déclaration publique — type : praise | criticize
+const makeDeclaration = (player, type) => {
+    router.post(
+        route('game-saves.players.declarations.store', { gameSave: props.gameSave.id, player: player.id }),
+        { type },
+        { preserveScroll: true }
+    );
+};
 
 // ==========================
 //   SAISON / SEMAINE / STATE
@@ -331,6 +353,12 @@ function updateOtherPlayerNumber(playerId, number) {
                                :averageAttack="averageAttack"
                                :averageDefense="averageDefense"
                                :averageStamina="averageStamina"
+                               :moraleLogs="moraleLogs"
+                               :playerPromises="playerPromises"
+                               :playerDeclarations="playerDeclarations"
+                               :currentWeek="week"
+                               @make-promise="makePromise"
+                               @make-declaration="makeDeclaration"
                                :isPlayerInjured="isPlayerInjured"
                                :isPlayerSuspended="isPlayerSuspended"
                                :playerYellowCards="playerYellowCards"
@@ -421,7 +449,7 @@ function updateOtherPlayerNumber(playerId, number) {
                     <TabTraining v-else-if="activeTab === 'training'"
                                  :season="season"
                                  :week="week"
-                                 :roster="roster"
+                                 :roster="rosterWithStatus"
                                  :trainingState="trainingState"
                                  :playerSeasonStats="props.playerSeasonStats"
                                  :isPlayerInjured="isPlayerInjured"

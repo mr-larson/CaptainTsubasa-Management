@@ -7,6 +7,8 @@ use App\Http\Controllers\GameSaves\GameDraftController;
 use App\Http\Controllers\GameSaves\GameSeasonController;
 use App\Http\Controllers\GameSaves\GameMatchController;
 use App\Http\Controllers\GameSaves\GamePlayerController;
+use App\Http\Controllers\GameSaves\GameDeclarationController;
+use App\Http\Controllers\GameSaves\GamePromiseController;
 use App\Http\Controllers\GameSaves\GameSaveController;
 use App\Http\Controllers\GameSaves\GameTeamController;
 use App\Http\Controllers\GameSaves\LineupController;
@@ -146,6 +148,14 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{gameSave}/players/{player}',       [GamePlayerController::class, 'destroy'])->name('players.destroy');
         Route::patch('/{gameSave}/players/{player}/number', [GamePlayerController::class, 'updateNumber'])
             ->name('players.update-number');
+
+        // Promesses (relation coach)
+        Route::post('/{gameSave}/players/{player}/promises',
+            [GamePromiseController::class, 'store'])->name('players.promises.store');
+
+        // Déclarations publiques (relation coach)
+        Route::post('/{gameSave}/players/{player}/declarations',
+            [GameDeclarationController::class, 'store'])->name('players.declarations.store');
 
         // Contrats de partie
         Route::post('/{gameSave}/players/{player}/contracts',

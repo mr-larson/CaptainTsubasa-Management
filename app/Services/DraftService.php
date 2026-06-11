@@ -89,6 +89,9 @@ class DraftService
 
         if ($hasContract) return null;
 
+        // Rancune envers le coach : refuse d'être drafté par l'équipe contrôlée
+        if ($this->playerRefusesTeam($gameSave, $player, (int) $currentTeamId)) return null;
+
         // Coût = salaire hebdo (majoration polyvalence incluse) × semaines restantes × réduction draft
         $seasonLength = $this->getSeasonLength($gameSave);
         $salary       = $player->adjusted_cost;
@@ -110,6 +113,13 @@ class DraftService
             $nextNumber = 1;
             while (in_array($nextNumber, $usedNumbers)) {
                 $nextNumber++;
+            }
+
+            // Drafté par un autre club que l'équipe contrôlée : la rancune
+            // envers le coach repart à zéro (nouveau départ).
+            if ((int) $team->id !== (int) ($gameSave->controlled_game_team_id ?? 0)
+                && (int) ($player->coach_affinity ?? 0) !== 0) {
+                $player->coach_affinity = 0;
             }
 
             $player->number = $nextNumber;
@@ -310,6 +320,18 @@ class DraftService
     /**
      * Retourne l'ID de l'équipe dont c'est le tour.
      */
+    /**
+     * Un joueur en rupture avec le coach (affinité ≤ seuil) refuse d'être
+     * drafté par l'équipe contrôlée. Les équipes IA ne sont pas concernées.
+     */
+    public function playerRefusesTeam(GameSave $gameSave, GamePlayer $player, int $teamId): bool
+    {
+        $controlledTeamId = (int) ($gameSave->controlled_game_team_id ?? 0);
+        if (!$controlledTeamId || $teamId !== $controlledTeamId) return false;
+
+        return (int) ($player->coach_affinity ?? 0) <= MoraleService::AFFINITY_REFUSAL_THRESHOLD;
+    }
+
     public function getCurrentTeamId(GameSave $gameSave): ?int
     {
         $draft = ($gameSave->state ?? [])['draft'] ?? null;

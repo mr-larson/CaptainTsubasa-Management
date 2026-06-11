@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
+import RosterList from '@/Pages/GameSaves/Play/RosterList.vue';
 
 const props = defineProps({
     season:                      { type: Number,   required: true },
@@ -273,75 +274,25 @@ const profileStatBars = computed(() => {
             <!-- ============================================ -->
             <!-- COLONNE GAUCHE : Effectif         -->
             <!-- ============================================ -->
-            <div class="col-span-3 border border-slate-200 rounded-xl bg-slate-50 p-3 max-h-[500px] overflow-y-auto">
-                <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Effectif</h3>
-                <div v-if="roster.length" class="space-y-1">
-                    <button v-for="p in roster" :key="p.id" type="button"
-                            @click="selectPlayer(p)"
-                            class="w-full text-left rounded-lg px-2 py-1.5 transition-all border"
-                            :class="[
-                    selectedPlayer?.id === p.id
-                        ? 'bg-teal-500 text-white border-teal-600 shadow-sm'
-                        : hasPlayerBeenTrainedThisWeek(p.id)
-                            ? 'bg-teal-50 border-teal-200 text-slate-700'
-                            : 'bg-white border-slate-100 text-slate-700 hover:bg-slate-100'
-                ]">
-                        <div class="flex items-center gap-2">
-                            <!-- Photo -->
-                            <div class="w-7 h-7 rounded-full overflow-hidden bg-slate-200 shrink-0">
-                                <img v-if="playerPhotoUrl(p)" :src="playerPhotoUrl(p)" class="w-full h-full object-cover" alt=""/>
-                                <div v-else class="w-full h-full flex items-center justify-center text-[9px] text-slate-400">?</div>
-                            </div>
-
-                            <!-- Nom + poste -->
-                            <div class="flex-1 min-w-0">
-                                <div class="text-xs font-semibold truncate">{{ p.lastname }}</div>
-                                <div class="text-[10px] opacity-60 truncate">{{ p.position }}</div>
-                            </div>
-
-                            <!-- Icônes statut + durée absence -->
-                            <div class="flex items-center gap-0.5 shrink-0">
-                                <span v-if="p.is_captain" title="Capitaine" class="text-[11px]">👑</span>
-                                <span v-if="isPlayerInjured(p.id)"
-                                      :title="`${playerInjury(p.id)?.description ?? 'Blessé'} — Retour S${playerInjury(p.id)?.week_return}`"
-                                      class="text-[11px]">🤕</span>
-                                <span v-else-if="isPlayerSuspended(p.id)"
-                                      :title="`${sanctionTypeLabel(playerSuspension(p.id)?.type)} — Retour S${playerSuspension(p.id)?.week_return}`"
-                                      class="text-[11px]">🚫</span>
-                                <span v-else-if="playerYellowCards(p.id) > 0"
-                                      :title="`${playerYellowCards(p.id)} carton(s) jaune`"
-                                      class="text-[9px] font-black bg-yellow-400 text-yellow-900 px-1 rounded">
-                        {{ playerYellowCards(p.id) }}🟨
-                    </span>
-                            </div>
-
-                            <!-- Stamina bar + valeur -->
-                            <div class="w-12 flex flex-col items-end gap-0.5 shrink-0">
-                                <div class="text-[10px] font-bold"
-                                     :class="selectedPlayer?.id === p.id ? 'text-white/80' : 'text-slate-500'">
-                                    {{ p.stamina ?? p.stats?.stamina ?? '—' }}
-                                </div>
-                                <div class="w-full h-1 rounded-full overflow-hidden"
-                                     :class="selectedPlayer?.id === p.id ? 'bg-white/30' : 'bg-slate-200'">
-                                    <div class="h-full rounded-full transition-all"
-                                         :class="(p.stamina ?? 0) >= 60 ? 'bg-emerald-400'
-                                   : (p.stamina ?? 0) >= 30 ? 'bg-amber-400' : 'bg-rose-400'"
-                                         :style="{ width: Math.min(p.stamina ?? 0, 100) + '%' }">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Badge entraîné -->
-                            <div v-if="hasPlayerBeenTrainedThisWeek(p.id)"
-                                 class="text-[9px] px-1.5 py-0.5 rounded-full font-bold shrink-0"
-                                 :class="selectedPlayer?.id === p.id ? 'bg-white text-teal-600' : 'bg-teal-500 text-white'">
-                                ✓
-                            </div>
-                        </div>
-                    </button>
-                </div>
-                <p v-else class="text-xs text-slate-400">Aucun joueur.</p>
-            </div>
+            <RosterList class="col-span-3 max-h-[500px]"
+                        :players="roster"
+                        :selectedId="selectedPlayer?.id"
+                        :isPlayerInjured="isPlayerInjured"
+                        :isPlayerSuspended="isPlayerSuspended"
+                        :playerYellowCards="playerYellowCards"
+                        :playerInjury="playerInjury"
+                        :playerSuspension="playerSuspension"
+                        :rowHighlight="p => hasPlayerBeenTrainedThisWeek(p.id)"
+                        @select="selectPlayer">
+                <template #badge="{ player, selected }">
+                    <div v-if="hasPlayerBeenTrainedThisWeek(player.id)"
+                         class="text-[9px] px-1.5 py-0.5 rounded-full font-bold shrink-0"
+                         :class="selected ? 'bg-white text-teal-600' : 'bg-teal-500 text-white'"
+                         title="Déjà entraîné cette semaine">
+                        ✓
+                    </div>
+                </template>
+            </RosterList>
 
             <!-- ============================================ -->
             <!-- COLONNE  CENTRAL & DROITE                               -->
