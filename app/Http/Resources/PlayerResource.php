@@ -31,6 +31,7 @@ class PlayerResource extends JsonResource
             'lastname' => $this->lastname,
             'age' => $this->age,
             'position' => $this->position,
+            'secondary_positions' => $this->secondary_positions ?? [],
             'cost' => $this->cost,
             'stats' => $this->stats,
             'description' => $this->description,

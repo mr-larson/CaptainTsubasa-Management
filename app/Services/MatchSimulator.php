@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\TeamStyle;
+use App\Helpers\FormationHelper;
 use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GameTeam;
 use Illuminate\Support\Collection;
@@ -17,6 +18,19 @@ class MatchSimulator
     private const GOOD_COUNTER_BONUS              = 2;
     private const HOME_BONUS                      = 0.5;
     private const SHOT_DISTANCE_PENALTY_PER_ZONE  = 1;
+
+    // Miroir de POSITION_BONUS / SECONDARY_POSITION_BONUS_FACTOR / OFF_POSITION_MALUS (constants.js)
+    private const POSITION_BONUS = [
+        'GK' => ['gk' => 0.03],
+        'DF' => ['defend' => 0.03, 'tackle' => 0.02, 'block' => 0.03],
+        'MF' => ['pass' => 0.03, 'dribble' => 0.02],
+        'FW' => ['shot' => 0.04, 'attack' => 0.03],
+    ];
+    private const SECONDARY_POSITION_BONUS_FACTOR = 0.5;
+    private const OFF_POSITION_MALUS              = 0.08;
+
+    /** Rôle (GK/DF/MF/FW) assigné par slot de lineup, indexé par id de joueur. */
+    private array $assignedRoles = [];
 
     public function simulateOtherMatchesOfWeek(GameMatch $playedMatch): void
     {
@@ -55,9 +69,13 @@ class MatchSimulator
     // ==========================
     private function simulateAndSave(GameMatch $m): void
     {
+        $gameSave = $m->gameSave ?? \App\Models\GameSaves\GameSave::find($m->game_save_id);
+        $lineups  = $gameSave?->state['lineup'] ?? [];
+
         [$homeScore, $awayScore, $matchStats] = $this->simulateMatch(
             $m->homeTeam,
-            $m->awayTeam
+            $m->awayTeam,
+            $lineups
         );
 
         $m->home_score  = $homeScore;
@@ -67,7 +85,6 @@ class MatchSimulator
         $m->save();
 
         // Progression post-match pour les joueurs IA
-        $gameSave = $m->gameSave ?? \App\Models\GameSaves\GameSave::find($m->game_save_id);
         if ($gameSave) {
             app(PostMatchProgressionService::class)->applyForMatch($gameSave, $m);
         }
@@ -87,10 +104,12 @@ class MatchSimulator
      * compatible avec celui généré par `buildMatchStats` côté client
      * (mêmes clés consommées par PlayerStatsService / PostMatchProgressionService / TabCalendar).
      */
-    private function simulateMatch(GameTeam $home, GameTeam $away): array
+    private function simulateMatch(GameTeam $home, GameTeam $away, array $lineups = []): array
     {
         $homePlayers = $this->getStarters($home);
         $awayPlayers = $this->getStarters($away);
+
+        $this->buildAssignedRoles([$home, $away], $lineups);
 
         $homeGK = $this->getGoalkeeper($homePlayers);
         $awayGK = $this->getGoalkeeper($awayPlayers);
@@ -326,12 +345,82 @@ class MatchSimulator
     //   HELPERS DUEL / STAMINA
     // ==========================
 
+    /**
+     * Construit la carte joueur → rôle assigné (GK/DF/MF/FW) depuis les slots
+     * de lineup sauvegardés. Les joueurs sans slot connu joueront à leur
+     * poste naturel (aucun bonus/malus de repositionnement).
+     */
+    private function buildAssignedRoles(array $teams, array $lineups): void
+    {
+        $this->assignedRoles = [];
+
+        foreach ($teams as $team) {
+            $slots = $lineups[$team->id]['slots'] ?? null;
+            if (!is_array($slots)) continue;
+
+            foreach ($slots as $slot => $playerId) {
+                if (!$playerId) continue;
+                $role = FormationHelper::slotRole($team->formation ?? null, (int) $slot);
+                if ($role !== null) {
+                    $this->assignedRoles[(string) $playerId] = $role;
+                }
+            }
+        }
+    }
+
+    /**
+     * Multiplicateur de poste, miroir de RosterService::positionBonusMultiplier :
+     * - poste principal  → bonus plein du rôle occupé
+     * - poste secondaire → bonus réduit
+     * - hors poste       → malus global
+     */
+    private function positionMultiplier($player, string $tag): float
+    {
+        if (!$player || !($player->id ?? null)) return 1.0;
+
+        $natural = FormationHelper::roleFromPosition($player->position ?? null);
+        $role    = $this->assignedRoles[(string) $player->id] ?? $natural;
+
+        if ($role === null || $natural === null) return 1.0;
+
+        $factor = 1.0;
+        if ($role !== $natural) {
+            $secondary = array_filter(array_map(
+                fn($p) => FormationHelper::roleFromPosition(is_string($p) ? $p : null),
+                (array) ($player->secondary_positions ?? [])
+            ));
+            if (!in_array($role, $secondary, true)) {
+                return 1.0 - self::OFF_POSITION_MALUS;
+            }
+            $factor = self::SECONDARY_POSITION_BONUS_FACTOR;
+        }
+
+        $bonus = self::POSITION_BONUS[$role][$tag] ?? 0.0;
+        return 1.0 + $bonus * $factor;
+    }
+
+    /** Tag de bonus de poste correspondant à une action (miroir des appels client). */
+    private function positionTagForAction(string $action, string $category): string
+    {
+        return match ($category) {
+            'attack' => match ($action) {
+                'shot'    => 'shot',
+                'pass'    => 'pass',
+                'dribble' => 'dribble',
+                default   => 'attack',
+            },
+            'defenseField' => $action === 'block' ? 'block' : 'defend',
+            'defenseGK'    => 'gk',
+            default        => 'attack',
+        };
+    }
+
     /** Retourne la statistique pertinente du joueur pour une action donnée (mêmes clés que STATS côté client). */
     private function statForAction($player, string $action, string $category): float
     {
         if (!$player) return 20.0;
 
-        return match ($category) {
+        return $this->positionMultiplier($player, $this->positionTagForAction($action, $category)) * match ($category) {
             'attack' => match ($action) {
                 'shot'    => (float) ($player->shot    ?? 0),
                 'pass'    => (float) ($player->pass    ?? 0),
@@ -547,8 +636,8 @@ class MatchSimulator
             // Défenseur : meilleur intercepteur adverse
             $defender = $defPlayers->sortByDesc(fn($p) => $p->intercept ?? 0)->first();
 
-            $attackScore  = ($attacker->pass ?? 0) * $this->staminaFactor($staminaOf($attacker)) + $homeBonus + $this->d20();
-            $defenseScore = ($defender->intercept ?? 0) * $this->staminaFactor($staminaOf($defender)) + self::GOOD_COUNTER_BONUS + $awayBonus + $this->d20();
+            $attackScore  = ($attacker->pass ?? 0) * $this->positionMultiplier($attacker, 'pass') * $this->staminaFactor($staminaOf($attacker)) + $homeBonus + $this->d20();
+            $defenseScore = ($defender->intercept ?? 0) * $this->positionMultiplier($defender, 'defend') * $this->staminaFactor($staminaOf($defender)) + self::GOOD_COUNTER_BONUS + $awayBonus + $this->d20();
 
             $success = $attackScore > $defenseScore;
 
@@ -603,7 +692,8 @@ class MatchSimulator
 
         // ----- Centre -----
         $crosser = $this->pickPlayerForAction($attPlayers, 'pass');
-        $crosserScore = ($crosser->pass ?? 0) * 0.7 + ($crosser->attack ?? 0) * 0.3;
+        $crosserScore = (($crosser->pass ?? 0) * 0.7 + ($crosser->attack ?? 0) * 0.3)
+            * $this->positionMultiplier($crosser, 'pass');
 
         $success = true;
         $defenderForLog = null;
@@ -613,7 +703,7 @@ class MatchSimulator
             $interceptDef = $defPlayers->sortByDesc(fn($p) => $p->intercept ?? 0)->first();
             $defenderForLog = $interceptDef;
             $attackScore  = $crosserScore * $this->staminaFactor($staminaOf($crosser)) + $homeBonus + $this->d20();
-            $defenseScore = ($interceptDef->intercept ?? 0) * $this->staminaFactor($staminaOf($interceptDef)) + self::GOOD_COUNTER_BONUS + $awayBonus + $this->d20();
+            $defenseScore = ($interceptDef->intercept ?? 0) * $this->positionMultiplier($interceptDef, 'defend') * $this->staminaFactor($staminaOf($interceptDef)) + self::GOOD_COUNTER_BONUS + $awayBonus + $this->d20();
             $success = $attackScore > $defenseScore;
 
             if ($interceptDef) {
@@ -630,7 +720,8 @@ class MatchSimulator
         if ($success) {
             $headingDef = $defPlayers->sortByDesc(fn($p) => (($p->heading ?? 0) * 0.8) + (($p->speed ?? 0) * 0.2))->first();
             $defenderForLog = $headingDef ?? $defenderForLog;
-            $headingScore = (($headingDef->heading ?? 0) * 0.8) + (($headingDef->speed ?? 0) * 0.2);
+            $headingScore = ((($headingDef->heading ?? 0) * 0.8) + (($headingDef->speed ?? 0) * 0.2))
+                * $this->positionMultiplier($headingDef, 'defend');
 
             $attackScore  = $crosserScore * $this->staminaFactor($staminaOf($crosser)) + $homeBonus + $this->d20();
             $defenseScore = $headingScore * $this->staminaFactor($staminaOf($headingDef)) + self::GOOD_COUNTER_BONUS + $awayBonus + $this->d20();
@@ -691,8 +782,8 @@ class MatchSimulator
             ? 1.15
             : (($crosserIsForward && $receiverIsForward) ? 1.10 : 1.0);
 
-        $attackScore  = ($receiver->shot ?? 0) * $shotBonus * $this->staminaFactor($staminaOf($receiver)) + $homeBonus + $this->d20();
-        $defenseScore = ($defGK->hand_save ?? 0) * 0.9 * $this->staminaFactor($staminaOf($defGK)) + $awayBonus + $this->d20();
+        $attackScore  = ($receiver->shot ?? 0) * $shotBonus * $this->positionMultiplier($receiver, 'shot') * $this->staminaFactor($staminaOf($receiver)) + $homeBonus + $this->d20();
+        $defenseScore = ($defGK->hand_save ?? 0) * 0.9 * $this->positionMultiplier($defGK, 'gk') * $this->staminaFactor($staminaOf($defGK)) + $awayBonus + $this->d20();
 
         $isGoal = $attackScore > $defenseScore;
 

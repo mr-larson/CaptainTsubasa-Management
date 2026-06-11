@@ -163,6 +163,20 @@
                         </FormCol>
                     </FormRaw>
 
+                    <!-- Postes secondaires -->
+                    <FormRaw>
+                        <FormCol>
+                            <InputLabel value="Postes secondaires" />
+                            <SecondaryPositionsPicker
+                                v-model="form.secondary_positions"
+                                :position="form.position"
+                            />
+                            <p v-if="form.errors.secondary_positions" class="text-sm text-red-600 mt-1">
+                                {{ form.errors.secondary_positions }}
+                            </p>
+                        </FormCol>
+                    </FormRaw>
+
                     <!-- Ligne 3 : coût & photo-->
                     <FormRaw>
                         <FormCol>
@@ -529,6 +543,7 @@ import ButtonGroup from '@/Components/ButtonGroup.vue';
 import ButtonPrimary from '@/Components/ButtonPrimary.vue';
 import ButtonDanger from '@/Components/ButtonDanger.vue';
 import InputSelect from "@/Components/InputSelect.vue";
+import SecondaryPositionsPicker from '@/Components/SecondaryPositionsPicker.vue';
 
 const props = defineProps({
     players: { type: Array, required: true },
@@ -543,6 +558,7 @@ const form = useForm({
     firstname: '',
     age: '',
     position: '',
+    secondary_positions: [],
     cost: '',
     description: '',
     photo_path: null, // string depuis DB
@@ -631,6 +647,7 @@ function selectPlayer(player) {
     form.lastname         = player.lastname ?? '';
     form.age              = player.age ?? '';
     form.position         = player.position ?? '';
+    form.secondary_positions = player.secondary_positions ?? [];
     form.cost             = player.cost ?? '';
     form.description      = player.description ?? '';
     form.photo_path       = player.photo_path ?? null;

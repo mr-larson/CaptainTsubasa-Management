@@ -99,10 +99,14 @@ class AiLineUpService
             $starterPosition = $this->positionGroup($starterPlayer->position ?? '');
             $starterOverall  = $this->playerOverall($starterPlayer);
 
-            // Cherche un remplaçant frais au même poste
+            // Cherche un remplaçant frais au même poste (principal d'abord, secondaire ensuite)
             $candidate = $freshSubs
-                ->filter(fn($c) => $this->positionGroup($c->gamePlayer->position ?? '') === $starterPosition)
-                ->sortByDesc(fn($c) => $this->playerOverall($c->gamePlayer))
+                ->filter(fn($c) => in_array($starterPosition, $this->playerPositionGroups($c->gamePlayer), true))
+                ->sortBy([
+                    fn($a, $b) => ($this->positionGroup($b->gamePlayer->position ?? '') === $starterPosition)
+                        <=> ($this->positionGroup($a->gamePlayer->position ?? '') === $starterPosition),
+                    fn($a, $b) => $this->playerOverall($b->gamePlayer) <=> $this->playerOverall($a->gamePlayer),
+                ])
                 ->first();
 
             if (!$candidate) continue;
@@ -162,8 +166,12 @@ class AiLineUpService
             $starterPosition = $this->positionGroup($starterPlayer->position ?? '');
 
             $replacement = $availableSubs
-                ->filter(fn($c) => $this->positionGroup($c->gamePlayer->position ?? '') === $starterPosition)
-                ->sortByDesc(fn($c) => $this->playerOverall($c->gamePlayer))
+                ->filter(fn($c) => in_array($starterPosition, $this->playerPositionGroups($c->gamePlayer), true))
+                ->sortBy([
+                    fn($a, $b) => ($this->positionGroup($b->gamePlayer->position ?? '') === $starterPosition)
+                        <=> ($this->positionGroup($a->gamePlayer->position ?? '') === $starterPosition),
+                    fn($a, $b) => $this->playerOverall($b->gamePlayer) <=> $this->playerOverall($a->gamePlayer),
+                ])
                 ->first();
 
             if (!$replacement) {
@@ -199,6 +207,22 @@ class AiLineUpService
     // ==========================
     //   HELPERS
     // ==========================
+
+    /**
+     * Groupes de poste maîtrisés par un joueur : poste principal + postes secondaires.
+     */
+    protected function playerPositionGroups($player): array
+    {
+        $groups = [$this->positionGroup($player->position ?? '')];
+
+        foreach ((array) ($player->secondary_positions ?? []) as $secondary) {
+            if (is_string($secondary) && $secondary !== '') {
+                $groups[] = $this->positionGroup($secondary);
+            }
+        }
+
+        return array_values(array_unique($groups));
+    }
 
     protected function positionGroup(string $position): string
     {

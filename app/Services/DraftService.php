@@ -89,9 +89,9 @@ class DraftService
 
         if ($hasContract) return null;
 
-        // Coût = salaire hebdo × semaines restantes × réduction draft
+        // Coût = salaire hebdo (majoration polyvalence incluse) × semaines restantes × réduction draft
         $seasonLength = $this->getSeasonLength($gameSave);
-        $salary       = $player->cost ?? 0;
+        $salary       = $player->adjusted_cost;
         $totalCost    = (int) floor($salary * $seasonLength * self::DRAFT_DISCOUNT);
 
         if ($totalCost > ($team->budget ?? 0)) return null;

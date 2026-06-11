@@ -45,6 +45,7 @@ class Player extends Model
         'lastname',
         'age',
         'position',
+        'secondary_positions',
         'cost',
         'stats',
         'special_moves',
@@ -55,6 +56,7 @@ class Player extends Model
     protected $casts = [
         'stats'    => 'array',
         'position' => PlayerPosition::class,
+        'secondary_positions' => 'array',
         'special_moves' => 'array'
     ];
 

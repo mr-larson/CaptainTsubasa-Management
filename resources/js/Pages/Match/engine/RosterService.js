@@ -1,11 +1,13 @@
 // resources/js/Pages/Match/engine/RosterService.js
-import { STATS, POSITION_BONUS } from './constants.js';
+import { STATS, POSITION_BONUS, SECONDARY_POSITION_BONUS_FACTOR, OFF_POSITION_MALUS } from './constants.js';
+import { FORMATIONS, DEFAULT_FORMATION } from './formations.js';
 
 export class RosterService {
-    constructor({ rosters, statCoef, positionBonus }) {
+    constructor({ rosters, statCoef, positionBonus, formations }) {
         this.rosters        = rosters;
         this.STAT_COEF      = statCoef;
         this.POSITION_BONUS = positionBonus;
+        this.formations     = formations ?? {};
     }
 
     static create(matchConfig, { statCoef, positionBonus }) {
@@ -56,6 +58,7 @@ export class RosterService {
                     firstname:    p.firstname ?? "",
                     lastname:     p.lastname  ?? "",
                     position:     p.position  ?? "",
+                    secondaryPositions: Array.isArray(p.secondary_positions) ? p.secondary_positions : [],
                     photo:        resolvePhoto(p),
                     stats:        resolveStats(p),
                     specialMoves: Array.isArray(p.special_moves) ? p.special_moves : [],
@@ -68,7 +71,7 @@ export class RosterService {
                 } : {
                     id: null, number: slot,
                     firstname: "Joueur", lastname: `#${slot}`,
-                    position: "", photo: null, stats: null, specialMoves: [],
+                    position: "", secondaryPositions: [], photo: null, stats: null, specialMoves: [],
                     isAvailable: true, yellowCards: 0, isStarter: true,
                     isCaptain:    false,   // ← pas de p ici
                     contractId:   null,
@@ -86,6 +89,7 @@ export class RosterService {
                     firstname:    p.firstname ?? "",
                     lastname:     p.lastname  ?? "",
                     position:     p.position  ?? "",
+                    secondaryPositions: Array.isArray(p.secondary_positions) ? p.secondary_positions : [],
                     photo:        resolvePhoto(p),
                     stats:        resolveStats(p),
                     specialMoves: Array.isArray(p.special_moves) ? p.special_moves : [],
@@ -99,7 +103,12 @@ export class RosterService {
         seedTeam("internal");
         seedTeam("external");
 
-        return new RosterService({ rosters, statCoef, positionBonus });
+        const formations = {
+            internal: matchConfig.teams?.internal?.formation ?? DEFAULT_FORMATION,
+            external: matchConfig.teams?.external?.formation ?? DEFAULT_FORMATION,
+        };
+
+        return new RosterService({ rosters, statCoef, positionBonus, formations });
     }
 
     // -----------------------------------------------------------
@@ -153,12 +162,58 @@ export class RosterService {
         return this.getRoleFromPositionString(info?.position);
     }
 
-    positionBonusMultiplier(role, tag) {
+    /** Rôle (GK/DF/MF/FW) du slot occupé, dérivé de la formation de l'équipe. */
+    getSlotRole(team, slotNumber) {
+        const formKey   = this.formations?.[team] ?? DEFAULT_FORMATION;
+        const formation = FORMATIONS[formKey] ?? FORMATIONS[DEFAULT_FORMATION];
+        const zone      = formation.slots?.[slotNumber]?.zone;
+
+        if (zone === 0) return "GK";
+        if (zone === 1) return "DF";
+        if (zone === 2 || zone === 3) return "MF";
+        if (zone === 4) return "FW";
+
+        // Slot hors formation (remplaçants 12+) : poste naturel
+        return this.getPlayerRole(team, slotNumber);
+    }
+
+    /**
+     * Maîtrise du poste occupé :
+     * - "primary"   : le slot correspond au poste naturel
+     * - "secondary" : le slot correspond à un poste secondaire
+     * - "off"       : joueur hors poste
+     */
+    positionMastery(team, slotNumber) {
+        const slotRole    = this.getSlotRole(team, slotNumber);
+        const naturalRole = this.getPlayerRole(team, slotNumber);
+
+        // Données manquantes (joueur fictif, position inconnue) → neutre
+        if (!slotRole || !naturalRole) return { role: slotRole, level: "primary" };
+
+        if (slotRole === naturalRole) return { role: slotRole, level: "primary" };
+
+        const info      = this.getPlayerInfo(team, slotNumber);
+        const secondary = (info?.secondaryPositions ?? [])
+            .map(p => this.getRoleFromPositionString(p));
+
+        if (secondary.includes(slotRole)) return { role: slotRole, level: "secondary" };
+
+        return { role: slotRole, level: "off" };
+    }
+
+    positionBonusMultiplier(team, slotNumber, tag) {
+        const { role, level } = this.positionMastery(team, slotNumber);
+
+        if (level === "off") return 1.0 - OFF_POSITION_MALUS;
+
         if (!role) return 1.0;
         const r = this.POSITION_BONUS[role];
         if (!r)  return 1.0;
         const b = Number(r[tag] ?? 0);
-        return 1.0 + (Number.isFinite(b) ? b : 0);
+        if (!Number.isFinite(b)) return 1.0;
+
+        const factor = level === "secondary" ? SECONDARY_POSITION_BONUS_FACTOR : 1.0;
+        return 1.0 + b * factor;
     }
 
     globalAttackMultiplier(team, slotNumber) {
@@ -181,7 +236,6 @@ export class RosterService {
     // -----------------------------------------------------------
     attackBaseFor(actionKey, team, slotNumber) {
         const base = STATS.attack[actionKey]?.power ?? 10;
-        const role = this.getPlayerRole(team, slotNumber);
         const map  = {
             pass:    { stat: "pass",    bonus: "pass"    },
             dribble: { stat: "dribble", bonus: "dribble" },
@@ -193,7 +247,7 @@ export class RosterService {
             const attackStat = this.getStat(team, slotNumber, "attack");
             const combined   = passStat * 0.7 + attackStat * 0.3;
             let raw = base + combined * this.STAT_COEF;
-            raw *= this.positionBonusMultiplier(role, "pass");
+            raw *= this.positionBonusMultiplier(team, slotNumber, "pass");
             raw *= this.globalAttackMultiplier(team, slotNumber);
             return raw;
         }
@@ -201,7 +255,7 @@ export class RosterService {
         const m = map[actionKey] ?? null;
         let raw = base;
         if (m) raw = base + this.getStat(team, slotNumber, m.stat) * this.STAT_COEF;
-        if (m) raw *= this.positionBonusMultiplier(role, m.bonus);
+        if (m) raw *= this.positionBonusMultiplier(team, slotNumber, m.bonus);
         raw *= this.globalAttackMultiplier(team, slotNumber);
         return raw;
     }
@@ -210,13 +264,12 @@ export class RosterService {
         const baseField = STATS.defenseField[defenseAction]?.power;
         const baseGk    = STATS.defenseGK[defenseAction]?.power;
         const base      = baseField ?? baseGk ?? 10;
-        const role      = this.getPlayerRole(defenseTeam, defenseSlotNumber);
 
         if (isKeeper) {
             const mapGK   = { hands: "hand_save", punch: "punch_save", "gk-special": "defense" };
             const statKey = mapGK[defenseAction] ?? null;
             let raw = base + (statKey ? this.getStat(defenseTeam, defenseSlotNumber, statKey) * this.STAT_COEF : 0);
-            raw *= this.positionBonusMultiplier(role, "gk");
+            raw *= this.positionBonusMultiplier(defenseTeam, defenseSlotNumber, "gk");
             raw *= this.globalDefenseMultiplier(defenseTeam, defenseSlotNumber);
             return raw;
         }
@@ -226,7 +279,7 @@ export class RosterService {
             const speedStat   = this.getStat(defenseTeam, defenseSlotNumber, "speed");
             const combined    = headingStat * 0.8 + speedStat * 0.2;
             let raw = base + combined * this.STAT_COEF;
-            raw *= this.positionBonusMultiplier(role, "defend");
+            raw *= this.positionBonusMultiplier(defenseTeam, defenseSlotNumber, "defend");
             raw *= this.globalDefenseMultiplier(defenseTeam, defenseSlotNumber);
             return raw;
         }
@@ -235,7 +288,7 @@ export class RosterService {
         const statKey  = mapField[defenseAction] ?? null;
         let raw = base + (statKey ? this.getStat(defenseTeam, defenseSlotNumber, statKey) * this.STAT_COEF : 0);
         const bonusTag = (defenseAction === "block") ? "block" : "defend";
-        raw *= this.positionBonusMultiplier(role, bonusTag);
+        raw *= this.positionBonusMultiplier(defenseTeam, defenseSlotNumber, bonusTag);
         raw *= this.globalDefenseMultiplier(defenseTeam, defenseSlotNumber);
         return raw;
     }

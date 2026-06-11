@@ -19,6 +19,7 @@ class GamePlayer extends Model
         'firstname',
         'lastname',
         'position',
+        'secondary_positions',
         'speed',
         'stamina',
         'attack',
@@ -41,7 +42,11 @@ class GamePlayer extends Model
 
     protected $casts = [
         'special_moves' => 'array',
+        'secondary_positions' => 'array',
     ];
+
+    /** Expose le coût avec majoration de polyvalence côté front. */
+    protected $appends = ['adjusted_cost'];
 
     public function gameSave()
     {
@@ -66,6 +71,23 @@ class GamePlayer extends Model
     protected function getBaseStat(string $key): int
     {
         return (int) ($this->{$key} ?? 0);
+    }
+
+    /**
+     * Facteur de polyvalence : majoration salariale
+     * (+5 % par poste secondaire, plafonnée à +15 %).
+     */
+    public function versatilityFactor(): float
+    {
+        $count = count((array) ($this->secondary_positions ?? []));
+
+        return 1.0 + min($count * 0.05, 0.15);
+    }
+
+    /** Coût hebdomadaire incluant la majoration de polyvalence. */
+    public function getAdjustedCostAttribute(): int
+    {
+        return (int) round(($this->cost ?? 0) * $this->versatilityFactor());
     }
 
     public function getFullNameAttribute(): string

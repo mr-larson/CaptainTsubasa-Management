@@ -1,14 +1,16 @@
 <template>
-    <Head :title="`Ajouter un joueur (partie #${gameSave.id})`" />
+    <Head :title="`Modifier ${player.firstname} ${player.lastname} (partie #${gameSave.id})`" />
 
     <AuthenticatedLayout>
         <template #header>
-            <H2>Ajouter un joueur à la partie</H2>
+            <H2>Modifier un joueur de la partie</H2>
         </template>
 
         <div class="p-4">
             <div class="flex justify-center">
-                <h1 class="text-3xl font-bold text-slate-600 mb-6">Création (partie)</h1>
+                <h1 class="text-3xl font-bold text-slate-600 mb-6">
+                    Édition — {{ player.firstname }} {{ player.lastname }}
+                </h1>
             </div>
 
             <!-- LAYOUT FLEX -->
@@ -116,13 +118,21 @@
 
                                         <div class="h-16 w-16 rounded border bg-white overflow-hidden flex items-center justify-center">
                                             <img
-                                                v-if="photoPreviewUrl"
-                                                :src="photoPreviewUrl"
+                                                v-if="photoPreviewUrl || (player.photo_path && !form.remove_photo)"
+                                                :src="photoPreviewUrl ? photoPreviewUrl : `/storage/${player.photo_path}`"
                                                 class="h-full w-full object-cover"
                                             />
                                             <span v-else class="text-xs text-slate-400">Aucune</span>
                                         </div>
                                     </div>
+
+                                    <label
+                                        v-if="player.photo_path"
+                                        class="flex items-center gap-2 text-sm text-slate-600"
+                                    >
+                                        <input type="checkbox" v-model="form.remove_photo" />
+                                        Supprimer la photo actuelle
+                                    </label>
                                 </div>
 
                                 <p v-if="form.errors.photo" class="text-sm text-red-600 mt-1">
@@ -315,7 +325,7 @@
                         <div class="flex justify-around p-6">
                             <ButtonGroup>
                                 <ButtonPrimary :disabled="form.processing">
-                                    Créer le joueur
+                                    Enregistrer les modifications
                                 </ButtonPrimary>
                             </ButtonGroup>
                         </div>
@@ -328,13 +338,11 @@
 </template>
 
 <script setup>
-import { Head, Link, useForm } from '@inertiajs/vue3'
+import { Head, useForm } from '@inertiajs/vue3'
 import { ref, defineProps } from 'vue'
 
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
-import H1 from '@/Components/H1.vue'
 import H2 from '@/Components/H2.vue'
-import FormContainer from '@/Components/FormContainer.vue'
 import FormRaw from '@/Components/FormRaw.vue'
 import FormCol from '@/Components/FormCol.vue'
 import InputLabel from '@/Components/InputLabel.vue'
@@ -346,6 +354,7 @@ import ButtonPrimary from "@/Components/ButtonPrimary.vue";
 
 const props = defineProps({
     gameSave: Object,
+    player: Object,
 })
 
 const positions = ['Goalkeeper', 'Defender', 'Midfielder', 'Forward']
@@ -355,27 +364,28 @@ const photoPreviewUrl = ref(null)
 const selectedPhotoName = ref('')
 
 const form = useForm({
-    firstname: '',
-    lastname: '',
-    position: '',
-    secondary_positions: [],
-    cost: 0,
-    description: '',
+    firstname: props.player.firstname ?? '',
+    lastname: props.player.lastname ?? '',
+    position: props.player.position ?? '',
+    secondary_positions: props.player.secondary_positions ?? [],
+    cost: props.player.cost ?? 0,
+    description: props.player.description ?? '',
     photo: null,
-    speed: 0,
-    attack: 0,
-    defense: 0,
-    stamina: 0,
-    shot: 0,
-    pass: 0,
-    dribble: 0,
-    block: 0,
-    intercept: 0,
-    tackle: 0,
-    heading: 0,
-    hand_save: 0,
-    punch_save: 0,
-    special_moves: [],
+    remove_photo: false,
+    speed: props.player.speed ?? 0,
+    attack: props.player.attack ?? 0,
+    defense: props.player.defense ?? 0,
+    stamina: props.player.stamina ?? 0,
+    shot: props.player.shot ?? 0,
+    pass: props.player.pass ?? 0,
+    dribble: props.player.dribble ?? 0,
+    block: props.player.block ?? 0,
+    intercept: props.player.intercept ?? 0,
+    tackle: props.player.tackle ?? 0,
+    heading: props.player.heading ?? 0,
+    hand_save: props.player.hand_save ?? 0,
+    punch_save: props.player.punch_save ?? 0,
+    special_moves: props.player.special_moves ?? [],
 })
 
 function openPhotoPicker() {
@@ -390,6 +400,7 @@ function onPhotoChange(e) {
 
     if (file) {
         photoPreviewUrl.value = URL.createObjectURL(file)
+        form.remove_photo = false
     }
 
     e.target.value = ''
@@ -412,8 +423,14 @@ function removeSpecialMove(index) {
 }
 
 function submit() {
-    form.post(
-        route('game-saves.players.store', { gameSave: props.gameSave.id }),
+    form.transform(data => ({
+        ...data,
+        _method: 'PUT',
+    })).post(
+        route('game-saves.players.update', {
+            gameSave: props.gameSave.id,
+            player: props.player.id,
+        }),
         { forceFormData: true }
     )
 }

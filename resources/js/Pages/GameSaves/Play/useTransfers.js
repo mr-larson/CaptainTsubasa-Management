@@ -31,7 +31,8 @@ export function useTransfers({ gameSave, freePlayers, team, teams }) {
     const openTransferModal = (player) => {
         transferTarget.value    = player;
         transferMatches.value   = 10;
-        transferSalary.value    = player.cost ?? 0;
+        // Coût ajusté = coût + légère majoration de polyvalence (postes secondaires)
+        transferSalary.value    = player.adjusted_cost ?? player.cost ?? 0;
         transferReason.value    = '';
         showTransferModal.value = true;
     };

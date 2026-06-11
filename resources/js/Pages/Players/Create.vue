@@ -94,6 +94,20 @@
                             </FormCol>
                         </FormRaw>
 
+                        <!-- Postes secondaires -->
+                        <FormRaw>
+                            <FormCol>
+                                <InputLabel value="Postes secondaires" />
+                                <SecondaryPositionsPicker
+                                    v-model="form.secondary_positions"
+                                    :position="form.position"
+                                />
+                                <p v-if="form.errors.secondary_positions" class="text-sm text-red-600 mt-1">
+                                    {{ form.errors.secondary_positions }}
+                                </p>
+                            </FormCol>
+                        </FormRaw>
+
                         <!-- Ligne 3 : coût & photo (même rendu que Edit) -->
                         <FormRaw>
                             <FormCol>
@@ -389,6 +403,7 @@ import FormCol from '@/Components/FormCol.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import InputText from '@/Components/InputText.vue';
 import InputSelect from '@/Components/InputSelect.vue';
+import SecondaryPositionsPicker from '@/Components/SecondaryPositionsPicker.vue';
 
 const props = defineProps({
     positions: { type: Array, required: true },
@@ -400,6 +415,7 @@ const form = useForm({
     lastname: '',
     age: '',
     position: '',
+    secondary_positions: [],
     cost: '',
     stats: {
         attack: 0,

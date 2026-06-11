@@ -20,6 +20,8 @@ class GamePlayerRequest extends FormRequest
             'firstname'    => ['required', 'string', 'max:255'],
             'lastname'     => ['required', 'string', 'max:255'],
             'position'     => ['required', new Enum(PlayerPosition::class)],
+            'secondary_positions'   => ['nullable', 'array'],
+            'secondary_positions.*' => [new Enum(PlayerPosition::class), 'different:position'],
             'description'  => ['nullable', 'string', 'max:1000'],
             'cost'         => ['required', 'integer', 'min:0'],
 

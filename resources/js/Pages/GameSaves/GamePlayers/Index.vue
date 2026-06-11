@@ -167,6 +167,17 @@
                             </div>
 
                             <div class="sm:col-span-2">
+                                <label class="block text-sm font-semibold text-slate-500 mb-1">Postes secondaires</label>
+                                <SecondaryPositionsPicker
+                                    v-model="form.secondary_positions"
+                                    :position="form.position"
+                                />
+                                <p v-if="form.errors.secondary_positions" class="text-sm text-red-600 mt-1">
+                                    {{ form.errors.secondary_positions }}
+                                </p>
+                            </div>
+
+                            <div class="sm:col-span-2">
                                 <label class="block text-sm font-semibold text-slate-500 mb-1">Photo du joueur</label>
 
                                 <div class="flex items-center gap-3 mt-1">
@@ -533,6 +544,7 @@ import ButtonGroup from '@/Components/ButtonGroup.vue'
 import ButtonPrimary from '@/Components/ButtonPrimary.vue'
 import ButtonDanger from '@/Components/ButtonDanger.vue'
 import InputSelect from "@/Components/InputSelect.vue";
+import SecondaryPositionsPicker from '@/Components/SecondaryPositionsPicker.vue'
 
 const props = defineProps({
     gameSave: Object,
@@ -559,6 +571,7 @@ const form = useForm({
     firstname: '',
     lastname: '',
     position: '',
+    secondary_positions: [],
     cost: 0,
     description: '',
     photo_path: null,
@@ -675,6 +688,7 @@ function selectPlayer(player) {
     form.firstname = player.firstname
     form.lastname = player.lastname
     form.position = player.position
+    form.secondary_positions = player.secondary_positions ?? []
     form.cost = player.cost
     form.description = player.description ?? ''
     form.special_moves = player.special_moves ?? []

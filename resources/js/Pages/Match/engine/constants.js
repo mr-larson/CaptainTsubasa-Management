@@ -71,6 +71,13 @@ export const POSITION_BONUS = {
     FW: { shot: 0.04, attack: 0.03 },
 };
 
+// Le bonus de poste dépend du rôle du SLOT occupé (pas du poste naturel) :
+// - poste principal  → bonus plein
+// - poste secondaire → bonus réduit (× SECONDARY_POSITION_BONUS_FACTOR)
+// - hors poste       → malus global (× (1 - OFF_POSITION_MALUS))
+export const SECONDARY_POSITION_BONUS_FACTOR = 0.5;
+export const OFF_POSITION_MALUS = 0.08;
+
 // ==========================
 //   TEXTES UI / LOGS / CARTES
 // ==========================

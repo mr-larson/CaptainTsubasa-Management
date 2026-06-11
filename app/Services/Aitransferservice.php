@@ -141,7 +141,7 @@ class AITransferService
 
             if (!$candidate) continue;
 
-            $salary    = min($candidate->cost ?? 0, (int) ($availableBudget / max($remainingWeeks, 1)));
+            $salary    = min($candidate->adjusted_cost, (int) ($availableBudget / max($remainingWeeks, 1)));
             $salary    = max(0, $salary);
             $totalCost = $salary * $remainingWeeks;
 
@@ -281,7 +281,7 @@ class AITransferService
             if ($positionGroup !== 'ANY' && $this->positionGroup($p->position ?? '') !== $positionGroup) {
                 return false;
             }
-            $salary    = min($p->cost ?? 0, (int) ($budget / max($remainingWeeks, 1)));
+            $salary    = min($p->adjusted_cost, (int) ($budget / max($remainingWeeks, 1)));
             $totalCost = $salary * $remainingWeeks;
             return $totalCost <= $budget;
         });

@@ -51,6 +51,30 @@ const getSlotForPlayer = (playerId) => {
     return row ? row.slot : null;
 };
 
+// ── Maîtrise du poste occupé (miroir de RosterService.positionMastery) ──
+const ROLE_BY_ZONE = { 0: 'GK', 1: 'DF', 2: 'MF', 3: 'MF', 4: 'FW' };
+
+const roleFromPosition = (pos) => {
+    const p = String(pos || '').toLowerCase();
+    if (p.includes('goal')) return 'GK';
+    if (p.includes('def'))  return 'DF';
+    if (p.includes('mid'))  return 'MF';
+    if (p.includes('for') || p.includes('att')) return 'FW';
+    return null;
+};
+
+// 'primary' | 'secondary' | 'off' | null
+const slotMastery = (slot, slotDef) => {
+    const player = props.playerForSlot(slot);
+    if (!player) return null;
+    const slotRole = ROLE_BY_ZONE[slotDef.zone] ?? null;
+    const natural  = roleFromPosition(player.position);
+    if (!slotRole || !natural) return null;
+    if (slotRole === natural) return 'primary';
+    const secondary = (player.secondary_positions ?? []).map(roleFromPosition);
+    return secondary.includes(slotRole) ? 'secondary' : 'off';
+};
+
 // ── Terrain unifié : playerPosition / playerForSlot / selectedSlot viennent de useTeam via props ──
 
 // ── Radar chart ─────────────────────────────────────────────
@@ -191,7 +215,7 @@ const perfChips = computed(() => {
                             @dragover="emit('drag-over', $event)"
                             @drop.stop="playerForSlot(slot) && emit('drop-on', playerForSlot(slot), $event)"
                         >
-                            <div class="flex flex-col items-center transition-transform duration-150"
+                            <div class="relative flex flex-col items-center transition-transform duration-150"
                                  :class="[
                             isPickedUp(playerForSlot(slot)) ? 'scale-125'
                                 : selectedSlot === Number(slot) ? 'scale-110'
@@ -210,6 +234,12 @@ const perfChips = computed(() => {
                                          :src="playerPhotoUrl(playerForSlot(slot))" class="w-full h-full object-cover pointer-events-none" alt=""/>
                                     <span v-else class="text-[9px] font-bold text-white">{{ slot }}</span>
                                 </div>
+                                <div v-if="slotMastery(slot, slotDef) === 'off'"
+                                     class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-red-500 border border-white text-[8px] leading-[12px] text-white text-center font-bold pointer-events-none"
+                                     title="Hors poste : malus appliqué en match">!</div>
+                                <div v-else-if="slotMastery(slot, slotDef) === 'secondary'"
+                                     class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-400 border border-white text-[8px] leading-[12px] text-slate-900 text-center font-bold pointer-events-none"
+                                     title="Poste secondaire : bonus réduit">2</div>
                                 <div class="mt-0.5 px-1 rounded text-[7px] font-semibold leading-tight text-center max-w-[48px] truncate pointer-events-none"
                                      :class="isPickedUp(playerForSlot(slot))
                                 ? 'bg-amber-300 text-slate-900'

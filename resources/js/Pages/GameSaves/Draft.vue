@@ -570,7 +570,11 @@ onMounted(() => {
                                      ? 'border-amber-300 bg-amber-50'
                                      : 'border-slate-200 bg-white'">
                                 <div v-if="isProcessing && !isMyTurn" class="flex items-center justify-center gap-3">
-                                    <div class="w-6 h-6 rounded-full border-2 border-slate-300 border-t-slate-600 animate-spin"></div>
+                                    <div class="relative w-8 h-8 rounded-full bg-slate-50 border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
+                                        <img v-if="teamLogoUrl(currentTeam)" :src="teamLogoUrl(currentTeam)" class="w-full h-full object-contain" alt=""/>
+                                        <span v-else class="text-xs text-slate-400">{{ (currentTeam?.name || '?').charAt(0) }}</span>
+                                        <div class="absolute inset-0 rounded-full border-2 border-slate-300 border-t-slate-600 animate-spin"></div>
+                                    </div>
                                     <span class="text-sm font-bold text-slate-600">
                                         {{ currentTeam?.name ?? '—' }} est en train de choisir...
                                     </span>
@@ -731,12 +735,28 @@ onMounted(() => {
                                 </div>
                             </div>
 
-                            <!-- Pas mon tour → placeholder -->
+                            <!-- Pas mon tour → derniers picks -->
                             <div v-else-if="!draftCompleted"
-                                 class="border border-dashed border-slate-200 rounded-xl p-16 text-center text-slate-400">
-                                <div class="text-3xl mb-2">⏳</div>
-                                <p class="font-semibold">Les autres équipes sont en train de piocher...</p>
-                                <p class="text-xs mt-1">Tu pourras choisir quand ce sera ton tour.</p>
+                                 class="border border-dashed border-slate-200 rounded-xl p-6 text-slate-400">
+                                <p class="text-center text-xs mb-4">Les autres équipes sont en train de piocher... Tu pourras choisir quand ce sera ton tour.</p>
+
+                                <div v-if="pickLog.length" class="flex flex-col gap-2 max-w-md mx-auto">
+                                    <div v-for="(pick, idx) in [...pickLog].reverse().slice(0, 6)" :key="idx"
+                                         class="flex items-center gap-3 bg-white border border-slate-200 rounded-lg px-3 py-2">
+                                        <div class="h-8 w-8 rounded-full bg-slate-50 border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
+                                            <img v-if="teamLogoUrl(teams.find(t => t.id === pick.team_id))" :src="teamLogoUrl(teams.find(t => t.id === pick.team_id))" class="w-full h-full object-contain" alt=""/>
+                                            <span v-else class="text-xs text-slate-400">{{ (pick.team_name || '?').charAt(0) }}</span>
+                                        </div>
+                                        <div class="flex-1 text-left">
+                                            <p class="text-sm font-semibold text-slate-700">{{ pick.player_name }}</p>
+                                            <p class="text-[10px] text-slate-400">{{ pick.team_name }}</p>
+                                        </div>
+                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                                            {{ positionGroup(pick.position) }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div v-else class="text-center text-3xl">⏳</div>
                             </div>
                         </div>
                     </div>
