@@ -1,6 +1,8 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
+import RadarChart from '@/Pages/GameSaves/Play/RadarChart.vue';
+import StatBars from '@/Pages/GameSaves/Play/StatBars.vue';
 
 const props = defineProps({
     availableFreePlayers: { type: Array,   required: true },
@@ -24,7 +26,7 @@ const emit = defineEmits([
 // ==========================
 //   HELPERS
 // ==========================
-const { overallOf, playerPhotoUrl, positionGroup, keyStatsFor, statLabel, statColor } = usePlayerUtils();
+const { overallOf, playerPhotoUrl, positionGroup, keyStatsFor, statLabel } = usePlayerUtils();
 
 
 // ==========================
@@ -63,55 +65,6 @@ const bestTeamPlayerSamePos = computed(() => {
     if (!samePos.length) return null;
     return samePos.reduce((best, p) => overallOf(p) > overallOf(best) ? p : best, samePos[0]);
 });
-
-// ==========================
-//   RADAR
-// ==========================
-const RADAR_STATS = [
-    { key: 'shot',    label: 'Tir'     },
-    { key: 'pass',    label: 'Passe'   },
-    { key: 'dribble', label: 'Dribble' },
-    { key: 'defense', label: 'Défense' },
-    { key: 'speed',   label: 'Vitesse' },
-    { key: 'stamina', label: 'Stamina' },
-];
-
-const radarPointsFor = (player) => {
-    if (!player) return [];
-    const cx = 80, cy = 80, r = 60;
-    return RADAR_STATS.map((s, i) => {
-        const val = Math.min(Number(player[s.key] ?? player.stats?.[s.key] ?? 0) / 100, 1);
-        const angle = (Math.PI * 2 * i / RADAR_STATS.length) - Math.PI / 2;
-        return {
-            x: cx + r * val * Math.cos(angle),
-            y: cy + r * val * Math.sin(angle),
-            lx: cx + (r + 14) * Math.cos(angle),
-            ly: cy + (r + 14) * Math.sin(angle),
-            label: s.label,
-        };
-    });
-};
-
-const radarGrids = computed(() => {
-    const cx = 80, cy = 80, r = 60;
-    return [0.25, 0.5, 0.75, 1.0].map(scale =>
-        RADAR_STATS.map((_, i) => {
-            const angle = (Math.PI * 2 * i / RADAR_STATS.length) - Math.PI / 2;
-            return `${cx + r * scale * Math.cos(angle)},${cy + r * scale * Math.sin(angle)}`;
-        }).join(' ')
-    );
-});
-
-const radarAxes = computed(() => {
-    const cx = 80, cy = 80, r = 60;
-    return RADAR_STATS.map((_, i) => {
-        const angle = (Math.PI * 2 * i / RADAR_STATS.length) - Math.PI / 2;
-        return { x2: cx + r * Math.cos(angle), y2: cy + r * Math.sin(angle) };
-    });
-});
-
-const radarPolygon = (player) =>
-    radarPointsFor(player).map(p => `${p.x},${p.y}`).join(' ');
 
 // ==========================
 //   BUDGET
@@ -278,68 +231,14 @@ const filteredHistory = computed(() =>
 
                 <!-- Radar + stats comparées -->
                 <div class="grid grid-cols-2 gap-3">
+                    <RadarChart :player="selectedPlayer"
+                                accent="teal"
+                                :comparePlayer="bestTeamPlayerSamePos"
+                                :compareLabel="bestTeamPlayerSamePos ? `${bestTeamPlayerSamePos.lastname} (ton équipe)` : null" />
 
-                    <!-- Radar -->
-                    <div class="border border-slate-200 rounded-xl bg-slate-50 p-3 flex flex-col items-center">
-                        <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 self-start">Profil technique</h4>
-                        <svg viewBox="0 0 160 160" class="w-36 h-36">
-                            <!-- Grille adversaire (comparaison) -->
-                            <polygon v-if="bestTeamPlayerSamePos"
-                                     :points="radarPolygon(bestTeamPlayerSamePos)"
-                                     fill="rgba(148,163,184,0.15)" stroke="#94a3b8" stroke-width="1" stroke-dasharray="3,2"/>
-                            <!-- Grille joueur -->
-                            <polygon v-for="(pts,i) in radarGrids" :key="i" :points="pts" fill="none" stroke="#e2e8f0" stroke-width="0.8"/>
-                            <line v-for="(ax,i) in radarAxes" :key="'a'+i" x1="80" y1="80" :x2="ax.x2" :y2="ax.y2" stroke="#e2e8f0" stroke-width="0.8"/>
-                            <polygon :points="radarPolygon(selectedPlayer)" fill="rgba(20,184,166,0.2)" stroke="#14b8a6" stroke-width="1.5" stroke-linejoin="round"/>
-                            <circle v-for="(pt,i) in radarPointsFor(selectedPlayer)" :key="'p'+i" :cx="pt.x" :cy="pt.y" r="2" fill="#14b8a6" stroke="white" stroke-width="1"/>
-                            <text v-for="(pt,i) in radarPointsFor(selectedPlayer)" :key="'t'+i" :x="pt.lx" :y="pt.ly" text-anchor="middle" dominant-baseline="middle" font-size="7" fill="#94a3b8" font-weight="600">{{ pt.label }}</text>
-                        </svg>
-                        <p v-if="bestTeamPlayerSamePos" class="text-[9px] text-slate-400 mt-1">
-                            <span class="inline-block w-3 h-0.5 bg-slate-300 mr-1 align-middle"></span>
-                            {{ bestTeamPlayerSamePos.lastname }} (ton équipe)
-                        </p>
-                    </div>
-
-                    <!-- Barres stats -->
-                    <div class="border border-slate-200 rounded-xl bg-slate-50 p-3">
-                        <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Statistiques</h4>
-                        <div class="space-y-1.5">
-                            <div v-for="stat in [
-                                {label:'Vitesse',  key:'speed'},
-                                {label:'Stamina',  key:'stamina'},
-                                {label:'Attaque',  key:'attack'},
-                                {label:'Défense',  key:'defense'},
-                                {label:'Tir',      key:'shot'},
-                                {label:'Passe',    key:'pass'},
-                                {label:'Dribble',  key:'dribble'},
-                                {label:'Block',    key:'block'},
-                                {label:'Interc.',  key:'intercept'},
-                                {label:'Tacle',    key:'tackle'},
-                            ]" :key="stat.key" class="flex items-center gap-2 text-xs">
-                                <span class="w-14 text-slate-500 shrink-0 text-[11px]">{{ stat.label }}</span>
-                                <div class="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden relative">
-                                    <!-- Barre comparaison équipe -->
-                                    <div v-if="bestTeamPlayerSamePos"
-                                         class="absolute h-full rounded-full opacity-30 bg-slate-500"
-                                         :style="{width: Math.min(bestTeamPlayerSamePos[stat.key] ?? 0, 100)+'%'}">
-                                    </div>
-                                    <!-- Barre joueur -->
-                                    <div class="h-full rounded-full" :class="statColor(stat.key)"
-                                         :style="{width: Math.min(selectedPlayer[stat.key] ?? selectedPlayer.stats?.[stat.key] ?? 0, 100)+'%'}">
-                                    </div>
-                                </div>
-                                <span class="w-6 text-right font-bold text-slate-700 text-[11px]">
-                                    {{ selectedPlayer[stat.key] ?? selectedPlayer.stats?.[stat.key] ?? '—' }}
-                                </span>
-                                <span v-if="bestTeamPlayerSamePos" class="w-5 text-right text-[10px] text-slate-400">
-                                    {{ bestTeamPlayerSamePos[stat.key] ?? '—' }}
-                                </span>
-                            </div>
-                        </div>
-                        <p v-if="bestTeamPlayerSamePos" class="text-[9px] text-slate-400 mt-2">
-                            Comparé à {{ bestTeamPlayerSamePos.lastname }}
-                        </p>
-                    </div>
+                    <StatBars :player="selectedPlayer"
+                              :comparePlayer="bestTeamPlayerSamePos"
+                              :compareLabel="bestTeamPlayerSamePos?.lastname" />
                 </div>
 
                 <!-- Formulaire offre -->

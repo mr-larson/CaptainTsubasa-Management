@@ -2,6 +2,11 @@
 import { ref, computed } from 'vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
 import RosterList from '@/Pages/GameSaves/Play/RosterList.vue';
+import PlayerStatusAlert from '@/Pages/GameSaves/Play/PlayerStatusAlert.vue';
+import PlayerIdentityCard from '@/Pages/GameSaves/Play/PlayerIdentityCard.vue';
+import RadarChart from '@/Pages/GameSaves/Play/RadarChart.vue';
+import StatBars from '@/Pages/GameSaves/Play/StatBars.vue';
+import PerfChips from '@/Pages/GameSaves/Play/PerfChips.vue';
 
 const props = defineProps({
     season:                      { type: Number,   required: true },
@@ -27,7 +32,7 @@ const props = defineProps({
 
 const emit = defineEmits(['add-slot', 'remove-slot', 'submit-training', 'prev-ai-week', 'next-ai-week']);
 
-const { overallOf, playerPhotoUrl, statColor, sanctionTypeLabel } = usePlayerUtils();
+const { playerPhotoUrl, statColor } = usePlayerUtils();
 
 const trainingButtonState = computed(() => {
     const p = selectedPlayer.value;
@@ -130,108 +135,11 @@ const statsForSlot = (slot) => {
     ];
 };
 
-// ── Radar du joueur sélectionné ────────────────────────────
-const RADAR_STATS = [
-    { key: 'shot',    label: 'Tir'     },
-    { key: 'pass',    label: 'Passe'   },
-    { key: 'dribble', label: 'Dribble' },
-    { key: 'defense', label: 'Défense' },
-    { key: 'speed',   label: 'Vitesse' },
-    { key: 'stamina', label: 'Stamina' },
-];
-
-const radarPoints = computed(() => {
-    const p = selectedPlayer.value;
-    if (!p) return [];
-    const cx = 90, cy = 90, r = 68;
-    return RADAR_STATS.map((s, i) => {
-        const val = Math.min(Number(p[s.key] ?? p.stats?.[s.key] ?? 0) / 100, 1);
-        const angle = (Math.PI * 2 * i / RADAR_STATS.length) - Math.PI / 2;
-        return {
-            x: cx + r * val * Math.cos(angle),
-            y: cy + r * val * Math.sin(angle),
-            lx: cx + (r + 16) * Math.cos(angle),
-            ly: cy + (r + 16) * Math.sin(angle),
-            label: s.label,
-        };
-    });
-});
-const radarPolygon = computed(() => radarPoints.value.map(p => `${p.x},${p.y}`).join(' '));
-const radarGrids   = computed(() => {
-    const cx = 90, cy = 90, r = 68;
-    return [0.25, 0.5, 0.75, 1.0].map(scale =>
-        RADAR_STATS.map((_, i) => {
-            const angle = (Math.PI * 2 * i / RADAR_STATS.length) - Math.PI / 2;
-            return `${cx + r * scale * Math.cos(angle)},${cy + r * scale * Math.sin(angle)}`;
-        }).join(' ')
-    );
-});
-const radarAxes = computed(() => {
-    const cx = 90, cy = 90, r = 68;
-    return RADAR_STATS.map((_, i) => {
-        const angle = (Math.PI * 2 * i / RADAR_STATS.length) - Math.PI / 2;
-        return { x2: cx + r * Math.cos(angle), y2: cy + r * Math.sin(angle) };
-    });
-});
-
-// ── Perf chips ─────────────────────────────────────────────
+// ── Perf saison du joueur sélectionné (consommé par PerfChips) ──
 const selectedPlayerPerf = computed(() => {
     const p = selectedPlayer.value;
     if (!p) return null;
     return props.playerSeasonStats?.[p.id] ?? props.playerSeasonStats?.[String(p.id)] ?? null;
-});
-
-const perfChips = computed(() => {
-    const perf = selectedPlayerPerf.value;
-    const p = selectedPlayer.value;
-    if (!perf || !p) return [];
-    const isGK = p.position?.toLowerCase().includes('goalkeeper');
-
-    if (isGK) return [
-        { icon: '🧤', label: 'Arrêts',  val: perf.defense?.hands?.attempts     ?? 0, sub: perf.defense?.hands?.success     ?? 0, color: 'bg-violet-100 text-violet-700' },
-        { icon: '👊', label: 'Poings',  val: perf.defense?.gkSpecial?.attempts ?? 0, sub: perf.defense?.gkSpecial?.success ?? 0, color: 'bg-fuchsia-100 text-fuchsia-700' },
-        { icon: '🧱', label: 'Blocks',  val: perf.defense?.block?.attempts     ?? 0, sub: perf.defense?.block?.success     ?? 0, color: 'bg-slate-100 text-slate-600' },
-        { icon: '🎯', label: 'Passes',  val: perf.offense?.pass?.attempts      ?? 0, sub: perf.offense?.pass?.success      ?? 0, color: 'bg-sky-100 text-sky-700' },
-        { icon: '⚔️', label: 'Gagnés',  val: perf.duelsWon  ?? 0, sub: null, color: 'bg-teal-100 text-teal-700' },
-        { icon: '💔', label: 'Perdus',  val: perf.duelsLost ?? 0, sub: null, color: 'bg-rose-100 text-rose-700' },
-    ];
-
-    return [
-        { icon: '⚽', label: 'Tirs',     val: perf.offense?.shot?.attempts      ?? 0, sub: perf.offense?.shot?.success      ?? 0, color: 'bg-blue-100 text-blue-700' },
-        { icon: '🎯', label: 'Passes',   val: perf.offense?.pass?.attempts      ?? 0, sub: perf.offense?.pass?.success      ?? 0, color: 'bg-sky-100 text-sky-700' },
-        { icon: '🔥', label: 'Dribbles', val: perf.offense?.dribble?.attempts   ?? 0, sub: perf.offense?.dribble?.success   ?? 0, color: 'bg-orange-100 text-orange-700' },
-        { icon: '🛡️', label: 'Interc.',  val: perf.defense?.intercept?.attempts ?? 0, sub: perf.defense?.intercept?.success ?? 0, color: 'bg-emerald-100 text-emerald-700' },
-        { icon: '⚡', label: 'Tacles',   val: perf.defense?.tackle?.attempts    ?? 0, sub: perf.defense?.tackle?.success    ?? 0, color: 'bg-yellow-100 text-yellow-700' },
-        { icon: '🧱', label: 'Blocks',   val: perf.defense?.block?.attempts     ?? 0, sub: perf.defense?.block?.success     ?? 0, color: 'bg-slate-100 text-slate-600' },
-        { icon: '⚔️', label: 'Gagnés',   val: perf.duelsWon  ?? 0, sub: null, color: 'bg-teal-100 text-teal-700' },
-        { icon: '💔', label: 'Perdus',   val: perf.duelsLost ?? 0, sub: null, color: 'bg-rose-100 text-rose-700' },
-    ];
-});
-
-// ── Stats du profil (barres horizontales selon poste) ──────
-const profileStatBars = computed(() => {
-    const p = selectedPlayer.value;
-    if (!p) return [];
-    return p.position?.toLowerCase().includes('goalkeeper') ? [
-        { label: 'Vitesse',  key: 'speed',      color: 'bg-sky-400' },
-        { label: 'Stamina',  key: 'stamina',    color: 'bg-emerald-400' },
-        { label: 'Défense',  key: 'defense',    color: 'bg-blue-400' },
-        { label: 'Arrêt ✋', key: 'hand_save',  color: 'bg-violet-400' },
-        { label: 'Arrêt 👊', key: 'punch_save', color: 'bg-fuchsia-400' },
-        { label: 'Attaque',  key: 'attack',     color: 'bg-orange-400' },
-        { label: 'Block',    key: 'block',      color: 'bg-indigo-400' },
-    ] : [
-        { label: 'Vitesse', key: 'speed',    color: 'bg-sky-400' },
-        { label: 'Stamina', key: 'stamina',  color: 'bg-emerald-400' },
-        { label: 'Attaque', key: 'attack',   color: 'bg-orange-400' },
-        { label: 'Défense', key: 'defense',  color: 'bg-blue-400' },
-        { label: 'Tir',     key: 'shot',     color: 'bg-red-400' },
-        { label: 'Passe',   key: 'pass',     color: 'bg-teal-400' },
-        { label: 'Dribble', key: 'dribble',  color: 'bg-yellow-400' },
-        { label: 'Block',   key: 'block',    color: 'bg-indigo-400' },
-        { label: 'Interc.', key: 'intercept',color: 'bg-purple-400' },
-        { label: 'Tacle',   key: 'tackle',   color: 'bg-pink-400' },
-    ];
 });
 </script>
 
@@ -303,114 +211,41 @@ const profileStatBars = computed(() => {
                 <!-- ====================================== -->
                 <template v-if="selectedPlayer">
 
-                    <!-- Alerte blessure/suspension -->
-                    <div v-if="isPlayerInjured(selectedPlayer.id)"
-                         class="border border-rose-200 rounded-xl bg-rose-50 px-4 py-2.5 flex items-center gap-2">
-                        <span class="text-lg">🤕</span>
-                        <div>
-                            <div class="text-xs font-bold text-rose-700">Joueur blessé</div>
-                            <div class="text-[10px] text-rose-500">
-                                {{ playerInjury(selectedPlayer.id)?.description ?? 'Blessure' }}
-                                — Retour semaine {{ playerInjury(selectedPlayer.id)?.week_return ?? '—' }}
-                            </div>
-                        </div>
-                    </div>
-                    <div v-else-if="isPlayerSuspended(selectedPlayer.id)"
-                         class="border border-amber-200 rounded-xl bg-amber-50 px-4 py-2.5 flex items-center gap-2">
-                        <span class="text-lg">🚫</span>
-                        <div>
-                            <div class="text-xs font-bold text-amber-700">Joueur suspendu</div>
-                            <div class="text-[10px] text-amber-500">
-                                {{ sanctionTypeLabel(playerSuspension(selectedPlayer.id)?.type) }}
-                                <template v-if="playerSuspension(selectedPlayer.id)?.weeks_suspended">
-                                    — {{ playerSuspension(selectedPlayer.id).weeks_suspended }} semaine(s)
-                                </template>
-                                — Retour semaine {{ playerSuspension(selectedPlayer.id)?.week_return ?? '—' }}
-                            </div>
-                        </div>
-                    </div>
+                    <PlayerStatusAlert :player="selectedPlayer"
+                                       :isPlayerInjured="isPlayerInjured"
+                                       :isPlayerSuspended="isPlayerSuspended"
+                                       :playerInjury="playerInjury"
+                                       :playerSuspension="playerSuspension" />
 
                     <!-- Identité -->
-                    <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
-                        <div class="flex items-start gap-4">
-                            <div class="relative shrink-0">
-                                <div class="w-20 h-20 rounded-xl border-2 border-slate-200 bg-white overflow-hidden">
-                                    <img v-if="playerPhotoUrl(selectedPlayer)" :src="playerPhotoUrl(selectedPlayer)" class="w-full h-full object-cover" alt=""/>
-                                    <div v-else class="w-full h-full flex items-center justify-center text-3xl text-slate-200">👤</div>
-                                </div>
-                                <div class="absolute -top-2 -right-2 w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-[11px] font-black shadow"
-                                     :class="overallOf(selectedPlayer)>=80?'bg-emerald-500 text-white':overallOf(selectedPlayer)>=65?'bg-teal-500 text-white':overallOf(selectedPlayer)>=50?'bg-amber-400 text-slate-900':'bg-slate-400 text-white'">
-                                    {{ overallOf(selectedPlayer) }}
-                                </div>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <h3 class="text-base font-bold text-slate-800">{{ selectedPlayer.firstname }} {{ selectedPlayer.lastname }}</h3>
-                                <p class="text-xs text-slate-400 mt-0.5">
-                                    {{ selectedPlayer.position }} • Stamina {{ selectedPlayer.stamina ?? '—' }}
-                                </p>
-                                <p v-if="selectedPlayer.description" class="mt-2 text-xs text-slate-400 italic line-clamp-2">
-                                    {{ selectedPlayer.description }}
-                                </p>
-                                <div class="mt-3">
-                                    <button type="button"
-                                            @click="emit('add-slot', selectedPlayer.id)"
-                                            :disabled="trainingButtonState.disabled"
-                                            class="px-4 py-2 rounded-full text-xs font-bold transition-all"
-                                            :class="trainingButtonState.disabled
-                ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                : 'bg-teal-500 hover:bg-teal-600 text-white shadow-sm'">
-                                        {{ trainingButtonState.label }}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <PlayerIdentityCard :player="selectedPlayer"
+                                        :subtitle="`${selectedPlayer.position} • Stamina ${selectedPlayer.stamina ?? '—'}`">
+                        <template #actions>
+                            <button type="button"
+                                    @click="emit('add-slot', selectedPlayer.id)"
+                                    :disabled="trainingButtonState.disabled"
+                                    class="px-4 py-2 rounded-full text-xs font-bold transition-all"
+                                    :class="trainingButtonState.disabled
+                                        ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                                        : 'bg-teal-500 hover:bg-teal-600 text-white shadow-sm'">
+                                {{ trainingButtonState.label }}
+                            </button>
+                        </template>
+                        <template #footer>
+                            <p v-if="selectedPlayer.description" class="mt-2 text-xs text-slate-400 italic line-clamp-2">
+                                {{ selectedPlayer.description }}
+                            </p>
+                        </template>
+                    </PlayerIdentityCard>
 
                     <!-- Radar + Barres stats -->
                     <div class="grid grid-cols-2 gap-3">
-                        <div class="border border-slate-200 rounded-xl bg-slate-50 p-3 flex flex-col items-center">
-                            <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 self-start">Profil technique</h4>
-                            <svg viewBox="0 0 180 180" class="w-40 h-40">
-                                <polygon v-for="(pts,i) in radarGrids" :key="i" :points="pts" fill="none" stroke="#e2e8f0" stroke-width="0.8"/>
-                                <line v-for="(ax,i) in radarAxes" :key="'a'+i" x1="90" y1="90" :x2="ax.x2" :y2="ax.y2" stroke="#e2e8f0" stroke-width="0.8"/>
-                                <polygon :points="radarPolygon" fill="rgba(20,184,166,0.2)" stroke="#14b8a6" stroke-width="1.5" stroke-linejoin="round"/>
-                                <circle v-for="(pt,i) in radarPoints" :key="'p'+i" :cx="pt.x" :cy="pt.y" r="2.5" fill="#14b8a6" stroke="white" stroke-width="1"/>
-                                <text v-for="(pt,i) in radarPoints" :key="'t'+i" :x="pt.lx" :y="pt.ly" text-anchor="middle" dominant-baseline="middle" font-size="8" fill="#94a3b8" font-weight="600">{{ pt.label }}</text>
-                            </svg>
-                        </div>
-
-                        <div class="border border-slate-200 rounded-xl bg-slate-50 p-3">
-                            <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Statistiques</h4>
-                            <div class="space-y-1.5">
-                                <div v-for="stat in profileStatBars" :key="stat.key" class="flex items-center gap-2 text-xs">
-                                    <span class="w-16 text-slate-500 shrink-0 text-[11px]">{{ stat.label }}</span>
-                                    <div class="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                                        <div class="h-full rounded-full" :class="stat.color"
-                                             :style="{width: Math.min((selectedPlayer[stat.key] ?? selectedPlayer.stats?.[stat.key] ?? 0), 100)+'%'}">
-                                        </div>
-                                    </div>
-                                    <span class="w-6 text-right font-bold text-slate-700 text-[11px]">
-                        {{ selectedPlayer[stat.key] ?? selectedPlayer.stats?.[stat.key] ?? '—' }}
-                    </span>
-                                </div>
-                            </div>
-                        </div>
+                        <RadarChart :player="selectedPlayer" accent="teal" />
+                        <StatBars :player="selectedPlayer" />
                     </div>
 
                     <!-- Perf chips -->
-                    <div v-if="perfChips.length" class="border border-slate-200 rounded-xl bg-slate-50 p-4">
-                        <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">Performance saison</h4>
-                        <div class="flex flex-wrap gap-2">
-                            <div v-for="chip in perfChips" :key="chip.label"
-                                 class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
-                                 :class="chip.color">
-                                <span>{{ chip.icon }}</span>
-                                <span>{{ chip.label }}</span>
-                                <span class="font-black">{{ chip.val }}</span>
-                                <span v-if="chip.sub !== null" class="opacity-50 text-[10px]">/ {{ chip.sub }} ✓</span>
-                            </div>
-                        </div>
-                    </div>
+                    <PerfChips :player="selectedPlayer" :perf="selectedPlayerPerf" />
                 </template>
                 <!-- État vide -->
                 <div v-else
