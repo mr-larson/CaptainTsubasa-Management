@@ -1,5 +1,5 @@
 <script setup>
-import { usePlayerUtils } from './usePlayerUtils.js';
+import { usePlayerUtils } from '../usePlayerUtils.js';
 
 /**
  * Terrain : rendu du 11 selon la formation, avec drag & drop.

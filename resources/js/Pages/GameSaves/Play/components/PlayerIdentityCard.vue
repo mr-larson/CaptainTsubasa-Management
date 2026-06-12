@@ -1,5 +1,5 @@
 <script setup>
-import { usePlayerUtils } from './usePlayerUtils.js';
+import { usePlayerUtils } from '../usePlayerUtils.js';
 
 /**
  * Carte identité du joueur sélectionné : photo + badge overall + nom +

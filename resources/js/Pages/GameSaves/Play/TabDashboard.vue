@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
-import TeamStyleBadges from "@/Pages/GameSaves/Play/TeamStyleBadges.vue";
+import TeamStyleBadges from "@/Pages/GameSaves/Play/components/TeamStyleBadges.vue";
 
 const props = defineProps({
     gameSave:      { type: Object, required: true },

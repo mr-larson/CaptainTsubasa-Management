@@ -1,8 +1,8 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
-import RadarChart from '@/Pages/GameSaves/Play/RadarChart.vue';
-import StatBars from '@/Pages/GameSaves/Play/StatBars.vue';
+import RadarChart from '@/Pages/GameSaves/Play/components/RadarChart.vue';
+import StatBars from '@/Pages/GameSaves/Play/components/StatBars.vue';
 
 const props = defineProps({
     availableFreePlayers: { type: Array,   required: true },

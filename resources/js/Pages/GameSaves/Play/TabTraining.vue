@@ -1,12 +1,12 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
-import RosterList from '@/Pages/GameSaves/Play/RosterList.vue';
-import PlayerStatusAlert from '@/Pages/GameSaves/Play/PlayerStatusAlert.vue';
-import PlayerIdentityCard from '@/Pages/GameSaves/Play/PlayerIdentityCard.vue';
-import RadarChart from '@/Pages/GameSaves/Play/RadarChart.vue';
-import StatBars from '@/Pages/GameSaves/Play/StatBars.vue';
-import PerfChips from '@/Pages/GameSaves/Play/PerfChips.vue';
+import RosterList from '@/Pages/GameSaves/Play/components/RosterList.vue';
+import PlayerStatusAlert from '@/Pages/GameSaves/Play/components/PlayerStatusAlert.vue';
+import PlayerIdentityCard from '@/Pages/GameSaves/Play/components/PlayerIdentityCard.vue';
+import RadarChart from '@/Pages/GameSaves/Play/components/RadarChart.vue';
+import StatBars from '@/Pages/GameSaves/Play/components/StatBars.vue';
+import PerfChips from '@/Pages/GameSaves/Play/components/PerfChips.vue';
 
 const props = defineProps({
     season:                      { type: Number,   required: true },

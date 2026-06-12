@@ -1,5 +1,5 @@
 <script setup>
-import { useTeamStyles } from './useTeamStyles.js';
+import { useTeamStyles } from '../useTeamStyles.js';
 
 const props = defineProps({
     team: { type: Object, default: null },

@@ -1,17 +1,17 @@
 <script setup>
 import { computed } from 'vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
-import RosterList from '@/Pages/GameSaves/Play/RosterList.vue';
-import PlayerStatusAlert from '@/Pages/GameSaves/Play/PlayerStatusAlert.vue';
-import PlayerIdentityCard from '@/Pages/GameSaves/Play/PlayerIdentityCard.vue';
-import RadarChart from '@/Pages/GameSaves/Play/RadarChart.vue';
-import StatBars from '@/Pages/GameSaves/Play/StatBars.vue';
-import PerfChips from '@/Pages/GameSaves/Play/PerfChips.vue';
-import FormationCard from '@/Pages/GameSaves/Play/FormationCard.vue';
-import PitchView from '@/Pages/GameSaves/Play/PitchView.vue';
-import BenchCard from '@/Pages/GameSaves/Play/BenchCard.vue';
-import ClubIdentityCard from '@/Pages/GameSaves/Play/ClubIdentityCard.vue';
-import TeamRecordCard from '@/Pages/GameSaves/Play/TeamRecordCard.vue';
+import RosterList from '@/Pages/GameSaves/Play/components/RosterList.vue';
+import PlayerStatusAlert from '@/Pages/GameSaves/Play/components/PlayerStatusAlert.vue';
+import PlayerIdentityCard from '@/Pages/GameSaves/Play/components/PlayerIdentityCard.vue';
+import RadarChart from '@/Pages/GameSaves/Play/components/RadarChart.vue';
+import StatBars from '@/Pages/GameSaves/Play/components/StatBars.vue';
+import PerfChips from '@/Pages/GameSaves/Play/components/PerfChips.vue';
+import FormationCard from '@/Pages/GameSaves/Play/components/FormationCard.vue';
+import PitchView from '@/Pages/GameSaves/Play/components/PitchView.vue';
+import BenchCard from '@/Pages/GameSaves/Play/components/BenchCard.vue';
+import ClubIdentityCard from '@/Pages/GameSaves/Play/components/ClubIdentityCard.vue';
+import TeamRecordCard from '@/Pages/GameSaves/Play/components/TeamRecordCard.vue';
 
 const props = defineProps({
     // Équipes

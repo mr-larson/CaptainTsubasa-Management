@@ -1,5 +1,5 @@
 <script setup>
-import { usePlayerUtils } from './usePlayerUtils.js';
+import { usePlayerUtils } from '../usePlayerUtils.js';
 
 /** Bandeau d'alerte blessure / suspension du joueur sélectionné. */
 const props = defineProps({

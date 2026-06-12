@@ -1,5 +1,5 @@
 <script setup>
-import { usePlayerUtils } from './usePlayerUtils.js';
+import { usePlayerUtils } from '../usePlayerUtils.js';
 
 /**
  * Liste d'effectif partagée (Mon Équipe / Entraînement / Autres équipes) :

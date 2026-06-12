@@ -1,5 +1,5 @@
 <script setup>
-import { usePlayerUtils } from './usePlayerUtils.js';
+import { usePlayerUtils } from '../usePlayerUtils.js';
 
 /** Carte "Banc" : remplaçants en grille, draggables vers le terrain. */
 const props = defineProps({

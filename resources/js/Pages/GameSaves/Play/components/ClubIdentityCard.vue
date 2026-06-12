@@ -1,6 +1,6 @@
 <script setup>
-import { usePlayerUtils } from './usePlayerUtils.js';
-import TeamStyleBadges from '@/Pages/GameSaves/Play/TeamStyleBadges.vue';
+import { usePlayerUtils } from '../usePlayerUtils.js';
+import TeamStyleBadges from '@/Pages/GameSaves/Play/components/TeamStyleBadges.vue';
 
 /** Carte club : logo, nom, classement, budget, description et styles. */
 const props = defineProps({

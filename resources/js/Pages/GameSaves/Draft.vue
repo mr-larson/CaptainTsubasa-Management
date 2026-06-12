@@ -2,7 +2,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { ref, computed, onMounted, nextTick } from 'vue';
-import TeamStyleBadges from '@/Pages/GameSaves/Play/TeamStyleBadges.vue';
+import TeamStyleBadges from '@/Pages/GameSaves/Play/components/TeamStyleBadges.vue';
 
 const props = defineProps({
     gameSave:         { type: Object, required: true },
