@@ -155,7 +155,7 @@ const slotMastery = (slot, slotDef) => {
 </script>
 
 <template>
-    <div class="flex-1 flex flex-col gap-4 overflow-y-auto max-h-[75vh] pr-1">
+    <div class="flex-1 flex flex-col gap-4 overflow-y-auto max-h-[75vh] pr-1 [&>*]:shrink-0">
 
         <!-- LIGNE 1 : Formation + Terrain + Banc -->
         <div class="grid grid-cols-12 gap-4">
@@ -226,16 +226,18 @@ const slotMastery = (slot, slotDef) => {
         <!-- LIGNE 3 : Liste joueurs + Profil -->
         <div class="grid grid-cols-12 gap-4">
 
-            <!-- Liste joueurs -->
-            <RosterList class="col-span-3 max-h-[630px]"
-                        :players="rosterWithStatus"
-                        :selectedId="selectedMyPlayer?.id"
-                        :isPlayerInjured="isPlayerInjured"
-                        :isPlayerSuspended="isPlayerSuspended"
-                        :playerYellowCards="playerYellowCards"
-                        :playerInjury="playerInjury"
-                        :playerSuspension="playerSuspension"
-                        @select="p => emit('select-player', p)" />
+            <!-- Liste joueurs — hauteur calée sur la colonne profil (scroll interne) -->
+            <div class="col-span-3 relative min-h-[320px]">
+                <RosterList class="absolute inset-0"
+                            :players="rosterWithStatus"
+                            :selectedId="selectedMyPlayer?.id"
+                            :isPlayerInjured="isPlayerInjured"
+                            :isPlayerSuspended="isPlayerSuspended"
+                            :playerYellowCards="playerYellowCards"
+                            :playerInjury="playerInjury"
+                            :playerSuspension="playerSuspension"
+                            @select="p => emit('select-player', p)" />
+            </div>
 
             <!-- Profil joueur -->
             <div class="col-span-9 flex flex-col gap-3">

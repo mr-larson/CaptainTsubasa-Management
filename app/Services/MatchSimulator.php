@@ -541,9 +541,31 @@ class MatchSimulator
         $stamina[$pid] = max(0.0, ($stamina[$pid] ?? self::ENDURANCE_DEFAULT) - $baseCost * $categoryMultiplier * $speedReduction);
     }
 
+    /** Le joueur est-il un gardien d'après son poste ? */
+    private function isGoalkeeper($player): bool
+    {
+        return FormationHelper::roleFromPosition($player->position ?? null) === 'GK';
+    }
+
+    /**
+     * Joueurs de champ (sans gardien), miroir du client qui exclut `.goalkeeper`
+     * des sélections de défenseurs/receveurs (engine/field.js, pickWeightedPlayerInZone).
+     * Repli sur la collection complète si elle ne contient que des gardiens.
+     */
+    private function fieldPlayers(Collection $players): Collection
+    {
+        $field = $players->reject(fn($p) => $this->isGoalkeeper($p));
+
+        return $field->isNotEmpty() ? $field : $players;
+    }
+
     /** Sélectionne un joueur de champ adapté à l'action (biaisé vers les profils pertinents, comme côté client). */
     private function pickPlayerForAction(Collection $players, string $action)
     {
+        // Toutes les actions résolues ici sont des actions de champ : le gardien
+        // ne doit jamais tacler/intercepter au milieu (ses arrêts passent par $defGK).
+        $players = $this->fieldPlayers($players);
+
         if ($players->isEmpty()) return null;
 
         $statKey = match ($action) {
@@ -689,14 +711,14 @@ class MatchSimulator
         if ($action === 'long_pass') {
             $attacker = $this->pickPlayerForAction($attPlayers, 'pass');
 
-            // Cible : meilleur allié par (pass + attack)
-            $target = $attPlayers
+            // Cible : meilleur allié de champ par (pass + attack)
+            $target = $this->fieldPlayers($attPlayers)
                 ->filter(fn($p) => $p->id !== ($attacker->id ?? null))
                 ->sortByDesc(fn($p) => ($p->pass ?? 0) + ($p->attack ?? 0))
                 ->first() ?? $attacker;
 
-            // Défenseur : meilleur intercepteur adverse
-            $defender = $defPlayers->sortByDesc(fn($p) => $p->intercept ?? 0)->first();
+            // Défenseur : meilleur intercepteur adverse (hors gardien)
+            $defender = $this->fieldPlayers($defPlayers)->sortByDesc(fn($p) => $p->intercept ?? 0)->first();
 
             $attackScore  = ($attacker->pass ?? 0) * $this->positionMultiplier($attacker, 'pass') * $this->staminaFactor($staminaOf($attacker)) + $homeBonus + $this->d20();
             $defenseScore = ($defender->intercept ?? 0) * $this->positionMultiplier($defender, 'defend') * $this->staminaFactor($staminaOf($defender)) + self::GOOD_COUNTER_BONUS + $awayBonus + $this->d20();
@@ -770,7 +792,7 @@ class MatchSimulator
 
         // MDF (zoneIndex 1 -> rôle MDF) : 1er check vs intercept du MOF adverse
         if ($this->getPlayerZone($zone) === 2) {
-            $interceptDef = $defPlayers->sortByDesc(fn($p) => $p->intercept ?? 0)->first();
+            $interceptDef = $this->fieldPlayers($defPlayers)->sortByDesc(fn($p) => $p->intercept ?? 0)->first();
             $defenderForLog = $interceptDef;
             $attackScore  = $crosserScore * $this->staminaFactor($staminaOf($crosser)) + $homeBonus + $this->d20();
             $defenseScore = ($interceptDef->intercept ?? 0) * $this->positionMultiplier($interceptDef, 'defend') * $this->staminaFactor($staminaOf($interceptDef)) + self::GOOD_COUNTER_BONUS + $awayBonus + $this->d20();
@@ -788,7 +810,7 @@ class MatchSimulator
         // 2e check (ou seul check pour MOF/ATT) : heading du DEF adverse
         $headingDef = null;
         if ($success) {
-            $headingDef = $defPlayers->sortByDesc(fn($p) => (($p->heading ?? 0) * 0.8) + (($p->speed ?? 0) * 0.2))->first();
+            $headingDef = $this->fieldPlayers($defPlayers)->sortByDesc(fn($p) => (($p->heading ?? 0) * 0.8) + (($p->speed ?? 0) * 0.2))->first();
             $defenderForLog = $headingDef ?? $defenderForLog;
             $headingScore = ((($headingDef->heading ?? 0) * 0.8) + (($headingDef->speed ?? 0) * 0.2))
                 * $this->positionMultiplier($headingDef, 'defend');
@@ -847,8 +869,8 @@ class MatchSimulator
             return;
         }
 
-        // Centre réussi : l'ATT receveur tire automatiquement avec bonus
-        $receiver = $attPlayers
+        // Centre réussi : l'ATT receveur (joueur de champ) tire automatiquement avec bonus
+        $receiver = $this->fieldPlayers($attPlayers)
             ->sortByDesc(fn($p) => ($p->attack ?? 0) + ($p->shot ?? 0))
             ->first() ?? $crosser;
 

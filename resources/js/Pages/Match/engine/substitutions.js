@@ -55,6 +55,12 @@ export function performSubstitution(team, outSlot, inSlot) {
 
     if (isPlayerSentOff(team, outSlot)) return false;
 
+    // Capturer les infos AVANT toute mutation du roster : le slot sortant
+    // est écrasé par l'entrant juste après.
+    const outInfo = _roster.getPlayerInfo(team, outSlot);
+    const inInfo  = _roster.getPlayerInfo(team, inSlot);
+    if (!inInfo || inInfo.isAvailable === false) return false;
+
     const inId = _getPlayerId(team, inSlot);
     const inEl = _rootEl.querySelector(`[data-player="${inId}"]`);
 
@@ -65,20 +71,24 @@ export function performSubstitution(team, outSlot, inSlot) {
         if (outEl.dataset.zone) inEl.dataset.zone = outEl.dataset.zone;
         outEl.classList.add('unavailable');
     } else {
-        const inInfo = _roster.getPlayerInfo(team, inSlot);
-        if (!inInfo) return false;
-
+        // L'entrant prend le slot terrain ; le sortant est conservé sur le
+        // slot banc, marqué indisponible (il ne peut pas revenir en jeu).
         _roster.rosters[team].set(outSlot, { ...inInfo, isStarter: true });
-        _roster.rosters[team].set(inSlot, { ...inInfo, isAvailable: false });
+        _roster.rosters[team].set(inSlot, { ...outInfo, isStarter: false, isAvailable: false });
 
-        const subNumber = 11 + _state.substitutionCount + 1;
-        outEl.textContent       = String(subNumber);
-        outEl.dataset.jersey    = String(subNumber);
+        const jersey = inInfo.number ?? (11 + _state.substitutionCount + 1);
+        // Ne modifier que le nœud texte : textContent raserait les enfants
+        // du jeton (.endurance-shell, badges) ajoutés par initStamina/ui.
+        const textNode = Array.from(outEl.childNodes).find(n => n.nodeType === Node.TEXT_NODE);
+        if (textNode) textNode.nodeValue = String(jersey);
+        else outEl.prepend(document.createTextNode(String(jersey)));
+
+        outEl.dataset.jersey    = String(jersey);
         outEl.dataset.firstname = inInfo.firstname;
         outEl.dataset.lastname  = inInfo.lastname;
         outEl.dataset.position  = inInfo.position;
 
-        const inStamina = inInfo.stats?.stamina ?? 80;
+        const inStamina = Number(inInfo.stats?.stamina) || 80;
         _state.stamina[outId]    = inStamina;
         _state.staminaMax[outId] = inStamina;
         outEl.classList.remove('unavailable');
@@ -88,9 +98,6 @@ export function performSubstitution(team, outSlot, inSlot) {
     if (_state.ball.team === team && _state.ball.number === outSlot) {
         _state._moveBallFn(team, outSlot);
     }
-
-    const outInfo = _roster.getPlayerInfo(team, outSlot);
-    const inInfo  = _roster.getPlayerInfo(team, inSlot);
 
     _state.substitutions.push({
         team, outSlot, inSlot,

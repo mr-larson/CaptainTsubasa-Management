@@ -144,7 +144,7 @@ const selectedPlayerPerf = computed(() => {
 </script>
 
 <template>
-    <div class="flex-1 flex flex-col gap-4 overflow-y-auto max-h-[75vh] pr-1">
+    <div class="flex-1 flex flex-col gap-4 overflow-y-auto max-h-[75vh] pr-1 [&>*]:shrink-0">
 
         <!-- HEADER -->
         <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
@@ -182,25 +182,28 @@ const selectedPlayerPerf = computed(() => {
             <!-- ============================================ -->
             <!-- COLONNE GAUCHE : Effectif         -->
             <!-- ============================================ -->
-            <RosterList class="col-span-3 max-h-[500px]"
-                        :players="roster"
-                        :selectedId="selectedPlayer?.id"
-                        :isPlayerInjured="isPlayerInjured"
-                        :isPlayerSuspended="isPlayerSuspended"
-                        :playerYellowCards="playerYellowCards"
-                        :playerInjury="playerInjury"
-                        :playerSuspension="playerSuspension"
-                        :rowHighlight="p => hasPlayerBeenTrainedThisWeek(p.id)"
-                        @select="selectPlayer">
-                <template #badge="{ player, selected }">
-                    <div v-if="hasPlayerBeenTrainedThisWeek(player.id)"
-                         class="text-[9px] px-1.5 py-0.5 rounded-full font-bold shrink-0"
-                         :class="selected ? 'bg-white text-teal-600' : 'bg-teal-500 text-white'"
-                         title="Déjà entraîné cette semaine">
-                        ✓
-                    </div>
-                </template>
-            </RosterList>
+            <!-- Hauteur calée sur les colonnes de droite (scroll interne) -->
+            <div class="col-span-3 relative min-h-[320px]">
+                <RosterList class="absolute inset-0"
+                            :players="roster"
+                            :selectedId="selectedPlayer?.id"
+                            :isPlayerInjured="isPlayerInjured"
+                            :isPlayerSuspended="isPlayerSuspended"
+                            :playerYellowCards="playerYellowCards"
+                            :playerInjury="playerInjury"
+                            :playerSuspension="playerSuspension"
+                            :rowHighlight="p => hasPlayerBeenTrainedThisWeek(p.id)"
+                            @select="selectPlayer">
+                    <template #badge="{ player, selected }">
+                        <div v-if="hasPlayerBeenTrainedThisWeek(player.id)"
+                             class="text-[9px] px-1.5 py-0.5 rounded-full font-bold shrink-0"
+                             :class="selected ? 'bg-white text-teal-600' : 'bg-teal-500 text-white'"
+                             title="Déjà entraîné cette semaine">
+                            ✓
+                        </div>
+                    </template>
+                </RosterList>
+            </div>
 
             <!-- ============================================ -->
             <!-- COLONNE  CENTRAL & DROITE                               -->

@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, watch, onUnmounted } from 'vue';
+import { FORMATIONS, DEFAULT_FORMATION, LANE_Y, GK_LANE_Y } from '@/Pages/Match/engine/formations.js';
 
 const props = defineProps({
     events:        { type: Array,  default: () => [] },
@@ -9,6 +10,9 @@ const props = defineProps({
     awayLogo:      { type: String, default: null },
     finalHomeScore:{ type: Number, default: 0 },
     finalAwayScore:{ type: Number, default: 0 },
+    // Effectifs pour la reconstitution : { formation, players: [{id, lastname, number, position, is_starter}] }
+    homeSquad:     { type: Object, default: null },
+    awaySquad:     { type: Object, default: null },
 });
 
 // ==========================
@@ -73,6 +77,9 @@ const ballTrack = computed(() => {
     let zone = 3;     // 1..5, 3 = milieu de terrain (côté de l'équipe `side`, qui attaque)
     let lane = 50;    // position verticale en %
     let side = props.events[0]?.team ?? 'internal'; // équipe qui porte le ballon / attaque
+    // Coup d'envoi : la prochaine action se joue au centre du terrain
+    // (le moteur, lui, fait abstraitement repartir le ballon de la zone 0).
+    let kickoff = true;
     const track = [{ zone, lane, side }];
 
     for (let i = 0; i < props.events.length; i++) {
@@ -84,9 +91,16 @@ const ballTrack = computed(() => {
         lane = parseLane(ev) ?? lane;
 
         if (isGoalEvent(ev)) {
-            // But marqué par actingTeam → l'adversaire relance depuis son camp
-            side = other(actingTeam);
-            zone = 1;
+            // Ballon au fond des filets, côté du buteur
+            side = actingTeam;
+            zone = 5;
+            lane = 50;
+            kickoff = true; // la reprise se fera au rond central
+        } else if (kickoff) {
+            // Coup d'envoi (début de match ou après un but) : au centre
+            kickoff = false;
+            side = actingTeam;
+            zone = 3;
             lane = 50;
         } else if (ev.result === 'attack') {
             // L'attaquant progresse vers le but adverse
@@ -123,6 +137,110 @@ const currentActors = computed(() => {
     if (!ev) return null;
     if (!ev.attacker && !ev.defender) return null;
     return { attacker: ev.attacker ?? null, defender: ev.defender ?? null };
+});
+
+// ==========================
+//  RECONSTITUTION DES 22 JOUEURS
+// ==========================
+// Position horizontale de base par zone de formation, identique au moteur
+// de match (field.js getCellCenter) : les formations couvrent tout le
+// terrain et s'interpénètrent (les attaquants jouent dans le camp adverse).
+// Équipe domicile, attaque vers la droite — l'extérieure est en miroir.
+const ZONE_X = { 0: 10, 1: 20, 2: 35, 3: 55, 4: 75 };
+
+const roleFromPosition = (pos) => {
+    const p = String(pos || '').toLowerCase();
+    if (p.includes('goal')) return 'GK';
+    if (p.includes('def'))  return 'DF';
+    if (p.includes('mid'))  return 'MF';
+    if (p.includes('for') || p.includes('att')) return 'FW';
+    return null;
+};
+
+const roleForZone = (zone) => (zone === 0 ? 'GK' : zone === 1 ? 'DF' : zone === 4 ? 'FW' : 'MF');
+
+// Assigne les 11 titulaires aux slots de la formation, en privilégiant
+// le rôle naturel de chaque joueur (reconstitution, pas enregistrement :
+// le lineup exact du match n'est pas historisé).
+function assignSlots(squad) {
+    if (!squad?.players?.length) return [];
+    const formation = FORMATIONS[squad.formation] ?? FORMATIONS[DEFAULT_FORMATION];
+
+    let starters = squad.players.filter(p => p.is_starter);
+    if (starters.length < 11) {
+        const rest = squad.players.filter(p => !p.is_starter);
+        starters = [...starters, ...rest].slice(0, 11);
+    } else {
+        starters = starters.slice(0, 11);
+    }
+
+    const pool   = [...starters];
+    const placed = [];
+
+    for (const [slot, def] of Object.entries(formation.slots)) {
+        const wanted = roleForZone(def.zone);
+        let idx = pool.findIndex(p => roleFromPosition(p.position) === wanted);
+        if (idx === -1) idx = 0;
+        const player = pool.splice(idx, 1)[0];
+        if (!player) break;
+
+        placed.push({
+            ...player,
+            slot: Number(slot),
+            baseX: ZONE_X[def.zone] ?? 30,
+            baseY: def.laneIndex === null ? GK_LANE_Y : (LANE_Y[def.laneIndex] ?? 50),
+        });
+    }
+    return placed;
+}
+
+const homePlaced = computed(() => assignSlots(props.homeSquad));
+const awayPlaced = computed(() =>
+    assignSlots(props.awaySquad).map(p => ({ ...p, baseX: 100 - p.baseX }))
+);
+
+const hasSquads = computed(() => homePlaced.value.length > 0 || awayPlaced.value.length > 0);
+
+// Position effective : les joueurs "respirent" vers le ballon, et les deux
+// acteurs du duel se déplacent sur l'action.
+const DRIFT = 0.10;
+
+const placedPlayers = computed(() => {
+    const ballX = ballPosition.value;
+    const ballY = ballLane.value;
+    const actors = currentActors.value;
+
+    const place = (p, side) => {
+        const isAttacker = actors?.attacker?.id != null && p.id === actors.attacker.id;
+        const isDefender = actors?.defender?.id != null && p.id === actors.defender.id;
+
+        let x, y;
+        if (isAttacker) {
+            // L'attaquant arrive sur le ballon, légèrement côté possesseur
+            x = ballX + (side === 'internal' ? -3 : 3);
+            y = ballY;
+        } else if (isDefender) {
+            // Le défenseur se place entre le ballon et son propre but
+            x = ballX + (side === 'internal' ? -3 : 3);
+            y = ballY;
+        } else {
+            x = p.baseX + (ballX - p.baseX) * DRIFT;
+            y = p.baseY + (ballY - p.baseY) * DRIFT;
+        }
+
+        return {
+            ...p, side,
+            x: Math.max(2, Math.min(98, x)),
+            y: Math.max(8, Math.min(92, y)),
+            isActor: isAttacker || isDefender,
+            actorRole: isAttacker ? 'attacker' : isDefender ? 'defender' : null,
+        };
+    };
+
+    return [
+        ...homePlaced.value.map(p => place(p, 'internal')),
+        ...awayPlaced.value.map(p => place(p, 'external')),
+    ];
 });
 
 const ACTION_ICONS = {
@@ -231,31 +349,60 @@ onUnmounted(() => clearTimer());
         </div>
 
         <!-- Terrain -->
-        <div class="relative h-28 rounded-xl overflow-hidden border border-emerald-900/30 bg-gradient-to-r from-emerald-700 via-emerald-600 to-emerald-700 shadow-inner">
+        <div class="relative rounded-xl overflow-hidden border border-emerald-900/30 bg-gradient-to-r from-emerald-700 via-emerald-600 to-emerald-700 shadow-inner"
+             :class="hasSquads ? 'h-56' : 'h-28'">
             <!-- bandes de terrain -->
             <div class="absolute inset-0 grid grid-cols-5">
                 <div v-for="n in 5" :key="n" class="border-r border-white/10 last:border-r-0"
                      :class="n % 2 === 0 ? 'bg-white/0' : 'bg-white/5'"></div>
             </div>
-            <!-- ligne médiane -->
+            <!-- ligne médiane + rond central -->
             <div class="absolute inset-y-0 left-1/2 w-px bg-white/30"></div>
+            <div v-if="hasSquads" class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full border border-white/25"></div>
+            <!-- surfaces -->
+            <div v-if="hasSquads" class="absolute left-0 top-1/2 -translate-y-1/2 border border-white/25 border-l-0" style="width:10%;height:55%"></div>
+            <div v-if="hasSquads" class="absolute right-0 top-1/2 -translate-y-1/2 border border-white/25 border-r-0" style="width:10%;height:55%"></div>
             <!-- buts -->
             <div class="absolute inset-y-0 left-0 w-2 bg-white/40"></div>
             <div class="absolute inset-y-0 right-0 w-2 bg-white/40"></div>
 
+            <!-- 22 joueurs (reconstitution selon formation) -->
+            <template v-if="hasSquads">
+                <div v-for="p in placedPlayers" :key="p.side + '-' + p.id"
+                     class="absolute -translate-x-1/2 -translate-y-1/2 transition-all duration-700 ease-out flex flex-col items-center"
+                     :class="p.isActor ? 'z-20' : 'z-[5]'"
+                     :style="{ left: p.x + '%', top: p.y + '%' }">
+                    <div class="rounded-full flex items-center justify-center font-black text-white shadow transition-all"
+                         :class="[
+                            p.side === 'internal' ? 'bg-sky-600' : 'bg-rose-600',
+                            p.isActor
+                                ? 'w-6 h-6 text-[10px] ring-2 ring-amber-300 scale-110'
+                                : 'w-5 h-5 text-[9px] ring-1 ring-white/50 opacity-90',
+                         ]"
+                         :title="`N°${p.number ?? '?'} ${p.lastname}`">
+                        {{ p.number ?? '?' }}
+                    </div>
+                    <div v-if="p.isActor"
+                         class="mt-0.5 px-1 rounded text-[7px] font-bold leading-tight whitespace-nowrap"
+                         :class="p.actorRole === 'attacker' ? 'bg-amber-300 text-slate-900' : 'bg-white/90 text-slate-700'">
+                        {{ p.lastname }}
+                    </div>
+                </div>
+            </template>
+
             <!-- ballon -->
             <div class="absolute -translate-y-1/2 -translate-x-1/2 transition-all duration-700 ease-out z-10"
                  :style="{ left: ballPosition + '%', top: ballLane + '%' }">
-                <div class="w-6 h-6 rounded-full bg-white shadow-lg flex items-center justify-center text-xs ring-2 ring-amber-400">
+                <div class="w-5 h-5 rounded-full bg-white shadow-lg flex items-center justify-center text-[10px] ring-2 ring-amber-400">
                     ⚽
                 </div>
             </div>
 
             <!-- pas encore démarré -->
-            <div v-if="cursor === 0" class="absolute inset-0 flex items-center justify-center bg-black/30 text-white text-xs font-bold">
+            <div v-if="cursor === 0" class="absolute inset-0 flex items-center justify-center bg-black/30 text-white text-xs font-bold z-30">
                 Appuie sur ▶ pour lancer le replay
             </div>
-            <div v-else-if="isFinished" class="absolute inset-0 flex items-center justify-center bg-black/30 text-white text-xs font-bold">
+            <div v-else-if="isFinished" class="absolute inset-0 flex items-center justify-center bg-black/30 text-white text-xs font-bold z-30">
                 🏁 Match terminé
             </div>
         </div>

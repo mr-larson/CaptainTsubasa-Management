@@ -35,6 +35,93 @@ const awayTeamName = computed(() =>
     props.selectedCalendarMatch ? props.teamById[props.selectedCalendarMatch.away_team_id]?.name : ''
 );
 
+// Effectif + formation d'une équipe pour la reconstitution du replay
+const replaySquad = (teamId) => {
+    const team = props.teamById[teamId];
+    if (!team) return null;
+    const players = (team.contracts ?? [])
+        .map(c => {
+            const p = c.game_player ?? c.gamePlayer ?? null;
+            return p ? {
+                id:         p.id,
+                lastname:   p.lastname,
+                number:     p.number,
+                position:   p.position,
+                is_starter: c.is_starter ?? false,
+            } : null;
+        })
+        .filter(Boolean);
+    return { formation: team.formation ?? null, players };
+};
+
+const replayHomeSquad = computed(() =>
+    props.selectedCalendarMatch ? replaySquad(props.selectedCalendarMatch.home_team_id) : null
+);
+const replayAwaySquad = computed(() =>
+    props.selectedCalendarMatch ? replaySquad(props.selectedCalendarMatch.away_team_id) : null
+);
+
+// ── Déroulé du match enrichi (logs structurés) ───────────────
+const playersById = computed(() => {
+    const map = {};
+    for (const team of Object.values(props.teamById ?? {})) {
+        for (const c of team?.contracts ?? []) {
+            const p = c.game_player ?? c.gamePlayer ?? null;
+            if (p) map[p.id] = p;
+        }
+    }
+    return map;
+});
+
+const eventPlayerPhoto = (ref) => {
+    if (!ref?.id) return null;
+    const p = playersById.value[ref.id];
+    return p ? playerPhotoUrl(p) : null;
+};
+
+const EVENT_ACTION_LABELS = {
+    pass: 'Passe', dribble: 'Dribble', shot: 'Tir', special: 'Spécial',
+    cross: 'Centre', long_pass: 'Passe longue',
+    intercept: 'Interception', tackle: 'Tacle', block: 'Contre', heading: 'Tête',
+    hands: 'Arrêt ✋', punch: 'Poings 👊', 'gk-special': 'Arrêt spécial',
+    'field-special': 'Défense spéciale',
+};
+const eventActionLabel = (key) => EVENT_ACTION_LABELS[key] ?? null;
+
+// Filtres du déroulé
+const logFilter = ref('all');
+const LOG_FILTERS = [
+    { key: 'all',      label: 'Tout' },
+    { key: 'goals',    label: '⚽ Buts' },
+    { key: 'shots',    label: '🎯 Tirs' },
+    { key: 'heroics',  label: '🔥 Temps forts' },
+];
+
+const isGoalEv  = (ev) => /goal/i.test(ev?.actionType ?? '');
+const isShotEv  = (ev) => isGoalEv(ev) || /shot/i.test(ev?.actionType ?? '') || ev?.action === 'shot';
+const isHeroEv  = (ev) => ev?.actionType === 'heroic' || /héroï|dépassement|reroll/i.test(ev?.text ?? '');
+
+// Événements annotés du score courant, puis filtrés (affichage antichronologique)
+const annotatedEvents = computed(() => {
+    let home = 0, away = 0;
+    return props.selectedCalendarEvents.map((ev, index) => {
+        if (isGoalEv(ev)) {
+            if (ev.team === 'internal') home++; else away++;
+        }
+        return { ...ev, index, score: isGoalEv(ev) ? `${home} - ${away}` : null };
+    });
+});
+
+const filteredLogEvents = computed(() => {
+    const list = annotatedEvents.value.filter(ev => {
+        if (logFilter.value === 'goals')   return isGoalEv(ev);
+        if (logFilter.value === 'shots')   return isShotEv(ev);
+        if (logFilter.value === 'heroics') return isHeroEv(ev);
+        return true;
+    });
+    return [...list].reverse();
+});
+
 const homeProgressors = computed(() =>
     props.selectedCalendarProgression.filter(p => p.team_side === 'home').sort((a, b) => b.total - a.total)
 );
@@ -228,7 +315,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
 </script>
 
 <template>
-    <div class="flex-1 flex flex-col gap-4 overflow-y-auto max-h-[75vh] pr-1">
+    <div class="flex-1 flex flex-col gap-4 overflow-y-auto max-h-[75vh] pr-1 [&>*]:shrink-0">
 
         <!-- Sélecteur équipes — chips horizontales -->
         <div class="border border-slate-200 rounded-xl bg-slate-50 p-3">
@@ -503,17 +590,27 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                 <!-- BLOC : Déroulé du match (action par action)  -->
                 <!-- ============================================ -->
                 <div v-if="selectedCalendarEvents.length" class="border border-slate-200 rounded-xl bg-slate-50 p-4">
-                    <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center justify-between mb-3 gap-2 flex-wrap">
                         <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
                             📋 Déroulé du match (action par action)
                         </h4>
-                        <span class="text-[10px] text-slate-400">
-                            {{ selectedCalendarEvents.length }} action{{ selectedCalendarEvents.length > 1 ? 's' : '' }}
-                        </span>
+                        <div class="flex items-center gap-1.5">
+                            <button v-for="f in LOG_FILTERS" :key="f.key" type="button"
+                                    @click="logFilter = f.key"
+                                    class="px-2 py-0.5 rounded-full text-[10px] font-semibold border transition-all"
+                                    :class="logFilter === f.key
+                                        ? 'bg-teal-500 text-white border-teal-600'
+                                        : 'bg-white text-slate-500 border-slate-200 hover:border-teal-300'">
+                                {{ f.label }}
+                            </button>
+                            <span class="text-[10px] text-slate-400 ml-1">
+                                {{ filteredLogEvents.length }}/{{ selectedCalendarEvents.length }}
+                            </span>
+                        </div>
                     </div>
 
                     <div class="max-h-72 overflow-y-auto space-y-1 pr-1">
-                        <div v-for="(ev, i) in [...selectedCalendarEvents].reverse()" :key="i"
+                        <div v-for="ev in filteredLogEvents" :key="ev.index"
                              class="flex items-start gap-2 px-2 py-1.5 rounded-lg text-[11px]"
                              :class="playLogRowClass(ev)">
                             <span class="shrink-0 font-mono text-[9px] px-1 py-0.5 rounded bg-white/70 text-slate-500">
@@ -522,13 +619,55 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                             <span v-if="ev.team" class="w-2 h-2 rounded-full mt-1 shrink-0"
                                   :class="ev.team === 'internal' ? 'bg-blue-400' : 'bg-orange-400'"></span>
                             <span class="shrink-0">{{ playLogIcon(ev) }}</span>
-                            <div class="min-w-0">
-                                <div class="font-semibold text-slate-700">{{ ev.text }}</div>
-                                <div v-if="ev.details?.length" class="text-[10px] text-slate-400">
+                            <div class="min-w-0 flex-1">
+                                <div class="font-semibold text-slate-700 flex items-center gap-1.5 flex-wrap">
+                                    <span>{{ ev.text }}</span>
+                                    <span v-if="ev.score"
+                                          class="px-1.5 py-0.5 rounded bg-slate-800 text-white text-[10px] font-black tabular-nums">
+                                        {{ ev.score }}
+                                    </span>
+                                </div>
+
+                                <!-- Duel : acteurs structurés (logs récents) -->
+                                <div v-if="ev.attacker || ev.defender" class="mt-1 flex items-center gap-1.5 flex-wrap">
+                                    <span v-if="ev.attacker"
+                                          class="inline-flex items-center gap-1 pl-0.5 pr-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">
+                                        <span class="w-4 h-4 rounded-full overflow-hidden bg-emerald-200 shrink-0">
+                                            <img v-if="eventPlayerPhoto(ev.attacker)" :src="eventPlayerPhoto(ev.attacker)" class="w-full h-full object-cover" alt=""/>
+                                        </span>
+                                        N°{{ ev.attacker.number ?? '?' }} {{ ev.attacker.name }}
+                                        <span v-if="eventActionLabel(ev.action)" class="opacity-60 font-semibold">· {{ eventActionLabel(ev.action) }}</span>
+                                    </span>
+                                    <span v-if="ev.attacker && ev.defender" class="text-[10px] text-slate-400">⚔️</span>
+                                    <span v-if="ev.defender"
+                                          class="inline-flex items-center gap-1 pl-0.5 pr-1.5 py-0.5 rounded-full bg-rose-100 text-rose-700 text-[10px] font-bold">
+                                        <span class="w-4 h-4 rounded-full overflow-hidden bg-rose-200 shrink-0">
+                                            <img v-if="eventPlayerPhoto(ev.defender)" :src="eventPlayerPhoto(ev.defender)" class="w-full h-full object-cover" alt=""/>
+                                        </span>
+                                        N°{{ ev.defender.number ?? '?' }} {{ ev.defender.name }}
+                                        <span v-if="eventActionLabel(ev.def_action)" class="opacity-60 font-semibold">· {{ eventActionLabel(ev.def_action) }}</span>
+                                    </span>
+
+                                    <!-- Mini-indicateur de zone (5 segments, sens d'attaque) -->
+                                    <span v-if="Number.isFinite(ev.zone)" class="inline-flex items-center gap-0.5 ml-auto"
+                                          :title="`Zone ${ev.zone + 1}/5 — ${ev.team === 'internal' ? 'attaque →' : '← attaque'}`">
+                                        <span v-for="z in 5" :key="z"
+                                              class="w-2 h-1 rounded-sm"
+                                              :class="(ev.team === 'internal' ? z - 1 : 5 - z) === ev.zone
+                                                  ? (ev.team === 'internal' ? 'bg-blue-500' : 'bg-orange-500')
+                                                  : 'bg-slate-200'"></span>
+                                    </span>
+                                </div>
+
+                                <!-- Fallback anciens matchs : détails texte -->
+                                <div v-else-if="ev.details?.length" class="text-[10px] text-slate-400">
                                     {{ ev.details.join(' · ') }}
                                 </div>
                             </div>
                         </div>
+                        <p v-if="!filteredLogEvents.length" class="text-[11px] text-slate-400 italic text-center py-4">
+                            Aucune action de ce type dans ce match.
+                        </p>
                     </div>
                 </div>
             </div>
@@ -687,6 +826,8 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                         :away-logo="teamLogoUrl(teamById[selectedCalendarMatch.away_team_id])"
                         :final-home-score="selectedCalendarMatch.home_score"
                         :final-away-score="selectedCalendarMatch.away_score"
+                        :home-squad="replayHomeSquad"
+                        :away-squad="replayAwaySquad"
                     />
 
                     <!-- Repli : ancien résumé statique (matchs sans 'events' enregistrés) -->

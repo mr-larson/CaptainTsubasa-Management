@@ -183,7 +183,7 @@ const matchesPlayed = computed(() =>
 </script>
 
 <template>
-    <div class="flex-1 flex flex-col gap-4 overflow-y-auto min-h-[75vh] max-h-[75vh] pr-1">
+    <div class="flex-1 flex flex-col gap-4 overflow-y-auto min-h-[75vh] max-h-[75vh] pr-1 [&>*]:shrink-0">
 
         <!-- ============================================ -->
         <!-- RÉCAP DE LA SEMAINE : blessures / suspensions -->
