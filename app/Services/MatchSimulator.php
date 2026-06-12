@@ -238,6 +238,13 @@ class MatchSimulator
                     'text'       => "🔥 Dépassement de soi — {$attacker->lastname}",
                     'details'    => [$success ? '✓ Le duel est renversé !' : '✗ Le duel reste perdu'],
                     'diceTag'    => round($attackScore, 1) . '-' . round($defenseScore, 1),
+                    'zone'            => $zone,
+                    'lane'            => null,
+                    'front_of_keeper' => $frontOfKeeper,
+                    'action'          => $action,
+                    'def_action'      => $defAction,
+                    'attacker'        => $this->eventPlayerRef($attacker),
+                    'defender'        => $this->eventPlayerRef($defender),
                 ];
             }
 
@@ -370,6 +377,27 @@ class MatchSimulator
             'text'       => $text,
             'details'    => $details,
             'diceTag'    => null,
+            // Données structurées pour le replay visuel (positions + acteurs).
+            // lane = null : la simulation PHP n'a pas de notion de couloir.
+            'zone'            => $zone,
+            'lane'            => null,
+            'front_of_keeper' => $frontOfKeeper,
+            'action'          => $action,
+            'def_action'      => $defAction,
+            'attacker'        => $this->eventPlayerRef($attacker),
+            'defender'        => $this->eventPlayerRef($defender),
+        ];
+    }
+
+    /** Référence joueur embarquée dans les events du déroulé (replay). */
+    private function eventPlayerRef($player): ?array
+    {
+        if (!$player || !($player->id ?? null)) return null;
+
+        return [
+            'id'     => (int) $player->id,
+            'name'   => trim(($player->firstname ?? '') . ' ' . ($player->lastname ?? '')),
+            'number' => $player->number ?? null,
         ];
     }
 
@@ -712,6 +740,14 @@ class MatchSimulator
                     : "Passe longue de {$attacker?->lastname} interceptée par {$defender?->lastname}",
                 'details'    => ['Zone ' . ($zone + 1)],
                 'diceTag'    => null,
+                'zone'            => $zone,
+                'lane'            => null,
+                'front_of_keeper' => false,
+                'action'          => 'long_pass',
+                'def_action'      => 'intercept',
+                'attacker'        => $this->eventPlayerRef($attacker),
+                'defender'        => $this->eventPlayerRef($defender),
+                'receiver'        => $success ? $this->eventPlayerRef($target) : null,
             ];
 
             if ($success) {
@@ -797,6 +833,13 @@ class MatchSimulator
                 'text'       => "Centre de {$crosser?->lastname} dégagé par {$defenderForLog?->lastname}",
                 'details'    => ['Zone ' . ($zone + 1)],
                 'diceTag'    => null,
+                'zone'            => $zone,
+                'lane'            => null,
+                'front_of_keeper' => false,
+                'action'          => 'cross',
+                'def_action'      => 'heading',
+                'attacker'        => $this->eventPlayerRef($crosser),
+                'defender'        => $this->eventPlayerRef($defenderForLog),
             ];
             $side = $defSide;
             $zone = self::MAX_ZONE_INDEX - $zone;
@@ -861,6 +904,14 @@ class MatchSimulator
                 : "Centre de {$crosser?->lastname} repris par {$receiver?->lastname} — arrêté",
             'details'    => ['Zone ' . ($zone + 1)],
             'diceTag'    => null,
+            'zone'            => $zone,
+            'lane'            => null,
+            'front_of_keeper' => true,
+            'action'          => 'shot',
+            'def_action'      => 'hands',
+            'attacker'        => $this->eventPlayerRef($receiver),
+            'defender'        => $this->eventPlayerRef($defGK),
+            'assist'          => $this->eventPlayerRef($crosser),
         ];
 
         // La balle repart de zéro côté défenseur, but ou non

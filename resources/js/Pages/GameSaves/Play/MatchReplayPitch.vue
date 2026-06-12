@@ -45,12 +45,21 @@ function isGoalEvent(ev) {
 }
 
 function parseZone(ev) {
+    // Source primaire : champ structuré `zone` (0..4, ajouté aux deux moteurs).
+    if (Number.isFinite(ev?.zone)) return Math.max(1, Math.min(5, ev.zone + 1));
+    // Fallback anciens matchs : parsing du texte "Zone N" des détails.
     if (!ev?.details) return null;
     for (const d of ev.details) {
         const m = typeof d === 'string' ? d.match(/Zone\s+(\d)/i) : null;
         if (m) return Math.max(1, Math.min(5, parseInt(m[1], 10)));
     }
     return null;
+}
+
+// Couloir (0 haut, 1 centre, 2 bas) → position verticale en %.
+// Seuls les matchs joués manuellement ont cette info ; sinon centre.
+function parseLane(ev) {
+    return Number.isFinite(ev?.lane) ? [28, 50, 72][ev.lane] ?? 50 : null;
 }
 
 // Reconstitue la progression du ballon (zone + camp possesseur) au fil des événements.
@@ -62,8 +71,9 @@ const ballTrack = computed(() => {
     const other = (s) => (s === 'internal' ? 'external' : 'internal');
 
     let zone = 3;     // 1..5, 3 = milieu de terrain (côté de l'équipe `side`, qui attaque)
+    let lane = 50;    // position verticale en %
     let side = props.events[0]?.team ?? 'internal'; // équipe qui porte le ballon / attaque
-    const track = [{ zone, side }];
+    const track = [{ zone, lane, side }];
 
     for (let i = 0; i < props.events.length; i++) {
         const ev = props.events[i];
@@ -71,11 +81,13 @@ const ballTrack = computed(() => {
         const actingTeam = ev.team ?? side;
 
         const explicitZone = parseZone(ev);
+        lane = parseLane(ev) ?? lane;
 
         if (isGoalEvent(ev)) {
             // But marqué par actingTeam → l'adversaire relance depuis son camp
             side = other(actingTeam);
             zone = 1;
+            lane = 50;
         } else if (ev.result === 'attack') {
             // L'attaquant progresse vers le but adverse
             side = actingTeam;
@@ -87,7 +99,7 @@ const ballTrack = computed(() => {
         }
         // 'neutral' (coup d'envoi, faute, etc.) : on conserve l'état courant
 
-        track.push({ zone, side });
+        track.push({ zone, lane, side });
     }
     return track;
 });
@@ -100,6 +112,17 @@ const ballPosition = computed(() => {
     return side === 'internal'
         ? 12 + ratio * 76   // l'équipe interne attaque vers la droite
         : 88 - ratio * 76;  // l'équipe externe attaque vers la gauche
+});
+
+// Position verticale du ballon (couloir — seulement connu pour les matchs joués)
+const ballLane = computed(() => ballTrack.value[cursor.value]?.lane ?? 50);
+
+// Acteurs de l'action courante (id/nom/numéro structurés dans les logs récents)
+const currentActors = computed(() => {
+    const ev = currentEvent.value;
+    if (!ev) return null;
+    if (!ev.attacker && !ev.defender) return null;
+    return { attacker: ev.attacker ?? null, defender: ev.defender ?? null };
 });
 
 const ACTION_ICONS = {
@@ -221,8 +244,8 @@ onUnmounted(() => clearTimer());
             <div class="absolute inset-y-0 right-0 w-2 bg-white/40"></div>
 
             <!-- ballon -->
-            <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 transition-all duration-700 ease-out z-10"
-                 :style="{ left: ballPosition + '%' }">
+            <div class="absolute -translate-y-1/2 -translate-x-1/2 transition-all duration-700 ease-out z-10"
+                 :style="{ left: ballPosition + '%', top: ballLane + '%' }">
                 <div class="w-6 h-6 rounded-full bg-white shadow-lg flex items-center justify-center text-xs ring-2 ring-amber-400">
                     ⚽
                 </div>
@@ -248,6 +271,18 @@ onUnmounted(() => clearTimer());
                     <span class="text-slate-400 mr-1">T{{ currentEvent.turn }}</span>{{ currentEvent.text }}
                 </div>
                 <div v-else class="text-xs text-slate-400 italic">En attente du coup d'envoi…</div>
+                <!-- Acteurs du duel (logs structurés) -->
+                <div v-if="currentActors" class="mt-1 flex flex-wrap items-center gap-1.5">
+                    <span v-if="currentActors.attacker"
+                          class="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-700">
+                        N°{{ currentActors.attacker.number ?? '?' }} {{ currentActors.attacker.name }}
+                    </span>
+                    <span v-if="currentActors.attacker && currentActors.defender" class="text-[10px] text-slate-400">⚔️</span>
+                    <span v-if="currentActors.defender"
+                          class="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-rose-100 text-rose-700">
+                        N°{{ currentActors.defender.number ?? '?' }} {{ currentActors.defender.name }}
+                    </span>
+                </div>
                 <div v-if="currentEvent?.details?.length" class="mt-1 flex flex-wrap gap-1">
                     <span v-for="(d, i) in currentEvent.details" :key="i"
                           class="text-[10px] px-1.5 py-0.5 rounded bg-white border border-slate-200 text-slate-500">{{ d }}</span>

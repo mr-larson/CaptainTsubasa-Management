@@ -302,6 +302,7 @@ export function pushLogEntry(logKeyOrText, details = [], diceTag = null, state, 
     // Historique COMPLET (non plafonné par MAX_HISTORY) du déroulé du match,
     // exploitable pour le résumé post-match (action par action) côté Tab Calendar.
     if (state?.matchLog) {
+        const duelMeta = meta?.meta ?? null; // breakdown.meta = { attacker, defender } (id, nom, numéro, action)
         state.matchLog.push({
             turn:       entry.turn,
             actionType: entry.actionType,
@@ -310,9 +311,19 @@ export function pushLogEntry(logKeyOrText, details = [], diceTag = null, state, 
             text:       entry.mainText,
             details:    entry.details,
             diceTag:    entry.diceTag,
-            // Données structurées (IDs, zone, dés, stats) pour un futur replay
-            // visuel fidèle (positions des joueurs, jets de dés détaillés…).
+            // Données structurées pour le replay visuel (position du ballon + acteurs).
             // Peut être absent pour les anciens matchs / actions sans duel (kickoff, etc.).
+            zone:            state?.ball?.zoneIndex ?? null,
+            lane:            state?.ball?.laneIndex ?? null,
+            front_of_keeper: state?.ball?.frontOfKeeper ?? false,
+            action:          duelMeta?.attacker?.actionKey ?? null,
+            def_action:      duelMeta?.defender?.actionKey ?? null,
+            attacker:        duelMeta?.attacker
+                ? { id: duelMeta.attacker.id, name: duelMeta.attacker.name, number: duelMeta.attacker.number }
+                : null,
+            defender:        duelMeta?.defender
+                ? { id: duelMeta.defender.id, name: duelMeta.defender.name, number: duelMeta.defender.number }
+                : null,
             meta:       meta ?? null,
         });
     }

@@ -64,11 +64,13 @@ export function buildDuelMeta({ attackTeam, attackSlot, attackAction, defenseTea
     return {
         attacker: {
             team: attackTeam, slot: attackSlot,
+            id: aInfo?.id ?? null,
             number: aInfo?.number ?? null, name: fullName(aInfo),
             actionKey: attackAction, actionLabel: getAttackLabel(attackAction),
         },
         defender: defenseSlot ? {
             team: defenseTeam, slot: defenseSlot,
+            id: dInfo?.id ?? null,
             number: dInfo?.number ?? null, name: fullName(dInfo),
             actionKey: defenseAction, actionLabel: getDefenseLabel(defenseAction),
         } : null,
