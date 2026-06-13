@@ -27,11 +27,13 @@
                 </div>
             </div>
 
-            <div class="max-w-7xl mx-auto">
+            <div class="max-w-9xl mx-auto">
                 <div class="grid grid-cols-12 gap-4">
 
                     <!-- Colonne gauche : liste équipes -->
-                    <div class="col-span-3 border border-slate-200 rounded-xl bg-white p-3 flex flex-col gap-2" style="max-height: calc(100vh - 180px);">
+                    <!-- overflow-hidden + min-h-0 : la carte ne pilote pas la hauteur de la rangée — elle s'aligne
+                         sur la colonne du milieu (profil → bouton « Jouer avec »). La liste défile à l'intérieur. -->
+                    <div class="col-span-2 border border-slate-200 rounded-xl bg-white p-3 flex flex-col gap-2 min-h-0 overflow-hidden">
                         <!-- Recherche -->
                         <div class="relative shrink-0">
                             <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 20 20">
@@ -48,7 +50,7 @@
                         </div>
 
                         <!-- Liste scrollable -->
-                        <div class="flex-1 overflow-y-auto space-y-1 pr-0.5">
+                        <div class="flex-1 min-h-0 overflow-y-auto space-y-1 pr-0.5">
                             <button v-for="team in filteredTeams" :key="team.id" type="button"
                                     @click="selectTeam(team)"
                                     class="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-semibold border transition-all text-left"
@@ -68,10 +70,10 @@
                     </div>
 
                     <!-- Panneau principal -->
-                    <div v-if="selectedTeam" class="col-span-9 grid grid-cols-12 gap-4">
+                    <div v-if="selectedTeam" class="col-span-10 grid grid-cols-12 gap-4">
 
                         <!-- Profil équipe -->
-                        <div class="col-span-4 flex flex-col gap-3">
+                        <div class="col-span-3 flex flex-col gap-3">
 
                             <!-- Logo + infos -->
                             <div class="border border-slate-200 rounded-xl bg-white p-5">
@@ -161,7 +163,7 @@
                         </div>
 
                         <!-- Colonne droite : effectif (prebuilt) ou aperçu style (draft) -->
-                        <div class="col-span-8 border border-slate-200 rounded-xl bg-white p-4">
+                        <div class="col-span-9 border border-slate-200 rounded-xl bg-white p-4">
 
                             <!-- Mode prebuilt : effectif complet -->
                             <template v-if="gameMode !== 'draft'">
@@ -169,34 +171,55 @@
                                     Effectif — {{ roster.length }} joueur(s)
                                 </h3>
 
-                                <div v-if="roster.length" class="grid grid-cols-2 gap-2 max-h-[620px] overflow-y-auto pr-1">
-                                    <div v-for="player in roster" :key="player.id"
-                                         class="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-slate-50 hover:bg-white hover:border-slate-200 transition-all">
-                                        <div class="w-12 h-12 rounded-xl overflow-hidden bg-slate-200 border border-slate-100 shrink-0">
-                                            <img v-if="playerPhotoUrl(player)" :src="playerPhotoUrl(player)" class="w-full h-full object-cover" alt=""/>
-                                            <div v-else class="w-full h-full flex items-center justify-center text-slate-400 text-lg">👤</div>
+                                <div v-if="roster.length" class="max-h-[620px] overflow-y-auto pr-1 space-y-3">
+                                    <!-- Groupes de postes : GK → DEF → MID → ATT, triés par note -->
+                                    <div v-for="group in groupedRoster" :key="group.key">
+                                        <div class="flex items-center gap-2 mb-1.5 px-0.5">
+                                            <span class="text-[10px] font-black uppercase tracking-wider" :class="group.text">{{ group.label }}</span>
+                                            <span class="text-[10px] font-bold text-slate-300 tabular-nums">{{ group.players.length }}</span>
+                                            <div class="flex-1 h-px bg-slate-100"></div>
                                         </div>
-                                        <div class="flex-1 min-w-0">
-                                            <div class="text-xs font-bold text-slate-800 truncate">
-                                                {{ player.firstname }} {{ player.lastname }}
-                                            </div>
-                                            <div class="text-[10px] text-slate-400">{{ player.position }}</div>
-                                            <div class="flex gap-2 mt-1">
-                                                <div v-for="k in keyStatsFor(player.position).slice(0, 3)" :key="k" class="text-center">
-                                                    <div class="text-[11px] font-black text-slate-700">
-                                                        {{ player[k] ?? player.stats?.[k] ?? '—' }}
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <div v-for="player in group.players" :key="player.id"
+                                                 class="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-slate-50 hover:bg-white hover:border-slate-200 transition-all">
+                                                <div class="w-12 h-12 rounded-xl overflow-hidden bg-slate-200 border border-slate-100 shrink-0">
+                                                    <img v-if="playerPhotoUrl(player)" :src="playerPhotoUrl(player)" class="w-full h-full object-cover" alt=""/>
+                                                    <div v-else class="w-full h-full flex items-center justify-center text-slate-400 text-lg">👤</div>
+                                                </div>
+                                                <div class="flex-1 min-w-0">
+                                                    <div class="flex items-center gap-1.5">
+                                                        <span class="text-xs font-bold text-slate-800 truncate">
+                                                            {{ player.firstname }} {{ player.lastname }}
+                                                        </span>
+                                                        <span class="shrink-0 px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wide"
+                                                              :class="posBadgeClass(player.position)">
+                                                            {{ player.position }}
+                                                        </span>
                                                     </div>
-                                                    <div class="text-[8px] text-slate-400 uppercase">{{ statShortLabel(k) }}</div>
+                                                    <!-- Stats clés (adaptées au poste) : libellé, valeur teintée, mini-barre colorée -->
+                                                    <div class="flex gap-2 mt-1.5">
+                                                        <div v-for="k in keyStatsFor(player.position)" :key="k" class="flex-1 min-w-0">
+                                                            <div class="flex items-center justify-between gap-1">
+                                                                <span class="text-[8px] font-semibold uppercase text-slate-400 truncate">{{ statLabel(k) }}</span>
+                                                                <span class="text-[10px] font-black tabular-nums" :class="statTone(statValue(player, k))">
+                                                                    {{ statValue(player, k) }}
+                                                                </span>
+                                                            </div>
+                                                            <div class="h-1 bg-slate-200 rounded-full overflow-hidden mt-0.5">
+                                                                <div class="h-full rounded-full" :class="statColor(k)"
+                                                                     :style="{ width: Math.min(statValue(player, k), 100) + '%' }"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="flex flex-col items-center gap-0.5 shrink-0">
+                                                    <div class="w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-black border-2"
+                                                         :class="overallBadgeClass(overallOf(player))">
+                                                        {{ overallOf(player) }}
+                                                    </div>
+                                                    <span class="text-[7px] font-bold uppercase text-slate-300 tracking-wider">Note</span>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 border-2"
-                                             :class="overallOf(player) >= 70
-                            ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
-                            : overallOf(player) >= 50
-                                ? 'bg-amber-50 border-amber-300 text-amber-700'
-                                : 'bg-slate-100 border-slate-200 text-slate-500'">
-                                            {{ overallOf(player) }}
                                         </div>
                                     </div>
                                 </div>
@@ -260,7 +283,7 @@
                     </div>
 
                     <!-- Placeholder si aucune équipe sélectionnée -->
-                    <div v-else class="col-span-9 border border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center text-slate-400" style="min-height: 400px;">
+                    <div v-else class="col-span-10 border border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center text-slate-400" style="min-height: 400px;">
                         <div class="text-4xl mb-3">⚽</div>
                         <p class="font-semibold">Sélectionne une équipe pour voir son profil</p>
                     </div>
@@ -278,6 +301,7 @@ import { ref, computed } from 'vue';
 import H2 from '@/Components/H2.vue';
 import H1 from '@/Components/H1.vue';
 import TeamStyleBadges from '@/Pages/GameSaves/Play/components/TeamStyleBadges.vue';
+import { usePlayerUtils } from '@/Pages/GameSaves/Play/usePlayerUtils.js';
 
 const props = defineProps({
     label:    { type: String, default: null },
@@ -288,6 +312,12 @@ const props = defineProps({
 
 const searchQuery  = ref('');
 const selectedTeam = ref(null);
+
+// Helpers d'affichage partagés (cohérence avec le reste de l'app, cf. dashboard / effectif).
+const {
+    overallOf, keyStatsFor, statLabel, statColor,
+    positionGroup, playerPhotoUrl, teamLogoUrl,
+} = usePlayerUtils();
 
 const filteredTeams = computed(() => {
     if (!searchQuery.value) return props.teams;
@@ -305,6 +335,27 @@ const roster = computed(() => {
     if (!selectedTeam.value?.contracts) return [];
     return selectedTeam.value.contracts.map(c => c.player).filter(Boolean);
 });
+
+// Effectif groupé par poste (GK → DEF → MID → ATT → autres), trié par note
+// décroissante dans chaque groupe — pour scanner l'effectif plus vite.
+const POSITION_GROUPS = [
+    { key: 'GK',    label: 'Gardien',   text: 'text-violet-600' },
+    { key: 'DEF',   label: 'Défense',   text: 'text-blue-600'   },
+    { key: 'MID',   label: 'Milieu',    text: 'text-teal-600'   },
+    { key: 'ATT',   label: 'Attaque',   text: 'text-orange-600' },
+    { key: 'OTHER', label: 'Autres',    text: 'text-slate-500'  },
+];
+
+const groupedRoster = computed(() =>
+    POSITION_GROUPS
+        .map(g => ({
+            ...g,
+            players: roster.value
+                .filter(p => positionGroup(p.position) === g.key)
+                .sort((a, b) => overallOf(b) - overallOf(a)),
+        }))
+        .filter(g => g.players.length)
+);
 
 const styleLabel = (key) => ({
     offensive:  '⚔️ Offensif',
@@ -352,27 +403,28 @@ const avgDefense = computed(() => avgStat('defense'));
 const avgStamina = computed(() => avgStat('stamina'));
 const avgSpeed   = computed(() => avgStat('speed'));
 
-const overallOf = (p) => {
-    if (!p) return 0;
-    const keys = ['speed','stamina','attack','defense','shot','pass','dribble','block','intercept','tackle'];
-    const vals = keys.map(k => Number(p[k] ?? p.stats?.[k] ?? 0)).filter(v => isFinite(v));
-    return vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : 0;
-};
+// overallOf / keyStatsFor / statLabel / statColor / positionGroup proviennent du
+// composable partagé usePlayerUtils (déstructuré plus haut) — on n'ajoute ici que
+// les helpers de mise en forme propres à cet écran.
+const statValue = (p, k) => Number(p?.[k] ?? p?.stats?.[k] ?? 0);
 
-const keyStatsFor = (pos) => {
-    const p = (pos ?? '').toUpperCase();
-    if (p.includes('GK'))  return ['hand_save', 'punch_save', 'defense'];
-    if (p.includes('DEF')) return ['defense', 'tackle', 'block'];
-    if (p.includes('MDF') || p.includes('MOF') || p.includes('MID')) return ['pass', 'intercept', 'attack'];
-    if (p.includes('ATT') || p.includes('FOR')) return ['shot', 'dribble', 'attack'];
-    return ['attack', 'defense', 'pass'];
-};
+// Teinte du chiffre selon la valeur (lecture rapide des forces / faiblesses).
+const statTone = (v) => Number(v) >= 70 ? 'text-emerald-600'
+    : Number(v) >= 50 ? 'text-amber-600'
+    : 'text-slate-500';
 
-const statShortLabel = (k) => ({
-    shot: 'Tir', pass: 'Pass', dribble: 'Drib', attack: 'Att',
-    defense: 'Def', speed: 'Vit', block: 'Blk', intercept: 'Int',
-    tackle: 'Tac', stamina: 'End', hand_save: 'Main', punch_save: 'Poing',
-}[k] ?? k);
+// Pastille de note globale (mêmes seuils que les chiffres).
+const overallBadgeClass = (o) => o >= 70 ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
+    : o >= 50 ? 'bg-amber-50 border-amber-300 text-amber-700'
+    : 'bg-slate-100 border-slate-200 text-slate-500';
+
+// Badge de poste coloré (couleur par groupe GK / DEF / MID / ATT, libellé brut conservé).
+const posBadgeClass = (pos) => ({
+    GK:  'bg-violet-100 text-violet-700',
+    DEF: 'bg-blue-100 text-blue-700',
+    MID: 'bg-teal-100 text-teal-700',
+    ATT: 'bg-orange-100 text-orange-700',
+}[positionGroup(pos)] ?? 'bg-slate-100 text-slate-500');
 
 // ==========================
 //   RADAR
@@ -424,23 +476,6 @@ const radarAxes = computed(() => {
         return { x2: cx + r * Math.cos(angle), y2: cy + r * Math.sin(angle) };
     });
 });
-
-// ==========================
-//   URLS
-// ==========================
-const teamLogoUrl = (team) => {
-    const path = team?.logo_path;
-    if (!path) return null;
-    if (path.startsWith('http') || path.startsWith('/')) return path;
-    if (path.startsWith('teams/')) return '/images/' + path;
-    return '/' + path;
-};
-
-const playerPhotoUrl = (player) => {
-    if (player?.photo_path) return `/storage/${player.photo_path}`;
-    if (player?.photo?.path) return `/storage/${player.photo.path}`;
-    return null;
-};
 
 const label = props.label;
 </script>
