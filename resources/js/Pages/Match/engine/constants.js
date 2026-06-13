@@ -24,6 +24,16 @@ export const DUEL_RULES = {
 };
 
 // ==========================
+//   COUP DE PIED ARRÊTÉ (coup franc)
+// ==========================
+// Une faute grave (échec critique du défenseur) commise dans le tiers offensif
+// donne un coup franc-tir à l'équipe lésée, résolu via le duel tir-vs-gardien.
+export const FREE_KICK = {
+    MIN_ZONE_INDEX: 3, // tiers offensif (zones 0..4) ; en deçà, pas de coup franc-tir
+    ATTACK_BONUS:   3, // bonus offensif sur la base du tir de coup franc
+};
+
+// ==========================
 //   ENDURANCE
 // ==========================
 export const ENDURANCE_DEFAULT = 100;
@@ -140,6 +150,9 @@ export const TEXTS = {
         goalMain:        "BUT pour {team} !",
         goalSpecialMain: "BUT SPÉCIAL pour {team} !",
         goalSub:         "Score : {scoreInternal} - {scoreExternal}.",
+
+        freeKickMain: "⚽ Coup franc !",
+        freeKickSub:  "{team} obtient un coup franc — le n°{number} va frapper.",
     },
     logs: {
         kickoffTitle:  "Coup d'envoi",
@@ -175,6 +188,7 @@ export const TEXTS = {
         foulCardTitle:    "Carton",
         foulTitle:        "Faute",
         foulInjuryTitle:  "Blessure",
+        freeKickTitle:    "Coup franc",
     },
     cards: {
         attack: {

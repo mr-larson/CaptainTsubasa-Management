@@ -62,12 +62,13 @@ export function showEventNotification(type, text, subText = null) {
             setTimeout(() => toast.classList.remove('hiding'), 350);
         }, 2500);
 
-    } else if (type === 'red' || type === 'injury') {
+    } else if (type === 'red' || type === 'injury' || type === 'freekick') {
         const overlay = _ensureOverlayEl();
         if (!overlay) return;
+        const icon = type === 'red' ? '🟥' : type === 'injury' ? '🤕' : '⚽';
         overlay.className = `event-overlay event-overlay--${type}`;
         overlay.innerHTML = `
-            <div class="event-overlay__icon">${type === 'red' ? '🟥' : '🤕'}</div>
+            <div class="event-overlay__icon">${icon}</div>
             <div class="event-overlay__text">${text}</div>
             ${subText ? `<div class="event-overlay__sub">${subText}</div>` : ''}
         `;
@@ -75,6 +76,11 @@ export function showEventNotification(type, text, subText = null) {
         overlay.classList.add('visible');
         setTimeout(() => overlay.classList.remove('visible'), 2200);
     }
+}
+
+// Bannière plein terrain « ⚽ Coup franc ! » — appelée par les résolveurs.
+export function showFreeKickBanner(teamLabel, takerNumber) {
+    showEventNotification('freekick', 'Coup franc !', `${teamLabel} — n°${takerNumber}`);
 }
 
 function _triggerEventNotification(actionType, main, details) {
@@ -187,6 +193,7 @@ const LOG_TYPES = {
     'card-yellow':     { icon: '🟨', color: 'yellow' },
     'card-red':        { icon: '🟥', color: 'red'    },
     foul:              { icon: '⚠️', color: 'slate'  },
+    'free-kick':       { icon: '⚽', color: 'blue'   },
     substitution:      { icon: '🔄', color: 'blue'   },
     unknown:           { icon: '▸',  color: 'slate'  },
 };
@@ -274,6 +281,7 @@ function _detectType(key, details) {
     if (k.includes('injury') || d.includes('blessure'))       return ['injury',            'failed' ];
     if (d.includes('🟥') || d.includes('rouge'))              return ['card-red',          'failed' ];
     if (d.includes('🟨') || d.includes('jaune'))              return ['card-yellow',       'failed' ];
+    if (k.includes('freekick') || d.includes('coup franc'))    return ['free-kick',         'neutral'];
     if (k.includes('foul') || k.includes('faute'))             return ['foul',             'neutral'];
 
     return ['unknown', 'neutral'];

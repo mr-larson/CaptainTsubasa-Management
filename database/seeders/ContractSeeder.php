@@ -168,7 +168,7 @@ class ContractSeeder extends Seeder
                 $contracts[] = [
                     'player_id'  => $player->id,
                     'team_id'    => $teamId,
-                    'salary'     => $this->calculateWeeklyCost($player->stats ?? [], $player->position),
+                    'salary'     => $this->calculateWeeklyCost($player->stats ?? [], $player->position?->value),
                     'start_date' => now()->subMonths(rand(1, 12))->subDays(rand(1, 30)),
                     'end_date'   => now()->addMonths(rand(1, 12))->addDays(rand(1, 30)),
                     'is_captain' => isset($captains[$teamName]) && $captains[$teamName] === $fullName ? 1 : 0,

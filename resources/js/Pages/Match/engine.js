@@ -133,6 +133,7 @@ export function initMatchEngine(rootEl, config = {}) {
         pendingClearanceBonus: 0,
         pendingDefenseContext: null,
         pendingCaptainReroll:  null,
+        pendingFreeKick:       null,
         lastDribblerId: null,
         stamina:        {},
         staminaMax:     {},
@@ -668,6 +669,7 @@ export function initMatchEngine(rootEl, config = {}) {
         state.pendingShotContext    = null;
         state.pendingDefenseContext = null;
         state.pendingCaptainReroll  = null;
+        state.pendingFreeKick       = null;
         state.pendingClearanceBonus = 0;
         state.foulEvents        = [];
         resetLogHistory();

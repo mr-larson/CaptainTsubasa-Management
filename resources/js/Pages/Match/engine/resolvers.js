@@ -1,6 +1,6 @@
 // resources/js/Pages/Match/engine/resolvers.js
 import {
-    TEXTS, DUEL_RULES, FIELD_RULES,
+    TEXTS, DUEL_RULES, FIELD_RULES, FREE_KICK,
     MAX_ZONE_INDEX, ZONE_BOUNDS_INTERNAL, laneY,
     CRIT_STAMINA_BOOST,
     HEROIC_MORALE_THRESHOLD, HEROIC_CHANCE, MORALE_DEFAULT,
@@ -18,7 +18,7 @@ import {
     isGoalkeeperId, setBallToKeeperVisual,
 } from './field.js';
 import {
-    setMessage, pushLogEntry,
+    setMessage, pushLogEntry, showFreeKickBanner,
     updateSideCard, syncRecovererCard, updateTeamCard,
     buildDefenseGKHTML, buildDefenseFieldHTML, setActionBar,
 } from './ui.js';
@@ -804,6 +804,9 @@ export function resolvePass(attackTeam, defenseTeam, defenseAction, defenderPick
     // Reroll en attente → on stoppe ici, continuePendingAction reprendra
     if (duel.duelResult === "pending_reroll") return;
 
+    // Coup de pied arrêté obtenu pendant le duel → on bascule sur le coup franc-tir.
+    if (_state.pendingFreeKick) { startFreeKick(); return; }
+
     if (duel.isTie) {
         pushLogEntry(
             isSpecial ? "Duel equilibre (special pass)" : "Duel equilibre (pass)",
@@ -894,6 +897,7 @@ export function resolveCross(attackTeam, defenseTeam) {
     const b = ball();
     const duel = runFieldDuel({ attackTeam, defenseTeam, attackType: "cross", defenseAction: "heading" });
     if (duel.duelResult === "pending_reroll") return;
+    if (_state.pendingFreeKick) { startFreeKick(); return; }
 
     if (duel.isTie) {
         pushLogEntry("Duel equilibre (centre)", ["Defense: heading", getCounterTag("cross", "heading")], duel.diceTag, _state, duel.breakdown ?? null);
@@ -938,6 +942,7 @@ export function resolveLongPass(attackTeam, defenseTeam) {
     const b = ball();
     const duel = runFieldDuel({ attackTeam, defenseTeam, attackType: "long_pass", defenseAction: "intercept" });
     if (duel.duelResult === "pending_reroll") return;
+    if (_state.pendingFreeKick) { startFreeKick(); return; }
 
     if (duel.isTie) {
         pushLogEntry("Duel equilibre (passe longue)", ["Defense: intercept", getCounterTag("long_pass", "intercept")], duel.diceTag, _state, duel.breakdown ?? null);
@@ -1007,6 +1012,8 @@ export function resolveDribble(attackTeam, defenseTeam, defenseAction, defenderP
         }
         return;
     }
+
+    if (_state.pendingFreeKick) { startFreeKick(); return; }
 
     if (duel.isTie) {
         pushLogEntry(
@@ -1124,6 +1131,8 @@ export function resolveShot(attackTeam, defenseTeam, defenseAction, isSpecial = 
         return;
     }
 
+    if (_state.pendingFreeKick) { startFreeKick(); return; }
+
     if (duel.isTie) {
         pushLogEntry("Duel equilibre (shot)", ["Defense: " + defenseAction, getCounterTag(attackType, defenseAction)], duel.diceTag, _state, duel.breakdown ?? null);
         _state.phase = "attack"; _state.pendingAttack = null;
@@ -1195,6 +1204,75 @@ function continueShot(attackTeam, defenseTeam, defenseAction, isSpecial, duel, o
         _state.phase = "defense";
         _state.pendingAttack = attackType;
         if (_isAITeam(defenseTeam)) _scheduleAIDefense(attackType, defenseTeam);
+    });
+}
+
+// -----------------------------------------------------------
+//   startFreeKick — coup de pied arrêté (coup franc-tir)
+//   Déclenché par les résolveurs quand `_state.pendingFreeKick` est posé
+//   (faute grave en zone dangereuse, cf. fouls.js). Le tireur fauté frappe
+//   directement vers le gardien adverse, avec un bonus offensif — on réutilise
+//   le duel tir-vs-gardien existant (resolveShotKeeperDuel via pendingShotContext).
+// -----------------------------------------------------------
+function startFreeKick() {
+    const fk = _state.pendingFreeKick;
+    _state.pendingFreeKick = null;
+    if (!fk) return;
+
+    const b           = ball();
+    const attackTeam  = fk.team;
+    const defenseTeam = otherTeam(attackTeam);
+    const takerSlot   = fk.takerSlot;
+    const originZone  = fk.zoneIndex;
+    const originLane  = fk.laneIndex;
+
+    // Forcer le porteur sur le tireur fauté : dans le cas limite (double critFail →
+    // égalité), runFieldDuel a pu donner la possession à la défense avant notre garde.
+    b.team   = attackTeam;
+    b.number = takerSlot;
+    b.frontOfKeeper = false;
+    resetLastDribbler();
+    _state.phase = "attack";
+    _state.pendingAttack = null;
+    _state.pendingDefenseContext = null;
+
+    const takerInfo = _roster.getPlayerInfo(attackTeam, takerSlot);
+    const takerNum  = takerInfo?.number ?? takerSlot;
+
+    // Bannière plein terrain + message + entrée de déroulé (le matchLog capte zone/lane).
+    showFreeKickBanner(_TEAMS[attackTeam].label, takerNum);
+    setMessage(
+        TEXTS.ui.freeKickMain,
+        TEXTS.ui.freeKickSub.replace("{team}", _TEAMS[attackTeam].label).replace("{number}", takerNum)
+    );
+    pushLogEntry("freeKickTitle", [`${_TEAMS[attackTeam].label} — n°${takerNum}`, "Zone " + (originZone + 1)], null, _state);
+
+    // Animation du tireur + base offensive bonifiée (coup franc = occasion franche).
+    playPlayerAnimation(attackTeam, takerSlot, 'shoot');
+    const gkAttackBase = _roster.attackBaseFor("shot", attackTeam, takerSlot) + FREE_KICK.ATTACK_BONUS;
+
+    // Ballon placé devant le but, puis duel gardien (flux existant).
+    const center = getCellCenter(attackTeam, MAX_ZONE_INDEX, originLane);
+    b.zoneIndex = MAX_ZONE_INDEX; b.laneIndex = originLane;
+    if (_ui.ballEl) { _ui.ballEl.style.left = center.x + "%"; _ui.ballEl.style.top = center.y + "%"; }
+
+    _state.pendingShotContext = {
+        stage: "keeper", attackTeam, defenseTeam,
+        originZone, originLane, isSpecial: false,
+        gkAttackBase, logParts: ["Coup franc"], isFreeKick: true,
+    };
+
+    animateShotToKeeper(defenseTeam, () => {
+        const defPrefix = defenseTeam === "internal" ? "home" : "away";
+        updateSideCard(defPrefix, defenseTeam, 1);
+        _state.pendingDefenseContext = { defenseTeam, defenderId: getKeeperId(defenseTeam), defenderSlot: 1 };
+
+        setActionBar(buildDefenseGKHTML(defenseTeam, _roster), "mode-defense-" + defenseTeam, b, _roster, _bindActionButtons, false);
+        setMessage(TEXTS.ui.freeKickMain, TEXTS.ui.shotGKChoiceSub.replace("{team}", _TEAMS[defenseTeam].label));
+
+        _state.phase = "defense";
+        _state.pendingAttack = "shot";
+        if (_isAITeam(defenseTeam)) _scheduleAIDefense("shot", defenseTeam);
     });
 }
 

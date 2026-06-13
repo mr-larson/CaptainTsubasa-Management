@@ -3521,10 +3521,9 @@ class PlayerSeeder extends Seeder
             $photoPathDb = null;
             $specialMoves = $specialMovesByPlayerSlug[$slug] ?? null;
             if (is_file($sourcePath)) {
-                // copie uniquement si pas déjà présent (ou tu peux forcer overwrite)
-                if (!$storageDisk->exists($destPath)) {
-                    $storageDisk->put($destPath, file_get_contents($sourcePath));
-                }
+                // copie systématique : les images mises à jour dans les assets
+                // écrasent celles du storage
+                $storageDisk->put($destPath, file_get_contents($sourcePath));
 
                 $photoPathDb = $destPath; // stocké en DB
             }
@@ -3565,27 +3564,29 @@ class PlayerSeeder extends Seeder
         $handSave = max(5, (int)round($defense * 0.2));
         $punchSave = max(5, (int)round($defense * 0.15));
 
-        // par défaut, faible (attaquants/gardiens n'interviennent pas sur les centres)
-        $heading = 15;
+        // Tête : échelle 10-30, hiérarchie DEF > FW > MF > GK (les défenseurs
+        // dominent le jeu aérien, les avants pèsent sur les centres)
+        $heading = 13;
 
         switch ($position) {
             case 'Forward':
                 $shot = (int)round(min(100, $attack * 1.05));
                 $dribble = (int)round(min(100, ($attack * 0.8 + $speed * 0.4) / 1.1));
                 $pass = (int)round(($attack * 0.75 + $speed * 0.35) / 1.1);
+                $heading = (int)round($attack * 0.15 + $stamina * 0.05 + 10);
                 break;
 
             case 'Midfielder':
                 $pass = (int)round(min(100, ($attack * 0.9 + $speed * 0.4) / 1.1));
                 $dribble = (int)round(min(100, ($attack * 0.85 + $speed * 0.4) / 1.1));
-                $heading = (int)round($defense * 0.3 + $block * 0.2 + $stamina * 0.1) + 15;
+                $heading = (int)round($defense * 0.12 + $block * 0.05 + $stamina * 0.03 + 10);
                 break;
 
             case 'Defender':
                 $block = (int)round(min(100, $block * 1.05));
                 $tackle = (int)round(min(100, $tackle * 1.05));
                 $intercept = (int)round(($defense * 0.8 + $speed * 0.3) / 1.1);
-                $heading = (int)round(min(100, $defense * 0.5 + $block * 0.3 + $stamina * 0.2));
+                $heading = (int)round($defense * 0.18 + $block * 0.06 + $stamina * 0.04 + 12);
                 break;
 
             case 'Goalkeeper':
@@ -3600,6 +3601,7 @@ class PlayerSeeder extends Seeder
 
                 $handSave = (int)round(min(100, ($defense * 1.3 + $stamina * 0.5) / 1.5));
                 $punchSave = (int)round(min(100, ($defense * 1.1 + $stamina * 0.7) / 1.5));
+                $heading = (int)round($defense * 0.04 + 10);
                 break;
         }
 
@@ -3610,7 +3612,7 @@ class PlayerSeeder extends Seeder
                 'block' => $block,
                 'intercept' => $intercept,
                 'tackle' => $tackle,
-                'heading' => $heading,
+                'heading' => max(10, min(30, $heading)),
                 'hand_save' => $handSave,
                 'punch_save' => $punchSave,
             ];
@@ -3622,10 +3624,11 @@ class PlayerSeeder extends Seeder
      */
     private function getHeadingOverride(string $slug): ?int
     {
+        // Spécialistes du jeu aérien (échelle de tête : 10-30)
         $overrides = [
-            'jito' => 42,
-            'soda' => 40,
-            'matsuyama' => 35,
+            'jito' => 30,
+            'soda' => 28,
+            'matsuyama' => 26,
         ];
 
         foreach ($overrides as $needle => $value) {

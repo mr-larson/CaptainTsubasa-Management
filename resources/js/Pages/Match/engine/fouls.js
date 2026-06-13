@@ -1,6 +1,8 @@
 // resources/js/Pages/Match/engine/fouls.js
 // Résolution des fautes / cartons consécutifs à un duel.
 
+import { FREE_KICK } from './constants.js';
+
 let _state  = null;
 let _roster = null;
 let _rootEl = null;
@@ -76,6 +78,20 @@ export function resolveFoulOutcome({ attackerId, defenderId, duelResult, dRoll }
             giveYellowCard(defenderId, defenderDbId, defenderName);
         } else {
             _pushLogEntry('foulTitle', [`⚠️ ${defenderName} — Faute`], null, _state);
+        }
+
+        // ── Coup de pied arrêté : faute grave dans le tiers offensif → coup franc-tir.
+        // On pose un drapeau data-only ; le déclenchement du flux est piloté par les
+        // résolveurs (resolvers.js), comme le pattern `pending_reroll`.
+        const b = _state.ball;
+        if (b && b.zoneIndex >= FREE_KICK.MIN_ZONE_INDEX && !b.frontOfKeeper) {
+            const attackTeam = attackerId?.startsWith('I') ? 'internal' : 'external';
+            _state.pendingFreeKick = {
+                team:      attackTeam,
+                takerSlot: b.number,
+                zoneIndex: b.zoneIndex,
+                laneIndex: b.laneIndex,
+            };
         }
     }
 
