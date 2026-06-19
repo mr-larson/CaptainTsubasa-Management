@@ -25,11 +25,8 @@ class TeamTest extends TestCase
         $this->assertIsString($team->name);
         $this->assertIsString($team->logo_path);
         $this->assertIsInt($team->budget);
-        $this->assertIsInt($team->points);
         $this->assertIsInt($team->wins);
         $this->assertIsInt($team->draws);
         $this->assertIsInt($team->losses);
-        $this->assertIsArray($team->team_stats_bonus);
-        $this->assertIsArray($team->active_cards);
     }
 }

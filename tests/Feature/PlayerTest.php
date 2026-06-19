@@ -20,10 +20,18 @@ class PlayerTest extends TestCase
         $player = Player::factory()->create();
         $team = Team::factory()->create();
 
-        // Associate player with the team
-        $player->team()->associate($team)->save();
+        // La relation joueur <-> équipe passe par la table pivot "contracts" (many-to-many)
+        $player->teams()->attach($team->id, [
+            'salary'     => 1000,
+            'start_date' => now(),
+            'end_date'   => now()->addYear(),
+        ]);
 
-        // Check if the player's team_id matches the created team's id
-        $this->assertEquals($team->id, $player->team_id);
+        // Le joueur est bien rattaché à l'équipe via un contrat
+        $this->assertTrue($player->teams()->where('teams.id', $team->id)->exists());
+        $this->assertDatabaseHas('contracts', [
+            'player_id' => $player->id,
+            'team_id'   => $team->id,
+        ]);
     }
 }

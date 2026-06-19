@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\GameSaves;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\AuthorizesGameSave;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSave;
@@ -15,12 +16,14 @@ use Inertia\Response;
 
 class GameDraftController extends Controller
 {
+    use AuthorizesGameSave;
+
     /**
      * Écran de draft (initial ou intersaison).
      */
     public function show(Request $request, GameSave $gameSave): Response
     {
-        $this->authorizeSave($request, $gameSave);
+        $this->authorizeGameSave('view', $gameSave);
 
         if (!in_array($gameSave->phase, ['draft', 'intersaison_draft'], true)) {
             return redirect()->route('game-saves.Play', $gameSave);
@@ -50,7 +53,7 @@ class GameDraftController extends Controller
      */
     public function aiPick(Request $request, GameSave $gameSave)
     {
-        $this->authorizeSave($request, $gameSave);
+        $this->authorizeGameSave('update', $gameSave);
 
         if (!in_array($gameSave->phase, ['draft', 'intersaison_draft'], true)) {
             return response()->json(['error' => 'Not in draft phase'], 400);
@@ -136,7 +139,7 @@ class GameDraftController extends Controller
      */
     public function pick(Request $request, GameSave $gameSave)
     {
-        $this->authorizeSave($request, $gameSave);
+        $this->authorizeGameSave('update', $gameSave);
 
         if (!in_array($gameSave->phase, ['draft', 'intersaison_draft'], true)) {
             return response()->json(['error' => 'Not in draft phase'], 400);
@@ -183,7 +186,7 @@ class GameDraftController extends Controller
 
     public function finish(Request $request, GameSave $gameSave)
     {
-        $this->authorizeSave($request, $gameSave);
+        $this->authorizeGameSave('update', $gameSave);
 
         $draftService = app(DraftService::class);
         $allDone = $draftService->finishTeamDraft($gameSave, $gameSave->controlled_game_team_id);
@@ -194,10 +197,5 @@ class GameDraftController extends Controller
             'draftState' => $gameSave->state['draft'] ?? [],
             'completed'  => $allDone || ($gameSave->state['draft']['completed'] ?? false),
         ]);
-    }
-
-    private function authorizeSave(Request $request, GameSave $gameSave): void
-    {
-        if ($gameSave->user_id !== $request->user()->id) abort(403);
     }
 }

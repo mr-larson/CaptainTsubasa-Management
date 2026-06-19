@@ -3,6 +3,7 @@
 namespace App\Http\Requests\GameSaves;
 
 use App\Enums\TeamStyle;
+use App\Models\GameSaves\GameSave;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -10,8 +11,10 @@ class GameTeamRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // L’ownership est vérifiée dans le contrôleur GameTeamController.
-        return true;
+        $gameSave = $this->route('gameSave');
+
+        return $gameSave instanceof GameSave
+            && (bool) $this->user()?->can('update', $gameSave);
     }
 
     public function rules(): array

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\GameSaves;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\AuthorizesGameSave;
 use App\Http\Requests\GameSaves\GameTeamRequest;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
@@ -15,14 +16,14 @@ use Inertia\Response;
 
 class GameTeamController extends Controller
 {
+    use AuthorizesGameSave;
+
     /**
      * Liste des équipes d'une sauvegarde.
      */
     public function index(Request $request, GameSave $gameSave): Response
     {
-        if ($gameSave->user_id !== $request->user()->id) {
-            abort(403);
-        }
+        $this->authorizeGameSave('view', $gameSave);
 
         $teams = GameTeam::where('game_save_id', $gameSave->id)
             ->orderBy('name')
@@ -39,8 +40,7 @@ class GameTeamController extends Controller
      */
     public function edit(Request $request, GameSave $gameSave, GameTeam $team): Response
     {
-        if ($gameSave->user_id !== $request->user()->id) abort(403);
-        if ($team->game_save_id !== $gameSave->id) abort(403);
+        $this->authorizeGameSave('view', $gameSave, $team);
 
         return Inertia::render('GameSaves/GameTeams/Edit', [
             'gameSave' => $gameSave,
@@ -53,8 +53,7 @@ class GameTeamController extends Controller
      */
     public function update(GameTeamRequest $request, GameSave $gameSave, GameTeam $team)
     {
-        if ($gameSave->user_id !== $request->user()->id) abort(403);
-        if ($team->game_save_id !== $gameSave->id) abort(403);
+        $this->authorizeGameSave('update', $gameSave, $team);
 
         $data = $request->validated();
 
@@ -89,7 +88,7 @@ class GameTeamController extends Controller
      */
     public function create(Request $request, GameSave $gameSave): Response
     {
-        if ($gameSave->user_id !== $request->user()->id) abort(403);
+        $this->authorizeGameSave('view', $gameSave);
 
         return Inertia::render('GameSaves/GameTeams/Create', [
             'gameSave' => $gameSave,
@@ -101,7 +100,7 @@ class GameTeamController extends Controller
      */
     public function store(GameTeamRequest $request, GameSave $gameSave)
     {
-        if ($gameSave->user_id !== $request->user()->id) abort(403);
+        $this->authorizeGameSave('update', $gameSave);
 
         $data = $request->validated();
 
@@ -134,8 +133,7 @@ class GameTeamController extends Controller
      */
     public function destroy(Request $request, GameSave $gameSave, GameTeam $team)
     {
-        if ($gameSave->user_id !== $request->user()->id) abort(403);
-        if ($team->game_save_id !== $gameSave->id) abort(403);
+        $this->authorizeGameSave('update', $gameSave, $team);
 
         if ($team->logo_path) {
             $this->deleteGameTeamLogo($team->logo_path);

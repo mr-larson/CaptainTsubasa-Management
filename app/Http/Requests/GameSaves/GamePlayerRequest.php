@@ -3,6 +3,7 @@
 namespace App\Http\Requests\GameSaves;
 
 use App\Enums\PlayerPosition;
+use App\Models\GameSaves\GameSave;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
 
@@ -10,8 +11,10 @@ class GamePlayerRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // L’ownership finale sera vérifiée dans le contrôleur.
-        return true;
+        $gameSave = $this->route('gameSave');
+
+        return $gameSave instanceof GameSave
+            && (bool) $this->user()?->can('update', $gameSave);
     }
 
     public function rules(): array

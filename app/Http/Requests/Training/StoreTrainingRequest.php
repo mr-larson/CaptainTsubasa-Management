@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Training;
 
+use App\Models\GameSaves\GameSave;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -9,9 +10,10 @@ class StoreTrainingRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // La propriété de la GameSave est vérifiée dans le contrôleur,
-        // ici on autorise et on laisse le contrôle au controller.
-        return true;
+        $gameSave = $this->route('gameSave');
+
+        return $gameSave instanceof GameSave
+            && (bool) $this->user()?->can('update', $gameSave);
     }
 
     public function rules(): array

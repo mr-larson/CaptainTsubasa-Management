@@ -5,61 +5,42 @@ namespace App\Policies;
 use App\Models\GameSaves\GameSave;
 use App\Models\User;
 
+/**
+ * Une sauvegarde (et tout son contenu : équipes, joueurs, contrats, matchs…)
+ * appartient à l'utilisateur qui l'a créée. Les administrateurs passent via
+ * le Gate::before défini dans AuthServiceProvider.
+ */
 class GameSavePolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
     public function viewAny(User $user): bool
     {
-        //
+        // Chaque utilisateur ne voit que ses propres sauvegardes :
+        // la liste est filtrée par user_id dans le contrôleur.
+        return true;
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
     public function view(User $user, GameSave $gameSave): bool
     {
-        //
+        return $this->owns($user, $gameSave);
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
     public function create(User $user): bool
     {
-        //
+        return true;
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
     public function update(User $user, GameSave $gameSave): bool
     {
-        //
+        return $this->owns($user, $gameSave);
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
     public function delete(User $user, GameSave $gameSave): bool
     {
-        //
+        return $this->owns($user, $gameSave);
     }
 
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, GameSave $gameSave): bool
+    private function owns(User $user, GameSave $gameSave): bool
     {
-        //
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, GameSave $gameSave): bool
-    {
-        //
+        return (int) $user->id === (int) $gameSave->user_id;
     }
 }

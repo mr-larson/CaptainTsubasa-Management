@@ -2,13 +2,17 @@
 
 namespace App\Http\Requests\GameSaves;
 
+use App\Models\GameSaves\GameSave;
 use Illuminate\Foundation\Http\FormRequest;
 
 class GameContractRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true; // ownership verified in controller
+        $gameSave = $this->route('gameSave');
+
+        return $gameSave instanceof GameSave
+            && (bool) $this->user()?->can('update', $gameSave);
     }
 
     public function rules(): array

@@ -2,13 +2,18 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Contract;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ContractRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        $contract = $this->route('contract');
+
+        return $contract
+            ? (bool) $this->user()?->can('update', $contract)
+            : (bool) $this->user()?->can('create', Contract::class);
     }
 
     public function rules(): array

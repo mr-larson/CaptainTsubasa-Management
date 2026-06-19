@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\GameSaves;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\AuthorizesGameSave;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GamePlayer;
@@ -32,12 +33,14 @@ use Inertia\Response;
 
 class GameMatchController extends Controller
 {
+    use AuthorizesGameSave;
+
     /**
      * Écran de match jouable pour une session.
      */
     public function match(Request $request, GameSave $gameSave): Response
     {
-        $this->authorizeSave($request, $gameSave);
+        $this->authorizeGameSave('view', $gameSave);
 
         $controlledGameTeam = GameTeam::where('game_save_id', $gameSave->id)
             ->where('base_team_id', $gameSave->team_id)
@@ -131,7 +134,7 @@ class GameMatchController extends Controller
      */
     public function finishMatch(Request $request, GameSave $gameSave, GameMatch $match): RedirectResponse
     {
-        $this->authorizeSave($request, $gameSave);
+        $this->authorizeGameSave('update', $gameSave);
 
         abort_unless((int) $match->game_save_id === (int) $gameSave->id, 404);
 
@@ -239,7 +242,7 @@ class GameMatchController extends Controller
      */
     public function simulateWeek(Request $request, GameSave $gameSave): RedirectResponse
     {
-        $this->authorizeSave($request, $gameSave);
+        $this->authorizeGameSave('update', $gameSave);
 
         $week = (int) ($gameSave->week ?? 1);
 
@@ -465,9 +468,7 @@ class GameMatchController extends Controller
 
     public function useCaptainReroll(Request $request, GameSave $gameSave, GameContract $contract): JsonResponse
     {
-        $this->authorizeSave($request, $gameSave);
-
-        if ($contract->game_save_id !== $gameSave->id) abort(403);
+        $this->authorizeGameSave('update', $gameSave, $contract);
 
         if (! $contract->useReroll()) {
             return response()->json([
@@ -484,19 +485,10 @@ class GameMatchController extends Controller
 
     public function resetCaptainRerollActionFlag(Request $request, GameSave $gameSave, GameContract $contract): JsonResponse
     {
-        $this->authorizeSave($request, $gameSave);
-
-        if ($contract->game_save_id !== $gameSave->id) abort(403);
+        $this->authorizeGameSave('update', $gameSave, $contract);
 
         $contract->resetRerollActionFlag();
 
         return response()->json(['success' => true]);
-    }
-
-    private function authorizeSave(Request $request, GameSave $gameSave): void
-    {
-        if ($gameSave->user_id !== $request->user()->id) {
-            abort(403);
-        }
     }
 }

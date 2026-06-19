@@ -41,5 +41,22 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'is_admin' => 'boolean',
     ];
+
+    /**
+     * Indique si l'utilisateur dispose des droits d'administration.
+     *
+     * Volontairement hors de $fillable : le flag ne doit jamais être
+     * assignable en masse depuis une requête utilisateur.
+     */
+    public function isAdmin(): bool
+    {
+        return (bool) $this->is_admin;
+    }
+
+    public function gameSaves()
+    {
+        return $this->hasMany(\App\Models\GameSaves\GameSave::class);
+    }
 }

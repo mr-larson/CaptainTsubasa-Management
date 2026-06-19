@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\GameSaves;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\AuthorizesGameSave;
 use App\Http\Requests\GameSaves\GameSaveRequest;
 use App\Models\Contract;
 use App\Models\GameSaves\GameBonusCard;
@@ -30,6 +31,8 @@ use Inertia\Response;
 
 class GameSaveController extends Controller
 {
+    use AuthorizesGameSave;
+
     public function index(Request $request): Response
     {
         $gameSaves = GameSave::with('team')
@@ -224,7 +227,7 @@ class GameSaveController extends Controller
      */
     public function play(Request $request, GameSave $gameSave): Response
     {
-        $this->authorizeSave($request, $gameSave);
+        $this->authorizeGameSave('view', $gameSave);
 
         $currentWeek = $gameSave->week ?? 1;
 
@@ -448,7 +451,7 @@ class GameSaveController extends Controller
 
     public function signFreeAgent(Request $request, GameSave $gameSave, GamePlayer $player): RedirectResponse
     {
-        $this->authorizeSave($request, $gameSave);
+        $this->authorizeGameSave('update', $gameSave, $player);
 
         $data = $request->validate([
             'team_id'       => ['required', 'integer', Rule::exists('game_teams', 'id')->where('game_save_id', $gameSave->id)],
@@ -546,7 +549,7 @@ class GameSaveController extends Controller
 
     public function update(GameSaveRequest $request, GameSave $gameSave): mixed
     {
-        $this->authorizeSave($request, $gameSave);
+        $this->authorizeGameSave('update', $gameSave);
         $gameSave->fill($request->validated())->save();
 
         if ($request->wantsJson()) {
@@ -558,7 +561,7 @@ class GameSaveController extends Controller
 
     public function destroy(Request $request, GameSave $gameSave): RedirectResponse
     {
-        $this->authorizeSave($request, $gameSave);
+        $this->authorizeGameSave('delete', $gameSave);
         $gameSave->delete();
 
         return redirect()->route('game-saves.index')->with('success', 'Sauvegarde supprimée.');
@@ -636,10 +639,5 @@ class GameSaveController extends Controller
                 'status'       => 'scheduled',
             ]);
         }
-    }
-
-    private function authorizeSave(Request $request, GameSave $gameSave): void
-    {
-        if ($gameSave->user_id !== $request->user()->id) abort(403);
     }
 }

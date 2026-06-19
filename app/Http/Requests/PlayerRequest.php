@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Enums\PlayerPosition;
+use App\Models\Player;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
 
@@ -10,7 +11,11 @@ class PlayerRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        $player = $this->route('player');
+
+        return $player
+            ? (bool) $this->user()?->can('update', $player)
+            : (bool) $this->user()?->can('create', Player::class);
     }
 
     public function rules(): array

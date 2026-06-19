@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\GameSaves;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\AuthorizesGameSave;
 use App\Models\GameSaves\GameBonusCard;
 use App\Models\GameSaves\GameSave;
 use App\Services\BonusCardActivationService;
@@ -12,6 +13,8 @@ use Illuminate\Http\Request;
 
 class BonusCardController extends Controller
 {
+    use AuthorizesGameSave;
+
     public function __construct(
         private BonusCardShopService     $shopService,
         private BonusCardActivationService $activationService,
@@ -22,7 +25,7 @@ class BonusCardController extends Controller
      */
     public function buy(Request $request, GameSave $gameSave): RedirectResponse
     {
-        $this->authorizeSave($request, $gameSave);
+        $this->authorizeGameSave('update', $gameSave);
 
         $request->validate([
             'bonus_card_id' => 'required|integer|exists:bonus_cards,id',
@@ -84,12 +87,12 @@ class BonusCardController extends Controller
      */
     public function activate(Request $request, GameSave $gameSave, GameBonusCard $gameBonusCard): RedirectResponse
     {
-        $this->authorizeSave($request, $gameSave);
+        $this->authorizeGameSave('update', $gameSave, $gameBonusCard);
 
-        if ($gameBonusCard->game_save_id !== $gameSave->id ||
-            $gameBonusCard->game_team_id !== $gameSave->controlled_game_team_id) {
-            abort(403);
-        }
+        abort_unless(
+            (int) $gameBonusCard->game_team_id === (int) $gameSave->controlled_game_team_id,
+            403
+        );
 
         $request->validate([
             'target_player_id' => 'nullable|integer|exists:game_players,id',
@@ -105,10 +108,5 @@ class BonusCardController extends Controller
         } catch (\Illuminate\Validation\ValidationException $e) {
             return back()->withErrors($e->errors());
         }
-    }
-
-    private function authorizeSave(Request $request, GameSave $gameSave): void
-    {
-        if ($gameSave->user_id !== $request->user()->id) abort(403);
     }
 }

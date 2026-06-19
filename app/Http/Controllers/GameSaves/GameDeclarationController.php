@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\GameSaves;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\AuthorizesGameSave;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSave;
@@ -13,13 +14,14 @@ use Illuminate\Validation\Rule;
 
 class GameDeclarationController extends Controller
 {
+    use AuthorizesGameSave;
+
     /**
      * Déclaration publique (féliciter / critiquer) sur un joueur de l'équipe contrôlée.
      */
     public function store(Request $request, GameSave $gameSave, GamePlayer $player): RedirectResponse
     {
-        if ($gameSave->user_id !== auth()->id()) abort(403);
-        if ($player->game_save_id !== $gameSave->id) abort(403);
+        $this->authorizeGameSave('update', $gameSave, $player);
 
         $data = $request->validate([
             'type' => ['required', Rule::in(['praise', 'criticize'])],

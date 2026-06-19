@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\GameSaves;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\AuthorizesGameSave;
 use App\Models\GameSaves\GameSave;
 use App\Services\SeasonService;
 use Illuminate\Http\RedirectResponse;
@@ -12,12 +13,14 @@ use Inertia\Response;
 
 class GameSeasonController extends Controller
 {
+    use AuthorizesGameSave;
+
     /**
      * Écran de fin de saison : champion, MVP, primes de classement.
      */
     public function show(Request $request, GameSave $gameSave): Response
     {
-        $this->authorizeSave($request, $gameSave);
+        $this->authorizeGameSave('view', $gameSave);
 
         if ($gameSave->phase !== 'season_end') {
             return redirect()->route('game-saves.Play', $gameSave);
@@ -37,7 +40,7 @@ class GameSeasonController extends Controller
      */
     public function continue(Request $request, GameSave $gameSave): RedirectResponse
     {
-        $this->authorizeSave($request, $gameSave);
+        $this->authorizeGameSave('update', $gameSave);
 
         if ($gameSave->phase !== 'season_end') {
             return redirect()->route('game-saves.Play', $gameSave);
@@ -47,10 +50,5 @@ class GameSeasonController extends Controller
 
         return redirect()->route('game-saves.draft', $gameSave)
             ->with('success', "Saison {$gameSave->season} — la draft commence !");
-    }
-
-    private function authorizeSave(Request $request, GameSave $gameSave): void
-    {
-        if ($gameSave->user_id !== $request->user()->id) abort(403);
     }
 }

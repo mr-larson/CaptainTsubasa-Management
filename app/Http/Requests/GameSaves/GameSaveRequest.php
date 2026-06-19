@@ -2,17 +2,23 @@
 
 namespace App\Http\Requests\GameSaves;
 
+use App\Models\GameSaves\GameSave;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class GameSaveRequest extends FormRequest
 {
     /**
-     * Autorisation : uniquement utilisateur connecté.
+     * Création : tout utilisateur connecté. Mise à jour : propriétaire de la
+     * sauvegarde (délégué à GameSavePolicy).
      */
     public function authorize(): bool
     {
-        return auth()->check();
+        $gameSave = $this->route('gameSave');
+
+        return $gameSave instanceof GameSave
+            ? (bool) $this->user()?->can('update', $gameSave)
+            : (bool) $this->user()?->can('create', GameSave::class);
     }
 
     /**

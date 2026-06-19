@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\GameSaves;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\AuthorizesGameSave;
 use App\Http\Requests\GameSaves\GameContractRequest;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameSave;
@@ -13,16 +14,11 @@ use App\Services\MoraleService;
 
 class GameContractController extends Controller
 {
+    use AuthorizesGameSave;
+
     public function store(GameContractRequest $request, GameSave $gameSave, GamePlayer $player)
     {
-
-        if ($gameSave->user_id !== auth()->id()) {
-            abort(403);
-        }
-
-        if ($player->game_save_id !== $gameSave->id) {
-            abort(403);
-        }
+        $this->authorizeGameSave('update', $gameSave, $player);
 
         $data = $request->validated();
 
@@ -56,8 +52,7 @@ class GameContractController extends Controller
 
     public function update(GameContractRequest $request, GameSave $gameSave, GameContract $contract)
     {
-        if ($gameSave->user_id !== auth()->id()) abort(403);
-        if ($contract->game_save_id !== $gameSave->id) abort(403);
+        $this->authorizeGameSave('update', $gameSave, $contract);
 
         $contract->update($request->validated());
 
@@ -66,8 +61,7 @@ class GameContractController extends Controller
 
     public function destroy(GameSave $gameSave, GameContract $contract)
     {
-        if ($gameSave->user_id !== auth()->id()) abort(403);
-        if ($contract->game_save_id !== $gameSave->id) abort(403);
+        $this->authorizeGameSave('update', $gameSave, $contract);
 
         $contract->delete();
 

@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\GameSaves;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\AuthorizesGameSave;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
@@ -10,13 +11,14 @@ use Illuminate\Support\Facades\DB;
 
 class LineupController extends Controller
 {
+    use AuthorizesGameSave;
+
     /**
      * Toggle titulaire / remplaçant sur un contrat.
      */
     public function toggleStarter(Request $request, GameContract $contract)
     {
-        $gameSave = $contract->gameSave;
-        if ($gameSave->user_id !== $request->user()->id) abort(403);
+        $this->authorizeGameSave('update', $contract->gameSave);
 
         $contract->is_starter = !$contract->is_starter;
         $contract->save();
@@ -29,8 +31,7 @@ class LineupController extends Controller
      */
     public function toggleCaptain(Request $request, GameContract $contract)
     {
-        $gameSave = $contract->gameSave;
-        if ($gameSave->user_id !== $request->user()->id) abort(403);
+        $this->authorizeGameSave('update', $contract->gameSave);
 
         // Si ce joueur est déjà capitaine → on le retire simplement
         if ($contract->is_captain) {
@@ -57,7 +58,7 @@ class LineupController extends Controller
      */
     public function update(Request $request, GameSave $gameSave)
     {
-        if ($gameSave->user_id !== $request->user()->id) abort(403);
+        $this->authorizeGameSave('update', $gameSave);
 
         $data = $request->validate([
             'team_id'           => ['required', 'integer'],
@@ -95,7 +96,7 @@ class LineupController extends Controller
      */
     public function updateFormation(Request $request, GameSave $gameSave)
     {
-        if ($gameSave->user_id !== $request->user()->id) abort(403);
+        $this->authorizeGameSave('update', $gameSave);
 
         $data = $request->validate([
             'team_id'   => ['required', 'integer'],
@@ -119,7 +120,7 @@ class LineupController extends Controller
      */
     public function substitute(Request $request, GameSave $gameSave)
     {
-        if ($gameSave->user_id !== $request->user()->id) abort(403);
+        $this->authorizeGameSave('update', $gameSave);
 
         $data = $request->validate([
             'team_id'       => ['required', 'integer'],

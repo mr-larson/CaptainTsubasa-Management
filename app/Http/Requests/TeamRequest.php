@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Enums\TeamStyle;
+use App\Models\Team;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -10,7 +11,11 @@ class TeamRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        $team = $this->route('team');
+
+        return $team
+            ? (bool) $this->user()?->can('update', $team)
+            : (bool) $this->user()?->can('create', Team::class);
     }
 
     protected function prepareForValidation(): void

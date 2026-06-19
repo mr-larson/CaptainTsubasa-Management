@@ -57,8 +57,8 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile',  [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Équipes (base)
-    Route::prefix('teams')->name('teams.')->group(function () {
+    // Équipes (base) — données de référence : gestion réservée aux admins
+    Route::prefix('teams')->name('teams.')->middleware('admin')->group(function () {
         Route::get('/',          [TeamController::class, 'index'])->name('index');
         Route::get('/create',    [TeamController::class, 'create'])->name('create');
         Route::get('/edit',      [TeamController::class, 'edit'])->name('edit');
@@ -67,8 +67,8 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{team}', [TeamController::class, 'destroy'])->name('destroy');
     });
 
-    // Joueurs (base)
-    Route::prefix('players')->name('players.')->group(function () {
+    // Joueurs (base) — données de référence : gestion réservée aux admins
+    Route::prefix('players')->name('players.')->middleware('admin')->group(function () {
         Route::get('/',            [PlayerController::class, 'index'])->name('index');
         Route::get('/create',      [PlayerController::class, 'create'])->name('create');
         Route::get('/edit',        [PlayerController::class, 'edit'])->name('edit');
@@ -77,8 +77,8 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{player}', [PlayerController::class, 'destroy'])->name('destroy');
     });
 
-    // Contrats (base)
-    Route::prefix('contracts')->name('contracts.')->group(function () {
+    // Contrats (base) — données de référence : gestion réservée aux admins
+    Route::prefix('contracts')->name('contracts.')->middleware('admin')->group(function () {
         Route::get('/',              [ContractController::class, 'index'])->name('index');
         Route::get('/create',        [ContractController::class, 'create'])->name('create');
         Route::get('/edit',          [ContractController::class, 'edit'])->name('edit');
@@ -191,11 +191,11 @@ Route::middleware('auth')->group(function () {
     // Match démo
     Route::get('/match/demo', fn() => Inertia::render('Match/Engine'))->name('match.demo');
 
-    //Test
+    //Test — réservé aux admins (route de debug, expose des données de partie)
     Route::get('/debug/styles/{gameSave}', function (\App\Models\GameSaves\GameSave $gameSave) {
         return \App\Models\GameSaves\GameTeam::where('game_save_id', $gameSave->id)
             ->get(['name', 'tactical_style', 'management_philosophy']);
-    });
+    })->middleware('admin');
 });
 
 require __DIR__.'/auth.php';

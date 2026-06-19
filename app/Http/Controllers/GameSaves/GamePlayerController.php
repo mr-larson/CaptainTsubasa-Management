@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\GameSaves;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\AuthorizesGameSave;
 use App\Http\Requests\GameSaves\GamePlayerRequest;
 use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSave;
@@ -16,15 +17,14 @@ use Inertia\Response;
 
 class GamePlayerController extends Controller
 {
+    use AuthorizesGameSave;
+
     /**
      * Liste des joueurs d'une sauvegarde.
      */
     public function index(Request $request, GameSave $gameSave): Response
     {
-        // Sécurité ownership
-        if ($gameSave->user_id !== $request->user()->id) {
-            abort(403);
-        }
+        $this->authorizeGameSave('view', $gameSave);
 
         $players = GamePlayer::with(['contracts.gameTeam'])
             ->where('game_save_id', $gameSave->id)
@@ -48,9 +48,7 @@ class GamePlayerController extends Controller
      */
     public function create(Request $request, GameSave $gameSave): Response
     {
-        if ($gameSave->user_id !== $request->user()->id) {
-            abort(403);
-        }
+        $this->authorizeGameSave('view', $gameSave);
 
         return Inertia::render('GameSaves/GamePlayers/Create', [
             'gameSave' => $gameSave,
@@ -62,9 +60,7 @@ class GamePlayerController extends Controller
      */
     public function store(GamePlayerRequest $request, GameSave $gameSave)
     {
-        if ($gameSave->user_id !== $request->user()->id) {
-            abort(403);
-        }
+        $this->authorizeGameSave('update', $gameSave);
 
         $data = $request->validated();
 
@@ -97,13 +93,7 @@ class GamePlayerController extends Controller
      */
     public function edit(Request $request, GameSave $gameSave, GamePlayer $player): Response
     {
-        if ($gameSave->user_id !== $request->user()->id) {
-            abort(403);
-        }
-
-        if ($player->game_save_id !== $gameSave->id) {
-            abort(403);
-        }
+        $this->authorizeGameSave('view', $gameSave, $player);
 
         return Inertia::render('GameSaves/GamePlayers/Edit', [
             'gameSave' => $gameSave,
@@ -116,13 +106,7 @@ class GamePlayerController extends Controller
      */
     public function update(GamePlayerRequest $request, GameSave $gameSave, GamePlayer $player)
     {
-        if ($gameSave->user_id !== $request->user()->id) {
-            abort(403);
-        }
-
-        if ($player->game_save_id !== $gameSave->id) {
-            abort(403);
-        }
+        $this->authorizeGameSave('update', $gameSave, $player);
 
         $data = $request->validated();
 
@@ -160,13 +144,7 @@ class GamePlayerController extends Controller
      */
     public function destroy(Request $request, GameSave $gameSave, GamePlayer $player)
     {
-        if ($gameSave->user_id !== $request->user()->id) {
-            abort(403);
-        }
-
-        if ($player->game_save_id !== $gameSave->id) {
-            abort(403);
-        }
+        $this->authorizeGameSave('update', $gameSave, $player);
 
         // Règle métier : interdiction de supprimer un joueur sous contrat
         if ($player->contracts()->activeAt($gameSave->week ?? 1)->exists()) {
@@ -209,9 +187,7 @@ class GamePlayerController extends Controller
 
     public function updateNumber(Request $request, GameSave $gameSave, GamePlayer $player): \Illuminate\Http\RedirectResponse
     {
-        if ($gameSave->user_id !== $request->user()->id) {
-            abort(403);
-        }
+        $this->authorizeGameSave('update', $gameSave, $player);
 
         $data = $request->validate([
             'number' => ['required', 'integer', 'min:1', 'max:99'],
