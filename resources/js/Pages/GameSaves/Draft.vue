@@ -5,12 +5,19 @@ import { ref, computed, onMounted, nextTick } from 'vue';
 import TeamStyleBadges from '@/Pages/GameSaves/Play/components/TeamStyleBadges.vue';
 
 const props = defineProps({
-    gameSave:         { type: Object, required: true },
-    teams:            { type: Array,  required: true },
-    freePlayers:      { type: Array,  required: true },
-    draftState:       { type: Object, default: null },
-    controlledTeamId: { type: Number, default: null },
+    gameSave:          { type: Object, required: true },
+    teams:             { type: Array,  required: true },
+    freePlayers:       { type: Array,  required: true },
+    draftState:        { type: Object, default: null },
+    controlledTeamId:  { type: Number, default: null },
+    controlledTeamIds: { type: Array,  default: () => [] },
 });
+
+// Équipes humaines (hot-seat). Repli sur l'unique équipe contrôlée (mono).
+const humanTeamIds = computed(() =>
+    props.controlledTeamIds?.length ? props.controlledTeamIds : [props.controlledTeamId]
+);
+const isHumanTeam = (id) => humanTeamIds.value.includes(id);
 
 // ══════════════════════════════════════
 //  STATE RÉACTIF
@@ -62,19 +69,25 @@ const currentTeam = computed(() =>
 );
 
 const isMyTurn = computed(() =>
-    currentTeamId.value === props.controlledTeamId
+    isHumanTeam(currentTeamId.value)
+);
+
+// Joueur humain aux commandes : l'équipe sur l'horloge si c'est un tour humain,
+// sinon repli sur la 1re équipe humaine (pour l'affichage hors-tour).
+const activeHumanTeamId = computed(() =>
+    isMyTurn.value ? currentTeamId.value : humanTeamIds.value[0]
 );
 
 const myTeam = computed(() =>
-    props.teams.find(t => t.id === props.controlledTeamId)
+    props.teams.find(t => t.id === activeHumanTeamId.value)
 );
 
 const myRosterCount = computed(() =>
-    teamRosters.value[props.controlledTeamId]?.count ?? 0
+    teamRosters.value[activeHumanTeamId.value]?.count ?? 0
 );
 
 const myBudget = computed(() =>
-    teamRosters.value[props.controlledTeamId]?.budget ?? 0
+    teamRosters.value[activeHumanTeamId.value]?.budget ?? 0
 );
 
 const seasonLength = computed(() => {
@@ -410,7 +423,7 @@ onMounted(() => {
                              class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 pointer-events-none">
                             <div class="bg-white rounded-2xl shadow-2xl p-8 text-center max-w-sm animate-bounce-in">
                                 <div class="w-20 h-20 rounded-full overflow-hidden bg-slate-200 mx-auto mb-4 border-4"
-                                     :class="lastPick.team_id === controlledTeamId ? 'border-amber-400' : 'border-slate-300'">
+                                     :class="isHumanTeam(lastPick.team_id) ? 'border-amber-400' : 'border-slate-300'">
                                     <img v-if="lastPick.photo_path" :src="`/storage/${lastPick.photo_path}`"
                                          class="w-full h-full object-cover" alt=""/>
                                     <div v-else class="w-full h-full flex items-center justify-center text-2xl text-slate-400">👤</div>
@@ -532,7 +545,7 @@ onMounted(() => {
                                             <img v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" class="w-full h-full object-contain" alt=""/>
                                         </div>
                                         <span class="flex-1 truncate"
-                                              :class="t.id === controlledTeamId ? 'text-amber-700' : 'text-slate-600'">
+                                              :class="isHumanTeam(t.id) ? 'text-amber-700 font-semibold' : 'text-slate-600'">
                                             {{ t.name }}
                                         </span>
                                         <span class="text-[10px] text-slate-400">{{ t.rosterCount }}</span>
@@ -548,7 +561,7 @@ onMounted(() => {
                                 <div v-if="pickLog.length" class="space-y-1">
                                     <div v-for="(pick, i) in [...pickLog].reverse().slice(0, 20)" :key="i"
                                          class="flex items-center gap-2 text-[11px] px-2 py-1 rounded"
-                                         :class="pick.team_id === controlledTeamId ? 'bg-amber-50' : 'bg-slate-50'">
+                                         :class="isHumanTeam(pick.team_id) ? 'bg-amber-50' : 'bg-slate-50'">
                                         <span class="font-bold text-slate-500 w-14 truncate">{{ pick.team_name }}</span>
                                         <span class="flex-1 text-slate-700 truncate">{{ pick.player_name }}</span>
                                         <span :class="positionColor(pick.position)"
@@ -580,7 +593,8 @@ onMounted(() => {
                                     </span>
                                 </div>
                                 <div v-else-if="isMyTurn" class="text-lg font-black text-amber-700">
-                                    🎯 C'est ton tour ! Choisis un joueur.
+                                    🎯 <span v-if="humanTeamIds.length > 1">{{ myTeam?.name }} — à toi de piocher !</span>
+                                    <span v-else>C'est ton tour ! Choisis un joueur.</span>
                                 </div>
                             </div>
                             <!-- Bouton terminer le draft (à partir de 14 joueurs) -->

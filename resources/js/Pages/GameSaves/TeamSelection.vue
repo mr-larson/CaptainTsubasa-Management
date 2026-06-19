@@ -207,7 +207,7 @@
                                             :disabled="!humanTeams.length || startForm.processing"
                                             @click="startWithTeam">
                                         <span v-if="startForm.processing">Chargement...</span>
-                                        <span v-else>▶ Lancer la partie ({{ humanTeams.length }} joueur{{ humanTeams.length > 1 ? 's' : '' }})</span>
+                                        <span v-else>{{ gameMode === 'draft' ? '🎯 Lancer le draft' : '▶ Lancer la partie' }} ({{ humanTeams.length }} joueur{{ humanTeams.length > 1 ? 's' : '' }})</span>
                                     </button>
                                 </div>
                             </template>
@@ -383,8 +383,9 @@ const startForm = useForm({
     game_mode: props.gameMode,
 });
 
-// Hot-seat multi-manager (mode prebuilt) : équipes humaines dans l'ordre des sièges.
-const isMultiMode = computed(() => props.gameMode !== 'draft');
+// Hot-seat multi-manager : équipes humaines dans l'ordre des sièges.
+// Disponible dans les deux modes (prebuilt ET draft).
+const isMultiMode = computed(() => true);
 const humanTeams  = ref([]);
 
 const isHumanTeam = (team) => humanTeams.value.some(t => t.id === team.id);

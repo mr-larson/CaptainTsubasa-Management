@@ -83,12 +83,6 @@ class GameSaveController extends Controller
             $data['team_ids'] ?? array_filter([$data['team_id'] ?? null]),
         )));
 
-        // Le draft tour-par-tour multi-humain n'est pas encore géré : on s'en tient
-        // à une seule équipe humaine en mode draft.
-        if ($isDraft) {
-            $humanTeamIds = array_slice($humanTeamIds, 0, 1);
-        }
-
         // Équipe propriétaire / active de la save = siège 1.
         $primaryTeamId = $humanTeamIds[0] ?? $data['team_id'];
 

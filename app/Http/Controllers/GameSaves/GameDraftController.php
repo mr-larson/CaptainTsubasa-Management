@@ -43,8 +43,9 @@ class GameDraftController extends Controller
             'gameSave'         => $gameSave,
             'teams'            => $gameTeams,
             'freePlayers'      => $freePlayers,
-            'draftState'       => $gameSave->state['draft'] ?? null,
-            'controlledTeamId' => $gameSave->controlled_game_team_id,
+            'draftState'        => $gameSave->state['draft'] ?? null,
+            'controlledTeamId'  => $gameSave->controlled_game_team_id,
+            'controlledTeamIds' => $gameSave->controlledGameTeamIds(),
         ]);
     }
 
@@ -189,7 +190,15 @@ class GameDraftController extends Controller
         $this->authorizeGameSave('update', $gameSave);
 
         $draftService = app(DraftService::class);
-        $allDone = $draftService->finishTeamDraft($gameSave, $gameSave->controlled_game_team_id);
+
+        // Clôturer l'équipe humaine actuellement sur l'horloge (hot-seat), avec
+        // repli sur l'équipe propriétaire si l'horloge n'est pas sur un humain.
+        $current = $draftService->getCurrentTeamId($gameSave);
+        $teamId = ($current !== null && in_array((int) $current, $gameSave->controlledGameTeamIds(), true))
+            ? (int) $current
+            : (int) $gameSave->controlled_game_team_id;
+
+        $allDone = $draftService->finishTeamDraft($gameSave, $teamId);
 
         $gameSave->refresh();
 

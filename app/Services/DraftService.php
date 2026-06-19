@@ -115,9 +115,9 @@ class DraftService
                 $nextNumber++;
             }
 
-            // Drafté par un autre club que l'équipe contrôlée : la rancune
-            // envers le coach repart à zéro (nouveau départ).
-            if ((int) $team->id !== (int) ($gameSave->controlled_game_team_id ?? 0)
+            // Drafté par un club IA (non humain) : la rancune envers le coach
+            // repart à zéro (nouveau départ).
+            if (!in_array((int) $team->id, $gameSave->controlledGameTeamIds(), true)
                 && (int) ($player->coach_affinity ?? 0) !== 0) {
                 $player->coach_affinity = 0;
             }
@@ -326,8 +326,8 @@ class DraftService
      */
     public function playerRefusesTeam(GameSave $gameSave, GamePlayer $player, int $teamId): bool
     {
-        $controlledTeamId = (int) ($gameSave->controlled_game_team_id ?? 0);
-        if (!$controlledTeamId || $teamId !== $controlledTeamId) return false;
+        // La rancune envers le coach ne concerne que les équipes humaines.
+        if (!in_array($teamId, $gameSave->controlledGameTeamIds(), true)) return false;
 
         return (int) ($player->coach_affinity ?? 0) <= MoraleService::AFFINITY_REFUSAL_THRESHOLD;
     }
@@ -351,7 +351,8 @@ class DraftService
     public function isHumanTurn(GameSave $gameSave): bool
     {
         $currentTeamId = $this->getCurrentTeamId($gameSave);
-        return $currentTeamId && $currentTeamId === $gameSave->controlled_game_team_id;
+        return $currentTeamId !== null
+            && in_array((int) $currentTeamId, $gameSave->controlledGameTeamIds(), true);
     }
 
     protected function getCurrentRound(GameSave $gameSave): int
