@@ -23,7 +23,7 @@ class AiBonusCardService
      */
     public function processWeek(GameSave $gameSave): void
     {
-        $controlledTeamId = $gameSave->controlled_game_team_id;
+        $controlledTeamIds = $gameSave->controlledGameTeamIds();
         $shop = $gameSave->state['shop'] ?? null;
 
         if (!$shop ||
@@ -35,7 +35,7 @@ class AiBonusCardService
         $teams = $gameSave->gameTeams()->get();
 
         foreach ($teams as $team) {
-            if ($team->id === $controlledTeamId) continue; // Skip équipe joueur
+            if (in_array((int) $team->id, $controlledTeamIds, true)) continue; // Skip équipes joueurs
 
             $offers = $shop['offers_by_team'][(string) $team->id] ?? [];
             $this->processTeam($gameSave, $team, $offers);

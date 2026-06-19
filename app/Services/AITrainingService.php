@@ -50,26 +50,26 @@ class AITrainingService
             ->with(['contracts' => fn($q) => $q->activeAt($week)->with('gamePlayer')])
             ->get();
 
-        $controlledTeamId = $gameSave->controlled_game_team_id;
-        $aiEntries        = [];
+        $controlledTeamIds = $gameSave->controlledGameTeamIds();
+        $activeTeamId      = (int) $gameSave->controlled_game_team_id;
+        $aiEntries         = [];
 
         $allEntries = []; // historique complet toutes équipes
 
-        $allEntries = [];
-
         foreach ($allTeams as $team) {
-            $isControlled = ((int) $team->id === (int) $controlledTeamId);
-            if ($isControlled) {
-                $results   = $this->trainTeam($team, gainMax: 2, excludePlayerIds: $manuallyTrainedIds, tacticalStyle: $team->tactical_style);
-                $aiEntries = $results;
-                foreach ($results as $entry) {
-                    $allEntries[] = array_merge($entry, ['team_id' => $team->id, 'team_name' => $team->name]);
+            $isHuman = in_array((int) $team->id, $controlledTeamIds, true);
+            if ($isHuman) {
+                // Équipe humaine : auto-entraînement doux des joueurs non entraînés à la main.
+                $results = $this->trainTeam($team, gainMax: 2, excludePlayerIds: $manuallyTrainedIds, tacticalStyle: $team->tactical_style);
+                // ai_entries = panneau du joueur actif uniquement.
+                if ((int) $team->id === $activeTeamId) {
+                    $aiEntries = $results;
                 }
             } else {
                 $results = $this->trainTeam($team, gainMax: 3, tacticalStyle: $team->tactical_style);
-                foreach ($results as $entry) {
-                    $allEntries[] = array_merge($entry, ['team_id' => $team->id, 'team_name' => $team->name]);
-                }
+            }
+            foreach ($results as $entry) {
+                $allEntries[] = array_merge($entry, ['team_id' => $team->id, 'team_name' => $team->name]);
             }
         }
 

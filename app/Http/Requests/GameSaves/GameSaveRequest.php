@@ -43,6 +43,17 @@ class GameSaveRequest extends FormRequest
                 'exists:teams,id',
             ],
 
+            // Hot-seat multi-manager : équipes humaines, dans l'ordre des sièges.
+            'team_ids' => [
+                'nullable',
+                'array',
+                'min:1',
+            ],
+            'team_ids.*' => [
+                'integer',
+                'exists:teams,id',
+            ],
+
             'season' => [
                 'nullable',
                 'integer',
@@ -72,6 +83,9 @@ class GameSaveRequest extends FormRequest
                 'string',
                 Rule::in($allowedPeriods),
             ];
+
+            // Création : au moins une équipe humaine (mono via team_id, ou liste).
+            $rules['team_id'][] = 'required_without:team_ids';
         } else {
             $rules['period'] = [
                 'sometimes',

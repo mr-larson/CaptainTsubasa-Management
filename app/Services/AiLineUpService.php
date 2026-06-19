@@ -30,8 +30,8 @@ class AiLineUpService
      */
     public function adjustLineupsForWeek(GameSave $gameSave): void
     {
-        $currentWeek      = $gameSave->week ?? 1;
-        $controlledTeamId = $gameSave->controlled_game_team_id;
+        $currentWeek       = $gameSave->week ?? 1;
+        $controlledTeamIds = $gameSave->controlledGameTeamIds();
 
         $injuredIds = GameInjury::where('game_save_id', $gameSave->id)
             ->where('week_return', '>', $currentWeek)
@@ -47,7 +47,7 @@ class AiLineUpService
         $unavailableIds = array_unique(array_merge($injuredIds, $suspendedIds));
 
         $aiTeams = GameTeam::where('game_save_id', $gameSave->id)
-            ->when($controlledTeamId, fn($q) => $q->where('id', '!=', $controlledTeamId))
+            ->when($controlledTeamIds, fn($q) => $q->whereNotIn('id', $controlledTeamIds))
             ->with(['contracts' => fn($q) => $q->activeAt($currentWeek)->with('gamePlayer')])
             ->get();
 

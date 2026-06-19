@@ -54,10 +54,10 @@ class AITransferService
         $week           = $gameSave->week ?? 1;
         $seasonLength   = $this->getSeasonLength($gameSave);
         $remainingWeeks = max(1, $seasonLength - $week + 1);
-        $controlledTeamId = $gameSave->controlled_game_team_id;
+        $controlledTeamIds = $gameSave->controlledGameTeamIds();
 
         $aiTeams = GameTeam::where('game_save_id', $gameSave->id)
-            ->when($controlledTeamId, fn($q) => $q->where('id', '!=', $controlledTeamId))
+            ->when($controlledTeamIds, fn($q) => $q->whereNotIn('id', $controlledTeamIds))
             ->with(['contracts' => fn($q) => $q->activeAt($week)->with('gamePlayer')])
             ->get();
 

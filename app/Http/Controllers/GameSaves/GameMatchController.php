@@ -42,9 +42,13 @@ class GameMatchController extends Controller
     {
         $this->authorizeGameSave('view', $gameSave);
 
-        $controlledGameTeam = GameTeam::where('game_save_id', $gameSave->id)
-            ->where('base_team_id', $gameSave->team_id)
-            ->firstOrFail();
+        // Équipe jouée = joueur ACTIF (hot-seat), repli sur l'équipe propriétaire.
+        $controlledGameTeam = ($gameSave->controlled_game_team_id
+            ? GameTeam::where('game_save_id', $gameSave->id)->find($gameSave->controlled_game_team_id)
+            : null)
+            ?? GameTeam::where('game_save_id', $gameSave->id)
+                ->where('base_team_id', $gameSave->team_id)
+                ->firstOrFail();
 
         $match = GameMatch::with([
             'homeTeam.contracts.gamePlayer.basePlayer',
@@ -161,6 +165,11 @@ class GameMatchController extends Controller
         $homeScore = (int) $scores[$homeTeamId];
         $awayScore = (int) $scores[$awayTeamId];
 
+        // ─────────────────────────────────────────────────────────────
+        //  PARTIE PAR-MATCH : toujours exécutée pour le match qui vient
+        //  d'être joué (score, classement, fautes, progression, cartes).
+        // ─────────────────────────────────────────────────────────────
+
         // 1. Sauvegarder le match avec match_stats (source de vérité)
         $match->home_score  = $homeScore;
         $match->away_score  = $awayScore;
@@ -179,52 +188,86 @@ class GameMatchController extends Controller
         $home->save();
         $away->save();
 
-        // 3. Fautes, cartons et blessures EN PREMIER
+        // 3. Fautes, cartons et blessures (propres à ce match)
         $foulEvents = $data['foulEvents'] ?? [];
         app(FoulAndInjuryService::class)->processMatchEvents($gameSave, $match, $foulEvents);
 
-        // 4. Ajuster les lineups IA APRÈS (pour la semaine suivante)
-        app(AILineupService::class)->adjustLineupsForWeek($gameSave);
-
-        // 5. Progression post-match
+        // 4. Progression post-match (joueurs de ce match)
         app(PostMatchProgressionService::class)->applyForMatch($gameSave, $match);
         $gameSave->refresh();
 
-        // 6. Simuler les autres matchs
-        app(MatchSimulator::class)->simulateOtherMatchesOfWeek($match);
-        app(AITrainingService::class)->trainForWeek($gameSave);
-        app(AITransferService::class)->recruitForWeek($gameSave);
-
-        // 7. Revenus hebdomadaires AVANT d'incrémenter la semaine
-        $playedWeek = $match->week;
-        $this->applyWeeklyIncome($gameSave, $playedWeek);
-
-        // 8. Avancer la semaine
-        $gameSave->week = max($gameSave->week ?? 1, $match->week + 1);
-        $gameSave->save();
-
-        // 9. Conserver player_actions
+        // 5. Conserver player_actions (cumulés sur tous les matchs humains de la semaine)
         $state = $gameSave->state ?? [];
         $state['player_actions'] = array_merge($state['player_actions'] ?? [], $data['playerActions'] ?? []);
         $gameSave->state = $state;
         $gameSave->save();
 
-        // 10. Stamina après match — agrégation de TOUS les matchs joués cette semaine
-        StaminaService::applyAfterWeek($gameSave, $playedWeek);
-
-        // 10bis. Moral après match (résultats, temps de jeu, salaire)
-        app(MoraleService::class)->applyAfterWeek($gameSave, $playedWeek);
-
-        // 10ter. Promesses arrivées à échéance
-        app(PromiseService::class)->evaluateForWeek($gameSave, $playedWeek);
-
-        // 11. Consommer les cartes pre_match de l'équipe contrôlée
-        $controlledTeamId = $gameSave->controlled_game_team_id;
-        if ($controlledTeamId) {
-            app(BonusCardActivationService::class)->consumePreMatchCards($gameSave, $controlledTeamId);
+        // 6. Consommer les cartes pre_match de la/des équipe(s) humaine(s) de CE match
+        $controlledTeamIds = $gameSave->controlledGameTeamIds();
+        $humanSides = array_values(array_intersect([$homeTeamId, $awayTeamId], $controlledTeamIds));
+        foreach ($humanSides as $teamId) {
+            app(BonusCardActivationService::class)->consumePreMatchCards($gameSave, $teamId);
         }
 
-        // 12. Générer la boutique + IA cartes pour la nouvelle semaine
+        // ─────────────────────────────────────────────────────────────
+        //  GATING : tant qu'il reste un match humain à jouer cette
+        //  semaine, on n'avance PAS — la semaine ne se clôt qu'au dernier.
+        // ─────────────────────────────────────────────────────────────
+        $weekToClose = (int) $match->week;
+
+        $remainingHumanMatches = GameMatch::where('game_save_id', $gameSave->id)
+            ->where('week', $weekToClose)
+            ->where('status', 'scheduled')
+            ->where(function ($q) use ($controlledTeamIds) {
+                $q->whereIn('home_team_id', $controlledTeamIds)
+                    ->orWhereIn('away_team_id', $controlledTeamIds);
+            })
+            ->count();
+
+        if ($remainingHumanMatches > 0) {
+            // D'autres joueurs humains doivent encore disputer leur match :
+            // on passe la main au prochain joueur (siège suivant non joué).
+            $next = $this->nextHumanWithPendingMatch($gameSave, $weekToClose);
+            if ($next) {
+                $gameSave->controlled_game_team_id = $next->id;
+                $gameSave->save();
+            }
+
+            return redirect()->route('game-saves.Play', $gameSave);
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        //  FIN DE SEMAINE : tous les matchs humains sont joués. On simule
+        //  les matchs IA restants et on déroule le pipeline une seule fois.
+        // ─────────────────────────────────────────────────────────────
+
+        // Ajuster les lineups IA (pour la semaine suivante)
+        app(AILineupService::class)->adjustLineupsForWeek($gameSave);
+
+        // Simuler les matchs IA restants (les matchs humains sont déjà "played")
+        app(MatchSimulator::class)->simulateOtherMatchesOfWeek($match);
+        app(AITrainingService::class)->trainForWeek($gameSave);
+        app(AITransferService::class)->recruitForWeek($gameSave);
+
+        // Revenus hebdomadaires AVANT d'incrémenter la semaine
+        $this->applyWeeklyIncome($gameSave, $weekToClose);
+
+        // Avancer la semaine
+        $gameSave->week = max($gameSave->week ?? 1, $weekToClose + 1);
+
+        // Nouvelle semaine : la main repasse au joueur du siège 1.
+        $firstHuman = $gameSave->controlledGameTeams()->first();
+        if ($firstHuman) {
+            $gameSave->controlled_game_team_id = $firstHuman->id;
+        }
+        $gameSave->save();
+
+        // Stamina / moral / promesses — agrégés sur toute la semaine
+        StaminaService::applyAfterWeek($gameSave, $weekToClose);
+        app(MoraleService::class)->applyAfterWeek($gameSave, $weekToClose);
+        app(PromiseService::class)->evaluateForWeek($gameSave, $weekToClose);
+
+        // Générer la boutique + IA cartes pour la nouvelle semaine
         app(BonusCardShopService::class)->generateWeeklyOffers($gameSave);
         app(AIBonusCardService::class)->processWeek($gameSave);
 
@@ -235,6 +278,30 @@ class GameMatchController extends Controller
         }
 
         return redirect()->route('game-saves.Play', $gameSave);
+    }
+
+    /**
+     * Prochain joueur humain (par ordre de siège) dont le match de la semaine
+     * n'est pas encore joué. Null si plus aucun.
+     */
+    private function nextHumanWithPendingMatch(GameSave $gameSave, int $week): ?GameTeam
+    {
+        foreach ($gameSave->controlledGameTeams()->get() as $team) {
+            $hasPending = GameMatch::where('game_save_id', $gameSave->id)
+                ->where('week', $week)
+                ->where('status', 'scheduled')
+                ->where(function ($q) use ($team) {
+                    $q->where('home_team_id', $team->id)
+                        ->orWhere('away_team_id', $team->id);
+                })
+                ->exists();
+
+            if ($hasPending) {
+                return $team;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -274,6 +341,12 @@ class GameMatchController extends Controller
         app(PromiseService::class)->evaluateForWeek($gameSave, $week);
 
         $gameSave->week = $week + 1;
+
+        // Nouvelle semaine : la main repasse au joueur du siège 1.
+        $firstHuman = $gameSave->controlledGameTeams()->first();
+        if ($firstHuman) {
+            $gameSave->controlled_game_team_id = $firstHuman->id;
+        }
         $gameSave->save();
 
         // Boutique + IA cartes pour la nouvelle semaine

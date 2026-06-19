@@ -17,15 +17,15 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         $admin = User::updateOrCreate(
-            ['email' => 'gauthierdewit@gmail.com'],
-            ['name' => 'Gauthier Dewit', 'password' => 'Adm!n2010'],
+            ['email' => 'admin@mail.com'],
+            ['name' => 'admin', 'password' => 'Admin'],
         );
         $admin->is_admin = true;
         $admin->save();
 
         $user = User::updateOrCreate(
-            ['email' => 'user@gmail.com'],
-            ['name' => 'user', 'password' => 'password'],
+            ['email' => 'user@mail.com'],
+            ['name' => 'user', 'password' => 'User'],
         );
         $user->is_admin = false;
         $user->save();

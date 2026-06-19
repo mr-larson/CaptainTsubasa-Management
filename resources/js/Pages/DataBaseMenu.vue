@@ -1,14 +1,20 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
 import H2 from '@/Components/H2.vue';
 
+const isAdmin = computed(() => !!usePage().props.auth?.user?.is_admin);
+
 const sections = [
-    { label: 'Mon profil',  desc: 'Modifier mes informations',     icon: '👤', route: 'profile.edit',   color: 'border-slate-200 hover:border-teal-300 hover:bg-teal-50' },
-    { label: 'Joueurs',     desc: 'Gérer les joueurs de la DB',    icon: '⚽', route: 'players.edit',   color: 'border-slate-200 hover:border-teal-300 hover:bg-teal-50' },
-    { label: 'Équipes',     desc: 'Gérer les équipes de la DB',    icon: '🏟️', route: 'teams.edit',     color: 'border-slate-200 hover:border-teal-300 hover:bg-teal-50' },
-    { label: 'Contrats',    desc: 'Gérer les contrats de la DB',   icon: '📋', route: 'contracts.edit', color: 'border-slate-200 hover:border-teal-300 hover:bg-teal-50' },
+    { label: 'Mon profil',  desc: 'Modifier mes informations',     icon: '👤', route: 'profile.edit',   admin: false, color: 'border-slate-200 hover:border-teal-300 hover:bg-teal-50' },
+    { label: 'Joueurs',     desc: 'Gérer les joueurs de la DB',    icon: '⚽', route: 'players.edit',   admin: true,  color: 'border-slate-200 hover:border-teal-300 hover:bg-teal-50' },
+    { label: 'Équipes',     desc: 'Gérer les équipes de la DB',    icon: '🏟️', route: 'teams.edit',     admin: true,  color: 'border-slate-200 hover:border-teal-300 hover:bg-teal-50' },
+    { label: 'Contrats',    desc: 'Gérer les contrats de la DB',   icon: '📋', route: 'contracts.edit', admin: true,  color: 'border-slate-200 hover:border-teal-300 hover:bg-teal-50' },
 ];
+
+// Les sections d'administration ne sont visibles que pour les admins.
+const visibleSections = computed(() => sections.filter(s => !s.admin || isAdmin.value));
 </script>
 
 <template>
@@ -43,7 +49,7 @@ const sections = [
 
                         <!-- Grille boutons -->
                         <div class="grid grid-cols-2 gap-3">
-                            <Link v-for="s in sections" :key="s.route"
+                            <Link v-for="s in visibleSections" :key="s.route"
                                   :href="route(s.route)"
                                   class="group flex items-center gap-3 px-4 py-3.5 bg-white rounded-xl border transition-all shadow-sm active:scale-[0.98]"
                                   :class="s.color">

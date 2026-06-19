@@ -77,9 +77,24 @@ class GameSaveController extends Controller
         $gameMode = $data['game_mode'] ?? 'prebuilt';
         $isDraft  = $gameMode === 'draft';
 
+        // Équipes humaines, dans l'ordre des sièges. Fallback mono-équipe via team_id.
+        $humanTeamIds = array_values(array_unique(array_map(
+            'intval',
+            $data['team_ids'] ?? array_filter([$data['team_id'] ?? null]),
+        )));
+
+        // Le draft tour-par-tour multi-humain n'est pas encore géré : on s'en tient
+        // à une seule équipe humaine en mode draft.
+        if ($isDraft) {
+            $humanTeamIds = array_slice($humanTeamIds, 0, 1);
+        }
+
+        // Équipe propriétaire / active de la save = siège 1.
+        $primaryTeamId = $humanTeamIds[0] ?? $data['team_id'];
+
         $gameSave = GameSave::create([
             'user_id' => $request->user()->id,
-            'team_id' => $data['team_id'],
+            'team_id' => $primaryTeamId,
             'period'  => $data['period'],
             'season'  => 1,
             'week'    => 1,
@@ -113,9 +128,23 @@ class GameSaveController extends Controller
             $gameTeamsByBaseId[$team->id] = $gameTeam;
         }
 
-        $controlled = $gameTeamsByBaseId[$data['team_id']] ?? null;
-        if ($controlled) {
-            $gameSave->controlled_game_team_id = $controlled->id;
+        // Marquer chaque équipe humaine (is_controlled + siège dans l'ordre choisi).
+        $seat = 1;
+        $firstControlled = null;
+        foreach ($humanTeamIds as $tid) {
+            $gameTeam = $gameTeamsByBaseId[$tid] ?? null;
+            if (!$gameTeam) {
+                continue;
+            }
+            $gameTeam->is_controlled = true;
+            $gameTeam->human_seat    = $seat++;
+            $gameTeam->save();
+            $firstControlled ??= $gameTeam;
+        }
+
+        // Joueur actif = siège 1.
+        if ($firstControlled) {
+            $gameSave->controlled_game_team_id = $firstControlled->id;
             $gameSave->save();
         }
 
@@ -238,7 +267,10 @@ class GameSaveController extends Controller
 
         $gameSave->load('controlledGameTeam');
 
-        $controlledTeam = $gameTeams->firstWhere('base_team_id', $gameSave->team_id)
+        // Équipe affichée = joueur ACTIF (hot-seat), avec repli sur l'équipe
+        // propriétaire puis la première équipe.
+        $controlledTeam = $gameTeams->firstWhere('id', $gameSave->controlled_game_team_id)
+            ?? $gameTeams->firstWhere('base_team_id', $gameSave->team_id)
             ?? $gameTeams->first();
 
         $this->ensureCalendar($gameSave, $gameTeams);
@@ -429,6 +461,29 @@ class GameSaveController extends Controller
                 ])
             : collect();
 
+        // ─── Hot-seat multi-manager : qui joue, dans quel ordre ───
+        $controlledTeams = $gameTeams
+            ->whereNotNull('human_seat')
+            ->sortBy('human_seat')
+            ->values();
+        if ($controlledTeams->isEmpty()) {
+            $controlledTeams = $gameTeams->where('is_controlled', true)->values();
+        }
+
+        $hotSeat = null;
+        if ($controlledTeams->count() > 1) {
+            $activeId = (int) $gameSave->controlled_game_team_id;
+            $hotSeat = [
+                'total'   => $controlledTeams->count(),
+                'players' => $controlledTeams->values()->map(fn ($t, $i) => [
+                    'seat'        => $i + 1,
+                    'name'        => $t->name,
+                    'game_team_id' => $t->id,
+                    'is_active'   => (int) $t->id === $activeId,
+                ])->all(),
+            ];
+        }
+
         return Inertia::render('GameSaves/Play', [
             'gameSave'            => $gameSave,
             'managementStats'     => $managementStats,
@@ -436,6 +491,7 @@ class GameSaveController extends Controller
             'matches'             => $matches,
             'freePlayers'         => $freePlayers,
             'controlledTeam'      => $controlledTeam,
+            'hotSeat'             => $hotSeat,
             'playerSeasonStats'   => $playerSeasonStats,
             'activeInjuries'      => $activeInjuries,
             'activeSuspensions'   => $activeSuspensions,

@@ -66,4 +66,27 @@ class GameSave extends Model
     {
         return $this->belongsTo(GameTeam::class, 'controlled_game_team_id');
     }
+
+    /**
+     * Toutes les équipes pilotées par un humain (hot-seat multi-manager),
+     * ordonnées par siège de jeu. En mono-joueur, n'en contient qu'une.
+     */
+    public function controlledGameTeams()
+    {
+        return $this->hasMany(GameTeam::class)
+            ->where('is_controlled', true)
+            ->orderByRaw('human_seat IS NULL') // sièges renseignés d'abord
+            ->orderBy('human_seat')
+            ->orderBy('id');
+    }
+
+    /**
+     * IDs des équipes humaines de cette sauvegarde.
+     *
+     * @return array<int>
+     */
+    public function controlledGameTeamIds(): array
+    {
+        return $this->controlledGameTeams()->pluck('game_teams.id')->all();
+    }
 }

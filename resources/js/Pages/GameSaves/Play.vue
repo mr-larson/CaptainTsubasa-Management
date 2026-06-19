@@ -50,6 +50,7 @@ const props = defineProps({
     moraleLogs:         { type: Object, default: () => ({}) },
     playerPromises:     { type: Object, default: () => ({}) },
     playerDeclarations: { type: Object, default: () => ({}) },
+    hotSeat:            { type: Object, required: false, default: null },
 });
 
 // Promesse au joueur (relation coach) — type : playing_time | starter | renewal
@@ -267,6 +268,27 @@ function updateOtherPlayerNumber(playerId, number) {
         <div class="p-4">
             <div class="flex justify-center mb-3">
                 <h1 class="text-3xl font-bold text-slate-600">Session de jeu</h1>
+            </div>
+
+            <!-- Hot-seat multi-manager : indicateur de tour -->
+            <div v-if="hotSeat" class="max-w-3xl mx-auto mb-4">
+                <div class="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-teal-200 bg-teal-50">
+                    <span class="text-xs font-bold text-teal-600 uppercase tracking-wider shrink-0">Hot-seat</span>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span v-for="p in hotSeat.players" :key="p.game_team_id"
+                              class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border transition-all"
+                              :class="p.is_active
+                                  ? 'bg-teal-500 text-white border-teal-600 shadow-sm'
+                                  : 'bg-white text-slate-500 border-slate-200'">
+                            <span class="w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-black"
+                                  :class="p.is_active ? 'bg-white/90 text-teal-700' : 'bg-slate-100 text-slate-400'">
+                                {{ p.seat }}
+                            </span>
+                            {{ p.name }}
+                            <span v-if="p.is_active" class="text-[10px] font-bold uppercase">• à toi de jouer</span>
+                        </span>
+                    </div>
+                </div>
             </div>
 
             <div class="flex flex-row">

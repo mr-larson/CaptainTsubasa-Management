@@ -13,6 +13,8 @@ class GameTeam extends Model
     protected $fillable = [
         'game_save_id',
         'base_team_id',
+        'is_controlled',
+        'human_seat',
         'name',
         'description',
         'budget',
@@ -23,6 +25,11 @@ class GameTeam extends Model
         'formation',
         'tactical_style',
         'management_philosophy',
+    ];
+
+    protected $casts = [
+        'is_controlled' => 'boolean',
+        'human_seat'    => 'integer',
     ];
 
     public function gameSave()

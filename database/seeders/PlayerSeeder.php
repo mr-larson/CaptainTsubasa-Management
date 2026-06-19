@@ -2633,16 +2633,6 @@ class PlayerSeeder extends Seeder
                 ],
                 'Gardien de Columbus, peu sûr de lui mais qui progresse grâce aux conseils de Benjamin. Il apprend à surmonter sa peur face aux tirs puissants de Cesare.'
             ],
-            [
-                'Antonio', 'Solozzo', 13, 'Midfielder', 270,
-                [
-                    'speed' => 54, 'stamina' => 62, 'defense' => 20, 'attack' => 22,
-                    'shot' => 18, 'pass' => 21, 'dribble' => 19,
-                    'block' => 17, 'intercept' => 18, 'tackle' => 17,
-                    'hand_save' => 10, 'punch_save' => 10,
-                ],
-                'Milieu discret de Columbus qui manque de confiance en lui. L\'arrivée de Benjamin l\'encourage à se surpasser lors des entraînements.'
-            ],
 
 // San Podesta Jr
             [
@@ -2904,17 +2894,6 @@ class PlayerSeeder extends Seeder
                 'Attaquant fougueux de Jyoyo, surnommé Orangehead. Formé par son frère Seisuke, il retrouve sa passion du football au contact de ses coéquipiers et s\'impose comme l\'attaquant vedette de l\'équipe.'
             ],
 
-//            [
-//                'Seisuke', 'Kano', 17, 'Midfielder', 460,
-//                [
-//                    'speed' => 72, 'stamina' => 76, 'defense' => 24, 'attack' => 38,
-//                    'shot' => 28, 'pass' => 32, 'dribble' => 28,
-//                    'block' => 18, 'intercept' => 22, 'tackle' => 20,
-//                    'hand_save' => 10, 'punch_save' => 10,
-//                ],
-//                'Frère aîné de Kyosuke, prodige reconnu. Il a guidé ses équipes aux nationaux et vise déjà une carrière professionnelle. Meneur de jeu technique et visionnaire.'
-//            ],
-
             [
                 'Rafael', 'Del Franco', 13, 'Midfielder', 355,
                 [
@@ -2979,39 +2958,6 @@ class PlayerSeeder extends Seeder
                     'hand_save' => 10, 'punch_save' => 10,
                 ],
                 'Milieu jovial de Jyoyo, passionné par le bien-être de l\'équipe. Sako et Kamata le choisissent comme nouveau capitaine pour son attitude exemplaire.'
-            ],
-
-            [
-                'Yuya', 'Kiba', 13, 'Forward', 320,
-                [
-                    'speed' => 72, 'stamina' => 62, 'defense' => 14, 'attack' => 26,
-                    'shot' => 21, 'pass' => 16, 'dribble' => 22,
-                    'block' => 13, 'intercept' => 14, 'tackle' => 13,
-                    'hand_save' => 10, 'punch_save' => 10,
-                ],
-                'Attaquant rapide rival de Kyosuke, surnommé Nesthead. Sa vitesse et sa frappe sont ses principaux atouts, mais il manque encore de maturité.'
-            ],
-
-            [
-                'Masahiko', 'Shinkawa', 13, 'Midfielder', 300,
-                [
-                    'speed' => 76, 'stamina' => 58, 'defense' => 16, 'attack' => 22,
-                    'shot' => 16, 'pass' => 18, 'dribble' => 24,
-                    'block' => 14, 'intercept' => 15, 'tackle' => 14,
-                    'hand_save' => 10, 'punch_save' => 10,
-                ],
-                'Milieu ultra-rapide et ami proche de Yuya. Sa vitesse et ses dribbles en font un joueur difficile à stopper malgré son jeune âge.'
-            ],
-
-            [
-                'Kazuya', 'Muroi', 13, 'Defender', 270,
-                [
-                    'speed' => 58, 'stamina' => 62, 'defense' => 23, 'attack' => 14,
-                    'shot' => 12, 'pass' => 14, 'dribble' => 13,
-                    'block' => 22, 'intercept' => 18, 'tackle' => 22,
-                    'hand_save' => 10, 'punch_save' => 10,
-                ],
-                'Défenseur reconnaissable à sa coupe mohawk. Il joue au football pour aider Yuya à réaliser son rêve, apportant solidité et engagement défensif.'
             ],
 
             //-------------------------------
@@ -3106,7 +3052,7 @@ class PlayerSeeder extends Seeder
             ],
 
             [
-                'Ryosuke', 'Kira', 13, 'Forward', 340,
+                'Ryusei', 'Shido', 13, 'Forward', 340,
                 [
                     'speed' => 64, 'stamina' => 62, 'defense' => 16, 'attack' => 26,
                     'shot' => 21, 'pass' => 20, 'dribble' => 21,
@@ -3354,9 +3300,6 @@ class PlayerSeeder extends Seeder
 
             ['Masaru', 'Ito', 12, 'Midfielder', 210, [
                 'speed' => 50, 'stamina' => 55, 'defense' => 22, 'attack' => 24, 'shot' => 21, 'pass' => 22, 'dribble' => 21, 'block' => 18, 'intercept' => 19, 'tackle' => 18, 'hand_save' => 15, 'punch_save' => 15
-            ]],
-            ['Shu', 'Hiura', 12, 'Forward', 175, [
-                'speed' => 45, 'stamina' => 50, 'defense' => 18, 'attack' => 23, 'shot' => 22, 'pass' => 18, 'dribble' => 20, 'block' => 16, 'intercept' => 16, 'tackle' => 16, 'hand_save' => 15, 'punch_save' => 15
             ]],
             ['Daichi', 'Kakeru', 12, 'Midfielder', 210, [
                 'speed' => 52, 'stamina' => 57, 'defense' => 23, 'attack' => 25, 'shot' => 22, 'pass' => 23, 'dribble' => 22, 'block' => 18, 'intercept' => 19, 'tackle' => 18, 'hand_save' => 15, 'punch_save' => 15
