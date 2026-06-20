@@ -248,8 +248,18 @@ class MatchSimulator
             elseif ($defenseCrit && !$attackCrit)  $success = false;
             else                                   $success = $attackScore > $defenseScore;
 
-            if ($attackCrit)  $stamina[(string) ($attacker->id ?? 0)] = min(self::ENDURANCE_DEFAULT, ($stamina[(string) ($attacker->id ?? 0)] ?? self::ENDURANCE_DEFAULT) + self::CRIT_STAMINA_BOOST);
-            if ($defenseCrit) $stamina[(string) ($defender->id ?? 0)] = min(self::ENDURANCE_DEFAULT, ($stamina[(string) ($defender->id ?? 0)] ?? self::ENDURANCE_DEFAULT) + self::CRIT_STAMINA_BOOST);
+            // La récupération est plafonnée à l'endurance MAX du joueur (stat stamina),
+            // pas à 100 : sinon un joueur peu endurant — typiquement le gardien, seul
+            // défenseur sur chaque tir — se constituerait une réserve au-dessus de son
+            // plafond. Miroir du client (resolvers.js applyCritBoost).
+            if ($attackCrit) {
+                $aid = (string) ($attacker->id ?? 0);
+                $stamina[$aid] = min($staminaMax[$aid] ?? self::ENDURANCE_DEFAULT, ($stamina[$aid] ?? self::ENDURANCE_DEFAULT) + self::CRIT_STAMINA_BOOST);
+            }
+            if ($defenseCrit) {
+                $did = (string) ($defender->id ?? 0);
+                $stamina[$did] = min($staminaMax[$did] ?? self::ENDURANCE_DEFAULT, ($stamina[$did] ?? self::ENDURANCE_DEFAULT) + self::CRIT_STAMINA_BOOST);
+            }
 
             // ----- Moment héroïque : un joueur très satisfait peut relancer un duel perdu -----
             if (
