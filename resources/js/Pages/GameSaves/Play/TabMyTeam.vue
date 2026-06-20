@@ -102,8 +102,8 @@ const lastResolvedPromise = computed(() =>
 );
 
 const PROMISE_TYPES = [
-    { type: 'playing_time', icon: '🤝', label: 'Temps de jeu',  hint: 'Il jouera 3 matchs dans les 5 prochaines semaines' },
-    { type: 'starter',      icon: '⭐', label: 'Titularisation', hint: 'Il jouera 4 matchs dans les 5 prochaines semaines' },
+    { type: 'playing_time', icon: '🤝', label: 'Temps de jeu',  hint: 'Il jouera au moins 15 tours (~30 min) à son prochain match' },
+    { type: 'starter',      icon: '⭐', label: 'Titularisation', hint: 'Il sera titulaire sur 4 matchs dans les 5 prochaines semaines' },
     { type: 'renewal',      icon: '📜', label: 'Prolongation',   hint: 'Tu lui signeras un nouveau contrat sous 4 semaines' },
 ];
 
@@ -353,10 +353,13 @@ const slotMastery = (slot, slotDef) => {
                                       class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-100 text-sky-700"
                                       :title="activePromise.type === 'renewal'
                                           ? `Signe-lui un nouveau contrat avant la semaine ${activePromise.due_week}`
-                                          : `Il doit jouer ${activePromise.target_matches} matchs entre la semaine ${activePromise.start_week} et la semaine ${activePromise.due_week}`">
+                                          : activePromise.type === 'playing_time'
+                                              ? `Il doit jouer au moins ${activePromise.target_turns} tours à son prochain match`
+                                              : `Il doit être titulaire sur ${activePromise.target_matches} matchs entre la semaine ${activePromise.start_week} et la semaine ${activePromise.due_week}`">
                                     🤝 Promesse en cours — {{ promiseTypeLabel(activePromise.type) }}
-                                    <template v-if="activePromise.type !== 'renewal'">: {{ activePromise.target_matches }} matchs</template>
-                                    avant S{{ activePromise.due_week }}
+                                    <template v-if="activePromise.type === 'playing_time'">: ≥{{ activePromise.target_turns }} tours au prochain match</template>
+                                    <template v-else-if="activePromise.type === 'starter'">: {{ activePromise.target_matches }} matchs titulaire avant S{{ activePromise.due_week }}</template>
+                                    <template v-else>avant S{{ activePromise.due_week }}</template>
                                 </span>
                                 <template v-else>
                                     <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Promettre :</span>
@@ -371,7 +374,10 @@ const slotMastery = (slot, slotDef) => {
                                       class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
                                       :class="lastResolvedPromise.status === 'kept' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'">
                                     {{ lastResolvedPromise.status === 'kept' ? '✓ Promesse tenue' : '✗ Promesse rompue' }}
-                                    <template v-if="lastResolvedPromise.type !== 'renewal'">
+                                    <template v-if="lastResolvedPromise.type === 'playing_time'">
+                                        ({{ lastResolvedPromise.played_turns ?? 0 }}/{{ lastResolvedPromise.target_turns }} tours)
+                                    </template>
+                                    <template v-else-if="lastResolvedPromise.type === 'starter'">
                                         ({{ lastResolvedPromise.played_matches ?? 0 }}/{{ lastResolvedPromise.target_matches }})
                                     </template>
                                 </span>

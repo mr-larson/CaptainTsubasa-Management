@@ -19,6 +19,8 @@ class GamePromise extends Model
         'due_week',
         'target_matches',
         'played_matches',
+        'target_turns',
+        'played_turns',
         'status',
         'season',
     ];
@@ -28,6 +30,8 @@ class GamePromise extends Model
         'due_week'       => 'integer',
         'target_matches' => 'integer',
         'played_matches' => 'integer',
+        'target_turns'   => 'integer',
+        'played_turns'   => 'integer',
         'season'         => 'integer',
     ];
 

@@ -23,6 +23,31 @@ export function emptyPlayerMatchStats() {
     };
 }
 
+/**
+ * Temps de jeu (en tours) par joueur, dérivé du 11 de départ, des remplacements
+ * et du nombre total de tours joués.
+ *  - titulaire non remplacé : totalTurns
+ *  - titulaire sorti au tour T : T tours
+ *  - remplaçant entré au tour T : totalTurns - T tours
+ * Clés = game_player_id (cohérent avec match_stats.players).
+ */
+export function computePlaytime(startersByTeam, substitutions, totalTurns) {
+    const playtime = {};
+
+    for (const team of ["internal", "external"]) {
+        for (const pid of startersByTeam?.[team] ?? []) {
+            if (pid != null) playtime[String(pid)] = totalTurns;
+        }
+    }
+
+    for (const s of substitutions ?? []) {
+        if (s.outPlayerId != null) playtime[String(s.outPlayerId)] = s.turn;
+        if (s.inPlayerId  != null) playtime[String(s.inPlayerId)]  = Math.max(0, totalTurns - s.turn);
+    }
+
+    return playtime;
+}
+
 export function buildMatchStats(events, goalEvents = []) {
     const out = {
         players: {},

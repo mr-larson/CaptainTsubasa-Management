@@ -404,6 +404,8 @@ class GameSaveController extends Controller
                 'due_week'       => $p->due_week,
                 'target_matches' => $p->target_matches,
                 'played_matches' => $p->played_matches,
+                'target_turns'   => $p->target_turns,
+                'played_turns'   => $p->played_turns,
                 'status'         => $p->status,
             ])->values());
 

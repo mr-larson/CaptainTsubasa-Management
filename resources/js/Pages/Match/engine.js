@@ -48,7 +48,7 @@ import {
     resetCaptainRerollActionFlag,
 } from './engine/resolvers.js';
 
-import { buildMatchStats } from './engine/matchStats.js';
+import { buildMatchStats, computePlaytime } from './engine/matchStats.js';
 
 import {
     initFoulsModule, resolveFoulOutcome,
@@ -341,6 +341,14 @@ export function initMatchEngine(rootEl, config = {}) {
                         payload.match_stats = buildMatchStats(state.actionEvents, state.goalEvents);
                         // Déroulé complet du match (action par action), pour le résumé post-match
                         payload.match_stats.events = state.matchLog;
+                        // 11 de départ + temps de jeu par joueur (promesses temps de jeu / titularisation)
+                        payload.match_stats.starters = {
+                            home: state.startersByTeam?.internal ?? [],
+                            away: state.startersByTeam?.external ?? [],
+                        };
+                        payload.match_stats.playtime = computePlaytime(
+                            state.startersByTeam, state.substitutions, state.turns
+                        );
                         matchConfig.onMatchEnd(payload);
                     }
                 };
@@ -692,6 +700,13 @@ export function initMatchEngine(rootEl, config = {}) {
         resetLogHistory();
         state.substitutions     = [];
         state.substitutionCount = 0;
+
+        // 11 de départ figé (avant tout remplacement) : sert au calcul du temps
+        // de jeu par joueur et à la promesse de titularisation.
+        state.startersByTeam = {
+            internal: Array.from({ length: 11 }, (_, i) => roster.getPlayerInfo("internal", i + 1)?.id).filter(id => id != null),
+            external: Array.from({ length: 11 }, (_, i) => roster.getPlayerInfo("external", i + 1)?.id).filter(id => id != null),
+        };
 
         applyKickoffPositions(basePositions);
         const kickoffTeam = matchConfig.isControlledHome ? "internal" : "external";

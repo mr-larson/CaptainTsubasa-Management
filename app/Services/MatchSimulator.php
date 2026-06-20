@@ -365,10 +365,23 @@ class MatchSimulator
             }
         }
 
+        // Temps de jeu (matchs simulés) : pas de remplacements ici, donc chaque
+        // titulaire joue l'intégralité des tours, les remplaçants n'entrent pas.
+        $starters = [
+            'home' => $homePlayers->map(fn($p) => (string) $p->id)->values()->all(),
+            'away' => $awayPlayers->map(fn($p) => (string) $p->id)->values()->all(),
+        ];
+        $playtime = [];
+        foreach ($homePlayers->concat($awayPlayers) as $p) {
+            $playtime[(string) $p->id] = self::MAX_TURNS;
+        }
+
         $matchStats = [
-            'teams'   => $teamStats,
-            'players' => $playerStats,
-            'events'  => $events,
+            'teams'    => $teamStats,
+            'players'  => $playerStats,
+            'events'   => $events,
+            'starters' => $starters,
+            'playtime' => $playtime,
         ];
 
         return [$teamStats['home']['goals'], $teamStats['away']['goals'], $matchStats];
