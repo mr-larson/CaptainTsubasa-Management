@@ -3122,39 +3122,6 @@ class PlayerSeeder extends Seeder
             ],
 
             [
-                'Yuji', 'Soga', 13, 'Defender', 290,
-                [
-                    'speed' => 60, 'stamina' => 68, 'defense' => 31, 'attack' => 23,
-                    'shot' => 19, 'pass' => 20, 'dribble' => 18,
-                    'block' => 25, 'intercept' => 24, 'tackle' => 26,
-                    'hand_save' => 15, 'punch_save' => 15
-                ],
-                'Défenseur combatif, Soga apporte de l’impact physique et sécurise l’axe défensif.'
-            ],
-
-            [
-                'Gakuto', 'Igawa', 13, 'Midfielder', 295,
-                [
-                    'speed' => 62, 'stamina' => 68, 'defense' => 28, 'attack' => 25,
-                    'shot' => 23, 'pass' => 24, 'dribble' => 23,
-                    'block' => 21, 'intercept' => 22, 'tackle' => 21,
-                    'hand_save' => 15, 'punch_save' => 15
-                ],
-                'Milieu polyvalent, Igawa participe aussi bien à la récupération qu’à la projection offensive.'
-            ],
-
-            [
-                'Kotaru', 'Furukawa', 13, 'Midfielder', 300,
-                [
-                    'speed' => 63, 'stamina' => 69, 'defense' => 29, 'attack' => 26,
-                    'shot' => 24, 'pass' => 25, 'dribble' => 24,
-                    'block' => 21, 'intercept' => 22, 'tackle' => 21,
-                    'hand_save' => 15, 'punch_save' => 15
-                ],
-                'Milieu technique, Furukawa se rend disponible entre les lignes et fluidifie le jeu collectif.'
-            ],
-
-            [
                 'Takashi', 'Sugimoto', 13, 'Midfielder', 305,
                 [
                     'speed' => 65, 'stamina' => 70, 'defense' => 30, 'attack' => 27,
@@ -3185,17 +3152,6 @@ class PlayerSeeder extends Seeder
                     'hand_save' => 15, 'punch_save' => 15
                 ],
                 'Milieu offensif régulier, Okano soutient les attaques et se projette intelligemment.'
-            ],
-
-            [
-                'Shinnosuke', 'Kazami', 13, 'Forward', 315,
-                [
-                    'speed' => 67, 'stamina' => 70, 'defense' => 22, 'attack' => 36,
-                    'shot' => 28, 'pass' => 22, 'dribble' => 26,
-                    'block' => 18, 'intercept' => 18, 'tackle' => 18,
-                    'hand_save' => 15, 'punch_save' => 15
-                ],
-                'Attaquant rapide et opportuniste, Kazami multiplie les appels et profite du jeu collectif.'
             ],
 
             [
@@ -3964,14 +3920,14 @@ class PlayerSeeder extends Seeder
             ['Daichi', 'Kakeru', 12, 'Midfielder', 210, [
                 'speed' => 52, 'stamina' => 57, 'defense' => 23, 'attack' => 25, 'shot' => 22, 'pass' => 23, 'dribble' => 22, 'block' => 18, 'intercept' => 19, 'tackle' => 18, 'hand_save' => 15, 'punch_save' => 15
             ]],
-            ['Yayoi', 'Aoba', 12, 'Defender', 205, [
+            ['Nico', 'Perera', 12, 'Defender', 205, [
                 'speed' => 48, 'stamina' => 54, 'defense' => 26, 'attack' => 20, 'shot' => 17, 'pass' => 18, 'dribble' => 16, 'block' => 22, 'intercept' => 21, 'tackle' => 22, 'hand_save' => 15, 'punch_save' => 15
             ]],
             ['Kuniharu', 'Uematsu', 12, 'Defender', 200, [
                 'speed' => 47, 'stamina' => 52, 'defense' => 25, 'attack' => 20, 'shot' => 16, 'pass' => 17, 'dribble' => 16, 'block' => 21, 'intercept' => 20, 'tackle' => 21, 'hand_save' => 15, 'punch_save' => 15
             ]],
-            ['Katsutoshi', 'Hasegawa', 13, 'Midfielder', 210, [
-                'speed' => 48, 'stamina' => 55, 'defense' => 22, 'attack' => 24, 'shot' => 22, 'pass' => 22, 'dribble' => 21, 'block' => 18, 'intercept' => 19, 'tackle' => 18, 'hand_save' => 15, 'punch_save' => 15
+            ['Gauthier', 'Leblanc', 13, 'Midfielder', 210, [
+                'speed' => 68, 'stamina' => 55, 'defense' => 26, 'attack' => 26, 'shot' => 22, 'pass' => 28, 'dribble' => 23, 'block' => 18, 'intercept' => 28, 'tackle' => 27, 'hand_save' => 15, 'punch_save' => 15
             ]],
             ['Sho', 'Kazama', 12, 'Defender', 210, [
                 'speed' => 50, 'stamina' => 55, 'defense' => 27, 'attack' => 21, 'shot' => 17, 'pass' => 18, 'dribble' => 16, 'block' => 23, 'intercept' => 22, 'tackle' => 23, 'hand_save' => 15, 'punch_save' => 15

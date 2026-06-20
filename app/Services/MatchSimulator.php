@@ -972,6 +972,11 @@ class MatchSimulator
             $away->draws  = ($away->draws  ?? 0) + 1;
         }
 
+        $home->goals_for     = ($home->goals_for     ?? 0) + $m->home_score;
+        $home->goals_against = ($home->goals_against ?? 0) + $m->away_score;
+        $away->goals_for     = ($away->goals_for     ?? 0) + $m->away_score;
+        $away->goals_against = ($away->goals_against ?? 0) + $m->home_score;
+
         $home->save();
         $away->save();
     }

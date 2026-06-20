@@ -33,28 +33,9 @@ const recentFormFor = (teamId) => {
     });
 };
 
-// Buts pour/contre depuis standings ou matches
-const goalsFor = (row) => {
-    if (row.goals_for !== undefined) return row.goals_for;
-    return props.matches
-        .filter(m => m.status === 'played')
-        .reduce((acc, m) => {
-            if (m.home_team_id === row.id) return acc + (m.home_score ?? 0);
-            if (m.away_team_id === row.id) return acc + (m.away_score ?? 0);
-            return acc;
-        }, 0);
-};
-
-const goalsAgainst = (row) => {
-    if (row.goals_against !== undefined) return row.goals_against;
-    return props.matches
-        .filter(m => m.status === 'played')
-        .reduce((acc, m) => {
-            if (m.home_team_id === row.id) return acc + (m.away_score ?? 0);
-            if (m.away_team_id === row.id) return acc + (m.home_score ?? 0);
-            return acc;
-        }, 0);
-};
+// Buts pour/contre : maintenus sur game_teams et fournis par chaque ligne du classement.
+const goalsFor     = (row) => row.goals_for     ?? 0;
+const goalsAgainst = (row) => row.goals_against ?? 0;
 
 const goalDiff = (row) => {
     const diff = goalsFor(row) - goalsAgainst(row);

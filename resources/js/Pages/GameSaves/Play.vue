@@ -122,7 +122,6 @@ const {
     averageAttack, averageDefense, averageStamina, averageSpeed,
 } = useDashboard({
     teams: teamsRef, gameSave: gameSaveRef, team: teamRef, roster,
-    matches: matchesRef,
     activeInjuries: activeInjuriesRef,
     activeSuspensions: activeSuspensionsRef,
     activeYellowCards: activeYellowCardsRef,

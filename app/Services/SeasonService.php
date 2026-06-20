@@ -33,8 +33,7 @@ class SeasonService
     {
         $teams = GameTeam::where('game_save_id', $gameSave->id)->get();
 
-        [$goalsFor, $goalsAgainst] = $this->aggregateGoals($gameSave);
-        $standings = $this->sortStandings($teams, $goalsFor, $goalsAgainst);
+        $standings = $this->sortStandings($teams);
         $champion  = $standings->first();
         $mvp       = $this->findSeasonMvp($gameSave);
 
@@ -46,8 +45,8 @@ class SeasonService
             $team->budget = ($team->budget ?? 0) + $prize;
             $team->save();
 
-            $gf = $goalsFor[$team->id]     ?? 0;
-            $ga = $goalsAgainst[$team->id] ?? 0;
+            $gf = (int) ($team->goals_for     ?? 0);
+            $ga = (int) ($team->goals_against ?? 0);
 
             $standingsRecap[] = [
                 'rank'          => $rank,
@@ -164,15 +163,15 @@ class SeasonService
     {
         $teams = GameTeam::where('game_save_id', $gameSave->id)->get();
 
-        // Agrégé avant la suppression du calendrier (les matchs sont effacés plus bas).
-        [$goalsFor, $goalsAgainst] = $this->aggregateGoals($gameSave);
-        $standings  = $this->sortStandings($teams, $goalsFor, $goalsAgainst);
+        $standings  = $this->sortStandings($teams);
         $draftOrder = $standings->reverse()->pluck('id')->values()->all();
 
         foreach ($teams as $team) {
-            $team->wins   = 0;
-            $team->draws  = 0;
-            $team->losses = 0;
+            $team->wins          = 0;
+            $team->draws         = 0;
+            $team->losses        = 0;
+            $team->goals_for     = 0;
+            $team->goals_against = 0;
             $team->save();
         }
 
@@ -197,56 +196,29 @@ class SeasonService
     /**
      * Trie les équipes selon les règles de classement :
      * points → différence de buts → buts marqués → victoires → nom.
+     * Les buts sont lus directement sur game_teams (maintenus à la simulation).
      *
      * @param  \Illuminate\Support\Collection<int, GameTeam>  $teams
-     * @param  array<int, int>  $goalsFor
-     * @param  array<int, int>  $goalsAgainst
      * @return \Illuminate\Support\Collection<int, GameTeam>
      */
-    private function sortStandings($teams, array $goalsFor, array $goalsAgainst)
+    private function sortStandings($teams)
     {
-        return $teams->sort(function ($a, $b) use ($goalsFor, $goalsAgainst) {
+        return $teams->sort(function ($a, $b) {
             $pa = ($a->wins ?? 0) * 3 + ($a->draws ?? 0);
             $pb = ($b->wins ?? 0) * 3 + ($b->draws ?? 0);
             if ($pa !== $pb) return $pb <=> $pa;
 
-            $da = ($goalsFor[$a->id] ?? 0) - ($goalsAgainst[$a->id] ?? 0);
-            $db = ($goalsFor[$b->id] ?? 0) - ($goalsAgainst[$b->id] ?? 0);
+            $da = ($a->goals_for ?? 0) - ($a->goals_against ?? 0);
+            $db = ($b->goals_for ?? 0) - ($b->goals_against ?? 0);
             if ($da !== $db) return $db <=> $da;
 
-            $fa = $goalsFor[$a->id] ?? 0;
-            $fb = $goalsFor[$b->id] ?? 0;
+            $fa = $a->goals_for ?? 0;
+            $fb = $b->goals_for ?? 0;
             if ($fa !== $fb) return $fb <=> $fa;
 
             if (($a->wins ?? 0) !== ($b->wins ?? 0)) return ($b->wins ?? 0) <=> ($a->wins ?? 0);
 
             return strcmp((string) $a->name, (string) $b->name);
         })->values();
-    }
-
-    /**
-     * Agrège buts marqués / encaissés par équipe depuis les matchs joués.
-     *
-     * @return array{0: array<int, int>, 1: array<int, int>} [goalsFor, goalsAgainst]
-     */
-    private function aggregateGoals(GameSave $gameSave): array
-    {
-        $goalsFor = [];
-        $goalsAgainst = [];
-
-        $matches = GameMatch::where('game_save_id', $gameSave->id)
-            ->where('status', 'played')
-            ->whereNotNull('home_score')
-            ->whereNotNull('away_score')
-            ->get(['home_team_id', 'away_team_id', 'home_score', 'away_score']);
-
-        foreach ($matches as $m) {
-            $goalsFor[$m->home_team_id]     = ($goalsFor[$m->home_team_id]     ?? 0) + $m->home_score;
-            $goalsAgainst[$m->home_team_id] = ($goalsAgainst[$m->home_team_id] ?? 0) + $m->away_score;
-            $goalsFor[$m->away_team_id]     = ($goalsFor[$m->away_team_id]     ?? 0) + $m->away_score;
-            $goalsAgainst[$m->away_team_id] = ($goalsAgainst[$m->away_team_id] ?? 0) + $m->home_score;
-        }
-
-        return [$goalsFor, $goalsAgainst];
     }
 }

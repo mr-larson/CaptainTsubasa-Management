@@ -27,7 +27,6 @@ use App\Services\StaminaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -184,6 +183,11 @@ class GameMatchController extends Controller
         if ($homeScore > $awayScore)      { $home->wins++;   $away->losses++; }
         elseif ($homeScore < $awayScore)  { $away->wins++;   $home->losses++; }
         else                              { $home->draws++;  $away->draws++;  }
+
+        $home->goals_for     += $homeScore;
+        $home->goals_against += $awayScore;
+        $away->goals_for     += $awayScore;
+        $away->goals_against += $homeScore;
 
         $home->save();
         $away->save();
@@ -484,7 +488,7 @@ class GameMatchController extends Controller
                 'secondary_positions' => $p->secondary_positions ?? [],
                 'is_starter'    => true,
                 'photo_path'    => $p->photo_path,
-                'photo_url'     => $p->photo_path ? Storage::url($p->photo_path) : null,
+                'photo_url'     => $p->photo_url,
                 'stats'         => [
                     'speed' => $p->speed, 'stamina' => $p->stamina,
                     'attack' => $p->attack, 'defense' => $p->defense,
@@ -517,7 +521,7 @@ class GameMatchController extends Controller
                 'secondary_positions' => $p->secondary_positions ?? [],
                 'is_starter'    => false,
                 'photo_path'    => $p->photo_path,
-                'photo_url'     => $p->photo_path ? Storage::url($p->photo_path) : null,
+                'photo_url'     => $p->photo_url,
                 'stats'         => [
                     'speed' => $p->speed, 'stamina' => $p->stamina,
                     'attack' => $p->attack, 'defense' => $p->defense,

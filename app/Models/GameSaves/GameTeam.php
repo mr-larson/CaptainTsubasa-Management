@@ -2,6 +2,7 @@
 
 namespace App\Models\GameSaves;
 
+use App\Models\GameSaves\Concerns\BelongsToGameSave;
 use App\Models\Team;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -9,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 class GameTeam extends Model
 {
     use HasFactory;
+    use BelongsToGameSave;
 
     protected $fillable = [
         'game_save_id',
@@ -21,6 +23,8 @@ class GameTeam extends Model
         'wins',
         'draws',
         'losses',
+        'goals_for',
+        'goals_against',
         'logo_path',
         'formation',
         'tactical_style',
@@ -31,11 +35,6 @@ class GameTeam extends Model
         'is_controlled' => 'boolean',
         'human_seat'    => 'integer',
     ];
-
-    public function gameSave()
-    {
-        return $this->belongsTo(GameSave::class);
-    }
 
     public function baseTeam()
     {

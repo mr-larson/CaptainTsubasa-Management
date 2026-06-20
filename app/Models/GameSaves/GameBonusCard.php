@@ -3,11 +3,14 @@
 namespace App\Models\GameSaves;
 
 use App\Models\BonusCard;
+use App\Models\GameSaves\Concerns\BelongsToGameSave;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class GameBonusCard extends Model
 {
+    use BelongsToGameSave;
+
     protected $fillable = [
         'game_save_id', 'bonus_card_id', 'game_team_id', 'tier', 'cost_paid',
         'status', 'target_player_id',
@@ -18,11 +21,6 @@ class GameBonusCard extends Model
     public function bonusCard(): BelongsTo
     {
         return $this->belongsTo(BonusCard::class);
-    }
-
-    public function gameSave(): BelongsTo
-    {
-        return $this->belongsTo(GameSave::class);
     }
 
     public function gameTeam(): BelongsTo

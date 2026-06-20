@@ -1,31 +1,19 @@
 // resources/js/Pages/GameSaves/Play/useDashboard.js
 import { computed } from 'vue';
 
-export function useDashboard({ teams, gameSave, team, roster, matches, activeInjuries, activeSuspensions, activeYellowCards }) {
+export function useDashboard({ teams, gameSave, team, roster, activeInjuries, activeSuspensions, activeYellowCards }) {
 
     // ==========================
     //   CLASSEMENT
     // ==========================
     const standings = computed(() => {
-        // Buts marqués / encaissés agrégés depuis les matchs joués.
-        const goalsFor = {};
-        const goalsAgainst = {};
-        for (const m of (matches?.value ?? [])) {
-            if (m.status !== 'played') continue;
-            const hs = m.home_score ?? 0;
-            const as = m.away_score ?? 0;
-            goalsFor[m.home_team_id]     = (goalsFor[m.home_team_id]     ?? 0) + hs;
-            goalsAgainst[m.home_team_id] = (goalsAgainst[m.home_team_id] ?? 0) + as;
-            goalsFor[m.away_team_id]     = (goalsFor[m.away_team_id]     ?? 0) + as;
-            goalsAgainst[m.away_team_id] = (goalsAgainst[m.away_team_id] ?? 0) + hs;
-        }
-
         const list = (teams.value ?? []).map((t) => {
             const wins   = t.wins   ?? 0;
             const draws  = t.draws  ?? 0;
             const losses = t.losses ?? 0;
-            const gf = goalsFor[t.id]     ?? 0;
-            const ga = goalsAgainst[t.id] ?? 0;
+            // Buts maintenus sur game_teams (source de vérité côté serveur).
+            const gf = t.goals_for     ?? 0;
+            const ga = t.goals_against ?? 0;
             return {
                 ...t, wins, draws, losses,
                 played: wins + draws + losses,

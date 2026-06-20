@@ -2,6 +2,7 @@
 
 namespace App\Models\GameSaves;
 
+use App\Models\GameSaves\Concerns\BelongsToGameSave;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class GameMatch extends Model
 {
     use HasFactory;
+    use BelongsToGameSave;
 
     protected $fillable = [
         'game_save_id',
@@ -24,12 +26,6 @@ class GameMatch extends Model
     protected $casts = [
         'match_stats' => 'array',
     ];
-
-    public function gameSave(): BelongsTo
-    {
-        return $this->belongsTo(GameSave::class);
-    }
-
 
     public function homeTeam(): BelongsTo
     {

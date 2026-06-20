@@ -2,12 +2,14 @@
 
 namespace App\Models\GameSaves;
 
+use App\Models\GameSaves\Concerns\BelongsToGameSave;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class GameContract extends Model
 {
     use HasFactory;
+    use BelongsToGameSave;
 
     protected $fillable = [
         'game_save_id',
@@ -35,11 +37,6 @@ class GameContract extends Model
     // ──────────────────────────────────────────────
     //   Relations
     // ──────────────────────────────────────────────
-
-    public function gameSave()
-    {
-        return $this->belongsTo(GameSave::class);
-    }
 
     public function gameTeam()
     {

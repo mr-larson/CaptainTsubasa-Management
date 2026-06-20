@@ -41,7 +41,7 @@ class Card extends Model
     // Si vous voulez obtenir l'effet exact d'une carte sur une statistique particulière
     public function getEffectOnStat($stat)
     {
-        $effects = json_decode($this->effects, true);
-        return $effects[$stat] ?? null;
+        // `effects` est déjà casté en tableau (cf. $casts).
+        return $this->effects[$stat] ?? null;
     }
 }

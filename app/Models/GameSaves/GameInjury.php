@@ -2,11 +2,14 @@
 
 namespace App\Models\GameSaves;
 
+use App\Models\GameSaves\Concerns\BelongsToGameSave;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class GameInjury extends Model
 {
+    use BelongsToGameSave;
+
     protected $fillable = [
         'game_save_id',
         'game_player_id',
@@ -17,11 +20,6 @@ class GameInjury extends Model
         'week_return',
         'description',
     ];
-
-    public function gameSave(): BelongsTo
-    {
-        return $this->belongsTo(GameSave::class);
-    }
 
     public function gamePlayer(): BelongsTo
     {
