@@ -196,14 +196,16 @@ const filteredHistory = computed(() =>
 <template>
     <div class="flex-1 flex flex-col gap-4 overflow-y-auto min-h-[75vh] max-h-[75vh] pr-1 [&>*]:shrink-0">
 
-        <!-- Header budget -->
-        <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
-            <div class="flex items-center justify-between">
+        <!-- Header : Marché (1/4) + recherche & filtres (3/4) -->
+        <div class="grid grid-cols-12 gap-4 items-stretch">
+
+            <!-- Marché des transferts (1/4) -->
+            <div class="col-span-3 border border-slate-200 rounded-xl bg-slate-50 p-4 flex flex-col gap-3">
                 <div>
                     <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Marché des transferts</h3>
                     <p class="text-sm text-slate-500 mt-1">{{ availableFreePlayers.length }} joueur(s) sans contrat disponible(s)</p>
                 </div>
-                <div class="flex gap-4">
+                <div class="flex flex-wrap gap-2 mt-auto">
                     <div class="text-center px-4 py-2 rounded-xl border bg-teal-50 border-teal-200">
                         <div class="text-xl font-black text-teal-600">{{ teamBudget }} €</div>
                         <div class="text-[10px] text-teal-400 font-semibold">Budget actuel</div>
@@ -219,40 +221,40 @@ const filteredHistory = computed(() =>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Recherche + filtres origine -->
-        <div class="flex flex-col gap-3">
-            <!-- Barre de recherche (comme le draft) -->
-            <input type="search" v-model="searchQuery"
-                   class="w-full px-4 py-2 text-sm border border-slate-200 rounded-xl bg-white focus:ring-2 focus:ring-teal-300 focus:outline-none"
-                   placeholder="Rechercher un joueur..."/>
+            <!-- Recherche + filtres (3/4) -->
+            <div class="col-span-9 flex flex-col gap-3">
+                <!-- Barre de recherche (comme le draft) -->
+                <input type="search" v-model="searchQuery"
+                       class="w-full px-4 py-2 text-sm border border-slate-200 rounded-xl bg-white focus:ring-2 focus:ring-teal-300 focus:outline-none"
+                       placeholder="Rechercher un joueur..."/>
 
-            <!-- Filtres origine (œuvre de provenance) -->
-            <div class="flex gap-2 flex-wrap">
-                <button v-for="o in originFilters" :key="o.key" type="button"
-                        @click="originFilter = o.key"
-                        class="px-3 py-1.5 rounded-full text-xs font-semibold border transition-all"
-                        :class="originFilter === o.key
-                        ? 'bg-indigo-500 text-white border-indigo-600 shadow-sm'
-                        : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:text-indigo-600'">
-                    {{ o.label }}
-                    <span class="ml-1 opacity-60">({{ originCount(o.key) }})</span>
-                </button>
+                <!-- Filtres origine (œuvre de provenance) -->
+                <div class="flex gap-2 flex-wrap">
+                    <button v-for="o in originFilters" :key="o.key" type="button"
+                            @click="originFilter = o.key"
+                            class="px-3 py-1.5 rounded-full text-xs font-semibold border transition-all"
+                            :class="originFilter === o.key
+                            ? 'bg-indigo-500 text-white border-indigo-600 shadow-sm'
+                            : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:text-indigo-600'">
+                        {{ o.label }}
+                        <span class="ml-1 opacity-60">({{ originCount(o.key) }})</span>
+                    </button>
+                </div>
+
+                <!-- Filtres poste -->
+                <div class="flex gap-2 flex-wrap">
+                    <button v-for="f in filters" :key="f.key" type="button"
+                            @click="posFilter = f.key"
+                            class="px-3 py-1.5 rounded-full text-xs font-semibold border transition-all"
+                            :class="posFilter === f.key
+                            ? 'bg-teal-500 text-white border-teal-600 shadow-sm'
+                            : 'bg-white text-slate-600 border-slate-200 hover:border-teal-300 hover:text-teal-600'">
+                        {{ f.label }}
+                        <span class="ml-1 opacity-60">({{ posCount(f.key) }})</span>
+                    </button>
+                </div>
             </div>
-        </div>
-
-        <!-- Filtres poste -->
-        <div class="flex gap-2 flex-wrap">
-            <button v-for="f in filters" :key="f.key" type="button"
-                    @click="posFilter = f.key"
-                    class="px-3 py-1.5 rounded-full text-xs font-semibold border transition-all"
-                    :class="posFilter === f.key
-                    ? 'bg-teal-500 text-white border-teal-600 shadow-sm'
-                    : 'bg-white text-slate-600 border-slate-200 hover:border-teal-300 hover:text-teal-600'">
-                {{ f.label }}
-                <span class="ml-1 opacity-60">({{ posCount(f.key) }})</span>
-            </button>
         </div>
 
         <!-- Contenu principal -->
