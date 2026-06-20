@@ -505,8 +505,7 @@ class GameSaveController extends Controller
 
         $data = $request->validate([
             'team_id'       => ['required', 'integer', Rule::exists('game_teams', 'id')->where('game_save_id', $gameSave->id)],
-            'salary'        => ['required', 'integer', 'min:0'],
-            'matches_total' => ['required', 'integer', 'min:1'],
+            'matches_total' => ['required', 'integer', 'min:1', 'max:60'],
             'reason'        => ['nullable', 'string', 'max:1000'],
         ]);
 
@@ -521,6 +520,23 @@ class GameSaveController extends Controller
 
         if ($alreadyHasContract) {
             return back()->with('info', 'Ce joueur a déjà un contrat en cours dans cette partie.');
+        }
+
+        // Le salaire fait autorité côté serveur : on ignore toute valeur cliente
+        // (sinon n'importe qui pourrait signer un joueur pour 0) et on refuse la
+        // signature si l'équipe n'a pas les moyens.
+        $salary    = (int) $player->adjusted_cost;
+        $totalCost = $salary * $data['matches_total'];
+        $budget    = (int) ($team->budget ?? 0);
+
+        if ($totalCost > $budget) {
+            $totalFmt  = number_format($totalCost, 0, ',', ' ');
+            $salaryFmt = number_format($salary, 0, ',', ' ');
+            $budgetFmt = number_format($budget, 0, ',', ' ');
+            return back()->withErrors([
+                'contract' => "Budget insuffisant : {$player->full_name} coûte {$totalFmt} "
+                    . "({$salaryFmt} × {$data['matches_total']} match(s)), budget disponible {$budgetFmt}.",
+            ]);
         }
 
         // Conséquences du moral : un révolté refuse de re-signer avec son ancien club ;
@@ -568,7 +584,7 @@ class GameSaveController extends Controller
             'game_save_id'                    => $gameSave->id,
             'game_team_id'                    => $team->id,
             'game_player_id'                  => $player->id,
-            'salary'                          => $data['salary'],
+            'salary'                          => $salary,
             'start_week'                      => $startWeek,
             'end_week'                        => $endWeek,
             'is_starter'                      => $starterCount < 11,
@@ -577,15 +593,14 @@ class GameSaveController extends Controller
             'captain_reroll_used_this_action' => false,
         ]);
 
-        $totalCost    = $data['salary'] * $data['matches_total'];
-        $team->budget = max(0, ($team->budget ?? 0) - $totalCost);
+        $team->budget = $budget - $totalCost;
         $team->save();
 
         $state = $gameSave->state ?? [];
         $state['free_agent_signings'][] = [
             'player_id'     => $player->id,
             'team_id'       => $team->id,
-            'salary'        => $data['salary'],
+            'salary'        => $salary,
             'matches_total' => $data['matches_total'],
             'total_cost'    => $totalCost,
             'reason'        => $data['reason'] ?? null,

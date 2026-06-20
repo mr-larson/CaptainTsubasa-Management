@@ -53,8 +53,9 @@ const filteredPlayers = computed(() => {
 const selectedPlayer = ref(null);
 const selectPlayer = (p) => {
     selectedPlayer.value = p;
-    // Pré-remplir le formulaire d'offre
-    emit('update:transferSalary', p.cost ?? 0);
+    // Le salaire fait autorité côté serveur (coût ajusté à la polyvalence) :
+    // on l'affiche sans le rendre éditable, le serveur l'imposera de toute façon.
+    emit('update:transferSalary', p.adjusted_cost ?? p.cost ?? 0);
     emit('update:transferMatches', 10);
 };
 
@@ -320,10 +321,10 @@ const filteredHistory = computed(() =>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Salaire / match (€)</label>
-                            <input type="number" min="0"
-                                   :value="transferSalary"
-                                   @input="emit('update:transferSalary', +$event.target.value)"
-                                   class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-sm bg-white focus:ring-2 focus:ring-teal-300 focus:outline-none"/>
+                            <div class="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-slate-100 text-slate-600 font-semibold flex items-center justify-between">
+                                <span>{{ transferSalary }} €</span>
+                                <span class="text-[10px] text-slate-400 font-normal">fixé</span>
+                            </div>
                         </div>
                     </div>
 
