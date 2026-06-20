@@ -24,6 +24,20 @@ export const DUEL_RULES = {
 };
 
 // ==========================
+//   DUEL CONTEXTUEL (rôle distinct par stat)
+// ==========================
+// Chaque stat apporte un bonus multiplicatif borné selon le contexte du duel
+// (zone du ballon, type d'action). Réglage volontairement « subtil » : ces
+// facteurs font basculer un duel d'au plus ~10-15 % à stat maximale.
+//   zoneFactor = zoneIndex / MAX_ZONE_INDEX (0 en propre tiers, 1 près du but visé)
+export const DUEL_CONTEXT = {
+    ATTACK_ZONE_MAX:   0.15, // `attack`  : boost offensif, croît vers le but adverse
+    DEFENSE_ZONE_MAX:  0.15, // `defense` : boost défensif, croît en défendant bas
+    SPEED_DUEL_WEIGHT: 0.10, // `speed`   : dribble (att.) / tackle + intercept (déf.)
+    BLOCK_EDGE_MAX:    0.12, // `block`   : dernier rempart anti-tir, scalé par la profondeur
+};
+
+// ==========================
 //   COUP DE PIED ARRÊTÉ (coup franc)
 // ==========================
 // Une faute grave (échec critique du défenseur) commise dans le tiers offensif
@@ -38,18 +52,24 @@ export const FREE_KICK = {
 // ==========================
 export const ENDURANCE_DEFAULT = 100;
 
+// Paliers durcis : la fatigue dégrade plus nettement les bases de duel, pour
+// que l'usure de fin de match soit visible (cf. PASSIVE_STAMINA_DRAIN_PER_TURN).
 export const STAMINA_FACTORS = {
     HIGH:      1.0,   // ≥ 75%
-    MID:       0.88,  // 50-75%
-    LOW:       0.72,  // 25-50%
-    CRIT:      0.55,  // >0-25%
-    EXHAUSTED: 0.40,  // = 0
+    MID:       0.85,  // 50-75%
+    LOW:       0.68,  // 25-50%
+    CRIT:      0.50,  // >0-25%
+    EXHAUSTED: 0.35,  // = 0
 };
 
 export const STAMINA_COST_CROSS     = 18;
 export const STAMINA_COST_LONG_PASS = 15;
 export const STAMINA_COST_GLOBAL_SCALE = 1.0;
 export const CRIT_STAMINA_BOOST        = 10; // points récupérés sur un 20 naturel
+// Usure passive appliquée à chaque titulaire sur le terrain à chaque tour, en
+// plus des coûts d'action : rend la dégradation de fin de match visible et
+// récompense la stat `stamina` (qui fixe l'endurance max de départ).
+export const PASSIVE_STAMINA_DRAIN_PER_TURN = 0.4;
 
 // ==========================
 //   RÈGLES TERRAIN

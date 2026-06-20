@@ -19,6 +19,17 @@ class MatchSimulator
     private const HOME_BONUS                      = 0.5;
     private const SHOT_DISTANCE_PENALTY_PER_ZONE  = 1;
 
+    // Duel contextuel (miroir de DUEL_CONTEXT côté client) : chaque stat apporte
+    // un bonus multiplicatif borné selon le contexte du duel (zone, type d'action).
+    // Réglage « subtil » : au plus ~10-15 % de bascule à stat maximale.
+    private const ATTACK_ZONE_MAX                 = 0.15; // `attack`  : boost offensif vers le but adverse
+    private const DEFENSE_ZONE_MAX                = 0.15; // `defense` : boost défensif en défendant bas
+    private const SPEED_DUEL_WEIGHT               = 0.10; // `speed`   : dribble (att.) / tackle + intercept (déf.)
+    private const BLOCK_EDGE_MAX                  = 0.12; // `block`   : dernier rempart anti-tir, scalé par la profondeur
+    // Usure passive par tour pour chaque titulaire (miroir client). Combinée au
+    // `staminaMax = stat stamina`, rend la fatigue de fin de match visible.
+    private const PASSIVE_STAMINA_DRAIN_PER_TURN  = 0.4;
+
     // Miroir de POSITION_BONUS / SECONDARY_POSITION_BONUS_FACTOR / OFF_POSITION_MALUS (constants.js)
     private const POSITION_BONUS = [
         'GK' => ['gk' => 0.03],
@@ -116,8 +127,13 @@ class MatchSimulator
 
         $playerStats = [];
         $stamina     = [];
+        $staminaMax  = [];
         foreach ($homePlayers->concat($awayPlayers) as $p) {
-            $stamina[(string) $p->id] = (float) self::ENDURANCE_DEFAULT;
+            // Endurance max = stat `stamina` (miroir du client) : un joueur peu
+            // endurant atteint plus vite les paliers de fatigue. Repli sur 100.
+            $max = (float) (($p->stamina ?? 0) > 0 ? $p->stamina : self::ENDURANCE_DEFAULT);
+            $staminaMax[(string) $p->id] = $max;
+            $stamina[(string) $p->id]    = $max;
         }
 
         $teamStats = [
@@ -142,6 +158,18 @@ class MatchSimulator
             $defGK      = $isHomeAttacking ? $awayGK     : $homeGK;
             $defSide    = $isHomeAttacking ? 'away'      : 'home';
 
+            // ----- Usure passive : chaque titulaire perd un peu d'endurance à
+            //       chaque tour (en plus des coûts d'action). Placé en tête de
+            //       boucle pour s'appliquer aussi aux tours centre/passe longue. -----
+            if (self::PASSIVE_STAMINA_DRAIN_PER_TURN > 0) {
+                foreach ($homePlayers->concat($awayPlayers) as $p) {
+                    $pid = (string) ($p->id ?? 0);
+                    if (($stamina[$pid] ?? 0) > 0) {
+                        $stamina[$pid] = max(0.0, $stamina[$pid] - self::PASSIVE_STAMINA_DRAIN_PER_TURN);
+                    }
+                }
+            }
+
             // ----- Choix de l'action offensive -----
             if ($frontOfKeeper || $zone >= self::MAX_ZONE_INDEX) {
                 $action = $frontOfKeeper
@@ -154,7 +182,7 @@ class MatchSimulator
             // ----- Centre / Passe longue : résolution dédiée (checks multiples) -----
             if ($action === 'cross' || $action === 'long_pass') {
                 $this->resolveCrossOrLongPass(
-                    $action, $attPlayers, $defPlayers, $defGK, $stamina,
+                    $action, $attPlayers, $defPlayers, $defGK, $stamina, $staminaMax,
                     $playerStats, $teamStats, $events, $goalEvents,
                     $side, $defSide, $zone, $frontOfKeeper, $turn, $isHomeAttacking
                 );
@@ -174,9 +202,12 @@ class MatchSimulator
                 $defCategory = 'defenseField';
             }
 
-            // ----- Calcul des scores de duel (RPS + stamina + bonus domicile) -----
+            // ----- Calcul des scores de duel (RPS + contexte + stamina + domicile) -----
+            // Contexte : `attack` (zone) + `speed` (dribble) côté attaque ;
+            //            `defense` (zone) + `speed` (tackle/intercept) côté défense.
             $attackBase = $this->statForAction($attacker, $action, 'attack')
-                * $this->staminaFactor($stamina[(string) ($attacker->id ?? 0)] ?? self::ENDURANCE_DEFAULT);
+                * $this->attackContextMultiplier($attacker, $action, $zone)
+                * $this->staminaFactorOf($attacker, $stamina, $staminaMax);
 
             if ($action === 'shot' && !$frontOfKeeper) {
                 $zonesToGoal = self::MAX_ZONE_INDEX - $zone;
@@ -184,7 +215,17 @@ class MatchSimulator
             }
 
             $defenseBase = $this->statForAction($defender, $defAction, $defCategory)
-                * $this->staminaFactor($stamina[(string) ($defender->id ?? 0)] ?? self::ENDURANCE_DEFAULT);
+                * $this->defenseContextMultiplier($defender, $defAction, $defCategory, $zone)
+                * $this->staminaFactorOf($defender, $stamina, $staminaMax);
+
+            // `block` (dernier rempart) : le moteur serveur envoie tous les tirs au
+            // gardien (pas de duel de contre dédié), alors le meilleur contreur de
+            // champ se jette devant la frappe et renforce l'arrêt — d'autant plus
+            // que le tir part de près du but (zone haute).
+            if ($action === 'shot') {
+                $blocker = $this->fieldPlayers($defPlayers)->sortByDesc(fn($p) => $p->block ?? 0)->first();
+                if ($blocker) $defenseBase *= $this->blockEdgeMultiplier($blocker, $zone);
+            }
 
             // RPS : la défense "attendue" (intercept/tackle/gardien) compte comme bon contre
             $defenseBase += self::GOOD_COUNTER_BONUS;
@@ -508,17 +549,87 @@ class MatchSimulator
 
     /**
      * Facteur multiplicatif appliqué à la base d'attaque/défense selon le ratio
-     * de stamina restante — paliers identiques à `STAMINA_FACTORS` côté client.
+     * de stamina restante (relatif à l'endurance max du joueur) — paliers durcis,
+     * identiques à `STAMINA_FACTORS` côté client.
      */
-    private function staminaFactor(float $stamina): float
+    private function staminaFactor(float $stamina, float $max = self::ENDURANCE_DEFAULT): float
     {
-        $ratio = $stamina / self::ENDURANCE_DEFAULT;
+        $ratio = $max > 0 ? $stamina / $max : 0.0;
 
-        if ($ratio <= 0)    return 0.40; // EXHAUSTED
-        if ($ratio < 0.25)  return 0.55; // CRIT
-        if ($ratio < 0.50)  return 0.72; // LOW
-        if ($ratio < 0.75)  return 0.88; // MID
+        if ($ratio <= 0)    return 0.35; // EXHAUSTED
+        if ($ratio < 0.25)  return 0.50; // CRIT
+        if ($ratio < 0.50)  return 0.68; // LOW
+        if ($ratio < 0.75)  return 0.85; // MID
         return 1.0;                      // HIGH
+    }
+
+    /** Facteur de stamina d'un joueur en lisant les maps d'état (valeur + max). */
+    private function staminaFactorOf($player, array $stamina, array $staminaMax): float
+    {
+        $pid = (string) ($player->id ?? 0);
+        return $this->staminaFactor(
+            $stamina[$pid]    ?? self::ENDURANCE_DEFAULT,
+            $staminaMax[$pid] ?? self::ENDURANCE_DEFAULT,
+        );
+    }
+
+    // ==========================
+    //   MULTIPLICATEURS CONTEXTUELS (rôle distinct par stat)
+    // ==========================
+
+    /** Facteur de zone normalisé 0..1 (0 = propre tiers, 1 = près du but visé). */
+    private function zoneFactor(int $zone): float
+    {
+        if (self::MAX_ZONE_INDEX <= 0) return 0.0;
+        return max(0.0, min(1.0, $zone / self::MAX_ZONE_INDEX));
+    }
+
+    /** `attack` : boost offensif croissant à mesure qu'on progresse vers le but adverse. */
+    private function attackZoneMultiplier($player, int $zone): float
+    {
+        return 1.0 + ((float) ($player->attack ?? 0) / 100) * self::ATTACK_ZONE_MAX * $this->zoneFactor($zone);
+    }
+
+    /** `defense` : boost défensif croissant à mesure que le ballon menace (zone haute). */
+    private function defenseZoneMultiplier($player, int $zone): float
+    {
+        return 1.0 + ((float) ($player->defense ?? 0) / 100) * self::DEFENSE_ZONE_MAX * $this->zoneFactor($zone);
+    }
+
+    /** `speed` : avantage de poursuite — dribble (attaquant), tackle/intercept (défenseur). */
+    private function speedDuelMultiplier($player): float
+    {
+        return 1.0 + ((float) ($player->speed ?? 0) / 100) * self::SPEED_DUEL_WEIGHT;
+    }
+
+    /** `block` : dernier rempart anti-tir, d'autant plus fort que la défense est basse. */
+    private function blockEdgeMultiplier($player, int $zone): float
+    {
+        return 1.0 + ((float) ($player->block ?? 0) / 100) * self::BLOCK_EDGE_MAX * $this->zoneFactor($zone);
+    }
+
+    /** Multiplicateur offensif contextuel : `attack` (zone) + `speed` (dribble). */
+    private function attackContextMultiplier($player, string $action, int $zone): float
+    {
+        $mult = $this->attackZoneMultiplier($player, $zone);
+        if ($action === 'dribble') $mult *= $this->speedDuelMultiplier($player);
+        return $mult;
+    }
+
+    /**
+     * Multiplicateur défensif contextuel : `defense` (zone) + `speed`
+     * (tackle/intercept). Le gardien (defenseGK) n'en bénéficie pas — son arrêt
+     * peut être renforcé séparément par le `block` d'un coéquipier (cf. tir).
+     */
+    private function defenseContextMultiplier($player, string $defAction, string $defCategory, int $zone): float
+    {
+        if ($defCategory === 'defenseGK') return 1.0;
+
+        $mult = $this->defenseZoneMultiplier($player, $zone);
+        if ($defAction === 'tackle' || $defAction === 'intercept') {
+            $mult *= $this->speedDuelMultiplier($player);
+        }
+        return $mult;
     }
 
     /** Coût en stamina d'une action, pondéré par la vitesse du joueur (miroir de `applyStaminaCost`). */
@@ -693,6 +804,7 @@ class MatchSimulator
         Collection $defPlayers,
         $defGK,
         array &$stamina,
+        array $staminaMax,
         array &$playerStats,
         array &$teamStats,
         array &$events,
@@ -704,7 +816,7 @@ class MatchSimulator
         int $turn,
         bool $isHomeAttacking
     ): void {
-        $staminaOf = fn($p) => $stamina[(string) ($p->id ?? 0)] ?? self::ENDURANCE_DEFAULT;
+        $factorOf  = fn($p) => $this->staminaFactorOf($p, $stamina, $staminaMax);
         $homeBonus = $isHomeAttacking ? self::HOME_BONUS : 0.0;
         $awayBonus = $isHomeAttacking ? 0.0 : self::HOME_BONUS;
 
@@ -720,8 +832,8 @@ class MatchSimulator
             // Défenseur : meilleur intercepteur adverse (hors gardien)
             $defender = $this->fieldPlayers($defPlayers)->sortByDesc(fn($p) => $p->intercept ?? 0)->first();
 
-            $attackScore  = ($attacker->pass ?? 0) * $this->positionMultiplier($attacker, 'pass') * $this->staminaFactor($staminaOf($attacker)) + $homeBonus + $this->d20();
-            $defenseScore = ($defender->intercept ?? 0) * $this->positionMultiplier($defender, 'defend') * $this->staminaFactor($staminaOf($defender)) + self::GOOD_COUNTER_BONUS + $awayBonus + $this->d20();
+            $attackScore  = ($attacker->pass ?? 0) * $this->positionMultiplier($attacker, 'pass') * $this->attackZoneMultiplier($attacker, $zone) * $factorOf($attacker) + $homeBonus + $this->d20();
+            $defenseScore = ($defender->intercept ?? 0) * $this->positionMultiplier($defender, 'defend') * $this->defenseContextMultiplier($defender, 'intercept', 'defenseField', $zone) * $factorOf($defender) + self::GOOD_COUNTER_BONUS + $awayBonus + $this->d20();
 
             $success = $attackScore > $defenseScore;
 
@@ -785,7 +897,8 @@ class MatchSimulator
         // ----- Centre -----
         $crosser = $this->pickPlayerForAction($attPlayers, 'pass');
         $crosserScore = (($crosser->pass ?? 0) * 0.7 + ($crosser->attack ?? 0) * 0.3)
-            * $this->positionMultiplier($crosser, 'pass');
+            * $this->positionMultiplier($crosser, 'pass')
+            * $this->attackZoneMultiplier($crosser, $zone);
 
         $success = true;
         $defenderForLog = null;
@@ -794,8 +907,8 @@ class MatchSimulator
         if ($this->getPlayerZone($zone) === 2) {
             $interceptDef = $this->fieldPlayers($defPlayers)->sortByDesc(fn($p) => $p->intercept ?? 0)->first();
             $defenderForLog = $interceptDef;
-            $attackScore  = $crosserScore * $this->staminaFactor($staminaOf($crosser)) + $homeBonus + $this->d20();
-            $defenseScore = ($interceptDef->intercept ?? 0) * $this->positionMultiplier($interceptDef, 'defend') * $this->staminaFactor($staminaOf($interceptDef)) + self::GOOD_COUNTER_BONUS + $awayBonus + $this->d20();
+            $attackScore  = $crosserScore * $factorOf($crosser) + $homeBonus + $this->d20();
+            $defenseScore = ($interceptDef->intercept ?? 0) * $this->positionMultiplier($interceptDef, 'defend') * $this->defenseContextMultiplier($interceptDef, 'intercept', 'defenseField', $zone) * $factorOf($interceptDef) + self::GOOD_COUNTER_BONUS + $awayBonus + $this->d20();
             $success = $attackScore > $defenseScore;
 
             if ($interceptDef) {
@@ -813,10 +926,11 @@ class MatchSimulator
             $headingDef = $this->fieldPlayers($defPlayers)->sortByDesc(fn($p) => (($p->heading ?? 0) * 0.8) + (($p->speed ?? 0) * 0.2))->first();
             $defenderForLog = $headingDef ?? $defenderForLog;
             $headingScore = ((($headingDef->heading ?? 0) * 0.8) + (($headingDef->speed ?? 0) * 0.2))
-                * $this->positionMultiplier($headingDef, 'defend');
+                * $this->positionMultiplier($headingDef, 'defend')
+                * $this->defenseContextMultiplier($headingDef, 'heading', 'defenseField', $zone);
 
-            $attackScore  = $crosserScore * $this->staminaFactor($staminaOf($crosser)) + $homeBonus + $this->d20();
-            $defenseScore = $headingScore * $this->staminaFactor($staminaOf($headingDef)) + self::GOOD_COUNTER_BONUS + $awayBonus + $this->d20();
+            $attackScore  = $crosserScore * $factorOf($crosser) + $homeBonus + $this->d20();
+            $defenseScore = $headingScore * $factorOf($headingDef) + self::GOOD_COUNTER_BONUS + $awayBonus + $this->d20();
             $success = $attackScore > $defenseScore;
 
             if ($headingDef) {
@@ -881,8 +995,9 @@ class MatchSimulator
             ? 1.15
             : (($crosserIsForward && $receiverIsForward) ? 1.10 : 1.0);
 
-        $attackScore  = ($receiver->shot ?? 0) * $shotBonus * $this->positionMultiplier($receiver, 'shot') * $this->staminaFactor($staminaOf($receiver)) + $homeBonus + $this->d20();
-        $defenseScore = ($defGK->hand_save ?? 0) * 0.9 * $this->positionMultiplier($defGK, 'gk') * $this->staminaFactor($staminaOf($defGK)) + $awayBonus + $this->d20();
+        // Reprise dans la surface : `attack` à son plein effet (finition au but).
+        $attackScore  = ($receiver->shot ?? 0) * $shotBonus * $this->positionMultiplier($receiver, 'shot') * $this->attackZoneMultiplier($receiver, self::MAX_ZONE_INDEX) * $factorOf($receiver) + $homeBonus + $this->d20();
+        $defenseScore = ($defGK->hand_save ?? 0) * 0.9 * $this->positionMultiplier($defGK, 'gk') * $factorOf($defGK) + $awayBonus + $this->d20();
 
         $isGoal = $attackScore > $defenseScore;
 

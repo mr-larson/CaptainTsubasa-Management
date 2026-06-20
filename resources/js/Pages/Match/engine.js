@@ -3,6 +3,7 @@
 
 import {
     TEXTS, GAME_RULES, ANIM_MS, ACTION_BAR_FADE_MS, GK_HOLD_MS, POSITION_BONUS,
+    PASSIVE_STAMINA_DRAIN_PER_TURN,
 } from './engine/constants.js';
 
 import { RosterService } from './engine/RosterService.js';
@@ -284,6 +285,22 @@ export function initMatchEngine(rootEl, config = {}) {
         decayHeat();
         state.currentTeam = newTeam;
         state.turns++;
+
+        // Usure passive : chaque joueur sur le terrain perd un peu d'endurance à
+        // chaque tour (en plus des coûts d'action). Rend la fatigue de fin de
+        // match visible et valorise la stat `stamina` (= endurance max de départ).
+        if (PASSIVE_STAMINA_DRAIN_PER_TURN > 0) {
+            rootEl.querySelectorAll(".player").forEach((el) => {
+                const id = el.dataset.player;
+                if (!id) return;
+                const current = state.stamina[id];
+                if (!(current > 0)) return;
+                state.stamina[id] = Math.max(0, current - PASSIVE_STAMINA_DRAIN_PER_TURN);
+                // Rafraîchit seulement la barre d'endurance du joueur ; la carte
+                // du porteur est resynchronisée par le flux normal du tour.
+                updateStaminaUI(id);
+            });
+        }
 
         if (state.turns >= GAME_RULES.MAX_TURNS) {
             state.isGameOver = true;

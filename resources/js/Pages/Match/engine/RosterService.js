@@ -1,5 +1,5 @@
 // resources/js/Pages/Match/engine/RosterService.js
-import { STATS, POSITION_BONUS, SECONDARY_POSITION_BONUS_FACTOR, OFF_POSITION_MALUS, MORALE_FACTORS, MORALE_DEFAULT } from './constants.js';
+import { STATS, POSITION_BONUS, SECONDARY_POSITION_BONUS_FACTOR, OFF_POSITION_MALUS, MORALE_FACTORS, MORALE_DEFAULT, DUEL_CONTEXT, MAX_ZONE_INDEX } from './constants.js';
 import { FORMATIONS, DEFAULT_FORMATION } from './formations.js';
 
 export class RosterService {
@@ -226,19 +226,45 @@ export class RosterService {
         return 1.0 + b * factor;
     }
 
-    globalAttackMultiplier(team, slotNumber) {
-        const attackStat = this.getStat(team, slotNumber, "attack");
-        return 1.0 + (attackStat / 100) * 0.1;
-    }
-
-    globalDefenseMultiplier(team, slotNumber) {
-        const defenseStat = this.getStat(team, slotNumber, "defense");
-        return 1.0 + (defenseStat / 100) * 0.1;
-    }
-
     speedStaminaCostReduction(team, slotNumber) {
         const speedStat = this.getStat(team, slotNumber, "speed");
         return 1.0 - (speedStat / 100) * 0.1;
+    }
+
+    // -----------------------------------------------------------
+    //   Multiplicateurs contextuels de duel (rôle distinct par stat)
+    //   Appliqués au niveau du duel (zone du ballon connue), bornés « subtils ».
+    // -----------------------------------------------------------
+
+    /** Facteur de zone normalisé 0..1 (0 = propre tiers, 1 = près du but visé). */
+    zoneFactor(zoneIndex) {
+        const z = Number(zoneIndex);
+        if (!Number.isFinite(z) || MAX_ZONE_INDEX <= 0) return 0;
+        return Math.max(0, Math.min(1, z / MAX_ZONE_INDEX));
+    }
+
+    /** `attack` : bonus offensif croissant à mesure qu'on progresse vers le but adverse. */
+    attackZoneMultiplier(team, slotNumber, zoneIndex) {
+        const attackStat = this.getStat(team, slotNumber, "attack");
+        return 1.0 + (attackStat / 100) * DUEL_CONTEXT.ATTACK_ZONE_MAX * this.zoneFactor(zoneIndex);
+    }
+
+    /** `defense` : bonus défensif croissant à mesure que le ballon menace (zone haute). */
+    defenseZoneMultiplier(team, slotNumber, zoneIndex) {
+        const defenseStat = this.getStat(team, slotNumber, "defense");
+        return 1.0 + (defenseStat / 100) * DUEL_CONTEXT.DEFENSE_ZONE_MAX * this.zoneFactor(zoneIndex);
+    }
+
+    /** `speed` : avantage de poursuite — dribble (attaquant), tackle/intercept (défenseur). */
+    speedDuelMultiplier(team, slotNumber) {
+        const speedStat = this.getStat(team, slotNumber, "speed");
+        return 1.0 + (speedStat / 100) * DUEL_CONTEXT.SPEED_DUEL_WEIGHT;
+    }
+
+    /** `block` : dernier rempart anti-tir, d'autant plus fort que la défense est basse. */
+    blockEdgeMultiplier(team, slotNumber, zoneIndex) {
+        const blockStat = this.getStat(team, slotNumber, "block");
+        return 1.0 + (blockStat / 100) * DUEL_CONTEXT.BLOCK_EDGE_MAX * this.zoneFactor(zoneIndex);
     }
 
     // -----------------------------------------------------------
@@ -258,7 +284,6 @@ export class RosterService {
             const combined   = passStat * 0.7 + attackStat * 0.3;
             let raw = base + combined * this.STAT_COEF;
             raw *= this.positionBonusMultiplier(team, slotNumber, "pass");
-            raw *= this.globalAttackMultiplier(team, slotNumber);
             raw *= this.moraleFactor(team, slotNumber);
             return raw;
         }
@@ -267,7 +292,6 @@ export class RosterService {
         let raw = base;
         if (m) raw = base + this.getStat(team, slotNumber, m.stat) * this.STAT_COEF;
         if (m) raw *= this.positionBonusMultiplier(team, slotNumber, m.bonus);
-        raw *= this.globalAttackMultiplier(team, slotNumber);
         raw *= this.moraleFactor(team, slotNumber);
         return raw;
     }
@@ -282,7 +306,6 @@ export class RosterService {
             const statKey = mapGK[defenseAction] ?? null;
             let raw = base + (statKey ? this.getStat(defenseTeam, defenseSlotNumber, statKey) * this.STAT_COEF : 0);
             raw *= this.positionBonusMultiplier(defenseTeam, defenseSlotNumber, "gk");
-            raw *= this.globalDefenseMultiplier(defenseTeam, defenseSlotNumber);
             raw *= this.moraleFactor(defenseTeam, defenseSlotNumber);
             return raw;
         }
@@ -293,7 +316,6 @@ export class RosterService {
             const combined    = headingStat * 0.8 + speedStat * 0.2;
             let raw = base + combined * this.STAT_COEF;
             raw *= this.positionBonusMultiplier(defenseTeam, defenseSlotNumber, "defend");
-            raw *= this.globalDefenseMultiplier(defenseTeam, defenseSlotNumber);
             raw *= this.moraleFactor(defenseTeam, defenseSlotNumber);
             return raw;
         }
@@ -303,7 +325,6 @@ export class RosterService {
         let raw = base + (statKey ? this.getStat(defenseTeam, defenseSlotNumber, statKey) * this.STAT_COEF : 0);
         const bonusTag = (defenseAction === "block") ? "block" : "defend";
         raw *= this.positionBonusMultiplier(defenseTeam, defenseSlotNumber, bonusTag);
-        raw *= this.globalDefenseMultiplier(defenseTeam, defenseSlotNumber);
         raw *= this.moraleFactor(defenseTeam, defenseSlotNumber);
         return raw;
     }

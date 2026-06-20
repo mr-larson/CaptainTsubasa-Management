@@ -31,6 +31,37 @@ const { overallOf, playerPhotoUrl, positionGroup, keyStatsFor, statLabel } = use
 
 
 // ==========================
+//   RECHERCHE NOM (comme le draft)
+// ==========================
+const searchQuery = ref('');
+
+// ==========================
+//   FILTRE ORIGINE (œuvre de provenance)
+// ==========================
+const originFilter = ref('ALL');
+const originFilters = [
+    { key: 'ALL',                 label: 'Toutes' },
+    { key: 'captain_tsubasa',     label: 'Captain Tsubasa' },
+    { key: 'blue_lock',           label: 'Blue Lock' },
+    { key: 'hungry_heart',        label: 'Hungry Heart' },
+    { key: 'ecole_des_champions', label: "L'École des Champions" },
+    { key: 'ao_ashi',             label: 'Ao Ashi' },
+    { key: 'original',            label: 'Originaux' },
+];
+
+const originCount = (key) =>
+    key === 'ALL'
+        ? props.availableFreePlayers.length
+        : props.availableFreePlayers.filter(p => p.origin === key).length;
+
+// Liste réduite à l'origine choisie (sert aux compteurs de poste + à la liste).
+const originScoped = computed(() =>
+    originFilter.value === 'ALL'
+        ? props.availableFreePlayers
+        : props.availableFreePlayers.filter(p => p.origin === originFilter.value)
+);
+
+// ==========================
 //   FILTRE POSTE
 // ==========================
 const posFilter = ref('ALL');
@@ -42,9 +73,27 @@ const filters = [
     { key: 'ATT', label: 'Attaquants' },
 ];
 
+const posCount = (key) =>
+    key === 'ALL'
+        ? originScoped.value.length
+        : originScoped.value.filter(p => positionGroup(p.position) === key).length;
+
 const filteredPlayers = computed(() => {
-    if (posFilter.value === 'ALL') return props.availableFreePlayers;
-    return props.availableFreePlayers.filter(p => positionGroup(p.position) === posFilter.value);
+    let list = originScoped.value;
+
+    if (posFilter.value !== 'ALL') {
+        list = list.filter(p => positionGroup(p.position) === posFilter.value);
+    }
+
+    const q = searchQuery.value.trim().toLowerCase();
+    if (q) {
+        list = list.filter(p =>
+            (p.lastname?.toLowerCase().includes(q)) ||
+            (p.firstname?.toLowerCase().includes(q))
+        );
+    }
+
+    return list;
 });
 
 // ==========================
@@ -172,6 +221,27 @@ const filteredHistory = computed(() =>
             </div>
         </div>
 
+        <!-- Recherche + filtres origine -->
+        <div class="flex flex-col gap-3">
+            <!-- Barre de recherche (comme le draft) -->
+            <input type="search" v-model="searchQuery"
+                   class="w-full px-4 py-2 text-sm border border-slate-200 rounded-xl bg-white focus:ring-2 focus:ring-teal-300 focus:outline-none"
+                   placeholder="Rechercher un joueur..."/>
+
+            <!-- Filtres origine (œuvre de provenance) -->
+            <div class="flex gap-2 flex-wrap">
+                <button v-for="o in originFilters" :key="o.key" type="button"
+                        @click="originFilter = o.key"
+                        class="px-3 py-1.5 rounded-full text-xs font-semibold border transition-all"
+                        :class="originFilter === o.key
+                        ? 'bg-indigo-500 text-white border-indigo-600 shadow-sm'
+                        : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:text-indigo-600'">
+                    {{ o.label }}
+                    <span class="ml-1 opacity-60">({{ originCount(o.key) }})</span>
+                </button>
+            </div>
+        </div>
+
         <!-- Filtres poste -->
         <div class="flex gap-2 flex-wrap">
             <button v-for="f in filters" :key="f.key" type="button"
@@ -181,9 +251,7 @@ const filteredHistory = computed(() =>
                     ? 'bg-teal-500 text-white border-teal-600 shadow-sm'
                     : 'bg-white text-slate-600 border-slate-200 hover:border-teal-300 hover:text-teal-600'">
                 {{ f.label }}
-                <span class="ml-1 opacity-60">
-                    ({{ f.key === 'ALL' ? availableFreePlayers.length : availableFreePlayers.filter(p => positionGroup(p.position) === f.key).length }})
-                </span>
+                <span class="ml-1 opacity-60">({{ posCount(f.key) }})</span>
             </button>
         </div>
 
@@ -193,7 +261,7 @@ const filteredHistory = computed(() =>
             <!-- ============================================ -->
             <!-- LISTE JOUEURS LIBRES                         -->
             <!-- ============================================ -->
-            <div class="col-span-5 border border-slate-200 rounded-xl bg-slate-50 p-3 max-h-[520px] overflow-y-auto">
+            <div class="col-span-5 border border-slate-200 rounded-xl bg-slate-50 p-3 max-h-[690px] overflow-y-auto">
                 <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Agents libres</h3>
 
                 <div v-if="filteredPlayers.length" class="space-y-1">
@@ -264,7 +332,9 @@ const filteredHistory = computed(() =>
                 </div>
 
                 <div v-else class="flex items-center justify-center py-8 text-slate-400 text-xs italic">
-                    Aucun agent libre {{ posFilter !== 'ALL' ? 'à ce poste' : '' }}
+                    {{ (searchQuery || posFilter !== 'ALL' || originFilter !== 'ALL')
+                        ? 'Aucun agent libre ne correspond aux filtres'
+                        : 'Aucun agent libre disponible' }}
                 </div>
             </div>
 

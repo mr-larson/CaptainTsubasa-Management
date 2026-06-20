@@ -25,6 +25,8 @@ class GamePlayer extends Model
         'firstname',
         'lastname',
         'position',
+        'origin',
+        'nationality',
         'secondary_positions',
         'speed',
         'stamina',

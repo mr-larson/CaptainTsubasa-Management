@@ -50,6 +50,8 @@ class Player extends Model
         'lastname',
         'age',
         'position',
+        'origin',
+        'nationality',
         'secondary_positions',
         'cost',
         'stats',

@@ -536,6 +536,21 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
         defenseBaseRaw = _roster.defenseBaseFor(defenseAction, defenseTeam, defenderSlot, false);
     }
 
+    // ── Multiplicateurs contextuels (rôle distinct par stat) ──────────────
+    // Repliés dans les bases brutes pour que le breakdown affiché reste exact.
+    const zoneIdx = b.zoneIndex;
+    // Attaque : `attack` boost en zone offensive ; `speed` aide le dribble.
+    attackBaseRaw *= _roster.attackZoneMultiplier(attackTeam, b.number, zoneIdx);
+    if (attackType === "dribble") attackBaseRaw *= _roster.speedDuelMultiplier(attackTeam, b.number);
+    // Défense : `defense` boost en zone basse ; `speed` aide tackle/intercept ;
+    // `block` = dernier rempart anti-tir (scalé par la profondeur, sans speed).
+    defenseBaseRaw *= _roster.defenseZoneMultiplier(defenseTeam, defenderSlot, zoneIdx);
+    if (defenseAction === "tackle" || defenseAction === "intercept") {
+        defenseBaseRaw *= _roster.speedDuelMultiplier(defenseTeam, defenderSlot);
+    } else if (defenseAction === "block") {
+        defenseBaseRaw *= _roster.blockEdgeMultiplier(defenseTeam, defenderSlot, zoneIdx);
+    }
+
     const attackStamF  = staminaFactor(attackerId);
     const defenseStamF = staminaFactor(defenderId);
 
@@ -1371,7 +1386,11 @@ export function resolveShotKeeperDuel(ctx, defenseAction) {
     const attackerId = getPlayerId(attackTeam, b.number);
     const keeperId   = getKeeperId(defenseTeam);
 
-    let attackScore = gkAttackBase * staminaFactor(attackerId);
+    // `attack` : boost offensif selon la zone du tir (réutilisé par tir en jeu,
+    // tir face au gardien et coup franc — point unique pour les 3 chemins).
+    let attackScore = gkAttackBase
+        * _roster.attackZoneMultiplier(attackTeam, b.number, originZone)
+        * staminaFactor(attackerId);
     const gkFactor  = keeperId ? staminaFactor(keeperId) : 1.0;
 
     let defenseBase;

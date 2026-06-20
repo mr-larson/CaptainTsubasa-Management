@@ -116,34 +116,6 @@ const sortIcon = (key) => {
     if (sortKey.value !== key) return '↕';
     return sortDesc.value ? '↓' : '↑';
 };
-
-// ==========================
-//   MES JOUEURS DANS LES CLASSEMENTS
-// ==========================
-const myPlayersRanking = computed(() => {
-    if (!props.team) return [];
-
-    const categories = [
-        { label: 'Tirs réussis',    icon: '⚽', getter: p => p.perf?.offense?.goals ?? p.perf?.offense?.shot?.success ?? 0, posFilter: p => !isGK(p) },
-        { label: 'Passes réussies', icon: '🎯', getter: p => p.perf?.offense?.pass?.success    ?? 0, posFilter: p => !isGK(p) },
-        { label: 'Dribbles réussis',icon: '🔥', getter: p => p.perf?.offense?.dribble?.success ?? 0, posFilter: p => !isGK(p) },
-        { label: 'Duels gagnés',    icon: '⚔️', getter: p => p.perf?.duelsWon                  ?? 0, posFilter: p => !isGK(p) },
-        { label: 'Interceptions',   icon: '🛡️', getter: p => p.perf?.defense?.intercept?.success ?? 0, posFilter: p => !isGK(p) },
-        { label: 'Arrêts',          icon: '🧤', getter: p => (p.perf?.defense?.hands?.attempts ?? 0) + (p.perf?.defense?.punch?.attempts ?? 0), posFilter: isGK },
-    ];
-
-    return categories.map(cat => {
-        const sorted = [...allPlayersWithStats.value]
-            .filter(p => p.perf && cat.posFilter(p))
-            .sort((a, b) => cat.getter(b) - cat.getter(a));
-
-        const myBest = sorted.find(p => p.teamId === props.team.id);
-        if (!myBest || cat.getter(myBest) === 0) return null;
-
-        const rank = sorted.indexOf(myBest) + 1;
-        return { ...cat, player: myBest, rank, total: sorted.length, value: cat.getter(myBest) };
-    }).filter(Boolean);
-});
 </script>
 
 <template>
@@ -247,37 +219,7 @@ const myPlayersRanking = computed(() => {
             </div>
 
             <!-- ============================================ -->
-            <!-- BLOC 2 : MES JOUEURS DANS LES CLASSEMENTS   -->
-            <!-- ============================================ -->
-            <div v-if="myPlayersRanking.length" class="border border-slate-200 rounded-xl bg-slate-50 p-4">
-                <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
-                    ⭐ {{ team?.name }} dans les classements
-                </h3>
-                <div class="flex flex-wrap gap-2">
-                    <div v-for="entry in myPlayersRanking" :key="entry.label"
-                         class="flex items-center gap-2 px-3 py-2 rounded-xl border border-teal-200 bg-teal-50">
-                        <div class="w-6 h-6 rounded-full overflow-hidden bg-slate-200 shrink-0">
-                            <img v-if="playerPhotoUrl(entry.player)" :src="playerPhotoUrl(entry.player)" class="w-full h-full object-cover" alt=""/>
-                            <div v-else class="w-full h-full flex items-center justify-center text-[8px] text-slate-400">?</div>
-                        </div>
-                        <div>
-                            <div class="text-xs font-bold text-teal-800">{{ entry.player.lastname }}</div>
-                            <div class="text-[10px] text-teal-600">{{ entry.label }}</div>
-                        </div>
-                        <div class="ml-1 text-center">
-                            <div class="text-lg font-black leading-none"
-                                 :class="entry.rank === 1 ? 'text-yellow-500' : entry.rank <= 3 ? 'text-amber-500' : 'text-teal-600'">
-                                {{ entry.rank }}<sup class="text-xs">e</sup>
-                            </div>
-                            <div class="text-[9px] text-slate-400">/ {{ entry.total }}</div>
-                        </div>
-                        <div class="text-xs font-black text-slate-500 ml-1">{{ entry.value }}</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ============================================ -->
-            <!-- BLOC 3 : COMPARATIF ÉQUIPES                 -->
+            <!-- BLOC 2 : COMPARATIF ÉQUIPES                 -->
             <!-- ============================================ -->
             <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
                 <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">📋 Comparatif équipes</h3>
