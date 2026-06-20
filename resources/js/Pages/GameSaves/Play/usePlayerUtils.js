@@ -26,6 +26,22 @@ const KEY_STATS_BY_POSITION = {
     ATT: ['shot', 'dribble', 'attack', 'speed'],
 };
 
+// Libellés FR des postes (miroir de PlayerPosition::labels()).
+const POSITION_LABELS = {
+    Goalkeeper: 'Gardien',
+    Defender:   'Défenseur',
+    Midfielder: 'Milieu',
+    Forward:    'Attaquant',
+};
+
+// Couleurs de badge par groupe de poste (cohérentes avec le Draft).
+const POSITION_GROUP_COLORS = {
+    GK:  'bg-yellow-100 text-yellow-700',
+    DEF: 'bg-blue-100 text-blue-700',
+    MID: 'bg-green-100 text-green-700',
+    ATT: 'bg-red-100 text-red-700',
+};
+
 export function usePlayerUtils() {
 
     const overallOf = (player) => {
@@ -66,6 +82,9 @@ export function usePlayerUtils() {
         const g = positionGroup(pos);
         return KEY_STATS_BY_POSITION[g] ?? ['attack', 'defense', 'pass', 'shot'];
     };
+
+    const positionLabel = (pos) => POSITION_LABELS[pos] ?? pos ?? '';
+    const positionGroupColor = (pos) => POSITION_GROUP_COLORS[positionGroup(pos)] ?? 'bg-slate-100 text-slate-600';
 
     const statLabel = (k) => STAT_LABELS[k] ?? k;
     const statColor = (k) => STAT_COLORS[k] ?? 'bg-slate-400';
@@ -115,6 +134,7 @@ export function usePlayerUtils() {
         overallOf, playerPhotoUrl, teamLogoUrl, sanctionTypeLabel,
         moraleState, moraleSourceLabel, moraleMatchEffect, HEROIC_MORALE_THRESHOLD,
         positionGroup, keyStatsFor, statLabel, statColor,
+        positionLabel, positionGroupColor,
         STAT_KEYS, STAT_LABELS, STAT_COLORS,
     };
 }

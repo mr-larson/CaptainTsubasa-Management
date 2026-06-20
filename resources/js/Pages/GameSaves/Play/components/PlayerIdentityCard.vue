@@ -1,5 +1,6 @@
 <script setup>
 import { usePlayerUtils } from '../usePlayerUtils.js';
+import SecondaryPositions from './SecondaryPositions.vue';
 
 /**
  * Carte identité du joueur sélectionné : photo + badge overall + nom +
@@ -46,6 +47,8 @@ const { overallOf, playerPhotoUrl } = usePlayerUtils();
                 <p class="text-xs text-slate-400 mt-0.5">
                     {{ subtitle ?? `${player.position} • ${player.cost ?? 0} €` }}
                 </p>
+
+                <SecondaryPositions :player="player" class="mt-1.5" />
 
                 <div v-if="$slots.actions" class="mt-3 flex flex-wrap items-center gap-2">
                     <slot name="actions" />

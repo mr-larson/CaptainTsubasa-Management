@@ -67,6 +67,7 @@ function startNewSeason() {
                                 <th class="text-center px-2 py-2">V</th>
                                 <th class="text-center px-2 py-2">N</th>
                                 <th class="text-center px-2 py-2">D</th>
+                                <th class="text-center px-2 py-2">Diff</th>
                                 <th class="text-center px-2 py-2">Pts</th>
                                 <th class="text-right px-6 py-2">Prime</th>
                             </tr>
@@ -83,6 +84,10 @@ function startNewSeason() {
                                 <td class="text-center px-2 py-2">{{ row.wins }}</td>
                                 <td class="text-center px-2 py-2">{{ row.draws }}</td>
                                 <td class="text-center px-2 py-2">{{ row.losses }}</td>
+                                <td class="text-center px-2 py-2"
+                                    :class="(row.goal_diff ?? 0) >= 0 ? 'text-emerald-600' : 'text-rose-500'">
+                                    {{ (row.goal_diff ?? 0) > 0 ? '+' : '' }}{{ row.goal_diff ?? 0 }}
+                                </td>
                                 <td class="text-center px-2 py-2 font-semibold">{{ row.points }}</td>
                                 <td class="text-right px-6 py-2 text-emerald-600 font-medium">+{{ row.prize.toLocaleString() }}</td>
                             </tr>

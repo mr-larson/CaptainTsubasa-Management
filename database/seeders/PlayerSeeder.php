@@ -341,6 +341,644 @@ class PlayerSeeder extends Seeder
                 'base_action' => 'hand_save',
                 'description' => 'Le gardien géant ferme entièrement l’axe et bloque un tir à bout portant.',
             ]],
+
+            // =======================
+            // BLUE LOCK
+            // =======================
+
+            'yoichi-isagi' => [[
+                'key'         => 'isagi_direct_shot',
+                'mode'        => 'attack',
+                'label'       => 'Direct Shot',
+                'short_label' => 'Direct',
+                'cooldown'    => 3,
+                'base_action' => 'shot',
+                'description' => 'Grâce à sa Méta-Vision, Isagi reprend une passe en une touche et frappe avant que la défense ne réagisse.',
+            ]],
+
+            'meguru-bachira' => [[
+                'key'         => 'bachira_monster_dribble',
+                'mode'        => 'attack',
+                'label'       => 'Dribble du monstre',
+                'short_label' => 'Monstre',
+                'cooldown'    => 2,
+                'base_action' => 'dribble',
+                'description' => 'Bachira suit son instinct et enchaîne des dribbles imprévisibles qui sèment le chaos dans la défense.',
+            ]],
+
+            'hyoma-chigiri' => [[
+                'key'         => 'chigiri_speed_burst',
+                'mode'        => 'attack',
+                'label'       => 'Accélération fulgurante',
+                'short_label' => 'Vitesse',
+                'cooldown'    => 2,
+                'base_action' => 'dribble',
+                'description' => 'Une pointe de vitesse phénoménale qui grille net la défense sur l’aile.',
+            ]],
+
+            'rensuke-kunigami' => [[
+                'key'         => 'kunigami_hunter_shot',
+                'mode'        => 'attack',
+                'label'       => 'Tir du Chasseur',
+                'short_label' => 'Chasseur',
+                'cooldown'    => 3,
+                'base_action' => 'shot',
+                'description' => 'Sa frappe gauche dévastatrice de longue distance, marque de fabrique du « Hunter ».',
+            ]],
+
+            'seishiro-nagi' => [[
+                'key'         => 'nagi_god_trap_volley',
+                'mode'        => 'attack',
+                'label'       => 'Volée sur amorti divin',
+                'short_label' => 'Amorti',
+                'cooldown'    => 2,
+                'base_action' => 'shot',
+                'description' => 'Un contrôle parfait suivi d’une reprise immédiate, son génie naturel du ballon en un geste.',
+            ]],
+
+            'reo-mikage' => [[
+                'key'         => 'mikage_perfect_playmaker',
+                'mode'        => 'attack',
+                'label'       => 'Meneur parfait',
+                'short_label' => 'Maestro',
+                'cooldown'    => 2,
+                'base_action' => 'pass',
+                'description' => 'Polyvalent et intelligent, Mikage délivre la passe idéale qui met l’attaque en position de marquer.',
+            ]],
+
+            'shoei-baro' => [[
+                'key'         => 'baro_king_impact',
+                'mode'        => 'attack',
+                'label'       => 'King’s Impact',
+                'short_label' => 'King',
+                'cooldown'    => 3,
+                'base_action' => 'shot',
+                'description' => 'La frappe surpuissante du « Roi du terrain », misant sur sa puissance physique écrasante.',
+            ]],
+
+            'rin-itoshi' => [[
+                'key'         => 'itoshi_flow_shot',
+                'mode'        => 'attack',
+                'label'       => 'Tir en état de Flow',
+                'short_label' => 'Flow',
+                'cooldown'    => 3,
+                'base_action' => 'shot',
+                'description' => 'Dans son état de flow, Itoshi enchaîne lecture du jeu et frappe à un niveau supérieur.',
+            ]],
+
+            'ryusei-shido' => [[
+                'key'         => 'shido_acrobatic_volley',
+                'mode'        => 'attack',
+                'label'       => 'Volée acrobatique',
+                'short_label' => 'Acrobatie',
+                'cooldown'    => 3,
+                'base_action' => 'shot',
+                'description' => 'Une reprise de volée imprévisible rendue possible par sa souplesse hors norme.',
+            ]],
+
+            'jingo-raichi' => [[
+                'key'         => 'raichi_power_charge',
+                'mode'        => 'attack',
+                'label'       => 'Charge bulldozer',
+                'short_label' => 'Charge',
+                'cooldown'    => 2,
+                'base_action' => 'dribble',
+                'description' => 'Une percée physique pleine d’énergie pour forcer le passage à travers la défense.',
+            ]],
+
+            'gin-gagamaru' => [[
+                'key'         => 'gagamaru_octopus_save',
+                'mode'        => 'defense',
+                'label'       => 'Arrêt de la pieuvre',
+                'short_label' => 'Pieuvre',
+                'cooldown'    => 2,
+                'base_action' => 'hand_save',
+                'description' => 'Une allonge surprenante et des réflexes d’ancien attaquant pour détourner un tir surpuissant.',
+            ]],
+
+            // =======================
+            // AO ASHI
+            // =======================
+
+            'ashito-aoi' => [[
+                'key'         => 'aoi_bird_eye_view',
+                'mode'        => 'attack',
+                'label'       => 'Vision panoramique',
+                'short_label' => 'Vision',
+                'cooldown'    => 2,
+                'base_action' => 'pass',
+                'description' => 'Sa vue d’ensemble du terrain, « l’œil d’oiseau », lui permet de lancer une passe décisive depuis l’arrière.',
+            ]],
+
+            'eisaku-ohtomo' => [[
+                'key'         => 'ohtomo_link_play',
+                'mode'        => 'attack',
+                'label'       => 'Jeu de liaison',
+                'short_label' => 'Liaison',
+                'cooldown'    => 2,
+                'base_action' => 'pass',
+                'description' => 'Une relance calme et bien orientée qui fait le lien entre la défense et l’attaque.',
+            ]],
+
+            'soichiro-tachibana' => [[
+                'key'         => 'soichiro_box_finish',
+                'mode'        => 'attack',
+                'label'       => 'Renard des surfaces',
+                'short_label' => 'Renard',
+                'cooldown'    => 2,
+                'base_action' => 'shot',
+                'description' => 'Un excellent sens du placement dans la surface pour conclure au bon moment.',
+            ]],
+
+            'keiji-togashi' => [[
+                'key'         => 'togashi_iron_marking',
+                'mode'        => 'defense',
+                'label'       => 'Marquage de fer',
+                'short_label' => 'Marquage',
+                'cooldown'    => 2,
+                'base_action' => 'tackle',
+                'description' => 'Défenseur central discipliné, solide dans le timing du tacle et le sens du placement.',
+            ]],
+
+            'kanpei-kuroda' => [[
+                'key'         => 'kuroda_ball_control',
+                'mode'        => 'attack',
+                'label'       => 'Conservation technique',
+                'short_label' => 'Conservation',
+                'cooldown'    => 2,
+                'base_action' => 'pass',
+                'description' => 'Technique et bien formé tactiquement, il garde le ballon sous pression et construit le jeu.',
+            ]],
+
+            'jun-asari' => [[
+                'key'         => 'asari_overlap_run',
+                'mode'        => 'attack',
+                'label'       => 'Montée du latéral',
+                'short_label' => 'Montée',
+                'cooldown'    => 2,
+                'base_action' => 'dribble',
+                'description' => 'Latéral polyvalent qui se projette des deux côtés pour soutenir l’attaque.',
+            ]],
+
+            'yuma-motoki' => [[
+                'key'         => 'motoki_clinical_finish',
+                'mode'        => 'attack',
+                'label'       => 'Finition d’académie',
+                'short_label' => 'Finition',
+                'cooldown'    => 2,
+                'base_action' => 'shot',
+                'description' => 'Attaquant techniquement formé à l’académie, efficace et précis devant le but.',
+            ]],
+
+            'ryuichi-takeshima' => [[
+                'key'         => 'takeshima_wall_block',
+                'mode'        => 'defense',
+                'label'       => 'Mur central',
+                'short_label' => 'Mur',
+                'cooldown'    => 2,
+                'base_action' => 'block',
+                'description' => 'Solide dans les duels et bien organisé, il ferme l’axe et bloque les frappes.',
+            ]],
+
+            // =======================
+            // HUNGRY HEART
+            // =======================
+
+            'kyosuke-kano' => [[
+                'key'         => 'kano_orangehead_strike',
+                'mode'        => 'attack',
+                'label'       => 'Frappe Orangehead',
+                'short_label' => 'Orangehead',
+                'cooldown'    => 3,
+                'base_action' => 'shot',
+                'description' => 'L’attaquant fougueux libère toute sa fureur dans une frappe puissante et rageuse.',
+            ]],
+
+            'rafael-del-franco' => [[
+                'key'         => 'delfranco_samba_playmaker',
+                'mode'        => 'attack',
+                'label'       => 'Meneur samba',
+                'short_label' => 'Samba',
+                'cooldown'    => 2,
+                'base_action' => 'pass',
+                'description' => 'Meneur brésilien au cerveau de jeu, il oriente l’attaque avec créativité.',
+            ]],
+
+            'koji-sakai' => [[
+                'key'         => 'sakai_brave_save',
+                'mode'        => 'defense',
+                'label'       => 'Arrêt courageux',
+                'short_label' => 'Courage',
+                'cooldown'    => 2,
+                'base_action' => 'hand_save',
+                'description' => 'Il surmonte sa peur des blessures pour se détendre et repousser le tir.',
+            ]],
+
+            // =======================
+            // INTERNATIONAUX — REAL SEVEN
+            // =======================
+
+            'michel-yamada' => [[
+                'key'         => 'yamada_reflex_save',
+                'mode'        => 'defense',
+                'label'       => 'Arrêt réflexe',
+                'short_label' => 'Réflexe',
+                'cooldown'    => 2,
+                'base_action' => 'hand_save',
+                'description' => 'Gardien athlétique et mobile, il combine réflexes explosifs et bonne lecture du jeu.',
+            ]],
+
+            'shinnosuke-kazami' => [[
+                'key'         => 'kazami_quick_strike',
+                'mode'        => 'attack',
+                'label'       => 'Frappe éclair',
+                'short_label' => 'Éclair',
+                'cooldown'    => 2,
+                'base_action' => 'shot',
+                'description' => 'Attaquant rapide et opportuniste, il multiplie les appels et conclut vite les actions.',
+            ]],
+
+            // =======================
+            // INTERNATIONAUX — L’ÉCOLE DES CHAMPIONS
+            // =======================
+
+            'benjamin-lefranc' => [[
+                'key'         => 'lefranc_captain_shot',
+                'mode'        => 'attack',
+                'label'       => 'Frappe du capitaine',
+                'short_label' => 'Capitaine',
+                'cooldown'    => 3,
+                'base_action' => 'shot',
+                'description' => 'Capitaine charismatique, il élève son niveau dans les grands moments par une frappe décisive.',
+            ]],
+
+            'eric-townsend' => [[
+                'key'         => 'townsend_winger_dash',
+                'mode'        => 'attack',
+                'label'       => 'Débordement',
+                'short_label' => 'Débordement',
+                'cooldown'    => 2,
+                'base_action' => 'dribble',
+                'description' => 'Ailier travailleur qui se dépasse et déborde son vis-à-vis par la vitesse.',
+            ]],
+
+            'lucas-rondi' => [[
+                'key'         => 'rondi_acrobatic_dribble',
+                'mode'        => 'attack',
+                'label'       => 'Dribble acrobatique',
+                'short_label' => 'Acrobate',
+                'cooldown'    => 2,
+                'base_action' => 'dribble',
+                'description' => 'Libéro acrobate aux dribbles spectaculaires hérités de sa famille de circassiens.',
+            ]],
+
+            'cesare-gatti' => [[
+                'key'         => 'gatti_thunder_shot',
+                'mode'        => 'attack',
+                'label'       => 'Tir tonnerre',
+                'short_label' => 'Tonnerre',
+                'cooldown'    => 3,
+                'base_action' => 'shot',
+                'description' => 'Attaquant au sang chaud dont la frappe dévastatrice est l’une des plus redoutées.',
+            ]],
+
+            'macaroni-giotti' => [[
+                'key'         => 'giotti_relentless_block',
+                'mode'        => 'defense',
+                'label'       => 'Blocage acharné',
+                'short_label' => 'Acharné',
+                'cooldown'    => 2,
+                'base_action' => 'block',
+                'description' => 'Défenseur tenace, capable de repousser même les tirs les plus puissants.',
+            ]],
+
+            'mario-santis' => [[
+                'key'         => 'santis_tactical_pass',
+                'mode'        => 'attack',
+                'label'       => 'Passe du stratège',
+                'short_label' => 'Stratège',
+                'cooldown'    => 2,
+                'base_action' => 'pass',
+                'description' => 'Intelligence tactique hors norme : il anticipe les plans adverses et lance idéalement ses partenaires.',
+            ]],
+
+            'renato-salgari' => [[
+                'key'         => 'salgari_copy_shot',
+                'mode'        => 'attack',
+                'label'       => 'Tir mimétique',
+                'short_label' => 'Mimétique',
+                'cooldown'    => 3,
+                'base_action' => 'shot',
+                'description' => 'Incroyablement doué, il reproduit les tirs les plus puissants même en déséquilibre.',
+            ]],
+
+            'bruno-moricone' => [[
+                'key'         => 'moricone_solo_run',
+                'mode'        => 'attack',
+                'label'       => 'Percée individuelle',
+                'short_label' => 'Solo',
+                'cooldown'    => 2,
+                'base_action' => 'dribble',
+                'description' => 'Joueur vedette et technique, capable d’une percée tranchante balle au pied.',
+            ]],
+
+            'alfredo-pettri' => [[
+                'key'         => 'pettri_limpet_marking',
+                'mode'        => 'defense',
+                'label'       => 'Marquage sangsue',
+                'short_label' => 'Sangsue',
+                'cooldown'    => 2,
+                'base_action' => 'tackle',
+                'description' => 'Petit défenseur d’une ténacité acharnée, capable de museler les meilleurs joueurs.',
+            ]],
+
+            'nino-biancchi' => [[
+                'key'         => 'biancchi_twin_header',
+                'mode'        => 'attack',
+                'label'       => 'Tête des jumeaux',
+                'short_label' => 'Jumeaux',
+                'cooldown'    => 3,
+                'base_action' => 'shot',
+                'description' => 'Grande détente et une-deux foudroyant avec son frère pour conclure de la tête.',
+            ]],
+
+            'riki-biancchi' => [[
+                'key'         => 'biancchi_twin_combo',
+                'mode'        => 'attack',
+                'label'       => 'Combo des jumeaux',
+                'short_label' => 'Combo',
+                'cooldown'    => 3,
+                'base_action' => 'shot',
+                'description' => 'Synchronisation parfaite avec Nino, redoutable sur les phases arrêtées aériennes.',
+            ]],
+
+            // =======================
+            // INTERNATIONAUX — NAPLES
+            // =======================
+
+            'woltz-hoffmann' => [[
+                'key'         => 'hoffmann_anticipation_save',
+                'mode'        => 'defense',
+                'label'       => 'Arrêt d’anticipation',
+                'short_label' => 'Anticipation',
+                'cooldown'    => 2,
+                'base_action' => 'hand_save',
+                'description' => 'Gardien massif mais agile, il anticipe la trajectoire en observant les pieds du tireur.',
+            ]],
+
+            'ricardo-costello' => [[
+                'key'         => 'costello_hard_press',
+                'mode'        => 'defense',
+                'label'       => 'Pressing rugueux',
+                'short_label' => 'Pressing',
+                'cooldown'    => 2,
+                'base_action' => 'tackle',
+                'description' => 'Joueur au sang chaud, il harcèle physiquement le porteur jusqu’à lui prendre le ballon.',
+            ]],
+
+            // =======================
+            // INTERNATIONAUX — AILES DE JUPITER
+            // =======================
+
+            'papan-correia-da-silva' => [[
+                'key'         => 'papan_acrobatic_play',
+                'mode'        => 'attack',
+                'label'       => 'Jeu acrobatique',
+                'short_label' => 'Acrobate',
+                'cooldown'    => 2,
+                'base_action' => 'dribble',
+                'description' => 'Milieu au talent immense et aux dribbles acrobatiques totalement imprévisibles.',
+            ]],
+
+            'ash-rodrigues' => [[
+                'key'         => 'ash_libero_cover',
+                'mode'        => 'defense',
+                'label'       => 'Couverture du libéro',
+                'short_label' => 'Libéro',
+                'cooldown'    => 2,
+                'base_action' => 'intercept',
+                'description' => 'Libéro brésilien qui lit le jeu et coupe les trajectoires de passe adverses.',
+            ]],
+
+            'yann-haarden' => [[
+                'key'         => 'haarden_power_forward',
+                'mode'        => 'attack',
+                'label'       => 'Buteur de puissance',
+                'short_label' => 'Puissance',
+                'cooldown'    => 3,
+                'base_action' => 'shot',
+                'description' => 'Attaquant très physique et stratège, il force la finition au cœur de la surface.',
+            ]],
+
+            'peter-shilton' => [[
+                'key'         => 'shilton_iron_wall',
+                'mode'        => 'defense',
+                'label'       => 'Muraille anglaise',
+                'short_label' => 'Muraille',
+                'cooldown'    => 2,
+                'base_action' => 'block',
+                'description' => 'Défenseur imposant et autoritaire, capitaine de l’Angleterre, infranchissable dans l’axe.',
+            ]],
+
+            'marcel-beauregard' => [[
+                'key'         => 'beauregard_precision_pass',
+                'mode'        => 'attack',
+                'label'       => 'Passe millimétrée',
+                'short_label' => 'Précision',
+                'cooldown'    => 2,
+                'base_action' => 'pass',
+                'description' => 'Capitaine de la France réputé pour la précision millimétrée de ses passes.',
+            ]],
+
+            // =======================
+            // INTERNATIONAUX — MILAN
+            // =======================
+
+            'jean-levaillant' => [[
+                'key'         => 'levaillant_magician',
+                'mode'        => 'attack',
+                'label'       => 'Le Magicien',
+                'short_label' => 'Magicien',
+                'cooldown'    => 2,
+                'base_action' => 'dribble',
+                'description' => 'L’un des joueurs les plus techniques de sa génération, capable de tout faire avec un ballon.',
+            ]],
+
+            // =======================
+            // INTERNATIONAUX — ROME
+            // =======================
+
+            'nero-martella' => [[
+                'key'         => 'martella_one_touch_combo',
+                'mode'        => 'attack',
+                'label'       => 'Jeu en une touche',
+                'short_label' => 'Une-touche',
+                'cooldown'    => 2,
+                'base_action' => 'pass',
+                'description' => 'Avec Erio et Bento, il déstabilise les défenses par un jeu de passes rapides et précises.',
+            ]],
+
+            // =======================
+            // INTERNATIONAUX — FALCON JR
+            // =======================
+
+            'carlos-oliveira-tavares' => [[
+                'key'         => 'carlos_curve_shot',
+                'mode'        => 'attack',
+                'label'       => 'Tir brossé',
+                'short_label' => 'Brossé',
+                'cooldown'    => 3,
+                'base_action' => 'shot',
+                'description' => 'Attaquant brésilien spécialiste des tirs à effet, redoutable sur coups de pied arrêtés.',
+            ]],
+
+            // =======================
+            // INTERNATIONAUX — PEGASUS FC
+            // =======================
+
+            'ken-hinamori' => [[
+                'key'         => 'hinamori_karate_strike',
+                'mode'        => 'attack',
+                'label'       => 'Frappe karaté',
+                'short_label' => 'Karaté',
+                'cooldown'    => 3,
+                'base_action' => 'shot',
+                'description' => 'Ceinture noire de karaté, il transpose la puissance de cet art martial dans ses frappes.',
+            ]],
+
+            'ryo-sakura' => [[
+                'key'         => 'sakura_karate_save',
+                'mode'        => 'defense',
+                'label'       => 'Parade karaté',
+                'short_label' => 'Karaté',
+                'cooldown'    => 2,
+                'base_action' => 'punch_save',
+                'description' => 'Gardien qui s’inspire du karaté pour repousser les tirs d’un geste tranchant et puissant.',
+            ]],
+
+            // =======================
+            // CAPTAIN TSUBASA — CADRES D’ÉQUIPE (compléments)
+            // =======================
+
+            'yuzo-morisaki' => [[
+                'key'         => 'morisaki_desperate_dive',
+                'mode'        => 'defense',
+                'label'       => 'Plongeon désespéré',
+                'short_label' => 'Plongeon',
+                'cooldown'    => 2,
+                'base_action' => 'hand_save',
+                'description' => 'Gardien titulaire de Nankatsu, Morisaki compense ses limites par un plongeon désespéré pour repousser le tir.',
+            ]],
+
+            'tsuneo-takashima' => [[
+                'key'         => 'takashima_toho_rock',
+                'mode'        => 'defense',
+                'label'       => 'Roc de Toho',
+                'short_label' => 'Roc',
+                'cooldown'    => 2,
+                'base_action' => 'tackle',
+                'description' => 'Pilier de la défense de Toho, il sécurise l’arrière-garde par son placement et un tacle dur au bon moment.',
+            ]],
+
+            'kazumasa-oda' => [[
+                'key'         => 'kazumasa_oda_finisher',
+                'mode'        => 'attack',
+                'label'       => 'Frappe du finisseur',
+                'short_label' => 'Finisseur',
+                'cooldown'    => 3,
+                'base_action' => 'shot',
+                'description' => 'Avant-centre principal de Furano, Oda profite du pressing de son équipe pour conclure d’une frappe puissante.',
+            ]],
+
+            'minoru-honma' => [[
+                'key'         => 'honma_box_fox',
+                'mode'        => 'attack',
+                'label'       => 'Renard de Musashi',
+                'short_label' => 'Renard',
+                'cooldown'    => 2,
+                'base_action' => 'shot',
+                'description' => 'Attaquant principal de Musashi, Honma exploite les occasions créées par Misugi pour frapper dans la surface.',
+            ]],
+
+            'yuichiro-daimaru' => [[
+                'key'         => 'daimaru_hanawa_brain',
+                'mode'        => 'attack',
+                'label'       => 'Cerveau de Hanawa',
+                'short_label' => 'Cerveau',
+                'cooldown'    => 2,
+                'base_action' => 'pass',
+                'description' => 'Cerveau de Hanawa, Daimaru oriente le jeu et délivre la passe qui lance l’attaque.',
+            ]],
+
+            'koji-nishio' => [[
+                'key'         => 'nishio_otomo_stopper',
+                'mode'        => 'defense',
+                'label'       => 'Stoppeur d’Otomo',
+                'short_label' => 'Stoppeur',
+                'cooldown'    => 2,
+                'base_action' => 'block',
+                'description' => 'Pilier défensif d’Otomo, Nishio est un stoppeur puissant et constant qui ferme l’axe.',
+            ]],
+
+            'yuichi-suenaga' => [[
+                'key'         => 'suenaga_meiwa_blade',
+                'mode'        => 'attack',
+                'label'       => 'Lame de Meiwa',
+                'short_label' => 'Lame',
+                'cooldown'    => 3,
+                'base_action' => 'shot',
+                'description' => 'Avant-centre principal de Meiwa, Suenaga est un finisseur tranchant qui profite du jeu collectif pour marquer.',
+            ]],
+
+            'shinishi-sakamoto' => [[
+                'key'         => 'sakamoto_meiwa_engine',
+                'mode'        => 'attack',
+                'label'       => 'Moteur de Meiwa',
+                'short_label' => 'Moteur',
+                'cooldown'    => 2,
+                'base_action' => 'pass',
+                'description' => 'Moteur du jeu de Meiwa, Sakamoto récupère, oriente et relance les offensives de son équipe.',
+            ]],
+
+            'motoharu-nagano' => [[
+                'key'         => 'nagano_meiwa_rampart',
+                'mode'        => 'defense',
+                'label'       => 'Rempart de Meiwa',
+                'short_label' => 'Rempart',
+                'cooldown'    => 2,
+                'base_action' => 'tackle',
+                'description' => 'Pilier défensif de Meiwa, Nagano est un stoppeur puissant et constant qui muselle les attaquants adverses.',
+            ]],
+
+            'tetsuo-ishida' => [[
+                'key'         => 'ishida_minawi_flash',
+                'mode'        => 'attack',
+                'label'       => 'Éclair de Minawi',
+                'short_label' => 'Éclair',
+                'cooldown'    => 2,
+                'base_action' => 'dribble',
+                'description' => 'Joueur clé de Minawi, Ishida est un milieu offensif explosif et technique qui perce les défenses balle au pied.',
+            ]],
+
+            'kazumasa-kato' => [[
+                'key'         => 'kazumasa_kato_poacher',
+                'mode'        => 'attack',
+                'label'       => 'Pointe de Shimizu',
+                'short_label' => 'Pointe',
+                'cooldown'    => 2,
+                'base_action' => 'shot',
+                'description' => 'Attaquant principal de Shimizu, Kato guette la moindre occasion pour la convertir d’une frappe opportuniste.',
+            ]],
+
+            'junichi-nagasaki' => [[
+                'key'         => 'nagasaki_shimada_striker',
+                'mode'        => 'attack',
+                'label'       => 'Buteur de Shimada',
+                'short_label' => 'Buteur',
+                'cooldown'    => 2,
+                'base_action' => 'shot',
+                'description' => 'Fer de lance de Shimada, Nagasaki tente de convertir les rares occasions de son équipe en buts.',
+            ]],
         ];
 
         $players = [
@@ -463,7 +1101,8 @@ class PlayerSeeder extends Seeder
                     'block' => 20, 'intercept' => 23, 'tackle' => 23,
                     'hand_save' => 15, 'punch_save' => 15
                 ],
-                'Prodige du football japonais, Tsubasa est le cœur et l’âme de Nankatsu. Doté d’une vision exceptionnelle et d’une technique complète, il élève le niveau de toute l’équipe.'
+                'Prodige du football japonais, Tsubasa est le cœur et l’âme de Nankatsu. Doté d’une vision exceptionnelle et d’une technique complète, il élève le niveau de toute l’équipe.',
+                ['Midfielder', 'Defender'],
             ],
 
             [
@@ -607,7 +1246,8 @@ class PlayerSeeder extends Seeder
                     'block' => 16, 'intercept' => 17, 'tackle' => 18,
                     'hand_save' => 15, 'punch_save' => 15
                 ],
-                'Attaquant très rapide, Taki est l’arme de Shutetsu en contre-attaque. Il mise sur la vitesse et le dribble pour déborder, provoquer et créer des situations de tir.'
+                'Attaquant très rapide, Taki est l’arme de Shutetsu en contre-attaque. Il mise sur la vitesse et le dribble pour déborder, provoquer et créer des situations de tir.',
+                ['Midfielder'],
             ],
 
             // Toho
@@ -818,7 +1458,8 @@ class PlayerSeeder extends Seeder
                     'block' => 25, 'intercept' => 26, 'tackle' => 26,
                     'hand_save' => 15, 'punch_save' => 15
                 ],
-                'Capitaine de Furano, Matsuyama est un leader infatigable. Son endurance exceptionnelle, sa rigueur défensive et son mental font de lui le pilier de l’équipe.'
+                'Capitaine de Furano, Matsuyama est un leader infatigable. Son endurance exceptionnelle, sa rigueur défensive et son mental font de lui le pilier de l’équipe.',
+                ['Forward', 'Defender'],
             ],
 
             [
@@ -940,7 +1581,8 @@ class PlayerSeeder extends Seeder
                     'block' => 25, 'intercept' => 25, 'tackle' => 25,
                     'hand_save' => 15, 'punch_save' => 15
                 ],
-                'Surnommé le « Prince du terrain », Misugi est un génie tactique et technique. Freiné par une santé fragile, il compense par une intelligence de jeu exceptionnelle et une maîtrise totale du rythme.'
+                'Surnommé le « Prince du terrain », Misugi est un génie tactique et technique. Freiné par une santé fragile, il compense par une intelligence de jeu exceptionnelle et une maîtrise totale du rythme.',
+                ['Forward', 'Defender'],
             ],
 
             [
@@ -951,7 +1593,8 @@ class PlayerSeeder extends Seeder
                     'block' => 17, 'intercept' => 17, 'tackle' => 17,
                     'hand_save' => 15, 'punch_save' => 15
                 ],
-                'Attaquant principal de Musashi, Honma se montre efficace dans la surface et sait exploiter les occasions créées par Misugi.'
+                'Attaquant principal de Musashi, Honma se montre efficace dans la surface et sait exploiter les occasions créées par Misugi.',
+                ['Midfielder'],
             ],
 
             [
@@ -1084,7 +1727,8 @@ class PlayerSeeder extends Seeder
                     'block' => 18, 'intercept' => 20, 'tackle' => 20,
                     'hand_save' => 15, 'punch_save' => 15
                 ],
-                'L’un des célèbres frères Tachibana. Spécialiste du jeu aérien et des combinaisons acrobatiques, Masao est une menace constante dans la surface.'
+                'L’un des célèbres frères Tachibana. Spécialiste du jeu aérien et des combinaisons acrobatiques, Masao est une menace constante dans la surface.',
+                ['Midfielder', 'Defender'],
             ],
 
             [
@@ -1095,7 +1739,8 @@ class PlayerSeeder extends Seeder
                     'block' => 18, 'intercept' => 20, 'tackle' => 20,
                     'hand_save' => 15, 'punch_save' => 15
                 ],
-                'Second des frères Tachibana, Kazuo forme avec Masao un duo redoutable. Leur synchronisation parfaite et leurs techniques aériennes font l’identité offensive de Hanawa.'
+                'Second des frères Tachibana, Kazuo forme avec Masao un duo redoutable. Leur synchronisation parfaite et leurs techniques aériennes font l’identité offensive de Hanawa.',
+                ['Midfielder', 'Defender'],
             ],
 
             // Azuma-ichi
@@ -1339,7 +1984,8 @@ class PlayerSeeder extends Seeder
                     'block' => 18, 'intercept' => 18, 'tackle' => 18,
                     'hand_save' => 15, 'punch_save' => 15
                 ],
-                'Attaquant vedette de Hirado, Sano est un dribbleur rapide et technique. Il forme un duo redoutable avec Jito, profitant des récupérations musclées pour partir en contre et provoquer.'
+                'Attaquant vedette de Hirado, Sano est un dribbleur rapide et technique. Il forme un duo redoutable avec Jito, profitant des récupérations musclées pour partir en contre et provoquer.',
+                ['Midfielder'],
             ],
 
             // Otomo
@@ -1417,7 +2063,8 @@ class PlayerSeeder extends Seeder
                     'block' => 20, 'intercept' => 23, 'tackle' => 22,
                     'hand_save' => 15, 'punch_save' => 15
                 ],
-                'Milieu de terrain complet, Kishida participe à la récupération et à la création, apportant de l’équilibre au collectif.'
+                'Milieu de terrain complet, Kishida participe à la récupération et à la création, apportant de l’équilibre au collectif.',
+                ['Defender'],
             ],
 
             [
@@ -1429,6 +2076,7 @@ class PlayerSeeder extends Seeder
                     'hand_save' => 15, 'punch_save' => 15
                 ],
                 'Leader du milieu d’Otomo, Urabe est un joueur combatif et complet. Il impose le rythme et n’hésite pas à provoquer physiquement.'
+                , ['Defender']
             ],
 
             [
@@ -1705,7 +2353,8 @@ class PlayerSeeder extends Seeder
                     'block' => 18, 'intercept' => 23, 'tackle' => 22,
                     'hand_save' => 15, 'punch_save' => 15
                 ],
-                'Prodige solitaire de Nakahara, Aoi est un attaquant technique et imprévisible. Doté d’un talent exceptionnel, il peut à lui seul faire basculer un match malgré la faiblesse de son équipe.'
+                'Prodige solitaire de Nakahara, Aoi est un attaquant technique et imprévisible. Doté d’un talent exceptionnel, il peut à lui seul faire basculer un match malgré la faiblesse de son équipe.',
+                ['Defender', 'Midfielder']
             ],
 
             // Naniwa
@@ -2571,7 +3220,8 @@ class PlayerSeeder extends Seeder
                     'block' => 17, 'intercept' => 18, 'tackle' => 18,
                     'hand_save' => 10, 'punch_save' => 10,
                 ],
-                'Capitaine charismatique des Ailes de Jupiter. Benjamin se distingue par sa détermination, sa vision du jeu et sa capacité à élever son niveau dans les grands moments.'
+                'Capitaine charismatique des Ailes de Jupiter. Benjamin se distingue par sa détermination, sa vision du jeu et sa capacité à élever son niveau dans les grands moments.',
+                ['Midfielder']
             ],
             [
                 'Eric', 'Townsend', 13, 'Forward', 390,
@@ -2581,7 +3231,8 @@ class PlayerSeeder extends Seeder
                     'block' => 16, 'intercept' => 17, 'tackle' => 17,
                     'hand_save' => 10, 'punch_save' => 10,
                 ],
-                'Capitaine de Columbus devenu lieutenant fidèle de Benjamin. Il se dépasse régulièrement face aux frappes puissantes de Cesare, payant de sa personne pour sauver son équipe.'
+                'Capitaine de Columbus devenu lieutenant fidèle de Benjamin. Il se dépasse régulièrement face aux frappes puissantes de Cesare, payant de sa personne pour sauver son équipe.',
+                ['Midfielder']
             ],
             [
                 'Lucas', 'Rondi', 13, 'Defender', 385,
@@ -2705,7 +3356,8 @@ class PlayerSeeder extends Seeder
                     'block' => 16, 'intercept' => 17, 'tackle' => 16,
                     'hand_save' => 10, 'punch_save' => 10,
                 ],
-                'Jumeau attaquant de Corvette. Grand et doté d\'une excellente détente, il excelle dans le jeu de tête et les une-deux foudroyants avec son frère Riki.'
+                'Jumeau attaquant de Corvette. Grand et doté d\'une excellente détente, il excelle dans le jeu de tête et les une-deux foudroyants avec son frère Riki.',
+                ['Midfielder']
             ],
             [
                 'Riki', 'Biancchi', 13, 'Forward', 355,
@@ -2715,7 +3367,8 @@ class PlayerSeeder extends Seeder
                     'block' => 16, 'intercept' => 17, 'tackle' => 16,
                     'hand_save' => 10, 'punch_save' => 10,
                 ],
-                'Jumeau attaquant de Corvette. En duo avec Nino, leur synchronisation parfaite et leur jeu aérien font d\'eux une menace constante sur les phases arrêtées.'
+                'Jumeau attaquant de Corvette. En duo avec Nino, leur synchronisation parfaite et leur jeu aérien font d\'eux une menace constante sur les phases arrêtées.',
+                ['Midfielder']
             ],
 
 // Naples
@@ -2769,7 +3422,8 @@ class PlayerSeeder extends Seeder
                     'block' => 19, 'intercept' => 20, 'tackle' => 22,
                     'hand_save' => 10, 'punch_save' => 10,
                 ],
-                'Attaquant très physique des Pays-Bas. Stratège redoutable, il utilise Cesare à son insu pour faire le ménage dans les défenses. Il forme un trio de choc avec Cesare et Ash.'
+                'Attaquant très physique des Pays-Bas. Stratège redoutable, il utilise Cesare à son insu pour faire le ménage dans les défenses.',
+                ['Midfielder']
             ],
             [
                 'Peter', 'Shilton', 13, 'Defender', 380,
@@ -2971,7 +3625,8 @@ class PlayerSeeder extends Seeder
                     'block' => 15, 'intercept' => 18, 'tackle' => 16,
                     'hand_save' => 10, 'punch_save' => 10,
                 ],
-                'Attaquant au sens du but exceptionnel. Isagi brille par sa lecture du jeu et sa capacité à analyser le terrain pour être toujours au bon endroit au bon moment.'
+                'Attaquant au sens du but exceptionnel. Isagi brille par sa lecture du jeu et sa capacité à analyser le terrain pour être toujours au bon endroit au bon moment.',
+                ['Midfielder']
             ],
 
             [
@@ -2986,14 +3641,15 @@ class PlayerSeeder extends Seeder
             ],
 
             [
-                'Hyoma', 'Chigiri', 13, 'Forward', 390,
+                'Hyoma', 'Chigiri', 13, 'Midfielder', 390,
                 [
                     'speed' => 84, 'stamina' => 64, 'defense' => 16, 'attack' => 30,
                     'shot' => 24, 'pass' => 20, 'dribble' => 24,
                     'block' => 13, 'intercept' => 16, 'tackle' => 14,
                     'hand_save' => 10, 'punch_save' => 10,
                 ],
-                'Ailier prodige doté d\'une vitesse à couper le souffle. Fragilisé par une blessure au genou, il se surpasse malgré tout pour devenir un joueur exceptionnel.'
+                'Ailier prodige doté d\'une vitesse à couper le souffle. Fragilisé par une blessure au genou, il se surpasse malgré tout pour devenir un joueur exceptionnel.',
+                ['Forward', 'Defender']
             ],
 
             [
@@ -3015,7 +3671,8 @@ class PlayerSeeder extends Seeder
                     'block' => 15, 'intercept' => 17, 'tackle' => 15,
                     'hand_save' => 10, 'punch_save' => 10,
                 ],
-                'Génie naturel du football découvert par Reo. Ses amortis et son contrôle de balle exceptionnels font de lui un joueur unique, capable de dominer sans effort apparent.'
+                'Génie naturel du football découvert par Reo. Ses amortis et son contrôle de balle exceptionnels font de lui un joueur unique, capable de dominer sans effort apparent.',
+                ['Midfielder']
             ],
 
             [
@@ -3048,7 +3705,8 @@ class PlayerSeeder extends Seeder
                     'block' => 17, 'intercept' => 20, 'tackle' => 20,
                     'hand_save' => 10, 'punch_save' => 10,
                 ],
-                'Frère cadet de Sae Itoshi, déterminé à le surpasser. Attaquant complet capable d\'atteindre un état de flow qui le propulse à un niveau supérieur lors des grands matchs.'
+                'Frère cadet de Sae Itoshi, déterminé à le surpasser. Attaquant complet capable d\'atteindre un état de flow qui le propulse à un niveau supérieur lors des grands matchs.',
+                ['Midfielder']
             ],
 
             [
@@ -3065,12 +3723,13 @@ class PlayerSeeder extends Seeder
             [
                 'Jingo', 'Raichi', 13, 'Forward', 295,
                 [
-                    'speed' => 60, 'stamina' => 64, 'defense' => 14, 'attack' => 22,
+                    'speed' => 60, 'stamina' => 64, 'defense' => 18, 'attack' => 19,
                     'shot' => 18, 'pass' => 14, 'dribble' => 17,
-                    'block' => 12, 'intercept' => 13, 'tackle' => 13,
+                    'block' => 15, 'intercept' => 15, 'tackle' => 19,
                     'hand_save' => 10, 'punch_save' => 10,
                 ],
-                'Attaquant grande gueule de Blue Lock. Beau parleur au niveau de jeu modeste, il compense par son énergie et sa détermination affichée.'
+                'Attaquant grande gueule de Blue Lock. Beau parleur au niveau de jeu modeste, il compense par son énergie et sa détermination affichée.',
+                ['Defender']
             ],
 
             [
@@ -3091,11 +3750,12 @@ class PlayerSeeder extends Seeder
                 'Ashito', 'Aoi', 13, 'Defender', 390,
                 [
                     'speed' => 72, 'stamina' => 74, 'defense' => 28, 'attack' => 26,
-                    'shot' => 20, 'pass' => 22, 'dribble' => 24,
-                    'block' => 24, 'intercept' => 26, 'tackle' => 25,
+                    'shot' => 20, 'pass' => 23, 'dribble' => 17,
+                    'block' => 17, 'intercept' => 26, 'tackle' => 25,
                     'hand_save' => 10, 'punch_save' => 10,
                 ],
-                'Latéral gauche d\'Esperion, reconverti d\'attaquant par le coach Fukuda. Sa vision exceptionnelle du jeu et sa détermination sans faille compensent son inexpérience au poste défensif.'
+                'Latéral gauche d\'Esperion, reconverti d\'attaquant par le coach Fukuda. Sa vision exceptionnelle du jeu et sa détermination sans faille compensent son inexpérience au poste défensif.',
+                ['Forward']
             ],
 
             [
@@ -3446,6 +4106,9 @@ class PlayerSeeder extends Seeder
             $cost = $this->calculateWeeklyCost($player[5], $position);
             $baseStats = $player[5];
             $desc = $player[6] ?? null;
+            // Postes secondaires (optionnel, index 7) : postes où le joueur peut
+            // aussi évoluer, avec un bonus de poste réduit en match.
+            $secondaryPositions = $player[7] ?? [];
 
             $fullStats = $this->buildSkills($baseStats, $position);
 
@@ -3476,6 +4139,7 @@ class PlayerSeeder extends Seeder
                 'lastname' => $lastname,
                 'age' => $age,
                 'position' => $position,
+                'secondary_positions' => json_encode($secondaryPositions, JSON_UNESCAPED_UNICODE),
                 'cost' => $cost,
                 'stats' => json_encode($fullStats, JSON_UNESCAPED_UNICODE),
                 'special_moves' => $specialMoves ? json_encode($specialMoves, JSON_UNESCAPED_UNICODE)

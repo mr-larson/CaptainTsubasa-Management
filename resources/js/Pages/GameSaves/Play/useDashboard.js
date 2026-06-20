@@ -1,21 +1,46 @@
 // resources/js/Pages/GameSaves/Play/useDashboard.js
 import { computed } from 'vue';
 
-export function useDashboard({ teams, gameSave, team, roster, activeInjuries, activeSuspensions, activeYellowCards }) {
+export function useDashboard({ teams, gameSave, team, roster, matches, activeInjuries, activeSuspensions, activeYellowCards }) {
 
     // ==========================
     //   CLASSEMENT
     // ==========================
     const standings = computed(() => {
+        // Buts marqués / encaissés agrégés depuis les matchs joués.
+        const goalsFor = {};
+        const goalsAgainst = {};
+        for (const m of (matches?.value ?? [])) {
+            if (m.status !== 'played') continue;
+            const hs = m.home_score ?? 0;
+            const as = m.away_score ?? 0;
+            goalsFor[m.home_team_id]     = (goalsFor[m.home_team_id]     ?? 0) + hs;
+            goalsAgainst[m.home_team_id] = (goalsAgainst[m.home_team_id] ?? 0) + as;
+            goalsFor[m.away_team_id]     = (goalsFor[m.away_team_id]     ?? 0) + as;
+            goalsAgainst[m.away_team_id] = (goalsAgainst[m.away_team_id] ?? 0) + hs;
+        }
+
         const list = (teams.value ?? []).map((t) => {
             const wins   = t.wins   ?? 0;
             const draws  = t.draws  ?? 0;
             const losses = t.losses ?? 0;
-            return { ...t, wins, draws, losses, played: wins + draws + losses, points: wins * 3 + draws };
+            const gf = goalsFor[t.id]     ?? 0;
+            const ga = goalsAgainst[t.id] ?? 0;
+            return {
+                ...t, wins, draws, losses,
+                played: wins + draws + losses,
+                points: wins * 3 + draws,
+                goals_for: gf,
+                goals_against: ga,
+                goal_diff: gf - ga,
+            };
         });
+        // Départage : points → différence de buts → buts marqués → victoires → nom.
         list.sort((a, b) => {
-            if (b.points !== a.points) return b.points - a.points;
-            if (b.wins   !== a.wins)   return b.wins   - a.wins;
+            if (b.points    !== a.points)    return b.points    - a.points;
+            if (b.goal_diff !== a.goal_diff) return b.goal_diff - a.goal_diff;
+            if (b.goals_for !== a.goals_for) return b.goals_for - a.goals_for;
+            if (b.wins      !== a.wins)      return b.wins      - a.wins;
             return a.name.localeCompare(b.name);
         });
         return list;
