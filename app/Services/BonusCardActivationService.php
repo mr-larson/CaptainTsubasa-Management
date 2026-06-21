@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\GameSaves\GameBonusCard;
 use App\Models\GameSaves\GameInjury;
 use App\Models\GameSaves\GamePlayer;
+use App\Models\GameSaves\GamePlayerMoraleLog;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
 use Illuminate\Validation\ValidationException;
@@ -43,6 +44,8 @@ class BonusCardActivationService
             'injury_reduce',
             'injury_cure'           => $this->applyInjuryReduce($gameSave, $gameBonusCard, $targetPlayerId),
             'revenue_boost'         => $this->applyRevenueBoost($gameSave, $gameBonusCard),
+            'morale_boost'          => $this->applyMoraleBoost($gameSave, $gameBonusCard, $targetPlayerId),
+            'coach_affinity_boost'  => $this->applyCoachAffinityBoost($gameSave, $gameBonusCard, $targetPlayerId),
             // pre_match : juste marquer comme activée, MatchSimulator la lira
             'stat_boost',
             'stat_boost_and_stamina'=> $this->markPreMatchCard($gameBonusCard, $gameSave),
@@ -130,6 +133,72 @@ class BonusCardActivationService
         $team->save();
 
         return ['message' => "+{$amount} € ajoutés au budget.", 'new_budget' => $team->budget];
+    }
+
+    private function applyMoraleBoost(GameSave $gameSave, GameBonusCard $gameBonusCard, ?int $targetPlayerId): array
+    {
+        $player = $this->resolveTargetPlayer($gameSave, $gameBonusCard, $targetPlayerId);
+        $amount = (int) ($gameBonusCard->bonusCard->effect_value['amount'] ?? 0);
+
+        $before          = (int) ($player->morale ?? 0);
+        $player->morale  = min(100, max(0, $before + $amount));
+        $player->save();
+
+        $gain = $player->morale - $before;
+
+        GamePlayerMoraleLog::create([
+            'game_save_id'   => $gameSave->id,
+            'game_player_id' => $player->id,
+            'source'         => 'bonus_card',
+            'value'          => $gain,
+            'label'          => $gameBonusCard->bonusCard->name,
+            'week'           => $gameSave->week,
+            'season'         => $gameSave->season,
+        ]);
+
+        return [
+            'message'    => "+{$gain} de moral pour {$player->lastname} (désormais {$player->morale}).",
+            'new_morale' => $player->morale,
+        ];
+    }
+
+    private function applyCoachAffinityBoost(GameSave $gameSave, GameBonusCard $gameBonusCard, ?int $targetPlayerId): array
+    {
+        $player = $this->resolveTargetPlayer($gameSave, $gameBonusCard, $targetPlayerId);
+        $amount = (int) ($gameBonusCard->bonusCard->effect_value['amount'] ?? 0);
+
+        $before                 = (int) ($player->coach_affinity ?? 0);
+        $player->coach_affinity = min(100, max(-100, $before + $amount));
+        $player->save();
+
+        $gain = $player->coach_affinity - $before;
+
+        return [
+            'message'            => "+{$gain} de relation avec le coach pour {$player->lastname} (désormais {$player->coach_affinity}).",
+            'new_coach_affinity' => $player->coach_affinity,
+        ];
+    }
+
+    /**
+     * Récupère et valide le joueur cible d'une carte target=player.
+     */
+    private function resolveTargetPlayer(GameSave $gameSave, GameBonusCard $gameBonusCard, ?int $targetPlayerId): GamePlayer
+    {
+        if (!$targetPlayerId) {
+            throw ValidationException::withMessages(['card' => 'Joueur cible requis.']);
+        }
+
+        $player = GamePlayer::query()
+            ->where('game_save_id', $gameSave->id)
+            ->where('id', $targetPlayerId)
+            ->whereHas('contracts', fn ($q) => $q->where('game_team_id', $gameBonusCard->game_team_id))
+            ->first();
+
+        if (!$player) {
+            throw ValidationException::withMessages(['card' => 'Ce joueur ne fait pas partie de votre effectif.']);
+        }
+
+        return $player;
     }
 
     /**

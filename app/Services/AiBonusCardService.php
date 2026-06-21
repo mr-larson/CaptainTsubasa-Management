@@ -129,6 +129,18 @@ class AiBonusCardService
                 $score = $budget < 500 ? 80 : ($budget < 1000 ? 50 : 20);
                 break;
 
+            case 'morale_boost':
+                // Utile si un joueur a un moral bas (< neutre)
+                $worst = $context['worst_morale'] ?? 60;
+                $score = $worst < 50 ? min(85, (int) ((60 - $worst) * 2)) : 0;
+                break;
+
+            case 'coach_affinity_boost':
+                // Utile si un joueur est fâché avec le coach (relation négative)
+                $worst = $context['worst_affinity'] ?? 0;
+                $score = $worst < 0 ? min(85, (int) (abs($worst) * 1.5)) : 0;
+                break;
+
             case 'stat_boost':
             case 'stat_boost_and_stamina':
                 // Toujours utile avant un match
@@ -173,6 +185,18 @@ class AiBonusCardService
             } elseif ($effectType === 'revenue_boost') {
                 // Toujours activer les boosts financiers
                 $this->activationService->activate($card, $gameSave);
+            } elseif ($effectType === 'morale_boost') {
+                // Activer sur le joueur au moral le plus bas
+                $targetId = $context['worst_morale_player_id'] ?? null;
+                if ($targetId && ($context['worst_morale'] ?? 60) < 50) {
+                    $this->activationService->activate($card, $gameSave, $targetId);
+                }
+            } elseif ($effectType === 'coach_affinity_boost') {
+                // Activer sur le joueur à la pire relation avec le coach
+                $targetId = $context['worst_affinity_player_id'] ?? null;
+                if ($targetId && ($context['worst_affinity'] ?? 0) < 0) {
+                    $this->activationService->activate($card, $gameSave, $targetId);
+                }
             }
         } catch (\Throwable) {
             // Silencieux — l'IA ne plante pas si la carte échoue
@@ -226,6 +250,10 @@ class AiBonusCardService
         // Joueur blessé le plus impactant = celui dont le retour est le plus loin
         $bestInjuredId = $injuries->first()?->game_player_id;
 
+        // Joueur au moral le plus bas / à la pire relation avec le coach
+        $worstMoralePlayer   = $players->sortBy('morale')->first();
+        $worstAffinityPlayer = $players->sortBy('coach_affinity')->first();
+
         // Match cette semaine
         $hasMatchThisWeek = $gameSave->matches()
             ->where('week', $gameSave->week)
@@ -236,13 +264,17 @@ class AiBonusCardService
             )->exists();
 
         return [
-            'avg_stamina'            => $avgStamina,
-            'injured_count'          => $injuries->count(),
-            'best_injured_player_id' => $bestInjuredId,
-            'budget'                 => $team->budget ?? 0,
-            'wins'                   => $team->wins ?? 0,
-            'losses'                 => $team->losses ?? 0,
-            'has_match_this_week'    => $hasMatchThisWeek,
+            'avg_stamina'               => $avgStamina,
+            'injured_count'             => $injuries->count(),
+            'best_injured_player_id'    => $bestInjuredId,
+            'worst_morale'              => (int) ($worstMoralePlayer->morale ?? 60),
+            'worst_morale_player_id'    => $worstMoralePlayer?->id,
+            'worst_affinity'            => (int) ($worstAffinityPlayer->coach_affinity ?? 0),
+            'worst_affinity_player_id'  => $worstAffinityPlayer?->id,
+            'budget'                    => $team->budget ?? 0,
+            'wins'                      => $team->wins ?? 0,
+            'losses'                    => $team->losses ?? 0,
+            'has_match_this_week'       => $hasMatchThisWeek,
         ];
     }
 }

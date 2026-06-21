@@ -24,10 +24,34 @@ const targetPlayerId = ref(null);     // pour cartes "player"
 const availableCards = computed(() => props.inventory.filter(c => c.status === 'available'));
 const usedCards      = computed(() => props.inventory.filter(c => c.status === 'used'));
 
-// Joueurs blessés disponibles comme cible
-const injuredPlayers = computed(() =>
-    props.rosterWithStatus.filter(p => props.isPlayerInjured(p.id))
+// Effets qui ne ciblent que les joueurs blessés
+const INJURY_EFFECTS = ['injury_reduce', 'injury_cure'];
+
+// Joueurs proposés comme cible selon la carte sélectionnée :
+// - cartes blessure  → uniquement les joueurs blessés
+// - autres (moral, relation coach…) → tout l'effectif
+const targetPlayers = computed(() => {
+    if (!selectedCard.value) return [];
+    if (INJURY_EFFECTS.includes(selectedCard.value.effect_type)) {
+        return props.rosterWithStatus.filter(p => props.isPlayerInjured(p.id));
+    }
+    return props.rosterWithStatus;
+});
+
+const isInjuryCard = computed(() =>
+    INJURY_EFFECTS.includes(selectedCard.value?.effect_type)
 );
+
+// Info contextuelle affichée à droite de chaque joueur cible
+const targetMeta = (card, player) => {
+    if (card?.effect_type === 'morale_boost') {
+        return { label: `Moral ${player.morale ?? 0}`, class: 'text-amber-500' };
+    }
+    if (card?.effect_type === 'coach_affinity_boost') {
+        return { label: `Relation ${player.coach_affinity ?? 0}`, class: 'text-sky-500' };
+    }
+    return null;
+};
 
 // ==========================
 //   HELPERS VISUELS
@@ -297,22 +321,27 @@ const canConfirm = computed(() => {
                             Sélectionner un joueur cible
                         </p>
 
-                        <div v-if="injuredPlayers.length" class="space-y-1 max-h-40 overflow-y-auto">
-                            <button v-for="p in injuredPlayers" :key="p.id"
+                        <div v-if="targetPlayers.length" class="space-y-1 max-h-40 overflow-y-auto">
+                            <button v-for="p in targetPlayers" :key="p.id"
                                     type="button"
                                     @click="targetPlayerId = p.id"
-                                    class="w-full text-left px-3 py-2 rounded-lg text-xs border transition-all"
+                                    class="w-full flex items-center px-3 py-2 rounded-lg text-xs border transition-all"
                                     :class="targetPlayerId === p.id
                                         ? 'bg-teal-500 text-white border-teal-600'
                                         : 'bg-white border-slate-200 hover:border-teal-300 text-slate-700'">
                                 <span class="font-semibold">{{ p.lastname }}</span>
                                 <span class="opacity-70 ml-1">— {{ p.position }}</span>
-                                <span class="ml-1 text-rose-400">🤕</span>
+                                <span v-if="isInjuryCard" class="ml-1 text-rose-400">🤕</span>
+                                <span v-if="targetMeta(selectedCard, p)"
+                                      class="ml-auto font-semibold"
+                                      :class="targetPlayerId === p.id ? 'text-white/90' : targetMeta(selectedCard, p).class">
+                                    {{ targetMeta(selectedCard, p).label }}
+                                </span>
                             </button>
                         </div>
 
                         <p v-else class="text-xs text-slate-400 italic">
-                            Aucun joueur blessé dans votre effectif.
+                            {{ isInjuryCard ? 'Aucun joueur blessé dans votre effectif.' : 'Aucun joueur dans votre effectif.' }}
                         </p>
                     </div>
 

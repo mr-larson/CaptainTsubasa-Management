@@ -117,6 +117,7 @@ export function usePlayerUtils() {
             case 'result':       return 'Résultats';
             case 'playing_time': return 'Temps de jeu';
             case 'salary':       return 'Salaire';
+            case 'bonus_card':   return 'Carte bonus';
             default:             return source;
         }
     };
