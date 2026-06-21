@@ -28,6 +28,18 @@ const emit = defineEmits(['select-team', 'open-match-stats']);
 // ==========================
 const { playerPhotoUrl, teamLogoUrl } = usePlayerUtils();
 
+// Libellé court de la colonne gauche : tour de Coupe du Monde (poule / ½ / F)
+// si le match porte un `round`, sinon la semaine de ligue (S1, S2…).
+const ROUND_SHORT = {
+    group_a: 'Pl.A', group_b: 'Pl.B', group_c: 'Pl.C', group_d: 'Pl.D',
+    semi: '½', final: 'F',
+};
+const roundShort = (match) => ROUND_SHORT[match?.round] ?? `S${match?.week}`;
+const roundTitle = (match) => ({
+    group_a: 'Poule A', group_b: 'Poule B', group_c: 'Poule C', group_d: 'Poule D',
+    semi: 'Demi-finale', final: 'Finale',
+}[match?.round] ?? `Semaine ${match?.week}`);
+
 const homeTeamName = computed(() =>
     props.selectedCalendarMatch ? props.teamById[props.selectedCalendarMatch.home_team_id]?.name : ''
 );
@@ -361,9 +373,9 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                         ]"
                          @click="!isByeMatch(match) && match.status === 'played' && match.match_stats && emit('open-match-stats', match)">
 
-                        <!-- Semaine -->
-                        <div class="w-8 text-center shrink-0">
-                            <div class="text-[10px] font-bold text-slate-400">S{{ match.week }}</div>
+                        <!-- Tour (Coupe du Monde) ou semaine (ligue) -->
+                        <div class="w-8 text-center shrink-0" :title="roundTitle(match)">
+                            <div class="text-[10px] font-bold text-slate-400">{{ roundShort(match) }}</div>
                         </div>
 
                         <!-- Résultat badge -->

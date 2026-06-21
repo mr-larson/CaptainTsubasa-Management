@@ -95,6 +95,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/create',  [GameSaveController::class, 'create'])->name('create');
         Route::post('/',       [GameSaveController::class, 'store'])->name('store');
         Route::post('/start',  [GameSaveController::class, 'start'])->name('start');
+        Route::post('/world-cup/start', [GameSaveController::class, 'startWorldCup'])->name('start-world-cup');
         Route::get('/continue',[GameSaveController::class, 'continue'])->name('continue');
         Route::get('/{gameSave}/draft', [GameDraftController::class, 'show'])->name('draft');
         Route::post('/{gameSave}/draft/ai-pick', [GameDraftController::class, 'aiPick'])->name('draft.ai-pick');

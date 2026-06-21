@@ -30,9 +30,30 @@ const props = defineProps({
     isPlayerInjured:    { type: Function, default: () => false },
     isPlayerSuspended:  { type: Function, default: () => false },
     weeklyRecap:        { type: Array, default: () => [] },
+    tournament:         { type: Object, default: null },
+    isWorldCup:         { type: Boolean, default: false },
 });
 
 const emit = defineEmits(['Play-next-match', 'simulate-week', 'save-game', 'quit', 'change-tab']);
+
+// ── Coupe du Monde : contexte de poule de l'équipe contrôlée + étape ──
+const wcStageLabel = computed(() => ({
+    group: 'Phase de poules', semi: 'Demi-finales', final: 'Finale', done: 'Terminé',
+}[props.tournament?.stage] ?? '—'));
+
+const wcStanding = computed(() => {
+    if (!props.isWorldCup || !props.tournament || !props.team) return null;
+    for (const group of props.tournament.groups ?? []) {
+        const idx = group.rows.findIndex(r => r.team_id === props.team.id);
+        if (idx !== -1) {
+            const row = group.rows[idx];
+            return { group: group.key, position: idx + 1, total: group.rows.length, points: row.points, qualified: row.qualified };
+        }
+    }
+    return null; // équipe non trouvée (ne devrait pas arriver)
+});
+
+const wcChampion = computed(() => props.tournament?.champion ?? null);
 
 // ==========================
 //   HELPERS
@@ -261,13 +282,39 @@ const matchesPlayed = computed(() =>
             </div>
         </div>
 
+        <!-- Coupe du Monde : bannière champion -->
+        <div v-if="isWorldCup && wcChampion"
+             class="flex items-center justify-center gap-3 px-5 py-4 rounded-2xl bg-gradient-to-r from-amber-100 to-yellow-50 border border-amber-300">
+            <span class="text-4xl">🏆</span>
+            <div class="text-center">
+                <div class="text-[11px] font-bold text-amber-600 uppercase tracking-wider">Champion du Monde</div>
+                <div class="text-xl font-extrabold text-amber-800">{{ wcChampion.flag }} {{ wcChampion.name }}</div>
+            </div>
+        </div>
+
         <!-- ============================================ -->
         <!-- LIGNE 2 : 4 tuiles                          -->
         <!-- ============================================ -->
         <div class="grid grid-cols-4 gap-3">
 
-            <!-- Classement -->
-            <div class="border border-slate-200 rounded-xl bg-slate-50 p-2 flex flex-col items-center gap-1">
+            <!-- Classement — Coupe du Monde : position dans la poule -->
+            <div v-if="isWorldCup" class="border border-slate-200 rounded-xl bg-slate-50 p-2 flex flex-col items-center gap-1">
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    {{ wcStanding ? 'Poule ' + wcStanding.group : 'Tournoi' }}
+                </div>
+                <div class="text-3xl font-black mt-1 text-indigo-600">
+                    {{ wcStanding ? wcStanding.position : '—' }}<sup v-if="wcStanding" class="text-base">e</sup>
+                </div>
+                <div class="text-[10px] text-slate-400">{{ wcStanding ? '/ ' + wcStanding.total : wcStageLabel }}</div>
+                <div v-if="wcStanding"
+                     class="text-[10px] font-bold px-2 py-0.5 rounded-full mt-1"
+                     :class="wcStanding.qualified ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-500'">
+                    {{ wcStanding.qualified ? 'Qualifié' : wcStanding.points + ' pts' }}
+                </div>
+            </div>
+
+            <!-- Classement — Ligue -->
+            <div v-else class="border border-slate-200 rounded-xl bg-slate-50 p-2 flex flex-col items-center gap-1">
                 <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Classement</div>
                 <div class="text-3xl font-black mt-1" :class="rankStyle">
                     {{ clubStanding?.position ?? '—' }}<sup v-if="clubStanding" class="text-base">e</sup>

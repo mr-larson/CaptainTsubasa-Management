@@ -72,6 +72,8 @@ class GameSaveRequest extends FormRequest
             ],
 
             'game_mode' => ['nullable', 'string', 'in:prebuilt,draft'],
+
+            'competition_type' => ['nullable', 'string', 'in:college_league,world_cup'],
         ];
 
         // Différence création / mise à jour :

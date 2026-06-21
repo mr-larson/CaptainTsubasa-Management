@@ -23,6 +23,7 @@ use App\Services\MoraleService;
 use App\Services\PostMatchProgressionService;
 use App\Services\PromiseService;
 use App\Services\SeasonService;
+use App\Services\TournamentService;
 use App\Services\StaminaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -275,6 +276,13 @@ class GameMatchController extends Controller
         app(BonusCardShopService::class)->generateWeeklyOffers($gameSave);
         app(AIBonusCardService::class)->processWeek($gameSave);
 
+        // Coupe du Monde : faire progresser le tournoi (poules → élimination →
+        // champion) au lieu de la logique de fin de saison de ligue.
+        if ($gameSave->competition_type === 'world_cup') {
+            app(TournamentService::class)->advance($gameSave);
+            return redirect()->route('game-saves.Play', $gameSave);
+        }
+
         $seasonService = app(SeasonService::class);
         if ($seasonService->isSeasonOver($gameSave)) {
             $seasonService->endSeason($gameSave);
@@ -356,6 +364,12 @@ class GameMatchController extends Controller
         // Boutique + IA cartes pour la nouvelle semaine
         app(BonusCardShopService::class)->generateWeeklyOffers($gameSave);
         app(AIBonusCardService::class)->processWeek($gameSave);
+
+        // Coupe du Monde : progression du tournoi au lieu de la fin de saison.
+        if ($gameSave->competition_type === 'world_cup') {
+            app(TournamentService::class)->advance($gameSave);
+            return redirect()->route('game-saves.Play', $gameSave);
+        }
 
         $seasonService = app(SeasonService::class);
         if ($seasonService->isSeasonOver($gameSave)) {

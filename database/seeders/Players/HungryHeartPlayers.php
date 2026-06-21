@@ -135,4 +135,17 @@ class HungryHeartPlayers
             // =======================
         ];
     }
+
+    /**
+     * Exceptions de nationalité (slug "prenom-nom" → pays). Le reste de
+     * l'effectif est japonais par défaut (cf. PlayerSeeder).
+     * @return array<string, string>
+     */
+    public static function nationalities(): array
+    {
+        return [
+            'rafael-del-franco' => 'Brésil',
+            'koji-sakai'        => 'Suède',
+        ];
+    }
 }

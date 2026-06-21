@@ -24,6 +24,7 @@ class GameSave extends Model
         'phase' => 'string',
         'phase',
         'game_mode',
+        'competition_type',
     ];
 
 

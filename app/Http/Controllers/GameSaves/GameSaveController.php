@@ -19,9 +19,12 @@ use App\Models\GameSaves\GameSanction;
 use App\Models\GameSaves\GameTeam;
 use App\Models\Player;
 use App\Models\Team;
+use App\Enums\Nationality;
 use App\Services\BonusCardShopService;
 use App\Services\MoraleService;
+use App\Services\NationalTeamAssembler;
 use App\Services\PlayerStatsService;
+use App\Services\TournamentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -32,6 +35,9 @@ use Inertia\Response;
 class GameSaveController extends Controller
 {
     use AuthorizesGameSave;
+
+    /** Nombre de sélections participant à une Coupe du Monde. */
+    private const TOURNAMENT_NATIONS = 8;
 
     public function index(Request $request): Response
     {
@@ -51,24 +57,77 @@ class GameSaveController extends Controller
     }
 
     /**
-     * Étape 1 : reçoit label + period → affiche choix d'équipe.
+     * Étape 1 : reçoit label + period + format → affiche l'écran de sélection.
+     * - college_league : choix des clubs (TeamSelection)
+     * - world_cup      : choix de la sélection nationale (NationSelection)
      */
     public function store(Request $request): Response
     {
         $data = $request->validate([
-            'label'     => ['nullable', 'string', 'max:255'],
-            'period'    => ['required', 'string', 'in:college'],
-            'game_mode' => ['nullable', 'string', 'in:prebuilt,draft'],
+            'label'            => ['nullable', 'string', 'max:255'],
+            'period'           => ['required', 'string', 'in:college'],
+            'game_mode'        => ['nullable', 'string', 'in:prebuilt,draft'],
+            'competition_type' => ['nullable', 'string', 'in:college_league,world_cup'],
         ]);
+
+        $competitionType = $data['competition_type'] ?? 'college_league';
+
+        if ($competitionType === 'world_cup') {
+            return Inertia::render('GameSaves/NationSelection', [
+                'label'           => $data['label'] ?? null,
+                'period'          => $data['period'],
+                'competitionType' => $competitionType,
+                'nations'         => $this->playableNations(),
+            ]);
+        }
 
         $teams = Team::with(['contracts.player'])->orderBy('name')->get();
 
         return Inertia::render('GameSaves/TeamSelection', [
-            'label'  => $data['label'] ?? null,
-            'period' => $data['period'],
-            'teams'  => $teams,
-            'gameMode' => $data['game_mode'] ?? 'prebuilt',
+            'label'           => $data['label'] ?? null,
+            'period'          => $data['period'],
+            'teams'           => $teams,
+            'gameMode'        => $data['game_mode'] ?? 'prebuilt',
+            'competitionType' => $competitionType,
         ]);
+    }
+
+    /**
+     * Nations disponibles pour le mode Coupe du Monde, calculées depuis le pool
+     * de joueurs (par `nationality`). Une nation est « jouable » si elle peut
+     * aligner un onze : au moins 11 joueurs dont 1 gardien. Triées : jouables
+     * d'abord, puis par effectif décroissant.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function playableNations(): array
+    {
+        $rows = Player::query()
+            ->whereNotNull('nationality')
+            ->selectRaw('nationality, COUNT(*) as total')
+            ->selectRaw("SUM(CASE WHEN position = 'Goalkeeper' THEN 1 ELSE 0 END) as goalkeepers")
+            ->groupBy('nationality')
+            ->get()
+            ->keyBy('nationality');
+
+        $nations = [];
+        foreach (\App\Enums\Nationality::ALL as $name) {
+            $row   = $rows->get($name);
+            $total = (int) ($row->total ?? 0);
+            $gk    = (int) ($row->goalkeepers ?? 0);
+
+            $nations[] = [
+                'name'        => $name,
+                'flag'        => \App\Enums\Nationality::flag($name),
+                'total'       => $total,
+                'goalkeepers' => $gk,
+                'playable'    => $total >= 11 && $gk >= 1,
+            ];
+        }
+
+        usort($nations, fn($a, $b) => [$b['playable'], $b['total']] <=> [$a['playable'], $a['total']]);
+
+        return $nations;
     }
 
     public function start(GameSaveRequest $request): RedirectResponse
@@ -94,6 +153,7 @@ class GameSaveController extends Controller
             'week'    => 1,
             'phase'   => $isDraft ? 'draft' : 'season',
             'game_mode' => $gameMode,
+            'competition_type' => $data['competition_type'] ?? 'college_league',
             'label'   => $data['label'] ?? null,
             'state'   => null,
         ]);
@@ -244,6 +304,59 @@ class GameSaveController extends Controller
         }
 
         return redirect()->route('game-saves.Play', $gameSave)->with('success', 'Partie créée');
+    }
+
+    /**
+     * Lance une partie Coupe du Monde : crée la save, tire au sort les nations
+     * participantes (la nation choisie + des adversaires jouables) et monte
+     * toutes les sélections via le NationalTeamAssembler.
+     *
+     * Le calendrier du tournoi (poules + bracket) sera généré en Phase 4 ;
+     * la save démarre donc en phase 'world_cup' (attente).
+     */
+    public function startWorldCup(Request $request, NationalTeamAssembler $assembler, TournamentService $tournament): RedirectResponse
+    {
+        $data = $request->validate([
+            'label'            => ['nullable', 'string', 'max:255'],
+            'period'           => ['required', 'string', 'in:college'],
+            'competition_type' => ['required', 'string', 'in:world_cup'],
+            'nation'           => ['required', 'string', Rule::in(Nationality::ALL)],
+        ]);
+
+        // Nations réellement alignables (≥ 11 joueurs dont 1 gardien).
+        $playable = collect($this->playableNations())
+            ->where('playable', true)
+            ->pluck('name');
+
+        if (! $playable->contains($data['nation'])) {
+            return back()->withErrors(['nation' => "Cette sélection n'a pas assez de joueurs pour concourir."]);
+        }
+
+        $controlled = $data['nation'];
+        $opponents  = $playable->reject(fn($n) => $n === $controlled)
+            ->shuffle()
+            ->take(self::TOURNAMENT_NATIONS - 1)
+            ->values();
+        $nations = collect([$controlled])->merge($opponents)->all();
+
+        $gameSave = GameSave::create([
+            'user_id'          => $request->user()->id,
+            'team_id'          => null,
+            'period'           => $data['period'],
+            'season'           => 1,
+            'week'             => 1,
+            'phase'            => 'world_cup',
+            'game_mode'        => 'prebuilt',
+            'competition_type' => 'world_cup',
+            'label'            => $data['label'] ?? null,
+            'state'            => null,
+        ]);
+
+        $assembler->assemble($gameSave, $nations, $controlled);
+        $tournament->generateGroups($gameSave);
+
+        return redirect()->route('game-saves.Play', $gameSave)
+            ->with('success', "Coupe du Monde créée — tu diriges {$controlled} !");
     }
 
     /**
@@ -500,6 +613,9 @@ class GameSaveController extends Controller
             'playerDeclarations'  => $playerDeclarations,
             'bonusCardOffers'     => $bonusCardOffers,
             'bonusCardInventory'  => $bonusCardInventory,
+            'tournament'          => $gameSave->competition_type === 'world_cup'
+                ? app(TournamentService::class)->presentation($gameSave)
+                : null,
         ]);
     }
 
@@ -655,6 +771,10 @@ class GameSaveController extends Controller
 
     private function ensureCalendar(GameSave $gameSave, Collection $teams): void
     {
+        // En Coupe du Monde, le calendrier (poules + élimination directe) est
+        // géré par le moteur de tournoi (Phase 4), pas par le round-robin de ligue.
+        if ($gameSave->competition_type === 'world_cup') return;
+
         if ($gameSave->matches()->exists()) return;
 
         $teamIds   = $teams->pluck('id')->values()->all();

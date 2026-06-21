@@ -24,6 +24,7 @@ import TabMyTeam     from '@/Pages/GameSaves/Play/TabMyTeam.vue';
 import TabOtherTeams from '@/Pages/GameSaves/Play/TabOtherTeams.vue';
 import TabCalendar   from '@/Pages/GameSaves/Play/TabCalendar.vue';
 import TabStandings  from '@/Pages/GameSaves/Play/TabStandings.vue';
+import TabTournament from '@/Pages/GameSaves/Play/TabTournament.vue';
 import TabStats      from '@/Pages/GameSaves/Play/TabStats.vue';
 import TabTraining   from '@/Pages/GameSaves/Play/TabTraining.vue';
 import TabTransfers  from '@/Pages/GameSaves/Play/TabTransfers.vue';
@@ -51,7 +52,12 @@ const props = defineProps({
     playerPromises:     { type: Object, default: () => ({}) },
     playerDeclarations: { type: Object, default: () => ({}) },
     hotSeat:            { type: Object, required: false, default: null },
+    tournament:         { type: Object, required: false, default: null },
 });
+
+// Mode Coupe du Monde : adapte l'UI (onglet Classement → poules+bracket,
+// masquage des onglets sans objet comme Transferts/Gestion).
+const isWorldCup = computed(() => props.gameSave?.competition_type === 'world_cup');
 
 // Promesse au joueur (relation coach) — type : playing_time | starter | renewal
 const makePromise = (player, type = 'playing_time') => {
@@ -215,18 +221,23 @@ const {
 // ==========================
 //   ONGLETS
 // ==========================
-const tabs = [
-    { key: 'dashboard',   label: 'Dashboard'     },
-    { key: 'my-team',     label: 'Mon équipe'     },
-    { key: 'other-teams', label: 'Autres équipes' },
-    { key: 'calendar',    label: 'Calendrier'     },
-    { key: 'standings',   label: 'Classement'     },
-    { key: 'match-stats', label: 'Stats'          },
-    { key: 'training',    label: 'Entraînement'   },
-    { key: 'transfers',   label: 'Transferts'     },
-    { key: 'cards',       label: 'Cartes bonus'   },
-    { key: 'management',  label: 'Gestion'        },
-];
+// En Coupe du Monde : « Classement » devient « Tournoi » (poules + bracket),
+// et les onglets Transferts/Gestion (sans objet pour des sélections) sont masqués.
+const tabs = computed(() => {
+    const wc = isWorldCup.value;
+    return [
+        { key: 'dashboard',   label: 'Dashboard'                      },
+        { key: 'my-team',     label: 'Mon équipe'                     },
+        { key: 'other-teams', label: wc ? 'Sélections' : 'Autres équipes' },
+        { key: 'calendar',    label: 'Calendrier'                     },
+        { key: 'standings',   label: wc ? 'Tournoi' : 'Classement'    },
+        { key: 'match-stats', label: 'Stats'                          },
+        { key: 'training',    label: 'Entraînement'                   },
+        ...(wc ? [] : [{ key: 'transfers',  label: 'Transferts' }]),
+        { key: 'cards',       label: 'Cartes bonus'                   },
+        ...(wc ? [] : [{ key: 'management', label: 'Gestion'    }]),
+    ];
+});
 const activeTab = ref('dashboard');
 
 // ==========================
@@ -339,6 +350,8 @@ function updateOtherPlayerNumber(playerId, number) {
                                   :unboughtCardsCount="unboughtCardsCount"
                                   :freePlayersCount="freePlayersCount"
                                   :weeklyRecap="weeklyRecapRef"
+                                  :tournament="tournament"
+                                  :isWorldCup="isWorldCup"
                                   @change-tab="activeTab = $event"
                                   :isPlayerInjured="isPlayerInjured"
                                   @play-next-match="playNextMatch"
@@ -454,6 +467,10 @@ function updateOtherPlayerNumber(playerId, number) {
                     />
 
                     <!-- ======== CLASSEMENT ======== -->
+                    <TabTournament v-else-if="activeTab === 'standings' && isWorldCup"
+                                   :tournament="tournament"
+                    />
+
                     <TabStandings v-else-if="activeTab === 'standings'"
                                   :standings="standings"
                                   :team="teamRef"

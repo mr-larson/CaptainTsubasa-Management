@@ -7,6 +7,7 @@ const form = useForm({
     label: '',
     period: 'college',
     game_mode: 'prebuilt',
+    competition_type: 'college_league',
 });
 
 function submit() {
@@ -55,6 +56,63 @@ function submit() {
                             <p v-if="form.errors.label" class="text-xs text-rose-500">{{ form.errors.label }}</p>
                         </div>
 
+                        <!-- Format de compétition -->
+                        <div class="flex flex-col gap-2">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                Format de compétition
+                            </label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <!-- Ligue collège -->
+                                <button type="button"
+                                        @click="form.competition_type = 'college_league'"
+                                        class="relative flex flex-col gap-2 p-4 rounded-xl border-2 transition-all text-left"
+                                        :class="form.competition_type === 'college_league'
+                                            ? 'border-teal-500 bg-teal-50 shadow-sm'
+                                            : 'border-slate-200 bg-white hover:border-slate-300'">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-xl">🏫</span>
+                                        <span class="text-sm font-bold"
+                                              :class="form.competition_type === 'college_league' ? 'text-teal-700' : 'text-slate-700'">
+                                            Ligue collège
+                                        </span>
+                                    </div>
+                                    <p class="text-[11px] leading-relaxed"
+                                       :class="form.competition_type === 'college_league' ? 'text-teal-600' : 'text-slate-400'">
+                                        Championnat des collèges en matchs aller-retour. Le mode classique de Captain Tsubasa.
+                                    </p>
+                                    <div v-if="form.competition_type === 'college_league'"
+                                         class="absolute top-2 right-2 w-5 h-5 rounded-full bg-teal-500 flex items-center justify-center">
+                                        <span class="text-white text-[10px] font-bold">✓</span>
+                                    </div>
+                                </button>
+
+                                <!-- Coupe du Monde -->
+                                <button type="button"
+                                        @click="form.competition_type = 'world_cup'"
+                                        class="relative flex flex-col gap-2 p-4 rounded-xl border-2 transition-all text-left"
+                                        :class="form.competition_type === 'world_cup'
+                                            ? 'border-indigo-500 bg-indigo-50 shadow-sm'
+                                            : 'border-slate-200 bg-white hover:border-slate-300'">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-xl">🌍</span>
+                                        <span class="text-sm font-bold"
+                                              :class="form.competition_type === 'world_cup' ? 'text-indigo-700' : 'text-slate-700'">
+                                            Coupe du Monde
+                                        </span>
+                                    </div>
+                                    <p class="text-[11px] leading-relaxed"
+                                       :class="form.competition_type === 'world_cup' ? 'text-indigo-600' : 'text-slate-400'">
+                                        Tournoi des sélections nationales : poules puis élimination directe. Mène ta nation au titre.
+                                    </p>
+                                    <div v-if="form.competition_type === 'world_cup'"
+                                         class="absolute top-2 right-2 w-5 h-5 rounded-full bg-indigo-500 flex items-center justify-center">
+                                        <span class="text-white text-[10px] font-bold">✓</span>
+                                    </div>
+                                </button>
+                            </div>
+                            <p v-if="form.errors.competition_type" class="text-xs text-rose-500">{{ form.errors.competition_type }}</p>
+                        </div>
+
                         <!-- Période -->
                         <div class="flex flex-col gap-1.5">
                             <label for="period" class="text-xs font-bold text-slate-500 uppercase tracking-wider">
@@ -72,8 +130,8 @@ function submit() {
                             <p v-if="form.errors.period" class="text-xs text-rose-500">{{ form.errors.period }}</p>
                         </div>
 
-                        <!-- Mode de jeu -->
-                        <div class="flex flex-col gap-2">
+                        <!-- Mode de jeu (Ligue collège uniquement) -->
+                        <div v-if="form.competition_type === 'college_league'" class="flex flex-col gap-2">
                             <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">
                                 Mode de démarrage
                             </label>
@@ -142,10 +200,13 @@ function submit() {
                                 type="submit"
                                 :disabled="form.processing"
                                 class="flex items-center gap-2 px-6 py-2.5 text-white text-sm font-bold rounded-xl transition-all disabled:opacity-50 active:scale-[0.98]"
-                                :class="form.game_mode === 'draft'
-                                    ? 'bg-amber-500 hover:bg-amber-400'
-                                    : 'bg-teal-500 hover:bg-teal-400'">
+                                :class="form.competition_type === 'world_cup'
+                                    ? 'bg-indigo-500 hover:bg-indigo-400'
+                                    : (form.game_mode === 'draft'
+                                        ? 'bg-amber-500 hover:bg-amber-400'
+                                        : 'bg-teal-500 hover:bg-teal-400')">
                                 <span v-if="form.processing">Création...</span>
+                                <span v-else-if="form.competition_type === 'world_cup'">🌍 Choisir ma sélection</span>
                                 <span v-else-if="form.game_mode === 'draft'">🎯 Lancer le draft</span>
                                 <span v-else>⚽ Démarrer la partie</span>
                             </button>

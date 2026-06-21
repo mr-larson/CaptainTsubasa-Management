@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\Nationality;
 use Database\Seeders\Concerns\CalculatesWeeklyCost;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -12,6 +13,22 @@ use Illuminate\Support\Str;
 class PlayerSeeder extends Seeder
 {
     use CalculatesWeeklyCost;
+
+    /**
+     * Nationalité par défaut selon l'œuvre de provenance (origin).
+     * Les univers japonais (Captain Tsubasa au collège, Blue Lock, Ao Ashi,
+     * Hungry Heart) sont des équipes nippones ; École des Champions est italien
+     * majoritaire. Les exceptions sont gérées au cas par cas par les maps
+     * nationalities() de chaque classe Players\*. `null` = non sélectionnable.
+     */
+    private const DEFAULT_NATIONALITY_BY_ORIGIN = [
+        'captain_tsubasa'     => 'Japon',
+        'blue_lock'           => 'Japon',
+        'ao_ashi'             => 'Japon',
+        'hungry_heart'        => 'Japon',
+        'ecole_des_champions' => 'Italie',
+        'original'            => null,
+    ];
 
     /**
      * Run the database seeds.
@@ -49,6 +66,10 @@ class PlayerSeeder extends Seeder
             'captain_tsubasa' => array_merge(
                 Players\CaptainTsubasaClubPlayers::players(),
                 Players\CaptainTsubasaFreePlayers::players(),
+                // Stars étrangères de l'univers Tsubasa (sans contrat club) :
+                // disponibles comme agents libres et sélectionnables en équipe
+                // nationale via leur `nationality`.
+                Players\CaptainTsubasaInternationalPlayers::players(),
             ),
             'ecole_des_champions' => Players\EcoleDesChampionsPlayers::players(),
             'hungry_heart'        => Players\HungryHeartPlayers::players(),
@@ -60,11 +81,22 @@ class PlayerSeeder extends Seeder
         $specialMovesByPlayerSlug = array_merge(
             Players\CaptainTsubasaClubPlayers::specialMoves(),
             Players\CaptainTsubasaFreePlayers::specialMoves(),
+            Players\CaptainTsubasaInternationalPlayers::specialMoves(),
             Players\EcoleDesChampionsPlayers::specialMoves(),
             Players\HungryHeartPlayers::specialMoves(),
             Players\BlueLockPlayers::specialMoves(),
             Players\AoAshiPlayers::specialMoves(),
             Players\RandomPlayers::specialMoves(),
+        );
+
+        // Nationalité par joueur (slug "prenom-nom" → pays). Sert à composer les
+        // sélections nationales du mode Coupe du Monde. Résolution :
+        //   override par slug  >  défaut par origin (DEFAULT_NATIONALITY_BY_ORIGIN)  >  null
+        // Seules les classes ayant des exceptions exposent nationalities().
+        $nationalityByPlayerSlug = array_merge(
+            Players\EcoleDesChampionsPlayers::nationalities(),
+            Players\HungryHeartPlayers::nationalities(),
+            Players\CaptainTsubasaInternationalPlayers::nationalities(),
         );
 
         foreach ($playersByOrigin as $origin => $players) {
@@ -86,6 +118,22 @@ class PlayerSeeder extends Seeder
             // PHOTO AUTO (si fichier existe)
             // -----------------------------
             $slug = Str::slug($firstname . ' ' . $lastname); // ex: taro-misaki
+
+            // Nationalité : override par slug, sinon défaut de l'œuvre, sinon null.
+            $nationality = $nationalityByPlayerSlug[$slug]
+                ?? self::DEFAULT_NATIONALITY_BY_ORIGIN[$origin]
+                ?? null;
+
+            // Validation stricte : une nationalité non reconnue (faute de frappe,
+            // langue mélangée comme « Sweden » au lieu de « Suède ») fait échouer
+            // le seed plutôt que de créer une nation fantôme. Pour un nouveau pays,
+            // ajoute-le d'abord dans App\Enums\Nationality.
+            if ($nationality !== null && !Nationality::isValid($nationality)) {
+                throw new \RuntimeException(
+                    "Nationalité inconnue « {$nationality} » pour le joueur « {$slug} ». "
+                    . "Ajoute-la dans App\\Enums\\Nationality ou corrige la valeur."
+                );
+            }
 
             $headingOverride = $this->getHeadingOverride($slug);
             if ($headingOverride !== null) {
@@ -110,7 +158,7 @@ class PlayerSeeder extends Seeder
                 'age' => $age,
                 'position' => $position,
                 'origin' => $origin,
-                'nationality' => null, // prévu pour un usage futur
+                'nationality' => $nationality,
                 'secondary_positions' => json_encode($secondaryPositions, JSON_UNESCAPED_UNICODE),
                 'cost' => $cost,
                 'stats' => json_encode($fullStats, JSON_UNESCAPED_UNICODE),

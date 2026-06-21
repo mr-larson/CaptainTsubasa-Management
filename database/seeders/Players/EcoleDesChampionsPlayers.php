@@ -504,4 +504,25 @@ class EcoleDesChampionsPlayers
             ]],
         ];
     }
+
+    /**
+     * Exceptions de nationalité (slug "prenom-nom" → pays). Le reste de
+     * l'effectif est italien par défaut (cf. PlayerSeeder).
+     * @return array<string, string>
+     */
+    public static function nationalities(): array
+    {
+        return [
+            'benjamin-lefranc'           => 'France',
+            'marcel-beauregard'          => 'France',
+            'eric-townsend'              => 'Angleterre',
+            'woltz-hoffmann'             => 'Allemagne',
+            'yann-haarden'               => 'Pays-Bas',
+            'papan-correia-da-silva'     => 'Brésil',
+            'ash-rodrigues'              => 'Brésil',
+            'bento-capone'               => 'Brésil',
+            'carlos-oliveira-tavares'    => 'Brésil',
+            'giovanni-barbossa-perreira' => 'Brésil',
+        ];
+    }
 }
