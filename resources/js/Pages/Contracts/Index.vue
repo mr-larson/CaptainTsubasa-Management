@@ -6,9 +6,7 @@
             <H2>Teams</H2>
         </template>
 
-        <aside id="separator-sidebar"
-               class="fixed top-0 left-0 z-40 w-64 h-screen transition-transform -translate-x-full sm:translate-x-0"
-               aria-label="Sidebar">
+        <MobileSidebar>
             <div class="h-full px-3 py-2 overflow-y-auto bg-slate-700">
                 <div class="p-3 mb-3 border-b text-center text-gray-200">
                     <H2>Equipes</H2>
@@ -49,13 +47,13 @@
                     </li>
                 </ul>
             </div>
-        </aside>
+        </MobileSidebar>
 
         <div class="p-4 sm:ml-64">
             <div class="flex justify-center">
                 <h1 class="text-3xl font-bold text-slate-600 mb-4">Liste des équipes</h1>
             </div>
-            <div class="p-4 border border-slate-300 rounded-lg mx-6 bg-white">
+            <div class="p-4 border border-slate-300 rounded-lg md:mx-6 bg-white">
                 <form @submit.prevent="submit" enctype="multipart/form-data">
                     <div class="flex flex-col md:grid lg:grid-cols-2 gap-4 text-slate-700">
 
@@ -104,6 +102,7 @@ import {ref, defineProps, reactive, onMounted, computed} from 'vue';
 
 //Component
 import H2 from '@/Components/H2.vue';
+import MobileSidebar from '@/Components/MobileSidebar.vue';
 
 
 // Propriétés du composant

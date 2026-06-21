@@ -6,11 +6,7 @@
         </template>
 
         <!-- SIDEBAR -->
-        <aside
-            id="separator-sidebar"
-            class="fixed top-0 left-0 z-40 w-64 h-screen transition-transform -translate-x-full sm:translate-x-0"
-            aria-label="Sidebar"
-        >
+        <MobileSidebar>
             <div class="h-full px-3 py-2 overflow-y-auto bg-slate-700">
                 <div class="p-3 pb-5 mb-3 border-b text-center text-gray-200">
                     <H2>Equipes</H2>
@@ -88,7 +84,7 @@
                     </li>
                 </ul>
             </div>
-        </aside>
+        </MobileSidebar>
 
         <!-- CONTENU PRINCIPAL -->
         <div class="p-4 sm:ml-64">
@@ -318,6 +314,7 @@ import { ref, defineProps, computed, onMounted } from 'vue';
 // Components
 import H2 from '@/Components/H2.vue';
 import H1 from '@/Components/H1.vue';
+import MobileSidebar from '@/Components/MobileSidebar.vue';
 import FormContainer from '@/Components/FormContainer.vue';
 import FormRaw from '@/Components/FormRaw.vue';
 import FormCol from '@/Components/FormCol.vue';
