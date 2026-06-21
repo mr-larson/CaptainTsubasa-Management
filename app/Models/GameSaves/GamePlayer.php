@@ -55,6 +55,9 @@ class GamePlayer extends Model
         'secondary_positions' => 'array',
     ];
 
+    /** Origine des joueurs fictifs (générés pour compléter les sélections en Coupe du Monde). */
+    public const ORIGIN_FICTIONAL = 'fictional';
+
     /** Expose le coût avec majoration de polyvalence côté front. */
     protected $appends = ['adjusted_cost'];
 
@@ -77,6 +80,19 @@ class GamePlayer extends Model
     public function promises()
     {
         return $this->hasMany(GamePromise::class, 'game_player_id');
+    }
+
+    /**
+     * Exclut les joueurs fictifs (origin = 'fictional').
+     * Ils ne servent qu'à compléter les sélections nationales en Coupe
+     * du Monde et ne doivent jamais apparaître dans le pool de draft.
+     */
+    public function scopeExcludingFictional($query)
+    {
+        return $query->where(function ($q) {
+            $q->whereNull('origin')
+              ->orWhere('origin', '!=', self::ORIGIN_FICTIONAL);
+        });
     }
 
     /**

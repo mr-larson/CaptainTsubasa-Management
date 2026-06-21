@@ -391,6 +391,7 @@ class GameSaveController extends Controller
 
         $freePlayers = GamePlayer::where('game_save_id', $gameSave->id)
             ->whereDoesntHave('contracts', fn($q) => $q->activeAt($currentWeek))
+            ->excludingFictional()
             ->orderBy('lastname')
             ->orderBy('firstname')
             ->get();

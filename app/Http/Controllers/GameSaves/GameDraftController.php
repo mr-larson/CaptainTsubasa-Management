@@ -36,6 +36,7 @@ class GameDraftController extends Controller
 
         $freePlayers = GamePlayer::where('game_save_id', $gameSave->id)
             ->whereDoesntHave('contracts')
+            ->excludingFictional()
             ->orderBy('lastname')
             ->get();
 
