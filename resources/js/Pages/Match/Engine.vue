@@ -20,7 +20,7 @@
                          ====================== -->
                     <div
                         id="score-strip"
-                        class="lg:col-span-2 grid grid-cols-3 items-center rounded-xl px-6 py-6 text-neutral-800 shadow-md text-sm bg-white/90 shadow-md
+                        class="lg:col-span-2 grid grid-cols-[auto_1fr_auto] sm:grid-cols-3 items-center gap-2 rounded-xl px-3 py-4 sm:px-6 sm:py-6 text-neutral-800 shadow-md text-sm bg-white/90 shadow-md
                    border border-slate-200/70"
                     >
                         <!-- Left: actions -->
@@ -47,10 +47,10 @@
                         </div>
 
                         <!-- Center: score + logos -->
-                        <div class="flex items-center justify-center gap-4">
+                        <div class="flex items-center justify-center gap-2 sm:gap-4 min-w-0">
 
                             <!-- HOME / INTERNAL -->
-                            <div class="flex items-center gap-2 min-w-[160px] justify-end">
+                            <div class="flex items-center gap-2 min-w-0 sm:min-w-[160px] justify-end">
                                 <div class="h-12 w-12 rounded-md overflow-hidden flex items-center justify-center">
                                     <img
                                         v-if="homeLogoUrl"
@@ -62,7 +62,7 @@
                                 </div>
 
                                 <!-- ⚠️ ID utilisé par engine.js -->
-                                <span class="font-bold truncate max-w-[180px]" id="team-name-internal">
+                                <span class="font-bold truncate max-w-[180px] min-w-0" id="team-name-internal">
                   {{ homeName }}
                 </span>
                             </div>
@@ -76,8 +76,8 @@
                             </div>
 
                             <!-- AWAY / EXTERNAL -->
-                            <div class="flex items-center gap-2 min-w-[160px] justify-start">
-                <span class="font-bold truncate max-w-[180px]" id="team-name-external">
+                            <div class="flex items-center gap-2 min-w-0 sm:min-w-[160px] justify-start">
+                <span class="font-bold truncate max-w-[180px] min-w-0" id="team-name-external">
                   {{ awayName }}
                 </span>
 
@@ -170,7 +170,7 @@
                 <div id="main-row" class="grid grid-cols-1 lg:grid-cols-10 gap-6 items-stretch">
 
                     <!-- LEFT COLUMN : Stats cards -->
-                    <div id="left-column" class="lg:col-span-2 min-w-0 flex flex-col justify-around gap-4 max-h-[55vh]">
+                    <div id="left-column" class="lg:col-span-2 min-w-0 flex flex-col justify-around gap-4 lg:max-h-[55vh]">
 
                         <!-- HOME CARD -->
                         <div

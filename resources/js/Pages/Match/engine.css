@@ -242,6 +242,16 @@
 }
 
 /* ==========================================================================
+   RESPONSIVE MOBILE — pions / ballon réduits sur petit écran
+   (positions en % gérées par le moteur : seul le rendu est adapté)
+   ========================================================================== */
+@media (max-width: 640px) {
+    .player { width: 28px; height: 28px; font-size: 10px; }
+    #ball { width: 16px; height: 16px; font-size: 9px; }
+    #log-card { min-height: 320px; }
+}
+
+/* ==========================================================================
    ETATS / ANIMATIONS JS
    ========================================================================== */
 .dice-chip {
