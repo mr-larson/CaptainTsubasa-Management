@@ -504,6 +504,12 @@ export function updateSideCard(prefix, team, slotNumber) {
         header.textContent = `🔄 Choisir remplaçant`;
         panel.appendChild(header);
 
+        // Liste défilable : si beaucoup de remplaçants, on peut scroller
+        // au lieu de voir la liste déborder hors de l'écran.
+        const listEl = document.createElement('div');
+        listEl.style.cssText = 'max-height:min(220px,40vh);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;';
+        panel.appendChild(listEl);
+
         subs.forEach(({ slot, info: subInfo }) => {
             const subPid = getPlayerId(team, slot);
             const stMax  = _state.staminaMax[subPid] ?? 100;
@@ -527,7 +533,7 @@ export function updateSideCard(prefix, team, slotNumber) {
                     if (ok) { subBtn.remove(); panel.remove(); }
                 }
             };
-            panel.appendChild(item);
+            listEl.appendChild(item);
         });
 
         let open = false;
