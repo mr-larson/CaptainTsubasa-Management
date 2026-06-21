@@ -46,7 +46,7 @@ class CaptainTsubasaInternationalPlayers
                 ['Midfielder'],
             ],
             [
-                'Manfred', 'Margus', 13, 'Defender', 380,
+                'Manfred', 'Margus', 13, 'Forward', 380,
                 [
                     'speed' => 66, 'stamina' => 76, 'defense' => 38, 'attack' => 20,
                     'shot' => 16, 'pass' => 21, 'dribble' => 18,
@@ -56,7 +56,17 @@ class CaptainTsubasaInternationalPlayers
                 'Défenseur central solide et discipliné, pilier de l’arrière-garde allemande.',
             ],
             [
-                'Christian', 'Bauer', 13, 'Goalkeeper', 340,
+            'Franz', 'Schester', 13, 'Midfielder', 380,
+                [
+                    'speed' => 66, 'stamina' => 76, 'defense' => 38, 'attack' => 20,
+                    'shot' => 16, 'pass' => 21, 'dribble' => 18,
+                    'block' => 30, 'intercept' => 28, 'tackle' => 30,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Défenseur central solide et discipliné, pilier de l’arrière-garde allemande.',
+            ],
+            [
+                'Deuter', 'Müller', 13, 'Goalkeeper', 340,
                 [
                     'speed' => 57, 'stamina' => 74, 'defense' => 36, 'attack' => 15,
                     'shot' => 12, 'pass' => 17, 'dribble' => 15,
@@ -104,6 +114,114 @@ class CaptainTsubasaInternationalPlayers
             // =======================
             // BRÉSIL
             // =======================
+            // --- Gardien ---
+            [
+                '', 'Salinas', 13, 'Goalkeeper', 340,
+                [
+                    'speed' => 60, 'stamina' => 76, 'defense' => 38, 'attack' => 16,
+                    'shot' => 13, 'pass' => 18, 'dribble' => 16,
+                    'block' => 26, 'intercept' => 24, 'tackle' => 20,
+                    'hand_save' => 30, 'punch_save' => 29,
+                ],
+                'Gardien brésilien agile et spectaculaire, dernier rempart de la Seleção.',
+            ],
+
+            // --- Défenseurs ---
+            [
+                '', 'Alberto', 13, 'Defender', 410,
+                [
+                    'speed' => 73, 'stamina' => 82, 'defense' => 39, 'attack' => 26,
+                    'shot' => 20, 'pass' => 26, 'dribble' => 24,
+                    'block' => 30, 'intercept' => 28, 'tackle' => 30,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Capitaine et patron de la défense brésilienne, leader autoritaire au marquage implacable.',
+            ],
+            [
+                '', 'Casa Grande', 13, 'Defender', 400,
+                [
+                    'speed' => 71, 'stamina' => 81, 'defense' => 39, 'attack' => 24,
+                    'shot' => 19, 'pass' => 24, 'dribble' => 22,
+                    'block' => 30, 'intercept' => 27, 'tackle' => 30,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Roc défensif de la Seleção, puissant dans les duels et impérial dans le jeu aérien.',
+            ],
+            [
+                '', 'Jorgi', 13, 'Defender', 370,
+                [
+                    'speed' => 70, 'stamina' => 79, 'defense' => 37, 'attack' => 22,
+                    'shot' => 18, 'pass' => 23, 'dribble' => 22,
+                    'block' => 29, 'intercept' => 27, 'tackle' => 29,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Défenseur véloce et accrocheur, fidèle soutien de l’arrière-garde brésilienne.',
+            ],
+            [
+                '', 'Senardo', 13, 'Defender', 350,
+                [
+                    'speed' => 69, 'stamina' => 78, 'defense' => 36, 'attack' => 21,
+                    'shot' => 17, 'pass' => 22, 'dribble' => 21,
+                    'block' => 28, 'intercept' => 26, 'tackle' => 28,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Défenseur discipliné et endurant, il verrouille son couloir sans relâche.',
+            ],
+
+            // --- Milieux ---
+            [
+                '', 'Natureza', 13, 'Midfielder', 470,
+                [
+                    'speed' => 76, 'stamina' => 82, 'defense' => 26, 'attack' => 38,
+                    'shot' => 28, 'pass' => 30, 'dribble' => 30,
+                    'block' => 21, 'intercept' => 23, 'tackle' => 23,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Prodige de la Seleção, meneur surdoué aux dribbles et passes magiques. L’un des plus grands talents du World Youth.',
+                ['Forward'],
+            ],
+            [
+                '', 'Silva', 13, 'Midfielder', 400,
+                [
+                    'speed' => 73, 'stamina' => 80, 'defense' => 27, 'attack' => 33,
+                    'shot' => 26, 'pass' => 29, 'dribble' => 28,
+                    'block' => 22, 'intercept' => 24, 'tackle' => 24,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Milieu samba créatif, il fait circuler le ballon avec une aisance déconcertante.',
+            ],
+            [
+                '', 'Dugo', 13, 'Midfielder', 390,
+                [
+                    'speed' => 73, 'stamina' => 79, 'defense' => 27, 'attack' => 32,
+                    'shot' => 25, 'pass' => 28, 'dribble' => 28,
+                    'block' => 22, 'intercept' => 24, 'tackle' => 23,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Relayeur technique au jeu fluide, moteur du milieu de terrain brésilien.',
+            ],
+            [
+                '', 'Branca', 13, 'Midfielder', 380,
+                [
+                    'speed' => 72, 'stamina' => 80, 'defense' => 29, 'attack' => 31,
+                    'shot' => 24, 'pass' => 28, 'dribble' => 27,
+                    'block' => 24, 'intercept' => 26, 'tackle' => 25,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Milieu récupérateur infatigable, premier rempart devant la défense brésilienne.',
+            ],
+            [
+                '', 'Marcio', 13, 'Midfielder', 360,
+                [
+                    'speed' => 71, 'stamina' => 78, 'defense' => 26, 'attack' => 30,
+                    'shot' => 24, 'pass' => 27, 'dribble' => 26,
+                    'block' => 22, 'intercept' => 24, 'tackle' => 23,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Milieu polyvalent et travailleur, précieux équilibre dans l’entrejeu brésilien.',
+            ],
+
+            // --- Attaquants ---
             [
                 'Carlos', 'Santana', 13, 'Forward', 500,
                 [
@@ -112,27 +230,27 @@ class CaptainTsubasaInternationalPlayers
                     'block' => 19, 'intercept' => 21, 'tackle' => 21,
                     'hand_save' => 15, 'punch_save' => 15,
                 ],
-                'Prodige brésilien, capitaine de la Seleção. Technique féline et finition redoutable, c’est le grand rival de Tsubasa.',
+                'Star de la Seleção et grand rival de Tsubasa. Technique féline et finition redoutable, l’attaquant vedette de Flamengo.',
             ],
             [
-                'Toninho', 'Leite', 13, 'Midfielder', 400,
+                '', 'Pepe', 13, 'Forward', 480,
                 [
-                    'speed' => 74, 'stamina' => 78, 'defense' => 25, 'attack' => 33,
-                    'shot' => 26, 'pass' => 30, 'dribble' => 30,
-                    'block' => 21, 'intercept' => 23, 'tackle' => 23,
+                    'speed' => 78, 'stamina' => 83, 'defense' => 24, 'attack' => 41,
+                    'shot' => 31, 'pass' => 25, 'dribble' => 29,
+                    'block' => 19, 'intercept' => 21, 'tackle' => 21,
                     'hand_save' => 15, 'punch_save' => 15,
                 ],
-                'Milieu samba aux dribbles imprévisibles, il fait vivre le ballon au cœur du jeu brésilien.',
+                'Buteur surpuissant de São Paulo, sa frappe dévastatrice en fait l’une des terreurs de la Seleção.',
             ],
             [
-                'Amaral', 'Ferreira', 13, 'Defender', 370,
+                'Luciano', 'Leo', 13, 'Forward', 460,
                 [
-                    'speed' => 70, 'stamina' => 78, 'defense' => 38, 'attack' => 22,
-                    'shot' => 18, 'pass' => 23, 'dribble' => 22,
-                    'block' => 30, 'intercept' => 28, 'tackle' => 30,
+                    'speed' => 80, 'stamina' => 82, 'defense' => 23, 'attack' => 38,
+                    'shot' => 29, 'pass' => 26, 'dribble' => 30,
+                    'block' => 18, 'intercept' => 20, 'tackle' => 20,
                     'hand_save' => 15, 'punch_save' => 15,
                 ],
-                'Défenseur athlétique et anticipateur, mur de la défense brésilienne.',
+                'Ailier foudroyant de Flamengo, sa vitesse et ses débordements affolent les défenses.',
             ],
 
             // =======================
@@ -264,6 +382,56 @@ class CaptainTsubasaInternationalPlayers
                 'description' => 'Un tir acrobatique d’une technique brésilienne stupéfiante, impossible à anticiper.',
             ]],
 
+            'salinas' => [[
+                'key'         => 'salinas_jaguar_save',
+                'mode'        => 'defense',
+                'label'       => 'Arrêt du jaguar',
+                'short_label' => 'Jaguar',
+                'cooldown'    => 3,
+                'base_action' => 'hand_save',
+                'description' => 'Un plongeon félin d’une détente foudroyante qui dévie l’imparable.',
+            ]],
+
+            'alberto' => [[
+                'key'         => 'alberto_captain_tackle',
+                'mode'        => 'defense',
+                'label'       => 'Tacle du capitaine',
+                'short_label' => 'Capitão',
+                'cooldown'    => 2,
+                'base_action' => 'tackle',
+                'description' => 'Une interception autoritaire du capitaine, qui étouffe l’attaque et relance aussitôt.',
+            ]],
+
+            'casa-grande' => [[
+                'key'         => 'casa_grande_wall_block',
+                'mode'        => 'defense',
+                'label'       => 'Mur brésilien',
+                'short_label' => 'Mur',
+                'cooldown'    => 3,
+                'base_action' => 'block',
+                'description' => 'Un bloc d’une puissance colossale qui repousse même les frappes les plus lourdes.',
+            ]],
+
+            'natureza' => [[
+                'key'         => 'natureza_wild_dribble',
+                'mode'        => 'attack',
+                'label'       => 'Dribble sauvage',
+                'short_label' => 'Nature',
+                'cooldown'    => 2,
+                'base_action' => 'dribble',
+                'description' => 'Une succession de feintes imprévisibles, instinctives comme la nature elle-même.',
+            ]],
+
+            'pepe' => [[
+                'key'         => 'pepe_skylab_shot',
+                'mode'        => 'attack',
+                'label'       => 'Tir Skylab',
+                'short_label' => 'Skylab',
+                'cooldown'    => 3,
+                'base_action' => 'shot',
+                'description' => 'Une frappe surpuissante venue de São Paulo, un véritable boulet de canon.',
+            ]],
+
             'juan-diaz' => [[
                 'key'         => 'diaz_condor_shot',
                 'mode'        => 'attack',
@@ -308,15 +476,26 @@ class CaptainTsubasaInternationalPlayers
             'karl-heinz-schneider' => 'Allemagne',
             'hermann-kaltz'        => 'Allemagne',
             'manfred-margus'       => 'Allemagne',
-            'christian-bauer'      => 'Allemagne',
+            'franz-schester'      => 'Allemagne',
+            'deuter-muller'      => 'Allemagne',
             // France
             'el-sid-pierre'        => 'France',
             'louis-napoleon'       => 'France',
             'lucien-lacombe'       => 'France',
             // Brésil
+            'salinas'              => 'Brésil',
+            'alberto'              => 'Brésil',
+            'casa-grande'          => 'Brésil',
+            'jorgi'                => 'Brésil',
+            'senardo'              => 'Brésil',
+            'natureza'             => 'Brésil',
+            'silva'                => 'Brésil',
+            'dugo'                 => 'Brésil',
+            'branca'               => 'Brésil',
+            'marcio'               => 'Brésil',
             'carlos-santana'       => 'Brésil',
-            'toninho-leite'        => 'Brésil',
-            'amaral-ferreira'      => 'Brésil',
+            'pepe'                 => 'Brésil',
+            'luciano-leo'          => 'Brésil',
             // Argentine
             'juan-diaz'            => 'Argentine',
             'ramon-galvan'         => 'Argentine',
