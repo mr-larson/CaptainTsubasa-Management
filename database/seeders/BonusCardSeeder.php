@@ -86,42 +86,104 @@ class BonusCardSeeder extends Seeder
                 'icon'            => '✨',
             ],
 
-            // ── Finance ────────────────────────────────────────
+            // ── Finance — Pub (pari : gain aléatoire ±) ─────────
             [
-                'name'            => 'Bonus sponsors',
-                'description'     => 'Ajoute 500 € au budget de l\'équipe.',
+                'name'            => 'Affiche locale',
+                'description'     => 'Campagne d\'affichage au résultat incertain : rapporte entre -100 € et +400 € au budget.',
                 'tier'            => 'bronze',
                 'target'          => 'finance',
                 'execution_phase' => 'immediate',
-                'effect_type'     => 'revenue_boost',
-                'effect_value'    => ['amount' => 500],
+                'effect_type'     => 'revenue_gamble',
+                'effect_value'    => ['min' => -100, 'max' => 400],
                 'cost'            => 150,
-                'base_weight'     => 130,
-                'icon'            => '💰',
+                'base_weight'     => 80,
+                'icon'            => '📣',
             ],
             [
-                'name'            => 'Contrat TV',
-                'description'     => 'Ajoute 1000 € au budget de l\'équipe.',
+                'name'            => 'Spot TV',
+                'description'     => 'Spot télévisé au résultat incertain : rapporte entre -300 € et +900 € au budget.',
                 'tier'            => 'silver',
                 'target'          => 'finance',
                 'execution_phase' => 'immediate',
-                'effect_type'     => 'revenue_boost',
-                'effect_value'    => ['amount' => 1000],
+                'effect_type'     => 'revenue_gamble',
+                'effect_value'    => ['min' => -300, 'max' => 900],
                 'cost'            => 300,
-                'base_weight'     => 90,
+                'base_weight'     => 60,
                 'icon'            => '📺',
             ],
             [
-                'name'            => 'Méga-sponsor',
-                'description'     => 'Ajoute 2000 € au budget de l\'équipe.',
+                'name'            => 'Campagne nationale',
+                'description'     => 'Grande campagne nationale au résultat incertain : rapporte entre -500 € et +2200 € au budget. Coup de pouce pour les équipes en difficulté.',
                 'tier'            => 'gold',
                 'target'          => 'finance',
                 'execution_phase' => 'immediate',
-                'effect_type'     => 'revenue_boost',
-                'effect_value'    => ['amount' => 2000],
+                'effect_type'     => 'revenue_gamble',
+                'effect_value'    => ['min' => -500, 'max' => 2200],
                 'cost'            => 600,
-                'base_weight'     => 40,
-                'icon'            => '🏦',
+                'base_weight'     => 30,
+                'icon'            => '🎰',
+            ],
+
+            // ── Finance — Sponsor (défi : récompense si objectif atteint au prochain match) ──
+            [
+                'name'            => 'Prime de victoire',
+                'description'     => 'Le sponsor verse +600 € si tu gagnes ton prochain match. Sinon, la mise est perdue.',
+                'tier'            => 'bronze',
+                'target'          => 'finance',
+                'execution_phase' => 'immediate',
+                'effect_type'     => 'revenue_challenge',
+                'effect_value'    => ['challenge' => 'win', 'reward' => 600],
+                'cost'            => 200,
+                'base_weight'     => 70,
+                'icon'            => '🥅',
+            ],
+            [
+                'name'            => 'Prime offensive',
+                'description'     => 'Le sponsor verse +1200 € si ton équipe marque au moins 3 buts au prochain match. Sinon, la mise est perdue.',
+                'tier'            => 'silver',
+                'target'          => 'finance',
+                'execution_phase' => 'immediate',
+                'effect_type'     => 'revenue_challenge',
+                'effect_value'    => ['challenge' => 'score_3', 'reward' => 1200],
+                'cost'            => 300,
+                'base_weight'     => 60,
+                'icon'            => '⚽',
+            ],
+            [
+                'name'            => 'Prime défensive',
+                'description'     => 'Le sponsor verse +1200 € si ton équipe n\'encaisse aucun but au prochain match. Sinon, la mise est perdue.',
+                'tier'            => 'silver',
+                'target'          => 'finance',
+                'execution_phase' => 'immediate',
+                'effect_type'     => 'revenue_challenge',
+                'effect_value'    => ['challenge' => 'clean_sheet', 'reward' => 1200],
+                'cost'            => 300,
+                'base_weight'     => 60,
+                'icon'            => '🛡️',
+            ],
+            [
+                'name'            => 'Prime du spectacle',
+                'description'     => 'Le sponsor verse +1400 € si tu gagnes ton prochain match avec au moins 2 buts d\'écart. Sinon, la mise est perdue.',
+                'tier'            => 'silver',
+                'target'          => 'finance',
+                'execution_phase' => 'immediate',
+                'effect_type'     => 'revenue_challenge',
+                'effect_value'    => ['challenge' => 'win_by_2', 'reward' => 1400],
+                'cost'            => 350,
+                'base_weight'     => 50,
+                'icon'            => '🎇',
+            ],
+            [
+                'name'            => 'Méga-contrat',
+                'description'     => 'Le sponsor verse +2500 € si tu gagnes ton prochain match en marquant au moins 3 buts. Sinon, la mise est perdue.',
+                'tier'            => 'gold',
+                'target'          => 'finance',
+                'execution_phase' => 'immediate',
+                'effect_type'     => 'revenue_challenge',
+                'effect_value'    => ['challenge' => 'win_score_3', 'reward' => 2500],
+                'cost'            => 600,
+                'base_weight'     => 25,
+                'icon'            => '🏆',
             ],
 
             // ── Boost match (Match / pre_match) ────────────────
@@ -239,8 +301,13 @@ class BonusCardSeeder extends Seeder
             ],
         ];
 
+        // Anciennes cartes finance "argent gratuit" remplacées par les paris/défis.
+        // Le FK game_bonus_cards.bonus_card_id est en cascadeOnDelete : supprimer
+        // ces cartes retire aussi les exemplaires déjà achetés dans les parties.
+        BonusCard::whereIn('name', ['Bonus sponsors', 'Contrat TV', 'Méga-sponsor'])->delete();
+
         foreach ($cards as $card) {
-            BonusCard::firstOrCreate(['name' => $card['name']], $card);
+            BonusCard::updateOrCreate(['name' => $card['name']], $card);
         }
     }
 }

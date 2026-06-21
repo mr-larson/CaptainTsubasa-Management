@@ -47,6 +47,8 @@ const props = defineProps({
     weeklyRecap:       { type: Array,  default: () => [] },
     bonusCardOffers:    { type: Array, default: () => [] },
     bonusCardInventory: { type: Array, default: () => [] },
+    sponsorChallenges:  { type: Array, default: () => [] },
+    sponsorResults:     { type: Array, default: () => [] },
     managementStats:    { type: Object, default: () => ({}) },
     moraleLogs:         { type: Object, default: () => ({}) },
     playerPromises:     { type: Object, default: () => ({}) },
@@ -73,6 +75,24 @@ const makeDeclaration = (player, type) => {
     router.post(
         route('game-saves.players.declarations.store', { gameSave: props.gameSave.id, player: player.id }),
         { type },
+        { preserveScroll: true }
+    );
+};
+
+// Résiliation de contrat — salaire perdu, relation coach rompue, joueur libéré
+const releasePlayer = (player) => {
+    if (!player?.contract_id) return;
+    const name = `${player.firstname ?? ''} ${player.lastname ?? ''}`.trim() || 'ce joueur';
+    if (!window.confirm(
+        `Résilier le contrat de ${name} ?\n\n`
+        + `• Le salaire déjà payé d'avance ne sera PAS remboursé.\n`
+        + `• Sa relation avec le coach tombera à -100 (il refusera de re-signer).\n`
+        + `• Son moral chutera.\n\n`
+        + `Confirmer la résiliation ?`
+    )) return;
+
+    router.delete(
+        route('game-saves.contracts.release', { gameSave: props.gameSave.id, contract: player.contract_id }),
         { preserveScroll: true }
     );
 };
@@ -394,6 +414,7 @@ function updateOtherPlayerNumber(playerId, number) {
                                :currentWeek="week"
                                @make-promise="makePromise"
                                @make-declaration="makeDeclaration"
+                               @release-player="releasePlayer"
                                :isPlayerInjured="isPlayerInjured"
                                :isPlayerSuspended="isPlayerSuspended"
                                :playerYellowCards="playerYellowCards"
@@ -542,6 +563,8 @@ function updateOtherPlayerNumber(playerId, number) {
                                    :week="week"
                                    :isAlreadyBought="isAlreadyBought"
                                    :isPlayerInjured="isPlayerInjured"
+                                   :sponsorChallenges="props.sponsorChallenges"
+                                   :sponsorResults="props.sponsorResults"
                                    @buy="buyCard"
                                    @activate="activateCard"
                     />

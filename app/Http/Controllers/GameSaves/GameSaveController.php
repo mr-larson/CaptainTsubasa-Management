@@ -573,6 +573,21 @@ class GameSaveController extends Controller
                 ])
             : collect();
 
+        // ─── Défis sponsor (cartes finance) de l'équipe contrôlée ───
+        $state = $gameSave->state ?? [];
+        $sponsorChallenges = $controlledTeamId
+            ? array_values(array_filter(
+                $state['pending_sponsor_challenges'] ?? [],
+                fn ($c) => (int) ($c['game_team_id'] ?? 0) === (int) $controlledTeamId
+            ))
+            : [];
+        $sponsorResults = $controlledTeamId
+            ? array_values(array_filter(
+                $state['sponsor_results'] ?? [],
+                fn ($c) => (int) ($c['game_team_id'] ?? 0) === (int) $controlledTeamId
+            ))
+            : [];
+
         // ─── Hot-seat multi-manager : qui joue, dans quel ordre ───
         $controlledTeams = $gameTeams
             ->whereNotNull('human_seat')
@@ -614,6 +629,8 @@ class GameSaveController extends Controller
             'playerDeclarations'  => $playerDeclarations,
             'bonusCardOffers'     => $bonusCardOffers,
             'bonusCardInventory'  => $bonusCardInventory,
+            'sponsorChallenges'   => $sponsorChallenges,
+            'sponsorResults'      => $sponsorResults,
             'tournament'          => $gameSave->competition_type === 'world_cup'
                 ? app(TournamentService::class)->presentation($gameSave)
                 : null,

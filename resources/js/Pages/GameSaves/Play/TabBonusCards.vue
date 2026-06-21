@@ -10,6 +10,8 @@ const props = defineProps({
     week:             { type: Number,   required: true },
     isAlreadyBought:  { type: Function, default: () => false },
     isPlayerInjured:  { type: Function, default: () => false },
+    sponsorChallenges:{ type: Array,    default: () => [] },
+    sponsorResults:   { type: Array,    default: () => [] },
 });
 
 const emit = defineEmits(['buy', 'activate']);
@@ -75,6 +77,16 @@ const targetLabel = (target) => ({
     match:   '⚽ Match',
     finance: '💰 Finances',
 }[target] ?? target);
+
+// Libellés des défis sponsor (miroir de BonusCardActivationService::evaluateChallenge)
+const CHALLENGE_LABELS = {
+    win:         'Gagner le prochain match',
+    score_3:     'Marquer au moins 3 buts au prochain match',
+    clean_sheet: 'Ne pas encaisser au prochain match',
+    win_by_2:    'Gagner avec au moins 2 buts d\'écart',
+    win_score_3: 'Gagner en marquant au moins 3 buts',
+};
+const challengeLabel = (c) => CHALLENGE_LABELS[c] ?? 'Objectif au prochain match';
 
 const canAfford = (cost) => props.teamBudget >= cost;
 
@@ -153,6 +165,46 @@ const canConfirm = computed(() => {
                         {{ availableCards.length }}
                     </span>
                 </button>
+            </div>
+        </div>
+
+        <!-- ================================================ -->
+        <!-- DÉFIS SPONSOR (cartes finance)                    -->
+        <!-- ================================================ -->
+        <div v-if="sponsorChallenges.length || sponsorResults.length" class="flex flex-col gap-2">
+
+            <!-- Défis en cours -->
+            <div v-for="(ch, i) in sponsorChallenges" :key="'pending-' + i"
+                 class="flex items-center gap-3 border border-sky-200 bg-sky-50 rounded-xl px-3 py-2">
+                <span class="text-xl">{{ ch.icon || '🤝' }}</span>
+                <div class="flex-1 min-w-0">
+                    <div class="text-xs font-bold text-sky-800">Défi en cours — {{ ch.card_name }}</div>
+                    <div class="text-[11px] text-sky-600">{{ challengeLabel(ch.challenge) }}</div>
+                </div>
+                <div class="text-right shrink-0">
+                    <div class="text-sm font-black text-sky-700">+{{ ch.reward }} €</div>
+                    <div class="text-[9px] font-semibold text-sky-500">si réussi</div>
+                </div>
+            </div>
+
+            <!-- Résultats de la dernière clôture -->
+            <div v-for="(r, i) in sponsorResults" :key="'result-' + i"
+                 class="flex items-center gap-3 border rounded-xl px-3 py-2"
+                 :class="r.success ? 'border-emerald-200 bg-emerald-50' : 'border-rose-200 bg-rose-50'">
+                <span class="text-xl">{{ r.icon || '🤝' }}</span>
+                <div class="flex-1 min-w-0">
+                    <div class="text-xs font-bold" :class="r.success ? 'text-emerald-800' : 'text-rose-800'">
+                        {{ r.success ? '✓ Défi réussi' : '✗ Défi manqué' }} — {{ r.card_name }}
+                    </div>
+                    <div class="text-[11px]" :class="r.success ? 'text-emerald-600' : 'text-rose-600'">
+                        {{ challengeLabel(r.challenge) }} · résultat {{ r.scored }}–{{ r.against }}
+                    </div>
+                </div>
+                <div class="text-right shrink-0">
+                    <div class="text-sm font-black" :class="r.success ? 'text-emerald-700' : 'text-rose-400'">
+                        {{ r.success ? '+' + r.reward + ' €' : '0 €' }}
+                    </div>
+                </div>
             </div>
         </div>
 

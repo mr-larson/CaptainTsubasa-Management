@@ -123,10 +123,16 @@ class AiBonusCardService
                 $score = $injuredCount > 0 ? min(90, 40 + $injuredCount * 20) : 0;
                 break;
 
-            case 'revenue_boost':
-                // Plus le budget est bas, plus c'est urgent
+            case 'revenue_gamble':
+                // Pari publicitaire : plus le budget est bas, plus on tente
                 $budget = $context['budget'] ?? 1000;
-                $score = $budget < 500 ? 80 : ($budget < 1000 ? 50 : 20);
+                $score = $budget < 500 ? 75 : ($budget < 1000 ? 45 : 15);
+                break;
+
+            case 'revenue_challenge':
+                // Défi sponsor : intéressant quand le budget est tendu (pari sur la perf)
+                $budget = $context['budget'] ?? 1000;
+                $score = $budget < 700 ? 50 : ($budget < 1200 ? 30 : 10);
                 break;
 
             case 'morale_boost':
@@ -182,8 +188,11 @@ class AiBonusCardService
                 if ($targetId) {
                     $this->activationService->activate($card, $gameSave, $targetId);
                 }
-            } elseif ($effectType === 'revenue_boost') {
-                // Toujours activer les boosts financiers
+            } elseif ($effectType === 'revenue_gamble') {
+                // Tenter le pari publicitaire (résolution immédiate)
+                $this->activationService->activate($card, $gameSave);
+            } elseif ($effectType === 'revenue_challenge') {
+                // Souscrire le défi sponsor (résolu au prochain match)
                 $this->activationService->activate($card, $gameSave);
             } elseif ($effectType === 'morale_boost') {
                 // Activer sur le joueur au moral le plus bas

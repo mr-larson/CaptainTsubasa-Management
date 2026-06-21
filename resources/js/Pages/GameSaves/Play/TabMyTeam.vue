@@ -52,6 +52,7 @@ const props = defineProps({
 const emit = defineEmits([
     'select-player', 'toggle-starter', 'toggle-captain', 'save-formation', 'update-number',
     'player-click', 'drag-start', 'drag-over', 'drop-on', 'make-promise', 'make-declaration',
+    'release-player',
 ]);
 
 const substitutes = computed(() => props.rosterWithStatus.filter(p => !p.is_starter));
@@ -284,6 +285,13 @@ const slotMastery = (slot, slotDef) => {
                                     class="w-14 border border-slate-300 rounded-lg px-2 py-1 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-teal-300 focus:outline-none"
                                 />
                             </div>
+                            <!-- Résiliation -->
+                            <button v-if="selectedMyPlayer.contract_id" type="button"
+                                    @click="emit('release-player', selectedMyPlayer)"
+                                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all bg-white text-rose-500 border-rose-300 hover:bg-rose-50"
+                                    title="Résilier le contrat : salaire déjà versé non remboursé, relation avec le coach rompue (-100)">
+                                ✖ Résilier
+                            </button>
                         </template>
                         <template #footer>
                             <p v-if="selectedMyPlayer.is_starter" class="mt-3 text-[10px] text-slate-400 italic">

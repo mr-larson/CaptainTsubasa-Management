@@ -15,7 +15,7 @@ return new class extends Migration
             $table->enum('tier', ['bronze', 'silver', 'gold']);
             $table->enum('target', ['self', 'player', 'match', 'finance']);
             $table->enum('execution_phase', ['immediate', 'pre_match', 'post_match', 'weekly_reset']);
-            $table->string('effect_type');          // stamina_boost, stat_boost, injury_reduce, revenue_boost
+            $table->string('effect_type');          // stamina_boost, stat_boost, injury_reduce, revenue_gamble, revenue_challenge, morale_boost, coach_affinity_boost
             $table->json('effect_value');            // {"amount": 20} ou {"stat": "attack", "amount": 10}
             $table->unsignedInteger('cost');         // coût en euros
             $table->unsignedInteger('base_weight'); // poids de base pour le tirage (100 = neutre)

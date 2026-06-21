@@ -67,4 +67,36 @@ class GameContractController extends Controller
 
         return back()->with('success', 'Contrat supprimé.');
     }
+
+    /**
+     * Résilie un contrat en cours (action en jeu, équipe contrôlée).
+     * Conséquences : aucun remboursement du salaire déjà payé d'avance, la
+     * relation du joueur avec le coach est rompue (-100) et son moral chute.
+     * Le joueur redevient agent libre et refusera de re-signer avec ce club.
+     */
+    public function release(GameSave $gameSave, GameContract $contract)
+    {
+        $this->authorizeGameSave('update', $gameSave, $contract);
+
+        abort_unless(
+            (int) $contract->game_team_id === (int) $gameSave->controlled_game_team_id,
+            403
+        );
+
+        $player = $contract->gamePlayer;
+
+        if ($player) {
+            $player->coach_affinity = -100;
+            $player->morale = max(0, (int) ($player->morale ?? MoraleService::NEUTRAL_MORALE) - 20);
+            $player->number = null;
+            $player->save();
+        }
+
+        // Aucun remboursement : le salaire versé d'avance est perdu.
+        $contract->delete();
+
+        $name = $player?->full_name ?? 'Le joueur';
+
+        return back()->with('success', "{$name} a été libéré. Le salaire déjà versé n'est pas remboursé et sa relation avec le coach est rompue.");
+    }
 }

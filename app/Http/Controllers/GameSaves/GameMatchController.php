@@ -257,6 +257,9 @@ class GameMatchController extends Controller
         // Revenus hebdomadaires AVANT d'incrémenter la semaine
         $this->applyWeeklyIncome($gameSave, $weekToClose);
 
+        // Résolution des défis sponsor (cartes finance) selon les résultats de la semaine
+        app(BonusCardActivationService::class)->resolveSponsorChallenges($gameSave, $weekToClose);
+
         // Avancer la semaine
         $gameSave->week = max($gameSave->week ?? 1, $weekToClose + 1);
 
@@ -342,6 +345,9 @@ class GameMatchController extends Controller
 
         // Revenus AVANT incrément
         $this->applyWeeklyIncome($gameSave, $week);
+
+        // Résolution des défis sponsor (cartes finance) selon les résultats de la semaine
+        app(BonusCardActivationService::class)->resolveSponsorChallenges($gameSave, $week);
 
         // Stamina AVANT incrément (sinon on récupère l'historique d'une autre semaine)
         StaminaService::applyAfterWeek($gameSave, $week);
