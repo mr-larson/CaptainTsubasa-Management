@@ -56,7 +56,7 @@ const props = defineProps({
 });
 
 // Mode Coupe du Monde : adapte l'UI (onglet Classement → poules+bracket,
-// masquage des onglets sans objet comme Transferts/Gestion).
+// masquage de l'onglet Transferts, sans objet pour des sélections).
 const isWorldCup = computed(() => props.gameSave?.competition_type === 'world_cup');
 
 // Promesse au joueur (relation coach) — type : playing_time | starter | renewal
@@ -222,7 +222,7 @@ const {
 //   ONGLETS
 // ==========================
 // En Coupe du Monde : « Classement » devient « Tournoi » (poules + bracket),
-// et les onglets Transferts/Gestion (sans objet pour des sélections) sont masqués.
+// et l'onglet Transferts (sans objet pour des sélections) est masqué.
 const tabs = computed(() => {
     const wc = isWorldCup.value;
     return [
@@ -235,7 +235,7 @@ const tabs = computed(() => {
         { key: 'training',    label: 'Entraînement'                   },
         ...(wc ? [] : [{ key: 'transfers',  label: 'Transferts' }]),
         { key: 'cards',       label: 'Cartes bonus'                   },
-        ...(wc ? [] : [{ key: 'management', label: 'Gestion'    }]),
+        { key: 'management',  label: 'Gestion'                        },
     ];
 });
 const activeTab = ref('dashboard');
