@@ -73,7 +73,7 @@ function submit() {
                                         <span class="text-xl">🏫</span>
                                         <span class="text-sm font-bold"
                                               :class="form.competition_type === 'college_league' ? 'text-teal-700' : 'text-slate-700'">
-                                            Ligue collège
+                                            Ligue
                                         </span>
                                     </div>
                                     <p class="text-[11px] leading-relaxed"

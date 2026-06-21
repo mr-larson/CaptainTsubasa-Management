@@ -27,9 +27,9 @@ class CaptainTsubasaInternationalPlayers
             [
                 'Karl-Heinz', 'Schneider', 13, 'Forward', 500,
                 [
-                    'speed' => 84, 'stamina' => 88, 'defense' => 26, 'attack' => 46,
-                    'shot' => 38, 'pass' => 25, 'dribble' => 30,
-                    'block' => 20, 'intercept' => 22, 'tackle' => 22,
+                    'speed' => 77, 'stamina' => 84, 'defense' => 25, 'attack' => 42,
+                    'shot' => 31, 'pass' => 24, 'dribble' => 28,
+                    'block' => 19, 'intercept' => 21, 'tackle' => 21,
                     'hand_save' => 15, 'punch_save' => 15,
                 ],
                 'Le « Kaiser » du football allemand. Buteur d’exception au tir surpuissant, il incarne la rigueur et la puissance de la sélection.',
@@ -37,9 +37,9 @@ class CaptainTsubasaInternationalPlayers
             [
                 'Hermann', 'Kaltz', 13, 'Defender', 430,
                 [
-                    'speed' => 78, 'stamina' => 84, 'defense' => 42, 'attack' => 30,
-                    'shot' => 24, 'pass' => 28, 'dribble' => 26,
-                    'block' => 32, 'intercept' => 32, 'tackle' => 33,
+                    'speed' => 72, 'stamina' => 80, 'defense' => 39, 'attack' => 28,
+                    'shot' => 21, 'pass' => 27, 'dribble' => 24,
+                    'block' => 30, 'intercept' => 28, 'tackle' => 30,
                     'hand_save' => 15, 'punch_save' => 15,
                 ],
                 'Latéral offensif infatigable, il monte sans cesse pour soutenir l’attaque et combine avec Schneider.',
@@ -48,9 +48,9 @@ class CaptainTsubasaInternationalPlayers
             [
                 'Manfred', 'Margus', 13, 'Defender', 380,
                 [
-                    'speed' => 72, 'stamina' => 80, 'defense' => 40, 'attack' => 22,
-                    'shot' => 18, 'pass' => 22, 'dribble' => 20,
-                    'block' => 33, 'intercept' => 30, 'tackle' => 32,
+                    'speed' => 66, 'stamina' => 76, 'defense' => 38, 'attack' => 20,
+                    'shot' => 16, 'pass' => 21, 'dribble' => 18,
+                    'block' => 30, 'intercept' => 28, 'tackle' => 30,
                     'hand_save' => 15, 'punch_save' => 15,
                 ],
                 'Défenseur central solide et discipliné, pilier de l’arrière-garde allemande.',
@@ -58,10 +58,10 @@ class CaptainTsubasaInternationalPlayers
             [
                 'Christian', 'Bauer', 13, 'Goalkeeper', 340,
                 [
-                    'speed' => 62, 'stamina' => 78, 'defense' => 38, 'attack' => 16,
-                    'shot' => 14, 'pass' => 18, 'dribble' => 16,
-                    'block' => 26, 'intercept' => 24, 'tackle' => 20,
-                    'hand_save' => 40, 'punch_save' => 36,
+                    'speed' => 57, 'stamina' => 74, 'defense' => 36, 'attack' => 15,
+                    'shot' => 12, 'pass' => 17, 'dribble' => 15,
+                    'block' => 25, 'intercept' => 23, 'tackle' => 19,
+                    'hand_save' => 30, 'punch_save' => 30,
                 ],
                 'Gardien rigoureux et bien placé, dernier rempart fiable de la sélection allemande.',
             ],
@@ -72,9 +72,9 @@ class CaptainTsubasaInternationalPlayers
             [
                 'El Sid', 'Pierre', 13, 'Midfielder', 470,
                 [
-                    'speed' => 82, 'stamina' => 84, 'defense' => 26, 'attack' => 38,
-                    'shot' => 30, 'pass' => 33, 'dribble' => 34,
-                    'block' => 22, 'intercept' => 24, 'tackle' => 24,
+                    'speed' => 75, 'stamina' => 80, 'defense' => 25, 'attack' => 35,
+                    'shot' => 26, 'pass' => 30, 'dribble' => 30,
+                    'block' => 21, 'intercept' => 23, 'tackle' => 23,
                     'hand_save' => 15, 'punch_save' => 15,
                 ],
                 'Meneur virevoltant des « Jumeaux de l’aigle ». Dribble et vision exceptionnels, il orchestre le jeu français avec Napoléon.',
@@ -83,9 +83,9 @@ class CaptainTsubasaInternationalPlayers
             [
                 'Louis', 'Napoleon', 13, 'Forward', 460,
                 [
-                    'speed' => 80, 'stamina' => 82, 'defense' => 24, 'attack' => 44,
-                    'shot' => 36, 'pass' => 28, 'dribble' => 31,
-                    'block' => 20, 'intercept' => 22, 'tackle' => 22,
+                    'speed' => 74, 'stamina' => 78, 'defense' => 23, 'attack' => 40,
+                    'shot' => 31, 'pass' => 27, 'dribble' => 29,
+                    'block' => 19, 'intercept' => 21, 'tackle' => 21,
                     'hand_save' => 15, 'punch_save' => 15,
                 ],
                 'Attaquant tranchant, partenaire de Pierre. Leur une-deux « de l’aigle » déchire les défenses.',
@@ -93,9 +93,9 @@ class CaptainTsubasaInternationalPlayers
             [
                 'Lucien', 'Lacombe', 13, 'Defender', 360,
                 [
-                    'speed' => 74, 'stamina' => 80, 'defense' => 39, 'attack' => 22,
-                    'shot' => 18, 'pass' => 24, 'dribble' => 22,
-                    'block' => 31, 'intercept' => 30, 'tackle' => 31,
+                    'speed' => 68, 'stamina' => 76, 'defense' => 37, 'attack' => 20,
+                    'shot' => 16, 'pass' => 23, 'dribble' => 20,
+                    'block' => 29, 'intercept' => 28, 'tackle' => 29,
                     'hand_save' => 15, 'punch_save' => 15,
                 ],
                 'Défenseur élégant et rapide, à l’aise dans la relance autant que dans le duel.',
@@ -107,9 +107,9 @@ class CaptainTsubasaInternationalPlayers
             [
                 'Carlos', 'Santana', 13, 'Forward', 500,
                 [
-                    'speed' => 86, 'stamina' => 88, 'defense' => 26, 'attack' => 47,
-                    'shot' => 38, 'pass' => 28, 'dribble' => 34,
-                    'block' => 20, 'intercept' => 22, 'tackle' => 22,
+                    'speed' => 79, 'stamina' => 84, 'defense' => 25, 'attack' => 42,
+                    'shot' => 31, 'pass' => 27, 'dribble' => 30,
+                    'block' => 19, 'intercept' => 21, 'tackle' => 21,
                     'hand_save' => 15, 'punch_save' => 15,
                 ],
                 'Prodige brésilien, capitaine de la Seleção. Technique féline et finition redoutable, c’est le grand rival de Tsubasa.',
@@ -117,9 +117,9 @@ class CaptainTsubasaInternationalPlayers
             [
                 'Toninho', 'Leite', 13, 'Midfielder', 400,
                 [
-                    'speed' => 80, 'stamina' => 82, 'defense' => 26, 'attack' => 36,
-                    'shot' => 30, 'pass' => 32, 'dribble' => 35,
-                    'block' => 22, 'intercept' => 24, 'tackle' => 24,
+                    'speed' => 74, 'stamina' => 78, 'defense' => 25, 'attack' => 33,
+                    'shot' => 26, 'pass' => 30, 'dribble' => 30,
+                    'block' => 21, 'intercept' => 23, 'tackle' => 23,
                     'hand_save' => 15, 'punch_save' => 15,
                 ],
                 'Milieu samba aux dribbles imprévisibles, il fait vivre le ballon au cœur du jeu brésilien.',
@@ -127,9 +127,9 @@ class CaptainTsubasaInternationalPlayers
             [
                 'Amaral', 'Ferreira', 13, 'Defender', 370,
                 [
-                    'speed' => 76, 'stamina' => 82, 'defense' => 40, 'attack' => 24,
-                    'shot' => 20, 'pass' => 24, 'dribble' => 24,
-                    'block' => 32, 'intercept' => 31, 'tackle' => 32,
+                    'speed' => 70, 'stamina' => 78, 'defense' => 38, 'attack' => 22,
+                    'shot' => 18, 'pass' => 23, 'dribble' => 22,
+                    'block' => 30, 'intercept' => 28, 'tackle' => 30,
                     'hand_save' => 15, 'punch_save' => 15,
                 ],
                 'Défenseur athlétique et anticipateur, mur de la défense brésilienne.',
@@ -141,9 +141,9 @@ class CaptainTsubasaInternationalPlayers
             [
                 'Juan', 'Diaz', 13, 'Forward', 480,
                 [
-                    'speed' => 82, 'stamina' => 84, 'defense' => 24, 'attack' => 45,
-                    'shot' => 37, 'pass' => 26, 'dribble' => 32,
-                    'block' => 20, 'intercept' => 22, 'tackle' => 22,
+                    'speed' => 75, 'stamina' => 80, 'defense' => 23, 'attack' => 41,
+                    'shot' => 31, 'pass' => 25, 'dribble' => 29,
+                    'block' => 19, 'intercept' => 21, 'tackle' => 21,
                     'hand_save' => 15, 'punch_save' => 15,
                 ],
                 'Buteur argentin au sang-froid glacial, son tir foudroyant fait trembler les filets.',
@@ -151,9 +151,9 @@ class CaptainTsubasaInternationalPlayers
             [
                 'Ramon', 'Galvan', 13, 'Defender', 370,
                 [
-                    'speed' => 75, 'stamina' => 81, 'defense' => 40, 'attack' => 24,
-                    'shot' => 20, 'pass' => 24, 'dribble' => 24,
-                    'block' => 32, 'intercept' => 30, 'tackle' => 33,
+                    'speed' => 69, 'stamina' => 77, 'defense' => 38, 'attack' => 22,
+                    'shot' => 18, 'pass' => 23, 'dribble' => 22,
+                    'block' => 30, 'intercept' => 28, 'tackle' => 30,
                     'hand_save' => 15, 'punch_save' => 15,
                 ],
                 'Défenseur accrocheur et roublard, spécialiste du marquage individuel.',
@@ -161,9 +161,9 @@ class CaptainTsubasaInternationalPlayers
             [
                 'Juan', 'Babington', 13, 'Midfielder', 390,
                 [
-                    'speed' => 78, 'stamina' => 83, 'defense' => 28, 'attack' => 35,
-                    'shot' => 29, 'pass' => 32, 'dribble' => 31,
-                    'block' => 24, 'intercept' => 26, 'tackle' => 26,
+                    'speed' => 72, 'stamina' => 79, 'defense' => 27, 'attack' => 32,
+                    'shot' => 26, 'pass' => 30, 'dribble' => 29,
+                    'block' => 23, 'intercept' => 25, 'tackle' => 25,
                     'hand_save' => 15, 'punch_save' => 15,
                 ],
                 'Milieu complet, relais entre défense et attaque, moteur du collectif argentin.',
@@ -175,9 +175,9 @@ class CaptainTsubasaInternationalPlayers
             [
                 'Ramon', 'Victorino', 13, 'Forward', 470,
                 [
-                    'speed' => 80, 'stamina' => 86, 'defense' => 26, 'attack' => 45,
-                    'shot' => 37, 'pass' => 26, 'dribble' => 30,
-                    'block' => 22, 'intercept' => 24, 'tackle' => 24,
+                    'speed' => 74, 'stamina' => 82, 'defense' => 25, 'attack' => 41,
+                    'shot' => 31, 'pass' => 25, 'dribble' => 28,
+                    'block' => 21, 'intercept' => 23, 'tackle' => 23,
                     'hand_save' => 15, 'punch_save' => 15,
                 ],
                 'Avant-centre uruguayen puissant et combatif, sa frappe lourde est une arme de destruction.',
@@ -185,9 +185,9 @@ class CaptainTsubasaInternationalPlayers
             [
                 'Diego', 'Madero', 13, 'Defender', 360,
                 [
-                    'speed' => 73, 'stamina' => 82, 'defense' => 39, 'attack' => 24,
-                    'shot' => 20, 'pass' => 23, 'dribble' => 22,
-                    'block' => 31, 'intercept' => 29, 'tackle' => 32,
+                    'speed' => 67, 'stamina' => 78, 'defense' => 37, 'attack' => 22,
+                    'shot' => 18, 'pass' => 22, 'dribble' => 20,
+                    'block' => 29, 'intercept' => 28, 'tackle' => 30,
                     'hand_save' => 15, 'punch_save' => 15,
                 ],
                 'Défenseur rugueux à la « garra charrúa », il ne lâche jamais un duel.',
@@ -199,9 +199,9 @@ class CaptainTsubasaInternationalPlayers
             [
                 'Brian', 'Cruyfford', 13, 'Forward', 470,
                 [
-                    'speed' => 84, 'stamina' => 84, 'defense' => 24, 'attack' => 44,
-                    'shot' => 35, 'pass' => 30, 'dribble' => 33,
-                    'block' => 20, 'intercept' => 22, 'tackle' => 22,
+                    'speed' => 77, 'stamina' => 80, 'defense' => 23, 'attack' => 40,
+                    'shot' => 31, 'pass' => 29, 'dribble' => 30,
+                    'block' => 19, 'intercept' => 21, 'tackle' => 21,
                     'hand_save' => 15, 'punch_save' => 15,
                 ],
                 'Génie du football total néerlandais, à l’aise partout devant, fin technicien et meneur d’hommes.',
@@ -210,9 +210,9 @@ class CaptainTsubasaInternationalPlayers
             [
                 'Robin', 'Van Basty', 13, 'Midfielder', 380,
                 [
-                    'speed' => 78, 'stamina' => 82, 'defense' => 28, 'attack' => 34,
-                    'shot' => 30, 'pass' => 33, 'dribble' => 30,
-                    'block' => 24, 'intercept' => 26, 'tackle' => 26,
+                    'speed' => 72, 'stamina' => 78, 'defense' => 27, 'attack' => 31,
+                    'shot' => 26, 'pass' => 30, 'dribble' => 28,
+                    'block' => 23, 'intercept' => 25, 'tackle' => 25,
                     'hand_save' => 15, 'punch_save' => 15,
                 ],
                 'Milieu intelligent et altruiste, métronome du jeu de position oranje.',
