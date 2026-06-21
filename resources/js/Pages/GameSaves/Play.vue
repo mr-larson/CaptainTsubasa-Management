@@ -276,9 +276,9 @@ function updateOtherPlayerNumber(playerId, number) {
             <H2>Partie : {{ gameSave.label ?? `Sauvegarde #${gameSave.id}` }}</H2>
         </template>
 
-        <div class="p-4">
+        <div class="p-2 sm:p-4">
             <div class="flex justify-center mb-3">
-                <h1 class="text-3xl font-bold text-slate-600">Session de jeu</h1>
+                <h1 class="text-2xl sm:text-3xl font-bold text-slate-600">Session de jeu</h1>
             </div>
 
             <!-- Hot-seat multi-manager : indicateur de tour -->
@@ -304,11 +304,11 @@ function updateOtherPlayerNumber(playerId, number) {
 
             <div class="flex flex-row">
                 <!-- Visuel gauche -->
-                <div class="hidden md:block basis-1/4 p-4 bg-contain bg-center bg-no-repeat"
+                <div class="hidden md:block md:basis-1/4 p-4 bg-contain bg-center bg-no-repeat"
                      style="background-image: url('/images/wakabayashi.webp')"></div>
 
                 <!-- Carte principale -->
-                <div class="basis-3/4 p-4 border border-slate-300 rounded-lg mx-6 bg-white min-h-[500px] flex flex-col">
+                <div class="flex-1 min-w-0 p-3 sm:p-4 border border-slate-300 rounded-lg md:mx-6 bg-white min-h-[500px] flex flex-col">
 
                     <!-- Onglets -->
                     <div class="mb-4 border-b border-slate-200">

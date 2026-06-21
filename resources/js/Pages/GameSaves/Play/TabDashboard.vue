@@ -223,7 +223,7 @@ const matchesPlayed = computed(() =>
         <!-- LIGNE 1 : Contexte + progression saison      -->
         <!-- ============================================ -->
         <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
-            <div class="flex items-center justify-between gap-4 mb-3">
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-3">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl overflow-hidden shrink-0">
                         <img v-if="teamLogoUrl(team)" :src="teamLogoUrl(team)" class="w-full h-full object-contain" alt=""/>
@@ -295,7 +295,7 @@ const matchesPlayed = computed(() =>
         <!-- ============================================ -->
         <!-- LIGNE 2 : 4 tuiles                          -->
         <!-- ============================================ -->
-        <div class="grid grid-cols-4 gap-3">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
 
             <!-- Classement — Coupe du Monde : position dans la poule -->
             <div v-if="isWorldCup" class="border border-slate-200 rounded-xl bg-slate-50 p-2 flex flex-col items-center gap-1">
@@ -463,10 +463,10 @@ const matchesPlayed = computed(() =>
         <!-- ============================================ -->
         <!-- LIGNE 3.5 : Checklist pré-match (CTA)        -->
         <!-- ============================================ -->
-        <div v-if="!isByeWeek && preMatchReminders.length > 0" class="grid gap-3"
-             :class="preMatchReminders.length === 1 ? 'grid-cols-1'
-           : preMatchReminders.length === 2 ? 'grid-cols-2'
-           : 'grid-cols-3'">
+        <div v-if="!isByeWeek && preMatchReminders.length > 0" class="grid grid-cols-1 gap-3"
+             :class="preMatchReminders.length === 1 ? 'sm:grid-cols-1'
+           : preMatchReminders.length === 2 ? 'sm:grid-cols-2'
+           : 'sm:grid-cols-3'">
             <button v-for="(r, i) in preMatchReminders" :key="i"
                     type="button"
                     @click="emit('change-tab', r.targetTab)"
@@ -484,7 +484,7 @@ const matchesPlayed = computed(() =>
         <!-- ============================================ -->
         <!-- LIGNE 4 : Forces + Forme récente            -->
         <!-- ============================================ -->
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
             <!-- Forces moyennes -->
             <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
