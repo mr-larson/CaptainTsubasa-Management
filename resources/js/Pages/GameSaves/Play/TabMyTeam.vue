@@ -158,13 +158,13 @@ const slotMastery = (slot, slotDef) => {
     <div class="flex-1 flex flex-col gap-4 overflow-y-auto max-h-[75vh] pr-1 [&>*]:shrink-0">
 
         <!-- LIGNE 1 : Formation + Terrain + Banc -->
-        <div class="grid grid-cols-12 gap-4">
-            <FormationCard class="col-span-4"
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <FormationCard class="lg:col-span-4"
                            :formation="currentFormation"
                            :formationData="formationData"
                            @change="key => emit('save-formation', key)" />
 
-            <PitchView class="col-span-6"
+            <PitchView class="lg:col-span-6"
                        :formationData="formationData"
                        :playerPosition="playerPosition"
                        :playerForSlot="playerForSlot"
@@ -177,7 +177,7 @@ const slotMastery = (slot, slotDef) => {
                        @drag-over="e => emit('drag-over', e)"
                        @drop-on="(p, e) => emit('drop-on', p, e)" />
 
-            <BenchCard class="col-span-2"
+            <BenchCard class="lg:col-span-2"
                        :substitutes="substitutes"
                        :selectedId="selectedMyPlayer?.id"
                        :isPickedUp="isPickedUp"
@@ -188,20 +188,20 @@ const slotMastery = (slot, slotDef) => {
         </div>
 
         <!-- LIGNE 2 : Infos club -->
-        <div class="grid grid-cols-12 gap-4">
-            <ClubIdentityCard class="col-span-5"
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+            <ClubIdentityCard class="md:col-span-5"
                               :team="team"
                               :rank="clubStanding?.position ?? null"
                               :total="standings.length"
                               :budget="teamBudget" />
 
-            <TeamRecordCard class="col-span-3"
+            <TeamRecordCard class="md:col-span-3"
                             :wins="teamRecord.wins"
                             :draws="teamRecord.draws"
                             :losses="teamRecord.losses" />
 
             <!-- Stats + Effectif -->
-            <div class="col-span-4 border border-slate-200 rounded-xl bg-slate-50 p-4">
+            <div class="md:col-span-4 border border-slate-200 rounded-xl bg-slate-50 p-4">
                 <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Club</h4>
                 <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-slate-600">
                     <div class="flex justify-between"><span>Attaque moy.</span><span class="font-bold text-slate-800">{{ averageAttack }}</span></div>
@@ -224,10 +224,10 @@ const slotMastery = (slot, slotDef) => {
         </div>
 
         <!-- LIGNE 3 : Liste joueurs + Profil -->
-        <div class="grid grid-cols-12 gap-4">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
 
             <!-- Liste joueurs — hauteur calée sur la colonne profil (scroll interne) -->
-            <div class="col-span-3 relative min-h-[320px]">
+            <div class="lg:col-span-3 relative min-h-[320px]">
                 <RosterList class="absolute inset-0"
                             :players="rosterWithStatus"
                             :selectedId="selectedMyPlayer?.id"
@@ -240,7 +240,7 @@ const slotMastery = (slot, slotDef) => {
             </div>
 
             <!-- Profil joueur -->
-            <div class="col-span-9 flex flex-col gap-3">
+            <div class="lg:col-span-9 flex flex-col gap-3">
                 <template v-if="selectedMyPlayer">
 
                     <PlayerStatusAlert :player="selectedMyPlayer"
@@ -431,7 +431,7 @@ const slotMastery = (slot, slotDef) => {
                     </div>
 
                     <!-- Radar + Barres -->
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <RadarChart :player="selectedMyPlayer" accent="teal" />
                         <StatBars :player="selectedMyPlayer" />
                     </div>

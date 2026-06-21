@@ -197,10 +197,10 @@ const filteredHistory = computed(() =>
     <div class="flex-1 flex flex-col gap-4 overflow-y-auto min-h-[75vh] max-h-[75vh] pr-1 [&>*]:shrink-0">
 
         <!-- Header : Marché (1/4) + recherche & filtres (3/4) -->
-        <div class="grid grid-cols-12 gap-4 items-stretch">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch">
 
             <!-- Marché des transferts (1/4) -->
-            <div class="col-span-3 border border-slate-200 rounded-xl bg-slate-50 p-4 flex flex-col gap-3">
+            <div class="md:col-span-3 border border-slate-200 rounded-xl bg-slate-50 p-4 flex flex-col gap-3">
                 <div>
                     <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Marché des transferts</h3>
                     <p class="text-sm text-slate-500 mt-1">{{ availableFreePlayers.length }} joueur(s) sans contrat disponible(s)</p>
@@ -223,7 +223,7 @@ const filteredHistory = computed(() =>
             </div>
 
             <!-- Recherche + filtres (3/4) -->
-            <div class="col-span-9 flex flex-col gap-3">
+            <div class="md:col-span-9 flex flex-col gap-3">
                 <!-- Barre de recherche (comme le draft) -->
                 <input type="search" v-model="searchQuery"
                        class="w-full px-4 py-2 text-sm border border-slate-200 rounded-xl bg-white focus:ring-2 focus:ring-teal-300 focus:outline-none"
@@ -258,12 +258,12 @@ const filteredHistory = computed(() =>
         </div>
 
         <!-- Contenu principal -->
-        <div class="grid grid-cols-12 gap-4">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
 
             <!-- ============================================ -->
             <!-- LISTE JOUEURS LIBRES                         -->
             <!-- ============================================ -->
-            <div class="col-span-5 border border-slate-200 rounded-xl bg-slate-50 p-3 max-h-[690px] overflow-y-auto">
+            <div class="lg:col-span-5 border border-slate-200 rounded-xl bg-slate-50 p-3 max-h-[690px] overflow-y-auto">
                 <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Agents libres</h3>
 
                 <div v-if="filteredPlayers.length" class="space-y-1">
@@ -343,7 +343,7 @@ const filteredHistory = computed(() =>
             <!-- ============================================ -->
             <!-- PROFIL + OFFRE                               -->
             <!-- ============================================ -->
-            <div v-if="selectedPlayer" class="col-span-7 flex flex-col gap-3">
+            <div v-if="selectedPlayer" class="lg:col-span-7 flex flex-col gap-3">
 
                 <!-- Identité -->
                 <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
@@ -368,7 +368,7 @@ const filteredHistory = computed(() =>
                 </div>
 
                 <!-- Radar + stats comparées -->
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <RadarChart :player="selectedPlayer"
                                 accent="teal"
                                 :comparePlayer="bestTeamPlayerSamePos"
@@ -438,7 +438,7 @@ const filteredHistory = computed(() =>
             </div>
 
             <!-- Placeholder si aucun joueur sélectionné -->
-            <div v-else class="col-span-7 flex items-center justify-center rounded-xl border border-dashed border-slate-300 p-10 text-slate-400 text-sm">
+            <div v-else class="lg:col-span-7 flex items-center justify-center rounded-xl border border-dashed border-slate-300 p-10 text-slate-400 text-sm">
                 <div class="text-center">
                     <div class="text-3xl mb-2">👤</div>
                     <p>Sélectionne un joueur pour voir son profil et faire une offre</p>

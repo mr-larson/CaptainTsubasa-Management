@@ -64,7 +64,7 @@ const rankIcon = (rank) => {
         <!-- Mon classement -->
         <div v-if="myStanding" class="border border-slate-200 rounded-xl bg-slate-50 p-4">
             <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Ta position</h3>
-            <div class="flex items-center gap-6">
+            <div class="flex flex-wrap items-center gap-4 sm:gap-6">
 
                 <!-- Rang -->
                 <div class="text-center shrink-0">

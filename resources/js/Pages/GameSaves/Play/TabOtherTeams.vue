@@ -93,13 +93,13 @@ const selectedPlayerPerf = computed(() => {
         </div>
 
         <!-- LIGNE 2 : Formation + Terrain + Banc -->
-        <div class="grid grid-cols-12 gap-4" v-if="selectedOtherTeam">
-            <FormationCard class="col-span-4"
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4" v-if="selectedOtherTeam">
+            <FormationCard class="lg:col-span-4"
                            :formation="otherFormation"
                            :formationData="otherFormationData"
                            @change="key => emit('save-formation', key)" />
 
-            <PitchView class="col-span-6"
+            <PitchView class="lg:col-span-6"
                        :formationData="otherFormationData"
                        :playerPosition="otherPlayerPosition"
                        :playerForSlot="otherPlayerForSlot"
@@ -111,7 +111,7 @@ const selectedPlayerPerf = computed(() => {
                        @drag-over="e => emit('drag-over', e)"
                        @drop-on="(p, e) => emit('drop-on', p, e)" />
 
-            <BenchCard class="col-span-2"
+            <BenchCard class="lg:col-span-2"
                        :substitutes="otherSubstitutes"
                        :selectedId="selectedOtherPlayer?.id"
                        :isPickedUp="isOtherPickedUp"
@@ -122,20 +122,20 @@ const selectedPlayerPerf = computed(() => {
         </div>
 
         <!-- LIGNE 3 : Infos club -->
-        <div class="grid grid-cols-12 gap-4" v-if="selectedOtherTeam">
-            <ClubIdentityCard class="col-span-5"
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4" v-if="selectedOtherTeam">
+            <ClubIdentityCard class="md:col-span-5"
                               :team="selectedOtherTeam"
                               :rank="selectedTeamRank"
                               :total="standings.length"
                               :budget="selectedOtherTeam.budget ?? 0" />
 
-            <TeamRecordCard class="col-span-3"
+            <TeamRecordCard class="md:col-span-3"
                             :wins="selectedOtherTeam.wins ?? 0"
                             :draws="selectedOtherTeam.draws ?? 0"
                             :losses="selectedOtherTeam.losses ?? 0" />
 
             <!-- Stats + Effectif -->
-            <div class="col-span-4 border border-slate-200 rounded-xl bg-slate-50 p-4">
+            <div class="md:col-span-4 border border-slate-200 rounded-xl bg-slate-50 p-4">
                 <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Club</h4>
                 <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-slate-600">
                     <div class="flex justify-between">
@@ -173,10 +173,10 @@ const selectedPlayerPerf = computed(() => {
         </div>
 
         <!-- LIGNE 4 : Liste joueurs + Profil -->
-        <div class="grid grid-cols-12 gap-4" v-if="selectedOtherTeam">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4" v-if="selectedOtherTeam">
 
             <!-- Liste joueurs — hauteur calée sur la colonne profil (scroll interne) -->
-            <div class="col-span-3 relative min-h-[320px]">
+            <div class="lg:col-span-3 relative min-h-[320px]">
                 <RosterList class="absolute inset-0"
                             :players="otherRosterWithStatus"
                             :selectedId="selectedOtherPlayer?.id"
@@ -189,7 +189,7 @@ const selectedPlayerPerf = computed(() => {
             </div>
 
             <!-- Profil joueur -->
-            <div class="col-span-9 flex flex-col gap-3">
+            <div class="lg:col-span-9 flex flex-col gap-3">
                 <template v-if="selectedOtherPlayer">
 
                     <PlayerStatusAlert :player="selectedOtherPlayer"
@@ -246,7 +246,7 @@ const selectedPlayerPerf = computed(() => {
                     </PlayerIdentityCard>
 
                     <!-- Radar + Barres -->
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <RadarChart :player="selectedOtherPlayer" accent="red" />
                         <StatBars :player="selectedOtherPlayer" />
                     </div>

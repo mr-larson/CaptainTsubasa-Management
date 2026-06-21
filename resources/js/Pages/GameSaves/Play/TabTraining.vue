@@ -177,13 +177,13 @@ const selectedPlayerPerf = computed(() => {
             </div>
         </div>
 
-        <div class="grid grid-cols-12 gap-4">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
 
             <!-- ============================================ -->
             <!-- COLONNE GAUCHE : Effectif         -->
             <!-- ============================================ -->
             <!-- Hauteur calée sur les colonnes de droite (scroll interne) -->
-            <div class="col-span-3 relative min-h-[320px]">
+            <div class="lg:col-span-3 relative min-h-[320px]">
                 <RosterList class="absolute inset-0"
                             :players="roster"
                             :selectedId="selectedPlayer?.id"
@@ -208,7 +208,7 @@ const selectedPlayerPerf = computed(() => {
             <!-- ============================================ -->
             <!-- COLONNE  CENTRAL & DROITE                               -->
             <!-- ============================================ -->
-            <div class="col-span-6 flex flex-col gap-4">
+            <div class="lg:col-span-6 flex flex-col gap-4">
                 <!-- ====================================== -->
                 <!-- PROFIL JOUEUR SÉLECTIONNÉ              -->
                 <!-- ====================================== -->
@@ -242,7 +242,7 @@ const selectedPlayerPerf = computed(() => {
                     </PlayerIdentityCard>
 
                     <!-- Radar + Barres stats -->
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <RadarChart :player="selectedPlayer" accent="teal" />
                         <StatBars :player="selectedPlayer" />
                     </div>
@@ -263,7 +263,7 @@ const selectedPlayerPerf = computed(() => {
                     </div>
                 </div>
             </div>
-            <div class="col-span-3 flex flex-col gap-4">
+            <div class="lg:col-span-3 flex flex-col gap-4">
                 <!-- Formulaire entraînement manuel -->
                 <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
                     <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">

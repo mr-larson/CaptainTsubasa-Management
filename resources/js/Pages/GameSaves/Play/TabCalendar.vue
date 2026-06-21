@@ -348,12 +348,12 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
         </div>
 
         <!-- Contenu principal : calendrier + stats -->
-        <div v-if="calendarTeam" class="grid grid-cols-12 gap-4">
+        <div v-if="calendarTeam" class="grid grid-cols-1 lg:grid-cols-12 gap-4">
 
             <!-- ============================================ -->
             <!-- CALENDRIER                                    -->
             <!-- ============================================ -->
-            <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 col-span-4">
+            <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 lg:col-span-4">
                 <div class="flex items-center gap-3 mb-3">
                     <div class="w-8 h-8 rounded-lg overflow-hidden bg-white border border-slate-200 shrink-0">
                         <img v-if="teamLogoUrl(calendarTeam)" :src="teamLogoUrl(calendarTeam)" class="w-full h-full object-contain" alt=""/>
@@ -432,7 +432,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
             <!-- STATS MATCH SÉLECTIONNÉ                      -->
             <!-- ============================================ -->
             <div v-if="selectedCalendarMatch && selectedCalendarMatchStats"
-                 class="col-span-8 flex flex-col gap-3 max-h-[830px] overflow-y-auto pr-1">
+                 class="lg:col-span-8 flex flex-col gap-3 max-h-[830px] overflow-y-auto pr-1">
 
                 <!-- Score du match -->
                 <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
@@ -684,7 +684,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                 </div>
             </div>
             <!-- Message si aucun match sélectionné -->
-            <div v-else class="col-span-8 flex items-center justify-center rounded-xl border border-dashed border-slate-300 text-slate-400 text-sm">
+            <div v-else class="lg:col-span-8 flex items-center justify-center rounded-xl border border-dashed border-slate-300 text-slate-400 text-sm">
                 <div class="text-center p-8">
                     <div class="text-3xl mb-2">📊</div>
                     <p>Clique sur un match joué pour voir les statistiques</p>
