@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class BonusCard extends Model
 {
     protected $fillable = [
-        'name', 'description', 'tier', 'target', 'execution_phase',
+        'name', 'description', 'kind', 'tier', 'target', 'execution_phase',
         'effect_type', 'effect_value', 'cost', 'base_weight', 'icon',
     ];
 

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\GameSaves\GameBonusCard;
+use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameInjury;
 use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GamePlayer;
@@ -48,6 +49,9 @@ class BonusCardActivationService
             'revenue_challenge'     => $this->registerSponsorChallenge($gameSave, $gameBonusCard),
             'morale_boost'          => $this->applyMoraleBoost($gameSave, $gameBonusCard, $targetPlayerId),
             'coach_affinity_boost'  => $this->applyCoachAffinityBoost($gameSave, $gameBonusCard, $targetPlayerId),
+            // malus : ciblent l'adversaire du prochain match de l'équipe émettrice
+            'opponent_stamina_drain' => $this->applyOpponentStaminaDrain($gameSave, $gameBonusCard),
+            'opponent_bench_starter' => $this->applyOpponentBenchStarter($gameSave, $gameBonusCard),
             // pre_match : juste marquer comme activée, MatchSimulator la lira
             'stat_boost',
             'stat_boost_and_stamina'=> $this->markPreMatchCard($gameBonusCard, $gameSave),
@@ -220,6 +224,196 @@ class BonusCardActivationService
             'message'            => "+{$gain} de relation avec le coach pour {$player->lastname} (désormais {$player->coach_affinity}).",
             'new_coach_affinity' => $player->coach_affinity,
         ];
+    }
+
+    // ──────────────────────────────────────────────────────────
+    //   MALUS (target = opponent)
+    // ──────────────────────────────────────────────────────────
+
+    /**
+     * Carte malus « fatigue » : retire de la stamina aux titulaires de
+     * l'adversaire du prochain match de l'équipe émettrice. La stamina étant
+     * un pool régénéré chaque semaine, l'effet est temporaire et impacte
+     * directement le match à venir.
+     */
+    private function applyOpponentStaminaDrain(GameSave $gameSave, GameBonusCard $gameBonusCard): array
+    {
+        $opponentId = $this->resolveNextOpponentTeamId($gameSave, (int) $gameBonusCard->game_team_id);
+        $amount     = (int) ($gameBonusCard->bonusCard->effect_value['amount'] ?? 0);
+
+        $starters = $this->opponentStarters($opponentId);
+
+        $drained = 0;
+        foreach ($starters as $contract) {
+            $player = $contract->gamePlayer;
+            if (!$player) continue;
+            $player->stamina = max(0, (int) ($player->stamina ?? 0) - $amount);
+            $player->save();
+            $drained++;
+        }
+
+        $opponentName = GameTeam::find($opponentId)?->name ?? 'L\'adversaire';
+
+        return [
+            'message' => "😴 {$opponentName} : −{$amount} stamina infligés à {$drained} titulaire(s) avant le prochain match.",
+            'drained' => $drained,
+        ];
+    }
+
+    /**
+     * Carte malus « titulaire consigné » : désigne un titulaire de l'adversaire
+     * qui ne pourra pas débuter son prochain match. Le joueur est choisi
+     * immédiatement (stable), puis le malus est stocké dans state.pending_malus
+     * et appliqué à la construction du prochain match de la cible (écran de
+     * match pour un humain, MatchSimulator pour une équipe IA).
+     */
+    private function applyOpponentBenchStarter(GameSave $gameSave, GameBonusCard $gameBonusCard): array
+    {
+        $opponentId = $this->resolveNextOpponentTeamId($gameSave, (int) $gameBonusCard->game_team_id);
+        $pick       = (string) ($gameBonusCard->bonusCard->effect_value['pick'] ?? 'random');
+
+        // Candidats : titulaires de champ (on épargne le gardien pour ne pas
+        // laisser la cible sans dernier rempart).
+        $candidates = $this->opponentStarters($opponentId)
+            ->filter(fn ($c) => $c->gamePlayer && strtoupper((string) $c->gamePlayer->position) !== 'GK')
+            ->values();
+
+        if ($candidates->isEmpty()) {
+            // Repli : tous les titulaires (effectif réduit / que des gardiens).
+            $candidates = $this->opponentStarters($opponentId)->filter(fn ($c) => $c->gamePlayer)->values();
+        }
+
+        if ($candidates->isEmpty()) {
+            throw ValidationException::withMessages(['card' => 'L\'adversaire n\'a aucun titulaire à consigner.']);
+        }
+
+        $chosen = $pick === 'key'
+            ? $candidates->sortByDesc(fn ($c) => $this->playerRating($c->gamePlayer))->first()
+            : $candidates->random();
+
+        $player = $chosen->gamePlayer;
+        $name   = trim(($player->firstname ?? '') . ' ' . ($player->lastname ?? '')) ?: ($player->lastname ?? 'Joueur');
+
+        $state = $gameSave->state ?? [];
+        $state['pending_malus'][] = [
+            'game_bonus_card_id' => $gameBonusCard->id,
+            'source_team_id'     => (int) $gameBonusCard->game_team_id,
+            'target_team_id'     => $opponentId,
+            'target_player_id'   => (int) $player->id,
+            'player_name'        => $name,
+            'effect_type'        => 'opponent_bench_starter',
+            'card_name'          => $gameBonusCard->bonusCard->name,
+            'icon'               => $gameBonusCard->bonusCard->icon,
+            'created_season'     => $gameSave->season,
+            'created_week'       => $gameSave->week,
+        ];
+        $gameSave->state = $state;
+        $gameSave->save();
+
+        $opponentName = GameTeam::find($opponentId)?->name ?? 'l\'adversaire';
+
+        return [
+            'message' => "🚫 {$name} ({$opponentName}) est consigné : il ne débutera pas le prochain match.",
+        ];
+    }
+
+    /**
+     * Identifie l'équipe adverse du prochain match programmé de $teamId.
+     */
+    private function resolveNextOpponentTeamId(GameSave $gameSave, int $teamId): int
+    {
+        $match = GameMatch::where('game_save_id', $gameSave->id)
+            ->where('status', 'scheduled')
+            ->where('week', '>=', $gameSave->week ?? 1)
+            ->where(fn ($q) => $q
+                ->where('home_team_id', $teamId)
+                ->orWhere('away_team_id', $teamId))
+            ->orderBy('week')
+            ->first();
+
+        if (!$match) {
+            throw ValidationException::withMessages(['card' => 'Aucun match à venir : impossible de cibler un adversaire.']);
+        }
+
+        return (int) $match->home_team_id === $teamId
+            ? (int) $match->away_team_id
+            : (int) $match->home_team_id;
+    }
+
+    /**
+     * Contrats titulaires (avec joueur chargé) d'une équipe.
+     *
+     * @return \Illuminate\Support\Collection<int, GameContract>
+     */
+    private function opponentStarters(int $teamId): \Illuminate\Support\Collection
+    {
+        return GameContract::where('game_team_id', $teamId)
+            ->where('is_starter', true)
+            ->with('gamePlayer')
+            ->get()
+            ->filter(fn ($c) => $c->gamePlayer)
+            ->values();
+    }
+
+    /**
+     * Note synthétique d'un joueur de champ (proxy pour désigner un « cadre »).
+     */
+    private function playerRating(GamePlayer $p): int
+    {
+        return (int) (($p->attack ?? 0) + ($p->shot ?? 0) + ($p->dribble ?? 0)
+            + ($p->pass ?? 0) + ($p->defense ?? 0) + ($p->speed ?? 0));
+    }
+
+    /**
+     * IDs des joueurs d'une équipe à priver de titularisation au prochain match
+     * (malus « titulaire consigné » en attente). Lu à la construction du match.
+     *
+     * @return array<int, int>
+     */
+    public function getBenchedPlayerIds(GameSave $gameSave, int $teamId): array
+    {
+        $entries = $gameSave->state['pending_malus'] ?? [];
+
+        return array_values(array_unique(array_map(
+            fn ($m) => (int) $m['target_player_id'],
+            array_filter($entries, fn ($m) =>
+                (int) ($m['target_team_id'] ?? 0) === $teamId
+                && ($m['effect_type'] ?? '') === 'opponent_bench_starter'
+                && !empty($m['target_player_id'])
+            )
+        )));
+    }
+
+    /**
+     * Retire les malus « titulaire consigné » dont l'équipe cible a disputé son
+     * match cette semaine. Appelé une seule fois en fin de semaine, sur
+     * l'instance GameSave du contrôleur (pour éviter les conflits d'instances
+     * dans la boucle de simulation des matchs IA).
+     */
+    public function consumeMalusForPlayedWeek(GameSave $gameSave, int $week): void
+    {
+        $state   = $gameSave->state ?? [];
+        $entries = $state['pending_malus'] ?? [];
+        if (empty($entries)) return;
+
+        $playedTeamIds = GameMatch::where('game_save_id', $gameSave->id)
+            ->where('week', $week)
+            ->where('status', 'played')
+            ->get(['home_team_id', 'away_team_id'])
+            ->flatMap(fn ($m) => [(int) $m->home_team_id, (int) $m->away_team_id])
+            ->unique()
+            ->all();
+
+        if (empty($playedTeamIds)) return;
+
+        $remaining = array_filter($entries, fn ($m) =>
+            !(($m['effect_type'] ?? '') === 'opponent_bench_starter'
+              && in_array((int) ($m['target_team_id'] ?? 0), $playedTeamIds, true))
+        );
+
+        $state['pending_malus'] = array_values($remaining);
+        $gameSave->state = $state;
+        $gameSave->save();
     }
 
     /**

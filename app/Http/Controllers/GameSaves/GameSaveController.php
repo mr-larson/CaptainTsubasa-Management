@@ -566,6 +566,7 @@ class GameSaveController extends Controller
                     'name'             => $c->bonusCard->name,
                     'description'      => $c->bonusCard->description,
                     'icon'             => $c->bonusCard->icon,
+                    'kind'             => $c->bonusCard->kind,
                     'target'           => $c->bonusCard->target,
                     'execution_phase'  => $c->bonusCard->execution_phase,
                     'effect_type'      => $c->bonusCard->effect_type,
@@ -585,6 +586,15 @@ class GameSaveController extends Controller
             ? array_values(array_filter(
                 $state['sponsor_results'] ?? [],
                 fn ($c) => (int) ($c['game_team_id'] ?? 0) === (int) $controlledTeamId
+            ))
+            : [];
+
+        // ─── Malus reçus : titulaires consignés contre l'équipe contrôlée ───
+        $incomingMalus = $controlledTeamId
+            ? array_values(array_filter(
+                $state['pending_malus'] ?? [],
+                fn ($m) => (int) ($m['target_team_id'] ?? 0) === (int) $controlledTeamId
+                    && ($m['effect_type'] ?? '') === 'opponent_bench_starter'
             ))
             : [];
 
@@ -631,6 +641,7 @@ class GameSaveController extends Controller
             'bonusCardInventory'  => $bonusCardInventory,
             'sponsorChallenges'   => $sponsorChallenges,
             'sponsorResults'      => $sponsorResults,
+            'incomingMalus'       => $incomingMalus,
             'tournament'          => $gameSave->competition_type === 'world_cup'
                 ? app(TournamentService::class)->presentation($gameSave)
                 : null,

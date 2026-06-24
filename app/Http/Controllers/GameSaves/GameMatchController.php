@@ -260,6 +260,9 @@ class GameMatchController extends Controller
         // Résolution des défis sponsor (cartes finance) selon les résultats de la semaine
         app(BonusCardActivationService::class)->resolveSponsorChallenges($gameSave, $weekToClose);
 
+        // Consommer les malus « titulaire consigné » des équipes ayant joué cette semaine
+        app(BonusCardActivationService::class)->consumeMalusForPlayedWeek($gameSave, $weekToClose);
+
         // Avancer la semaine
         $gameSave->week = max($gameSave->week ?? 1, $weekToClose + 1);
 
@@ -348,6 +351,9 @@ class GameMatchController extends Controller
 
         // Résolution des défis sponsor (cartes finance) selon les résultats de la semaine
         app(BonusCardActivationService::class)->resolveSponsorChallenges($gameSave, $week);
+
+        // Consommer les malus « titulaire consigné » des équipes ayant joué cette semaine
+        app(BonusCardActivationService::class)->consumeMalusForPlayedWeek($gameSave, $week);
 
         // Stamina AVANT incrément (sinon on récupère l'historique d'une autre semaine)
         StaminaService::applyAfterWeek($gameSave, $week);
@@ -447,7 +453,11 @@ class GameMatchController extends Controller
             ->pluck('game_player_id')
             ->toArray();
 
-        $unavailableIds = array_unique(array_merge($injuredPlayerIds, $suspendedPlayerIds));
+        // Malus « titulaire consigné » infligé à cette équipe (par le joueur ou l'IA)
+        $benchedByMalus = app(BonusCardActivationService::class)
+            ->getBenchedPlayerIds($gameSave, $team->id);
+
+        $unavailableIds = array_unique(array_merge($injuredPlayerIds, $suspendedPlayerIds, $benchedByMalus));
 
         $contracts = $team->contracts->loadMissing('gamePlayer');
         $starters = $contracts->sortByDesc('is_starter')->values();

@@ -6,6 +6,7 @@ use App\Enums\TeamStyle;
 use App\Helpers\FormationHelper;
 use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GameTeam;
+use App\Services\BonusCardActivationService;
 use Illuminate\Support\Collection;
 
 class MatchSimulator
@@ -83,10 +84,24 @@ class MatchSimulator
         $gameSave = $m->gameSave ?? \App\Models\GameSaves\GameSave::find($m->game_save_id);
         $lineups  = $gameSave?->state['lineup'] ?? [];
 
+        // Malus « titulaire consigné » à appliquer pour ce match (par équipe).
+        // On se contente de LIRE le malus ici : la consommation est centralisée
+        // en fin de semaine sur l'instance GameSave du contrôleur (évite tout
+        // conflit d'instances dans la boucle de simulation).
+        $benchedByTeam = [];
+        if ($gameSave) {
+            $activation = app(BonusCardActivationService::class);
+            $benchedByTeam = [
+                (int) $m->home_team_id => $activation->getBenchedPlayerIds($gameSave, (int) $m->home_team_id),
+                (int) $m->away_team_id => $activation->getBenchedPlayerIds($gameSave, (int) $m->away_team_id),
+            ];
+        }
+
         [$homeScore, $awayScore, $matchStats] = $this->simulateMatch(
             $m->homeTeam,
             $m->awayTeam,
-            $lineups
+            $lineups,
+            $benchedByTeam
         );
 
         $m->home_score  = $homeScore;
@@ -115,10 +130,10 @@ class MatchSimulator
      * compatible avec celui généré par `buildMatchStats` côté client
      * (mêmes clés consommées par PlayerStatsService / PostMatchProgressionService / TabCalendar).
      */
-    private function simulateMatch(GameTeam $home, GameTeam $away, array $lineups = []): array
+    private function simulateMatch(GameTeam $home, GameTeam $away, array $lineups = [], array $benchedByTeam = []): array
     {
-        $homePlayers = $this->getStarters($home);
-        $awayPlayers = $this->getStarters($away);
+        $homePlayers = $this->getStarters($home, $benchedByTeam[(int) $home->id] ?? []);
+        $awayPlayers = $this->getStarters($away, $benchedByTeam[(int) $away->id] ?? []);
 
         $this->buildAssignedRoles([$home, $away], $lineups);
 
@@ -726,10 +741,30 @@ class MatchSimulator
     //   HELPERS JOUEURS
     // ==========================
 
-    private function getStarters(GameTeam $team): Collection
+    private function getStarters(GameTeam $team, array $benchedIds = []): Collection
     {
-        return $team->contracts
+        $starters = $team->contracts
             ->filter(fn($c) => $c->is_starter && $c->gamePlayer)
+            ->values();
+
+        // Malus « titulaire consigné » : on écarte les joueurs visés et on
+        // promeut autant de remplaçants disponibles que possible.
+        if (!empty($benchedIds)) {
+            $benchedIds = array_map('intval', $benchedIds);
+            $removed    = $starters->filter(fn($c) => in_array((int) $c->game_player_id, $benchedIds, true))->count();
+            $starters   = $starters->reject(fn($c) => in_array((int) $c->game_player_id, $benchedIds, true))->values();
+
+            if ($removed > 0) {
+                $replacements = $team->contracts
+                    ->filter(fn($c) => !$c->is_starter && $c->gamePlayer
+                        && !in_array((int) $c->game_player_id, $benchedIds, true))
+                    ->values()
+                    ->take($removed);
+                $starters = $starters->concat($replacements)->values();
+            }
+        }
+
+        return $starters
             ->map(fn($c) => $c->gamePlayer)
             ->values()
             ->take(11);

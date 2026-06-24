@@ -100,16 +100,6 @@ class CaptainTsubasaInternationalPlayers
                 ],
                 'Attaquant tranchant, partenaire de Pierre. Leur une-deux « de l’aigle » déchire les défenses.',
             ],
-            [
-                'Lucien', 'Lacombe', 13, 'Defender', 360,
-                [
-                    'speed' => 68, 'stamina' => 76, 'defense' => 37, 'attack' => 20,
-                    'shot' => 16, 'pass' => 23, 'dribble' => 20,
-                    'block' => 29, 'intercept' => 28, 'tackle' => 29,
-                    'hand_save' => 15, 'punch_save' => 15,
-                ],
-                'Défenseur élégant et rapide, à l’aise dans la relance autant que dans le duel.',
-            ],
 
             // =======================
             // BRÉSIL
@@ -148,7 +138,7 @@ class CaptainTsubasaInternationalPlayers
                 'Roc défensif de la Seleção, puissant dans les duels et impérial dans le jeu aérien.',
             ],
             [
-                '', 'Jorgi', 13, 'Defender', 370,
+                '', 'radunga', 13, 'Defender', 370,
                 [
                     'speed' => 70, 'stamina' => 79, 'defense' => 37, 'attack' => 22,
                     'shot' => 18, 'pass' => 23, 'dribble' => 22,
@@ -201,7 +191,7 @@ class CaptainTsubasaInternationalPlayers
                 'Relayeur technique au jeu fluide, moteur du milieu de terrain brésilien.',
             ],
             [
-                '', 'Branca', 13, 'Midfielder', 380,
+                '', 'Blanco', 13, 'Midfielder', 380,
                 [
                     'speed' => 72, 'stamina' => 80, 'defense' => 29, 'attack' => 31,
                     'shot' => 24, 'pass' => 28, 'dribble' => 27,
@@ -290,6 +280,106 @@ class CaptainTsubasaInternationalPlayers
             // =======================
             // URUGUAY
             // =======================
+            // NB : Ryoma Hino (FW #9) existe déjà comme agent libre dans
+            // CaptainTsubasaFreePlayers ; il est rattaché à l'Uruguay via
+            // nationalities() ci-dessous (pas de doublon ici).
+            // --- Gardien ---
+            [
+                '', 'Conzales', 13, 'Goalkeeper', 330,
+                [
+                    'speed' => 60, 'stamina' => 76, 'defense' => 38, 'attack' => 16,
+                    'shot' => 13, 'pass' => 18, 'dribble' => 16,
+                    'block' => 26, 'intercept' => 24, 'tackle' => 20,
+                    'hand_save' => 29, 'punch_save' => 28,
+                ],
+                'Gardien uruguayen courageux et explosif, dernier rempart de la Celeste.',
+            ],
+
+            // --- Défenseurs ---
+            [
+                '', 'Amerigo', 13, 'Defender', 400,
+                [
+                    'speed' => 70, 'stamina' => 80, 'defense' => 38, 'attack' => 22,
+                    'shot' => 17, 'pass' => 23, 'dribble' => 22,
+                    'block' => 30, 'intercept' => 28, 'tackle' => 30,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Libéro uruguayen au sang-froid, organisateur d’une défense imperméable.',
+            ],
+            [
+                '', 'Pazu', 13, 'Defender', 380,
+                [
+                    'speed' => 69, 'stamina' => 80, 'defense' => 38, 'attack' => 21,
+                    'shot' => 17, 'pass' => 22, 'dribble' => 21,
+                    'block' => 29, 'intercept' => 27, 'tackle' => 29,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Défenseur tout en « garra charrúa », il harcèle l’attaquant jusqu’au bout.',
+            ],
+            [
+                '', 'Olivares', 13, 'Defender', 370,
+                [
+                    'speed' => 68, 'stamina' => 79, 'defense' => 37, 'attack' => 20,
+                    'shot' => 16, 'pass' => 21, 'dribble' => 20,
+                    'block' => 29, 'intercept' => 27, 'tackle' => 29,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Défenseur dur au mal et bon relanceur, fiable dans l’adversité.',
+            ],
+            [
+                '', 'Filippo', 13, 'Defender', 360,
+                [
+                    'speed' => 67, 'stamina' => 78, 'defense' => 36, 'attack' => 20,
+                    'shot' => 16, 'pass' => 21, 'dribble' => 20,
+                    'block' => 28, 'intercept' => 26, 'tackle' => 28,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Défenseur appliqué, précieux dans la couverture et le marquage.',
+            ],
+
+            // --- Milieux ---
+            [
+                '', 'Dionisi', 13, 'Midfielder', 420,
+                [
+                    'speed' => 72, 'stamina' => 80, 'defense' => 28, 'attack' => 33,
+                    'shot' => 26, 'pass' => 29, 'dribble' => 28,
+                    'block' => 23, 'intercept' => 25, 'tackle' => 25,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Meneur uruguayen technique et combatif, plaque tournante de la Celeste.',
+            ],
+            [
+                '', 'Enrico', 13, 'Midfielder', 410,
+                [
+                    'speed' => 71, 'stamina' => 79, 'defense' => 27, 'attack' => 32,
+                    'shot' => 25, 'pass' => 28, 'dribble' => 27,
+                    'block' => 22, 'intercept' => 24, 'tackle' => 24,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Milieu offensif inspiré, il illumine le jeu uruguayen de ses passes.',
+            ],
+            [
+                '', 'Pedro', 13, 'Midfielder', 390,
+                [
+                    'speed' => 71, 'stamina' => 80, 'defense' => 29, 'attack' => 31,
+                    'shot' => 25, 'pass' => 28, 'dribble' => 27,
+                    'block' => 24, 'intercept' => 26, 'tackle' => 26,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Milieu box-to-box infatigable, poumon de l’entrejeu uruguayen.',
+            ],
+            [
+                '', 'Fengas', 13, 'Midfielder', 380,
+                [
+                    'speed' => 70, 'stamina' => 79, 'defense' => 29, 'attack' => 30,
+                    'shot' => 24, 'pass' => 27, 'dribble' => 26,
+                    'block' => 24, 'intercept' => 26, 'tackle' => 26,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Récupérateur tenace, il gratte tous les ballons devant la défense.',
+            ],
+
+            // --- Attaquant (capitaine) ---
             [
                 'Ramon', 'Victorino', 13, 'Forward', 470,
                 [
@@ -298,42 +388,355 @@ class CaptainTsubasaInternationalPlayers
                     'block' => 21, 'intercept' => 23, 'tackle' => 23,
                     'hand_save' => 15, 'punch_save' => 15,
                 ],
-                'Avant-centre uruguayen puissant et combatif, sa frappe lourde est une arme de destruction.',
-            ],
-            [
-                'Diego', 'Madero', 13, 'Defender', 360,
-                [
-                    'speed' => 67, 'stamina' => 78, 'defense' => 37, 'attack' => 22,
-                    'shot' => 18, 'pass' => 22, 'dribble' => 20,
-                    'block' => 29, 'intercept' => 28, 'tackle' => 30,
-                    'hand_save' => 15, 'punch_save' => 15,
-                ],
-                'Défenseur rugueux à la « garra charrúa », il ne lâche jamais un duel.',
+                'Capitaine et avant-centre de la Celeste, puissant et combatif, sa frappe lourde est une arme de destruction.',
             ],
 
             // =======================
             // PAYS-BAS
             // =======================
+            // --- Gardien ---
             [
-                'Brian', 'Cruyfford', 13, 'Forward', 470,
+                'Hans', 'Dolman', 13, 'Goalkeeper', 340,
+                [
+                    'speed' => 60, 'stamina' => 76, 'defense' => 38, 'attack' => 16,
+                    'shot' => 13, 'pass' => 19, 'dribble' => 16,
+                    'block' => 26, 'intercept' => 24, 'tackle' => 20,
+                    'hand_save' => 30, 'punch_save' => 29,
+                ],
+                'Gardien de l’Ajax, sûr sur sa ligne et excellent dans le jeu au pied à la mode oranje.',
+            ],
+
+            // --- Défenseur ---
+            [
+                'Leon', 'Dick', 13, 'Defender', 400,
+                [
+                    'speed' => 70, 'stamina' => 80, 'defense' => 38, 'attack' => 23,
+                    'shot' => 18, 'pass' => 24, 'dribble' => 23,
+                    'block' => 30, 'intercept' => 28, 'tackle' => 30,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Défenseur de l’Ajax adepte du football total, solide et très à l’aise balle au pied.',
+            ],
+
+            // --- Milieux ---
+            [
+                'Ruud', 'Krisman', 13, 'Midfielder', 460,
+                [
+                    'speed' => 72, 'stamina' => 80, 'defense' => 27, 'attack' => 35,
+                    'shot' => 28, 'pass' => 30, 'dribble' => 29,
+                    'block' => 22, 'intercept' => 24, 'tackle' => 24,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Vice-capitaine et meneur de l’Ajax, technicien complet et inspirateur du jeu oranje.',
+            ],
+            [
+                '', 'Haan', 13, 'Midfielder', 400,
+                [
+                    'speed' => 71, 'stamina' => 80, 'defense' => 29, 'attack' => 31,
+                    'shot' => 25, 'pass' => 29, 'dribble' => 27,
+                    'block' => 24, 'intercept' => 26, 'tackle' => 26,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Milieu complet à la frappe lointaine redoutable, métronome de l’entrejeu néerlandais.',
+            ],
+            [
+                'Brian', 'Cruyfford', 13, 'Midfielder', 470,
                 [
                     'speed' => 77, 'stamina' => 80, 'defense' => 23, 'attack' => 40,
                     'shot' => 31, 'pass' => 29, 'dribble' => 30,
                     'block' => 19, 'intercept' => 21, 'tackle' => 21,
                     'hand_save' => 15, 'punch_save' => 15,
                 ],
-                'Génie du football total néerlandais, à l’aise partout devant, fin technicien et meneur d’hommes.',
-                ['Midfielder'],
+                'Capitaine et génie du football total néerlandais, à l’aise partout devant, fin technicien et meneur d’hommes.',
+                ['Forward'],
             ],
+
+            // --- Attaquants ---
             [
-                'Robin', 'Van Basty', 13, 'Midfielder', 380,
+                'Johan', 'Rensenbrink', 13, 'Forward', 450,
                 [
-                    'speed' => 72, 'stamina' => 78, 'defense' => 27, 'attack' => 31,
-                    'shot' => 26, 'pass' => 30, 'dribble' => 28,
-                    'block' => 23, 'intercept' => 25, 'tackle' => 25,
+                    'speed' => 77, 'stamina' => 79, 'defense' => 23, 'attack' => 38,
+                    'shot' => 29, 'pass' => 26, 'dribble' => 30,
+                    'block' => 18, 'intercept' => 20, 'tackle' => 20,
                     'hand_save' => 15, 'punch_save' => 15,
                 ],
-                'Milieu intelligent et altruiste, métronome du jeu de position oranje.',
+                'Ailier néerlandais virevoltant, dribbleur élégant et finisseur tout en finesse.',
+            ],
+            [
+                'Gert', 'Keizer', 13, 'Forward', 435,
+                [
+                    'speed' => 75, 'stamina' => 78, 'defense' => 23, 'attack' => 37,
+                    'shot' => 28, 'pass' => 26, 'dribble' => 29,
+                    'block' => 18, 'intercept' => 20, 'tackle' => 20,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Ailier rapide et technique, spécialiste des débordements et des centres millimétrés.',
+            ],
+
+            // =======================
+            // MEXIQUE
+            // =======================
+            // --- Gardien ---
+            [
+                'Ricardo', 'Espadas', 13, 'Goalkeeper', 320,
+                [
+                    'speed' => 58, 'stamina' => 74, 'defense' => 36, 'attack' => 15,
+                    'shot' => 12, 'pass' => 17, 'dribble' => 15,
+                    'block' => 25, 'intercept' => 23, 'tackle' => 19,
+                    'hand_save' => 28, 'punch_save' => 27,
+                ],
+                'Capitaine et gardien émérite du Mexique, vif sur sa ligne et meneur d’hommes respecté.',
+            ],
+
+            // --- Défenseurs ---
+            [
+                '', 'Medina', 13, 'Defender', 360,
+                [
+                    'speed' => 67, 'stamina' => 76, 'defense' => 35, 'attack' => 20,
+                    'shot' => 16, 'pass' => 21, 'dribble' => 20,
+                    'block' => 27, 'intercept' => 25, 'tackle' => 27,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Défenseur solide et combatif, taulier de l’arrière-garde mexicaine.',
+            ],
+            [
+                '', 'Carvajal', 13, 'Defender', 360,
+                [
+                    'speed' => 68, 'stamina' => 76, 'defense' => 35, 'attack' => 21,
+                    'shot' => 16, 'pass' => 22, 'dribble' => 21,
+                    'block' => 27, 'intercept' => 25, 'tackle' => 27,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Latéral offensif endurant, il apporte le surnombre sur son couloir.',
+            ],
+            [
+                '', 'Gomez', 13, 'Defender', 350,
+                [
+                    'speed' => 66, 'stamina' => 75, 'defense' => 34, 'attack' => 19,
+                    'shot' => 15, 'pass' => 20, 'dribble' => 19,
+                    'block' => 26, 'intercept' => 24, 'tackle' => 26,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Défenseur rugueux au sens du placement, difficile à déborder.',
+            ],
+            [
+                '', 'Espino', 13, 'Defender', 345,
+                [
+                    'speed' => 66, 'stamina' => 74, 'defense' => 34, 'attack' => 20,
+                    'shot' => 15, 'pass' => 20, 'dribble' => 20,
+                    'block' => 26, 'intercept' => 24, 'tackle' => 26,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Défenseur discipliné, précieux dans l’organisation de la ligne mexicaine.',
+            ],
+            [
+                '', 'Rivera', 13, 'Defender', 340,
+                [
+                    'speed' => 65, 'stamina' => 75, 'defense' => 33, 'attack' => 19,
+                    'shot' => 15, 'pass' => 20, 'dribble' => 19,
+                    'block' => 26, 'intercept' => 24, 'tackle' => 26,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Défenseur appliqué et généreux dans l’effort, fiable dans les duels.',
+            ],
+
+            // --- Milieux ---
+            [
+                '', 'Zaragoza', 13, 'Midfielder', 410,
+                [
+                    'speed' => 70, 'stamina' => 78, 'defense' => 27, 'attack' => 31,
+                    'shot' => 25, 'pass' => 28, 'dribble' => 27,
+                    'block' => 22, 'intercept' => 24, 'tackle' => 24,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Meneur de jeu mexicain à la technique soignée, cerveau de la Tricolor.',
+            ],
+            [
+                '', 'Garcia', 13, 'Midfielder', 385,
+                [
+                    'speed' => 69, 'stamina' => 77, 'defense' => 28, 'attack' => 29,
+                    'shot' => 23, 'pass' => 27, 'dribble' => 26,
+                    'block' => 23, 'intercept' => 25, 'tackle' => 24,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Milieu travailleur et précis, liant solide entre défense et attaque.',
+            ],
+            [
+                '', 'Suarez', 13, 'Midfielder', 380,
+                [
+                    'speed' => 68, 'stamina' => 76, 'defense' => 26, 'attack' => 28,
+                    'shot' => 23, 'pass' => 26, 'dribble' => 26,
+                    'block' => 22, 'intercept' => 23, 'tackle' => 23,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Milieu vif et créatif, il accélère le jeu par ses passes incisives.',
+            ],
+
+            // --- Attaquants ---
+            [
+                '', 'Alvez', 13, 'Forward', 440,
+                [
+                    'speed' => 75, 'stamina' => 79, 'defense' => 23, 'attack' => 37,
+                    'shot' => 28, 'pass' => 25, 'dribble' => 28,
+                    'block' => 18, 'intercept' => 20, 'tackle' => 20,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Buteur vedette du Mexique, opportuniste redoutable dans la surface.',
+            ],
+            [
+                '', 'Lopez', 13, 'Forward', 425,
+                [
+                    'speed' => 74, 'stamina' => 78, 'defense' => 23, 'attack' => 36,
+                    'shot' => 27, 'pass' => 24, 'dribble' => 27,
+                    'block' => 18, 'intercept' => 20, 'tackle' => 20,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Attaquant remuant et adroit, partenaire de pointe complémentaire d’Alvez.',
+            ],
+
+            // =======================
+            // ITALIE
+            // =======================
+            // NB : la sélection italienne s'appuie aussi sur les joueurs de
+            // l'École des Champions (origin ecole_des_champions, italiens par
+            // défaut), qui restent dans le vivier de la Squadra Azzurra.
+            // --- Gardiens ---
+            [
+                'Gino', 'Hernandez', 13, 'Goalkeeper', 340,
+                [
+                    'speed' => 60, 'stamina' => 76, 'defense' => 38, 'attack' => 16,
+                    'shot' => 13, 'pass' => 18, 'dribble' => 16,
+                    'block' => 26, 'intercept' => 24, 'tackle' => 20,
+                    'hand_save' => 30, 'punch_save' => 29,
+                ],
+                'Capitaine et gardien de l’Inter, réflexes d’élite et autorité dans la surface azzurra.',
+            ],
+            [
+                '', 'Amoruso', 13, 'Goalkeeper', 300,
+                [
+                    'speed' => 57, 'stamina' => 73, 'defense' => 35, 'attack' => 14,
+                    'shot' => 12, 'pass' => 16, 'dribble' => 15,
+                    'block' => 24, 'intercept' => 22, 'tackle' => 18,
+                    'hand_save' => 27, 'punch_save' => 26,
+                ],
+                'Gardien remplaçant fiable, solide doublure dans les buts italiens.',
+            ],
+
+            // --- Défenseurs (catenaccio) ---
+            [
+                'Salvatore', 'Gentile', 13, 'Defender', 410,
+                [
+                    'speed' => 69, 'stamina' => 81, 'defense' => 39, 'attack' => 21,
+                    'shot' => 17, 'pass' => 22, 'dribble' => 21,
+                    'block' => 30, 'intercept' => 28, 'tackle' => 30,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Défenseur de la Juventus, marqueur intraitable et roc du catenaccio italien.',
+            ],
+            [
+                '', 'Tacchinardi', 13, 'Defender', 390,
+                [
+                    'speed' => 68, 'stamina' => 80, 'defense' => 38, 'attack' => 21,
+                    'shot' => 16, 'pass' => 22, 'dribble' => 21,
+                    'block' => 30, 'intercept' => 27, 'tackle' => 30,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Défenseur athlétique et combatif, précieux dans la récupération haute.',
+            ],
+            [
+                '', 'Fresi', 13, 'Defender', 375,
+                [
+                    'speed' => 67, 'stamina' => 79, 'defense' => 37, 'attack' => 20,
+                    'shot' => 16, 'pass' => 21, 'dribble' => 20,
+                    'block' => 29, 'intercept' => 27, 'tackle' => 29,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Défenseur central rigoureux, fort dans le jeu aérien et le placement.',
+            ],
+            [
+                '', 'Galante', 13, 'Defender', 370,
+                [
+                    'speed' => 67, 'stamina' => 79, 'defense' => 37, 'attack' => 20,
+                    'shot' => 16, 'pass' => 21, 'dribble' => 20,
+                    'block' => 29, 'intercept' => 26, 'tackle' => 29,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Défenseur élégant et sûr, il relance proprement depuis l’arrière.',
+            ],
+            [
+                '', 'Pagotto', 13, 'Defender', 355,
+                [
+                    'speed' => 66, 'stamina' => 78, 'defense' => 36, 'attack' => 19,
+                    'shot' => 15, 'pass' => 20, 'dribble' => 19,
+                    'block' => 28, 'intercept' => 26, 'tackle' => 28,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Latéral discipliné et endurant, fiable sur son couloir.',
+            ],
+
+            // --- Milieux ---
+            [
+                '', 'Totti', 13, 'Midfielder', 460,
+                [
+                    'speed' => 73, 'stamina' => 80, 'defense' => 27, 'attack' => 36,
+                    'shot' => 28, 'pass' => 30, 'dribble' => 30,
+                    'block' => 22, 'intercept' => 24, 'tackle' => 24,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Fantasista de la Squadra Azzurra, génie créatif aux passes et dribbles d’exception.',
+                ['Forward'],
+            ],
+            [
+                '', 'Branca', 13, 'Midfielder', 400,
+                [
+                    'speed' => 70, 'stamina' => 78, 'defense' => 26, 'attack' => 32,
+                    'shot' => 27, 'pass' => 27, 'dribble' => 26,
+                    'block' => 22, 'intercept' => 23, 'tackle' => 23,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Milieu offensif au tir précis, redoutable arrivée de la deuxième ligne.',
+            ],
+            [
+                '', 'Delvecchio', 13, 'Midfielder', 390,
+                [
+                    'speed' => 70, 'stamina' => 79, 'defense' => 28, 'attack' => 31,
+                    'shot' => 26, 'pass' => 27, 'dribble' => 26,
+                    'block' => 23, 'intercept' => 25, 'tackle' => 24,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Milieu travailleur et généreux, il abat un volume de jeu considérable.',
+            ],
+            [
+                '', 'Panucci', 13, 'Midfielder', 385,
+                [
+                    'speed' => 71, 'stamina' => 80, 'defense' => 30, 'attack' => 29,
+                    'shot' => 23, 'pass' => 27, 'dribble' => 25,
+                    'block' => 25, 'intercept' => 27, 'tackle' => 26,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Milieu défensif à vocation de récupération, charnière entre les lignes.',
+            ],
+
+            // --- Attaquants ---
+            [
+                '', 'Lentini', 13, 'Forward', 450,
+                [
+                    'speed' => 76, 'stamina' => 79, 'defense' => 23, 'attack' => 37,
+                    'shot' => 28, 'pass' => 26, 'dribble' => 29,
+                    'block' => 18, 'intercept' => 20, 'tackle' => 20,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Ailier vif et percutant, ses débordements et centres font des ravages.',
+            ],
+            [
+                '', 'Bianchi', 13, 'Forward', 435,
+                [
+                    'speed' => 74, 'stamina' => 78, 'defense' => 23, 'attack' => 36,
+                    'shot' => 28, 'pass' => 24, 'dribble' => 27,
+                    'block' => 18, 'intercept' => 20, 'tackle' => 20,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Avant-centre opportuniste, buteur d’instinct dans la surface.',
             ],
         ];
     }
@@ -461,6 +864,16 @@ class CaptainTsubasaInternationalPlayers
                 'base_action' => 'dribble',
                 'description' => 'Un crochet venu du football total qui renverse l’orientation du jeu en un instant.',
             ]],
+
+            'ricardo-espadas' => [[
+                'key'         => 'espadas_aztec_save',
+                'mode'        => 'defense',
+                'label'       => 'Arrêt aztèque',
+                'short_label' => 'Aztèque',
+                'cooldown'    => 3,
+                'base_action' => 'hand_save',
+                'description' => 'Une parade spectaculaire du capitaine mexicain, mur infranchissable sur sa ligne.',
+            ]],
         ];
     }
 
@@ -481,17 +894,16 @@ class CaptainTsubasaInternationalPlayers
             // France
             'el-sid-pierre'        => 'France',
             'louis-napoleon'       => 'France',
-            'lucien-lacombe'       => 'France',
             // Brésil
             'salinas'              => 'Brésil',
             'alberto'              => 'Brésil',
             'casa-grande'          => 'Brésil',
-            'jorgi'                => 'Brésil',
+            'radunga'                => 'Brésil',
             'senardo'              => 'Brésil',
             'natureza'             => 'Brésil',
             'silva'                => 'Brésil',
             'dugo'                 => 'Brésil',
-            'branca'               => 'Brésil',
+            'blanco'               => 'Brésil',
             'marcio'               => 'Brésil',
             'carlos-santana'       => 'Brésil',
             'pepe'                 => 'Brésil',
@@ -501,11 +913,51 @@ class CaptainTsubasaInternationalPlayers
             'ramon-galvan'         => 'Argentine',
             'juan-babington'       => 'Argentine',
             // Uruguay
+            'conzales'             => 'Uruguay',
+            'amerigo'              => 'Uruguay',
+            'pazu'                 => 'Uruguay',
+            'olivares'             => 'Uruguay',
+            'filippo'              => 'Uruguay',
+            'dionisi'              => 'Uruguay',
+            'enrico'               => 'Uruguay',
+            'pedro'                => 'Uruguay',
+            'fengas'               => 'Uruguay',
             'ramon-victorino'      => 'Uruguay',
-            'diego-madero'         => 'Uruguay',
+            'ryoma-hino'           => 'Uruguay', // existe dans CaptainTsubasaFreePlayers
             // Pays-Bas
+            'hans-dolman'          => 'Pays-Bas',
+            'leon-dick'            => 'Pays-Bas',
+            'ruud-krisman'         => 'Pays-Bas',
+            'haan'                 => 'Pays-Bas',
             'brian-cruyfford'      => 'Pays-Bas',
-            'robin-van-basty'      => 'Pays-Bas',
+            'johan-rensenbrink'    => 'Pays-Bas',
+            'gert-keizer'          => 'Pays-Bas',
+            // Mexique
+            'ricardo-espadas'      => 'Mexique',
+            'medina'               => 'Mexique',
+            'carvajal'             => 'Mexique',
+            'gomez'                => 'Mexique',
+            'espino'               => 'Mexique',
+            'rivera'               => 'Mexique',
+            'zaragoza'             => 'Mexique',
+            'garcia'               => 'Mexique',
+            'suarez'               => 'Mexique',
+            'alvez'                => 'Mexique',
+            'lopez'                => 'Mexique',
+            // Italie (la Squadra Azzurra puise aussi dans l'École des Champions)
+            'gino-hernandez'       => 'Italie',
+            'amoruso'              => 'Italie',
+            'salvatore-gentile'    => 'Italie',
+            'tacchinardi'          => 'Italie',
+            'fresi'                => 'Italie',
+            'galante'              => 'Italie',
+            'pagotto'              => 'Italie',
+            'totti'                => 'Italie',
+            'branca'               => 'Italie',
+            'delvecchio'           => 'Italie',
+            'panucci'              => 'Italie',
+            'lentini'              => 'Italie',
+            'bianchi'              => 'Italie',
         ];
     }
 }

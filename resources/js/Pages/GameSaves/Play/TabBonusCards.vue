@@ -12,6 +12,7 @@ const props = defineProps({
     isPlayerInjured:  { type: Function, default: () => false },
     sponsorChallenges:{ type: Array,    default: () => [] },
     sponsorResults:   { type: Array,    default: () => [] },
+    incomingMalus:    { type: Array,    default: () => [] },
 });
 
 const emit = defineEmits(['buy', 'activate']);
@@ -25,6 +26,25 @@ const targetPlayerId = ref(null);     // pour cartes "player"
 
 const availableCards = computed(() => props.inventory.filter(c => c.status === 'available'));
 const usedCards      = computed(() => props.inventory.filter(c => c.status === 'used'));
+
+// Séparation bonus / malus (même onglet, sections distinctes)
+const isMalus = (c) => c?.kind === 'malus';
+
+const bonusOffers = computed(() => props.weeklyOffers.filter(o => !isMalus(o)));
+const malusOffers = computed(() => props.weeklyOffers.filter(o =>  isMalus(o)));
+
+const availableBonus = computed(() => availableCards.value.filter(c => !isMalus(c)));
+const availableMalus = computed(() => availableCards.value.filter(c =>  isMalus(c)));
+
+const offerGroups = computed(() => [
+    { key: 'bonus', label: '🃏 Cartes Bonus', hint: 'Boostez votre équipe',                 items: bonusOffers.value },
+    { key: 'malus', label: '☠️ Cartes Malus', hint: 'Sabotez l\'adversaire du prochain match', items: malusOffers.value },
+].filter(g => g.items.length));
+
+const inventoryGroups = computed(() => [
+    { key: 'bonus', label: '🃏 Bonus', items: availableBonus.value },
+    { key: 'malus', label: '☠️ Malus', items: availableMalus.value },
+].filter(g => g.items.length));
 
 // Effets qui ne ciblent que les joueurs blessés
 const INJURY_EFFECTS = ['injury_reduce', 'injury_cure'];
@@ -72,10 +92,11 @@ const phaseLabel = (phase) => ({
 }[phase] ?? phase);
 
 const targetLabel = (target) => ({
-    self:    '👥 Équipe',
-    player:  '👤 Joueur',
-    match:   '⚽ Match',
-    finance: '💰 Finances',
+    self:     '👥 Équipe',
+    player:   '👤 Joueur',
+    match:    '⚽ Match',
+    finance:  '💰 Finances',
+    opponent: '🎯 Adversaire',
 }[target] ?? target);
 
 // Libellés des défis sponsor (miroir de BonusCardActivationService::evaluateChallenge)
@@ -117,6 +138,8 @@ const cancelActivate = () => {
 const needsTarget = computed(() =>
     selectedCard.value?.target === 'player'
 );
+
+const isSelectedMalus = computed(() => isMalus(selectedCard.value));
 
 const canConfirm = computed(() => {
     if (!selectedCard.value) return false;
@@ -209,58 +232,96 @@ const canConfirm = computed(() => {
         </div>
 
         <!-- ================================================ -->
+        <!-- MALUS REÇUS (titulaire consigné contre vous)      -->
+        <!-- ================================================ -->
+        <div v-if="incomingMalus.length" class="flex flex-col gap-2">
+            <div v-for="(m, i) in incomingMalus" :key="'malus-in-' + i"
+                 class="flex items-center gap-3 border border-rose-300 bg-rose-50 rounded-xl px-3 py-2">
+                <span class="text-xl">{{ m.icon || '🚫' }}</span>
+                <div class="flex-1 min-w-0">
+                    <div class="text-xs font-bold text-rose-800">Malus subi — {{ m.card_name || 'Titulaire consigné' }}</div>
+                    <div class="text-[11px] text-rose-600">
+                        {{ m.player_name }} ne pourra pas débuter votre prochain match.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================================================ -->
         <!-- BOUTIQUE                                          -->
         <!-- ================================================ -->
         <div v-if="activeTab === 'shop'">
 
-            <div v-if="weeklyOffers.length" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div v-for="(offer, i) in weeklyOffers" :key="i"
-                     class="border-2 rounded-2xl p-4 flex flex-col gap-3 shadow-sm transition-all"
-                     :class="[ tierClasses(offer.tier).border,tierClasses(offer.tier).bg,tierClasses(offer.tier).glow,isAlreadyBought(offer) ? 'opacity-60' : '']">
-                    <!-- Header carte -->
-                    <div class="flex items-start justify-between">
-                        <div class="flex items-center gap-2">
-                            <span class="text-3xl">{{ offer.icon }}</span>
-                            <div>
-                                <div class="text-sm font-black text-slate-800">{{ offer.name }}</div>
-                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                                      :class="tierClasses(offer.tier).badge">
-                                    {{ tierClasses(offer.tier).label }}
+            <div v-if="weeklyOffers.length" class="flex flex-col gap-5">
+                <div v-for="group in offerGroups" :key="group.key">
+                    <div class="flex items-baseline gap-2 mb-2">
+                        <h4 class="text-xs font-bold uppercase tracking-wider"
+                            :class="group.key === 'malus' ? 'text-rose-600' : 'text-slate-500'">
+                            {{ group.label }}
+                        </h4>
+                        <span class="text-[10px] text-slate-400">{{ group.hint }}</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div v-for="(offer, i) in group.items" :key="group.key + '-' + i"
+                             class="border-2 rounded-2xl p-4 flex flex-col gap-3 shadow-sm transition-all"
+                             :class="[ tierClasses(offer.tier).border,tierClasses(offer.tier).bg,tierClasses(offer.tier).glow,
+                                       isAlreadyBought(offer) ? 'opacity-60' : '',
+                                       group.key === 'malus' ? 'ring-1 ring-rose-300' : '']">
+                            <!-- Header carte -->
+                            <div class="flex items-start justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-3xl">{{ offer.icon }}</span>
+                                    <div>
+                                        <div class="text-sm font-black text-slate-800">{{ offer.name }}</div>
+                                        <div class="flex items-center gap-1 mt-0.5">
+                                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                                                  :class="tierClasses(offer.tier).badge">
+                                                {{ tierClasses(offer.tier).label }}
+                                            </span>
+                                            <span v-if="group.key === 'malus'"
+                                                  class="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-rose-500 text-white">
+                                                MALUS
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-right shrink-0">
+                                    <div class="text-lg font-black" :class="canAfford(offer.cost) ? 'text-emerald-600' : 'text-rose-500'">
+                                        {{ offer.cost }} €
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Description -->
+                            <p class="text-xs text-slate-600 leading-relaxed flex-1">{{ offer.description }}</p>
+
+                            <!-- Tags -->
+                            <div class="flex gap-1.5 flex-wrap">
+                                <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/70 border border-slate-200 text-slate-600">
+                                    {{ phaseLabel(offer.execution_phase) }}
+                                </span>
+                                <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/70 border border-slate-200 text-slate-600">
+                                    {{ targetLabel(offer.target) }}
                                 </span>
                             </div>
-                        </div>
-                        <div class="text-right shrink-0">
-                            <div class="text-lg font-black" :class="canAfford(offer.cost) ? 'text-emerald-600' : 'text-rose-500'">
-                                {{ offer.cost }} €
-                            </div>
+
+                            <!-- Bouton achat -->
+                            <button type="button"
+                                    @click="buyOffer(offer)"
+                                    :disabled="!canAfford(offer.cost) || isAlreadyBought(offer)"
+                                    class="w-full py-2 rounded-xl text-xs font-bold transition-all"
+                                    :class="isAlreadyBought(offer)
+                                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                                    : !canAfford(offer.cost)
+                                        ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                                        : group.key === 'malus'
+                                            ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-sm active:scale-95'
+                                            : 'bg-teal-500 hover:bg-teal-600 text-white shadow-sm active:scale-95'">
+                                    {{ isAlreadyBought(offer) ? '✓ Déjà achetée' : canAfford(offer.cost) ? 'Acheter' : 'Budget insuffisant' }}
+                            </button>
                         </div>
                     </div>
-
-                    <!-- Description -->
-                    <p class="text-xs text-slate-600 leading-relaxed flex-1">{{ offer.description }}</p>
-
-                    <!-- Tags -->
-                    <div class="flex gap-1.5 flex-wrap">
-                        <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/70 border border-slate-200 text-slate-600">
-                            {{ phaseLabel(offer.execution_phase) }}
-                        </span>
-                        <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/70 border border-slate-200 text-slate-600">
-                            {{ targetLabel(offer.target) }}
-                        </span>
-                    </div>
-
-                    <!-- Bouton achat -->
-                    <button type="button"
-                            @click="buyOffer(offer)"
-                            :disabled="!canAfford(offer.cost) || isAlreadyBought(offer)"
-                            class="w-full py-2 rounded-xl text-xs font-bold transition-all"
-                            :class="isAlreadyBought(offer)
-                            ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                            : canAfford(offer.cost)
-                                ? 'bg-teal-500 hover:bg-teal-600 text-white shadow-sm active:scale-95'
-                                : 'bg-slate-200 text-slate-400 cursor-not-allowed'">
-                            {{ isAlreadyBought(offer) ? '✓ Déjà achetée' : canAfford(offer.cost) ? 'Acheter' : 'Budget insuffisant' }}
-                    </button>
                 </div>
             </div>
 
@@ -284,36 +345,53 @@ const canConfirm = computed(() => {
                     ✅ Disponibles ({{ availableCards.length }})
                 </h4>
 
-                <div v-if="availableCards.length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    <div v-for="card in availableCards" :key="card.id"
-                         class="border-2 rounded-xl p-3 flex flex-col gap-2 cursor-pointer transition-all hover:shadow-md active:scale-95"
-                         :class="[tierClasses(card.tier).border, tierClasses(card.tier).bg]"
-                         @click="openActivate(card)">
+                <div v-if="availableCards.length" class="flex flex-col gap-4">
+                    <div v-for="group in inventoryGroups" :key="group.key">
+                        <h5 class="text-[11px] font-bold uppercase tracking-wider mb-2"
+                            :class="group.key === 'malus' ? 'text-rose-600' : 'text-slate-400'">
+                            {{ group.label }} ({{ group.items.length }})
+                        </h5>
 
-                        <div class="flex items-center gap-2">
-                            <span class="text-2xl">{{ card.icon }}</span>
-                            <div class="flex-1 min-w-0">
-                                <div class="text-xs font-black text-slate-800 truncate">{{ card.name }}</div>
-                                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
-                                      :class="tierClasses(card.tier).badge">
-                                    {{ tierClasses(card.tier).label }}
-                                </span>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                            <div v-for="card in group.items" :key="card.id"
+                                 class="border-2 rounded-xl p-3 flex flex-col gap-2 cursor-pointer transition-all hover:shadow-md active:scale-95"
+                                 :class="[tierClasses(card.tier).border, tierClasses(card.tier).bg,
+                                          group.key === 'malus' ? 'ring-1 ring-rose-300' : '']"
+                                 @click="openActivate(card)">
+
+                                <div class="flex items-center gap-2">
+                                    <span class="text-2xl">{{ card.icon }}</span>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="text-xs font-black text-slate-800 truncate">{{ card.name }}</div>
+                                        <div class="flex items-center gap-1 mt-0.5">
+                                            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                                                  :class="tierClasses(card.tier).badge">
+                                                {{ tierClasses(card.tier).label }}
+                                            </span>
+                                            <span v-if="group.key === 'malus'"
+                                                  class="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-rose-500 text-white">
+                                                MALUS
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <p class="text-[10px] text-slate-600 leading-relaxed">{{ card.description }}</p>
+
+                                <div class="flex gap-1 flex-wrap">
+                                    <span class="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-white/80 border border-slate-200 text-slate-500">
+                                        {{ phaseLabel(card.execution_phase) }}
+                                    </span>
+                                    <span class="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-white/80 border border-slate-200 text-slate-500">
+                                        {{ targetLabel(card.target) }}
+                                    </span>
+                                </div>
+
+                                <div class="text-[10px] font-semibold text-center rounded-lg py-1"
+                                     :class="group.key === 'malus' ? 'text-rose-600 bg-rose-50' : 'text-teal-600 bg-teal-50'">
+                                    Cliquer pour activer
+                                </div>
                             </div>
-                        </div>
-
-                        <p class="text-[10px] text-slate-600 leading-relaxed">{{ card.description }}</p>
-
-                        <div class="flex gap-1 flex-wrap">
-                            <span class="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-white/80 border border-slate-200 text-slate-500">
-                                {{ phaseLabel(card.execution_phase) }}
-                            </span>
-                            <span class="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-white/80 border border-slate-200 text-slate-500">
-                                {{ targetLabel(card.target) }}
-                            </span>
-                        </div>
-
-                        <div class="text-[10px] text-teal-600 font-semibold text-center bg-teal-50 rounded-lg py-1">
-                            Cliquer pour activer
                         </div>
                     </div>
                 </div>
@@ -397,6 +475,17 @@ const canConfirm = computed(() => {
                         </p>
                     </div>
 
+                    <!-- Cible adversaire (carte malus) -->
+                    <div v-if="isSelectedMalus" class="p-5 border-b border-slate-100">
+                        <div class="flex items-center gap-2 text-rose-700 text-sm font-semibold">
+                            <span class="text-lg">🎯</span>
+                            <span>Cible : l'adversaire de votre prochain match</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 mt-1">
+                            L'effet s'applique automatiquement à l'adversaire de votre prochain match programmé.
+                        </p>
+                    </div>
+
                     <!-- Actions -->
                     <div class="p-4 flex gap-2 justify-end">
                         <button type="button"
@@ -408,10 +497,12 @@ const canConfirm = computed(() => {
                                 @click="confirmActivate"
                                 :disabled="!canConfirm"
                                 class="px-5 py-2 text-xs font-bold rounded-xl transition-all disabled:opacity-40"
-                                :class="canConfirm
-                                    ? 'bg-teal-500 hover:bg-teal-600 text-white shadow-sm'
-                                    : 'bg-slate-200 text-slate-400'">
-                            ✨ Activer la carte
+                                :class="!canConfirm
+                                    ? 'bg-slate-200 text-slate-400'
+                                    : isSelectedMalus
+                                        ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-sm'
+                                        : 'bg-teal-500 hover:bg-teal-600 text-white shadow-sm'">
+                            {{ isSelectedMalus ? '☠️ Infliger le malus' : '✨ Activer la carte' }}
                         </button>
                     </div>
                 </div>

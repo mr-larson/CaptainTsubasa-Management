@@ -299,6 +299,79 @@ class BonusCardSeeder extends Seeder
                 'base_weight'     => 30,
                 'icon'            => '🫂',
             ],
+
+            // ══════════════════════════════════════════════════
+            //   CARTES MALUS — ciblent l'adversaire du prochain match
+            // ══════════════════════════════════════════════════
+
+            // ── Fatigue (−stamina aux titulaires adverses) ─────
+            [
+                'name'            => 'Nuit agitée',
+                'description'     => 'Retire 15 points de stamina aux titulaires de votre adversaire avant son prochain match.',
+                'kind'            => 'malus',
+                'tier'            => 'bronze',
+                'target'          => 'opponent',
+                'execution_phase' => 'immediate',
+                'effect_type'     => 'opponent_stamina_drain',
+                'effect_value'    => ['amount' => 15],
+                'cost'            => 250,
+                'base_weight'     => 90,
+                'icon'            => '😴',
+            ],
+            [
+                'name'            => 'Sabotage du sommeil',
+                'description'     => 'Retire 25 points de stamina aux titulaires de votre adversaire avant son prochain match.',
+                'kind'            => 'malus',
+                'tier'            => 'silver',
+                'target'          => 'opponent',
+                'execution_phase' => 'immediate',
+                'effect_type'     => 'opponent_stamina_drain',
+                'effect_value'    => ['amount' => 25],
+                'cost'            => 450,
+                'base_weight'     => 70,
+                'icon'            => '🥱',
+            ],
+            [
+                'name'            => 'Épuisement programmé',
+                'description'     => 'Retire 35 points de stamina aux titulaires de votre adversaire avant son prochain match.',
+                'kind'            => 'malus',
+                'tier'            => 'gold',
+                'target'          => 'opponent',
+                'execution_phase' => 'immediate',
+                'effect_type'     => 'opponent_stamina_drain',
+                'effect_value'    => ['amount' => 35],
+                'cost'            => 750,
+                'base_weight'     => 35,
+                'icon'            => '🪫',
+            ],
+
+            // ── Titulaire consigné (interdit de titularisation) ─
+            [
+                'name'            => 'Convocation surprise',
+                'description'     => 'Un titulaire au hasard de votre adversaire ne pourra pas débuter son prochain match.',
+                'kind'            => 'malus',
+                'tier'            => 'silver',
+                'target'          => 'opponent',
+                'execution_phase' => 'immediate',
+                'effect_type'     => 'opponent_bench_starter',
+                'effect_value'    => ['count' => 1, 'pick' => 'random'],
+                'cost'            => 550,
+                'base_weight'     => 60,
+                'icon'            => '🚫',
+            ],
+            [
+                'name'            => 'Scandale médiatique',
+                'description'     => 'Un cadre de votre adversaire (son meilleur titulaire de champ) ne pourra pas débuter son prochain match.',
+                'kind'            => 'malus',
+                'tier'            => 'gold',
+                'target'          => 'opponent',
+                'execution_phase' => 'immediate',
+                'effect_type'     => 'opponent_bench_starter',
+                'effect_value'    => ['count' => 1, 'pick' => 'key'],
+                'cost'            => 900,
+                'base_weight'     => 30,
+                'icon'            => '📰',
+            ],
         ];
 
         // Anciennes cartes finance "argent gratuit" remplacées par les paris/défis.

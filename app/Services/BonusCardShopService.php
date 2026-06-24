@@ -24,9 +24,11 @@ class BonusCardShopService
         $standings = $this->buildStandings($gameSave, $teams);
         $total    = $teams->count();
 
-        // Charger le catalogue
-        $allCards = BonusCard::all();
+        // Charger le catalogue, séparé bonus / malus
+        $allCards   = BonusCard::all();
         if ($allCards->isEmpty()) return;
+        $bonusCards = $allCards->where('kind', 'bonus')->values();
+        $malusCards = $allCards->where('kind', '!=', 'bonus')->values();
 
         $state = $gameSave->state ?? [];
         $offersByTeam = [];
@@ -38,28 +40,11 @@ class BonusCardShopService
             // Plus l'équipe est mal classée, plus elle a de chances d'avoir de l'Or
             $weights = $this->computeTierWeights($position, $total);
 
-            $offers = [];
-            $usedCardIds = [];
-
-            for ($i = 0; $i < 3; $i++) {
-                $tier = $this->drawTier($weights);
-                $card = $this->drawCard($allCards, $tier, $usedCardIds);
-                if (!$card) continue;
-
-                $usedCardIds[] = $card->id;
-                $offers[] = [
-                    'bonus_card_id' => $card->id,
-                    'tier'          => $tier,
-                    'cost'          => $card->cost,
-                    'name'          => $card->name,
-                    'description'   => $card->description,
-                    'icon'          => $card->icon,
-                    'target'        => $card->target,
-                    'execution_phase' => $card->execution_phase,
-                    'effect_type'   => $card->effect_type,
-                    'effect_value'  => $card->effect_value,
-                ];
-            }
+            // 3 cartes bonus + 2 cartes malus par semaine.
+            $offers = array_merge(
+                $this->buildOffers($bonusCards, $weights, 3),
+                $this->buildOffers($malusCards, $weights, 2),
+            );
 
             $offersByTeam[(string) $team->id] = $offers;
         }
@@ -98,6 +83,43 @@ class BonusCardShopService
     // ──────────────────────────────────────────────────────────
     //   HELPERS PRIVÉS
     // ──────────────────────────────────────────────────────────
+
+    /**
+     * Tire $count offres distinctes dans un catalogue donné (bonus ou malus),
+     * en respectant la pondération de tier et les base_weight.
+     *
+     * @return array<int, array>
+     */
+    private function buildOffers(Collection $catalog, array $weights, int $count): array
+    {
+        if ($catalog->isEmpty()) return [];
+
+        $offers = [];
+        $usedCardIds = [];
+
+        for ($i = 0; $i < $count; $i++) {
+            $tier = $this->drawTier($weights);
+            $card = $this->drawCard($catalog, $tier, $usedCardIds);
+            if (!$card) continue;
+
+            $usedCardIds[] = $card->id;
+            $offers[] = [
+                'bonus_card_id'   => $card->id,
+                'kind'            => $card->kind,
+                'tier'            => $tier,
+                'cost'            => $card->cost,
+                'name'            => $card->name,
+                'description'     => $card->description,
+                'icon'            => $card->icon,
+                'target'          => $card->target,
+                'execution_phase' => $card->execution_phase,
+                'effect_type'     => $card->effect_type,
+                'effect_value'    => $card->effect_value,
+            ];
+        }
+
+        return $offers;
+    }
 
     /**
      * Calcule les poids Bronze/Argent/Or selon la position.

@@ -107,10 +107,11 @@ export function useBonusCards({ gameSave, bonusCardOffers, bonusCardInventory })
     }[phase] ?? phase);
 
     const targetLabel = (target) => ({
-        self:    'Toute l\'équipe',
-        player:  'Joueur ciblé',
-        match:   'Prochain match',
-        finance: 'Finances',
+        self:     'Toute l\'équipe',
+        player:   'Joueur ciblé',
+        match:    'Prochain match',
+        finance:  'Finances',
+        opponent: 'Adversaire',
     }[target] ?? target);
 
     return {

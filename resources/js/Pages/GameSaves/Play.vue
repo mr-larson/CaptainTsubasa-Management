@@ -49,6 +49,7 @@ const props = defineProps({
     bonusCardInventory: { type: Array, default: () => [] },
     sponsorChallenges:  { type: Array, default: () => [] },
     sponsorResults:     { type: Array, default: () => [] },
+    incomingMalus:      { type: Array, default: () => [] },
     managementStats:    { type: Object, default: () => ({}) },
     moraleLogs:         { type: Object, default: () => ({}) },
     playerPromises:     { type: Object, default: () => ({}) },
@@ -565,6 +566,7 @@ function updateOtherPlayerNumber(playerId, number) {
                                    :isPlayerInjured="isPlayerInjured"
                                    :sponsorChallenges="props.sponsorChallenges"
                                    :sponsorResults="props.sponsorResults"
+                                   :incomingMalus="props.incomingMalus"
                                    @buy="buyCard"
                                    @activate="activateCard"
                     />

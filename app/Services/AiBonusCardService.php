@@ -156,6 +156,22 @@ class AiBonusCardService
                     $score += 20;
                 }
                 break;
+
+            case 'opponent_stamina_drain':
+                // Malus fatigue : pertinent uniquement avec un match à venir.
+                $score = ($context['has_match_this_week'] ?? false) ? 52 : 0;
+                if ($score && ($context['wins'] ?? 0) < ($context['losses'] ?? 0)) {
+                    $score += 10; // une équipe en difficulté est plus agressive
+                }
+                break;
+
+            case 'opponent_bench_starter':
+                // Malus titulaire consigné : fort impact, réservé aux matchs à venir.
+                $score = ($context['has_match_this_week'] ?? false) ? 58 : 0;
+                if ($score && ($context['wins'] ?? 0) < ($context['losses'] ?? 0)) {
+                    $score += 10;
+                }
+                break;
         }
 
         // Bonus selon le tier
@@ -205,6 +221,11 @@ class AiBonusCardService
                 $targetId = $context['worst_affinity_player_id'] ?? null;
                 if ($targetId && ($context['worst_affinity'] ?? 0) < 0) {
                     $this->activationService->activate($card, $gameSave, $targetId);
+                }
+            } elseif (in_array($effectType, ['opponent_stamina_drain', 'opponent_bench_starter'], true)) {
+                // Malus : infligé à l'adversaire du prochain match si match à venir.
+                if ($context['has_match_this_week'] ?? false) {
+                    $this->activationService->activate($card, $gameSave);
                 }
             }
         } catch (\Throwable) {
