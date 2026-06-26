@@ -94,7 +94,7 @@ class GameMatchController extends Controller
                 'gameSaveId'     => $gameSave->id,
                 'matchId'        => $match->id,
                 'week'           => $match->week,
-                'maxTurns'       => 40,
+                'maxTurns'       => (int) $gameSave->getConfig('match_max_turns', 45),
                 'controlMode'    => $controlMode,
                 'controlledSide' => $controlledSide,
 
@@ -207,12 +207,9 @@ class GameMatchController extends Controller
         $gameSave->state = $state;
         $gameSave->save();
 
-        // 6. Consommer les cartes pre_match de la/des équipe(s) humaine(s) de CE match
+        // 6. (Les cartes pre_match sont consommées en fin de semaine pour TOUTES
+        //     les équipes ayant joué — humaines et IA — cf. plus bas.)
         $controlledTeamIds = $gameSave->controlledGameTeamIds();
-        $humanSides = array_values(array_intersect([$homeTeamId, $awayTeamId], $controlledTeamIds));
-        foreach ($humanSides as $teamId) {
-            app(BonusCardActivationService::class)->consumePreMatchCards($gameSave, $teamId);
-        }
 
         // ─────────────────────────────────────────────────────────────
         //  GATING : tant qu'il reste un match humain à jouer cette
@@ -251,17 +248,26 @@ class GameMatchController extends Controller
 
         // Simuler les matchs IA restants (les matchs humains sont déjà "played")
         app(MatchSimulator::class)->simulateOtherMatchesOfWeek($match);
-        app(AITrainingService::class)->trainForWeek($gameSave);
-        app(AITransferService::class)->recruitForWeek($gameSave);
+        if ($gameSave->getConfig('ai_training_enabled', true)) {
+            app(AITrainingService::class)->trainForWeek($gameSave);
+        }
+        if ($gameSave->getConfig('ai_transfers_enabled', true)) {
+            app(AITransferService::class)->recruitForWeek($gameSave);
+        }
 
         // Revenus hebdomadaires AVANT d'incrémenter la semaine
         $this->applyWeeklyIncome($gameSave, $weekToClose);
 
-        // Résolution des défis sponsor (cartes finance) selon les résultats de la semaine
-        app(BonusCardActivationService::class)->resolveSponsorChallenges($gameSave, $weekToClose);
+        $bonusEnabled = $gameSave->getConfig('bonus_cards_enabled', true);
+        $malusEnabled = $bonusEnabled && $gameSave->getConfig('malus_cards_enabled', true);
 
-        // Consommer les malus « titulaire consigné » des équipes ayant joué cette semaine
-        app(BonusCardActivationService::class)->consumeMalusForPlayedWeek($gameSave, $weekToClose);
+        if ($bonusEnabled) {
+            app(BonusCardActivationService::class)->resolveSponsorChallenges($gameSave, $weekToClose);
+            app(BonusCardActivationService::class)->consumePreMatchCardsForPlayedWeek($gameSave, $weekToClose);
+        }
+        if ($malusEnabled) {
+            app(BonusCardActivationService::class)->consumeMalusForPlayedWeek($gameSave, $weekToClose);
+        }
 
         // Avancer la semaine
         $gameSave->week = max($gameSave->week ?? 1, $weekToClose + 1);
@@ -278,9 +284,10 @@ class GameMatchController extends Controller
         app(MoraleService::class)->applyAfterWeek($gameSave, $weekToClose);
         app(PromiseService::class)->evaluateForWeek($gameSave, $weekToClose);
 
-        // Générer la boutique + IA cartes pour la nouvelle semaine
-        app(BonusCardShopService::class)->generateWeeklyOffers($gameSave);
-        app(AIBonusCardService::class)->processWeek($gameSave);
+        if ($bonusEnabled) {
+            app(BonusCardShopService::class)->generateWeeklyOffers($gameSave);
+            app(AIBonusCardService::class)->processWeek($gameSave);
+        }
 
         // Coupe du Monde : faire progresser le tournoi (poules → élimination →
         // champion) au lieu de la logique de fin de saison de ligue.
@@ -343,17 +350,26 @@ class GameMatchController extends Controller
 
         app(MatchSimulator::class)->simulateMatchesCollection($matches);
         app(AILineupService::class)->adjustLineupsForWeek($gameSave);
-        app(AITrainingService::class)->trainForWeek($gameSave);
-        app(AITransferService::class)->recruitForWeek($gameSave);
+        if ($gameSave->getConfig('ai_training_enabled', true)) {
+            app(AITrainingService::class)->trainForWeek($gameSave);
+        }
+        if ($gameSave->getConfig('ai_transfers_enabled', true)) {
+            app(AITransferService::class)->recruitForWeek($gameSave);
+        }
 
         // Revenus AVANT incrément
         $this->applyWeeklyIncome($gameSave, $week);
 
-        // Résolution des défis sponsor (cartes finance) selon les résultats de la semaine
-        app(BonusCardActivationService::class)->resolveSponsorChallenges($gameSave, $week);
+        $bonusEnabled = $gameSave->getConfig('bonus_cards_enabled', true);
+        $malusEnabled = $bonusEnabled && $gameSave->getConfig('malus_cards_enabled', true);
 
-        // Consommer les malus « titulaire consigné » des équipes ayant joué cette semaine
-        app(BonusCardActivationService::class)->consumeMalusForPlayedWeek($gameSave, $week);
+        if ($bonusEnabled) {
+            app(BonusCardActivationService::class)->resolveSponsorChallenges($gameSave, $week);
+            app(BonusCardActivationService::class)->consumePreMatchCardsForPlayedWeek($gameSave, $week);
+        }
+        if ($malusEnabled) {
+            app(BonusCardActivationService::class)->consumeMalusForPlayedWeek($gameSave, $week);
+        }
 
         // Stamina AVANT incrément (sinon on récupère l'historique d'une autre semaine)
         StaminaService::applyAfterWeek($gameSave, $week);
@@ -373,9 +389,10 @@ class GameMatchController extends Controller
         }
         $gameSave->save();
 
-        // Boutique + IA cartes pour la nouvelle semaine
-        app(BonusCardShopService::class)->generateWeeklyOffers($gameSave);
-        app(AIBonusCardService::class)->processWeek($gameSave);
+        if ($bonusEnabled) {
+            app(BonusCardShopService::class)->generateWeeklyOffers($gameSave);
+            app(AIBonusCardService::class)->processWeek($gameSave);
+        }
 
         // Coupe du Monde : progression du tournoi au lieu de la fin de saison.
         if ($gameSave->competition_type === 'world_cup') {
@@ -459,6 +476,10 @@ class GameMatchController extends Controller
 
         $unavailableIds = array_unique(array_merge($injuredPlayerIds, $suspendedPlayerIds, $benchedByMalus));
 
+        // Modificateurs de stats "ce match" : boosts propres + debuffs reçus
+        $statMods = app(BonusCardActivationService::class)
+            ->getMatchStatModifiers($gameSave, $team->id);
+
         $contracts = $team->contracts->loadMissing('gamePlayer');
         $starters = $contracts->sortByDesc('is_starter')->values();
         $ordered   = collect();
@@ -519,13 +540,7 @@ class GameMatchController extends Controller
                 'is_starter'    => true,
                 'photo_path'    => $p->photo_path,
                 'photo_url'     => $p->photo_url,
-                'stats'         => [
-                    'speed' => $p->speed, 'stamina' => $p->stamina,
-                    'attack' => $p->attack, 'defense' => $p->defense,
-                    'shot' => $p->shot, 'pass' => $p->pass, 'dribble' => $p->dribble,
-                    'block' => $p->block, 'intercept' => $p->intercept, 'tackle' => $p->tackle,
-                    'heading' => $p->heading, 'hand_save' => $p->hand_save, 'punch_save' => $p->punch_save,
-                ],
+                'stats'         => $this->playerStatsArray($p, $this->matchDeltaFor($statMods, $p->id)),
                 'special_moves' => $p->special_moves ?? [],
                 'is_available'  => !in_array($p->id, $unavailableIds),
                 'yellow_cards'  => 0,
@@ -552,13 +567,7 @@ class GameMatchController extends Controller
                 'is_starter'    => false,
                 'photo_path'    => $p->photo_path,
                 'photo_url'     => $p->photo_url,
-                'stats'         => [
-                    'speed' => $p->speed, 'stamina' => $p->stamina,
-                    'attack' => $p->attack, 'defense' => $p->defense,
-                    'shot' => $p->shot, 'pass' => $p->pass, 'dribble' => $p->dribble,
-                    'block' => $p->block, 'intercept' => $p->intercept, 'tackle' => $p->tackle,
-                    'heading' => $p->heading, 'hand_save' => $p->hand_save, 'punch_save' => $p->punch_save,
-                ],
+                'stats'         => $this->playerStatsArray($p, $this->matchDeltaFor($statMods, $p->id)),
                 'special_moves' => $p->special_moves ?? [],
                 'is_available'  => !in_array($p->id, $unavailableIds),
                 'yellow_cards'  => 0,
@@ -571,6 +580,43 @@ class GameMatchController extends Controller
         })->values();
 
         return $starters11->concat($subs);
+    }
+
+    /**
+     * Construit le tableau de stats d'un joueur pour le moteur, en appliquant
+     * les modificateurs "ce match" (boosts pre_match et debuffs subis),
+     * bornés à [1, 100].
+     */
+    private function playerStatsArray(GamePlayer $p, array $deltas = []): array
+    {
+        $stats = [
+            'speed' => $p->speed, 'stamina' => $p->stamina,
+            'attack' => $p->attack, 'defense' => $p->defense,
+            'shot' => $p->shot, 'pass' => $p->pass, 'dribble' => $p->dribble,
+            'block' => $p->block, 'intercept' => $p->intercept, 'tackle' => $p->tackle,
+            'heading' => $p->heading, 'hand_save' => $p->hand_save, 'punch_save' => $p->punch_save,
+        ];
+
+        foreach ($deltas as $stat => $amount) {
+            if (array_key_exists($stat, $stats)) {
+                $stats[$stat] = max(1, min(100, (int) $stats[$stat] + (int) $amount));
+            }
+        }
+
+        return $stats;
+    }
+
+    /**
+     * Fusionne le delta d'équipe et le delta spécifique d'un joueur (debuff de
+     * cadre) en une seule carte de modificateurs pour ce joueur.
+     */
+    private function matchDeltaFor(array $mods, $playerId): array
+    {
+        $delta = $mods['team'] ?? [];
+        foreach (($mods['players'][$playerId] ?? []) as $stat => $v) {
+            $delta[$stat] = ($delta[$stat] ?? 0) + (int) $v;
+        }
+        return $delta;
     }
 
     public function useCaptainReroll(Request $request, GameSave $gameSave, GameContract $contract): JsonResponse

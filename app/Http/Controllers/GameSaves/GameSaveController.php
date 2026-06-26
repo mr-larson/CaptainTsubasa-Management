@@ -392,6 +392,7 @@ class GameSaveController extends Controller
         $freePlayers = GamePlayer::where('game_save_id', $gameSave->id)
             ->whereDoesntHave('contracts', fn($q) => $q->activeAt($currentWeek))
             ->excludingFictional()
+            ->visibleForConfig($gameSave)
             ->orderBy('lastname')
             ->orderBy('firstname')
             ->get();
@@ -598,6 +599,14 @@ class GameSaveController extends Controller
             ))
             : [];
 
+        // ─── Boucliers anti-malus actifs (carte Cellule de crise) ───
+        $activeShields = $controlledTeamId
+            ? count(array_filter(
+                $state['malus_shields'] ?? [],
+                fn ($id) => (int) $id === (int) $controlledTeamId
+            ))
+            : 0;
+
         // ─── Hot-seat multi-manager : qui joue, dans quel ordre ───
         $controlledTeams = $gameTeams
             ->whereNotNull('human_seat')
@@ -642,6 +651,8 @@ class GameSaveController extends Controller
             'sponsorChallenges'   => $sponsorChallenges,
             'sponsorResults'      => $sponsorResults,
             'incomingMalus'       => $incomingMalus,
+            'activeShields'       => $activeShields,
+            'gameConfig'          => $gameSave->getConfig(),
             'tournament'          => $gameSave->competition_type === 'world_cup'
                 ? app(TournamentService::class)->presentation($gameSave)
                 : null,
@@ -857,5 +868,34 @@ class GameSaveController extends Controller
                 'status'       => 'scheduled',
             ]);
         }
+    }
+
+    public function updateConfig(Request $request, GameSave $gameSave): RedirectResponse
+    {
+        $this->authorizeGameSave('update', $gameSave);
+
+        $data = $request->validate([
+            'bonus_cards_enabled'     => ['boolean'],
+            'malus_cards_enabled'     => ['boolean'],
+            'match_stamina_cost'      => ['integer', 'min:0', 'max:20'],
+            'rest_stamina_recovery'   => ['integer', 'min:0', 'max:30'],
+            'match_max_turns'         => ['integer', 'min:10', 'max:80'],
+            'injury_on_foul'          => ['boolean'],
+            'suspension_on_3_yellows' => ['boolean'],
+            'training_max_per_week'   => ['integer', 'min:1', 'max:10'],
+            'training_gain_min'       => ['integer', 'min:0', 'max:10'],
+            'training_gain_max'       => ['integer', 'min:1', 'max:20'],
+            'training_stamina_cost'   => ['integer', 'min:0', 'max:15'],
+            'training_min_stamina'    => ['integer', 'min:0', 'max:50'],
+            'ai_transfers_enabled'    => ['boolean'],
+            'ai_training_enabled'     => ['boolean'],
+            'visible_origins'         => ['array'],
+            'visible_origins.*'       => ['boolean'],
+            'internationals_visible'  => ['boolean'],
+        ]);
+
+        $gameSave->setConfig($data);
+
+        return back()->with('success', 'Configuration mise à jour.');
     }
 }

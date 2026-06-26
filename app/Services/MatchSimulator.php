@@ -11,7 +11,6 @@ use Illuminate\Support\Collection;
 
 class MatchSimulator
 {
-    // Miroir des constantes du moteur client (resources/js/Pages/Match/engine/constants.js)
     private const MAX_TURNS                       = 45;
     private const MAX_ZONE_INDEX                  = 4;   // 5 zones, index 0..4
     private const ENDURANCE_DEFAULT               = 100;
@@ -89,19 +88,28 @@ class MatchSimulator
         // en fin de semaine sur l'instance GameSave du contrôleur (évite tout
         // conflit d'instances dans la boucle de simulation).
         $benchedByTeam = [];
+        $modsByTeam    = [];
         if ($gameSave) {
             $activation = app(BonusCardActivationService::class);
             $benchedByTeam = [
                 (int) $m->home_team_id => $activation->getBenchedPlayerIds($gameSave, (int) $m->home_team_id),
                 (int) $m->away_team_id => $activation->getBenchedPlayerIds($gameSave, (int) $m->away_team_id),
             ];
+            $modsByTeam = [
+                (int) $m->home_team_id => $activation->getMatchStatModifiers($gameSave, (int) $m->home_team_id),
+                (int) $m->away_team_id => $activation->getMatchStatModifiers($gameSave, (int) $m->away_team_id),
+            ];
         }
+
+        $maxTurns = (int) ($gameSave?->getConfig('match_max_turns') ?? self::MAX_TURNS);
 
         [$homeScore, $awayScore, $matchStats] = $this->simulateMatch(
             $m->homeTeam,
             $m->awayTeam,
             $lineups,
-            $benchedByTeam
+            $benchedByTeam,
+            $modsByTeam,
+            $maxTurns
         );
 
         $m->home_score  = $homeScore;
@@ -130,10 +138,16 @@ class MatchSimulator
      * compatible avec celui généré par `buildMatchStats` côté client
      * (mêmes clés consommées par PlayerStatsService / PostMatchProgressionService / TabCalendar).
      */
-    private function simulateMatch(GameTeam $home, GameTeam $away, array $lineups = [], array $benchedByTeam = []): array
+    private function simulateMatch(GameTeam $home, GameTeam $away, array $lineups = [], array $benchedByTeam = [], array $modsByTeam = [], int $maxTurns = self::MAX_TURNS): array
     {
         $homePlayers = $this->getStarters($home, $benchedByTeam[(int) $home->id] ?? []);
         $awayPlayers = $this->getStarters($away, $benchedByTeam[(int) $away->id] ?? []);
+
+        // Modificateurs "ce match" (boosts pre_match + debuffs subis) : mutation
+        // en mémoire uniquement (les joueurs ne sont pas sauvegardés ici ; la
+        // progression recharge via find()).
+        $this->applyMatchStatModifiers($homePlayers, $modsByTeam[(int) $home->id] ?? []);
+        $this->applyMatchStatModifiers($awayPlayers, $modsByTeam[(int) $away->id] ?? []);
 
         $this->buildAssignedRoles([$home, $away], $lineups);
 
@@ -164,7 +178,7 @@ class MatchSimulator
         $zone          = 0;
         $frontOfKeeper = false;
 
-        for ($turn = 1; $turn <= self::MAX_TURNS; $turn++) {
+        for ($turn = 1; $turn <= $maxTurns; $turn++) {
             $isHomeAttacking = $side === 'home';
             $attTeam    = $isHomeAttacking ? $home       : $away;
             $defTeam    = $isHomeAttacking ? $away       : $home;
@@ -388,7 +402,7 @@ class MatchSimulator
         ];
         $playtime = [];
         foreach ($homePlayers->concat($awayPlayers) as $p) {
-            $playtime[(string) $p->id] = self::MAX_TURNS;
+            $playtime[(string) $p->id] = $maxTurns;
         }
 
         $matchStats = [
@@ -768,6 +782,35 @@ class MatchSimulator
             ->map(fn($c) => $c->gamePlayer)
             ->values()
             ->take(11);
+    }
+
+    /**
+     * Applique en mémoire les modificateurs "ce match" (boosts pre_match positifs
+     * + debuffs subis négatifs, bornés à [1,100]) aux joueurs d'une équipe.
+     * $mods = ['team' => [...], 'players' => [playerId => [...]]].
+     * Les modèles ne sont jamais sauvegardés ici, donc l'effet reste limité au
+     * match (la progression post-match recharge via find()).
+     */
+    private function applyMatchStatModifiers(Collection $players, array $mods): void
+    {
+        $teamDelta    = $mods['team'] ?? [];
+        $playerDeltas = $mods['players'] ?? [];
+        if (empty($teamDelta) && empty($playerDeltas)) return;
+
+        foreach ($players as $p) {
+            if (!$p) continue;
+
+            $delta = $teamDelta;
+            foreach (($playerDeltas[(int) $p->id] ?? []) as $stat => $v) {
+                $delta[$stat] = ($delta[$stat] ?? 0) + (int) $v;
+            }
+
+            foreach ($delta as $stat => $amount) {
+                if (isset($p->{$stat})) {
+                    $p->{$stat} = max(1, min(100, (int) $p->{$stat} + (int) $amount));
+                }
+            }
+        }
     }
 
     private function getGoalkeeper(Collection $players)

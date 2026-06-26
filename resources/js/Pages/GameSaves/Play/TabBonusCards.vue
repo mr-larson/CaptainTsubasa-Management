@@ -13,6 +13,9 @@ const props = defineProps({
     sponsorChallenges:{ type: Array,    default: () => [] },
     sponsorResults:   { type: Array,    default: () => [] },
     incomingMalus:    { type: Array,    default: () => [] },
+    activeShields:    { type: Number,   default: 0 },
+    targetTeams:      { type: Array,    default: () => [] },
+    malusEnabled:     { type: Boolean,  default: true },
 });
 
 const emit = defineEmits(['buy', 'activate']);
@@ -23,6 +26,19 @@ const emit = defineEmits(['buy', 'activate']);
 const activeTab      = ref('shop');   // 'shop' | 'inventory'
 const selectedCard   = ref(null);     // carte inventaire sélectionnée
 const targetPlayerId = ref(null);     // pour cartes "player"
+const targetTeamId   = ref(null);     // pour malus à cible choisie (target="team")
+
+// Mode de ciblage d'une carte malus : 'opponent' | 'select' | 'leader'
+const malusTargetMode = (card) => {
+    if (!card) return null;
+    if (card.target === 'opponent') return 'opponent';
+    if (card.target === 'team') return card.effect_value?.target_mode ?? 'select';
+    return null;
+};
+
+// Équipe en tête du classement (cible des cartes "leader") — targetTeams est
+// déjà trié par classement côté Play.vue.
+const leaderTeam = computed(() => props.targetTeams[0] ?? null);
 
 const availableCards = computed(() => props.inventory.filter(c => c.status === 'available'));
 const usedCards      = computed(() => props.inventory.filter(c => c.status === 'used'));
@@ -31,10 +47,10 @@ const usedCards      = computed(() => props.inventory.filter(c => c.status === '
 const isMalus = (c) => c?.kind === 'malus';
 
 const bonusOffers = computed(() => props.weeklyOffers.filter(o => !isMalus(o)));
-const malusOffers = computed(() => props.weeklyOffers.filter(o =>  isMalus(o)));
+const malusOffers = computed(() => props.malusEnabled ? props.weeklyOffers.filter(o => isMalus(o)) : []);
 
 const availableBonus = computed(() => availableCards.value.filter(c => !isMalus(c)));
-const availableMalus = computed(() => availableCards.value.filter(c =>  isMalus(c)));
+const availableMalus = computed(() => props.malusEnabled ? availableCards.value.filter(c => isMalus(c)) : []);
 
 const offerGroups = computed(() => [
     { key: 'bonus', label: '🃏 Cartes Bonus', hint: 'Boostez votre équipe',                 items: bonusOffers.value },
@@ -97,6 +113,7 @@ const targetLabel = (target) => ({
     match:    '⚽ Match',
     finance:  '💰 Finances',
     opponent: '🎯 Adversaire',
+    team:     '🎯 Équipe ciblée',
 }[target] ?? target);
 
 // Libellés des défis sponsor (miroir de BonusCardActivationService::evaluateChallenge)
@@ -122,21 +139,33 @@ const buyOffer = (offer) => {
 const openActivate = (card) => {
     selectedCard.value   = card;
     targetPlayerId.value = null;
+    targetTeamId.value   = null;
 };
 
 const confirmActivate = () => {
     if (!selectedCard.value) return;
-    emit('activate', selectedCard.value, selectedCard.value.target === 'player' ? targetPlayerId.value : null);
+    const c = selectedCard.value;
+    const pid = c.target === 'player' ? targetPlayerId.value : null;
+    const tid = needsTeamSelect.value ? targetTeamId.value : null;
+    emit('activate', c, pid, tid);
     selectedCard.value = null;
+    targetPlayerId.value = null;
+    targetTeamId.value = null;
 };
 
 const cancelActivate = () => {
     selectedCard.value   = null;
     targetPlayerId.value = null;
+    targetTeamId.value   = null;
 };
 
 const needsTarget = computed(() =>
     selectedCard.value?.target === 'player'
+);
+
+// Sélection d'équipe requise : malus à cible libre (target="team", mode "select")
+const needsTeamSelect = computed(() =>
+    malusTargetMode(selectedCard.value) === 'select'
 );
 
 const isSelectedMalus = computed(() => isMalus(selectedCard.value));
@@ -144,6 +173,7 @@ const isSelectedMalus = computed(() => isMalus(selectedCard.value));
 const canConfirm = computed(() => {
     if (!selectedCard.value) return false;
     if (needsTarget.value && !targetPlayerId.value) return false;
+    if (needsTeamSelect.value && !targetTeamId.value) return false;
     return true;
 });
 </script>
@@ -232,9 +262,25 @@ const canConfirm = computed(() => {
         </div>
 
         <!-- ================================================ -->
+        <!-- BOUCLIER ANTI-MALUS ACTIF (Cellule de crise)      -->
+        <!-- ================================================ -->
+        <div v-if="activeShields > 0"
+             class="flex items-center gap-3 border border-emerald-300 bg-emerald-50 rounded-xl px-3 py-2">
+            <span class="text-xl">🛡️</span>
+            <div class="flex-1 min-w-0">
+                <div class="text-xs font-bold text-emerald-800">
+                    Cellule de crise active<template v-if="activeShields > 1"> ×{{ activeShields }}</template>
+                </div>
+                <div class="text-[11px] text-emerald-600">
+                    Le prochain malus infligé à votre équipe sera automatiquement annulé.
+                </div>
+            </div>
+        </div>
+
+        <!-- ================================================ -->
         <!-- MALUS REÇUS (titulaire consigné contre vous)      -->
         <!-- ================================================ -->
-        <div v-if="incomingMalus.length" class="flex flex-col gap-2">
+        <div v-if="malusEnabled && incomingMalus.length" class="flex flex-col gap-2">
             <div v-for="(m, i) in incomingMalus" :key="'malus-in-' + i"
                  class="flex items-center gap-3 border border-rose-300 bg-rose-50 rounded-xl px-3 py-2">
                 <span class="text-xl">{{ m.icon || '🚫' }}</span>
@@ -475,8 +521,8 @@ const canConfirm = computed(() => {
                         </p>
                     </div>
 
-                    <!-- Cible adversaire (carte malus) -->
-                    <div v-if="isSelectedMalus" class="p-5 border-b border-slate-100">
+                    <!-- Malus : cible = adversaire du prochain match -->
+                    <div v-if="isSelectedMalus && malusTargetMode(selectedCard) === 'opponent'" class="p-5 border-b border-slate-100">
                         <div class="flex items-center gap-2 text-rose-700 text-sm font-semibold">
                             <span class="text-lg">🎯</span>
                             <span>Cible : l'adversaire de votre prochain match</span>
@@ -484,6 +530,40 @@ const canConfirm = computed(() => {
                         <p class="text-[11px] text-slate-500 mt-1">
                             L'effet s'applique automatiquement à l'adversaire de votre prochain match programmé.
                         </p>
+                    </div>
+
+                    <!-- Malus : cible = 1er du classement (auto) -->
+                    <div v-else-if="isSelectedMalus && malusTargetMode(selectedCard) === 'leader'" class="p-5 border-b border-slate-100">
+                        <div class="flex items-center gap-2 text-rose-700 text-sm font-semibold">
+                            <span class="text-lg">👑</span>
+                            <span>Cible : le 1<sup>er</sup> du classement<template v-if="leaderTeam"> — {{ leaderTeam.name }}</template></span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 mt-1">
+                            L'effet vise automatiquement l'équipe en tête du classement.
+                        </p>
+                    </div>
+
+                    <!-- Malus : sélection libre de l'équipe cible -->
+                    <div v-else-if="needsTeamSelect" class="p-5 border-b border-slate-100">
+                        <p class="text-xs font-bold text-rose-600 uppercase tracking-wider mb-2">
+                            🎯 Choisir l'équipe à saboter
+                        </p>
+                        <div v-if="targetTeams.length" class="space-y-1 max-h-44 overflow-y-auto">
+                            <button v-for="t in targetTeams" :key="t.id"
+                                    type="button"
+                                    @click="targetTeamId = t.id"
+                                    class="w-full flex items-center px-3 py-2 rounded-lg text-xs border transition-all"
+                                    :class="targetTeamId === t.id
+                                        ? 'bg-rose-500 text-white border-rose-600'
+                                        : 'bg-white border-slate-200 hover:border-rose-300 text-slate-700'">
+                                <span class="font-semibold">{{ t.name }}</span>
+                                <span class="ml-auto font-semibold"
+                                      :class="targetTeamId === t.id ? 'text-white/90' : 'text-slate-400'">
+                                    {{ t.rank }}<sup>e</sup>
+                                </span>
+                            </button>
+                        </div>
+                        <p v-else class="text-xs text-slate-400 italic">Aucune autre équipe à cibler.</p>
                     </div>
 
                     <!-- Actions -->

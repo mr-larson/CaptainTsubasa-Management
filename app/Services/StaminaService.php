@@ -8,8 +8,8 @@ use App\Models\GameSaves\GameTeam;
 
 class StaminaService
 {
-    const MATCH_STAMINA_COST    = 5;   // -5 pour ceux qui ont joué
-    const REST_STAMINA_RECOVERY = 10;  // +10 pour ceux qui n'ont pas joué
+    const MATCH_STAMINA_COST    = 5;
+    const REST_STAMINA_RECOVERY = 10;
 
     /**
      * Applique stamina d'après-match pour UN match spécifique.
@@ -76,6 +76,9 @@ class StaminaService
     {
         $playedSet = array_flip($playedPlayerIds);
 
+        $matchCost = (int) $gameSave->getConfig('match_stamina_cost', self::MATCH_STAMINA_COST);
+        $restRecov = (int) $gameSave->getConfig('rest_stamina_recovery', self::REST_STAMINA_RECOVERY);
+
         $week = $gameSave->week ?? 1;
 
         $teams = GameTeam::where('game_save_id', $gameSave->id)
@@ -90,9 +93,9 @@ class StaminaService
                 $hasPlayed = isset($playedSet[(string) $player->id]);
 
                 if ($hasPlayed) {
-                    $player->stamina = max(0, $player->stamina - self::MATCH_STAMINA_COST);
+                    $player->stamina = max(0, $player->stamina - $matchCost);
                 } else {
-                    $player->stamina = min(100, $player->stamina + self::REST_STAMINA_RECOVERY);
+                    $player->stamina = min(100, $player->stamina + $restRecov);
                 }
 
                 $player->save();

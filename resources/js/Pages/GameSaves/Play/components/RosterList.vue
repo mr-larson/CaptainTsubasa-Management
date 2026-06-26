@@ -12,9 +12,11 @@ const props = defineProps({
     title:             { type: String, default: 'Effectif' },
     isPlayerInjured:   { type: Function, default: () => false },
     isPlayerSuspended: { type: Function, default: () => false },
+    isPlayerBenched:   { type: Function, default: () => false },
     playerYellowCards: { type: Function, default: () => 0 },
     playerInjury:      { type: Function, default: () => null },
     playerSuspension:  { type: Function, default: () => null },
+    playerBench:       { type: Function, default: () => null },
     showMorale:        { type: Boolean, default: true },
     showStarterDot:    { type: Boolean, default: true },
     // Ligne teintée même non sélectionnée (ex : déjà entraîné cette semaine)
@@ -35,6 +37,11 @@ const injuryTitle = (p) => {
 const suspensionTitle = (p) => {
     const s = props.playerSuspension(p.id);
     return s ? `${sanctionTypeLabel(s.type)} — Retour S${s.week_return ?? '—'}` : 'Suspendu';
+};
+
+const benchTitle = (p) => {
+    const m = props.playerBench(p.id);
+    return m ? `Consigné par l'adversaire (${m.card_name ?? 'malus'}) — ne peut pas débuter le prochain match` : 'Consigné';
 };
 </script>
 
@@ -71,6 +78,7 @@ const suspensionTitle = (p) => {
                         <span v-if="p.is_captain" title="Capitaine" class="text-[11px]">👑</span>
                         <span v-if="isPlayerInjured(p.id)" :title="injuryTitle(p)" class="text-[11px]">🤕</span>
                         <span v-else-if="isPlayerSuspended(p.id)" :title="suspensionTitle(p)" class="text-[11px]">🚫</span>
+                        <span v-else-if="isPlayerBenched(p.id)" :title="benchTitle(p)" class="text-[11px]">⛔</span>
                         <span v-else-if="playerYellowCards(p.id) > 0"
                               :title="`${playerYellowCards(p.id)} carton(s) jaune`"
                               class="text-[9px] font-black bg-yellow-400 text-yellow-900 px-1 rounded">

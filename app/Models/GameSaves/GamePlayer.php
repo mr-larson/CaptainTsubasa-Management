@@ -83,6 +83,28 @@ class GamePlayer extends Model
     }
 
     /**
+     * Filtre les joueurs libres selon la config de visibilité.
+     */
+    public function scopeVisibleForConfig($query, \App\Models\GameSaves\GameSave $gameSave): void
+    {
+        $config = $gameSave->getConfig();
+        $origins = $config['visible_origins'] ?? [];
+
+        $hidden = array_keys(array_filter($origins, fn($v) => !$v));
+        if (!empty($hidden)) {
+            $query->whereNotIn('origin', $hidden);
+        }
+
+        if (empty($config['internationals_visible'])) {
+            $query->where(function ($q) {
+                $q->where('origin', '!=', 'captain_tsubasa')
+                  ->orWhereNull('nationality')
+                  ->orWhere('nationality', \App\Enums\Nationality::JAPON);
+            });
+        }
+    }
+
+    /**
      * Exclut les joueurs fictifs (origin = 'fictional').
      * Ils ne servent qu'à compléter les sélections nationales en Coupe
      * du Monde et ne doivent jamais apparaître dans le pool de draft.

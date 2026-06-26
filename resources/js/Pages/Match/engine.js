@@ -65,6 +65,7 @@ export function initMatchEngine(rootEl, config = {}) {
     if (!rootEl) return;
 
     const matchConfig = config || {};
+    const MAX_TURNS = matchConfig.maxTurns ?? MAX_TURNS;
 
     const TEAMS = {
         internal: { id: "internal", label: matchConfig.teams?.internal?.name ?? TEXTS.teams.internal },
@@ -302,7 +303,7 @@ export function initMatchEngine(rootEl, config = {}) {
             });
         }
 
-        if (state.turns >= GAME_RULES.MAX_TURNS) {
+        if (state.turns >= MAX_TURNS) {
             state.isGameOver = true;
 
             setMessage(
@@ -503,7 +504,7 @@ export function initMatchEngine(rootEl, config = {}) {
     // ==========================
     function handleAttackClick(action) {
         if (state.isGameOver || state.isAnimating) return;
-        if (state.turns >= GAME_RULES.MAX_TURNS || state.phase !== "attack") return;
+        if (state.turns >= MAX_TURNS || state.phase !== "attack") return;
         if (!["shot","pass","dribble","special","special-pass","special-dribble","cross","long_pass"].includes(action)) return;
 
         if (state.isKickoff) {
@@ -618,7 +619,7 @@ export function initMatchEngine(rootEl, config = {}) {
     }
 
     function handleDefenseClick(defense) {
-        if (state.turns >= GAME_RULES.MAX_TURNS || state.isAnimating || state.phase !== "defense" || !state.pendingAttack) return;
+        if (state.turns >= MAX_TURNS || state.isAnimating || state.phase !== "defense" || !state.pendingAttack) return;
 
         const isKeeperDuel =
             (state.pendingShotContext && state.pendingShotContext.stage === "keeper") ||

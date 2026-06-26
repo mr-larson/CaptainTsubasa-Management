@@ -158,19 +158,47 @@ class AiBonusCardService
                 break;
 
             case 'opponent_stamina_drain':
-                // Malus fatigue : pertinent uniquement avec un match à venir.
-                $score = ($context['has_match_this_week'] ?? false) ? 52 : 0;
+            case 'opponent_bench_starter':
+            case 'opponent_morale_drain':
+            case 'opponent_affinity_drain':
+            case 'opponent_budget_drain':
+            case 'opponent_team_stat_debuff':
+            case 'opponent_key_stat_debuff':
+                // Malus offensif. Carte "prochain adversaire" : utile seulement
+                // si l'IA a un match. Carte à cible choisie (target=team) : l'IA
+                // peut saboter le leader à tout moment.
+                $base = match ($effectType) {
+                    'opponent_bench_starter'   => 58,
+                    'opponent_team_stat_debuff'=> 52,
+                    'opponent_key_stat_debuff' => 50,
+                    'opponent_affinity_drain'  => 48,
+                    'opponent_budget_drain'    => 45,
+                    default                    => 52,
+                };
+                $isTeamTargeted = ($offer['target'] ?? 'opponent') === 'team';
+                $score = $isTeamTargeted
+                    ? $base
+                    : (($context['has_match_this_week'] ?? false) ? $base : 0);
                 if ($score && ($context['wins'] ?? 0) < ($context['losses'] ?? 0)) {
                     $score += 10; // une équipe en difficulté est plus agressive
                 }
                 break;
 
-            case 'opponent_bench_starter':
-                // Malus titulaire consigné : fort impact, réservé aux matchs à venir.
-                $score = ($context['has_match_this_week'] ?? false) ? 58 : 0;
-                if ($score && ($context['wins'] ?? 0) < ($context['losses'] ?? 0)) {
-                    $score += 10;
-                }
+            case 'team_morale_boost':
+                // +moral collectif : utile si un joueur a le moral bas.
+                $worst = $context['worst_morale'] ?? 60;
+                $score = $worst < 50 ? 65 : ($worst < 60 ? 35 : 15);
+                break;
+
+            case 'revenue_performance':
+                // Revenu lié à la perf : intéressant quand le budget est tendu.
+                $budget = $context['budget'] ?? 1000;
+                $score = $budget < 700 ? 50 : ($budget < 1200 ? 30 : 12);
+                break;
+
+            case 'malus_shield':
+                // Défensif : l'IA n'en abuse pas (réservé surtout au joueur).
+                $score = 25;
                 break;
         }
 
@@ -222,11 +250,26 @@ class AiBonusCardService
                 if ($targetId && ($context['worst_affinity'] ?? 0) < 0) {
                     $this->activationService->activate($card, $gameSave, $targetId);
                 }
-            } elseif (in_array($effectType, ['opponent_stamina_drain', 'opponent_bench_starter'], true)) {
-                // Malus : infligé à l'adversaire du prochain match si match à venir.
-                if ($context['has_match_this_week'] ?? false) {
+            } elseif (in_array($effectType, [
+                'opponent_stamina_drain', 'opponent_bench_starter',
+                'opponent_morale_drain', 'opponent_affinity_drain', 'opponent_budget_drain',
+                'opponent_team_stat_debuff', 'opponent_key_stat_debuff',
+            ], true)) {
+                // Malus prochain adversaire : si match à venir. Malus à cible
+                // choisie (target=team) : sans cible explicite, le service tape
+                // le leader du classement (qui peut être le joueur humain).
+                $isTeamTargeted = ($offer['target'] ?? 'opponent') === 'team';
+                if ($isTeamTargeted || ($context['has_match_this_week'] ?? false)) {
                     $this->activationService->activate($card, $gameSave);
                 }
+            } elseif ($effectType === 'team_morale_boost') {
+                // +moral collectif : activer si un joueur a le moral bas.
+                if (($context['worst_morale'] ?? 60) < 55) {
+                    $this->activationService->activate($card, $gameSave);
+                }
+            } elseif ($effectType === 'revenue_performance' || $effectType === 'malus_shield') {
+                // Revenu (argent immédiat) et bouclier défensif : activer direct.
+                $this->activationService->activate($card, $gameSave);
             }
         } catch (\Throwable) {
             // Silencieux — l'IA ne plante pas si la carte échoue

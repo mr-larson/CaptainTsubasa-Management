@@ -17,9 +17,11 @@ const props = defineProps({
     rosterWithStatus:     { type: Array,   required: true },
     isPlayerInjured:      { type: Function, default: () => () => false },
     isPlayerSuspended:    { type: Function, default: () => () => false },
+    isPlayerBenched:      { type: Function, default: () => () => false },
     playerYellowCards:    { type: Function, default: () => () => 0 },
     playerInjury:         { type: Function, default: () => () => null },
     playerSuspension:     { type: Function, default: () => () => null },
+    playerBench:          { type: Function, default: () => () => null },
     selectedMyPlayer:     { type: Object,  default: null },
     currentFormation:     { type: String,  required: true },
     formationData:        { type: Object,  default: null },
@@ -234,9 +236,11 @@ const slotMastery = (slot, slotDef) => {
                             :selectedId="selectedMyPlayer?.id"
                             :isPlayerInjured="isPlayerInjured"
                             :isPlayerSuspended="isPlayerSuspended"
+                            :isPlayerBenched="isPlayerBenched"
                             :playerYellowCards="playerYellowCards"
                             :playerInjury="playerInjury"
                             :playerSuspension="playerSuspension"
+                            :playerBench="playerBench"
                             @select="p => emit('select-player', p)" />
             </div>
 
@@ -247,8 +251,10 @@ const slotMastery = (slot, slotDef) => {
                     <PlayerStatusAlert :player="selectedMyPlayer"
                                        :isPlayerInjured="isPlayerInjured"
                                        :isPlayerSuspended="isPlayerSuspended"
+                                       :isPlayerBenched="isPlayerBenched"
                                        :playerInjury="playerInjury"
-                                       :playerSuspension="playerSuspension" />
+                                       :playerSuspension="playerSuspension"
+                                       :playerBench="playerBench" />
 
                     <!-- Identité + actions -->
                     <PlayerIdentityCard :player="selectedMyPlayer">

@@ -37,24 +37,23 @@ class FoulAndInjuryService
     {
         if (empty($actionEvents)) return;
 
+        $injuryEnabled     = (bool) $gameSave->getConfig('injury_on_foul', true);
+        $suspensionEnabled = (bool) $gameSave->getConfig('suspension_on_3_yellows', true);
         $week = $match->week;
 
         foreach ($actionEvents as $event) {
             $eventType = $event['type'] ?? null;
 
-            // Événement faute
-            if ($eventType === 'foul') {
+            if ($eventType === 'foul' && $injuryEnabled) {
                 $this->processFoulEvent($gameSave, $match, $event, $week);
             }
 
-            // Événement blessure
-            if ($eventType === 'injury') {
+            if ($eventType === 'injury' && $injuryEnabled) {
                 $this->processInjuryEvent($gameSave, $match, $event, $week);
             }
 
-            // Événement carton (déjà décidé côté JS)
             if ($eventType === 'card') {
-                $this->processCardEvent($gameSave, $match, $event, $week);
+                $this->processCardEvent($gameSave, $match, $event, $week, $suspensionEnabled);
             }
         }
     }
@@ -97,17 +96,19 @@ class FoulAndInjuryService
     //   TRAITEMENT CARTON DIRECT
     // ==========================
 
-    protected function processCardEvent(GameSave $gameSave, GameMatch $match, array $event, int $week): void
+    protected function processCardEvent(GameSave $gameSave, GameMatch $match, array $event, int $week, bool $suspensionEnabled = true): void
     {
         $playerId = isset($event['player_id']) ? (int) $event['player_id'] : null;
-        $cardType = $event['card_type'] ?? 'yellow'; // 'yellow' | 'red'
+        $cardType = $event['card_type'] ?? 'yellow';
 
         if (!$playerId) return;
 
         if ($cardType === 'yellow') {
-            $this->giveYellowCard($gameSave, $match, $playerId, $week);
+            $this->giveYellowCard($gameSave, $match, $playerId, $week, $suspensionEnabled);
         } elseif ($cardType === 'red') {
-            $this->giveRedCard($gameSave, $match, $playerId, $week);
+            if ($suspensionEnabled) {
+                $this->giveRedCard($gameSave, $match, $playerId, $week);
+            }
         }
     }
 
@@ -138,11 +139,10 @@ class FoulAndInjuryService
         }
     }
 
-    protected function giveYellowCard(GameSave $gameSave, GameMatch $match, int $playerId, int $week): void
+    protected function giveYellowCard(GameSave $gameSave, GameMatch $match, int $playerId, int $week, bool $suspensionEnabled = true): void
     {
         $playerId = (int) $playerId;
-        DB::transaction(function () use ($gameSave, $match, $playerId, $week) {
-            // Compter les cartons jaunes existants cette saison
+        DB::transaction(function () use ($gameSave, $match, $playerId, $week, $suspensionEnabled) {
             $yellowCount = GameSanction::where('game_save_id', $gameSave->id)
                 ->where('game_player_id', $playerId)
                 ->where('type', 'yellow')
@@ -150,8 +150,7 @@ class FoulAndInjuryService
 
             $newCount = $yellowCount + 1;
 
-            // 3e carton jaune = suspension 1 semaine (double_yellow)
-            $isDoubleYellow = ($newCount % 3 === 0);
+            $isDoubleYellow = $suspensionEnabled && ($newCount % 3 === 0);
             $type           = $isDoubleYellow ? 'double_yellow' : 'yellow';
             $weeksSuspended = $isDoubleYellow ? 1 : 0;
             $weekReturn     = $week + 1 + $weeksSuspended;

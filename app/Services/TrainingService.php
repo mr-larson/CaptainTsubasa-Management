@@ -22,11 +22,11 @@ class TrainingService
      */
     public function applyTrainings(GameSave $gameSave, int $season, int $week, array $trainings): array
     {
-        $maxPerWeek   = config('training.max_trainings_per_week', 3);
-        $minStamina   = config('training.min_stamina_to_train', 10);
-        $staminaCost  = config('training.stamina_cost', 5);
-        $gainMin      = config('training.gain_min', 1);
-        $gainMax      = config('training.gain_max', 5);
+        $maxPerWeek   = (int) $gameSave->getConfig('training_max_per_week', config('training.max_trainings_per_week', 3));
+        $minStamina   = (int) $gameSave->getConfig('training_min_stamina', config('training.min_stamina_to_train', 10));
+        $staminaCost  = (int) $gameSave->getConfig('training_stamina_cost', config('training.stamina_cost', 5));
+        $gainMin      = (int) $gameSave->getConfig('training_gain_min', config('training.gain_min', 1));
+        $gainMax      = (int) $gameSave->getConfig('training_gain_max', config('training.gain_max', 5));
         $statMin      = config('training.stat_min', 0);
         $statMax      = config('training.stat_max', 100);
 

@@ -60,13 +60,13 @@ class AITrainingService
             $isHuman = in_array((int) $team->id, $controlledTeamIds, true);
             if ($isHuman) {
                 // Équipe humaine : auto-entraînement doux des joueurs non entraînés à la main.
-                $results = $this->trainTeam($team, gainMax: 2, excludePlayerIds: $manuallyTrainedIds, tacticalStyle: $team->tactical_style);
+                $results = $this->trainTeam($team, gainMax: 2, excludePlayerIds: $manuallyTrainedIds, tacticalStyle: $team->tactical_style, gameSave: $gameSave);
                 // ai_entries = panneau du joueur actif uniquement.
                 if ((int) $team->id === $activeTeamId) {
                     $aiEntries = $results;
                 }
             } else {
-                $results = $this->trainTeam($team, gainMax: 3, tacticalStyle: $team->tactical_style);
+                $results = $this->trainTeam($team, gainMax: 3, tacticalStyle: $team->tactical_style, gameSave: $gameSave);
             }
             foreach ($results as $entry) {
                 $allEntries[] = array_merge($entry, ['team_id' => $team->id, 'team_name' => $team->name]);
@@ -105,16 +105,16 @@ class AITrainingService
         $gameSave->save();
     }
 
-    protected function trainTeam(GameTeam $team, int $gainMax = 3, array $excludePlayerIds = [], ?string $tacticalStyle = null): array
+    protected function trainTeam(GameTeam $team, int $gainMax = 3, array $excludePlayerIds = [], ?string $tacticalStyle = null, ?GameSave $gameSave = null): array
     {
         $contracts = $team->contracts->filter(fn($c) => $c->gamePlayer !== null);
         if ($contracts->isEmpty()) return [];
 
-        $minStamina  = config('training.min_stamina_to_train', 40);
-        $staminaCost = config('training.stamina_cost', 5);
+        $minStamina  = $gameSave ? (int) $gameSave->getConfig('training_min_stamina') : config('training.min_stamina_to_train', 40);
+        $staminaCost = $gameSave ? (int) $gameSave->getConfig('training_stamina_cost') : config('training.stamina_cost', 5);
         $statMin     = config('training.stat_min', 0);
         $statMax     = config('training.stat_max', 100);
-        $gainMin     = 1;
+        $gainMin     = $gameSave ? (int) $gameSave->getConfig('training_gain_min') : 1;
         $trainCount  = rand(1, 3);
 
         // Priorité aux titulaires, sinon remplaçants

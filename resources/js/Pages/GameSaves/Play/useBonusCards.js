@@ -67,13 +67,13 @@ export function useBonusCards({ gameSave, bonusCardOffers, bonusCardInventory })
         activateTarget.value = null;
     };
 
-    const activateCard = (card, targetPlayerId = null) => {
+    const activateCard = (card, targetPlayerId = null, targetTeamId = null) => {
         router.post(
             route('game-saves.bonus-cards.activate', {
                 gameSave:      gameSave.value.id,
                 gameBonusCard: card.id,
             }),
-            { target_player_id: targetPlayerId },
+            { target_player_id: targetPlayerId, target_team_id: targetTeamId },
             {
                 preserveScroll: true,
                 onSuccess: () => {
@@ -112,6 +112,7 @@ export function useBonusCards({ gameSave, bonusCardOffers, bonusCardInventory })
         match:    'Prochain match',
         finance:  'Finances',
         opponent: 'Adversaire',
+        team:     'Équipe ciblée',
     }[target] ?? target);
 
     return {

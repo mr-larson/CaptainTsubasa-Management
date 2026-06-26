@@ -138,7 +138,7 @@ class CaptainTsubasaInternationalPlayers
                 'Roc défensif de la Seleção, puissant dans les duels et impérial dans le jeu aérien.',
             ],
             [
-                '', 'radunga', 13, 'Defender', 370,
+                '', 'Giorgi', 13, 'Defender', 370,
                 [
                     'speed' => 70, 'stamina' => 79, 'defense' => 37, 'attack' => 22,
                     'shot' => 18, 'pass' => 23, 'dribble' => 22,
@@ -898,7 +898,7 @@ class CaptainTsubasaInternationalPlayers
             'salinas'              => 'Brésil',
             'alberto'              => 'Brésil',
             'casa-grande'          => 'Brésil',
-            'radunga'                => 'Brésil',
+            'giorgi'                => 'Brésil',
             'senardo'              => 'Brésil',
             'natureza'             => 'Brésil',
             'silva'                => 'Brésil',

@@ -50,12 +50,14 @@ const props = defineProps({
     sponsorChallenges:  { type: Array, default: () => [] },
     sponsorResults:     { type: Array, default: () => [] },
     incomingMalus:      { type: Array, default: () => [] },
+    activeShields:      { type: Number, default: 0 },
     managementStats:    { type: Object, default: () => ({}) },
     moraleLogs:         { type: Object, default: () => ({}) },
     playerPromises:     { type: Object, default: () => ({}) },
     playerDeclarations: { type: Object, default: () => ({}) },
     hotSeat:            { type: Object, required: false, default: null },
     tournament:         { type: Object, required: false, default: null },
+    gameConfig:         { type: Object, default: () => ({}) },
 });
 
 // Mode Coupe du Monde : adapte l'UI (onglet Classement → poules+bracket,
@@ -152,6 +154,24 @@ const {
     activeInjuries: activeInjuriesRef,
     activeSuspensions: activeSuspensionsRef,
     activeYellowCards: activeYellowCardsRef,
+});
+
+// Malus « titulaire consigné » subis : joueurs interdits de titularisation au
+// prochain match (mêmes helpers que blessure/suspension pour l'UI d'effectif).
+const benchedByMalus = computed(() => props.incomingMalus ?? []);
+const isPlayerBenched = (playerId) =>
+    benchedByMalus.value.some(m => Number(m.target_player_id) === Number(playerId));
+const playerBench = (playerId) =>
+    benchedByMalus.value.find(m => Number(m.target_player_id) === Number(playerId)) ?? null;
+
+// Équipes ciblables par un malus à cible choisie (toutes sauf la mienne,
+// triées par classement → [0] = leader, pour l'affichage des cartes "leader").
+const targetableTeams = computed(() => {
+    const meId = Number(team.value?.id ?? props.gameSave?.controlled_game_team_id ?? 0);
+    return [...(props.teams ?? [])]
+        .filter(t => Number(t.id) !== meId)
+        .sort((a, b) => ((b.wins ?? 0) * 3 + (b.draws ?? 0)) - ((a.wins ?? 0) * 3 + (a.draws ?? 0)))
+        .map((t, i) => ({ id: t.id, name: t.name, rank: i + 1 }));
 });
 
 // Compteurs pour la checklist pré-match du dashboard
@@ -255,7 +275,7 @@ const tabs = computed(() => {
         { key: 'match-stats', label: 'Stats'                          },
         { key: 'training',    label: 'Entraînement'                   },
         ...(wc ? [] : [{ key: 'transfers',  label: 'Transferts' }]),
-        { key: 'cards',       label: 'Cartes bonus'                   },
+        ...(props.gameConfig?.bonus_cards_enabled !== false ? [{ key: 'cards', label: 'Cartes bonus' }] : []),
         { key: 'management',  label: 'Gestion'                        },
     ];
 });
@@ -418,9 +438,11 @@ function updateOtherPlayerNumber(playerId, number) {
                                @release-player="releasePlayer"
                                :isPlayerInjured="isPlayerInjured"
                                :isPlayerSuspended="isPlayerSuspended"
+                               :isPlayerBenched="isPlayerBenched"
                                :playerYellowCards="playerYellowCards"
                                :playerInjury="playerInjury"
                                :playerSuspension="playerSuspension"
+                               :playerBench="playerBench"
                                @select-player="selectMyPlayer"
                                @toggle-starter="toggleStarter"
                                @toggle-captain="toggleCaptain"
@@ -567,6 +589,9 @@ function updateOtherPlayerNumber(playerId, number) {
                                    :sponsorChallenges="props.sponsorChallenges"
                                    :sponsorResults="props.sponsorResults"
                                    :incomingMalus="props.incomingMalus"
+                                   :activeShields="props.activeShields"
+                                   :targetTeams="targetableTeams"
+                                   :malusEnabled="props.gameConfig?.malus_cards_enabled !== false"
                                    @buy="buyCard"
                                    @activate="activateCard"
                     />
@@ -575,6 +600,7 @@ function updateOtherPlayerNumber(playerId, number) {
                     <TabManagement v-else-if="activeTab === 'management'"
                                    :gameSave="gameSave"
                                    :managementStats="props.managementStats"
+                                   :gameConfig="props.gameConfig"
                     />
 
                 </div>

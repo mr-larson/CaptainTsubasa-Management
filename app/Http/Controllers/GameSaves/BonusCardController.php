@@ -27,6 +27,10 @@ class BonusCardController extends Controller
     {
         $this->authorizeGameSave('update', $gameSave);
 
+        if (!$gameSave->getConfig('bonus_cards_enabled', true)) {
+            return back()->withErrors(['card' => 'Les cartes bonus sont désactivées dans cette sauvegarde.']);
+        }
+
         $request->validate([
             'bonus_card_id' => 'required|integer|exists:bonus_cards,id',
             'tier'          => 'required|in:bronze,silver,gold',
@@ -96,13 +100,15 @@ class BonusCardController extends Controller
 
         $request->validate([
             'target_player_id' => 'nullable|integer|exists:game_players,id',
+            'target_team_id'   => 'nullable|integer|exists:game_teams,id',
         ]);
 
         try {
             $result = $this->activationService->activate(
                 $gameBonusCard,
                 $gameSave,
-                $request->input('target_player_id')
+                $request->input('target_player_id'),
+                $request->input('target_team_id'),
             );
             return back()->with('success', $result['message'] ?? 'Carte activée !');
         } catch (\Illuminate\Validation\ValidationException $e) {

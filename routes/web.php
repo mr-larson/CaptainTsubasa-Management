@@ -106,6 +106,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/{gameSave}',      [GameSaveController::class, 'show'])->name('show');
         Route::get('/{gameSave}/Play', [GameSaveController::class, 'play'])->name('Play');
         Route::put('/{gameSave}',      [GameSaveController::class, 'update'])->name('update');
+        Route::put('/{gameSave}/config', [GameSaveController::class, 'updateConfig'])->name('config.update');
         Route::delete('/{gameSave}',   [GameSaveController::class, 'destroy'])->name('destroy');
 
         // Agents libres

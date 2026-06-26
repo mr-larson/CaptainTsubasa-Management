@@ -24,11 +24,14 @@ class BonusCardShopService
         $standings = $this->buildStandings($gameSave, $teams);
         $total    = $teams->count();
 
-        // Charger le catalogue, séparé bonus / malus
-        $allCards   = BonusCard::all();
+        $malusEnabled = $gameSave->getConfig('bonus_cards_enabled', true)
+            && $gameSave->getConfig('malus_cards_enabled', true);
+
+        $allCards = BonusCard::all();
+        if (!$malusEnabled) {
+            $allCards = $allCards->where('kind', '!=', 'malus');
+        }
         if ($allCards->isEmpty()) return;
-        $bonusCards = $allCards->where('kind', 'bonus')->values();
-        $malusCards = $allCards->where('kind', '!=', 'bonus')->values();
 
         $state = $gameSave->state ?? [];
         $offersByTeam = [];
@@ -40,11 +43,9 @@ class BonusCardShopService
             // Plus l'équipe est mal classée, plus elle a de chances d'avoir de l'Or
             $weights = $this->computeTierWeights($position, $total);
 
-            // 3 cartes bonus + 2 cartes malus par semaine.
-            $offers = array_merge(
-                $this->buildOffers($bonusCards, $weights, 3),
-                $this->buildOffers($malusCards, $weights, 2),
-            );
+            // 3 offres par semaine, tirées dans le catalogue commun : chaque
+            // offre peut être bonus ou malus (le tirage respecte les base_weight).
+            $offers = $this->buildOffers($allCards, $weights, 3);
 
             $offersByTeam[(string) $team->id] = $offers;
         }
@@ -77,7 +78,16 @@ class BonusCardShopService
             $shop = $gameSave->state['shop'] ?? [];
         }
 
-        return $shop['offers_by_team'][(string) $teamId] ?? [];
+        $offers = $shop['offers_by_team'][(string) $teamId] ?? [];
+
+        $malusEnabled = $gameSave->getConfig('bonus_cards_enabled', true)
+            && $gameSave->getConfig('malus_cards_enabled', true);
+
+        if (!$malusEnabled) {
+            $offers = array_values(array_filter($offers, fn($o) => ($o['kind'] ?? 'bonus') !== 'malus'));
+        }
+
+        return $offers;
     }
 
     // ──────────────────────────────────────────────────────────
