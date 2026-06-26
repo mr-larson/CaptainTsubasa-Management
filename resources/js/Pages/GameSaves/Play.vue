@@ -317,7 +317,7 @@ function updateOtherPlayerNumber(playerId, number) {
             <H2>Partie : {{ gameSave.label ?? `Sauvegarde #${gameSave.id}` }}</H2>
         </template>
 
-        <div class="p-2 sm:p-4">
+        <div class="p-2 sm:p-3">
             <div class="flex justify-center mb-3">
                 <h1 class="text-2xl sm:text-3xl font-bold text-slate-600">Session de jeu</h1>
             </div>
@@ -345,7 +345,7 @@ function updateOtherPlayerNumber(playerId, number) {
 
             <div class="flex flex-row">
                 <!-- Visuel gauche -->
-                <div class="hidden md:block md:basis-1/4 p-4 bg-contain bg-center bg-no-repeat"
+                <div class="hidden md:block md:basis-1/6 bg-contain bg-center bg-no-repeat"
                      style="background-image: url('/images/wakabayashi.webp')"></div>
 
                 <!-- Carte principale -->

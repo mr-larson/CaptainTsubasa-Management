@@ -1,6 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { ref, reactive } from 'vue';
 import H2 from '@/Components/H2.vue';
 
 const form = useForm({
@@ -8,9 +9,61 @@ const form = useForm({
     period: 'college',
     game_mode: 'prebuilt',
     competition_type: 'college_league',
+    game_config: null,
 });
 
+const showConfig = ref(false);
+
+const originLabels = {
+    captain_tsubasa:     'Captain Tsubasa',
+    ecole_des_champions: 'École des Champions',
+    hungry_heart:        'Hungry Heart',
+    blue_lock:           'Blue Lock',
+    ao_ashi:             'Ao Ashi',
+    original:            'Joueurs générés',
+};
+
+const config = reactive({
+    bonus_cards_enabled: true,
+    malus_cards_enabled: true,
+    match_stamina_cost: 5,
+    rest_stamina_recovery: 10,
+    match_max_turns: 45,
+    injury_on_foul: true,
+    suspension_on_3_yellows: true,
+    training_max_per_week: 3,
+    training_gain_min: 1,
+    training_gain_max: 5,
+    training_stamina_cost: 2,
+    training_min_stamina: 10,
+    ai_transfers_enabled: true,
+    ai_training_enabled: true,
+    visible_origins: {
+        captain_tsubasa: true,
+        ecole_des_champions: true,
+        hungry_heart: true,
+        blue_lock: true,
+        ao_ashi: true,
+        original: true,
+    },
+    internationals_visible: true,
+});
+
+function resetDefaults() {
+    Object.assign(config, {
+        bonus_cards_enabled: true, malus_cards_enabled: true,
+        match_stamina_cost: 5, rest_stamina_recovery: 10, match_max_turns: 45,
+        injury_on_foul: true, suspension_on_3_yellows: true,
+        training_max_per_week: 3, training_gain_min: 1, training_gain_max: 5,
+        training_stamina_cost: 2, training_min_stamina: 10,
+        ai_transfers_enabled: true, ai_training_enabled: true,
+        visible_origins: { captain_tsubasa: true, ecole_des_champions: true, hungry_heart: true, blue_lock: true, ao_ashi: true, original: true },
+        internationals_visible: true,
+    });
+}
+
 function submit() {
+    form.game_config = { ...config, visible_origins: { ...config.visible_origins } };
     form.post(route('game-saves.store'), { preserveScroll: true });
 }
 </script>
@@ -26,20 +79,34 @@ function submit() {
         <div class="p-4">
             <div class="flex flex-row">
                 <!-- Visuel gauche -->
-                <div class="hidden md:block basis-1/3 p-4 bg-contain bg-center bg-no-repeat"
+                <div class="hidden md:block basis-1/4 p-4 bg-contain bg-center bg-no-repeat"
                      style="background-image: url('/images/hyuga2.webp')"></div>
 
-                <!-- Carte formulaire -->
-                <div class="basis-2/3 p-6 border border-slate-200 rounded-2xl mx-6 bg-white min-h-[500px] flex flex-col shadow-sm">
+                <!-- Carte formulaire / config -->
+                <div class="basis-3/4 p-6 border border-slate-200 rounded-2xl mx-6 bg-white h-[800px] flex flex-col shadow-sm overflow-hidden">
 
                     <!-- Header -->
-                    <div class="mb-8">
-                        <div class="text-xs font-bold text-teal-500 uppercase tracking-widest mb-1">Nouvelle sauvegarde</div>
-                        <h1 class="text-xl font-bold text-slate-800">Création d'une partie</h1>
-                        <p class="text-xs text-slate-400 mt-1">Configure ta nouvelle saison et choisis ton niveau de jeu.</p>
+                    <div class="mb-6 flex items-center justify-between">
+                        <div>
+                            <div class="text-xs font-bold text-teal-500 uppercase tracking-widest mb-1">Nouvelle sauvegarde</div>
+                            <h1 class="text-xl font-bold text-slate-800">
+                                {{ showConfig ? 'Configuration avancée' : 'Création d\'une partie' }}
+                            </h1>
+                            <p class="text-xs text-slate-400 mt-1">
+                                {{ showConfig ? 'Paramètres appliqués à cette sauvegarde.' : 'Configure ta nouvelle saison et choisis ton niveau de jeu.' }}
+                            </p>
+                        </div>
+                        <button type="button" @click="showConfig = !showConfig"
+                                class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full border transition-all"
+                                :class="showConfig
+                                    ? 'border-teal-300 bg-teal-50 text-teal-700 hover:bg-teal-100'
+                                    : 'border-slate-300 bg-white text-slate-600 hover:bg-slate-50'">
+                            <span>{{ showConfig ? '← Retour au formulaire' : '⚙ Configuration' }}</span>
+                        </button>
                     </div>
 
-                    <form @submit.prevent="submit" class="flex flex-col flex-1 gap-6">
+                    <!-- ====== FORMULAIRE CREATION ====== -->
+                    <form v-show="!showConfig" @submit.prevent="submit" class="flex flex-col flex-1 gap-6 overflow-y-auto">
 
                         <!-- Nom de la partie -->
                         <div class="flex flex-col gap-1.5">
@@ -62,7 +129,6 @@ function submit() {
                                 Format de compétition
                             </label>
                             <div class="grid grid-cols-2 gap-3">
-                                <!-- Ligue collège -->
                                 <button type="button"
                                         @click="form.competition_type = 'college_league'"
                                         class="relative flex flex-col gap-2 p-4 rounded-xl border-2 transition-all text-left"
@@ -86,7 +152,6 @@ function submit() {
                                     </div>
                                 </button>
 
-                                <!-- Coupe du Monde -->
                                 <button type="button"
                                         @click="form.competition_type = 'world_cup'"
                                         class="relative flex flex-col gap-2 p-4 rounded-xl border-2 transition-all text-left"
@@ -136,7 +201,6 @@ function submit() {
                                 Mode de démarrage
                             </label>
                             <div class="grid grid-cols-2 gap-3">
-                                <!-- Effectifs pré-faits -->
                                 <button type="button"
                                         @click="form.game_mode = 'prebuilt'"
                                         class="relative flex flex-col gap-2 p-4 rounded-xl border-2 transition-all text-left"
@@ -160,7 +224,6 @@ function submit() {
                                     </div>
                                 </button>
 
-                                <!-- Draft -->
                                 <button type="button"
                                         @click="form.game_mode = 'draft'"
                                         class="relative flex flex-col gap-2 p-4 rounded-xl border-2 transition-all text-left"
@@ -212,6 +275,179 @@ function submit() {
                             </button>
                         </div>
                     </form>
+
+                    <!-- ====== PANNEAU CONFIGURATION ====== -->
+                    <div v-show="showConfig" class="flex flex-col flex-1 gap-4 overflow-y-auto min-h-0">
+
+                        <!-- Cartes -->
+                        <div class="border border-slate-200 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
+                            <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                <span>🃏</span> Cartes
+                            </h4>
+                            <div class="grid grid-cols-2 gap-3">
+                                <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                                    <input type="checkbox" v-model="config.bonus_cards_enabled"
+                                           class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
+                                    Bonus cards
+                                </label>
+                                <label class="flex items-center gap-2 text-xs cursor-pointer"
+                                       :class="config.bonus_cards_enabled ? 'text-slate-700' : 'text-slate-400'">
+                                    <input type="checkbox" v-model="config.malus_cards_enabled"
+                                           :disabled="!config.bonus_cards_enabled"
+                                           class="rounded border-slate-300 text-teal-500 focus:ring-teal-400 disabled:opacity-40" />
+                                    Malus cards
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Fatigue -->
+                        <div class="border border-slate-200 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
+                            <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                <span>⚡</span> Fatigue & Stamina
+                            </h4>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-[10px] text-slate-500">Coût stamina / match</label>
+                                    <div class="flex items-center gap-2">
+                                        <input type="range" v-model.number="config.match_stamina_cost" min="0" max="20" class="flex-1 h-1 accent-teal-500" />
+                                        <span class="text-xs font-bold text-slate-800 w-5 text-right">{{ config.match_stamina_cost }}</span>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-[10px] text-slate-500">Récupération remplaçants</label>
+                                    <div class="flex items-center gap-2">
+                                        <input type="range" v-model.number="config.rest_stamina_recovery" min="0" max="30" class="flex-1 h-1 accent-teal-500" />
+                                        <span class="text-xs font-bold text-slate-800 w-5 text-right">{{ config.rest_stamina_recovery }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Match -->
+                        <div class="border border-slate-200 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
+                            <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                <span>⚽</span> Match
+                            </h4>
+                            <div class="flex flex-col gap-1 max-w-xs">
+                                <label class="text-[10px] text-slate-500">Tours par match</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="range" v-model.number="config.match_max_turns" min="10" max="80" step="5" class="flex-1 h-1 accent-teal-500" />
+                                    <span class="text-xs font-bold text-slate-800 w-5 text-right">{{ config.match_max_turns }}</span>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                                    <input type="checkbox" v-model="config.injury_on_foul"
+                                           class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
+                                    Blessures sur faute
+                                </label>
+                                <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                                    <input type="checkbox" v-model="config.suspension_on_3_yellows"
+                                           class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
+                                    Suspension 3 jaunes
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Entraînement -->
+                        <div class="border border-slate-200 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
+                            <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                <span>🏋️</span> Entraînement
+                            </h4>
+                            <div class="grid grid-cols-4 gap-3">
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-[10px] text-slate-500">Sessions / sem.</label>
+                                    <div class="flex items-center gap-1">
+                                        <input type="range" v-model.number="config.training_max_per_week" min="1" max="10" class="flex-1 h-1 accent-teal-500" />
+                                        <span class="text-[10px] font-bold text-slate-800 w-3 text-right">{{ config.training_max_per_week }}</span>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-[10px] text-slate-500">Gain min</label>
+                                    <div class="flex items-center gap-1">
+                                        <input type="range" v-model.number="config.training_gain_min" min="0" max="10" class="flex-1 h-1 accent-teal-500" />
+                                        <span class="text-[10px] font-bold text-slate-800 w-3 text-right">{{ config.training_gain_min }}</span>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-[10px] text-slate-500">Gain max</label>
+                                    <div class="flex items-center gap-1">
+                                        <input type="range" v-model.number="config.training_gain_max" min="1" max="20" class="flex-1 h-1 accent-teal-500" />
+                                        <span class="text-[10px] font-bold text-slate-800 w-3 text-right">{{ config.training_gain_max }}</span>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-[10px] text-slate-500">Coût stamina</label>
+                                    <div class="flex items-center gap-1">
+                                        <input type="range" v-model.number="config.training_stamina_cost" min="0" max="15" class="flex-1 h-1 accent-teal-500" />
+                                        <span class="text-[10px] font-bold text-slate-800 w-3 text-right">{{ config.training_stamina_cost }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-1 max-w-xs">
+                                <label class="text-[10px] text-slate-500">Stamina min. requise</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="range" v-model.number="config.training_min_stamina" min="0" max="50" step="5" class="flex-1 h-1 accent-teal-500" />
+                                    <span class="text-xs font-bold text-slate-800 w-5 text-right">{{ config.training_min_stamina }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Visibilité -->
+                        <div class="border border-slate-200 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
+                            <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                <span>👁</span> Visibilité des joueurs
+                            </h4>
+                            <div class="grid grid-cols-3 gap-2">
+                                <label v-for="(enabled, key) in config.visible_origins" :key="key"
+                                       class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                                    <input type="checkbox" v-model="config.visible_origins[key]"
+                                           class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
+                                    {{ originLabels[key] ?? key }}
+                                </label>
+                            </div>
+                            <div class="border-t border-slate-200 pt-2 mt-1">
+                                <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                                    <input type="checkbox" v-model="config.internationals_visible"
+                                           class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
+                                    Joueurs internationaux
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- IA -->
+                        <div class="border border-slate-200 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
+                            <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                <span>🤖</span> Intelligence Artificielle
+                            </h4>
+                            <div class="grid grid-cols-2 gap-3">
+                                <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                                    <input type="checkbox" v-model="config.ai_transfers_enabled"
+                                           class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
+                                    Transferts IA
+                                </label>
+                                <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                                    <input type="checkbox" v-model="config.ai_training_enabled"
+                                           class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
+                                    Entraînement IA
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Spacer + bouton reset -->
+                        <div class="flex-1"></div>
+                        <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+                            <button type="button" @click="resetDefaults"
+                                    class="px-3 py-1.5 text-xs rounded-full border border-slate-300 bg-white hover:bg-slate-50 text-slate-600 font-medium">
+                                Réinitialiser
+                            </button>
+                            <button type="button" @click="showConfig = false"
+                                    class="px-4 py-1.5 text-xs rounded-full bg-teal-500 hover:bg-teal-600 text-white font-semibold">
+                                ✓ Valider la config
+                            </button>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>

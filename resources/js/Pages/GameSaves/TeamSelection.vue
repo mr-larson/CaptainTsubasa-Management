@@ -360,6 +360,7 @@ const props = defineProps({
     teams:    { type: Array,  required: true },
     gameMode: { type: String, default: 'prebuilt' },
     competitionType: { type: String, default: 'college_league' },
+    gameConfig:      { type: Object, default: null },
 });
 
 const searchQuery  = ref('');
@@ -383,6 +384,7 @@ const startForm = useForm({
     team_ids:  [],
     game_mode: props.gameMode,
     competition_type: props.competitionType,
+    game_config: props.gameConfig,
 });
 
 // Hot-seat multi-manager : équipes humaines dans l'ordre des sièges.
@@ -463,7 +465,7 @@ function startWithTeam() {
     if (!isMultiMode.value) {
         if (!startForm.team_id) return;
         startForm
-            .transform(d => ({ label: d.label, period: d.period, game_mode: d.game_mode, competition_type: d.competition_type, team_id: d.team_id }))
+            .transform(d => ({ label: d.label, period: d.period, game_mode: d.game_mode, competition_type: d.competition_type, team_id: d.team_id, game_config: d.game_config }))
             .post(route('game-saves.start'), { preserveScroll: true });
         return;
     }
@@ -472,7 +474,7 @@ function startWithTeam() {
     if (!humanTeams.value.length) return;
     startForm.team_ids = humanTeams.value.map(t => t.id);
     startForm
-        .transform(d => ({ label: d.label, period: d.period, game_mode: d.game_mode, competition_type: d.competition_type, team_ids: d.team_ids }))
+        .transform(d => ({ label: d.label, period: d.period, game_mode: d.game_mode, competition_type: d.competition_type, team_ids: d.team_ids, game_config: d.game_config }))
         .post(route('game-saves.start'), { preserveScroll: true });
 }
 

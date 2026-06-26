@@ -9,6 +9,7 @@ const props = defineProps({
     period: { type: String, default: 'college' },
     competitionType: { type: String, default: 'world_cup' },
     nations: { type: Array, default: () => [] },
+    gameConfig: { type: Object, default: null },
 });
 
 const form = useForm({
@@ -16,6 +17,7 @@ const form = useForm({
     period: props.period,
     competition_type: props.competitionType,
     nation: null,
+    game_config: props.gameConfig,
 });
 
 const playableCount = computed(() => props.nations.filter(n => n.playable).length);

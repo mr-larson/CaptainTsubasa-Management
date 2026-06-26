@@ -68,9 +68,11 @@ class GameSaveController extends Controller
             'period'           => ['required', 'string', 'in:college'],
             'game_mode'        => ['nullable', 'string', 'in:prebuilt,draft'],
             'competition_type' => ['nullable', 'string', 'in:college_league,world_cup'],
+            'game_config'      => ['nullable', 'array'],
         ]);
 
         $competitionType = $data['competition_type'] ?? 'college_league';
+        $gameConfig = $data['game_config'] ?? null;
 
         if ($competitionType === 'world_cup') {
             return Inertia::render('GameSaves/NationSelection', [
@@ -78,6 +80,7 @@ class GameSaveController extends Controller
                 'period'          => $data['period'],
                 'competitionType' => $competitionType,
                 'nations'         => $this->playableNations(),
+                'gameConfig'      => $gameConfig,
             ]);
         }
 
@@ -89,6 +92,7 @@ class GameSaveController extends Controller
             'teams'           => $teams,
             'gameMode'        => $data['game_mode'] ?? 'prebuilt',
             'competitionType' => $competitionType,
+            'gameConfig'      => $gameConfig,
         ]);
     }
 
@@ -145,6 +149,11 @@ class GameSaveController extends Controller
         // Équipe propriétaire / active de la save = siège 1.
         $primaryTeamId = $humanTeamIds[0] ?? $data['team_id'];
 
+        $initialState = null;
+        if (!empty($data['game_config'])) {
+            $initialState = ['config' => $data['game_config']];
+        }
+
         $gameSave = GameSave::create([
             'user_id' => $request->user()->id,
             'team_id' => $primaryTeamId,
@@ -155,7 +164,7 @@ class GameSaveController extends Controller
             'game_mode' => $gameMode,
             'competition_type' => $data['competition_type'] ?? 'college_league',
             'label'   => $data['label'] ?? null,
-            'state'   => null,
+            'state'   => $initialState,
         ]);
 
         // 1. Dupliquer les équipes
@@ -321,6 +330,7 @@ class GameSaveController extends Controller
             'period'           => ['required', 'string', 'in:college'],
             'competition_type' => ['required', 'string', 'in:world_cup'],
             'nation'           => ['required', 'string', Rule::in(Nationality::ALL)],
+            'game_config'      => ['nullable', 'array'],
         ]);
 
         // Nations réellement alignables (≥ 11 joueurs dont 1 gardien).
@@ -339,6 +349,11 @@ class GameSaveController extends Controller
             ->values();
         $nations = collect([$controlled])->merge($opponents)->all();
 
+        $wcState = null;
+        if (!empty($data['game_config'])) {
+            $wcState = ['config' => $data['game_config']];
+        }
+
         $gameSave = GameSave::create([
             'user_id'          => $request->user()->id,
             'team_id'          => null,
@@ -349,7 +364,7 @@ class GameSaveController extends Controller
             'game_mode'        => 'prebuilt',
             'competition_type' => 'world_cup',
             'label'            => $data['label'] ?? null,
-            'state'            => null,
+            'state'            => $wcState,
         ]);
 
         $assembler->assemble($gameSave, $nations, $controlled);
