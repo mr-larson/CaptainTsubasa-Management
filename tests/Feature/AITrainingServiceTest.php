@@ -59,6 +59,40 @@ class AITrainingServiceTest extends TestCase
         $this->assertCount($historyCount, $save->fresh()->state['ai_training_history']);
     }
 
+    public function test_ai_pays_for_each_training_session(): void
+    {
+        $save = $this->makeSave(['week' => 1, 'season' => 1]);
+        // Équipe IA (non contrôlée), budget connu.
+        [$team] = $this->makeTeamWithSquad($save, ['budget' => 100000]);
+
+        $this->service->trainForWeek($save);
+        $save->refresh();
+
+        $sessions = collect($save->state['ai_training_history'])
+            ->where('team_id', $team->id)
+            ->count();
+
+        // Coût par défaut = 200 € : le budget est débité d'exactement 200 € par séance.
+        $this->assertGreaterThan(0, $sessions);
+        $this->assertSame(100000 - $sessions * 200, (int) $team->fresh()->budget);
+    }
+
+    public function test_ai_skips_training_when_broke(): void
+    {
+        $save = $this->makeSave(['week' => 1, 'season' => 1]);
+        [$team] = $this->makeTeamWithSquad($save, ['budget' => 100]); // < 200
+
+        $staminaBefore = (int) GamePlayer::where('game_save_id', $save->id)->sum('stamina');
+
+        $this->service->trainForWeek($save);
+        $save->refresh();
+
+        // Sans budget, aucune séance IA : budget intact, endurance intacte, historique vide.
+        $this->assertSame(100, (int) $team->fresh()->budget);
+        $this->assertSame($staminaBefore, (int) GamePlayer::where('game_save_id', $save->id)->sum('stamina'));
+        $this->assertEmpty($save->state['ai_training_history']);
+    }
+
     public function test_manually_trained_player_is_not_auto_trained(): void
     {
         // L'exclusion des joueurs entraînés à la main concerne l'auto-entraînement

@@ -222,6 +222,7 @@ const verdictOutcomeLabel = (o) => ({
                 <li><strong>Fin de saison</strong> : gros bonus si l'objectif est atteint (et plus encore en le dépassant), forte pénalité sinon — d'autant plus que le ratage est large.</li>
                 <li><strong>Titre de champion</strong> : compte pour ta condition de victoire de carrière.</li>
             </ul>
+            <p class="text-[10px] text-slate-400">💡 Les clubs IA paient aussi leurs entraînements : un club fauché s'entraîne moins.</p>
         </div>
 
         <!-- Barème par difficulté -->

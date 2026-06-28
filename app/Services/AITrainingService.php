@@ -66,7 +66,8 @@ class AITrainingService
                     $aiEntries = $results;
                 }
             } else {
-                $results = $this->trainTeam($team, gainMax: 3, tacticalStyle: $team->tactical_style, gameSave: $gameSave);
+                // Équipe IA : entraînement complet, mais chaque séance coûte de l'argent.
+                $results = $this->trainTeam($team, gainMax: 3, tacticalStyle: $team->tactical_style, gameSave: $gameSave, chargeCost: true);
             }
             foreach ($results as $entry) {
                 $allEntries[] = array_merge($entry, ['team_id' => $team->id, 'team_name' => $team->name]);
@@ -105,17 +106,18 @@ class AITrainingService
         $gameSave->save();
     }
 
-    protected function trainTeam(GameTeam $team, int $gainMax = 3, array $excludePlayerIds = [], ?string $tacticalStyle = null, ?GameSave $gameSave = null): array
+    protected function trainTeam(GameTeam $team, int $gainMax = 3, array $excludePlayerIds = [], ?string $tacticalStyle = null, ?GameSave $gameSave = null, bool $chargeCost = false): array
     {
         $contracts = $team->contracts->filter(fn($c) => $c->gamePlayer !== null);
         if ($contracts->isEmpty()) return [];
 
-        $minStamina  = $gameSave ? (int) $gameSave->getConfig('training_min_stamina') : config('training.min_stamina_to_train', 40);
-        $staminaCost = $gameSave ? (int) $gameSave->getConfig('training_stamina_cost') : config('training.stamina_cost', 5);
-        $statMin     = config('training.stat_min', 0);
-        $statMax     = config('training.stat_max', 100);
-        $gainMin     = $gameSave ? (int) $gameSave->getConfig('training_gain_min') : 1;
-        $trainCount  = rand(1, 3);
+        $minStamina   = $gameSave ? (int) $gameSave->getConfig('training_min_stamina') : config('training.min_stamina_to_train', 40);
+        $staminaCost  = $gameSave ? (int) $gameSave->getConfig('training_stamina_cost') : config('training.stamina_cost', 5);
+        $statMin      = config('training.stat_min', 0);
+        $statMax      = config('training.stat_max', 100);
+        $gainMin      = $gameSave ? (int) $gameSave->getConfig('training_gain_min') : 1;
+        $trainingCost = ($chargeCost && $gameSave) ? (int) $gameSave->getConfig('training_cost') : 0;
+        $trainCount   = rand(1, 3);
 
         // Priorité aux titulaires, sinon remplaçants
         $starterContracts = $contracts->where('is_starter', true);
@@ -147,6 +149,9 @@ class AITrainingService
             }
 
             if ($pool->isEmpty()) break;
+
+            // L'IA paie chaque séance ; si elle ne peut plus, elle arrête d'entraîner.
+            if ($trainingCost > 0 && (int) ($team->budget ?? 0) < $trainingCost) break;
 
             // Sélection avec variété :
             // 70% → joueur avec la plus grande faiblesse dans son poste
@@ -180,12 +185,19 @@ class AITrainingService
                 $gainApplied = $newStat - $oldStat;
             });
 
+            // Débiter le budget de l'équipe pour cette séance.
+            if ($trainingCost > 0) {
+                $team->budget = max(0, (int) ($team->budget ?? 0) - $trainingCost);
+                $team->save();
+            }
+
             $results[] = [
                 'player_id'    => $player->id,
                 'player_name'  => trim(($player->firstname ?? '') . ' ' . ($player->lastname ?? '')),
                 'stat'         => $statKey,
                 'gain'         => $gainApplied,
                 'stamina_cost' => $staminaCost,
+                'cost'         => $trainingCost,
             ];
 
             $trainedThisRound[] = $player->id;
