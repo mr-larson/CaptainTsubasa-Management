@@ -104,6 +104,7 @@ class GameSave extends Model
         'training_gain_max'         => 5,
         'training_stamina_cost'     => 2,
         'training_min_stamina'      => 10,
+        'training_cost'             => 200,
         'ai_transfers_enabled'      => true,
         'ai_training_enabled'       => true,
         'visible_origins'           => [

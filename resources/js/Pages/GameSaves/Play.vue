@@ -576,6 +576,8 @@ function updateOtherPlayerNumber(playerId, number) {
                                  :season="season"
                                  :week="week"
                                  :roster="rosterWithStatus"
+                                 :teamBudget="teamBudget"
+                                 :trainingCost="props.gameConfig?.training_cost ?? 0"
                                  :trainingState="trainingState"
                                  :playerSeasonStats="props.playerSeasonStats"
                                  :isPlayerInjured="isPlayerInjured"

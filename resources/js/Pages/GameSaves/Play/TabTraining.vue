@@ -12,6 +12,8 @@ const props = defineProps({
     season:                      { type: Number,   required: true },
     week:                        { type: Number,   required: true },
     roster:                      { type: Array,    required: true },
+    teamBudget:                  { type: Number,   default: 0 },
+    trainingCost:                { type: Number,   default: 0 },
     trainingState:               { type: Object,   default: null },
     remainingTrainingsThisWeek:  { type: Number,   required: true },
     hasPlayerBeenTrainedThisWeek:{ type: Function, required: true },
@@ -34,6 +36,14 @@ const emit = defineEmits(['add-slot', 'remove-slot', 'submit-training', 'prev-ai
 
 const { playerPhotoUrl, statColor } = usePlayerUtils();
 
+// Coût total des séances sélectionnées et budget restant après paiement.
+const selectedCount = computed(() => props.selectedTrainings.filter(s => s.player_id).length);
+const totalTrainingCost = computed(() => selectedCount.value * props.trainingCost);
+const budgetAfter = computed(() => props.teamBudget - totalTrainingCost.value);
+const canAffordSelected = computed(() => totalTrainingCost.value <= props.teamBudget);
+// Peut-on encore payer une séance supplémentaire ?
+const canAffordOneMore = computed(() => (selectedCount.value + 1) * props.trainingCost <= props.teamBudget);
+
 const trainingButtonState = computed(() => {
     const p = selectedPlayer.value;
     if (!p) return { disabled: true, label: '', reason: '' };
@@ -52,6 +62,9 @@ const trainingButtonState = computed(() => {
     }
     if ((p.stamina ?? 0) < 10) {
         return { disabled: true, label: 'Trop fatigué (< 10 stamina)', reason: 'tired' };
+    }
+    if (props.trainingCost > 0 && !canAffordOneMore.value) {
+        return { disabled: true, label: 'Budget insuffisant', reason: 'budget' };
     }
     return { disabled: false, label: '🏋 Ajouter à l\'entraînement', reason: null };
 });
@@ -156,6 +169,11 @@ const selectedPlayerPerf = computed(() => {
                     </p>
                 </div>
                 <div class="flex gap-3">
+                    <!-- Budget & coût par séance -->
+                    <div v-if="trainingCost > 0" class="text-center px-4 py-2 rounded-xl border bg-white border-slate-200">
+                        <div class="text-2xl font-black text-slate-700">{{ teamBudget }} €</div>
+                        <div class="text-[10px] font-semibold text-slate-400">budget · {{ trainingCost }} €/séance</div>
+                    </div>
                     <!-- Entraînements manuels restants -->
                     <div class="text-center px-4 py-2 rounded-xl border"
                          :class="remainingTrainingsThisWeek > 0 ? 'bg-teal-50 border-teal-200' : 'bg-slate-100 border-slate-200'">
@@ -270,7 +288,7 @@ const selectedPlayerPerf = computed(() => {
                         🏋️ Entraînement manuel
                     </h4>
                     <p class="text-xs text-slate-400 mb-3">
-                        Choisis jusqu'à 3 joueurs différents et la stat à améliorer (+1 à +5, coûte 5 stamina).
+                        Choisis jusqu'à 3 joueurs différents et la stat à améliorer (+1 à +5, coûte de la stamina<span v-if="trainingCost > 0"> et {{ trainingCost }} € par séance</span>).
                     </p>
 
                     <div class="space-y-2 mb-3">
@@ -320,19 +338,34 @@ const selectedPlayerPerf = computed(() => {
                             </p>
                         </div>
 
+                        <!-- Récap coût -->
+                        <div v-if="trainingCost > 0 && selectedCount > 0"
+                             class="flex items-center justify-between text-xs mb-2 px-1">
+                            <span class="text-slate-500">Coût total ({{ selectedCount }} séance{{ selectedCount > 1 ? 's' : '' }})</span>
+                            <span class="font-bold" :class="canAffordSelected ? 'text-slate-700' : 'text-rose-500'">
+                                {{ totalTrainingCost }} €
+                                <span class="font-normal text-slate-400">→ reste {{ budgetAfter }} €</span>
+                            </span>
+                        </div>
+
                         <!-- Bouton Lancer -->
                         <button type="button"
                                 class="w-full px-4 py-2 text-sm rounded-full font-semibold transition-all disabled:opacity-40"
-                                :class="canSubmitTraining
+                                :class="(canSubmitTraining && canAffordSelected)
             ? 'bg-teal-500 hover:bg-teal-600 text-white shadow-sm'
             : 'bg-slate-200 text-slate-400'"
                                 @click="emit('submit-training')"
-                                :disabled="!canSubmitTraining">
+                                :disabled="!canSubmitTraining || !canAffordSelected">
                             Lancer l'entraînement
+                            <span v-if="trainingCost > 0 && selectedCount > 0"> — {{ totalTrainingCost }} €</span>
                         </button>
                     </div>
 
-                    <p v-if="remainingTrainingsThisWeek <= 0"
+                    <p v-if="trainingCost > 0 && selectedCount > 0 && !canAffordSelected"
+                       class="mt-3 text-xs text-rose-600 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2">
+                        Budget insuffisant : il te faut {{ totalTrainingCost }} € pour ces séances.
+                    </p>
+                    <p v-else-if="remainingTrainingsThisWeek <= 0"
                        class="mt-3 text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
                         Tu as utilisé tous tes entraînements manuels pour cette semaine.
                     </p>

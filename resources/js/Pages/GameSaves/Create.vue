@@ -3,6 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref, reactive } from 'vue';
 import H2 from '@/Components/H2.vue';
+import GameRules from '@/Components/GameRules.vue';
 
 const form = useForm({
     label: '',
@@ -13,6 +14,7 @@ const form = useForm({
 });
 
 const showConfig = ref(false);
+const showRules = ref(false);
 
 const originLabels = {
     captain_tsubasa:     'Captain Tsubasa',
@@ -44,6 +46,7 @@ const config = reactive({
     training_gain_max: 5,
     training_stamina_cost: 2,
     training_min_stamina: 10,
+    training_cost: 200,
     ai_transfers_enabled: true,
     ai_training_enabled: true,
     visible_origins: {
@@ -64,7 +67,7 @@ function resetDefaults() {
         match_stamina_cost: 5, rest_stamina_recovery: 10, match_max_turns: 45,
         injury_on_foul: true, suspension_on_3_yellows: true,
         training_max_per_week: 3, training_gain_min: 1, training_gain_max: 5,
-        training_stamina_cost: 2, training_min_stamina: 10,
+        training_stamina_cost: 2, training_min_stamina: 10, training_cost: 200,
         ai_transfers_enabled: true, ai_training_enabled: true,
         visible_origins: { captain_tsubasa: true, ecole_des_champions: true, hungry_heart: true, blue_lock: true, ao_ashi: true, original: true },
         internationals_visible: true,
@@ -99,23 +102,39 @@ function submit() {
                         <div>
                             <div class="text-xs font-bold text-teal-500 uppercase tracking-widest mb-1">Nouvelle sauvegarde</div>
                             <h1 class="text-xl font-bold text-slate-800">
-                                {{ showConfig ? 'Configuration avancée' : 'Création d\'une partie' }}
+                                {{ showConfig ? 'Configuration avancée' : showRules ? 'Règles du jeu' : 'Création d\'une partie' }}
                             </h1>
                             <p class="text-xs text-slate-400 mt-1">
-                                {{ showConfig ? 'Paramètres appliqués à cette sauvegarde.' : 'Configure ta nouvelle saison et choisis ton niveau de jeu.' }}
+                                {{ showConfig ? 'Paramètres appliqués à cette sauvegarde.'
+                                    : showRules ? 'Comment fonctionne le jeu, les matchs, la draft et les objectifs.'
+                                    : 'Configure ta nouvelle saison et choisis ton niveau de jeu.' }}
                             </p>
                         </div>
-                        <button type="button" @click="showConfig = !showConfig"
-                                class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full border transition-all"
-                                :class="showConfig
-                                    ? 'border-teal-300 bg-teal-50 text-teal-700 hover:bg-teal-100'
-                                    : 'border-slate-300 bg-white text-slate-600 hover:bg-slate-50'">
-                            <span>{{ showConfig ? '← Retour au formulaire' : '⚙ Configuration' }}</span>
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <button type="button" @click="showRules = !showRules; showConfig = false"
+                                    class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full border transition-all"
+                                    :class="showRules
+                                        ? 'border-teal-300 bg-teal-50 text-teal-700 hover:bg-teal-100'
+                                        : 'border-slate-300 bg-white text-slate-600 hover:bg-slate-50'">
+                                <span>{{ showRules ? '← Retour au formulaire' : '📖 Règles' }}</span>
+                            </button>
+                            <button type="button" @click="showConfig = !showConfig; showRules = false"
+                                    class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full border transition-all"
+                                    :class="showConfig
+                                        ? 'border-teal-300 bg-teal-50 text-teal-700 hover:bg-teal-100'
+                                        : 'border-slate-300 bg-white text-slate-600 hover:bg-slate-50'">
+                                <span>{{ showConfig ? '← Retour au formulaire' : '⚙ Configuration' }}</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ====== PANNEAU RÈGLES ====== -->
+                    <div v-show="showRules" class="flex flex-col flex-1 gap-4 overflow-y-auto min-h-0 pr-1">
+                        <GameRules />
                     </div>
 
                     <!-- ====== FORMULAIRE CREATION ====== -->
-                    <form v-show="!showConfig" @submit.prevent="submit" class="flex flex-col flex-1 gap-6 overflow-y-auto">
+                    <form v-show="!showConfig && !showRules" @submit.prevent="submit" class="flex flex-col flex-1 gap-6 overflow-y-auto">
 
                         <!-- Nom de la partie -->
                         <div class="flex flex-col gap-1.5">
@@ -420,11 +439,20 @@ function submit() {
                                     </div>
                                 </div>
                             </div>
-                            <div class="flex flex-col gap-1 max-w-xs">
-                                <label class="text-[10px] text-slate-500">Stamina min. requise</label>
-                                <div class="flex items-center gap-2">
-                                    <input type="range" v-model.number="config.training_min_stamina" min="0" max="50" step="5" class="flex-1 h-1 accent-teal-500" />
-                                    <span class="text-xs font-bold text-slate-800 w-5 text-right">{{ config.training_min_stamina }}</span>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-[10px] text-slate-500">Stamina min. requise</label>
+                                    <div class="flex items-center gap-2">
+                                        <input type="range" v-model.number="config.training_min_stamina" min="0" max="50" step="5" class="flex-1 h-1 accent-teal-500" />
+                                        <span class="text-xs font-bold text-slate-800 w-5 text-right">{{ config.training_min_stamina }}</span>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-[10px] text-slate-500">Coût / séance (€)</label>
+                                    <div class="flex items-center gap-2">
+                                        <input type="range" v-model.number="config.training_cost" min="0" max="2000" step="50" class="flex-1 h-1 accent-teal-500" />
+                                        <span class="text-xs font-bold text-slate-800 w-10 text-right">{{ config.training_cost }}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>

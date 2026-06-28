@@ -122,6 +122,47 @@ class TrainingServiceTest extends TestCase
         ]);
     }
 
+    public function test_training_deducts_money_from_budget(): void
+    {
+        $save = $this->makeSave();
+        $team = $this->makeTeam($save, ['is_controlled' => true, 'budget' => 1000]);
+        $save->controlled_game_team_id = $team->id;
+        $save->save();
+
+        $player = $this->makePlayer($save, ['stamina' => 100]);
+        $this->makeContract($save, $team, $player);
+
+        // Coût par défaut = 200 € par séance.
+        $applied = $this->service->applyTrainings($save, 1, 1, [
+            ['player_id' => $player->id, 'stat' => 'shot'],
+        ]);
+
+        $this->assertSame(800, (int) $team->fresh()->budget, 'Le budget est débité du coût de la séance.');
+        $this->assertSame(200, (int) $applied[0]['cost']);
+    }
+
+    public function test_training_rejected_when_budget_insufficient(): void
+    {
+        $save = $this->makeSave();
+        $team = $this->makeTeam($save, ['is_controlled' => true, 'budget' => 100]); // < 200
+        $save->controlled_game_team_id = $team->id;
+        $save->save();
+
+        $player = $this->makePlayer($save, ['stamina' => 100, 'shot' => 50]);
+        $this->makeContract($save, $team, $player);
+
+        try {
+            $this->service->applyTrainings($save, 1, 1, [
+                ['player_id' => $player->id, 'stat' => 'shot'],
+            ]);
+            $this->fail('Un budget insuffisant aurait dû lever une ValidationException.');
+        } catch (ValidationException $e) {
+            // Rien n'est appliqué : budget et stat inchangés.
+            $this->assertSame(100, (int) $team->fresh()->budget);
+            $this->assertSame(50, (int) $player->fresh()->shot);
+        }
+    }
+
     public function test_player_below_minimum_stamina_cannot_train(): void
     {
         $save = $this->makeSave();

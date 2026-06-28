@@ -27,6 +27,7 @@ class TrainingService
         $staminaCost  = (int) $gameSave->getConfig('training_stamina_cost', config('training.stamina_cost', 5));
         $gainMin      = (int) $gameSave->getConfig('training_gain_min', config('training.gain_min', 1));
         $gainMax      = (int) $gameSave->getConfig('training_gain_max', config('training.gain_max', 5));
+        $trainingCost = (int) $gameSave->getConfig('training_cost', config('training.cost', 0));
         $statMin      = config('training.stat_min', 0);
         $statMax      = config('training.stat_max', 100);
 
@@ -118,6 +119,15 @@ class TrainingService
             ]);
         }
 
+        // 5️⃣bis Vérifier le budget : chaque entraînement coûte de l'argent.
+        $totalCost = $trainingCost * count($trainings);
+
+        if ($totalCost > (int) ($controlledTeam->budget ?? 0)) {
+            throw ValidationException::withMessages([
+                'trainings' => "Budget insuffisant : {$totalCost} € nécessaires pour {$this->plural(count($trainings), 'entraînement')}.",
+            ]);
+        }
+
         // 6️⃣ Appliquer les entraînements en transaction
         $applied = [];
 
@@ -130,6 +140,9 @@ class TrainingService
             $gainMax,
             $statMin,
             $statMax,
+            $trainingCost,
+            $totalCost,
+            $controlledTeam,
             &$state,
             &$applied,
             $season,
@@ -172,7 +185,14 @@ class TrainingService
                     'old_stamina'  => $oldStamina,
                     'new_stamina'  => $newStamina,
                     'stamina_cost' => $oldStamina - $newStamina,
+                    'cost'         => $trainingCost,
                 ];
+            }
+
+            // Débiter le budget de l'équipe contrôlée du coût total.
+            if ($totalCost > 0) {
+                $controlledTeam->budget = max(0, (int) ($controlledTeam->budget ?? 0) - $totalCost);
+                $controlledTeam->save();
             }
 
             // Mise à jour de state['training']
@@ -187,6 +207,7 @@ class TrainingService
                             'stat'         => $e['stat'],
                             'gain'         => $e['gain'],
                             'stamina_cost' => $e['stamina_cost'],
+                            'cost'         => $e['cost'],
                             'created_at'   => now()->toIso8601String(),
                         ];
                     }, $applied)
@@ -198,5 +219,11 @@ class TrainingService
         $gameSave->save();
 
         return $applied;
+    }
+
+    /** Petit utilitaire d'accord en nombre pour les messages d'erreur. */
+    private function plural(int $count, string $word): string
+    {
+        return $count > 1 ? "{$count} {$word}s" : "{$count} {$word}";
     }
 }

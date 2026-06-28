@@ -914,6 +914,7 @@ class GameSaveController extends Controller
             'training_gain_max'       => ['integer', 'min:1', 'max:20'],
             'training_stamina_cost'   => ['integer', 'min:0', 'max:15'],
             'training_min_stamina'    => ['integer', 'min:0', 'max:50'],
+            'training_cost'           => ['integer', 'min:0', 'max:5000'],
             'ai_transfers_enabled'    => ['boolean'],
             'ai_training_enabled'     => ['boolean'],
             'visible_origins'         => ['array'],
