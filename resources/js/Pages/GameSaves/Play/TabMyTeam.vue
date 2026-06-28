@@ -158,7 +158,7 @@ const slotMastery = (slot, slotDef) => {
 </script>
 
 <template>
-    <div class="flex-1 flex flex-col gap-4 overflow-y-auto max-h-[75vh] pr-1 [&>*]:shrink-0">
+    <div class="flex-1 flex flex-col gap-4 overflow-y-auto min-h-0 pr-1 [&>*]:shrink-0">
 
         <!-- LIGNE 1 : Formation + Terrain + Banc -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">

@@ -315,16 +315,13 @@ function updateOtherPlayerNumber(playerId, number) {
 
     <AuthenticatedLayout>
         <template #header>
-            <H2>Partie : {{ gameSave.label ?? `Sauvegarde #${gameSave.id}` }}</H2>
+            <H2>Session de jeu — {{ gameSave.label ?? `Sauvegarde #${gameSave.id}` }}</H2>
         </template>
 
-        <div class="p-2 sm:p-3">
-            <div class="flex justify-center mb-3">
-                <h1 class="text-2xl sm:text-3xl font-bold text-slate-600">Session de jeu</h1>
-            </div>
+        <div class="p-2 sm:p-3 h-[calc(100vh-4rem)] flex flex-col overflow-hidden">
 
             <!-- Objectif de carrière : jauge de confiance de la direction -->
-            <div v-if="career && career.mandate" class="max-w-3xl mx-auto mb-4">
+            <div v-if="career && career.mandate" class="max-w-3xl w-full mx-auto mb-4 shrink-0">
                 <div class="px-4 py-3 rounded-xl border bg-white"
                      :class="career.alert ? 'border-rose-300 ring-1 ring-rose-100' : 'border-slate-200'">
                     <div class="flex items-center justify-between gap-4 flex-wrap">
@@ -358,7 +355,7 @@ function updateOtherPlayerNumber(playerId, number) {
             </div>
 
             <!-- Hot-seat multi-manager : indicateur de tour -->
-            <div v-if="hotSeat" class="max-w-3xl mx-auto mb-4">
+            <div v-if="hotSeat" class="max-w-3xl w-full mx-auto mb-4 shrink-0">
                 <div class="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-teal-200 bg-teal-50">
                     <span class="text-xs font-bold text-teal-600 uppercase tracking-wider shrink-0">Hot-seat</span>
                     <div class="flex items-center gap-2 flex-wrap">
@@ -378,16 +375,16 @@ function updateOtherPlayerNumber(playerId, number) {
                 </div>
             </div>
 
-            <div class="flex flex-row">
+            <div class="flex flex-row flex-1 min-h-0">
                 <!-- Visuel gauche -->
                 <div class="hidden md:block md:basis-1/6 bg-contain bg-center bg-no-repeat"
                      style="background-image: url('/images/wakabayashi.webp')"></div>
 
                 <!-- Carte principale -->
-                <div class="flex-1 min-w-0 p-3 sm:p-4 border border-slate-300 rounded-lg md:mx-6 bg-white min-h-[500px] flex flex-col">
+                <div class="flex-1 min-w-0 min-h-0 p-3 sm:p-4 border border-slate-300 rounded-lg md:mx-6 bg-white flex flex-col overflow-hidden">
 
                     <!-- Onglets -->
-                    <div class="mb-4 border-b border-slate-200">
+                    <div class="mb-4 border-b border-slate-200 shrink-0">
                         <nav class="-mb-px flex space-x-2 overflow-x-auto">
                             <button v-for="tab in tabs" :key="tab.key" type="button"
                                     @click="activeTab = tab.key"

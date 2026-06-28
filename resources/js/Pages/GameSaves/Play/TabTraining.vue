@@ -144,7 +144,7 @@ const selectedPlayerPerf = computed(() => {
 </script>
 
 <template>
-    <div class="flex-1 flex flex-col gap-4 overflow-y-auto max-h-[75vh] pr-1 [&>*]:shrink-0">
+    <div class="flex-1 flex flex-col gap-4 overflow-y-auto min-h-0 pr-1 [&>*]:shrink-0">
 
         <!-- HEADER -->
         <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">

@@ -194,7 +194,7 @@ const filteredHistory = computed(() =>
 </script>
 
 <template>
-    <div class="flex-1 flex flex-col gap-4 overflow-y-auto min-h-[75vh] max-h-[75vh] pr-1 [&>*]:shrink-0">
+    <div class="flex-1 flex flex-col gap-4 overflow-y-auto min-h-0 pr-1 [&>*]:shrink-0">
 
         <!-- Header : Marché (1/4) + recherche & filtres (3/4) -->
         <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch">
