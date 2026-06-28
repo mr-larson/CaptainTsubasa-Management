@@ -2,6 +2,8 @@
 
 namespace Tests\Concerns;
 
+use App\Models\BonusCard;
+use App\Models\GameSaves\GameBonusCard;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GamePlayer;
@@ -125,5 +127,38 @@ trait BuildsGameWorld
         }
 
         return [$team, $players];
+    }
+
+    /** Définition de carte (catalogue bonus_cards). */
+    protected function makeBonusCard(array $attrs = []): BonusCard
+    {
+        return BonusCard::create(array_merge([
+            'name'            => 'Carte test',
+            'description'     => 'Description de test.',
+            'kind'            => 'bonus',
+            'tier'            => 'bronze',
+            'target'          => 'self',
+            'execution_phase' => 'immediate',
+            'effect_type'     => 'stamina_boost',
+            'effect_value'    => ['amount' => 10],
+            'cost'            => 1000,
+            'base_weight'     => 100,
+            'icon'            => '🃏',
+        ], $attrs));
+    }
+
+    /** Instance possédée d'une carte par une équipe (game_bonus_cards). */
+    protected function makeGameCard(GameSave $save, GameTeam $team, BonusCard $card, array $attrs = []): GameBonusCard
+    {
+        return GameBonusCard::create(array_merge([
+            'game_save_id'     => $save->id,
+            'bonus_card_id'    => $card->id,
+            'game_team_id'     => $team->id,
+            'tier'             => $card->tier,
+            'cost_paid'        => $card->cost,
+            'status'           => 'available',
+            'purchased_season' => 1,
+            'purchased_week'   => 1,
+        ], $attrs));
     }
 }
