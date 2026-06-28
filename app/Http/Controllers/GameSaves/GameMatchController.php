@@ -15,6 +15,7 @@ use App\Services\AiBonusCardService;
 use App\Services\AITrainingService;
 use App\Services\BonusCardActivationService;
 use App\Services\BonusCardShopService;
+use App\Services\CareerObjectiveService;
 use App\Services\MatchSimulator;
 use App\Services\AITransferService;
 use App\Services\AILineupService;
@@ -296,6 +297,13 @@ class GameMatchController extends Controller
             return redirect()->route('game-saves.Play', $gameSave);
         }
 
+        // Verdict de la direction en cours de saison (jauge de confiance).
+        $career = app(CareerObjectiveService::class);
+        $career->afterWeek($gameSave, $weekToClose);
+        if ($career->isGameOver($gameSave)) {
+            return redirect()->route('game-saves.game-over', $gameSave);
+        }
+
         $seasonService = app(SeasonService::class);
         if ($seasonService->isSeasonOver($gameSave)) {
             $seasonService->endSeason($gameSave);
@@ -398,6 +406,13 @@ class GameMatchController extends Controller
         if ($gameSave->competition_type === 'world_cup') {
             app(TournamentService::class)->advance($gameSave);
             return redirect()->route('game-saves.Play', $gameSave);
+        }
+
+        // Verdict de la direction en cours de saison (jauge de confiance).
+        $career = app(CareerObjectiveService::class);
+        $career->afterWeek($gameSave, $week);
+        if ($career->isGameOver($gameSave)) {
+            return redirect()->route('game-saves.game-over', $gameSave);
         }
 
         $seasonService = app(SeasonService::class);

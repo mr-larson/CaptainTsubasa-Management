@@ -23,7 +23,15 @@ const originLabels = {
     original:            'Joueurs générés',
 };
 
+const careerLevels = [
+    { key: 'none',     icon: '∞',  label: 'Bac à sable',  desc: 'Aucun objectif. Les saisons s\'enchaînent à l\'infini.' },
+    { key: 'survival', icon: '🛡️', label: 'Survie',       desc: 'Petit club. La direction tolère un objectif modeste mais reste impatiente. 1 titre pour gagner.' },
+    { key: 'standard', icon: '⚖️', label: 'Standard',     desc: 'Objectif calé sur la force de l\'effectif. 2 titres pour gagner.' },
+    { key: 'conquest', icon: '👑', label: 'Conquête',     desc: 'Gros club. Le board exige le haut du tableau. 3 titres pour gagner.' },
+];
+
 const config = reactive({
+    career_difficulty: 'standard',
     bonus_cards_enabled: true,
     malus_cards_enabled: true,
     match_stamina_cost: 5,
@@ -51,6 +59,7 @@ const config = reactive({
 
 function resetDefaults() {
     Object.assign(config, {
+        career_difficulty: 'standard',
         bonus_cards_enabled: true, malus_cards_enabled: true,
         match_stamina_cost: 5, rest_stamina_recovery: 10, match_max_turns: 45,
         injury_on_foul: true, suspension_on_3_yellows: true,
@@ -278,6 +287,33 @@ function submit() {
 
                     <!-- ====== PANNEAU CONFIGURATION ====== -->
                     <div v-show="showConfig" class="flex flex-col flex-1 gap-4 overflow-y-auto min-h-0">
+
+                        <!-- Mandat de la direction -->
+                        <div class="border border-slate-200 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
+                            <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                <span>🎯</span> Mandat de la direction
+                            </h4>
+                            <p class="text-[10px] text-slate-400 -mt-1">
+                                Définit l'objectif de classement, la patience du board et la condition de victoire de carrière.
+                            </p>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button v-for="lvl in careerLevels" :key="lvl.key" type="button"
+                                        @click="config.career_difficulty = lvl.key"
+                                        class="relative flex flex-col gap-1 p-2.5 rounded-lg border-2 transition-all text-left"
+                                        :class="config.career_difficulty === lvl.key
+                                            ? 'border-teal-500 bg-teal-50'
+                                            : 'border-slate-200 bg-white hover:border-slate-300'">
+                                    <span class="text-xs font-bold flex items-center gap-1.5"
+                                          :class="config.career_difficulty === lvl.key ? 'text-teal-700' : 'text-slate-700'">
+                                        <span>{{ lvl.icon }}</span> {{ lvl.label }}
+                                    </span>
+                                    <span class="text-[10px] leading-snug"
+                                          :class="config.career_difficulty === lvl.key ? 'text-teal-600' : 'text-slate-400'">
+                                        {{ lvl.desc }}
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
 
                         <!-- Cartes -->
                         <div class="border border-slate-200 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">

@@ -103,6 +103,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/{gameSave}/draft/finish', [GameDraftController::class, 'finish'])->name('draft.finish');
         Route::get('/{gameSave}/season-end',  [GameSeasonController::class, 'show'])->name('season-end');
         Route::post('/{gameSave}/season-end/continue', [GameSeasonController::class, 'continue'])->name('season-end.continue');
+        Route::get('/{gameSave}/game-over',  [GameSeasonController::class, 'gameOver'])->name('game-over');
         Route::get('/{gameSave}',      [GameSaveController::class, 'show'])->name('show');
         Route::get('/{gameSave}/Play', [GameSaveController::class, 'play'])->name('Play');
         Route::put('/{gameSave}',      [GameSaveController::class, 'update'])->name('update');

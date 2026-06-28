@@ -89,6 +89,9 @@ class SeasonService
             }
         }
 
+        // Verdict de la direction (objectif de classement, confiance, licenciement).
+        $careerVerdict = app(CareerObjectiveService::class)->evaluateSeasonEnd($gameSave, $standings);
+
         $recap = [
             'season'    => $gameSave->season,
             'champion'  => $champion ? [
@@ -99,6 +102,7 @@ class SeasonService
             'mvp'       => $mvp,
             'standings' => $standingsRecap,
             'transfer_requests' => $transferRequests,
+            'career_verdict'    => $careerVerdict,
         ];
 
         $state = $gameSave->state ?? [];
@@ -189,6 +193,9 @@ class SeasonService
         unset($state['lineup']);
         $gameSave->state = $state;
         $gameSave->save();
+
+        // Nouveau mandat de la direction pour la saison à venir.
+        app(CareerObjectiveService::class)->resetMandateForNewSeason($gameSave);
 
         app(DraftService::class)->initDraft($gameSave, $draftOrder);
     }

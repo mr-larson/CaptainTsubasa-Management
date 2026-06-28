@@ -115,6 +115,7 @@ class GameSave extends Model
             'original'            => true,
         ],
         'internationals_visible'    => true,
+        'career_difficulty'         => 'standard',
     ];
 
     public function getConfig(?string $key = null, $default = null)

@@ -21,6 +21,7 @@ use App\Models\Player;
 use App\Models\Team;
 use App\Enums\Nationality;
 use App\Services\BonusCardShopService;
+use App\Services\CareerObjectiveService;
 use App\Services\MoraleService;
 use App\Services\NationalTeamAssembler;
 use App\Services\PlayerStatsService;
@@ -378,9 +379,19 @@ class GameSaveController extends Controller
      * Dashboard principal de la session.
      * Agrège les stats saison depuis game_matches.match_stats (source DB).
      */
-    public function play(Request $request, GameSave $gameSave): Response
+    public function play(Request $request, GameSave $gameSave): Response|RedirectResponse
     {
         $this->authorizeGameSave('view', $gameSave);
+
+        // Carrière terminée (licencié / titre de carrière) : la session est figée.
+        $career = app(CareerObjectiveService::class);
+        if ($career->isGameOver($gameSave)) {
+            return redirect()->route('game-saves.game-over', $gameSave);
+        }
+
+        // Fixe l'objectif de la direction pour la saison courante si besoin
+        // (couvre le mode draft : l'effectif n'existe qu'après la draft).
+        $career->ensureSeasonMandate($gameSave);
 
         $currentWeek = $gameSave->week ?? 1;
 
@@ -671,6 +682,7 @@ class GameSaveController extends Controller
             'tournament'          => $gameSave->competition_type === 'world_cup'
                 ? app(TournamentService::class)->presentation($gameSave)
                 : null,
+            'career'              => app(CareerObjectiveService::class)->presentation($gameSave),
         ]);
     }
 
@@ -907,6 +919,7 @@ class GameSaveController extends Controller
             'visible_origins'         => ['array'],
             'visible_origins.*'       => ['boolean'],
             'internationals_visible'  => ['boolean'],
+            'career_difficulty'       => ['string', 'in:none,survival,standard,conquest'],
         ]);
 
         $gameSave->setConfig($data);

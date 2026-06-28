@@ -1,7 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 const props = defineProps({
     gameSave: { type: Object, required: true },
@@ -9,6 +9,9 @@ const props = defineProps({
 });
 
 const isStarting = ref(false);
+
+const verdict   = computed(() => props.recap?.career_verdict ?? null);
+const isGameOver = computed(() => ['fired', 'won'].includes(verdict.value?.outcome));
 
 function startNewSeason() {
     if (isStarting.value) return;
@@ -30,6 +33,46 @@ function startNewSeason() {
                 <div class="text-center py-6">
                     <p class="text-sm uppercase tracking-widest text-slate-400">Fin de la saison {{ recap?.season ?? gameSave.season }}</p>
                     <h1 class="text-3xl font-bold text-slate-800 mt-1">Bilan de la saison</h1>
+                </div>
+
+                <!-- Verdict de la direction -->
+                <div v-if="verdict"
+                     class="rounded-2xl shadow-lg p-5 border-l-4"
+                     :class="verdict.outcome === 'won' ? 'bg-emerald-50 border-emerald-500'
+                         : verdict.outcome === 'fired' ? 'bg-rose-50 border-rose-500'
+                         : verdict.met ? 'bg-teal-50 border-teal-500'
+                         : 'bg-amber-50 border-amber-500'">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <p class="text-xs uppercase tracking-widest font-bold"
+                               :class="verdict.outcome === 'won' ? 'text-emerald-600'
+                                   : verdict.outcome === 'fired' ? 'text-rose-600'
+                                   : verdict.met ? 'text-teal-600' : 'text-amber-600'">
+                                Verdict de la direction
+                            </p>
+                            <h3 class="text-lg font-bold text-slate-800 mt-1">
+                                <template v-if="verdict.outcome === 'won'">🏆 Mission accomplie — {{ verdict.titles_won }} titre(s) !</template>
+                                <template v-else-if="verdict.outcome === 'fired'">📉 La direction met fin à ton mandat</template>
+                                <template v-else-if="verdict.met">✅ Objectif atteint</template>
+                                <template v-else>⚠️ Objectif manqué</template>
+                            </h3>
+                            <p class="text-sm text-slate-600 mt-1">
+                                Objectif : <strong>{{ verdict.mandate }}</strong> ·
+                                classement final : <strong>{{ verdict.rank }}<sup>e</sup></strong>
+                            </p>
+                        </div>
+                        <div class="text-right shrink-0">
+                            <p class="text-[10px] uppercase tracking-wider text-slate-400">Confiance</p>
+                            <p class="text-2xl font-black"
+                               :class="verdict.confidence <= 25 ? 'text-rose-500' : 'text-slate-700'">
+                                {{ verdict.confidence }}
+                            </p>
+                            <p class="text-xs font-semibold"
+                               :class="verdict.delta >= 0 ? 'text-emerald-600' : 'text-rose-500'">
+                                {{ verdict.delta >= 0 ? '+' : '' }}{{ verdict.delta }}
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Champion -->
@@ -121,15 +164,23 @@ function startNewSeason() {
 
                 <div class="text-center pb-10">
                     <p class="text-sm text-slate-500 mb-3">
-                        Tous les contrats arrivent à expiration. Une nouvelle draft va commencer —
-                        l'ordre de sélection est inversé par rapport au classement.
+                        <template v-if="isGameOver">
+                            Ta carrière s'achève ici. Découvre le bilan de ton passage sur le banc.
+                        </template>
+                        <template v-else>
+                            Tous les contrats arrivent à expiration. Une nouvelle draft va commencer —
+                            l'ordre de sélection est inversé par rapport au classement.
+                        </template>
                     </p>
                     <button
                         @click="startNewSeason"
                         :disabled="isStarting"
-                        class="px-8 py-3 rounded-xl bg-emerald-600 text-white font-semibold shadow-lg hover:bg-emerald-700 transition disabled:opacity-50"
+                        class="px-8 py-3 rounded-xl text-white font-semibold shadow-lg transition disabled:opacity-50"
+                        :class="isGameOver ? 'bg-slate-700 hover:bg-slate-800' : 'bg-emerald-600 hover:bg-emerald-700'"
                     >
-                        {{ isStarting ? 'Préparation…' : `Démarrer la saison ${(recap?.season ?? gameSave.season) + 1}` }}
+                        <template v-if="isStarting">Préparation…</template>
+                        <template v-else-if="isGameOver">Voir le bilan de carrière →</template>
+                        <template v-else>{{ `Démarrer la saison ${(recap?.season ?? gameSave.season) + 1}` }}</template>
                     </button>
                 </div>
 

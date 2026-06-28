@@ -5,6 +5,7 @@ namespace App\Http\Controllers\GameSaves;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\AuthorizesGameSave;
 use App\Models\GameSaves\GameSave;
+use App\Services\CareerObjectiveService;
 use App\Services\SeasonService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -46,9 +47,46 @@ class GameSeasonController extends Controller
             return redirect()->route('game-saves.Play', $gameSave);
         }
 
+        // Carrière terminée (licencié ou objectif long terme atteint) : pas de
+        // saison suivante, on bascule sur le bilan de carrière.
+        if (app(CareerObjectiveService::class)->isGameOver($gameSave)) {
+            return redirect()->route('game-saves.game-over', $gameSave);
+        }
+
         app(SeasonService::class)->startNewSeason($gameSave);
 
         return redirect()->route('game-saves.draft', $gameSave)
             ->with('success', "Saison {$gameSave->season} — la draft commence !");
+    }
+
+    /**
+     * Bilan de carrière : écran de fin de partie (licenciement ou victoire).
+     */
+    public function gameOver(Request $request, GameSave $gameSave): Response|RedirectResponse
+    {
+        $this->authorizeGameSave('view', $gameSave);
+
+        $career = app(CareerObjectiveService::class);
+        if (! $career->isGameOver($gameSave)) {
+            return redirect()->route('game-saves.Play', $gameSave);
+        }
+
+        $data  = $career->data($gameSave);
+        $state = $gameSave->state ?? [];
+
+        return Inertia::render('GameSaves/GameOver', [
+            'gameSave' => $gameSave,
+            'career'   => [
+                'status'          => $data['status'],
+                'fired_reason'    => $data['fired_reason'],
+                'confidence'      => (int) $data['confidence'],
+                'titles_won'      => (int) $data['titles_won'],
+                'titles_required' => (int) $data['titles_required'],
+                'difficulty'      => $data['difficulty'],
+                'history'         => array_values($data['history'] ?? []),
+                'last_verdict'    => $data['last_verdict'],
+            ],
+            'lastRecap' => $state['last_season_recap'] ?? null,
+        ]);
     }
 }
