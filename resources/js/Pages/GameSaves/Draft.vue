@@ -7,6 +7,17 @@ import Modal from '@/Components/Modal.vue';
 import PlayerIdentityCard from '@/Pages/GameSaves/Play/components/PlayerIdentityCard.vue';
 import RadarChart from '@/Pages/GameSaves/Play/components/RadarChart.vue';
 import StatBars from '@/Pages/GameSaves/Play/components/StatBars.vue';
+import { usePlayerUtils } from '@/Pages/GameSaves/Play/usePlayerUtils.js';
+
+const { keyStatsFor } = usePlayerUtils();
+
+// Classe d'une cellule de stat : surlignée si c'est une stat clé du poste du
+// joueur, sinon en gris-noir comme les stats secondaires.
+function statClass(player, key) {
+    return keyStatsFor(player.position).includes(key)
+        ? 'text-amber-600 font-black'
+        : 'text-slate-600 font-semibold';
+}
 
 const props = defineProps({
     gameSave:          { type: Object, required: true },
@@ -734,20 +745,20 @@ onMounted(() => {
                         </span>
                                             </td>
 
-                                            <!-- Stats -->
-                                            <td class="py-1.5 px-1 text-center text-slate-600 font-semibold">{{ player.speed ?? 0 }}</td>
-                                            <td class="py-1.5 px-1 text-center text-slate-600 font-semibold">{{ player.stamina ?? 0 }}</td>
-                                            <td class="py-1.5 px-1 text-center text-slate-600 font-semibold">{{ player.shot ?? 0 }}</td>
-                                            <td class="py-1.5 px-1 text-center text-slate-600 font-semibold">{{ player.pass ?? 0 }}</td>
-                                            <td class="py-1.5 px-1 text-center text-slate-600 font-semibold">{{ player.dribble ?? 0 }}</td>
-                                            <td class="py-1.5 px-1 text-center text-slate-600 font-semibold">{{ player.attack ?? 0 }}</td>
-                                            <td class="py-1.5 px-1 text-center text-slate-600 font-semibold">{{ player.defense ?? 0 }}</td>
-                                            <td class="py-1.5 px-1 text-center text-slate-600 font-semibold">{{ player.tackle ?? 0 }}</td>
-                                            <td class="py-1.5 px-1 text-center text-slate-600 font-semibold">{{ player.intercept ?? 0 }}</td>
-                                            <td class="py-1.5 px-1 text-center text-slate-600 font-semibold">{{ player.block ?? 0 }}</td>
-                                            <td class="py-1.5 px-1 text-center text-slate-600 font-semibold">{{ player.heading ?? 0 }}</td>
-                                            <td class="py-1.5 px-1 text-center text-violet-600 font-semibold">{{ player.hand_save ?? 0 }}</td>
-                                            <td class="py-1.5 px-1 text-center text-fuchsia-600 font-semibold">{{ player.punch_save ?? 0 }}</td>
+                                            <!-- Stats — les stats clés du poste sont surlignées -->
+                                            <td class="py-1.5 px-1 text-center" :class="statClass(player, 'speed')">{{ player.speed ?? 0 }}</td>
+                                            <td class="py-1.5 px-1 text-center" :class="statClass(player, 'stamina')">{{ player.stamina ?? 0 }}</td>
+                                            <td class="py-1.5 px-1 text-center" :class="statClass(player, 'shot')">{{ player.shot ?? 0 }}</td>
+                                            <td class="py-1.5 px-1 text-center" :class="statClass(player, 'pass')">{{ player.pass ?? 0 }}</td>
+                                            <td class="py-1.5 px-1 text-center" :class="statClass(player, 'dribble')">{{ player.dribble ?? 0 }}</td>
+                                            <td class="py-1.5 px-1 text-center" :class="statClass(player, 'attack')">{{ player.attack ?? 0 }}</td>
+                                            <td class="py-1.5 px-1 text-center" :class="statClass(player, 'defense')">{{ player.defense ?? 0 }}</td>
+                                            <td class="py-1.5 px-1 text-center" :class="statClass(player, 'tackle')">{{ player.tackle ?? 0 }}</td>
+                                            <td class="py-1.5 px-1 text-center" :class="statClass(player, 'intercept')">{{ player.intercept ?? 0 }}</td>
+                                            <td class="py-1.5 px-1 text-center" :class="statClass(player, 'block')">{{ player.block ?? 0 }}</td>
+                                            <td class="py-1.5 px-1 text-center" :class="statClass(player, 'heading')">{{ player.heading ?? 0 }}</td>
+                                            <td class="py-1.5 px-1 text-center" :class="statClass(player, 'hand_save')">{{ player.hand_save ?? 0 }}</td>
+                                            <td class="py-1.5 px-1 text-center" :class="statClass(player, 'punch_save')">{{ player.punch_save ?? 0 }}</td>
 
                                             <!-- Coût -->
                                             <td class="py-1.5 px-2 text-right">
