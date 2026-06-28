@@ -3,6 +3,10 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { ref, computed, onMounted, nextTick } from 'vue';
 import TeamStyleBadges from '@/Pages/GameSaves/Play/components/TeamStyleBadges.vue';
+import Modal from '@/Components/Modal.vue';
+import PlayerIdentityCard from '@/Pages/GameSaves/Play/components/PlayerIdentityCard.vue';
+import RadarChart from '@/Pages/GameSaves/Play/components/RadarChart.vue';
+import StatBars from '@/Pages/GameSaves/Play/components/StatBars.vue';
 
 const props = defineProps({
     gameSave:          { type: Object, required: true },
@@ -180,6 +184,22 @@ function positionColor(pos) {
         MID: 'bg-green-100 text-green-700',
         ATT: 'bg-red-100 text-red-700',
     }[g] ?? 'bg-slate-100 text-slate-700';
+}
+
+// ── Modal détail joueur ──────────────────────────────
+const inspectedPlayer = ref(null);
+
+function openPlayerModal(player) {
+    inspectedPlayer.value = player;
+}
+
+function closePlayerModal() {
+    inspectedPlayer.value = null;
+}
+
+async function pickFromModal(player) {
+    closePlayerModal();
+    await pickPlayer(player);
 }
 
 const compareList = ref([]);
@@ -681,17 +701,19 @@ onMounted(() => {
 
                                             <!-- Joueur -->
                                             <td class="py-1.5 pl-1 pr-2">
-                                                <div class="flex items-center gap-2">
+                                                <button type="button" @click.stop="openPlayerModal(player)"
+                                                        class="flex items-center gap-2 text-left group/name"
+                                                        title="Voir la fiche du joueur">
                                                     <div class="w-7 h-7 rounded-full overflow-hidden bg-slate-200 shrink-0">
                                                         <img v-if="player.photo_path" :src="`/storage/${player.photo_path}`"
                                                              class="w-full h-full object-cover" alt=""/>
                                                         <div v-else class="w-full h-full flex items-center justify-center text-[9px] text-slate-400">?</div>
                                                     </div>
                                                     <div class="min-w-0">
-                                                        <div class="font-semibold text-slate-800 truncate max-w-[120px]">{{ player.lastname }}</div>
+                                                        <div class="font-semibold text-slate-800 truncate max-w-[120px] group-hover/name:text-amber-600 group-hover/name:underline">{{ player.lastname }}</div>
                                                         <div class="text-[9px] text-slate-400 truncate max-w-[120px]">{{ player.firstname }}</div>
                                                     </div>
-                                                </div>
+                                                </button>
                                             </td>
 
                                             <!-- Poste -->
@@ -777,6 +799,44 @@ onMounted(() => {
                 </template>
             </div>
         </div>
+
+        <!-- Modal fiche joueur -->
+        <Modal :show="!!inspectedPlayer" maxWidth="2xl" @close="closePlayerModal">
+            <div v-if="inspectedPlayer" class="p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-bold text-slate-700">Fiche joueur</h3>
+                    <button @click="closePlayerModal" class="text-slate-400 hover:text-slate-600 text-lg leading-none">✕</button>
+                </div>
+
+                <div class="flex flex-col gap-3">
+                    <!-- Identité -->
+                    <PlayerIdentityCard :player="inspectedPlayer"
+                                        :showCaptainBadge="false"
+                                        :subtitle="`${inspectedPlayer.position} • ${Math.floor((inspectedPlayer.cost ?? 0) * seasonLength * 0.5)} € (${inspectedPlayer.cost ?? 0} €/sem)`" />
+
+                    <!-- Radar + Barres -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <RadarChart :player="inspectedPlayer" accent="teal" />
+                        <StatBars :player="inspectedPlayer" />
+                    </div>
+
+                    <p v-if="inspectedPlayer.description" class="text-xs text-slate-400 italic">
+                        {{ inspectedPlayer.description }}
+                    </p>
+
+                    <!-- Action : piocher -->
+                    <div v-if="isMyTurn" class="flex justify-end pt-1">
+                        <button v-if="canAfford(inspectedPlayer)"
+                                @click="pickFromModal(inspectedPlayer)"
+                                :disabled="isProcessing"
+                                class="px-4 py-2 rounded-xl text-xs font-bold bg-amber-500 text-white hover:bg-amber-400 transition-all active:scale-95 disabled:opacity-50">
+                            🎯 Piocher ce joueur
+                        </button>
+                        <span v-else class="text-xs text-rose-400 font-semibold self-center">Budget insuffisant</span>
+                    </div>
+                </div>
+            </div>
+        </Modal>
 
         <!-- Panneau de comparaison -->
         <div v-if="compareList.length > 0"
