@@ -27,7 +27,7 @@ function startNewSeason() {
     <Head title="Fin de saison" />
 
     <AuthenticatedLayout>
-        <div class="min-h-screen bg-slate-50 p-4">
+        <div class="min-h-full bg-slate-50 p-4">
             <div class="max-w-4xl mx-auto space-y-6">
 
                 <div class="text-center py-6">

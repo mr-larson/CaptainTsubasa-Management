@@ -9,8 +9,8 @@ const showingNavigationDropdown = ref(false);
 
 <template>
     <div>
-        <div class="min-h-screen">
-            <nav class="bg-slate-700 text-gray-100 border-b border-gray-100">
+        <div class="h-screen flex flex-col overflow-hidden">
+            <nav class="bg-slate-700 text-gray-100 border-b border-gray-100 shrink-0">
                 <!-- Primary Navigation Menu -->
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div class="flex justify-between h-16">
@@ -111,7 +111,7 @@ const showingNavigationDropdown = ref(false);
             </nav>
 
             <!-- Page Content -->
-            <main class="bg-slate-100">
+            <main class="bg-slate-100 flex-1 min-h-0 overflow-y-auto">
                 <slot />
             </main>
         </div>

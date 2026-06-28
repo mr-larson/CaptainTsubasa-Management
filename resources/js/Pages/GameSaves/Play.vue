@@ -318,7 +318,7 @@ function updateOtherPlayerNumber(playerId, number) {
             <H2>Session de jeu — {{ gameSave.label ?? `Sauvegarde #${gameSave.id}` }}</H2>
         </template>
 
-        <div class="p-2 sm:p-3 h-[calc(100vh-4rem)] flex flex-col overflow-hidden">
+        <div class="p-2 sm:p-3 h-full flex flex-col overflow-hidden">
 
             <!-- Objectif de carrière : jauge de confiance de la direction -->
             <div v-if="career && career.mandate" class="max-w-3xl w-full mx-auto mb-4 shrink-0">

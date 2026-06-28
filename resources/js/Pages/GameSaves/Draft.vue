@@ -431,7 +431,7 @@ onMounted(() => {
     <AuthenticatedLayout>
         <template #header></template>
 
-        <div class="min-h-screen bg-slate-50 p-4">
+        <div class="min-h-full bg-slate-50 p-4">
             <div class="max-w-7xl mx-auto">
 
                 <!-- ══════ HEADER ══════ -->

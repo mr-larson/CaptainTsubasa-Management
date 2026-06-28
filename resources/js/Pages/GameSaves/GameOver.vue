@@ -22,7 +22,7 @@ const difficultyLabel = {
     <Head :title="won ? 'Carrière accomplie' : 'Mandat terminé'" />
 
     <AuthenticatedLayout>
-        <div class="min-h-screen p-4"
+        <div class="min-h-full p-4"
              :class="won ? 'bg-gradient-to-b from-emerald-50 to-slate-50' : 'bg-gradient-to-b from-rose-50 to-slate-50'">
             <div class="max-w-3xl mx-auto space-y-6">
 
