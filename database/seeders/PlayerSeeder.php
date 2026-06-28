@@ -192,8 +192,11 @@ class PlayerSeeder extends Seeder
         $handSave = max(5, (int)round($defense * 0.2));
         $punchSave = max(5, (int)round($defense * 0.15));
 
-        // Tête : échelle 10-30, hiérarchie DEF > FW > MF > GK (les défenseurs
-        // dominent le jeu aérien, les avants pèsent sur les centres)
+        // Tête : échelle 8-30, hiérarchie DEF > FW > MF > GK (les défenseurs
+        // dominent le jeu aérien, les avants pèsent sur les centres, les milieux
+        // génériques sont moyens et les gardiens très faibles de la tête).
+        // La valeur dépend du physique du joueur (defense/attack/stamina) pour
+        // étaler les notes au sein d'un même poste plutôt que de tout aplatir.
         $heading = 13;
 
         switch ($position) {
@@ -201,20 +204,20 @@ class PlayerSeeder extends Seeder
                 $shot = (int)round(min(100, $attack * 1.05));
                 $dribble = (int)round(min(100, ($attack * 0.8 + $speed * 0.4) / 1.1));
                 $pass = (int)round(($attack * 0.75 + $speed * 0.35) / 1.1);
-                $heading = (int)round($attack * 0.15 + $stamina * 0.05 + 10);
+                $heading = (int)round($attack * 0.18 + $stamina * 0.06 + 7);
                 break;
 
             case 'Midfielder':
                 $pass = (int)round(min(100, ($attack * 0.9 + $speed * 0.4) / 1.1));
                 $dribble = (int)round(min(100, ($attack * 0.85 + $speed * 0.4) / 1.1));
-                $heading = (int)round($defense * 0.12 + $block * 0.05 + $stamina * 0.03 + 10);
+                $heading = (int)round($defense * 0.18 + $attack * 0.08 + $stamina * 0.05 + 6);
                 break;
 
             case 'Defender':
                 $block = (int)round(min(100, $block * 1.05));
                 $tackle = (int)round(min(100, $tackle * 1.05));
                 $intercept = (int)round(($defense * 0.8 + $speed * 0.3) / 1.1);
-                $heading = (int)round($defense * 0.18 + $block * 0.06 + $stamina * 0.04 + 12);
+                $heading = (int)round($defense * 0.30 + $block * 0.10 + $stamina * 0.06 + 5);
                 break;
 
             case 'Goalkeeper':
@@ -229,7 +232,7 @@ class PlayerSeeder extends Seeder
 
                 $handSave = (int)round(min(100, ($defense * 1.3 + $stamina * 0.5) / 1.5));
                 $punchSave = (int)round(min(100, ($defense * 1.1 + $stamina * 0.7) / 1.5));
-                $heading = (int)round($defense * 0.04 + 10);
+                $heading = (int)round($defense * 0.08 + 6);
                 break;
         }
 
@@ -240,7 +243,7 @@ class PlayerSeeder extends Seeder
                 'block' => $block,
                 'intercept' => $intercept,
                 'tackle' => $tackle,
-                'heading' => max(10, min(30, $heading)),
+                'heading' => max(8, min(30, $heading)),
                 'hand_save' => $handSave,
                 'punch_save' => $punchSave,
             ];
@@ -255,8 +258,17 @@ class PlayerSeeder extends Seeder
         // Spécialistes du jeu aérien (échelle de tête : 10-30)
         $overrides = [
             'jito' => 30,
+            // Frères Tachibana : maîtres incontestés du jeu aérien acrobatique
+            'masao-tachibana' => 30,
+            'kazuo-tachibana' => 30,
             'soda' => 28,
+            // Hyuga : avant-centre puissant, très dangereux de la tête
+            'kojiro-hyuga' => 28,
             'matsuyama' => 26,
+            // Takasugi : défenseur solide, bon dans les duels aériens
+            'shingo-takasugi' => 22,
+            // Tsubasa : génie technique au sol, faible de la tête
+            'tsubasa-ozora' => 11,
         ];
 
         foreach ($overrides as $needle => $value) {

@@ -10,6 +10,7 @@ use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
 use App\Services\DraftAIService;
 use App\Services\DraftService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -21,7 +22,7 @@ class GameDraftController extends Controller
     /**
      * Écran de draft (initial ou intersaison).
      */
-    public function show(Request $request, GameSave $gameSave): Response
+    public function show(Request $request, GameSave $gameSave): Response|RedirectResponse
     {
         $this->authorizeGameSave('view', $gameSave);
 
