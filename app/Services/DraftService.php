@@ -516,6 +516,20 @@ class DraftService
     }
 
     /**
+     * Regroupe un poste précis en grand groupe (GK/DEF/MID/ATT).
+     * Miroir de DraftAIService/AITransferService::positionGroup.
+     */
+    protected function positionGroup(string $position): string
+    {
+        $p = strtoupper(trim($position));
+        if (str_contains($p, 'GK') || str_contains($p, 'GOAL'))    return 'GK';
+        if (str_contains($p, 'DEF') || str_contains($p, 'BACK'))   return 'DEF';
+        if (str_contains($p, 'MDF') || str_contains($p, 'MID') || str_contains($p, 'MOF')) return 'MID';
+        if (str_contains($p, 'ATT') || str_contains($p, 'FOR'))    return 'ATT';
+        return 'MID';
+    }
+
+    /**
      * Calcule l'overall d'un joueur.
      */
     protected function playerOverall($player): int
