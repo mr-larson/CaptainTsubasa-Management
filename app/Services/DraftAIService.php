@@ -32,10 +32,12 @@ class DraftAIService
      */
     public function chooseBestPlayer(GameSave $gameSave, GameTeam $team): ?int
     {
-        // Joueurs libres (hors fictifs : réservés aux sélections de Coupe du Monde)
+        // Joueurs libres (hors fictifs : réservés aux sélections de Coupe du Monde,
+        // et en respectant la config de visibilité : listes de joueurs actives/inactives)
         $freePlayers = GamePlayer::where('game_save_id', $gameSave->id)
             ->whereDoesntHave('contracts')
             ->excludingFictional()
+            ->visibleForConfig($gameSave)
             ->get();
 
         if ($freePlayers->isEmpty()) return null;

@@ -79,8 +79,12 @@ class DraftService
             return $this->advanceAndSkip($gameSave, $state, $draft);
         }
 
-        // Vérifier que le joueur est libre
-        $player = GamePlayer::where('game_save_id', $gameSave->id)->find($playerId);
+        // Vérifier que le joueur est libre, draftable (non fictif) et visible
+        // selon la config (listes de joueurs actives/inactives).
+        $player = GamePlayer::where('game_save_id', $gameSave->id)
+            ->excludingFictional()
+            ->visibleForConfig($gameSave)
+            ->find($playerId);
         if (!$player) return null;
 
         $hasContract = GameContract::where('game_save_id', $gameSave->id)
