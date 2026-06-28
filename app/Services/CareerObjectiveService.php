@@ -114,6 +114,12 @@ class CareerObjectiveService
             'titles_required' => (int) $c['titles_required'],
             'titles_won'      => (int) $c['titles_won'],
             'last_verdict'    => $c['last_verdict'],
+            'fired_reason'    => $c['fired_reason'],
+            // Historique des saisons jouées, trié par n° de saison croissant.
+            'history'         => collect($c['history'] ?? [])
+                ->sortBy('season')
+                ->values()
+                ->all(),
         ];
     }
 

@@ -282,6 +282,14 @@ const tabs = computed(() => {
 });
 const activeTab = ref('dashboard');
 
+// Section à pré-sélectionner dans l'onglet Gestion (ex: depuis l'aide objectif).
+const managementInitialSection = ref(null);
+
+function openCareerRules() {
+    managementInitialSection.value = 'rules';
+    activeTab.value = 'management';
+}
+
 // ==========================
 //   ACTIONS GLOBALES
 // ==========================
@@ -328,9 +336,12 @@ function updateOtherPlayerNumber(playerId, number) {
                         <div class="flex items-center gap-2 min-w-0">
                             <span class="text-lg shrink-0">🎯</span>
                             <div class="min-w-0">
-                                <p class="text-xs font-bold text-slate-700 truncate">
+                                <p class="text-xs font-bold text-slate-700 truncate flex items-center gap-1.5">
                                     Objectif : {{ career.mandate.label }}
                                     <span class="text-slate-400 font-normal">· {{ career.difficulty_label }}</span>
+                                    <button type="button" @click="openCareerRules"
+                                            class="shrink-0 w-4 h-4 rounded-full bg-slate-200 text-slate-500 text-[10px] font-bold flex items-center justify-center hover:bg-teal-500 hover:text-white transition-colors"
+                                            title="Voir le détail des règles et objectifs">ℹ</button>
                                 </p>
                                 <p class="text-[11px] text-slate-400">
                                     🏆 {{ career.titles_won }} / {{ career.titles_required }} titre(s) pour gagner
@@ -633,6 +644,8 @@ function updateOtherPlayerNumber(playerId, number) {
                                    :gameSave="gameSave"
                                    :managementStats="props.managementStats"
                                    :gameConfig="props.gameConfig"
+                                   :career="career"
+                                   :initialSection="managementInitialSection"
                     />
 
                 </div>
