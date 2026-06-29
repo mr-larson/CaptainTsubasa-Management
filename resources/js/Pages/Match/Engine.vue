@@ -49,13 +49,14 @@
                         <!-- Center: score + logos -->
                         <div class="flex items-center justify-center gap-2 sm:gap-4 min-w-0">
 
-                            <!-- HOME / INTERNAL -->
-                            <div class="flex items-center gap-2 min-w-0 sm:min-w-[160px] justify-end">
+                            <!-- INTERNAL (équipe contrôlée) — placée à gauche si domicile, sinon à droite -->
+                            <div class="flex items-center gap-2 min-w-0 sm:min-w-[160px]"
+                                 :class="internalIsHome ? 'order-1 justify-end' : 'order-3 justify-start flex-row-reverse'">
                                 <div class="h-12 w-12 rounded-md overflow-hidden flex items-center justify-center">
                                     <img
                                         v-if="homeLogoUrl"
                                         :src="homeLogoUrl"
-                                        alt="Logo domicile"
+                                        :alt="internalIsHome ? 'Logo domicile' : 'Logo extérieur'"
                                         class="h-full w-full object-contain"
                                     />
                                     <span v-else class="text-[10px] opacity-60">—</span>
@@ -68,15 +69,18 @@
                             </div>
 
                             <!-- SCORE -->
-                            <div class="flex items-center gap-2">
+                            <div class="flex items-center gap-2 order-2">
                                 <!-- ⚠️ IDs utilisés par engine.js -->
-                                <span class="text-lg font-extrabold tabular-nums" id="score-internal">0</span>
-                                <span class="opacity-80">-</span>
-                                <span class="text-lg font-extrabold tabular-nums" id="score-external">0</span>
+                                <span class="text-lg font-extrabold tabular-nums"
+                                      :class="internalIsHome ? 'order-1' : 'order-3'" id="score-internal">0</span>
+                                <span class="opacity-80 order-2">-</span>
+                                <span class="text-lg font-extrabold tabular-nums"
+                                      :class="internalIsHome ? 'order-3' : 'order-1'" id="score-external">0</span>
                             </div>
 
-                            <!-- AWAY / EXTERNAL -->
-                            <div class="flex items-center gap-2 min-w-0 sm:min-w-[160px] justify-start">
+                            <!-- EXTERNAL (adversaire) — placée à droite si l'interne est à domicile, sinon à gauche -->
+                            <div class="flex items-center gap-2 min-w-0 sm:min-w-[160px]"
+                                 :class="internalIsHome ? 'order-3 justify-start' : 'order-1 justify-end flex-row-reverse'">
                 <span class="font-bold truncate max-w-[180px] min-w-0" id="team-name-external">
                   {{ awayName }}
                 </span>
@@ -85,7 +89,7 @@
                                     <img
                                         v-if="awayLogoUrl"
                                         :src="awayLogoUrl"
-                                        alt="Logo extérieur"
+                                        :alt="internalIsHome ? 'Logo extérieur' : 'Logo domicile'"
                                         class="h-full w-full object-contain"
                                     />
                                     <span v-else class="text-[10px] opacity-60">—</span>
@@ -419,6 +423,10 @@ const buildLogoUrl = (path) => {
 // ==========================
 const homeName = computed(() => props.engineConfig?.teams?.internal?.name ?? 'Domicile');
 const awayName = computed(() => props.engineConfig?.teams?.external?.name ?? 'Extérieur');
+
+// L'équipe à domicile doit apparaître en premier (à gauche) dans le bandeau de
+// score, que le joueur contrôle le domicile (internal) ou l'extérieur.
+const internalIsHome = computed(() => props.engineConfig?.internalIsHome ?? true);
 
 const homeLogoUrl = computed(() => {
     const p = props.engineConfig?.teams?.internal?.logo_path;
