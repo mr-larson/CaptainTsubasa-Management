@@ -167,6 +167,21 @@ class AITransferService
                     'captain_reroll_used_this_action' => false,
                 ]);
 
+                // Numéro de maillot : prochain libre dans l'effectif de l'équipe
+                $usedNumbers = GamePlayer::where('game_save_id', $gameSave->id)
+                    ->whereHas('contracts', fn($q) => $q->where('game_team_id', $team->id))
+                    ->pluck('number')
+                    ->filter()
+                    ->toArray();
+
+                $nextNumber = 1;
+                while (in_array($nextNumber, $usedNumbers)) {
+                    $nextNumber++;
+                }
+
+                $candidate->number = $nextNumber;
+                $candidate->save();
+
                 $team->budget = max(0, ($team->budget ?? 0) - ($salary * $remainingWeeks));
                 $team->save();
             });
