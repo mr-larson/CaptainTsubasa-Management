@@ -529,7 +529,7 @@ class GameMatchController extends Controller
             }
         }
 
-        $starters11 = $ordered->map(function (array $row) use ($unavailableIds) {
+        $starters11 = $ordered->map(function (array $row) use ($unavailableIds, $statMods) {
             [$slot, $c] = $row;
             if (!$c || !$c->gamePlayer) {
                 return [
@@ -570,7 +570,7 @@ class GameMatchController extends Controller
         $subContracts = $team->contracts
             ->filter(fn($c) => !$c->is_starter && $c->gamePlayer)
             ->values();
-        $subs = $subContracts->map(function ($c) use ($unavailableIds) {
+        $subs = $subContracts->map(function ($c) use ($unavailableIds, $statMods) {
             $p = $c->gamePlayer;
             return [
                 'id'            => $p->id,

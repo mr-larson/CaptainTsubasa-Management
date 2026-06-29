@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from 'vue';
 import { usePlayerUtils } from '../usePlayerUtils.js';
 
 /**
@@ -25,7 +26,23 @@ const props = defineProps({
 
 const emit = defineEmits(['select']);
 
-const { playerPhotoUrl, sanctionTypeLabel, moraleState } = usePlayerUtils();
+const { playerPhotoUrl, sanctionTypeLabel, moraleState, positionGroup } = usePlayerUtils();
+
+// Joueurs regroupés par poste (Gardien, Défenseur, Milieu, Attaquant), dans
+// l'ordre du terrain. L'ordre interne à chaque groupe est conservé tel quel.
+const POSITION_GROUPS = [
+    { key: 'GK',    label: 'Gardiens' },
+    { key: 'DEF',   label: 'Défenseurs' },
+    { key: 'MID',   label: 'Milieux' },
+    { key: 'ATT',   label: 'Attaquants' },
+    { key: 'OTHER', label: 'Autres' },
+];
+
+const groupedPlayers = computed(() =>
+    POSITION_GROUPS
+        .map(g => ({ ...g, players: props.players.filter(p => positionGroup(p.position) === g.key) }))
+        .filter(g => g.players.length > 0)
+);
 
 const staminaOf = (p) => p.stamina ?? p.stats?.stamina ?? 0;
 
@@ -48,8 +65,12 @@ const benchTitle = (p) => {
 <template>
     <div class="border border-slate-200 rounded-xl bg-slate-50 p-3 overflow-y-auto">
         <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">{{ title }}</h3>
-        <div v-if="players.length" class="space-y-1">
-            <button v-for="p in players" :key="p.id" type="button"
+        <div v-if="players.length" class="space-y-3">
+            <div v-for="group in groupedPlayers" :key="group.key" class="space-y-1">
+                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-1">
+                    {{ group.label }} <span class="opacity-60">({{ group.players.length }})</span>
+                </h4>
+                <button v-for="p in group.players" :key="p.id" type="button"
                     @click="emit('select', p)"
                     class="w-full text-left rounded-lg px-2 py-1.5 transition-all border"
                     :class="selectedId === p.id
@@ -109,7 +130,8 @@ const benchTitle = (p) => {
                     <div v-if="showStarterDot" class="w-2 h-2 rounded-full shrink-0"
                          :class="p.is_starter ? 'bg-emerald-400' : 'bg-slate-300'"></div>
                 </div>
-            </button>
+                </button>
+            </div>
         </div>
         <p v-else class="text-xs text-slate-400">Aucun joueur.</p>
     </div>
