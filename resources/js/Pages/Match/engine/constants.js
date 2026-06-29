@@ -249,7 +249,7 @@ export const STATS = {
         pass:    { power: 10, cost: 6 },
         dribble: { power: 10, cost: 4  },
         special: { power: 12, cost: 15 },
-        cross:     { power: 10, cost: 18 },
+        cross:     { power: 10, cost: 8 },
         long_pass: { power: 10, cost: 15 },
     },
     defenseField: {
