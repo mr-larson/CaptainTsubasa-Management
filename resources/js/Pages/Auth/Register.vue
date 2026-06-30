@@ -28,7 +28,7 @@ const submit = () => {
             Créer un compte
         </h1>
         <p class="text-xs text-slate-500 mb-4">
-            Inscris-toi pour lancer ta première saison de Captain Tsubasa Management.
+            Inscris-toi pour lancer ta première saison de Golden Eleven.
         </p>
 
         <form @submit.prevent="submit" class="space-y-4">

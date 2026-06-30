@@ -10,7 +10,7 @@
                 <div class="mb-4 flex items-center justify-between">
                     <div class="flex items-center gap-2">
                         <span class="font-semibold text-sm text-slate-700">
-                            Captain Tsubasa <span class="text-teal-500">Management</span>
+                            Golden <span class="text-teal-500">Eleven</span>
                         </span>
                     </div>
                     <Link

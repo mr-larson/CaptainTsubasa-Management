@@ -24,25 +24,28 @@ const overallOf = (p) => {
 };
 
 const features = [
-    { icon: 'ti-trophy',      title: 'Championnat complet',   desc: 'Saisons de 28+ journées avec calendrier aller-retour équilibré.' },
-    { icon: 'ti-sword',       title: 'Matchs au tour par tour', desc: '40 tours par match avec passes, dribbles, tirs et actions spéciales.' },
-    { icon: 'ti-run',         title: 'Gestion de l\'effectif',  desc: 'Titulaires, remplaçants, formations tactiques et numéros de maillot.' },
-    { icon: 'ti-heart-rate',  title: 'Fatigue & blessures',    desc: 'Stamina, blessures d\'épuisement, cartons jaunes et rouges.' },
-    { icon: 'ti-arrows-exchange', title: 'Transferts',         desc: 'Marché des agents libres, recrutement IA et gestion du budget.' },
-    { icon: 'ti-chart-line',  title: 'Statistiques',           desc: 'Performances par joueur, bilan d\'équipe et historique des matchs.' },
+    { icon: 'ti-trophy',          title: 'Championnat complet',      desc: 'Saisons de 28+ journées avec calendrier aller-retour équilibré et classement en direct.' },
+    { icon: 'ti-sword',           title: 'Matchs tour par tour',     desc: 'Passes, dribbles, tirs et tirs spéciaux, avec une IA offensive et défensive.' },
+    { icon: 'ti-world',           title: 'Mode Coupe du Monde',      desc: 'Compose une sélection nationale et vise le titre : phase de poules puis élimination directe.' },
+    { icon: 'ti-users',           title: 'Multi-manager hot-seat',   desc: 'Plusieurs managers humains sur une même partie, chacun son équipe, à tour de rôle.' },
+    { icon: 'ti-cards',           title: 'Cartes bonus & malus',     desc: 'Paris, défis de match et coups bas pour saboter l\'adversaire de ta prochaine rencontre.' },
+    { icon: 'ti-target-arrow',    title: 'Carrière & objectifs',     desc: 'Mandat du board et jauge de confiance : atteins tes objectifs… ou fais-toi licencier.' },
+    { icon: 'ti-run',             title: 'Gestion de l\'effectif',   desc: 'Titulaires, remplaçants, formations tactiques, numéros de maillot et entraînement.' },
+    { icon: 'ti-arrows-exchange', title: 'Transferts & finances',    desc: 'Marché des agents libres, recrutement IA, résiliations de contrat et gestion du budget.' },
+    { icon: 'ti-heart-rate',      title: 'Fatigue & blessures',      desc: 'Stamina, blessures d\'épuisement, cartons jaunes et rouges.' },
 ];
 </script>
 
 <template>
-    <Head title="Captain Tsubasa Management" />
+    <Head title="Golden Eleven" />
 
     <div class="page-wrap">
 
         <!-- NAV -->
         <nav class="nav-bar">
             <div class="nav-brand">
-                <span class="brand-ct">Captain Tsubasa</span>
-                <span class="brand-mgmt">Management</span>
+                <span class="brand-ct">Golden</span>
+                <span class="brand-mgmt">Eleven</span>
             </div>
             <div class="nav-links" v-if="canLogin">
                 <Link v-if="$page.props.auth?.user" :href="route('mainMenu')" class="nav-link">Menu principal</Link>
@@ -59,8 +62,8 @@ const features = [
                 <div class="hero-badge">Saison 1 · En développement</div>
                 <h1 class="hero-title">Deviens le meilleur<br>manager du Japon</h1>
                 <p class="hero-sub">
-                    Un jeu de gestion football tour par tour inspiré de l'univers Captain Tsubasa.
-                    Construis ton équipe, dispute des championnats et affronte l'IA.
+                    <strong>Golden Eleven</strong> est un jeu de gestion football tour par tour inspiré de l'univers Captain Tsubasa.
+                    Construis ton club, dispute championnats et Coupe du Monde, joue à plusieurs et affronte l'IA.
                 </p>
                 <div class="hero-actions">
                     <Link v-if="canRegister" :href="route('register')" class="btn-primary">Créer une partie</Link>
@@ -72,7 +75,7 @@ const features = [
                     <div class="hstat-sep"></div>
                     <div class="hstat"><span class="hstat-n">{{ players.length }}</span><span class="hstat-l">Joueurs</span></div>
                     <div class="hstat-sep"></div>
-                    <div class="hstat"><span class="hstat-n">45</span><span class="hstat-l">Tours / match</span></div>
+                    <div class="hstat"><span class="hstat-n">40</span><span class="hstat-l">Tours / match</span></div>
                 </div>
             </div>
             <div class="hero-visual">
@@ -134,7 +137,7 @@ const features = [
                 <div class="cta-actions">
                     <Link v-if="canRegister" :href="route('register')" class="btn-primary">Créer un compte</Link>
                     <Link v-if="canLogin && !$page.props.auth?.user" :href="route('login')" class="btn-secondary">Se connecter</Link>
-                    <a href="https://github.com/mr-larson/CaptainTsubasaManagement" target="_blank" class="btn-ghost">
+                    <a href="https://github.com/mr-larson/CaptainTsubasa-Management" target="_blank" class="btn-ghost">
                         <i class="ti ti-brand-github" aria-hidden="true"></i> GitHub
                     </a>
                 </div>
@@ -143,7 +146,7 @@ const features = [
 
         <!-- FOOTER -->
         <footer class="footer">
-            <span>Captain Tsubasa Management · Projet open source</span>
+            <span>Golden Eleven · Projet open source</span>
             <span>Inspiré de l'œuvre de Yōichi Takahashi</span>
         </footer>
     </div>

@@ -1,30 +1,27 @@
-# CaptainTsubasa-Management ⚽️🎮
+# Golden Eleven ⚽️🎮
 
 ![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Laravel](https://img.shields.io/badge/Laravel-12-red)
+![Laravel](https://img.shields.io/badge/Laravel-10-red)
 ![Vue](https://img.shields.io/badge/Vue-3-green)
 
-> Jeu de gestion d’équipe de football inspiré de l’univers **Captain Tsubasa**.  
+> **Golden Eleven** — jeu de gestion d’équipe de football inspiré de l’univers **Captain Tsubasa**.  
 > Gère ton club, construis ton effectif et vis les matchs via un **moteur de jeu interactif**.
 
 ---
 
 ## 🧠 Vision du projet
 
-**CaptainTsubasa-Management** est un jeu de type **GM Mode / Management Football**, combinant :
+**Golden Eleven** est un jeu de type **GM Mode / Management Football**, combinant :
 
 - Gestion d’équipe (budget, effectif, contrats)
 - Simulation de saison (calendrier, semaines, résultats)
 - Matchs jouables via un moteur **tour par tour**
 - IA offensive et défensive
 - Système de stamina et de statistiques
-
-Le projet vise un **MVP solide**, extensible vers :
-- formations d’équipe,
-- tactiques,
-- progression des joueurs,
-- modes de jeu avancés.
+- **Mode Coupe du Monde** (sélections nationales)
+- **Multi-manager hot-seat** (plusieurs joueurs humains sur une même partie)
+- **Cartes bonus & malus** et **objectifs de carrière**
 
 ---
 
@@ -60,6 +57,17 @@ https://gautd8.notion.site/Captain-Tsubasa-Management-28c47313c8ca4fb5b0e3652491
 - Action bar contextuelle
 - Historique des actions du match
 
+### 🌍 Modes de jeu
+- **Coupe du Monde** : sélections nationales, phase de poules puis élimination directe
+- **Multi-manager (hot-seat)** : plusieurs managers humains sur une même partie, à tour de rôle
+- **Carrière & objectifs** : mandat du board, jauge de confiance, licenciement ou victoire
+
+### 🃏 Économie & cartes
+- Cartes bonus (pari financier, défis de match)
+- Cartes malus offensives ciblant l’adversaire de la prochaine rencontre
+- Transferts (agents libres, recrutement IA, résiliations de contrat)
+- Entraînement et progression des joueurs
+
 
 ---
 
@@ -78,7 +86,7 @@ https://gautd8.notion.site/Captain-Tsubasa-Management-28c47313c8ca4fb5b0e3652491
 ## 🧪 Stack technique
 
 - **Backend**
-- Laravel 12
+- Laravel 10
 - Eloquent ORM
 - Services (MatchSimulator)
 - **Frontend**
