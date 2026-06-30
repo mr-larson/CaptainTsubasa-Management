@@ -42,33 +42,27 @@ class AITrainingService
         $week   = $gameSave->week ?? 1;
         $season = $gameSave->season ?? 1;
 
-        // Joueurs déjà entraînés manuellement cette semaine
-        $manuallyTrainedIds = $this->getManuallyTrainedPlayerIds($state, $week, $season);
-
         // Toutes les équipes de la save
         $allTeams = GameTeam::where('game_save_id', $gameSave->id)
             ->with(['contracts' => fn($q) => $q->activeAt($week)->with('gamePlayer')])
             ->get();
 
         $controlledTeamIds = $gameSave->controlledGameTeamIds();
-        $activeTeamId      = (int) $gameSave->controlled_game_team_id;
-        $aiEntries         = [];
+        $aiEntries         = []; // jamais d'auto-entraînement humain → toujours vide
 
         $allEntries = []; // historique complet toutes équipes
 
         foreach ($allTeams as $team) {
-            $isHuman = in_array((int) $team->id, $controlledTeamIds, true);
-            if ($isHuman) {
-                // Équipe humaine : auto-entraînement doux des joueurs non entraînés à la main.
-                $results = $this->trainTeam($team, gainMax: 2, excludePlayerIds: $manuallyTrainedIds, tacticalStyle: $team->tactical_style, gameSave: $gameSave);
-                // ai_entries = panneau du joueur actif uniquement.
-                if ((int) $team->id === $activeTeamId) {
-                    $aiEntries = $results;
-                }
-            } else {
-                // Équipe IA : entraînement complet, mais chaque séance coûte de l'argent.
-                $results = $this->trainTeam($team, gainMax: 3, tacticalStyle: $team->tactical_style, gameSave: $gameSave, chargeCost: true);
+            // Les équipes humaines ne sont jamais auto-entraînées : seuls leurs
+            // entraînements manuels font progresser leurs joueurs. L'auto-entraînement
+            // est réservé aux équipes IA.
+            if (in_array((int) $team->id, $controlledTeamIds, true)) {
+                continue;
             }
+
+            // Équipe IA : entraînement complet, mais chaque séance coûte de l'argent.
+            $results = $this->trainTeam($team, gainMax: 3, tacticalStyle: $team->tactical_style, gameSave: $gameSave, chargeCost: true);
+
             foreach ($results as $entry) {
                 $allEntries[] = array_merge($entry, ['team_id' => $team->id, 'team_name' => $team->name]);
             }
@@ -299,25 +293,6 @@ class AITrainingService
     // ==========================
     //   HELPERS
     // ==========================
-
-    /**
-     * Récupère les IDs des joueurs déjà entraînés manuellement cette semaine.
-     */
-    protected function getManuallyTrainedPlayerIds(array $state, int $week, int $season): array
-    {
-        $training = $state['training'] ?? null;
-
-        if (
-            !$training ||
-            !isset($training['season'], $training['week']) ||
-            (int) $training['season'] !== $season ||
-            (int) $training['week'] !== $week
-        ) {
-            return [];
-        }
-
-        return array_column($training['entries'] ?? [], 'player_id');
-    }
 
     /**
      * Conservé pour compatibilité — remplacé par positionWeakness().

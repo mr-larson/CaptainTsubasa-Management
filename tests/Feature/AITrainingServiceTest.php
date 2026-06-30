@@ -93,28 +93,25 @@ class AITrainingServiceTest extends TestCase
         $this->assertEmpty($save->state['ai_training_history']);
     }
 
-    public function test_manually_trained_player_is_not_auto_trained(): void
+    public function test_human_team_is_never_auto_trained(): void
     {
-        // L'exclusion des joueurs entraînés à la main concerne l'auto-entraînement
-        // doux de l'équipe HUMAINE (les équipes IA, elles, entraînent librement).
+        // L'auto-entraînement est réservé aux équipes IA : une équipe humaine
+        // n'est jamais auto-entraînée, même pour un joueur NON entraîné à la main.
         $save = $this->makeSave(['week' => 1, 'season' => 1]);
         $team = $this->makeTeam($save, ['is_controlled' => true, 'human_seat' => 1]);
         $save->controlled_game_team_id = $team->id;
         $save->save();
 
-        // Une seule recrue, déjà entraînée à la main cette semaine.
+        // Joueur sans aucun entraînement manuel enregistré cette semaine.
         $player = $this->makePlayer($save, ['stamina' => 100, 'shot' => 50]);
         $this->makeContract($save, $team, $player);
 
-        $save->state = ['training' => [
-            'season' => 1, 'week' => 1,
-            'entries' => [['player_id' => $player->id, 'stat' => 'shot', 'gain' => 2, 'stamina_cost' => 2]],
-        ]];
-        $save->save();
-
         $this->service->trainForWeek($save);
 
-        // Exclu du pool IA → endurance intacte (pas de second entraînement).
-        $this->assertSame(100, (int) $player->fresh()->stamina);
+        $fresh = $player->fresh();
+
+        // Aucune progression ni perte d'endurance : l'équipe humaine est ignorée.
+        $this->assertSame(100, (int) $fresh->stamina);
+        $this->assertSame(50, (int) $fresh->shot);
     }
 }
