@@ -2,7 +2,12 @@
 /node_modules
 /public/build
 /public/hot
-/public/storage
+# Disque public servi directement depuis public/storage.
+# On ignore tout sauf les images statiques seedées (équipes/joueurs),
+# qui doivent être livrées avec chaque déploiement (FS Laravel Cloud éphémère).
+/public/storage/*
+!/public/storage/players/
+!/public/storage/teams/
 /storage/*.key
 /vendor
 .env
