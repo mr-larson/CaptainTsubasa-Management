@@ -187,6 +187,7 @@ function assignSlots(squad) {
         placed.push({
             ...player,
             slot: Number(slot),
+            role: wanted, // GK / DF / MF / FW du slot occupé
             baseX: ZONE_X[def.zone] ?? 30,
             baseY: def.laneIndex === null ? GK_LANE_Y : (LANE_Y[def.laneIndex] ?? 50),
         });
@@ -201,31 +202,47 @@ const awayPlaced = computed(() =>
 
 const hasSquads = computed(() => homePlaced.value.length > 0 || awayPlaced.value.length > 0);
 
-// Position effective : les joueurs "respirent" vers le ballon, et les deux
-// acteurs du duel se déplacent sur l'action.
-const DRIFT = 0.10;
+// Position effective : le bloc "respire" vers le ballon (suivi plus marqué pour
+// les lignes avancées), monte/descend selon la possession, et les deux acteurs
+// du duel convergent sur l'action. Le gardien, lui, reste sur sa ligne.
+//
+// Suivi horizontal du ballon par ligne (les attaquants suivent plus que les
+// défenseurs ; le gardien quasiment pas).
+const LINE_DRIFT = { GK: 0.05, DF: 0.12, MF: 0.20, FW: 0.28 };
+// Poussée/recul collectif (% du terrain) selon que l'équipe attaque ou défend.
+const PHASE_SHIFT = 6;
 
 const placedPlayers = computed(() => {
-    const ballX = ballPosition.value;
-    const ballY = ballLane.value;
-    const actors = currentActors.value;
+    const ballX    = ballPosition.value;
+    const ballY    = ballLane.value;
+    const actors   = currentActors.value;
+    const ballSide = ballTrack.value[cursor.value]?.side ?? 'internal';
 
     const place = (p, side) => {
         const isAttacker = actors?.attacker?.id != null && p.id === actors.attacker.id;
         const isDefender = actors?.defender?.id != null && p.id === actors.defender.id;
+        const isGK       = p.role === 'GK' || p.slot === 1;
 
         let x, y;
-        if (isAttacker) {
-            // L'attaquant arrive sur le ballon, légèrement côté possesseur
+        if (isAttacker || isDefender) {
+            // Les deux duellistes convergent sur le ballon : le porteur arrive
+            // dessus (légèrement côté possesseur), le défenseur se place côté but.
+            // Décalage vertical pour qu'ils ne se superposent pas.
             x = ballX + (side === 'internal' ? -3 : 3);
-            y = ballY;
-        } else if (isDefender) {
-            // Le défenseur se place entre le ballon et son propre but
-            x = ballX + (side === 'internal' ? -3 : 3);
-            y = ballY;
+            y = ballY + (isAttacker ? -4 : 4);
+        } else if (isGK) {
+            // Le gardien colle à sa ligne ; il ne suit que le couloir du ballon.
+            x = p.baseX + (ballX - p.baseX) * LINE_DRIFT.GK;
+            y = p.baseY + (ballY - p.baseY) * 0.25;
         } else {
-            x = p.baseX + (ballX - p.baseX) * DRIFT;
-            y = p.baseY + (ballY - p.baseY) * DRIFT;
+            const drift = LINE_DRIFT[p.role] ?? 0.16;
+            // Sens du but adverse pour cette équipe (interne attaque vers la droite).
+            const forward = side === 'internal' ? 1 : -1;
+            // En possession on avance vers le but adverse, sinon on recule.
+            const phase = (side === ballSide ? 1 : -1) * forward * PHASE_SHIFT;
+
+            x = p.baseX + (ballX - p.baseX) * drift + phase;
+            y = p.baseY + (ballY - p.baseY) * 0.30;
         }
 
         return {
