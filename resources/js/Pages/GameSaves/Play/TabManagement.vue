@@ -86,14 +86,14 @@ function resetDefaults() {
 </script>
 
 <template>
-    <div class="flex-1 flex gap-4 overflow-y-auto min-h-0">
+    <div class="flex-1 flex flex-col md:flex-row gap-4 overflow-y-auto min-h-0">
         <!-- Sidebar -->
-        <div class="w-1/5 border border-slate-200 rounded-lg bg-slate-50 p-3">
+        <div class="md:w-1/5 shrink-0 border border-slate-200 rounded-lg bg-slate-50 p-3">
             <h3 class="text-md font-semibold text-slate-700 mb-2">Gestion</h3>
-            <nav class="space-y-1">
+            <nav class="flex md:flex-col gap-1 md:gap-0 md:space-y-1 overflow-x-auto">
                 <button v-for="sec in sections" :key="sec.key" type="button"
                         @click="activeSection = sec.key"
-                        :class="['w-full text-left text-sm px-2 py-1 rounded',
+                        :class="['shrink-0 md:w-full text-left text-sm px-2 py-1 rounded whitespace-nowrap',
                         activeSection === sec.key ? 'bg-teal-100 text-slate-900' : 'bg-white hover:bg-slate-100 text-slate-700']">
                     {{ sec.label }}
                 </button>
@@ -101,7 +101,7 @@ function resetDefaults() {
         </div>
 
         <!-- Panneau droit -->
-        <div class="flex-1 border border-slate-200 rounded-lg bg-slate-50 p-4 flex flex-col gap-4">
+        <div class="flex-1 border border-slate-200 rounded-lg bg-slate-50 p-3 sm:p-4 flex flex-col gap-4">
 
             <!-- Base de données -->
             <div v-if="activeSection === 'dataBase'" class="flex-1 flex flex-col gap-3">
@@ -195,7 +195,7 @@ function resetDefaults() {
 
             <!-- Configuration -->
             <div v-else-if="activeSection === 'config'" class="flex-1 flex flex-col gap-3 overflow-y-auto">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                         <h3 class="text-lg font-semibold text-slate-800">Configuration du jeu</h3>
                         <p class="text-sm text-slate-500">Paramètres appliqués à cette sauvegarde.</p>
