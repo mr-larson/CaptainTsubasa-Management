@@ -16,6 +16,11 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
+        // Comptes de test (mots de passe faibles) : jamais en production.
+        if (app()->environment('production')) {
+            return;
+        }
+
         $admin = User::updateOrCreate(
             ['email' => 'admin@mail.com'],
             ['name' => 'admin', 'password' => 'Admin'],
