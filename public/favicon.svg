@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Golden Eleven">
+  <defs>
+    <linearGradient id="ge-bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#152238"/>
+      <stop offset="1" stop-color="#0b1120"/>
+    </linearGradient>
+    <linearGradient id="ge-gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fde68a"/>
+      <stop offset=".5" stop-color="#f5c542"/>
+      <stop offset="1" stop-color="#dd9022"/>
+    </linearGradient>
+  </defs>
+
+  <!-- tuile -->
+  <rect x="1.5" y="1.5" width="61" height="61" rx="15"
+        fill="url(#ge-bg)" stroke="#2dd4bf" stroke-opacity=".4" stroke-width="2"/>
+
+  <!-- "11" doré -->
+  <g fill="url(#ge-gold)">
+    <g transform="translate(13 16)">
+      <rect x="5" y="3" width="7" height="26" rx="2.5"/>
+      <rect x="1" y="26" width="15" height="6" rx="2.5"/>
+      <path d="M5 11 L5 5 L0.5 8 Z"/>
+    </g>
+    <g transform="translate(34 16)">
+      <rect x="5" y="3" width="7" height="26" rx="2.5"/>
+      <rect x="1" y="26" width="15" height="6" rx="2.5"/>
+      <path d="M5 11 L5 5 L0.5 8 Z"/>
+    </g>
+  </g>
+
+  <!-- ligne de terrain -->
+  <rect x="15" y="50.5" width="34" height="3" rx="1.5" fill="#2dd4bf"/>
+</svg>
