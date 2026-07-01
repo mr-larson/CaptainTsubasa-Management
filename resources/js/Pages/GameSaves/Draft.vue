@@ -431,7 +431,7 @@ onMounted(() => {
     <AuthenticatedLayout>
         <template #header></template>
 
-        <div class="min-h-full bg-slate-50 p-4">
+        <div class="min-h-full bg-slate-50 p-2 sm:p-4">
             <div class="max-w-7xl mx-auto">
 
                 <!-- ══════ HEADER ══════ -->
@@ -489,10 +489,10 @@ onMounted(() => {
 
                 <!-- ══════ DRAFT EN COURS ══════ -->
                 <template v-else>
-                    <div class="grid grid-cols-12 gap-4">
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
 
                         <!-- ══════ COL GAUCHE : Ordre + Log ══════ -->
-                        <div class="col-span-3 flex flex-col gap-4">
+                        <div class="col-span-1 lg:col-span-3 flex flex-col gap-4">
 
                             <!-- Mon équipe -->
                             <div class="border border-amber-200 rounded-xl bg-amber-50 p-3">
@@ -606,7 +606,7 @@ onMounted(() => {
                         </div>
 
                         <!-- ══════ COL CENTRALE + DROITE : Joueurs ══════ -->
-                        <div class="col-span-9">
+                        <div class="col-span-1 lg:col-span-9">
 
                             <!-- Qui pioche ? -->
                             <div class="border rounded-xl p-4 mb-4 text-center"
@@ -638,9 +638,9 @@ onMounted(() => {
                             </div>
 
                             <!-- Filtres -->
-                            <div v-if="isMyTurn" class="flex items-center gap-3 mb-4">
+                            <div v-if="isMyTurn" class="flex flex-wrap items-center gap-3 mb-4">
                                 <!-- Recherche -->
-                                <div class="relative flex-1 ">
+                                <div class="relative flex-1 min-w-[160px]">
                                     <input type="search" v-model="searchQuery"
                                            class="w-full pl-14 pr-3 py-2 text-xs border border-slate-200 rounded-xl bg-white focus:ring-2 focus:ring-amber-300 focus:outline-none"
                                            placeholder="Rechercher un joueur..."/>
@@ -670,8 +670,8 @@ onMounted(() => {
                             <!-- Grille joueurs -->
                             <!-- Liste joueurs compacte -->
                             <div v-if="isMyTurn" class="border border-slate-200 rounded-xl bg-white overflow-hidden">
-                                <div class="max-h-[60vh] overflow-y-auto">
-                                    <table class="w-full text-xs">
+                                <div class="max-h-[60vh] overflow-auto">
+                                    <table class="w-full text-xs min-w-[900px]">
                                         <thead class="sticky top-0 bg-slate-50 border-b border-slate-200 z-10">
                                         <tr class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                                             <th class="py-2 pl-3 pr-1 w-8 text-center" title="Comparer">⚖️</th>
@@ -864,7 +864,8 @@ onMounted(() => {
                     Sélectionne un second joueur (⚖️) pour comparer.
                 </div>
 
-                <table v-else class="w-full text-xs">
+                <div v-else class="overflow-x-auto">
+                <table class="w-full text-xs min-w-[360px]">
                     <thead>
                     <tr class="text-slate-500">
                         <th class="text-left py-1 px-2 font-semibold">Stat</th>
@@ -888,6 +889,7 @@ onMounted(() => {
                     </tr>
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     </AuthenticatedLayout>

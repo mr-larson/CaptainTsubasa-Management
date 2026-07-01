@@ -41,11 +41,11 @@ function launch() {
             <H2>🌍 Coupe du Monde — Choisis ta sélection</H2>
         </template>
 
-        <div class="p-4">
-            <div class="border border-slate-200 rounded-2xl bg-white shadow-sm p-6">
+        <div class="p-2 sm:p-4">
+            <div class="border border-slate-200 rounded-2xl bg-white shadow-sm p-4 sm:p-6">
 
                 <!-- Header -->
-                <div class="mb-6 flex items-start justify-between gap-4">
+                <div class="mb-6 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                     <div>
                         <div class="text-xs font-bold text-indigo-500 uppercase tracking-widest mb-1">Tournoi mondial</div>
                         <h1 class="text-xl font-bold text-slate-800">{{ label || 'Nouvelle Coupe du Monde' }}</h1>
@@ -91,14 +91,14 @@ function launch() {
                 <p v-if="form.errors.nation" class="mt-4 text-xs text-rose-500">{{ form.errors.nation }}</p>
 
                 <!-- Pied : lancement -->
-                <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between gap-4">
+                <div class="mt-6 pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <p class="text-xs text-slate-400">
                         Ton effectif national est constitué automatiquement à partir des meilleurs joueurs de la nation.
                     </p>
                     <button type="button"
                             @click="launch"
                             :disabled="!form.nation || form.processing"
-                            class="shrink-0 flex items-center gap-2 px-6 py-2.5 bg-indigo-500 hover:bg-indigo-400 text-white text-sm font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]">
+                            class="shrink-0 flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-500 hover:bg-indigo-400 text-white text-sm font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]">
                         <span v-if="form.processing">Création...</span>
                         <span v-else-if="form.nation">🏆 Lancer avec {{ form.nation }}</span>
                         <span v-else>Sélectionne une nation</span>

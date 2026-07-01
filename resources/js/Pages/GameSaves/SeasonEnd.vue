@@ -27,7 +27,7 @@ function startNewSeason() {
     <Head title="Fin de saison" />
 
     <AuthenticatedLayout>
-        <div class="min-h-full bg-slate-50 p-4">
+        <div class="min-h-full bg-slate-50 p-2 sm:p-4">
             <div class="max-w-4xl mx-auto space-y-6">
 
                 <div class="text-center py-6">
@@ -42,7 +42,7 @@ function startNewSeason() {
                          : verdict.outcome === 'fired' ? 'bg-rose-50 border-rose-500'
                          : verdict.met ? 'bg-teal-50 border-teal-500'
                          : 'bg-amber-50 border-amber-500'">
-                    <div class="flex items-start justify-between gap-4">
+                    <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                         <div>
                             <p class="text-xs uppercase tracking-widest font-bold"
                                :class="verdict.outcome === 'won' ? 'text-emerald-600'
@@ -99,10 +99,11 @@ function startNewSeason() {
 
                 <!-- Classement final & primes -->
                 <div v-if="recap?.standings" class="bg-white rounded-2xl shadow-lg overflow-hidden">
-                    <div class="px-6 py-4 border-b border-slate-100">
+                    <div class="px-4 sm:px-6 py-4 border-b border-slate-100">
                         <h3 class="font-semibold text-slate-700">Classement final & primes</h3>
                     </div>
-                    <table class="w-full text-sm">
+                    <div class="overflow-x-auto">
+                    <table class="w-full text-sm min-w-[500px]">
                         <thead class="text-slate-400 uppercase text-xs">
                             <tr>
                                 <th class="text-left px-6 py-2">#</th>
@@ -136,6 +137,7 @@ function startNewSeason() {
                             </tr>
                         </tbody>
                     </table>
+                    </div>
                 </div>
 
                 <!-- Joueurs en rupture avec le coach / le club -->

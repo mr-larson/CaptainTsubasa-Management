@@ -20,15 +20,15 @@ defineProps({
             <H2>Profile</H2>
         </template>
 
-        <div class="p-6">
+        <div class="p-3 sm:p-6">
             <!-- Titre principal -->
             <div class="flex justify-center mb-8">
-                <h1 class="text-3xl font-bold text-slate-600">
+                <h1 class="text-2xl sm:text-3xl font-bold text-slate-600 text-center">
                     Gestion du profil
                 </h1>
             </div>
 
-            <div class="flex flex-row gap-6">
+            <div class="flex flex-col xl:flex-row gap-6">
 
                 <!-- Image illustrative -->
                 <div

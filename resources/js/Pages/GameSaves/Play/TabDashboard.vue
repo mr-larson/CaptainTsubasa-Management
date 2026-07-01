@@ -403,7 +403,7 @@ const matchesPlayed = computed(() =>
                 </div>
 
                 <!-- Affrontement -->
-                <div class="flex items-center justify-around gap-4">
+                <div class="flex flex-wrap items-center justify-around gap-3 sm:gap-4">
                     <!-- Mon équipe -->
                     <div class="flex flex-col items-center gap-2 flex-1">
                         <div class="w-14 h-14 rounded-2xl overflow-hidden flex items-center justify-center">
@@ -447,7 +447,7 @@ const matchesPlayed = computed(() =>
             </div>
 
             <!-- Semaine sans match -->
-            <div v-else class="p-5 flex items-center justify-between gap-4">
+            <div v-else class="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <div class="text-sm font-semibold text-slate-600">Semaine {{ week }} — Pas de match</div>
                     <div class="text-xs text-slate-400 mt-0.5">Semaine de repos ou en attente du calendrier</div>

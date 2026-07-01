@@ -88,20 +88,20 @@ function submit() {
             <H2>Nouvelle partie</H2>
         </template>
 
-        <div class="p-4">
-            <div class="flex flex-row">
+        <div class="p-2 sm:p-4">
+            <div class="flex flex-col md:flex-row">
                 <!-- Visuel gauche -->
                 <div class="hidden md:block basis-1/4 p-4 bg-contain bg-center bg-no-repeat"
                      style="background-image: url('/images/hyuga2.webp')"></div>
 
                 <!-- Carte formulaire / config -->
-                <div class="basis-3/4 p-6 border border-slate-200 rounded-2xl mx-6 bg-white h-[800px] flex flex-col shadow-sm overflow-hidden">
+                <div class="basis-full md:basis-3/4 p-4 sm:p-6 border border-slate-200 rounded-2xl mx-0 md:mx-6 bg-white h-[calc(100vh-6rem)] md:h-[800px] flex flex-col shadow-sm overflow-hidden">
 
                     <!-- Header -->
-                    <div class="mb-6 flex items-center justify-between">
+                    <div class="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <div>
                             <div class="text-xs font-bold text-teal-500 uppercase tracking-widest mb-1">Nouvelle sauvegarde</div>
-                            <h1 class="text-xl font-bold text-slate-800">
+                            <h1 class="text-lg sm:text-xl font-bold text-slate-800">
                                 {{ showConfig ? 'Configuration avancée' : showRules ? 'Règles du jeu' : 'Création d\'une partie' }}
                             </h1>
                             <p class="text-xs text-slate-400 mt-1">
@@ -116,14 +116,14 @@ function submit() {
                                     :class="showRules
                                         ? 'border-teal-300 bg-teal-50 text-teal-700 hover:bg-teal-100'
                                         : 'border-slate-300 bg-white text-slate-600 hover:bg-slate-50'">
-                                <span>{{ showRules ? '← Retour au formulaire' : '📖 Règles' }}</span>
+                                <span>{{ showRules ? '← Retour' : '📖 Règles' }}</span>
                             </button>
                             <button type="button" @click="showConfig = !showConfig; showRules = false"
                                     class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full border transition-all"
                                     :class="showConfig
                                         ? 'border-teal-300 bg-teal-50 text-teal-700 hover:bg-teal-100'
                                         : 'border-slate-300 bg-white text-slate-600 hover:bg-slate-50'">
-                                <span>{{ showConfig ? '← Retour au formulaire' : '⚙ Configuration' }}</span>
+                                <span>{{ showConfig ? '← Retour' : '⚙ Configuration' }}</span>
                             </button>
                         </div>
                     </div>
@@ -156,7 +156,7 @@ function submit() {
                             <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">
                                 Format de compétition
                             </label>
-                            <div class="grid grid-cols-2 gap-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <button type="button"
                                         @click="form.competition_type = 'college_league'"
                                         class="relative flex flex-col gap-2 p-4 rounded-xl border-2 transition-all text-left"
@@ -228,7 +228,7 @@ function submit() {
                             <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">
                                 Mode de démarrage
                             </label>
-                            <div class="grid grid-cols-2 gap-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <button type="button"
                                         @click="form.game_mode = 'prebuilt'"
                                         class="relative flex flex-col gap-2 p-4 rounded-xl border-2 transition-all text-left"
@@ -282,15 +282,15 @@ function submit() {
                         <div class="flex-1"></div>
 
                         <!-- Boutons -->
-                        <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+                        <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 border-t border-slate-100">
                             <Link :href="route('mainMenu')"
-                                  class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-500 text-sm font-semibold rounded-xl border border-slate-200 transition-all">
+                                  class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-500 text-sm font-semibold rounded-xl border border-slate-200 transition-all text-center">
                                 ← Retour
                             </Link>
                             <button
                                 type="submit"
                                 :disabled="form.processing"
-                                class="flex items-center gap-2 px-6 py-2.5 text-white text-sm font-bold rounded-xl transition-all disabled:opacity-50 active:scale-[0.98]"
+                                class="flex items-center justify-center gap-2 px-6 py-2.5 text-white text-sm font-bold rounded-xl transition-all disabled:opacity-50 active:scale-[0.98]"
                                 :class="form.competition_type === 'world_cup'
                                     ? 'bg-indigo-500 hover:bg-indigo-400'
                                     : (form.game_mode === 'draft'
@@ -315,7 +315,7 @@ function submit() {
                             <p class="text-[10px] text-slate-400 -mt-1">
                                 Définit l'objectif de classement, la patience du board et la condition de victoire de carrière.
                             </p>
-                            <div class="grid grid-cols-2 gap-2">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 <button v-for="lvl in careerLevels" :key="lvl.key" type="button"
                                         @click="config.career_difficulty = lvl.key"
                                         class="relative flex flex-col gap-1 p-2.5 rounded-lg border-2 transition-all text-left"
@@ -339,7 +339,7 @@ function submit() {
                             <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                                 <span>🃏</span> Cartes
                             </h4>
-                            <div class="grid grid-cols-2 gap-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
                                     <input type="checkbox" v-model="config.bonus_cards_enabled"
                                            class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
@@ -360,7 +360,7 @@ function submit() {
                             <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                                 <span>⚡</span> Fatigue & Stamina
                             </h4>
-                            <div class="grid grid-cols-2 gap-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div class="flex flex-col gap-1">
                                     <label class="text-[10px] text-slate-500">Coût stamina / match</label>
                                     <div class="flex items-center gap-2">
@@ -390,7 +390,7 @@ function submit() {
                                     <span class="text-xs font-bold text-slate-800 w-5 text-right">{{ config.match_max_turns }}</span>
                                 </div>
                             </div>
-                            <div class="grid grid-cols-2 gap-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
                                     <input type="checkbox" v-model="config.injury_on_foul"
                                            class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
@@ -409,7 +409,7 @@ function submit() {
                             <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                                 <span>🏋️</span> Entraînement
                             </h4>
-                            <div class="grid grid-cols-4 gap-3">
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                                 <div class="flex flex-col gap-1">
                                     <label class="text-[10px] text-slate-500">Sessions / sem.</label>
                                     <div class="flex items-center gap-1">
@@ -439,7 +439,7 @@ function submit() {
                                     </div>
                                 </div>
                             </div>
-                            <div class="grid grid-cols-2 gap-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div class="flex flex-col gap-1">
                                     <label class="text-[10px] text-slate-500">Stamina min. requise</label>
                                     <div class="flex items-center gap-2">
@@ -462,7 +462,7 @@ function submit() {
                             <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                                 <span>👁</span> Visibilité des joueurs
                             </h4>
-                            <div class="grid grid-cols-3 gap-2">
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
                                 <label v-for="(enabled, key) in config.visible_origins" :key="key"
                                        class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
                                     <input type="checkbox" v-model="config.visible_origins[key]"
@@ -484,7 +484,7 @@ function submit() {
                             <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                                 <span>🤖</span> Intelligence Artificielle
                             </h4>
-                            <div class="grid grid-cols-2 gap-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
                                     <input type="checkbox" v-model="config.ai_transfers_enabled"
                                            class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />

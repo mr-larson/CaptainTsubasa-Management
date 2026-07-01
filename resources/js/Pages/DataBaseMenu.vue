@@ -25,9 +25,9 @@ const visibleSections = computed(() => sections.filter(s => !s.admin || isAdmin.
             <H2>Base de données</H2>
         </template>
 
-        <div class="min-h-[calc(100vh-64px)] flex items-center">
-            <div class="max-w-5xl mx-auto px-6 w-full">
-                <div class="flex items-center gap-12">
+        <div class="min-h-[calc(100vh-64px)] flex items-center py-8">
+            <div class="max-w-5xl mx-auto px-4 sm:px-6 w-full">
+                <div class="flex items-center gap-6 md:gap-12">
 
                     <!-- Illustration -->
                     <div class="hidden md:block flex-1">
@@ -36,19 +36,19 @@ const visibleSections = computed(() => sections.filter(s => !s.admin || isAdmin.
                     </div>
 
                     <!-- Contenu -->
-                    <div class="flex-1 flex flex-col gap-8">
+                    <div class="flex-1 flex flex-col gap-6 sm:gap-8">
 
                         <!-- Titre -->
                         <div>
                             <div class="text-xs font-bold text-teal-500 uppercase tracking-widest mb-2">Administration</div>
-                            <h1 class="text-3xl font-extrabold text-slate-800 leading-tight">
+                            <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-800 leading-tight">
                                 Éditer les<br><span class="text-teal-500">données</span>
                             </h1>
                             <p class="text-slate-400 text-sm mt-2">Gère les équipes, joueurs et contrats de la base.</p>
                         </div>
 
                         <!-- Grille boutons -->
-                        <div class="grid grid-cols-2 gap-3">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <Link v-for="s in visibleSections" :key="s.route"
                                   :href="route(s.route)"
                                   class="group flex items-center gap-3 px-4 py-3.5 bg-white rounded-xl border transition-all shadow-sm active:scale-[0.98]"

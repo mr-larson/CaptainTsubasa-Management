@@ -161,14 +161,14 @@ const selectedPlayerPerf = computed(() => {
 
         <!-- HEADER -->
         <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                     <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Entraînement</h3>
                     <p class="text-sm text-slate-600 mt-1">
                         Saison {{ season }} — Semaine {{ week }}
                     </p>
                 </div>
-                <div class="flex gap-3">
+                <div class="flex flex-wrap gap-3">
                     <!-- Budget & coût par séance -->
                     <div v-if="trainingCost > 0" class="text-center px-4 py-2 rounded-xl border bg-white border-slate-200">
                         <div class="text-2xl font-black text-slate-700">{{ teamBudget }} €</div>

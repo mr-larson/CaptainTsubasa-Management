@@ -30,23 +30,23 @@ const formatDate = (value) => {
             <H2>Mes parties sauvegardées</H2>
         </template>
 
-        <div class="p-4">
-            <div class="flex flex-row">
+        <div class="p-2 sm:p-4">
+            <div class="flex flex-col md:flex-row">
                 <!-- Visuel gauche -->
                 <div class="hidden md:block basis-1/3 p-4 bg-contain bg-center bg-no-repeat"
                      style="background-image: url('/images/Jun_Misugi.webp')"></div>
 
                 <!-- Carte -->
-                <div class="basis-2/3 p-6 border border-slate-200 rounded-2xl mx-6 bg-white min-h-[500px] flex flex-col shadow-sm">
+                <div class="basis-full md:basis-2/3 p-4 sm:p-6 border border-slate-200 rounded-2xl mx-0 md:mx-6 bg-white min-h-[500px] flex flex-col shadow-sm">
 
                     <!-- Header -->
-                    <div class="flex items-center justify-between mb-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                         <div>
                             <h1 class="text-xl font-bold text-slate-800">Charger une partie</h1>
                             <p class="text-xs text-slate-400 mt-0.5">Sélectionne une sauvegarde ou crée une nouvelle partie</p>
                         </div>
                         <Link :href="route('game-saves.create')"
-                              class="flex items-center gap-2 px-4 py-2 bg-teal-500 hover:bg-teal-400 text-white text-sm font-semibold rounded-xl transition-all">
+                              class="flex items-center justify-center gap-2 px-4 py-2 bg-teal-500 hover:bg-teal-400 text-white text-sm font-semibold rounded-xl transition-all">
                             ⚽ Nouvelle partie
                         </Link>
                     </div>
@@ -65,7 +65,7 @@ const formatDate = (value) => {
                     <!-- Liste -->
                     <div v-else class="flex-1 flex flex-col gap-3 overflow-y-auto">
                         <div v-for="save in gameSaves" :key="save.id"
-                             class="flex items-center gap-4 px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-teal-300 hover:bg-teal-50 transition-all">
+                             class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-teal-300 hover:bg-teal-50 transition-all">
 
                             <!-- Infos -->
                             <div class="flex-1 min-w-0">

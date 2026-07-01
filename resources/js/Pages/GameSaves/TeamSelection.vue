@@ -5,13 +5,13 @@
     <AuthenticatedLayout>
         <template #header></template>
 
-        <div class="min-h-full bg-slate-50 p-6">
+        <div class="min-h-full bg-slate-50 p-3 sm:p-6">
 
             <!-- Header -->
             <div class="max-w-7xl mx-auto mb-6">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
-                        <h1 class="text-2xl font-black text-slate-800">Choix de l'équipe</h1>
+                        <h1 class="text-xl sm:text-2xl font-black text-slate-800">Choix de l'équipe</h1>
                         <p class="text-sm text-slate-400 mt-0.5">
                             Partie : <span class="font-semibold text-slate-600">{{ label || 'Sans nom' }}</span>
                             &nbsp;•&nbsp; Période : <span class="font-semibold text-slate-600">Collège</span>
@@ -28,12 +28,12 @@
             </div>
 
             <div class="max-w-9xl mx-auto">
-                <div class="grid grid-cols-12 gap-4">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
 
                     <!-- Colonne gauche : liste équipes -->
                     <!-- overflow-hidden + min-h-0 : la carte ne pilote pas la hauteur de la rangée — elle s'aligne
                          sur la colonne du milieu (profil → bouton « Jouer avec »). La liste défile à l'intérieur. -->
-                    <div class="col-span-2 border border-slate-200 rounded-xl bg-white p-3 flex flex-col gap-2 min-h-0 overflow-hidden">
+                    <div class="col-span-1 lg:col-span-2 border border-slate-200 rounded-xl bg-white p-3 flex flex-col gap-2 min-h-0 max-h-64 lg:max-h-none overflow-hidden">
                         <!-- Recherche -->
                         <div class="relative shrink-0">
                             <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 20 20">
@@ -76,10 +76,10 @@
                     </div>
 
                     <!-- Panneau principal -->
-                    <div v-if="selectedTeam" class="col-span-10 grid grid-cols-12 gap-4">
+                    <div v-if="selectedTeam" class="col-span-1 lg:col-span-10 grid grid-cols-1 lg:grid-cols-12 gap-4">
 
                         <!-- Profil équipe -->
-                        <div class="col-span-3 flex flex-col gap-3">
+                        <div class="col-span-1 lg:col-span-3 flex flex-col gap-3">
 
                             <!-- Logo + infos -->
                             <div class="border border-slate-200 rounded-xl bg-white p-5">
@@ -214,7 +214,7 @@
                         </div>
 
                         <!-- Colonne droite : effectif (prebuilt) ou aperçu style (draft) -->
-                        <div class="col-span-9 border border-slate-200 rounded-xl bg-white p-4">
+                        <div class="col-span-1 lg:col-span-9 border border-slate-200 rounded-xl bg-white p-4">
 
                             <!-- Mode prebuilt : effectif complet -->
                             <template v-if="gameMode !== 'draft'">
@@ -230,7 +230,7 @@
                                             <span class="text-[10px] font-bold text-slate-300 tabular-nums">{{ group.players.length }}</span>
                                             <div class="flex-1 h-px bg-slate-100"></div>
                                         </div>
-                                        <div class="grid grid-cols-2 gap-2">
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                             <div v-for="player in group.players" :key="player.id"
                                                  class="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-slate-50 hover:bg-white hover:border-slate-200 transition-all">
                                                 <div class="w-12 h-12 rounded-xl overflow-hidden bg-slate-200 border border-slate-100 shrink-0">
@@ -334,7 +334,7 @@
                     </div>
 
                     <!-- Placeholder si aucune équipe sélectionnée -->
-                    <div v-else class="col-span-10 border border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center text-slate-400" style="min-height: 400px;">
+                    <div v-else class="col-span-1 lg:col-span-10 border border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center text-slate-400" style="min-height: 400px;">
                         <div class="text-4xl mb-3">⚽</div>
                         <p class="font-semibold">Sélectionne une équipe pour voir son profil</p>
                     </div>

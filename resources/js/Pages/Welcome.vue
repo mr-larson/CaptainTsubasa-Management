@@ -168,6 +168,7 @@ const features = [
 /* ── Nav ── */
 .nav-bar {
     display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 0.75rem;
     padding: 1.25rem 2.5rem;
     border-bottom: 1px solid rgba(255,255,255,0.07);
     position: sticky; top: 0; z-index: 50;
@@ -177,7 +178,7 @@ const features = [
 .nav-brand { display: flex; align-items: baseline; gap: 6px; }
 .brand-ct { font-size: 17px; font-weight: 700; color: #f1f5f9; }
 .brand-mgmt { font-size: 17px; font-weight: 400; color: #5eead4; }
-.nav-links { display: flex; align-items: center; gap: 1.25rem; }
+.nav-links { display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; justify-content: flex-end; }
 .nav-link { color: #cbd5e1; font-size: 14px; text-decoration: none; transition: color .15s; }
 .nav-link:hover { color: #5eead4; }
 .nav-cta {

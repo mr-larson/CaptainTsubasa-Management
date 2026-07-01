@@ -22,7 +22,7 @@ const difficultyLabel = {
     <Head :title="won ? 'Carrière accomplie' : 'Mandat terminé'" />
 
     <AuthenticatedLayout>
-        <div class="min-h-full p-4"
+        <div class="min-h-full p-2 sm:p-4"
              :class="won ? 'bg-gradient-to-b from-emerald-50 to-slate-50' : 'bg-gradient-to-b from-rose-50 to-slate-50'">
             <div class="max-w-3xl mx-auto space-y-6">
 
@@ -74,10 +74,11 @@ const difficultyLabel = {
 
                 <!-- Palmarès saison par saison -->
                 <div v-if="career.history.length" class="bg-white rounded-2xl shadow-lg overflow-hidden">
-                    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                    <div class="px-4 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between">
                         <h3 class="font-semibold text-slate-700">Parcours — mandat {{ difficultyLabel[career.difficulty] ?? career.difficulty }}</h3>
                     </div>
-                    <table class="w-full text-sm">
+                    <div class="overflow-x-auto">
+                    <table class="w-full text-sm min-w-[400px]">
                         <thead class="text-slate-400 uppercase text-xs">
                             <tr>
                                 <th class="text-left px-6 py-2">Saison</th>
@@ -103,16 +104,17 @@ const difficultyLabel = {
                             </tr>
                         </tbody>
                     </table>
+                    </div>
                 </div>
 
                 <!-- Actions -->
-                <div class="flex items-center justify-center gap-3 pb-10">
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 pb-10">
                     <Link :href="route('mainMenu')"
-                          class="px-6 py-3 rounded-xl bg-white border border-slate-200 text-slate-600 font-semibold shadow hover:bg-slate-50 transition">
+                          class="px-6 py-3 rounded-xl bg-white border border-slate-200 text-slate-600 font-semibold shadow hover:bg-slate-50 transition text-center">
                         Menu principal
                     </Link>
                     <Link :href="route('game-saves.create')"
-                          class="px-6 py-3 rounded-xl bg-teal-600 text-white font-semibold shadow-lg hover:bg-teal-700 transition">
+                          class="px-6 py-3 rounded-xl bg-teal-600 text-white font-semibold shadow-lg hover:bg-teal-700 transition text-center">
                         Nouvelle partie
                     </Link>
                 </div>

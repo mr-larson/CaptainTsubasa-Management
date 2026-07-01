@@ -12,9 +12,9 @@ import H2 from '@/Components/H2.vue';
             <H2>Menu principal</H2>
         </template>
 
-        <div class="min-h-[calc(100vh-64px)] flex items-center">
-            <div class="max-w-5xl mx-auto px-6 w-full">
-                <div class="flex items-center gap-12">
+        <div class="min-h-[calc(100vh-64px)] flex items-center py-8">
+            <div class="max-w-5xl mx-auto px-4 sm:px-6 w-full">
+                <div class="flex items-center gap-6 md:gap-12">
 
                     <!-- Illustration -->
                     <div class="hidden md:block flex-1">
@@ -23,12 +23,12 @@ import H2 from '@/Components/H2.vue';
                     </div>
 
                     <!-- Contenu -->
-                    <div class="flex-1 flex flex-col gap-8">
+                    <div class="flex-1 flex flex-col gap-6 sm:gap-8">
 
                         <!-- Titre -->
                         <div>
                             <div class="text-xs font-bold text-teal-500 uppercase tracking-widest mb-2">Bienvenue</div>
-                            <h1 class="text-4xl font-extrabold text-slate-800 leading-tight">
+                            <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-800 leading-tight">
                                 Golden<br>
                                 <span class="text-teal-500">Eleven</span>
                             </h1>

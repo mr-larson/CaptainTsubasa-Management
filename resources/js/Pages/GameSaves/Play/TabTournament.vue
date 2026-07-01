@@ -54,7 +54,8 @@ function score(match) {
                 <div class="px-4 py-2.5 bg-slate-50 border-b border-slate-100 text-sm font-bold text-slate-700">
                     Groupe {{ group.key }}
                 </div>
-                <table class="w-full text-sm">
+                <div class="overflow-x-auto">
+                <table class="w-full text-sm min-w-[380px]">
                     <thead>
                         <tr class="text-[11px] text-slate-400 uppercase tracking-wide">
                             <th class="text-left font-semibold py-2 pl-4">Sélection</th>
@@ -85,6 +86,7 @@ function score(match) {
                         </tr>
                     </tbody>
                 </table>
+                </div>
                 <div class="px-4 py-1.5 text-[10px] text-emerald-600 bg-emerald-50/40 border-t border-slate-50">
                     Les 2 premiers sont qualifiés.
                 </div>

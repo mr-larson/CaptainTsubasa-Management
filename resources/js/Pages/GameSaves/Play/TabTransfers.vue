@@ -510,7 +510,8 @@ const filteredHistory = computed(() =>
                         Sélectionne un second joueur (⚖️) pour comparer.
                     </div>
 
-                    <table v-else class="w-full text-xs">
+                    <div v-else class="overflow-x-auto">
+                    <table class="w-full text-xs min-w-[360px]">
                         <thead>
                         <tr class="text-slate-500">
                             <th class="text-left py-1 px-2 font-semibold">Stat</th>
@@ -541,6 +542,7 @@ const filteredHistory = computed(() =>
                         </tr>
                         </tbody>
                     </table>
+                    </div>
                 </div>
             </div>
         </Teleport>

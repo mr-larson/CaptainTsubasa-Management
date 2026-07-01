@@ -436,7 +436,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
 
                 <!-- Score du match -->
                 <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
-                    <div class="flex items-center justify-around gap-4">
+                    <div class="flex flex-wrap items-center justify-around gap-4">
 
                         <!-- Équipe domicile -->
                         <div class="flex flex-col items-center gap-1 flex-1">
@@ -691,7 +691,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                 </div>
             </div>
         </div>
-        <div v-if="calendarTeam && selectedCalendarMatch" class="grid grid-cols gap-4">
+        <div v-if="calendarTeam && selectedCalendarMatch" class="grid grid-cols-1 gap-4">
         <!-- Stats joueurs -->
             <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
                 <div class="flex items-center justify-between mb-3">
@@ -807,7 +807,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
             <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden">
 
                 <!-- Header -->
-                <div class="p-4 bg-slate-800 text-white flex items-center justify-between shrink-0">
+                <div class="p-4 bg-slate-800 text-white flex flex-wrap items-center justify-between gap-2 shrink-0">
                     <div class="flex items-center gap-3">
                         <span class="text-lg">▶</span>
                         <div>
@@ -843,7 +843,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                     />
 
                     <!-- Repli : ancien résumé statique (matchs sans 'events' enregistrés) -->
-                    <div v-else class="grid grid-cols-2 gap-4">
+                    <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
                         <!-- HOME -->
                         <div>
@@ -911,7 +911,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                     </div>
 
                     <!-- Stats équipe résumé -->
-                    <div class="mt-4 pt-4 border-t border-slate-100 grid grid-cols-2 gap-4 text-center text-xs">
+                    <div class="mt-4 pt-4 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-4 text-center text-xs">
                         <div class="flex justify-around text-slate-500">
                             <div><div class="font-black text-slate-800">{{ selectedCalendarMatchStats?.teams?.home?.shots ?? 0 }}</div><div>Tirs</div></div>
                             <div><div class="font-black text-slate-800">{{ selectedCalendarMatchStats?.teams?.home?.passes ?? 0 }}</div><div>Passes</div></div>
