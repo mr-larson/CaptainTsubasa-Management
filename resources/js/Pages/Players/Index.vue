@@ -14,7 +14,7 @@
             <div class="flex flex-col md:flex-row">
                 <div
                     class="hidden md:block basis-1/3 p-4 bg-contain bg-center bg-no-repeat"
-                    style="background-image: url('/images/tsubasa.webp')"
+                    style="background-image: url('/images/tsubas3.webp')"
                 ></div>
 
                 <div class="basis-full md:basis-2/3 p-4 border border-slate-300 rounded-lg mx-0 md:mx-6 bg-white">
