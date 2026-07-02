@@ -27,7 +27,7 @@ const emit = defineEmits([
 // ==========================
 //   HELPERS
 // ==========================
-const { overallOf, playerPhotoUrl, positionGroup, keyStatsFor, statLabel } = usePlayerUtils();
+const { overallOf, playerPhotoUrl, positionGroup, keyStatsFor, statLabel, moraleState } = usePlayerUtils();
 
 
 // ==========================
@@ -293,6 +293,19 @@ const filteredHistory = computed(() =>
                             </div>
                         </div>
 
+                        <!-- Moral -->
+                        <div class="text-center w-8 shrink-0"
+                             :title="`Moral : ${moraleState(p.morale).label} (${p.morale ?? 60}/100)`">
+                            <div class="text-[11px] font-black"
+                                 :class="selectedPlayer?.id === p.id ? 'text-white' : moraleState(p.morale).text">
+                                {{ moraleState(p.morale).emoji }} {{ p.morale ?? 60 }}
+                            </div>
+                            <div class="text-[8px]"
+                                 :class="selectedPlayer?.id === p.id ? 'text-white/60' : 'text-slate-400'">
+                                Moral
+                            </div>
+                        </div>
+
                         <!-- Stats clés -->
                         <div class="flex gap-1 shrink-0">
                             <div v-for="k in keyStatsFor(p.position).slice(0,2)" :key="k"
@@ -361,6 +374,12 @@ const filteredHistory = computed(() =>
                         <div class="flex-1">
                             <h3 class="text-base font-bold text-slate-800">{{ selectedPlayer.firstname }} {{ selectedPlayer.lastname }}</h3>
                             <p class="text-xs text-slate-400 mt-0.5">{{ selectedPlayer.position }} • Coût de base : {{ selectedPlayer.cost ?? 0 }} €/match</p>
+                            <span class="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                                  :class="moraleState(selectedPlayer.morale).chip"
+                                  title="Le moral d'un joueur libre n'évolue pas tant qu'il est sans club">
+                                {{ moraleState(selectedPlayer.morale).emoji }}
+                                Moral : {{ moraleState(selectedPlayer.morale).label }} ({{ selectedPlayer.morale ?? 60 }}/100)
+                            </span>
                             <SecondaryPositions :player="selectedPlayer" class="mt-1.5" />
                             <p v-if="selectedPlayer.description" class="text-xs text-slate-500 mt-2 italic">{{ selectedPlayer.description }}</p>
                         </div>

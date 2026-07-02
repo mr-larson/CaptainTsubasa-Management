@@ -384,11 +384,11 @@ export function updateSideCard(prefix, team, slotNumber) {
     setText(`#${prefix}-team`,   _TEAMS[team].label);
 
     const stat = (k) => Number(info?.stats?.[k] ?? 0) || 0;
-    ["shot","pass","dribble","attack","block","intercept","tackle","heading","defense","hand_save","punch_save"]
+    ["shot","pass","dribble","attack","block","intercept","tackle","defense","hand_save","punch_save"]
         .forEach(k => setText(`#${prefix}-stat-${k}`, String(stat(k))));
 
     const isGK = (info?.position || "").toLowerCase().includes("goalkeeper");
-    ["block","intercept","tackle","heading","dribble"].forEach(k => {
+    ["block","intercept","tackle","dribble"].forEach(k => {
         const el = _rootEl.querySelector(`#${prefix}-stat-${k}`)?.parentElement;
         if (el) el.classList.toggle("hidden", isGK);
     });

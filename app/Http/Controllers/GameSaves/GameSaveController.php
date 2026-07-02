@@ -215,6 +215,7 @@ class GameSaveController extends Controller
         // 2. Dupliquer les joueurs
         $players             = Player::orderBy('id')->get();
         $gamePlayersByBaseId = [];
+        $randomMorale        = (bool) $gameSave->getConfig('initial_morale_random');
 
         foreach ($players as $player) {
             $s = $player->stats ?? [];
@@ -244,6 +245,9 @@ class GameSaveController extends Controller
                 'punch_save'     => $player->punch_save ?? $s['punch_save'] ?? 0,
                 'special_moves'  => $player->special_moves ?? [],
                 'cost'           => $player->cost ?? 0,
+                'morale'         => $randomMorale
+                    ? rand(GameSave::INITIAL_MORALE_MIN, GameSave::INITIAL_MORALE_MAX)
+                    : MoraleService::NEUTRAL_MORALE,
             ]);
             $gamePlayersByBaseId[$player->id] = $gamePlayer;
         }

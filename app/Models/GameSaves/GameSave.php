@@ -117,7 +117,14 @@ class GameSave extends Model
         ],
         'internationals_visible'    => true,
         'career_difficulty'         => 'standard',
+        // Appliqué uniquement à la création du monde (sans effet en cours de partie)
+        'initial_morale_random'     => true,
     ];
+
+    // Bornes du moral initial aléatoire : de "mécontent haut" à "satisfait",
+    // jamais révolté (refus de re-signer ≤ 20) ni héroïque (> 85) d'entrée.
+    public const INITIAL_MORALE_MIN = 45;
+    public const INITIAL_MORALE_MAX = 75;
 
     public function getConfig(?string $key = null, $default = null)
     {

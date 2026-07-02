@@ -49,6 +49,7 @@ const config = reactive({
     training_cost: 200,
     ai_transfers_enabled: true,
     ai_training_enabled: true,
+    initial_morale_random: true,
     visible_origins: {
         captain_tsubasa: true,
         ecole_des_champions: true,
@@ -69,6 +70,7 @@ function resetDefaults() {
         training_max_per_week: 3, training_gain_min: 1, training_gain_max: 5,
         training_stamina_cost: 2, training_min_stamina: 10, training_cost: 200,
         ai_transfers_enabled: true, ai_training_enabled: true,
+        initial_morale_random: true,
         visible_origins: { captain_tsubasa: true, ecole_des_champions: true, hungry_heart: true, blue_lock: true, ao_ashi: true, original: true },
         internationals_visible: true,
     });
@@ -353,6 +355,21 @@ function submit() {
                                     Malus cards
                                 </label>
                             </div>
+                        </div>
+
+                        <!-- Moral -->
+                        <div class="border border-slate-200 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
+                            <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                <span>😊</span> Moral
+                            </h4>
+                            <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                                <input type="checkbox" v-model="config.initial_morale_random"
+                                       class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
+                                Moral initial aléatoire (45–75 par joueur)
+                            </label>
+                            <p class="text-[10px] text-slate-400">
+                                Décoché : tous les joueurs démarrent à 60 (neutre). Appliqué uniquement à la création de la partie.
+                            </p>
                         </div>
 
                         <!-- Fatigue -->

@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "sail (app + mysql + redis + mailpit)",
+      "runtimeExecutable": "docker",
+      "runtimeArgs": ["compose", "up"],
+      "port": 8080
+    },
+    {
+      "name": "vite (assets/HMR, inside sail container)",
+      "runtimeExecutable": "docker",
+      "runtimeArgs": ["compose", "exec", "-T", "laravel.test", "npm", "run", "dev", "--", "--host", "0.0.0.0"],
+      "port": 5173
+    }
+  ]
+}

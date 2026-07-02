@@ -166,6 +166,9 @@ class NationalTeamAssembler
             'punch_save'          => $player->punch_save ?? $s['punch_save'] ?? 0,
             'special_moves'       => $player->special_moves ?? [],
             'cost'                => $player->cost ?? 0,
+            'morale'              => $gameSave->getConfig('initial_morale_random')
+                ? rand(GameSave::INITIAL_MORALE_MIN, GameSave::INITIAL_MORALE_MAX)
+                : MoraleService::NEUTRAL_MORALE,
         ]);
     }
 
