@@ -193,6 +193,9 @@ class GameSaveController extends Controller
         }
 
         // Marquer chaque équipe humaine (is_controlled + siège dans l'ordre choisi).
+        // La difficulté du mandat ajuste aussi leur budget de départ (l'IA garde le sien).
+        $difficultyPreset = CareerObjectiveService::PRESETS[$gameSave->getConfig('career_difficulty', 'standard')] ?? null;
+
         $seat = 1;
         $firstControlled = null;
         foreach ($humanTeamIds as $tid) {
@@ -202,6 +205,9 @@ class GameSaveController extends Controller
             }
             $gameTeam->is_controlled = true;
             $gameTeam->human_seat    = $seat++;
+            if ($difficultyPreset !== null) {
+                $gameTeam->budget = $difficultyPreset['start_budget'];
+            }
             $gameTeam->save();
             $firstControlled ??= $gameTeam;
         }

@@ -29,8 +29,7 @@ import H2 from '@/Components/H2.vue';
                         <div>
                             <div class="text-xs font-bold text-teal-500 uppercase tracking-widest mb-2">Bienvenue</div>
                             <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-800 leading-tight">
-                                Golden<br>
-                                <span class="text-teal-500">Eleven</span>
+                                Golden <span class="text-teal-500">Eleven</span>
                             </h1>
                             <p class="text-slate-400 text-sm mt-2">Gère ton club, dispute des championnats, bats l'IA.</p>
                         </div>

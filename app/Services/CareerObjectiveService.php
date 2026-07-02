@@ -20,31 +20,42 @@ use Illuminate\Support\Collection;
  */
 class CareerObjectiveService
 {
-    /** Réglages par niveau de mandat choisi à la création. */
+    /**
+     * Réglages par niveau de mandat choisi à la création.
+     *
+     * start_budget / weekly_income ne s'appliquent qu'aux équipes humaines :
+     * l'IA garde les valeurs de base (5000 / 500), l'écart relatif fait la difficulté.
+     */
     public const PRESETS = [
         'survival' => [
-            'label'        => 'Survie',
-            'confidence'   => 45,
-            'titles'       => 1,
-            'rank_offset'  => 2,   // objectif plus indulgent (rang plus bas toléré)
-            'win_bonus'    => 20,
-            'fail_penalty' => 16,
+            'label'         => 'Survie',
+            'confidence'    => 45,
+            'titles'        => 1,
+            'rank_offset'   => 2,   // objectif plus indulgent (rang plus bas toléré)
+            'win_bonus'     => 20,
+            'fail_penalty'  => 16,
+            'start_budget'  => 5000, // board indulgent : matelas financier préservé
+            'weekly_income' => 500,
         ],
         'standard' => [
-            'label'        => 'Standard',
-            'confidence'   => 50,
-            'titles'       => 2,
-            'rank_offset'  => 0,
-            'win_bonus'    => 18,
-            'fail_penalty' => 22,
+            'label'         => 'Standard',
+            'confidence'    => 50,
+            'titles'        => 2,
+            'rank_offset'   => 0,
+            'win_bonus'     => 18,
+            'fail_penalty'  => 22,
+            'start_budget'  => 4000,
+            'weekly_income' => 450,
         ],
         'conquest' => [
-            'label'        => 'Conquête',
-            'confidence'   => 55,
-            'titles'       => 3,
-            'rank_offset'  => -2,  // objectif exigeant (doit finir plus haut)
-            'win_bonus'    => 15,
-            'fail_penalty' => 28,
+            'label'         => 'Conquête',
+            'confidence'    => 55,
+            'titles'        => 3,
+            'rank_offset'   => -2,  // objectif exigeant (doit finir plus haut)
+            'win_bonus'     => 15,
+            'fail_penalty'  => 28,
+            'start_budget'  => 2500, // le board exige ET tient les cordons de la bourse
+            'weekly_income' => 350,
         ],
     ];
 

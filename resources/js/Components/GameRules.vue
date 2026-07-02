@@ -13,9 +13,9 @@ const props = defineProps({
 
 // Barème statique (miroir de CareerObjectiveService).
 const DIFFICULTY_PRESETS = [
-    { key: 'survival', label: 'Survie',   confidence: 45, titles: 1, rank: 'Objectif indulgent (rang toléré +2)' },
-    { key: 'standard', label: 'Standard', confidence: 50, titles: 2, rank: 'Objectif = classement attendu' },
-    { key: 'conquest', label: 'Conquête', confidence: 55, titles: 3, rank: 'Objectif exigeant (rang −2)' },
+    { key: 'survival', label: 'Survie',   confidence: 45, titles: 1, budget: '5000 €', income: '500 €/sem', rank: 'Objectif indulgent (rang toléré +2)' },
+    { key: 'standard', label: 'Standard', confidence: 50, titles: 2, budget: '4000 €', income: '450 €/sem', rank: 'Objectif = classement attendu' },
+    { key: 'conquest', label: 'Conquête', confidence: 55, titles: 3, budget: '2500 €', income: '350 €/sem', rank: 'Objectif exigeant (rang −2)' },
 ];
 
 // Présentation des pages/onglets du jeu.
@@ -234,6 +234,8 @@ const verdictOutcomeLabel = (o) => ({
                     <th class="text-left py-1">Niveau</th>
                     <th class="text-center py-1">Confiance départ</th>
                     <th class="text-center py-1">Titres à gagner</th>
+                    <th class="text-center py-1">Budget départ</th>
+                    <th class="text-center py-1">Revenu de base</th>
                     <th class="text-left py-1 pl-3">Exigence</th>
                 </tr>
                 </thead>
@@ -246,11 +248,14 @@ const verdictOutcomeLabel = (o) => ({
                     </td>
                     <td class="py-1.5 text-center text-slate-600">{{ d.confidence }}</td>
                     <td class="py-1.5 text-center text-slate-600">{{ d.titles }} 🏆</td>
+                    <td class="py-1.5 text-center text-slate-600">{{ d.budget }}</td>
+                    <td class="py-1.5 text-center text-slate-600">{{ d.income }}</td>
                     <td class="py-1.5 pl-3 text-slate-500">{{ d.rank }}</td>
                 </tr>
                 </tbody>
             </table>
-            <p class="text-[10px] text-slate-400 mt-2">En mode « Bac à sable », aucun objectif n'est suivi : les saisons s'enchaînent librement.</p>
+            <p class="text-[10px] text-slate-400 mt-2">En mode « Bac à sable », aucun objectif n'est suivi : les saisons s'enchaînent librement (budget et revenus pleins).</p>
+            <p class="text-[10px] text-slate-400">💰 Budget de départ et revenu de base réduits ne concernent que ton club : les clubs IA gardent 5000 € et 500 €/sem.</p>
         </div>
     </div>
 </template>

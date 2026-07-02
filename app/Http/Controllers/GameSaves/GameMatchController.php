@@ -433,10 +433,20 @@ class GameMatchController extends Controller
         $WIN_BONUS   = 300;
         $DRAW_BONUS  = 100;
 
+        // La difficulté du mandat réduit le revenu de base des équipes humaines
+        // (mode Ligue uniquement) ; l'IA garde le revenu plein.
+        $humanBaseIncome = $BASE_INCOME;
+        if ($gameSave->competition_type !== 'world_cup') {
+            $preset = CareerObjectiveService::PRESETS[$gameSave->getConfig('career_difficulty', 'standard')] ?? null;
+            if ($preset !== null) {
+                $humanBaseIncome = $preset['weekly_income'];
+            }
+        }
+
         $teams = GameTeam::where('game_save_id', $gameSave->id)->get();
 
         foreach ($teams as $team) {
-            $income = $BASE_INCOME;
+            $income = $team->is_controlled ? $humanBaseIncome : $BASE_INCOME;
 
             $match = GameMatch::where('game_save_id', $gameSave->id)
                 ->where('week', $week)
