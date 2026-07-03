@@ -126,6 +126,14 @@
                                         </div>
                                         <span class="w-6 text-right font-black text-slate-600">{{ stat.val }}</span>
                                     </div>
+                                    <div v-if="avgMorale != null" class="flex items-center gap-2 text-xs pt-1 border-t border-slate-100">
+                                        <span class="w-14 text-slate-500 shrink-0">Moral</span>
+                                        <div class="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                            <div class="h-full rounded-full" :class="moraleState(avgMorale).bar"
+                                                 :style="{ width: Math.min(avgMorale, 100) + '%' }"></div>
+                                        </div>
+                                        <span class="w-6 text-right font-black" :class="moraleState(avgMorale).text">{{ avgMorale }}</span>
+                                    </div>
                                 </div>
                             </div>
 
@@ -269,6 +277,12 @@
                                                         {{ overallOf(player) }}
                                                     </div>
                                                     <span class="text-[7px] font-bold uppercase text-slate-300 tracking-wider">Note</span>
+                                                    <span v-if="player.morale_preview != null"
+                                                          class="text-[10px] font-black tabular-nums"
+                                                          :class="moraleState(player.morale_preview).text"
+                                                          :title="`Moral de départ : ${moraleState(player.morale_preview).label}`">
+                                                        {{ moraleState(player.morale_preview).emoji }} {{ player.morale_preview }}
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
@@ -361,6 +375,8 @@ const props = defineProps({
     gameMode: { type: String, default: 'prebuilt' },
     competitionType: { type: String, default: 'college_league' },
     gameConfig:      { type: Object, default: null },
+    // Graine du moral initial : null si l'option "moral aléatoire" est désactivée.
+    moraleSeed:      { type: Number, default: null },
 });
 
 const searchQuery  = ref('');
@@ -369,7 +385,7 @@ const selectedTeam = ref(null);
 // Helpers d'affichage partagés (cohérence avec le reste de l'app, cf. dashboard / effectif).
 const {
     overallOf, keyStatsFor, statLabel, statColor,
-    positionGroup, playerPhotoUrl, teamLogoUrl,
+    positionGroup, playerPhotoUrl, teamLogoUrl, moraleState,
 } = usePlayerUtils();
 
 const filteredTeams = computed(() => {
@@ -385,6 +401,7 @@ const startForm = useForm({
     game_mode: props.gameMode,
     competition_type: props.competitionType,
     game_config: props.gameConfig,
+    morale_seed: props.moraleSeed,
 });
 
 // Hot-seat multi-manager : équipes humaines dans l'ordre des sièges.
@@ -465,7 +482,7 @@ function startWithTeam() {
     if (!isMultiMode.value) {
         if (!startForm.team_id) return;
         startForm
-            .transform(d => ({ label: d.label, period: d.period, game_mode: d.game_mode, competition_type: d.competition_type, team_id: d.team_id, game_config: d.game_config }))
+            .transform(d => ({ label: d.label, period: d.period, game_mode: d.game_mode, competition_type: d.competition_type, team_id: d.team_id, game_config: d.game_config, morale_seed: d.morale_seed }))
             .post(route('game-saves.start'), { preserveScroll: true });
         return;
     }
@@ -474,7 +491,7 @@ function startWithTeam() {
     if (!humanTeams.value.length) return;
     startForm.team_ids = humanTeams.value.map(t => t.id);
     startForm
-        .transform(d => ({ label: d.label, period: d.period, game_mode: d.game_mode, competition_type: d.competition_type, team_ids: d.team_ids, game_config: d.game_config }))
+        .transform(d => ({ label: d.label, period: d.period, game_mode: d.game_mode, competition_type: d.competition_type, team_ids: d.team_ids, game_config: d.game_config, morale_seed: d.morale_seed }))
         .post(route('game-saves.start'), { preserveScroll: true });
 }
 
@@ -491,6 +508,13 @@ const avgAttack  = computed(() => avgStat('attack'));
 const avgDefense = computed(() => avgStat('defense'));
 const avgStamina = computed(() => avgStat('stamina'));
 const avgSpeed   = computed(() => avgStat('speed'));
+
+// Moral moyen prévisualisé (null si l'option "moral aléatoire" est désactivée).
+const avgMorale = computed(() => {
+    const values = roster.value.map(p => p.morale_preview).filter(v => v != null);
+    if (!values.length) return null;
+    return Math.round(values.reduce((a, v) => a + Number(v), 0) / values.length);
+});
 
 // overallOf / keyStatsFor / statLabel / statColor / positionGroup proviennent du
 // composable partagé usePlayerUtils (déstructuré plus haut) — on n'ajoute ici que

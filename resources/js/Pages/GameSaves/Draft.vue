@@ -9,7 +9,7 @@ import RadarChart from '@/Pages/GameSaves/Play/components/RadarChart.vue';
 import StatBars from '@/Pages/GameSaves/Play/components/StatBars.vue';
 import { usePlayerUtils } from '@/Pages/GameSaves/Play/usePlayerUtils.js';
 
-const { keyStatsFor } = usePlayerUtils();
+const { keyStatsFor, moraleState } = usePlayerUtils();
 
 // Classe d'une cellule de stat : surlignée si c'est une stat clé du poste du
 // joueur, sinon en gris-noir comme les stats secondaires.
@@ -678,6 +678,7 @@ onMounted(() => {
                                             <th class="text-left py-2 pl-1 pr-2">Joueur</th>
                                             <th class="text-center py-2 px-1 w-12">Poste</th>
                                             <th class="text-center py-2 px-1 w-10">OVR</th>
+                                            <th class="text-center py-2 px-1 w-12" title="Moral de départ">Moral</th>
                                             <th class="text-center py-2 px-1 w-10">Vit</th>
                                             <th class="text-center py-2 px-1 w-10">End</th>
                                             <th class="text-center py-2 px-1 w-10">Tir</th>
@@ -742,6 +743,15 @@ onMounted(() => {
                                   : overallOf(player) >= 50 ? 'text-amber-600'
                                   : 'text-slate-500'">
                             {{ overallOf(player) }}
+                        </span>
+                                            </td>
+
+                                            <!-- Moral de départ -->
+                                            <td class="py-1.5 px-1 text-center">
+                        <span class="font-black text-[10px] tabular-nums"
+                              :class="moraleState(player.morale).text"
+                              :title="`Moral : ${moraleState(player.morale).label}`">
+                            {{ moraleState(player.morale).emoji }} {{ player.morale ?? 60 }}
                         </span>
                                             </td>
 

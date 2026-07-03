@@ -53,6 +53,18 @@ class MoraleService
     const AFFINITY_SALARY_TOLERANCE  = 50;   // au-dessus, tolère un salaire bas sans malus
 
     /**
+     * Moral initial d'un joueur, dérivé d'une graine de partie : déterministe,
+     * pour que le moral prévisualisé à la sélection d'équipe soit exactement
+     * celui appliqué à la création du monde (borné 45-75, cf. GameSave).
+     */
+    public static function initialMoraleFromSeed(int $seed, int $basePlayerId): int
+    {
+        $span = GameSave::INITIAL_MORALE_MAX - GameSave::INITIAL_MORALE_MIN + 1;
+
+        return GameSave::INITIAL_MORALE_MIN + (crc32($seed . ':' . $basePlayerId) % $span);
+    }
+
+    /**
      * Facteur appliqué aux bases d'attaque/défense en match
      * (miroir de RosterService.moraleFactor côté client).
      */

@@ -87,6 +87,21 @@ class GameSaveController extends Controller
 
         $teams = Team::with(['contracts.player'])->orderBy('name')->get();
 
+        // Moral initial aléatoire : tiré via une graine déterministe pour que le
+        // moral affiché à la sélection soit exactement celui de la partie créée.
+        $moraleSeed = null;
+        if ((bool) ($gameConfig['initial_morale_random'] ?? true)) {
+            $moraleSeed = random_int(1, 2_000_000_000);
+            foreach ($teams as $team) {
+                foreach ($team->contracts as $contract) {
+                    $contract->player?->setAttribute(
+                        'morale_preview',
+                        MoraleService::initialMoraleFromSeed($moraleSeed, $contract->player->id)
+                    );
+                }
+            }
+        }
+
         return Inertia::render('GameSaves/TeamSelection', [
             'label'           => $data['label'] ?? null,
             'period'          => $data['period'],
@@ -94,6 +109,7 @@ class GameSaveController extends Controller
             'gameMode'        => $data['game_mode'] ?? 'prebuilt',
             'competitionType' => $competitionType,
             'gameConfig'      => $gameConfig,
+            'moraleSeed'      => $moraleSeed,
         ]);
     }
 
@@ -222,6 +238,9 @@ class GameSaveController extends Controller
         $players             = Player::orderBy('id')->get();
         $gamePlayersByBaseId = [];
         $randomMorale        = (bool) $gameSave->getConfig('initial_morale_random');
+        // Graine transmise depuis l'écran de sélection : le moral prévisualisé
+        // y est reproduit à l'identique. Sans graine (tests, appels directs) : rand.
+        $moraleSeed          = isset($data['morale_seed']) ? (int) $data['morale_seed'] : null;
 
         foreach ($players as $player) {
             $s = $player->stats ?? [];
@@ -251,9 +270,11 @@ class GameSaveController extends Controller
                 'punch_save'     => $player->punch_save ?? $s['punch_save'] ?? 0,
                 'special_moves'  => $player->special_moves ?? [],
                 'cost'           => $player->cost ?? 0,
-                'morale'         => $randomMorale
-                    ? rand(GameSave::INITIAL_MORALE_MIN, GameSave::INITIAL_MORALE_MAX)
-                    : MoraleService::NEUTRAL_MORALE,
+                'morale'         => !$randomMorale
+                    ? MoraleService::NEUTRAL_MORALE
+                    : ($moraleSeed !== null
+                        ? MoraleService::initialMoraleFromSeed($moraleSeed, $player->id)
+                        : rand(GameSave::INITIAL_MORALE_MIN, GameSave::INITIAL_MORALE_MAX)),
             ]);
             $gamePlayersByBaseId[$player->id] = $gamePlayer;
         }

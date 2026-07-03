@@ -76,6 +76,10 @@ class GameSaveRequest extends FormRequest
             'competition_type' => ['nullable', 'string', 'in:college_league,world_cup'],
 
             'game_config'      => ['nullable', 'array'],
+
+            // Graine du moral initial, générée à l'écran de sélection d'équipe
+            // pour que le moral prévisualisé soit celui réellement appliqué.
+            'morale_seed'      => ['nullable', 'integer', 'min:1'],
         ];
 
         // Différence création / mise à jour :
