@@ -46,7 +46,39 @@ const showPickAnim   = ref(false);
 const draftCompleted = ref(props.draftState?.completed ?? false);
 const filterPosition = ref('ALL');
 const sortBy         = ref('overall');
+const sortDir        = ref('desc'); // desc = meilleur en premier
 const searchQuery    = ref('');
+
+// Colonnes de stats du tableau (ordre = ordre des <td> du corps).
+const STAT_COLUMNS = [
+    { key: 'speed',      label: 'Vit'   },
+    { key: 'stamina',    label: 'End'   },
+    { key: 'shot',       label: 'Tir'   },
+    { key: 'pass',       label: 'Pass'  },
+    { key: 'dribble',    label: 'Drib'  },
+    { key: 'attack',     label: 'Att'   },
+    { key: 'defense',    label: 'Déf'   },
+    { key: 'tackle',     label: 'Tac'   },
+    { key: 'intercept',  label: 'Int'   },
+    { key: 'block',      label: 'Blk'   },
+    { key: 'heading',    label: 'Hdg'   },
+    { key: 'hand_save',  label: 'Main'  },
+    { key: 'punch_save', label: 'Poing' },
+];
+
+// Clic sur un en-tête : trie sur cette colonne (meilleur d'abord),
+// re-clic sur la même colonne : inverse le sens.
+function setSort(key) {
+    if (sortBy.value === key) {
+        sortDir.value = sortDir.value === 'desc' ? 'asc' : 'desc';
+    } else {
+        sortBy.value  = key;
+        sortDir.value = key === 'name' ? 'asc' : 'desc';
+    }
+}
+
+const sortIndicator = (key) =>
+    sortBy.value === key ? (sortDir.value === 'desc' ? '▼' : '▲') : '';
 const inspectedTeamId = ref(props.controlledTeamId);
 
 // Rosters locaux par équipe (reconstruits depuis les picks)
@@ -126,11 +158,14 @@ const filteredPlayers = computed(() => {
         list = list.filter(p => positionGroup(p.position) === filterPosition.value);
     }
 
+    const dir = sortDir.value === 'desc' ? -1 : 1;
     list = [...list].sort((a, b) => {
-        if (sortBy.value === 'overall') return overallOf(b) - overallOf(a);
-        if (sortBy.value === 'cost')    return (b.cost ?? 0) - (a.cost ?? 0);
-        if (sortBy.value === 'name')    return (a.lastname ?? '').localeCompare(b.lastname ?? '');
-        return 0;
+        if (sortBy.value === 'name') {
+            return dir * (a.lastname ?? '').localeCompare(b.lastname ?? '');
+        }
+        const va = sortBy.value === 'overall' ? overallOf(a) : Number(a[sortBy.value] ?? 0);
+        const vb = sortBy.value === 'overall' ? overallOf(b) : Number(b[sortBy.value] ?? 0);
+        return dir * (va - vb);
     });
 
     return list;
@@ -658,13 +693,8 @@ onMounted(() => {
                                     </button>
                                 </div>
 
-                                <!-- Tri -->
-                                <select v-model="sortBy"
-                                        class="border border-slate-200 rounded-lg px-2 py-1.5 text-xs bg-white text-slate-600">
-                                    <option value="overall">Meilleur overall</option>
-                                    <option value="cost">Plus cher</option>
-                                    <option value="name">Alphabétique</option>
-                                </select>
+                                <!-- Tri : clic sur les en-têtes de colonnes du tableau -->
+                                <span class="text-[10px] text-slate-400 italic self-center">💡 Clique un en-tête de colonne pour trier</span>
                             </div>
 
                             <!-- Grille joueurs -->
@@ -675,24 +705,33 @@ onMounted(() => {
                                         <thead class="sticky top-0 bg-slate-50 border-b border-slate-200 z-10">
                                         <tr class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                                             <th class="py-2 pl-3 pr-1 w-8 text-center" title="Comparer">⚖️</th>
-                                            <th class="text-left py-2 pl-1 pr-2">Joueur</th>
+                                            <th class="text-left py-2 pl-1 pr-2 cursor-pointer select-none hover:text-amber-600 transition-colors"
+                                                :class="sortBy === 'name' ? 'text-amber-600' : ''"
+                                                @click="setSort('name')" title="Trier par nom">
+                                                Joueur {{ sortIndicator('name') }}
+                                            </th>
                                             <th class="text-center py-2 px-1 w-12">Poste</th>
-                                            <th class="text-center py-2 px-1 w-10">OVR</th>
-                                            <th class="text-center py-2 px-1 w-12" title="Moral de départ">Moral</th>
-                                            <th class="text-center py-2 px-1 w-10">Vit</th>
-                                            <th class="text-center py-2 px-1 w-10">End</th>
-                                            <th class="text-center py-2 px-1 w-10">Tir</th>
-                                            <th class="text-center py-2 px-1 w-10">Pass</th>
-                                            <th class="text-center py-2 px-1 w-10">Drib</th>
-                                            <th class="text-center py-2 px-1 w-10">Att</th>
-                                            <th class="text-center py-2 px-1 w-10">Déf</th>
-                                            <th class="text-center py-2 px-1 w-10">Tac</th>
-                                            <th class="text-center py-2 px-1 w-10">Int</th>
-                                            <th class="text-center py-2 px-1 w-10">Blk</th>
-                                            <th class="text-center py-2 px-1 w-10">Hdg</th>
-                                            <th class="text-center py-2 px-1 w-10">Main</th>
-                                            <th class="text-center py-2 px-1 w-10">Poing</th>
-                                            <th class="text-right py-2 px-2 w-16">Coût</th>
+                                            <th class="text-center py-2 px-1 w-10 cursor-pointer select-none hover:text-amber-600 transition-colors"
+                                                :class="sortBy === 'overall' ? 'text-amber-600' : ''"
+                                                @click="setSort('overall')" title="Trier par note globale">
+                                                OVR {{ sortIndicator('overall') }}
+                                            </th>
+                                            <th class="text-center py-2 px-1 w-12 cursor-pointer select-none hover:text-amber-600 transition-colors"
+                                                :class="sortBy === 'morale' ? 'text-amber-600' : ''"
+                                                @click="setSort('morale')" title="Trier par moral de départ">
+                                                Moral {{ sortIndicator('morale') }}
+                                            </th>
+                                            <th v-for="col in STAT_COLUMNS" :key="col.key"
+                                                class="text-center py-2 px-1 w-10 cursor-pointer select-none hover:text-amber-600 transition-colors"
+                                                :class="sortBy === col.key ? 'text-amber-600' : ''"
+                                                @click="setSort(col.key)" :title="`Trier par ${col.label}`">
+                                                {{ col.label }} {{ sortIndicator(col.key) }}
+                                            </th>
+                                            <th class="text-right py-2 px-2 w-16 cursor-pointer select-none hover:text-amber-600 transition-colors"
+                                                :class="sortBy === 'cost' ? 'text-amber-600' : ''"
+                                                @click="setSort('cost')" title="Trier par coût">
+                                                Coût {{ sortIndicator('cost') }}
+                                            </th>
                                             <th class="py-2 px-2 w-20"></th>
                                         </tr>
                                         </thead>
