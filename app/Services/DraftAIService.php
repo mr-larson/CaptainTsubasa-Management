@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\TeamStyle;
+use App\Models\PlayerLink;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSave;
@@ -86,7 +87,18 @@ class DraftAIService
         $tacticalStyle = $team->tactical_style        ?? 'balanced';
         $teamAvg       = $this->avgOverall($currentContracts);
 
-        $scored = $affordable->map(function ($player) use ($priorityPosition, $philosophy, $tacticalStyle, $teamAvg, $maxCostPerPlayer, $countByPos, $discountedCost) {
+        // Duos d'alchimie : partenaires connus des candidats, pour valoriser
+        // la reconstitution d'un duo (débloque le une-deux en match).
+        $squadBaseIds = $currentContracts
+            ->map(fn ($c) => $c->gamePlayer?->base_player_id)
+            ->filter()->flip()->all();
+        $poolBaseIds  = $freePlayers->pluck('base_player_id')->filter()->flip()->all();
+        $partnerMap   = PlayerLink::partnerMapFor(
+            array_keys($squadBaseIds + $poolBaseIds),
+            withinSetOnly: false
+        );
+
+        $scored = $affordable->map(function ($player) use ($priorityPosition, $philosophy, $tacticalStyle, $teamAvg, $maxCostPerPlayer, $countByPos, $discountedCost, $partnerMap, $squadBaseIds, $poolBaseIds) {
             $posGroup = $this->positionGroup($player->position ?? '');
             $overall  = $this->overallOf($player);
             $cost     = $player->cost ?? 0;
@@ -124,6 +136,21 @@ class DraftAIService
             if ($cost > $maxCostPerPlayer * 2) {
                 $score -= 20;
             }
+
+            // 6. Duos d'alchimie : +25 si le partenaire est déjà dans l'effectif
+            //    (une-deux débloqué immédiatement), +8 s'il est encore draftable
+            //    (pari sur la reconstitution du duo).
+            $duoBonus = 0;
+            foreach ($partnerMap[$player->base_player_id] ?? [] as $link) {
+                if (isset($squadBaseIds[$link['partner_id']])) {
+                    $duoBonus = 25;
+                    break;
+                }
+                if (isset($poolBaseIds[$link['partner_id']])) {
+                    $duoBonus = max($duoBonus, 8);
+                }
+            }
+            $score += $duoBonus;
 
             return ['player' => $player, 'score' => $score];
         });

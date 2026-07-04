@@ -582,10 +582,18 @@ export function updateCardsPower(ball) {
     const carrierStats = carrier?.stats ?? {};
 
     _ui.actionBarEl.querySelectorAll(".skill-card").forEach((btn) => {
-        const a   = btn.dataset.action;
+        const a  = btn.dataset.action;
+        const el = btn.querySelector(".skill-power");
+        if (!el) return;
+        if (a === "one_two") {
+            // Puissance affichée = moyenne des passes du duo
+            const duo         = _roster.getDuoPartnerOnField(ball.team, ball.number);
+            const partnerPass = duo ? _roster.getStat(ball.team, duo.slot, "pass") : 0;
+            el.textContent = String(Math.round((Number(carrierStats.pass ?? 0) + partnerPass) / 2));
+            return;
+        }
         const map = { pass: "pass", dribble: "dribble", shot: "shot", special: "attack", cross: "pass", long_pass: "pass" };
-        const el  = btn.querySelector(".skill-power");
-        if (el) el.textContent = String(Number(carrierStats[map[a]] ?? 0));
+        el.textContent = String(Number(carrierStats[map[a]] ?? 0));
     });
 
     const specialBtn = _ui.actionBarEl.querySelector('.skill-card[data-action="special"]');
@@ -684,6 +692,15 @@ export function buildAttackActionsHTML(ball, roster) {
     const specials = roster.getSpecialMoves(ball.team, ball.number).filter(m => m?.mode === "attack");
     const zone     = Math.min(4, (ball.zoneIndex ?? 0) + 1); // 1=DEF,2=MDF,3=MOF,4=ATT
 
+    // Une-deux : uniquement si le partenaire de duo du porteur est sur le terrain
+    const duo = roster.getDuoPartnerOnField(ball.team, ball.number);
+    const oneTwoHTML = duo ? buildSkillCard("one_two", {
+        ...cfg.one_two,
+        sub: duo.label
+            ? `${duo.label} — ${duo.partnerInfo?.lastname ?? ""}`.trim()
+            : `Avec ${duo.partnerInfo?.lastname ?? "son duo"}`,
+    }) : "";
+
     let forwardCount = 0;
     for (const p of roster.rosters[ball.team].values()) {
         if (p?.isStarter && (p.position || "").toLowerCase().includes("forward")) forwardCount++;
@@ -707,6 +724,7 @@ export function buildAttackActionsHTML(ball, roster) {
         ${showShot ? buildSkillCard("shot", cfg.shot) : ""}
         ${buildSkillCard("pass",    cfg.pass)}
         ${buildSkillCard("dribble", cfg.dribble)}
+        ${oneTwoHTML}
         ${extraHTML}
         ${specials.length ? buildSkillCard("special", cfg.special) : ""}
     </div>`;

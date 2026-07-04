@@ -11,6 +11,7 @@ use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
 use App\Models\GameSaves\GameInjury;
 use App\Models\GameSaves\GameSanction;
+use App\Models\PlayerLink;
 use App\Services\AiBonusCardService;
 use App\Services\AITrainingService;
 use App\Services\BonusCardActivationService;
@@ -506,6 +507,11 @@ class GameMatchController extends Controller
             ->getMatchStatModifiers($gameSave, $team->id);
 
         $contracts = $team->contracts->loadMissing('gamePlayer');
+
+        // Duos d'alchimie : partenaires « une-deux » présents dans la même équipe
+        // (résolus via base_player_id → player_links).
+        $duoPartners = $this->duoPartnersFor($contracts);
+
         $starters = $contracts->sortByDesc('is_starter')->values();
         $ordered   = collect();
 
@@ -539,7 +545,7 @@ class GameMatchController extends Controller
             }
         }
 
-        $starters11 = $ordered->map(function (array $row) use ($unavailableIds, $statMods) {
+        $starters11 = $ordered->map(function (array $row) use ($unavailableIds, $statMods, $duoPartners) {
             [$slot, $c] = $row;
             if (!$c || !$c->gamePlayer) {
                 return [
@@ -548,6 +554,7 @@ class GameMatchController extends Controller
                     'is_starter' => false, 'photo_path' => null, 'photo_url' => null,
                     'stats' => null, 'special_moves' => [], 'is_available' => true,
                     'yellow_cards' => 0,
+                    'duo_partners' => [],
                     'is_captain'                => $c?->is_captain ?? false,
                     'contract_id'               => $c?->id,
                     'captain_rerolls_remaining' => $c?->captain_rerolls_remaining ?? 3,
@@ -570,6 +577,7 @@ class GameMatchController extends Controller
                 'is_available'  => !in_array($p->id, $unavailableIds),
                 'yellow_cards'  => 0,
                 'morale'        => (int) ($p->morale ?? 60),
+                'duo_partners'  => $duoPartners[$p->id] ?? [],
                 // ── Captain ──
                 'is_captain'                      => $c->is_captain,
                 'captain_rerolls_remaining'       => $c->captain_rerolls_remaining,
@@ -580,7 +588,7 @@ class GameMatchController extends Controller
         $subContracts = $team->contracts
             ->filter(fn($c) => !$c->is_starter && $c->gamePlayer)
             ->values();
-        $subs = $subContracts->map(function ($c) use ($unavailableIds, $statMods) {
+        $subs = $subContracts->map(function ($c) use ($unavailableIds, $statMods, $duoPartners) {
             $p = $c->gamePlayer;
             return [
                 'id'            => $p->id,
@@ -597,6 +605,7 @@ class GameMatchController extends Controller
                 'is_available'  => !in_array($p->id, $unavailableIds),
                 'yellow_cards'  => 0,
                 'morale'        => (int) ($p->morale ?? 60),
+                'duo_partners'  => $duoPartners[$p->id] ?? [],
                 // ── Captain ──
                 'is_captain'                      => $c->is_captain,
                 'captain_rerolls_remaining'       => $c->captain_rerolls_remaining,
@@ -605,6 +614,39 @@ class GameMatchController extends Controller
         })->values();
 
         return $starters11->concat($subs);
+    }
+
+    /**
+     * Partenaires de duo par game_player_id, restreints à l'effectif fourni
+     * (le une-deux exige les deux joueurs dans la même équipe) :
+     * [game_player_id => [['id' => game_player_id partenaire, 'label' => ?string], …]].
+     */
+    private function duoPartnersFor(\Illuminate\Support\Collection $contracts): array
+    {
+        $players = $contracts->map(fn ($c) => $c->gamePlayer)->filter();
+
+        $gameIdsByBase = [];
+        foreach ($players as $p) {
+            if ($p->base_player_id) {
+                $gameIdsByBase[$p->base_player_id][] = $p->id;
+            }
+        }
+        if (empty($gameIdsByBase)) {
+            return [];
+        }
+
+        $partnerMap = PlayerLink::partnerMapFor(array_keys($gameIdsByBase));
+
+        $result = [];
+        foreach ($players as $p) {
+            foreach ($partnerMap[$p->base_player_id] ?? [] as $entry) {
+                foreach ($gameIdsByBase[$entry['partner_id']] ?? [] as $partnerGameId) {
+                    $result[$p->id][] = ['id' => $partnerGameId, 'label' => $entry['label']];
+                }
+            }
+        }
+
+        return $result;
     }
 
     /**

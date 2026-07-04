@@ -8,6 +8,7 @@ use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
+use App\Models\PlayerLink;
 use App\Services\DraftAIService;
 use App\Services\DraftService;
 use Illuminate\Http\RedirectResponse;
@@ -49,6 +50,11 @@ class GameDraftController extends Controller
             'draftState'        => $gameSave->state['draft'] ?? null,
             'controlledTeamId'  => $gameSave->controlled_game_team_id,
             'controlledTeamIds' => $gameSave->controlledGameTeamIds(),
+            // Duos d'alchimie (une-deux), par base_player_id : pour badger les
+            // joueurs liés dans le tableau de draft.
+            'duoLinks'          => PlayerLink::linksWithNamesFor(
+                $freePlayers->pluck('base_player_id')->filter()->unique()->values()->all()
+            ),
         ]);
     }
 

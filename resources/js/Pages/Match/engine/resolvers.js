@@ -112,6 +112,7 @@ export function isGoodDefenseChoice(attackAction, defenseAction) {
     return (
         (a === "pass"    && d === "intercept") ||
         (a === "dribble" && d === "tackle")    ||
+        (a === "one_two" && d === "intercept") ||
         (a === "shot"    && d === "block")     ||
         (a === "special" && (d === "field-special" || d === "block"))
     );
@@ -126,10 +127,12 @@ function getLogTitleForDuel(attackAction, defenseAction, duelWinner) {
     if (duelWinner === "attack") {
         if (attackAction === "pass")    return TEXTS.logs.passSuccessTitle;
         if (attackAction === "dribble") return TEXTS.logs.dribbleSuccessTitle;
+        if (attackAction === "one_two") return TEXTS.logs.oneTwoSuccessTitle;
         return TEXTS.logs.shotGoalTitle;
     }
     if (attackAction === "pass")    return defenseAction === "intercept" ? TEXTS.logs.passFailTitle    : TEXTS.logs.passRecoveredTitle;
     if (attackAction === "dribble") return defenseAction === "tackle"    ? TEXTS.logs.dribbleFailTitle : TEXTS.logs.dribbleRecoveredTitle;
+    if (attackAction === "one_two") return defenseAction === "intercept" ? TEXTS.logs.oneTwoFailTitle  : TEXTS.logs.oneTwoRecoveredTitle;
     if (attackAction === "shot")    return defenseAction === "block"     ? TEXTS.logs.shotBlockedTitle : TEXTS.logs.shotRecoveredTitle;
     if (attackAction === "special") return defenseAction === "block"     ? TEXTS.logs.shotBlockedTitle : TEXTS.logs.specialRecoveredTitle;
     return "";
@@ -487,7 +490,7 @@ function continuePendingAction(ctx, duel) {
 
     if (attackType === "pass" || attackType === "special") {
         continuePass(attackTeam, defenseTeam, attackType, defenseAction, isSpecial, duel);
-    } else if (attackType === "dribble") {
+    } else if (attackType === "dribble" || attackType === "one_two") {
         continueDribble(attackTeam, defenseTeam, attackType, defenseAction, isSpecial, duel, ctx.oldZone, ctx.lane);
     } else if (attackType === "shot") {
         continueShot(attackTeam, defenseTeam, defenseAction, isSpecial, duel, ctx.originZone, ctx.originLane);
@@ -521,6 +524,13 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
         attackBaseRaw = moves.length > 0
             ? specialBaseFor(moves[0], attackTeam, b.number, _roster)
             : _roster.attackBaseFor("special", attackTeam, b.number);
+    } else if (attackType === "one_two") {
+        // Une-deux : moyenne des passes du duo (repli passe simple si le
+        // partenaire a disparu entre le clic et la résolution).
+        const duo = _roster.getDuoPartnerOnField(attackTeam, b.number);
+        attackBaseRaw = duo
+            ? _roster.oneTwoBaseFor(attackTeam, b.number, duo.slot)
+            : _roster.attackBaseFor("pass", attackTeam, b.number);
     } else {
         attackBaseRaw = _roster.attackBaseFor(attackType, attackTeam, b.number);
     }
@@ -1051,9 +1061,17 @@ function continueDribble(attackTeam, defenseTeam, attackType, defenseAction, isS
     const carrierId = getPlayerId(attackTeam, b.number);
     const carrierEl = _rootEl.querySelector('[data-player="' + carrierId + '"]');
 
+    // Une-deux : même progression qu'un dribble, mais textes/animations de duo
+    const isOneTwo  = attackType === "one_two";
+    const duo       = isOneTwo ? _roster.getDuoPartnerOnField(attackTeam, b.number) : null;
+    const duoDetail = isOneTwo
+        ? (duo?.label ? "⚡ " + duo.label : "Avec " + (duo?.partnerInfo?.lastname ?? "son partenaire"))
+        : null;
+
     if (duel.duelResult === "attack") {
-        // ── Animation du dribbleur (feinte latérale)
+        // ── Animation du dribbleur (feinte latérale) + du partenaire de duo
         playPlayerAnimation(attackTeam, b.number, 'dribble');
+        if (duo) playPlayerAnimation(attackTeam, duo.slot, 'dribble');
 
         resetLastDribbler();
         _state.lastDribblerId = carrierId;
@@ -1071,8 +1089,11 @@ function continueDribble(attackTeam, defenseTeam, attackType, defenseAction, isS
             if (carrierEl) carrierEl.dataset.zone = String(newZone);
             b.zoneIndex = newZone; b.laneIndex = lane; b.frontOfKeeper = false;
 
-            setMessage(isSpecial ? "Dribble special reussi !" : "Dribble reussi !", _TEAMS[attackTeam].label + " avance en zone " + (newZone + 1));
-            pushLogEntry("dribbleSuccessTitle", [isSpecial ? "(Special dribble)" : null, "Zone " + (newZone + 1), "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, _state, duel.breakdown ?? null);
+            const successMsg = isOneTwo
+                ? (duo?.label ? duo.label + " !" : "Une-deux réussi !")
+                : (isSpecial ? "Dribble special reussi !" : "Dribble reussi !");
+            setMessage(successMsg, _TEAMS[attackTeam].label + " avance en zone " + (newZone + 1));
+            pushLogEntry(isOneTwo ? "oneTwoSuccessTitle" : "dribbleSuccessTitle", [duoDetail, isSpecial ? "(Special dribble)" : null, "Zone " + (newZone + 1), "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, _state, duel.breakdown ?? null);
             _animateAndThen(() => { _advanceTurn(attackTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
             return;
         }
@@ -1088,7 +1109,7 @@ function continueDribble(attackTeam, defenseTeam, attackType, defenseAction, isS
             b.zoneIndex = oldZone; b.laneIndex = lane; b.frontOfKeeper = true;
 
             setMessage(TEXTS.ui.frontOfKeeperMain, TEXTS.ui.frontOfKeeperSub);
-            pushLogEntry("frontOfKeeperTitle", [isSpecial ? "(Special dribble)" : null, "Zone " + (oldZone + 1), "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, _state, duel.breakdown ?? null);
+            pushLogEntry("frontOfKeeperTitle", [duoDetail, isSpecial ? "(Special dribble)" : null, "Zone " + (oldZone + 1), "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, _state, duel.breakdown ?? null);
             _animateAndThen(() => { _advanceTurn(attackTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
             return;
         }
@@ -1106,10 +1127,65 @@ function continueDribble(attackTeam, defenseTeam, attackType, defenseAction, isS
     syncRecovererCard(defenseTeam, slot);
 
     const logTitle = getLogTitleForDuel(attackType, defenseAction, "defense");
-    const msgTitle = defenseAction === "tackle" ? "Dribble stoppe" : TEXTS.logs.dribbleRecoveredTitle;
+    const msgTitle = isOneTwo
+        ? (defenseAction === "intercept" ? TEXTS.logs.oneTwoFailTitle : TEXTS.logs.oneTwoRecoveredTitle)
+        : (defenseAction === "tackle" ? "Dribble stoppe" : TEXTS.logs.dribbleRecoveredTitle);
     setMessage(msgTitle, _TEAMS[defenseTeam].label + " recupere avec le n " + slot);
-    pushLogEntry(logTitle, [isSpecial ? "(Special dribble)" : null, "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, _state, duel.breakdown ?? null);
+    pushLogEntry(logTitle, [duoDetail, isSpecial ? "(Special dribble)" : null, "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, _state, duel.breakdown ?? null);
     _animateAndThen(() => { _advanceTurn(defenseTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
+}
+
+// -----------------------------------------------------------
+//   resolveOneTwo — une-deux de duo (progression type dribble,
+//   résolu sur la passe, contré à l'interception)
+// -----------------------------------------------------------
+export function resolveOneTwo(attackTeam, defenseTeam, defenseAction, defenderPick = null) {
+    const b = ball();
+    _state.keeperRestartMustPass = false;
+
+    if (b.frontOfKeeper) {
+        setMessage(TEXTS.ui.dribbleForbiddenMain, TEXTS.ui.dribbleForbiddenSub);
+        pushLogEntry("dribbleRefusedTitle", ["dribbleRefusedDetail"], null, _state);
+        _state.phase = "attack"; _state.pendingAttack = null;
+        return;
+    }
+
+    // Sécurité : sans partenaire sur le terrain, l'action n'a pas lieu d'être
+    if (!_roster.getDuoPartnerOnField(attackTeam, b.number)) {
+        _state.phase = "attack"; _state.pendingAttack = null;
+        _showAttackBarForCurrentTeam();
+        return;
+    }
+
+    const oldZone    = b.zoneIndex;
+    const lane       = b.laneIndex;
+    const attackType = "one_two";
+
+    const duel = runFieldDuel({ attackTeam, defenseTeam, attackType, defenseAction, defenderPick });
+
+    if (duel.duelResult === "pending_reroll") {
+        if (_state.pendingCaptainReroll) {
+            _state.pendingCaptainReroll.oldZone   = oldZone;
+            _state.pendingCaptainReroll.lane      = lane;
+            _state.pendingCaptainReroll.isSpecial = false;
+        }
+        return;
+    }
+
+    if (_state.pendingFreeKick) { startFreeKick(); return; }
+
+    if (duel.isTie) {
+        pushLogEntry(
+            "Duel equilibre (une-deux)",
+            ["Defense: " + defenseAction, getCounterTag(attackType, defenseAction)],
+            duel.diceTag, _state, duel.breakdown ?? null
+        );
+        _state.phase = "attack"; _state.pendingAttack = null;
+        _animateAndThen(() => { _advanceTurn(defenseTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
+        return;
+    }
+
+    continueDribble(attackTeam, defenseTeam, attackType, defenseAction, false, duel, oldZone, lane);
 }
 
 // -----------------------------------------------------------

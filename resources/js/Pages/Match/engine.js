@@ -42,7 +42,7 @@ import {
 import {
     initResolversModule,
     isGoodDefenseChoice, givePossessionOnTie,
-    resolvePass, resolveDribble, resolveShot, resolveShotKeeperDuel,
+    resolvePass, resolveDribble, resolveOneTwo, resolveShot, resolveShotKeeperDuel,
     resolveCross, resolveLongPass,
     performKeeperClearance, recordDuelEvent,
     resetCaptainRerollActionFlag,
@@ -505,7 +505,7 @@ export function initMatchEngine(rootEl, config = {}) {
     function handleAttackClick(action) {
         if (state.isGameOver || state.isAnimating) return;
         if (state.turns >= MAX_TURNS || state.phase !== "attack") return;
-        if (!["shot","pass","dribble","special","special-pass","special-dribble","cross","long_pass"].includes(action)) return;
+        if (!["shot","pass","dribble","one_two","special","special-pass","special-dribble","cross","long_pass"].includes(action)) return;
 
         if (state.isKickoff) {
             if (action !== "pass") return;
@@ -514,6 +514,9 @@ export function initMatchEngine(rootEl, config = {}) {
         }
 
         if (ball.frontOfKeeper && action !== "shot" && action !== "special") return;
+
+        // Une-deux : exige un partenaire de duo sur le terrain
+        if (action === "one_two" && !roster.getDuoPartnerOnField(state.currentTeam, ball.number)) return;
 
         if (action === "cross" || action === "long_pass") {
             const defTeam = otherTeam(state.currentTeam);
@@ -606,6 +609,13 @@ export function initMatchEngine(rootEl, config = {}) {
                 `${TEAMS[state.currentTeam].label} : ${specialLabel.toUpperCase()} !`,
                 `${TEAMS[defTeam].label} : Block / Intercept / Tackle / Special.`
             );
+        } else if (action === "one_two") {
+            const duo = roster.getDuoPartnerOnField(state.currentTeam, ball.number);
+            html = buildDefenseFieldHTML(defTeam, state.pendingDefenseContext.defenderSlot, roster);
+            setMessage(
+                `${TEAMS[state.currentTeam].label} prépare un UNE-DEUX${duo?.label ? ` (${duo.label})` : ""} !`,
+                `${TEAMS[defTeam].label} : Block / Intercept / Tackle / Special.`
+            );
         } else {
             html = buildDefenseFieldHTML(defTeam, state.pendingDefenseContext.defenderSlot, roster);
             setMessage(
@@ -654,6 +664,7 @@ export function initMatchEngine(rootEl, config = {}) {
 
         if (attack === "pass")              resolvePass(attackTeam, defenseTeam, defense, defenderPick, false);
         else if (attack === "dribble")      resolveDribble(attackTeam, defenseTeam, defense, defenderPick, false);
+        else if (attack === "one_two")      resolveOneTwo(attackTeam, defenseTeam, defense, defenderPick);
         else if (attack === "shot")         resolveShot(attackTeam, defenseTeam, defense, false, defenderPick);
         else if (attack === "special")      resolveShot(attackTeam, defenseTeam, defense, true,  defenderPick);
         else if (attack === "special-pass") resolvePass(attackTeam, defenseTeam, defense, defenderPick, true);

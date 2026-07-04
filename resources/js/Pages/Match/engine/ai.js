@@ -54,6 +54,11 @@ export function computeAIAttackChoice(ball, specialCooldown) {
     // Disponibilité PAR TECHNIQUE (cooldown indépendant pour chaque move)
     const canUse = (move) => moveIsReady(playerId, specialCooldown, turns, move);
 
+    // Une-deux : partenaire de duo sur le terrain ET assez d'endurance pour
+    // encaisser le coût élevé (9) sans finir le match à sec.
+    const canOneTwo = !!_roster.getDuoPartnerOnField(team, slot)
+        && getStaminaRatio(playerId) >= 0.35;
+
     if (_state.isKickoff || _state.keeperRestartMustPass) {
         return canUse(passSp) ? specialAction(passSp) : "pass";
     }
@@ -67,18 +72,21 @@ export function computeAIAttackChoice(ball, specialCooldown) {
     if (z <= 1) {
         if (canUse(passSp) && Math.random() < 0.30) return specialAction(passSp);
         if (canUse(dribSp) && Math.random() < 0.25) return specialAction(dribSp);
+        if (canOneTwo    && Math.random() < 0.20) return "one_two";
         return Math.random() < 0.65 ? "pass" : "dribble";
     }
 
     if (z === 2) {
         if (canUse(dribSp) && Math.random() < 0.40) return specialAction(dribSp);
         if (canUse(passSp) && Math.random() < 0.20) return specialAction(passSp);
+        if (canOneTwo    && Math.random() < 0.30) return "one_two";
         return Math.random() < 0.55 ? "dribble" : "pass";
     }
 
     if (z === 3) {
         if (canUse(shotSp) && Math.random() < 0.25) return specialAction(shotSp);
         if (canUse(dribSp) && Math.random() < 0.20) return specialAction(dribSp);
+        if (canOneTwo    && Math.random() < 0.25) return "one_two";
         return Math.random() < 0.60 ? "dribble" : "shot";
     }
 
@@ -106,7 +114,7 @@ export function computeAIDefenseChoice(attackAction, defendingTeam, opts, specia
     }
 
     if (canSpecial) {
-        const rpsMap = { shot: "block", pass: "intercept", dribble: "tackle" };
+        const rpsMap = { shot: "block", pass: "intercept", dribble: "tackle", one_two: "intercept" };
         const goodBase = rpsMap[attackAction];
         if (goodBase && specials.some(m => m.base_action === goodBase) && Math.random() < 0.40) return "field-special";
         if (Math.random() < 0.25) return "field-special";
@@ -120,6 +128,7 @@ function _computeDefenseFallback(attackAction) {
     switch (attackAction) {
         case "pass":    return r < 0.7 ? "intercept" : (r < 0.9 ? "tackle" : "block");
         case "dribble": return r < 0.7 ? "tackle"    : (r < 0.9 ? "intercept" : "block");
+        case "one_two": return r < 0.7 ? "intercept" : (r < 0.9 ? "tackle" : "block");
         case "shot":    return r < 0.75 ? "block" : "intercept";
         case "special":
         case "special-pass":

@@ -18,6 +18,7 @@ use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameSanction;
 use App\Models\GameSaves\GameTeam;
 use App\Models\Player;
+use App\Models\PlayerLink;
 use App\Models\Team;
 use App\Enums\Nationality;
 use App\Services\BonusCardShopService;
@@ -687,9 +688,20 @@ class GameSaveController extends Controller
             ];
         }
 
+        // Duos d'alchimie (une-deux), par base_player_id : pour badger les
+        // joueurs liés (effectif, mercato).
+        $duoLinks = PlayerLink::linksWithNamesFor(
+            GamePlayer::where('game_save_id', $gameSave->id)
+                ->whereNotNull('base_player_id')
+                ->distinct()
+                ->pluck('base_player_id')
+                ->all()
+        );
+
         return Inertia::render('GameSaves/Play', [
             'gameSave'            => $gameSave,
             'managementStats'     => $managementStats,
+            'duoLinks'            => $duoLinks,
             'teams'               => $gameTeams,
             'matches'             => $matches,
             'freePlayers'         => $freePlayers,

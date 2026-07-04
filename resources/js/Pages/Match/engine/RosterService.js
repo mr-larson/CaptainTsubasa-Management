@@ -62,6 +62,7 @@ export class RosterService {
                     photo:        resolvePhoto(p),
                     stats:        resolveStats(p),
                     specialMoves: Array.isArray(p.special_moves) ? p.special_moves : [],
+                    duoPartners:  Array.isArray(p.duo_partners) ? p.duo_partners : [],
                     isAvailable:  p.is_available !== false,
                     yellowCards:  p.yellow_cards ?? 0,
                     morale:       p.morale ?? MORALE_DEFAULT,
@@ -73,6 +74,7 @@ export class RosterService {
                     id: null, number: slot,
                     firstname: "Joueur", lastname: `#${slot}`,
                     position: "", secondaryPositions: [], photo: null, stats: null, specialMoves: [],
+                    duoPartners: [],
                     isAvailable: true, yellowCards: 0, morale: MORALE_DEFAULT, isStarter: true,
                     isCaptain:    false,   // ← pas de p ici
                     contractId:   null,
@@ -94,6 +96,7 @@ export class RosterService {
                     photo:        resolvePhoto(p),
                     stats:        resolveStats(p),
                     specialMoves: Array.isArray(p.special_moves) ? p.special_moves : [],
+                    duoPartners:  Array.isArray(p.duo_partners) ? p.duo_partners : [],
                     isAvailable:  p.is_available !== false,
                     yellowCards:  p.yellow_cards ?? 0,
                     morale:       p.morale ?? MORALE_DEFAULT,
@@ -157,6 +160,42 @@ export class RosterService {
         const info  = this.getPlayerInfo(team, slotNumber);
         const moves = info?.specialMoves;
         return Array.isArray(moves) ? moves : [];
+    }
+
+    /**
+     * Partenaire de duo (une-deux) actuellement sur le terrain dans la même
+     * équipe : { slot, label, partnerInfo } ou null. Le partenaire doit être
+     * titulaire (slots 1-11) et disponible.
+     */
+    getDuoPartnerOnField(team, slotNumber) {
+        const info     = this.getPlayerInfo(team, slotNumber);
+        const partners = info?.duoPartners ?? [];
+        if (!info?.id || !partners.length) return null;
+
+        for (let slot = 1; slot <= 11; slot++) {
+            if (slot === slotNumber) continue;
+            const other = this.getPlayerInfo(team, slot);
+            if (!other?.id || other.isAvailable === false) continue;
+            const match = partners.find(d => d?.id === other.id);
+            if (match) return { slot, label: match.label ?? null, partnerInfo: other };
+        }
+        return null;
+    }
+
+    /**
+     * Base de duel du une-deux : moyenne des stats de passe des DEUX joueurs
+     * du duo (recruter le bon partenaire compte), bonus de poste « pass » et
+     * moral du porteur. Pas de bonus supplémentaire : l'avantage est le swap
+     * de stat (passe au lieu de dribble) et de défense (intercept au lieu de
+     * tackle) ; le coût d'endurance élevé fait le reste.
+     */
+    oneTwoBaseFor(team, slotNumber, partnerSlot) {
+        const base     = STATS.attack.one_two?.power ?? 10;
+        const combined = (this.getStat(team, slotNumber, "pass") + this.getStat(team, partnerSlot, "pass")) / 2;
+        let raw = base + combined * this.STAT_COEF;
+        raw *= this.positionBonusMultiplier(team, slotNumber, "pass");
+        raw *= this.moraleFactor(team, slotNumber);
+        return raw;
     }
 
     getPlayerRole(team, slotNumber) {

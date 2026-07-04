@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 import { usePlayerUtils } from '../usePlayerUtils.js';
 
 /**
@@ -45,6 +46,19 @@ const groupedPlayers = computed(() =>
 );
 
 const staminaOf = (p) => p.stamina ?? p.stats?.stamina ?? 0;
+
+// Duos d'alchimie : badge 🤝 quand le partenaire de duo est dans le même
+// effectif (débloque l'action une-deux en match).
+const duoLinks = usePage().props.duoLinks ?? {};
+const rosterBaseIds = computed(() =>
+    new Set(props.players.map(p => p.base_player_id).filter(Boolean))
+);
+const duoInfo = (p) =>
+    (duoLinks[p.base_player_id] ?? []).find(d => rosterBaseIds.value.has(d.partner_base_id)) ?? null;
+const duoTitle = (p) => {
+    const d = duoInfo(p);
+    return d ? `${d.label ?? 'Duo'} avec ${d.partner_name} — débloque le une-deux en match` : '';
+};
 
 const injuryTitle = (p) => {
     const inj = props.playerInjury(p.id);
@@ -97,6 +111,7 @@ const benchTitle = (p) => {
                               :title="`Moral : ${p.morale ?? 60} (${moraleState(p.morale).label})`"
                               class="text-[11px]">{{ moraleState(p.morale).emoji }}</span>
                         <span v-if="p.is_captain" title="Capitaine" class="text-[11px]">👑</span>
+                        <span v-if="duoInfo(p)" :title="duoTitle(p)" class="text-[11px]">🤝</span>
                         <span v-if="isPlayerInjured(p.id)" :title="injuryTitle(p)" class="text-[11px]">🤕</span>
                         <span v-else-if="isPlayerSuspended(p.id)" :title="suspensionTitle(p)" class="text-[11px]">🚫</span>
                         <span v-else-if="isPlayerBenched(p.id)" :title="benchTitle(p)" class="text-[11px]">⛔</span>

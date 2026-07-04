@@ -188,6 +188,10 @@ export const TEXTS = {
         dribbleSuccessTitle:  "Dribble réussi",
         dribbleFailTitle:     "Dribble stoppé",
 
+        oneTwoSuccessTitle:   "Une-deux réussi",
+        oneTwoFailTitle:      "Une-deux coupé",
+        oneTwoRecoveredTitle: "Une-deux récupéré",
+
         longShotGoalTitle:  "Tir de loin – BUT",
         longShotSavedTitle: "Tir de loin – arrêté",
 
@@ -215,6 +219,7 @@ export const TEXTS = {
             shot:    { icon: "⚽️", title: "Shot",    sub: "Puissant tir" },
             pass:    { icon: "➡️",  title: "Pass",    sub: "Passe avant" },
             dribble: { icon: "🌀",  title: "Dribble", sub: "Dribble un adversaire" },
+            one_two: { icon: "🤝",  title: "Une-deux", sub: "Combinaison de duo" },
             special: { icon: "🔥",  title: "Special", sub: "Action spéciale" },
             cross:     { icon: "🎯", title: "Centre",       sub: "Centre dans la surface" },
             long_pass: { icon: "🚀", title: "Passe longue", sub: "Lancement vers le milieu offensif" },
@@ -248,6 +253,10 @@ export const STATS = {
         shot:    { power: 10, cost: 10 },
         pass:    { power: 10, cost: 6 },
         dribble: { power: 10, cost: 4  },
+        // Une-deux (duo d'alchimie) : progression comme un dribble mais résolue
+        // sur la passe. Coût volontairement élevé (presque un tir) : c'est le
+        // frein anti-spam — pas de bonus numérique en plus du swap de stat.
+        one_two: { power: 10, cost: 9  },
         special: { power: 12, cost: 15 },
         cross:     { power: 10, cost: 8 },
         long_pass: { power: 10, cost: 15 },

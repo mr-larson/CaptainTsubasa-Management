@@ -26,7 +26,16 @@ const props = defineProps({
     draftState:        { type: Object, default: null },
     controlledTeamId:  { type: Number, default: null },
     controlledTeamIds: { type: Array,  default: () => [] },
+    duoLinks:          { type: Object, default: () => ({}) },
 });
+
+// Duos d'alchimie : premier lien connu d'un joueur (badge 🤝 dans le tableau).
+// Recruter les deux membres d'un duo débloque l'action une-deux en match.
+const duoOf = (player) => (props.duoLinks?.[player.base_player_id] ?? [])[0] ?? null;
+const duoTitle = (player) => {
+    const d = duoOf(player);
+    return d ? `${d.label ?? 'Duo'} avec ${d.partner_name} — recrutez les deux pour débloquer le une-deux` : '';
+};
 
 // Équipes humaines (hot-seat). Repli sur l'unique équipe contrôlée (mono).
 const humanTeamIds = computed(() =>
@@ -761,7 +770,9 @@ onMounted(() => {
                                                         <div v-else class="w-full h-full flex items-center justify-center text-[9px] text-slate-400">?</div>
                                                     </div>
                                                     <div class="min-w-0">
-                                                        <div class="font-semibold text-slate-800 truncate max-w-[120px] group-hover/name:text-amber-600 group-hover/name:underline">{{ player.lastname }}</div>
+                                                        <div class="font-semibold text-slate-800 truncate max-w-[120px] group-hover/name:text-amber-600 group-hover/name:underline">
+                                                            {{ player.lastname }}<span v-if="duoOf(player)" :title="duoTitle(player)" class="ml-1">🤝</span>
+                                                        </div>
                                                         <div class="text-[9px] text-slate-400 truncate max-w-[120px]">{{ player.firstname }}</div>
                                                     </div>
                                                 </button>
