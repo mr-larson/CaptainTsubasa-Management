@@ -420,7 +420,7 @@ class CaptainTsubasaInternationalPlayers
 
             // --- Milieux ---
             [
-                'Ruud', 'Krisman', 13, 'Midfielder', 460,
+                'Ruud', 'Klisman', 13, 'Midfielder', 460,
                 [
                     'speed' => 72, 'stamina' => 80, 'defense' => 27, 'attack' => 35,
                     'shot' => 28, 'pass' => 30, 'dribble' => 29,
@@ -911,7 +911,7 @@ class CaptainTsubasaInternationalPlayers
             // Argentine
             'juan-diaz'            => 'Argentine',
             'ramon-galvan'         => 'Argentine',
-            'juan-babington'       => 'Argentine',
+            'alan-pascal'       => 'Argentine',
             // Uruguay
             'conzales'             => 'Uruguay',
             'amerigo'              => 'Uruguay',
@@ -927,8 +927,7 @@ class CaptainTsubasaInternationalPlayers
             // Pays-Bas
             'hans-dolman'          => 'Pays-Bas',
             'leon-dick'            => 'Pays-Bas',
-            'ruud-krisman'         => 'Pays-Bas',
-            'haan'                 => 'Pays-Bas',
+            'ruud-klisman'         => 'Pays-Bas',
             'brian-cruyfford'      => 'Pays-Bas',
             'johan-rensenbrink'    => 'Pays-Bas',
             'gert-keizer'          => 'Pays-Bas',

@@ -42,21 +42,14 @@ class PlayerSeeder extends Seeder
 
         /**
          * CONFIG IMAGES
-         * - Source: mets tes PNG ici (dans ton repo)
-         *   database/seeders/assets/players/firstname-lastname.png
-         * - Destination: le seeder copie vers
-         *   storage/app/public/players/firstname-lastname.png
-         *
-         * Ensuite, côté front: /storage/players/firstname-lastname.png
+         * Source de vérité unique : public/storage/players/ (versionné dans le
+         * repo — le FS de prod est éphémère). Mets tes PNG directement là,
+         * nommés d'après le slug du joueur : firstname-lastname.png.
+         * Le seeder ne copie plus rien : il vérifie l'existence du fichier et
+         * renseigne photo_path en conséquence.
          */
-        $imagesSourceDir = database_path('seeders/assets/players'); // <--- dossier à créer
         $storageDisk = Storage::disk('public');
         $storageDir = 'players';
-
-        // (optionnel) crée le dossier destination si pas présent
-        if (!$storageDisk->exists($storageDir)) {
-            $storageDisk->makeDirectory($storageDir);
-        }
 
         // Données joueurs regroupées par source dans database/seeders/Players/.
         // PlayerSeeder conserve toute la logique d'insertion (skills, images,
@@ -139,18 +132,16 @@ class PlayerSeeder extends Seeder
             if ($headingOverride !== null) {
                 $fullStats['heading'] = $headingOverride;
             }
-            $filename = $slug . '.png';
-            $sourcePath = $imagesSourceDir . DIRECTORY_SEPARATOR . $filename;
-            $destPath = $storageDir . '/' . $filename; // players/taro-misaki.png
+            // players/taro-misaki.png (ou .jpg/.webp)
             $photoPathDb = null;
-            $specialMoves = $specialMovesByPlayerSlug[$slug] ?? null;
-            if (is_file($sourcePath)) {
-                // copie systématique : les images mises à jour dans les assets
-                // écrasent celles du storage
-                $storageDisk->put($destPath, file_get_contents($sourcePath));
-
-                $photoPathDb = $destPath; // stocké en DB
+            foreach (['png', 'jpg', 'jpeg', 'webp'] as $ext) {
+                $candidate = $storageDir . '/' . $slug . '.' . $ext;
+                if ($storageDisk->exists($candidate)) {
+                    $photoPathDb = $candidate;
+                    break;
+                }
             }
+            $specialMoves = $specialMovesByPlayerSlug[$slug] ?? null;
 
             DB::table('players')->insert([
                 'firstname' => $firstname,

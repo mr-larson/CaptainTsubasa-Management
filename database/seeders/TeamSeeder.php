@@ -18,13 +18,10 @@ class TeamSeeder extends Seeder
         DB::table('teams')->truncate();
         Schema::enableForeignKeyConstraints();
 
-        $imagesSourceDir = database_path('seeders/assets/teams');
+        // Logos : source de vérité unique = public/storage/teams/ (versionné),
+        // nommés d'après le slug de l'équipe. Le seeder ne copie plus rien.
         $storageDisk = Storage::disk('public');
         $storageDir = 'teams';
-
-        if (!$storageDisk->exists($storageDir)) {
-            $storageDisk->makeDirectory($storageDir);
-        }
 
         // ---------
         // LISTE DES EQUIPES
@@ -84,27 +81,14 @@ class TeamSeeder extends Seeder
             $slug = Str::slug($name);
 
             $extensions = ['png', 'jpg', 'jpeg', 'webp'];
-            $foundPath = null;
-
-            foreach ($extensions as $ext) {
-                $candidate = $imagesSourceDir . DIRECTORY_SEPARATOR . $slug . '.' . $ext;
-                if (is_file($candidate)) {
-                    $foundPath = $candidate;
-                    break;
-                }
-            }
-
             $logoPathDb = null;
 
-            if ($foundPath) {
-                $filename = $slug . '.' . pathinfo($foundPath, PATHINFO_EXTENSION);
-                $destPath = $storageDir . '/' . $filename;
-
-                if (!$storageDisk->exists($destPath)) {
-                    $storageDisk->put($destPath, file_get_contents($foundPath));
+            foreach ($extensions as $ext) {
+                $candidate = $storageDir . '/' . $slug . '.' . $ext;
+                if ($storageDisk->exists($candidate)) {
+                    $logoPathDb = $candidate;
+                    break;
                 }
-
-                $logoPathDb = $destPath;
             }
 
             DB::table('teams')->insert([
