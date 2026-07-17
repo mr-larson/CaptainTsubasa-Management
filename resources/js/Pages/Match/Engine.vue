@@ -323,7 +323,10 @@
                             <div id="log-current" class="shrink-0">
                                 <div class="flex items-center justify-between gap-2">
                                     <div class="text-[10px] uppercase tracking-widest font-bold text-slate-600 whitespace-nowrap">DERNIÈRE ACTION</div>
-                                    <div id="duel-dice-display" class="dice-chip"></div>
+                                    <div class="flex items-center gap-1.5">
+                                        <button id="dice-anim-toggle" type="button" class="dice-anim-toggle" title="Animation des dés : normale / rapide / désactivée"></button>
+                                        <div id="duel-dice-display" class="dice-chip"></div>
+                                    </div>
                                 </div>
                                 <div id="current-action-title" class="mt-2 font-bold text-slate-900">–</div>
                                 <div id="current-action-detail" class="text-slate-600">Les duels et détails apparaîtront ici.</div>

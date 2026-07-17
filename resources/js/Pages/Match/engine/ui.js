@@ -2,6 +2,7 @@
 import { TEXTS, STATS, ACTION_BAR_FADE_MS } from './constants.js';
 import { getStaminaRatio, getStaminaTier } from './stamina.js';
 import { getPlayerId } from './field.js';
+import { isDiceAnimating, runAfterDiceAnimation } from './dice.js';
 
 let _rootEl = null;
 let _roster = null;
@@ -48,6 +49,11 @@ function _ensureOverlayEl() {
 }
 
 export function showEventNotification(type, text, subText = null) {
+    // Ne pas spoiler le résultat pendant l'animation des dés : différer le toast
+    if (isDiceAnimating()) {
+        runAfterDiceAnimation(() => showEventNotification(type, text, subText));
+        return;
+    }
     if (type === 'goal' || type === 'foul' || type === 'yellow') {
         const toast = _ensureToastEl();
         if (!toast) return;
@@ -148,8 +154,14 @@ export function setAIOverlay(visible, text) {
 }
 
 export function updateScoreUI(state) {
-    if (_ui.scoreInternalEl) _ui.scoreInternalEl.textContent = state.score.internal;
-    if (_ui.scoreExternalEl) _ui.scoreExternalEl.textContent = state.score.external;
+    // Score différé pendant l'animation des dés (spoiler de but sinon) ;
+    // state est partagé, le callback relira donc le score final.
+    const applyScore = () => {
+        if (_ui.scoreInternalEl) _ui.scoreInternalEl.textContent = state.score.internal;
+        if (_ui.scoreExternalEl) _ui.scoreExternalEl.textContent = state.score.external;
+    };
+    if (isDiceAnimating()) runAfterDiceAnimation(applyScore);
+    else applyScore();
 
     const minutes = state.turns * 2;
     const t = String(minutes).padStart(2, "0");

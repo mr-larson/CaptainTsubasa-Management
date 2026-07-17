@@ -264,6 +264,72 @@
 .dice-chip.pop { animation: dice-pop 0.45s ease-out; }
 @keyframes dice-pop { 0% { transform: scale(0.8); } 40% { transform: scale(1.1); } 100% { transform: scale(1); } }
 
+.dice-anim-toggle {
+    font-size: 9px; font-weight: 700; color: #475569; background: rgba(148,163,184,0.15);
+    border: none; border-radius: 999px; padding: 2px 8px; white-space: nowrap; cursor: pointer;
+}
+.dice-anim-toggle:hover { background: rgba(148,163,184,0.35); }
+
+/* ── Animation de lancer de dés (overlay sur le terrain) ─────────────── */
+#duel-roll-overlay {
+    position: absolute; inset: 0; z-index: 220;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(2, 6, 23, 0.35);
+    opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
+}
+#duel-roll-overlay.visible { opacity: 1; pointer-events: auto; cursor: pointer; }
+
+.droll-card {
+    background: rgba(15, 23, 42, 0.94); border-radius: 18px; padding: 14px 22px 10px;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    max-width: 92%;
+}
+.droll-row  { display: flex; align-items: flex-start; justify-content: center; gap: 18px; }
+.droll-side { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 110px; }
+.droll-label { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; }
+.droll-label--attack  { color: #38bdf8; }
+.droll-label--defense { color: #a78bfa; }
+.droll-name   { font-size: 11px; font-weight: 700; color: #f1f5f9; text-align: center; max-width: 140px; }
+.droll-action { font-size: 9px; color: #94a3b8; min-height: 12px; }
+.droll-dice-row { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+.droll-die {
+    width: 58px; height: 58px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; font-weight: 800; color: #fff; font-variant-numeric: tabular-nums;
+    background: rgba(255,255,255,0.08); border: 2px solid rgba(148,163,184,0.5);
+    animation: droll-tumble 0.14s linear infinite;
+}
+.droll-die--internal { border-color: #38bdf8; background: rgba(0, 116, 255, 0.28); }
+.droll-die--external { border-color: #fb923c; background: rgba(255, 127, 53, 0.28); }
+.droll-die--attack   { border-color: #38bdf8; background: rgba(14, 165, 233, 0.22); }
+.droll-die--defense  { border-color: #a78bfa; background: rgba(139, 92, 246, 0.22); }
+.droll-die--alt { width: 34px; height: 34px; font-size: 15px; border-radius: 9px; }
+.droll-die--settled   { animation: droll-settle 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.droll-die--discarded { opacity: 0.35; }
+.droll-die--crit   { border-color: #fbbf24; background: rgba(245, 158, 11, 0.4); box-shadow: 0 0 18px rgba(251, 191, 36, 0.8); }
+.droll-die--fumble { border-color: #ef4444; background: rgba(239, 68, 68, 0.4); box-shadow: 0 0 18px rgba(239, 68, 68, 0.7); }
+@keyframes droll-tumble {
+    0%   { transform: rotate(-8deg) translateY(-2px); }
+    50%  { transform: rotate(7deg)  translateY(2px); }
+    100% { transform: rotate(-8deg) translateY(-2px); }
+}
+@keyframes droll-settle { 0% { transform: scale(1.4); } 100% { transform: scale(1); } }
+.droll-adv   { font-size: 9px; font-weight: 700; color: #fbbf24; margin-top: 2px; }
+.droll-bonus { font-size: 10px; color: #cbd5e1; min-height: 14px; font-variant-numeric: tabular-nums; }
+.droll-vs    { font-size: 12px; font-weight: 900; color: #64748b; align-self: center; }
+.droll-verdict { font-size: 13px; font-weight: 800; min-height: 18px; }
+.droll-verdict--attack  { color: #22c55e; }
+.droll-verdict--defense { color: #ef4444; }
+.droll-verdict--tie     { color: #94a3b8; }
+.droll-hint { font-size: 8px; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em; }
+
+/* Floute le log pendant le roll pour ne pas spoiler le résultat */
+#current-action-title, #current-action-detail, #log-history { transition: filter 0.15s ease; }
+#log-card.dice-rolling #current-action-title,
+#log-card.dice-rolling #current-action-detail,
+#log-card.dice-rolling #log-history { filter: blur(5px); }
+
 .dice-tooltip { max-width: min(420px, calc(100vw - 24px)); }
 .dice-tooltip[data-placement="top"]::after { top: auto; bottom: -8px; transform: rotate(180deg); }
 

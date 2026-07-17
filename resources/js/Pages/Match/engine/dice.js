@@ -154,6 +154,217 @@ let _lastBreakdown  = null;
 
 export function initDiceUI(duelDiceEl) {
     _duelDiceEl = duelDiceEl;
+    initDiceAnimToggle();
+}
+
+// -----------------------------------------------------------
+//   Animation de lancer de dés (overlay sur le terrain)
+// -----------------------------------------------------------
+const DICE_ANIM_STORAGE_KEY = 'ctm-dice-anim';
+const DICE_ANIM_MODES       = ['normal', 'fast', 'off'];
+const DICE_ANIM_LABELS      = { normal: '🎲 normale', fast: '🎲 rapide', off: '🎲 off' };
+
+let _animState    = null;   // animation en cours { abort() }
+let _afterAnimCbs = [];     // notifications différées pendant l'animation
+let _chipToken    = 0;      // seul le dernier duel a le droit d'écrire le chip
+
+export function getDiceAnimMode() {
+    try {
+        const stored = localStorage.getItem(DICE_ANIM_STORAGE_KEY);
+        if (DICE_ANIM_MODES.includes(stored)) return stored;
+    } catch (e) { /* localStorage indisponible */ }
+    if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return 'off';
+    return 'normal';
+}
+
+export function isDiceAnimating() {
+    return _animState !== null;
+}
+
+/** Exécute cb tout de suite, ou à la fin de l'animation de dés en cours. */
+export function runAfterDiceAnimation(cb) {
+    if (_animState) _afterAnimCbs.push(cb);
+    else cb();
+}
+
+function flushAfterAnimCbs() {
+    const cbs = _afterAnimCbs;
+    _afterAnimCbs = [];
+    cbs.forEach(cb => { try { cb(); } catch (e) { console.error(e); } });
+}
+
+function initDiceAnimToggle() {
+    const toggle = document.getElementById('dice-anim-toggle');
+    if (!toggle) return;
+    const refresh = () => { toggle.textContent = DICE_ANIM_LABELS[getDiceAnimMode()]; };
+    toggle.addEventListener('click', () => {
+        const next = DICE_ANIM_MODES[(DICE_ANIM_MODES.indexOf(getDiceAnimMode()) + 1) % DICE_ANIM_MODES.length];
+        try { localStorage.setItem(DICE_ANIM_STORAGE_KEY, next); } catch (e) { /* ignore */ }
+        refresh();
+    });
+    refresh();
+}
+
+function escapeHTML(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c => (
+        { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+}
+
+function ensureRollOverlay() {
+    let overlay = document.getElementById('duel-roll-overlay');
+    if (overlay) return overlay;
+    const wrapper = document.getElementById('field-wrapper');
+    if (!wrapper) return null;
+    overlay = document.createElement('div');
+    overlay.id = 'duel-roll-overlay';
+    wrapper.appendChild(overlay);
+    return overlay;
+}
+
+/**
+ * Joue l'animation des deux dés vers un résultat déjà résolu.
+ * Skippable au clic (ou Échap). Résout la promesse à la fermeture.
+ */
+function playDuelAnimation(aRoll, dRoll, breakdown, mode, finalWinner, isCrit) {
+    return new Promise((resolve) => {
+        if (_animState) _animState.abort();
+
+        const overlay = ensureRollOverlay();
+        if (!overlay) { resolve(); return; }
+        const logCard = document.getElementById('log-card');
+        const meta    = breakdown?.meta ?? null;
+
+        const teamClass = (p, fallback) =>
+            p?.team === 'internal' ? 'droll-die--internal'
+                : p?.team === 'external' ? 'droll-die--external'
+                    : fallback;
+
+        const playerLine = (p, fallback) => p?.name
+            ? `${p.number != null ? '#' + escapeHTML(p.number) + ' ' : ''}${escapeHTML(p.name)}`
+            : fallback;
+
+        const advBadge = (roll) => roll.isAdvantage
+            ? `<div class="droll-adv">${breakdown?.captainReroll ? '👑 Reroll capitaine' : '🔥 Dépassement de soi'} — 2d20</div>`
+            : '';
+
+        const sideHTML = (side, roll, p, dieCls) => `
+            <div class="droll-side">
+                <div class="droll-label droll-label--${side}">${side === 'attack' ? '⚔️ Attaque' : '🛡️ Défense'}</div>
+                <div class="droll-name">${playerLine(p, side === 'attack' ? 'Attaquant' : 'Défenseur')}</div>
+                <div class="droll-action">${p?.actionLabel ? escapeHTML(p.actionLabel) : '&nbsp;'}</div>
+                <div class="droll-dice-row">
+                    <div class="droll-die ${dieCls}" data-die="${side}">?</div>
+                    ${roll.isAdvantage ? `<div class="droll-die droll-die--alt ${dieCls}" data-die="${side}-alt">?</div>` : ''}
+                </div>
+                ${advBadge(roll)}
+                <div class="droll-bonus" data-bonus="${side}">&nbsp;</div>
+            </div>`;
+
+        overlay.innerHTML = `
+            <div class="droll-card" role="status">
+                <div class="droll-row">
+                    ${sideHTML('attack', aRoll, meta?.attacker, teamClass(meta?.attacker, 'droll-die--attack'))}
+                    <div class="droll-vs">VS</div>
+                    ${sideHTML('defense', dRoll, meta?.defender, teamClass(meta?.defender, 'droll-die--defense'))}
+                </div>
+                <div class="droll-verdict">&nbsp;</div>
+                <div class="droll-hint">cliquer pour passer</div>
+            </div>`;
+
+        overlay.classList.add('visible');
+        logCard?.classList.add('dice-rolling');
+
+        const dieA      = overlay.querySelector('[data-die="attack"]');
+        const dieAAlt   = overlay.querySelector('[data-die="attack-alt"]');
+        const dieD      = overlay.querySelector('[data-die="defense"]');
+        const dieDAlt   = overlay.querySelector('[data-die="defense-alt"]');
+        const verdictEl = overlay.querySelector('.droll-verdict');
+
+        const timers = [];
+        const later  = (fn, ms) => timers.push(setTimeout(fn, ms));
+        const flip   = setInterval(() => {
+            [dieA, dieAAlt, dieD, dieDAlt].forEach(el => {
+                if (el && !el.classList.contains('droll-die--settled')) {
+                    el.textContent = 1 + Math.floor(Math.random() * DIE_SIDES);
+                }
+            });
+        }, 70);
+
+        const settleSide = (side, mainEl, altEl, roll) => {
+            if (!mainEl || mainEl.classList.contains('droll-die--settled')) return;
+            mainEl.textContent = roll.roll;
+            mainEl.classList.add('droll-die--settled');
+            if (roll.critSuccess) mainEl.classList.add('droll-die--crit');
+            if (roll.critFail)    mainEl.classList.add('droll-die--fumble');
+            if (altEl && roll.isAdvantage) {
+                altEl.textContent = Math.min(roll.roll1 ?? roll.roll, roll.roll2 ?? roll.roll);
+                altEl.classList.add('droll-die--settled', 'droll-die--discarded');
+            }
+            const bonusEl = overlay.querySelector(`[data-bonus="${side}"]`);
+            if (bonusEl) bonusEl.textContent = `bonus +${roll.bonus.toFixed(1)}`;
+        };
+
+        const showVerdict = () => {
+            if (!verdictEl || verdictEl.dataset.done) return;
+            verdictEl.dataset.done = '1';
+            const label = finalWinner === 'attack' ? "✓ L'attaque l'emporte"
+                : finalWinner === 'defense' ? '✗ La défense tient bon'
+                    : '= Égalité';
+            verdictEl.textContent = isCrit ? `⚡ Critique — ${label}` : label;
+            verdictEl.classList.add(
+                finalWinner === 'attack' ? 'droll-verdict--attack'
+                    : finalWinner === 'defense' ? 'droll-verdict--defense'
+                        : 'droll-verdict--tie'
+            );
+        };
+
+        const settleAll = () => {
+            settleSide('attack',  dieA, dieAAlt, aRoll);
+            settleSide('defense', dieD, dieDAlt, dRoll);
+            showVerdict();
+        };
+
+        let done = false;
+        const finish = () => {
+            if (done) return;
+            done = true;
+            clearInterval(flip);
+            timers.forEach(clearTimeout);
+            overlay.classList.remove('visible');
+            logCard?.classList.remove('dice-rolling');
+            overlay.onclick = null;
+            document.removeEventListener('keydown', onKey);
+            _animState = null;
+            resolve();
+            flushAfterAnimCbs();
+        };
+
+        const skip = () => {
+            if (done) return;
+            if (!verdictEl?.dataset.done) {
+                settleAll();
+                later(finish, 400);
+            } else {
+                finish();
+            }
+        };
+        const onKey = (e) => { if (e.key === 'Escape') skip(); };
+
+        overlay.onclick = skip;
+        document.addEventListener('keydown', onKey);
+
+        const T = mode === 'fast'
+            ? { settleA: 300, settleD: 480, verdict: 560,  close: 1150 }
+            : { settleA: 800, settleD: 1050, verdict: 1200, close: 2100 };
+
+        later(() => settleSide('attack',  dieA, dieAAlt, aRoll), T.settleA);
+        later(() => settleSide('defense', dieD, dieDAlt, dRoll), T.settleD);
+        later(showVerdict, T.verdict);
+        later(finish, T.close);
+
+        _animState = { abort: () => { settleAll(); finish(); } };
+    });
 }
 
 function ensureTooltip() {
@@ -284,23 +495,37 @@ export function showDuelDice(attackScore, defenseScore, aRoll, dRoll, breakdown)
 
     const winner = attackScore > defenseScore ? "attack"
         : attackScore < defenseScore ? "defense" : "tie";
+    const finalWinner = breakdown?.result?.critWinner ?? breakdown?.result?.winner ?? winner;
 
     const aTag = breakdown?.rolls?.aTag ?? String(aRoll.roll);
     const dTag = breakdown?.rolls?.dTag ?? String(dRoll.roll);
 
-    // Chip compact — juste les scores
-    const winnerLabel = winner === 'attack' ? '✓ Attaque' : winner === 'defense' ? '✗ Défense' : '= Égalité';
-    const winnerColor = winner === 'attack' ? '#22c55e' : winner === 'defense' ? '#ef4444' : '#94a3b8';
+    const token = ++_chipToken;
+    const revealChip = () => {
+        if (token !== _chipToken) return;
 
-    duelDiceEl.textContent = `${aTag} vs ${dTag} — ${winnerLabel}`;
-    duelDiceEl.style.color = winnerColor;
-    duelDiceEl.style.fontWeight = '700';
-    duelDiceEl.classList.add("visible", "pop");
-    setTimeout(() => duelDiceEl.classList.remove("pop"), 500);
+        // Chip compact — juste les scores
+        const winnerLabel = winner === 'attack' ? '✓ Attaque' : winner === 'defense' ? '✗ Défense' : '= Égalité';
+        const winnerColor = winner === 'attack' ? '#22c55e' : winner === 'defense' ? '#ef4444' : '#94a3b8';
 
-    // Tooltip détaillé mis à jour pour le hover
-    const tip = ensureTooltip();
-    if (tip) tip.innerHTML = formatBreakdownHTML(breakdown);
+        duelDiceEl.textContent = `${aTag} vs ${dTag} — ${winnerLabel}`;
+        duelDiceEl.style.color = winnerColor;
+        duelDiceEl.style.fontWeight = '700';
+        duelDiceEl.classList.add("visible", "pop");
+        setTimeout(() => duelDiceEl.classList.remove("pop"), 500);
+
+        // Tooltip détaillé mis à jour pour le hover
+        const tip = ensureTooltip();
+        if (tip) tip.innerHTML = formatBreakdownHTML(breakdown);
+    };
+
+    const mode = getDiceAnimMode();
+    if (mode === 'off') { revealChip(); return; }
+
+    // Chip masqué pendant l'animation, révélé à la fin
+    duelDiceEl.classList.remove('visible', 'pop');
+    playDuelAnimation(aRoll, dRoll, breakdown, mode, finalWinner, !!breakdown?.result?.critWinner)
+        .then(revealChip);
 }
 
 export function bindDuelTooltipEvents() {
