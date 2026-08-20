@@ -347,6 +347,7 @@
 #duel-dice-tooltip .dt-row:last-child { border-bottom: none; }
 #duel-dice-tooltip .dt-label { opacity: 0.85; }
 #duel-dice-tooltip .dt-value { font-weight: 800; color: rgba(241,245,249,0.95); font-variant-numeric: tabular-nums; }
+#duel-dice-tooltip .dt-desc  { font-size: 11px; color: rgba(226,232,240,0.75); line-height: 1.4; margin: 4px 0 8px; }
 
 #action-bar.fade-out { opacity: 0; transform: translateY(8px); pointer-events: none; }
 #action-bar.fade-in  { opacity: 1; transform: translateY(0); pointer-events: auto; }
@@ -384,24 +385,61 @@
 #action-bar.mode-defense-external { --card-accent-1: rgba(249,115,22,0.95); --card-accent-2: rgba(253,186,116,0.95); --card-border: rgba(249,115,22,0.28); --card-inset: rgba(249,115,22,0.10); }
 
 .skill-card, .def-card {
-    position: relative; overflow: hidden; appearance: none; border: 1px solid var(--card-border);
-    cursor: pointer; display: grid; grid-template-rows: auto auto auto 1fr; gap: 4px;
-    width: 100%; min-height: 18px; padding: 12px; border-radius: 16px;
+    position: relative; overflow: hidden; display: flex; align-items: stretch;
+    border: 1px solid var(--card-border); width: 100%; min-height: 18px; border-radius: 16px;
     background: rgba(255,255,255,0.92);
     box-shadow: 0 10px 18px var(--card-shadow), 0 0 0 1px var(--card-inset) inset;
-    transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease; text-align: left;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
-.skill-card::before, .def-card::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 6px; opacity: 0.95; background: linear-gradient(90deg, var(--card-accent-1), var(--card-accent-2)); }
+.skill-card::before, .def-card::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 6px; opacity: 0.95; background: linear-gradient(90deg, var(--card-accent-1), var(--card-accent-2)); z-index: 1; }
 .skill-card:hover, .def-card:hover { transform: translateY(-1px); box-shadow: 0 14px 22px rgba(0,0,0,0.22); }
-.skill-card:active, .def-card:active { transform: translateY(0); filter: brightness(0.98); }
+
+/* Bouton d'action principal (Shot/Pass/Dribble/...) — occupe toute la carte,
+   ou seulement sa partie gauche quand un slot spécial est accolé à droite. */
+.skill-card-main, .def-card-main {
+    position: relative; appearance: none; border: none; cursor: pointer; text-align: left;
+    flex: 1 1 auto; min-width: 0; display: grid; grid-template-rows: auto auto auto 1fr; gap: 4px;
+    padding: 12px; background: transparent; transition: filter 0.12s ease;
+}
+.skill-card-main:active, .def-card-main:active { filter: brightness(0.97); }
 
 .skill-icon, .def-icon { font-size: 18px; line-height: 1; }
 .skill-title, .def-title { font-size: 13px; font-weight: 800; color: #0f172a; letter-spacing: 0.2px; }
 .skill-sub, .def-sub { font-size: 11px; color: rgba(15,23,42,0.70); }
-.skill-bottom, .def-bottom { margin-top: 6px; display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; }
+.skill-bottom, .def-bottom { margin-top: 6px; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
 .skill-power, .def-power { font-size: 18px; font-weight: 900; color: #0f172a; font-variant-numeric: tabular-nums; }
 .skill-cost, .def-cost { font-size: 11px; font-weight: 700; color: rgba(15,23,42,0.75); white-space: nowrap; }
 .skill-cost span, .def-cost span { font-weight: 900; color: rgba(15,23,42,0.90); }
+
+/* Slot spécial accolé à droite de la carte — fusionne action + spécial pour
+   éviter une carte dédiée en plus. */
+.skill-card-special, .def-card-special {
+    position: relative; appearance: none; cursor: pointer; text-align: left; flex: 0 0 auto; width: 86px;
+    display: flex; flex-direction: column; justify-content: space-between; gap: 4px;
+    padding: 10px 8px; border: none; border-left: 1px dashed rgba(15,23,42,0.14);
+    background: linear-gradient(180deg, rgba(217,119,6,0.10), rgba(255,255,255,0));
+    transition: background 0.12s ease, filter 0.12s ease;
+}
+.skill-card-special:hover, .def-card-special:hover { background: linear-gradient(180deg, rgba(217,119,6,0.22), rgba(255,255,255,0)); }
+.skill-card-special:active, .def-card-special:active { filter: brightness(0.96); }
+.skill-special-icon, .def-special-icon { font-size: 15px; line-height: 1; }
+.skill-special-title, .def-special-title {
+    font-size: 10px; font-weight: 800; color: #92400e; line-height: 1.15;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.skill-special-foot, .def-special-foot { display: flex; flex-direction: column; gap: 1px; }
+.skill-special-power, .def-special-power { font-size: 13px; font-weight: 900; color: #92400e; font-variant-numeric: tabular-nums; }
+.skill-special-cost, .def-special-cost { font-size: 9px; font-weight: 700; color: rgba(146,64,14,0.85); white-space: nowrap; }
+.skill-special-cost span, .def-special-cost span { font-weight: 900; }
+
+/* Badge de recharge (cooldown) — coin haut-droit du slot spécial compact,
+   ou du bouton entier pour la carte spéciale autonome (--main). */
+.skill-special-cooldown, .def-special-cooldown {
+    position: absolute; top: 4px; right: 4px; font-size: 8px; font-weight: 800; line-height: 1.3;
+    color: rgba(146,64,14,0.85); background: rgba(255,255,255,0.75); border-radius: 999px;
+    padding: 1px 4px; pointer-events: none;
+}
+.skill-special-cooldown--main { top: 8px; right: 8px; font-size: 9px; }
 #info-text { font-size: 12px; color: rgba(15,23,42,0.75); }
 
 /* ==========================================================================

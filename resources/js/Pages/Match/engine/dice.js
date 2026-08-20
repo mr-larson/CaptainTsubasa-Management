@@ -537,6 +537,27 @@ export function showBreakdownTooltip(breakdown, anchorEl) {
     tip.classList.remove("hidden");
 }
 
+function formatSpecialHTML(move) {
+    if (!move) return "";
+    const row = (label, value) => `<div class="dt-row"><div class="dt-label">${label}</div><div class="dt-value">${value}</div></div>`;
+    return `<div class="dt-wrap">
+        <div class="dt-section">
+            <div class="dt-title">🔥 ${move.label ?? move.short_label ?? "Spécial"}</div>
+            ${move.description ? `<div class="dt-desc">${move.description}</div>` : ""}
+            ${row("Recharge", move.cooldown != null ? `${move.cooldown} tour${move.cooldown > 1 ? "s" : ""}` : "—")}
+        </div>
+    </div>`;
+}
+
+/** Affiche le détail (nom complet, description, recharge) d'un spécial ancré sur son slot de carte. */
+export function showSpecialTooltip(move, anchorEl) {
+    if (!move || !anchorEl) return;
+    const tip = ensureTooltip();
+    tip.innerHTML = formatSpecialHTML(move);
+    positionTooltip(anchorEl);
+    tip.classList.remove("hidden");
+}
+
 export function hideBreakdownTooltip() {
     _duelTooltipEl?.classList.add("hidden");
 }

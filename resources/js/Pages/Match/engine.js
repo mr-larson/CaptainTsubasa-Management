@@ -14,7 +14,7 @@ import {
 } from './engine/stamina.js';
 
 import {
-    initDiceUI, bindDuelTooltipEvents, showDuelDice,
+    initDiceUI, bindDuelTooltipEvents, showDuelDice, showSpecialTooltip, hideBreakdownTooltip,
 } from './engine/dice.js';
 
 import {
@@ -247,12 +247,21 @@ export function initMatchEngine(rootEl, config = {}) {
     // Lie les boutons d'action (attaque/défense) générés dans la barre d'actions
     // à leurs handlers. Réutilisé à chaque (re)génération de la barre.
     function bindActionButtons() {
-        rootEl.querySelectorAll(".skill-card").forEach(btn =>
+        rootEl.querySelectorAll(".skill-card-main, .skill-card-special").forEach(btn =>
             btn.addEventListener("click", () => handleAttackClick(btn.dataset.action))
         );
-        rootEl.querySelectorAll(".def-card").forEach(btn =>
+        rootEl.querySelectorAll(".def-card-main, .def-card-special").forEach(btn =>
             btn.addEventListener("click", () => handleDefenseClick(btn.dataset.defense))
         );
+
+        // Tooltip (nom complet, description, recharge) au survol des slots spéciaux.
+        rootEl.querySelectorAll("[data-special]").forEach(btn => {
+            let move = null;
+            try { move = JSON.parse(btn.dataset.special); } catch { /* données invalides, tooltip ignorée */ }
+            if (!move) return;
+            btn.addEventListener("mouseenter", () => showSpecialTooltip(move, btn));
+            btn.addEventListener("mouseleave", () => hideBreakdownTooltip());
+        });
     }
 
     // ==========================
@@ -446,7 +455,7 @@ export function initMatchEngine(rootEl, config = {}) {
         const prefix       = defenseTeam === "internal" ? "home" : "away";
         const isKeeperStage =
             (state.pendingShotContext && state.pendingShotContext.stage === "keeper") ||
-            (ball.frontOfKeeper && (action === "shot" || action === "special"));
+            (ball.frontOfKeeper && ["shot", "special", "special-pass", "special-dribble"].includes(action));
 
         if (isKeeperStage) { updateSideCard(prefix, defenseTeam, 1); return; }
 
@@ -513,7 +522,7 @@ export function initMatchEngine(rootEl, config = {}) {
             return;
         }
 
-        if (ball.frontOfKeeper && action !== "shot" && action !== "special") return;
+        if (ball.frontOfKeeper && !["shot", "special", "special-pass", "special-dribble"].includes(action)) return;
 
         // Une-deux : exige un partenaire de duo sur le terrain
         if (action === "one_two" && !roster.getDuoPartnerOnField(state.currentTeam, ball.number)) return;
@@ -528,7 +537,7 @@ export function initMatchEngine(rootEl, config = {}) {
         }
 
         // Après
-        if (action === "special") {
+        if (action === "special" || action === "special-pass" || action === "special-dribble") {
             const attackerId = getPlayerId(state.currentTeam, ball.number);
             if (!canUseSpecial(attackerId)) {
                 setMessage(TEXTS.ui.specialCooldownMain, TEXTS.ui.specialCooldownSub);

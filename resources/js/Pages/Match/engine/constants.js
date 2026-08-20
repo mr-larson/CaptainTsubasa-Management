@@ -258,6 +258,10 @@ export const STATS = {
         // frein anti-spam — pas de bonus numérique en plus du swap de stat.
         one_two: { power: 10, cost: 9  },
         special: { power: 12, cost: 15 },
+        // Spéciaux passe/dribble : même coût/puissance que le spécial générique
+        // (repris tel quel lors du passage à un slot dédié par carte).
+        "special-pass":    { power: 12, cost: 15 },
+        "special-dribble": { power: 12, cost: 15 },
         cross:     { power: 10, cost: 8 },
         long_pass: { power: 10, cost: 15 },
     },

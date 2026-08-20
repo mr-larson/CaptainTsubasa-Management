@@ -635,7 +635,7 @@ export function updateCardsPower(ball) {
     const carrier      = _roster.getPlayerInfo(ball.team, ball.number);
     const carrierStats = carrier?.stats ?? {};
 
-    _ui.actionBarEl.querySelectorAll(".skill-card").forEach((btn) => {
+    _ui.actionBarEl.querySelectorAll(".skill-card-main").forEach((btn) => {
         const a  = btn.dataset.action;
         const el = btn.querySelector(".skill-power");
         if (!el) return;
@@ -650,39 +650,29 @@ export function updateCardsPower(ball) {
         el.textContent = String(Number(carrierStats[map[a]] ?? 0));
     });
 
-    const specialBtn = _ui.actionBarEl.querySelector('.skill-card[data-action="special"]');
-    if (specialBtn) {
-        const titleEl = specialBtn.querySelector('.skill-title');
-        const subEl   = specialBtn.querySelector('.skill-sub');
-        if (titleEl && subEl) {
-            const specials = _roster.getSpecialMoves(ball.team, ball.number).filter(m => m?.mode === "attack");
-            if (!specials.length) {
-                titleEl.textContent = TEXTS.cards.attack.special.title;
-                subEl.textContent   = TEXTS.cards.attack.special.sub;
-            } else if (specials.length === 1) {
-                titleEl.textContent = specials[0].label       || TEXTS.cards.attack.special.title;
-                subEl.textContent   = specials[0].description || TEXTS.cards.attack.special.sub;
-            } else {
-                titleEl.textContent = "Spéciaux";
-                subEl.textContent   = specials.map(m => m.short_label || m.label).filter(Boolean).join(" / ") || TEXTS.cards.attack.special.sub;
-            }
-        }
-    }
+    const specialMap = { special: "attack", "special-pass": "pass", "special-dribble": "dribble" };
+    _ui.actionBarEl.querySelectorAll(".skill-card-special").forEach((btn) => {
+        const el = btn.querySelector(".skill-special-power");
+        if (el) el.textContent = String(Number(carrierStats[specialMap[btn.dataset.action]] ?? 0));
+    });
 
     const mode = [..._ui.actionBarEl.classList].find(c => c.startsWith("mode-defense-"));
     if (!mode) return;
 
     const defenseTeam = mode.includes("external") ? "external" : "internal";
-    const isGK        = !!_ui.actionBarEl.querySelector('.def-card[data-defense="hands"]');
+    const isGK        = !!_ui.actionBarEl.querySelector('.def-card-main[data-defense="hands"]');
 
     if (isGK) {
         const gkStats = _roster.getPlayerInfo(defenseTeam, 1)?.stats ?? {};
-        const mapGK   = { hands: "hand_save", punch: "punch_save", "gk-special": "defense" };
-        _ui.actionBarEl.querySelectorAll(".def-card").forEach((btn) => {
+        const mapGK   = { hands: "hand_save", punch: "punch_save" };
+        _ui.actionBarEl.querySelectorAll(".def-card-main").forEach((btn) => {
             const el = btn.querySelector(".def-power");
             if (el) el.textContent = String(Number(gkStats[mapGK[btn.dataset.defense]] ?? 0));
         });
-        _updateSpecialDefLabel(_ui.actionBarEl.querySelector('.def-card[data-defense="gk-special"]'), defenseTeam, 1, "defense", TEXTS.cards.defenseGK["gk-special"]);
+        _ui.actionBarEl.querySelectorAll(".def-card-special").forEach((btn) => {
+            const el = btn.querySelector(".def-special-power");
+            if (el) el.textContent = String(Number(gkStats.defense ?? 0));
+        });
         return;
     }
 
@@ -691,59 +681,107 @@ export function updateCardsPower(ball) {
     if (!slot) return;
 
     const dStats = _roster.getPlayerInfo(defenseTeam, slot)?.stats ?? {};
-    const mapF   = { block: "block", intercept: "intercept", tackle: "tackle", "field-special": "defense" };
-    _ui.actionBarEl.querySelectorAll(".def-card").forEach((btn) => {
+    const mapF   = { block: "block", intercept: "intercept", tackle: "tackle" };
+    _ui.actionBarEl.querySelectorAll(".def-card-main").forEach((btn) => {
         const el = btn.querySelector(".def-power");
         if (el) el.textContent = String(Number(dStats[mapF[btn.dataset.defense]] ?? 0));
     });
-    _updateSpecialDefLabel(_ui.actionBarEl.querySelector('.def-card[data-defense="field-special"]'), defenseTeam, slot, "defense", TEXTS.cards.defenseField["field-special"]);
+    _ui.actionBarEl.querySelectorAll(".def-card-special").forEach((btn) => {
+        const el = btn.querySelector(".def-special-power");
+        if (el) el.textContent = String(Number(dStats.defense ?? 0));
+    });
 }
 
-function _updateSpecialDefLabel(btn, team, slot, mode, defaultCfg) {
-    if (!btn) return;
-    const titleEl = btn.querySelector('.def-title');
-    const subEl   = btn.querySelector('.def-sub');
-    if (!titleEl || !subEl) return;
-    const specials = _roster.getSpecialMoves(team, slot).filter(m => m?.mode === mode);
-    if (!specials.length) {
-        titleEl.textContent = defaultCfg.title;
-        subEl.textContent   = defaultCfg.sub;
-    } else if (specials.length === 1) {
-        titleEl.textContent = specials[0].label       || defaultCfg.title;
-        subEl.textContent   = specials[0].description || defaultCfg.sub;
-    } else {
-        titleEl.textContent = "Spéciaux";
-        subEl.textContent   = specials.map(m => m.short_label || m.label).filter(Boolean).join(" / ") || defaultCfg.sub;
-    }
+// Carte de base (Shot/Pass/Dribble/...) avec, si `special` est fourni, un slot
+// compact à droite pour l'action spéciale correspondante (fusion des deux
+// cartes en une pour limiter le nombre de cartes affichées).
+
+// Icône par type de base — identifie le genre de spécial en un coup d'œil.
+const SPECIAL_ICONS = {
+    shot: "🔥", pass: "🎯", dribble: "💨",
+    block: "🛡️", tackle: "🛡️", intercept: "🛡️",
+    hand_save: "🧤", punch_save: "🧤",
+};
+const specialIcon = (baseAction) => SPECIAL_ICONS[baseAction] ?? "🔥";
+
+// Sérialise un special move dans un attribut data (guillemets simples : le
+// JSON est en double-quotes, seule l'apostrophe éventuelle doit être échappée).
+const specialDataAttr = (move) => `data-special='${JSON.stringify(move).replace(/'/g, "&#39;")}'`;
+const specialCooldownBadge = (move, cls) => move?.cooldown != null ? `<span class="${cls}">⏳${move.cooldown}</span>` : '';
+
+function buildSkillCard(actionKey, cfg, special = null) {
+    const specialHTML = special ? `
+        <button class="skill-card-special" data-action="${special.action}" ${specialDataAttr(special.move)}>
+            ${specialCooldownBadge(special.move, 'skill-special-cooldown')}
+            <div class="skill-special-icon">${specialIcon(special.move.base_action)}</div>
+            <div class="skill-special-title">${special.move.short_label || special.move.label || 'Spécial'}</div>
+            <div class="skill-special-foot">
+                <div class="skill-special-power"></div>
+                <div class="skill-special-cost">⚡<span></span></div>
+            </div>
+        </button>` : '';
+    return `<div class="skill-card${special ? ' has-special' : ''}">
+        <button class="skill-card-main" data-action="${actionKey}">
+            <div class="skill-icon">${cfg.icon}</div>
+            <div class="skill-title">${cfg.title}</div>
+            <div class="skill-sub">${cfg.sub}</div>
+            <div class="skill-bottom">
+                <div class="skill-power"></div>
+                <div class="skill-cost">Énergie <span></span></div>
+            </div>
+        </button>${specialHTML}
+    </div>`;
 }
 
-function buildSkillCard(actionKey, cfg) {
-    return `<button class="skill-card" data-action="${actionKey}">
-        <div class="skill-icon">${cfg.icon}</div>
-        <div class="skill-title">${cfg.title}</div>
-        <div class="skill-sub">${cfg.sub}</div>
-        <div class="skill-bottom">
-            <div class="skill-power"></div>
-            <div class="skill-cost">Énergie <span></span></div>
-        </div>
-    </button>`;
+// Carte autonome pour un spécial dont l'action de base n'est pas proposée ce
+// tour-ci (ex : spécial tir hors de la zone de tir) — le spécial doit rester
+// jouable même sans carte hôte.
+function buildStandaloneSpecialCard(actionKey, move, defaultCfg) {
+    return `<div class="skill-card">
+        <button class="skill-card-main" data-action="${actionKey}" ${specialDataAttr(move ?? {})}>
+            ${specialCooldownBadge(move, 'skill-special-cooldown skill-special-cooldown--main')}
+            <div class="skill-icon">${specialIcon(move?.base_action)}</div>
+            <div class="skill-title">${move?.label || defaultCfg.title}</div>
+            <div class="skill-sub">${move?.description || defaultCfg.sub}</div>
+            <div class="skill-bottom">
+                <div class="skill-power"></div>
+                <div class="skill-cost">Énergie <span></span></div>
+            </div>
+        </button>
+    </div>`;
 }
 
-function buildDefCard(defKey, cfg) {
-    return `<button class="def-card" data-defense="${defKey}">
-        <div class="def-icon">${cfg.icon}</div>
-        <div class="def-title">${cfg.title}</div>
-        <div class="def-sub">${cfg.sub}</div>
-        <div class="def-bottom">
-            <div class="def-power"></div>
-            <div class="def-cost">Énergie <span></span></div>
-        </div>
-    </button>`;
+function buildDefCard(defKey, cfg, special = null) {
+    const specialHTML = special ? `
+        <button class="def-card-special" data-defense="${special.action}" ${specialDataAttr(special.move)}>
+            ${specialCooldownBadge(special.move, 'def-special-cooldown')}
+            <div class="def-special-icon">${specialIcon(special.move.base_action)}</div>
+            <div class="def-special-title">${special.move.short_label || special.move.label || 'Spécial'}</div>
+            <div class="def-special-foot">
+                <div class="def-special-power"></div>
+                <div class="def-special-cost">⚡<span></span></div>
+            </div>
+        </button>` : '';
+    return `<div class="def-card${special ? ' has-special' : ''}">
+        <button class="def-card-main" data-defense="${defKey}">
+            <div class="def-icon">${cfg.icon}</div>
+            <div class="def-title">${cfg.title}</div>
+            <div class="def-sub">${cfg.sub}</div>
+            <div class="def-bottom">
+                <div class="def-power"></div>
+                <div class="def-cost">Énergie <span></span></div>
+            </div>
+        </button>${specialHTML}
+    </div>`;
 }
 
 export function buildAttackActionsHTML(ball, roster) {
     const cfg      = TEXTS.cards.attack;
     const specials = roster.getSpecialMoves(ball.team, ball.number).filter(m => m?.mode === "attack");
+    // Un slot spécial par carte de base concernée (shot/pass/dribble) — premier
+    // spécial trouvé pour chaque base_action en cas de doublon improbable.
+    const specialByBase = {};
+    specials.forEach(m => { const base = m.base_action || "shot"; if (!specialByBase[base]) specialByBase[base] = m; });
     const zone     = Math.min(4, (ball.zoneIndex ?? 0) + 1); // 1=DEF,2=MDF,3=MOF,4=ATT
 
     // Une-deux : uniquement si le partenaire de duo du porteur est sur le terrain
@@ -774,51 +812,72 @@ export function buildAttackActionsHTML(ball, roster) {
     }
 
     const showShot = zone >= 3;
+    // Le spécial tir perd sa carte hôte hors zone de tir (Shot non proposé) :
+    // on garde une carte autonome pour qu'il reste toujours jouable.
+    const shotOrphanHTML = (!showShot && specialByBase.shot)
+        ? buildStandaloneSpecialCard("special", specialByBase.shot, cfg.special)
+        : "";
+
     return `<div id="attack-strip">
-        ${showShot ? buildSkillCard("shot", cfg.shot) : ""}
-        ${buildSkillCard("pass",    cfg.pass)}
-        ${buildSkillCard("dribble", cfg.dribble)}
+        ${showShot ? buildSkillCard("shot", cfg.shot, specialByBase.shot ? { action: "special", move: specialByBase.shot } : null) : ""}
+        ${buildSkillCard("pass",    cfg.pass,    specialByBase.pass    ? { action: "special-pass",    move: specialByBase.pass    } : null)}
+        ${buildSkillCard("dribble", cfg.dribble, specialByBase.dribble ? { action: "special-dribble", move: specialByBase.dribble } : null)}
         ${oneTwoHTML}
         ${extraHTML}
-        ${specials.length ? buildSkillCard("special", cfg.special) : ""}
+        ${shotOrphanHTML}
     </div>`;
 }
 
+const FIELD_DEFENSE_KEYS = ["block", "intercept", "tackle"];
+const GK_DEFENSE_KEYS    = { hand_save: "hands", punch_save: "punch" };
+
 export function buildDefenseFieldHTML(defenderTeam, defenderSlot, roster) {
-    const cfg      = TEXTS.cards.defenseField;
-    const specials = roster.getSpecialMoves(defenderTeam, defenderSlot).filter(m => m?.mode === "defense");
+    const cfg  = TEXTS.cards.defenseField;
+    const move = roster.getSpecialMoves(defenderTeam, defenderSlot).filter(m => m?.mode === "defense")[0] ?? null;
+    // Le moteur ne résout qu'un seul spécial défensif par joueur (cf. defenseBaseFor) ;
+    // on l'accroche à sa carte de base si reconnue, sinon à Tackle par défaut.
+    const base = move ? (FIELD_DEFENSE_KEYS.includes(move.base_action) ? move.base_action : "tackle") : null;
     return `<div id="defense-strip">
-        ${buildDefCard("block",     cfg.block)}
-        ${buildDefCard("intercept", cfg.intercept)}
-        ${buildDefCard("tackle",    cfg.tackle)}
-        ${specials.length ? buildDefCard("field-special", cfg["field-special"]) : ""}
+        ${buildDefCard("block",     cfg.block,     base === "block"     ? { action: "field-special", move } : null)}
+        ${buildDefCard("intercept", cfg.intercept, base === "intercept" ? { action: "field-special", move } : null)}
+        ${buildDefCard("tackle",    cfg.tackle,    base === "tackle"    ? { action: "field-special", move } : null)}
     </div>`;
 }
 
 export function buildDefenseGKHTML(defenderTeam, roster) {
-    const cfg      = TEXTS.cards.defenseGK;
-    const specials = roster.getSpecialMoves(defenderTeam, 1).filter(m => m?.mode === "defense");
+    const cfg  = TEXTS.cards.defenseGK;
+    const move = roster.getSpecialMoves(defenderTeam, 1).filter(m => m?.mode === "defense")[0] ?? null;
+    const base = move ? (GK_DEFENSE_KEYS[move.base_action] ?? "hands") : null;
     return `<div id="defense-strip">
-        ${buildDefCard("hands", cfg.hands)}
-        ${buildDefCard("punch", cfg.punch)}
-        ${specials.length ? buildDefCard("gk-special", cfg["gk-special"]) : ""}
+        ${buildDefCard("hands", cfg.hands, base === "hands" ? { action: "gk-special", move } : null)}
+        ${buildDefCard("punch", cfg.punch, base === "punch" ? { action: "gk-special", move } : null)}
     </div>`;
 }
 
 export function initUIFromStats() {
     const attackStrip = _rootEl.querySelector("#attack-strip");
     if (attackStrip) {
-        attackStrip.querySelectorAll(".skill-card").forEach(btn => {
+        attackStrip.querySelectorAll(".skill-card-main").forEach(btn => {
             const cfg   = STATS.attack[btn.dataset.action];
             const costEl= btn.querySelector(".skill-cost span");
+            if (cfg && costEl) costEl.textContent = cfg.cost;
+        });
+        attackStrip.querySelectorAll(".skill-card-special").forEach(btn => {
+            const cfg   = STATS.attack[btn.dataset.action];
+            const costEl= btn.querySelector(".skill-special-cost span");
             if (cfg && costEl) costEl.textContent = cfg.cost;
         });
     }
     const defenseStrip = _rootEl.querySelector("#defense-strip");
     if (defenseStrip) {
-        defenseStrip.querySelectorAll(".def-card").forEach(btn => {
+        defenseStrip.querySelectorAll(".def-card-main").forEach(btn => {
             const cfg   = STATS.defenseField[btn.dataset.defense] || STATS.defenseGK[btn.dataset.defense];
             const costEl= btn.querySelector(".def-cost span");
+            if (cfg && costEl) costEl.textContent = cfg.cost;
+        });
+        defenseStrip.querySelectorAll(".def-card-special").forEach(btn => {
+            const cfg   = STATS.defenseField[btn.dataset.defense] || STATS.defenseGK[btn.dataset.defense];
+            const costEl= btn.querySelector(".def-special-cost span");
             if (cfg && costEl) costEl.textContent = cfg.cost;
         });
     }
@@ -838,14 +897,18 @@ export function setActionBar(html, modeClass, ball, roster, bindFn, isKickoff) {
         updateCardsPower(ball);
 
         if (isKickoff && html.includes("attack-strip")) {
-            _ui.actionBarEl.querySelectorAll(".skill-card").forEach(btn => {
-                if (btn.dataset.action !== "pass") {
-                    btn.style.display = "none";
+            _ui.actionBarEl.querySelectorAll("#attack-strip > .skill-card").forEach(card => {
+                const btn = card.querySelector(".skill-card-main");
+                if (btn?.dataset.action !== "pass") {
+                    card.style.display = "none";
                 } else {
                     const t = btn.querySelector('.skill-title');
                     const s = btn.querySelector('.skill-sub');
                     if (t) t.textContent = "Coup d'envoi";
                     if (s) s.textContent = "Passe obligatoire";
+                    // Le spécial n'est pas jouable sur la remise en jeu obligatoire.
+                    card.querySelector('.skill-card-special')?.remove();
+                    card.classList.remove('has-special');
                 }
             });
         }
