@@ -378,9 +378,9 @@ function ensureTooltip() {
     return _duelTooltipEl;
 }
 
-function positionTooltip() {
+function positionTooltip(anchorEl = _duelDiceEl) {
     const tip  = _duelTooltipEl;
-    const dice = _duelDiceEl;
+    const dice = anchorEl;
     if (!tip || !dice) return;
 
     const margin   = 12;
@@ -526,6 +526,23 @@ export function showDuelDice(attackScore, defenseScore, aRoll, dRoll, breakdown)
     duelDiceEl.classList.remove('visible', 'pop');
     playDuelAnimation(aRoll, dRoll, breakdown, mode, finalWinner, !!breakdown?.result?.critWinner)
         .then(revealChip);
+}
+
+/** Affiche le détail d'un duel (breakdown) ancré sur n'importe quel élément — utilisé par le clic sur l'historique. */
+export function showBreakdownTooltip(breakdown, anchorEl) {
+    if (!breakdown || !anchorEl) return;
+    const tip = ensureTooltip();
+    tip.innerHTML = formatBreakdownHTML(breakdown);
+    positionTooltip(anchorEl);
+    tip.classList.remove("hidden");
+}
+
+export function hideBreakdownTooltip() {
+    _duelTooltipEl?.classList.add("hidden");
+}
+
+export function isBreakdownTooltipVisible() {
+    return !!_duelTooltipEl && !_duelTooltipEl.classList.contains("hidden");
 }
 
 export function bindDuelTooltipEvents() {

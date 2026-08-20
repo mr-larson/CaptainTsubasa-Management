@@ -14,7 +14,7 @@ const props = defineProps({
     showCaptainBadge: { type: Boolean, default: true },
 });
 
-const { overallOf, playerPhotoUrl } = usePlayerUtils();
+const { overallOf, playerPhotoUrl, nationalityFlag } = usePlayerUtils();
 </script>
 
 <template>
@@ -30,6 +30,11 @@ const { overallOf, playerPhotoUrl } = usePlayerUtils();
                      :class="overallOf(player)>=80?'bg-emerald-500 text-white':overallOf(player)>=65?'bg-teal-500 text-white':overallOf(player)>=50?'bg-amber-400 text-slate-900':'bg-slate-400 text-white'">
                     {{ overallOf(player) }}
                 </div>
+                <span v-if="nationalityFlag(player)"
+                      class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center text-[13px] leading-none shadow-sm"
+                      :title="player.nationality">
+                    {{ nationalityFlag(player) }}
+                </span>
             </div>
 
             <div class="flex-1 min-w-0">

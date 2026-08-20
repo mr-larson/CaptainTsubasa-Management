@@ -1400,7 +1400,7 @@ function _showKeeperRerollPrompt(defenseTeam, gkInfo, onConfirm, onSkip) {
     }, false);
 }
 
-function _continueKeeperDuelResult(duelResult, attackTeam, defenseTeam, isSpecial, originZone, logParts, diceTag) {
+function _continueKeeperDuelResult(duelResult, attackTeam, defenseTeam, isSpecial, originZone, logParts, diceTag, breakdown = null) {
     const b = ball();
     b.frontOfKeeper = false;
     resetLastDribbler();
@@ -1430,7 +1430,7 @@ function _continueKeeperDuelResult(duelResult, attackTeam, defenseTeam, isSpecia
         pushLogEntry(
             isSpecial ? "shotGoalSpecialTitle" : "shotGoalTitle",
             [scorerName2, "Zone " + (originZone + 1)].concat(logParts).filter(Boolean),
-            diceTag, _state
+            diceTag, _state, breakdown
         );
 
         animateGoalThenReset(attackTeam, () => {
@@ -1445,7 +1445,7 @@ function _continueKeeperDuelResult(duelResult, attackTeam, defenseTeam, isSpecia
         return;
     }
 
-    pushLogEntry("shotSavedTitle", ["Zone " + (originZone + 1)].concat(logParts), diceTag, _state);
+    pushLogEntry("shotSavedTitle", ["Zone " + (originZone + 1)].concat(logParts), diceTag, _state, breakdown);
     performKeeperClearance(defenseTeam, "hands", () => {
         _advanceTurn(defenseTeam);
         _showAttackBarForCurrentTeam();
@@ -1560,7 +1560,7 @@ export function resolveShotKeeperDuel(ctx, defenseAction) {
     resetLastDribbler();
 
     if (!critWinner && attackScore === defenseScore) {
-        pushLogEntry("shotGKEqualTitle", ["Zone " + (originZone + 1)], diceTag, _state);
+        pushLogEntry("shotGKEqualTitle", ["Zone " + (originZone + 1)], diceTag, _state, breakdown);
         performKeeperClearance(defenseTeam, "hands", () => { _advanceTurn(defenseTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
         return;
     }
@@ -1590,11 +1590,12 @@ export function resolveShotKeeperDuel(ctx, defenseAction) {
                         }));
                         const newCrit = resolveCritOutcome(aRoll, newDroll);
                         duelResult = newCrit ?? (newAttackScore > newDefenseScore ? "attack" : "defense");
-                        showDuelDice(newAttackScore, newDefenseScore, aRoll, newDroll, { ...breakdown, captainReroll: true });
+                        const rerollBreakdown = { ...breakdown, captainReroll: true };
+                        showDuelDice(newAttackScore, newDefenseScore, aRoll, newDroll, rerollBreakdown);
                         pushLogEntry(`👑 Captain Reroll GK — ${gkInfo.lastname}`, [
                             `2d20 (${newDroll.roll1}, ${newDroll.roll2}) → ${newDroll.roll}`,
                             duelResult === "defense" ? "✓ Arrêt !" : "✗ But quand même",
-                        ], null, _state);
+                        ], null, _state, rerollBreakdown);
                     }
                 } else {
                     // Joueur humain : stocker le contexte GK et afficher le prompt
@@ -1625,19 +1626,20 @@ export function resolveShotKeeperDuel(ctx, defenseAction) {
                         }));
                         const newCrit2  = resolveCritOutcome(aRoll, newDroll2);
                         const newResult = newCrit2 ?? (newAScore > newDScore ? "attack" : "defense");
-                        showDuelDice(newAScore, newDScore, aRoll, newDroll2, { ...breakdown, captainReroll: true });
+                        const rerollBreakdown = { ...breakdown, captainReroll: true };
+                        showDuelDice(newAScore, newDScore, aRoll, newDroll2, rerollBreakdown);
                         pushLogEntry(`👑 Captain Reroll GK — ${gkInfo.lastname}`, [
                             `2d20 (${newDroll2.roll1}, ${newDroll2.roll2}) → ${newDroll2.roll}`,
                             newResult === "defense" ? "✓ Arrêt !" : "✗ But quand même",
-                        ], null, _state);
-                        _continueKeeperDuelResult(newResult, attackTeam, defenseTeam, isSpecial, originZone, logParts, newAScore.toFixed(1) + "-" + newDScore.toFixed(1));
+                        ], null, _state, rerollBreakdown);
+                        _continueKeeperDuelResult(newResult, attackTeam, defenseTeam, isSpecial, originZone, logParts, newAScore.toFixed(1) + "-" + newDScore.toFixed(1), rerollBreakdown);
                     }, () => {
                         // Skip
                         _state.pendingCaptainReroll = null;
                         if (_state.captainReroll?.[defenseTeam]) {
                             _state.captainReroll[defenseTeam].usedOnCurrentAction = true;
                         }
-                        _continueKeeperDuelResult(duelResult, attackTeam, defenseTeam, isSpecial, originZone, logParts, diceTag);
+                        _continueKeeperDuelResult(duelResult, attackTeam, defenseTeam, isSpecial, originZone, logParts, diceTag, breakdown);
                     });
                     return; // Attendre le choix du joueur
                 }
@@ -1672,7 +1674,7 @@ export function resolveShotKeeperDuel(ctx, defenseAction) {
         pushLogEntry(
             isSpecial ? "shotGoalSpecialTitle" : "shotGoalTitle",
             [scorerName, "Zone " + (originZone + 1)].concat(logParts).filter(Boolean),
-            diceTag, _state
+            diceTag, _state, breakdown
         );
 
         animateGoalThenReset(attackTeam, () => {
@@ -1687,6 +1689,6 @@ export function resolveShotKeeperDuel(ctx, defenseAction) {
         return;
     }
 
-    pushLogEntry("shotSavedTitle", ["Zone " + (originZone + 1)].concat(logParts), diceTag, _state);
+    pushLogEntry("shotSavedTitle", ["Zone " + (originZone + 1)].concat(logParts), diceTag, _state, breakdown);
     performKeeperClearance(defenseTeam, defenseAction, () => { _advanceTurn(defenseTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
 }

@@ -2,7 +2,7 @@
 import { TEXTS, STATS, ACTION_BAR_FADE_MS } from './constants.js';
 import { getStaminaRatio, getStaminaTier } from './stamina.js';
 import { getPlayerId } from './field.js';
-import { isDiceAnimating, runAfterDiceAnimation } from './dice.js';
+import { isDiceAnimating, runAfterDiceAnimation, showBreakdownTooltip, hideBreakdownTooltip, isBreakdownTooltipVisible } from './dice.js';
 
 let _rootEl = null;
 let _roster = null;
@@ -16,6 +16,38 @@ export function initUIModule(rootEl, roster, ui, state, TEAMS) {
     _ui     = ui;
     _state  = state;
     _TEAMS  = TEAMS;
+
+    bindHistoryClickEvents();
+}
+
+/** Clic sur une entrée de l'historique → affiche le détail du duel (breakdown), s'il existe. */
+function bindHistoryClickEvents() {
+    if (!_ui?.historyListEl || _ui.historyListEl.dataset.clickBound) return;
+    _ui.historyListEl.dataset.clickBound = '1';
+
+    _ui.historyListEl.addEventListener('click', (event) => {
+        const li = event.target.closest('.log-entry');
+        if (!li) return;
+
+        const id        = li.dataset.logId;
+        const breakdown = id ? _logBreakdowns.get(id) : null;
+        if (!breakdown) return;
+
+        // Reclic sur la même entrée déjà ouverte → referme (comportement toggle).
+        if (isBreakdownTooltipVisible() && _openLogId === id) {
+            hideBreakdownTooltip();
+            _openLogId = null;
+            return;
+        }
+        showBreakdownTooltip(breakdown, li);
+        _openLogId = id;
+    });
+
+    document.addEventListener('click', (event) => {
+        if (event.target.closest('.log-entry') || event.target.closest('#duel-dice-tooltip')) return;
+        hideBreakdownTooltip();
+        _openLogId = null;
+    });
 }
 
 // -----------------------------------------------------------
@@ -210,8 +242,11 @@ const LOG_TYPES = {
     unknown:           { icon: '▸',  color: 'slate'  },
 };
 
+let _logIdSeq = 0;
+
 class LogEntry {
-    constructor({ turn = 0, actionType = 'unknown', team = null, result = 'neutral', mainText = '–', details = [], diceTag = null } = {}) {
+    constructor({ turn = 0, actionType = 'unknown', team = null, result = 'neutral', mainText = '–', details = [], diceTag = null, breakdown = null } = {}) {
+        this.id         = String(++_logIdSeq);
         this.turn       = turn;
         this.actionType = actionType;
         this.team       = team;
@@ -219,6 +254,7 @@ class LogEntry {
         this.mainText   = mainText;
         this.details    = details;
         this.diceTag    = diceTag;
+        this.breakdown  = breakdown;
     }
 
     get _cfg() {
@@ -237,8 +273,10 @@ class LogEntry {
         const detail = this.details.length
             ? `<div class="log-line-2">${this.details.join(' · ')}</div>`
             : '';
+        const clickable = this.breakdown ? ' log-entry--clickable' : '';
+        const infoIcon   = this.breakdown ? '<span class="log-info-icon" title="Voir le détail">ℹ</span>' : '';
 
-        return `<li class="log-entry log-result-${this.result} log-${this._cfg.color}">
+        return `<li class="log-entry log-result-${this.result} log-${this._cfg.color}${clickable}" data-log-id="${this.id}">
             <div class="log-left">${badge}${dot}</div>
             <div class="log-center">
                 <span class="log-icon">${this._cfg.icon}</span>
@@ -247,21 +285,25 @@ class LogEntry {
                     ${detail}
                 </div>
             </div>
+            ${infoIcon}
         </li>`;
     }
 }
 
-const logHistory  = [];
-const MAX_HISTORY = 30;
+const logHistory      = [];
+const _logBreakdowns  = new Map();
+let _openLogId        = null;
 
 export function resetLogHistory() {
     logHistory.length = 0;
+    _logBreakdowns.clear();
+    _openLogId = null;
     if (_ui?.historyListEl) _ui.historyListEl.innerHTML = '';
 }
 
 function _pushLog(entry) {
     logHistory.push(entry);
-    if (logHistory.length > MAX_HISTORY) logHistory.shift();
+    if (entry.breakdown) _logBreakdowns.set(entry.id, entry.breakdown);
     if (_ui?.historyListEl) {
         _ui.historyListEl.innerHTML = [...logHistory].reverse().map(e => e.toHTML()).join('');
     }
@@ -316,11 +358,11 @@ export function pushLogEntry(logKeyOrText, details = [], diceTag = null, state, 
     const [actionType, result] = _detectType(logKeyOrText, d);
 
     // Après
-    const entry = new LogEntry({ turn: turns, actionType, team, result, mainText: main, details: d, diceTag });
+    const entry = new LogEntry({ turn: turns, actionType, team, result, mainText: main, details: d, diceTag, breakdown: meta ?? null });
     _pushLog(entry);
 
-    // Historique COMPLET (non plafonné par MAX_HISTORY) du déroulé du match,
-    // exploitable pour le résumé post-match (action par action) côté Tab Calendar.
+    // Historique COMPLET du déroulé du match, exploitable pour le résumé
+    // post-match (action par action) côté Tab Calendar.
     if (state?.matchLog) {
         const duelMeta = meta?.meta ?? null; // breakdown.meta = { attacker, defender } (id, nom, numéro, action)
         state.matchLog.push({

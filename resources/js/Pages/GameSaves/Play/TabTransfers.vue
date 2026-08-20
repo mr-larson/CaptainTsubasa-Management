@@ -27,7 +27,7 @@ const emit = defineEmits([
 // ==========================
 //   HELPERS
 // ==========================
-const { overallOf, playerPhotoUrl, positionGroup, keyStatsFor, statLabel, moraleState } = usePlayerUtils();
+const { overallOf, playerPhotoUrl, nationalityFlag, positionGroup, keyStatsFor, statLabel, moraleState } = usePlayerUtils();
 
 
 // ==========================
@@ -275,10 +275,17 @@ const filteredHistory = computed(() =>
                             : 'bg-white hover:bg-slate-50 border-slate-100 hover:border-teal-200'">
 
                         <!-- Photo -->
-                        <div class="w-10 h-10 rounded-full overflow-hidden bg-slate-200 shrink-0 border-2"
-                             :class="selectedPlayer?.id === p.id ? 'border-white/50' : 'border-slate-100'">
-                            <img v-if="playerPhotoUrl(p)" :src="playerPhotoUrl(p)" class="w-full h-full object-cover" alt=""/>
-                            <div v-else class="w-full h-full flex items-center justify-center text-[10px] text-slate-400">?</div>
+                        <div class="relative shrink-0">
+                            <div class="w-10 h-10 rounded-full overflow-hidden bg-slate-200 border-2"
+                                 :class="selectedPlayer?.id === p.id ? 'border-white/50' : 'border-slate-100'">
+                                <img v-if="playerPhotoUrl(p)" :src="playerPhotoUrl(p)" class="w-full h-full object-cover" alt=""/>
+                                <div v-else class="w-full h-full flex items-center justify-center text-[10px] text-slate-400">?</div>
+                            </div>
+                            <span v-if="nationalityFlag(p)"
+                                  class="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-white border border-slate-200 flex items-center justify-center text-[10px] leading-none shadow-sm"
+                                  :title="p.nationality">
+                                {{ nationalityFlag(p) }}
+                            </span>
                         </div>
 
                         <!-- Infos -->
@@ -370,6 +377,11 @@ const filteredHistory = computed(() =>
                                  :class="overallOf(selectedPlayer)>=70?'bg-emerald-500 text-white':overallOf(selectedPlayer)>=50?'bg-amber-400 text-slate-900':'bg-slate-400 text-white'">
                                 {{ overallOf(selectedPlayer) }}
                             </div>
+                            <span v-if="nationalityFlag(selectedPlayer)"
+                                  class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center text-[13px] leading-none shadow-sm"
+                                  :title="selectedPlayer.nationality">
+                                {{ nationalityFlag(selectedPlayer) }}
+                            </span>
                         </div>
                         <div class="flex-1">
                             <h3 class="text-base font-bold text-slate-800">{{ selectedPlayer.firstname }} {{ selectedPlayer.lastname }}</h3>

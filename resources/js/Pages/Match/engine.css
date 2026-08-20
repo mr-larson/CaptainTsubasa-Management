@@ -467,6 +467,17 @@
 .log-entry.log-yellow { border-left-color: #ca8a04; }
 .log-entry.log-slate  { border-left-color: #94a3b8; }
 
+/* Entrées d'historique avec détail de duel disponible au clic */
+.log-entry--clickable { cursor: pointer; }
+.log-entry--clickable:hover { background: rgba(59,130,246,0.08); }
+.log-entry--clickable:active { transform: translateX(2px) scale(0.995); }
+.log-info-icon {
+    flex-shrink: 0; align-self: center; width: 14px; height: 14px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-size: 9px; font-style: normal;
+    color: #94a3b8; background: rgba(148,163,184,0.15); transition: background 0.15s ease, color 0.15s ease;
+}
+.log-entry--clickable:hover .log-info-icon { background: rgba(59,130,246,0.18); color: #2563eb; }
+
 .log-details-wrapper { display: flex; flex-direction: column; gap: 4px; margin-top: 2px; }
 .log-detail-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 6px; background: rgba(59,130,246,0.12); border-radius: 4px; border-left: 2px solid #3b82f6; font-size: 10px; }
 .log-detail-text { font-size: 10px; color: #64748b; }

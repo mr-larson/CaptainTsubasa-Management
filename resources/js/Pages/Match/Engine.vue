@@ -7,7 +7,6 @@
         </template>
 
         <div class="w-full px-4 lg:px-8 mt-4">
-            <div id="duel-dice-tooltip" class="dice-tooltip hidden" aria-hidden="true"></div>
             <div id="game-wrapper" ref="gameRoot" class="mx-auto w-full max-w-[1500px]">
 
                 <!-- =======================================================
@@ -322,13 +321,13 @@
                             <!-- ✅ shrink-0 : empêche l’entête de “manger” la place scroll -->
                             <div id="log-current" class="shrink-0">
                                 <div class="flex items-center justify-between gap-2">
-                                    <div class="text-[10px] uppercase tracking-widest font-bold text-slate-600 whitespace-nowrap">DERNIÈRE ACTION</div>
-                                    <div class="flex items-center gap-1.5">
-                                        <button id="dice-anim-toggle" type="button" class="dice-anim-toggle" title="Animation des dés : normale / rapide / désactivée"></button>
-                                        <div id="duel-dice-display" class="dice-chip"></div>
-                                    </div>
+                                    <div class="text-[10px] uppercase tracking-widest font-bold text-slate-600 whitespace-nowrap">ACTION</div>
+                                    <button id="dice-anim-toggle" type="button" class="dice-anim-toggle" title="Animation des dés : normale / rapide / désactivée"></button>
                                 </div>
-                                <div id="current-action-title" class="mt-2 font-bold text-slate-900">–</div>
+                                <div class="mt-2 flex items-center justify-between gap-2">
+                                    <div id="current-action-title" class="font-bold text-slate-900 truncate min-w-0">–</div>
+                                    <div id="duel-dice-display" class="dice-chip shrink-0"></div>
+                                </div>
                                 <div id="current-action-detail" class="text-slate-600">Les duels et détails apparaîtront ici.</div>
                             </div>
 

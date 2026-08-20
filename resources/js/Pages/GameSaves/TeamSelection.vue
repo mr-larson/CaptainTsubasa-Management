@@ -222,15 +222,15 @@
                         </div>
 
                         <!-- Colonne droite : effectif (prebuilt) ou aperçu style (draft) -->
-                        <div class="col-span-1 lg:col-span-9 border border-slate-200 rounded-xl bg-white p-4">
+                        <div class="col-span-1 lg:col-span-9 border border-slate-200 rounded-xl bg-white p-4 flex flex-col">
 
                             <!-- Mode prebuilt : effectif complet -->
                             <template v-if="gameMode !== 'draft'">
-                                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
+                                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 shrink-0">
                                     Effectif — {{ roster.length }} joueur(s)
                                 </h3>
 
-                                <div v-if="roster.length" class="max-h-[620px] overflow-y-auto pr-1 space-y-3">
+                                <div v-if="roster.length" class="flex-1 min-h-0 overflow-y-auto pr-1 space-y-3">
                                     <!-- Groupes de postes : GK → DEF → MID → ATT, triés par note -->
                                     <div v-for="group in groupedRoster" :key="group.key">
                                         <div class="flex items-center gap-2 mb-1.5 px-0.5">
@@ -241,9 +241,16 @@
                                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                             <div v-for="player in group.players" :key="player.id"
                                                  class="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-slate-50 hover:bg-white hover:border-slate-200 transition-all">
-                                                <div class="w-12 h-12 rounded-xl overflow-hidden bg-slate-200 border border-slate-100 shrink-0">
-                                                    <img v-if="playerPhotoUrl(player)" :src="playerPhotoUrl(player)" class="w-full h-full object-cover" alt=""/>
-                                                    <div v-else class="w-full h-full flex items-center justify-center text-slate-400 text-lg">👤</div>
+                                                <div class="relative shrink-0">
+                                                    <div class="w-12 h-12 rounded-xl overflow-hidden bg-slate-200 border border-slate-100">
+                                                        <img v-if="playerPhotoUrl(player)" :src="playerPhotoUrl(player)" class="w-full h-full object-cover" alt=""/>
+                                                        <div v-else class="w-full h-full flex items-center justify-center text-slate-400 text-lg">👤</div>
+                                                    </div>
+                                                    <span v-if="nationalityFlag(player)"
+                                                          class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-white border border-slate-200 flex items-center justify-center text-[11px] leading-none shadow-sm"
+                                                          :title="player.nationality">
+                                                        {{ nationalityFlag(player) }}
+                                                    </span>
                                                 </div>
                                                 <div class="flex-1 min-w-0">
                                                     <div class="flex items-center gap-1.5">
@@ -385,7 +392,7 @@ const selectedTeam = ref(null);
 // Helpers d'affichage partagés (cohérence avec le reste de l'app, cf. dashboard / effectif).
 const {
     overallOf, keyStatsFor, statLabel, statColor,
-    positionGroup, playerPhotoUrl, teamLogoUrl, moraleState,
+    positionGroup, playerPhotoUrl, teamLogoUrl, nationalityFlag, moraleState,
 } = usePlayerUtils();
 
 const filteredTeams = computed(() => {

@@ -42,6 +42,29 @@ const POSITION_GROUP_COLORS = {
     ATT: 'bg-red-100 text-red-700',
 };
 
+// Drapeaux par nationalité (miroir de App\Enums\Nationality::FLAGS).
+const NATIONALITY_FLAGS = {
+    'Japon':           '🇯🇵',
+    'Allemagne':       '🇩🇪',
+    'France':          '🇫🇷',
+    'Brésil':          '🇧🇷',
+    'Argentine':       '🇦🇷',
+    'Italie':          '🇮🇹',
+    'Pays-Bas':        '🇳🇱',
+    'Uruguay':         '🇺🇾',
+    'Angleterre':      '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
+    'Suède':           '🇸🇪',
+    'Espagne':         '🇪🇸',
+    'Mexique':         '🇲🇽',
+    'États-Unis':      '🇺🇸',
+    'Arabie saoudite': '🇸🇦',
+    'Corée du Sud':    '🇰🇷',
+    'Nigéria':         '🇳🇬',
+    'Australie':       '🇦🇺',
+    'Ghana':           '🇬🇭',
+    'Thaïlande':       '🇹🇭',
+};
+
 export function usePlayerUtils() {
 
     const overallOf = (player) => {
@@ -59,6 +82,11 @@ export function usePlayerUtils() {
         if (p.photo_path)         return `/storage/${p.photo_path}`;
         if (p.player?.photo_path) return `/storage/${p.player.photo_path}`;
         return null;
+    };
+
+    const nationalityFlag = (p) => {
+        const nationality = p?.nationality ?? p?.player?.nationality;
+        return NATIONALITY_FLAGS[nationality] ?? null;
     };
 
     const teamLogoUrl = (t) => {
@@ -132,7 +160,7 @@ export function usePlayerUtils() {
     };
 
     return {
-        overallOf, playerPhotoUrl, teamLogoUrl, sanctionTypeLabel,
+        overallOf, playerPhotoUrl, teamLogoUrl, nationalityFlag, sanctionTypeLabel,
         moraleState, moraleSourceLabel, moraleMatchEffect, HEROIC_MORALE_THRESHOLD,
         positionGroup, keyStatsFor, statLabel, statColor,
         positionLabel, positionGroupColor,
