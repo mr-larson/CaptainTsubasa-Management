@@ -31,7 +31,7 @@ const visibleSections = computed(() => sections.filter(s => !s.admin || isAdmin.
 
                     <!-- Illustration -->
                     <div class="hidden md:block flex-1">
-                        <img src="/images/Hyuga.webp" alt="Hyuga"
+                        <img src="/images/Matsuyama.webp" alt="Matsuyama"
                              class="max-h-[480px] object-contain drop-shadow-xl" />
                     </div>
 

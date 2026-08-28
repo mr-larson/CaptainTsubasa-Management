@@ -33,7 +33,7 @@ defineProps({
                 <!-- Image illustrative -->
                 <div
                     class="hidden xl:block basis-1/4 p-4 bg-contain bg-center bg-no-repeat"
-                    style="background-image: url('/images/Teppei_Kisugi_(Shutetsu_ES-SR-Pw)_Full.webp')"
+                    style="background-image: url('/images/Taro_Misaki.webp')"
                 ></div>
 
                 <!-- CONTENU en deux colonnes -->
