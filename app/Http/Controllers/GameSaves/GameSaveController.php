@@ -128,13 +128,59 @@ class GameSaveController extends Controller
         $periodPackage = null;
 
         if ($package) {
-            // Pas d'aperçu d'effectif détaillé pour un package (cf. plan) :
-            // juste la liste des équipes (id synthétique = team_key) pour le
-            // sélecteur, et les métadonnées du package pour l'affichage.
-            $teams = collect($package->teams_json)->map(fn ($t) => [
-                'id'   => $t['team_key'],
-                'name' => $t['name'],
-            ])->values();
+            // Équipes du package façonnées comme des `Team` canon (id synthétique
+            // = team_key, contracts[].player) pour que TeamSelection.vue affiche
+            // le même aperçu d'effectif complet qu'en mode standard — sans ça,
+            // l'écran ne montre qu'un résumé vide (cf. bug rapporté).
+            $playersByKey    = collect($package->players_json)->keyBy('player_key');
+            $contractsByTeam = collect($package->contracts_json)->groupBy('team_key');
+
+            $teams = collect($package->teams_json)->map(function ($t) use ($contractsByTeam, $playersByKey) {
+                $contracts = ($contractsByTeam->get($t['team_key']) ?? collect())
+                    ->map(function ($c) use ($playersByKey) {
+                        $p = $playersByKey->get($c['player_key']);
+                        if (!$p) return null;
+
+                        return [
+                            'salary'     => $c['salary'] ?? 0,
+                            'is_captain' => (bool) ($c['is_captain'] ?? false),
+                            'player'     => [
+                                'id'                  => $p['player_key'],
+                                'firstname'           => $p['firstname'],
+                                'lastname'            => $p['lastname'],
+                                'position'            => $p['position'],
+                                'secondary_positions' => $p['secondary_positions'] ?? [],
+                                'nationality'         => $p['nationality'] ?? null,
+                                'origin'              => $p['origin'] ?? null,
+                                'photo_path'          => $p['photo_path'] ?? null,
+                                'speed'               => $p['speed']      ?? 50,
+                                'stamina'             => $p['stamina']    ?? 50,
+                                'attack'              => $p['attack']     ?? 50,
+                                'defense'             => $p['defense']    ?? 50,
+                                'shot'                => $p['shot']       ?? 50,
+                                'pass'                => $p['pass']       ?? 50,
+                                'dribble'             => $p['dribble']    ?? 50,
+                                'block'               => $p['block']      ?? 50,
+                                'intercept'           => $p['intercept']  ?? 50,
+                                'tackle'              => $p['tackle']     ?? 50,
+                                'heading'             => $p['heading']    ?? 15,
+                            ],
+                        ];
+                    })
+                    ->filter()
+                    ->values();
+
+                return [
+                    'id'                     => $t['team_key'],
+                    'name'                   => $t['name'],
+                    'description'            => $t['description'] ?? null,
+                    'budget'                 => $t['budget'] ?? 0,
+                    'tactical_style'         => $t['tactical_style'] ?? null,
+                    'management_philosophy'  => $t['management_philosophy'] ?? null,
+                    'logo_path'              => $t['logo_path'] ?? null,
+                    'contracts'              => $contracts,
+                ];
+            })->values();
 
             $periodPackage = [
                 'id'          => $package->id,

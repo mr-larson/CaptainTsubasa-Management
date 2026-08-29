@@ -78,7 +78,7 @@
                     </div>
 
                     <!-- Panneau principal -->
-                    <div v-if="selectedTeam && !periodPackage" class="col-span-1 lg:col-span-10 grid grid-cols-1 lg:grid-cols-12 gap-4">
+                    <div v-if="selectedTeam" class="col-span-1 lg:col-span-10 grid grid-cols-1 lg:grid-cols-12 gap-4">
 
                         <!-- Profil équipe -->
                         <div class="col-span-1 lg:col-span-3 flex flex-col gap-3">
@@ -356,64 +356,6 @@
                         </div>
                     </div>
 
-                    <!-- Panneau principal — mode package : pas d'aperçu détaillé du roster,
-                         juste le résumé de la période et le choix des équipes à piloter. -->
-                    <div v-else-if="selectedTeam && periodPackage" class="col-span-1 lg:col-span-10 flex flex-col gap-3">
-                        <div class="border border-teal-200 rounded-xl bg-teal-50/50 p-5">
-                            <h2 class="text-lg font-black text-slate-800">📦 {{ periodPackage.name }}</h2>
-                            <p class="text-xs text-slate-500 mt-1">{{ periodPackage.description || 'Sans description' }}</p>
-                            <div class="mt-3 flex gap-4 text-xs text-slate-600 font-semibold">
-                                <span>{{ periodPackage.teamCount }} équipe(s)</span>
-                                <span>{{ periodPackage.playerCount }} joueur(s)</span>
-                            </div>
-                        </div>
-
-                        <div class="border border-slate-200 rounded-xl bg-white p-4">
-                            <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Équipe sélectionnée</h4>
-                            <p class="text-sm text-slate-700 font-semibold mb-4">{{ selectedTeam.name }}</p>
-
-                            <button type="button"
-                                    class="w-full py-3 rounded-xl font-bold text-sm transition-all"
-                                    :class="isHumanTeam(selectedTeam)
-                                ? 'bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100'
-                                : 'bg-teal-500 hover:bg-teal-400 text-white shadow-lg shadow-teal-200 hover:scale-[1.01] active:scale-[0.99]'"
-                                    @click="toggleHumanTeam(selectedTeam)">
-                                <span v-if="isHumanTeam(selectedTeam)">✓ Joueur {{ seatOf(selectedTeam) }} — Retirer</span>
-                                <span v-else>➕ Ajouter au hot-seat</span>
-                            </button>
-                        </div>
-
-                        <div class="border border-slate-200 rounded-xl bg-white p-4">
-                            <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
-                                Hot-seat — {{ humanTeams.length }} joueur(s)
-                            </h4>
-
-                            <div v-if="humanTeams.length" class="space-y-1.5 mb-3">
-                                <div v-for="(t, i) in humanTeams" :key="t.id"
-                                     class="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-slate-50 border border-slate-100">
-                                    <span class="w-5 h-5 rounded-full bg-teal-500 text-white text-[10px] font-black flex items-center justify-center shrink-0">{{ i + 1 }}</span>
-                                    <span class="flex-1 truncate text-xs font-semibold text-slate-700">{{ t.name }}</span>
-                                    <button type="button" @click="removeHumanTeam(t)"
-                                            class="shrink-0 text-slate-300 hover:text-rose-500 text-base leading-none">×</button>
-                                </div>
-                            </div>
-                            <p v-else class="text-xs text-slate-400 italic mb-3">
-                                Ajoute une ou plusieurs équipes à piloter.
-                            </p>
-
-                            <button type="button"
-                                    class="w-full py-3 rounded-xl font-bold text-sm transition-all"
-                                    :class="humanTeams.length
-                                ? 'bg-teal-500 hover:bg-teal-400 text-white shadow-lg shadow-teal-200 hover:scale-[1.01] active:scale-[0.99]'
-                                : 'bg-slate-100 text-slate-400 cursor-not-allowed'"
-                                    :disabled="!humanTeams.length || startForm.processing"
-                                    @click="startWithTeam">
-                                <span v-if="startForm.processing">Chargement...</span>
-                                <span v-else>▶ Lancer la partie ({{ humanTeams.length }} joueur{{ humanTeams.length > 1 ? 's' : '' }})</span>
-                            </button>
-                        </div>
-                    </div>
-
                     <!-- Placeholder si aucune équipe sélectionnée -->
                     <div v-else class="col-span-1 lg:col-span-10 border border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center text-slate-400" style="min-height: 400px;">
                         <div class="text-4xl mb-3">⚽</div>
@@ -439,9 +381,10 @@ import { usePlayerUtils } from '@/Pages/GameSaves/Play/usePlayerUtils.js';
 const props = defineProps({
     label:    { type: String, default: null },
     period:   { type: String, required: true },
-    // Équipes à afficher : celles du package choisi (id synthétique = team_key)
-    // si periodPackage est renseigné, sinon l'effectif standard — décidé en
-    // amont, à l'écran de création (cf. GameSaveController::store()).
+    // Équipes à afficher, façonnées comme des Team canon (contracts[].player) :
+    // celles du package choisi (id synthétique = team_key) si periodPackage
+    // est renseigné, sinon l'effectif standard — décidé en amont, à l'écran
+    // de création (cf. GameSaveController::store()).
     teams:    { type: Array,  required: true },
     gameMode: { type: String, default: 'prebuilt' },
     competitionType: { type: String, default: 'college_league' },
