@@ -222,13 +222,12 @@
 
                                     <!-- preview carré -->
                                     <div class="h-16 w-16 rounded border bg-white overflow-hidden flex items-center justify-center">
-                                        <img
-                                            v-if="photoPreviewUrl || form.photo_path"
-                                            :src="photoPreviewUrl ? photoPreviewUrl : `/storage/${form.photo_path}`"
+                                        <PlayerPhoto
+                                            :src="photoPreviewUrl ? photoPreviewUrl : (form.photo_path ? `/storage/${form.photo_path}` : null)"
                                             class="h-full w-full object-cover"
                                             alt="Photo joueur"
                                         />
-                                        <span v-else class="text-xs text-slate-400">Aucune</span>
+                                        <span v-if="!(photoPreviewUrl || form.photo_path)" class="text-xs text-slate-400">Aucune</span>
                                     </div>
                                 </div>
                             </div>
@@ -526,6 +525,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref, onBeforeUnmount, defineProps, computed, onMounted } from 'vue';
+import PlayerPhoto from '@/Components/PlayerPhoto.vue';
 
 // Components
 import H2 from '@/Components/H2.vue';

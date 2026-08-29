@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
+import PlayerPhoto from '@/Components/PlayerPhoto.vue';
 import RosterList from '@/Pages/GameSaves/Play/components/RosterList.vue';
 import PlayerStatusAlert from '@/Pages/GameSaves/Play/components/PlayerStatusAlert.vue';
 import PlayerIdentityCard from '@/Pages/GameSaves/Play/components/PlayerIdentityCard.vue';
@@ -299,10 +300,9 @@ const selectedPlayerPerf = computed(() => {
                                 <!-- Carte joueur compacte -->
                                 <div v-if="playerForEntry({ player_id: slot.player_id })" class="flex items-center gap-2">
                                     <div class="w-7 h-7 rounded-full overflow-hidden bg-slate-200 shrink-0">
-                                        <img v-if="playerPhotoUrl(playerForEntry({ player_id: slot.player_id }))"
-                                             :src="playerPhotoUrl(playerForEntry({ player_id: slot.player_id }))"
-                                             class="w-full h-full object-cover" alt=""/>
-                                        <div v-else class="w-full h-full flex items-center justify-center text-[9px] text-slate-400">?</div>
+                                        <PlayerPhoto :src="playerPhotoUrl(playerForEntry({ player_id: slot.player_id }))"
+                                             class="w-full h-full object-cover" alt="" />
+                                        <div v-if="!playerPhotoUrl(playerForEntry({ player_id: slot.player_id }))" class="w-full h-full flex items-center justify-center text-[9px] text-slate-400">?</div>
                                     </div>
                                     <div class="flex-1 min-w-0">
                                         <div class="text-xs font-semibold truncate text-slate-700">
@@ -443,9 +443,9 @@ const selectedPlayerPerf = computed(() => {
                              class="flex items-center gap-3 px-3 py-2 rounded-lg bg-teal-50 border border-teal-100">
 
                             <div class="w-8 h-8 rounded-full overflow-hidden bg-slate-200 shrink-0">
-                                <img v-if="playerForManualEntry(entry) && playerPhotoUrl(playerForManualEntry(entry))"
-                                     :src="playerPhotoUrl(playerForManualEntry(entry))" class="w-full h-full object-cover" alt=""/>
-                                <div v-else class="w-full h-full flex items-center justify-center text-[9px] text-slate-400">?</div>
+                                <PlayerPhoto :src="playerForManualEntry(entry) ? playerPhotoUrl(playerForManualEntry(entry)) : null"
+                                     class="w-full h-full object-cover" alt="" />
+                                <div v-if="!(playerForManualEntry(entry) && playerPhotoUrl(playerForManualEntry(entry)))" class="w-full h-full flex items-center justify-center text-[9px] text-slate-400">?</div>
                             </div>
 
                             <div class="flex-1 min-w-0">

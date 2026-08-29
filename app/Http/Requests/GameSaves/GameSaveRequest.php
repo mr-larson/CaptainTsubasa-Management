@@ -49,9 +49,16 @@ class GameSaveRequest extends FormRequest
                 'array',
                 'min:1',
             ],
-            'team_ids.*' => [
+            // En mode package de période, les valeurs sont des team_key (string)
+            // internes au package et non des id de la table globale `teams`.
+            'team_ids.*' => $this->filled('period_package_id')
+                ? ['string']
+                : ['integer', 'exists:teams,id'],
+
+            'period_package_id' => [
+                'nullable',
                 'integer',
-                'exists:teams,id',
+                'exists:period_packages,id',
             ],
 
             'season' => [

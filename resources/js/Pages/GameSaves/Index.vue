@@ -45,10 +45,16 @@ const formatDate = (value) => {
                             <h1 class="text-xl font-bold text-slate-800">Charger une partie</h1>
                             <p class="text-xs text-slate-400 mt-0.5">Sélectionne une sauvegarde ou crée une nouvelle partie</p>
                         </div>
-                        <Link :href="route('game-saves.create')"
-                              class="flex items-center justify-center gap-2 px-4 py-2 bg-teal-500 hover:bg-teal-400 text-white text-sm font-semibold rounded-xl transition-all">
-                            ⚽ Nouvelle partie
-                        </Link>
+                        <div class="flex items-center gap-2">
+                            <Link :href="route('period-packages.index')"
+                                  class="flex items-center justify-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 text-slate-600 text-sm font-semibold rounded-xl border border-slate-200 transition-all">
+                                📦 Mes périodes
+                            </Link>
+                            <Link :href="route('game-saves.create')"
+                                  class="flex items-center justify-center gap-2 px-4 py-2 bg-teal-500 hover:bg-teal-400 text-white text-sm font-semibold rounded-xl transition-all">
+                                ⚽ Nouvelle partie
+                            </Link>
+                        </div>
                     </div>
 
                     <!-- Aucune sauvegarde -->

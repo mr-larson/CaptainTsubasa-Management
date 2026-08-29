@@ -17,6 +17,7 @@ use App\Models\GameSaves\GamePromise;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameSanction;
 use App\Models\GameSaves\GameTeam;
+use App\Models\PeriodPackage;
 use App\Models\Player;
 use App\Models\PlayerLink;
 use App\Models\Team;
@@ -53,9 +54,32 @@ class GameSaveController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create(Request $request): Response
     {
-        return Inertia::render('GameSaves/Create');
+        return Inertia::render('GameSaves/Create', [
+            'periodPackages' => $this->periodPackagesSummary($request->user()),
+        ]);
+    }
+
+    /**
+     * Métadonnées légères des packages de période visibles par l'utilisateur
+     * (les siens + les partagés, tout pour un admin) — pour le sélecteur de
+     * contenu à la création d'une partie. Pas l'effectif complet : celui-ci
+     * n'est chargé qu'une fois le package effectivement choisi (cf. store()).
+     */
+    private function periodPackagesSummary(\App\Models\User $user): Collection
+    {
+        return PeriodPackage::query()
+            ->visibleTo($user)
+            ->get(['id', 'name', 'description', 'player_count', 'team_count'])
+            ->map(fn (PeriodPackage $p) => [
+                'id'          => $p->id,
+                'name'        => $p->name,
+                'description' => $p->description,
+                'playerCount' => $p->player_count,
+                'teamCount'   => $p->team_count,
+            ])
+            ->values();
     }
 
     /**
@@ -66,15 +90,17 @@ class GameSaveController extends Controller
     public function store(Request $request): Response
     {
         $data = $request->validate([
-            'label'            => ['nullable', 'string', 'max:255'],
-            'period'           => ['required', 'string', 'in:college'],
-            'game_mode'        => ['nullable', 'string', 'in:prebuilt,draft'],
-            'competition_type' => ['nullable', 'string', 'in:college_league,world_cup'],
-            'game_config'      => ['nullable', 'array'],
+            'label'              => ['nullable', 'string', 'max:255'],
+            'period'             => ['required', 'string', 'in:college'],
+            'game_mode'          => ['nullable', 'string', 'in:prebuilt,draft'],
+            'competition_type'   => ['nullable', 'string', 'in:college_league,world_cup'],
+            'game_config'        => ['nullable', 'array'],
+            'period_package_id'  => ['nullable', 'integer', 'exists:period_packages,id'],
         ]);
 
         $competitionType = $data['competition_type'] ?? 'college_league';
         $gameConfig = $data['game_config'] ?? null;
+        $gameMode = $data['game_mode'] ?? 'prebuilt';
 
         if ($competitionType === 'world_cup') {
             return Inertia::render('GameSaves/NationSelection', [
@@ -86,19 +112,52 @@ class GameSaveController extends Controller
             ]);
         }
 
-        $teams = Team::with(['contracts.player'])->orderBy('name')->get();
+        // Contenu choisi à l'étape précédente (Create.vue) : soit un package de
+        // période (remplace entièrement le roster standard), soit l'effectif
+        // standard. Sans effet en mode draft — le draft pioche dans le pool
+        // global de joueurs libres, incompatible avec un roster de package
+        // pré-assigné (cf. GameSaveRequest::rules(), Create.vue).
+        $package = null;
+        if ($gameMode !== 'draft' && !empty($data['period_package_id'])) {
+            $package = PeriodPackage::query()
+                ->visibleTo($request->user())
+                ->findOrFail($data['period_package_id']);
+        }
 
-        // Moral initial aléatoire : tiré via une graine déterministe pour que le
-        // moral affiché à la sélection soit exactement celui de la partie créée.
-        $moraleSeed = null;
-        if ((bool) ($gameConfig['initial_morale_random'] ?? true)) {
-            $moraleSeed = random_int(1, 2_000_000_000);
-            foreach ($teams as $team) {
-                foreach ($team->contracts as $contract) {
-                    $contract->player?->setAttribute(
-                        'morale_preview',
-                        MoraleService::initialMoraleFromSeed($moraleSeed, $contract->player->id)
-                    );
+        $moraleSeed    = null;
+        $periodPackage = null;
+
+        if ($package) {
+            // Pas d'aperçu d'effectif détaillé pour un package (cf. plan) :
+            // juste la liste des équipes (id synthétique = team_key) pour le
+            // sélecteur, et les métadonnées du package pour l'affichage.
+            $teams = collect($package->teams_json)->map(fn ($t) => [
+                'id'   => $t['team_key'],
+                'name' => $t['name'],
+            ])->values();
+
+            $periodPackage = [
+                'id'          => $package->id,
+                'name'        => $package->name,
+                'description' => $package->description,
+                'playerCount' => $package->player_count,
+                'teamCount'   => $package->team_count,
+            ];
+        } else {
+            $teams = Team::with(['contracts.player'])->orderBy('name')->get();
+
+            // Moral initial aléatoire : tiré via une graine déterministe pour que
+            // le moral affiché à la sélection soit exactement celui de la partie
+            // créée.
+            if ((bool) ($gameConfig['initial_morale_random'] ?? true)) {
+                $moraleSeed = random_int(1, 2_000_000_000);
+                foreach ($teams as $team) {
+                    foreach ($team->contracts as $contract) {
+                        $contract->player?->setAttribute(
+                            'morale_preview',
+                            MoraleService::initialMoraleFromSeed($moraleSeed, $contract->player->id)
+                        );
+                    }
                 }
             }
         }
@@ -107,10 +166,11 @@ class GameSaveController extends Controller
             'label'           => $data['label'] ?? null,
             'period'          => $data['period'],
             'teams'           => $teams,
-            'gameMode'        => $data['game_mode'] ?? 'prebuilt',
+            'gameMode'        => $gameMode,
             'competitionType' => $competitionType,
             'gameConfig'      => $gameConfig,
             'moraleSeed'      => $moraleSeed,
+            'periodPackage'   => $periodPackage,
         ]);
     }
 
@@ -158,14 +218,27 @@ class GameSaveController extends Controller
         $gameMode = $data['game_mode'] ?? 'prebuilt';
         $isDraft  = $gameMode === 'draft';
 
-        // Équipes humaines, dans l'ordre des sièges. Fallback mono-équipe via team_id.
-        $humanTeamIds = array_values(array_unique(array_map(
-            'intval',
-            $data['team_ids'] ?? array_filter([$data['team_id'] ?? null]),
-        )));
+        // Package de période sélectionné à la place du roster standard.
+        // Ignoré en mode draft : le draft tire son sens du pool global de
+        // joueurs libres (cf. GameSaveRequest::rules(), TeamSelection.vue).
+        $package = null;
+        if (!$isDraft && !empty($data['period_package_id'])) {
+            $package = PeriodPackage::findOrFail($data['period_package_id']);
+            $this->authorize('view', $package);
+        }
 
-        // Équipe propriétaire / active de la save = siège 1.
-        $primaryTeamId = $humanTeamIds[0] ?? $data['team_id'];
+        // Équipes humaines, dans l'ordre des sièges. Fallback mono-équipe via team_id.
+        // En mode package, ce sont des team_key (string) et non des id (int).
+        $humanTeamIds = $package
+            ? array_values(array_unique($data['team_ids'] ?? array_filter([$data['team_id'] ?? null])))
+            : array_values(array_unique(array_map(
+                'intval',
+                $data['team_ids'] ?? array_filter([$data['team_id'] ?? null]),
+            )));
+
+        // Équipe propriétaire / active de la save = siège 1. Pas de correspondance
+        // dans la table globale `teams` en mode package (FK nullable → null).
+        $primaryTeamId = $package ? null : ($humanTeamIds[0] ?? $data['team_id']);
 
         $initialState = null;
         if (!empty($data['game_config'])) {
@@ -185,28 +258,53 @@ class GameSaveController extends Controller
             'state'   => $initialState,
         ]);
 
-        // 1. Dupliquer les équipes
-        $teams             = Team::orderBy('id')->get();
-        $teamCount         = $teams->count();
-        $seasonLength      = max(1, ($teamCount - 1) * 2);
+        // 1. Dupliquer les équipes (ou hydrater depuis le package de période)
         $gameTeamsByBaseId = [];
 
-        foreach ($teams as $team) {
-            $gameTeam = GameTeam::create([
-                'game_save_id'          => $gameSave->id,
-                'base_team_id'          => $team->id,
-                'name'                  => $team->name,
-                'description'           => $team->description,
-                'budget'                => $team->budget,
-                'wins'                  => 0,
-                'draws'                 => 0,
-                'losses'                => 0,
-                'logo_path'             => $team->logo_path,
-                'formation'             => $team->default_formation ?? '3-2-3-2',
-                'tactical_style'        => $team->tactical_style        ?? 'balanced',
-                'management_philosophy' => $team->management_philosophy ?? 'collective',
-            ]);
-            $gameTeamsByBaseId[$team->id] = $gameTeam;
+        if ($package) {
+            $packageTeams = $package->teams_json;
+            $teamCount    = count($packageTeams);
+            $seasonLength = max(1, ($teamCount - 1) * 2);
+
+            foreach ($packageTeams as $t) {
+                $gameTeam = GameTeam::create([
+                    'game_save_id'          => $gameSave->id,
+                    'base_team_id'          => null,
+                    'name'                  => $t['name'],
+                    'description'           => $t['description'] ?? null,
+                    'budget'                => $t['budget'] ?? 0,
+                    'wins'                  => 0,
+                    'draws'                 => 0,
+                    'losses'                => 0,
+                    'logo_path'             => $t['logo_path'] ?? null,
+                    'formation'             => $t['formation'] ?? '3-2-3-2',
+                    'tactical_style'        => $t['tactical_style']        ?? 'balanced',
+                    'management_philosophy' => $t['management_philosophy'] ?? 'collective',
+                ]);
+                $gameTeamsByBaseId[$t['team_key']] = $gameTeam;
+            }
+        } else {
+            $teams        = Team::orderBy('id')->get();
+            $teamCount    = $teams->count();
+            $seasonLength = max(1, ($teamCount - 1) * 2);
+
+            foreach ($teams as $team) {
+                $gameTeam = GameTeam::create([
+                    'game_save_id'          => $gameSave->id,
+                    'base_team_id'          => $team->id,
+                    'name'                  => $team->name,
+                    'description'           => $team->description,
+                    'budget'                => $team->budget,
+                    'wins'                  => 0,
+                    'draws'                 => 0,
+                    'losses'                => 0,
+                    'logo_path'             => $team->logo_path,
+                    'formation'             => $team->default_formation ?? '3-2-3-2',
+                    'tactical_style'        => $team->tactical_style        ?? 'balanced',
+                    'management_philosophy' => $team->management_philosophy ?? 'collective',
+                ]);
+                $gameTeamsByBaseId[$team->id] = $gameTeam;
+            }
         }
 
         // Marquer chaque équipe humaine (is_controlled + siège dans l'ordre choisi).
@@ -235,86 +333,166 @@ class GameSaveController extends Controller
             $gameSave->save();
         }
 
-        // 2. Dupliquer les joueurs
-        $players             = Player::orderBy('id')->get();
+        // 2. Dupliquer les joueurs (ou hydrater depuis le package de période)
         $gamePlayersByBaseId = [];
         $randomMorale        = (bool) $gameSave->getConfig('initial_morale_random');
         // Graine transmise depuis l'écran de sélection : le moral prévisualisé
         // y est reproduit à l'identique. Sans graine (tests, appels directs) : rand.
         $moraleSeed          = isset($data['morale_seed']) ? (int) $data['morale_seed'] : null;
 
-        foreach ($players as $player) {
-            $s = $player->stats ?? [];
-            $gamePlayer = GamePlayer::create([
-                'game_save_id'   => $gameSave->id,
-                'base_player_id' => $player->id,
-                'firstname'      => $player->firstname,
-                'lastname'       => $player->lastname,
-                'position'       => $player->position,
-                'origin'         => $player->origin,
-                'nationality'    => $player->nationality,
-                'secondary_positions' => $player->secondary_positions ?? [],
-                'description'    => $player->description,
-                'photo_path'     => $player->photo_path,
-                'speed'          => $player->speed      ?? $s['speed']      ?? 50,
-                'stamina'        => rand(60, 100),
-                'attack'         => $player->attack     ?? $s['attack']     ?? 50,
-                'defense'        => $player->defense    ?? $s['defense']    ?? 50,
-                'shot'           => $player->shot       ?? $s['shot']       ?? 50,
-                'pass'           => $player->pass       ?? $s['pass']       ?? 50,
-                'dribble'        => $player->dribble    ?? $s['dribble']    ?? 50,
-                'block'          => $player->block      ?? $s['block']      ?? 50,
-                'intercept'      => $player->intercept  ?? $s['intercept']  ?? 50,
-                'tackle'         => $player->tackle     ?? $s['tackle']     ?? 50,
-                'heading'        => $player->heading    ?? $s['heading']    ?? 15,
-                'hand_save'      => $player->hand_save  ?? $s['hand_save']  ?? 0,
-                'punch_save'     => $player->punch_save ?? $s['punch_save'] ?? 0,
-                'special_moves'  => $player->special_moves ?? [],
-                'cost'           => $player->cost ?? 0,
-                'morale'         => !$randomMorale
-                    ? MoraleService::NEUTRAL_MORALE
-                    : ($moraleSeed !== null
-                        ? MoraleService::initialMoraleFromSeed($moraleSeed, $player->id)
-                        : rand(GameSave::INITIAL_MORALE_MIN, GameSave::INITIAL_MORALE_MAX)),
-            ]);
-            $gamePlayersByBaseId[$player->id] = $gamePlayer;
+        if ($package) {
+            foreach ($package->players_json as $p) {
+                // Pas d'id entier stable pour un joueur de package : crc32(player_key)
+                // sert de substitut déterministe à l'id attendu par initialMoraleFromSeed.
+                $moraleSeedInput = crc32($p['player_key']);
+
+                $gamePlayer = GamePlayer::create([
+                    'game_save_id'   => $gameSave->id,
+                    'base_player_id' => null,
+                    'firstname'      => $p['firstname'],
+                    'lastname'       => $p['lastname'],
+                    'position'       => $p['position'],
+                    'origin'         => $p['origin'] ?? null,
+                    'nationality'    => $p['nationality'] ?? null,
+                    'secondary_positions' => $p['secondary_positions'] ?? [],
+                    'description'    => $p['description'] ?? null,
+                    'photo_path'     => $p['photo_path'] ?? null,
+                    'speed'          => $p['speed']      ?? 50,
+                    'stamina'        => rand(60, 100),
+                    'attack'         => $p['attack']     ?? 50,
+                    'defense'        => $p['defense']    ?? 50,
+                    'shot'           => $p['shot']       ?? 50,
+                    'pass'           => $p['pass']       ?? 50,
+                    'dribble'        => $p['dribble']    ?? 50,
+                    'block'          => $p['block']      ?? 50,
+                    'intercept'      => $p['intercept']  ?? 50,
+                    'tackle'         => $p['tackle']     ?? 50,
+                    'heading'        => $p['heading']    ?? 15,
+                    'hand_save'      => $p['hand_save']  ?? 0,
+                    'punch_save'     => $p['punch_save'] ?? 0,
+                    'special_moves'  => $p['special_moves'] ?? [],
+                    'cost'           => $p['cost'] ?? 0,
+                    'morale'         => !$randomMorale
+                        ? MoraleService::NEUTRAL_MORALE
+                        : ($moraleSeed !== null
+                            ? MoraleService::initialMoraleFromSeed($moraleSeed, $moraleSeedInput)
+                            : rand(GameSave::INITIAL_MORALE_MIN, GameSave::INITIAL_MORALE_MAX)),
+                ]);
+                $gamePlayersByBaseId[$p['player_key']] = $gamePlayer;
+            }
+        } else {
+            $players = Player::orderBy('id')->get();
+
+            foreach ($players as $player) {
+                $s = $player->stats ?? [];
+                $gamePlayer = GamePlayer::create([
+                    'game_save_id'   => $gameSave->id,
+                    'base_player_id' => $player->id,
+                    'firstname'      => $player->firstname,
+                    'lastname'       => $player->lastname,
+                    'position'       => $player->position,
+                    'origin'         => $player->origin,
+                    'nationality'    => $player->nationality,
+                    'secondary_positions' => $player->secondary_positions ?? [],
+                    'description'    => $player->description,
+                    'photo_path'     => $player->photo_path,
+                    'speed'          => $player->speed      ?? $s['speed']      ?? 50,
+                    'stamina'        => rand(60, 100),
+                    'attack'         => $player->attack     ?? $s['attack']     ?? 50,
+                    'defense'        => $player->defense    ?? $s['defense']    ?? 50,
+                    'shot'           => $player->shot       ?? $s['shot']       ?? 50,
+                    'pass'           => $player->pass       ?? $s['pass']       ?? 50,
+                    'dribble'        => $player->dribble    ?? $s['dribble']    ?? 50,
+                    'block'          => $player->block      ?? $s['block']      ?? 50,
+                    'intercept'      => $player->intercept  ?? $s['intercept']  ?? 50,
+                    'tackle'         => $player->tackle     ?? $s['tackle']     ?? 50,
+                    'heading'        => $player->heading    ?? $s['heading']    ?? 15,
+                    'hand_save'      => $player->hand_save  ?? $s['hand_save']  ?? 0,
+                    'punch_save'     => $player->punch_save ?? $s['punch_save'] ?? 0,
+                    'special_moves'  => $player->special_moves ?? [],
+                    'cost'           => $player->cost ?? 0,
+                    'morale'         => !$randomMorale
+                        ? MoraleService::NEUTRAL_MORALE
+                        : ($moraleSeed !== null
+                            ? MoraleService::initialMoraleFromSeed($moraleSeed, $player->id)
+                            : rand(GameSave::INITIAL_MORALE_MIN, GameSave::INITIAL_MORALE_MAX)),
+                ]);
+                $gamePlayersByBaseId[$player->id] = $gamePlayer;
+            }
         }
 
         // 3. Dupliquer les contrats (mode prebuilt uniquement)
         if (!$isDraft) {
-            $contracts       = Contract::with(['team', 'player'])->orderBy('id')->get();
-            $contractsByTeam = $contracts->groupBy('team_id');
+            if ($package) {
+                $contractsByTeam = collect($package->contracts_json)->groupBy('team_key');
 
-            foreach ($contractsByTeam as $teamId => $teamContracts) {
-                if (!isset($gameTeamsByBaseId[$teamId])) continue;
-                $gameTeamId    = $gameTeamsByBaseId[$teamId]->id;
-                $teamContracts = $teamContracts->values();
+                foreach ($contractsByTeam as $teamKey => $teamContracts) {
+                    if (!isset($gameTeamsByBaseId[$teamKey])) continue;
+                    $gameTeamId    = $gameTeamsByBaseId[$teamKey]->id;
+                    $teamContracts = $teamContracts->values();
 
-                $starterNumber = 1;
-                $subNumber     = 12;
+                    $starterNumber = 1;
+                    $subNumber     = 12;
 
-                foreach ($teamContracts as $index => $contract) {
-                    $basePlayerId = $contract->player->id;
-                    if (!isset($gamePlayersByBaseId[$basePlayerId])) continue;
+                    foreach ($teamContracts as $index => $c) {
+                        $playerKey = $c['player_key'];
+                        if (!isset($gamePlayersByBaseId[$playerKey])) continue;
 
-                    $isStarter    = $index < 11;
-                    $jerseyNumber = $isStarter ? $starterNumber++ : $subNumber++;
+                        $isStarter    = $index < 11;
+                        $jerseyNumber = $isStarter ? $starterNumber++ : $subNumber++;
 
-                    $gamePlayersByBaseId[$basePlayerId]->number = $jerseyNumber;
-                    $gamePlayersByBaseId[$basePlayerId]->save();
+                        $gamePlayersByBaseId[$playerKey]->number = $jerseyNumber;
+                        $gamePlayersByBaseId[$playerKey]->save();
 
-                    GameContract::create([
-                        'game_save_id'                    => $gameSave->id,
-                        'game_team_id'                    => $gameTeamId,
-                        'game_player_id'                  => $gamePlayersByBaseId[$basePlayerId]->id,
-                        'salary'                          => $contract->salary ?? 0,
-                        'start_week'                      => 1,
-                        'end_week'                        => $seasonLength,
-                        'is_starter'                      => $isStarter,
-                        'is_captain'                      => $contract->is_captain ?? false,
-                        'captain_rerolls_remaining'       => 3,
-                        'captain_reroll_used_this_action' => false,
-                    ]);
+                        GameContract::create([
+                            'game_save_id'                    => $gameSave->id,
+                            'game_team_id'                    => $gameTeamId,
+                            'game_player_id'                  => $gamePlayersByBaseId[$playerKey]->id,
+                            'salary'                          => $c['salary'] ?? 0,
+                            'start_week'                      => 1,
+                            'end_week'                        => $seasonLength,
+                            'is_starter'                      => $isStarter,
+                            'is_captain'                      => $c['is_captain'] ?? false,
+                            'captain_rerolls_remaining'       => 3,
+                            'captain_reroll_used_this_action' => false,
+                        ]);
+                    }
+                }
+            } else {
+                $contracts       = Contract::with(['team', 'player'])->orderBy('id')->get();
+                $contractsByTeam = $contracts->groupBy('team_id');
+
+                foreach ($contractsByTeam as $teamId => $teamContracts) {
+                    if (!isset($gameTeamsByBaseId[$teamId])) continue;
+                    $gameTeamId    = $gameTeamsByBaseId[$teamId]->id;
+                    $teamContracts = $teamContracts->values();
+
+                    $starterNumber = 1;
+                    $subNumber     = 12;
+
+                    foreach ($teamContracts as $index => $contract) {
+                        $basePlayerId = $contract->player->id;
+                        if (!isset($gamePlayersByBaseId[$basePlayerId])) continue;
+
+                        $isStarter    = $index < 11;
+                        $jerseyNumber = $isStarter ? $starterNumber++ : $subNumber++;
+
+                        $gamePlayersByBaseId[$basePlayerId]->number = $jerseyNumber;
+                        $gamePlayersByBaseId[$basePlayerId]->save();
+
+                        GameContract::create([
+                            'game_save_id'                    => $gameSave->id,
+                            'game_team_id'                    => $gameTeamId,
+                            'game_player_id'                  => $gamePlayersByBaseId[$basePlayerId]->id,
+                            'salary'                          => $contract->salary ?? 0,
+                            'start_week'                      => 1,
+                            'end_week'                        => $seasonLength,
+                            'is_starter'                      => $isStarter,
+                            'is_captain'                      => $contract->is_captain ?? false,
+                            'captain_rerolls_remaining'       => 3,
+                            'captain_reroll_used_this_action' => false,
+                        ]);
+                    }
                 }
             }
         }

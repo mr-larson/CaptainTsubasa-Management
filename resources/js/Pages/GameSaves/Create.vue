@@ -1,9 +1,14 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ref, reactive } from 'vue';
+import { ref, reactive, computed } from 'vue';
 import H2 from '@/Components/H2.vue';
 import GameRules from '@/Components/GameRules.vue';
+import Modal from '@/Components/Modal.vue';
+
+const props = defineProps({
+    periodPackages: { type: Array, default: () => [] },
+});
 
 const form = useForm({
     label: '',
@@ -11,7 +16,47 @@ const form = useForm({
     game_mode: 'prebuilt',
     competition_type: 'college_league',
     game_config: null,
+    period_package_id: null,
 });
+
+// Périodes importées proposées dans le sélecteur : aucune en mode Draft (le
+// draft pioche dans le pool global de joueurs libres, incompatible avec un
+// roster de package pré-assigné).
+const availablePackages = computed(() => form.game_mode === 'draft' ? [] : props.periodPackages);
+
+// Exporter la période actuellement choisie (modèle Collège par défaut, ou le
+// package sélectionné) — lien direct, pas de visite Inertia (téléchargement).
+const exportHref = computed(() =>
+    form.period_package_id
+        ? route('period-packages.export', form.period_package_id)
+        : route('period-packages.export-template')
+);
+
+// Import inline : reste sur cet écran (redirect_to=create), la période
+// importée devient immédiatement sélectionnable dans le menu ci-dessus.
+const showImportModal = ref(false);
+const importForm = useForm({
+    name: '',
+    description: '',
+    is_shared: false,
+    zip: null,
+    redirect_to: 'create',
+});
+
+function onImportZipChange(e) {
+    importForm.zip = e.target.files?.[0] ?? null;
+}
+
+function submitImport() {
+    importForm.post(route('period-packages.store'), {
+        forceFormData: true,
+        preserveScroll: true,
+        onSuccess: () => {
+            showImportModal.value = false;
+            importForm.reset();
+        },
+    });
+}
 
 const showConfig = ref(false);
 const showRules = ref(false);
@@ -208,21 +253,41 @@ function submit() {
                             <p v-if="form.errors.competition_type" class="text-xs text-rose-500">{{ form.errors.competition_type }}</p>
                         </div>
 
-                        <!-- Période -->
-                        <div class="flex flex-col gap-1.5">
-                            <label for="period" class="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                                Période
-                            </label>
+                        <!-- Période : effectif standard, ou une période importée qui le remplace entièrement -->
+                        <div v-if="form.competition_type === 'college_league'" class="flex flex-col gap-1.5">
+                            <div class="flex items-center justify-between flex-wrap gap-1">
+                                <label for="period_package" class="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                    Période
+                                </label>
+                                <div class="flex items-center gap-2 text-[11px] font-semibold">
+                                    <a :href="exportHref" download
+                                       class="text-teal-600 hover:text-teal-700 hover:underline">
+                                        📤 Exporter{{ form.period_package_id ? ' cette période' : ' un modèle' }}
+                                    </a>
+                                    <span class="text-slate-300">·</span>
+                                    <button type="button" @click="showImportModal = true"
+                                            class="text-teal-600 hover:text-teal-700 hover:underline">
+                                        📥 Importer une période
+                                    </button>
+                                </div>
+                            </div>
                             <select
-                                id="period"
-                                v-model="form.period"
+                                id="period_package"
+                                v-model="form.period_package_id"
                                 class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-teal-300 focus:border-teal-300 transition-all"
                             >
-                                <option value="college">Collège</option>
-                                <option value="highschool">Lycée</option>
-                                <option value="pro">Professionnel</option>
+                                <option :value="null">Collège (effectif standard)</option>
+                                <option v-for="pkg in availablePackages" :key="pkg.id" :value="pkg.id">
+                                    📦 {{ pkg.name }} ({{ pkg.teamCount }} équipes, {{ pkg.playerCount }} joueurs)
+                                </option>
                             </select>
-                            <p v-if="form.errors.period" class="text-xs text-rose-500">{{ form.errors.period }}</p>
+                            <p v-if="form.period_package_id" class="text-xs text-slate-400">
+                                Remplace entièrement l'effectif standard pour cette partie.
+                            </p>
+                            <p v-else-if="form.game_mode === 'draft' && periodPackages.length" class="text-xs text-slate-400">
+                                Les périodes importées ne sont pas disponibles en mode Draft.
+                            </p>
+                            <p v-if="form.errors.period_package_id" class="text-xs text-rose-500">{{ form.errors.period_package_id }}</p>
                         </div>
 
                         <!-- Mode de jeu (Ligue collège uniquement) -->
@@ -255,7 +320,7 @@ function submit() {
                                 </button>
 
                                 <button type="button"
-                                        @click="form.game_mode = 'draft'"
+                                        @click="form.game_mode = 'draft'; form.period_package_id = null"
                                         class="relative flex flex-col gap-2 p-4 rounded-xl border-2 transition-all text-left"
                                         :class="form.game_mode === 'draft'
                                             ? 'border-amber-500 bg-amber-50 shadow-sm'
@@ -532,5 +597,53 @@ function submit() {
                 </div>
             </div>
         </div>
+
+        <!-- Import inline d'une période : reste sur cet écran (redirect_to=create) -->
+        <Modal :show="showImportModal" max-width="lg" @close="showImportModal = false">
+            <div class="p-6">
+                <h3 class="text-lg font-bold text-slate-800 mb-1">Importer une période</h3>
+                <p class="text-xs text-slate-400 mb-4">
+                    Dépose un fichier .zip au format attendu (voir « Exporter un modèle » pour un exemple à éditer).
+                    Elle sera ajoutée à ta bibliothèque et immédiatement sélectionnable ci-dessus.
+                </p>
+                <form @submit.prevent="submitImport" class="flex flex-col gap-3">
+                    <div>
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Nom</label>
+                        <input v-model="importForm.name" type="text"
+                               class="mt-1 w-full rounded-lg border border-slate-300 bg-slate-50 text-sm px-3 py-2" />
+                        <p v-if="importForm.errors.name" class="text-xs text-rose-500 mt-1">{{ importForm.errors.name }}</p>
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Description</label>
+                        <textarea v-model="importForm.description" rows="2"
+                                  class="mt-1 w-full rounded-lg border border-slate-300 bg-slate-50 text-sm px-3 py-2"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Fichier (.zip)</label>
+                        <input type="file" accept=".zip" class="mt-1 w-full text-sm text-slate-600" @change="onImportZipChange" />
+                        <p v-if="importForm.errors.zip" class="text-xs text-rose-500 mt-1">{{ importForm.errors.zip }}</p>
+                    </div>
+
+                    <label class="flex items-center gap-2 text-xs text-slate-600">
+                        <input v-model="importForm.is_shared" type="checkbox" class="rounded border-slate-300" />
+                        Partager cette période (visible par les autres utilisateurs)
+                    </label>
+
+                    <div class="flex items-center justify-end gap-2 pt-2">
+                        <button type="button" @click="showImportModal = false"
+                                class="px-4 py-2 text-xs font-semibold rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50">
+                            Annuler
+                        </button>
+                        <button type="submit" :disabled="importForm.processing"
+                                class="px-4 py-2 text-xs font-semibold rounded-lg bg-teal-500 hover:bg-teal-400 text-white disabled:opacity-50">
+                            <span v-if="importForm.processing">Import en cours...</span>
+                            <span v-else>Importer</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </Modal>
     </AuthenticatedLayout>
 </template>

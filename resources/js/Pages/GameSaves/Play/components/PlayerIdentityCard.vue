@@ -1,6 +1,7 @@
 <script setup>
 import { usePlayerUtils } from '../usePlayerUtils.js';
 import SecondaryPositions from './SecondaryPositions.vue';
+import PlayerPhoto from '@/Components/PlayerPhoto.vue';
 
 /**
  * Carte identité du joueur sélectionné : photo + badge overall + nom +
@@ -23,8 +24,8 @@ const { overallOf, playerPhotoUrl, nationalityFlag } = usePlayerUtils();
             <!-- Photo + overall -->
             <div class="relative shrink-0">
                 <div class="w-20 h-20 rounded-xl border-2 border-slate-200 bg-white overflow-hidden">
-                    <img v-if="playerPhotoUrl(player)" :src="playerPhotoUrl(player)" class="w-full h-full object-cover" alt=""/>
-                    <div v-else class="w-full h-full flex items-center justify-center text-3xl text-slate-200">👤</div>
+                    <PlayerPhoto :src="playerPhotoUrl(player)" class="w-full h-full object-cover" alt="" />
+                    <div v-if="!playerPhotoUrl(player)" class="w-full h-full flex items-center justify-center text-3xl text-slate-200">👤</div>
                 </div>
                 <div class="absolute -top-2 -right-2 w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-[11px] font-black shadow"
                      :class="overallOf(player)>=80?'bg-emerald-500 text-white':overallOf(player)>=65?'bg-teal-500 text-white':overallOf(player)>=50?'bg-amber-400 text-slate-900':'bg-slate-400 text-white'">

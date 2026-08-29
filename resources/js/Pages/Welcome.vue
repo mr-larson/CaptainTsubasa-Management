@@ -1,6 +1,7 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import PlayerPhoto from '@/Components/PlayerPhoto.vue';
 
 const { canLogin, canRegister, teams, players } = defineProps({
     canLogin:    { type: Boolean, default: false },
@@ -116,7 +117,7 @@ const features = [
             <div class="players-grid">
                 <div v-for="p in playersWithPhoto.slice(0, 12)" :key="p.id" class="player-card">
                     <div class="player-photo-wrap">
-                        <img :src="`/storage/${p.photo_path}`" :alt="p.firstname" class="player-photo" />
+                        <PlayerPhoto :src="`/storage/${p.photo_path}`" :alt="p.firstname" class="player-photo" />
                         <div class="player-overall">{{ overallOf(p) }}</div>
                     </div>
                     <div class="player-name">{{ p.firstname }} {{ p.lastname }}</div>

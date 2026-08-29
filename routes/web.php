@@ -13,6 +13,7 @@ use App\Http\Controllers\GameSaves\GameSaveController;
 use App\Http\Controllers\GameSaves\GameTeamController;
 use App\Http\Controllers\GameSaves\LineupController;
 use App\Http\Controllers\GameSaves\TrainingController;
+use App\Http\Controllers\PeriodPackageController;
 use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TeamController;
@@ -85,6 +86,19 @@ Route::middleware('auth')->group(function () {
         Route::post('/',             [ContractController::class, 'store'])->name('store');
         Route::post('/{contract}',   [ContractController::class, 'update'])->name('update');
         Route::delete('/{contract}', [ContractController::class, 'destroy'])->name('destroy');
+    });
+
+    // Packages de période (bibliothèque personnelle : effectifs/équipes/contrats
+    // importables à la création d'une partie) — pas de middleware admin, chacun
+    // gère sa propre bibliothèque (PeriodPackagePolicy : privé sauf is_shared).
+    Route::prefix('period-packages')->name('period-packages.')->group(function () {
+        Route::get('/',                   [PeriodPackageController::class, 'index'])->name('index');
+        Route::get('/create',             [PeriodPackageController::class, 'create'])->name('create');
+        Route::get('/export-template',    [PeriodPackageController::class, 'exportTemplate'])->name('export-template');
+        Route::post('/',                  [PeriodPackageController::class, 'store'])->name('store');
+        Route::get('/{periodPackage}/export', [PeriodPackageController::class, 'export'])->name('export');
+        Route::put('/{periodPackage}',    [PeriodPackageController::class, 'update'])->name('update');
+        Route::delete('/{periodPackage}', [PeriodPackageController::class, 'destroy'])->name('destroy');
     });
 
     // Game saves

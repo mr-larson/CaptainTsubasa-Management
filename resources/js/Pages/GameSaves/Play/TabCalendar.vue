@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
 import MatchReplayPitch from './MatchReplayPitch.vue';
+import PlayerPhoto from '@/Components/PlayerPhoto.vue';
 
 const props = defineProps({
     calendarTeams:                 { type: Array,    required: true },
@@ -536,8 +537,8 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                                 <div v-for="p in homeProgressors" :key="p.player_id"
                                      class="flex items-center gap-2 p-2 bg-white/80 rounded-lg">
                                     <div class="w-8 h-8 rounded-full overflow-hidden bg-slate-200 shrink-0">
-                                        <img v-if="p.photo_path" :src="`/storage/${p.photo_path}`" class="w-full h-full object-cover" alt=""/>
-                                        <div v-else class="w-full h-full flex items-center justify-center text-[10px] text-slate-400">?</div>
+                                        <PlayerPhoto :src="p.photo_path ? `/storage/${p.photo_path}` : null" class="w-full h-full object-cover" alt="" />
+                                        <div v-if="!p.photo_path" class="w-full h-full flex items-center justify-center text-[10px] text-slate-400">?</div>
                                     </div>
                                     <div class="flex-1 min-w-0">
                                         <div class="text-xs font-bold text-slate-800 truncate">{{ p.lastname }}</div>
@@ -573,8 +574,8 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                                 <div v-for="p in awayProgressors" :key="p.player_id"
                                      class="flex items-center gap-2 p-2 bg-white/80 rounded-lg">
                                     <div class="w-8 h-8 rounded-full overflow-hidden bg-slate-200 shrink-0">
-                                        <img v-if="p.photo_path" :src="`/storage/${p.photo_path}`" class="w-full h-full object-cover" alt=""/>
-                                        <div v-else class="w-full h-full flex items-center justify-center text-[10px] text-slate-400">?</div>
+                                        <PlayerPhoto :src="p.photo_path ? `/storage/${p.photo_path}` : null" class="w-full h-full object-cover" alt="" />
+                                        <div v-if="!p.photo_path" class="w-full h-full flex items-center justify-center text-[10px] text-slate-400">?</div>
                                     </div>
                                     <div class="flex-1 min-w-0">
                                         <div class="text-xs font-bold text-slate-800 truncate">{{ p.lastname }}</div>
@@ -736,8 +737,8 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                             <td class="py-1.5 pr-3">
                                 <div class="flex items-center gap-2">
                                     <div class="w-6 h-6 rounded-full overflow-hidden bg-slate-200 shrink-0">
-                                        <img v-if="playerPhotoUrl(p)" :src="playerPhotoUrl(p)" class="w-full h-full object-cover" alt=""/>
-                                        <div v-else class="w-full h-full flex items-center justify-center text-[8px] text-slate-400">?</div>
+                                        <PlayerPhoto :src="playerPhotoUrl(p)" class="w-full h-full object-cover" alt="" />
+                                        <div v-if="!playerPhotoUrl(p)" class="w-full h-full flex items-center justify-center text-[8px] text-slate-400">?</div>
                                     </div>
                                     <div>
                                         <div class="font-medium text-slate-700 truncate max-w-[80px]">{{ p.lastname }}</div>

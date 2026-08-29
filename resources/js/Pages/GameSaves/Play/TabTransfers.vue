@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
+import PlayerPhoto from '@/Components/PlayerPhoto.vue';
 import RadarChart from '@/Pages/GameSaves/Play/components/RadarChart.vue';
 import StatBars from '@/Pages/GameSaves/Play/components/StatBars.vue';
 import SecondaryPositions from '@/Pages/GameSaves/Play/components/SecondaryPositions.vue';
@@ -278,8 +279,8 @@ const filteredHistory = computed(() =>
                         <div class="relative shrink-0">
                             <div class="w-10 h-10 rounded-full overflow-hidden bg-slate-200 border-2"
                                  :class="selectedPlayer?.id === p.id ? 'border-white/50' : 'border-slate-100'">
-                                <img v-if="playerPhotoUrl(p)" :src="playerPhotoUrl(p)" class="w-full h-full object-cover" alt=""/>
-                                <div v-else class="w-full h-full flex items-center justify-center text-[10px] text-slate-400">?</div>
+                                <PlayerPhoto :src="playerPhotoUrl(p)" class="w-full h-full object-cover" alt="" />
+                                <div v-if="!playerPhotoUrl(p)" class="w-full h-full flex items-center justify-center text-[10px] text-slate-400">?</div>
                             </div>
                             <span v-if="nationalityFlag(p)"
                                   class="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-white border border-slate-200 flex items-center justify-center text-[10px] leading-none shadow-sm"
@@ -370,8 +371,8 @@ const filteredHistory = computed(() =>
                     <div class="flex items-start gap-4">
                         <div class="relative shrink-0">
                             <div class="w-20 h-20 rounded-xl border-2 border-slate-200 bg-white overflow-hidden">
-                                <img v-if="playerPhotoUrl(selectedPlayer)" :src="playerPhotoUrl(selectedPlayer)" class="w-full h-full object-cover" alt=""/>
-                                <div v-else class="w-full h-full flex items-center justify-center text-3xl text-slate-200">👤</div>
+                                <PlayerPhoto :src="playerPhotoUrl(selectedPlayer)" class="w-full h-full object-cover" alt="" />
+                                <div v-if="!playerPhotoUrl(selectedPlayer)" class="w-full h-full flex items-center justify-center text-3xl text-slate-200">👤</div>
                             </div>
                             <div class="absolute -top-2 -right-2 w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-[11px] font-black shadow"
                                  :class="overallOf(selectedPlayer)>=70?'bg-emerald-500 text-white':overallOf(selectedPlayer)>=50?'bg-amber-400 text-slate-900':'bg-slate-400 text-white'">
@@ -496,8 +497,8 @@ const filteredHistory = computed(() =>
                      class="flex items-center gap-3 px-3 py-2 rounded-lg bg-white border border-slate-100">
                     <!-- Photo -->
                     <div class="w-8 h-8 rounded-full overflow-hidden bg-slate-200 shrink-0">
-                        <img v-if="playerPhotoUrl(entry.player)" :src="playerPhotoUrl(entry.player)" class="w-full h-full object-cover" alt=""/>
-                        <div v-else class="w-full h-full flex items-center justify-center text-[9px] text-slate-400">?</div>
+                        <PlayerPhoto :src="playerPhotoUrl(entry.player)" class="w-full h-full object-cover" alt="" />
+                        <div v-if="!playerPhotoUrl(entry.player)" class="w-full h-full flex items-center justify-center text-[9px] text-slate-400">?</div>
                     </div>
                     <!-- Nom -->
                     <div class="flex-1 min-w-0">
@@ -549,8 +550,8 @@ const filteredHistory = computed(() =>
                             <th v-for="p in compareList" :key="p.id" class="py-1 px-2 font-bold">
                                 <div class="flex items-center justify-center gap-2">
                                     <div class="w-7 h-7 rounded-full overflow-hidden bg-slate-200 shrink-0">
-                                        <img v-if="playerPhotoUrl(p)" :src="playerPhotoUrl(p)" class="w-full h-full object-cover" alt=""/>
-                                        <div v-else class="w-full h-full flex items-center justify-center text-[9px] text-slate-400">?</div>
+                                        <PlayerPhoto :src="playerPhotoUrl(p)" class="w-full h-full object-cover" alt="" />
+                                        <div v-if="!playerPhotoUrl(p)" class="w-full h-full flex items-center justify-center text-[9px] text-slate-400">?</div>
                                     </div>
                                     <div class="text-left leading-tight">
                                         <div class="text-slate-800">{{ p.lastname }}</div>

@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { usePlayerUtils } from '../usePlayerUtils.js';
+import PlayerPhoto from '@/Components/PlayerPhoto.vue';
 
 /**
  * Liste d'effectif partagée (Mon Équipe / Entraînement / Autres équipes) :
@@ -95,8 +96,8 @@ const benchTitle = (p) => {
                 <div class="flex items-center gap-2">
                     <!-- Photo -->
                     <div class="w-7 h-7 rounded-full overflow-hidden bg-slate-200 shrink-0">
-                        <img v-if="playerPhotoUrl(p)" :src="playerPhotoUrl(p)" class="w-full h-full object-cover" alt=""/>
-                        <div v-else class="w-full h-full flex items-center justify-center text-[9px] text-slate-400">?</div>
+                        <PlayerPhoto :src="playerPhotoUrl(p)" class="w-full h-full object-cover" alt="" />
+                        <div v-if="!playerPhotoUrl(p)" class="w-full h-full flex items-center justify-center text-[9px] text-slate-400">?</div>
                     </div>
 
                     <!-- Nom + poste -->

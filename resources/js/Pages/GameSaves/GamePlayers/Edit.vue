@@ -117,12 +117,11 @@
                                         </div>
 
                                         <div class="h-16 w-16 rounded border bg-white overflow-hidden flex items-center justify-center">
-                                            <img
-                                                v-if="photoPreviewUrl || (player.photo_path && !form.remove_photo)"
-                                                :src="photoPreviewUrl ? photoPreviewUrl : `/storage/${player.photo_path}`"
+                                            <PlayerPhoto
+                                                :src="photoPreviewUrl || (player.photo_path && !form.remove_photo ? `/storage/${player.photo_path}` : null)"
                                                 class="h-full w-full object-cover"
                                             />
-                                            <span v-else class="text-xs text-slate-400">Aucune</span>
+                                            <span v-if="!(photoPreviewUrl || (player.photo_path && !form.remove_photo))" class="text-xs text-slate-400">Aucune</span>
                                         </div>
                                     </div>
 
@@ -340,6 +339,7 @@
 <script setup>
 import { Head, useForm } from '@inertiajs/vue3'
 import { ref, defineProps } from 'vue'
+import PlayerPhoto from '@/Components/PlayerPhoto.vue'
 
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import H2 from '@/Components/H2.vue'

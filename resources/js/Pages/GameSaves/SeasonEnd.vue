@@ -2,6 +2,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
+import PlayerPhoto from '@/Components/PlayerPhoto.vue';
 
 const props = defineProps({
     gameSave: { type: Object, required: true },
@@ -86,7 +87,7 @@ function startNewSeason() {
 
                 <!-- MVP -->
                 <div v-if="recap?.mvp" class="bg-white rounded-2xl shadow-lg p-6 flex items-center gap-4">
-                    <img v-if="recap.mvp.photo_path" :src="`/storage/${recap.mvp.photo_path}`" class="w-16 h-16 rounded-full object-cover bg-slate-100" />
+                    <PlayerPhoto :src="recap.mvp.photo_path ? `/storage/${recap.mvp.photo_path}` : null" class="w-16 h-16 rounded-full object-cover bg-slate-100" />
                     <div>
                         <p class="text-xs uppercase tracking-widest text-slate-400">MVP de la saison</p>
                         <h3 class="text-xl font-bold text-slate-800">{{ recap.mvp.name }}</h3>
@@ -151,8 +152,8 @@ function startNewSeason() {
                     </div>
                     <ul class="divide-y divide-slate-50">
                         <li v-for="req in recap.transfer_requests" :key="req.player_id" class="px-6 py-3 flex items-center gap-3">
-                            <img v-if="req.photo_path" :src="`/storage/${req.photo_path}`" class="w-10 h-10 rounded-full object-cover bg-slate-100" />
-                            <div v-else class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-300">👤</div>
+                            <PlayerPhoto :src="req.photo_path ? `/storage/${req.photo_path}` : null" class="w-10 h-10 rounded-full object-cover bg-slate-100" />
+                            <div v-if="!req.photo_path" class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-300">👤</div>
                             <div class="flex-1">
                                 <p class="font-semibold text-slate-700">{{ req.name }}</p>
                                 <p class="text-xs text-rose-500">

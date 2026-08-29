@@ -4,10 +4,12 @@ namespace App\Providers;
 
 use App\Models\Contract;
 use App\Models\GameSaves\GameSave;
+use App\Models\PeriodPackage;
 use App\Models\Player;
 use App\Models\Team;
 use App\Policies\ContractPolicy;
 use App\Policies\GameSavePolicy;
+use App\Policies\PeriodPackagePolicy;
 use App\Policies\PlayerPolicy;
 use App\Policies\TeamPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
@@ -21,10 +23,11 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
-        GameSave::class => GameSavePolicy::class,
-        Team::class     => TeamPolicy::class,
-        Player::class   => PlayerPolicy::class,
-        Contract::class => ContractPolicy::class,
+        GameSave::class     => GameSavePolicy::class,
+        Team::class         => TeamPolicy::class,
+        Player::class       => PlayerPolicy::class,
+        Contract::class     => ContractPolicy::class,
+        PeriodPackage::class => PeriodPackagePolicy::class,
     ];
 
     /**

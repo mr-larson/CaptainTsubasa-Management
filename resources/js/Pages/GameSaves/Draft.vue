@@ -4,6 +4,7 @@ import { Head, router } from '@inertiajs/vue3';
 import { ref, computed, onMounted, nextTick } from 'vue';
 import TeamStyleBadges from '@/Pages/GameSaves/Play/components/TeamStyleBadges.vue';
 import Modal from '@/Components/Modal.vue';
+import PlayerPhoto from '@/Components/PlayerPhoto.vue';
 import PlayerIdentityCard from '@/Pages/GameSaves/Play/components/PlayerIdentityCard.vue';
 import RadarChart from '@/Pages/GameSaves/Play/components/RadarChart.vue';
 import StatBars from '@/Pages/GameSaves/Play/components/StatBars.vue';
@@ -588,9 +589,9 @@ onMounted(() => {
                                     <div v-for="pick in inspectedRoster" :key="pick.player_id"
                                          class="flex items-center gap-2 px-2 py-1 rounded-lg bg-slate-50 text-[11px]">
                                         <div class="w-5 h-5 rounded-full overflow-hidden bg-slate-200 shrink-0">
-                                            <img v-if="pick.photo_path" :src="`/storage/${pick.photo_path}`"
-                                                 class="w-full h-full object-cover" alt=""/>
-                                            <div v-else class="w-full h-full flex items-center justify-center text-[8px] text-slate-400">?</div>
+                                            <PlayerPhoto :src="pick.photo_path ? `/storage/${pick.photo_path}` : null"
+                                                 class="w-full h-full object-cover" alt="" />
+                                            <div v-if="!pick.photo_path" class="w-full h-full flex items-center justify-center text-[8px] text-slate-400">?</div>
                                         </div>
                                         <span class="flex-1 font-semibold text-slate-700 truncate">{{ pick.player_name }}</span>
                                         <span :class="positionColor(pick.position)"

@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
+import PlayerPhoto from '@/Components/PlayerPhoto.vue';
 
 const props = defineProps({
     teams:             { type: Array,   required: true },
@@ -193,8 +194,8 @@ const sortIcon = (key) => {
 
                             <!-- Photo -->
                             <div class="w-6 h-6 rounded-full overflow-hidden bg-slate-200 shrink-0">
-                                <img v-if="playerPhotoUrl(p)" :src="playerPhotoUrl(p)" class="w-full h-full object-cover" alt=""/>
-                                <div v-else class="w-full h-full flex items-center justify-center text-[8px] text-slate-400">?</div>
+                                <PlayerPhoto :src="playerPhotoUrl(p)" class="w-full h-full object-cover" alt="" />
+                                <div v-if="!playerPhotoUrl(p)" class="w-full h-full flex items-center justify-center text-[8px] text-slate-400">?</div>
                             </div>
 
                             <!-- Nom + équipe -->
