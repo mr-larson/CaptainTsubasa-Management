@@ -2,7 +2,10 @@
 import { TEXTS, STATS, ACTION_BAR_FADE_MS } from './constants.js';
 import { getStaminaRatio, getStaminaTier } from './stamina.js';
 import { getPlayerId } from './field.js';
-import { isDiceAnimating, runAfterDiceAnimation, showBreakdownTooltip, hideBreakdownTooltip, isBreakdownTooltipVisible } from './dice.js';
+import {
+    isDiceAnimating, runAfterDiceAnimation, showBreakdownTooltip, hideBreakdownTooltip, isBreakdownTooltipVisible,
+    enqueueRevealStep, revealDwellMs, resetEventQueue,
+} from './dice.js';
 
 let _rootEl = null;
 let _roster = null;
@@ -80,15 +83,16 @@ function _ensureOverlayEl() {
     return _overlayEl;
 }
 
-export function showEventNotification(type, text, subText = null) {
-    // Ne pas spoiler le résultat pendant l'animation des dés : différer le toast
-    if (isDiceAnimating()) {
-        runAfterDiceAnimation(() => showEventNotification(type, text, subText));
-        return;
-    }
+/**
+ * Écrit réellement le toast/bannière — sans garde anti-spoiler, puisque les
+ * appelants internes (pushLogEntry, showFreeKickBanner) sont déjà séquencés
+ * par la file de révélation (enqueueRevealStep). Renvoie l'élément affiché
+ * (ou null), pour permettre un clic dessus qui saute la pause d'affichage.
+ */
+function _renderEventNotification(type, text, subText = null) {
     if (type === 'goal' || type === 'foul' || type === 'yellow') {
         const toast = _ensureToastEl();
-        if (!toast) return;
+        if (!toast) return null;
         if (_toastTimer) { clearTimeout(_toastTimer); _toastTimer = null; }
         toast.className = `event-toast event-toast--${type}`;
         toast.innerHTML = text;
@@ -99,10 +103,11 @@ export function showEventNotification(type, text, subText = null) {
             toast.classList.remove('visible');
             setTimeout(() => toast.classList.remove('hiding'), 350);
         }, 2500);
+        return toast;
 
     } else if (type === 'red' || type === 'injury' || type === 'freekick') {
         const overlay = _ensureOverlayEl();
-        if (!overlay) return;
+        if (!overlay) return null;
         const icon = type === 'red' ? '🟥' : type === 'injury' ? '🤕' : '⚽';
         overlay.className = `event-overlay event-overlay--${type}`;
         overlay.innerHTML = `
@@ -113,14 +118,52 @@ export function showEventNotification(type, text, subText = null) {
         overlay.getBoundingClientRect();
         overlay.classList.add('visible');
         setTimeout(() => overlay.classList.remove('visible'), 2200);
+        return overlay;
+    }
+    return null;
+}
+
+/**
+ * API publique défensive — conservée pour un éventuel appelant hors file.
+ * Les chemins internes (pushLogEntry, showFreeKickBanner) appellent
+ * directement _renderEventNotification, déjà séquencés par la file.
+ */
+export function showEventNotification(type, text, subText = null) {
+    if (isDiceAnimating()) {
+        runAfterDiceAnimation(() => showEventNotification(type, text, subText));
+        return;
+    }
+    _renderEventNotification(type, text, subText);
+}
+
+/**
+ * Attend `dwellMs` avant d'appeler `done()` — sauf clic sur `skipEl` (s'il est
+ * fourni), qui saute la pause immédiatement. Utilisé par les étapes de la
+ * file (pushLogEntry, showFreeKickBanner) pour rythmer leur révélation.
+ */
+function _awaitDwell(done, dwellMs, skipEl = null) {
+    if (dwellMs <= 0) { done(); return; }
+    let resolved = false;
+    const finish = () => {
+        if (resolved) return;
+        resolved = true;
+        done();
+    };
+    const timer = setTimeout(finish, dwellMs);
+    if (skipEl) {
+        skipEl.addEventListener('click', () => { clearTimeout(timer); finish(); }, { once: true });
     }
 }
 
 // Bannière plein terrain « ⚽ Coup franc ! » — appelée par les résolveurs.
 export function showFreeKickBanner(teamLabel, takerNumber) {
-    showEventNotification('freekick', 'Coup franc !', `${teamLabel} — n°${takerNumber}`);
+    enqueueRevealStep(done => {
+        const el = _renderEventNotification('freekick', 'Coup franc !', `${teamLabel} — n°${takerNumber}`);
+        _awaitDwell(done, revealDwellMs('freekick'), el);
+    });
 }
 
+/** Renvoie l'élément toast/overlay affiché (ou null si le type n'en a pas). */
 function _triggerEventNotification(actionType, main, details) {
     const firstDetail = (details || [])[0] ?? '';
 
@@ -134,27 +177,28 @@ function _triggerEventNotification(actionType, main, details) {
         // firstDetail contient "Lastname n°X (TeamName)"
         const scorer = extractName(firstDetail);
         const icon   = actionType === 'special-goal' ? '🔥' : '⚽';
-        showEventNotification('goal', `${icon} But ! ${scorer}`);
+        return _renderEventNotification('goal', `${icon} But ! ${scorer}`);
 
     } else if (actionType === 'card-red') {
         const name = extractName(firstDetail);
-        showEventNotification('red', main, name || null);
         _flashCard('red');
+        return _renderEventNotification('red', main, name || null);
 
     } else if (actionType === 'injury') {
         const name = extractName(firstDetail);
-        showEventNotification('injury', main, name || null);
+        return _renderEventNotification('injury', main, name || null);
 
     } else if (actionType === 'card-yellow') {
         const name = extractName(firstDetail);
-        showEventNotification('yellow', `🟨 ${name}`);
         _flashCard('yellow');
+        return _renderEventNotification('yellow', `🟨 ${name}`);
 
     } else if (actionType === 'foul') {
         const name = extractName(firstDetail);
-        showEventNotification('foul', `⚠️ Faute — ${name}`);
         _flashCard('yellow');
+        return _renderEventNotification('foul', `⚠️ Faute — ${name}`);
     }
+    return null;
 }
 
 function _flashCard(type) {
@@ -299,6 +343,7 @@ export function resetLogHistory() {
     _logBreakdowns.clear();
     _openLogId = null;
     if (_ui?.historyListEl) _ui.historyListEl.innerHTML = '';
+    resetEventQueue();
 }
 
 function _pushLog(entry) {
@@ -349,20 +394,16 @@ export function pushLogEntry(logKeyOrText, details = [], diceTag = null, state, 
         .map(x => typeof x === 'string' ? (TEXTS.logs[x] ?? x) : x)
         .filter(x => x && !TECHNICAL_PATTERNS.some(p => p.test(String(x))));
 
-    if (_ui?.currentActionTitleEl)  _ui.currentActionTitleEl.textContent  = main || '–';
-    if (_ui?.currentActionDetailEl) _ui.currentActionDetailEl.textContent = '';
-
     const turns = state?.turns ?? 0;
     const team  = state?.currentTeam ?? null;
 
     const [actionType, result] = _detectType(logKeyOrText, d);
 
-    // Après
     const entry = new LogEntry({ turn: turns, actionType, team, result, mainText: main, details: d, diceTag, breakdown: meta ?? null });
-    _pushLog(entry);
 
     // Historique COMPLET du déroulé du match, exploitable pour le résumé
-    // post-match (action par action) côté Tab Calendar.
+    // post-match (action par action) côté Tab Calendar. Bookkeeping immédiat,
+    // indépendant du rythme d'affichage ci-dessous.
     if (state?.matchLog) {
         const duelMeta = meta?.meta ?? null; // breakdown.meta = { attacker, defender } (id, nom, numéro, action)
         state.matchLog.push({
@@ -390,7 +431,16 @@ export function pushLogEntry(logKeyOrText, details = [], diceTag = null, state, 
         });
     }
 
-    _triggerEventNotification(actionType, main, d);
+    // Révélation à l'écran (titre courant, historique, toast) : mise en file
+    // pour rythmer la cascade faute → carton → coup franc → tir → arrêt au
+    // lieu de l'afficher d'un bloc.
+    enqueueRevealStep(done => {
+        if (_ui?.currentActionTitleEl)  _ui.currentActionTitleEl.textContent  = main || '–';
+        if (_ui?.currentActionDetailEl) _ui.currentActionDetailEl.textContent = '';
+        _pushLog(entry);
+        const el = _triggerEventNotification(actionType, main, d);
+        _awaitDwell(done, revealDwellMs(actionType), el);
+    });
 }
 
 function ensureCardPhotoLayer(cardEl) {

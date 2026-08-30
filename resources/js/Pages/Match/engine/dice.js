@@ -164,9 +164,17 @@ const DICE_ANIM_STORAGE_KEY = 'ctm-dice-anim';
 const DICE_ANIM_MODES       = ['normal', 'fast', 'off'];
 const DICE_ANIM_LABELS      = { normal: '🎲 normale', fast: '🎲 rapide', off: '🎲 off' };
 
-let _animState    = null;   // animation en cours { abort() }
-let _afterAnimCbs = [];     // notifications différées pendant l'animation
 let _chipToken    = 0;      // seul le dernier duel a le droit d'écrire le chip
+
+// -----------------------------------------------------------
+//   File d'événements séquentielle
+//   Chaque révélation (jet de dé, entrée d'historique, toast/bannière) passe
+//   par enqueueRevealStep() et s'exécute l'une après l'autre — une cascade
+//   faute → carton → coup franc → tir → arrêt se joue ainsi étape par étape
+//   au lieu de s'afficher d'un bloc pendant que le premier jet de dé tourne.
+// -----------------------------------------------------------
+let _queue     = [];   // étapes en attente : (done) => void
+let _queueBusy = false;
 
 export function getDiceAnimMode() {
     try {
@@ -177,20 +185,60 @@ export function getDiceAnimMode() {
     return 'normal';
 }
 
+/** Une révélation (dé ou toast/historique) est en cours d'affichage. */
 export function isDiceAnimating() {
-    return _animState !== null;
+    return _queueBusy;
 }
 
-/** Exécute cb tout de suite, ou à la fin de l'animation de dés en cours. */
+/** Exécute cb tout de suite, ou après la révélation en cours. */
 export function runAfterDiceAnimation(cb) {
-    if (_animState) _afterAnimCbs.push(cb);
+    if (_queueBusy) enqueueRevealStep(done => { cb(); done(); });
     else cb();
 }
 
-function flushAfterAnimCbs() {
-    const cbs = _afterAnimCbs;
-    _afterAnimCbs = [];
-    cbs.forEach(cb => { try { cb(); } catch (e) { console.error(e); } });
+/**
+ * Ajoute une étape de révélation à la file. `runStep(done)` doit appeler
+ * `done()` une fois son délai d'affichage écoulé — la file démarre l'étape
+ * suivante seulement à ce moment-là.
+ */
+export function enqueueRevealStep(runStep) {
+    _queue.push(runStep);
+    if (!_queueBusy) _drainQueue();
+}
+
+function _drainQueue() {
+    const step = _queue.shift();
+    if (!step) { _queueBusy = false; return; }
+    _queueBusy = true;
+    step(() => _drainQueue());
+}
+
+/** Vide la file (nouvelle partie) — pas d'étape d'un match précédent en attente. */
+export function resetEventQueue() {
+    _queue     = [];
+    _queueBusy = false;
+}
+
+const REVEAL_DWELL = {
+    normal: { notable: 1400, routine: 150 },
+    fast:   { notable: 700,  routine: 150 },
+    off:    { notable: 0,    routine: 0 },
+};
+
+// Types "notables" (faute, carton, coup franc, blessure, but) — ceux pour
+// lesquels on marque une vraie pause ; le reste (passe, dribble réussi...)
+// n'a droit qu'à un délai minimal, pour ne pas ralentir le jeu courant.
+const NOTABLE_REVEAL_KINDS = new Set([
+    'foul', 'card-yellow', 'card-red', 'yellow', 'red',
+    'freekick', 'free-kick', 'injury',
+    'shot-goal', 'special-goal', 'goal',
+]);
+
+/** Durée (ms) pendant laquelle une révélation reste affichée avant la suivante. */
+export function revealDwellMs(kind) {
+    const mode = getDiceAnimMode();
+    const isNotable = NOTABLE_REVEAL_KINDS.has(kind);
+    return REVEAL_DWELL[mode][isNotable ? 'notable' : 'routine'];
 }
 
 function initDiceAnimToggle() {
@@ -228,8 +276,6 @@ function ensureRollOverlay() {
  */
 function playDuelAnimation(aRoll, dRoll, breakdown, mode, finalWinner, isCrit) {
     return new Promise((resolve) => {
-        if (_animState) _animState.abort();
-
         const overlay = ensureRollOverlay();
         if (!overlay) { resolve(); return; }
         const logCard = document.getElementById('log-card');
@@ -335,9 +381,7 @@ function playDuelAnimation(aRoll, dRoll, breakdown, mode, finalWinner, isCrit) {
             logCard?.classList.remove('dice-rolling');
             overlay.onclick = null;
             document.removeEventListener('keydown', onKey);
-            _animState = null;
             resolve();
-            flushAfterAnimCbs();
         };
 
         const skip = () => {
@@ -362,8 +406,6 @@ function playDuelAnimation(aRoll, dRoll, breakdown, mode, finalWinner, isCrit) {
         later(() => settleSide('defense', dieD, dieDAlt, dRoll), T.settleD);
         later(showVerdict, T.verdict);
         later(finish, T.close);
-
-        _animState = { abort: () => { settleAll(); finish(); } };
     });
 }
 
@@ -520,12 +562,18 @@ export function showDuelDice(attackScore, defenseScore, aRoll, dRoll, breakdown)
     };
 
     const mode = getDiceAnimMode();
-    if (mode === 'off') { revealChip(); return; }
 
-    // Chip masqué pendant l'animation, révélé à la fin
-    duelDiceEl.classList.remove('visible', 'pop');
-    playDuelAnimation(aRoll, dRoll, breakdown, mode, finalWinner, !!breakdown?.result?.critWinner)
-        .then(revealChip);
+    // Le jet de dé est lui-même une étape de la file : il ne démarre qu'une
+    // fois les révélations précédentes (faute, carton...) affichées, et la
+    // suivante n'apparaît qu'une fois celui-ci terminé.
+    enqueueRevealStep(done => {
+        if (mode === 'off') { revealChip(); done(); return; }
+
+        // Chip masqué pendant l'animation, révélé à la fin
+        duelDiceEl.classList.remove('visible', 'pop');
+        playDuelAnimation(aRoll, dRoll, breakdown, mode, finalWinner, !!breakdown?.result?.critWinner)
+            .then(() => { revealChip(); done(); });
+    });
 }
 
 /** Affiche le détail d'un duel (breakdown) ancré sur n'importe quel élément — utilisé par le clic sur l'historique. */
