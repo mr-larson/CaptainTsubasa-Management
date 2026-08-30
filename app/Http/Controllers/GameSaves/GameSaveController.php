@@ -24,6 +24,7 @@ use App\Models\Team;
 use App\Enums\Nationality;
 use App\Services\BonusCardShopService;
 use App\Services\CareerObjectiveService;
+use App\Services\DraftService;
 use App\Services\MoraleService;
 use App\Services\NationalTeamAssembler;
 use App\Services\PlayerStatsService;
@@ -541,6 +542,18 @@ class GameSaveController extends Controller
                     }
                 }
             }
+
+            // Composition initiale hors draft : les contrats ont été créés
+            // dans l'ordre du package/BDD (sans notion de poste) ; on
+            // réorganise chaque équipe selon la formation et le niveau des
+            // joueurs à leur poste (principal ou secondaire).
+            $state = $gameSave->state ?? [];
+            foreach ($gameTeamsByBaseId as $gameTeam) {
+                $gameTeam->load('contracts.gamePlayer');
+                app(DraftService::class)->organizeTeamLineup($gameTeam, $gameSave, $state);
+            }
+            $gameSave->state = $state;
+            $gameSave->save();
         }
 
         // 4. Mode draft : bonus budget + init draft state

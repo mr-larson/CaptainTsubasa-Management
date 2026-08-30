@@ -8,9 +8,12 @@ use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
+use App\Services\Concerns\EvaluatesPlayers;
 
 class DraftAIService
 {
+    use EvaluatesPlayers;
+
     // Composition cible par poste
     private const TARGET_BY_POSITION = [
         'GK'  => 2,
@@ -79,7 +82,7 @@ class DraftAIService
             // Prendre le joueur gratuit le plus fort
             $freeAgents = $freePlayers->filter(fn($p) => ($p->cost ?? 0) === 0);
             if ($freeAgents->isEmpty()) return null;
-            return $freeAgents->sortByDesc(fn($p) => $this->overallOf($p))->first()->id;
+            return $freeAgents->sortByDesc(fn($p) => $this->playerOverall($p))->first()->id;
         }
 
         // Scorer chaque joueur
@@ -100,7 +103,7 @@ class DraftAIService
 
         $scored = $affordable->map(function ($player) use ($priorityPosition, $philosophy, $tacticalStyle, $teamAvg, $maxCostPerPlayer, $countByPos, $discountedCost, $partnerMap, $squadBaseIds, $poolBaseIds) {
             $posGroup = $this->positionGroup($player->position ?? '');
-            $overall  = $this->overallOf($player);
+            $overall  = $this->playerOverall($player, $posGroup);
             $cost     = $player->cost ?? 0;
             $score    = 0.0;
 
@@ -192,29 +195,11 @@ class DraftAIService
         return $deficits[$topPos] > 0 ? $topPos : 'MID'; // fallback
     }
 
-    protected function positionGroup(string $position): string
-    {
-        $p = strtoupper(trim($position));
-        if (str_contains($p, 'GK') || str_contains($p, 'GOAL'))    return 'GK';
-        if (str_contains($p, 'DEF') || str_contains($p, 'BACK'))   return 'DEF';
-        if (str_contains($p, 'MDF') || str_contains($p, 'MID') || str_contains($p, 'MOF')) return 'MID';
-        if (str_contains($p, 'ATT') || str_contains($p, 'FOR'))    return 'ATT';
-        return 'MID';
-    }
-
-    protected function overallOf($player): float
-    {
-        $keys = ['speed', 'stamina', 'attack', 'defense', 'shot', 'pass', 'dribble', 'block', 'intercept', 'tackle'];
-        $vals = array_map(fn($k) => (int) ($player->{$k} ?? 0), $keys);
-        $vals = array_filter($vals, fn($v) => $v > 0);
-        return empty($vals) ? 0 : array_sum($vals) / count($vals);
-    }
-
     protected function avgOverall($contracts): float
     {
         $players = $contracts->map(fn($c) => $c->gamePlayer)->filter();
         if ($players->isEmpty()) return 40;
-        return $players->avg(fn($p) => $this->overallOf($p));
+        return $players->avg(fn($p) => $this->playerOverall($p));
     }
 
     protected function getSeasonLength(GameSave $gameSave): int

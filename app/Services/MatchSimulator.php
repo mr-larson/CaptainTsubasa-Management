@@ -7,10 +7,13 @@ use App\Helpers\FormationHelper;
 use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GameTeam;
 use App\Services\BonusCardActivationService;
+use App\Services\Concerns\EvaluatesPlayers;
 use Illuminate\Support\Collection;
 
 class MatchSimulator
 {
+    use EvaluatesPlayers;
+
     private const MAX_TURNS                       = 45;
     private const MAX_ZONE_INDEX                  = 4;   // 5 zones, index 0..4
     private const ENDURANCE_DEFAULT               = 100;
@@ -762,19 +765,34 @@ class MatchSimulator
             ->values();
 
         // Malus « titulaire consigné » : on écarte les joueurs visés et on
-        // promeut autant de remplaçants disponibles que possible.
+        // promeut, pour chacun, le meilleur remplaçant disponible au même
+        // poste (principal ou secondaire), avec repli sur le meilleur
+        // remplaçant toutes positions confondues si aucun ne correspond.
         if (!empty($benchedIds)) {
-            $benchedIds = array_map('intval', $benchedIds);
-            $removed    = $starters->filter(fn($c) => in_array((int) $c->game_player_id, $benchedIds, true))->count();
-            $starters   = $starters->reject(fn($c) => in_array((int) $c->game_player_id, $benchedIds, true))->values();
+            $benchedIds       = array_map('intval', $benchedIds);
+            $benchedContracts = $starters->filter(fn($c) => in_array((int) $c->game_player_id, $benchedIds, true));
+            $starters         = $starters->reject(fn($c) => in_array((int) $c->game_player_id, $benchedIds, true))->values();
 
-            if ($removed > 0) {
-                $replacements = $team->contracts
+            if ($benchedContracts->isNotEmpty()) {
+                $availableSubs = $team->contracts
                     ->filter(fn($c) => !$c->is_starter && $c->gamePlayer
                         && !in_array((int) $c->game_player_id, $benchedIds, true))
-                    ->values()
-                    ->take($removed);
-                $starters = $starters->concat($replacements)->values();
+                    ->values();
+
+                foreach ($benchedContracts as $benchedContract) {
+                    $targetPos = $this->positionGroup($benchedContract->gamePlayer->position ?? '');
+
+                    $replacement = $availableSubs
+                        ->filter(fn($c) => in_array($targetPos, $this->playerPositionGroups($c->gamePlayer), true))
+                        ->sortByDesc(fn($c) => $this->playerOverall($c->gamePlayer, $targetPos))
+                        ->first()
+                        ?? $availableSubs->sortByDesc(fn($c) => $this->playerOverall($c->gamePlayer))->first();
+
+                    if (!$replacement) continue;
+
+                    $starters      = $starters->push($replacement);
+                    $availableSubs = $availableSubs->reject(fn($c) => $c->id === $replacement->id)->values();
+                }
             }
         }
 

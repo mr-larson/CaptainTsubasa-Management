@@ -9,11 +9,14 @@ use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSanction;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
+use App\Services\Concerns\EvaluatesPlayers;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class AITransferService
 {
+    use EvaluatesPlayers;
+
     // Effectif cible idéal
     private const TARGET_SQUAD = 18;
     private const SQUAD_EMERGENCY = 11; // 100% budget
@@ -25,12 +28,6 @@ class AITransferService
 
     // Seuil de stamina moyenne des titulaires pour recruter en urgence fatigue
     private const FATIGUE_THRESHOLD = 37;
-
-    // Stats pour l'overall
-    private const OVERALL_KEYS = [
-        'speed', 'stamina', 'attack', 'defense',
-        'shot', 'pass', 'dribble', 'block', 'intercept', 'tackle',
-    ];
 
     // Composition cible par groupe de poste
     // [titulaires, remplaçants] => total cible
@@ -311,25 +308,29 @@ class AITransferService
 
         if ($candidates->isEmpty()) return null;
 
+        // Poste évalué pour l'overall : celui recherché (le candidat sera
+        // aligné à ce poste), ou son poste naturel en repli "ANY".
+        $evalPos = $positionGroup !== 'ANY' ? $positionGroup : null;
+
         return match ($philosophy) {
             // Stars : le meilleur joueur absolu, peu importe le prix
             TeamStyle::PHILOSOPHY_STARS => $candidates
-                ->sortByDesc(fn($p) => $this->overallOf($p))
+                ->sortByDesc(fn($p) => $this->playerOverall($p, $evalPos))
                 ->first(),
 
             // Collectif : le plus proche de la moyenne équipe (homogénéité)
             TeamStyle::PHILOSOPHY_COLLECTIVE => $candidates
-                ->sortBy(fn($p) => abs($this->overallOf($p) - $teamAvgOverall))
+                ->sortBy(fn($p) => abs($this->playerOverall($p, $evalPos) - $teamAvgOverall))
                 ->first(),
 
             // Économe : meilleur ratio overall / coût (bonnes affaires)
             TeamStyle::PHILOSOPHY_ECONOMIST => $candidates
-                ->sortByDesc(fn($p) => $this->overallOf($p) / max(1, $p->cost ?? 1))
+                ->sortByDesc(fn($p) => $this->playerOverall($p, $evalPos) / max(1, $p->cost ?? 1))
                 ->first(),
 
             // Équilibré : préfère légèrement au-dessus de la moyenne, sans excès
             default => $candidates
-                ->sortByDesc(fn($p) => $this->scoreBalanced($p, $teamAvgOverall))
+                ->sortByDesc(fn($p) => $this->scoreBalanced($p, $teamAvgOverall, $evalPos))
                 ->first(),
         };
     }
@@ -338,28 +339,10 @@ class AITransferService
     //   HELPERS
     // ==========================
 
-    protected function positionGroup(string $position): string
-    {
-        $p = strtoupper(trim($position));
-        if (str_contains($p, 'GK') || str_contains($p, 'GOAL'))    return 'GK';
-        if (str_contains($p, 'DEF') || str_contains($p, 'BACK'))   return 'DEF';
-        if (str_contains($p, 'MDF') || str_contains($p, 'MID') || str_contains($p, 'MOF')) return 'MID';
-        if (str_contains($p, 'ATT') || str_contains($p, 'FOR'))    return 'ATT';
-        return 'MID';
-    }
-
-    protected function overallOf(GamePlayer $player): float
-    {
-        $values = array_map(fn($k) => (int) ($player->{$k} ?? 0), self::OVERALL_KEYS);
-        $values = array_filter($values, fn($v) => $v > 0);
-        if (empty($values)) return 0;
-        return array_sum($values) / count($values);
-    }
-
     protected function avgOverall(Collection $players): float
     {
         if ($players->isEmpty()) return 0;
-        return $players->avg(fn($p) => $this->overallOf($p)) ?? 0;
+        return $players->avg(fn($p) => $this->playerOverall($p)) ?? 0;
     }
 
     protected function getSeasonLength(GameSave $gameSave): int
@@ -373,9 +356,9 @@ class AITransferService
      * Score de sélection "Équilibré" : favorise les joueurs légèrement
      * au-dessus de la moyenne, pénalise les trop chers ou trop faibles.
      */
-    protected function scoreBalanced(GamePlayer $player, float $teamAvg): float
+    protected function scoreBalanced(GamePlayer $player, float $teamAvg, ?string $positionGroup = null): float
     {
-        $overall = $this->overallOf($player);
+        $overall = $this->playerOverall($player, $positionGroup);
         $cost    = max(1, $player->cost ?? 1);
 
         // Bonus si au-dessus de la moyenne (plafonné à +20)

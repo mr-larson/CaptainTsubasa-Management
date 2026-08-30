@@ -8,10 +8,13 @@ use App\Models\GameSaves\GameInjury;
 use App\Models\GameSaves\GameSanction;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
+use App\Services\Concerns\EvaluatesPlayers;
 use Illuminate\Support\Collection;
 
 class AiLineUpService
 {
+    use EvaluatesPlayers;
+
     /**
      * Seuils de stamina par philosophie.
      * En dessous du seuil, l'IA préfère faire tourner.
@@ -97,7 +100,7 @@ class AiLineUpService
         foreach ($tiredStarters as $starterContract) {
             $starterPlayer   = $starterContract->gamePlayer;
             $starterPosition = $this->positionGroup($starterPlayer->position ?? '');
-            $starterOverall  = $this->playerOverall($starterPlayer);
+            $starterOverall  = $this->playerOverall($starterPlayer, $starterPosition);
 
             // Cherche un remplaçant frais au même poste (principal d'abord, secondaire ensuite)
             $candidate = $freshSubs
@@ -105,13 +108,13 @@ class AiLineUpService
                 ->sortBy([
                     fn($a, $b) => ($this->positionGroup($b->gamePlayer->position ?? '') === $starterPosition)
                         <=> ($this->positionGroup($a->gamePlayer->position ?? '') === $starterPosition),
-                    fn($a, $b) => $this->playerOverall($b->gamePlayer) <=> $this->playerOverall($a->gamePlayer),
+                    fn($a, $b) => $this->playerOverall($b->gamePlayer, $starterPosition) <=> $this->playerOverall($a->gamePlayer, $starterPosition),
                 ])
                 ->first();
 
             if (!$candidate) continue;
 
-            $candidateOverall = $this->playerOverall($candidate->gamePlayer);
+            $candidateOverall = $this->playerOverall($candidate->gamePlayer, $starterPosition);
 
             // Décision selon philosophie
             $shouldSwap = match ($philosophy) {
@@ -170,7 +173,7 @@ class AiLineUpService
                 ->sortBy([
                     fn($a, $b) => ($this->positionGroup($b->gamePlayer->position ?? '') === $starterPosition)
                         <=> ($this->positionGroup($a->gamePlayer->position ?? '') === $starterPosition),
-                    fn($a, $b) => $this->playerOverall($b->gamePlayer) <=> $this->playerOverall($a->gamePlayer),
+                    fn($a, $b) => $this->playerOverall($b->gamePlayer, $starterPosition) <=> $this->playerOverall($a->gamePlayer, $starterPosition),
                 ])
                 ->first();
 
@@ -204,46 +207,4 @@ class AiLineUpService
         return $changed;
     }
 
-    // ==========================
-    //   HELPERS
-    // ==========================
-
-    /**
-     * Groupes de poste maîtrisés par un joueur : poste principal + postes secondaires.
-     */
-    protected function playerPositionGroups($player): array
-    {
-        $groups = [$this->positionGroup($player->position ?? '')];
-
-        foreach ((array) ($player->secondary_positions ?? []) as $secondary) {
-            if (is_string($secondary) && $secondary !== '') {
-                $groups[] = $this->positionGroup($secondary);
-            }
-        }
-
-        return array_values(array_unique($groups));
-    }
-
-    protected function positionGroup(string $position): string
-    {
-        $p = strtoupper(trim($position));
-        if (str_contains($p, 'GK') || str_contains($p, 'GOAL'))    return 'GK';
-        if (str_contains($p, 'DEF') || str_contains($p, 'BACK'))   return 'DEF';
-        if (str_contains($p, 'MDF') || str_contains($p, 'MID') || str_contains($p, 'MOF')) return 'MID';
-        if (str_contains($p, 'ATT') || str_contains($p, 'FOR'))    return 'ATT';
-        return 'MID';
-    }
-
-    protected function playerOverall($player): int
-    {
-        if (!$player) return 0;
-        $stats = [
-            $player->attack   ?? 0, $player->defense  ?? 0,
-            $player->shot     ?? 0, $player->pass     ?? 0,
-            $player->dribble  ?? 0, $player->speed    ?? 0,
-            $player->tackle   ?? 0, $player->block    ?? 0,
-            $player->intercept ?? 0,
-        ];
-        return (int) round(array_sum($stats) / max(1, count($stats)));
-    }
 }

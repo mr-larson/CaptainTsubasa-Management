@@ -6,10 +6,13 @@ use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
+use App\Services\Concerns\EvaluatesPlayers;
 use Illuminate\Support\Facades\DB;
 
 class DraftService
 {
+    use EvaluatesPlayers;
+
     public const MIN_SQUAD   = 14;
     public const MAX_SQUAD   = 18;
     public const DRAFT_BONUS = 5000;
@@ -402,35 +405,20 @@ class DraftService
     }
 
     /**
-     * Réorganise le lineup d'une équipe après le draft :
-     * - Assigne les 11 meilleurs joueurs comme titulaires selon leur poste et la formation
+     * Réorganise le lineup d'une équipe après le draft (ou à la création
+     * d'une partie "prebuilt" hors draft) :
+     * - Assigne les 11 meilleurs joueurs comme titulaires selon leur poste
+     *   (principal ou secondaire) et la formation
      * - Place chaque titulaire dans le bon slot de la formation
      * - Le reste en remplaçants
      */
-    protected function organizeTeamLineup(GameTeam $team, GameSave $gameSave, array &$state): void
+    public function organizeTeamLineup(GameTeam $team, GameSave $gameSave, array &$state): void
     {
         $contracts = $team->contracts->filter(fn($c) => $c->gamePlayer !== null);
         if ($contracts->isEmpty()) return;
 
         $formation = $team->formation ?? '4-2-2-2';
         $slotsNeeded = $this->getSlotsByZone($formation);
-
-        // Grouper les joueurs par poste
-        $playersByPos = ['GK' => [], 'DEF' => [], 'MID' => [], 'ATT' => []];
-        foreach ($contracts as $contract) {
-            $p = $contract->gamePlayer;
-            $group = $this->positionGroup($p->position ?? '');
-            $playersByPos[$group][] = [
-                'contract'  => $contract,
-                'player'    => $p,
-                'overall'   => $this->playerOverall($p),
-            ];
-        }
-
-        // Trier chaque poste par overall décroissant
-        foreach ($playersByPos as &$group) {
-            usort($group, fn($a, $b) => $b['overall'] - $a['overall']);
-        }
 
         // Assigner les titulaires slot par slot
         $starters = [];
@@ -442,30 +430,34 @@ class DraftService
         foreach ($slotsNeeded as $slot => $zone) {
             $targetPos = $zoneToPos[$zone] ?? 'MID';
 
-            // Chercher le meilleur joueur disponible au bon poste
-            $found = null;
-            foreach ($playersByPos[$targetPos] as $entry) {
-                if (!in_array($entry['player']->id, $assigned)) {
-                    $found = $entry;
-                    break;
-                }
-            }
+            $available = $contracts->reject(fn($c) => in_array($c->gamePlayer->id, $assigned, true));
 
-            // Fallback : prendre n'importe quel joueur non assigné
+            // Meilleur joueur disponible sachant jouer ce poste (principal ou secondaire)
+            $found = $available
+                ->filter(fn($c) => in_array($targetPos, $this->playerPositionGroups($c->gamePlayer), true))
+                ->sortByDesc(fn($c) => $this->playerOverall($c->gamePlayer, $targetPos))
+                ->first();
+
+            // Fallback : aucun joueur ne maîtrise ce poste. On évite de mettre
+            // un gardien pur sur le terrain ou un joueur de champ dans les
+            // buts, sauf si c'est vraiment le seul joueur restant.
             if (!$found) {
-                foreach (['MID', 'DEF', 'ATT', 'GK'] as $fallbackPos) {
-                    foreach ($playersByPos[$fallbackPos] as $entry) {
-                        if (!in_array($entry['player']->id, $assigned)) {
-                            $found = $entry;
-                            break 2;
-                        }
-                    }
+                $fallbackPool = $targetPos === 'GK'
+                    ? $available->filter(fn($c) => $this->positionGroup($c->gamePlayer->position ?? '') === 'GK')
+                    : $available->reject(fn($c) => $this->positionGroup($c->gamePlayer->position ?? '') === 'GK');
+
+                if ($fallbackPool->isEmpty()) {
+                    $fallbackPool = $available;
                 }
+
+                $found = $fallbackPool
+                    ->sortByDesc(fn($c) => $this->playerOverall($c->gamePlayer, $targetPos))
+                    ->first();
             }
 
             if ($found) {
-                $starters[$slot] = $found;
-                $assigned[] = $found['player']->id;
+                $starters[$slot] = ['contract' => $found, 'player' => $found->gamePlayer];
+                $assigned[] = $found->gamePlayer->id;
             }
         }
 
@@ -583,33 +575,4 @@ class DraftService
         }
     }
 
-    /**
-     * Regroupe un poste précis en grand groupe (GK/DEF/MID/ATT).
-     * Miroir de DraftAIService/AITransferService::positionGroup.
-     */
-    protected function positionGroup(string $position): string
-    {
-        $p = strtoupper(trim($position));
-        if (str_contains($p, 'GK') || str_contains($p, 'GOAL'))    return 'GK';
-        if (str_contains($p, 'DEF') || str_contains($p, 'BACK'))   return 'DEF';
-        if (str_contains($p, 'MDF') || str_contains($p, 'MID') || str_contains($p, 'MOF')) return 'MID';
-        if (str_contains($p, 'ATT') || str_contains($p, 'FOR'))    return 'ATT';
-        return 'MID';
-    }
-
-    /**
-     * Calcule l'overall d'un joueur.
-     */
-    protected function playerOverall($player): int
-    {
-        if (!$player) return 0;
-        $stats = [
-            $player->attack ?? 0, $player->defense ?? 0,
-            $player->shot ?? 0, $player->pass ?? 0,
-            $player->dribble ?? 0, $player->speed ?? 0,
-            $player->tackle ?? 0, $player->block ?? 0,
-            $player->intercept ?? 0,
-        ];
-        return (int) round(array_sum($stats) / max(1, count($stats)));
-    }
 }
