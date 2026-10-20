@@ -28,17 +28,13 @@ class PromiseService
     // moteur client GAME_RULES.MAX_TURNS).
     const FULL_MATCH_TURNS = 45;
 
-    // Paramètres par type : window (semaines), target (matchs), turns (tours).
+    // Paramètres par type : window (semaines), target (matchs), turns (tours),
+    // kept / broken : delta appliqué à la relation coach ET au moral.
     const TYPES = [
-        'playing_time' => ['window' => 5, 'target' => 0, 'turns' => 15],
-        'starter'      => ['window' => 5, 'target' => 4],
-        'renewal'      => ['window' => 4, 'target' => 0],
+        'playing_time' => ['window' => 5, 'target' => 0, 'turns' => 15, 'kept' => 5,  'broken' => -10],
+        'starter'      => ['window' => 5, 'target' => 4,                'kept' => 10, 'broken' => -15],
+        'renewal'      => ['window' => 4, 'target' => 0,                'kept' => 15, 'broken' => -20],
     ];
-
-    const AFFINITY_KEPT   = 15;
-    const AFFINITY_BROKEN = -25;
-    const MORALE_KEPT     = 5;
-    const MORALE_BROKEN   = -10;
 
     const AFFINITY_MIN = -100;
     const AFFINITY_MAX = 100;
@@ -119,19 +115,19 @@ class PromiseService
                 'played_turns'   => $playedTurns,
             ]);
 
+            $delta = $this->delta($promise->type, $kept);
+
             $player->coach_affinity = max(self::AFFINITY_MIN, min(self::AFFINITY_MAX,
-                (int) $player->coach_affinity + ($kept ? self::AFFINITY_KEPT : self::AFFINITY_BROKEN)
+                (int) $player->coach_affinity + $delta
             ));
-            $player->morale = max(0, min(100,
-                (int) $player->morale + ($kept ? self::MORALE_KEPT : self::MORALE_BROKEN)
-            ));
+            $player->morale = max(0, min(100, (int) $player->morale + $delta));
             $player->save();
 
             $logs[] = [
                 'game_save_id'   => $gameSave->id,
                 'game_player_id' => $player->id,
                 'source'         => 'promise',
-                'value'          => $kept ? self::MORALE_KEPT : self::MORALE_BROKEN,
+                'value'          => $delta,
                 'label'          => $label,
                 'week'           => $week,
                 'season'         => $season,
@@ -143,6 +139,16 @@ class PromiseService
         if (!empty($logs)) {
             GamePlayerMoraleLog::insert($logs);
         }
+    }
+
+    /**
+     * Delta relation/moral d'une promesse résolue selon son type.
+     */
+    private function delta(string $type, bool $kept): int
+    {
+        $config = self::TYPES[$type] ?? self::TYPES['starter'];
+
+        return $kept ? $config['kept'] : $config['broken'];
     }
 
     /**

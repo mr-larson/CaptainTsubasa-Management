@@ -146,7 +146,7 @@ export function initMatchEngine(rootEl, config = {}) {
         actionEvents:   [],
         foulEvents:     [],
         substitutions:      [],
-        substitutionCount:  0,
+        substitutionCount:  { internal: 0, external: 0 },
         MAX_SUBSTITUTIONS:  3,
         defensePreview: null,
         _matchConfig:    matchConfig,
@@ -720,7 +720,7 @@ export function initMatchEngine(rootEl, config = {}) {
         state.foulEvents        = [];
         resetLogHistory();
         state.substitutions     = [];
-        state.substitutionCount = 0;
+        state.substitutionCount = { internal: 0, external: 0 };
 
         // 11 de départ figé (avant tout remplacement) : sert au calcul du temps
         // de jeu par joueur et à la promesse de titularisation.

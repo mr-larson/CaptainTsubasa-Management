@@ -573,7 +573,7 @@ export function updateSideCard(prefix, team, slotNumber) {
     const canSub = (
         isControlledTeam &&
         !_state?.isGameOver &&
-        (_state?.substitutionCount ?? 0) < (_state?.MAX_SUBSTITUTIONS ?? 3) &&
+        (_state?.substitutionCount?.[team] ?? 0) < (_state?.MAX_SUBSTITUTIONS ?? 3) &&
         !(_state?.substitutions ?? []).some(s => s.outSlot === slotNumber && s.team === team) &&
         !_state?.isKickoff
     );
@@ -593,7 +593,7 @@ export function updateSideCard(prefix, team, slotNumber) {
 
         const subBtn = document.createElement('button');
         subBtn.id = `${prefix}-sub-btn`;
-        subBtn.title = `Remplacer (${(_state.MAX_SUBSTITUTIONS ?? 3) - (_state.substitutionCount ?? 0)} restant(s))`;
+        subBtn.title = `Remplacer (${(_state.MAX_SUBSTITUTIONS ?? 3) - (_state.substitutionCount?.[team] ?? 0)} restant(s))`;
         subBtn.textContent = '🔄';
         subBtn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:14px;padding:0;line-height:1;opacity:0.85;transition:opacity 0.15s;';
         subBtn.onmouseenter = () => subBtn.style.opacity = '1';

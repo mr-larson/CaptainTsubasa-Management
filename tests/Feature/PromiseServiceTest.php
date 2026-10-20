@@ -80,8 +80,8 @@ class PromiseServiceTest extends TestCase
 
         $promise = GamePromise::where('game_player_id', $player->id)->first();
         $this->assertSame('kept', $promise->status);
-        $this->assertSame(15, (int) $player->fresh()->coach_affinity); // +15
-        $this->assertSame(65, (int) $player->fresh()->morale);         // +5
+        $this->assertSame(5, (int) $player->fresh()->coach_affinity); // +5
+        $this->assertSame(65, (int) $player->fresh()->morale);        // +5
     }
 
     public function test_playing_time_promise_is_broken_when_player_barely_plays(): void
@@ -103,7 +103,7 @@ class PromiseServiceTest extends TestCase
 
         $promise = GamePromise::where('game_player_id', $player->id)->first();
         $this->assertSame('broken', $promise->status);
-        $this->assertSame(-25, (int) $player->fresh()->coach_affinity);
+        $this->assertSame(-10, (int) $player->fresh()->coach_affinity);
         $this->assertSame(50, (int) $player->fresh()->morale);
 
         // Une promesse rompue est journalisée.

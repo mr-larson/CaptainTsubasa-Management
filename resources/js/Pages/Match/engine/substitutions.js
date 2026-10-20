@@ -46,7 +46,7 @@ function isPlayerSentOff(team, slot) {
  * Retourne true si le remplacement a eu lieu.
  */
 export function performSubstitution(team, outSlot, inSlot) {
-    if (_state.substitutionCount >= _state.MAX_SUBSTITUTIONS) return false;
+    if ((_state.substitutionCount[team] ?? 0) >= _state.MAX_SUBSTITUTIONS) return false;
     if (outSlot === inSlot) return false;
 
     const outId = _getPlayerId(team, outSlot);
@@ -76,7 +76,7 @@ export function performSubstitution(team, outSlot, inSlot) {
         _roster.rosters[team].set(outSlot, { ...inInfo, isStarter: true });
         _roster.rosters[team].set(inSlot, { ...outInfo, isStarter: false, isAvailable: false });
 
-        const jersey = inInfo.number ?? (11 + _state.substitutionCount + 1);
+        const jersey = inInfo.number ?? (11 + _state.substitutionCount[team] + 1);
         // Ne modifier que le nœud texte : textContent raserait les enfants
         // du jeton (.endurance-shell, badges) ajoutés par initStamina/ui.
         const textNode = Array.from(outEl.childNodes).find(n => n.nodeType === Node.TEXT_NODE);
@@ -105,7 +105,7 @@ export function performSubstitution(team, outSlot, inSlot) {
         outPlayerId: outInfo?.id ?? null,
         inPlayerId:  inInfo?.id  ?? null,
     });
-    _state.substitutionCount++;
+    _state.substitutionCount[team]++;
 
     _pushLogEntry('substitutionTitle', [
         `🔄 ${outInfo?.lastname ?? '#' + outSlot} → ${inInfo?.lastname ?? '#' + inSlot}`,
@@ -121,10 +121,10 @@ export function performSubstitution(team, outSlot, inSlot) {
  */
 export function aiCheckSubstitutions() {
     if (_state.isGameOver) return;
-    if (_state.substitutionCount >= _state.MAX_SUBSTITUTIONS) return;
 
     for (const aiTeam of ['internal', 'external']) {
         if (!_isAITeam(aiTeam)) continue;
+        if ((_state.substitutionCount[aiTeam] ?? 0) >= _state.MAX_SUBSTITUTIONS) continue;
 
         for (let outSlot = 1; outSlot <= 11; outSlot++) {
             const outId = _getPlayerId(aiTeam, outSlot);

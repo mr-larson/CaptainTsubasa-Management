@@ -105,9 +105,9 @@ const lastResolvedPromise = computed(() =>
 );
 
 const PROMISE_TYPES = [
-    { type: 'playing_time', icon: '🤝', label: 'Temps de jeu',  hint: 'Il jouera au moins 15 tours (~30 min) à son prochain match' },
-    { type: 'starter',      icon: '⭐', label: 'Titularisation', hint: 'Il sera titulaire sur 4 matchs dans les 5 prochaines semaines' },
-    { type: 'renewal',      icon: '📜', label: 'Prolongation',   hint: 'Tu lui signeras un nouveau contrat sous 4 semaines' },
+    { type: 'playing_time', icon: '🤝', label: 'Temps de jeu',  hint: 'Il jouera au moins 15 tours (~30 min) à son prochain match', kept: 5,  broken: 10 },
+    { type: 'starter',      icon: '⭐', label: 'Titularisation', hint: 'Il sera titulaire sur 4 matchs dans les 5 prochaines semaines', kept: 10, broken: 15 },
+    { type: 'renewal',      icon: '📜', label: 'Prolongation',   hint: 'Tu lui signeras un nouveau contrat sous 4 semaines', kept: 15, broken: 20 },
 ];
 
 const promiseTypeLabel = (type) => PROMISE_TYPES.find(t => t.type === type)?.label ?? type;
@@ -380,7 +380,7 @@ const slotMastery = (slot, slotDef) => {
                                     <button v-for="pt in PROMISE_TYPES" :key="pt.type" type="button"
                                             @click="emit('make-promise', selectedMyPlayer, pt.type)"
                                             class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold border border-sky-300 bg-white text-sky-600 hover:bg-sky-50 transition-all"
-                                            :title="`${pt.hint}. Tenue : +15 relation, +5 moral. Rompue : −25 relation, −10 moral.`">
+                                            :title="`${pt.hint}. Tenue : +${pt.kept} relation, +${pt.kept} moral. Rompue : −${pt.broken} relation, −${pt.broken} moral.`">
                                         {{ pt.icon }} {{ pt.label }}
                                     </button>
                                 </template>
