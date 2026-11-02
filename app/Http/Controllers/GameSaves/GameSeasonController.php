@@ -4,6 +4,7 @@ namespace App\Http\Controllers\GameSaves;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\AuthorizesGameSave;
+use App\Http\Controllers\Concerns\LocksGameSave;
 use App\Models\GameSaves\GameSave;
 use App\Services\CareerObjectiveService;
 use App\Services\SeasonService;
@@ -15,6 +16,7 @@ use Inertia\Response;
 class GameSeasonController extends Controller
 {
     use AuthorizesGameSave;
+    use LocksGameSave;
 
     /**
      * Écran de fin de saison : champion, MVP, primes de classement.
@@ -43,20 +45,25 @@ class GameSeasonController extends Controller
     {
         $this->authorizeGameSave('update', $gameSave);
 
-        if ($gameSave->phase !== 'season_end') {
-            return redirect()->route('game-saves.Play', $gameSave);
-        }
+        // Verrou par save : un double clic sur « continuer » repasse le test de
+        // phase après la première requête et ne relance pas une 2e saison
+        // (saison +2, bonus de draft payé deux fois).
+        return $this->withSaveLock($gameSave, function (GameSave $gameSave) {
+            if ($gameSave->phase !== 'season_end') {
+                return redirect()->route('game-saves.Play', $gameSave);
+            }
 
-        // Carrière terminée (licencié ou objectif long terme atteint) : pas de
-        // saison suivante, on bascule sur le bilan de carrière.
-        if (app(CareerObjectiveService::class)->isGameOver($gameSave)) {
-            return redirect()->route('game-saves.game-over', $gameSave);
-        }
+            // Carrière terminée (licencié ou objectif long terme atteint) : pas de
+            // saison suivante, on bascule sur le bilan de carrière.
+            if (app(CareerObjectiveService::class)->isGameOver($gameSave)) {
+                return redirect()->route('game-saves.game-over', $gameSave);
+            }
 
-        app(SeasonService::class)->startNewSeason($gameSave);
+            app(SeasonService::class)->startNewSeason($gameSave);
 
-        return redirect()->route('game-saves.draft', $gameSave)
-            ->with('success', "Saison {$gameSave->season} — la draft commence !");
+            return redirect()->route('game-saves.draft', $gameSave)
+                ->with('success', "Saison {$gameSave->season} — la draft commence !");
+        });
     }
 
     /**

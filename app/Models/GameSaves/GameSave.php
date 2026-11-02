@@ -91,6 +91,18 @@ class GameSave extends Model
         return $this->controlledGameTeams()->pluck('game_teams.id')->all();
     }
 
+    /**
+     * Phases pendant lesquelles des matchs se jouent (ligue ou Coupe du Monde).
+     * Hors de ces phases (draft, fin de saison, tournoi terminé), terminer un
+     * match ou simuler une semaine est refusé.
+     */
+    public const MATCH_PHASES = ['season', 'world_cup', 'group', 'knockout'];
+
+    public function isInMatchPhase(): bool
+    {
+        return in_array($this->phase ?? 'season', self::MATCH_PHASES, true);
+    }
+
     public const DEFAULT_CONFIG = [
         'bonus_cards_enabled'       => true,
         'malus_cards_enabled'       => true,

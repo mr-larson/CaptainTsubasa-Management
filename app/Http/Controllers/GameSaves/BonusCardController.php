@@ -4,6 +4,7 @@ namespace App\Http\Controllers\GameSaves;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\AuthorizesGameSave;
+use App\Http\Controllers\Concerns\LocksGameSave;
 use App\Models\GameSaves\GameBonusCard;
 use App\Models\GameSaves\GameSave;
 use App\Services\BonusCardActivationService;
@@ -14,6 +15,7 @@ use Illuminate\Http\Request;
 class BonusCardController extends Controller
 {
     use AuthorizesGameSave;
+    use LocksGameSave;
 
     public function __construct(
         private BonusCardShopService     $shopService,
@@ -36,54 +38,58 @@ class BonusCardController extends Controller
             'tier'          => 'required|in:bronze,silver,gold',
         ]);
 
-        $teamId = $gameSave->controlled_game_team_id;
-        $team   = $gameSave->controlledGameTeam;
+        // Verrou par save : un double clic n'achète pas deux fois la carte
+        // (vérification « déjà achetée » + débit du budget sous verrou).
+        return $this->withSaveLock($gameSave, function (GameSave $gameSave) use ($request) {
+            $teamId = $gameSave->controlled_game_team_id;
+            $team   = $gameSave->controlledGameTeam;
 
-        if (!$team) abort(422, 'Équipe contrôlée introuvable.');
+            if (!$team) abort(422, 'Équipe contrôlée introuvable.');
 
-        // Vérifier que l'offre est bien dans la boutique de cette semaine
-        $offers = $this->shopService->getOffersForTeam($gameSave, $teamId);
-        $offer  = collect($offers)->firstWhere('bonus_card_id', (int) $request->bonus_card_id);
+            // Vérifier que l'offre est bien dans la boutique de cette semaine
+            $offers = $this->shopService->getOffersForTeam($gameSave, $teamId);
+            $offer  = collect($offers)->firstWhere('bonus_card_id', (int) $request->bonus_card_id);
 
-        if (!$offer) {
-            return back()->withErrors(['card' => 'Cette carte n\'est pas disponible cette semaine.']);
-        }
+            if (!$offer) {
+                return back()->withErrors(['card' => 'Cette carte n\'est pas disponible cette semaine.']);
+            }
 
-        $cost = (int) ($offer['cost'] ?? 0);
+            $cost = (int) ($offer['cost'] ?? 0);
 
-        if ($team->budget < $cost) {
-            return back()->withErrors(['card' => 'Budget insuffisant.']);
-        }
+            if ($team->budget < $cost) {
+                return back()->withErrors(['card' => 'Budget insuffisant.']);
+            }
 
-        // Vérifier que la carte n'a pas déjà été achetée cette semaine
-        $alreadyBought = GameBonusCard::where('game_save_id', $gameSave->id)
-            ->where('game_team_id', $teamId)
-            ->where('bonus_card_id', $offer['bonus_card_id'])
-            ->where('purchased_season', $gameSave->season)
-            ->where('purchased_week', $gameSave->week)
-            ->exists();
+            // Vérifier que la carte n'a pas déjà été achetée cette semaine
+            $alreadyBought = GameBonusCard::where('game_save_id', $gameSave->id)
+                ->where('game_team_id', $teamId)
+                ->where('bonus_card_id', $offer['bonus_card_id'])
+                ->where('purchased_season', $gameSave->season)
+                ->where('purchased_week', $gameSave->week)
+                ->exists();
 
-        if ($alreadyBought) {
-            return back()->withErrors(['card' => 'Vous avez déjà acheté cette carte cette semaine.']);
-        }
+            if ($alreadyBought) {
+                return back()->withErrors(['card' => 'Vous avez déjà acheté cette carte cette semaine.']);
+            }
 
-        // Déduire le coût
-        $team->budget -= $cost;
-        $team->save();
+            // Déduire le coût
+            $team->budget -= $cost;
+            $team->save();
 
-        // Créer la carte en inventaire
-        GameBonusCard::create([
-            'game_save_id'     => $gameSave->id,
-            'bonus_card_id'    => $offer['bonus_card_id'],
-            'game_team_id'     => $teamId,
-            'tier'             => $offer['tier'],
-            'cost_paid'        => $cost,
-            'status'           => 'available',
-            'purchased_season' => $gameSave->season,
-            'purchased_week'   => $gameSave->week,
-        ]);
+            // Créer la carte en inventaire
+            GameBonusCard::create([
+                'game_save_id'     => $gameSave->id,
+                'bonus_card_id'    => $offer['bonus_card_id'],
+                'game_team_id'     => $teamId,
+                'tier'             => $offer['tier'],
+                'cost_paid'        => $cost,
+                'status'           => 'available',
+                'purchased_season' => $gameSave->season,
+                'purchased_week'   => $gameSave->week,
+            ]);
 
-        return back()->with('success', "Carte \"{$offer['name']}\" achetée !");
+            return back()->with('success', "Carte \"{$offer['name']}\" achetée !");
+        });
     }
 
     /**
@@ -104,12 +110,19 @@ class BonusCardController extends Controller
         ]);
 
         try {
-            $result = $this->activationService->activate(
-                $gameBonusCard,
-                $gameSave,
-                $request->input('target_player_id'),
-                $request->input('target_team_id'),
-            );
+            // Verrou par save : un double clic voit la carte déjà « used » et
+            // n'applique pas l'effet deux fois. Une erreur de validation levée
+            // par le service annule aussi les écritures partielles.
+            $result = $this->withSaveLock($gameSave, function (GameSave $gameSave) use ($request, $gameBonusCard) {
+                $gameBonusCard->refresh();
+
+                return $this->activationService->activate(
+                    $gameBonusCard,
+                    $gameSave,
+                    $request->input('target_player_id'),
+                    $request->input('target_team_id'),
+                );
+            });
             return back()->with('success', $result['message'] ?? 'Carte activée !');
         } catch (\Illuminate\Validation\ValidationException $e) {
             return back()->withErrors($e->errors());

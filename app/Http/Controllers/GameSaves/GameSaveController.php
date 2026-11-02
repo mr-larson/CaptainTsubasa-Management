@@ -4,6 +4,7 @@ namespace App\Http\Controllers\GameSaves;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\AuthorizesGameSave;
+use App\Http\Controllers\Concerns\LocksGameSave;
 use App\Http\Requests\GameSaves\GameSaveRequest;
 use App\Models\Contract;
 use App\Models\GameSaves\GameBonusCard;
@@ -39,6 +40,7 @@ use Inertia\Response;
 class GameSaveController extends Controller
 {
     use AuthorizesGameSave;
+    use LocksGameSave;
 
     /** Nombre de sélections participant à une Coupe du Monde. */
     private const TOURNAMENT_NATIONS = 8;
@@ -976,107 +978,113 @@ class GameSaveController extends Controller
             'reason'        => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $team = GameTeam::where('game_save_id', $gameSave->id)->findOrFail($data['team_id']);
+        // Verrou par save : pas de double contrat ni de double débit sur un
+        // double clic (contrat existant et budget relus sous verrou).
+        return $this->withSaveLock($gameSave, function (GameSave $gameSave) use ($data, $player) {
+            $player->refresh();
 
-        $startWeek = $gameSave->week ?? 1;
+            $team = GameTeam::where('game_save_id', $gameSave->id)->findOrFail($data['team_id']);
 
-        $alreadyHasContract = GameContract::where('game_save_id', $gameSave->id)
-            ->where('game_player_id', $player->id)
-            ->activeAt($startWeek)
-            ->exists();
+            $startWeek = $gameSave->week ?? 1;
 
-        if ($alreadyHasContract) {
-            return back()->with('info', 'Ce joueur a déjà un contrat en cours dans cette partie.');
-        }
+            $alreadyHasContract = GameContract::where('game_save_id', $gameSave->id)
+                ->where('game_player_id', $player->id)
+                ->activeAt($startWeek)
+                ->exists();
 
-        // Le salaire fait autorité côté serveur : on ignore toute valeur cliente
-        // (sinon n'importe qui pourrait signer un joueur pour 0) et on refuse la
-        // signature si l'équipe n'a pas les moyens.
-        $salary    = (int) $player->adjusted_cost;
-        $totalCost = $salary * $data['matches_total'];
-        $budget    = (int) ($team->budget ?? 0);
+            if ($alreadyHasContract) {
+                return back()->with('info', 'Ce joueur a déjà un contrat en cours dans cette partie.');
+            }
 
-        if ($totalCost > $budget) {
-            $totalFmt  = number_format($totalCost, 0, ',', ' ');
-            $salaryFmt = number_format($salary, 0, ',', ' ');
-            $budgetFmt = number_format($budget, 0, ',', ' ');
-            return back()->withErrors([
-                'contract' => "Budget insuffisant : {$player->full_name} coûte {$totalFmt} "
-                    . "({$salaryFmt} × {$data['matches_total']} match(s)), budget disponible {$budgetFmt}.",
+            // Le salaire fait autorité côté serveur : on ignore toute valeur cliente
+            // (sinon n'importe qui pourrait signer un joueur pour 0) et on refuse la
+            // signature si l'équipe n'a pas les moyens.
+            $salary    = (int) $player->adjusted_cost;
+            $totalCost = $salary * $data['matches_total'];
+            $budget    = (int) ($team->budget ?? 0);
+
+            if ($totalCost > $budget) {
+                $totalFmt  = number_format($totalCost, 0, ',', ' ');
+                $salaryFmt = number_format($salary, 0, ',', ' ');
+                $budgetFmt = number_format($budget, 0, ',', ' ');
+                return back()->withErrors([
+                    'contract' => "Budget insuffisant : {$player->full_name} coûte {$totalFmt} "
+                        . "({$salaryFmt} × {$data['matches_total']} match(s)), budget disponible {$budgetFmt}.",
+                ]);
+            }
+
+            // Conséquences du moral : un révolté refuse de re-signer avec son ancien club ;
+            // signer ailleurs repart sur un moral neutre.
+            $lastContract = GameContract::where('game_save_id', $gameSave->id)
+                ->where('game_player_id', $player->id)
+                ->orderByDesc('end_week')
+                ->first();
+            $sameTeam = $lastContract && (int) $lastContract->game_team_id === (int) $team->id;
+
+            if ($sameTeam && MoraleService::refusesToSign($player)) {
+                return back()->withErrors([
+                    'contract' => "{$player->full_name} refuse de re-signer avec ce club (moral ou relation avec le coach au plus bas).",
+                ]);
+            }
+
+            if ($lastContract && !$sameTeam) {
+                $player->morale         = MoraleService::NEUTRAL_MORALE;
+                $player->coach_affinity = 0;
+            }
+
+            $endWeek      = $startWeek + $data['matches_total'] - 1;
+            $starterCount = GameContract::where('game_save_id', $gameSave->id)
+                ->where('game_team_id', $team->id)
+                ->where('is_starter', true)
+                ->activeAt($startWeek)
+                ->count();
+
+            // Premier numéro disponible dans l'équipe
+            $usedNumbers = GamePlayer::where('game_save_id', $gameSave->id)
+                ->whereHas('contracts', fn($q) => $q->where('game_team_id', $team->id)->activeAt($startWeek))
+                ->pluck('number')
+                ->filter()
+                ->toArray();
+
+            $nextNumber = 1;
+            while (in_array($nextNumber, $usedNumbers)) {
+                $nextNumber++;
+            }
+
+            $player->number = $nextNumber;
+            $player->save();
+
+            GameContract::create([
+                'game_save_id'                    => $gameSave->id,
+                'game_team_id'                    => $team->id,
+                'game_player_id'                  => $player->id,
+                'salary'                          => $salary,
+                'start_week'                      => $startWeek,
+                'end_week'                        => $endWeek,
+                'is_starter'                      => $starterCount < 11,
+                'is_captain'                      => false,
+                'captain_rerolls_remaining'       => 3,
+                'captain_reroll_used_this_action' => false,
             ]);
-        }
 
-        // Conséquences du moral : un révolté refuse de re-signer avec son ancien club ;
-        // signer ailleurs repart sur un moral neutre.
-        $lastContract = GameContract::where('game_save_id', $gameSave->id)
-            ->where('game_player_id', $player->id)
-            ->orderByDesc('end_week')
-            ->first();
-        $sameTeam = $lastContract && (int) $lastContract->game_team_id === (int) $team->id;
+            $team->budget = $budget - $totalCost;
+            $team->save();
 
-        if ($sameTeam && MoraleService::refusesToSign($player)) {
-            return back()->withErrors([
-                'contract' => "{$player->full_name} refuse de re-signer avec ce club (moral ou relation avec le coach au plus bas).",
-            ]);
-        }
+            $state = $gameSave->state ?? [];
+            $state['free_agent_signings'][] = [
+                'player_id'     => $player->id,
+                'team_id'       => $team->id,
+                'salary'        => $salary,
+                'matches_total' => $data['matches_total'],
+                'total_cost'    => $totalCost,
+                'reason'        => $data['reason'] ?? null,
+                'week'          => $gameSave->week,
+            ];
+            $gameSave->state = $state;
+            $gameSave->save();
 
-        if ($lastContract && !$sameTeam) {
-            $player->morale         = MoraleService::NEUTRAL_MORALE;
-            $player->coach_affinity = 0;
-        }
-
-        $endWeek      = $startWeek + $data['matches_total'] - 1;
-        $starterCount = GameContract::where('game_save_id', $gameSave->id)
-            ->where('game_team_id', $team->id)
-            ->where('is_starter', true)
-            ->activeAt($startWeek)
-            ->count();
-
-        // Premier numéro disponible dans l'équipe
-        $usedNumbers = GamePlayer::where('game_save_id', $gameSave->id)
-            ->whereHas('contracts', fn($q) => $q->where('game_team_id', $team->id)->activeAt($startWeek))
-            ->pluck('number')
-            ->filter()
-            ->toArray();
-
-        $nextNumber = 1;
-        while (in_array($nextNumber, $usedNumbers)) {
-            $nextNumber++;
-        }
-
-        $player->number = $nextNumber;
-        $player->save();
-
-        GameContract::create([
-            'game_save_id'                    => $gameSave->id,
-            'game_team_id'                    => $team->id,
-            'game_player_id'                  => $player->id,
-            'salary'                          => $salary,
-            'start_week'                      => $startWeek,
-            'end_week'                        => $endWeek,
-            'is_starter'                      => $starterCount < 11,
-            'is_captain'                      => false,
-            'captain_rerolls_remaining'       => 3,
-            'captain_reroll_used_this_action' => false,
-        ]);
-
-        $team->budget = $budget - $totalCost;
-        $team->save();
-
-        $state = $gameSave->state ?? [];
-        $state['free_agent_signings'][] = [
-            'player_id'     => $player->id,
-            'team_id'       => $team->id,
-            'salary'        => $salary,
-            'matches_total' => $data['matches_total'],
-            'total_cost'    => $totalCost,
-            'reason'        => $data['reason'] ?? null,
-            'week'          => $gameSave->week,
-        ];
-        $gameSave->state = $state;
-        $gameSave->save();
-
-        return back()->with('success', 'Joueur signé et budget mis à jour.');
+            return back()->with('success', 'Joueur signé et budget mis à jour.');
+        });
     }
 
     public function update(GameSaveRequest $request, GameSave $gameSave): mixed

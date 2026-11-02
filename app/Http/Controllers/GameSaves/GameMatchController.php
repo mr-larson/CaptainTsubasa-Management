@@ -4,6 +4,7 @@ namespace App\Http\Controllers\GameSaves;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\AuthorizesGameSave;
+use App\Http\Controllers\Concerns\LocksGameSave;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GamePlayer;
@@ -36,6 +37,7 @@ use Inertia\Response;
 class GameMatchController extends Controller
 {
     use AuthorizesGameSave;
+    use LocksGameSave;
 
     /**
      * Écran de match jouable pour une session.
@@ -144,10 +146,6 @@ class GameMatchController extends Controller
 
         abort_unless((int) $match->game_save_id === (int) $gameSave->id, 404);
 
-        if ($match->status === 'played') {
-            return redirect()->route('game-saves.Play', $gameSave);
-        }
-
         $data = $request->validate([
             'scoresByTeamId'   => ['required', 'array', 'min:2'],
             'scoresByTeamId.*' => ['integer', 'min:0'],
@@ -167,151 +165,167 @@ class GameMatchController extends Controller
         $homeScore = (int) $scores[$homeTeamId];
         $awayScore = (int) $scores[$awayTeamId];
 
-        // ─────────────────────────────────────────────────────────────
-        //  PARTIE PAR-MATCH : toujours exécutée pour le match qui vient
-        //  d'être joué (score, classement, fautes, progression, cartes).
-        // ─────────────────────────────────────────────────────────────
+        // Verrou par save : un double clic ou un retry attend la première
+        // requête puis retombe sur le match déjà joué, au lieu de recompter
+        // classement, revenus et fin de semaine. Tout est annulé en cas d'erreur.
+        return $this->withSaveLock($gameSave, function (GameSave $gameSave) use ($match, $data, $homeTeamId, $awayTeamId, $homeScore, $awayScore) {
+            $match->refresh();
 
-        // 1. Sauvegarder le match avec match_stats (source de vérité)
-        $match->home_score  = $homeScore;
-        $match->away_score  = $awayScore;
-        $match->status      = 'played';
-        $match->match_stats = $data['match_stats'] ?? null;
-        $match->save();
+            if ($match->status === 'played' || ! $gameSave->isInMatchPhase()) {
+                return redirect()->route('game-saves.Play', $gameSave);
+            }
 
-        // 2. Classement
-        $home = GameTeam::where('game_save_id', $gameSave->id)->findOrFail($homeTeamId);
-        $away = GameTeam::where('game_save_id', $gameSave->id)->findOrFail($awayTeamId);
+            // Un match d'une semaine future ferait sauter les semaines intermédiaires.
+            if ((int) $match->week > (int) ($gameSave->week ?? 1)) {
+                abort(422, 'Ce match n\'est pas encore programmé.');
+            }
 
-        if ($homeScore > $awayScore)      { $home->wins++;   $away->losses++; }
-        elseif ($homeScore < $awayScore)  { $away->wins++;   $home->losses++; }
-        else                              { $home->draws++;  $away->draws++;  }
+            // ─────────────────────────────────────────────────────────────
+            //  PARTIE PAR-MATCH : toujours exécutée pour le match qui vient
+            //  d'être joué (score, classement, fautes, progression, cartes).
+            // ─────────────────────────────────────────────────────────────
 
-        $home->goals_for     += $homeScore;
-        $home->goals_against += $awayScore;
-        $away->goals_for     += $awayScore;
-        $away->goals_against += $homeScore;
+            // 1. Sauvegarder le match avec match_stats (source de vérité)
+            $match->home_score  = $homeScore;
+            $match->away_score  = $awayScore;
+            $match->status      = 'played';
+            $match->match_stats = $data['match_stats'] ?? null;
+            $match->save();
 
-        $home->save();
-        $away->save();
+            // 2. Classement
+            $home = GameTeam::where('game_save_id', $gameSave->id)->findOrFail($homeTeamId);
+            $away = GameTeam::where('game_save_id', $gameSave->id)->findOrFail($awayTeamId);
 
-        // 3. Fautes, cartons et blessures (propres à ce match)
-        $foulEvents = $data['foulEvents'] ?? [];
-        app(FoulAndInjuryService::class)->processMatchEvents($gameSave, $match, $foulEvents);
+            if ($homeScore > $awayScore)      { $home->wins++;   $away->losses++; }
+            elseif ($homeScore < $awayScore)  { $away->wins++;   $home->losses++; }
+            else                              { $home->draws++;  $away->draws++;  }
 
-        // 4. Progression post-match (joueurs de ce match)
-        app(PostMatchProgressionService::class)->applyForMatch($gameSave, $match);
-        $gameSave->refresh();
+            $home->goals_for     += $homeScore;
+            $home->goals_against += $awayScore;
+            $away->goals_for     += $awayScore;
+            $away->goals_against += $homeScore;
 
-        // 5. Conserver player_actions (cumulés sur tous les matchs humains de la semaine)
-        $state = $gameSave->state ?? [];
-        $state['player_actions'] = array_merge($state['player_actions'] ?? [], $data['playerActions'] ?? []);
-        $gameSave->state = $state;
-        $gameSave->save();
+            $home->save();
+            $away->save();
 
-        // 6. (Les cartes pre_match sont consommées en fin de semaine pour TOUTES
-        //     les équipes ayant joué — humaines et IA — cf. plus bas.)
-        $controlledTeamIds = $gameSave->controlledGameTeamIds();
+            // 3. Fautes, cartons et blessures (propres à ce match)
+            $foulEvents = $data['foulEvents'] ?? [];
+            app(FoulAndInjuryService::class)->processMatchEvents($gameSave, $match, $foulEvents);
 
-        // ─────────────────────────────────────────────────────────────
-        //  GATING : tant qu'il reste un match humain à jouer cette
-        //  semaine, on n'avance PAS — la semaine ne se clôt qu'au dernier.
-        // ─────────────────────────────────────────────────────────────
-        $weekToClose = (int) $match->week;
+            // 4. Progression post-match (joueurs de ce match)
+            app(PostMatchProgressionService::class)->applyForMatch($gameSave, $match);
+            $gameSave->refresh();
 
-        $remainingHumanMatches = GameMatch::where('game_save_id', $gameSave->id)
-            ->where('week', $weekToClose)
-            ->where('status', 'scheduled')
-            ->where(function ($q) use ($controlledTeamIds) {
-                $q->whereIn('home_team_id', $controlledTeamIds)
-                    ->orWhereIn('away_team_id', $controlledTeamIds);
-            })
-            ->count();
+            // 5. Conserver player_actions (cumulés sur tous les matchs humains de la semaine)
+            $state = $gameSave->state ?? [];
+            $state['player_actions'] = array_merge($state['player_actions'] ?? [], $data['playerActions'] ?? []);
+            $gameSave->state = $state;
+            $gameSave->save();
 
-        if ($remainingHumanMatches > 0) {
-            // D'autres joueurs humains doivent encore disputer leur match :
-            // on passe la main au prochain joueur (siège suivant non joué).
-            $next = $this->nextHumanWithPendingMatch($gameSave, $weekToClose);
-            if ($next) {
-                $gameSave->controlled_game_team_id = $next->id;
-                $gameSave->save();
+            // 6. (Les cartes pre_match sont consommées en fin de semaine pour TOUTES
+            //     les équipes ayant joué — humaines et IA — cf. plus bas.)
+            $controlledTeamIds = $gameSave->controlledGameTeamIds();
+
+            // ─────────────────────────────────────────────────────────────
+            //  GATING : tant qu'il reste un match humain à jouer cette
+            //  semaine, on n'avance PAS — la semaine ne se clôt qu'au dernier.
+            // ─────────────────────────────────────────────────────────────
+            $weekToClose = (int) $match->week;
+
+            $remainingHumanMatches = GameMatch::where('game_save_id', $gameSave->id)
+                ->where('week', $weekToClose)
+                ->where('status', 'scheduled')
+                ->where(function ($q) use ($controlledTeamIds) {
+                    $q->whereIn('home_team_id', $controlledTeamIds)
+                        ->orWhereIn('away_team_id', $controlledTeamIds);
+                })
+                ->count();
+
+            if ($remainingHumanMatches > 0) {
+                // D'autres joueurs humains doivent encore disputer leur match :
+                // on passe la main au prochain joueur (siège suivant non joué).
+                $next = $this->nextHumanWithPendingMatch($gameSave, $weekToClose);
+                if ($next) {
+                    $gameSave->controlled_game_team_id = $next->id;
+                    $gameSave->save();
+                }
+
+                return redirect()->route('game-saves.Play', $gameSave);
+            }
+
+            // ─────────────────────────────────────────────────────────────
+            //  FIN DE SEMAINE : tous les matchs humains sont joués. On simule
+            //  les matchs IA restants et on déroule le pipeline une seule fois.
+            // ─────────────────────────────────────────────────────────────
+
+            // Ajuster les lineups IA (pour la semaine suivante)
+            app(AILineupService::class)->adjustLineupsForWeek($gameSave);
+
+            // Simuler les matchs IA restants (les matchs humains sont déjà "played")
+            app(MatchSimulator::class)->simulateOtherMatchesOfWeek($match);
+            if ($gameSave->getConfig('ai_training_enabled', true)) {
+                app(AITrainingService::class)->trainForWeek($gameSave);
+            }
+            if ($gameSave->getConfig('ai_transfers_enabled', true)) {
+                app(AITransferService::class)->recruitForWeek($gameSave);
+            }
+
+            // Revenus hebdomadaires AVANT d'incrémenter la semaine
+            $this->applyWeeklyIncome($gameSave, $weekToClose);
+
+            $bonusEnabled = $gameSave->getConfig('bonus_cards_enabled', true);
+            $malusEnabled = $bonusEnabled && $gameSave->getConfig('malus_cards_enabled', true);
+
+            if ($bonusEnabled) {
+                app(BonusCardActivationService::class)->resolveSponsorChallenges($gameSave, $weekToClose);
+                app(BonusCardActivationService::class)->consumePreMatchCardsForPlayedWeek($gameSave, $weekToClose);
+            }
+            if ($malusEnabled) {
+                app(BonusCardActivationService::class)->consumeMalusForPlayedWeek($gameSave, $weekToClose);
+            }
+
+            // Avancer la semaine
+            $gameSave->week = max($gameSave->week ?? 1, $weekToClose + 1);
+
+            // Nouvelle semaine : la main repasse au joueur du siège 1.
+            $firstHuman = $gameSave->controlledGameTeams()->first();
+            if ($firstHuman) {
+                $gameSave->controlled_game_team_id = $firstHuman->id;
+            }
+            $gameSave->save();
+
+            // Stamina / moral / promesses — agrégés sur toute la semaine
+            StaminaService::applyAfterWeek($gameSave, $weekToClose);
+            app(MoraleService::class)->applyAfterWeek($gameSave, $weekToClose);
+            app(PromiseService::class)->evaluateForWeek($gameSave, $weekToClose);
+
+            if ($bonusEnabled) {
+                app(BonusCardShopService::class)->generateWeeklyOffers($gameSave);
+                app(AIBonusCardService::class)->processWeek($gameSave);
+            }
+
+            // Coupe du Monde : faire progresser le tournoi (poules → élimination →
+            // champion) au lieu de la logique de fin de saison de ligue.
+            if ($gameSave->competition_type === 'world_cup') {
+                app(TournamentService::class)->advance($gameSave);
+                return redirect()->route('game-saves.Play', $gameSave);
+            }
+
+            // Verdict de la direction en cours de saison (jauge de confiance).
+            $career = app(CareerObjectiveService::class);
+            $career->afterWeek($gameSave, $weekToClose);
+            if ($career->isGameOver($gameSave)) {
+                return redirect()->route('game-saves.game-over', $gameSave);
+            }
+
+            $seasonService = app(SeasonService::class);
+            if ($seasonService->isSeasonOver($gameSave)) {
+                $seasonService->endSeason($gameSave);
+                return redirect()->route('game-saves.season-end', $gameSave);
             }
 
             return redirect()->route('game-saves.Play', $gameSave);
-        }
-
-        // ─────────────────────────────────────────────────────────────
-        //  FIN DE SEMAINE : tous les matchs humains sont joués. On simule
-        //  les matchs IA restants et on déroule le pipeline une seule fois.
-        // ─────────────────────────────────────────────────────────────
-
-        // Ajuster les lineups IA (pour la semaine suivante)
-        app(AILineupService::class)->adjustLineupsForWeek($gameSave);
-
-        // Simuler les matchs IA restants (les matchs humains sont déjà "played")
-        app(MatchSimulator::class)->simulateOtherMatchesOfWeek($match);
-        if ($gameSave->getConfig('ai_training_enabled', true)) {
-            app(AITrainingService::class)->trainForWeek($gameSave);
-        }
-        if ($gameSave->getConfig('ai_transfers_enabled', true)) {
-            app(AITransferService::class)->recruitForWeek($gameSave);
-        }
-
-        // Revenus hebdomadaires AVANT d'incrémenter la semaine
-        $this->applyWeeklyIncome($gameSave, $weekToClose);
-
-        $bonusEnabled = $gameSave->getConfig('bonus_cards_enabled', true);
-        $malusEnabled = $bonusEnabled && $gameSave->getConfig('malus_cards_enabled', true);
-
-        if ($bonusEnabled) {
-            app(BonusCardActivationService::class)->resolveSponsorChallenges($gameSave, $weekToClose);
-            app(BonusCardActivationService::class)->consumePreMatchCardsForPlayedWeek($gameSave, $weekToClose);
-        }
-        if ($malusEnabled) {
-            app(BonusCardActivationService::class)->consumeMalusForPlayedWeek($gameSave, $weekToClose);
-        }
-
-        // Avancer la semaine
-        $gameSave->week = max($gameSave->week ?? 1, $weekToClose + 1);
-
-        // Nouvelle semaine : la main repasse au joueur du siège 1.
-        $firstHuman = $gameSave->controlledGameTeams()->first();
-        if ($firstHuman) {
-            $gameSave->controlled_game_team_id = $firstHuman->id;
-        }
-        $gameSave->save();
-
-        // Stamina / moral / promesses — agrégés sur toute la semaine
-        StaminaService::applyAfterWeek($gameSave, $weekToClose);
-        app(MoraleService::class)->applyAfterWeek($gameSave, $weekToClose);
-        app(PromiseService::class)->evaluateForWeek($gameSave, $weekToClose);
-
-        if ($bonusEnabled) {
-            app(BonusCardShopService::class)->generateWeeklyOffers($gameSave);
-            app(AIBonusCardService::class)->processWeek($gameSave);
-        }
-
-        // Coupe du Monde : faire progresser le tournoi (poules → élimination →
-        // champion) au lieu de la logique de fin de saison de ligue.
-        if ($gameSave->competition_type === 'world_cup') {
-            app(TournamentService::class)->advance($gameSave);
-            return redirect()->route('game-saves.Play', $gameSave);
-        }
-
-        // Verdict de la direction en cours de saison (jauge de confiance).
-        $career = app(CareerObjectiveService::class);
-        $career->afterWeek($gameSave, $weekToClose);
-        if ($career->isGameOver($gameSave)) {
-            return redirect()->route('game-saves.game-over', $gameSave);
-        }
-
-        $seasonService = app(SeasonService::class);
-        if ($seasonService->isSeasonOver($gameSave)) {
-            $seasonService->endSeason($gameSave);
-            return redirect()->route('game-saves.season-end', $gameSave);
-        }
-
-        return redirect()->route('game-saves.Play', $gameSave);
+        });
     }
 
     /**
@@ -345,84 +359,97 @@ class GameMatchController extends Controller
     {
         $this->authorizeGameSave('update', $gameSave);
 
-        $week = (int) ($gameSave->week ?? 1);
+        // Verrou par save + garde de phase : un double clic ne simule pas deux
+        // semaines, et un re-POST pendant la draft / la fin de saison ne rejoue
+        // pas endSeason (primes et titres comptés deux fois).
+        return $this->withSaveLock($gameSave, function (GameSave $gameSave) {
+            if (! $gameSave->isInMatchPhase()) {
+                return redirect()->route('game-saves.Play', $gameSave);
+            }
 
-        $matches = GameMatch::query()
-            ->where('game_save_id', $gameSave->id)
-            ->where('week', $week)
-            ->where('status', 'scheduled')
-            ->with([
-                'homeTeam' => fn($q) => $q->with(['contracts' => fn($cq) => $cq->activeAt($week)->with('gamePlayer')]),
-                'awayTeam' => fn($q) => $q->with(['contracts' => fn($cq) => $cq->activeAt($week)->with('gamePlayer')]),
-            ])
-            ->get();
+            if (app(CareerObjectiveService::class)->isGameOver($gameSave)) {
+                return redirect()->route('game-saves.game-over', $gameSave);
+            }
 
-        app(MatchSimulator::class)->simulateMatchesCollection($matches);
-        app(AILineupService::class)->adjustLineupsForWeek($gameSave);
-        if ($gameSave->getConfig('ai_training_enabled', true)) {
-            app(AITrainingService::class)->trainForWeek($gameSave);
-        }
-        if ($gameSave->getConfig('ai_transfers_enabled', true)) {
-            app(AITransferService::class)->recruitForWeek($gameSave);
-        }
+            $week = (int) ($gameSave->week ?? 1);
 
-        // Revenus AVANT incrément
-        $this->applyWeeklyIncome($gameSave, $week);
+            $matches = GameMatch::query()
+                ->where('game_save_id', $gameSave->id)
+                ->where('week', $week)
+                ->where('status', 'scheduled')
+                ->with([
+                    'homeTeam' => fn($q) => $q->with(['contracts' => fn($cq) => $cq->activeAt($week)->with('gamePlayer')]),
+                    'awayTeam' => fn($q) => $q->with(['contracts' => fn($cq) => $cq->activeAt($week)->with('gamePlayer')]),
+                ])
+                ->get();
 
-        $bonusEnabled = $gameSave->getConfig('bonus_cards_enabled', true);
-        $malusEnabled = $bonusEnabled && $gameSave->getConfig('malus_cards_enabled', true);
+            app(MatchSimulator::class)->simulateMatchesCollection($matches);
+            app(AILineupService::class)->adjustLineupsForWeek($gameSave);
+            if ($gameSave->getConfig('ai_training_enabled', true)) {
+                app(AITrainingService::class)->trainForWeek($gameSave);
+            }
+            if ($gameSave->getConfig('ai_transfers_enabled', true)) {
+                app(AITransferService::class)->recruitForWeek($gameSave);
+            }
 
-        if ($bonusEnabled) {
-            app(BonusCardActivationService::class)->resolveSponsorChallenges($gameSave, $week);
-            app(BonusCardActivationService::class)->consumePreMatchCardsForPlayedWeek($gameSave, $week);
-        }
-        if ($malusEnabled) {
-            app(BonusCardActivationService::class)->consumeMalusForPlayedWeek($gameSave, $week);
-        }
+            // Revenus AVANT incrément
+            $this->applyWeeklyIncome($gameSave, $week);
 
-        // Stamina AVANT incrément (sinon on récupère l'historique d'une autre semaine)
-        StaminaService::applyAfterWeek($gameSave, $week);
+            $bonusEnabled = $gameSave->getConfig('bonus_cards_enabled', true);
+            $malusEnabled = $bonusEnabled && $gameSave->getConfig('malus_cards_enabled', true);
 
-        // Moral AVANT incrément (résultats, temps de jeu, salaire)
-        app(MoraleService::class)->applyAfterWeek($gameSave, $week);
+            if ($bonusEnabled) {
+                app(BonusCardActivationService::class)->resolveSponsorChallenges($gameSave, $week);
+                app(BonusCardActivationService::class)->consumePreMatchCardsForPlayedWeek($gameSave, $week);
+            }
+            if ($malusEnabled) {
+                app(BonusCardActivationService::class)->consumeMalusForPlayedWeek($gameSave, $week);
+            }
 
-        // Promesses arrivées à échéance
-        app(PromiseService::class)->evaluateForWeek($gameSave, $week);
+            // Stamina AVANT incrément (sinon on récupère l'historique d'une autre semaine)
+            StaminaService::applyAfterWeek($gameSave, $week);
 
-        $gameSave->week = $week + 1;
+            // Moral AVANT incrément (résultats, temps de jeu, salaire)
+            app(MoraleService::class)->applyAfterWeek($gameSave, $week);
 
-        // Nouvelle semaine : la main repasse au joueur du siège 1.
-        $firstHuman = $gameSave->controlledGameTeams()->first();
-        if ($firstHuman) {
-            $gameSave->controlled_game_team_id = $firstHuman->id;
-        }
-        $gameSave->save();
+            // Promesses arrivées à échéance
+            app(PromiseService::class)->evaluateForWeek($gameSave, $week);
 
-        if ($bonusEnabled) {
-            app(BonusCardShopService::class)->generateWeeklyOffers($gameSave);
-            app(AIBonusCardService::class)->processWeek($gameSave);
-        }
+            $gameSave->week = $week + 1;
 
-        // Coupe du Monde : progression du tournoi au lieu de la fin de saison.
-        if ($gameSave->competition_type === 'world_cup') {
-            app(TournamentService::class)->advance($gameSave);
+            // Nouvelle semaine : la main repasse au joueur du siège 1.
+            $firstHuman = $gameSave->controlledGameTeams()->first();
+            if ($firstHuman) {
+                $gameSave->controlled_game_team_id = $firstHuman->id;
+            }
+            $gameSave->save();
+
+            if ($bonusEnabled) {
+                app(BonusCardShopService::class)->generateWeeklyOffers($gameSave);
+                app(AIBonusCardService::class)->processWeek($gameSave);
+            }
+
+            // Coupe du Monde : progression du tournoi au lieu de la fin de saison.
+            if ($gameSave->competition_type === 'world_cup') {
+                app(TournamentService::class)->advance($gameSave);
+                return redirect()->route('game-saves.Play', $gameSave);
+            }
+
+            // Verdict de la direction en cours de saison (jauge de confiance).
+            $career = app(CareerObjectiveService::class);
+            $career->afterWeek($gameSave, $week);
+            if ($career->isGameOver($gameSave)) {
+                return redirect()->route('game-saves.game-over', $gameSave);
+            }
+
+            $seasonService = app(SeasonService::class);
+            if ($seasonService->isSeasonOver($gameSave)) {
+                $seasonService->endSeason($gameSave);
+                return redirect()->route('game-saves.season-end', $gameSave);
+            }
+
             return redirect()->route('game-saves.Play', $gameSave);
-        }
-
-        // Verdict de la direction en cours de saison (jauge de confiance).
-        $career = app(CareerObjectiveService::class);
-        $career->afterWeek($gameSave, $week);
-        if ($career->isGameOver($gameSave)) {
-            return redirect()->route('game-saves.game-over', $gameSave);
-        }
-
-        $seasonService = app(SeasonService::class);
-        if ($seasonService->isSeasonOver($gameSave)) {
-            $seasonService->endSeason($gameSave);
-            return redirect()->route('game-saves.season-end', $gameSave);
-        }
-
-        return redirect()->route('game-saves.Play', $gameSave);
+        });
     }
 
     /**

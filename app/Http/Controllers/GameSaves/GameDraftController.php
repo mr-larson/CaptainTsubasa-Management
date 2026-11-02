@@ -4,6 +4,7 @@ namespace App\Http\Controllers\GameSaves;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\AuthorizesGameSave;
+use App\Http\Controllers\Concerns\LocksGameSave;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSave;
@@ -19,6 +20,7 @@ use Inertia\Response;
 class GameDraftController extends Controller
 {
     use AuthorizesGameSave;
+    use LocksGameSave;
 
     /**
      * Écran de draft (initial ou intersaison).
@@ -65,83 +67,87 @@ class GameDraftController extends Controller
     {
         $this->authorizeGameSave('update', $gameSave);
 
-        if (!in_array($gameSave->phase, ['draft', 'intersaison_draft'], true)) {
-            return response()->json(['error' => 'Not in draft phase'], 400);
-        }
+        // Verrou par save : deux picks concurrents ne peuvent pas signer le même
+        // joueur ni consommer deux fois le même tour.
+        return $this->withSaveLock($gameSave, function (GameSave $gameSave) {
+            if (!in_array($gameSave->phase, ['draft', 'intersaison_draft'], true)) {
+                return response()->json(['error' => 'Not in draft phase'], 400);
+            }
 
-        $draftService = app(DraftService::class);
+            $draftService = app(DraftService::class);
 
-        // Vérifier que ce n'est PAS le tour du joueur humain
-        if ($draftService->isHumanTurn($gameSave)) {
-            return response()->json(['error' => 'It is your turn to pick'], 400);
-        }
+            // Vérifier que ce n'est PAS le tour du joueur humain
+            if ($draftService->isHumanTurn($gameSave)) {
+                return response()->json(['error' => 'It is your turn to pick'], 400);
+            }
 
-        $draft = ($gameSave->state ?? [])['draft'] ?? null;
-        if (!$draft || ($draft['completed'] ?? false)) {
-            // Draft terminé → finaliser
-            $draftService->finalizeDraft($gameSave);
-            return response()->json(['completed' => true]);
-        }
+            $draft = ($gameSave->state ?? [])['draft'] ?? null;
+            if (!$draft || ($draft['completed'] ?? false)) {
+                // Draft terminé → finaliser
+                $draftService->finalizeDraft($gameSave);
+                return response()->json(['completed' => true]);
+            }
 
-        // L'IA choisit un joueur
-        $aiService     = app(DraftAIService::class);
-        $currentTeamId = $draftService->getCurrentTeamId($gameSave);
-        $team          = GameTeam::find($currentTeamId);
+            // L'IA choisit un joueur
+            $aiService     = app(DraftAIService::class);
+            $currentTeamId = $draftService->getCurrentTeamId($gameSave);
+            $team          = GameTeam::find($currentTeamId);
 
-        if (!$team) {
-            return response()->json(['error' => 'Team not found'], 400);
-        }
+            if (!$team) {
+                return response()->json(['error' => 'Team not found'], 400);
+            }
 
-        // Vérifier si l'IA veut arrêter
-        $squadSize = GameContract::where('game_save_id', $gameSave->id)
-            ->where('game_team_id', $team->id)
-            ->count();
+            // Vérifier si l'IA veut arrêter
+            $squadSize = GameContract::where('game_save_id', $gameSave->id)
+                ->where('game_team_id', $team->id)
+                ->count();
 
-        if ($aiService->shouldFinishDraft($team, $squadSize, $team->budget ?? 0)) {
-            $draftService->finishTeamDraft($gameSave, $team->id);
+            if ($aiService->shouldFinishDraft($team, $squadSize, $team->budget ?? 0)) {
+                $draftService->finishTeamDraft($gameSave, $team->id);
+                $gameSave->refresh();
+                $draftState = $gameSave->state['draft'] ?? [];
+
+                return response()->json([
+                    'pick'       => null,
+                    'finished'   => true,
+                    'team_name'  => $team->name,
+                    'draftState' => $draftState,
+                    'completed'  => $draftState['completed'] ?? false,
+                ]);
+            }
+
+            $playerId = $aiService->chooseBestPlayer($gameSave, $team);
+
+            if (!$playerId) {
+                // Aucun joueur trouvable → cette équipe a fini (budget insuffisant)
+                $draftService->finishTeamDraft($gameSave, $team->id);
+                $gameSave->refresh();
+                $draftState = $gameSave->state['draft'] ?? [];
+
+                return response()->json([
+                    'pick'       => null,
+                    'finished'   => true,
+                    'team_name'  => $team->name,
+                    'draftState' => $draftState,
+                    'completed'  => $draftState['completed'] ?? false,
+                ]);
+            }
+
+            $pick = $draftService->executePick($gameSave, $playerId);
             $gameSave->refresh();
+
             $draftState = $gameSave->state['draft'] ?? [];
 
+            if ($draftState['completed'] ?? false) {
+                $draftService->finalizeDraft($gameSave);
+            }
+
             return response()->json([
-                'pick'       => null,
-                'finished'   => true,
-                'team_name'  => $team->name,
+                'pick'       => $pick,
                 'draftState' => $draftState,
                 'completed'  => $draftState['completed'] ?? false,
             ]);
-        }
-
-        $playerId = $aiService->chooseBestPlayer($gameSave, $team);
-
-        if (!$playerId) {
-            // Aucun joueur trouvable → cette équipe a fini (budget insuffisant)
-            $draftService->finishTeamDraft($gameSave, $team->id);
-            $gameSave->refresh();
-            $draftState = $gameSave->state['draft'] ?? [];
-
-            return response()->json([
-                'pick'       => null,
-                'finished'   => true,
-                'team_name'  => $team->name,
-                'draftState' => $draftState,
-                'completed'  => $draftState['completed'] ?? false,
-            ]);
-        }
-
-        $pick = $draftService->executePick($gameSave, $playerId);
-        $gameSave->refresh();
-
-        $draftState = $gameSave->state['draft'] ?? [];
-
-        if ($draftState['completed'] ?? false) {
-            $draftService->finalizeDraft($gameSave);
-        }
-
-        return response()->json([
-            'pick'       => $pick,
-            'draftState' => $draftState,
-            'completed'  => $draftState['completed'] ?? false,
-        ]);
+        });
     }
 
     /**
@@ -151,69 +157,77 @@ class GameDraftController extends Controller
     {
         $this->authorizeGameSave('update', $gameSave);
 
-        if (!in_array($gameSave->phase, ['draft', 'intersaison_draft'], true)) {
-            return response()->json(['error' => 'Not in draft phase'], 400);
-        }
-
         $data = $request->validate([
             'player_id' => ['required', 'integer'],
         ]);
 
-        $draftService = app(DraftService::class);
+        // Verrou par save : deux picks concurrents ne peuvent pas signer le même
+        // joueur ni consommer deux fois le même tour.
+        return $this->withSaveLock($gameSave, function (GameSave $gameSave) use ($data) {
+            if (!in_array($gameSave->phase, ['draft', 'intersaison_draft'], true)) {
+                return response()->json(['error' => 'Not in draft phase'], 400);
+            }
 
-        if (!$draftService->isHumanTurn($gameSave)) {
-            return response()->json(['error' => 'Not your turn'], 400);
-        }
+            $draftService = app(DraftService::class);
 
-        // Message explicite si le joueur refuse l'équipe contrôlée (rancune coach)
-        $pickedPlayer  = \App\Models\GameSaves\GamePlayer::where('game_save_id', $gameSave->id)->find($data['player_id']);
-        $currentTeamId = $draftService->getCurrentTeamId($gameSave);
-        if ($pickedPlayer && $currentTeamId && $draftService->playerRefusesTeam($gameSave, $pickedPlayer, (int) $currentTeamId)) {
+            if (!$draftService->isHumanTurn($gameSave)) {
+                return response()->json(['error' => 'Not your turn'], 400);
+            }
+
+            // Message explicite si le joueur refuse l'équipe contrôlée (rancune coach)
+            $pickedPlayer  = \App\Models\GameSaves\GamePlayer::where('game_save_id', $gameSave->id)->find($data['player_id']);
+            $currentTeamId = $draftService->getCurrentTeamId($gameSave);
+            if ($pickedPlayer && $currentTeamId && $draftService->playerRefusesTeam($gameSave, $pickedPlayer, (int) $currentTeamId)) {
+                return response()->json([
+                    'error' => "{$pickedPlayer->full_name} refuse de jouer pour ton équipe (relation en rupture avec le coach).",
+                ], 422);
+            }
+
+            $pick = $draftService->executePick($gameSave, $data['player_id']);
+
+            if (!$pick) {
+                return response()->json(['error' => 'Invalid pick (player taken, too expensive, or squad full)'], 422);
+            }
+
+            $gameSave->refresh();
+            $draftState = $gameSave->state['draft'] ?? [];
+
+            if ($draftState['completed'] ?? false) {
+                $draftService->finalizeDraft($gameSave);
+            }
+
             return response()->json([
-                'error' => "{$pickedPlayer->full_name} refuse de jouer pour ton équipe (relation en rupture avec le coach).",
-            ], 422);
-        }
-
-        $pick = $draftService->executePick($gameSave, $data['player_id']);
-
-        if (!$pick) {
-            return response()->json(['error' => 'Invalid pick (player taken, too expensive, or squad full)'], 422);
-        }
-
-        $gameSave->refresh();
-        $draftState = $gameSave->state['draft'] ?? [];
-
-        if ($draftState['completed'] ?? false) {
-            $draftService->finalizeDraft($gameSave);
-        }
-
-        return response()->json([
-            'pick'       => $pick,
-            'draftState' => $draftState,
-            'completed'  => $draftState['completed'] ?? false,
-        ]);
+                'pick'       => $pick,
+                'draftState' => $draftState,
+                'completed'  => $draftState['completed'] ?? false,
+            ]);
+        });
     }
 
     public function finish(Request $request, GameSave $gameSave)
     {
         $this->authorizeGameSave('update', $gameSave);
 
-        $draftService = app(DraftService::class);
+        // Verrou par save : deux picks concurrents ne peuvent pas signer le même
+        // joueur ni consommer deux fois le même tour.
+        return $this->withSaveLock($gameSave, function (GameSave $gameSave) {
+            $draftService = app(DraftService::class);
 
-        // Clôturer l'équipe humaine actuellement sur l'horloge (hot-seat), avec
-        // repli sur l'équipe propriétaire si l'horloge n'est pas sur un humain.
-        $current = $draftService->getCurrentTeamId($gameSave);
-        $teamId = ($current !== null && in_array((int) $current, $gameSave->controlledGameTeamIds(), true))
-            ? (int) $current
-            : (int) $gameSave->controlled_game_team_id;
+            // Clôturer l'équipe humaine actuellement sur l'horloge (hot-seat), avec
+            // repli sur l'équipe propriétaire si l'horloge n'est pas sur un humain.
+            $current = $draftService->getCurrentTeamId($gameSave);
+            $teamId = ($current !== null && in_array((int) $current, $gameSave->controlledGameTeamIds(), true))
+                ? (int) $current
+                : (int) $gameSave->controlled_game_team_id;
 
-        $allDone = $draftService->finishTeamDraft($gameSave, $teamId);
+            $allDone = $draftService->finishTeamDraft($gameSave, $teamId);
 
-        $gameSave->refresh();
+            $gameSave->refresh();
 
-        return response()->json([
-            'draftState' => $gameSave->state['draft'] ?? [],
-            'completed'  => $allDone || ($gameSave->state['draft']['completed'] ?? false),
-        ]);
+            return response()->json([
+                'draftState' => $gameSave->state['draft'] ?? [],
+                'completed'  => $allDone || ($gameSave->state['draft']['completed'] ?? false),
+            ]);
+        });
     }
 }
