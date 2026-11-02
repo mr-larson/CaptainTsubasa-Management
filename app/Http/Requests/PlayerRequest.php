@@ -29,7 +29,7 @@ class PlayerRequest extends FormRequest
             'secondary_positions.*' => [new Enum(PlayerPosition::class), 'different:position'],
             'cost'      => ['required', 'integer', 'min:0'],
             'description' => ['nullable', 'string', 'max:1000'],
-            'photo' => ['nullable', 'image', 'max:4096'],
+            'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
 
 
             // ─────────────────────────────

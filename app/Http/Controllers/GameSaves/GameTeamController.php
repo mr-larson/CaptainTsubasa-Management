@@ -154,7 +154,8 @@ class GameTeamController extends Controller
         $dir = public_path("images/game-teams/{$gameSaveId}");
         if (!File::exists($dir)) File::makeDirectory($dir, 0755, true);
 
-        $filename = Str::slug($teamName) . '-' . Str::random(6) . '.' . $file->getClientOriginalExtension();
+        // Extension déduite du contenu (jamais du nom client : « logo.html » servi en text/html).
+        $filename = Str::slug($teamName) . '-' . Str::random(6) . '.' . $file->guessExtension();
         $file->move($dir, $filename);
 
         return "images/game-teams/{$gameSaveId}/{$filename}";

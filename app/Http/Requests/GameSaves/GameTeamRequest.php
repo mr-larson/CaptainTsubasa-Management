@@ -29,7 +29,7 @@ class GameTeamRequest extends FormRequest
             'losses'      => ['nullable', 'integer', 'min:0'],
 
             // Gestion du logo
-            'logo'        => ['nullable', 'image', 'max:4096'],
+            'logo'        => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
             'remove_logo' => ['boolean'],
 
             // Seulement en cas de préparation pour edit()

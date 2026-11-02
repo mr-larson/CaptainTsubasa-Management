@@ -1093,7 +1093,10 @@ class GameSaveController extends Controller
     public function update(GameSaveRequest $request, GameSave $gameSave): mixed
     {
         $this->authorizeGameSave('update', $gameSave);
-        $gameSave->fill($request->validated())->save();
+        // Seul le libellé est modifiable par le client : semaine, saison, équipe
+        // et state sont pilotés par le serveur (un state renvoyé par le client
+        // est périmé et écraserait les changements faits depuis l'affichage).
+        $gameSave->fill($request->safe()->only(['label']))->save();
 
         if ($request->wantsJson()) {
             return response()->json(['success' => true]);

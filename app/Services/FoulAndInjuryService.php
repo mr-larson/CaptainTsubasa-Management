@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameInjury;
 use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GamePlayer;
@@ -41,7 +42,24 @@ class FoulAndInjuryService
         $suspensionEnabled = (bool) $gameSave->getConfig('suspension_on_3_yellows', true);
         $week = $match->week;
 
+        // Les événements viennent du client : on n'accepte que des joueurs sous
+        // contrat avec l'une des deux équipes du match (sinon on pourrait
+        // blesser ou suspendre n'importe quel joueur de la save).
+        $matchPlayerIds = GameContract::where('game_save_id', $gameSave->id)
+            ->whereIn('game_team_id', [$match->home_team_id, $match->away_team_id])
+            ->activeAt((int) $week)
+            ->pluck('game_player_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
         foreach ($actionEvents as $event) {
+            if (!is_array($event)) continue;
+            foreach (['player_id', 'fouler_player_id', 'victim_player_id'] as $key) {
+                if (isset($event[$key]) && !in_array((int) $event[$key], $matchPlayerIds, true)) {
+                    $event[$key] = null;
+                }
+            }
+
             $eventType = $event['type'] ?? null;
 
             if ($eventType === 'foul' && $injuryEnabled) {

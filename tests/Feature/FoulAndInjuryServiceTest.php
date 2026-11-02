@@ -33,6 +33,7 @@ class FoulAndInjuryServiceTest extends TestCase
         $save = $this->makeSave(['week' => 1]);
         $team = $this->makeTeam($save);
         $player = $this->makePlayer($save);
+        $this->makeContract($save, $team, $player);
         $match = $this->makeMatch($save, $team, $team, ['week' => 1, 'status' => 'played']);
 
         $this->service->processMatchEvents($save, $match, [
@@ -51,6 +52,7 @@ class FoulAndInjuryServiceTest extends TestCase
         $save = $this->makeSave(['week' => 1]);
         $team = $this->makeTeam($save);
         $player = $this->makePlayer($save);
+        $this->makeContract($save, $team, $player);
         $match = $this->makeMatch($save, $team, $team, ['week' => 1, 'status' => 'played']);
 
         // Trois jaunes sur le même joueur.
@@ -72,6 +74,7 @@ class FoulAndInjuryServiceTest extends TestCase
         $save->setConfig(['suspension_on_3_yellows' => false]);
         $team = $this->makeTeam($save);
         $player = $this->makePlayer($save);
+        $this->makeContract($save, $team, $player);
         $match = $this->makeMatch($save, $team, $team, ['week' => 1, 'status' => 'played']);
 
         for ($i = 0; $i < 3; $i++) {
@@ -90,6 +93,7 @@ class FoulAndInjuryServiceTest extends TestCase
         $save = $this->makeSave(['week' => 2]);
         $team = $this->makeTeam($save);
         $player = $this->makePlayer($save);
+        $this->makeContract($save, $team, $player);
         $match = $this->makeMatch($save, $team, $team, ['week' => 2, 'status' => 'played']);
 
         $this->service->processMatchEvents($save, $match, [
@@ -109,6 +113,7 @@ class FoulAndInjuryServiceTest extends TestCase
         $save->setConfig(['suspension_on_3_yellows' => false]);
         $team = $this->makeTeam($save);
         $player = $this->makePlayer($save);
+        $this->makeContract($save, $team, $player);
         $match = $this->makeMatch($save, $team, $team, ['week' => 1, 'status' => 'played']);
 
         $this->service->processMatchEvents($save->fresh(), $match, [
@@ -123,6 +128,7 @@ class FoulAndInjuryServiceTest extends TestCase
         $save = $this->makeSave(['week' => 1]);
         $team = $this->makeTeam($save);
         $player = $this->makePlayer($save);
+        $this->makeContract($save, $team, $player);
         $match = $this->makeMatch($save, $team, $team, ['week' => 1, 'status' => 'played']);
 
         $this->service->processMatchEvents($save, $match, [
@@ -143,6 +149,7 @@ class FoulAndInjuryServiceTest extends TestCase
         $save->setConfig(['injury_on_foul' => false]);
         $team = $this->makeTeam($save);
         $player = $this->makePlayer($save);
+        $this->makeContract($save, $team, $player);
         $match = $this->makeMatch($save, $team, $team, ['week' => 1, 'status' => 'played']);
 
         $this->service->processMatchEvents($save->fresh(), $match, [
@@ -157,6 +164,7 @@ class FoulAndInjuryServiceTest extends TestCase
         $save = $this->makeSave(['week' => 1]);
         $team = $this->makeTeam($save);
         $player = $this->makePlayer($save);
+        $this->makeContract($save, $team, $player);
         $match = $this->makeMatch($save, $team, $team, ['week' => 1, 'status' => 'played']);
 
         $events = [['type' => 'injury', 'player_id' => $player->id, 'severity' => 'severe']];

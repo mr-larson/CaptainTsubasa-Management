@@ -169,7 +169,8 @@ class GamePlayerController extends Controller
     {
         $dir = "images/game-players/{$gameSaveId}";
 
-        $filename = Str::slug($name).'-'.Str::random(6).'.'.$file->getClientOriginalExtension();
+        // Extension déduite du contenu (jamais du nom client : « photo.html » servi en text/html).
+        $filename = Str::slug($name).'-'.Str::random(6).'.'.$file->guessExtension();
 
         // On stocke sur le disque "public" pour être compatible avec Storage::url()
         Storage::disk('public')->putFileAs($dir, $file, $filename);

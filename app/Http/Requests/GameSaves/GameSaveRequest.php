@@ -61,23 +61,6 @@ class GameSaveRequest extends FormRequest
                 'exists:period_packages,id',
             ],
 
-            'season' => [
-                'nullable',
-                'integer',
-                'min:1',
-            ],
-
-            'week' => [
-                'nullable',
-                'integer',
-                'min:1',
-            ],
-
-            'state' => [
-                'nullable',
-                'array',
-            ],
-
             'game_mode' => ['nullable', 'string', 'in:prebuilt,draft'],
 
             'competition_type' => ['nullable', 'string', 'in:college_league,world_cup'],

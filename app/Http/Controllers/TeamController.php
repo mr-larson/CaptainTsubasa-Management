@@ -134,7 +134,7 @@ class TeamController extends Controller
         }
 
         // filename stable + unique
-        $ext = $file->getClientOriginalExtension(); // jpg/png/webp...
+        $ext = $file->guessExtension(); // jpg/png/webp, déduit du contenu (pas du nom client)
         $base = Str::slug($teamName); // ex: nankatsu
         $filename = $base . '-' . Str::random(6) . '.' . $ext;
 

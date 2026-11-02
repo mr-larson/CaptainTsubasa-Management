@@ -29,7 +29,7 @@ class GamePlayerRequest extends FormRequest
             'cost'         => ['required', 'integer', 'min:0'],
 
             // photo
-            'photo'        => ['nullable', 'image', 'max:4096'],
+            'photo'        => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
             'remove_photo' => ['boolean'],
 
             // base player optionnel

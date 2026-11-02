@@ -108,7 +108,6 @@ const releasePlayer = (player) => {
 // ==========================
 const season       = ref(props.gameSave.season || 1);
 const week         = ref(props.gameSave.week   || 1);
-const currentState = ref(props.gameSave.state  || {});
 const saving       = ref(false);
 
 watch(() => props.gameSave.season, (v) => { season.value = v ?? 1; }, { immediate: true });
@@ -301,7 +300,7 @@ const saveGame = () => {
     saving.value = true;
     router.put(
         route('game-saves.update', props.gameSave.id),
-        { label: props.gameSave.label, season: season.value, week: week.value, state: currentState.value },
+        { label: props.gameSave.label },
         { preserveState: true, preserveScroll: true, onFinish: () => { saving.value = false; } }
     );
 };

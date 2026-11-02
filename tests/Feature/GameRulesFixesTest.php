@@ -31,6 +31,7 @@ class GameRulesFixesTest extends TestCase
         $save   = $this->makeSave();
         $team   = $this->makeTeam($save);
         $player = $this->makePlayer($save);
+        $this->makeContract($save, $team, $player);
         $match  = $this->makeMatch($save, $team, $team, ['status' => 'played']);
 
         for ($i = 0; $i < 6; $i++) {
