@@ -22,8 +22,8 @@ class PostMatchProgressionService
 
         $season = (int) ($gameSave->season ?? 1);
         $state  = $gameSave->state ?? [];
-        $state['season_progression']          = $state['season_progression']          ?? [];
-        $state['season_progression'][$season] = $state['season_progression'][$season] ?? [];
+        // Seule la saison en cours sert au plafond : les précédentes sont purgées.
+        $state['season_progression'] = [$season => $state['season_progression'][$season] ?? []];
 
         $report = [];
 

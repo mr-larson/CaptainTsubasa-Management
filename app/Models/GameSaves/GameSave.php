@@ -6,6 +6,7 @@ use App\Models\Team;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Arr;
 
 class GameSave extends Model
 {
@@ -32,6 +33,29 @@ class GameSave extends Model
         'state' => 'array',
         'phase' => 'string',
     ];
+
+    /**
+     * Clés du state purement serveur, jamais lues par le front : retirées de la
+     * sérialisation (props Inertia, JSON) pour alléger chaque page. La boutique
+     * contient notamment les offres de toutes les équipes IA.
+     */
+    public const SERVER_ONLY_STATE_KEYS = [
+        'shop',
+        'ai_training_week',
+        'season_progression',
+        'match_progression_history',
+    ];
+
+    public function toArray()
+    {
+        $array = parent::toArray();
+
+        if (is_array($array['state'] ?? null)) {
+            $array['state'] = Arr::except($array['state'], self::SERVER_ONLY_STATE_KEYS);
+        }
+
+        return $array;
+    }
 
     public function user()
     {

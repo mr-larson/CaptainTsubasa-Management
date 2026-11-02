@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Enums\Nationality;
 use Database\Seeders\Concerns\CalculatesWeeklyCost;
+use Database\Seeders\Concerns\GuardsReferenceReseed;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -12,6 +13,7 @@ use Illuminate\Support\Str;
 
 class PlayerSeeder extends Seeder
 {
+    use GuardsReferenceReseed;
     use CalculatesWeeklyCost;
 
     /**
@@ -35,6 +37,10 @@ class PlayerSeeder extends Seeder
      */
     public function run(): void
     {
+        if ($this->refusesProductionReseed('players')) {
+            return;
+        }
+
         // On remet la table à zéro avant de reseed
         Schema::disableForeignKeyConstraints();
         DB::table('players')->truncate();

@@ -149,7 +149,6 @@ class GameMatchController extends Controller
         $data = $request->validate([
             'scoresByTeamId'   => ['required', 'array', 'min:2'],
             'scoresByTeamId.*' => ['integer', 'min:0'],
-            'playerActions'    => ['array'],
             'match_stats'      => ['nullable', 'array'],
             'foulEvents'       => ['nullable', 'array'],
         ]);
@@ -216,11 +215,6 @@ class GameMatchController extends Controller
             app(PostMatchProgressionService::class)->applyForMatch($gameSave, $match);
             $gameSave->refresh();
 
-            // 5. Conserver player_actions (cumulés sur tous les matchs humains de la semaine)
-            $state = $gameSave->state ?? [];
-            $state['player_actions'] = array_merge($state['player_actions'] ?? [], $data['playerActions'] ?? []);
-            $gameSave->state = $state;
-            $gameSave->save();
 
             // 6. (Les cartes pre_match sont consommées en fin de semaine pour TOUTES
             //     les équipes ayant joué — humaines et IA — cf. plus bas.)

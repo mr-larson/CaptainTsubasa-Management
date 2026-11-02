@@ -8,7 +8,6 @@ use App\Models\Player;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Storage;
 
 
 class PlayerController extends Controller
@@ -60,12 +59,9 @@ class PlayerController extends Controller
     {
         $data = $request->validated();
 
-        // ✅ UPLOAD PHOTO (si présente) + suppression ancienne
+        // Nouvelle photo : l'ancienne est conservée, car les saves en copient le
+        // chemin (game_players.photo_path) ; l'effacer casserait leur affichage.
         if ($request->hasFile('photo')) {
-            if ($player->photo_path) {
-                Storage::disk('public')->delete($player->photo_path);
-            }
-
             $data['photo_path'] = $request->file('photo')->store('players', 'public');
         }
 
@@ -78,11 +74,7 @@ class PlayerController extends Controller
 
     public function destroy(Player $player): RedirectResponse
     {
-        // ✅ supprimer aussi la photo
-        if ($player->photo_path) {
-            Storage::disk('public')->delete($player->photo_path);
-        }
-
+        // Photo conservée (suppression douce, et les saves en copient le chemin).
         $player->delete();
 
         return redirect()

@@ -206,6 +206,9 @@ class SeasonService
 
         $state = $gameSave->state ?? [];
         unset($state['lineup']);
+        // Tous les contrats ont expiré : les signatures d'agents libres de la
+        // saison passée n'ont plus lieu d'être (et bornent la taille du state).
+        unset($state['free_agent_signings']);
         $gameSave->state = $state;
         $gameSave->save();
 

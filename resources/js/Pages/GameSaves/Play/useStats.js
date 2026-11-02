@@ -16,63 +16,8 @@ export function useStats({ gameSave, teams, team, roster, playerSeasonStats: pla
         const p = selectedMyPlayer.value;
         if (!p) return null;
 
-        // Stats cumulées disponibles → on les utilise directement
-        const s = playerSeasonStats.value[p.id] ?? playerSeasonStats.value[String(p.id)];
-        if (s) return s;
-
-        // Fallback : calcul depuis playerActions
-        const playerActions = gameSave.value.state?.player_actions ?? [];
-        const events = playerActions.filter(ev =>
-            ev.attack?.game_player_id === p.id ||
-            ev.defense?.game_player_id === p.id
-        );
-        if (!events.length) return null;
-
-        const stats = {
-            offense: {
-                pass:    { attempts: 0, success: 0 },
-                shot:    { attempts: 0, success: 0 },
-                dribble: { attempts: 0, success: 0 },
-                special: { attempts: 0, success: 0 },
-            },
-            defense: {
-                intercept: { attempts: 0, success: 0 },
-                tackle:    { attempts: 0, success: 0 },
-                block:     { attempts: 0, success: 0 },
-                hands:     { attempts: 0, success: 0 },
-                punch:     { attempts: 0, success: 0 },
-                gkSpecial: { attempts: 0, success: 0 },
-            },
-            duelsWon: 0, duelsLost: 0,
-        };
-
-        for (const ev of events) {
-            const result     = ev.result;
-            const isAttacker = ev.attack?.game_player_id  === p.id;
-            const isDefender = ev.defense?.game_player_id === p.id;
-
-            if (isAttacker) {
-                const type = ev.attack.action;
-                if (stats.offense[type]) {
-                    stats.offense[type].attempts++;
-                    if (result === 'attack') stats.offense[type].success++;
-                }
-                if (result === 'attack')  stats.duelsWon++;
-                if (result === 'defense') stats.duelsLost++;
-            }
-
-            if (isDefender) {
-                const map = { intercept: 'intercept', tackle: 'tackle', block: 'block', hands: 'hands', punch: 'punch', 'gk-special': 'gkSpecial' };
-                const key = map[ev.defense.action];
-                if (key && stats.defense[key]) {
-                    stats.defense[key].attempts++;
-                    if (result === 'defense') stats.defense[key].success++;
-                }
-                if (result === 'defense') stats.duelsWon++;
-                if (result === 'attack')  stats.duelsLost++;
-            }
-        }
-        return stats;
+        // Stats cumulées (agrégées côté PHP depuis game_matches.match_stats).
+        return playerSeasonStats.value[p.id] ?? playerSeasonStats.value[String(p.id)] ?? null;
     });
 
     // ==========================

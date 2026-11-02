@@ -9,7 +9,6 @@ use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\File;
 
 class TeamController extends Controller
 {
@@ -83,18 +82,13 @@ class TeamController extends Controller
         unset($data['remove_logo'], $data['logo']);
         $team->fill($data);
 
-        // suppression explicite
-        if ($removeLogo && $team->logo_path) {
-            $this->deleteTeamLogo($team->logo_path);
+        // Retrait explicite du logo (le fichier est conservé, cf. storeTeamLogo).
+        if ($removeLogo) {
             $team->logo_path = null;
         }
 
         // remplacement logo
         if ($request->hasFile('logo')) {
-            if ($team->logo_path) {
-                $this->deleteTeamLogo($team->logo_path);
-            }
-
             $team->logo_path = $this->storeTeamLogo(
                 $request->file('logo'),
                 $team->name
@@ -111,10 +105,6 @@ class TeamController extends Controller
      */
     public function destroy(Team $team): RedirectResponse
     {
-        if ($team->logo_path) {
-            $this->deleteTeamLogo($team->logo_path);
-        }
-
         $team->delete();
 
         return redirect()
@@ -122,36 +112,16 @@ class TeamController extends Controller
             ->with('message', 'Équipe supprimée avec succès.');
     }
 
-    // AJOUT
+    /**
+     * Stocke le logo sur le disque public (servi sous /storage, comme les logos
+     * canon « teams/… » affichés par le front). Un logo remplacé n'est jamais
+     * supprimé : les saves en copient le chemin (game_teams.logo_path).
+     */
     private function storeTeamLogo(\Illuminate\Http\UploadedFile $file, string $teamName): string
     {
-        // dossier public/images/teams
-        $dir = public_path('images/teams');
+        // Extension déduite du contenu (pas du nom envoyé par le client).
+        $filename = Str::slug($teamName).'-'.Str::random(6).'.'.$file->guessExtension();
 
-        // crée le dossier si absent
-        if (!File::exists($dir)) {
-            File::makeDirectory($dir, 0755, true);
-        }
-
-        // filename stable + unique
-        $ext = $file->guessExtension(); // jpg/png/webp, déduit du contenu (pas du nom client)
-        $base = Str::slug($teamName); // ex: nankatsu
-        $filename = $base . '-' . Str::random(6) . '.' . $ext;
-
-        // move dans public
-        $file->move($dir, $filename);
-
-        // ce qu'on stocke en DB (chemin relatif public)
-        return 'images/teams/' . $filename;
-    }
-
-    private function deleteTeamLogo(string $logoPath): void
-    {
-        // logoPath est du type images/teams/xxx.webp
-        $absolute = public_path($logoPath);
-
-        if (File::exists($absolute)) {
-            File::delete($absolute);
-        }
+        return $file->storeAs('teams', $filename, 'public');
     }
 }

@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Enums\TeamStyle;
+use Database\Seeders\Concerns\GuardsReferenceReseed;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -11,8 +12,14 @@ use Illuminate\Support\Str;
 
 class TeamSeeder extends Seeder
 {
+    use GuardsReferenceReseed;
+
     public function run(): void
     {
+        if ($this->refusesProductionReseed('teams')) {
+            return;
+        }
+
         // Reset table
         Schema::disableForeignKeyConstraints();
         DB::table('teams')->truncate();

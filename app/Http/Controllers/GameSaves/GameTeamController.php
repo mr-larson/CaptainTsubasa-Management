@@ -9,7 +9,7 @@ use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -151,14 +151,11 @@ class GameTeamController extends Controller
      */
     private function storeGameTeamLogo(UploadedFile $file, string $teamName, int $gameSaveId): string
     {
-        $dir = public_path("images/game-teams/{$gameSaveId}");
-        if (!File::exists($dir)) File::makeDirectory($dir, 0755, true);
-
         // Extension déduite du contenu (jamais du nom client : « logo.html » servi en text/html).
         $filename = Str::slug($teamName) . '-' . Str::random(6) . '.' . $file->guessExtension();
-        $file->move($dir, $filename);
-
-        return "images/game-teams/{$gameSaveId}/{$filename}";
+        // Disque public (servi sous /storage, comme l'affiche le front) — et non
+        // public/images, d'où les logos uploadés n'étaient jamais affichés.
+        return $file->storeAs("images/game-teams/{$gameSaveId}", $filename, 'public');
     }
 
     /**
@@ -171,7 +168,6 @@ class GameTeamController extends Controller
             return;
         }
 
-        $absolute = public_path($path);
-        if (File::exists($absolute)) File::delete($absolute);
+        Storage::disk('public')->delete($path);
     }
 }

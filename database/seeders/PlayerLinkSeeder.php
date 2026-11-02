@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\Concerns\GuardsReferenceReseed;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -9,6 +10,8 @@ use Illuminate\Support\Str;
 
 class PlayerLinkSeeder extends Seeder
 {
+    use GuardsReferenceReseed;
+
     /**
      * Duos d'alchimie [slug A, slug B, nom du duo]. Les slugs suivent la même
      * convention que PlayerSeeder (Str::slug("prenom nom")). Deux joueurs liés
@@ -36,6 +39,10 @@ class PlayerLinkSeeder extends Seeder
 
     public function run(): void
     {
+        if ($this->refusesProductionReseed('player_links')) {
+            return;
+        }
+
         Schema::disableForeignKeyConstraints();
         DB::table('player_links')->truncate();
         Schema::enableForeignKeyConstraints();

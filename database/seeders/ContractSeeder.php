@@ -5,16 +5,22 @@ namespace Database\Seeders;
 use App\Models\Player;
 use App\Models\Team;
 use Database\Seeders\Concerns\CalculatesWeeklyCost;
+use Database\Seeders\Concerns\GuardsReferenceReseed;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class ContractSeeder extends Seeder
 {
+    use GuardsReferenceReseed;
     use CalculatesWeeklyCost;
 
     public function run(): void
     {
+        if ($this->refusesProductionReseed('contracts')) {
+            return;
+        }
+
         Schema::disableForeignKeyConstraints();
         DB::table('contracts')->truncate();
         Schema::enableForeignKeyConstraints();

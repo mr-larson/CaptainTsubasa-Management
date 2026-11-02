@@ -83,8 +83,12 @@ class AITrainingService
         // Toujours écrire ai_entries (vide ou non)
         $training['ai_entries'] = $aiEntries;
 
-        // Historique cumulatif
-        $history = $state['ai_training_history'] ?? [];
+        // Historique de la saison en cours (seul affiché par l'onglet
+        // Entraînement) : les saisons passées sont purgées pour borner le state.
+        $history = array_values(array_filter(
+            $state['ai_training_history'] ?? [],
+            fn ($e) => (int) ($e['season'] ?? 0) === (int) $season
+        ));
         foreach ($allEntries as $entry) {
             $history[] = array_merge($entry, [
                 'season' => $season,
