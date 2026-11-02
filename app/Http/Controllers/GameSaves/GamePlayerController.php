@@ -112,14 +112,14 @@ class GamePlayerController extends Controller
 
         // Gestion suppression photo
         if ($request->boolean('remove_photo') && $player->photo_path) {
-            $this->deleteGamePlayerPhoto($player->photo_path);
+            $this->deleteGamePlayerPhoto($player->photo_path, $gameSave->id);
             $player->photo_path = null;
         }
 
         // Upload nouvelle photo
         if ($request->hasFile('photo')) {
             if ($player->photo_path) {
-                $this->deleteGamePlayerPhoto($player->photo_path);
+                $this->deleteGamePlayerPhoto($player->photo_path, $gameSave->id);
             }
 
             $player->photo_path = $this->storeGamePlayerPhoto(
@@ -152,7 +152,7 @@ class GamePlayerController extends Controller
         }
 
         if ($player->photo_path) {
-            $this->deleteGamePlayerPhoto($player->photo_path);
+            $this->deleteGamePlayerPhoto($player->photo_path, $gameSave->id);
         }
 
         $player->delete();
@@ -179,9 +179,16 @@ class GamePlayerController extends Controller
 
     /**
      * Suppression de la photo du joueur depuis le disque public.
+     * Seuls les uploads propres à cette save sont supprimés : les photos
+     * canon (players/…, period-packages/…) sont partagées par toutes les
+     * saves, qui n'en stockent que le chemin.
      */
-    private function deleteGamePlayerPhoto(string $path): void
+    private function deleteGamePlayerPhoto(string $path, int $gameSaveId): void
     {
+        if (! str_starts_with($path, "images/game-players/{$gameSaveId}/")) {
+            return;
+        }
+
         Storage::disk('public')->delete($path);
     }
 

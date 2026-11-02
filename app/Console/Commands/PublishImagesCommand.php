@@ -8,26 +8,45 @@ use Illuminate\Support\Facades\File;
 class PublishImagesCommand extends Command
 {
     protected $signature = 'images:publish
-                            {--dry-run : Liste les fichiers à copier sans rien écrire}';
+                            {--dry-run : Liste les fichiers à générer sans rien écrire}
+                            {--force : Régénère toutes les images, même à jour}';
 
-    protected $description = 'Synchronise le dossier de dépôt des images (public/images) vers les copies servies et seedées (public/storage) — à lancer puis committer avant tout déploiement';
+    protected $description = 'Génère les images servies (public/storage, WebP redimensionné) depuis le dossier de dépôt (public/images) — à lancer puis committer avant tout déploiement';
 
     /**
      * Workflow images (le FS de prod est éphémère, tout doit être versionné) :
      *   1. Déposer les fichiers dans public/images/{players,teams}/slug.png ;
-     *   2. `php artisan images:publish` copie vers public/storage/{players,teams}
-     *      (seule arborescence servie via /storage et lue par les seeders) ;
+     *   2. `php artisan images:publish` génère public/storage/{players,teams}/slug.webp
+     *      (redimensionné à MAX_SIZE px, compressé) — seule arborescence servie
+     *      via /storage et lue par les seeders. Les anciennes variantes
+     *      png/jpg du même slug y sont supprimées ;
      *   3. committer les deux dossiers, pousser, puis re-seeder si des
      *      photo_path doivent apparaître (PlayerSeeder / TeamSeeder).
+     * Objectif : limiter la bande passante sortante en prod (les originaux
+     * font souvent 1–2 Mo pour un affichage en vignette).
      * NB : storage/app/public est un vestige d'avant la refonte de juin 2026,
      * il ne doit servir de source à rien.
      */
     private const DIRS = ['players', 'teams'];
 
+    private const SOURCE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp'];
+
+    // Les photos s'ouvrent en plein écran (PlayerPhoto) : 640 px reste net.
+    private const MAX_SIZE = 640;
+
+    private const QUALITY = 80;
+
     public function handle(): int
     {
-        $dry    = (bool) $this->option('dry-run');
-        $copied = 0;
+        if (! function_exists('imagewebp')) {
+            $this->error('GD avec le support WebP est requis.');
+
+            return self::FAILURE;
+        }
+
+        $dry       = (bool) $this->option('dry-run');
+        $force     = (bool) $this->option('force');
+        $generated = 0;
 
         foreach (self::DIRS as $dir) {
             $src = public_path("images/{$dir}");
@@ -39,28 +58,76 @@ class PublishImagesCommand extends Command
             File::ensureDirectoryExists($dst);
 
             foreach (File::files($src) as $file) {
-                $target = $dst.DIRECTORY_SEPARATOR.$file->getFilename();
-
-                if (is_file($target) && md5_file($file->getPathname()) === md5_file($target)) {
+                $ext = strtolower($file->getExtension());
+                if (! in_array($ext, self::SOURCE_EXTENSIONS, true)) {
                     continue;
                 }
 
-                $this->line(($dry ? '[dry-run] ' : '').(is_file($target) ? 'maj    ' : 'nouveau').'  '.$dir.'/'.$file->getFilename());
-                if (! $dry) {
-                    File::copy($file->getPathname(), $target);
+                $slug   = $file->getFilenameWithoutExtension();
+                $target = "{$dst}/{$slug}.webp";
+                $stale  = array_filter(
+                    array_map(fn ($e) => "{$dst}/{$slug}.{$e}", ['png', 'jpg', 'jpeg']),
+                    'is_file'
+                );
+
+                $upToDate = is_file($target) && filemtime($target) >= $file->getMTime();
+                if ($upToDate && ! $force && $stale === []) {
+                    continue;
                 }
-                $copied++;
+
+                $this->line(($dry ? '[dry-run] ' : '').(is_file($target) ? 'maj    ' : 'nouveau').'  '.$dir.'/'.$slug.'.webp');
+                if (! $dry) {
+                    if (! $upToDate || $force) {
+                        $this->convert($file->getPathname(), $target);
+                    }
+                    array_map('unlink', $stale);
+                }
+                $generated++;
             }
         }
 
-        if ($copied === 0) {
-            $this->info('Rien à synchroniser : public/storage est à jour.');
+        if ($generated === 0) {
+            $this->info('Rien à générer : public/storage est à jour.');
         } elseif ($dry) {
-            $this->info("{$copied} image(s) à synchroniser — relance sans --dry-run pour copier.");
+            $this->info("{$generated} image(s) à générer — relance sans --dry-run pour écrire.");
         } else {
-            $this->info("{$copied} image(s) synchronisée(s) — committe public/storage puis push pour mettre la prod à jour.");
+            $this->info("{$generated} image(s) générée(s) — committe public/storage puis push pour mettre la prod à jour.");
         }
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Redimensionne (sans agrandir) et encode en WebP, en préservant la
+     * transparence des logos.
+     */
+    private function convert(string $source, string $target): void
+    {
+        $image = imagecreatefromstring(file_get_contents($source));
+        if ($image === false) {
+            throw new \RuntimeException("Image illisible : {$source}");
+        }
+
+        $width  = imagesx($image);
+        $height = imagesy($image);
+        $ratio  = min(1, self::MAX_SIZE / max($width, $height));
+
+        if ($ratio < 1) {
+            $newWidth  = (int) round($width * $ratio);
+            $newHeight = (int) round($height * $ratio);
+            $resized   = imagecreatetruecolor($newWidth, $newHeight);
+            imagealphablending($resized, false);
+            imagesavealpha($resized, true);
+            imagecopyresampled($resized, $image, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+            imagedestroy($image);
+            $image = $resized;
+        } else {
+            imagepalettetotruecolor($image);
+            imagealphablending($image, false);
+            imagesavealpha($image, true);
+        }
+
+        imagewebp($image, $target, self::QUALITY);
+        imagedestroy($image);
     }
 }

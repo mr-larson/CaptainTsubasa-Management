@@ -80,7 +80,7 @@ class TeamSeeder extends Seeder
             // slug basé sur le nom
             $slug = Str::slug($name);
 
-            $extensions = ['png', 'jpg', 'jpeg', 'webp'];
+            $extensions = ['webp', 'png', 'jpg', 'jpeg'];
             $logoPathDb = null;
 
             foreach ($extensions as $ext) {

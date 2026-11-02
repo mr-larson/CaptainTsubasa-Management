@@ -43,8 +43,8 @@ class PlayerSeeder extends Seeder
         /**
          * CONFIG IMAGES
          * Source de vérité unique : public/storage/players/ (versionné dans le
-         * repo — le FS de prod est éphémère). Mets tes PNG directement là,
-         * nommés d'après le slug du joueur : firstname-lastname.png.
+         * repo — le FS de prod est éphémère). Les .webp y sont générés par
+         * `images:publish` depuis public/images, nommés firstname-lastname.webp.
          * Le seeder ne copie plus rien : il vérifie l'existence du fichier et
          * renseigne photo_path en conséquence.
          */
@@ -132,9 +132,9 @@ class PlayerSeeder extends Seeder
             if ($headingOverride !== null) {
                 $fullStats['heading'] = $headingOverride;
             }
-            // players/taro-misaki.png (ou .jpg/.webp)
+            // players/taro-misaki.webp (généré par images:publish ; png/jpg en repli)
             $photoPathDb = null;
-            foreach (['png', 'jpg', 'jpeg', 'webp'] as $ext) {
+            foreach (['webp', 'png', 'jpg', 'jpeg'] as $ext) {
                 $candidate = $storageDir . '/' . $slug . '.' . $ext;
                 if ($storageDisk->exists($candidate)) {
                     $photoPathDb = $candidate;

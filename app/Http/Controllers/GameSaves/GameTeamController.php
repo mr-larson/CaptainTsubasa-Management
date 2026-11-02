@@ -59,14 +59,14 @@ class GameTeamController extends Controller
 
         // gestion suppression logo
         if ($request->boolean('remove_logo') && $team->logo_path) {
-            $this->deleteGameTeamLogo($team->logo_path);
+            $this->deleteGameTeamLogo($team->logo_path, $gameSave->id);
             $team->logo_path = null;
         }
 
         // upload logo
         if ($request->hasFile('logo')) {
             if ($team->logo_path) {
-                $this->deleteGameTeamLogo($team->logo_path);
+                $this->deleteGameTeamLogo($team->logo_path, $gameSave->id);
             }
 
             $team->logo_path = $this->storeGameTeamLogo(
@@ -136,7 +136,7 @@ class GameTeamController extends Controller
         $this->authorizeGameSave('update', $gameSave, $team);
 
         if ($team->logo_path) {
-            $this->deleteGameTeamLogo($team->logo_path);
+            $this->deleteGameTeamLogo($team->logo_path, $gameSave->id);
         }
 
         $team->delete();
@@ -161,10 +161,15 @@ class GameTeamController extends Controller
     }
 
     /**
-     * Suppression logo.
+     * Suppression logo — uniquement les uploads propres à cette save : les
+     * logos canon sont partagés par toutes les saves.
      */
-    private function deleteGameTeamLogo(string $path): void
+    private function deleteGameTeamLogo(string $path, int $gameSaveId): void
     {
+        if (! str_starts_with($path, "images/game-teams/{$gameSaveId}/")) {
+            return;
+        }
+
         $absolute = public_path($path);
         if (File::exists($absolute)) File::delete($absolute);
     }
