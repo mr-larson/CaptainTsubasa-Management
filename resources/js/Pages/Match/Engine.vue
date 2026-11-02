@@ -407,14 +407,9 @@ const buildLogoUrl = (path) => {
         return path;
     }
 
-    // 🔧 Cas spécifique actuel : "teams/xxx.webp" => "/images/teams/xxx.webp"
-    if (path.startsWith('teams/')) {
-        return `/images/${path}`;
-        // => "teams/musashi.webp" -> "/images/teams/musashi.webp"
-    }
-
-    // Sinon, on considère que c'est un chemin relatif à la racine
-    return `/${path}`;
+    // Tous les logos (canon « teams/… », packages, uploads) sont servis par le disque public sous /storage.
+    // (public/images/teams n'est que le dossier des originaux, pas forcément en .webp.)
+    return `/storage/${path}`;
 };
 
 // ==========================

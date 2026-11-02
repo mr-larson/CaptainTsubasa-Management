@@ -231,7 +231,7 @@
                                     <div class="h-16 w-16 rounded border bg-white overflow-hidden flex items-center justify-center">
                                         <img
                                             v-if="logoPreviewUrl || form.logo_path"
-                                            :src="logoPreviewUrl ? logoPreviewUrl : `/${form.logo_path}`"
+                                            :src="logoPreviewUrl ? logoPreviewUrl : `/storage/${form.logo_path}`"
                                             class="h-full w-full object-cover"
                                             alt="Logo équipe"
                                         />

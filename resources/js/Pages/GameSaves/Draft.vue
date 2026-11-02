@@ -308,8 +308,8 @@ function teamLogoUrl(team) {
     const path = team?.logo_path;
     if (!path) return null;
     if (path.startsWith('http') || path.startsWith('/')) return path;
-    if (path.startsWith('teams/')) return '/images/' + path;
-    return '/' + path;
+    // Tous les logos (canon « teams/… », packages, uploads) sont servis par le disque public sous /storage.
+    return '/storage/' + path;
 }
 
 async function finishMyDraft() {
