@@ -743,12 +743,15 @@ class GameSaveController extends Controller
                 'week_return'     => $s->week_return,
             ]);
 
+        // Jaunes du cycle en cours (vers la prochaine suspension). Les sanctions
+        // sont purgées à l'intersaison, donc tout est de la saison courante.
+        $suspensionOn3Yellows = (bool) $gameSave->getConfig('suspension_on_3_yellows', true);
         $activeYellowCards = GameSanction::where('game_save_id', $gameSave->id)
-            ->where('type', 'yellow')
-            ->where('week_match', '>=', $currentWeek - 20)
+            ->whereIn('type', ['yellow', 'double_yellow'])
             ->get()
             ->groupBy('game_player_id')
-            ->map(fn($cards) => $cards->count());
+            ->map(fn($cards) => $suspensionOn3Yellows ? $cards->count() % 3 : $cards->count())
+            ->filter();
 
         // ─── Récap de la semaine écoulée (blessures et suspensions survenues) ───
         $previousWeek = $currentWeek - 1;

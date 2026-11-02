@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Helpers\FormationHelper;
 use App\Models\GameSaves\GameBonusCard;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameInjury;
@@ -371,7 +372,7 @@ class BonusCardActivationService
         // Candidats : titulaires de champ (on épargne le gardien pour ne pas
         // laisser la cible sans dernier rempart).
         $candidates = $this->opponentStarters($opponentId)
-            ->filter(fn ($c) => $c->gamePlayer && strtoupper((string) $c->gamePlayer->position) !== 'GK')
+            ->filter(fn ($c) => $c->gamePlayer && FormationHelper::roleFromPosition($c->gamePlayer->position) !== 'GK')
             ->values();
 
         if ($candidates->isEmpty()) {
@@ -454,7 +455,7 @@ class BonusCardActivationService
         $amount = (int) ($gameBonusCard->bonusCard->effect_value['amount'] ?? 0);
 
         $candidates = $this->opponentStarters($targetId)
-            ->filter(fn ($c) => $c->gamePlayer && strtoupper((string) $c->gamePlayer->position) !== 'GK')
+            ->filter(fn ($c) => $c->gamePlayer && FormationHelper::roleFromPosition($c->gamePlayer->position) !== 'GK')
             ->values();
         if ($candidates->isEmpty()) {
             $candidates = $this->opponentStarters($targetId)->filter(fn ($c) => $c->gamePlayer)->values();
@@ -539,7 +540,7 @@ class BonusCardActivationService
         }
 
         $candidates = $this->opponentStarters($targetId)
-            ->filter(fn ($c) => $c->gamePlayer && strtoupper((string) $c->gamePlayer->position) !== 'GK')
+            ->filter(fn ($c) => $c->gamePlayer && FormationHelper::roleFromPosition($c->gamePlayer->position) !== 'GK')
             ->values();
         if ($candidates->isEmpty()) {
             $candidates = $this->opponentStarters($targetId)->filter(fn ($c) => $c->gamePlayer)->values();

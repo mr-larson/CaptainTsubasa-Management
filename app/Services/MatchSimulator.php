@@ -4,7 +4,10 @@ namespace App\Services;
 
 use App\Enums\TeamStyle;
 use App\Helpers\FormationHelper;
+use App\Models\GameSaves\GameInjury;
 use App\Models\GameSaves\GameMatch;
+use App\Models\GameSaves\GameSanction;
+use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
 use App\Services\BonusCardActivationService;
 use App\Services\Concerns\EvaluatesPlayers;
@@ -46,8 +49,18 @@ class MatchSimulator
     /** Rôle (GK/DF/MF/FW) assigné par slot de lineup, indexé par id de joueur. */
     private array $assignedRoles = [];
 
-    public function simulateOtherMatchesOfWeek(GameMatch $playedMatch): void
+    /** Joueurs indisponibles (blessés / suspendus), indexés par "save:semaine". */
+    private array $unavailableCache = [];
+
+    /**
+     * Passer l'instance GameSave de l'appelant : la progression post-match
+     * écrit dans son `state`. Sur une copie rechargée, ces clés seraient
+     * écrasées par la prochaine sauvegarde de l'instance de l'appelant.
+     */
+    public function simulateOtherMatchesOfWeek(GameMatch $playedMatch, ?GameSave $gameSave = null): void
     {
+        $gameSave ??= GameSave::find($playedMatch->game_save_id);
+
         $others = GameMatch::query()
             ->where('game_save_id', $playedMatch->game_save_id)
             ->where('week', $playedMatch->week)
@@ -60,12 +73,15 @@ class MatchSimulator
             ->get();
 
         foreach ($others as $m) {
-            $this->simulateAndSave($m);
+            $this->simulateAndSave($m, $gameSave);
         }
     }
 
-    public function simulateMatchesCollection(Collection $matches): void
+    public function simulateMatchesCollection(Collection $matches, ?GameSave $gameSave = null): void
     {
+        // Une seule instance par save : chaque match lit et enrichit le même state.
+        $saves = $gameSave ? [(int) $gameSave->id => $gameSave] : [];
+
         foreach ($matches as $m) {
             if ($m->status !== 'scheduled') continue;
 
@@ -74,16 +90,16 @@ class MatchSimulator
                 'awayTeam' => fn($q) => $q->with(['contracts' => fn($cq) => $cq->activeAt($m->week)->with('gamePlayer')]),
             ]);
 
-            $this->simulateAndSave($m);
+            $saves[(int) $m->game_save_id] ??= GameSave::find($m->game_save_id);
+            $this->simulateAndSave($m, $saves[(int) $m->game_save_id]);
         }
     }
 
     // ==========================
     //   SIMULATION PRINCIPALE
     // ==========================
-    private function simulateAndSave(GameMatch $m): void
+    private function simulateAndSave(GameMatch $m, ?GameSave $gameSave): void
     {
-        $gameSave = $m->gameSave ?? \App\Models\GameSaves\GameSave::find($m->game_save_id);
         $lineups  = $gameSave?->state['lineup'] ?? [];
 
         // Malus « titulaire consigné » à appliquer pour ce match (par équipe).
@@ -102,6 +118,17 @@ class MatchSimulator
                 (int) $m->home_team_id => $activation->getMatchStatModifiers($gameSave, (int) $m->home_team_id),
                 (int) $m->away_team_id => $activation->getMatchStatModifiers($gameSave, (int) $m->away_team_id),
             ];
+        }
+
+        // Blessés et suspendus ne jouent pas : ils sont écartés et remplacés
+        // comme les titulaires consignés par un malus. Indispensable pour les
+        // équipes humaines simulées (simulate-week), dont le lineup n'est pas
+        // réajusté par AILineupService.
+        $unavailable = $this->unavailablePlayerIds((int) $m->game_save_id, (int) $m->week);
+        if (!empty($unavailable)) {
+            foreach ([(int) $m->home_team_id, (int) $m->away_team_id] as $teamId) {
+                $benchedByTeam[$teamId] = array_merge($benchedByTeam[$teamId] ?? [], $unavailable);
+            }
         }
 
         $maxTurns = (int) ($gameSave?->getConfig('match_max_turns') ?? self::MAX_TURNS);
@@ -757,6 +784,27 @@ class MatchSimulator
     // ==========================
     //   HELPERS JOUEURS
     // ==========================
+
+    /**
+     * Ids des joueurs blessés ou suspendus pour un match de la semaine donnée
+     * (mêmes critères que AILineupService::adjustLineupsForWeek).
+     *
+     * @return array<int>
+     */
+    private function unavailablePlayerIds(int $gameSaveId, int $week): array
+    {
+        return $this->unavailableCache["{$gameSaveId}:{$week}"] ??= array_values(array_unique(array_map('intval', array_merge(
+            GameInjury::where('game_save_id', $gameSaveId)
+                ->where('week_return', '>', $week)
+                ->pluck('game_player_id')
+                ->all(),
+            GameSanction::where('game_save_id', $gameSaveId)
+                ->where('week_return', '>', $week)
+                ->where('weeks_suspended', '>', 0)
+                ->pluck('game_player_id')
+                ->all(),
+        ))));
+    }
 
     private function getStarters(GameTeam $team, array $benchedIds = []): Collection
     {

@@ -3,8 +3,11 @@
 namespace App\Services;
 
 use App\Models\GameSaves\GameContract;
+use App\Models\GameSaves\GameInjury;
 use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GamePlayer;
+use App\Models\GameSaves\GamePromise;
+use App\Models\GameSaves\GameSanction;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
 
@@ -184,6 +187,18 @@ class SeasonService
         GamePlayer::where('game_save_id', $gameSave->id)->update(['number' => null]);
 
         GameMatch::where('game_save_id', $gameSave->id)->delete();
+
+        // La semaine repart à 1 : tout ce qui est indexé sur la semaine ne doit
+        // pas déborder sur la nouvelle saison (un blessé de fin de saison serait
+        // sinon absent jusqu'à la même semaine de la saison suivante, et les
+        // jaunes se cumuleraient d'une saison à l'autre). L'intersaison soigne
+        // et purge les sanctions ; les promesses en cours deviennent caduques
+        // (sans effet sur le moral : leur fenêtre a disparu avec le calendrier).
+        GameInjury::where('game_save_id', $gameSave->id)->delete();
+        GameSanction::where('game_save_id', $gameSave->id)->delete();
+        GamePromise::where('game_save_id', $gameSave->id)
+            ->where('status', 'pending')
+            ->update(['status' => 'expired']);
 
         $gameSave->season = ($gameSave->season ?? 1) + 1;
         $gameSave->week   = 1;

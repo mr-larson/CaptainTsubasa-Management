@@ -101,7 +101,8 @@ const activePromise = computed(() =>
 );
 
 const lastResolvedPromise = computed(() =>
-    selectedPlayerPromises.value.find(p => p.status !== 'pending') ?? null
+    // 'expired' = promesse rendue caduque par l'intersaison : rien à afficher.
+    selectedPlayerPromises.value.find(p => p.status === 'kept' || p.status === 'broken') ?? null
 );
 
 const PROMISE_TYPES = [

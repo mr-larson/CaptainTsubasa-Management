@@ -262,7 +262,7 @@ class GameMatchController extends Controller
             app(AILineupService::class)->adjustLineupsForWeek($gameSave);
 
             // Simuler les matchs IA restants (les matchs humains sont déjà "played")
-            app(MatchSimulator::class)->simulateOtherMatchesOfWeek($match);
+            app(MatchSimulator::class)->simulateOtherMatchesOfWeek($match, $gameSave);
             if ($gameSave->getConfig('ai_training_enabled', true)) {
                 app(AITrainingService::class)->trainForWeek($gameSave);
             }
@@ -383,7 +383,7 @@ class GameMatchController extends Controller
                 ])
                 ->get();
 
-            app(MatchSimulator::class)->simulateMatchesCollection($matches);
+            app(MatchSimulator::class)->simulateMatchesCollection($matches, $gameSave);
             app(AILineupService::class)->adjustLineupsForWeek($gameSave);
             if ($gameSave->getConfig('ai_training_enabled', true)) {
                 app(AITrainingService::class)->trainForWeek($gameSave);

@@ -43,6 +43,7 @@ class DeclarationService
 
         $recent = GameDeclaration::where('game_save_id', $gameSave->id)
             ->where('game_player_id', $player->id)
+            ->where('season', (int) ($gameSave->season ?? 1))
             ->where('week', '>', $week - self::COOLDOWN_WEEKS)
             ->exists();
 
