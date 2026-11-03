@@ -115,7 +115,7 @@
                             <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Aperçu des statistiques</h4>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1.5">
                                 <div v-for="stat in statBars" :key="stat.key" class="flex items-center gap-2">
-                                    <span class="w-16 text-[11px] text-slate-500 shrink-0">{{ stat.label }}</span>
+                                    <span class="w-16 text-[11px] text-slate-500 shrink-0">{{ stat.short ?? stat.label }}</span>
                                     <div class="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
                                         <div class="h-full rounded-full transition-all" :class="stat.color"
                                              :style="{ width: Math.min(stat.value, 100) + '%' }">
@@ -126,129 +126,11 @@
                             </div>
                         </div>
 
-                        <!-- Infos générales -->
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-                            <div>
-                                <label class="block text-sm font-semibold text-slate-500 mb-1">Prénom</label>
-                                <InputText v-model="form.firstname" class="mt-1 w-full" />
-                                <p v-if="form.errors.firstname" class="text-sm text-red-600 mt-1">
-                                    {{ form.errors.firstname }}
-                                </p>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-semibold text-slate-500 mb-1">Nom</label>
-                                <InputText v-model="form.lastname" class="mt-1 w-full" />
-                                <p v-if="form.errors.lastname" class="text-sm text-red-600 mt-1">
-                                    {{ form.errors.lastname }}
-                                </p>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-semibold text-slate-500 mb-1">Position</label>
-                                <InputSelect
-                                    id="position"
-                                    v-model="form.position"
-                                    class="mt-1 w-full"
-                                    required
-                                >
-                                    <option disabled value="">Choisir...</option>
-                                    <option v-for="p in positions" :key="p" :value="p">
-                                        {{ p }}
-                                    </option>
-                                </InputSelect>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-semibold text-slate-500 mb-1">Coût</label>
-                                <InputText type="number" v-model="form.cost" class="mt-1 w-full" />
-                                <p v-if="form.errors.cost" class="text-sm text-red-600 mt-1">
-                                    {{ form.errors.cost }}
-                                </p>
-                            </div>
-
-                            <div class="sm:col-span-2">
-                                <label class="block text-sm font-semibold text-slate-500 mb-1">Postes secondaires</label>
-                                <SecondaryPositionsPicker
-                                    v-model="form.secondary_positions"
-                                    :position="form.position"
-                                />
-                                <p v-if="form.errors.secondary_positions" class="text-sm text-red-600 mt-1">
-                                    {{ form.errors.secondary_positions }}
-                                </p>
-                                <FormErrorList :errors="form.errors" prefix="secondary_positions." />
-                            </div>
-
-                            <div class="sm:col-span-2">
-                                <label class="block text-sm font-semibold text-slate-500 mb-1">Photo du joueur</label>
-
-                                <div class="flex items-center gap-3 mt-1">
-                                    <!-- input file caché -->
-                                    <input
-                                        ref="photoInput"
-                                        type="file"
-                                        class="hidden"
-                                        accept="image/*"
-                                        @change="onPhotoChange"
-                                    />
-
-                                    <!-- faux input -->
-                                    <div class="flex items-center w-full md:w-56">
-                                        <button
-                                            type="button"
-                                            class="shrink-0 px-3 py-1.5 rounded-l-full border border-gray-300 bg-stone-50 text-sm text-gray-900 hover:bg-white"
-                                            @click="openPhotoPicker"
-                                        >
-                                            Choisir
-                                        </button>
-
-                                        <div
-                                            class="flex-1 px-3 py-1.5 rounded-r-full border border-l-0 border-gray-300 bg-stone-50 text-sm text-slate-600 truncate"
-                                        >
-                                            {{ selectedPhotoName || 'Aucun fichier choisi' }}
-                                        </div>
-                                    </div>
-
-                                    <!-- preview -->
-                                    <div class="h-16 w-16 rounded border bg-white overflow-hidden flex items-center justify-center">
-                                        <PlayerPhoto
-                                            :src="photoPreviewUrl ? photoPreviewUrl : (form.photo_path ? `/storage/${form.photo_path}` : null)"
-                                            class="h-full w-full object-cover"
-                                        />
-                                        <span v-if="!(photoPreviewUrl || form.photo_path)" class="text-xs text-slate-400">Aucune</span>
-                                    </div>
-                                </div>
-
-                                <p v-if="form.errors.photo" class="text-sm text-red-600 mt-1">
-                                    {{ form.errors.photo }}
-                                </p>
-                            </div>
-
-                            <div class="sm:col-span-3">
-                                <label class="block text-sm font-semibold text-slate-500 mb-1">Description</label>
-                                <textarea
-                                    v-model="form.description"
-                                    rows="3"
-                                    class="mt-1 w-full rounded border border-gray-300 bg-stone-50 text-sm"
-                                ></textarea>
-
-                                <p v-if="form.errors.description" class="text-sm text-red-600 mt-1">
-                                    {{ form.errors.description }}
-                                </p>
-                            </div>
-                        </div>
-
-                        <!-- Stats  -->
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-                            <div v-for="stat in statInputs" :key="stat.key">
-                                <label class="block text-sm font-semibold text-slate-500 mb-1">{{ stat.label }}</label>
-                                <InputText type="number" v-model="form[stat.key]" class="mt-1 w-full" />
-                                <p v-if="form.errors[stat.key]" class="text-xs text-red-600 mt-1">{{ form.errors[stat.key] }}</p>
-                            </div>
-                        </div>
-
-
-
+                        <PlayerFormFields
+                            :form="form"
+                            layout="grid"
+                            :photo-url="photoPath ? `/storage/${photoPath}` : null"
+                        />
 
                         <!-- ACTIONS -->
                         <ButtonGroup>
@@ -272,136 +154,7 @@
             <div class="mt-6 grid grid-cols-1 md:grid-cols-2">
                 <!-- CARTE TECHNIQUES SPÉCIALES -->
                 <FormContainer>
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-lg font-semibold text-slate-800">
-                            Techniques spéciales
-                        </h2>
-
-                        <!-- Bouton + en haut à droite -->
-                        <button
-                            type="button"
-                            class="flex items-center justify-center h-9 px-3 rounded-full bg-teal-500 text-white text-sm font-medium hover:bg-teal-600 shadow-md"
-                            @click="addSpecialMove"
-                        >
-                            + Ajouter
-                        </button>
-                    </div>
-
-                    <!-- Liste des techniques -->
-                    <div class="flex flex-col gap-4 max-h-[520px] overflow-y-auto pr-1">
-                        <div
-                            v-for="(move, index) in form.special_moves"
-                            :key="index"
-                            class="border border-slate-200 bg-white rounded-xl shadow-sm px-4 py-3"
-                        >
-                            <FormErrorList :errors="form.errors" :prefix="`special_moves.${index}.`" />
-                            <!-- Header de la technique -->
-                            <div class="flex items-center justify-between mb-3">
-                                <h3 class="text-sm font-semibold text-slate-800">
-                                    Technique #{{ index + 1 }}
-                                    <span v-if="move.label" class="text-slate-500 font-normal">
-                        — {{ move.label }}
-                    </span>
-                                </h3>
-
-                                <!-- Bouton supprimer compact -->
-                                <button
-                                    type="button"
-                                    class="text-xs px-2 py-1 rounded-full bg-red-50 text-red-600 hover:bg-red-100 border border-red-200"
-                                    @click="removeSpecialMove(index)"
-                                >
-                                    Supprimer
-                                </button>
-                            </div>
-
-                            <!-- Contenu du formulaire de la technique -->
-                            <div class="space-y-3">
-                                <!-- Label + Clé -->
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                    <div>
-                                        <InputLabel value="Label" />
-                                        <InputText
-                                            v-model="move.label"
-                                            class="mt-1 w-full"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <InputLabel value="Clé (identifiant)" />
-                                        <InputText
-                                            v-model="move.key"
-                                            class="mt-1 w-full"
-                                        />
-                                    </div>
-                                </div>
-
-                                <!-- Mode + Action de base -->
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                    <div>
-                                        <InputLabel value="Mode" />
-                                        <InputSelect
-                                            id="mode"
-                                            v-model="move.mode"
-                                            class="mt-1"
-                                            required
-                                        >
-                                            <option value="attack">Attaque</option>
-                                            <option value="defense">Défense</option>
-                                        </InputSelect>
-                                    </div>
-
-                                    <div>
-                                        <InputLabel value="Action de base" />
-                                        <InputSelect
-                                            id="mode"
-                                            v-model="move.base_action"
-                                            class="mt-1"
-                                            required
-                                        >
-                                            <option value="shot">Tir</option>
-                                            <option value="pass">Passe</option>
-                                            <option value="dribble">Dribble</option>
-                                            <option value="block">Block</option>
-                                            <option value="intercept">Interception</option>
-                                            <option value="tackle">Tacle</option>
-                                            <option value="hand_save">Arrêt main</option>
-                                            <option value="punch_save">Arrêt poing</option>
-                                        </InputSelect>
-                                    </div>
-                                </div>
-
-                                <!-- Cooldown + Description -->
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                    <div>
-                                        <InputLabel value="Cooldown (tours)" />
-                                        <InputText
-                                            type="number"
-                                            v-model="move.cooldown"
-                                            min="0"
-                                            class="mt-1 w-full"
-                                        />
-                                    </div>
-
-                                    <div class="md:col-span-1">
-                                        <label class="block text-sm font-semibold text-slate-500 mb-1">Description</label>
-                                        <textarea
-                                            v-model="move.description"
-                                            rows="3"
-                                            class="mt-1 w-full rounded border border-gray-300 bg-stone-50 text-sm"
-                                        ></textarea>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Message si aucune technique -->
-                        <p
-                            v-if="form.special_moves.length === 0"
-                            class="text-sm text-slate-500 italic"
-                        >
-                            Aucune technique spéciale définie pour ce joueur.
-                        </p>
-                    </div>
+                    <SpecialMovesEditor v-model="form.special_moves" :errors="form.errors" />
                 </FormContainer>
 
                 <!-- CARTE CONTRAT -->
@@ -529,20 +282,18 @@
 
 <script setup>
 import { Head, Link, router, useForm } from '@inertiajs/vue3'
-import { ref, computed, defineProps, onMounted, onBeforeUnmount } from 'vue'
-import PlayerPhoto from '@/Components/PlayerPhoto.vue'
+import { ref, computed, onMounted } from 'vue'
 
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import H2 from '@/Components/H2.vue'
 import FormContainer from '@/Components/FormContainer.vue'
 import InputLabel from '@/Components/InputLabel.vue'
-import InputText from '@/Components/InputText.vue'
 import ButtonGroup from '@/Components/ButtonGroup.vue'
 import ButtonPrimary from '@/Components/ButtonPrimary.vue'
 import ButtonDanger from '@/Components/ButtonDanger.vue'
-import InputSelect from "@/Components/InputSelect.vue";
-import SecondaryPositionsPicker from '@/Components/SecondaryPositionsPicker.vue'
-import FormErrorList from '@/Components/FormErrorList.vue'
+import PlayerFormFields from '@/Components/PlayerFormFields.vue'
+import SpecialMovesEditor from '@/Components/SpecialMovesEditor.vue'
+import { PLAYER_STATS } from '@/Enums/playerStats.js'
 
 const props = defineProps({
     gameSave: Object,
@@ -550,17 +301,9 @@ const props = defineProps({
     teams:   Array,
 })
 
-const positions = [
-    'Goalkeeper',
-    'Defender',
-    'Midfielder',
-    'Forward'
-]
-
 const searchQuery = ref('')
-const photoInput = ref(null)
-const photoPreviewUrl = ref(null)
-const selectedPhotoName = ref('')
+// Photo enregistrée : affichée seulement, jamais renvoyée au serveur.
+const photoPath = ref(null)
 const contractProcessing = ref(false)
 
 const form = useForm({
@@ -571,7 +314,6 @@ const form = useForm({
     secondary_positions: [],
     cost: 0,
     description: '',
-    photo_path: null,
     photo: null,
     remove_photo: false,
     speed: 0,
@@ -621,60 +363,18 @@ function positionShort(position) {
     return POSITION_SHORT[position] ?? position
 }
 
-const STAT_BAR_DEFS = [
-    { key: 'speed',      label: 'Vitesse',     color: 'bg-sky-400' },
-    { key: 'attack',     label: 'Attaque',     color: 'bg-orange-400' },
-    { key: 'defense',    label: 'Défense',     color: 'bg-blue-400' },
-    { key: 'stamina',    label: 'Endurance',   color: 'bg-emerald-400' },
-    { key: 'shot',       label: 'Tir',         color: 'bg-red-400' },
-    { key: 'pass',       label: 'Passe',       color: 'bg-teal-400' },
-    { key: 'dribble',    label: 'Dribble',     color: 'bg-yellow-400' },
-    { key: 'block',      label: 'Block',       color: 'bg-indigo-400' },
-    { key: 'intercept',  label: 'Interception',color: 'bg-purple-400' },
-    { key: 'tackle',     label: 'Tacle',       color: 'bg-pink-400' },
-    { key: 'heading',    label: 'Tête',        color: 'bg-cyan-400' },
-    { key: 'hand_save',  label: 'Arrêt main',  color: 'bg-violet-400' },
-    { key: 'punch_save', label: 'Arrêt poing', color: 'bg-fuchsia-400' },
-]
-
-const statInputs = [
-    { key: 'speed',      label: 'Vitesse' },
-    { key: 'attack',     label: 'Attaque' },
-    { key: 'defense',    label: 'Défense' },
-    { key: 'stamina',    label: 'Endurance' },
-    { key: 'shot',       label: 'Tir' },
-    { key: 'pass',       label: 'Passe' },
-    { key: 'dribble',    label: 'Dribble' },
-    { key: 'block',      label: 'Block' },
-    { key: 'intercept',  label: 'Interception' },
-    { key: 'tackle',     label: 'Tacle' },
-    { key: 'heading',    label: 'Tête' },
-    { key: 'hand_save',  label: 'Arrêt main' },
-    { key: 'punch_save', label: 'Arrêt poings' },
-]
-
-const statBars = computed(() => STAT_BAR_DEFS
+const statBars = computed(() => PLAYER_STATS
     .map(def => ({ ...def, value: Number(form[def.key] ?? 0) }))
     .filter(stat => stat.value > 0)
 )
 
 const overall = computed(() => {
-    const values = STAT_BAR_DEFS
+    const values = PLAYER_STATS
         .map(def => Number(form[def.key] ?? 0))
         .filter(v => Number.isFinite(v) && v > 0)
     if (!values.length) return 0
     return Math.round(values.reduce((a, b) => a + b, 0) / values.length)
 })
-
-// PREVIEW RESET
-const revokePreview = () => {
-    if (photoPreviewUrl.value) {
-        URL.revokeObjectURL(photoPreviewUrl.value)
-        photoPreviewUrl.value = null
-    }
-}
-
-onBeforeUnmount(() => revokePreview())
 
 // Copie profonde : le formulaire ne doit pas modifier les props (sinon une
 // saisie non enregistrée réapparaît comme sauvegardée en revenant sur le joueur).
@@ -682,7 +382,6 @@ const clone = (value) => (value == null ? value : JSON.parse(JSON.stringify(valu
 
 // SELECT PLAYER
 function selectPlayer(player) {
-    revokePreview()
     form.contract = clone(player.contracts?.[0] ?? null)
     form.selectedPlayerId = player.id
     form.id = player.id
@@ -707,44 +406,10 @@ function selectPlayer(player) {
     form.hand_save = player.hand_save ?? 0
     form.punch_save = player.punch_save ?? 0
 
-    form.photo_path = player.photo_path ?? null
-    form.photo = null
+    photoPath.value = player.photo_path ?? null
+    form.photo = null // efface aussi l'aperçu du fichier choisi
     form.remove_photo = false
-    selectedPhotoName.value = ''
-}
-
-// PHOTO UPLOAD
-function openPhotoPicker() {
-    photoInput.value?.click()
-}
-
-function onPhotoChange(e) {
-    const file = e.target.files?.[0] ?? null
-
-    revokePreview()
-
-    form.photo = file
-    form.remove_photo = false
-    selectedPhotoName.value = file ? file.name : ''
-
-    if (file) photoPreviewUrl.value = URL.createObjectURL(file)
-    e.target.value = ''
-}
-
-function addSpecialMove() {
-    form.special_moves.push({
-        key: '',
-        label: '',
-        short_label: '',
-        mode: 'attack',
-        base_action: 'shot',
-        cooldown: null, // vide = cooldown par défaut du moteur
-        description: ''
-    })
-}
-
-function removeSpecialMove(index) {
-    form.special_moves.splice(index, 1)
+    form.clearErrors()
 }
 
 function startNewContract() {
@@ -861,6 +526,11 @@ function submit() {
         {
             preserveScroll: true,
             forceFormData: true,
+            // Recharger le joueur enregistré (photo à jour, fichier remis à zéro).
+            onSuccess: () => {
+                const fresh = props.players.find(p => p.id === form.id)
+                if (fresh) selectPlayer(fresh)
+            },
         }
     )
 }

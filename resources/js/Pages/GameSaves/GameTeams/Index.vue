@@ -88,7 +88,7 @@
                 <div class="flex items-center justify-between mb-6 pb-6 border-b border-slate-200 flex-wrap gap-4">
                     <div class="flex items-center gap-3">
                         <div class="h-12 w-12 rounded-full bg-slate-50 border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
-                            <img loading="lazy" decoding="async" v-if="form.logo_path || logoPreviewUrl" :src="logoPreviewUrl || `/storage/${form.logo_path}`" class="h-full w-full object-cover" />
+                            <img loading="lazy" decoding="async" v-if="logoPreviewUrl || logoUrl" :src="logoPreviewUrl || logoUrl" class="h-full w-full object-cover" />
                             <span v-else class="text-sm text-slate-400">{{ (form.name || '?').charAt(0) }}</span>
                         </div>
                         <div>
@@ -123,184 +123,13 @@
                 </div>
 
                 <form @submit.prevent="submit">
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-500 mb-1">Nom</label>
-                            <InputText
-                                id="name"
-                                type="text"
-                                class="mt-1 w-full"
-                                v-model="form.name"
-                                autocomplete="off"
-                            />
-                            <p v-if="form.errors.name" class="text-sm text-red-600 mt-1">
-                                {{ form.errors.name }}
-                            </p>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-500 mb-1">Budget</label>
-                            <InputText
-                                type="number"
-                                id="budget"
-                                v-model="form.budget"
-                                placeholder="Budget de l'équipe"
-                                class="mt-1 w-full"
-                                autocomplete="budget"
-                            />
-                            <p v-if="form.errors.budget" class="text-sm text-red-600 mt-1">
-                                {{ form.errors.budget }}
-                            </p>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-500 mb-1">Victoire(s)</label>
-                            <InputText
-                                type="number"
-                                id="wins"
-                                v-model="form.wins"
-                                placeholder="Victoire(s) de l'équipe"
-                                class="mt-1 w-full"
-                            />
-                            <p v-if="form.errors.wins" class="text-sm text-red-600 mt-1">
-                                {{ form.errors.wins }}
-                            </p>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-500 mb-1">Défaite(s)</label>
-                            <InputText
-                                type="number"
-                                id="losses"
-                                v-model="form.losses"
-                                placeholder="Défaite(s) de l'équipe"
-                                class="mt-1 w-full"
-                            />
-                            <p v-if="form.errors.losses" class="text-sm text-red-600 mt-1">
-                                {{ form.errors.losses }}
-                            </p>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-500 mb-1">Matchs nuls</label>
-                            <InputText
-                                type="number"
-                                id="draws"
-                                v-model="form.draws"
-                                placeholder="Matchs nuls de l'équipe"
-                                class="mt-1 w-full"
-                            />
-                            <p v-if="form.errors.draws" class="text-sm text-red-600 mt-1">
-                                {{ form.errors.draws }}
-                            </p>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-500 mb-1">Style tactique</label>
-                            <select
-                                id="tactical_style"
-                                v-model="form.tactical_style"
-                                class="mt-1 w-full rounded border border-gray-300 bg-stone-50 text-sm text-gray-900 focus:outline-none focus:bg-white focus:border-purple-300"
-                            >
-                                <option v-for="style in tacticalStyles" :key="style" :value="style">
-                                    {{ tacticalLabel(style) }} {{ tacticalIcon(style) }}
-                                </option>
-                            </select>
-                            <p v-if="form.errors.tactical_style" class="text-sm text-red-600 mt-1">
-                                {{ form.errors.tactical_style }}
-                            </p>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-500 mb-1">Philosophie de gestion</label>
-                            <select
-                                id="management_philosophy"
-                                v-model="form.management_philosophy"
-                                class="mt-1 w-full rounded border border-gray-300 bg-stone-50 text-sm text-gray-900 focus:outline-none focus:bg-white focus:border-purple-300"
-                            >
-                                <option v-for="philosophy in philosophies" :key="philosophy" :value="philosophy">
-                                    {{ philosophyLabel(philosophy) }} {{ philosophyIcon(philosophy) }}
-                                </option>
-                            </select>
-                            <p v-if="form.errors.management_philosophy" class="text-sm text-red-600 mt-1">
-                                {{ form.errors.management_philosophy }}
-                            </p>
-                        </div>
-
-                        <div class="sm:col-span-2">
-                            <label class="block text-sm font-semibold text-slate-500 mb-1">Logo</label>
-
-                            <div class="mt-1 flex flex-col gap-2">
-                                <div class="flex items-center gap-3">
-                                    <!-- input file caché -->
-                                    <input
-                                        ref="logoInput"
-                                        type="file"
-                                        accept="image/*"
-                                        class="hidden"
-                                        @change="onLogoChange"
-                                    />
-
-                                    <!-- faux input -->
-                                    <div class="flex items-center w-full md:w-56">
-                                        <button
-                                            type="button"
-                                            class="shrink-0 px-3 py-1.5 rounded-l-full border border-gray-300 bg-stone-50 text-sm text-gray-900 hover:bg-white focus:outline-none focus:border-slate-700"
-                                            @click="openLogoPicker"
-                                        >
-                                            Choisir
-                                        </button>
-
-                                        <div
-                                            class="flex-1 px-3 py-1.5 rounded-r-full border border-l-0 border-gray-300 bg-stone-50 text-sm text-slate-600 truncate"
-                                            :title="selectedLogoName || 'Aucun fichier choisi'"
-                                        >
-                                            {{ selectedLogoName || 'Aucun fichier choisi' }}
-                                        </div>
-                                    </div>
-
-                                    <!-- preview carré -->
-                                    <div class="h-16 w-16 rounded border bg-white overflow-hidden flex items-center justify-center">
-                                        <img
-                                            v-if="logoPreviewUrl || form.logo_path"
-                                            :src="logoPreviewUrl ? logoPreviewUrl : `/storage/${form.logo_path}`"
-                                            class="h-full w-full object-cover"
-                                            alt="Logo équipe"
-                                        />
-                                        <span v-else class="text-xs text-slate-400">Aucun</span>
-                                    </div>
-
-                                    <!-- supprimer logo existant -->
-                                    <button
-                                        v-if="form.logo_path"
-                                        type="button"
-                                        class="px-3 py-1.5 rounded-full border border-red-300 bg-red-50 text-sm text-red-700 hover:bg-red-100"
-                                        @click="removeLogo"
-                                    >
-                                        Supprimer
-                                    </button>
-                                </div>
-                            </div>
-
-                            <p v-if="form.errors.logo" class="text-sm text-red-600 mt-1">
-                                {{ form.errors.logo }}
-                            </p>
-                        </div>
-
-                        <div class="sm:col-span-3">
-                            <label class="block text-sm font-semibold text-slate-500 mb-1">Description</label>
-                            <textarea
-                                id="description"
-                                v-model="form.description"
-                                rows="3"
-                                placeholder="Description de l'équipe (optionnel)"
-                                class="mt-1 w-full rounded border border-gray-300 bg-stone-50 text-sm text-gray-900 leading-tight focus:outline-none focus:bg-white focus:border-purple-300"
-                            ></textarea>
-                            <p v-if="form.errors.description" class="text-sm text-red-600 mt-1">
-                                {{ form.errors.description }}
-                            </p>
-                        </div>
-                    </div>
+                    <TeamFormFields
+                        :form="form"
+                        layout="grid"
+                        :logo-url="logoUrl"
+                        @remove-logo="removeLogo"
+                        @logo-preview="url => logoPreviewUrl = url"
+                    />
 
                     <ButtonGroup>
                         <ButtonPrimary :disabled="form.processing || !form.id">
@@ -342,19 +171,13 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import H2 from '@/Components/H2.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ref, defineProps, computed, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 
 // Components
-import InputText from '@/Components/InputText.vue';
 import ButtonGroup from '@/Components/ButtonGroup.vue';
 import ButtonPrimary from '@/Components/ButtonPrimary.vue';
 import ButtonDanger from '@/Components/ButtonDanger.vue';
-import { useTeamStyles } from '@/Pages/GameSaves/Play/useTeamStyles.js';
-import { TACTICAL_STYLES, PHILOSOPHIES } from '@/Enums/teamStyle.js';
-
-const { tacticalLabel, tacticalIcon, philosophyLabel, philosophyIcon } = useTeamStyles();
-const tacticalStyles = TACTICAL_STYLES;
-const philosophies = PHILOSOPHIES;
+import TeamFormFields from '@/Components/TeamFormFields.vue';
 
 const props = defineProps({
     gameSave: { type: Object, required: true },
@@ -372,7 +195,6 @@ const form = useForm({
     losses: 0,
     logo: null,
     remove_logo: false,
-    logo_path: null,
     tactical_style: 'balanced',
     management_philosophy: 'collective',
 });
@@ -398,37 +220,16 @@ const filteredTeams = computed(() => {
     );
 });
 
-// LOGO UI
-const logoInput = ref(null);
-const selectedLogoName = ref('');
-const logoPreviewUrl = ref('');
-
-function openLogoPicker() {
-    logoInput.value?.click();
-}
-
-function onLogoChange(e) {
-    const file = e.target.files?.[0] ?? null;
-
-    if (!file) {
-        form.logo = null;
-        selectedLogoName.value = '';
-        logoPreviewUrl.value = '';
-        return;
-    }
-
-    form.logo = file;
-    form.remove_logo = false;
-    selectedLogoName.value = file.name;
-    logoPreviewUrl.value = URL.createObjectURL(file);
-}
+// Logo enregistré : affiché seulement, jamais renvoyé au serveur (il gère seul
+// logo_path ; le renvoyer écrasait un nouveau logo par l'ancien chemin).
+const logoPath = ref(null);
+const logoUrl = computed(() => (logoPath.value ? `/storage/${logoPath.value}` : null));
+// Aperçu du fichier choisi, repris dans l'en-tête de la fiche.
+const logoPreviewUrl = ref(null);
 
 function removeLogo() {
     form.remove_logo = true;
     form.logo = null;
-    selectedLogoName.value = '';
-    logoPreviewUrl.value = '';
-    if (logoInput.value) logoInput.value.value = '';
 }
 
 function selectTeam(team) {
@@ -444,12 +245,9 @@ function selectTeam(team) {
     form.tactical_style        = team.tactical_style ?? 'balanced';
     form.management_philosophy = team.management_philosophy ?? 'collective';
 
-    form.logo_path      = team.logo_path ?? null;
+    logoPath.value      = team.logo_path ?? null;
     form.logo           = null;
     form.remove_logo    = false;
-
-    selectedLogoName.value = '';
-    logoPreviewUrl.value   = '';
 
     form.clearErrors();
 }
