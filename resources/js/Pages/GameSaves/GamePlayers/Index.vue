@@ -31,13 +31,15 @@
                 <div class="lg:w-72 shrink-0 border border-slate-200 rounded-xl bg-slate-50 p-3 flex flex-col gap-3 lg:max-h-[calc(100vh-13rem)]">
                     <div class="flex items-center justify-between">
                         <h3 class="text-sm font-semibold text-slate-700">Joueurs <span class="text-slate-400 font-normal">({{ players.length }})</span></h3>
-                        <Link
-                            :href="route('game-saves.players.create', { gameSave: gameSave.id })"
-                            class="flex items-center justify-center h-7 px-2.5 rounded-full bg-teal-500 text-white text-xs font-bold hover:bg-teal-600 shadow-sm"
+                        <button
+                            type="button"
+                            @click="startCreating"
+                            class="flex items-center justify-center h-7 px-2.5 rounded-full text-xs font-bold shadow-sm transition-colors"
+                            :class="creating ? 'bg-teal-700 text-white ring-2 ring-teal-200' : 'bg-teal-500 text-white hover:bg-teal-600'"
                             title="Créer un joueur"
                         >
                             + Ajouter
-                        </Link>
+                        </button>
                     </div>
 
                     <!-- SEARCH -->
@@ -90,11 +92,15 @@
                     <nav class="flex gap-1 -mb-px" role="tablist" aria-label="Édition du joueur">
                         <button v-for="t in panelTabs" :key="t.key" type="button" role="tab"
                                 :aria-selected="activePanel === t.key"
+                                :disabled="t.disabled"
+                                :title="t.disabled ? t.disabledHint : null"
                                 @click="activePanel = t.key"
                                 class="px-3 py-2 text-sm font-semibold border-b-2 transition-colors"
-                                :class="activePanel === t.key
-                                    ? 'border-teal-500 text-teal-600'
-                                    : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'">
+                                :class="t.disabled
+                                    ? 'border-transparent text-slate-300 cursor-not-allowed'
+                                    : activePanel === t.key
+                                        ? 'border-teal-500 text-teal-600'
+                                        : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'">
                             {{ t.label }}
                             <span v-if="t.badge" class="ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full"
                                   :class="activePanel === t.key ? 'bg-teal-50 text-teal-600' : 'bg-slate-100 text-slate-500'">
@@ -104,6 +110,9 @@
                     </nav>
 
                     <div class="flex items-center gap-2 pb-2">
+                        <span v-if="creating" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-50 text-teal-700">
+                            Nouveau joueur
+                        </span>
                         <span v-if="form.position" :class="positionBadgeClass(form.position)"
                               class="text-[10px] font-bold px-2 py-0.5 rounded-full">
                             {{ form.position }}
@@ -142,11 +151,12 @@
 
                         <!-- ACTIONS -->
                         <ButtonGroup>
-                            <ButtonPrimary :disabled="form.processing || !form.id">
-                                Mettre à jour
+                            <ButtonPrimary :disabled="form.processing || (!form.id && !creating)">
+                                {{ creating ? 'Créer le joueur' : 'Mettre à jour' }}
                             </ButtonPrimary>
 
                             <ButtonDanger
+                                v-if="!creating"
                                 :disabled="form.processing || !form.id"
                                 type="button"
                                 class="w-36"
@@ -163,8 +173,8 @@
                     <form @submit.prevent="submit">
                         <SpecialMovesEditor v-model="form.special_moves" :errors="form.errors" />
                         <ButtonGroup>
-                            <ButtonPrimary :disabled="form.processing || !form.id">
-                                Mettre à jour
+                            <ButtonPrimary :disabled="form.processing || (!form.id && !creating)">
+                                {{ creating ? 'Créer le joueur' : 'Mettre à jour' }}
                             </ButtonPrimary>
                         </ButtonGroup>
                     </form>
@@ -313,6 +323,10 @@ const props = defineProps({
     gameSave: Object,
     players: Array,
     teams:   Array,
+    // Joueur à sélectionner à l'ouverture (ex. juste après sa création).
+    selectedId: { type: Number, default: null },
+    // Ouvre directement une fiche vide (ancienne URL /players/create).
+    startCreate: { type: Boolean, default: false },
 })
 
 const searchQuery = ref('')
@@ -322,10 +336,14 @@ const contractProcessing = ref(false)
 
 // Onglets du panneau d'édition : fiche, coups spéciaux, contrat.
 const activePanel = ref('player')
+// Mode création : fiche vide sur cette même page (pas de page dédiée).
+const creating = ref(false)
 const panelTabs = computed(() => [
     { key: 'player',   label: 'Fiche joueur' },
     { key: 'moves',    label: 'Coups spéciaux', badge: form.special_moves?.length || null },
-    { key: 'contract', label: 'Contrat',        badge: form.contract?.id ? '✓' : null },
+    // Un contrat se rattache à un joueur existant : disponible après la création.
+    { key: 'contract', label: 'Contrat', badge: form.contract?.id ? '✓' : null,
+      disabled: creating.value, disabledHint: "Crée d'abord le joueur" },
 ])
 
 const form = useForm({
@@ -403,7 +421,18 @@ const overall = computed(() => {
 const clone = (value) => (value == null ? value : JSON.parse(JSON.stringify(value)))
 
 // SELECT PLAYER
-function selectPlayer(player) {
+async function selectPlayer(player) {
+    if (creating.value && hasDraft() && !(await confirmDialog({
+        title: 'Abandonner la création',
+        message: 'Le nouveau joueur n\'est pas encore créé. Abandonner la saisie ?',
+        confirmLabel: 'Abandonner',
+        danger: true,
+    }))) return
+    applyPlayer(player)
+}
+
+function applyPlayer(player) {
+    creating.value = false
     form.contract = clone(player.contracts?.[0] ?? null)
     form.selectedPlayerId = player.id
     form.id = player.id
@@ -432,6 +461,29 @@ function selectPlayer(player) {
     form.photo = null // efface aussi l'aperçu du fichier choisi
     form.remove_photo = false
     form.clearErrors()
+}
+
+// Valeurs d'une fiche vide (mêmes défauts que l'ancienne page de création).
+const BLANK_PLAYER = {
+    id: null, firstname: '', lastname: '', position: '', secondary_positions: [],
+    cost: 0, description: '', photo: null, remove_photo: false,
+    speed: 0, attack: 0, defense: 0, stamina: 0, shot: 0, pass: 0, dribble: 0,
+    block: 0, intercept: 0, tackle: 0, heading: 0, hand_save: 0, punch_save: 0,
+    special_moves: [], contract: null,
+}
+const draftKeys = Object.keys(BLANK_PLAYER).filter(k => k !== 'id' && k !== 'contract')
+function hasDraft() {
+    return draftKeys.some(k => JSON.stringify(form[k] ?? null) !== JSON.stringify(BLANK_PLAYER[k]))
+}
+
+async function startCreating() {
+    if (creating.value) return
+    Object.assign(form, clone(BLANK_PLAYER))
+    form.selectedPlayerId = null
+    photoPath.value = null
+    form.clearErrors()
+    creating.value = true
+    if (activePanel.value === 'contract') activePanel.value = 'player'
 }
 
 function startNewContract() {
@@ -525,7 +577,7 @@ async function deletePlayer() {
             preserveScroll: true,
             onSuccess: () => {
                 if (props.players.length > 0) {
-                    selectPlayer(props.players[0])
+                    applyPlayer(props.players[0])
                 } else {
                     form.reset()
                 }
@@ -535,6 +587,7 @@ async function deletePlayer() {
 }
 
 function submit() {
+    if (creating.value) return createPlayer()
     if (!form.id) return
 
     form.transform(data => ({
@@ -551,15 +604,34 @@ function submit() {
             // Recharger le joueur enregistré (photo à jour, fichier remis à zéro).
             onSuccess: () => {
                 const fresh = props.players.find(p => p.id === form.id)
-                if (fresh) selectPlayer(fresh)
+                if (fresh) applyPlayer(fresh)
+            },
+        }
+    )
+}
+
+function createPlayer() {
+    // transform() est mémorisé par le formulaire : on retire le _method d'une mise à jour précédente.
+    form.transform(({ id: _id, contract: _contract, selectedPlayerId: _selected, ...data }) => data).post(
+        route('game-saves.players.store', { gameSave: props.gameSave.id }),
+        {
+            preserveScroll: true,
+            forceFormData: true,
+            // Le serveur renvoie l'id du joueur créé : on l'ouvre en édition.
+            onSuccess: () => {
+                const created = props.players.find(p => p.id === props.selectedId)
+                if (created) applyPlayer(created)
             },
         }
     )
 }
 
 onMounted(() => {
-    if (props.players.length > 0) {
-        selectPlayer(props.players[0])
+    if (props.startCreate) {
+        startCreating()
+        return
     }
+    const initial = props.players.find(p => p.id === props.selectedId) ?? props.players[0]
+    if (initial) applyPlayer(initial)
 })
 </script>

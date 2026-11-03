@@ -38,4 +38,37 @@ class GamePlayerUpdateTest extends TestCase
         $this->assertSame('Drive', $move['short_label']);
         $this->assertSame(4, (int) $move['cooldown']);
     }
+
+    public function test_store_redirects_to_the_list_with_the_new_player_selected(): void
+    {
+        $save = $this->makeSave();
+
+        $response = $this->actingAs(User::find($save->user_id))
+            ->post(route('game-saves.players.store', $save), [
+                'firstname' => 'Kojiro',
+                'lastname'  => 'Hyuga',
+                'position'  => 'Forward',
+                'cost'      => 80,
+            ])
+            ->assertSessionHasNoErrors();
+
+        $created = \App\Models\GameSaves\GamePlayer::where('game_save_id', $save->id)
+            ->where('lastname', 'Hyuga')->firstOrFail();
+        $response->assertRedirect(route('game-saves.players.index', [$save, 'selected' => $created->id]));
+    }
+
+    public function test_legacy_create_url_opens_the_list_in_creation_mode(): void
+    {
+        $save = $this->makeSave();
+        $user = User::find($save->user_id);
+
+        $this->actingAs($user)
+            ->get(route('game-saves.players.create', $save))
+            ->assertRedirect(route('game-saves.players.index', [$save, 'create' => 1]));
+
+        $this->actingAs($user)
+            ->get(route('game-saves.players.index', [$save, 'create' => 1]))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('GameSaves/GamePlayers/Index')->where('startCreate', true));
+    }
 }

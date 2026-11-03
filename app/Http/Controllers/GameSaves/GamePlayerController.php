@@ -40,18 +40,23 @@ class GamePlayerController extends Controller
             'gameSave' => $gameSave,
             'players'  => $players,
             'teams'    => $teams,
+            // Joueur à ouvrir (ex. juste après sa création) / fiche vide demandée.
+            'selectedId'  => $request->integer('selected') ?: null,
+            'startCreate' => $request->boolean('create'),
         ]);
     }
 
     /**
-     * Formulaire de création de joueur dans la sauvegarde.
+     * La création se fait désormais dans la page liste (fiche vide) :
+     * l'ancienne URL y renvoie directement en mode création.
      */
-    public function create(Request $request, GameSave $gameSave): Response
+    public function create(Request $request, GameSave $gameSave)
     {
         $this->authorizeGameSave('view', $gameSave);
 
-        return Inertia::render('GameSaves/GamePlayers/Create', [
-            'gameSave' => $gameSave,
+        return redirect()->route('game-saves.players.index', [
+            'gameSave' => $gameSave->id,
+            'create'   => 1,
         ]);
     }
 
@@ -85,6 +90,7 @@ class GamePlayerController extends Controller
 
         return redirect()->route('game-saves.players.index', [
             'gameSave' => $gameSave->id,
+            'selected' => $player->id,
         ])->with('success', 'Joueur créé.');
     }
 
