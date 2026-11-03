@@ -95,8 +95,24 @@ const filteredPlayers = computed(() => {
         );
     }
 
-    return list;
+    const sorter = sortOptions.find(o => o.key === sortKey.value);
+    return sorter?.compare ? [...list].sort(sorter.compare) : list;
 });
+
+// ==========================
+//   TRI DE LA LISTE
+// ==========================
+const staminaOf = (p) => p.stamina ?? p.stats?.stamina ?? 0;
+const costOf = (p) => p.adjusted_cost ?? p.cost ?? 0;
+const byName = (a, b) => `${a.lastname ?? ''} ${a.firstname ?? ''}`.localeCompare(`${b.lastname ?? ''} ${b.firstname ?? ''}`, 'fr');
+const sortKey = ref('name');
+const sortOptions = [
+    { key: 'name',    label: 'Nom (A → Z)',          compare: byName },
+    { key: 'overall', label: 'Note (meilleure)',     compare: (a, b) => ovr(b) - ovr(a) || byName(a, b) },
+    { key: 'stamina', label: 'Endurance (haute)',    compare: (a, b) => staminaOf(b) - staminaOf(a) || byName(a, b) },
+    { key: 'morale',  label: 'Moral (haut)',         compare: (a, b) => (b.morale ?? 60) - (a.morale ?? 60) || byName(a, b) },
+    { key: 'cost',    label: 'Coût (moins cher)',    compare: (a, b) => costOf(a) - costOf(b) || byName(a, b) },
+];
 
 // Note globale calculée une fois par joueur et par liste (au lieu de 3-4 fois
 // par ligne à chaque re-rendu, ex. à chaque frappe dans la recherche).
@@ -278,12 +294,21 @@ const filteredHistory = computed(() =>
             <!-- LISTE JOUEURS LIBRES                         -->
             <!-- ============================================ -->
             <div class="lg:col-span-5 border border-slate-200 rounded-xl bg-slate-50 p-3 max-h-[690px] overflow-y-auto">
-                <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Agents libres</h3>
+                <div class="flex items-center justify-between gap-2 mb-2">
+                    <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Agents libres</h3>
+                    <label class="flex items-center gap-1.5 text-[10px] font-semibold text-slate-400">
+                        Trier par
+                        <select v-model="sortKey"
+                                class="py-1 pl-2 pr-7 text-xs font-semibold text-slate-600 border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-teal-300 focus:border-teal-300">
+                            <option v-for="o in sortOptions" :key="o.key" :value="o.key">{{ o.label }}</option>
+                        </select>
+                    </label>
+                </div>
 
                 <div v-if="filteredPlayers.length" class="space-y-1">
                     <div v-for="p in filteredPlayers" :key="p.id"
                          @click="selectPlayer(p)"
-                         class="flex items-center gap-3 px-3 py-2 rounded-lg border cursor-pointer transition-all"
+                         class="flex items-center gap-2 px-2 py-2 rounded-lg border cursor-pointer transition-all"
                          :class="selectedPlayer?.id === p.id
                             ? 'bg-teal-500 text-white border-teal-600 shadow-sm'
                             : 'bg-white hover:bg-slate-50 border-slate-100 hover:border-teal-200'">
@@ -314,6 +339,20 @@ const filteredHistory = computed(() =>
                             </div>
                         </div>
 
+                        <!-- Endurance -->
+                        <div class="text-center w-8 shrink-0" :title="`Endurance : ${staminaOf(p)}/100`">
+                            <div class="text-[11px] font-black"
+                                 :class="selectedPlayer?.id === p.id ? 'text-white'
+                                    : staminaOf(p) >= 70 ? 'text-emerald-600'
+                                    : staminaOf(p) >= 40 ? 'text-amber-600' : 'text-rose-500'">
+                                {{ staminaOf(p) }}
+                            </div>
+                            <div class="text-[8px]"
+                                 :class="selectedPlayer?.id === p.id ? 'text-white/60' : 'text-slate-400'">
+                                Endur.
+                            </div>
+                        </div>
+
                         <!-- Moral -->
                         <div class="text-center w-8 shrink-0"
                              :title="`Moral : ${moraleState(p.morale).label} (${p.morale ?? 60}/100)`">
@@ -328,7 +367,7 @@ const filteredHistory = computed(() =>
                         </div>
 
                         <!-- Stats clés -->
-                        <div class="flex gap-1 shrink-0">
+                        <div class="flex gap-0.5 shrink-0">
                             <div v-for="k in keyStatsFor(p.position).slice(0,2)" :key="k"
                                  class="text-center w-8">
                                 <div class="text-[11px] font-black"
