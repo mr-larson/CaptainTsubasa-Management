@@ -187,7 +187,10 @@ const faq = [
 
         <!-- 5. QUESTIONS AVANT L'INSCRIPTION -->
         <section class="mx-auto max-w-[1200px] border-t border-white/5 px-4 py-12 md:px-10 md:py-16">
-            <h2 class="mb-8 text-2xl font-bold text-slate-50">Questions fréquentes</h2>
+            <h2 class="mb-2 text-2xl font-bold text-slate-50">Questions fréquentes</h2>
+            <p class="mb-8 text-slate-300">
+                Pour le détail des règles, lis le <Link :href="route('guide')" class="text-teal-300 underline hover:text-teal-200">guide « Comment jouer »</Link>.
+            </p>
             <div class="grid gap-3 md:grid-cols-2">
                 <details v-for="item in faq" :key="item.q" class="group rounded-xl border border-white/10 bg-white/5 px-5 py-4">
                     <summary class="flex cursor-pointer list-none items-center justify-between gap-3 font-semibold text-slate-100 [&::-webkit-details-marker]:hidden">
@@ -216,6 +219,8 @@ const faq = [
         <footer class="flex flex-col gap-3 border-t border-white/5 px-4 py-6 text-sm text-slate-400 sm:flex-row sm:items-center sm:justify-between md:px-10">
             <span>Golden Eleven · Projet indépendant et open source, inspiré de l'œuvre de Yōichi Takahashi</span>
             <nav class="flex flex-wrap gap-4" aria-label="Liens du projet">
+                <Link :href="route('guide')" class="hover:text-teal-300">Comment jouer</Link>
+                <Link :href="route('privacy')" class="hover:text-teal-300">Confidentialité</Link>
                 <a href="https://gautd8.notion.site/Captain-Tsubasa-Management-28c47313c8ca4fb5b0e3652491118849"
                    target="_blank" rel="noopener" class="hover:text-teal-300">Documentation du projet</a>
                 <a href="https://github.com/mr-larson/CaptainTsubasa-Management" target="_blank" rel="noopener"

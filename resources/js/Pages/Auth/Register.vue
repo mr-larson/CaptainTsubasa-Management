@@ -108,6 +108,10 @@ const submit = () => {
 
             <div class="pt-8 flex flex-col gap-3">
                 <AuthSubmitButton :processing="form.processing">Créer mon compte</AuthSubmitButton>
+                <p class="text-center text-xs text-slate-500">
+                    Ce que nous faisons de tes données :
+                    <Link :href="route('privacy')" class="font-semibold text-teal-600 hover:text-teal-700">confidentialité</Link>.
+                </p>
 
                 <p class="text-xs text-slate-600 text-center">
                     Déjà inscrit ?

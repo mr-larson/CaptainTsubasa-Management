@@ -46,6 +46,10 @@ Route::get('/', function () {
     ]);
 })->name('welcome');
 
+// Pages publiques d'information.
+Route::get('/comment-jouer', fn () => Inertia::render('Guide'))->name('guide');
+Route::get('/confidentialite', fn () => Inertia::render('Privacy'))->name('privacy');
+
 /*
 |--------------------------------------------------------------------------
 | Routes protégées (auth)
