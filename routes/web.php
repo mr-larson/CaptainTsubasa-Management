@@ -37,6 +37,10 @@ Route::get('/', function () {
             ->get(),
         // Compteur réel (l'échantillon ci-dessus est limité à 50).
         'playerCount' => Player::count(),
+        // Captures réelles du jeu (public/images/welcome), affichées seulement si présentes.
+        'screenshots' => collect(['match', 'dashboard'])
+            ->mapWithKeys(fn ($name) => [$name => is_file(public_path("images/welcome/{$name}.webp")) ? "/images/welcome/{$name}.webp" : null])
+            ->all(),
         'canLogin'    => Route::has('login'),
         'canRegister' => Route::has('register'),
     ]);

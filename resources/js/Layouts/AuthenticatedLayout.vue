@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue';
+import { Link } from '@inertiajs/vue3';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
@@ -24,10 +25,17 @@ const navLinks = [
                 <!-- Primary Navigation Menu -->
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div class="flex justify-between h-16">
-                        <!-- Page Heading -->
-                        <header class="flex items-center" v-if="$slots.header">
-                            <slot name="header" />
-                        </header>
+                        <!-- Marque (retour au menu principal) + titre de la page -->
+                        <div class="flex min-w-0 items-center gap-3">
+                            <Link :href="route('mainMenu')" class="flex shrink-0 items-baseline gap-1.5 text-[17px]" title="Menu principal">
+                                <span class="font-bold text-slate-100">Golden</span>
+                                <span class="text-teal-300">Eleven</span>
+                            </Link>
+                            <header class="flex min-w-0 items-center gap-3" v-if="$slots.header">
+                                <span class="h-5 w-px shrink-0 bg-white/20" aria-hidden="true"></span>
+                                <div class="min-w-0 truncate"><slot name="header" /></div>
+                            </header>
+                        </div>
                         <div class="hidden sm:flex sm:items-center sm:ml-6">
                             <!-- Settings Dropdown -->
                             <div class="ml-3 relative">

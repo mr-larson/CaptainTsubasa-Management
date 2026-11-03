@@ -3,9 +3,12 @@ import Checkbox from '@/Components/Checkbox.vue';
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
-import ButtonPrimary from '@/Components/ButtonPrimary.vue';
+import AuthSubmitButton from '@/Components/AuthSubmitButton.vue';
 import InputText from '@/Components/InputText.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { ref } from 'vue';
+
+const showPassword = ref(false);
 
 defineProps({
     canResetPassword: {
@@ -31,7 +34,7 @@ const submit = () => {
 
 <template>
     <GuestLayout>
-        <Head title="Log in" />
+        <Head title="Connexion" />
 
         <h1 class="text-xl font-semibold text-slate-800 mb-1">
             Connexion
@@ -46,7 +49,7 @@ const submit = () => {
 
         <form @submit.prevent="submit">
             <div>
-                <InputLabel for="email" value="Email" />
+                <InputLabel for="email" value="Adresse e-mail" />
 
                 <InputText
                     id="email"
@@ -62,16 +65,21 @@ const submit = () => {
             </div>
 
             <div class="mt-4">
-                <InputLabel for="password" value="Password" />
+                <InputLabel for="password" value="Mot de passe" />
 
                 <InputText
                     id="password"
-                    type="password"
+                    :type="showPassword ? 'text' : 'password'"
                     class="mt-1 block md:w-96 bg-stone-100"
                     v-model="form.password"
                     required
                     autocomplete="current-password"
                 />
+                <button type="button" @click="showPassword = !showPassword"
+                        class="mt-1 block text-xs font-semibold text-teal-600 hover:text-teal-700"
+                        :aria-pressed="showPassword">
+                    {{ showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe' }}
+                </button>
 
                 <InputError class="mt-2" :message="form.errors.password" />
             </div>
@@ -95,13 +103,7 @@ const submit = () => {
             </div>
 
             <div class="mt-6 flex flex-col gap-3">
-                <ButtonPrimary
-                    class="w-full justify-center"
-                    :class="{ 'opacity-25': form.processing }"
-                    :disabled="form.processing"
-                >
-                    Se connecter
-                </ButtonPrimary>
+                <AuthSubmitButton :processing="form.processing">Se connecter</AuthSubmitButton>
 
                 <p class="text-xs text-slate-600 text-center">
                     Pas encore de compte ?

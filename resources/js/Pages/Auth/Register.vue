@@ -2,9 +2,12 @@
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
-import ButtonPrimary from '@/Components/ButtonPrimary.vue';
+import AuthSubmitButton from '@/Components/AuthSubmitButton.vue';
 import InputText from '@/Components/InputText.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { ref } from 'vue';
+
+const showPassword = ref(false);
 
 const form = useForm({
     name: '',
@@ -28,12 +31,12 @@ const submit = () => {
             Créer un compte
         </h1>
         <p class="text-xs text-slate-500 mb-4">
-            Inscris-toi pour lancer ta première saison de Golden Eleven.
+            C'est gratuit. Une fois ton compte créé, tu pourras lancer ta première partie.
         </p>
 
         <form @submit.prevent="submit" class="space-y-4">
             <div>
-                <InputLabel for="name" value="Nom" />
+                <InputLabel for="name" value="Nom de manager" />
 
                 <InputText
                     id="name"
@@ -42,8 +45,10 @@ const submit = () => {
                     v-model="form.name"
                     required
                     autofocus
-                    autocomplete="name"
+                    autocomplete="nickname"
+                    aria-describedby="name-help"
                 />
+                <p id="name-help" class="mt-1 text-xs text-slate-500">Le nom affiché dans le jeu. Un pseudo convient.</p>
 
                 <InputError class="mt-1" :message="form.errors.name" />
             </div>
@@ -68,12 +73,20 @@ const submit = () => {
 
                 <InputText
                     id="password"
-                    type="password"
+                    :type="showPassword ? 'text' : 'password'"
                     class="mt-1 block md:w-96 bg-stone-100"
                     v-model="form.password"
                     required
+                    minlength="8"
                     autocomplete="new-password"
+                    aria-describedby="password-help"
                 />
+                <p id="password-help" class="mt-1 text-xs text-slate-500">8 caractères minimum.</p>
+                <button type="button" @click="showPassword = !showPassword"
+                        class="mt-1 text-xs font-semibold text-teal-600 hover:text-teal-700"
+                        :aria-pressed="showPassword">
+                    {{ showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe' }}
+                </button>
 
                 <InputError class="mt-1" :message="form.errors.password" />
             </div>
@@ -83,7 +96,7 @@ const submit = () => {
 
                 <InputText
                     id="password_confirmation"
-                    type="password"
+                    :type="showPassword ? 'text' : 'password'"
                     class="mt-1 block md:w-96 bg-stone-100"
                     v-model="form.password_confirmation"
                     required
@@ -94,13 +107,7 @@ const submit = () => {
             </div>
 
             <div class="pt-8 flex flex-col gap-3">
-                <ButtonPrimary
-                    class="w-full justify-center"
-                    :class="{ 'opacity-25': form.processing }"
-                    :disabled="form.processing"
-                >
-                    S’inscrire
-                </ButtonPrimary>
+                <AuthSubmitButton :processing="form.processing">Créer mon compte</AuthSubmitButton>
 
                 <p class="text-xs text-slate-600 text-center">
                     Déjà inscrit ?

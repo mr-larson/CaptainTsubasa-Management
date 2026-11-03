@@ -2,7 +2,7 @@
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
-import ButtonPrimary from '@/Components/ButtonPrimary.vue';
+import AuthSubmitButton from '@/Components/AuthSubmitButton.vue';
 import InputText from '@/Components/InputText.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 
@@ -23,11 +23,10 @@ const submit = () => {
 
 <template>
     <GuestLayout>
-        <Head title="Forgot Password" />
+        <Head title="Mot de passe oublié" />
 
         <div class="mb-4 text-sm text-gray-600">
-            Forgot your password? No problem. Just let us know your email address and we will email you a password reset
-            link that will allow you to choose a new one.
+            Mot de passe oublié ? Indique ton adresse e-mail : tu recevras un lien pour en choisir un nouveau.
         </div>
 
         <div v-if="status" class="mb-4 font-medium text-sm text-green-600">
@@ -36,7 +35,7 @@ const submit = () => {
 
         <form @submit.prevent="submit">
             <div>
-                <InputLabel for="email" value="Email" />
+                <InputLabel for="email" value="Adresse e-mail" />
 
                 <InputText
                     id="email"
@@ -52,9 +51,7 @@ const submit = () => {
             </div>
 
             <div class="flex items-center justify-end mt-4">
-                <ButtonPrimary :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
-                    Email Password Reset Link
-                </ButtonPrimary>
+                <AuthSubmitButton :processing="form.processing">Recevoir le lien de réinitialisation</AuthSubmitButton>
             </div>
         </form>
     </GuestLayout>
