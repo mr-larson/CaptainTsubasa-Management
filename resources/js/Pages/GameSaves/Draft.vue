@@ -1,5 +1,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import H2 from '@/Components/H2.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import TeamStyleBadges from '@/Pages/GameSaves/Play/components/TeamStyleBadges.vue';
@@ -513,7 +514,9 @@ onMounted(() => {
     <Head title="Draft" />
 
     <AuthenticatedLayout>
-        <template #header></template>
+        <template #header>
+            <H2>Draft — Saison {{ gameSave.season }}</H2>
+        </template>
 
         <div class="min-h-full bg-slate-50 p-2 sm:p-4">
             <div class="max-w-7xl mx-auto">

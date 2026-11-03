@@ -1,10 +1,10 @@
 <!-- resources/js/Pages/Players/Create.vue -->
 <template>
-    <Head title="Add Player" />
+    <Head title="Ajouter un joueur" />
 
     <AuthenticatedLayout>
         <template #header>
-            <H2>Add Player</H2>
+            <H2>Ajouter un joueur</H2>
         </template>
 
         <div class="p-4">

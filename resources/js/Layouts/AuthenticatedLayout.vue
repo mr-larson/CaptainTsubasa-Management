@@ -6,6 +6,15 @@ import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import FlashToasts from '@/Components/FlashToasts.vue';
 
 const showingNavigationDropdown = ref(false);
+
+// Navigation disponible depuis toutes les pages (menu utilisateur et menu mobile).
+const navLinks = [
+    { label: 'Menu principal', route: 'mainMenu' },
+    { label: 'Mes parties',    route: 'game-saves.index' },
+    { label: 'Nouvelle partie', route: 'game-saves.create' },
+    { label: 'Mes périodes',   route: 'period-packages.index' },
+    { label: 'Base de données', route: 'dataBaseMenu' },
+];
 </script>
 
 <template>
@@ -48,9 +57,13 @@ const showingNavigationDropdown = ref(false);
                                     </template>
 
                                     <template #content>
-                                        <DropdownLink :href="route('profile.edit')"> Profile </DropdownLink>
+                                        <DropdownLink v-for="link in navLinks" :key="link.route" :href="route(link.route)">
+                                            {{ link.label }}
+                                        </DropdownLink>
+                                        <div class="border-t border-gray-100 my-1"></div>
+                                        <DropdownLink :href="route('profile.edit')"> Profil </DropdownLink>
                                         <DropdownLink :href="route('logout')" method="post" as="button">
-                                            Log Out
+                                            Déconnexion
                                         </DropdownLink>
                                     </template>
                                 </Dropdown>
@@ -102,9 +115,13 @@ const showingNavigationDropdown = ref(false);
                         </div>
 
                         <div class="mt-3 space-y-1">
-                            <ResponsiveNavLink :href="route('profile.edit')"> Profile </ResponsiveNavLink>
+                            <ResponsiveNavLink v-for="link in navLinks" :key="link.route" :href="route(link.route)"
+                                               :active="route().current(link.route)">
+                                {{ link.label }}
+                            </ResponsiveNavLink>
+                            <ResponsiveNavLink :href="route('profile.edit')"> Profil </ResponsiveNavLink>
                             <ResponsiveNavLink :href="route('logout')" method="post" as="button">
-                                Log Out
+                                Déconnexion
                             </ResponsiveNavLink>
                         </div>
                     </div>

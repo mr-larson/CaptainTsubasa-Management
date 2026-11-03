@@ -1,5 +1,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import H2 from '@/Components/H2.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import PlayerPhoto from '@/Components/PlayerPhoto.vue';
@@ -28,6 +29,9 @@ function startNewSeason() {
     <Head title="Fin de saison" />
 
     <AuthenticatedLayout>
+        <template #header>
+            <H2>Fin de saison</H2>
+        </template>
         <div class="min-h-full bg-slate-50 p-2 sm:p-4">
             <div class="max-w-4xl mx-auto space-y-6">
 

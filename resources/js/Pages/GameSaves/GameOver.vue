@@ -1,5 +1,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import H2 from '@/Components/H2.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
@@ -22,6 +23,9 @@ const difficultyLabel = {
     <Head :title="won ? 'Carrière accomplie' : 'Mandat terminé'" />
 
     <AuthenticatedLayout>
+        <template #header>
+            <H2>{{ won ? 'Carrière accomplie' : 'Mandat terminé' }}</H2>
+        </template>
         <div class="min-h-full p-2 sm:p-4"
              :class="won ? 'bg-gradient-to-b from-emerald-50 to-slate-50' : 'bg-gradient-to-b from-rose-50 to-slate-50'">
             <div class="max-w-3xl mx-auto space-y-6">

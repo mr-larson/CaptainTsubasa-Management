@@ -1,8 +1,9 @@
 <template>
-    <Head title="Teams"/>
+    <Head title="Équipes"/>
 
     <AuthenticatedLayout>
         <template #header>
+            <H2>Équipes</H2>
         </template>
 
         <!-- SIDEBAR -->
@@ -88,7 +89,6 @@
 
         <!-- CONTENU PRINCIPAL -->
         <div class="p-4 sm:ml-64">
-            <H1>Editions</H1>
 
             <FormContainer>
                 <form @submit.prevent="submit">
@@ -313,7 +313,6 @@ import { ref, defineProps, computed, onMounted } from 'vue';
 
 // Components
 import H2 from '@/Components/H2.vue';
-import H1 from '@/Components/H1.vue';
 import MobileSidebar from '@/Components/MobileSidebar.vue';
 import FormContainer from '@/Components/FormContainer.vue';
 import FormRaw from '@/Components/FormRaw.vue';

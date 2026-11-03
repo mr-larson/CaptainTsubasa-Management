@@ -1,9 +1,9 @@
 <template>
-    <Head title="Teams"/>
+    <Head title="Contrats"/>
 
     <AuthenticatedLayout>
         <template #header>
-            <H2>Teams</H2>
+            <H2>Contrats</H2>
         </template>
 
         <MobileSidebar>

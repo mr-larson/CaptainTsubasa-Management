@@ -1,10 +1,10 @@
 <!-- resources/js/Pages/Teams/Create.vue -->
 <template>
-    <Head title="Add Team" />
+    <Head title="Ajouter une équipe" />
 
     <AuthenticatedLayout>
         <template #header>
-            <H2>Add Team</H2>
+            <H2>Ajouter une équipe</H2>
         </template>
 
         <div class="p-4">

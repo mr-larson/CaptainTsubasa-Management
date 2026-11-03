@@ -3,7 +3,9 @@
     <Head title="Choix de l'équipe" />
 
     <AuthenticatedLayout>
-        <template #header></template>
+        <template #header>
+            <H2>Choix de l'équipe</H2>
+        </template>
 
         <div class="min-h-full bg-slate-50 p-3 sm:p-6">
 
@@ -11,8 +13,7 @@
             <div class="max-w-7xl mx-auto mb-6">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
-                        <h1 class="text-xl sm:text-2xl font-black text-slate-800">Choix de l'équipe</h1>
-                        <p class="text-sm text-slate-400 mt-0.5">
+                        <p class="text-sm text-slate-400">
                             Partie : <span class="font-semibold text-slate-600">{{ label || 'Sans nom' }}</span>
                             &nbsp;•&nbsp;
                             <span v-if="periodPackage" class="font-semibold text-teal-600">📦 {{ periodPackage.name }}</span>

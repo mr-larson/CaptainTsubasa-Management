@@ -13,11 +13,11 @@ defineProps({
 </script>
 
 <template>
-    <Head title="Profile" />
+    <Head title="Profil" />
 
     <AuthenticatedLayout>
         <template #header>
-            <H2>Profile</H2>
+            <H2>Profil</H2>
         </template>
 
         <div class="p-3 sm:p-6">

@@ -1,9 +1,9 @@
 <template>
-    <Head title="Add Contract" />
+    <Head title="Ajouter un contrat" />
 
     <AuthenticatedLayout>
         <template #header>
-            <H2>Add Contract</H2>
+            <H2>Ajouter un contrat</H2>
         </template>
 
         <div class="p-4">

@@ -2,11 +2,12 @@
     <Head :title="`Joueurs — Partie #${gameSave.id}`" />
 
     <AuthenticatedLayout>
-        <template #header></template>
+        <template #header>
+            <H2>Joueurs de la partie</H2>
+        </template>
 
         <!-- CONTENU PRINCIPAL -->
         <div class="p-4 sm:p-6 max-w-8xl mx-auto flex flex-col gap-4">
-            <H1>Édition des joueurs de la partie</H1>
 
             <!-- SOUS-NAVIGATION GESTION -->
             <div class="flex flex-wrap items-center gap-2">
@@ -532,7 +533,7 @@ import { ref, computed, defineProps, onMounted, onBeforeUnmount } from 'vue'
 import PlayerPhoto from '@/Components/PlayerPhoto.vue'
 
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
-import H1 from '@/Components/H1.vue'
+import H2 from '@/Components/H2.vue'
 import FormContainer from '@/Components/FormContainer.vue'
 import InputLabel from '@/Components/InputLabel.vue'
 import InputText from '@/Components/InputText.vue'
