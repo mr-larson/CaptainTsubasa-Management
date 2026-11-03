@@ -203,7 +203,6 @@ const {
 const playerSeasonStatsRef = computed(() => props.playerSeasonStats ?? {});
 
 const {
-    playerSeasonStats,
     selectedMyPlayerPerf: _selectedMyPlayerPerf,
     selectedStatsTeamId, selectedStatsTeam,
     selectedTeamPlayerStats, teamStats,

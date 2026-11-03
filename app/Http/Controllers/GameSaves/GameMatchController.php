@@ -73,6 +73,14 @@ class GameMatchController extends Controller
             ->orderBy('week')
             ->firstOrFail();
 
+        // 3 relances de capitaine par match : remises à zéro au lancement (elles
+        // sont décomptées côté serveur pendant le match via useCaptainReroll).
+        GameContract::where('game_save_id', $gameSave->id)
+            ->whereIn('game_team_id', [$match->home_team_id, $match->away_team_id])
+            ->where('is_captain', true)
+            ->update(['captain_rerolls_remaining' => 3, 'captain_reroll_used_this_action' => false]);
+        $match->load(['homeTeam.contracts' => $activeContracts, 'awayTeam.contracts' => $activeContracts]);
+
         $homeTeam = $match->homeTeam;
         $awayTeam = $match->awayTeam;
 

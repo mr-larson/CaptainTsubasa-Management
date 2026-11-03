@@ -15,7 +15,7 @@
 
 
         <!-- Scripts -->
-        @routes
+        @routes(auth()->user()?->is_admin ? null : 'player')
         @vite(['resources/js/app.js', "resources/js/Pages/{$page['component']}.vue"])
         @inertiaHead
     </head>

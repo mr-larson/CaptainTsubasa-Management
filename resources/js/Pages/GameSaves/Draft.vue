@@ -11,6 +11,10 @@ import PlayerIdentityCard from '@/Pages/GameSaves/Play/components/PlayerIdentity
 import RadarChart from '@/Pages/GameSaves/Play/components/RadarChart.vue';
 import StatBars from '@/Pages/GameSaves/Play/components/StatBars.vue';
 import { usePlayerUtils } from '@/Pages/GameSaves/Play/usePlayerUtils.js';
+import DraftPickAnimation from '@/Pages/GameSaves/Draft/DraftPickAnimation.vue';
+import DraftOrderList from '@/Pages/GameSaves/Draft/DraftOrderList.vue';
+import DraftPickLog from '@/Pages/GameSaves/Draft/DraftPickLog.vue';
+import { positionColor, positionGroup } from '@/Pages/GameSaves/Draft/draftPositions.js';
 
 const { keyStatsFor, moraleState } = usePlayerUtils();
 
@@ -234,25 +238,6 @@ function overallOf(p) {
     return vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : 0;
 }
 
-function positionGroup(pos) {
-    const p = (pos ?? '').toUpperCase();
-    if (p.includes('GK') || p.includes('GOAL')) return 'GK';
-    if (p.includes('DEF') || p.includes('BACK')) return 'DEF';
-    if (p.includes('MDF') || p.includes('MID') || p.includes('MOF')) return 'MID';
-    if (p.includes('ATT') || p.includes('FOR')) return 'ATT';
-    return 'MID';
-}
-
-function positionColor(pos) {
-    const g = positionGroup(pos);
-    return {
-        GK:  'bg-yellow-100 text-yellow-700',
-        DEF: 'bg-blue-100 text-blue-700',
-        MID: 'bg-green-100 text-green-700',
-        ATT: 'bg-red-100 text-red-700',
-    }[g] ?? 'bg-slate-100 text-slate-700';
-}
-
 // ── Modal détail joueur ──────────────────────────────
 const inspectedPlayer = ref(null);
 
@@ -333,7 +318,7 @@ async function finishMyDraft() {
 
     isProcessing.value = true;
     try {
-        const response = await axios.post(`/game-saves/${props.gameSave.id}/draft/finish`);
+        const response = await axios.post(route('game-saves.draft.finish', props.gameSave.id));
         const data = response.data;
 
         if (data.draftState) draft.value = data.draftState;
@@ -399,7 +384,7 @@ async function runAiPicks() {
         if (!alive) break;
 
         try {
-            const response = await axios.post(`/game-saves/${props.gameSave.id}/draft/ai-pick`);
+            const response = await axios.post(route('game-saves.draft.ai-pick', props.gameSave.id));
             if (!alive) break;
             const data = response.data;
 
@@ -461,7 +446,7 @@ async function pickPlayer(player) {
     isProcessing.value = true;
 
     try {
-        const response = await axios.post(`/game-saves/${props.gameSave.id}/draft/pick`, {
+        const response = await axios.post(route('game-saves.draft.pick', props.gameSave.id), {
             player_id: player.id,
         });
         const data = response.data;
@@ -501,7 +486,7 @@ async function pickPlayer(player) {
 //  FIN DU DRAFT
 // ══════════════════════════════════════
 function goToPlay() {
-    router.visit(`/game-saves/${props.gameSave.id}/play`);
+    router.visit(route('game-saves.Play', props.gameSave.id)); // la route est « /Play » (majuscule)
 }
 
 // ══════════════════════════════════════
@@ -542,31 +527,7 @@ onMounted(() => {
                 </div>
 
                 <!-- ══════ PICK ANIMATION OVERLAY ══════ -->
-                <Teleport to="body">
-                    <Transition enter-active-class="transition-opacity duration-300" leave-active-class="transition-opacity duration-300"
-                                enter-from-class="opacity-0" leave-to-class="opacity-0">
-                        <div v-if="showPickAnim && lastPick"
-                             class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 pointer-events-none">
-                            <div class="bg-white rounded-2xl shadow-2xl p-8 text-center max-w-sm animate-bounce-in">
-                                <div class="w-20 h-20 rounded-full overflow-hidden bg-slate-200 mx-auto mb-4 border-4"
-                                     :class="isHumanTeam(lastPick.team_id) ? 'border-amber-400' : 'border-slate-300'">
-                                    <img loading="lazy" decoding="async" v-if="lastPick.photo_path" :src="`/storage/${lastPick.photo_path}`"
-                                         class="w-full h-full object-cover" alt=""/>
-                                    <div v-else class="w-full h-full flex items-center justify-center text-2xl text-slate-400">👤</div>
-                                </div>
-                                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
-                                    {{ lastPick.team_name }}
-                                </div>
-                                <div class="text-xl font-black text-slate-800">
-                                    {{ lastPick.player_name }}
-                                </div>
-                                <div class="mt-1 text-sm text-slate-500">
-                                    {{ lastPick.position }} • {{ lastPick.cost }} €
-                                </div>
-                            </div>
-                        </div>
-                    </Transition>
-                </Teleport>
+                <DraftPickAnimation :show="showPickAnim" :pick="lastPick" :highlight="!!lastPick && isHumanTeam(lastPick.team_id)" />
 
                 <!-- ══════ DRAFT TERMINÉ ══════ -->
                 <div v-if="draftCompleted" class="text-center py-16">
@@ -657,47 +618,11 @@ onMounted(() => {
                             </div>
 
                             <!-- Ordre de draft -->
-                            <div class="border border-slate-200 rounded-xl bg-white p-3 flex-1 max-h-[300px] overflow-y-auto">
-                                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
-                                    Ordre — Tour {{ draft?.round ?? 1 }}
-                                </h4>
-                                <div class="space-y-1">
-                                    <div v-for="(t, idx) in draftOrderTeams" :key="t.id"
-                                         class="flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs transition-all"
-                                         :class="t.isCurrent
-                                             ? 'bg-amber-100 border border-amber-300 font-bold'
-                                             : 'bg-slate-50'">
-                                        <div class="w-5 h-5 rounded overflow-hidden bg-white shrink-0">
-                                            <img loading="lazy" decoding="async" v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" class="w-full h-full object-contain" alt=""/>
-                                        </div>
-                                        <span class="flex-1 truncate"
-                                              :class="isHumanTeam(t.id) ? 'text-amber-700 font-semibold' : 'text-slate-600'">
-                                            {{ t.name }}
-                                        </span>
-                                        <span class="text-[10px] text-slate-400">{{ t.rosterCount }}</span>
-                                    </div>
-                                </div>
-                            </div>
+                            <DraftOrderList :teams="draftOrderTeams" :round="draft?.round ?? 1"
+                                            :is-human-team="isHumanTeam" :team-logo-url="teamLogoUrl" />
 
                             <!-- Log des derniers picks -->
-                            <div class="border border-slate-200 rounded-xl bg-white p-3 max-h-[250px] overflow-y-auto">
-                                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
-                                    Derniers picks
-                                </h4>
-                                <div v-if="pickLog.length" class="space-y-1">
-                                    <div v-for="(pick, i) in [...pickLog].reverse().slice(0, 20)" :key="i"
-                                         class="flex items-center gap-2 text-[11px] px-2 py-1 rounded"
-                                         :class="isHumanTeam(pick.team_id) ? 'bg-amber-50' : 'bg-slate-50'">
-                                        <span class="font-bold text-slate-500 w-14 truncate">{{ pick.team_name }}</span>
-                                        <span class="flex-1 text-slate-700 truncate">{{ pick.player_name }}</span>
-                                        <span :class="positionColor(pick.position)"
-                                              class="px-1.5 py-0.5 rounded text-[9px] font-bold">
-                                            {{ positionGroup(pick.position) }}
-                                        </span>
-                                    </div>
-                                </div>
-                                <p v-else class="text-[10px] text-slate-400 italic">Aucun pick encore</p>
-                            </div>
+                            <DraftPickLog :picks="pickLog" :is-human-team="isHumanTeam" />
                         </div>
 
                         <!-- ══════ COL CENTRALE + DROITE : Joueurs ══════ -->

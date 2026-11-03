@@ -122,7 +122,8 @@ function score(match) {
                 <!-- Finale -->
                 <div class="flex-1 flex flex-col gap-3">
                     <div class="text-[11px] font-bold text-amber-500 uppercase tracking-wide">Finale</div>
-                    <div v-if="finale.length" v-for="(m, i) in finale" :key="'f' + i"
+                    <template v-if="finale.length">
+                    <div v-for="(m, i) in finale" :key="'f' + i"
                          class="rounded-xl border-2 border-amber-300 overflow-hidden">
                         <div class="flex items-center justify-between px-3 py-2.5"
                              :class="isWinner(m, 'home') ? 'bg-amber-50 font-bold text-amber-700' : 'text-slate-600'">
@@ -135,6 +136,7 @@ function score(match) {
                             <span>{{ m.played ? m.away_score : '' }}<span v-if="m.shootout" class="ml-1 text-[10px] font-normal text-slate-400" title="Tirs au but">({{ m.shootout.away }})</span></span>
                         </div>
                     </div>
+                    </template>
                     <div v-else class="rounded-xl border border-dashed border-slate-200 px-3 py-4 text-center text-xs text-slate-400">
                         En attente des qualifiés
                     </div>

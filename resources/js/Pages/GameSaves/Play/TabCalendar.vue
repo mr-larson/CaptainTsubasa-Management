@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
 import MatchReplayPitch from './MatchReplayPitch.vue';
 import PlayerPhoto from '@/Components/PlayerPhoto.vue';
+import MatchProgression from './components/MatchProgression.vue';
 
 const props = defineProps({
     calendarTeams:                 { type: Array,    required: true },
@@ -146,20 +147,6 @@ const filteredLogEvents = computed(() => {
     });
     return [...list].reverse();
 });
-
-const homeProgressors = computed(() =>
-    props.selectedCalendarProgression.filter(p => p.team_side === 'home').sort((a, b) => b.total - a.total)
-);
-const awayProgressors = computed(() =>
-    props.selectedCalendarProgression.filter(p => p.team_side === 'away').sort((a, b) => b.total - a.total)
-);
-
-const STAT_LABELS = {
-    shot:    { icon: '🎯', label: 'Tir',     color: 'text-rose-700    bg-rose-100' },
-    pass:    { icon: '🎽', label: 'Passe',   color: 'text-emerald-700 bg-emerald-100' },
-    dribble: { icon: '🔥', label: 'Dribble', color: 'text-amber-700   bg-amber-100' },
-    defense: { icon: '🛡️', label: 'Défense', color: 'text-blue-700    bg-blue-100' },
-};
 
 // Résultat d'un match pour une équipe donnée
 const matchResult = (match, teamId) => {
@@ -523,89 +510,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                 <!-- ============================================ -->
                 <!-- BLOC : Progression des joueurs               -->
                 <!-- ============================================ -->
-                <div v-if="selectedCalendarProgression.length" class="border border-slate-200 rounded-xl bg-slate-50 p-4">
-                    <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3">
-                        📈 Progression suite à ce match
-                    </h4>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                        <!-- HOME -->
-                        <div>
-                            <div class="text-xs font-bold text-slate-600 mb-2 pb-1.5 border-b border-slate-200">
-                                {{ homeTeamName }}
-                                <span class="text-[10px] text-slate-400 font-normal ml-1">
-                    ({{ homeProgressors.length }} joueur{{ homeProgressors.length > 1 ? 's' : '' }})
-                </span>
-                            </div>
-                            <div v-if="!homeProgressors.length" class="text-[11px] text-slate-400 italic py-2">
-                                Aucune progression
-                            </div>
-                            <div v-else class="space-y-1.5">
-                                <div v-for="p in homeProgressors" :key="p.player_id"
-                                     class="flex items-center gap-2 p-2 bg-white/80 rounded-lg">
-                                    <div class="w-8 h-8 rounded-full overflow-hidden bg-slate-200 shrink-0">
-                                        <PlayerPhoto :src="p.photo_path ? `/storage/${p.photo_path}` : null" class="w-full h-full object-cover" alt="" />
-                                        <div v-if="!p.photo_path" class="w-full h-full flex items-center justify-center text-[10px] text-slate-400">?</div>
-                                    </div>
-                                    <div class="flex-1 min-w-0">
-                                        <div class="text-xs font-bold text-slate-800 truncate">{{ p.lastname }}</div>
-                                        <div class="flex flex-wrap gap-1 mt-0.5">
-                            <span v-for="(detail, stat) in p.gains" :key="stat"
-                                  :class="STAT_LABELS[stat]?.color"
-                                  class="px-1.5 py-0.5 rounded text-[9px] font-bold inline-flex items-center gap-0.5">
-                                <span>{{ STAT_LABELS[stat]?.icon }}</span>
-                                <span>+{{ detail.gain }}</span>
-                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="text-right shrink-0 px-1">
-                                        <div class="text-lg font-black text-emerald-600 leading-none">+{{ p.total }}</div>
-                                        <div class="text-[8px] text-slate-400 uppercase">pts</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- AWAY -->
-                        <div>
-                            <div class="text-xs font-bold text-slate-600 mb-2 pb-1.5 border-b border-slate-200">
-                                {{ awayTeamName }}
-                                <span class="text-[10px] text-slate-400 font-normal ml-1">
-                    ({{ awayProgressors.length }} joueur{{ awayProgressors.length > 1 ? 's' : '' }})
-                </span>
-                            </div>
-                            <div v-if="!awayProgressors.length" class="text-[11px] text-slate-400 italic py-2">
-                                Aucune progression
-                            </div>
-                            <div v-else class="space-y-1.5">
-                                <div v-for="p in awayProgressors" :key="p.player_id"
-                                     class="flex items-center gap-2 p-2 bg-white/80 rounded-lg">
-                                    <div class="w-8 h-8 rounded-full overflow-hidden bg-slate-200 shrink-0">
-                                        <PlayerPhoto :src="p.photo_path ? `/storage/${p.photo_path}` : null" class="w-full h-full object-cover" alt="" />
-                                        <div v-if="!p.photo_path" class="w-full h-full flex items-center justify-center text-[10px] text-slate-400">?</div>
-                                    </div>
-                                    <div class="flex-1 min-w-0">
-                                        <div class="text-xs font-bold text-slate-800 truncate">{{ p.lastname }}</div>
-                                        <div class="flex flex-wrap gap-1 mt-0.5">
-                            <span v-for="(detail, stat) in p.gains" :key="stat"
-                                  :class="STAT_LABELS[stat]?.color"
-                                  class="px-1.5 py-0.5 rounded text-[9px] font-bold inline-flex items-center gap-0.5">
-                                <span>{{ STAT_LABELS[stat]?.icon }}</span>
-                                <span>+{{ detail.gain }}</span>
-                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="text-right shrink-0 px-1">
-                                        <div class="text-lg font-black text-emerald-600 leading-none">+{{ p.total }}</div>
-                                        <div class="text-[8px] text-slate-400 uppercase">pts</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
+                <MatchProgression :progression="selectedCalendarProgression" :home-team-name="homeTeamName" :away-team-name="awayTeamName" />
 
                 <!-- ============================================ -->
                 <!-- BLOC : Déroulé du match (action par action)  -->
