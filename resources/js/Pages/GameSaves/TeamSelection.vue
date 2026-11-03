@@ -177,19 +177,28 @@
                             <!-- Action — PREBUILT : hot-seat multi-manager -->
                             <template v-else>
                                 <button type="button"
-                                        class="w-full py-3 rounded-xl font-bold text-sm transition-all"
+                                        class="w-full py-3 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2"
                                         :class="isHumanTeam(selectedTeam)
                         ? 'bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100'
                         : 'bg-teal-500 hover:bg-teal-400 text-white shadow-lg shadow-teal-200 hover:scale-[1.01] active:scale-[0.99]'"
                                         @click="toggleHumanTeam(selectedTeam)">
-                                    <span v-if="isHumanTeam(selectedTeam)">✓ Joueur {{ seatOf(selectedTeam) }} — Retirer</span>
-                                    <span v-else>➕ Ajouter au hot-seat</span>
+                                    <template v-if="isHumanTeam(selectedTeam)">
+                                        <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                                        <span>Ne plus piloter {{ selectedTeam.name }} (Joueur {{ seatOf(selectedTeam) }})</span>
+                                    </template>
+                                    <template v-else>
+                                        <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                                        <span>Piloter {{ selectedTeam.name }} (Joueur {{ humanTeams.length + 1 }})</span>
+                                    </template>
                                 </button>
+                                <p class="-mt-2 text-[11px] text-slate-400 text-center leading-snug">
+                                    Chaque équipe pilotée est confiée à un manager humain ; les autres sont gérées par l'IA. Les joueurs jouent à tour de rôle sur cet écran.
+                                </p>
 
                                 <!-- Récap hot-seat + lancement -->
                                 <div class="border border-slate-200 rounded-xl bg-white p-4">
                                     <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
-                                        Hot-seat — {{ humanTeams.length }} joueur(s)
+                                        Managers humains — {{ humanTeams.length }}
                                     </h4>
 
                                     <div v-if="humanTeams.length" class="space-y-1.5 mb-3">
@@ -206,7 +215,7 @@
                                         </div>
                                     </div>
                                     <p v-else class="text-xs text-slate-400 italic mb-3">
-                                        Ajoute une ou plusieurs équipes à piloter.
+                                        Aucune équipe pilotée pour l'instant : choisis une équipe à gauche puis clique sur « Piloter ».
                                     </p>
 
                                     <button type="button"
