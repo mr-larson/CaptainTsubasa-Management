@@ -536,7 +536,8 @@ onMounted(() => {
 
                 <!-- ══════ PICK ANIMATION OVERLAY ══════ -->
                 <Teleport to="body">
-                    <Transition name="fade">
+                    <Transition enter-active-class="transition-opacity duration-300" leave-active-class="transition-opacity duration-300"
+                                enter-from-class="opacity-0" leave-to-class="opacity-0">
                         <div v-if="showPickAnim && lastPick"
                              class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 pointer-events-none">
                             <div class="bg-white rounded-2xl shadow-2xl p-8 text-center max-w-sm animate-bounce-in">
@@ -1006,21 +1007,3 @@ onMounted(() => {
         </div>
     </AuthenticatedLayout>
 </template>
-
-<style scoped>
-.fade-enter-active, .fade-leave-active {
-    transition: opacity 0.3s ease;
-}
-.fade-enter-from, .fade-leave-to {
-    opacity: 0;
-}
-
-@keyframes bounce-in {
-    0%   { transform: scale(0.5); opacity: 0; }
-    60%  { transform: scale(1.05); }
-    100% { transform: scale(1); opacity: 1; }
-}
-.animate-bounce-in {
-    animation: bounce-in 0.5s ease-out;
-}
-</style>

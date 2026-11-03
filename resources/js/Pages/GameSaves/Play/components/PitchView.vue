@@ -22,17 +22,17 @@ const { playerPhotoUrl } = usePlayerUtils();
 </script>
 
 <template>
-    <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm" style="height:240px;">
+    <div class="h-[240px] border border-slate-200 rounded-xl overflow-hidden shadow-sm">
         <div class="relative w-full h-full">
             <div class="absolute inset-0 bg-gradient-to-r from-green-800 via-green-700 to-green-800"></div>
             <div v-for="i in 8" :key="i" class="absolute top-0 h-full bg-green-900/15" :style="{ left:((i-1)*12.5)+'%', width:'12.5%' }"></div>
             <div class="absolute inset-2 border border-white/40 rounded pointer-events-none"></div>
             <div class="absolute top-2 bottom-2 left-1/2 w-px bg-white/40"></div>
             <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-full border border-white/30"></div>
-            <div class="absolute left-2 top-1/2 -translate-y-1/2 border border-white/30" style="width:9%;height:55%"></div>
-            <div class="absolute right-2 top-1/2 -translate-y-1/2 border border-white/30" style="width:9%;height:55%"></div>
-            <div class="absolute left-2 top-1/2 -translate-y-1/2 bg-white/15 border border-white/50" style="width:2%;height:22%"></div>
-            <div class="absolute right-2 top-1/2 -translate-y-1/2 bg-white/15 border border-white/50" style="width:2%;height:22%"></div>
+            <div class="absolute left-2 top-1/2 -translate-y-1/2 border border-white/30 w-[9%] h-[55%]"></div>
+            <div class="absolute right-2 top-1/2 -translate-y-1/2 border border-white/30 w-[9%] h-[55%]"></div>
+            <div class="absolute left-2 top-1/2 -translate-y-1/2 bg-white/15 border border-white/50 w-[2%] h-[22%]"></div>
+            <div class="absolute right-2 top-1/2 -translate-y-1/2 bg-white/15 border border-white/50 w-[2%] h-[22%]"></div>
 
             <template v-if="formationData">
                 <div

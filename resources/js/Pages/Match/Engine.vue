@@ -162,7 +162,7 @@
                 <!-- =======================================================
                      MESSAGE PANEL (JS only)
                      ======================================================= -->
-                <div id="message-panel" class="visually-hidden">
+                <div id="message-panel" class="sr-only">
                     <div id="message-main"></div>
                     <div id="message-sub"></div>
                 </div>
@@ -170,10 +170,10 @@
                 <!-- =======================================================
                      MAIN ROW : left cards / field / right log
                      ======================================================= -->
-                <div id="main-row" class="grid grid-cols-1 lg:grid-cols-10 gap-6 items-stretch">
+                <div id="main-row" class="grid min-h-0 grid-cols-1 lg:grid-cols-10 gap-6 items-stretch">
 
                     <!-- LEFT COLUMN : Stats cards -->
-                    <div id="left-column" class="lg:col-span-2 min-w-0 flex flex-col justify-around gap-4 lg:max-h-[55vh]">
+                    <div id="left-column" class="lg:col-span-2 min-w-0 min-h-0 flex flex-col justify-around gap-4 lg:max-h-[55vh]">
 
                         <!-- HOME CARD -->
                         <div
@@ -338,7 +338,7 @@
                                 <div class="text-[8px] uppercase tracking-widest font-bold text-slate-600 mb-2 whitespace-nowrap">
                                     HISTORIQUE
                                 </div>
-                                <ul id="history-list" class="space-y-1"></ul>
+                                <ul id="history-list" class="flex min-h-px flex-col gap-1 py-0.5"></ul>
                             </div>
                         </div>
                     </div>
@@ -347,9 +347,10 @@
                 <!-- =======================================================
                      SKILL BARS (injecté par engine.js)
                      ======================================================= -->
-                <div id="bars-container">
-                    <div id="action-bar"></div>
-                    <div id="info-text"></div>
+                <!-- Mobile (< lg) : barre collée en bas de l'écran pour garder actions et terrain visibles ensemble. -->
+                <div id="bars-container" class="mt-4 flex flex-col gap-2.5 lg:mt-[30px] max-lg:sticky max-lg:bottom-0 max-lg:z-30 max-lg:pb-[env(safe-area-inset-bottom)]">
+                    <div id="action-bar" class="mx-auto block w-full rounded-2xl border border-black/5 bg-white/85 p-3 shadow-[0_12px_22px_rgba(0,0,0,0.18)] max-lg:max-h-[45vh] max-lg:overflow-y-auto"></div>
+                    <div id="info-text" class="text-xs text-slate-900/75"></div>
                 </div>
 
             </div>

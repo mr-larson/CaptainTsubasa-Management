@@ -377,8 +377,8 @@ onUnmounted(() => clearTimer());
             <div class="absolute inset-y-0 left-1/2 w-px bg-white/30"></div>
             <div v-if="hasSquads" class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full border border-white/25"></div>
             <!-- surfaces -->
-            <div v-if="hasSquads" class="absolute left-0 top-1/2 -translate-y-1/2 border border-white/25 border-l-0" style="width:10%;height:55%"></div>
-            <div v-if="hasSquads" class="absolute right-0 top-1/2 -translate-y-1/2 border border-white/25 border-r-0" style="width:10%;height:55%"></div>
+            <div v-if="hasSquads" class="absolute left-0 top-1/2 -translate-y-1/2 border border-white/25 border-l-0 w-[10%] h-[55%]"></div>
+            <div v-if="hasSquads" class="absolute right-0 top-1/2 -translate-y-1/2 border border-white/25 border-r-0 w-[10%] h-[55%]"></div>
             <!-- buts -->
             <div class="absolute inset-y-0 left-0 w-2 bg-white/40"></div>
             <div class="absolute inset-y-0 right-0 w-2 bg-white/40"></div>

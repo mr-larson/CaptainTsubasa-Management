@@ -57,7 +57,3 @@ import {Link} from "@inertiajs/vue3";
 import H2 from "@/Components/H2.vue";
 
 </script>
-
-<style scoped>
-
-</style>

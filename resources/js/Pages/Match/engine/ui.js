@@ -65,7 +65,7 @@ function bindHistoryClickEvents() {
     document.addEventListener('click', (event) => {
         // Panneaux de remplacement ouverts : refermés au clic hors du panneau.
         if (!event.target.closest('[id$="-sub-panel"]')) {
-            _rootEl?.querySelectorAll('[id$="-sub-panel"]').forEach(p => { p.style.display = 'none'; });
+            _rootEl?.querySelectorAll('[id$="-sub-panel"]').forEach(p => p.classList.add('hidden'));
         }
         if (event.target.closest('.log-entry') || event.target.closest('#duel-dice-tooltip')) return;
         hideBreakdownTooltip();
@@ -131,9 +131,9 @@ function _renderEventNotification(type, text, subText = null) {
         const icon = type === 'red' ? '🟥' : type === 'injury' ? '🤕' : '⚽';
         overlay.className = `event-overlay event-overlay--${type}`;
         overlay.innerHTML = `
-            <div class="event-overlay__icon">${icon}</div>
-            <div class="event-overlay__text">${text}</div>
-            ${subText ? `<div class="event-overlay__sub">${subText}</div>` : ''}
+            <div class="event-overlay__icon text-[52px] leading-none drop-shadow-lg">${icon}</div>
+            <div class="text-center text-base font-black tracking-wide text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.5)]">${text}</div>
+            ${subText ? `<div class="text-center text-[11px] font-semibold text-white/75">${subText}</div>` : ''}
         `;
         overlay.getBoundingClientRect();
         overlay.classList.add('visible');
@@ -327,26 +327,31 @@ class LogEntry {
     }
 
     toHTML() {
-        const pad    = n => String(n).padStart(2, '0');
-        const badge  = `<span class="log-turn-badge">T${pad(this.turn)}</span>`;
-        const dot    = this.team
-            ? `<span class="log-team-dot log-team-${this.team}"></span>`
+        const pad     = n => String(n).padStart(2, '0');
+        const isGold  = this._cfg.color === 'gold';
+        const badgeBg = isGold ? 'from-amber-600 to-amber-700' : 'from-slate-500 to-slate-600';
+        const badge   = `<span class="log-turn-badge inline-flex h-[18px] w-7 shrink-0 items-center justify-center rounded-[5px] bg-gradient-to-br ${badgeBg} text-[9px] font-extrabold tracking-[0.3px] text-white shadow">T${pad(this.turn)}</span>`;
+        const dotBg   = this.team === 'internal' ? 'bg-blue-500 shadow-[0_0_4px_rgba(59,130,246,0.6)]' : 'bg-orange-500 shadow-[0_0_4px_rgba(249,115,22,0.6)]';
+        const dot     = this.team
+            ? `<span class="h-[5px] w-[5px] shrink-0 rounded-full ${dotBg}"></span>`
             : '';
-        const dice   = this.diceTag
-            ? `<span class="log-dice">${this.diceTag}</span>`
+        const dice    = this.diceTag
+            ? `<span class="whitespace-nowrap rounded bg-slate-400/20 px-1 font-mono text-[9px] text-slate-600">${this.diceTag}</span>`
             : '';
-        const detail = this.details.length
-            ? `<div class="log-line-2">${this.details.join(' · ')}</div>`
+        const detail  = this.details.length
+            ? `<div class="truncate text-[10px] text-slate-500">${this.details.join(' · ')}</div>`
             : '';
-        const clickable = this.breakdown ? ' log-entry--clickable' : '';
-        const infoIcon   = this.breakdown ? '<span class="log-info-icon" title="Voir le détail">ℹ</span>' : '';
+        const clickable = this.breakdown ? ' log-entry--clickable group' : '';
+        const infoIcon  = this.breakdown
+            ? '<span class="flex h-3.5 w-3.5 shrink-0 items-center justify-center self-center rounded-full bg-slate-400/15 text-[9px] not-italic text-slate-400 transition-colors group-hover:bg-blue-500/20 group-hover:text-blue-600" title="Voir le détail">ℹ</span>'
+            : '';
 
         return `<li class="log-entry log-result-${this.result} log-${this._cfg.color}${clickable}" data-log-id="${this.id}">
-            <div class="log-left">${badge}${dot}</div>
-            <div class="log-center">
-                <span class="log-icon">${this._cfg.icon}</span>
-                <div class="log-text">
-                    <div class="log-line-1"><span class="log-main">${this.mainText}</span>${dice}</div>
+            <div class="flex shrink-0 flex-col items-center gap-[3px]">${badge}${dot}</div>
+            <div class="flex min-w-0 flex-1 items-start gap-1.5">
+                <span class="log-icon mt-px shrink-0 text-[13px] leading-none">${this._cfg.icon}</span>
+                <div class="flex min-w-0 flex-1 flex-col gap-px">
+                    <div class="flex flex-wrap items-baseline gap-1 font-semibold text-slate-900"><span>${this.mainText}</span>${dice}</div>
                     ${detail}
                 </div>
             </div>
@@ -554,8 +559,7 @@ export function updateSideCard(prefix, team, slotNumber) {
         // 🤕 Indisponible (inséré en premier = apparaît à gauche)
         if (info?.isAvailable === false) {
             const b = document.createElement('div');
-            b.className = 'status-badge';
-            b.style.cssText = 'background:#ef4444;color:#fff;font-size:9px;font-weight:900;padding:1px 4px;border-radius:4px;white-space:nowrap;';
+            b.className = 'status-badge whitespace-nowrap rounded px-1 text-[9px] font-black bg-red-500 py-px text-white';
             b.textContent = totalYellows >= 2 ? '🚫' : '🤕';
             b.title = totalYellows >= 2 ? 'Expulsé' : 'Blessé / Indisponible';
             statusBar.insertBefore(b, statusBar.firstChild);
@@ -564,8 +568,7 @@ export function updateSideCard(prefix, team, slotNumber) {
         // 🟨 Cartons jaunes
         if (totalYellows > 0) {
             const b = document.createElement('div');
-            b.className = 'status-badge';
-            b.style.cssText = 'background:#eab308;color:#1c1917;font-size:9px;font-weight:900;padding:1px 4px;border-radius:4px;white-space:nowrap;';
+            b.className = 'status-badge whitespace-nowrap rounded px-1 text-[9px] font-black bg-yellow-500 py-px text-stone-900';
             b.textContent = `${totalYellows}🟨`;
             b.title = `${totalYellows} carton(s) jaune`;
             statusBar.insertBefore(b, statusBar.firstChild);
@@ -575,9 +578,8 @@ export function updateSideCard(prefix, team, slotNumber) {
         if (info?.isCaptain) {
             const rerolls = _state?.captainReroll?.[team]?.rerollsRemaining ?? 0;
             const b = document.createElement('div');
-            b.className = 'status-badge';
+            b.className = 'status-badge whitespace-nowrap rounded px-1 text-[9px] font-black cursor-default bg-amber-500 px-[5px] py-px text-white';
             b.setAttribute('data-captain-reroll', team);
-            b.style.cssText = 'background:#f59e0b;color:#fff;font-size:9px;font-weight:900;padding:1px 5px;border-radius:4px;white-space:nowrap;cursor:default;';
             b.textContent = `👑 ${rerolls}`;
             b.title = `Capitaine — ${rerolls} relance(s) restante(s)`;
             statusBar.insertBefore(b, statusBar.firstChild);
@@ -618,23 +620,22 @@ export function updateSideCard(prefix, team, slotNumber) {
         subBtn.id = `${prefix}-sub-btn`;
         subBtn.title = `Remplacer (${(_state.MAX_SUBSTITUTIONS ?? 3) - (_state.substitutionCount?.[team] ?? 0)} restant(s))`;
         subBtn.textContent = '🔄';
-        subBtn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:14px;padding:0;line-height:1;opacity:0.85;transition:opacity 0.15s;';
-        subBtn.onmouseenter = () => subBtn.style.opacity = '1';
-        subBtn.onmouseleave = () => subBtn.style.opacity = '0.85';
+        subBtn.className = 'cursor-pointer border-0 bg-transparent p-0 text-sm leading-none opacity-[0.85] transition-opacity hover:opacity-100';
+        subBtn.setAttribute('aria-label', 'Remplacer ce joueur');
 
         const panel = document.createElement('div');
         panel.id = `${prefix}-sub-panel`;
-        panel.style.cssText = 'display:none;position:absolute;top:32px;right:4px;z-index:80;background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 8px 20px rgba(0,0,0,0.15);min-width:180px;overflow:hidden;';
+        panel.className = 'sub-panel hidden absolute right-1 top-8 z-[80] min-w-[180px] overflow-hidden rounded-[10px] border border-slate-200 bg-white shadow-lg';
 
         const header = document.createElement('div');
-        header.style.cssText = 'padding:6px 10px;background:#0ea5e9;color:#fff;font-size:10px;font-weight:700;';
+        header.className = 'bg-sky-500 px-2.5 py-1.5 text-[10px] font-bold text-white';
         header.textContent = `🔄 Choisir remplaçant`;
         panel.appendChild(header);
 
         // Liste défilable : si beaucoup de remplaçants, on peut scroller
         // au lieu de voir la liste déborder hors de l'écran.
         const listEl = document.createElement('div');
-        listEl.style.cssText = 'max-height:min(220px,40vh);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;';
+        listEl.className = 'max-h-[min(220px,40vh)] overflow-y-auto overscroll-contain';
         panel.appendChild(listEl);
 
         subs.forEach(({ slot, info: subInfo }) => {
@@ -642,18 +643,17 @@ export function updateSideCard(prefix, team, slotNumber) {
             const stMax  = _state.staminaMax[subPid] ?? 100;
             const stCur  = _state.stamina[subPid]    ?? stMax;
             const pct    = stMax > 0 ? Math.round(stCur / stMax * 100) : 100;
-            const color  = pct >= 75 ? '#22c55e' : pct >= 50 ? '#f59e0b' : '#ef4444';
+            const color  = pct >= 75 ? 'text-green-500' : pct >= 50 ? 'text-amber-500' : 'text-red-500';
 
             const item = document.createElement('button');
-            item.style.cssText = 'width:100%;padding:6px 10px;text-align:left;font-size:11px;border:none;border-bottom:1px solid #f1f5f9;background:transparent;cursor:pointer;display:flex;justify-content:space-between;align-items:center;';
+            item.type = 'button';
+            item.className = 'flex w-full cursor-pointer items-center justify-between border-0 border-b border-slate-100 bg-transparent px-2.5 py-1.5 text-left text-[11px] hover:bg-sky-50';
             item.innerHTML = `
             <div>
-                <div style="font-weight:700;">${subInfo.lastname}</div>
-                <div style="font-size:9px;color:#94a3b8;">${subInfo.position ?? '—'}</div>
+                <div class="font-bold">${subInfo.lastname}</div>
+                <div class="text-[9px] text-slate-400">${subInfo.position ?? '—'}</div>
             </div>
-            <span style="color:${color};font-size:10px;font-weight:700;">${pct}%⚡</span>`;
-            item.onmouseenter = () => item.style.background = '#f0f9ff';
-            item.onmouseleave = () => item.style.background = 'transparent';
+            <span class="${color} text-[10px] font-bold">${pct}%⚡</span>`;
             item.onclick = () => {
                 if (_state._performSubstitution) {
                     const ok = _state._performSubstitution(team, slotNumber, slot);
@@ -667,7 +667,7 @@ export function updateSideCard(prefix, team, slotNumber) {
         // au lieu d'un listener `document` ajouté à chaque rafraîchissement de carte.
         subBtn.onclick = (e) => {
             e.stopPropagation();
-            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+            panel.classList.toggle('hidden');
         };
 
         // 🔄 dans la status-bar, panel ancré sur la card
@@ -774,31 +774,29 @@ const specialIcon = (baseAction) => SPECIAL_ICONS[baseAction] ?? "🔥";
 
 // Sérialise un special move dans un attribut data (guillemets simples : le
 // JSON est en double-quotes, seule l'apostrophe éventuelle doit être échappée).
+// Typographie des cartes d'action et de défense (classes Tailwind). Les noms
+// sémantiques (skill-power, def-cost…) restent : le JS s'en sert comme repères.
+const CARD = {
+    icon:       'text-lg leading-none',
+    title:      'text-[13px] font-extrabold tracking-[0.2px] text-slate-900',
+    sub:        'text-[11px] text-slate-900/70',
+    bottom:     'mt-1.5 flex flex-col items-start gap-0.5',
+    power:      'text-lg font-black tabular-nums text-slate-900',
+    cost:       'whitespace-nowrap text-[11px] font-bold text-slate-900/75 [&>span]:font-black [&>span]:text-slate-900/90',
+    spIcon:     'text-[15px] leading-none',
+    spTitle:    'line-clamp-2 text-[10px] font-extrabold leading-tight text-amber-800',
+    spFoot:     'flex flex-col gap-px',
+    spPower:    'text-[13px] font-black tabular-nums text-amber-800',
+    spCost:     'whitespace-nowrap text-[9px] font-bold text-amber-800/85 [&>span]:font-black',
+    cooldown:   'pointer-events-none absolute right-1 top-1 rounded-full bg-white/75 px-1 text-[8px] font-extrabold leading-tight text-amber-800/85',
+    cooldownMain: 'pointer-events-none absolute right-2 top-2 rounded-full bg-white/75 px-1 text-[9px] font-extrabold leading-tight text-amber-800/85',
+};
+
 const specialDataAttr = (move) => `data-special='${JSON.stringify(move).replace(/'/g, "&#39;")}'`;
 const specialCooldownBadge = (move, cls) => move?.cooldown != null ? `<span class="${cls}">⏳${move.cooldown}</span>` : '';
 
 function buildSkillCard(actionKey, cfg, special = null) {
-    const specialHTML = special ? `
-        <button class="skill-card-special" data-action="${special.action}" ${specialDataAttr(special.move)}>
-            ${specialCooldownBadge(special.move, 'skill-special-cooldown')}
-            <div class="skill-special-icon">${specialIcon(special.move.base_action)}</div>
-            <div class="skill-special-title">${special.move.short_label || special.move.label || 'Spécial'}</div>
-            <div class="skill-special-foot">
-                <div class="skill-special-power"></div>
-                <div class="skill-special-cost">⚡<span></span></div>
-            </div>
-        </button>` : '';
-    return `<div class="skill-card${special ? ' has-special' : ''}">
-        <button class="skill-card-main" data-action="${actionKey}">
-            <div class="skill-icon">${cfg.icon}</div>
-            <div class="skill-title">${cfg.title}</div>
-            <div class="skill-sub">${cfg.sub}</div>
-            <div class="skill-bottom">
-                <div class="skill-power"></div>
-                <div class="skill-cost">Énergie <span></span></div>
-            </div>
-        </button>${specialHTML}
-    </div>`;
+    return buildActionCard('skill', 'data-action', actionKey, cfg, special);
 }
 
 // Carte autonome pour un spécial dont l'action de base n'est pas proposée ce
@@ -807,37 +805,43 @@ function buildSkillCard(actionKey, cfg, special = null) {
 function buildStandaloneSpecialCard(actionKey, move, defaultCfg) {
     return `<div class="skill-card">
         <button class="skill-card-main" data-action="${actionKey}" ${specialDataAttr(move ?? {})}>
-            ${specialCooldownBadge(move, 'skill-special-cooldown skill-special-cooldown--main')}
-            <div class="skill-icon">${specialIcon(move?.base_action)}</div>
-            <div class="skill-title">${move?.label || defaultCfg.title}</div>
-            <div class="skill-sub">${move?.description || defaultCfg.sub}</div>
-            <div class="skill-bottom">
-                <div class="skill-power"></div>
-                <div class="skill-cost">Énergie <span></span></div>
+            ${specialCooldownBadge(move, CARD.cooldownMain)}
+            <div class="skill-icon ${CARD.icon}">${specialIcon(move?.base_action)}</div>
+            <div class="skill-title ${CARD.title}">${move?.label || defaultCfg.title}</div>
+            <div class="skill-sub ${CARD.sub}">${move?.description || defaultCfg.sub}</div>
+            <div class="skill-bottom ${CARD.bottom}">
+                <div class="skill-power ${CARD.power}"></div>
+                <div class="skill-cost ${CARD.cost}">Énergie <span></span></div>
             </div>
         </button>
     </div>`;
 }
 
 function buildDefCard(defKey, cfg, special = null) {
+    return buildActionCard('def', 'data-defense', defKey, cfg, special);
+}
+
+// Carte commune attaque (`skill`) / défense (`def`) : action principale, plus
+// un slot spécial accolé à droite quand le joueur a une technique de ce type.
+function buildActionCard(kind, dataAttr, key, cfg, special) {
     const specialHTML = special ? `
-        <button class="def-card-special" data-defense="${special.action}" ${specialDataAttr(special.move)}>
-            ${specialCooldownBadge(special.move, 'def-special-cooldown')}
-            <div class="def-special-icon">${specialIcon(special.move.base_action)}</div>
-            <div class="def-special-title">${special.move.short_label || special.move.label || 'Spécial'}</div>
-            <div class="def-special-foot">
-                <div class="def-special-power"></div>
-                <div class="def-special-cost">⚡<span></span></div>
+        <button class="${kind}-card-special" ${dataAttr}="${special.action}" ${specialDataAttr(special.move)}>
+            ${specialCooldownBadge(special.move, CARD.cooldown)}
+            <div class="${kind}-special-icon ${CARD.spIcon}">${specialIcon(special.move.base_action)}</div>
+            <div class="${kind}-special-title ${CARD.spTitle}">${special.move.short_label || special.move.label || 'Spécial'}</div>
+            <div class="${kind}-special-foot ${CARD.spFoot}">
+                <div class="${kind}-special-power ${CARD.spPower}"></div>
+                <div class="${kind}-special-cost ${CARD.spCost}">⚡<span></span></div>
             </div>
         </button>` : '';
-    return `<div class="def-card${special ? ' has-special' : ''}">
-        <button class="def-card-main" data-defense="${defKey}">
-            <div class="def-icon">${cfg.icon}</div>
-            <div class="def-title">${cfg.title}</div>
-            <div class="def-sub">${cfg.sub}</div>
-            <div class="def-bottom">
-                <div class="def-power"></div>
-                <div class="def-cost">Énergie <span></span></div>
+    return `<div class="${kind}-card${special ? ' has-special' : ''}">
+        <button class="${kind}-card-main" ${dataAttr}="${key}">
+            <div class="${kind}-icon ${CARD.icon}">${cfg.icon}</div>
+            <div class="${kind}-title ${CARD.title}">${cfg.title}</div>
+            <div class="${kind}-sub ${CARD.sub}">${cfg.sub}</div>
+            <div class="${kind}-bottom ${CARD.bottom}">
+                <div class="${kind}-power ${CARD.power}"></div>
+                <div class="${kind}-cost ${CARD.cost}">Énergie <span></span></div>
             </div>
         </button>${specialHTML}
     </div>`;

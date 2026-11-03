@@ -26,7 +26,3 @@ import H2 from '@/Components/H2.vue';
         </div>
     </AuthenticatedLayout>
 </template>
-
-<style scoped>
-/* Si vous avez des styles spécifiques pour ces boutons, ajoutez-les ici. */
-</style>

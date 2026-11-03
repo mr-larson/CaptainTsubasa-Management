@@ -32,8 +32,7 @@ const formatDate = (value) => {
 
         <div class="p-2 sm:p-4">
             <div class="flex flex-col md:flex-row">
-                <div class="hidden md:block basis-1/3 p-4 bg-contain bg-center bg-no-repeat"
-                     style="background-image: url('/images/Jun_Misugi.webp')"></div>
+                <div class="hidden md:block basis-1/3 p-4 bg-contain bg-center bg-no-repeat bg-[url('/images/Jun_Misugi.webp')]"></div>
 
                 <div class="basis-full md:basis-2/3 p-4 sm:p-6 border border-slate-200 rounded-2xl mx-0 md:mx-6 bg-white min-h-[500px] flex flex-col shadow-sm">
 

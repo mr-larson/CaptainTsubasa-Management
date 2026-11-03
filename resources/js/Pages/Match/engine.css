@@ -5,19 +5,10 @@
 #game-wrapper .hidden,
 #game-wrapper [hidden] { display: none !important; }
 
-#game-wrapper .visually-hidden {
-    border: 0; clip: rect(0,0,0,0); height: 1px; margin: -1px;
-    overflow: hidden; padding: 0; position: absolute; white-space: nowrap; width: 1px;
-}
-
 /* ==========================================================================
    LAYOUT SAFETY
    ========================================================================== */
-#main-row { min-height: 0; }
-#left-column { min-height: 0; }
 #field-wrapper { min-height: 0; }
-#log-card { min-height: 420px; }
-#log-history { min-height: 0; }
 
 /* ==========================================================================
    TERRAIN
@@ -361,13 +352,6 @@
 /* ==========================================================================
    ACTION BAR
    ========================================================================== */
-#bars-container { margin-top: 30px; display: flex; flex-direction: column; gap: 10px; }
-
-#action-bar {
-    display: block; width: 100%; margin: 0 auto; border-radius: 16px; padding: 12px;
-    background: rgba(255,255,255,0.85); box-shadow: 0 12px 22px rgba(0,0,0,0.18); border: 1px solid rgba(0,0,0,0.06);
-}
-
 #attack-strip, #defense-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; align-items: stretch; }
 #attack-strip:has(.skill-card:nth-child(5)) { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 #defense-strip:has(.def-card[data-defense="hands"]), #defense-strip:has(.def-card[data-defense="punch"]) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -403,14 +387,6 @@
 }
 .skill-card-main:active, .def-card-main:active { filter: brightness(0.97); }
 
-.skill-icon, .def-icon { font-size: 18px; line-height: 1; }
-.skill-title, .def-title { font-size: 13px; font-weight: 800; color: #0f172a; letter-spacing: 0.2px; }
-.skill-sub, .def-sub { font-size: 11px; color: rgba(15,23,42,0.70); }
-.skill-bottom, .def-bottom { margin-top: 6px; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
-.skill-power, .def-power { font-size: 18px; font-weight: 900; color: #0f172a; font-variant-numeric: tabular-nums; }
-.skill-cost, .def-cost { font-size: 11px; font-weight: 700; color: rgba(15,23,42,0.75); white-space: nowrap; }
-.skill-cost span, .def-cost span { font-weight: 900; color: rgba(15,23,42,0.90); }
-
 /* Slot spécial accolé à droite de la carte — fusionne action + spécial pour
    éviter une carte dédiée en plus. */
 .skill-card-special, .def-card-special {
@@ -422,25 +398,6 @@
 }
 .skill-card-special:hover, .def-card-special:hover { background: linear-gradient(180deg, rgba(217,119,6,0.22), rgba(255,255,255,0)); }
 .skill-card-special:active, .def-card-special:active { filter: brightness(0.96); }
-.skill-special-icon, .def-special-icon { font-size: 15px; line-height: 1; }
-.skill-special-title, .def-special-title {
-    font-size: 10px; font-weight: 800; color: #92400e; line-height: 1.15;
-    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-}
-.skill-special-foot, .def-special-foot { display: flex; flex-direction: column; gap: 1px; }
-.skill-special-power, .def-special-power { font-size: 13px; font-weight: 900; color: #92400e; font-variant-numeric: tabular-nums; }
-.skill-special-cost, .def-special-cost { font-size: 9px; font-weight: 700; color: rgba(146,64,14,0.85); white-space: nowrap; }
-.skill-special-cost span, .def-special-cost span { font-weight: 900; }
-
-/* Badge de recharge (cooldown) — coin haut-droit du slot spécial compact,
-   ou du bouton entier pour la carte spéciale autonome (--main). */
-.skill-special-cooldown, .def-special-cooldown {
-    position: absolute; top: 4px; right: 4px; font-size: 8px; font-weight: 800; line-height: 1.3;
-    color: rgba(146,64,14,0.85); background: rgba(255,255,255,0.75); border-radius: 999px;
-    padding: 1px 4px; pointer-events: none;
-}
-.skill-special-cooldown--main { top: 8px; right: 8px; font-size: 9px; }
-#info-text { font-size: 12px; color: rgba(15,23,42,0.75); }
 
 /* ==========================================================================
    TEAM BORDER
@@ -470,24 +427,9 @@
 @keyframes log-slide-in { from { opacity: 0; transform: translateX(-6px); } to { opacity: 1; transform: translateX(0); } }
 @keyframes log-pulse-icon { 0%,100% { transform: scale(1); } 50% { transform: scale(1.3); } }
 
-#history-list { display: flex; flex-direction: column; gap: 4px; padding: 2px 0; min-height: 1px; }
-
 .log-entry { display: flex; align-items: flex-start; gap: 8px; padding: 6px 8px; border-radius: 8px; font-size: 11px; line-height: 1.35; list-style: none; border-left: 3px solid transparent; background: rgba(248,250,252,0.7); animation: log-slide-in 0.22s ease-out both; transition: background 0.15s ease, transform 0.15s ease; }
 .log-entry:hover { background: rgba(255,255,255,0.95); transform: translateX(2px); }
 .log-entry:last-child { background: rgba(255,255,255,0.95); box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
-
-.log-left { display: flex; flex-direction: column; align-items: center; gap: 3px; flex-shrink: 0; }
-.log-turn-badge { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 18px; background: linear-gradient(135deg, #64748b, #475569); color: #fff; font-size: 9px; font-weight: 800; border-radius: 5px; letter-spacing: 0.3px; box-shadow: 0 1px 4px rgba(0,0,0,0.2); flex-shrink: 0; }
-.log-team-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
-.log-team-dot.log-team-internal { background: radial-gradient(circle, #60a5fa, #2563eb); box-shadow: 0 0 4px rgba(59,130,246,0.6); }
-.log-team-dot.log-team-external { background: radial-gradient(circle, #fb923c, #ea580c); box-shadow: 0 0 4px rgba(249,115,22,0.6); }
-
-.log-center { display: flex; align-items: flex-start; gap: 6px; flex: 1; min-width: 0; }
-.log-icon { font-size: 13px; line-height: 1; flex-shrink: 0; margin-top: 1px; }
-.log-text { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
-.log-line-1 { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px; font-weight: 600; color: #0f172a; }
-.log-line-2 { font-size: 10px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.log-dice { font-family: 'Monaco','Courier New',monospace; font-size: 9px; color: #475569; background: rgba(148,163,184,0.18); border-radius: 4px; padding: 1px 4px; white-space: nowrap; }
 
 .log-result-success { border-left-color: #22c55e; }
 .log-result-failed  { border-left-color: #ef4444; }
@@ -495,7 +437,6 @@
 .log-entry.log-result-success { background: linear-gradient(90deg, rgba(34,197,94,0.07) 0%, rgba(248,250,252,0.7) 60%); }
 .log-entry.log-result-failed  { background: linear-gradient(90deg, rgba(239,68,68,0.07) 0%, rgba(248,250,252,0.7) 60%); }
 .log-entry.log-gold { background: linear-gradient(90deg, rgba(217,119,6,0.13) 0%, rgba(255,255,255,0.85) 60%); border-left-color: #d97706; }
-.log-entry.log-gold .log-turn-badge { background: linear-gradient(135deg, #d97706, #b45309); }
 .log-entry.log-gold .log-icon { animation: log-pulse-icon 1.4s ease-in-out infinite; }
 
 .log-entry.log-amber  { border-left-color: #b45309; }
@@ -509,18 +450,6 @@
 .log-entry--clickable { cursor: pointer; }
 .log-entry--clickable:hover { background: rgba(59,130,246,0.08); }
 .log-entry--clickable:active { transform: translateX(2px) scale(0.995); }
-.log-info-icon {
-    flex-shrink: 0; align-self: center; width: 14px; height: 14px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center; font-size: 9px; font-style: normal;
-    color: #94a3b8; background: rgba(148,163,184,0.15); transition: background 0.15s ease, color 0.15s ease;
-}
-.log-entry--clickable:hover .log-info-icon { background: rgba(59,130,246,0.18); color: #2563eb; }
-
-.log-details-wrapper { display: flex; flex-direction: column; gap: 4px; margin-top: 2px; }
-.log-detail-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 6px; background: rgba(59,130,246,0.12); border-radius: 4px; border-left: 2px solid #3b82f6; font-size: 10px; }
-.log-detail-text { font-size: 10px; color: #64748b; }
-
-.duel-tooltip-container { background: linear-gradient(to bottom, rgba(15,23,42,0.98) 0%, rgba(30,41,59,0.98) 100%); color: #e2e8f0; border-radius: 10px; padding: 12px; border: 1px solid rgba(71,85,105,0.4); box-shadow: 0 20px 40px rgba(0,0,0,0.5); font-size: 11px; min-width: 280px; }
 
 /* ==========================================================================
    EVENT NOTIFICATIONS
@@ -574,26 +503,7 @@
 .event-overlay--injury  { background: rgba(15, 23, 42, 0.80); }
 .event-overlay--freekick { background: linear-gradient(135deg, rgba(2,132,199,0.88), rgba(14,165,233,0.85)); }
 
-.event-overlay__icon {
-    font-size: 52px;
-    line-height: 1;
-    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.4));
-    animation: overlay-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-}
-.event-overlay__text {
-    font-size: 16px;
-    font-weight: 900;
-    color: #fff;
-    text-align: center;
-    letter-spacing: 0.03em;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.5);
-}
-.event-overlay__sub {
-    font-size: 11px;
-    font-weight: 600;
-    color: rgba(255,255,255,0.75);
-    text-align: center;
-}
+.event-overlay__icon { animation: overlay-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
 
 /* Flash side-card */
 @keyframes flash-yellow {
@@ -617,17 +527,9 @@
 
 /* ==========================================================================
    MOBILE / TABLETTE (< lg) : une seule colonne
-   La barre d'actions reste collée en bas de l'écran (plus de défilement entre
-   le terrain et les boutons à chaque tour) et le journal est raccourci.
+   Journal raccourci (la barre d'actions collée en bas est gérée en Tailwind
+   dans Engine.vue).
    ========================================================================== */
 @media (max-width: 1023px) {
-    #bars-container {
-        position: sticky;
-        bottom: 0;
-        z-index: 30;
-        margin-top: 16px;
-        padding-bottom: env(safe-area-inset-bottom);
-    }
-    #action-bar { max-height: 45vh; overflow-y: auto; }
     #log-card { min-height: 0; max-height: 220px; }
 }

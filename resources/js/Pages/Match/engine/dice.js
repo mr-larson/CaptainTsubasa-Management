@@ -476,18 +476,18 @@ function formatBreakdownHTML(b) {
     const winnerLabel = winner === "attack"  ? "✓ Attaque gagne"
         : winner === "defense" ? "✗ Défense gagne"
             : "= Égalité";
-    const winnerColor = winner === "attack"  ? "#22c55e"
-        : winner === "defense" ? "#ef4444"
-            : "#94a3b8";
+    const winnerClass = winner === "attack"  ? "text-green-500"
+        : winner === "defense" ? "text-red-500"
+            : "text-slate-400";
 
     const resultLine = b.result?.critWinner
-        ? `<span style="color:${winnerColor};font-weight:700">CRITIQUE — ${winnerLabel}</span>`
-        : `<span style="color:${winnerColor};font-weight:700">${winnerLabel}</span>`
-        + ` <span style="color:#94a3b8">(diff: ${Number(b.result?.diff ?? 0).toFixed(1)})</span>`;
+        ? `<span class="${winnerClass} font-bold">CRITIQUE — ${winnerLabel}</span>`
+        : `<span class="${winnerClass} font-bold">${winnerLabel}</span>`
+        + ` <span class="text-slate-400">(diff: ${Number(b.result?.diff ?? 0).toFixed(1)})</span>`;
 
     // Badge captain reroll
     const rerollBadge = b.captainReroll
-        ? `<div style="background:#f59e0b;color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;margin-bottom:6px;text-align:center;letter-spacing:0.05em;">👑 CAPTAIN REROLL — 2d20 Avantage</div>`
+        ? `<div class="mb-1.5 rounded bg-amber-500 px-2 py-0.5 text-center text-[9px] font-bold tracking-wider text-white">👑 CAPTAIN REROLL — 2d20 Avantage</div>`
         : "";
 
     // Contexte joueurs
@@ -496,13 +496,13 @@ function formatBreakdownHTML(b) {
         const a   = b.meta.attacker;
         const d   = b.meta.defender;
         const fmt = (x) => [
-            x?.number != null ? `<span style="color:#94a3b8">#${x.number}</span>` : null,
+            x?.number != null ? `<span class="text-slate-400">#${x.number}</span>` : null,
             x?.name ? `<b>${x.name}</b>` : null,
-            x?.actionLabel ? `<span style="color:#64748b"> — ${x.actionLabel}</span>` : null,
+            x?.actionLabel ? `<span class="text-slate-500"> — ${x.actionLabel}</span>` : null,
         ].filter(Boolean).join(" ");
         contextHTML = section("👤 Joueurs", [
             row("Attaquant", fmt(a)),
-            row("Défenseur", d ? fmt(d) : `<span style="color:#94a3b8">—</span>`),
+            row("Défenseur", d ? fmt(d) : `<span class="text-slate-400">—</span>`),
         ].join(""));
     }
 
@@ -516,20 +516,20 @@ function formatBreakdownHTML(b) {
         ${rerollBadge}
         ${contextHTML}
         ${section("🎲 Jets de dés", [
-        row("Attaque", `<b style="font-size:12px">${b.rolls?.aTag ?? "?"}</b> → +${Number(b.rolls?.aBonus ?? 0).toFixed(1)}`),
-        row("Défense", `<b style="font-size:12px">${b.rolls?.dTag ?? "?"}</b> → +${Number(b.rolls?.dBonus ?? 0).toFixed(1)}`),
+        row("Attaque", `<b class="text-xs">${b.rolls?.aTag ?? "?"}</b> → +${Number(b.rolls?.aBonus ?? 0).toFixed(1)}`),
+        row("Défense", `<b class="text-xs">${b.rolls?.dTag ?? "?"}</b> → +${Number(b.rolls?.dBonus ?? 0).toFixed(1)}`),
     ].join(""))}
         ${section("⚔️ Attaque", [
         row("Base", `${aBase.toFixed(1)}`),
         row("× Stamina", `${aStam.toFixed(2)} = <b>${(aBase * aStam).toFixed(1)}</b>`),
-        ...(b.attack?.additions || []).map(x => row(x.label, `<span style="color:#0ea5e9">${x.value}</span>`)),
-        row("Total", `<b style="font-size:12px;color:#ffffff">${Number(b.attack?.total ?? 0).toFixed(1)}</b>`),
+        ...(b.attack?.additions || []).map(x => row(x.label, `<span class="text-sky-500">${x.value}</span>`)),
+        row("Total", `<b class="text-xs text-white">${Number(b.attack?.total ?? 0).toFixed(1)}</b>`),
     ].join(""))}
         ${section("🛡️ Défense", [
         row("Base", `${dBase.toFixed(1)}`),
         row("× Stamina", `${dStam.toFixed(2)} = <b>${(dBase * dStam).toFixed(1)}</b>`),
-        ...(b.defense?.additions || []).map(x => row(x.label, `<span style="color:#8b5cf6">${x.value}</span>`)),
-        row("Total", `<b style="font-size:12px;color:#ffffff">${Number(b.defense?.total ?? 0).toFixed(1)}</b>`),
+        ...(b.defense?.additions || []).map(x => row(x.label, `<span class="text-violet-500">${x.value}</span>`)),
+        row("Total", `<b class="text-xs text-white">${Number(b.defense?.total ?? 0).toFixed(1)}</b>`),
     ].join(""))}
         ${section("✅ Résultat", [
         row("Règle RPS", b.result?.bonusRuleLabel || "—"),
@@ -560,11 +560,11 @@ export function showDuelDice(attackScore, defenseScore, aRoll, dRoll, breakdown)
 
         // Chip compact — juste les scores
         const winnerLabel = winner === 'attack' ? '✓ Attaque' : winner === 'defense' ? '✗ Défense' : '= Égalité';
-        const winnerColor = winner === 'attack' ? '#22c55e' : winner === 'defense' ? '#ef4444' : '#94a3b8';
+        const winnerClass = winner === 'attack' ? 'text-green-500' : winner === 'defense' ? 'text-red-500' : 'text-slate-400';
 
         duelDiceEl.textContent = `${aTag} vs ${dTag} — ${winnerLabel}`;
-        duelDiceEl.style.color = winnerColor;
-        duelDiceEl.style.fontWeight = '700';
+        duelDiceEl.classList.remove('text-green-500', 'text-red-500', 'text-slate-400');
+        duelDiceEl.classList.add(winnerClass, 'font-bold');
         duelDiceEl.classList.add("visible", "pop");
         setTimeout(() => duelDiceEl.classList.remove("pop"), 500);
 

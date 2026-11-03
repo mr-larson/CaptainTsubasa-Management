@@ -18,7 +18,3 @@ export default {
   }
 };
 </script>
-
-<style scoped>
-/* Si vous voulez ajouter des styles spécifiques pour ce composant */
-</style>
