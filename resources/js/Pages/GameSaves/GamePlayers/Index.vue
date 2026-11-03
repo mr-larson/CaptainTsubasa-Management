@@ -84,7 +84,7 @@
                 <!-- PANNEAU DROIT -->
                 <div class="flex-1 flex flex-col gap-4 min-w-0">
 
-            <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 md:p-8">
+            <div class="bg-slate-50 border border-slate-200 rounded-2xl shadow-sm p-6 md:p-8">
                 <!-- Onglets de la fiche + infos du joueur -->
                 <div class="flex items-end justify-between flex-wrap gap-3 mb-6 border-b border-slate-200">
                     <nav class="flex gap-1 -mb-px" role="tablist" aria-label="Édition du joueur">
@@ -115,11 +115,11 @@
                 </div>
 
                 <!-- FICHE JOUEUR -->
-                <FormContainer v-show="activePanel === 'player'" :custom-class="panelClass">
+                <FormContainer v-show="activePanel === 'player'">
                     <form @submit.prevent="submit">
 
                         <!-- Aperçu visuel des stats -->
-                        <div v-if="form.id" class="mb-4 border border-slate-200 rounded-xl bg-white p-3">
+                        <div v-if="form.id" class="mb-4 border border-slate-200 rounded-xl bg-slate-50 p-3">
                             <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Aperçu des statistiques</h4>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1.5">
                                 <div v-for="stat in statBars" :key="stat.key" class="flex items-center gap-2">
@@ -159,7 +159,7 @@
                 </FormContainer>
 
                 <!-- COUPS SPÉCIAUX (enregistrés avec la fiche du joueur) -->
-                <FormContainer v-show="activePanel === 'moves'" :custom-class="panelClass">
+                <FormContainer v-show="activePanel === 'moves'">
                     <form @submit.prevent="submit">
                         <SpecialMovesEditor v-model="form.special_moves" :errors="form.errors" />
                         <ButtonGroup>
@@ -171,7 +171,7 @@
                 </FormContainer>
 
                 <!-- CONTRAT -->
-                <FormContainer v-show="activePanel === 'contract'" :custom-class="panelClass">
+                <FormContainer v-show="activePanel === 'contract'">
                     <!-- Header de la carte -->
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-lg font-semibold text-slate-800">
@@ -322,8 +322,6 @@ const contractProcessing = ref(false)
 
 // Onglets du panneau d'édition : fiche, coups spéciaux, contrat.
 const activePanel = ref('player')
-// Fond gris clair, comme la liste des joueurs à gauche.
-const panelClass = 'p-4 sm:p-6 border border-slate-200 rounded-xl md:mx-6 bg-slate-50'
 const panelTabs = computed(() => [
     { key: 'player',   label: 'Fiche joueur' },
     { key: 'moves',    label: 'Coups spéciaux', badge: form.special_moves?.length || null },
