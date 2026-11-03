@@ -85,9 +85,25 @@
                 <div class="flex-1 flex flex-col gap-4 min-w-0">
 
             <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 md:p-8">
-                <div class="flex items-center justify-between mb-6 flex-wrap gap-2">
-                    <div class="flex items-center gap-3">
-                        <h2 class="text-lg font-semibold text-slate-800">Joueur</h2>
+                <!-- Onglets de la fiche + infos du joueur -->
+                <div class="flex items-end justify-between flex-wrap gap-3 mb-6 border-b border-slate-200">
+                    <nav class="flex gap-1 -mb-px" role="tablist" aria-label="Édition du joueur">
+                        <button v-for="t in panelTabs" :key="t.key" type="button" role="tab"
+                                :aria-selected="activePanel === t.key"
+                                @click="activePanel = t.key"
+                                class="px-3 py-2 text-sm font-semibold border-b-2 transition-colors"
+                                :class="activePanel === t.key
+                                    ? 'border-teal-500 text-teal-600'
+                                    : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'">
+                            {{ t.label }}
+                            <span v-if="t.badge" class="ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                                  :class="activePanel === t.key ? 'bg-teal-50 text-teal-600' : 'bg-slate-100 text-slate-500'">
+                                {{ t.badge }}
+                            </span>
+                        </button>
+                    </nav>
+
+                    <div class="flex items-center gap-2 pb-2">
                         <span v-if="form.position" :class="positionBadgeClass(form.position)"
                               class="text-[10px] font-bold px-2 py-0.5 rounded-full">
                             {{ form.position }}
@@ -96,18 +112,10 @@
                             OVR {{ overall }}
                         </span>
                     </div>
-
-                    <!-- + Création joueur -->
-                    <Link
-                        :href="route('game-saves.players.create', { gameSave: gameSave.id })"
-                        class="flex items-center justify-center h-9 px-3 rounded-full bg-teal-500 text-white text-sm font-medium hover:bg-teal-600 shadow-md"
-                        title="Créer un joueur"
-                    >
-                        + Ajouter
-                    </Link>
-
                 </div>
-                <FormContainer>
+
+                <!-- FICHE JOUEUR -->
+                <FormContainer v-show="activePanel === 'player'">
                     <form @submit.prevent="submit">
 
                         <!-- Aperçu visuel des stats -->
@@ -149,16 +157,21 @@
                         </ButtonGroup>
                     </form>
                 </FormContainer>
-            </div>
-            <!-- CARTES Techniques spéciales + Contrat côte à côte -->
-            <div class="mt-6 grid grid-cols-1 md:grid-cols-2">
-                <!-- CARTE TECHNIQUES SPÉCIALES -->
-                <FormContainer>
-                    <SpecialMovesEditor v-model="form.special_moves" :errors="form.errors" />
+
+                <!-- COUPS SPÉCIAUX (enregistrés avec la fiche du joueur) -->
+                <FormContainer v-show="activePanel === 'moves'">
+                    <form @submit.prevent="submit">
+                        <SpecialMovesEditor v-model="form.special_moves" :errors="form.errors" />
+                        <ButtonGroup>
+                            <ButtonPrimary :disabled="form.processing || !form.id">
+                                Mettre à jour
+                            </ButtonPrimary>
+                        </ButtonGroup>
+                    </form>
                 </FormContainer>
 
-                <!-- CARTE CONTRAT -->
-                <FormContainer>
+                <!-- CONTRAT -->
+                <FormContainer v-show="activePanel === 'contract'">
                     <!-- Header de la carte -->
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-lg font-semibold text-slate-800">
@@ -270,7 +283,7 @@
 
                     <!-- Si aucun contrat encore défini -->
                     <div v-else class="text-sm text-slate-500 italic">
-                        Aucun contrat défini pour ce joueur. Cliquez sur “+ Créer” pour ajouter un contrat.
+                        Aucun contrat défini pour ce joueur. Cliquez sur « + Ajouter » pour en créer un.
                     </div>
                 </FormContainer>
             </div>
@@ -306,6 +319,14 @@ const searchQuery = ref('')
 // Photo enregistrée : affichée seulement, jamais renvoyée au serveur.
 const photoPath = ref(null)
 const contractProcessing = ref(false)
+
+// Onglets du panneau d'édition : fiche, coups spéciaux, contrat.
+const activePanel = ref('player')
+const panelTabs = computed(() => [
+    { key: 'player',   label: 'Fiche joueur' },
+    { key: 'moves',    label: 'Coups spéciaux', badge: form.special_moves?.length || null },
+    { key: 'contract', label: 'Contrat',        badge: form.contract?.id ? '✓' : null },
+])
 
 const form = useForm({
     id: null,
