@@ -49,6 +49,7 @@ const props = defineProps({
     playerPromises:       { type: Object,  default: () => ({}) },
     playerDeclarations:   { type: Object,  default: () => ({}) },
     currentWeek:          { type: Number,  default: 1 },
+    currentSeason:        { type: Number,  default: 1 },
 });
 
 const emit = defineEmits([
@@ -127,8 +128,10 @@ const lastDeclaration = computed(() =>
     (props.playerDeclarations?.[props.selectedMyPlayer?.id] ?? [])[0] ?? null
 );
 
+// Même règle que DeclarationService : le délai ne compte que dans la saison en cours.
 const declarationOnCooldown = computed(() =>
     lastDeclaration.value
+    && Number(lastDeclaration.value.season) === Number(props.currentSeason)
     && lastDeclaration.value.week > (props.currentWeek - DECLARATION_COOLDOWN_WEEKS)
 );
 

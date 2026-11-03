@@ -16,6 +16,17 @@ class StoreTrainingRequest extends FormRequest
             && (bool) $this->user()?->can('update', $gameSave);
     }
 
+    /** Quota hebdo de la save (réglable 1-10 dans Gestion), pas seulement la config globale. */
+    private function maxPerWeek(): int
+    {
+        $gameSave = $this->route('gameSave');
+        $default  = (int) config('training.max_trainings_per_week', 3);
+
+        return $gameSave instanceof GameSave
+            ? (int) $gameSave->getConfig('training_max_per_week', $default)
+            : $default;
+    }
+
     public function rules(): array
     {
         $allowedStats = config('training.allowed_stats', []);
@@ -25,7 +36,7 @@ class StoreTrainingRequest extends FormRequest
             'week'   => ['required', 'integer', 'min:1'],
 
             // trainings : array de 1 à max_trainings_per_week
-            'trainings'              => ['required', 'array', 'min:1', 'max:' . config('training.max_trainings_per_week', 3)],
+            'trainings'              => ['required', 'array', 'min:1', 'max:' . $this->maxPerWeek()],
             'trainings.*.player_id'  => ['required', 'integer'],
             'trainings.*.stat'       => ['required', 'string', Rule::in($allowedStats)],
         ];
@@ -34,7 +45,7 @@ class StoreTrainingRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'trainings.max' => 'Tu ne peux pas faire plus de ' . config('training.max_trainings_per_week') . ' entraînements par semaine.',
+            'trainings.max' => 'Tu ne peux pas faire plus de ' . $this->maxPerWeek() . ' entraînements par semaine.',
         ];
     }
 }

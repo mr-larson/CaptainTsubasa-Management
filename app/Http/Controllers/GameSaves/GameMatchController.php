@@ -54,9 +54,14 @@ class GameMatchController extends Controller
                 ->where('base_team_id', $gameSave->team_id)
                 ->firstOrFail();
 
+        // Seuls les contrats actifs cette semaine : ni contrat expiré, ni
+        // pré-contrat futur sur la feuille de match (comme simulateWeek et play).
+        $week = (int) ($gameSave->week ?? 1);
+        $activeContracts = fn ($q) => $q->activeAt($week)->with('gamePlayer.basePlayer');
+
         $match = GameMatch::with([
-            'homeTeam.contracts.gamePlayer.basePlayer',
-            'awayTeam.contracts.gamePlayer.basePlayer',
+            'homeTeam.contracts' => $activeContracts,
+            'awayTeam.contracts' => $activeContracts,
         ])
             ->where('game_save_id', $gameSave->id)
             ->where('status', 'scheduled')
@@ -205,6 +210,11 @@ class GameMatchController extends Controller
                 if (! $validShootout) {
                     unset($stats['shootout']);
                 }
+            }
+
+            // Instantané des effectifs : l'historique reste juste après les transferts.
+            if (is_array($stats)) {
+                $stats['lineups'] = app(\App\Services\MatchLineupSnapshot::class)->build($match);
             }
 
             $match->home_score  = $homeScore;

@@ -142,6 +142,8 @@ class MatchSimulator
             $maxTurns
         );
 
+        $matchStats['lineups'] = app(MatchLineupSnapshot::class)->build($m);
+
         $m->home_score  = $homeScore;
         $m->away_score  = $awayScore;
         $m->status      = 'played';

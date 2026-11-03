@@ -36,6 +36,10 @@ const originLabels = {
 const config = reactive({ ...props.gameConfig });
 
 watch(() => props.gameConfig, (v) => Object.assign(config, v), { deep: true });
+// Gain max jamais inférieur au gain min (le serveur le refuse aussi).
+watch(() => config.training_gain_min, (min) => {
+    if (config.training_gain_max < min) config.training_gain_max = Math.max(1, min);
+});
 
 const saving = ref(false);
 const saved = ref(false);
@@ -317,7 +321,7 @@ function resetDefaults() {
                             <label class="text-xs text-slate-600">Gain max</label>
                             <div class="flex items-center gap-2">
                                 <input type="range" v-model.number="config.training_gain_max"
-                                       min="1" max="20" step="1"
+                                       :min="Math.max(1, config.training_gain_min)" max="20" step="1"
                                        class="flex-1 h-1.5 accent-teal-500" />
                                 <span class="text-xs font-bold text-slate-800 w-4 text-right">{{ config.training_gain_max }}</span>
                             </div>

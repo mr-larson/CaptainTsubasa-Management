@@ -59,6 +59,10 @@ class PlayerController extends Controller
     {
         $data = $request->validated();
 
+        // En multipart, un tableau vide n'est pas envoyé : postes secondaires
+        // absents = liste vidée (le formulaire envoie toujours ce champ).
+        $data['secondary_positions'] = $data['secondary_positions'] ?? [];
+
         // Nouvelle photo : l'ancienne est conservée, car les saves en copient le
         // chemin (game_players.photo_path) ; l'effacer casserait leur affichage.
         if ($request->hasFile('photo')) {

@@ -173,8 +173,11 @@ const filteredPlayers = computed(() => {
         if (sortBy.value === 'name') {
             return dir * (a.lastname ?? '').localeCompare(b.lastname ?? '');
         }
-        const va = sortBy.value === 'overall' ? overallOf(a) : Number(a[sortBy.value] ?? 0);
-        const vb = sortBy.value === 'overall' ? overallOf(b) : Number(b[sortBy.value] ?? 0);
+        const valueOf = (p) => sortBy.value === 'overall' ? overallOf(p)
+            : sortBy.value === 'cost' ? weeklyCost(p)
+            : Number(p[sortBy.value] ?? 0);
+        const va = valueOf(a);
+        const vb = valueOf(b);
         return dir * (va - vb);
     });
 
@@ -300,8 +303,13 @@ function compareStatValue(player, key) {
     return Number(player?.[key] ?? 0);
 }
 
+// Le serveur facture le coût majoré de la polyvalence (adjusted_cost) :
+// prix affiché, tri et « abordable » doivent suivre la même base.
+const weeklyCost = (player) => player?.adjusted_cost ?? player?.cost ?? 0;
+const draftCost  = (player) => Math.floor(weeklyCost(player) * seasonLength.value * 0.5);
+
 function canAfford(player) {
-    return Math.floor((player.cost ?? 0) * seasonLength.value * 0.5) <= myBudget.value;
+    return draftCost(player) <= myBudget.value;
 }
 
 function teamLogoUrl(team) {
@@ -475,7 +483,7 @@ async function pickPlayer(player) {
         }
     } catch (err) {
         console.error('Pick error:', err);
-        alert('Impossible de sélectionner ce joueur. Vérifie ton budget.');
+        alert(err.response?.data?.error ?? 'Impossible de sélectionner ce joueur. Vérifie ton budget.');
     }
 
     isProcessing.value = false;
@@ -863,8 +871,8 @@ onMounted(() => {
 
                                             <!-- Coût -->
                                             <td class="py-1.5 px-2 text-right">
-                                                <span class="font-semibold text-amber-600">{{ Math.floor((player.cost ?? 0) * seasonLength * 0.5) }} €</span>
-                                                <span class="text-[9px] text-slate-400 ml-1">{{ player.cost ?? 0 }} €/sem</span>
+                                                <span class="font-semibold text-amber-600">{{ draftCost(player) }} €</span>
+                                                <span class="text-[9px] text-slate-400 ml-1">{{ weeklyCost(player) }} €/sem</span>
                                             </td>
 
                                             <!-- Bouton -->
@@ -924,7 +932,7 @@ onMounted(() => {
                     <!-- Identité -->
                     <PlayerIdentityCard :player="inspectedPlayer"
                                         :showCaptainBadge="false"
-                                        :subtitle="`${inspectedPlayer.position} • ${Math.floor((inspectedPlayer.cost ?? 0) * seasonLength * 0.5)} € (${inspectedPlayer.cost ?? 0} €/sem)`" />
+                                        :subtitle="`${inspectedPlayer.position} • ${draftCost(inspectedPlayer)} € (${weeklyCost(inspectedPlayer)} €/sem)`" />
 
                     <!-- Radar + Barres -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">

@@ -175,6 +175,7 @@
                                 <p v-if="form.errors.secondary_positions" class="text-sm text-red-600 mt-1">
                                     {{ form.errors.secondary_positions }}
                                 </p>
+                                <FormErrorList :errors="form.errors" prefix="secondary_positions." />
                             </div>
 
                             <div class="sm:col-span-2">
@@ -241,6 +242,7 @@
                             <div v-for="stat in statInputs" :key="stat.key">
                                 <label class="block text-sm font-semibold text-slate-500 mb-1">{{ stat.label }}</label>
                                 <InputText type="number" v-model="form[stat.key]" class="mt-1 w-full" />
+                                <p v-if="form.errors[stat.key]" class="text-xs text-red-600 mt-1">{{ form.errors[stat.key] }}</p>
                             </div>
                         </div>
 
@@ -291,6 +293,7 @@
                             :key="index"
                             class="border border-slate-200 bg-white rounded-xl shadow-sm px-4 py-3"
                         >
+                            <FormErrorList :errors="form.errors" :prefix="`special_moves.${index}.`" />
                             <!-- Header de la technique -->
                             <div class="flex items-center justify-between mb-3">
                                 <h3 class="text-sm font-semibold text-slate-800">
@@ -538,6 +541,7 @@ import ButtonPrimary from '@/Components/ButtonPrimary.vue'
 import ButtonDanger from '@/Components/ButtonDanger.vue'
 import InputSelect from "@/Components/InputSelect.vue";
 import SecondaryPositionsPicker from '@/Components/SecondaryPositionsPicker.vue'
+import FormErrorList from '@/Components/FormErrorList.vue'
 
 const props = defineProps({
     gameSave: Object,
@@ -671,19 +675,23 @@ const revokePreview = () => {
 
 onBeforeUnmount(() => revokePreview())
 
+// Copie profonde : le formulaire ne doit pas modifier les props (sinon une
+// saisie non enregistrée réapparaît comme sauvegardée en revenant sur le joueur).
+const clone = (value) => (value == null ? value : JSON.parse(JSON.stringify(value)))
+
 // SELECT PLAYER
 function selectPlayer(player) {
     revokePreview()
-    form.contract = player.contracts?.[0] ?? null
+    form.contract = clone(player.contracts?.[0] ?? null)
     form.selectedPlayerId = player.id
     form.id = player.id
     form.firstname = player.firstname
     form.lastname = player.lastname
     form.position = player.position
-    form.secondary_positions = player.secondary_positions ?? []
+    form.secondary_positions = clone(player.secondary_positions ?? [])
     form.cost = player.cost
     form.description = player.description ?? ''
-    form.special_moves = player.special_moves ?? []
+    form.special_moves = clone(player.special_moves ?? [])
     form.speed = player.speed ?? 0
     form.attack = player.attack ?? 0
     form.defense = player.defense ?? 0
@@ -767,6 +775,11 @@ function updateContract() {
     // global ; on débloque les boutons dans tous les cas.
     const options = {
         preserveScroll: true,
+        // Recharger le contrat enregistré (id créé, valeurs serveur) dans la copie locale.
+        onSuccess: () => {
+            const fresh = props.players.find(p => p.id === form.id)
+            if (fresh) form.contract = clone(fresh.contracts?.[0] ?? null)
+        },
         onFinish: () => { contractProcessing.value = false },
     }
 

@@ -474,7 +474,31 @@ onMounted(() => {
     });
 });
 
+// ── Quitter un match commencé ────────────────────────────────
+// Sans garde, « Retour » laissait le match programmé : on pouvait le rejouer
+// jusqu'à la victoire. Toute navigation Inertia (Retour, menu…) en cours de
+// match demande confirmation puis valide le score du moment ; recharger ou
+// fermer l'onglet déclenche l'avertissement du navigateur.
+const removeLeaveGuard = router.on('before', (event) => {
+    if (!cleanup?.isInProgress?.()) return;
+    if (event.detail.visit.method !== 'get') return; // l'envoi du résultat lui-même
+
+    if (confirm(`Quitter le match ? Le score actuel (${cleanup.scoreLabel()}) sera validé comme résultat final.`)) {
+        cleanup.finishNow();
+    }
+    return false;
+});
+
+function warnBeforeUnload(event) {
+    if (!cleanup?.isInProgress?.()) return;
+    event.preventDefault();
+    event.returnValue = '';
+}
+window.addEventListener('beforeunload', warnBeforeUnload);
+
 onBeforeUnmount(() => {
+    removeLeaveGuard();
+    window.removeEventListener('beforeunload', warnBeforeUnload);
     if (typeof cleanup === 'function') cleanup();
 });
 // Calcule les positions CSS (left%, top%) de tous les joueurs

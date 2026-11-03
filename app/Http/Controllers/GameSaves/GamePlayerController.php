@@ -134,6 +134,11 @@ class GamePlayerController extends Controller
             $request->safe()->except(['photo', 'remove_photo'])
         );
 
+        // En multipart, un tableau vide n'est pas envoyé : les formulaires
+        // envoient toujours ces champs, leur absence = liste vidée.
+        $player->secondary_positions = $data['secondary_positions'] ?? [];
+        $player->special_moves       = $data['special_moves'] ?? [];
+
         $player->save();
 
         return back()->with('success', 'Joueur mis à jour.');

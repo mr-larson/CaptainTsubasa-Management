@@ -23,7 +23,50 @@ class LineupController extends Controller
 
         $contract->is_starter = !$contract->is_starter;
         $contract->save();
+
+        $this->syncLineupSlot($contract->gameSave, $contract);
+
         return back()->with('success', 'Changement effectué');
+    }
+
+    /**
+     * Garde state.lineup cohérent avec is_starter : un joueur passé remplaçant
+     * libère son slot (sinon il s'affiche à la fois sur le terrain et sur le
+     * banc) ; un joueur titularisé prend le premier slot libre.
+     */
+    private function syncLineupSlot(GameSave $gameSave, GameContract $contract): void
+    {
+        $state  = $gameSave->state ?? [];
+        $teamId = $contract->game_team_id;
+        $slots  = $state['lineup'][$teamId]['slots'] ?? null;
+        if (!is_array($slots)) {
+            return; // pas de compo enregistrée : l'ordre par défaut s'applique
+        }
+
+        $playerId = (int) $contract->game_player_id;
+        $placed   = false;
+        foreach ($slots as $slot => $pid) {
+            if ((int) $pid === $playerId) {
+                if ($contract->is_starter) {
+                    $placed = true;
+                } else {
+                    $slots[$slot] = null;
+                }
+            }
+        }
+
+        if ($contract->is_starter && !$placed) {
+            for ($slot = 1; $slot <= 11; $slot++) {
+                if (empty($slots[$slot] ?? null)) {
+                    $slots[$slot] = $playerId;
+                    break;
+                }
+            }
+        }
+
+        $state['lineup'][$teamId]['slots'] = $slots;
+        $gameSave->state = $state;
+        $gameSave->save();
     }
 
     /**

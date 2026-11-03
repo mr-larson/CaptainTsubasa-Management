@@ -67,11 +67,23 @@ const replaySquad = (teamId) => {
     return { formation: team.formation ?? null, players };
 };
 
+// Instantané des effectifs au moment du match (match_stats.lineups) : un joueur
+// parti depuis reste dans l'historique, une recrue n'y apparaît pas. Les matchs
+// joués avant l'instantané retombent sur l'effectif actuel.
+const lineupSnapshot = (side) => props.selectedCalendarMatchStats?.lineups?.[side] ?? null;
+
+const matchRoster = (side) => {
+    const snap = lineupSnapshot(side);
+    if (snap) return snap.players ?? [];
+    const teamId = side === 'home' ? props.selectedCalendarMatch?.home_team_id : props.selectedCalendarMatch?.away_team_id;
+    return teamId === props.calendarTeam?.id ? props.calendarTeamRoster : props.calendarOpponentRoster;
+};
+
 const replayHomeSquad = computed(() =>
-    props.selectedCalendarMatch ? replaySquad(props.selectedCalendarMatch.home_team_id) : null
+    props.selectedCalendarMatch ? (lineupSnapshot('home') ?? replaySquad(props.selectedCalendarMatch.home_team_id)) : null
 );
 const replayAwaySquad = computed(() =>
-    props.selectedCalendarMatch ? replaySquad(props.selectedCalendarMatch.away_team_id) : null
+    props.selectedCalendarMatch ? (lineupSnapshot('away') ?? replaySquad(props.selectedCalendarMatch.away_team_id)) : null
 );
 
 // ── Déroulé du match enrichi (logs structurés) ───────────────
@@ -254,15 +266,11 @@ const replayEvents = computed(() => {
     const events  = [];
 
     for (const [pid, pStats] of Object.entries(players)) {
-        const allRosters = [...props.calendarTeamRoster, ...props.calendarOpponentRoster];
-        const player = allRosters.find(p => String(p.id) === String(pid));
+        const homeRoster = matchRoster('home');
+        const player = [...homeRoster, ...matchRoster('away')].find(p => String(p.id) === String(pid));
         if (!player) continue;
 
-        const isHome = props.selectedCalendarMatch.home_team_id ===
-            props.calendarTeams.find(t => t.contracts?.some(c =>
-                (c.game_player ?? c.gamePlayer ?? c.player)?.id == pid
-            ))?.id;
-        const teamSide = isHome ? 'home' : 'away';
+        const teamSide = homeRoster.some(p => String(p.id) === String(pid)) ? 'home' : 'away';
 
         const goals = pStats.offense?.goals ?? 0;
         for (let i = 0; i < goals; i++) {
@@ -729,10 +737,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                         </tr>
                         </thead>
                         <tbody>
-                        <tr v-for="p in (selectedStatsTeam === 'home'
-            ? (selectedCalendarMatch.home_team_id === calendarTeam?.id ? calendarTeamRoster : calendarOpponentRoster)
-            : (selectedCalendarMatch.away_team_id === calendarTeam?.id ? calendarTeamRoster : calendarOpponentRoster)
-        )" :key="p.id"
+                        <tr v-for="p in matchRoster(selectedStatsTeam)" :key="p.id"
                             class="border-b border-slate-100 last:border-0 hover:bg-white transition-colors">
                             <td class="py-1.5 pr-3">
                                 <div class="flex items-center gap-2">

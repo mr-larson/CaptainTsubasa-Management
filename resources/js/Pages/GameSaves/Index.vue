@@ -81,6 +81,8 @@ const formatDate = (value) => {
                                 <div class="text-xs text-slate-400 mt-0.5">
                                     {{ periodLabel(save.period) }}
                                     · Saison {{ save.season }} · Semaine {{ save.week }}
+                                    <span v-if="save.phase === 'draft' || save.phase === 'intersaison_draft'"
+                                          class="ml-1 px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-semibold">Draft en cours</span>
                                     · <span class="text-slate-300">{{ formatDate(save.updated_at) }}</span>
                                 </div>
                             </div>

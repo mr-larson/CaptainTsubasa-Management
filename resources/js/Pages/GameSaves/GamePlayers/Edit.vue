@@ -80,6 +80,7 @@
                                 <p v-if="form.errors.secondary_positions" class="text-sm text-red-600 mt-1">
                                     {{ form.errors.secondary_positions }}
                                 </p>
+                                <FormErrorList :errors="form.errors" prefix="secondary_positions." />
                             </FormCol>
                         </FormRaw>
 
@@ -244,6 +245,7 @@
                                         :key="index"
                                         class="p-3 rounded border bg-white shadow-sm"
                                     >
+                                        <FormErrorList :errors="form.errors" :prefix="`special_moves.${index}.`" />
                                         <h3 class="font-semibold text-sm mb-2">
                                             Technique #{{ index + 1 }}
                                         </h3>
@@ -349,6 +351,7 @@ import InputLabel from '@/Components/InputLabel.vue'
 import InputText from '@/Components/InputText.vue'
 import InputSelect from '@/Components/InputSelect.vue'
 import SecondaryPositionsPicker from '@/Components/SecondaryPositionsPicker.vue'
+import FormErrorList from '@/Components/FormErrorList.vue'
 import ButtonGroup from "@/Components/ButtonGroup.vue";
 import ButtonPrimary from "@/Components/ButtonPrimary.vue";
 
@@ -385,7 +388,7 @@ const form = useForm({
     heading: props.player.heading ?? 0,
     hand_save: props.player.hand_save ?? 0,
     punch_save: props.player.punch_save ?? 0,
-    special_moves: props.player.special_moves ?? [],
+    special_moves: JSON.parse(JSON.stringify(props.player.special_moves ?? [])), // copie : ne pas muter la prop
 })
 
 function openPhotoPicker() {

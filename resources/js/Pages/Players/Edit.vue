@@ -667,7 +667,7 @@ function selectPlayer(player) {
     form.lastname         = player.lastname ?? '';
     form.age              = player.age ?? '';
     form.position         = player.position ?? '';
-    form.secondary_positions = player.secondary_positions ?? [];
+    form.secondary_positions = [...(player.secondary_positions ?? [])]; // copie : ne pas muter la prop
     form.cost             = player.cost ?? '';
     form.description      = player.description ?? '';
     form.photo_path       = player.photo_path ?? null;

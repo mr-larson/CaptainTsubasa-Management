@@ -7,13 +7,12 @@ export function useTransfers({ gameSave, freePlayers, team, teams }) {
     // ==========================
     //   AGENTS LIBRES
     // ==========================
-    const freeAgentSignings   = computed(() => gameSave.value.state?.free_agent_signings ?? []);
-    const signedFreePlayerIds = computed(() => freeAgentSignings.value.map(s => s.player_id));
-
-    const availableFreePlayers = computed(() => {
-        if (!Array.isArray(freePlayers.value)) return [];
-        return freePlayers.value.filter(p => !signedFreePlayerIds.value.includes(p.id));
-    });
+    // Le serveur ne renvoie que les joueurs sans contrat actif : un agent libre
+    // en fin de contrat ou résilié redevient disponible tout de suite (l'ancien
+    // filtre sur state.free_agent_signings le cachait jusqu'à l'intersaison).
+    const availableFreePlayers = computed(() =>
+        Array.isArray(freePlayers.value) ? freePlayers.value : []
+    );
 
     // ==========================
     //   MODAL

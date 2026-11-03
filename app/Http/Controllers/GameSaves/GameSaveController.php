@@ -90,7 +90,7 @@ class GameSaveController extends Controller
      * - college_league : choix des clubs (TeamSelection)
      * - world_cup      : choix de la sélection nationale (NationSelection)
      */
-    public function store(Request $request): Response
+    public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
             'label'              => ['nullable', 'string', 'max:255'],
@@ -100,6 +100,25 @@ class GameSaveController extends Controller
             'game_config'        => ['nullable', 'array'],
             'period_package_id'  => ['nullable', 'integer', 'exists:period_packages,id'],
         ]);
+
+        // L'étape 1 est gardée en session et l'écran de choix d'équipe servi
+        // en GET : un F5, ou une erreur de validation au lancement (back()),
+        // y ramène au lieu de renvoyer sur la liste des parties.
+        $request->session()->put('game_save_setup', $data);
+
+        return redirect()->route('game-saves.setup');
+    }
+
+    /**
+     * Étape 2 de la création : choix de l'équipe (ou de la nation), à partir
+     * des réglages de l'étape 1 gardés en session.
+     */
+    public function setup(Request $request): Response|RedirectResponse
+    {
+        $data = $request->session()->get('game_save_setup');
+        if (!is_array($data) || empty($data['period'])) {
+            return redirect()->route('game-saves.create');
+        }
 
         $competitionType = $data['competition_type'] ?? 'college_league';
         $gameConfig = $data['game_config'] ?? null;
@@ -658,6 +677,15 @@ class GameSaveController extends Controller
         $career = app(CareerObjectiveService::class);
         if ($career->isGameOver($gameSave)) {
             return redirect()->route('game-saves.game-over', $gameSave);
+        }
+
+        // Draft en cours (onglet fermé, draft interrompu) : on y retourne au
+        // lieu d'ouvrir Play avec des effectifs partiels. Idem fin de saison.
+        if (in_array($gameSave->phase, ['draft', 'intersaison_draft'], true)) {
+            return redirect()->route('game-saves.draft', $gameSave);
+        }
+        if ($gameSave->phase === 'season_end') {
+            return redirect()->route('game-saves.season-end', $gameSave);
         }
 
         // Fixe l'objectif de la direction pour la saison courante si besoin
@@ -1221,6 +1249,14 @@ class GameSaveController extends Controller
             'internationals_visible'  => ['boolean'],
             'career_difficulty'       => ['string', 'in:none,survival,standard,conquest'],
         ]);
+
+        // Gain min ≤ gain max, en tenant compte de la valeur déjà enregistrée
+        // pour le champ non envoyé (sinon random_int lève une ValueError).
+        $gainMin = $data['training_gain_min'] ?? (int) $gameSave->getConfig('training_gain_min', config('training.gain_min', 1));
+        $gainMax = $data['training_gain_max'] ?? (int) $gameSave->getConfig('training_gain_max', config('training.gain_max', 5));
+        if ($gainMin > $gainMax) {
+            return back()->withErrors(['training_gain_max' => 'Le gain max doit être supérieur ou égal au gain min.']);
+        }
 
         $gameSave->setConfig($data);
 

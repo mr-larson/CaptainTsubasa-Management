@@ -213,7 +213,11 @@ const {
     selectedTrainings, addTrainingSlot, removeTrainingSlot,
     canSubmitTraining, submitTraining,
     aiTrainingEntries, aiCurrentDisplayWeek, aiWeekMax, prevAiWeek, nextAiWeek,
-} = useTraining({ gameSave: gameSaveRef, season, week, teamId: computed(() => teamRef.value?.id ?? null) });
+} = useTraining({
+    gameSave: gameSaveRef, season, week,
+    teamId:     computed(() => teamRef.value?.id ?? null),
+    maxPerWeek: computed(() => props.gameConfig?.training_max_per_week),
+});
 
 const {
     availableFreePlayers,
@@ -453,6 +457,7 @@ const saveGame = () => {
                                :playerPromises="playerPromises"
                                :playerDeclarations="playerDeclarations"
                                :currentWeek="week"
+                               :currentSeason="season"
                                @make-promise="makePromise"
                                @make-declaration="makeDeclaration"
                                @release-player="releasePlayer"
@@ -546,6 +551,8 @@ const saveGame = () => {
                                  :roster="rosterWithStatus"
                                  :teamBudget="teamBudget"
                                  :trainingCost="props.gameConfig?.training_cost ?? 0"
+                                 :maxPerWeek="props.gameConfig?.training_max_per_week ?? 3"
+                                 :minStamina="props.gameConfig?.training_min_stamina ?? 10"
                                  :trainingState="trainingState"
                                  :playerSeasonStats="props.playerSeasonStats"
                                  :isPlayerInjured="isPlayerInjured"

@@ -2,9 +2,11 @@
 import { ref, computed } from 'vue';
 import { router } from '@inertiajs/vue3';
 
-export function useTraining({ gameSave, season, week, teamId }) {
+export function useTraining({ gameSave, season, week, teamId, maxPerWeek }) {
 
-    const MAX_TRAININGS_PER_WEEK = 3;
+    // Quota de la save (réglable dans Gestion), 3 par défaut.
+    const MAX_TRAININGS_PER_WEEK_DEFAULT = 3;
+    const maxTrainingsPerWeek = computed(() => Number(maxPerWeek?.value) || MAX_TRAININGS_PER_WEEK_DEFAULT);
 
     const trainingState = computed(() => gameSave.value.state?.training ?? null);
 
@@ -18,7 +20,7 @@ export function useTraining({ gameSave, season, week, teamId }) {
     });
 
     const remainingTrainingsThisWeek = computed(() =>
-        Math.max(0, MAX_TRAININGS_PER_WEEK - myEntriesThisWeek.value.length)
+        Math.max(0, maxTrainingsPerWeek.value - myEntriesThisWeek.value.length)
     );
 
     const hasPlayerBeenTrainedThisWeek = (playerId) =>
@@ -41,7 +43,7 @@ export function useTraining({ gameSave, season, week, teamId }) {
     const selectedTrainings = ref([]);
 
     const addTrainingSlot = (playerId = null) => {
-        if (selectedTrainings.value.length >= 3) return;
+        if (selectedTrainings.value.length >= remainingTrainingsThisWeek.value) return;
         if (remainingTrainingsThisWeek.value <= 0) return;
 
         if (playerId && selectedTrainings.value.some(s => Number(s.player_id) === Number(playerId))) {

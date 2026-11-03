@@ -192,7 +192,7 @@ class GameDraftController extends Controller
             $pick = $draftService->executePick($gameSave, $data['player_id']);
 
             if (!$pick) {
-                return response()->json(['error' => 'Invalid pick (player taken, too expensive, or squad full)'], 422);
+                return response()->json(['error' => 'Sélection impossible : joueur déjà pris, trop cher ou effectif complet.'], 422);
             }
 
             $gameSave->refresh();

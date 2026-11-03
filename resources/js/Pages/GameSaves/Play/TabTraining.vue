@@ -14,6 +14,8 @@ const props = defineProps({
     week:                        { type: Number,   required: true },
     roster:                      { type: Array,    required: true },
     teamBudget:                  { type: Number,   default: 0 },
+    maxPerWeek:                  { type: Number,   default: 3 },
+    minStamina:                  { type: Number,   default: 10 },
     trainingCost:                { type: Number,   default: 0 },
     trainingState:               { type: Object,   default: null },
     remainingTrainingsThisWeek:  { type: Number,   required: true },
@@ -52,8 +54,8 @@ const trainingButtonState = computed(() => {
     if (props.remainingTrainingsThisWeek <= 0) {
         return { disabled: true, label: 'Plus de séances cette semaine', reason: 'limit_week' };
     }
-    if (props.selectedTrainings.length >= 3) {
-        return { disabled: true, label: 'Limite de 3 joueurs atteinte', reason: 'limit_slots' };
+    if (props.selectedTrainings.length >= props.remainingTrainingsThisWeek) {
+        return { disabled: true, label: `Limite de ${props.remainingTrainingsThisWeek} séance(s) atteinte`, reason: 'limit_slots' };
     }
     if (props.selectedTrainings.some(s => Number(s.player_id) === Number(p.id))) {
         return { disabled: true, label: '✓ Déjà dans la séance', reason: 'already_added' };
@@ -61,8 +63,8 @@ const trainingButtonState = computed(() => {
     if (props.hasPlayerBeenTrainedThisWeek(p.id)) {
         return { disabled: true, label: 'Déjà entraîné cette semaine', reason: 'trained' };
     }
-    if ((p.stamina ?? 0) < 10) {
-        return { disabled: true, label: 'Trop fatigué (< 10 stamina)', reason: 'tired' };
+    if ((p.stamina ?? 0) < props.minStamina) {
+        return { disabled: true, label: `Trop fatigué (< ${props.minStamina} stamina)`, reason: 'tired' };
     }
     if (props.trainingCost > 0 && !canAffordOneMore.value) {
         return { disabled: true, label: 'Budget insuffisant', reason: 'budget' };
@@ -290,7 +292,7 @@ const selectedPlayerPerf = computed(() => {
                         🏋️ Entraînement manuel
                     </h4>
                     <p class="text-xs text-slate-400 mb-3">
-                        Choisis jusqu'à 3 joueurs différents et la stat à améliorer (+1 à +5, coûte de la stamina<span v-if="trainingCost > 0"> et {{ trainingCost }} € par séance</span>).
+                        Choisis jusqu'à {{ maxPerWeek }} joueurs différents et la stat à améliorer (+1 à +5, coûte de la stamina<span v-if="trainingCost > 0"> et {{ trainingCost }} € par séance</span>).
                     </p>
 
                     <div class="space-y-2 mb-3">

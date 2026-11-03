@@ -614,3 +614,20 @@
     0%   { transform: scale(0.3); opacity: 0; }
     100% { transform: scale(1);   opacity: 1; }
 }
+
+/* ==========================================================================
+   MOBILE / TABLETTE (< lg) : une seule colonne
+   La barre d'actions reste collée en bas de l'écran (plus de défilement entre
+   le terrain et les boutons à chaque tour) et le journal est raccourci.
+   ========================================================================== */
+@media (max-width: 1023px) {
+    #bars-container {
+        position: sticky;
+        bottom: 0;
+        z-index: 30;
+        margin-top: 16px;
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+    #action-bar { max-height: 45vh; overflow-y: auto; }
+    #log-card { min-height: 0; max-height: 220px; }
+}

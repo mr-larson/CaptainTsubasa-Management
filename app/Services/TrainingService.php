@@ -27,6 +27,8 @@ class TrainingService
         $staminaCost  = (int) $gameSave->getConfig('training_stamina_cost', config('training.stamina_cost', 5));
         $gainMin      = (int) $gameSave->getConfig('training_gain_min', config('training.gain_min', 1));
         $gainMax      = (int) $gameSave->getConfig('training_gain_max', config('training.gain_max', 5));
+        // Config enregistrée avant le contrôle min ≤ max : on remet dans l'ordre.
+        [$gainMin, $gainMax] = [min($gainMin, $gainMax), max($gainMin, $gainMax)];
         $trainingCost = (int) $gameSave->getConfig('training_cost', config('training.cost', 0));
         $statMin      = config('training.stat_min', 0);
         $statMax      = config('training.stat_max', 100);

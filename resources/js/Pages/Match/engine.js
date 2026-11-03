@@ -348,51 +348,7 @@ export function initMatchEngine(rootEl, config = {}) {
             if (ui.matchEndActionsEl) ui.matchEndActionsEl.classList.remove("hidden");
 
             if (ui.finishMatchBtn) {
-                ui.finishMatchBtn.onclick = () => {
-                    const internalTeamId = matchConfig?.sides?.internalTeamId;
-                    const externalTeamId = matchConfig?.sides?.externalTeamId;
-                    if (!internalTeamId || !externalTeamId) return;
-                    // Un seul envoi du résultat (double clic) ; réactivé si le serveur refuse.
-                    if (ui.finishMatchBtn.disabled) return;
-                    ui.finishMatchBtn.disabled = true;
-
-                    const payload = {
-                        matchId:    matchConfig.matchId,
-                        gameSaveId: matchConfig.gameSaveId,
-                        scoresByTeamId: {
-                            [internalTeamId]: state.score.internal,
-                            [externalTeamId]: state.score.external,
-                        },
-                        playerActions: state.actionEvents,
-                        foulEvents:    state.foulEvents,
-                        onFailed:      () => { if (ui.finishMatchBtn) ui.finishMatchBtn.disabled = false; },
-                    };
-
-                    if (typeof matchConfig.onMatchEnd === "function") {
-                        payload.match_stats = buildMatchStats(state.actionEvents, state.goalEvents);
-                        // Déroulé complet du match (action par action), pour le résumé post-match
-                        payload.match_stats.events = state.matchLog;
-                        // 11 de départ + temps de jeu par joueur (promesses temps de jeu / titularisation)
-                        payload.match_stats.starters = {
-                            home: state.startersByTeam?.internal ?? [],
-                            away: state.startersByTeam?.external ?? [],
-                        };
-                        if (state.shootout) {
-                            const sideId = { internal: internalTeamId, external: externalTeamId };
-                            payload.match_stats.shootout = {
-                                winner_team_id: sideId[state.shootout.winner],
-                                scores: {
-                                    [internalTeamId]: state.shootout.score.internal,
-                                    [externalTeamId]: state.shootout.score.external,
-                                },
-                            };
-                        }
-                        payload.match_stats.playtime = computePlaytime(
-                            state.startersByTeam, state.substitutions, state.turns, state.exitTurns
-                        );
-                        matchConfig.onMatchEnd(payload);
-                    }
-                };
+                ui.finishMatchBtn.onclick = submitResult;
             }
             return;
         }
@@ -717,6 +673,61 @@ export function initMatchEngine(rootEl, config = {}) {
     }
 
     // ==========================
+    //   ENVOI DU RÉSULTAT
+    // ==========================
+    // Bouton « Suite » en fin de match, ou abandon en cours de match (Engine.vue :
+    // quitter valide le score du moment, pour ne pas pouvoir rejouer un match perdu).
+    function submitResult() {
+        const internalTeamId = matchConfig?.sides?.internalTeamId;
+        const externalTeamId = matchConfig?.sides?.externalTeamId;
+        if (!internalTeamId || !externalTeamId) return;
+        // Un seul envoi du résultat (double clic) ; réactivé si le serveur refuse.
+        if (state.resultSubmitted) return;
+        state.resultSubmitted = true;
+        if (ui.finishMatchBtn) ui.finishMatchBtn.disabled = true;
+
+        const payload = {
+            matchId:    matchConfig.matchId,
+            gameSaveId: matchConfig.gameSaveId,
+            scoresByTeamId: {
+                [internalTeamId]: state.score.internal,
+                [externalTeamId]: state.score.external,
+            },
+            playerActions: state.actionEvents,
+            foulEvents:    state.foulEvents,
+            onFailed:      () => {
+                state.resultSubmitted = false;
+                if (ui.finishMatchBtn) ui.finishMatchBtn.disabled = false;
+            },
+        };
+
+        if (typeof matchConfig.onMatchEnd === "function") {
+            payload.match_stats = buildMatchStats(state.actionEvents, state.goalEvents);
+            // Déroulé complet du match (action par action), pour le résumé post-match
+            payload.match_stats.events = state.matchLog;
+            // 11 de départ + temps de jeu par joueur (promesses temps de jeu / titularisation)
+            payload.match_stats.starters = {
+                home: state.startersByTeam?.internal ?? [],
+                away: state.startersByTeam?.external ?? [],
+            };
+            if (state.shootout) {
+                const sideId = { internal: internalTeamId, external: externalTeamId };
+                payload.match_stats.shootout = {
+                    winner_team_id: sideId[state.shootout.winner],
+                    scores: {
+                        [internalTeamId]: state.shootout.score.internal,
+                        [externalTeamId]: state.shootout.score.external,
+                    },
+                };
+            }
+            payload.match_stats.playtime = computePlaytime(
+                state.startersByTeam, state.substitutions, state.turns, state.exitTurns
+            );
+            matchConfig.onMatchEnd(payload);
+        }
+    }
+
+    // ==========================
     //   INIT
     // ==========================
     function init() {
@@ -821,12 +832,17 @@ export function initMatchEngine(rootEl, config = {}) {
     // Appelé par Engine.vue au démontage : les timers en vol voient `disposed`
     // et s'arrêtent, les listeners globaux sont retirés et l'état de module
     // (toast, file de révélation) ne fuit pas dans le match suivant.
-    return function destroy() {
+    function destroy() {
         state.disposed = true;
         disposeUIModule();
         disposeDiceUI();
         hideBreakdownTooltip();
         if (window.__matchState === state) delete window.__matchState;
         if (window.__matchRoster === roster) delete window.__matchRoster;
-    };
+    }
+    // Match commencé et résultat pas encore envoyé : quitter doit valider le score.
+    destroy.isInProgress = () => !state.disposed && !state.resultSubmitted && state.turns > 0;
+    destroy.finishNow    = () => { state.isGameOver = true; submitResult(); };
+    destroy.scoreLabel   = () => `${state.score.internal} - ${state.score.external}`;
+    return destroy;
 }

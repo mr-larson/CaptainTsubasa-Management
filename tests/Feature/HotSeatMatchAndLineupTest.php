@@ -57,4 +57,26 @@ class HotSeatMatchAndLineupTest extends TestCase
             ->assertSessionHasNoErrors();
         $this->assertSame('5-2-2-1', $mine->fresh()->formation);
     }
+
+    public function test_benching_a_starter_frees_his_lineup_slot(): void
+    {
+        $save = $this->makeSave();
+        [$mine, $players] = $this->makeTeamWithSquad($save, ['is_controlled' => true, 'human_seat' => 1], 12);
+        $slots = [];
+        foreach ($players->take(11) as $i => $p) {
+            $slots[$i + 1] = $p->id;
+        }
+        $save->update([
+            'controlled_game_team_id' => $mine->id,
+            'state' => ['lineup' => [$mine->id => ['slots' => $slots]]],
+        ]);
+
+        $contract = $players[3]->contracts()->first();
+        $this->actingAs(User::find($save->user_id))
+            ->patch(route('game-contracts.toggle-starter', $contract))
+            ->assertSessionHasNoErrors();
+
+        $saved = $save->fresh()->state['lineup'][$mine->id]['slots'];
+        $this->assertNotContains($players[3]->id, array_values($saved), 'Le remplaçant ne doit plus occuper de slot.');
+    }
 }
