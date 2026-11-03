@@ -106,6 +106,8 @@ class GameMatchController extends Controller
                 'matchId'        => $match->id,
                 'week'           => $match->week,
                 'maxTurns'       => (int) $gameSave->getConfig('match_max_turns', 45),
+                // Coupe du Monde, phase finale : égalité → tirs au but dans le moteur.
+                'isKnockout'     => in_array($match->round, ['semi', 'final'], true),
                 'controlMode'    => $controlMode,
                 'controlledSide' => $controlledSide,
 
@@ -191,11 +193,24 @@ class GameMatchController extends Controller
             //  d'être joué (score, classement, fautes, progression, cartes).
             // ─────────────────────────────────────────────────────────────
 
-            // 1. Sauvegarder le match avec match_stats (source de vérité)
+            // 1. Sauvegarder le match avec match_stats (source de vérité).
+            // Tirs au but : gardés seulement pour une égalité en phase finale,
+            // avec un vainqueur qui dispute bien ce match.
+            $stats    = $data['match_stats'] ?? null;
+            $shootout = $stats['shootout'] ?? null;
+            if (is_array($stats) && array_key_exists('shootout', $stats)) {
+                $validShootout = in_array($match->round, ['semi', 'final'], true)
+                    && $homeScore === $awayScore
+                    && in_array((int) ($shootout['winner_team_id'] ?? 0), [$homeTeamId, $awayTeamId], true);
+                if (! $validShootout) {
+                    unset($stats['shootout']);
+                }
+            }
+
             $match->home_score  = $homeScore;
             $match->away_score  = $awayScore;
             $match->status      = 'played';
-            $match->match_stats = $data['match_stats'] ?? null;
+            $match->match_stats = $stats;
             $match->save();
 
             // 2. Classement

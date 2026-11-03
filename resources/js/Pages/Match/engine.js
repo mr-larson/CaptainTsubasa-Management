@@ -50,6 +50,7 @@ import {
 } from './engine/resolvers.js';
 
 import { buildMatchStats, computePlaytime } from './engine/matchStats.js';
+import { runShootout } from './engine/shootout.js';
 
 import {
     initFoulsModule, resolveFoulOutcome,
@@ -323,6 +324,20 @@ export function initMatchEngine(rootEl, config = {}) {
             );
             pushLogEntry("matchEndTitle", [`Score final ${state.score.internal} - ${state.score.external}`], null, state);
 
+            // Phase à élimination directe : une égalité se départage aux tirs au but.
+            if (matchConfig.isKnockout && state.score.internal === state.score.external) {
+                const so = runShootout(roster, rootEl);
+                state.shootout = so;
+                so.kicks.forEach((k, i) => {
+                    pushLogEntry(`🥅 Tir au but ${i + 1} — ${TEAMS[k.team].label}`, [`${k.name} : ${k.scored ? '✓ But' : '✗ Raté'}`], null, state);
+                });
+                pushLogEntry("🏆 Tirs au but", [`${TEAMS[so.winner].label} l'emporte ${so.score[so.winner]} - ${so.score[so.winner === 'internal' ? 'external' : 'internal']}`], null, state);
+                setMessage(
+                    TEXTS.ui.matchEndMain,
+                    `${TEXTS.ui.matchEndPrefix}${state.score.internal} - ${state.score.external} (t.a.b. ${so.score.internal} - ${so.score.external})`
+                );
+            }
+
             if (ui.actionBarEl) {
                 ui.actionBarEl.classList.remove("fade-in");
                 ui.actionBarEl.classList.add("fade-out");
@@ -362,6 +377,16 @@ export function initMatchEngine(rootEl, config = {}) {
                             home: state.startersByTeam?.internal ?? [],
                             away: state.startersByTeam?.external ?? [],
                         };
+                        if (state.shootout) {
+                            const sideId = { internal: internalTeamId, external: externalTeamId };
+                            payload.match_stats.shootout = {
+                                winner_team_id: sideId[state.shootout.winner],
+                                scores: {
+                                    [internalTeamId]: state.shootout.score.internal,
+                                    [externalTeamId]: state.shootout.score.external,
+                                },
+                            };
+                        }
                         payload.match_stats.playtime = computePlaytime(
                             state.startersByTeam, state.substitutions, state.turns, state.exitTurns
                         );

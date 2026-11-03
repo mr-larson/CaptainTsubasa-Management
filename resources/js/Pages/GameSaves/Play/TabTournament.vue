@@ -27,7 +27,7 @@ function score(match) {
 </script>
 
 <template>
-    <div v-if="tournament" class="flex flex-col gap-6">
+    <div v-if="tournament" class="flex-1 flex flex-col gap-6 overflow-y-auto min-h-0 pr-1">
 
         <!-- En-tête / champion -->
         <div class="flex items-center justify-between gap-4">
@@ -107,12 +107,12 @@ function score(match) {
                         <div class="flex items-center justify-between px-3 py-2"
                              :class="isWinner(m, 'home') ? 'bg-indigo-50 font-bold text-indigo-700' : 'text-slate-600'">
                             <span>{{ m.home?.flag }} {{ m.home?.name ?? '—' }}</span>
-                            <span>{{ m.played ? m.home_score : '' }}</span>
+                            <span>{{ m.played ? m.home_score : '' }}<span v-if="m.shootout" class="ml-1 text-[10px] font-normal text-slate-400" title="Tirs au but">({{ m.shootout.home }})</span></span>
                         </div>
                         <div class="flex items-center justify-between px-3 py-2 border-t border-slate-100"
                              :class="isWinner(m, 'away') ? 'bg-indigo-50 font-bold text-indigo-700' : 'text-slate-600'">
                             <span>{{ m.away?.flag }} {{ m.away?.name ?? '—' }}</span>
-                            <span>{{ m.played ? m.away_score : '' }}</span>
+                            <span>{{ m.played ? m.away_score : '' }}<span v-if="m.shootout" class="ml-1 text-[10px] font-normal text-slate-400" title="Tirs au but">({{ m.shootout.away }})</span></span>
                         </div>
                     </div>
                 </div>
@@ -127,12 +127,12 @@ function score(match) {
                         <div class="flex items-center justify-between px-3 py-2.5"
                              :class="isWinner(m, 'home') ? 'bg-amber-50 font-bold text-amber-700' : 'text-slate-600'">
                             <span>{{ m.home?.flag }} {{ m.home?.name ?? '—' }}</span>
-                            <span>{{ m.played ? m.home_score : '' }}</span>
+                            <span>{{ m.played ? m.home_score : '' }}<span v-if="m.shootout" class="ml-1 text-[10px] font-normal text-slate-400" title="Tirs au but">({{ m.shootout.home }})</span></span>
                         </div>
                         <div class="flex items-center justify-between px-3 py-2.5 border-t border-amber-100"
                              :class="isWinner(m, 'away') ? 'bg-amber-50 font-bold text-amber-700' : 'text-slate-600'">
                             <span>{{ m.away?.flag }} {{ m.away?.name ?? '—' }}</span>
-                            <span>{{ m.played ? m.away_score : '' }}</span>
+                            <span>{{ m.played ? m.away_score : '' }}<span v-if="m.shootout" class="ml-1 text-[10px] font-normal text-slate-400" title="Tirs au but">({{ m.shootout.away }})</span></span>
                         </div>
                     </div>
                     <div v-else class="rounded-xl border border-dashed border-slate-200 px-3 py-4 text-center text-xs text-slate-400">

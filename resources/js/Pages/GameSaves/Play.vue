@@ -280,6 +280,11 @@ const tabs = computed(() => {
 });
 const activeTab = ref('dashboard');
 
+// N'ouvre qu'un onglet existant (ex. Transferts masqué en Coupe du Monde).
+function setTab(key) {
+    activeTab.value = tabs.value.some(t => t.key === key) ? key : 'dashboard';
+}
+
 // Section à pré-sélectionner dans l'onglet Gestion (ex: depuis l'aide objectif).
 const managementInitialSection = ref(null);
 
@@ -408,7 +413,7 @@ const saveGame = () => {
                                   :freePlayersCount="freePlayersCount"
                                   :tournament="tournament"
                                   :isWorldCup="isWorldCup"
-                                  @change-tab="activeTab = $event"
+                                  @change-tab="setTab"
                                   :isPlayerInjured="isPlayerInjured"
                                   @play-next-match="playNextMatch"
                                   @simulate-week="simulateWeek"

@@ -975,6 +975,11 @@ class GameSaveController extends Controller
     {
         $this->authorizeGameSave('update', $gameSave, $player);
 
+        // Coupe du Monde : des sélections nationales ne recrutent pas.
+        if ($gameSave->competition_type === 'world_cup') {
+            return back()->withErrors(['player' => 'Pas de transferts en Coupe du Monde.']);
+        }
+
         $data = $request->validate([
             'team_id'       => ['required', 'integer', Rule::exists('game_teams', 'id')->where('game_save_id', $gameSave->id)],
             'matches_total' => ['required', 'integer', 'min:1', 'max:60'],

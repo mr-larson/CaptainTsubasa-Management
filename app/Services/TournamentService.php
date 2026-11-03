@@ -314,11 +314,15 @@ class TournamentService
 
             $stored = $t['winners'][$round] ?? [];
             $bracket[$round] = $matches->map(function ($m, $i) use ($ref, $stored) {
-                $winner = null;
+                $winner   = null;
+                $shootout = $m->match_stats['shootout'] ?? null;
                 if ($m->status === 'played') {
                     $hs = (int) $m->home_score; $as = (int) $m->away_score;
-                    $winner = $hs > $as ? $m->home_team_id : ($as > $hs ? $m->away_team_id : ($stored[$i] ?? null));
+                    $winner = $hs > $as ? $m->home_team_id
+                        : ($as > $hs ? $m->away_team_id : ($shootout['winner_team_id'] ?? $stored[$i] ?? null));
                 }
+                // Score des tirs au but (séance jouée dans le moteur uniquement).
+                $soScores = $shootout['scores'] ?? null;
                 return [
                     'home'           => $ref($m->home_team_id),
                     'away'           => $ref($m->away_team_id),
@@ -326,6 +330,10 @@ class TournamentService
                     'away_score'     => $m->away_score,
                     'played'         => $m->status === 'played',
                     'winner_team_id' => $winner,
+                    'shootout'       => is_array($soScores) ? [
+                        'home' => (int) ($soScores[$m->home_team_id] ?? 0),
+                        'away' => (int) ($soScores[$m->away_team_id] ?? 0),
+                    ] : null,
                 ];
             })->all();
         }
@@ -359,7 +367,11 @@ class TournamentService
         return array_values(array_filter($winners));
     }
 
-    /** Vainqueur d'un match à élimination directe (égalité → tirs au but, aléatoire). */
+    /**
+     * Vainqueur d'un match à élimination directe. Égalité → vainqueur des tirs
+     * au but joués dans le moteur (match_stats.shootout) ; pour un match simulé,
+     * tirage unique enregistré dans match_stats pour rester stable d'un appel à l'autre.
+     */
     private function matchWinner(GameMatch $m): ?int
     {
         $hs = (int) $m->home_score;
@@ -368,6 +380,17 @@ class TournamentService
         if ($hs > $as) return $m->home_team_id;
         if ($as > $hs) return $m->away_team_id;
 
-        return rand(0, 1) === 1 ? $m->home_team_id : $m->away_team_id;
+        $stats  = $m->match_stats ?? [];
+        $winner = (int) ($stats['shootout']['winner_team_id'] ?? 0);
+        if (in_array($winner, [(int) $m->home_team_id, (int) $m->away_team_id], true)) {
+            return $winner;
+        }
+
+        $winner = rand(0, 1) === 1 ? (int) $m->home_team_id : (int) $m->away_team_id;
+        $stats['shootout'] = ['winner_team_id' => $winner, 'simulated' => true];
+        $m->match_stats = $stats;
+        $m->save();
+
+        return $winner;
     }
 }

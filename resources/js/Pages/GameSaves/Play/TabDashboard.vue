@@ -124,7 +124,7 @@ const preMatchReminders = computed(() => {
     }
 
     // ─── 3. Marché : joueurs libres à recruter ────────────────
-    if (props.freePlayersCount > 0) {
+    if (props.freePlayersCount > 0 && !props.isWorldCup) {
         reminders.push({
             icon: '💼',
             label: 'Marché des transferts',
@@ -159,6 +159,9 @@ const opponentAvgStamina = computed(() => {
 //   SAISON PROGRESSION
 // ==========================
 const totalWeeks = computed(() => {
+    // Dernière semaine du calendrier (juste aussi en Coupe du Monde).
+    const weeks = (props.matches ?? []).map(m => Number(m.week) || 0);
+    if (weeks.length) return Math.max(...weeks);
     const n = props.standings.length;
     if (n < 2) return 28;
     return n % 2 === 1 ? n * 2 : (n - 1) * 2;
