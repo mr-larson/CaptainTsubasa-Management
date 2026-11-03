@@ -97,10 +97,10 @@ const config = reactive({
     initial_morale_random: true,
     visible_origins: {
         captain_tsubasa: true,
-        ecole_des_champions: true,
-        hungry_heart: true,
-        blue_lock: true,
-        ao_ashi: true,
+        ecole_des_champions: false,
+        hungry_heart: false,
+        blue_lock: false,
+        ao_ashi: false,
         original: true,
     },
     internationals_visible: true,
@@ -116,7 +116,7 @@ function resetDefaults() {
         training_stamina_cost: 2, training_min_stamina: 10, training_cost: 200,
         ai_transfers_enabled: true, ai_training_enabled: true,
         initial_morale_random: true,
-        visible_origins: { captain_tsubasa: true, ecole_des_champions: true, hungry_heart: true, blue_lock: true, ao_ashi: true, original: true },
+        visible_origins: { captain_tsubasa: true, ecole_des_champions: false, hungry_heart: false, blue_lock: false, ao_ashi: false, original: true },
         internationals_visible: true,
     });
 }
