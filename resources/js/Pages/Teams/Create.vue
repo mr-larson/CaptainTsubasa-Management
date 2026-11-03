@@ -14,8 +14,7 @@
 
             <div class="flex flex-col md:flex-row">
                 <div
-                    class="hidden md:block basis-1/3 p-4 bg-contain bg-center bg-no-repeat"
-                    style="background-image: url('/images/Mamoru_Izawa_(Shutetsu_ES-SR-Tq)_Full.webp')"
+                    class="hidden md:block basis-1/3 p-4 bg-contain bg-center bg-no-repeat bg-[url('/images/Mamoru\_Izawa\_(Shutetsu\_ES-SR-Tq)\_Full.webp')]"
                 ></div>
 
                 <div class="basis-full md:basis-2/3 min-h-[500px] p-4 border border-slate-300 rounded-lg mx-0 md:mx-6 bg-white">

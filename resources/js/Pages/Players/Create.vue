@@ -18,8 +18,7 @@
             <div class="flex flex-col md:flex-row">
                 <!-- Visuel gauche -->
                 <div
-                    class="hidden md:block basis-1/3 p-4 bg-contain bg-center bg-no-repeat"
-                    style="background-image: url('/images/Mamoru_Izawa_(Shutetsu_ES-SR-Tq)_Full.webp')"
+                    class="hidden md:block basis-1/3 p-4 bg-contain bg-center bg-no-repeat bg-[url('/images/Mamoru\_Izawa\_(Shutetsu\_ES-SR-Tq)\_Full.webp')]"
                 ></div>
 
                 <!-- Carte formulaire -->
