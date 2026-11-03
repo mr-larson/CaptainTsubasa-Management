@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
+import FlashToasts from '@/Components/FlashToasts.vue';
 
 const showingNavigationDropdown = ref(false);
 </script>
@@ -115,5 +116,7 @@ const showingNavigationDropdown = ref(false);
                 <slot />
             </main>
         </div>
+
+        <FlashToasts />
     </div>
 </template>

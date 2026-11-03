@@ -42,17 +42,26 @@ export function useTransfers({ gameSave, freePlayers, team, teams }) {
         transferTarget.value    = null;
     };
 
-    const confirmTransfer = () => {
-        if (!team.value || !transferTarget.value) return;
+    const transferProcessing = ref(false);
+
+    // `player` est passé explicitement par l'onglet : ne pas repasser par
+    // openTransferModal, qui réinitialiserait la durée saisie.
+    const confirmTransfer = (player = transferTarget.value) => {
+        if (!team.value || !player || transferProcessing.value) return;
+        transferProcessing.value = true;
         router.post(
-            route('game-saves.free-agents.sign', { gameSave: gameSave.value.id, player: transferTarget.value.id }),
+            route('game-saves.free-agents.sign', { gameSave: gameSave.value.id, player: player.id }),
             {
                 team_id:       team.value.id,
                 salary:        transferSalary.value,
                 matches_total: transferMatches.value,
                 reason:        transferReason.value,
             },
-            { preserveScroll: true, onSuccess: () => closeTransferModal() }
+            {
+                preserveScroll: true,
+                onSuccess: () => closeTransferModal(),
+                onFinish:  () => { transferProcessing.value = false; },
+            }
         );
     };
 
@@ -83,7 +92,7 @@ export function useTransfers({ gameSave, freePlayers, team, teams }) {
         availableFreePlayers,
         showTransferModal, transferTarget,
         transferMatches, transferSalary, transferReason,
-        transferTotalCost,
+        transferTotalCost, transferProcessing,
         openTransferModal, closeTransferModal, confirmTransfer,
         transferHistory,
     };

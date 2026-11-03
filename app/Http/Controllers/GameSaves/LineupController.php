@@ -19,6 +19,7 @@ class LineupController extends Controller
     public function toggleStarter(Request $request, GameContract $contract)
     {
         $this->authorizeGameSave('update', $contract->gameSave);
+        if ($refused = $this->refuseUnlessActiveTeam($contract->gameSave, (int) $contract->game_team_id)) return $refused;
 
         $contract->is_starter = !$contract->is_starter;
         $contract->save();
@@ -32,6 +33,7 @@ class LineupController extends Controller
     public function toggleCaptain(Request $request, GameContract $contract)
     {
         $this->authorizeGameSave('update', $contract->gameSave);
+        if ($refused = $this->refuseUnlessActiveTeam($contract->gameSave, (int) $contract->game_team_id)) return $refused;
 
         // Si ce joueur est déjà capitaine → on le retire simplement
         if ($contract->is_captain) {
@@ -69,6 +71,7 @@ class LineupController extends Controller
         ]);
 
         $teamId = (int) $data['team_id'];
+        if ($refused = $this->refuseUnlessActiveTeam($gameSave, $teamId)) return $refused;
         $team   = $gameSave->gameTeams()->where('id', $teamId)->firstOrFail();
 
         $slots = [];
@@ -104,6 +107,7 @@ class LineupController extends Controller
         ]);
 
         $teamId = (int) $data['team_id'];
+        if ($refused = $this->refuseUnlessActiveTeam($gameSave, $teamId)) return $refused;
         $team   = $gameSave->gameTeams()->where('id', $teamId)->firstOrFail();
 
         $team->formation = $data['formation'];
@@ -133,6 +137,7 @@ class LineupController extends Controller
         $substituteId = (int) $data['substitute_id'];
 
         if ($starterId === $substituteId) return back();
+        if ($refused = $this->refuseUnlessActiveTeam($gameSave, $teamId)) return $refused;
 
         $team = $gameSave->gameTeams()->where('id', $teamId)->firstOrFail();
 
@@ -166,5 +171,19 @@ class LineupController extends Controller
         });
 
         return back()->with('success', 'Substitution effectuée.');
+    }
+
+    /**
+     * Seule l'équipe qui a la main (siège actif) peut changer sa composition :
+     * modifier celle d'une équipe IA ou d'un autre manager humain revenait à
+     * consigner gratuitement ses titulaires (et à saboter un joueur en hot-seat).
+     */
+    private function refuseUnlessActiveTeam(GameSave $gameSave, int $teamId): ?\Illuminate\Http\RedirectResponse
+    {
+        if ($teamId === (int) $gameSave->controlled_game_team_id) {
+            return null;
+        }
+
+        return back()->withErrors(['team_id' => "La composition d'une autre équipe ne peut pas être modifiée."]);
     }
 }

@@ -1,7 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
-import { ref, computed, onMounted, nextTick } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import TeamStyleBadges from '@/Pages/GameSaves/Play/components/TeamStyleBadges.vue';
 import Modal from '@/Components/Modal.vue';
 import PlayerPhoto from '@/Components/PlayerPhoto.vue';
@@ -340,38 +340,56 @@ async function finishMyDraft() {
 async function showPickAnimation(pick) {
     lastPick.value    = pick;
     showPickAnim.value = true;
-    await new Promise(r => setTimeout(r, 1800));
+    await wait(1800);
     showPickAnim.value = false;
 }
 
 // ══════════════════════════════════════
 //  AI PICK FLOW
 // ══════════════════════════════════════
+// La boucle s'arrête au démontage de la page (navigation Inertia) et ne peut
+// tourner qu'en un seul exemplaire. Si le serveur répond plusieurs fois sans
+// faire avancer le draft, on sort avec un message au lieu de boucler.
+const MAX_STALLED_AI_RESPONSES = 3;
+let alive         = true;
+let aiLoopRunning = false;
+const pendingTimers = new Set();
+const aiStalled     = ref(false);
+
+function wait(ms) {
+    return new Promise(resolve => {
+        const t = setTimeout(() => { pendingTimers.delete(t); resolve(); }, ms);
+        pendingTimers.add(t);
+    });
+}
+
+function draftProgressKey() {
+    const d = draft.value ?? {};
+    return [d.round, d.current_pick_index, (d.finished_teams ?? []).length, d.completed, pickLog.value.length].join('|');
+}
+
 async function runAiPicks() {
-    while (!isMyTurn.value && !draftCompleted.value) {
+    if (aiLoopRunning) return;
+    aiLoopRunning   = true;
+    aiStalled.value = false;
+    let stalled     = 0;
+
+    while (alive && !isMyTurn.value && !draftCompleted.value) {
         isProcessing.value = true;
+        const before = draftProgressKey();
 
         // Pause de suspense
-        await new Promise(r => setTimeout(r, 800));
+        await wait(800);
+        if (!alive) break;
 
         try {
             const response = await axios.post(`/game-saves/${props.gameSave.id}/draft/ai-pick`);
+            if (!alive) break;
             const data = response.data;
 
             if (data.completed) {
                 draftCompleted.value = true;
                 break;
-            }
-
-            if (data.completed) {
-                draftCompleted.value = true;
-                break;
-            }
-
-            if (data.finished) {
-                // L'IA a terminé son draft
-                if (data.draftState) draft.value = data.draftState;
-                continue;
             }
 
             if (data.pick && !data.skipped) {
@@ -389,20 +407,33 @@ async function runAiPicks() {
             if (data.draftState) {
                 draft.value = data.draftState;
             }
-
-            if (data.draftState) {
-                draft.value = data.draftState;
-            }
         } catch (err) {
             console.error('AI pick error:', err);
+            aiStalled.value = true;
             break;
         }
 
-        isProcessing.value = false;
+        stalled = draftProgressKey() === before ? stalled + 1 : 0;
+        if (stalled >= MAX_STALLED_AI_RESPONSES) {
+            aiStalled.value = true;
+            break;
+        }
     }
 
-    isProcessing.value = false;
+    aiLoopRunning = false;
+    if (alive) isProcessing.value = false;
 }
+
+function retryAiPicks() {
+    aiStalled.value = false;
+    runAiPicks();
+}
+
+onBeforeUnmount(() => {
+    alive = false;
+    pendingTimers.forEach(clearTimeout);
+    pendingTimers.clear();
+});
 
 // ══════════════════════════════════════
 //  HUMAN PICK
@@ -667,6 +698,15 @@ onMounted(() => {
                                     <span class="text-sm font-bold text-slate-600">
                                         {{ currentTeam?.name ?? '—' }} est en train de choisir...
                                     </span>
+                                </div>
+                                <div v-else-if="aiStalled && !isMyTurn" class="flex flex-col items-center gap-2">
+                                    <span class="text-sm font-bold text-rose-600">
+                                        Le draft de {{ currentTeam?.name ?? 'l\'IA' }} ne progresse plus.
+                                    </span>
+                                    <button type="button" @click="retryAiPicks"
+                                            class="px-4 py-1.5 rounded-full text-xs font-bold bg-slate-800 text-white hover:bg-slate-700">
+                                        Réessayer
+                                    </button>
                                 </div>
                                 <div v-else-if="isMyTurn" class="text-lg font-black text-amber-700">
                                     🎯 <span v-if="humanTeamIds.length > 1">{{ myTeam?.name }} — à toi de piocher !</span>

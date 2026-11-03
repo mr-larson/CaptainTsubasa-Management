@@ -443,6 +443,28 @@
                         </FormCol>
                     </FormRaw>
 
+                    <!-- Ligne 8 bis : stat heading -->
+                    <FormRaw>
+                        <FormCol>
+                            <label
+                                for="stats.heading"
+                                class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4"
+                            >
+                                Jeu de tête
+                            </label>
+                            <input
+                                type="number"
+                                id="stats.heading"
+                                v-model="form.stats.heading"
+                                placeholder="Jeu de tête"
+                                class="appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:bg-white focus:border-purple-300"
+                            >
+                            <p v-if="form.errors['stats.heading']" class="text-sm text-red-600 mt-1">
+                                {{ form.errors['stats.heading'] }}
+                            </p>
+                        </FormCol>
+                    </FormRaw>
+
                     <!-- Ligne 9 : stats hand_save / punch_save -->
                     <FormRaw>
                         <FormCol>
@@ -571,6 +593,7 @@ const form = useForm({
         block: 0,
         intercept: 0,
         tackle: 0,
+        heading: 0,
         hand_save: 0,
         punch_save: 0,
     },
@@ -664,6 +687,7 @@ function selectPlayer(player) {
         block:       Number(stats.block ?? 0),
         intercept:   Number(stats.intercept ?? 0),
         tackle:      Number(stats.tackle ?? 0),
+        heading:     Number(stats.heading ?? 15),
         hand_save:   Number(stats.hand_save ?? 0),
         punch_save:  Number(stats.punch_save ?? 0),
     };

@@ -127,4 +127,28 @@ class ProductionHardeningTest extends TestCase
         $this->assertStringStartsWith("images/game-teams/{$save->id}/", $logo);
         Storage::disk('public')->assertExists($logo);
     }
+
+    public function test_stale_logo_path_sent_by_the_form_does_not_override_the_new_logo(): void
+    {
+        Storage::fake('public');
+        $save = $this->makeSave();
+        $team = $this->makeTeam($save, ['name' => 'Toho', 'logo_path' => "images/game-teams/{$save->id}/old.png"]);
+
+        $path = tempnam(sys_get_temp_dir(), 'upl');
+        file_put_contents($path, base64_decode(self::PNG_1PX));
+
+        // Le formulaire renvoie l'ancien chemin en plus du nouveau fichier.
+        $this->actingAs(User::find($save->user_id))
+            ->post(route('game-saves.teams.update', [$save, $team]), [
+                'name'      => 'Toho',
+                'budget'    => 1000,
+                'logo_path' => "images/game-teams/{$save->id}/old.png",
+                'logo'      => new UploadedFile($path, 'toho.png', null, null, true),
+            ])
+            ->assertSessionHasNoErrors();
+
+        $logo = $team->fresh()->logo_path;
+        $this->assertNotSame("images/game-teams/{$save->id}/old.png", $logo);
+        Storage::disk('public')->assertExists($logo);
+    }
 }

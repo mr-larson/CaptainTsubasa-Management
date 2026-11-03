@@ -59,7 +59,11 @@ export function computeAIAttackChoice(ball, specialCooldown) {
     const canOneTwo = !!_roster.getDuoPartnerOnField(team, slot)
         && getStaminaRatio(playerId) >= 0.35;
 
-    if (_state.isKickoff || _state.keeperRestartMustPass) {
+    // Le coup d'envoi n'accepte qu'une passe simple (handleAttackClick refuse
+    // le reste) : proposer une passe spéciale bloquerait l'IA.
+    if (_state.isKickoff) return "pass";
+
+    if (_state.keeperRestartMustPass) {
         return canUse(passSp) ? specialAction(passSp) : "pass";
     }
 

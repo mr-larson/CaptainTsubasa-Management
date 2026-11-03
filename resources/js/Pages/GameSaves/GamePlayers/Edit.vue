@@ -413,7 +413,7 @@ function addSpecialMove() {
         short_label: '',
         mode: 'attack',
         base_action: 'shot',
-        cooldown: 0,
+        cooldown: null, // vide = cooldown par défaut du moteur
         description: ''
     })
 }

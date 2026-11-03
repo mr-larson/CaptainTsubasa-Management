@@ -38,16 +38,17 @@ function countYellows(playerDbId) {
     ).length;
 }
 
-function expelPlayer(domId) {
+function expelPlayer(domId, dbId) {
     const el = _rootEl.querySelector(`[data-player="${domId}"]`);
     if (el) el.classList.add('unavailable');
+    if (dbId != null) _state.exitTurns[dbId] ??= _state.turns;
 }
 
 function giveYellowCard(defenderId, defenderDbId, defenderName) {
     _state.foulEvents.push({ type: 'card', player_id: defenderDbId, card_type: 'yellow' });
 
     if (countYellows(defenderDbId) >= 2) {
-        expelPlayer(defenderId);
+        expelPlayer(defenderId, defenderDbId);
         _pushLogEntry('foulCardTitle', [`🟨🟨 ${defenderName} — Double jaune ! Expulsé !`], null, _state);
     } else {
         _pushLogEntry('foulCardTitle', [`🟨 ${defenderName} — Carton jaune`], null, _state);
@@ -72,7 +73,7 @@ export function resolveFoulOutcome({ attackerId, defenderId, duelResult, dRoll }
 
         if (r < 0.15) {
             _state.foulEvents.push({ type: 'card', player_id: defenderDbId, card_type: 'red' });
-            expelPlayer(defenderId);
+            expelPlayer(defenderId, defenderDbId);
             _pushLogEntry('foulCardTitle', [`🟥 ${defenderName} — Carton rouge ! Expulsé !`], null, _state);
         } else if (r < 0.90) {
             giveYellowCard(defenderId, defenderDbId, defenderName);

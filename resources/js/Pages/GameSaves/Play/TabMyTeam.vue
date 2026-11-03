@@ -59,6 +59,13 @@ const emit = defineEmits([
 
 const substitutes = computed(() => props.rosterWithStatus.filter(p => !p.is_starter));
 
+// Numéro refusé par le serveur (déjà pris) : l'input revient à l'ancien numéro.
+function onNumberChange(event) {
+    const input    = event.target;
+    const previous = props.selectedMyPlayer?.number ?? '';
+    emit('update-number', props.selectedMyPlayer.id, input.value, () => { input.value = previous; });
+}
+
 const { moraleState, moraleSourceLabel, moraleMatchEffect, HEROIC_MORALE_THRESHOLD } = usePlayerUtils();
 
 // ── Moral ────────────────────────────────────────────────────
@@ -288,7 +295,7 @@ const slotMastery = (slot, slotDef) => {
                                     min="1"
                                     max="99"
                                     :value="selectedMyPlayer.number"
-                                    @change="emit('update-number', selectedMyPlayer.id, $event.target.value)"
+                                    @change="onNumberChange($event)"
                                     class="w-14 border border-slate-300 rounded-lg px-2 py-1 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-teal-300 focus:outline-none"
                                 />
                             </div>

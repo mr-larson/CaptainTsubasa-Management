@@ -274,8 +274,10 @@ class DraftService
                 ->count();
 
             // Terminé si : a atteint le max OU a dit "fini" (avec min 14)
+            // OU a été clôturée faute de joueur abordable (exhausted).
             if ($count >= self::MAX_SQUAD) continue;
             if (in_array($teamId, $finished) && $count >= self::MIN_SQUAD) continue;
+            if (in_array($teamId, $draft['exhausted_teams'] ?? [])) continue;
 
             // Cette équipe n'a pas fini
             return false;
@@ -286,14 +288,18 @@ class DraftService
 
     /**
      * Marque une équipe comme ayant fini son draft.
+     *
+     * `$force` clôt une équipe sous MIN_SQUAD qui ne peut plus rien s'offrir
+     * (pool vide ou budget épuisé) : sans cela, le pointeur ne bouge plus et
+     * la boucle de picks IA côté front tourne indéfiniment.
      */
-    public function finishTeamDraft(GameSave $gameSave, int $teamId): bool
+    public function finishTeamDraft(GameSave $gameSave, int $teamId, bool $force = false): bool
     {
         $count = GameContract::where('game_save_id', $gameSave->id)
             ->where('game_team_id', $teamId)
             ->count();
 
-        if ($count < self::MIN_SQUAD) return false;
+        if ($count < self::MIN_SQUAD && !$force) return false;
 
         $state = $gameSave->state ?? [];
         $draft = $state['draft'] ?? [];
@@ -301,6 +307,14 @@ class DraftService
 
         if (!in_array($teamId, $finished)) {
             $finished[] = $teamId;
+        }
+
+        if ($count < self::MIN_SQUAD) {
+            $exhausted = $draft['exhausted_teams'] ?? [];
+            if (!in_array($teamId, $exhausted)) {
+                $exhausted[] = $teamId;
+            }
+            $draft['exhausted_teams'] = $exhausted;
         }
 
         $draft['finished_teams'] = $finished;

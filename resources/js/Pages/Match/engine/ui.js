@@ -13,7 +13,14 @@ let _ui     = null;
 let _state  = null;
 let _TEAMS  = null;
 
+// Listeners posés sur `document` : retirés d'un coup au démontage du match
+// (navigation Inertia sans rechargement) pour ne pas s'accumuler.
+let _docAbort = null;
+
 export function initUIModule(rootEl, roster, ui, state, TEAMS) {
+    disposeUIModule();
+    _docAbort = new AbortController();
+
     _rootEl = rootEl;
     _roster = roster;
     _ui     = ui;
@@ -21,6 +28,15 @@ export function initUIModule(rootEl, roster, ui, state, TEAMS) {
     _TEAMS  = TEAMS;
 
     bindHistoryClickEvents();
+}
+
+/** Nettoyage de fin de match : listeners document, toast et overlay du terrain précédent. */
+export function disposeUIModule() {
+    _docAbort?.abort();
+    _docAbort = null;
+    if (_toastTimer) { clearTimeout(_toastTimer); _toastTimer = null; }
+    _toastEl   = null;
+    _overlayEl = null;
 }
 
 /** Clic sur une entrée de l'historique → affiche le détail du duel (breakdown), s'il existe. */
@@ -50,7 +66,7 @@ function bindHistoryClickEvents() {
         if (event.target.closest('.log-entry') || event.target.closest('#duel-dice-tooltip')) return;
         hideBreakdownTooltip();
         _openLogId = null;
-    });
+    }, { signal: _docAbort?.signal });
 }
 
 // -----------------------------------------------------------
@@ -566,10 +582,11 @@ export function updateSideCard(prefix, team, slotNumber) {
     _rootEl.querySelector(`#${prefix}-sub-btn`)?.remove();
     _rootEl.querySelector(`#${prefix}-sub-panel`)?.remove();
 
-    const isControlledTeam = (
-        _state?._matchConfig?.controlledSide === team ||
-        _state?._matchConfig?.controlMode === 'both'
-    );
+    // Mode courant (bouton « Mode 1 / 2 joueurs ») plutôt que la config figée
+    // au chargement : en mode 2 joueurs, les deux camps peuvent remplacer.
+    const isControlledTeam = typeof _state?._isAITeam === 'function'
+        ? !_state._isAITeam(team)
+        : (_state?._matchConfig?.controlledSide === team || _state?._matchConfig?.controlMode === 'both');
     const canSub = (
         isControlledTeam &&
         !_state?.isGameOver &&
@@ -650,7 +667,7 @@ export function updateSideCard(prefix, team, slotNumber) {
         document.addEventListener('click', () => {
             open = false;
             panel.style.display = 'none';
-        }, { once: true });
+        }, { once: true, signal: _docAbort?.signal });
 
         // 🔄 dans la status-bar, panel ancré sur la card
         const subBtnContainer = _rootEl.querySelector(`#${prefix}-status-bar`);

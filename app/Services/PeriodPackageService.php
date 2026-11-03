@@ -217,6 +217,8 @@ class PeriodPackageService
                 'players.*.special_moves.*.mode'         => ['required', 'string', 'in:attack,defense'],
                 'players.*.special_moves.*.base_action'  => ['required', 'string', 'max:50'],
                 'players.*.special_moves.*.description'  => ['nullable', 'string', 'max:1000'],
+                'players.*.special_moves.*.short_label'  => ['nullable', 'string', 'max:50'],
+                'players.*.special_moves.*.cooldown'     => ['nullable', 'integer', 'min:0', 'max:20'],
                 'players.*.photo_image'           => ['nullable', 'string'],
 
                 'contracts'                => ['nullable', 'array'],

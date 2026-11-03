@@ -45,11 +45,8 @@ const props = defineProps({
     playerYellowCards:      { type: Function, default: () => () => 0 },
 });
 
-const emit = defineEmits([
-    'select-team', 'select-player', 'toggle-starter', 'toggle-captain',
-    'save-formation', 'update-number',
-    'player-click', 'drag-start', 'drag-over', 'drop-on',
-]);
+// Onglet en lecture seule : on ne peut que choisir une équipe et consulter un joueur.
+const emit = defineEmits(['select-team', 'select-player']);
 
 const otherSubstitutes = computed(() => props.otherRosterWithStatus.filter(p => !p.is_starter));
 
@@ -94,10 +91,12 @@ const selectedPlayerPerf = computed(() => {
 
         <!-- LIGNE 2 : Formation + Terrain + Banc -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4" v-if="selectedOtherTeam">
+            <!-- Lecture seule : la compo d'une autre équipe (IA ou autre manager
+                 en hot-seat) n'est plus modifiable, le serveur le refuse. -->
             <FormationCard class="lg:col-span-4"
                            :formation="otherFormation"
                            :formationData="otherFormationData"
-                           @change="key => emit('save-formation', key)" />
+                           readonly />
 
             <PitchView class="lg:col-span-6"
                        :formationData="otherFormationData"
@@ -106,19 +105,13 @@ const selectedPlayerPerf = computed(() => {
                        :selectedSlot="otherSelectedSlot"
                        :isPickedUp="isOtherPickedUp"
                        :players="otherRosterWithStatus"
-                       @player-click="p => emit('player-click', p)"
-                       @drag-start="(p, e) => emit('drag-start', p, e)"
-                       @drag-over="e => emit('drag-over', e)"
-                       @drop-on="(p, e) => emit('drop-on', p, e)" />
+                       @player-click="p => emit('select-player', p)" />
 
             <BenchCard class="lg:col-span-2"
                        :substitutes="otherSubstitutes"
                        :selectedId="selectedOtherPlayer?.id"
                        :isPickedUp="isOtherPickedUp"
-                       @player-click="p => emit('player-click', p)"
-                       @drag-start="(p, e) => emit('drag-start', p, e)"
-                       @drag-over="e => emit('drag-over', e)"
-                       @drop-on="(p, e) => emit('drop-on', p, e)" />
+                       @player-click="p => emit('select-player', p)" />
         </div>
 
         <!-- LIGNE 3 : Infos club -->
@@ -201,46 +194,21 @@ const selectedPlayerPerf = computed(() => {
                     <!-- Identité + actions -->
                     <PlayerIdentityCard :player="selectedOtherPlayer">
                         <template #actions>
-                            <button v-if="selectedOtherPlayer.contract_id" type="button"
-                                    @click="emit('toggle-starter', selectedOtherPlayer.contract_id)"
-                                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all"
-                                    :class="selectedOtherPlayer.is_starter
-                                        ? 'bg-emerald-500 text-white border-emerald-600 hover:bg-emerald-600'
-                                        : 'bg-white text-slate-500 border-slate-300 hover:bg-slate-50'">
-                                {{ selectedOtherPlayer.is_starter ? '✓ Titulaire' : '+ Titulariser' }}
-                            </button>
-                            <button
-                                v-if="selectedOtherPlayer.contract_id"
-                                type="button"
-                                @click="emit('toggle-captain', selectedOtherPlayer.contract_id)"
-                                class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all"
-                                :class="selectedOtherPlayer.is_captain
-                                    ? 'bg-amber-400 text-white border-amber-500 hover:bg-amber-500'
-                                    : 'bg-white text-slate-500 border-slate-300 hover:bg-slate-50'"
-                                :title="selectedOtherPlayer.is_captain ? 'Retirer le brassard' : 'Nommer capitaine'"
-                            >
-                                {{ selectedOtherPlayer.is_captain ? '👑 Capitaine' : '👑 Nommer capitaine' }}
-                            </button>
-                            <!-- Numéro de maillot -->
-                            <div class="flex items-center gap-1.5">
-                                <span class="text-xs text-slate-500 font-semibold">N°</span>
-                                <input
-                                    type="number"
-                                    min="1"
-                                    max="99"
-                                    :value="selectedOtherPlayer.number"
-                                    @change="emit('update-number', selectedOtherPlayer.id, $event.target.value)"
-                                    class="w-14 border border-slate-300 rounded-lg px-2 py-1 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-teal-300 focus:outline-none"
-                                />
-                            </div>
+                            <span class="px-3 py-1.5 rounded-full text-xs font-semibold border"
+                                  :class="selectedOtherPlayer.is_starter
+                                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                      : 'bg-white text-slate-500 border-slate-200'">
+                                {{ selectedOtherPlayer.is_starter ? '✓ Titulaire' : 'Remplaçant' }}
+                            </span>
+                            <span v-if="selectedOtherPlayer.is_captain"
+                                  class="px-3 py-1.5 rounded-full text-xs font-semibold border bg-amber-50 text-amber-700 border-amber-200">
+                                👑 Capitaine
+                            </span>
+                            <span v-if="selectedOtherPlayer.number" class="text-xs text-slate-500 font-semibold">
+                                N° {{ selectedOtherPlayer.number }}
+                            </span>
                         </template>
                         <template #footer>
-                            <p v-if="selectedOtherPlayer.is_starter" class="mt-3 text-[10px] text-slate-400 italic">
-                                💡 Glisse ce joueur sur un titulaire pour échanger les positions, ou sur un remplaçant pour le sortir.
-                            </p>
-                            <p v-else class="mt-3 text-[10px] text-emerald-600 italic">
-                                💡 Glisse ce remplaçant sur un titulaire pour le faire entrer en jeu.
-                            </p>
                             <p v-if="selectedOtherPlayer.description" class="mt-2 text-xs text-slate-400 italic">{{ selectedOtherPlayer.description }}</p>
                         </template>
                     </PlayerIdentityCard>

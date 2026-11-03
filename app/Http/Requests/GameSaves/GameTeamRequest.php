@@ -32,8 +32,9 @@ class GameTeamRequest extends FormRequest
             'logo'        => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
             'remove_logo' => ['boolean'],
 
-            // Seulement en cas de préparation pour edit()
-            'logo_path'   => ['nullable', 'string'],
+            // Pas de règle `logo_path` : le chemin est géré uniquement par le
+            // contrôleur (upload / suppression). L'accepter du client écrasait
+            // le nouveau logo par l'ancien chemin, déjà supprimé.
 
             'tactical_style'        => ['nullable', Rule::in(TeamStyle::TACTICAL_STYLES)],
             'management_philosophy' => ['nullable', Rule::in(TeamStyle::PHILOSOPHIES)],

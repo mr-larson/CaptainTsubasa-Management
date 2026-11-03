@@ -159,8 +159,9 @@ function animateGoalThenReset(attackTeam, cb) {
 
 function animateShotToKeeper(defenseTeam, cb) {
     setBallToKeeperVisual(defenseTeam);
+    const st = _state;
     _animateAndThen(() => {
-        setTimeout(() => { if (cb) cb(); }, _state._GK_HOLD_MS ?? 300);
+        setTimeout(() => { if (!st.disposed && cb) cb(); }, st._GK_HOLD_MS ?? 300);
     });
 }
 
@@ -224,6 +225,19 @@ export function recordDuelEvent({ attackTeam, defenseTeam, attackSlot, defenseSl
         resultWinner: breakdown?.result?.winner ?? null,
         diff:         breakdown?.result?.diff   ?? null,
     });
+}
+
+/**
+ * Après une relance (capitaine, gardien, dépassement de soi), le duel déjà
+ * enregistré par recordDuelEvent porte l'ancien résultat : on le corrige pour
+ * que match_stats reflète l'issue réelle.
+ */
+function amendLastDuelEvent(duelResult, breakdown) {
+    const last = _state.actionEvents[_state.actionEvents.length - 1];
+    if (!last || last.turn !== _state.turns || !last.attack) return;
+    last.result       = duelResult;
+    last.resultWinner = breakdown?.result?.winner ?? duelResult;
+    last.diff         = breakdown?.result?.diff   ?? last.diff;
 }
 
 // -----------------------------------------------------------
@@ -345,6 +359,11 @@ function doReroll(ctx, heroic = false) {
     if (isGood) newDefenseScore += DUEL_RULES.GOOD_COUNTER_BONUS;
     else        newAttackScore  += DUEL_RULES.GENERIC_ATTACK_BONUS;
 
+    // Même bonus domicile que le duel initial (runFieldDuel).
+    const HOME_BONUS = 0.5;
+    if (attackTeam  === _homeTeam) newAttackScore  += HOME_BONUS;
+    if (defenseTeam === _homeTeam) newDefenseScore += HOME_BONUS;
+
     const newCritWinner = resolveCritOutcome(newAroll, newDroll);
 
     const meta = buildDuelMeta(
@@ -352,7 +371,6 @@ function doReroll(ctx, heroic = false) {
         _roster, TEXTS
     );
 
-    const HOME_BONUS = 0.5;
     const breakdown = buildFieldDuelBreakdown({
         attackBaseRaw, defenseBaseRaw,
         attackStamF, defenseStamF,
@@ -373,6 +391,7 @@ function doReroll(ctx, heroic = false) {
 
     const newDiceTag   = newAttackScore.toFixed(1) + "-" + newDefenseScore.toFixed(1);
     const newRawResult = newCritWinner ?? (newAttackScore > newDefenseScore ? "attack" : newAttackScore < newDefenseScore ? "defense" : "tie");
+    amendLastDuelEvent(newRawResult, breakdown);
 
     const attackerInfo = _roster.getPlayerInfo(attackTeam, b.number);
     const attackerName = ((attackerInfo?.firstname ?? '') + ' ' + (attackerInfo?.lastname ?? '')).trim();
@@ -632,6 +651,7 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
             const dbId  = _roster.getPlayerInfo(team, slot)?.id ?? null;
             const name  = _roster.getPlayerInfo(team, slot)?.lastname ?? pid;
             _state.foulEvents.push({ type: 'injury', player_id: dbId, severity: 'light' });
+            _state.exitTurns[dbId] ??= _state.turns;
             const el = _rootEl.querySelector(`[data-player="${pid}"]`);
             if (el) el.classList.add('unavailable');
             pushLogEntry('foulInjuryTitle', [`🤕 ${name} — Blessure (épuisement)`], null, _state);
@@ -803,7 +823,9 @@ export function performKeeperClearance(defenseTeam, defenseAction, afterClearanc
     const rx = parseFloat(receiverEl.style.left);
     const ry = parseFloat(receiverEl.style.top);
 
+    const st = _state;
     setTimeout(() => {
+        if (st.disposed) return;
         animateBallToXY(rx, ry, () => {
             b.frontOfKeeper = false;
             resetLastDribbler();
@@ -1493,6 +1515,18 @@ export function resolveShotKeeperDuel(ctx, defenseAction) {
     if (attackTeam  === _homeTeam) attackScore  += HOME_BONUS;
     if (defenseTeam === _homeTeam) defenseScore += HOME_BONUS;
 
+    // Score avant dés (zone, endurance, domicile) : réutilisé tel quel par les
+    // relances du gardien pour qu'elles ne faussent pas le tir.
+    const attackPreDice  = attackScore  - aRoll.bonus;
+    const defensePreDice = defenseScore - dRoll.bonus;
+    const rescoreKeeperDuel = (newDroll) => applyDuelBonuses({
+        attackAction: isSpecial ? "special" : "shot",
+        defenseAction,
+        attackScore:  attackPreDice  + aRoll.bonus,
+        defenseScore: defensePreDice + newDroll.bonus,
+        context: { isKeeperDuel: true },
+    });
+
     ({ attackScore, defenseScore } = applyDuelBonuses({
         attackAction: isSpecial ? "special" : "shot",
         defenseAction, attackScore, defenseScore,
@@ -1545,6 +1579,7 @@ export function resolveShotKeeperDuel(ctx, defenseAction) {
             const dbId  = _roster.getPlayerInfo(team, slot)?.id ?? null;
             const name  = _roster.getPlayerInfo(team, slot)?.lastname ?? pid;
             _state.foulEvents.push({ type: 'injury', player_id: dbId, severity: 'light' });
+            _state.exitTurns[dbId] ??= _state.turns;
             const el = _rootEl.querySelector(`[data-player="${pid}"]`);
             if (el) el.classList.add('unavailable');
             pushLogEntry('foulInjuryTitle', [`🤕 ${name} — Blessure (épuisement)`], null, _state);
@@ -1582,15 +1617,11 @@ export function resolveShotKeeperDuel(ctx, defenseAction) {
                         let newDefenseScore  = defenseBase * gkFactor + newDroll.bonus;
                         let newAttackScore   = attackScore - dRoll.bonus + aRoll.bonus; // recalcul sans le vieux dRoll
                         // Réappliquer les bonus
-                        ({ attackScore: newAttackScore, defenseScore: newDefenseScore } = applyDuelBonuses({
-                            attackAction: isSpecial ? "special" : "shot",
-                            defenseAction, attackScore: gkAttackBase * staminaFactor(attackerId) + aRoll.bonus,
-                            defenseScore: defenseBase * gkFactor + newDroll.bonus,
-                            context: { isKeeperDuel: true },
-                        }));
+                        ({ attackScore: newAttackScore, defenseScore: newDefenseScore } = rescoreKeeperDuel(newDroll));
                         const newCrit = resolveCritOutcome(aRoll, newDroll);
                         duelResult = newCrit ?? (newAttackScore > newDefenseScore ? "attack" : "defense");
                         const rerollBreakdown = { ...breakdown, captainReroll: true };
+                        amendLastDuelEvent(duelResult, { result: { winner: duelResult, diff: newAttackScore - newDefenseScore } });
                         showDuelDice(newAttackScore, newDefenseScore, aRoll, newDroll, rerollBreakdown);
                         pushLogEntry(`👑 Captain Reroll GK — ${gkInfo.lastname}`, [
                             `2d20 (${newDroll.roll1}, ${newDroll.roll2}) → ${newDroll.roll}`,
@@ -1617,15 +1648,10 @@ export function resolveShotKeeperDuel(ctx, defenseAction) {
                         consumeReroll(defenseTeam);
                         const newDroll2      = rollD20Advantage();
                         let newAScore, newDScore;
-                        ({ attackScore: newAScore, defenseScore: newDScore } = applyDuelBonuses({
-                            attackAction: isSpecial ? "special" : "shot",
-                            defenseAction,
-                            attackScore: gkAttackBase * staminaFactor(attackerId) + aRoll.bonus,
-                            defenseScore: defenseBase * gkFactor + newDroll2.bonus,
-                            context: { isKeeperDuel: true },
-                        }));
+                        ({ attackScore: newAScore, defenseScore: newDScore } = rescoreKeeperDuel(newDroll2));
                         const newCrit2  = resolveCritOutcome(aRoll, newDroll2);
                         const newResult = newCrit2 ?? (newAScore > newDScore ? "attack" : "defense");
+                        amendLastDuelEvent(newResult, { result: { winner: newResult, diff: newAScore - newDScore } });
                         const rerollBreakdown = { ...breakdown, captainReroll: true };
                         showDuelDice(newAScore, newDScore, aRoll, newDroll2, rerollBreakdown);
                         pushLogEntry(`👑 Captain Reroll GK — ${gkInfo.lastname}`, [

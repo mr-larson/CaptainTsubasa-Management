@@ -110,7 +110,8 @@ const playerForManualEntry = playerForEntry;
 const manualEntries = computed(() => {
     const s = props.trainingState;
     if (!s || Number(s.season) !== Number(props.season) || Number(s.week) !== Number(props.week)) return [];
-    return Array.isArray(s.entries) ? s.entries : [];
+    // Seules les séances de mon équipe (en hot-seat, les autres managers ont les leurs).
+    return Array.isArray(s.entries) ? s.entries.filter(e => playerForEntry(e)) : [];
 });
 
 // ── Stats autorisées par poste (5 groupes — sémantique entraînement) ──

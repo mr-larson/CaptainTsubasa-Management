@@ -53,6 +53,30 @@ class TrainingServiceTest extends TestCase
         $this->assertCount(1, $save->fresh()->state['training']['entries']);
     }
 
+    public function test_hot_seat_quota_is_counted_per_team(): void
+    {
+        $save  = $this->makeSave();
+        $seat1 = $this->makeTeam($save, ['is_controlled' => true, 'human_seat' => 1]);
+        $seat2 = $this->makeTeam($save, ['is_controlled' => true, 'human_seat' => 2]);
+
+        $train = function ($team) use ($save) {
+            $save->controlled_game_team_id = $team->id;
+            $save->save();
+            $rows = [];
+            for ($i = 0; $i < 3; $i++) {
+                $player = $this->makePlayer($save, ['stamina' => 100]);
+                $this->makeContract($save, $team, $player);
+                $rows[] = ['player_id' => $player->id, 'stat' => 'shot'];
+            }
+            return $this->service->applyTrainings($save->fresh(), 1, 1, $rows);
+        };
+
+        // Le siège 1 épuise son quota hebdo (3) ; le siège 2 garde le sien.
+        $this->assertCount(3, $train($seat1));
+        $this->assertCount(3, $train($seat2));
+        $this->assertCount(6, $save->fresh()->state['training']['entries']);
+    }
+
     public function test_stat_gain_is_clamped_to_maximum(): void
     {
         $save = $this->makeSave();

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
 import PlayerPhoto from '@/Components/PlayerPhoto.vue';
 import RadarChart from '@/Pages/GameSaves/Play/components/RadarChart.vue';
@@ -16,6 +16,7 @@ const props = defineProps({
     transferSalary:       { type: Number,  required: true },
     transferReason:       { type: String,  required: true },
     transferTotalCost:    { type: Number,  required: true },
+    transferProcessing:   { type: Boolean, default: false },
     transferHistory:      { type: Array, default: () => [] },
     roster:               { type: Array,   default: () => [] },
 });
@@ -101,6 +102,13 @@ const filteredPlayers = computed(() => {
 //   JOUEUR SÉLECTIONNÉ
 // ==========================
 const selectedPlayer = ref(null);
+// Après une signature réussie, le joueur sort de la liste des agents libres :
+// on referme son panneau (sinon il reste ouvert et invite à recliquer).
+watch(() => props.availableFreePlayers, (list) => {
+    if (selectedPlayer.value && !list.some(p => p.id === selectedPlayer.value.id)) {
+        selectedPlayer.value = null;
+    }
+});
 const selectPlayer = (p) => {
     selectedPlayer.value = p;
     // Le salaire fait autorité côté serveur (coût ajusté à la polyvalence) :
@@ -458,11 +466,11 @@ const filteredHistory = computed(() =>
                         </button>
                         <button type="button"
                                 class="px-5 py-1.5 text-sm rounded-full font-semibold transition-all disabled:opacity-40"
-                                :class="canAfford && team && transferMatches > 0
+                                :class="canAfford && team && transferMatches > 0 && !transferProcessing
                                 ? 'bg-teal-500 hover:bg-teal-600 text-white shadow-sm'
                                 : 'bg-slate-200 text-slate-400'"
-                                :disabled="!canAfford || !team || transferMatches <= 0"
-                                @click="emit('open-modal', selectedPlayer); emit('confirm-transfer')">
+                                :disabled="!canAfford || !team || transferMatches <= 0 || transferProcessing"
+                                @click="emit('confirm-transfer', selectedPlayer)">
                             Confirmer l'offre
                         </button>
                     </div>

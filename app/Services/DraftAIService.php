@@ -72,7 +72,9 @@ class DraftAIService
         $maxCostPerPlayer = (int) floor($budget / $remaining);
 
         // Filtrer les joueurs abordables
-        $discountedCost = fn($p) => (int) floor(($p->cost ?? 0) * $seasonLength * DraftService::DRAFT_DISCOUNT);
+        // Même base que DraftService::executePick (coût majoré de la polyvalence) :
+        // sinon l'IA choisit un joueur que le pick refusera.
+        $discountedCost = fn($p) => (int) floor(($p->adjusted_cost ?? 0) * $seasonLength * DraftService::DRAFT_DISCOUNT);
 
         $affordable = $freePlayers->filter(fn($p) =>
             $discountedCost($p) <= $budget
@@ -80,7 +82,7 @@ class DraftAIService
 
         if ($affordable->isEmpty()) {
             // Prendre le joueur gratuit le plus fort
-            $freeAgents = $freePlayers->filter(fn($p) => ($p->cost ?? 0) === 0);
+            $freeAgents = $freePlayers->filter(fn($p) => ($p->adjusted_cost ?? 0) === 0);
             if ($freeAgents->isEmpty()) return null;
             return $freeAgents->sortByDesc(fn($p) => $this->playerOverall($p))->first()->id;
         }
@@ -104,7 +106,7 @@ class DraftAIService
         $scored = $affordable->map(function ($player) use ($priorityPosition, $philosophy, $tacticalStyle, $teamAvg, $maxCostPerPlayer, $countByPos, $discountedCost, $partnerMap, $squadBaseIds, $poolBaseIds) {
             $posGroup = $this->positionGroup($player->position ?? '');
             $overall  = $this->playerOverall($player, $posGroup);
-            $cost     = $player->cost ?? 0;
+            $cost     = $player->adjusted_cost ?? 0;
             $score    = 0.0;
 
             // 1. Bonus poste prioritaire (+30)

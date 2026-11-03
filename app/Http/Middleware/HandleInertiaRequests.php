@@ -35,6 +35,14 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            // Messages flash des contrôleurs (->with('success'|'info'|'message'|'error')),
+            // affichés par le toast global d'AuthenticatedLayout. `status` reste
+            // lu directement par les pages Breeze (profil, mot de passe).
+            'flash' => fn () => array_filter([
+                'success' => $request->session()->get('success'),
+                'info'    => $request->session()->get('info') ?? $request->session()->get('message'),
+                'error'   => $request->session()->get('error'),
+            ]),
             'ziggy' => function () use ($request) {
                 return array_merge((new Ziggy)->toArray(), [
                     'location' => $request->url(),

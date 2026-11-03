@@ -150,6 +150,20 @@ class DraftServiceTest extends TestCase
         $this->assertContains($ok->id, $save->fresh()->state['draft']['finished_teams']);
     }
 
+    public function test_forced_finish_closes_an_exhausted_team_under_minimum(): void
+    {
+        $save = $this->makeSave();
+        [$small] = $this->makeTeamWithSquad($save, [], DraftService::MIN_SQUAD - 3);
+        $this->service->initDraft($save, [$small->id]);
+
+        // Sans `force`, le draft resterait bloqué sur cette équipe.
+        $this->assertTrue($this->service->finishTeamDraft($save, $small->id, force: true));
+
+        $draft = $save->fresh()->state['draft'];
+        $this->assertContains($small->id, $draft['exhausted_teams']);
+        $this->assertTrue($draft['completed']);
+    }
+
     public function test_finalize_draft_builds_lineups_and_starts_season(): void
     {
         $save = $this->makeSave(['phase' => 'intersaison_draft']);

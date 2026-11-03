@@ -57,6 +57,8 @@ class GamePlayerRequest extends FormRequest
             'special_moves.*.mode'       => ['required_with:special_moves', 'string', 'in:attack,defense'],
             'special_moves.*.base_action'=> ['required_with:special_moves', 'string', 'max:50'],
             'special_moves.*.description'=> ['nullable', 'string', 'max:1000'],
+            'special_moves.*.short_label'=> ['nullable', 'string', 'max:50'],
+            'special_moves.*.cooldown'   => ['nullable', 'integer', 'min:0', 'max:20'],
         ];
     }
 }

@@ -29,20 +29,30 @@ export function emptyPlayerMatchStats() {
  *  - titulaire non remplacé : totalTurns
  *  - titulaire sorti au tour T : T tours
  *  - remplaçant entré au tour T : totalTurns - T tours
+ *  - expulsé / blessé au tour X : le temps s'arrête à X (exitTurns)
  * Clés = game_player_id (cohérent avec match_stats.players).
  */
-export function computePlaytime(startersByTeam, substitutions, totalTurns) {
+export function computePlaytime(startersByTeam, substitutions, totalTurns, exitTurns = {}) {
     const playtime = {};
+    const enteredAt = {};
 
     for (const team of ["internal", "external"]) {
         for (const pid of startersByTeam?.[team] ?? []) {
-            if (pid != null) playtime[String(pid)] = totalTurns;
+            if (pid != null) { playtime[String(pid)] = totalTurns; enteredAt[String(pid)] = 0; }
         }
     }
 
     for (const s of substitutions ?? []) {
-        if (s.outPlayerId != null) playtime[String(s.outPlayerId)] = s.turn;
-        if (s.inPlayerId  != null) playtime[String(s.inPlayerId)]  = Math.max(0, totalTurns - s.turn);
+        if (s.outPlayerId != null) playtime[String(s.outPlayerId)] = s.turn - (enteredAt[String(s.outPlayerId)] ?? 0);
+        if (s.inPlayerId  != null) {
+            playtime[String(s.inPlayerId)]  = Math.max(0, totalTurns - s.turn);
+            enteredAt[String(s.inPlayerId)] = s.turn;
+        }
+    }
+
+    for (const [pid, exitTurn] of Object.entries(exitTurns ?? {})) {
+        if (!(pid in playtime)) continue;
+        playtime[pid] = Math.min(playtime[pid], Math.max(0, exitTurn - (enteredAt[pid] ?? 0)));
     }
 
     return playtime;

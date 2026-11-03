@@ -436,14 +436,27 @@ const awayLogoUrl = computed(() => {
 // ==========================
 //  Lifecycle : mount / unmount
 // ==========================
+// Le moteur construit son DOM en `innerHTML` avec les noms de joueurs, d'équipes
+// et de techniques, qui sont saisis librement (y compris via les packages de
+// période partagés). On neutralise `<` et `>` à l'entrée : ces textes ne sont
+// jamais interpolés dans des attributs, donc aucune balise ne peut être injectée.
+function neutralizeMarkup(value) {
+    if (typeof value === 'string') return value.replace(/</g, '‹').replace(/>/g, '›');
+    if (Array.isArray(value)) return value.map(neutralizeMarkup);
+    if (value && typeof value === 'object') {
+        return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, neutralizeMarkup(v)]));
+    }
+    return value;
+}
+
 onMounted(() => {
-    const captain = props.engineConfig.teams.internal.players.find(p => p.is_captain);
-    console.log('Captain:', captain?.lastname, 'isCaptain:', captain?.is_captain);
     if (!gameRoot.value) return;
 
     cleanup = initMatchEngine(gameRoot.value, {
-        ...props.engineConfig,
-        onMatchEnd: ({ matchId, gameSaveId, scoresByTeamId, playerActions, match_stats, foulEvents }) => {
+        ...neutralizeMarkup(props.engineConfig),
+        onMatchEnd: ({ matchId, gameSaveId, scoresByTeamId, playerActions, match_stats, foulEvents, onFailed }) => {
+            // Pas de `router.visit` en onSuccess : le serveur choisit la suite
+            // (Play, fin de saison, game over) via sa redirection.
             router.post(
                 route('game-saves.matches.finish', { gameSave: gameSaveId, match: matchId }),
                 {
@@ -454,7 +467,7 @@ onMounted(() => {
                 },
                 {
                     preserveScroll: true,
-                    onSuccess: () => router.visit(route('game-saves.Play', { gameSave: gameSaveId })),
+                    onError: () => onFailed?.(),
                 }
             );
         },

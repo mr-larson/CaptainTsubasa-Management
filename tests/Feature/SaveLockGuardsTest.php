@@ -82,6 +82,39 @@ class SaveLockGuardsTest extends TestCase
         }
     }
 
+    public function test_simulate_week_with_stale_week_is_ignored(): void
+    {
+        $save = $this->makeSave(['week' => 3]);
+        $team = $this->makeTeam($save, ['budget' => 1000]);
+
+        $this->actingAs(User::find($save->user_id))
+            ->post(route('game-saves.simulate-week', $save), ['week' => 2])
+            ->assertRedirect(route('game-saves.Play', $save));
+
+        $this->assertSame(3, (int) $save->fresh()->week, 'Un double clic ne doit pas simuler la semaine suivante.');
+        $this->assertSame(1000, (int) $team->fresh()->budget);
+    }
+
+    public function test_simulate_week_hands_over_to_human_with_pending_match(): void
+    {
+        $save   = $this->makeSave();
+        $seat1  = $this->makeTeam($save, ['is_controlled' => true, 'human_seat' => 1]);
+        $seat2  = $this->makeTeam($save, ['is_controlled' => true, 'human_seat' => 2]);
+        $ai     = $this->makeTeam($save);
+        $save->update(['controlled_game_team_id' => $seat1->id]);
+
+        // Le siège 1 est exempt, le siège 2 doit encore jouer.
+        $match = $this->makeMatch($save, $seat2, $ai);
+
+        $this->actingAs(User::find($save->user_id))
+            ->post(route('game-saves.simulate-week', $save), ['week' => 1])
+            ->assertRedirect(route('game-saves.Play', $save));
+
+        $this->assertSame('scheduled', $match->fresh()->status, 'Le match d\'un humain ne doit pas être simulé.');
+        $this->assertSame(1, (int) $save->fresh()->week);
+        $this->assertSame($seat2->id, (int) $save->fresh()->controlled_game_team_id);
+    }
+
     public function test_replayed_season_continue_starts_only_one_new_season(): void
     {
         $save = $this->makeSave(['phase' => 'season_end', 'week' => 7, 'season' => 1]);

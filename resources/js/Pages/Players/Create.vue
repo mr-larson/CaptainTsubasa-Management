@@ -319,6 +319,22 @@
                             </FormCol>
                         </FormRaw>
 
+                        <!-- Ligne 8 bis : heading -->
+                        <FormRaw>
+                            <FormCol>
+                                <InputLabel for="stats.heading" value="Jeu de tête" />
+                                <InputText
+                                    id="stats.heading"
+                                    type="number"
+                                    class="mt-1 w-full"
+                                    v-model="form.stats.heading"
+                                />
+                                <p v-if="form.errors['stats.heading']" class="text-sm text-red-600 mt-1">
+                                    {{ form.errors['stats.heading'] }}
+                                </p>
+                            </FormCol>
+                        </FormRaw>
+
                         <!-- Ligne 9 : hand_save / punch_save -->
                         <FormRaw>
                             <FormCol>
@@ -428,6 +444,7 @@ const form = useForm({
         block: 0,
         intercept: 0,
         tackle: 0,
+        heading: 15, // défaut du modèle Player
         hand_save: 0,
         punch_save: 0,
     },

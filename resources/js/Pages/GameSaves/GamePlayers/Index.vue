@@ -418,13 +418,6 @@
                             + Ajouter
                         </button>
                     </div>
-                    <div
-                        v-if="contractCreatedMessage"
-                        class="mb-4 px-3 py-2 rounded-lg bg-teal-50 border border-teal-200 text-teal-700 text-sm font-medium"
-                    >
-                        {{ contractCreatedMessage }}
-                    </div>
-
                     <!-- Si un contrat existe : formulaire d’édition -->
                     <form v-if="form.contract" @submit.prevent="updateContract" class="space-y-4">
                         <!-- Ligne 1 : Équipe + Salaire -->
@@ -564,7 +557,6 @@ const photoInput = ref(null)
 const photoPreviewUrl = ref(null)
 const selectedPhotoName = ref('')
 const contractProcessing = ref(false)
-const contractCreatedMessage = ref('')
 
 const form = useForm({
     id: null,
@@ -737,7 +729,7 @@ function addSpecialMove() {
         short_label: '',
         mode: 'attack',
         base_action: 'shot',
-        cooldown: 0,
+        cooldown: null, // vide = cooldown par défaut du moteur
         description: ''
     })
 }
@@ -753,7 +745,7 @@ function startNewContract() {
         id: null,
         game_team_id: '',
         salary: 0,
-        start_week: null,
+        start_week: props.gameSave.week ?? 1, // requis côté serveur
         end_week: null,
         is_starter: false,
     }
@@ -771,21 +763,11 @@ function updateContract() {
         is_starter: form.contract.is_starter,
     }
 
+    // Succès et erreurs (422, contrat déjà actif…) s'affichent dans le toast
+    // global ; on débloque les boutons dans tous les cas.
     const options = {
         preserveScroll: true,
-        onSuccess: () => {
-            contractProcessing.value = false
-
-            // 🎉 Message de succès
-            contractCreatedMessage.value = form.contract.id
-                ? 'Contrat mis à jour.'
-                : 'Contrat créé avec succès.'
-
-            // 🧹 Nettoie après 3 secondes
-            setTimeout(() => {
-                contractCreatedMessage.value = ''
-            }, 3000)
-        }
+        onFinish: () => { contractProcessing.value = false },
     }
 
     if (form.contract.id) {
@@ -828,7 +810,6 @@ function deleteContract() {
         }
     )
 }
-``
 
 function deletePlayer() {
     if (!form.id) return

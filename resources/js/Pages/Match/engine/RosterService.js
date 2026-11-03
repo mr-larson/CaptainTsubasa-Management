@@ -47,11 +47,14 @@ export class RosterService {
             let starters = playersRaw.filter(p => p && p.is_starter === true);
             if (!starters.length) starters = playersRaw.slice(0, 11);
 
-            const subs = playersRaw.filter(p => p && p.is_starter === false);
+            const subs = playersRaw.filter(p => p && p.is_starter === false && p.id != null);
 
             // Slots 1-11 = titulaires sur le terrain
             for (let slot = 1; slot <= 11; slot++) {
-                const p = starters[slot - 1] ?? null;
+                // Un slot vide envoyé par le serveur (is_placeholder, id null)
+                // reçoit le jeton générique « Joueur #slot ».
+                const raw = starters[slot - 1] ?? null;
+                const p   = raw && raw.id != null ? raw : null;
                 rosters[teamKey].set(slot, p ? {
                     id:           p.id        ?? null,
                     number:       p.number    ?? slot,

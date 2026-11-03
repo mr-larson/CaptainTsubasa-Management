@@ -213,13 +213,13 @@ const {
     selectedTrainings, addTrainingSlot, removeTrainingSlot,
     canSubmitTraining, submitTraining,
     aiTrainingEntries, aiCurrentDisplayWeek, aiWeekMax, prevAiWeek, nextAiWeek,
-} = useTraining({ gameSave: gameSaveRef, season, week });
+} = useTraining({ gameSave: gameSaveRef, season, week, teamId: computed(() => teamRef.value?.id ?? null) });
 
 const {
     availableFreePlayers,
     showTransferModal, transferTarget,
     transferMatches, transferSalary, transferReason,
-    transferTotalCost,
+    transferTotalCost, transferProcessing,
     openTransferModal, closeTransferModal, confirmTransfer,
     transferHistory,
 } = useTransfers({ gameSave: gameSaveRef, freePlayers: freePlayersRef, team: teamRef, teams: teamsRef });
@@ -230,12 +230,10 @@ const {
 const {
     otherTeams, selectedOtherTeam, selectOtherTeam,
     otherRosterWithStatus, selectedOtherPlayer, selectOtherPlayer,
-    toggleOtherStarter, toggleOtherCaptain,
-    otherLineupForm, getOtherSlotForPlayer, changeOtherPlayerSlot,
-    otherFormation, otherFormationData, saveOtherFormation,
+    otherLineupForm, getOtherSlotForPlayer,
+    otherFormation, otherFormationData,
     otherPlayerPosition, otherPlayerForSlot, otherSelectedSlot,
     updatePlayerNumber, isOtherPickedUp,
-    handleOtherPlayerClick, handleOtherDragStart, handleOtherDragOver, handleOtherDrop,
 } = useOtherTeam({
     gameSave: gameSaveRef,
     teams: teamsRef,
@@ -294,7 +292,17 @@ function openCareerRules() {
 //   ACTIONS GLOBALES
 // ==========================
 const playNextMatch  = () => router.get(route('game-saves.match', { gameSave: props.gameSave.id }));
-const simulateWeek   = () => router.post(route('game-saves.simulate-week', { gameSave: props.gameSave.id }), {}, { preserveScroll: true, preserveState: false });
+const simulating     = ref(false);
+const simulateWeek   = () => {
+    if (simulating.value) return;
+    simulating.value = true;
+    // `week` sert de clé d'idempotence côté serveur (double clic).
+    router.post(
+        route('game-saves.simulate-week', { gameSave: props.gameSave.id }),
+        { week: props.gameSave.week },
+        { preserveScroll: true, preserveState: false, onFinish: () => { simulating.value = false; } },
+    );
+};
 
 const saveGame = () => {
     saving.value = true;
@@ -305,17 +313,6 @@ const saveGame = () => {
     );
 };
 
-
-function updateOtherPlayerNumber(playerId, number) {
-    router.patch(
-        route('game-saves.players.update-number', {
-            gameSave: props.gameSave.id,
-            player: playerId,
-        }),
-        { number: parseInt(number) },
-        { preserveScroll: true }
-    );
-}
 </script>
 
 <template>
@@ -405,6 +402,7 @@ function updateOtherPlayerNumber(playerId, number) {
                                   :isByeWeek="isByeWeek"
                                   :teamById="teamById"
                                   :saving="saving"
+                                  :simulating="simulating"
                                   :matches="matches"
                                   :unboughtCardsCount="unboughtCardsCount"
                                   :freePlayersCount="freePlayersCount"
@@ -493,17 +491,8 @@ function updateOtherPlayerNumber(playerId, number) {
                                    :isPlayerSuspended="isPlayerSuspended"
                                    :playerYellowCards="playerYellowCards"
                                    :isOtherPickedUp="isOtherPickedUp"
-                                   @player-click="handleOtherPlayerClick"
-                                   @drag-start="handleOtherDragStart"
-                                   @drag-over="handleOtherDragOver"
-                                   @drop-on="handleOtherDrop"
                                    @select-team="selectOtherTeam"
                                    @select-player="selectOtherPlayer"
-                                   @toggle-starter="toggleOtherStarter"
-                                   @toggle-captain="toggleOtherCaptain"
-                                   @change-slot="changeOtherPlayerSlot"
-                                   @save-formation="saveOtherFormation"
-                                   @update-number="updateOtherPlayerNumber"
                     />
 
                     <!-- ======== CALENDRIER ======== -->
@@ -585,6 +574,7 @@ function updateOtherPlayerNumber(playerId, number) {
                                   :transferSalary="transferSalary"
                                   :transferReason="transferReason"
                                   :transferTotalCost="transferTotalCost"
+                                  :transferProcessing="transferProcessing"
                                   :roster="roster"
                                   @open-modal="openTransferModal"
                                   @close-modal="closeTransferModal"

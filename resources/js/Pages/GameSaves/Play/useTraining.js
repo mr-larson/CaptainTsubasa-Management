@@ -2,27 +2,27 @@
 import { ref, computed } from 'vue';
 import { router } from '@inertiajs/vue3';
 
-export function useTraining({ gameSave, season, week }) {
+export function useTraining({ gameSave, season, week, teamId }) {
 
     const MAX_TRAININGS_PER_WEEK = 3;
 
     const trainingState = computed(() => gameSave.value.state?.training ?? null);
 
-    const remainingTrainingsThisWeek = computed(() => {
+    // Séances de la semaine de l'équipe active (quota par équipe en hot-seat).
+    // Les entrées sans team_id (anciennes) comptent pour toutes les équipes, comme côté serveur.
+    const myEntriesThisWeek = computed(() => {
         const s = trainingState.value;
-        if (!s) return MAX_TRAININGS_PER_WEEK;
-        if (s.season !== season.value || s.week !== week.value) return MAX_TRAININGS_PER_WEEK;
-        const used = Array.isArray(s.entries) ? s.entries.length : 0;
-        return Math.max(0, MAX_TRAININGS_PER_WEEK - used);
+        if (!s || s.season !== season.value || s.week !== week.value) return [];
+        if (!Array.isArray(s.entries)) return [];
+        return s.entries.filter(e => e.team_id == null || Number(e.team_id) === Number(teamId?.value));
     });
 
-    const hasPlayerBeenTrainedThisWeek = (playerId) => {
-        const s = trainingState.value;
-        if (!s) return false;
-        if (s.season !== season.value || s.week !== week.value) return false;
-        if (!Array.isArray(s.entries)) return false;
-        return s.entries.some(e => Number(e.player_id) === Number(playerId));
-    };
+    const remainingTrainingsThisWeek = computed(() =>
+        Math.max(0, MAX_TRAININGS_PER_WEEK - myEntriesThisWeek.value.length)
+    );
+
+    const hasPlayerBeenTrainedThisWeek = (playerId) =>
+        myEntriesThisWeek.value.some(e => Number(e.player_id) === Number(playerId));
 
     const availableTrainingStats = [
         { key: 'shot',       label: 'Tir'           },

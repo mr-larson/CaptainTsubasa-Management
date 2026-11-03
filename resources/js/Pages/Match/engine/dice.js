@@ -175,6 +175,7 @@ let _chipToken    = 0;      // seul le dernier duel a le droit d'écrire le chip
 // -----------------------------------------------------------
 let _queue     = [];   // étapes en attente : (done) => void
 let _queueBusy = false;
+let _queueGen  = 0;    // incrémenté au reset : un done() d'un match précédent est ignoré
 
 export function getDiceAnimMode() {
     try {
@@ -210,13 +211,24 @@ function _drainQueue() {
     const step = _queue.shift();
     if (!step) { _queueBusy = false; return; }
     _queueBusy = true;
-    step(() => _drainQueue());
+    const gen = _queueGen;
+    step(() => { if (gen === _queueGen) _drainQueue(); });
 }
 
 /** Vide la file (nouvelle partie) — pas d'étape d'un match précédent en attente. */
 export function resetEventQueue() {
     _queue     = [];
     _queueBusy = false;
+    _queueGen++;
+}
+
+let _winAbort = null;
+
+/** Nettoyage de fin de match : listeners window du tooltip et file de révélation. */
+export function disposeDiceUI() {
+    _winAbort?.abort();
+    _winAbort = null;
+    resetEventQueue();
 }
 
 const REVEAL_DWELL = {
@@ -628,6 +640,8 @@ export function bindDuelTooltipEvents() {
     _duelDiceEl.addEventListener("blur",  hide);
 
     const reposition = () => { if (!_duelTooltipEl?.classList.contains("hidden")) positionTooltip(); };
-    window.addEventListener("scroll", reposition, { passive: true });
-    window.addEventListener("resize", reposition);
+    _winAbort?.abort();
+    _winAbort = new AbortController();
+    window.addEventListener("scroll", reposition, { passive: true, signal: _winAbort.signal });
+    window.addEventListener("resize", reposition, { signal: _winAbort.signal });
 }

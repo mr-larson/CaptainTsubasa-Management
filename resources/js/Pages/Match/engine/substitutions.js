@@ -116,8 +116,9 @@ export function performSubstitution(team, outSlot, inSlot) {
 }
 
 /**
- * IA : remplace automatiquement un joueur fatigué (< 50% d'endurance) par
- * le meilleur remplaçant disponible au même poste.
+ * IA : remplace en priorité un titulaire indisponible (blessé, suspendu,
+ * consigné par malus — mais pas un expulsé), puis un joueur fatigué
+ * (< 50% d'endurance), par le meilleur remplaçant disponible au même poste.
  */
 export function aiCheckSubstitutions() {
     if (_state.isGameOver) return;
@@ -126,16 +127,30 @@ export function aiCheckSubstitutions() {
         if (!_isAITeam(aiTeam)) continue;
         if ((_state.substitutionCount[aiTeam] ?? 0) >= _state.MAX_SUBSTITUTIONS) continue;
 
+        const candidates = [];
         for (let outSlot = 1; outSlot <= 11; outSlot++) {
             const outId = _getPlayerId(aiTeam, outSlot);
             const outEl = _rootEl.querySelector(`[data-player="${outId}"]`);
-            if (!outEl || outEl.classList.contains('unavailable')) continue;
+            if (!outEl) continue;
             if (isPlayerSentOff(aiTeam, outSlot)) continue;
 
-            const stMax = _state.staminaMax[outId] ?? 100;
-            const stCur = _state.stamina[outId]    ?? stMax;
-            const ratio = stMax > 0 ? stCur / stMax : 1;
-            if (ratio >= 0.5) continue;
+            if (outEl.classList.contains('unavailable')) {
+                // Jeton déjà sorti par un remplacement : rien à faire.
+                if (_state.substitutions.some(s => s.team === aiTeam && s.outSlot === outSlot)) continue;
+                candidates.push({ outSlot, outId, priority: 0 });
+            } else {
+                candidates.push({ outSlot, outId, priority: 1 });
+            }
+        }
+        candidates.sort((a, b) => a.priority - b.priority);
+
+        for (const { outSlot, outId, priority } of candidates) {
+            if (priority === 1) {
+                const stMax = _state.staminaMax[outId] ?? 100;
+                const stCur = _state.stamina[outId]    ?? stMax;
+                const ratio = stMax > 0 ? stCur / stMax : 1;
+                if (ratio >= 0.5) continue;
+            }
 
             const outInfo = _roster.getPlayerInfo(aiTeam, outSlot);
             const outPos  = outInfo?.position ?? '';

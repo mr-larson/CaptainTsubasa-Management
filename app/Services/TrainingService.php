@@ -31,11 +31,13 @@ class TrainingService
         $statMin      = config('training.stat_min', 0);
         $statMax      = config('training.stat_max', 100);
 
-        // 1️⃣ Lire l'état actuel des entraînements dans state
+        // 1️⃣ Lire l'état actuel des entraînements dans state. Le quota est
+        // compté par équipe : en hot-seat, chaque manager a ses propres séances.
         $state    = $gameSave->state ?? [];
         $training = $state['training'] ?? null;
+        $teamId   = (int) $gameSave->controlled_game_team_id;
 
-        $currentEntries = [];
+        $weekEntries = [];   // toutes équipes confondues, semaine courante
 
         if (
             $training &&
@@ -43,8 +45,14 @@ class TrainingService
             (int) $training['season'] === $season &&
             (int) $training['week'] === $week
         ) {
-            $currentEntries = $training['entries'] ?? [];
+            $weekEntries = $training['entries'] ?? [];
         }
+
+        // Entrées sans team_id (antérieures au quota par équipe) : comptées pour tous.
+        $currentEntries = array_values(array_filter(
+            $weekEntries,
+            fn ($e) => !isset($e['team_id']) || (int) $e['team_id'] === $teamId
+        ));
 
         if (count($currentEntries) >= $maxPerWeek) {
             throw ValidationException::withMessages([
@@ -143,6 +151,7 @@ class TrainingService
             $trainingCost,
             $totalCost,
             $controlledTeam,
+            $weekEntries,
             &$state,
             &$applied,
             $season,
@@ -200,9 +209,10 @@ class TrainingService
                 'season'  => $season,
                 'week'    => $week,
                 'entries' => array_merge(
-                    $state['training']['entries'] ?? [],
-                    array_map(function ($e) {
+                    $weekEntries,
+                    array_map(function ($e) use ($controlledTeam) {
                         return [
+                            'team_id'      => $controlledTeam->id,
                             'player_id'    => $e['player_id'],
                             'stat'         => $e['stat'],
                             'gain'         => $e['gain'],

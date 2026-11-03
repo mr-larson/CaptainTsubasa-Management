@@ -24,6 +24,7 @@ const props = defineProps({
     isByeWeek:      { type: Boolean, required: true },
     teamById:       { type: Object, required: true },
     saving:         { type: Boolean, required: true },
+    simulating:     { type: Boolean, default: false },
     matches:        { type: Array,   default: () => [] },
     unboughtCardsCount:  { type: Number,   default: 0 },
     freePlayersCount:    { type: Number,   default: 0 },
@@ -404,7 +405,8 @@ const matchesPlayed = computed(() =>
                     <div class="text-center shrink-0 flex flex-col items-center gap-3">
                         <div class="text-3xl font-black text-slate-300">VS</div>
                         <button v-if="isByeWeek" type="button"
-                                class="px-5 py-2 rounded-full font-bold text-xs bg-slate-200 hover:bg-slate-300 text-slate-600 transition-all"
+                                class="px-5 py-2 rounded-full font-bold text-xs bg-slate-200 hover:bg-slate-300 text-slate-600 transition-all disabled:opacity-50 disabled:cursor-wait"
+                                :disabled="simulating"
                                 @click="emit('simulate-week')">
                             ⏭ Simuler S{{ week }}
                         </button>
@@ -439,7 +441,8 @@ const matchesPlayed = computed(() =>
                     <div class="text-xs text-slate-400 mt-0.5">Semaine de repos ou en attente du calendrier</div>
                 </div>
                 <button type="button"
-                        class="px-6 py-2 rounded-full font-semibold text-sm bg-slate-200 hover:bg-slate-300 text-slate-600 transition-all"
+                        class="px-6 py-2 rounded-full font-semibold text-sm bg-slate-200 hover:bg-slate-300 text-slate-600 transition-all disabled:opacity-50 disabled:cursor-wait"
+                        :disabled="simulating"
                         @click="emit('simulate-week')">
                     ⏭ Simuler la semaine
                 </button>

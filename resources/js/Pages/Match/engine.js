@@ -15,6 +15,7 @@ import {
 
 import {
     initDiceUI, bindDuelTooltipEvents, showDuelDice, showSpecialTooltip, hideBreakdownTooltip,
+    disposeDiceUI,
 } from './engine/dice.js';
 
 import {
@@ -27,7 +28,7 @@ import {
 } from './engine/field.js';
 
 import {
-    initUIModule,
+    initUIModule, disposeUIModule,
     setMessage, setAIOverlay, updateScoreUI, pushLogEntry,
     updateSideCard, syncRecovererCard, updateTeamCard, updateCardsPower,
     buildAttackActionsHTML, buildDefenseFieldHTML, buildDefenseGKHTML,
@@ -145,6 +146,7 @@ export function initMatchEngine(rootEl, config = {}) {
         matchLog:       [],
         actionEvents:   [],
         foulEvents:     [],
+        exitTurns:      {},   // game_player_id → tour de sortie forcée (expulsion, blessure)
         substitutions:      [],
         substitutionCount:  { internal: 0, external: 0 },
         MAX_SUBSTITUTIONS:  3,
@@ -335,6 +337,9 @@ export function initMatchEngine(rootEl, config = {}) {
                     const internalTeamId = matchConfig?.sides?.internalTeamId;
                     const externalTeamId = matchConfig?.sides?.externalTeamId;
                     if (!internalTeamId || !externalTeamId) return;
+                    // Un seul envoi du résultat (double clic) ; réactivé si le serveur refuse.
+                    if (ui.finishMatchBtn.disabled) return;
+                    ui.finishMatchBtn.disabled = true;
 
                     const payload = {
                         matchId:    matchConfig.matchId,
@@ -345,6 +350,7 @@ export function initMatchEngine(rootEl, config = {}) {
                         },
                         playerActions: state.actionEvents,
                         foulEvents:    state.foulEvents,
+                        onFailed:      () => { if (ui.finishMatchBtn) ui.finishMatchBtn.disabled = false; },
                     };
 
                     if (typeof matchConfig.onMatchEnd === "function") {
@@ -357,7 +363,7 @@ export function initMatchEngine(rootEl, config = {}) {
                             away: state.startersByTeam?.external ?? [],
                         };
                         payload.match_stats.playtime = computePlaytime(
-                            state.startersByTeam, state.substitutions, state.turns
+                            state.startersByTeam, state.substitutions, state.turns, state.exitTurns
                         );
                         matchConfig.onMatchEnd(payload);
                     }
@@ -385,7 +391,7 @@ export function initMatchEngine(rootEl, config = {}) {
         const AI_THINK_MS = 150;
         setAIOverlay(true, TEXTS.ui.aiAttackTurn);
         const action = computeAIAttackChoice(ball, state.specialCooldown);
-        setTimeout(() => { setAIOverlay(false); handleAttackClick(action); }, AI_THINK_MS);
+        setTimeout(() => { if (state.disposed) return; setAIOverlay(false); handleAttackClick(action); }, AI_THINK_MS);
     }
 
     function scheduleAIDefense(attackAction, defendingTeam) {
@@ -402,7 +408,7 @@ export function initMatchEngine(rootEl, config = {}) {
             { isKeeperDuel },
             state.specialCooldown, state.turns
         );
-        setTimeout(() => { setAIOverlay(false); handleDefenseClick(defense); }, AI_THINK_MS);
+        setTimeout(() => { if (state.disposed) return; setAIOverlay(false); handleDefenseClick(defense); }, AI_THINK_MS);
     }
 
     // ==========================
@@ -661,8 +667,13 @@ export function initMatchEngine(rootEl, config = {}) {
 
         if ((attack === "shot" || attack === "special" || attack === "special-pass" || attack === "special-dribble") &&
             state.pendingShotContext?.stage === "keeper") {
-            resolveShotKeeperDuel(state.pendingShotContext, defense);
+            // Sort de la phase « defense » avant la résolution : pendant la
+            // relance du gardien (300 ms), un 2e clic ferait retirer l'attaquant.
+            const ctx = state.pendingShotContext;
+            state.phase = "resolving";
+            state.pendingAttack = null;
             state.pendingShotContext = null;
+            resolveShotKeeperDuel(ctx, defense);
             return;
         }
 
@@ -687,6 +698,7 @@ export function initMatchEngine(rootEl, config = {}) {
 
         window.__matchState = state;
         window.__matchRoster = roster;
+        state._isAITeam = isAITeam; // lu par ui.js (droit de remplacer)
 
         initBasePositions(basePositions);
         applyRosterToDOM(roster, rootEl);
@@ -723,10 +735,14 @@ export function initMatchEngine(rootEl, config = {}) {
         state.substitutionCount = { internal: 0, external: 0 };
 
         // 11 de départ figé (avant tout remplacement) : sert au calcul du temps
-        // de jeu par joueur et à la promesse de titularisation.
+        // de jeu par joueur et à la promesse de titularisation. Un titulaire
+        // indisponible (blessé, suspendu, consigné) n'a pas joué.
+        const startersOf = (team) => Array.from({ length: 11 }, (_, i) => roster.getPlayerInfo(team, i + 1))
+            .filter(info => info?.id != null && info.isAvailable !== false)
+            .map(info => info.id);
         state.startersByTeam = {
-            internal: Array.from({ length: 11 }, (_, i) => roster.getPlayerInfo("internal", i + 1)?.id).filter(id => id != null),
-            external: Array.from({ length: 11 }, (_, i) => roster.getPlayerInfo("external", i + 1)?.id).filter(id => id != null),
+            internal: startersOf("internal"),
+            external: startersOf("external"),
         };
 
         applyKickoffPositions(basePositions);
@@ -776,4 +792,16 @@ export function initMatchEngine(rootEl, config = {}) {
     }
 
     init();
+
+    // Appelé par Engine.vue au démontage : les timers en vol voient `disposed`
+    // et s'arrêtent, les listeners globaux sont retirés et l'état de module
+    // (toast, file de révélation) ne fuit pas dans le match suivant.
+    return function destroy() {
+        state.disposed = true;
+        disposeUIModule();
+        disposeDiceUI();
+        hideBreakdownTooltip();
+        if (window.__matchState === state) delete window.__matchState;
+        if (window.__matchRoster === roster) delete window.__matchRoster;
+    };
 }

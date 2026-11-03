@@ -119,8 +119,9 @@ class GameDraftController extends Controller
             $playerId = $aiService->chooseBestPlayer($gameSave, $team);
 
             if (!$playerId) {
-                // Aucun joueur trouvable → cette équipe a fini (budget insuffisant)
-                $draftService->finishTeamDraft($gameSave, $team->id);
+                // Aucun joueur trouvable → cette équipe a fini (budget insuffisant),
+                // même sous MIN_SQUAD : sinon le tour ne passe jamais.
+                $draftService->finishTeamDraft($gameSave, $team->id, force: true);
                 $gameSave->refresh();
                 $draftState = $gameSave->state['draft'] ?? [];
 
@@ -134,6 +135,11 @@ class GameDraftController extends Controller
             }
 
             $pick = $draftService->executePick($gameSave, $playerId);
+            if ($pick === null) {
+                // Pick refusé (joueur pris, trop cher…) : l'IA perd son tour
+                // plutôt que de bloquer le draft sur le même pointeur.
+                $draftService->advancePick($gameSave);
+            }
             $gameSave->refresh();
 
             $draftState = $gameSave->state['draft'] ?? [];

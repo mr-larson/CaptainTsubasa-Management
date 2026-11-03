@@ -68,14 +68,16 @@ export function useTeam({ gameSave, team }) {
         router.patch(route('game-contracts.toggle-captain', { contract: contractId }), {}, { preserveScroll: true });
     };
 
-    const updatePlayerNumber = (playerId, number) => {
+    // `onError` : l'appelant remet l'input sur l'ancien numéro si le serveur
+    // refuse (numéro déjà pris) — le message s'affiche dans le toast global.
+    const updatePlayerNumber = (playerId, number, onError = null) => {
         router.patch(
             route('game-saves.players.update-number', {
                 gameSave: gameSave.value.id,
                 player: playerId,
             }),
             { number: parseInt(number) },
-            { preserveScroll: true }
+            { preserveScroll: true, onError: () => onError?.() }
         );
     };
 

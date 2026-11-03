@@ -79,6 +79,13 @@ class GameMatchController extends Controller
             $controlMode = 'single';
         }
 
+        // Hot-seat : derby entre deux managers humains → les deux camps se
+        // jouent à la main (sinon l'IA jouerait l'équipe du second humain).
+        $humanIds = array_map('intval', $gameSave->controlledGameTeamIds());
+        if (in_array((int) $homeTeam->id, $humanIds, true) && in_array((int) $awayTeam->id, $humanIds, true)) {
+            $controlMode = 'both';
+        }
+
         $controlledSide = 'internal';
 
         $internalTeam = $isControlledHome ? $homeTeam : $awayTeam;
@@ -356,7 +363,7 @@ class GameMatchController extends Controller
         // Verrou par save + garde de phase : un double clic ne simule pas deux
         // semaines, et un re-POST pendant la draft / la fin de saison ne rejoue
         // pas endSeason (primes et titres comptés deux fois).
-        return $this->withSaveLock($gameSave, function (GameSave $gameSave) {
+        return $this->withSaveLock($gameSave, function (GameSave $gameSave) use ($request) {
             if (! $gameSave->isInMatchPhase()) {
                 return redirect()->route('game-saves.Play', $gameSave);
             }
@@ -366,6 +373,23 @@ class GameMatchController extends Controller
             }
 
             $week = (int) ($gameSave->week ?? 1);
+
+            // Idempotence : le front envoie la semaine affichée. Un second POST
+            // (double clic) arrive après l'avancement et ne simule pas la
+            // semaine suivante, ni le match que le joueur devait disputer.
+            if ($request->filled('week') && (int) $request->input('week') !== $week) {
+                return redirect()->route('game-saves.Play', $gameSave);
+            }
+
+            // Hot-seat : on ne simule jamais le match d'un manager humain. Si
+            // l'un d'eux doit encore jouer, la main lui passe.
+            $nextHuman = $this->nextHumanWithPendingMatch($gameSave, $week);
+            if ($nextHuman) {
+                $gameSave->controlled_game_team_id = $nextHuman->id;
+                $gameSave->save();
+
+                return redirect()->route('game-saves.Play', $gameSave);
+            }
 
             $matches = GameMatch::query()
                 ->where('game_save_id', $gameSave->id)
@@ -572,7 +596,10 @@ class GameMatchController extends Controller
                 return [
                     'id' => null, 'number' => $slot,
                     'firstname' => '', 'lastname' => '', 'position' => '',
-                    'is_starter' => false, 'photo_path' => null, 'photo_url' => null,
+                    // Slot vide (effectif incomplet) : reste un titulaire pour que
+                    // le front ne décale pas les slots suivants (gardien en slot 1).
+                    'is_starter' => true, 'is_placeholder' => true,
+                    'photo_path' => null, 'photo_url' => null,
                     'stats' => null, 'special_moves' => [], 'is_available' => true,
                     'yellow_cards' => 0,
                     'duo_partners' => [],

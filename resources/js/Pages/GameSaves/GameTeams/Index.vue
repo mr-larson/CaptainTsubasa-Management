@@ -462,6 +462,12 @@ function submit() {
     }), {
         preserveScroll: true,
         forceFormData: true,
+        // Resynchroniser avec l'équipe rechargée : logo à jour, fichier et
+        // « supprimer le logo » remis à zéro (sinon re-upload au clic suivant).
+        onSuccess: () => {
+            const fresh = props.teams.find(t => t.id === form.id);
+            if (fresh) selectTeam(fresh);
+        },
     });
 }
 
