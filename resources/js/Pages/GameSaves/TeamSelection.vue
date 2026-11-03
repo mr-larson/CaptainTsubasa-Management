@@ -62,7 +62,7 @@
                                     ? 'bg-teal-50 text-slate-700 border-teal-300 ring-1 ring-teal-200'
                                     : 'bg-white text-slate-600 border-slate-100 hover:border-teal-200 hover:bg-teal-50')">
                                 <div class="w-7 h-7 rounded-lg overflow-hidden shrink-0 bg-slate-100 border border-slate-200 flex items-center justify-center">
-                                    <img v-if="teamLogoUrl(team)" :src="teamLogoUrl(team)" class="w-full h-full object-contain" alt=""/>
+                                    <img loading="lazy" decoding="async" v-if="teamLogoUrl(team)" :src="teamLogoUrl(team)" class="w-full h-full object-contain" alt=""/>
                                     <span v-else class="text-[8px] text-slate-400">—</span>
                                 </div>
                                 <span class="truncate">{{ team.name }}</span>
@@ -87,7 +87,7 @@
                             <div class="border border-slate-200 rounded-xl bg-white p-5">
                                 <div class="flex flex-col items-center gap-3 mb-4">
                                     <div class="w-24 h-24 rounded-2xl overflow-hidden bg-slate-50 border border-slate-200 flex items-center justify-center">
-                                        <img v-if="teamLogoUrl(selectedTeam)" :src="teamLogoUrl(selectedTeam)" class="w-full h-full object-contain" alt=""/>
+                                        <img loading="lazy" decoding="async" v-if="teamLogoUrl(selectedTeam)" :src="teamLogoUrl(selectedTeam)" class="w-full h-full object-contain" alt=""/>
                                         <span v-else class="text-4xl">🏟️</span>
                                     </div>
                                     <div class="text-center">
@@ -206,7 +206,7 @@
                                              class="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-slate-50 border border-slate-100">
                                             <span class="w-5 h-5 rounded-full bg-teal-500 text-white text-[10px] font-black flex items-center justify-center shrink-0">{{ i + 1 }}</span>
                                             <div class="w-6 h-6 rounded-md overflow-hidden bg-white border border-slate-200 shrink-0 flex items-center justify-center">
-                                                <img v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" class="w-full h-full object-contain" alt=""/>
+                                                <img loading="lazy" decoding="async" v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" class="w-full h-full object-contain" alt=""/>
                                                 <span v-else class="text-[8px] text-slate-400">—</span>
                                             </div>
                                             <span class="flex-1 truncate text-xs font-semibold text-slate-700">{{ t.name }}</span>

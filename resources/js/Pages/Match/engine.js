@@ -67,7 +67,7 @@ export function initMatchEngine(rootEl, config = {}) {
     if (!rootEl) return;
 
     const matchConfig = config || {};
-    const MAX_TURNS = matchConfig.maxTurns ?? MAX_TURNS;
+    const MAX_TURNS = matchConfig.maxTurns ?? GAME_RULES.MAX_TURNS; // réglable 10-80 par save
 
     const TEAMS = {
         internal: { id: "internal", label: matchConfig.teams?.internal?.name ?? TEXTS.teams.internal },
@@ -122,6 +122,7 @@ export function initMatchEngine(rootEl, config = {}) {
     const basePositions = {};
 
     const state = {
+        maxTurns: MAX_TURNS, // lu par ui.js (horloge) et resolvers.js (fin de match de l'IA)
         ball: { team: "internal", zoneIndex: 1, laneIndex: 1, number: 8, frontOfKeeper: false },
         currentTeam:   "internal",
         homeTeam: internalIsHome ? 'internal' : 'external',

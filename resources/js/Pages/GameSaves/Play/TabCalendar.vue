@@ -349,7 +349,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                         ? 'bg-teal-500 text-white border-teal-600 shadow-sm'
                         : 'bg-white text-slate-600 border-slate-200 hover:border-teal-300 hover:text-teal-600'">
                     <div class="w-4 h-4 rounded-full overflow-hidden shrink-0 bg-slate-100">
-                        <img v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" class="w-full h-full object-contain" alt=""/>
+                        <img loading="lazy" decoding="async" v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" class="w-full h-full object-contain" alt=""/>
                     </div>
                     {{ t.name }}
                 </button>
@@ -365,7 +365,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
             <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 lg:col-span-4">
                 <div class="flex items-center gap-3 mb-3">
                     <div class="w-8 h-8 rounded-lg overflow-hidden bg-white border border-slate-200 shrink-0">
-                        <img v-if="teamLogoUrl(calendarTeam)" :src="teamLogoUrl(calendarTeam)" class="w-full h-full object-contain" alt=""/>
+                        <img loading="lazy" decoding="async" v-if="teamLogoUrl(calendarTeam)" :src="teamLogoUrl(calendarTeam)" class="w-full h-full object-contain" alt=""/>
                     </div>
                     <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">{{ calendarTeam.name }}</h3>
                 </div>
@@ -399,7 +399,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                         <!-- Adversaire -->
                         <div class="flex items-center gap-2 flex-1 min-w-0">
                             <div v-if="!isByeMatch(match)" class="w-5 h-5 rounded-full overflow-hidden bg-slate-100 shrink-0">
-                                <img v-if="teamLogoUrl(opponentTeam(match, calendarTeam.id))"
+                                <img loading="lazy" decoding="async" v-if="teamLogoUrl(opponentTeam(match, calendarTeam.id))"
                                      :src="teamLogoUrl(opponentTeam(match, calendarTeam.id))"
                                      class="w-full h-full object-contain" alt=""/>
                             </div>
@@ -450,7 +450,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                         <!-- Équipe domicile -->
                         <div class="flex flex-col items-center gap-1 flex-1">
                             <div class="w-12 h-12 rounded-xl overflow-hidden bg-white border border-slate-200">
-                                <img v-if="teamLogoUrl(teamById[selectedCalendarMatch.home_team_id])"
+                                <img loading="lazy" decoding="async" v-if="teamLogoUrl(teamById[selectedCalendarMatch.home_team_id])"
                                      :src="teamLogoUrl(teamById[selectedCalendarMatch.home_team_id])"
                                      class="w-full h-full object-contain" alt=""/>
                             </div>
@@ -477,7 +477,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                         <!-- Équipe extérieure -->
                         <div class="flex flex-col items-center gap-1 flex-1">
                             <div class="w-12 h-12 rounded-xl overflow-hidden bg-white border border-slate-200">
-                                <img v-if="teamLogoUrl(teamById[selectedCalendarMatch.away_team_id])"
+                                <img loading="lazy" decoding="async" v-if="teamLogoUrl(teamById[selectedCalendarMatch.away_team_id])"
                                      :src="teamLogoUrl(teamById[selectedCalendarMatch.away_team_id])"
                                      class="w-full h-full object-contain" alt=""/>
                             </div>
@@ -654,7 +654,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                                     <span v-if="ev.attacker"
                                           class="inline-flex items-center gap-1 pl-0.5 pr-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">
                                         <span class="w-4 h-4 rounded-full overflow-hidden bg-emerald-200 shrink-0">
-                                            <img v-if="eventPlayerPhoto(ev.attacker)" :src="eventPlayerPhoto(ev.attacker)" class="w-full h-full object-cover" alt=""/>
+                                            <img loading="lazy" decoding="async" v-if="eventPlayerPhoto(ev.attacker)" :src="eventPlayerPhoto(ev.attacker)" class="w-full h-full object-cover" alt=""/>
                                         </span>
                                         N°{{ ev.attacker.number ?? '?' }} {{ ev.attacker.name }}
                                         <span v-if="eventActionLabel(ev.action)" class="opacity-60 font-semibold">· {{ eventActionLabel(ev.action) }}</span>
@@ -663,7 +663,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                                     <span v-if="ev.defender"
                                           class="inline-flex items-center gap-1 pl-0.5 pr-1.5 py-0.5 rounded-full bg-rose-100 text-rose-700 text-[10px] font-bold">
                                         <span class="w-4 h-4 rounded-full overflow-hidden bg-rose-200 shrink-0">
-                                            <img v-if="eventPlayerPhoto(ev.defender)" :src="eventPlayerPhoto(ev.defender)" class="w-full h-full object-cover" alt=""/>
+                                            <img loading="lazy" decoding="async" v-if="eventPlayerPhoto(ev.defender)" :src="eventPlayerPhoto(ev.defender)" class="w-full h-full object-cover" alt=""/>
                                         </span>
                                         N°{{ ev.defender.number ?? '?' }} {{ ev.defender.name }}
                                         <span v-if="eventActionLabel(ev.def_action)" class="opacity-60 font-semibold">· {{ eventActionLabel(ev.def_action) }}</span>
@@ -855,7 +855,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                         <div>
                             <div class="flex items-center gap-2 mb-3">
                                 <div class="w-6 h-6 rounded overflow-hidden bg-slate-100 shrink-0">
-                                    <img v-if="teamLogoUrl(teamById[selectedCalendarMatch.home_team_id])"
+                                    <img loading="lazy" decoding="async" v-if="teamLogoUrl(teamById[selectedCalendarMatch.home_team_id])"
                                          :src="teamLogoUrl(teamById[selectedCalendarMatch.home_team_id])"
                                          class="w-full h-full object-contain" alt=""/>
                                 </div>
@@ -887,7 +887,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                         <div>
                             <div class="flex items-center gap-2 mb-3">
                                 <div class="w-6 h-6 rounded overflow-hidden bg-slate-100 shrink-0">
-                                    <img v-if="teamLogoUrl(teamById[selectedCalendarMatch.away_team_id])"
+                                    <img loading="lazy" decoding="async" v-if="teamLogoUrl(teamById[selectedCalendarMatch.away_team_id])"
                                          :src="teamLogoUrl(teamById[selectedCalendarMatch.away_team_id])"
                                          class="w-full h-full object-contain" alt=""/>
                                 </div>

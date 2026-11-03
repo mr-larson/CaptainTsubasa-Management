@@ -97,7 +97,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import {Head, Link} from '@inertiajs/vue3';
-import {Inertia} from '@inertiajs/inertia';
 import {ref, defineProps, reactive, onMounted, computed} from 'vue';
 
 //Component

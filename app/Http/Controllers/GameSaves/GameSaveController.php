@@ -785,11 +785,14 @@ class GameSaveController extends Controller
         $previousWeek = $currentWeek - 1;
 
         $weeklyRecap = collect();
+        // Récap de MON équipe (équipe active en hot-seat), pas de toute la ligue.
+        $recapPlayerIds = $controlledTeam ? $controlledTeam->contracts->pluck('game_player_id') : collect();
 
         if ($previousWeek >= 1) {
             $weeklyRecap = $weeklyRecap
                 ->merge(
                     GameInjury::where('game_save_id', $gameSave->id)
+                        ->whereIn('game_player_id', $recapPlayerIds)
                         ->where('week_injured', $previousWeek)
                         ->with('gamePlayer')
                         ->get()
@@ -801,6 +804,7 @@ class GameSaveController extends Controller
                 )
                 ->merge(
                     GameSanction::where('game_save_id', $gameSave->id)
+                        ->whereIn('game_player_id', $recapPlayerIds)
                         ->whereIn('type', ['red', 'double_yellow'])
                         ->where('week_match', $previousWeek)
                         ->with('gamePlayer')

@@ -1,7 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, nextTick } from 'vue';
 import H2 from '@/Components/H2.vue';
 
 // ==========================
@@ -251,9 +251,9 @@ const bonusCardOffersRef    = computed(() => props.bonusCardOffers    ?? []);
 const bonusCardInventoryRef = computed(() => props.bonusCardInventory ?? []);
 
 const {
-    weeklyOffers, canAfford, buyCard,
+    weeklyOffers, buyCard,
     inventory, availableCards, usedCards,
-    selectedCard, selectCard, activateCard,
+    selectedCard, activateCard,
     tierColor, tierBadge, phaseLabel, targetLabel,
     isAlreadyBought,
 } = useBonusCards({
@@ -287,6 +287,14 @@ const activeTab = ref('dashboard');
 // N'ouvre qu'un onglet existant (ex. Transferts masqué en Coupe du Monde).
 function setTab(key) {
     activeTab.value = tabs.value.some(t => t.key === key) ? key : 'dashboard';
+}
+
+// Navigation au clavier entre onglets (flèches gauche / droite).
+function focusSiblingTab(step) {
+    const keys = tabs.value.map(t => t.key);
+    const next = keys[(keys.indexOf(activeTab.value) + step + keys.length) % keys.length];
+    activeTab.value = next;
+    nextTick(() => document.querySelector(`[role="tab"][data-tab="${next}"]`)?.focus());
 }
 
 // Section à pré-sélectionner dans l'onglet Gestion (ex: depuis l'aide objectif).
@@ -377,8 +385,13 @@ const saveGame = () => {
 
                     <!-- Onglets -->
                     <div class="mb-4 border-b border-slate-200 shrink-0">
-                        <nav class="-mb-px flex space-x-2 overflow-x-auto">
+                        <nav class="-mb-px flex space-x-2 overflow-x-auto" role="tablist" aria-label="Sections de la partie"
+                             @keydown.right.prevent="focusSiblingTab(1)" @keydown.left.prevent="focusSiblingTab(-1)">
                             <button v-for="tab in tabs" :key="tab.key" type="button"
+                                    role="tab"
+                                    :aria-selected="activeTab === tab.key"
+                                    :tabindex="activeTab === tab.key ? 0 : -1"
+                                    :data-tab="tab.key"
                                     @click="activeTab = tab.key"
                                     :class="['whitespace-nowrap py-2 px-4 text-sm font-medium border-b-2 rounded-t-md',
                                     activeTab === tab.key

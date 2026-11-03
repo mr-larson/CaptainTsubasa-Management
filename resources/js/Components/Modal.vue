@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, onUnmounted, watch } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 
 const props = defineProps({
     show: {
@@ -18,16 +18,37 @@ const props = defineProps({
 
 const emit = defineEmits(['close']);
 
+// Focus : envoyé dans la modale à l'ouverture, gardé dedans (Tab), rendu à
+// l'élément d'origine à la fermeture.
+const panel = ref(null);
+let previouslyFocused = null;
+const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 watch(
     () => props.show,
-    () => {
+    async () => {
         if (props.show) {
             document.body.style.overflow = 'hidden';
+            previouslyFocused = document.activeElement;
+            await nextTick();
+            (panel.value?.querySelector(FOCUSABLE) ?? panel.value)?.focus();
         } else {
             document.body.style.overflow = null;
+            previouslyFocused?.focus?.();
+            previouslyFocused = null;
         }
     }
 );
+
+const trapFocus = (e) => {
+    if (e.key !== 'Tab' || !props.show || !panel.value) return;
+    const items = [...panel.value.querySelectorAll(FOCUSABLE)];
+    if (!items.length) return;
+    const first = items[0];
+    const last  = items[items.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+};
 
 const close = () => {
     if (props.closeable) {
@@ -39,6 +60,7 @@ const closeOnEscape = (e) => {
     if (e.key === 'Escape' && props.show) {
         close();
     }
+    trapFocus(e);
 };
 
 onMounted(() => document.addEventListener('keydown', closeOnEscape));
@@ -86,7 +108,11 @@ const maxWidthClass = computed(() => {
                 >
                     <div
                         v-show="show"
-                        class="mb-6 bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:w-full sm:mx-auto"
+                        ref="panel"
+                        role="dialog"
+                        aria-modal="true"
+                        tabindex="-1"
+                        class="mb-6 bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:w-full sm:mx-auto focus:outline-none"
                         :class="maxWidthClass"
                     >
                         <slot v-if="show" />

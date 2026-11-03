@@ -3,8 +3,7 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "build": "vite build",
-        "watch": "webpack --watch"
+        "build": "vite build"
     },
     "devDependencies": {
         "@inertiajs/vue3": "^1.0.0",
@@ -16,11 +15,6 @@
         "postcss": "^8.4.18",
         "tailwindcss": "^3.2.1",
         "vite": "^4.0.0",
-        "vue": "^3.2.41",
-        "webpack": "^5.89.0",
-        "webpack-cli": "^5.1.4"
-    },
-    "dependencies": {
-        "@inertiajs/inertia-vue3": "^0.6.0"
+        "vue": "^3.2.41"
     }
 }

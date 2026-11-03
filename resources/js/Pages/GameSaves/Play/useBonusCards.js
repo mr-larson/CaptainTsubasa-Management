@@ -31,13 +31,6 @@ export function useBonusCards({ gameSave, bonusCardOffers, bonusCardInventory })
     const isAlreadyBought = (offer) =>
         purchasedThisWeek.value.includes(Number(offer.bonus_card_id));
 
-    const canAfford = (offer) => {
-        const budget = gameSave.value?.controlledTeam?.budget
-            ?? gameSave.value?.state?.controlled_budget
-            ?? 0;
-        return budget >= (offer.cost ?? 0);
-    };
-
     const buyCard = (offer) => {
         router.post(
             route('game-saves.bonus-cards.buy', { gameSave: gameSave.value.id }),
@@ -61,11 +54,6 @@ export function useBonusCards({ gameSave, bonusCardOffers, bonusCardInventory })
     const usedCards = computed(() =>
         inventory.value.filter(c => c.status === 'used')
     );
-
-    const selectCard = (card) => {
-        selectedCard.value = card;
-        activateTarget.value = null;
-    };
 
     const activateCard = (card, targetPlayerId = null, targetTeamId = null) => {
         router.post(
@@ -116,9 +104,9 @@ export function useBonusCards({ gameSave, bonusCardOffers, bonusCardInventory })
     }[target] ?? target);
 
     return {
-        weeklyOffers, canAfford, buyCard,
+        weeklyOffers, buyCard,
         inventory, availableCards, usedCards,
-        selectedCard, selectCard, activateCard, activateTarget,
+        selectedCard, activateCard, activateTarget,
         tierColor, tierBadge, phaseLabel, targetLabel, isAlreadyBought,
     };
 }

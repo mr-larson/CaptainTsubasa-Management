@@ -3,7 +3,7 @@
         <label
             v-for="p in positions"
             :key="p"
-            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-sm select-none"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-sm select-none focus-within:ring-2 focus-within:ring-teal-300"
             :class="p === position
                 ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
                 : (model.includes(p)
@@ -12,7 +12,7 @@
         >
             <input
                 type="checkbox"
-                class="hidden"
+                class="sr-only"
                 :disabled="p === position"
                 :checked="model.includes(p)"
                 @change="toggle(p)"

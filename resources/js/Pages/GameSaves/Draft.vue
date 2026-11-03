@@ -539,7 +539,7 @@ onMounted(() => {
                             <div class="bg-white rounded-2xl shadow-2xl p-8 text-center max-w-sm animate-bounce-in">
                                 <div class="w-20 h-20 rounded-full overflow-hidden bg-slate-200 mx-auto mb-4 border-4"
                                      :class="isHumanTeam(lastPick.team_id) ? 'border-amber-400' : 'border-slate-300'">
-                                    <img v-if="lastPick.photo_path" :src="`/storage/${lastPick.photo_path}`"
+                                    <img loading="lazy" decoding="async" v-if="lastPick.photo_path" :src="`/storage/${lastPick.photo_path}`"
                                          class="w-full h-full object-cover" alt=""/>
                                     <div v-else class="w-full h-full flex items-center justify-center text-2xl text-slate-400">👤</div>
                                 </div>
@@ -582,7 +582,7 @@ onMounted(() => {
                             <div class="border border-amber-200 rounded-xl bg-amber-50 p-3">
                                 <div class="flex items-center gap-2 mb-2">
                                     <div class="w-8 h-8 rounded-lg overflow-hidden bg-white border border-slate-200 shrink-0">
-                                        <img v-if="teamLogoUrl(myTeam)" :src="teamLogoUrl(myTeam)" class="w-full h-full object-contain" alt=""/>
+                                        <img loading="lazy" decoding="async" v-if="teamLogoUrl(myTeam)" :src="teamLogoUrl(myTeam)" class="w-full h-full object-contain" alt=""/>
                                     </div>
                                     <div>
                                         <div class="text-xs font-bold text-amber-700">{{ myTeam?.name }}</div>
@@ -657,7 +657,7 @@ onMounted(() => {
                                              ? 'bg-amber-100 border border-amber-300 font-bold'
                                              : 'bg-slate-50'">
                                         <div class="w-5 h-5 rounded overflow-hidden bg-white shrink-0">
-                                            <img v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" class="w-full h-full object-contain" alt=""/>
+                                            <img loading="lazy" decoding="async" v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" class="w-full h-full object-contain" alt=""/>
                                         </div>
                                         <span class="flex-1 truncate"
                                               :class="isHumanTeam(t.id) ? 'text-amber-700 font-semibold' : 'text-slate-600'">
@@ -699,7 +699,7 @@ onMounted(() => {
                                      : 'border-slate-200 bg-white'">
                                 <div v-if="isProcessing && !isMyTurn" class="flex items-center justify-center gap-3">
                                     <div class="relative w-8 h-8 rounded-full bg-slate-50 border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
-                                        <img v-if="teamLogoUrl(currentTeam)" :src="teamLogoUrl(currentTeam)" class="w-full h-full object-contain" alt=""/>
+                                        <img loading="lazy" decoding="async" v-if="teamLogoUrl(currentTeam)" :src="teamLogoUrl(currentTeam)" class="w-full h-full object-contain" alt=""/>
                                         <span v-else class="text-xs text-slate-400">{{ (currentTeam?.name || '?').charAt(0) }}</span>
                                         <div class="absolute inset-0 rounded-full border-2 border-slate-300 border-t-slate-600 animate-spin"></div>
                                     </div>
@@ -765,29 +765,29 @@ onMounted(() => {
                                             <th class="py-2 pl-3 pr-1 w-8 text-center" title="Comparer">⚖️</th>
                                             <th class="text-left py-2 pl-1 pr-2 cursor-pointer select-none hover:text-amber-600 transition-colors"
                                                 :class="sortBy === 'name' ? 'text-amber-600' : ''"
-                                                @click="setSort('name')" title="Trier par nom">
+                                                @click="setSort('name')" tabindex="0" @keydown.enter.prevent="setSort('name')" title="Trier par nom">
                                                 Joueur {{ sortIndicator('name') }}
                                             </th>
                                             <th class="text-center py-2 px-1 w-12">Poste</th>
                                             <th class="text-center py-2 px-1 w-10 cursor-pointer select-none hover:text-amber-600 transition-colors"
                                                 :class="sortBy === 'overall' ? 'text-amber-600' : ''"
-                                                @click="setSort('overall')" title="Trier par note globale">
+                                                @click="setSort('overall')" tabindex="0" @keydown.enter.prevent="setSort('overall')" title="Trier par note globale">
                                                 OVR {{ sortIndicator('overall') }}
                                             </th>
                                             <th class="text-center py-2 px-1 w-12 cursor-pointer select-none hover:text-amber-600 transition-colors"
                                                 :class="sortBy === 'morale' ? 'text-amber-600' : ''"
-                                                @click="setSort('morale')" title="Trier par moral de départ">
+                                                @click="setSort('morale')" tabindex="0" @keydown.enter.prevent="setSort('morale')" title="Trier par moral de départ">
                                                 Moral {{ sortIndicator('morale') }}
                                             </th>
                                             <th v-for="col in STAT_COLUMNS" :key="col.key"
                                                 class="text-center py-2 px-1 w-10 cursor-pointer select-none hover:text-amber-600 transition-colors"
                                                 :class="sortBy === col.key ? 'text-amber-600' : ''"
-                                                @click="setSort(col.key)" :title="`Trier par ${col.label}`">
+                                                @click="setSort(col.key)" tabindex="0" @keydown.enter.prevent="setSort(col.key)" :title="`Trier par ${col.label}`">
                                                 {{ col.label }} {{ sortIndicator(col.key) }}
                                             </th>
                                             <th class="text-right py-2 px-2 w-16 cursor-pointer select-none hover:text-amber-600 transition-colors"
                                                 :class="sortBy === 'cost' ? 'text-amber-600' : ''"
-                                                @click="setSort('cost')" title="Trier par coût">
+                                                @click="setSort('cost')" tabindex="0" @keydown.enter.prevent="setSort('cost')" title="Trier par coût">
                                                 Coût {{ sortIndicator('cost') }}
                                             </th>
                                             <th class="py-2 px-2 w-20"></th>
@@ -814,7 +814,7 @@ onMounted(() => {
                                                         class="flex items-center gap-2 text-left group/name"
                                                         title="Voir la fiche du joueur">
                                                     <div class="w-7 h-7 rounded-full overflow-hidden bg-slate-200 shrink-0">
-                                                        <img v-if="player.photo_path" :src="`/storage/${player.photo_path}`"
+                                                        <img loading="lazy" decoding="async" v-if="player.photo_path" :src="`/storage/${player.photo_path}`"
                                                              class="w-full h-full object-cover" alt=""/>
                                                         <div v-else class="w-full h-full flex items-center justify-center text-[9px] text-slate-400">?</div>
                                                     </div>
@@ -900,7 +900,7 @@ onMounted(() => {
                                     <div v-for="(pick, idx) in [...pickLog].reverse().slice(0, 6)" :key="idx"
                                          class="flex items-center gap-3 bg-white border border-slate-200 rounded-lg px-3 py-2">
                                         <div class="h-8 w-8 rounded-full bg-slate-50 border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
-                                            <img v-if="teamLogoUrl(teams.find(t => t.id === pick.team_id))" :src="teamLogoUrl(teams.find(t => t.id === pick.team_id))" class="w-full h-full object-contain" alt=""/>
+                                            <img loading="lazy" decoding="async" v-if="teamLogoUrl(teams.find(t => t.id === pick.team_id))" :src="teamLogoUrl(teams.find(t => t.id === pick.team_id))" class="w-full h-full object-contain" alt=""/>
                                             <span v-else class="text-xs text-slate-400">{{ (pick.team_name || '?').charAt(0) }}</span>
                                         </div>
                                         <div class="flex-1 text-left">
@@ -925,7 +925,7 @@ onMounted(() => {
             <div v-if="inspectedPlayer" class="p-5">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-sm font-bold text-slate-700">Fiche joueur</h3>
-                    <button @click="closePlayerModal" class="text-slate-400 hover:text-slate-600 text-lg leading-none">✕</button>
+                    <button type="button" @click="closePlayerModal" aria-label="Fermer" class="text-slate-400 hover:text-slate-600 text-lg leading-none">✕</button>
                 </div>
 
                 <div class="flex flex-col gap-3">

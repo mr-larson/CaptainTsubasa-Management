@@ -8,6 +8,7 @@ const { canLogin, canRegister, teams, players } = defineProps({
     canRegister: { type: Boolean, default: false },
     teams:       { type: Array,   default: () => [] },
     players:     { type: Array,   default: () => [] },
+    playerCount: { type: Number,  default: null },
 });
 
 const teamLogoUrl = (team) => {
@@ -74,7 +75,7 @@ const features = [
                 <div class="hero-stats">
                     <div class="hstat"><span class="hstat-n">{{ teams.length }}</span><span class="hstat-l">Équipes</span></div>
                     <div class="hstat-sep"></div>
-                    <div class="hstat"><span class="hstat-n">{{ players.length }}</span><span class="hstat-l">Joueurs</span></div>
+                    <div class="hstat"><span class="hstat-n">{{ playerCount ?? players.length }}</span><span class="hstat-l">Joueurs</span></div>
                     <div class="hstat-sep"></div>
                     <div class="hstat"><span class="hstat-n">40</span><span class="hstat-l">Tours / match</span></div>
                 </div>

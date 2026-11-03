@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, watch, onUnmounted } from 'vue';
 
 /**
  * <img> de photo joueur, cliquable pour l'agrandir dans un modal plein écran.
@@ -19,12 +19,17 @@ const closeOnEscape = (e) => {
     if (e.key === 'Escape' && open.value) open.value = false;
 };
 
-onMounted(() => document.addEventListener('keydown', closeOnEscape));
+// Listener Échap posé seulement quand la photo est agrandie : une liste de
+// plusieurs centaines de miniatures n'ajoute plus autant de listeners globaux.
+watch(open, (isOpen) => {
+    if (isOpen) document.addEventListener('keydown', closeOnEscape);
+    else document.removeEventListener('keydown', closeOnEscape);
+});
 onUnmounted(() => document.removeEventListener('keydown', closeOnEscape));
 </script>
 
 <template>
-    <img v-if="src" v-bind="$attrs" :src="src" :alt="alt" class="cursor-zoom-in" @click.stop="open = true" />
+    <img v-if="src" v-bind="$attrs" :src="src" :alt="alt" loading="lazy" decoding="async" class="cursor-zoom-in" @click.stop="open = true" />
 
     <Teleport to="body">
         <div v-if="open"

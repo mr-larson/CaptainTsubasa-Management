@@ -433,6 +433,12 @@ function submit() {
     form.post(route('teams.update', form.id), {
         preserveScroll: true,
         forceFormData: true,
+        // Recharger l'équipe enregistrée : logo à jour, fichier et « supprimer
+        // le logo » remis à zéro (sinon re-upload au clic suivant).
+        onSuccess: () => {
+            const fresh = props.teams.find(t => t.id === form.id);
+            if (fresh) selectTeam(fresh);
+        },
     });
 }
 

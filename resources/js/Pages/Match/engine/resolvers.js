@@ -33,7 +33,7 @@ let _TEAMS       = null;
 let _rootEl      = null;
 let _basePos     = null;
 
-let _advanceTurn                 = null;
+let _advanceTurn                 = null; // rafraîchit déjà barre d'actions et UI : ne pas les rappeler après
 let _showAttackBarForCurrentTeam = null;
 let _refreshUI                   = null;
 let _animateAndThen              = null;
@@ -297,7 +297,8 @@ function aiShouldReroll(attackTeam) {
     const oppTeam   = attackTeam === "internal" ? "external" : "internal";
     const oppScore  = _state.score?.[oppTeam] ?? 0;
 
-    if (turn >= 35)              return Math.random() < 0.85; // Late game
+    // Fin de match : derniers ~22 % des tours (35 sur 45 par défaut), quelle que soit la durée réglée.
+    if (turn >= Math.round((_state.maxTurns || 45) * 0.78)) return Math.random() < 0.85;
     if (selfScore < oppScore)    return Math.random() < 0.65; // En retard
     if (selfScore === oppScore)  return Math.random() < 0.50; // Egalité
     return Math.random() < 0.25;                              // En avance → économiser
@@ -861,7 +862,7 @@ export function resolvePass(attackTeam, defenseTeam, defenseAction, defenderPick
             duel.diceTag, _state, duel.breakdown ?? null
         );
         _state.phase = "attack"; _state.pendingAttack = null;
-        _animateAndThen(() => { _advanceTurn(defenseTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
+        _animateAndThen(() => { _advanceTurn(defenseTeam); });
         return;
     }
 
@@ -873,13 +874,13 @@ export function resolvePass(attackTeam, defenseTeam, defenseAction, defenderPick
             const receiver = [5, 6][Math.floor(Math.random() * 2)];
             setMessage(isSpecial ? "Passe speciale reussie !" : "Remise en jeu reussie !", _TEAMS[attackTeam].label + " joue vers le n " + receiver);
             pushLogEntry("kickoffTitle", [isSpecial ? "(Special pass)" : null, "Vers n " + receiver, "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, _state, duel.breakdown ?? null);
-            _animateAndThen(() => { restoreBasePositions(); _moveBall(attackTeam, receiver); _advanceTurn(attackTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
+            _animateAndThen(() => { restoreBasePositions(); _moveBall(attackTeam, receiver); _advanceTurn(attackTeam); });
         } else {
             const receiver = duel.defenderSlot ?? 6;
             const verb     = defenseAction === "intercept" ? "intercepte" : "recupere";
             setMessage("Remise en jeu ratee !", _TEAMS[defenseTeam].label + " " + verb + " avec le n " + receiver);
             pushLogEntry("kickoffTitle", [isSpecial ? "(Special pass)" : null, "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, _state, duel.breakdown ?? null);
-            _animateAndThen(() => { restoreBasePositions(); _moveBall(defenseTeam, receiver); _advanceTurn(defenseTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
+            _animateAndThen(() => { restoreBasePositions(); _moveBall(defenseTeam, receiver); _advanceTurn(defenseTeam); });
         }
         return;
     }
@@ -915,7 +916,7 @@ function continuePass(attackTeam, defenseTeam, attackType, defenseAction, isSpec
         _moveBall(attackTeam, receiver);
         setMessage(isSpecial ? "Passe speciale reussie !" : TEXTS.logs.passSuccessTitle, _TEAMS[attackTeam].label + " trouve le n " + receiver);
         pushLogEntry("passSuccessTitle", [isSpecial ? "(Special pass)" : null, "Vers n " + receiver, "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, _state, duel.breakdown ?? null);
-        _animateAndThen(() => { _advanceTurn(attackTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
+        _animateAndThen(() => { _advanceTurn(attackTeam); });
         return;
     }
 
@@ -934,7 +935,7 @@ function continuePass(attackTeam, defenseTeam, attackType, defenseAction, isSpec
     const msgTitle = defenseAction === "intercept" ? TEXTS.logs.passFailTitle : TEXTS.logs.passRecoveredTitle;
     setMessage(msgTitle, _TEAMS[defenseTeam].label + " recupere avec le n " + receiver);
     pushLogEntry(logTitle, [isSpecial ? "(Special pass)" : null, "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, _state, duel.breakdown ?? null);
-    _animateAndThen(() => { _advanceTurn(defenseTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
+    _animateAndThen(() => { _advanceTurn(defenseTeam); });
 }
 
 // -----------------------------------------------------------
@@ -949,7 +950,7 @@ export function resolveCross(attackTeam, defenseTeam) {
     if (duel.isTie) {
         pushLogEntry("Duel equilibre (centre)", ["Defense: heading", getCounterTag("cross", "heading")], duel.diceTag, _state, duel.breakdown ?? null);
         _state.phase = "attack"; _state.pendingAttack = null;
-        _animateAndThen(() => { _advanceTurn(defenseTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
+        _animateAndThen(() => { _advanceTurn(defenseTeam); });
         return;
     }
 
@@ -966,7 +967,7 @@ export function resolveCross(attackTeam, defenseTeam) {
         _moveBall(attackTeam, receiver);
         setMessage("Centre reussi !", _TEAMS[attackTeam].label + " trouve le n " + receiver + " dans la surface");
         pushLogEntry("Centre reussi", ["Vers n " + receiver, "Defense: heading", getCounterTag("cross", "heading")], duel.diceTag, _state, duel.breakdown ?? null);
-        _animateAndThen(() => { _advanceTurn(attackTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
+        _animateAndThen(() => { _advanceTurn(attackTeam); });
         return;
     }
 
@@ -982,7 +983,7 @@ export function resolveCross(attackTeam, defenseTeam) {
 
     setMessage("Centre repousse !", _TEAMS[defenseTeam].label + " degage avec le n " + receiver);
     pushLogEntry("Centre repousse (tete)", ["Defense: heading", getCounterTag("cross", "heading")], duel.diceTag, _state, duel.breakdown ?? null);
-    _animateAndThen(() => { _advanceTurn(defenseTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
+    _animateAndThen(() => { _advanceTurn(defenseTeam); });
 }
 
 export function resolveLongPass(attackTeam, defenseTeam) {
@@ -994,7 +995,7 @@ export function resolveLongPass(attackTeam, defenseTeam) {
     if (duel.isTie) {
         pushLogEntry("Duel equilibre (passe longue)", ["Defense: intercept", getCounterTag("long_pass", "intercept")], duel.diceTag, _state, duel.breakdown ?? null);
         _state.phase = "attack"; _state.pendingAttack = null;
-        _animateAndThen(() => { _advanceTurn(defenseTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
+        _animateAndThen(() => { _advanceTurn(defenseTeam); });
         return;
     }
 
@@ -1011,7 +1012,7 @@ export function resolveLongPass(attackTeam, defenseTeam) {
         _moveBall(attackTeam, receiver);
         setMessage("Passe longue reussie !", _TEAMS[attackTeam].label + " trouve le n " + receiver);
         pushLogEntry("Passe longue reussie", ["Vers n " + receiver, "Defense: intercept", getCounterTag("long_pass", "intercept")], duel.diceTag, _state, duel.breakdown ?? null);
-        _animateAndThen(() => { _advanceTurn(attackTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
+        _animateAndThen(() => { _advanceTurn(attackTeam); });
         return;
     }
 
@@ -1027,7 +1028,7 @@ export function resolveLongPass(attackTeam, defenseTeam) {
 
     setMessage("Passe longue interceptee !", _TEAMS[defenseTeam].label + " recupere avec le n " + receiver);
     pushLogEntry("Passe longue interceptee", ["Defense: intercept", getCounterTag("long_pass", "intercept")], duel.diceTag, _state, duel.breakdown ?? null);
-    _animateAndThen(() => { _advanceTurn(defenseTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
+    _animateAndThen(() => { _advanceTurn(defenseTeam); });
 }
 
 // -----------------------------------------------------------
@@ -1069,7 +1070,7 @@ export function resolveDribble(attackTeam, defenseTeam, defenseAction, defenderP
             duel.diceTag, _state, duel.breakdown ?? null
         );
         _state.phase = "attack"; _state.pendingAttack = null;
-        _animateAndThen(() => { _advanceTurn(defenseTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
+        _animateAndThen(() => { _advanceTurn(defenseTeam); });
         return;
     }
 
@@ -1116,7 +1117,7 @@ function continueDribble(attackTeam, defenseTeam, attackType, defenseAction, isS
                 : (isSpecial ? "Dribble special reussi !" : "Dribble reussi !");
             setMessage(successMsg, _TEAMS[attackTeam].label + " avance en zone " + (newZone + 1));
             pushLogEntry(isOneTwo ? "oneTwoSuccessTitle" : "dribbleSuccessTitle", [duoDetail, isSpecial ? "(Special dribble)" : null, "Zone " + (newZone + 1), "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, _state, duel.breakdown ?? null);
-            _animateAndThen(() => { _advanceTurn(attackTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
+            _animateAndThen(() => { _advanceTurn(attackTeam); });
             return;
         }
 
@@ -1132,7 +1133,7 @@ function continueDribble(attackTeam, defenseTeam, attackType, defenseAction, isS
 
             setMessage(TEXTS.ui.frontOfKeeperMain, TEXTS.ui.frontOfKeeperSub);
             pushLogEntry("frontOfKeeperTitle", [duoDetail, isSpecial ? "(Special dribble)" : null, "Zone " + (oldZone + 1), "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, _state, duel.breakdown ?? null);
-            _animateAndThen(() => { _advanceTurn(attackTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
+            _animateAndThen(() => { _advanceTurn(attackTeam); });
             return;
         }
     }
@@ -1154,7 +1155,7 @@ function continueDribble(attackTeam, defenseTeam, attackType, defenseAction, isS
         : (defenseAction === "tackle" ? "Dribble stoppe" : TEXTS.logs.dribbleRecoveredTitle);
     setMessage(msgTitle, _TEAMS[defenseTeam].label + " recupere avec le n " + slot);
     pushLogEntry(logTitle, [duoDetail, isSpecial ? "(Special dribble)" : null, "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, _state, duel.breakdown ?? null);
-    _animateAndThen(() => { _advanceTurn(defenseTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
+    _animateAndThen(() => { _advanceTurn(defenseTeam); });
 }
 
 // -----------------------------------------------------------
@@ -1203,7 +1204,7 @@ export function resolveOneTwo(attackTeam, defenseTeam, defenseAction, defenderPi
             duel.diceTag, _state, duel.breakdown ?? null
         );
         _state.phase = "attack"; _state.pendingAttack = null;
-        _animateAndThen(() => { _advanceTurn(defenseTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
+        _animateAndThen(() => { _advanceTurn(defenseTeam); });
         return;
     }
 
@@ -1249,7 +1250,7 @@ export function resolveShot(attackTeam, defenseTeam, defenseAction, isSpecial = 
     if (duel.isTie) {
         pushLogEntry("Duel equilibre (shot)", ["Defense: " + defenseAction, getCounterTag(attackType, defenseAction)], duel.diceTag, _state, duel.breakdown ?? null);
         _state.phase = "attack"; _state.pendingAttack = null;
-        _animateAndThen(() => { _advanceTurn(defenseTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
+        _animateAndThen(() => { _advanceTurn(defenseTeam); });
         return;
     }
 
@@ -1279,7 +1280,7 @@ function continueShot(attackTeam, defenseTeam, defenseAction, isSpecial, duel, o
         );
         pushLogEntry(getLogTitleForDuel(attackType, defenseAction, "defense"), ["Defense: " + defenseAction, getCounterTag(attackType, defenseAction)], duel.diceTag, _state, duel.breakdown ?? null);
         _state.phase = "attack"; _state.pendingAttack = null;
-        _animateAndThen(() => { _advanceTurn(defenseTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
+        _animateAndThen(() => { _advanceTurn(defenseTeam); });
         return;
     }
 
@@ -1461,8 +1462,6 @@ function _continueKeeperDuelResult(duelResult, attackTeam, defenseTeam, isSpecia
             _state._applyKickoffFn?.();
             _moveBall(defenseTeam, 8);
             _advanceTurn(defenseTeam);
-            _showAttackBarForCurrentTeam();
-            _refreshUI();
         });
         return;
     }
@@ -1470,8 +1469,6 @@ function _continueKeeperDuelResult(duelResult, attackTeam, defenseTeam, isSpecia
     pushLogEntry("shotSavedTitle", ["Zone " + (originZone + 1)].concat(logParts), diceTag, _state, breakdown);
     performKeeperClearance(defenseTeam, "hands", () => {
         _advanceTurn(defenseTeam);
-        _showAttackBarForCurrentTeam();
-        _refreshUI();
     });
 }
 
@@ -1596,7 +1593,7 @@ export function resolveShotKeeperDuel(ctx, defenseAction) {
 
     if (!critWinner && attackScore === defenseScore) {
         pushLogEntry("shotGKEqualTitle", ["Zone " + (originZone + 1)], diceTag, _state, breakdown);
-        performKeeperClearance(defenseTeam, "hands", () => { _advanceTurn(defenseTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
+        performKeeperClearance(defenseTeam, "hands", () => { _advanceTurn(defenseTeam); });
         return;
     }
 
@@ -1709,12 +1706,10 @@ export function resolveShotKeeperDuel(ctx, defenseAction) {
             _state._applyKickoffFn?.();
             _moveBall(defenseTeam, 8);
             _advanceTurn(defenseTeam);
-            _showAttackBarForCurrentTeam();
-            _refreshUI();
         });
         return;
     }
 
     pushLogEntry("shotSavedTitle", ["Zone " + (originZone + 1)].concat(logParts), diceTag, _state, breakdown);
-    performKeeperClearance(defenseTeam, defenseAction, () => { _advanceTurn(defenseTeam); _showAttackBarForCurrentTeam(); _refreshUI(); });
+    performKeeperClearance(defenseTeam, defenseAction, () => { _advanceTurn(defenseTeam); });
 }

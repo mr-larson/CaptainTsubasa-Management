@@ -67,7 +67,7 @@
                                 class="flex items-center gap-2 px-3 py-2 border rounded-lg transition-all"
                             >
                                 <div class="h-6 w-6 rounded-full bg-white/80 border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
-                                    <img v-if="team.logo_path" :src="`/storage/${team.logo_path}`" class="h-full w-full object-cover" />
+                                    <img loading="lazy" decoding="async" v-if="team.logo_path" :src="`/storage/${team.logo_path}`" class="h-full w-full object-cover" />
                                     <span v-else class="text-[9px] text-slate-400">{{ (team.name || '?').charAt(0) }}</span>
                                 </div>
                                 <span class="truncate text-sm font-medium">{{ team.name }}</span>
@@ -87,7 +87,7 @@
                 <div class="flex items-center justify-between mb-6 pb-6 border-b border-slate-200 flex-wrap gap-4">
                     <div class="flex items-center gap-3">
                         <div class="h-12 w-12 rounded-full bg-slate-50 border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
-                            <img v-if="form.logo_path || logoPreviewUrl" :src="logoPreviewUrl || `/storage/${form.logo_path}`" class="h-full w-full object-cover" />
+                            <img loading="lazy" decoding="async" v-if="form.logo_path || logoPreviewUrl" :src="logoPreviewUrl || `/storage/${form.logo_path}`" class="h-full w-full object-cover" />
                             <span v-else class="text-sm text-slate-400">{{ (form.name || '?').charAt(0) }}</span>
                         </div>
                         <div>

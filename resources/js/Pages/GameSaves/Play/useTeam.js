@@ -148,19 +148,20 @@ export function useTeam({ gameSave, team }) {
     // ==========================
     //   FORMATION
     // ==========================
+    // Formation affichée : celle choisie localement (mise à jour immédiate au
+    // clic) jusqu'au rechargement des props, sinon celle de l'équipe en base.
+    const pendingFormation = ref(null);
     const currentFormation = computed(() =>
-        team.value?.formation ?? DEFAULT_FORMATION
+        pendingFormation.value ?? team.value?.formation ?? DEFAULT_FORMATION
     );
 
-    watch(() => team.value?.id, () => {
-        currentFormation.value = gameSave.value.state?.lineup?.[team.value?.id]?.formation ?? DEFAULT_FORMATION;
-    });
+    watch(() => [team.value?.id, team.value?.formation], () => { pendingFormation.value = null; });
 
     const formationData = computed(() => FORMATIONS[currentFormation.value] ?? FORMATIONS[DEFAULT_FORMATION]);
 
     const saveFormation = (formationKey) => {
         if (!team.value) return;
-        currentFormation.value = formationKey;
+        pendingFormation.value = formationKey;
         router.post(
             route('game-saves.lineup.formation', { gameSave: gameSave.value.id }),
             { team_id: team.value.id, formation: formationKey },

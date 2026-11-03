@@ -7,6 +7,7 @@ use App\Http\Controllers\Concerns\AuthorizesGameSave;
 use App\Http\Requests\GameSaves\GameTeamRequest;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -36,16 +37,14 @@ class GameTeamController extends Controller
     }
 
     /**
-     * Formulaire d'édition.
+     * Ancienne URL d'édition : l'édition se fait dans la page liste
+     * (GameTeams/Index) ; la page GameTeams/Edit n'existe pas.
      */
-    public function edit(Request $request, GameSave $gameSave, GameTeam $team): Response
+    public function edit(Request $request, GameSave $gameSave, GameTeam $team): RedirectResponse
     {
         $this->authorizeGameSave('view', $gameSave, $team);
 
-        return Inertia::render('GameSaves/GameTeams/Edit', [
-            'gameSave' => $gameSave,
-            'team'     => $team,
-        ]);
+        return redirect()->route('game-saves.teams.index', $gameSave);
     }
 
     /**

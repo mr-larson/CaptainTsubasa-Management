@@ -98,6 +98,11 @@ const filteredPlayers = computed(() => {
     return list;
 });
 
+// Note globale calculée une fois par joueur et par liste (au lieu de 3-4 fois
+// par ligne à chaque re-rendu, ex. à chaque frappe dans la recherche).
+const overallById = computed(() => new Map(props.availableFreePlayers.map(p => [p.id, overallOf(p)])));
+const ovr = (p) => overallById.value.get(p.id) ?? overallOf(p);
+
 // ==========================
 //   JOUEUR SÉLECTIONNÉ
 // ==========================
@@ -341,10 +346,10 @@ const filteredHistory = computed(() =>
                         <div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-black shrink-0"
                              :class="selectedPlayer?.id === p.id
                                 ? 'bg-white/20 text-white'
-                                : overallOf(p) >= 70 ? 'bg-emerald-100 text-emerald-700'
-                                : overallOf(p) >= 50 ? 'bg-amber-100 text-amber-700'
+                                : ovr(p) >= 70 ? 'bg-emerald-100 text-emerald-700'
+                                : ovr(p) >= 50 ? 'bg-amber-100 text-amber-700'
                                 : 'bg-slate-100 text-slate-500'">
-                            {{ overallOf(p) }}
+                            {{ ovr(p) }}
                         </div>
 
                         <!-- Comparer -->
@@ -566,7 +571,7 @@ const filteredHistory = computed(() =>
                                         <div class="text-[9px] text-slate-400 font-normal">{{ p.position }}</div>
                                     </div>
                                     <button type="button" @click="toggleCompare(p)"
-                                            class="text-slate-300 hover:text-rose-500" title="Retirer">✕</button>
+                                            class="text-slate-300 hover:text-rose-500" title="Retirer" aria-label="Retirer">✕</button>
                                 </div>
                             </th>
                         </tr>

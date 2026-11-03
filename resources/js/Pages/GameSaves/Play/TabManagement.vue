@@ -11,8 +11,9 @@ const props = defineProps({
     initialSection: { type: String, default: null },
 });
 
-const stats = props.managementStats ?? {};
-const expiringContracts = stats.expiringContracts ?? [];
+// Réactifs : restent à jour après une action tant que l'onglet est monté.
+const stats = computed(() => props.managementStats ?? {});
+const expiringContracts = computed(() => stats.value.expiringContracts ?? []);
 
 const sections = computed(() => [
     { key: 'dataBase', label: 'Base de données' },

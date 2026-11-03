@@ -63,6 +63,10 @@ function bindHistoryClickEvents() {
     });
 
     document.addEventListener('click', (event) => {
+        // Panneaux de remplacement ouverts : refermés au clic hors du panneau.
+        if (!event.target.closest('[id$="-sub-panel"]')) {
+            _rootEl?.querySelectorAll('[id$="-sub-panel"]').forEach(p => { p.style.display = 'none'; });
+        }
         if (event.target.closest('.log-entry') || event.target.closest('#duel-dice-tooltip')) return;
         hideBreakdownTooltip();
         _openLogId = null;
@@ -255,7 +259,8 @@ export function updateScoreUI(state) {
     if (isDiceAnimating()) runAfterDiceAnimation(applyScore);
     else applyScore();
 
-    const minutes = state.turns * 2;
+    // Durée de match réglable (10-80 tours) : la minute affichée reste sur 90'.
+    const minutes = Math.round(state.turns / (state.maxTurns || 45) * 90);
     const t = String(minutes).padStart(2, "0");
     if (_ui.turnsDisplayEl)   _ui.turnsDisplayEl.textContent = t + "'";
     if (_ui.turnIndicatorEl)  _ui.turnIndicatorEl.textContent = t + "'";
@@ -366,7 +371,8 @@ function _pushLog(entry) {
     logHistory.push(entry);
     if (entry.breakdown) _logBreakdowns.set(entry.id, entry.breakdown);
     if (_ui?.historyListEl) {
-        _ui.historyListEl.innerHTML = [...logHistory].reverse().map(e => e.toHTML()).join('');
+        // Ajout en tête plutôt que reconstruire tout l'historique à chaque entrée.
+        _ui.historyListEl.insertAdjacentHTML('afterbegin', entry.toHTML());
     }
 }
 
@@ -657,17 +663,12 @@ export function updateSideCard(prefix, team, slotNumber) {
             listEl.appendChild(item);
         });
 
-        let open = false;
+        // Fermeture au clic ailleurs : un seul listener délégué (bindHistoryClickEvents),
+        // au lieu d'un listener `document` ajouté à chaque rafraîchissement de carte.
         subBtn.onclick = (e) => {
             e.stopPropagation();
-            open = !open;
-            panel.style.display = open ? 'block' : 'none';
+            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
         };
-
-        document.addEventListener('click', () => {
-            open = false;
-            panel.style.display = 'none';
-        }, { once: true, signal: _docAbort?.signal });
 
         // 🔄 dans la status-bar, panel ancré sur la card
         const subBtnContainer = _rootEl.querySelector(`#${prefix}-status-bar`);

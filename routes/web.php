@@ -35,6 +35,8 @@ Route::get('/', function () {
             ->orderByRaw("JSON_EXTRACT(stats, '$.attack') DESC")
             ->take(50)
             ->get(),
+        // Compteur réel (l'échantillon ci-dessus est limité à 50).
+        'playerCount' => Player::count(),
         'canLogin'    => Route::has('login'),
         'canRegister' => Route::has('register'),
     ]);

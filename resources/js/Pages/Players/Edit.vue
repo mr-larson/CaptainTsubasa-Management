@@ -701,6 +701,11 @@ function submit() {
     form.post(route('players.update', form.id), {
         preserveScroll: true,
         forceFormData: true, // ✅ nécessaire pour envoyer form.photo (File)
+        // Recharger le joueur enregistré (photo à jour, fichier remis à zéro).
+        onSuccess: () => {
+            const fresh = props.players.find(p => p.id === form.id);
+            if (fresh) selectPlayer(fresh);
+        },
     });
 }
 

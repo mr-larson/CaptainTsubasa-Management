@@ -157,7 +157,7 @@ const sortIcon = (key) => {
             ? 'bg-teal-500 text-white border-teal-600'
             : 'bg-white text-slate-600 border-slate-200 hover:border-teal-300 hover:text-teal-600'">
                         <div class="w-4 h-4 rounded-full overflow-hidden shrink-0 bg-slate-100">
-                            <img v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" class="w-full h-full object-contain" alt=""/>
+                            <img loading="lazy" decoding="async" v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" class="w-full h-full object-contain" alt=""/>
                         </div>
                         {{ t.name }}
                     </button>
@@ -244,7 +244,7 @@ const sortIcon = (key) => {
                                 ]" :key="col.key"
                                 class="py-2 px-2 text-right cursor-pointer select-none hover:text-teal-600 transition-colors"
                                 :class="sortKey === col.key ? 'text-teal-600 font-bold' : 'text-slate-500 font-semibold'"
-                                @click="setSort(col.key)"
+                                @click="setSort(col.key)" tabindex="0" @keydown.enter.prevent="setSort(col.key)"
                             >
                                 {{ col.label }} <span class="text-[10px]">{{ sortIcon(col.key) }}</span>
                             </th>
@@ -259,7 +259,7 @@ const sortIcon = (key) => {
                             <td class="py-2 pr-4">
                                 <div class="flex items-center gap-2">
                                     <div class="w-6 h-6 rounded overflow-hidden bg-white border border-slate-100 shrink-0">
-                                        <img v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" class="w-full h-full object-contain" alt=""/>
+                                        <img loading="lazy" decoding="async" v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" class="w-full h-full object-contain" alt=""/>
                                     </div>
                                     <span class="font-semibold truncate max-w-[120px]"
                                           :class="isMyTeam(t.id) ? 'text-teal-700' : 'text-slate-700'">
