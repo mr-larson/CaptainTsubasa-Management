@@ -2,6 +2,7 @@
     <Head title="Match" />
 
     <AuthenticatedLayout>
+        <LoadingOverlay :show="submittingResult" message="Enregistrement du match et fin de semaine…" />
         <template #header>
             <H2>Match</H2>
         </template>
@@ -113,7 +114,7 @@
                                             stroke-linecap="round"
                                             stroke-dasharray="0 69.1"
                                             transform="rotate(-90 18 18)"
-                                            style="transition: stroke-dasharray 0.3s ease"/>
+                                            class="transition-[stroke-dasharray] duration-300 ease-in-out"/>
                                     <!-- Aiguille -->
                                     <line id="clock-hand" x1="18" y1="18" x2="18" y2="9"
                                           stroke="#0f172a" stroke-width="1.5" stroke-linecap="round"/>
@@ -363,7 +364,9 @@
 //  Imports Vue / Inertia
 // ==========================
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
+import { confirmDialog } from '@/Composables/useDialog.js';
 import { onMounted, onBeforeUnmount, ref, computed } from 'vue';
 import H2 from '@/Components/H2.vue';
 import { FORMATIONS, DEFAULT_FORMATION } from './engine/formations.js';
@@ -389,6 +392,8 @@ const gameRoot = ref(/** @type {HTMLElement|null} */ (null));
 // Cleanup
 /** @type {null | (() => void)} */
 let cleanup = null;
+// Voile « enregistrement » pendant l'envoi du résultat (la fin de semaine côté serveur peut prendre du temps).
+const submittingResult = ref(false);
 
 // ...
 
@@ -458,6 +463,7 @@ onMounted(() => {
         onMatchEnd: ({ matchId, gameSaveId, scoresByTeamId, playerActions, match_stats, foulEvents, onFailed }) => {
             // Pas de `router.visit` en onSuccess : le serveur choisit la suite
             // (Play, fin de saison, game over) via sa redirection.
+            submittingResult.value = true;
             router.post(
                 route('game-saves.matches.finish', { gameSave: gameSaveId, match: matchId }),
                 {
@@ -469,6 +475,7 @@ onMounted(() => {
                 {
                     preserveScroll: true,
                     onError: () => onFailed?.(),
+                    onFinish: () => { submittingResult.value = false; },
                 }
             );
         },
@@ -484,9 +491,14 @@ const removeLeaveGuard = router.on('before', (event) => {
     if (!cleanup?.isInProgress?.()) return;
     if (event.detail.visit.method !== 'get') return; // l'envoi du résultat lui-même
 
-    if (confirm(`Quitter le match ? Le score actuel (${cleanup.scoreLabel()}) sera validé comme résultat final.`)) {
-        cleanup.finishNow();
-    }
+    // La navigation est annulée tout de suite ; la fenêtre décide ensuite.
+    confirmDialog({
+        title:        'Quitter le match ?',
+        message:      `Le score actuel (${cleanup.scoreLabel()}) sera validé comme résultat final.`,
+        confirmLabel: 'Quitter et valider',
+        cancelLabel:  'Continuer le match',
+        danger:       true,
+    }).then(ok => { if (ok && cleanup?.isInProgress?.()) cleanup.finishNow(); });
     return false;
 });
 

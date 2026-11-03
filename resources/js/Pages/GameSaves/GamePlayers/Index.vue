@@ -282,6 +282,7 @@
 
 <script setup>
 import { Head, Link, router, useForm } from '@inertiajs/vue3'
+import { confirmDialog } from '@/Composables/useDialog.js'
 import { ref, computed, onMounted } from 'vue'
 
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
@@ -472,9 +473,9 @@ function updateContract() {
     }
 }
 
-function deleteContract() {
+async function deleteContract() {
     if (!form.contract || !form.contract.id) return
-    if (!confirm('Supprimer ce contrat ?')) return
+    if (!(await confirmDialog({ title: 'Supprimer le contrat', message: 'Supprimer ce contrat ?', confirmLabel: 'Supprimer', danger: true }))) return
 
     router.delete(
         route('game-saves.contracts.destroy', {
@@ -490,9 +491,9 @@ function deleteContract() {
     )
 }
 
-function deletePlayer() {
+async function deletePlayer() {
     if (!form.id) return
-    if (!confirm('Supprimer ce joueur ?')) return
+    if (!(await confirmDialog({ title: 'Supprimer le joueur', message: 'Supprimer ce joueur ?', confirmLabel: 'Supprimer', danger: true }))) return
 
     form.delete(
         route('game-saves.players.destroy', {

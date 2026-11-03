@@ -1,6 +1,6 @@
 <template>
     <button
-        class="items-center w-36 px-4 py-2 bg-stone-100 border-2 border-blue-600 rounded-full font-semibold text-xs text-blue-600 hover:text-white uppercase tracking-widest hover:bg-blue-400 focus:bg-blue-600 active:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition ease-in-out duration-200 text-center drop-shadow-md mb-2"
+        class="mb-2 inline-flex min-h-[40px] min-w-[9rem] items-center justify-center rounded-full bg-teal-500 px-5 text-sm font-bold text-slate-900 shadow-sm transition-colors hover:bg-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
     >
         <slot />
     </button>

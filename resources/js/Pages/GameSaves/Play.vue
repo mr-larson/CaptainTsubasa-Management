@@ -1,6 +1,8 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 import { Head, router } from '@inertiajs/vue3';
+import { confirmDialog } from '@/Composables/useDialog.js';
 import { ref, computed, watch, nextTick } from 'vue';
 import H2 from '@/Components/H2.vue';
 
@@ -86,16 +88,20 @@ const makeDeclaration = (player, type) => {
 };
 
 // Résiliation de contrat — salaire perdu, relation coach rompue, joueur libéré
-const releasePlayer = (player) => {
+const releasePlayer = async (player) => {
     if (!player?.contract_id) return;
     const name = `${player.firstname ?? ''} ${player.lastname ?? ''}`.trim() || 'ce joueur';
-    if (!window.confirm(
-        `Résilier le contrat de ${name} ?\n\n`
-        + `• Le salaire déjà payé d'avance ne sera PAS remboursé.\n`
-        + `• Sa relation avec le coach tombera à -100 (il refusera de re-signer).\n`
-        + `• Son moral chutera.\n\n`
-        + `Confirmer la résiliation ?`
-    )) return;
+    const ok = await confirmDialog({
+        title:        `Résilier le contrat de ${name} ?`,
+        details: [
+            "Le salaire déjà payé d'avance ne sera pas remboursé.",
+            'Sa relation avec le coach tombera à -100 (il refusera de re-signer).',
+            'Son moral chutera.',
+        ],
+        confirmLabel: 'Résilier',
+        danger:       true,
+    });
+    if (!ok) return;
 
     router.delete(
         route('game-saves.contracts.release', { gameSave: props.gameSave.id, contract: player.contract_id }),
@@ -284,6 +290,11 @@ const tabs = computed(() => {
 });
 const activeTab = ref('dashboard');
 
+// Mobile : la barre d'onglets défile horizontalement, on garde l'onglet actif visible.
+watch(activeTab, (key) => nextTick(() =>
+    document.querySelector(`[role="tab"][data-tab="${key}"]`)?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+));
+
 // N'ouvre qu'un onglet existant (ex. Transferts masqué en Coupe du Monde).
 function setTab(key) {
     activeTab.value = tabs.value.some(t => t.key === key) ? key : 'dashboard';
@@ -336,6 +347,7 @@ const saveGame = () => {
     <Head :title="`Partie ${gameSave.label ?? '#' + gameSave.id}`" />
 
     <AuthenticatedLayout>
+        <LoadingOverlay :show="simulating" message="Simulation de la semaine en cours…" />
         <template #header>
             <H2>Session de jeu — {{ gameSave.label ?? `Sauvegarde #${gameSave.id}` }}</H2>
         </template>
@@ -376,8 +388,7 @@ const saveGame = () => {
                     <CareerMandateCard v-if="career && career.mandate" compact
                                        :career="career" @open-rules="openCareerRules" />
                     <WeeklyRecapCard v-if="weeklyRecap.length" :weeklyRecap="weeklyRecap" />
-                    <div class="flex-1 bg-contain bg-center bg-no-repeat"
-                         style="background-image: url('/images/wakabayashi.webp')"></div>
+                    <div class="flex-1 bg-contain bg-center bg-no-repeat bg-[url('/images/wakabayashi.webp')]"></div>
                 </div>
 
                 <!-- Carte principale -->

@@ -135,6 +135,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { confirmDialog } from '@/Composables/useDialog.js';
 import { ref, computed, onMounted } from 'vue';
 
 // Components
@@ -222,10 +223,10 @@ function submit() {
     });
 }
 
-function deleteTeam() {
+async function deleteTeam() {
     if (!form.id) return;
 
-    if (!confirm('Voulez-vous vraiment supprimer cette équipe ?')) {
+    if (!(await confirmDialog({ title: "Supprimer l'équipe", message: 'Voulez-vous vraiment supprimer cette équipe ?', confirmLabel: 'Supprimer', danger: true }))) {
         return;
     }
 

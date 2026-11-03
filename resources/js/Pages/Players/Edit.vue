@@ -127,6 +127,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { confirmDialog } from '@/Composables/useDialog.js';
 import { ref, computed, onMounted } from 'vue';
 
 // Components
@@ -218,10 +219,10 @@ function submit() {
     });
 }
 
-function deletePlayer() {
+async function deletePlayer() {
     if (!form.id) return;
 
-    if (!confirm('Voulez-vous vraiment supprimer ce joueur ?')) return;
+    if (!(await confirmDialog({ title: 'Supprimer le joueur', message: 'Voulez-vous vraiment supprimer ce joueur ?', confirmLabel: 'Supprimer', danger: true }))) return;
 
     form.delete(route('players.destroy', form.id), {
         preserveScroll: true,

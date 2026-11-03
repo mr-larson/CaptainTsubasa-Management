@@ -226,7 +226,12 @@ class GameDraftController extends Controller
                 ? (int) $current
                 : (int) $gameSave->controlled_game_team_id;
 
-            $allDone = $draftService->finishTeamDraft($gameSave, $teamId);
+            // Sous le minimum d'effectif, on ne peut clôturer que si plus aucun
+            // joueur n'est abordable : sinon le manager resterait bloqué au draft.
+            $team  = GameTeam::where('game_save_id', $gameSave->id)->find($teamId);
+            $force = $team && !$draftService->hasAffordablePlayer($gameSave, $team);
+
+            $allDone = $draftService->finishTeamDraft($gameSave, $teamId, force: $force);
 
             $gameSave->refresh();
 

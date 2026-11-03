@@ -14,7 +14,7 @@ const { playerPhotoUrl } = usePlayerUtils();
 </script>
 
 <template>
-    <div class="border border-slate-200 rounded-xl bg-slate-100 overflow-hidden shadow-sm flex flex-col" style="height:240px;">
+    <div class="h-[240px] border border-slate-200 rounded-xl bg-slate-100 overflow-hidden shadow-sm flex flex-col">
         <div class="px-3 py-1.5 bg-slate-200/60 border-b border-slate-200 flex items-center justify-between shrink-0">
             <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Banc</h4>
             <span class="text-[10px] font-bold text-slate-400">{{ substitutes.length }}</span>

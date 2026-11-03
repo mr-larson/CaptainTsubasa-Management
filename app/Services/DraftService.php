@@ -345,6 +345,24 @@ class DraftService
      * Un joueur en rupture avec le coach (affinité ≤ seuil) refuse d'être
      * drafté par l'équipe contrôlée. Les équipes IA ne sont pas concernées.
      */
+    /**
+     * L'équipe peut-elle encore s'offrir au moins un joueur libre du draft ?
+     * (même règle de prix que executePick : coût ajusté × semaines × réduction draft)
+     */
+    public function hasAffordablePlayer(GameSave $gameSave, GameTeam $team): bool
+    {
+        $seasonLength = $this->getSeasonLength($gameSave);
+        $budget       = (int) ($team->budget ?? 0);
+
+        return GamePlayer::where('game_save_id', $gameSave->id)
+            ->whereDoesntHave('contracts')
+            ->excludingFictional()
+            ->visibleForConfig($gameSave)
+            ->get()
+            ->contains(fn ($p) => (int) floor($p->adjusted_cost * $seasonLength * self::DRAFT_DISCOUNT) <= $budget
+                && !$this->playerRefusesTeam($gameSave, $p, (int) $team->id));
+    }
+
     public function playerRefusesTeam(GameSave $gameSave, GamePlayer $player, int $teamId): bool
     {
         // La rancune envers le coach ne concerne que les équipes humaines.

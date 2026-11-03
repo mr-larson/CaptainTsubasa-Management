@@ -2,6 +2,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import H2 from '@/Components/H2.vue';
 import { Head, router } from '@inertiajs/vue3';
+import { alertDialog } from '@/Composables/useDialog.js';
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import TeamStyleBadges from '@/Pages/GameSaves/Play/components/TeamStyleBadges.vue';
 import Modal from '@/Components/Modal.vue';
@@ -143,6 +144,12 @@ const myTeam = computed(() =>
 const myRosterCount = computed(() =>
     teamRosters.value[activeHumanTeamId.value]?.count ?? 0
 );
+
+// Sous 14 joueurs, terminer n'est permis que si plus aucun joueur n'est
+// abordable (le serveur applique la même règle) : sinon le draft serait bloqué.
+const MIN_SQUAD = 14;
+const canAffordAnyone = computed(() => availablePlayers.value.some(p => canAfford(p)));
+const canFinishDraft  = computed(() => myRosterCount.value >= MIN_SQUAD || !canAffordAnyone.value);
 
 const myBudget = computed(() =>
     teamRosters.value[activeHumanTeamId.value]?.budget ?? 0
@@ -322,7 +329,7 @@ function teamLogoUrl(team) {
 }
 
 async function finishMyDraft() {
-    if (myRosterCount.value < 14) return;
+    if (!canFinishDraft.value) return;
 
     isProcessing.value = true;
     try {
@@ -484,7 +491,7 @@ async function pickPlayer(player) {
         }
     } catch (err) {
         console.error('Pick error:', err);
-        alert(err.response?.data?.error ?? 'Impossible de sélectionner ce joueur. Vérifie ton budget.');
+        alertDialog({ title: 'Sélection impossible', message: err.response?.data?.error ?? 'Impossible de sélectionner ce joueur. Vérifie ton budget.' });
     }
 
     isProcessing.value = false;
@@ -725,8 +732,11 @@ onMounted(() => {
                                     <span v-else>C'est ton tour ! Choisis un joueur.</span>
                                 </div>
                             </div>
-                            <!-- Bouton terminer le draft (à partir de 14 joueurs) -->
-                            <div v-if="isMyTurn && myRosterCount >= 14" class="mb-4 text-center">
+                            <!-- Bouton terminer le draft (à partir de 14 joueurs, ou plus rien d'abordable) -->
+                            <div v-if="isMyTurn && canFinishDraft" class="mb-4 text-center">
+                                <p v-if="myRosterCount < MIN_SQUAD" class="mb-2 text-sm text-amber-700">
+                                    Plus aucun joueur n'est dans ton budget : tu peux terminer ton draft avec {{ myRosterCount }} joueurs.
+                                </p>
                                 <button @click="finishMyDraft"
                                         :disabled="isProcessing"
                                         class="px-6 py-2.5 rounded-xl text-sm font-bold border-2 border-teal-500 text-teal-600 bg-teal-50 hover:bg-teal-500 hover:text-white transition-all disabled:opacity-50">

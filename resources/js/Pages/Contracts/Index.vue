@@ -58,32 +58,32 @@
                     <div class="flex flex-col md:grid lg:grid-cols-2 gap-4 text-slate-700">
 
                         <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Nom : </label>
+                            <label class="text-sm font-semibold text-slate-600 w-1/3 text-right mb-1 md:mb-0 pr-4">Nom : </label>
                             <span class="text-gray-900">{{ form.name }}</span>
                         </div>
 
                         <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Victoire(s) : </label>
+                            <label class="text-sm font-semibold text-slate-600 w-1/3 text-right mb-1 md:mb-0 pr-4">Victoire(s) : </label>
                             <span class="text-gray-900">{{ form.wins }}</span>
                         </div>
 
                         <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label for="points" class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Points : </label>
+                            <label for="points" class="text-sm font-semibold text-slate-600 w-1/3 text-right mb-1 md:mb-0 pr-4">Points : </label>
                             <span class="text-gray-900">{{ form.points }}</span>
                         </div>
 
                         <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label for="losses" class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Défaite(s) : </label>
+                            <label for="losses" class="text-sm font-semibold text-slate-600 w-1/3 text-right mb-1 md:mb-0 pr-4">Défaite(s) : </label>
                             <span class="text-gray-900">{{ form.losses }}</span>
                         </div>
 
                         <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label for="budget" class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Budget</label>
+                            <label for="budget" class="text-sm font-semibold text-slate-600 w-1/3 text-right mb-1 md:mb-0 pr-4">Budget</label>
                             <span class="text-gray-900">{{ form.budget }}</span>
                         </div>
 
                         <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label class="text-gray-500 font-bold w-1/3 text-right mb-1 md:mb-0 pr-4">Matchs
+                            <label class="text-sm font-semibold text-slate-600 w-1/3 text-right mb-1 md:mb-0 pr-4">Matchs
                                 nul(s) : </label>
                             <span class="text-gray-900">{{ form.draws }}</span>
                         </div>

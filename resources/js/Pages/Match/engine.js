@@ -252,10 +252,10 @@ export function initMatchEngine(rootEl, config = {}) {
     // à leurs handlers. Réutilisé à chaque (re)génération de la barre.
     function bindActionButtons() {
         rootEl.querySelectorAll(".skill-card-main, .skill-card-special").forEach(btn =>
-            btn.addEventListener("click", () => handleAttackClick(btn.dataset.action))
+            btn.addEventListener("click", () => { if (touchTipFirst(btn)) handleAttackClick(btn.dataset.action); })
         );
         rootEl.querySelectorAll(".def-card-main, .def-card-special").forEach(btn =>
-            btn.addEventListener("click", () => handleDefenseClick(btn.dataset.defense))
+            btn.addEventListener("click", () => { if (touchTipFirst(btn)) handleDefenseClick(btn.dataset.defense); })
         );
 
         // Tooltip (nom complet, description, recharge) au survol des slots spéciaux.
@@ -266,6 +266,21 @@ export function initMatchEngine(rootEl, config = {}) {
             btn.addEventListener("mouseenter", () => showSpecialTooltip(move, btn));
             btn.addEventListener("mouseleave", () => hideBreakdownTooltip());
         });
+    }
+
+    // Au toucher, il n'y a pas de survol : le 1er tap sur une technique spéciale
+    // affiche sa description, un 2e tap sur le même bouton (dans les 4 s) la joue.
+    let lastPointerType = 'mouse';
+    rootEl.addEventListener('pointerdown', (e) => { lastPointerType = e.pointerType; }, { capture: true });
+    function touchTipFirst(btn) {
+        if (lastPointerType !== 'touch' || !btn.dataset.special) return true;
+        if (btn.dataset.tipShown === '1') return true;
+        let move = null;
+        try { move = JSON.parse(btn.dataset.special); } catch { return true; }
+        showSpecialTooltip(move, btn);
+        btn.dataset.tipShown = '1';
+        setTimeout(() => { delete btn.dataset.tipShown; hideBreakdownTooltip(); }, 4000);
+        return false;
     }
 
     // ==========================

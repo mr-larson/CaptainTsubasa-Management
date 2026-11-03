@@ -13,8 +13,7 @@
 
             <div class="flex flex-col md:flex-row">
                 <div
-                    class="hidden md:block basis-1/3 p-4 bg-contain bg-center bg-no-repeat"
-                    style="background-image: url('/images/Taro_Misaki.webp')"
+                    class="hidden md:block basis-1/3 p-4 bg-contain bg-center bg-no-repeat bg-[url('/images/Taro_Misaki.webp')]"
                 ></div>
 
                 <div class="basis-full md:basis-2/3 min-h-[500px] p-4 border border-slate-300 rounded-lg mx-0 md:mx-6 bg-white">
@@ -24,7 +23,7 @@
                         <div class="flex justify-around p-6">
                             <button
                                 type="submit"
-                                class="w-40 bg-cyan-300 hover:bg-cyan-400 text-center font-semibold py-2 px-5 border-2 border-cyan-500 rounded-full drop-shadow-md mb-2 disabled:opacity-50"
+                                class="mb-2 inline-flex min-h-[44px] w-40 items-center justify-center rounded-full bg-teal-500 px-5 text-sm font-bold text-slate-900 shadow-sm transition-colors hover:bg-teal-400 disabled:opacity-50"
                                 :disabled="form.processing"
                             >
                                 Création
@@ -32,7 +31,7 @@
 
                             <Link
                                 :href="route('game-saves.teams.index', { gameSave: gameSave.id })"
-                                class="w-40 bg-slate-300 hover:bg-slate-400 text-center font-semibold py-2 px-5 border-2 border-slate-500 rounded-full drop-shadow-md mb-2"
+                                class="mb-2 inline-flex min-h-[44px] w-40 items-center justify-center rounded-full border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50"
                             >
                                 Retour
                             </Link>

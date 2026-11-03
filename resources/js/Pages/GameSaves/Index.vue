@@ -1,6 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
+import { confirmDialog } from '@/Composables/useDialog.js';
 import H2 from '@/Components/H2.vue';
 
 const props = defineProps({
@@ -9,8 +10,8 @@ const props = defineProps({
 
 const play = (save) => router.get(route('game-saves.Play', save.id));
 
-const destroySave = (save) => {
-    if (!confirm('Voulez-vous vraiment supprimer cette sauvegarde ?')) return;
+const destroySave = async (save) => {
+    if (!(await confirmDialog({ title: 'Supprimer la sauvegarde', message: 'Cette partie sera définitivement supprimée.', confirmLabel: 'Supprimer', danger: true }))) return;
     router.delete(route('game-saves.destroy', save.id), { preserveScroll: true });
 };
 
@@ -33,8 +34,7 @@ const formatDate = (value) => {
         <div class="p-2 sm:p-4">
             <div class="flex flex-col md:flex-row">
                 <!-- Visuel gauche -->
-                <div class="hidden md:block basis-1/3 p-4 bg-contain bg-center bg-no-repeat"
-                     style="background-image: url('/images/Jun_Misugi.webp')"></div>
+                <div class="hidden md:block basis-1/3 p-4 bg-contain bg-center bg-no-repeat bg-[url('/images/Jun_Misugi.webp')]"></div>
 
                 <!-- Carte -->
                 <div class="basis-full md:basis-2/3 p-4 sm:p-6 border border-slate-200 rounded-2xl mx-0 md:mx-6 bg-white min-h-[500px] flex flex-col shadow-sm">

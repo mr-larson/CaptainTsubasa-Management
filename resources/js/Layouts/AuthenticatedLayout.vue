@@ -5,6 +5,7 @@ import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import FlashToasts from '@/Components/FlashToasts.vue';
+import AppDialog from '@/Components/AppDialog.vue';
 
 const showingNavigationDropdown = ref(false);
 
@@ -143,5 +144,6 @@ const navLinks = [
         </div>
 
         <FlashToasts />
+        <AppDialog />
     </div>
 </template>

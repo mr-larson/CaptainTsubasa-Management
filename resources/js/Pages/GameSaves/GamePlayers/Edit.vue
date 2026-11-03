@@ -18,8 +18,7 @@
 
                 <!-- IMAGE / ILLUSTRATION -->
                 <div
-                    class="hidden md:block basis-1/3 p-4 bg-contain bg-center bg-no-repeat"
-                    style="background-image: url('/images/Takeshi_Sawada.webp')"
+                    class="hidden md:block basis-1/3 p-4 bg-contain bg-center bg-no-repeat bg-[url('/images/Takeshi_Sawada.webp')]"
                 ></div>
 
                 <!-- FORM -->

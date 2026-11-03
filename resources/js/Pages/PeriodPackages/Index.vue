@@ -1,6 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
+import { confirmDialog } from '@/Composables/useDialog.js';
 import H2 from '@/Components/H2.vue';
 
 const props = defineProps({
@@ -11,8 +12,8 @@ const toggleShared = (pkg) => {
     router.put(route('period-packages.update', pkg.id), { is_shared: !pkg.is_shared }, { preserveScroll: true });
 };
 
-const destroyPackage = (pkg) => {
-    if (!confirm(`Supprimer la période « ${pkg.name} » ?`)) return;
+const destroyPackage = async (pkg) => {
+    if (!(await confirmDialog({ title: 'Supprimer la période', message: `Supprimer la période « ${pkg.name} » ?`, confirmLabel: 'Supprimer', danger: true }))) return;
     router.delete(route('period-packages.destroy', pkg.id), { preserveScroll: true });
 };
 

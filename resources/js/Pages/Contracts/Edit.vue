@@ -206,6 +206,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { confirmDialog } from '@/Composables/useDialog.js';
 import { ref, defineProps, computed, onMounted } from 'vue';
 
 // Components
@@ -285,10 +286,10 @@ function submit() {
     });
 }
 
-function deleteContract() {
+async function deleteContract() {
     if (!form.id) return;
 
-    if (!confirm('Voulez-vous vraiment supprimer ce contrat ?')) {
+    if (!(await confirmDialog({ title: "Supprimer le contrat", message: 'Voulez-vous vraiment supprimer ce contrat ?', confirmLabel: 'Supprimer', danger: true }))) {
         return;
     }
 

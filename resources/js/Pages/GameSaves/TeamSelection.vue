@@ -367,7 +367,7 @@
                     </div>
 
                     <!-- Placeholder si aucune équipe sélectionnée -->
-                    <div v-else class="col-span-1 lg:col-span-10 border border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center text-slate-400" style="min-height: 400px;">
+                    <div v-else class="col-span-1 lg:col-span-10 min-h-[400px] border border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center text-slate-400">
                         <div class="text-4xl mb-3">⚽</div>
                         <p class="font-semibold">Sélectionne une équipe pour voir son profil</p>
                     </div>

@@ -164,6 +164,24 @@ class DraftServiceTest extends TestCase
         $this->assertTrue($draft['completed']);
     }
 
+    public function test_human_without_affordable_player_can_finish_under_minimum(): void
+    {
+        $save = $this->makeSave(['phase' => 'draft']);
+        [$human] = $this->makeTeamWithSquad($save, ['is_controlled' => true, 'human_seat' => 1, 'budget' => 0], DraftService::MIN_SQUAD - 2);
+        $save->update(['controlled_game_team_id' => $human->id]);
+        $this->service->initDraft($save, [$human->id]);
+        $this->makePlayer($save, ['cost' => 1000]); // joueur libre, trop cher pour un budget nul
+
+        $this->assertFalse($this->service->hasAffordablePlayer($save->fresh(), $human->fresh()));
+
+        $this->actingAs(\App\Models\User::find($save->user_id))
+            ->postJson(route('game-saves.draft.finish', $save))
+            ->assertOk()
+            ->assertJson(['completed' => true]);
+
+        $this->assertContains($human->id, $save->fresh()->state['draft']['finished_teams'] ?? []);
+    }
+
     public function test_finalize_draft_builds_lineups_and_starts_season(): void
     {
         $save = $this->makeSave(['phase' => 'intersaison_draft']);

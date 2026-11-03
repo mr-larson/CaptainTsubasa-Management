@@ -77,7 +77,7 @@ const verdictOutcomeLabel = (o) => ({
                     </span>
                 </div>
                 <div class="relative h-2.5 rounded-full bg-slate-100 overflow-hidden">
-                    <div class="absolute top-0 bottom-0 w-px bg-rose-300" style="left: 25%"></div>
+                    <div class="absolute top-0 bottom-0 left-1/4 w-px bg-rose-300"></div>
                     <div class="h-full rounded-full transition-all"
                          :class="career.confidence <= 25 ? 'bg-rose-500' : career.confidence <= 50 ? 'bg-amber-400' : 'bg-emerald-500'"
                          :style="{ width: career.confidence + '%' }"></div>

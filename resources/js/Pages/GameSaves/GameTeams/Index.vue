@@ -171,6 +171,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import H2 from '@/Components/H2.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { confirmDialog } from '@/Composables/useDialog.js';
 import { ref, computed, onMounted } from 'vue';
 
 // Components
@@ -270,10 +271,10 @@ function submit() {
     });
 }
 
-function deleteTeam() {
+async function deleteTeam() {
     if (!form.id) return;
 
-    if (!confirm('Voulez-vous vraiment supprimer cette équipe de la partie ?')) {
+    if (!(await confirmDialog({ title: "Supprimer l'équipe", message: 'Voulez-vous vraiment supprimer cette équipe de la partie ?', confirmLabel: 'Supprimer', danger: true }))) {
         return;
     }
 
