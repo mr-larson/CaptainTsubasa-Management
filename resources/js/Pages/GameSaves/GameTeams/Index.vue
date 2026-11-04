@@ -6,163 +6,63 @@
             <H2>Équipes de la partie</H2>
         </template>
 
-        <!-- CONTENU PRINCIPAL -->
         <div class="p-4 sm:p-6 max-w-8xl mx-auto flex flex-col gap-4">
+            <EditorSubNav
+                :back="{ href: route('game-saves.Play', { gameSave: gameSave.id }), label: 'Retour à la partie' }"
+                :links="[
+                    { href: route('game-saves.players.index', { gameSave: gameSave.id }), label: 'Joueurs' },
+                    { href: route('game-saves.teams.index', { gameSave: gameSave.id }), label: 'Équipes', active: true },
+                ]"
+            />
 
-            <!-- SOUS-NAVIGATION GESTION -->
-            <div class="flex flex-wrap items-center gap-2">
-                <Link :href="route('game-saves.Play', { gameSave: gameSave.id })"
-                      class="text-xs font-semibold px-3 py-1.5 rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 transition-all">
-                    ← Retour à la partie
-                </Link>
-                <span class="w-px h-5 bg-slate-200"></span>
-                <Link :href="route('game-saves.players.index', { gameSave: gameSave.id })"
-                      class="text-xs font-bold px-3 py-1.5 rounded-full border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all">
-                    Joueurs
-                </Link>
-                <Link :href="route('game-saves.teams.index', { gameSave: gameSave.id })"
-                      class="text-xs font-bold px-3 py-1.5 rounded-full bg-teal-500 text-white shadow-sm">
-                    Équipes
-                </Link>
-            </div>
+            <EntityEditor
+                title="Équipes"
+                :items="teams"
+                :selected-id="editor.selectedId.value"
+                :creating="editor.creating.value"
+                :search-text="t => t.name || ''"
+                search-placeholder="Rechercher une équipe"
+                empty-label="Aucune équipe trouvée."
+                add-title="Créer une équipe"
+                :tabs="[{ key: 'team', label: 'Fiche équipe' }]"
+                active-tab="team"
+                @select="editor.select"
+                @create="editor.startCreating"
+            >
+                <template #item="{ item }">
+                    <TeamLogo :team="item" />
+                    <span class="truncate text-sm font-medium">{{ item.name }}</span>
+                </template>
 
-            <div class="flex flex-col lg:flex-row gap-4">
-                <!-- LISTE ÉQUIPES -->
-                <div class="lg:w-72 shrink-0 border border-slate-200 rounded-xl bg-slate-50 p-3 flex flex-col gap-3 lg:max-h-[calc(100vh-13rem)]">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-sm font-semibold text-slate-700">Équipes <span class="text-slate-400 font-normal">({{ teams.length }})</span></h3>
-                        <Link
-                            :href="route('game-saves.teams.create', { gameSave: gameSave.id })"
-                            class="flex items-center justify-center h-7 px-2.5 rounded-full bg-teal-500 text-white text-xs font-bold hover:bg-teal-600 shadow-sm"
-                            title="Créer une équipe"
-                        >
-                            + Ajouter
-                        </Link>
-                    </div>
+                <template #badges>
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                        Budget : {{ Number(form.budget || 0).toLocaleString('fr-FR') }} €
+                    </span>
+                </template>
 
-                    <!-- Recherche -->
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                            <svg class="w-4 h-4 text-slate-400" aria-hidden="true" fill="none" viewBox="0 0 20 20">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                      stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
-                            </svg>
-                        </div>
-                        <input
-                            type="search"
-                            v-model="searchQuery"
-                            class="block w-full py-1.5 pl-9 pr-3 text-sm text-slate-700 bg-white border border-slate-200 rounded-full focus:ring-2 focus:ring-teal-300 focus:border-teal-300 focus:outline-none"
-                            placeholder="Rechercher une équipe"
-                        >
-                    </div>
+                <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-6 shadow-sm">
+                    <form @submit.prevent="submit">
+                        <TeamRecordBars v-if="!editor.creating.value" :wins="form.wins" :draws="form.draws" :losses="form.losses" />
 
-                    <!-- Liste -->
-                    <ul class="space-y-1 overflow-y-auto pr-1">
-                        <li v-for="team in filteredTeams" :key="team.id">
-                            <a
-                                href="#"
-                                @click.prevent="selectTeam(team)"
-                                :class="form.selectedTeamId === team.id
-                                    ? 'bg-teal-500 text-white border-teal-500 shadow-sm'
-                                    : 'bg-white text-slate-700 border-slate-200 hover:border-teal-300 hover:bg-teal-50'"
-                                class="flex items-center gap-2 px-3 py-2 border rounded-lg transition-all"
-                            >
-                                <div class="h-6 w-6 rounded-full bg-white/80 border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
-                                    <img loading="lazy" decoding="async" v-if="team.logo_path" :src="`/storage/${team.logo_path}`" class="h-full w-full object-cover" />
-                                    <span v-else class="text-[9px] text-slate-400">{{ (team.name || '?').charAt(0) }}</span>
-                                </div>
-                                <span class="truncate text-sm font-medium">{{ team.name }}</span>
-                            </a>
-                        </li>
-                        <li v-if="filteredTeams.length === 0" class="text-xs text-slate-400 italic px-2 py-3 text-center">
-                            Aucune équipe trouvée.
-                        </li>
-                    </ul>
+                        <TeamFormFields
+                            :form="form"
+                            layout="grid"
+                            :logo-url="logoUrl"
+                            @remove-logo="removeLogo"
+                        />
+
+                        <ButtonGroup>
+                            <ButtonPrimary :disabled="form.processing">
+                                {{ editor.creating.value ? "Créer l'équipe" : 'Mettre à jour' }}
+                            </ButtonPrimary>
+                            <ButtonDanger v-if="!editor.creating.value" class="w-36" type="button"
+                                          :disabled="form.processing || !form.id" @click="deleteTeam">
+                                Supprimer
+                            </ButtonDanger>
+                        </ButtonGroup>
+                    </form>
                 </div>
-
-                <!-- PANNEAU DROIT -->
-                <div class="flex-1 min-w-0 flex flex-col gap-4">
-
-            <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 md:p-8">
-                <!-- En-tête : récap équipe + ajout -->
-                <div class="flex items-center justify-between mb-6 pb-6 border-b border-slate-200 flex-wrap gap-4">
-                    <div class="flex items-center gap-3">
-                        <div class="h-12 w-12 rounded-full bg-slate-50 border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
-                            <img loading="lazy" decoding="async" v-if="logoPreviewUrl || logoUrl" :src="logoPreviewUrl || logoUrl" class="h-full w-full object-cover" />
-                            <span v-else class="text-sm text-slate-400">{{ (form.name || '?').charAt(0) }}</span>
-                        </div>
-                        <div>
-                            <h2 class="text-lg font-semibold text-slate-800">{{ form.name || 'Équipe' }}</h2>
-                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
-                                Budget : {{ Number(form.budget || 0).toLocaleString('fr-FR') }} €
-                            </span>
-                        </div>
-
-                        <!-- Barres de stats : bilan -->
-                        <div class="hidden md:grid grid-cols-3 gap-x-6 gap-y-2 ml-6">
-                            <div v-for="stat in recordBars" :key="stat.key" class="flex items-center gap-2">
-                                <span class="w-20 text-[11px] text-slate-500 shrink-0">{{ stat.label }}</span>
-                                <div class="w-24 h-2 bg-slate-200 rounded-full overflow-hidden">
-                                    <div class="h-full rounded-full transition-all" :class="stat.color"
-                                         :style="{ width: stat.percent + '%' }">
-                                    </div>
-                                </div>
-                                <span class="w-7 text-right text-[11px] font-bold text-slate-700">{{ stat.value }}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- + Création équipe -->
-                    <Link
-                        :href="route('game-saves.teams.create', { gameSave: gameSave.id })"
-                        class="flex items-center justify-center h-9 px-3 rounded-full bg-teal-500 text-white text-sm font-medium hover:bg-teal-600 shadow-md"
-                        title="Créer une équipe"
-                    >
-                        + Ajouter
-                    </Link>
-                </div>
-
-                <form @submit.prevent="submit">
-                    <TeamFormFields
-                        :form="form"
-                        layout="grid"
-                        :logo-url="logoUrl"
-                        @remove-logo="removeLogo"
-                        @logo-preview="url => logoPreviewUrl = url"
-                    />
-
-                    <ButtonGroup>
-                        <ButtonPrimary :disabled="form.processing || !form.id">
-                            Mettre à jour
-                        </ButtonPrimary>
-
-                        <Transition
-                            enter-active-class="transition ease-in-out"
-                            enter-from-class="opacity-0"
-                            leave-active-class="transition ease-in-out"
-                            leave-to-class="opacity-0"
-                        >
-                            <p
-                                v-if="form.recentlySuccessful"
-                                class="text-sm text-slate-600"
-                            >
-                                Sauvegardé.
-                            </p>
-                        </Transition>
-
-                        <ButtonDanger
-                            class="w-36"
-                            type="button"
-                            :disabled="form.processing || !form.id"
-                            @click="deleteTeam"
-                        >
-                            Supprimer
-                        </ButtonDanger>
-                    </ButtonGroup>
-                </form>
-            </div>
-                </div>
-            </div>
+            </EntityEditor>
         </div>
     </AuthenticatedLayout>
 </template>
@@ -170,23 +70,30 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import H2 from '@/Components/H2.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, useForm } from '@inertiajs/vue3';
 import { confirmDialog } from '@/Composables/useDialog.js';
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 
-// Components
+import EntityEditor from '@/Components/EntityEditor.vue';
+import EditorSubNav from '@/Components/EditorSubNav.vue';
+import TeamLogo from '@/Components/TeamLogo.vue';
+import TeamRecordBars from '@/Components/TeamRecordBars.vue';
 import ButtonGroup from '@/Components/ButtonGroup.vue';
 import ButtonPrimary from '@/Components/ButtonPrimary.vue';
 import ButtonDanger from '@/Components/ButtonDanger.vue';
 import TeamFormFields from '@/Components/TeamFormFields.vue';
+import { useEntityEditor, clone } from '@/Composables/useEntityEditor.js';
 
 const props = defineProps({
     gameSave: { type: Object, required: true },
     teams: { type: Array, required: true }, // GameTeam[]
+    // Équipe à sélectionner à l'ouverture (ex. juste après sa création).
+    selectedId: { type: Number, default: null },
+    // Ouvre directement une fiche vide (ancienne URL /teams/create).
+    startCreate: { type: Boolean, default: false },
 });
 
-const form = useForm({
-    selectedTeamId: null,
+const BLANK = {
     id: null,
     name: '',
     description: '',
@@ -198,104 +105,73 @@ const form = useForm({
     remove_logo: false,
     tactical_style: 'balanced',
     management_philosophy: 'collective',
-});
+};
 
-const searchQuery = ref('');
+const form = useForm(clone(BLANK));
 
-const recordBars = computed(() => {
-    const wins = Number(form.wins ?? 0);
-    const draws = Number(form.draws ?? 0);
-    const losses = Number(form.losses ?? 0);
-    const total = Math.max(wins + draws + losses, 1);
-    return [
-        { key: 'wins',   label: 'Victoires',   value: wins,   color: 'bg-emerald-400', percent: Math.round((wins / total) * 100) },
-        { key: 'draws',  label: 'Nuls',        value: draws,  color: 'bg-amber-400',   percent: Math.round((draws / total) * 100) },
-        { key: 'losses', label: 'Défaites',    value: losses, color: 'bg-rose-400',    percent: Math.round((losses / total) * 100) },
-    ];
-});
-
-const filteredTeams = computed(() => {
-    if (!searchQuery.value) return props.teams;
-    return props.teams.filter(team =>
-        (team.name || '').toLowerCase().includes(searchQuery.value.toLowerCase())
-    );
-});
-
-// Logo enregistré : affiché seulement, jamais renvoyé au serveur (il gère seul
-// logo_path ; le renvoyer écrasait un nouveau logo par l'ancien chemin).
+// Logo enregistré : affiché seulement, jamais renvoyé au serveur (il gère seul logo_path).
 const logoPath = ref(null);
 const logoUrl = computed(() => (logoPath.value ? `/storage/${logoPath.value}` : null));
-// Aperçu du fichier choisi, repris dans l'en-tête de la fiche.
-const logoPreviewUrl = ref(null);
+
+const editor = useEntityEditor({
+    form,
+    items: () => props.teams,
+    blank: BLANK,
+    entityLabel: 'La nouvelle équipe',
+    initial: () => ({ selectedId: props.selectedId, startCreate: props.startCreate }),
+    apply(team) {
+        Object.assign(form, {
+            id: team.id,
+            name: team.name,
+            description: team.description ?? '',
+            budget: team.budget ?? 0,
+            wins: team.wins ?? 0,
+            draws: team.draws ?? 0,
+            losses: team.losses ?? 0,
+            tactical_style: team.tactical_style ?? 'balanced',
+            management_philosophy: team.management_philosophy ?? 'collective',
+            logo: null,
+            remove_logo: false,
+        });
+        logoPath.value = team.logo_path ?? null;
+    },
+    onCreate() {
+        logoPath.value = null;
+    },
+});
 
 function removeLogo() {
     form.remove_logo = true;
     form.logo = null;
 }
 
-function selectTeam(team) {
-    form.selectedTeamId = team.id;
-    form.id             = team.id;
-    form.name           = team.name;
-    form.description    = team.description ?? '';
-    form.budget         = team.budget ?? 0;
-    form.wins           = team.wins ?? 0;
-    form.draws          = team.draws ?? 0;
-    form.losses         = team.losses ?? 0;
-
-    form.tactical_style        = team.tactical_style ?? 'balanced';
-    form.management_philosophy = team.management_philosophy ?? 'collective';
-
-    logoPath.value      = team.logo_path ?? null;
-    form.logo           = null;
-    form.remove_logo    = false;
-
-    form.clearErrors();
-}
-
 function submit() {
+    if (editor.creating.value) {
+        form.post(route('game-saves.teams.store', { gameSave: props.gameSave.id }), {
+            preserveScroll: true,
+            forceFormData: true,
+            // Le serveur renvoie l'id de l'équipe créée : on l'ouvre en édition.
+            onSuccess: () => editor.reload(props.selectedId),
+        });
+        return;
+    }
     if (!form.id) return;
 
-    form.post(route('game-saves.teams.update', {
-        gameSave: props.gameSave.id,
-        team: form.id,
-    }), {
+    form.post(route('game-saves.teams.update', { gameSave: props.gameSave.id, team: form.id }), {
         preserveScroll: true,
         forceFormData: true,
-        // Resynchroniser avec l'équipe rechargée : logo à jour, fichier et
-        // « supprimer le logo » remis à zéro (sinon re-upload au clic suivant).
-        onSuccess: () => {
-            const fresh = props.teams.find(t => t.id === form.id);
-            if (fresh) selectTeam(fresh);
-        },
+        // Resynchroniser : logo à jour, fichier et « supprimer le logo » remis à zéro.
+        onSuccess: () => editor.reload(form.id),
     });
 }
 
 async function deleteTeam() {
     if (!form.id) return;
+    if (!(await confirmDialog({ title: "Supprimer l'équipe", message: 'Voulez-vous vraiment supprimer cette équipe de la partie ?', confirmLabel: 'Supprimer', danger: true }))) return;
 
-    if (!(await confirmDialog({ title: "Supprimer l'équipe", message: 'Voulez-vous vraiment supprimer cette équipe de la partie ?', confirmLabel: 'Supprimer', danger: true }))) {
-        return;
-    }
-
-    form.delete(route('game-saves.teams.destroy', {
-        gameSave: props.gameSave.id,
-        team: form.id,
-    }), {
+    form.delete(route('game-saves.teams.destroy', { gameSave: props.gameSave.id, team: form.id }), {
         preserveScroll: true,
-        onSuccess: () => {
-            if (props.teams.length > 0) {
-                selectTeam(props.teams[0]);
-            } else {
-                form.reset();
-            }
-        },
+        onSuccess: () => editor.afterDelete(),
     });
 }
-
-onMounted(() => {
-    if (props.teams.length > 0) {
-        selectTeam(props.teams[0]);
-    }
-});
 </script>

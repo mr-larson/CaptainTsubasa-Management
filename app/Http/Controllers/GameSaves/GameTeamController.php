@@ -33,6 +33,9 @@ class GameTeamController extends Controller
         return Inertia::render('GameSaves/GameTeams/Index', [
             'gameSave' => $gameSave,
             'teams'    => $teams,
+            // Équipe à ouvrir (ex. juste après sa création) / fiche vide demandée.
+            'selectedId'  => $request->integer('selected') ?: null,
+            'startCreate' => $request->boolean('create'),
         ]);
     }
 
@@ -83,14 +86,16 @@ class GameTeamController extends Controller
     }
 
     /**
-     * Formulaire création équipe.
+     * La création se fait dans la page liste (fiche vide) : l'ancienne URL
+     * y renvoie directement en mode création.
      */
-    public function create(Request $request, GameSave $gameSave): Response
+    public function create(Request $request, GameSave $gameSave): RedirectResponse
     {
         $this->authorizeGameSave('view', $gameSave);
 
-        return Inertia::render('GameSaves/GameTeams/Create', [
-            'gameSave' => $gameSave,
+        return redirect()->route('game-saves.teams.index', [
+            'gameSave' => $gameSave->id,
+            'create'   => 1,
         ]);
     }
 
@@ -124,7 +129,8 @@ class GameTeamController extends Controller
 
         return redirect()->route('game-saves.teams.index', [
             'gameSave' => $gameSave->id,
-        ]);
+            'selected' => $team->id,
+        ])->with('success', 'Équipe créée.');
     }
 
     /**

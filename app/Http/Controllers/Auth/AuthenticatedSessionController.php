@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -28,19 +29,21 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): RedirectResponse
+    public function store(LoginRequest $request): SymfonyResponse
     {
         $request->authenticate();
 
         $request->session()->regenerate();
 
-        return redirect()->intended(RouteServiceProvider::HOME);
+        // Rechargement complet (et non visite Inertia) : la liste des routes
+        // Ziggy injectée par @routes dépend du rôle (admin ou non).
+        return Inertia::location(redirect()->intended(RouteServiceProvider::HOME)->getTargetUrl());
     }
 
     /**
      * Destroy an authenticated session.
      */
-    public function destroy(Request $request): RedirectResponse
+    public function destroy(Request $request): SymfonyResponse
     {
         Auth::guard('web')->logout();
 
@@ -48,6 +51,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        // Idem : ne pas garder la liste des routes admin après déconnexion.
+        return Inertia::location(url('/'));
     }
 }

@@ -48,9 +48,8 @@ class ContractController extends Controller
 
         Contract::create($data);
 
-        return redirect()
-            ->route('contracts.index')
-            ->with('success', "Le contrat a été créé avec succès");
+        // Retour à l'écran d'origine (page Contrats ou onglet Contrat d'un joueur).
+        return back()->with('success', 'Le contrat a été créé avec succès.');
     }
 
     public function edit(): \Inertia\Response
@@ -94,17 +93,13 @@ class ContractController extends Controller
         // matches_played peut être envoyé depuis l’UI ou géré côté match engine
         $contract->update($data);
 
-        return redirect()
-            ->route('contracts.edit')
-            ->with('success', "Le contrat a été modifié avec succès");
+        return back()->with('success', 'Le contrat a été modifié avec succès.');
     }
 
     public function destroy(Contract $contract): RedirectResponse
     {
         $contract->delete();
 
-        return redirect()
-            ->route('contracts.edit')
-            ->with('message', 'Contract successfully deleted.');
+        return back()->with('success', 'Le contrat a été supprimé.');
     }
 }

@@ -117,7 +117,8 @@ class AuthorizationTest extends TestCase
     {
         $admin = $this->makeUser(admin: true);
 
-        $this->actingAs($admin)->get(route('teams.create'))->assertOk();
+        $this->actingAs($admin)->get(route('teams.index'))->assertOk();
+        $this->actingAs($admin)->get(route('players.index'))->assertOk();
         $this->actingAs($admin)->get(route('contracts.create'))->assertOk();
     }
 

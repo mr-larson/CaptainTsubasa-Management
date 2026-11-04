@@ -6,142 +6,52 @@
             <H2>Joueurs de la partie</H2>
         </template>
 
-        <!-- CONTENU PRINCIPAL -->
         <div class="p-4 sm:p-6 max-w-8xl mx-auto flex flex-col gap-4">
+            <EditorSubNav
+                :back="{ href: route('game-saves.Play', { gameSave: gameSave.id }), label: 'Retour à la partie' }"
+                :links="[
+                    { href: route('game-saves.players.index', { gameSave: gameSave.id }), label: 'Joueurs', active: true },
+                    { href: route('game-saves.teams.index', { gameSave: gameSave.id }), label: 'Équipes' },
+                ]"
+            />
 
-            <!-- SOUS-NAVIGATION GESTION -->
-            <div class="flex flex-wrap items-center gap-2">
-                <Link :href="route('game-saves.Play', { gameSave: gameSave.id })"
-                      class="text-xs font-semibold px-3 py-1.5 rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 transition-all">
-                    ← Retour à la partie
-                </Link>
-                <span class="w-px h-5 bg-slate-200"></span>
-                <Link :href="route('game-saves.players.index', { gameSave: gameSave.id })"
-                      class="text-xs font-bold px-3 py-1.5 rounded-full bg-teal-500 text-white shadow-sm">
-                    Joueurs
-                </Link>
-                <Link :href="route('game-saves.teams.index', { gameSave: gameSave.id })"
-                      class="text-xs font-bold px-3 py-1.5 rounded-full border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all">
-                    Équipes
-                </Link>
-            </div>
+            <EntityEditor
+                title="Joueurs"
+                :items="players"
+                :selected-id="editor.selectedId.value"
+                :creating="editor.creating.value"
+                :search-text="p => `${p.firstname} ${p.lastname}`"
+                search-placeholder="Rechercher un joueur"
+                empty-label="Aucun joueur trouvé."
+                add-title="Créer un joueur"
+                :tabs="panelTabs"
+                v-model:active-tab="activePanel"
+                @select="editor.select"
+                @create="editor.startCreating"
+            >
+                <template #item="{ item, selected }">
+                    <span class="flex-1 truncate text-sm font-medium">{{ item.firstname }} {{ item.lastname }}</span>
+                    <span v-if="item.position"
+                          :class="selected ? 'bg-white/20 text-white' : positionBadgeClass(item.position)"
+                          class="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0">
+                        {{ positionShort(item.position) }}
+                    </span>
+                </template>
 
-            <div class="flex flex-col lg:flex-row gap-2">
-                <!-- LISTE JOUEURS -->
-                <div class="lg:w-72 shrink-0 border border-slate-200 rounded-xl bg-slate-50 p-3 flex flex-col gap-3 lg:max-h-[calc(100vh-13rem)]">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-sm font-semibold text-slate-700">Joueurs <span class="text-slate-400 font-normal">({{ players.length }})</span></h3>
-                        <button
-                            type="button"
-                            @click="startCreating"
-                            class="flex items-center justify-center h-7 px-2.5 rounded-full text-xs font-bold shadow-sm transition-colors"
-                            :class="creating ? 'bg-teal-700 text-white ring-2 ring-teal-200' : 'bg-teal-500 text-white hover:bg-teal-600'"
-                            title="Créer un joueur"
-                        >
-                            + Ajouter
-                        </button>
-                    </div>
-
-                    <!-- SEARCH -->
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                            <svg class="w-4 h-4 text-slate-400" aria-hidden="true" fill="none" viewBox="0 0 20 20">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                      stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
-                            </svg>
-                        </div>
-                        <input
-                            type="search"
-                            v-model="searchQuery"
-                            class="block w-full py-1.5 pl-9 pr-3 text-sm text-slate-700 bg-white border border-slate-200 rounded-full focus:ring-2 focus:ring-teal-300 focus:border-teal-300 focus:outline-none"
-                            placeholder="Rechercher un joueur"
-                        >
-                    </div>
-
-                    <!-- LISTE -->
-                    <ul class="space-y-1 overflow-y-auto pr-1">
-                        <li v-for="player in filteredPlayers" :key="player.id">
-                            <a
-                                href="#"
-                                @click.prevent="selectPlayer(player)"
-                                :class="form.selectedPlayerId === player.id
-                                    ? 'bg-teal-500 text-white border-teal-500 shadow-sm'
-                                    : 'bg-white text-slate-700 border-slate-200 hover:border-teal-300 hover:bg-teal-50'"
-                                class="flex items-center justify-between gap-2 px-3 py-2 border rounded-lg transition-all"
-                            >
-                                <span class="truncate text-sm font-medium">{{ player.firstname }} {{ player.lastname }}</span>
-                                <span v-if="player.position"
-                                      :class="form.selectedPlayerId === player.id ? 'bg-white/20 text-white' : positionBadgeClass(player.position)"
-                                      class="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0">
-                                    {{ positionShort(player.position) }}
-                                </span>
-                            </a>
-                        </li>
-                        <li v-if="filteredPlayers.length === 0" class="text-xs text-slate-400 italic px-2 py-3 text-center">
-                            Aucun joueur trouvé.
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- PANNEAU DROIT -->
-                <div class="flex-1 flex flex-col gap-4 min-w-0">
-
-            <div class="bg-slate-50 border border-slate-200 rounded-2xl shadow-sm p-6 md:p-8">
-                <!-- Onglets de la fiche + infos du joueur -->
-                <div class="flex items-end justify-between flex-wrap gap-3 mb-6 border-b border-slate-200">
-                    <nav class="flex gap-1 -mb-px" role="tablist" aria-label="Édition du joueur">
-                        <button v-for="t in panelTabs" :key="t.key" type="button" role="tab"
-                                :aria-selected="activePanel === t.key"
-                                :disabled="t.disabled"
-                                :title="t.disabled ? t.disabledHint : null"
-                                @click="activePanel = t.key"
-                                class="px-3 py-2 text-sm font-semibold border-b-2 transition-colors"
-                                :class="t.disabled
-                                    ? 'border-transparent text-slate-300 cursor-not-allowed'
-                                    : activePanel === t.key
-                                        ? 'border-teal-500 text-teal-600'
-                                        : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'">
-                            {{ t.label }}
-                            <span v-if="t.badge" class="ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full"
-                                  :class="activePanel === t.key ? 'bg-teal-50 text-teal-600' : 'bg-slate-100 text-slate-500'">
-                                {{ t.badge }}
-                            </span>
-                        </button>
-                    </nav>
-
-                    <div class="flex items-center gap-2 pb-2">
-                        <span v-if="creating" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-50 text-teal-700">
-                            Nouveau joueur
-                        </span>
-                        <span v-if="form.position" :class="positionBadgeClass(form.position)"
-                              class="text-[10px] font-bold px-2 py-0.5 rounded-full">
-                            {{ form.position }}
-                        </span>
-                        <span v-if="overall" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
-                            OVR {{ overall }}
-                        </span>
-                    </div>
-                </div>
+                <template #badges>
+                    <span v-if="form.position" :class="positionBadgeClass(form.position)"
+                          class="text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        {{ form.position }}
+                    </span>
+                    <span v-if="overall" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                        OVR {{ overall }}
+                    </span>
+                </template>
 
                 <!-- FICHE JOUEUR -->
-                <FormContainer v-show="activePanel === 'player'">
+                <div v-show="activePanel === 'player'" class="bg-white border border-slate-200 rounded-xl p-4 sm:p-6 shadow-sm">
                     <form @submit.prevent="submit">
-
-                        <!-- Aperçu visuel des stats -->
-                        <div v-if="form.id" class="mb-4 border border-slate-200 rounded-xl bg-slate-50 p-3">
-                            <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Aperçu des statistiques</h4>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1.5">
-                                <div v-for="stat in statBars" :key="stat.key" class="flex items-center gap-2">
-                                    <span class="w-16 text-[11px] text-slate-500 shrink-0">{{ stat.short ?? stat.label }}</span>
-                                    <div class="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
-                                        <div class="h-full rounded-full transition-all" :class="stat.color"
-                                             :style="{ width: Math.min(stat.value, 100) + '%' }">
-                                        </div>
-                                    </div>
-                                    <span class="w-7 text-right text-[11px] font-bold text-slate-700">{{ stat.value }}</span>
-                                </div>
-                            </div>
-                        </div>
+                        <PlayerStatsPreview v-if="form.id" :stats="form" />
 
                         <PlayerFormFields
                             :form="form"
@@ -149,168 +59,100 @@
                             :photo-url="photoPath ? `/storage/${photoPath}` : null"
                         />
 
-                        <!-- ACTIONS -->
                         <ButtonGroup>
-                            <ButtonPrimary :disabled="form.processing || (!form.id && !creating)">
-                                {{ creating ? 'Créer le joueur' : 'Mettre à jour' }}
+                            <ButtonPrimary :disabled="form.processing">
+                                {{ editor.creating.value ? 'Créer le joueur' : 'Mettre à jour' }}
                             </ButtonPrimary>
-
-                            <ButtonDanger
-                                v-if="!creating"
-                                :disabled="form.processing || !form.id"
-                                type="button"
-                                class="w-36"
-                                @click="deletePlayer"
-                            >
+                            <ButtonDanger v-if="!editor.creating.value" type="button" class="w-36"
+                                          :disabled="form.processing || !form.id" @click="deletePlayer">
                                 Supprimer
                             </ButtonDanger>
                         </ButtonGroup>
                     </form>
-                </FormContainer>
+                </div>
 
                 <!-- COUPS SPÉCIAUX (enregistrés avec la fiche du joueur) -->
-                <FormContainer v-show="activePanel === 'moves'">
+                <div v-show="activePanel === 'moves'" class="bg-white border border-slate-200 rounded-xl p-4 sm:p-6 shadow-sm">
                     <form @submit.prevent="submit">
                         <SpecialMovesEditor v-model="form.special_moves" :errors="form.errors" />
                         <ButtonGroup>
-                            <ButtonPrimary :disabled="form.processing || (!form.id && !creating)">
-                                {{ creating ? 'Créer le joueur' : 'Mettre à jour' }}
+                            <ButtonPrimary :disabled="form.processing">
+                                {{ editor.creating.value ? 'Créer le joueur' : 'Mettre à jour' }}
                             </ButtonPrimary>
                         </ButtonGroup>
                     </form>
-                </FormContainer>
+                </div>
 
                 <!-- CONTRAT -->
-                <FormContainer v-show="activePanel === 'contract'">
-                    <!-- Header de la carte -->
+                <div v-show="activePanel === 'contract'" class="bg-white border border-slate-200 rounded-xl p-4 sm:p-6 shadow-sm">
                     <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-lg font-semibold text-slate-800">
-                            Contrat
-                        </h2>
-
-                        <!-- Bouton + pour créer un contrat si aucun -->
-                        <button
-                            v-if="!form.contract"
-                            type="button"
-                            class="flex items-center justify-center h-9 px-3 rounded-full bg-teal-500 text-white text-sm font-medium hover:bg-teal-600 shadow-md"
-                            @click="startNewContract"
-                        >
+                        <h2 class="text-lg font-semibold text-slate-800">Contrat</h2>
+                        <button v-if="!contract" type="button" @click="startNewContract"
+                                class="flex items-center justify-center h-9 px-3 rounded-full bg-teal-500 text-white text-sm font-medium hover:bg-teal-600 shadow-md">
                             + Ajouter
                         </button>
                     </div>
-                    <!-- Si un contrat existe : formulaire d’édition -->
-                    <form v-if="form.contract" @submit.prevent="updateContract" class="space-y-4">
-                        <!-- Ligne 1 : Équipe + Salaire -->
+
+                    <form v-if="contract" @submit.prevent="saveContract" class="space-y-4">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <InputLabel value="Équipe" />
-                                <select
-                                    v-model="form.contract.game_team_id"
-                                    required
-                                    class="mt-1 block w-full appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full px-3 py-1.5 leading-tight focus:outline-none focus:bg-white focus:border-slate-700"
-                                >
+                                <select v-model="contract.game_team_id" required :class="fieldClass">
                                     <option disabled value="">Choisir...</option>
-                                    <option
-                                        v-for="team in props.teams"
-                                        :key="team.id"
-                                        :value="team.id"
-                                    >
-                                        {{ team.name }}
-                                    </option>
+                                    <option v-for="team in teams" :key="team.id" :value="team.id">{{ team.name }}</option>
                                 </select>
                             </div>
-
                             <div>
-                                <InputLabel value="Salaire" class="block text-start"/>
-                                <input
-                                    type="number"
-                                    v-model="form.contract.salary"
-                                    class="mt-1 block w-full appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full px-3 py-1.5 leading-tight focus:outline-none focus:bg-white focus:border-slate-700"
-                                />
+                                <InputLabel value="Salaire" />
+                                <input type="number" v-model="contract.salary" :class="fieldClass" />
                             </div>
-                        </div>
-
-                        <!-- Ligne 2 : Début / Fin -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <InputLabel value="Début (semaine)" />
-                                <input
-                                    type="number"
-                                    v-model="form.contract.start_week"
-                                    class="mt-1 block w-full appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full px-3 py-1.5 leading-tight focus:outline-none focus:bg-white focus:border-slate-700"
-                                />
+                                <input type="number" v-model="contract.start_week" :class="fieldClass" />
                             </div>
-
                             <div>
                                 <InputLabel value="Fin (semaine)" />
-                                <input
-                                    type="number"
-                                    v-model="form.contract.end_week"
-                                    class="mt-1 block w-full appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full px-3 py-1.5 leading-tight focus:outline-none focus:bg-white focus:border-slate-700"
-                                />
+                                <input type="number" v-model="contract.end_week" :class="fieldClass" />
                             </div>
-                        </div>
-
-                        <!-- Ligne 3 : Titulaire -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <InputLabel value="Titulaire ?" />
-                                <select
-                                    v-model="form.contract.is_starter"
-                                    class="mt-1 block w-full appearance-none text-sm text-gray-900 bg-stone-50 border border-gray-300 rounded-full px-3 py-1.5 leading-tight focus:outline-none focus:bg-white focus:border-slate-700"
-                                >
+                                <select v-model="contract.is_starter" :class="fieldClass">
                                     <option :value="true">Oui</option>
                                     <option :value="false">Non</option>
                                 </select>
                             </div>
-
-                            <!-- Colonne libre (pour future info ou juste alignement) -->
-                            <div class="hidden md:block"></div>
                         </div>
 
-                        <!-- Actions -->
-                        <div class="mt-4">
-                            <ButtonGroup>
-                                <ButtonPrimary
-                                    type="submit"
-                                    :disabled="contractProcessing || !form.contract"
-                                >
-                                    {{ form.contract.id ? 'Mettre à jour' : 'Créer' }}
-                                </ButtonPrimary>
-
-                                <ButtonDanger
-                                    v-if="form.contract.id"
-                                    type="button"
-                                    class="w-36"
-                                    :disabled="contractProcessing || !form.contract"
-                                    @click="deleteContract"
-                                >
-                                    Supprimer
-                                </ButtonDanger>
-                            </ButtonGroup>
-                        </div>
+                        <ButtonGroup>
+                            <ButtonPrimary type="submit" :disabled="contractProcessing">
+                                {{ contract.id ? 'Mettre à jour' : 'Créer' }}
+                            </ButtonPrimary>
+                            <ButtonDanger v-if="contract.id" type="button" class="w-36"
+                                          :disabled="contractProcessing" @click="deleteContract">
+                                Supprimer
+                            </ButtonDanger>
+                        </ButtonGroup>
                     </form>
 
-                    <!-- Si aucun contrat encore défini -->
-                    <div v-else class="text-sm text-slate-500 italic">
+                    <p v-else class="text-sm text-slate-500 italic">
                         Aucun contrat défini pour ce joueur. Cliquez sur « + Ajouter » pour en créer un.
-                    </div>
-                </FormContainer>
-            </div>
+                    </p>
                 </div>
-            </div>
+            </EntityEditor>
         </div>
     </AuthenticatedLayout>
 </template>
 
 <script setup>
-import { Head, Link, router, useForm } from '@inertiajs/vue3'
+import { Head, router, useForm } from '@inertiajs/vue3'
 import { confirmDialog } from '@/Composables/useDialog.js'
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import H2 from '@/Components/H2.vue'
-import FormContainer from '@/Components/FormContainer.vue'
+import EntityEditor from '@/Components/EntityEditor.vue'
+import EditorSubNav from '@/Components/EditorSubNav.vue'
+import PlayerStatsPreview from '@/Components/PlayerStatsPreview.vue'
 import InputLabel from '@/Components/InputLabel.vue'
 import ButtonGroup from '@/Components/ButtonGroup.vue'
 import ButtonPrimary from '@/Components/ButtonPrimary.vue'
@@ -318,6 +160,8 @@ import ButtonDanger from '@/Components/ButtonDanger.vue'
 import PlayerFormFields from '@/Components/PlayerFormFields.vue'
 import SpecialMovesEditor from '@/Components/SpecialMovesEditor.vue'
 import { PLAYER_STATS } from '@/Enums/playerStats.js'
+import { positionBadgeClass, positionShort } from '@/Enums/positionBadges.js'
+import { useEntityEditor, clone } from '@/Composables/useEntityEditor.js'
 
 const props = defineProps({
     gameSave: Object,
@@ -329,167 +173,110 @@ const props = defineProps({
     startCreate: { type: Boolean, default: false },
 })
 
-const searchQuery = ref('')
-// Photo enregistrée : affichée seulement, jamais renvoyée au serveur.
-const photoPath = ref(null)
-const contractProcessing = ref(false)
-
-// Onglets du panneau d'édition : fiche, coups spéciaux, contrat.
-const activePanel = ref('player')
-// Mode création : fiche vide sur cette même page (pas de page dédiée).
-const creating = ref(false)
-const panelTabs = computed(() => [
-    { key: 'player',   label: 'Fiche joueur' },
-    { key: 'moves',    label: 'Coups spéciaux', badge: form.special_moves?.length || null },
-    // Un contrat se rattache à un joueur existant : disponible après la création.
-    { key: 'contract', label: 'Contrat', badge: form.contract?.id ? '✓' : null,
-      disabled: creating.value, disabledHint: "Crée d'abord le joueur" },
-])
-
-const form = useForm({
-    id: null,
-    firstname: '',
-    lastname: '',
-    position: '',
-    secondary_positions: [],
-    cost: 0,
-    description: '',
-    photo: null,
-    remove_photo: false,
-    speed: 0,
-    attack: 0,
-    defense: 0,
-    stamina: 0,
-    shot: 0,
-    pass: 0,
-    dribble: 0,
-    block: 0,
-    intercept: 0,
-    tackle: 0,
-    heading: 0,
-    hand_save: 0,
-    punch_save: 0,
-    special_moves: [],
-    contract: null,
-})
-
-
-const filteredPlayers = computed(() => {
-    if (!searchQuery.value) return props.players
-    const q = searchQuery.value.toLowerCase()
-
-    return props.players.filter(
-        p => `${p.firstname} ${p.lastname}`.toLowerCase().includes(q)
-    )
-})
-
-// BADGES & STATS VISUELS
-const POSITION_BADGES = {
-    Goalkeeper: 'bg-amber-50 text-amber-700',
-    Defender:   'bg-blue-50 text-blue-700',
-    Midfielder: 'bg-emerald-50 text-emerald-700',
-    Forward:    'bg-rose-50 text-rose-700',
-}
-const POSITION_SHORT = {
-    Goalkeeper: 'GB',
-    Defender:   'DEF',
-    Midfielder: 'MIL',
-    Forward:    'ATT',
-}
-function positionBadgeClass(position) {
-    return POSITION_BADGES[position] ?? 'bg-slate-100 text-slate-600'
-}
-function positionShort(position) {
-    return POSITION_SHORT[position] ?? position
-}
-
-const statBars = computed(() => PLAYER_STATS
-    .map(def => ({ ...def, value: Number(form[def.key] ?? 0) }))
-    .filter(stat => stat.value > 0)
-)
-
-const overall = computed(() => {
-    const values = PLAYER_STATS
-        .map(def => Number(form[def.key] ?? 0))
-        .filter(v => Number.isFinite(v) && v > 0)
-    if (!values.length) return 0
-    return Math.round(values.reduce((a, b) => a + b, 0) / values.length)
-})
-
-// Copie profonde : le formulaire ne doit pas modifier les props (sinon une
-// saisie non enregistrée réapparaît comme sauvegardée en revenant sur le joueur).
-const clone = (value) => (value == null ? value : JSON.parse(JSON.stringify(value)))
-
-// SELECT PLAYER
-async function selectPlayer(player) {
-    if (creating.value && hasDraft() && !(await confirmDialog({
-        title: 'Abandonner la création',
-        message: 'Le nouveau joueur n\'est pas encore créé. Abandonner la saisie ?',
-        confirmLabel: 'Abandonner',
-        danger: true,
-    }))) return
-    applyPlayer(player)
-}
-
-function applyPlayer(player) {
-    creating.value = false
-    form.contract = clone(player.contracts?.[0] ?? null)
-    form.selectedPlayerId = player.id
-    form.id = player.id
-    form.firstname = player.firstname
-    form.lastname = player.lastname
-    form.position = player.position
-    form.secondary_positions = clone(player.secondary_positions ?? [])
-    form.cost = player.cost
-    form.description = player.description ?? ''
-    form.special_moves = clone(player.special_moves ?? [])
-    form.speed = player.speed ?? 0
-    form.attack = player.attack ?? 0
-    form.defense = player.defense ?? 0
-    form.stamina = player.stamina ?? 0
-    form.shot = player.shot ?? 0
-    form.pass = player.pass ?? 0
-    form.dribble = player.dribble ?? 0
-    form.block = player.block ?? 0
-    form.intercept = player.intercept ?? 0
-    form.tackle = player.tackle ?? 0
-    form.heading = player.heading ?? 0
-    form.hand_save = player.hand_save ?? 0
-    form.punch_save = player.punch_save ?? 0
-
-    photoPath.value = player.photo_path ?? null
-    form.photo = null // efface aussi l'aperçu du fichier choisi
-    form.remove_photo = false
-    form.clearErrors()
-}
-
-// Valeurs d'une fiche vide (mêmes défauts que l'ancienne page de création).
-const BLANK_PLAYER = {
+// Valeurs d'une fiche vide.
+const BLANK = {
     id: null, firstname: '', lastname: '', position: '', secondary_positions: [],
     cost: 0, description: '', photo: null, remove_photo: false,
     speed: 0, attack: 0, defense: 0, stamina: 0, shot: 0, pass: 0, dribble: 0,
     block: 0, intercept: 0, tackle: 0, heading: 0, hand_save: 0, punch_save: 0,
-    special_moves: [], contract: null,
-}
-const draftKeys = Object.keys(BLANK_PLAYER).filter(k => k !== 'id' && k !== 'contract')
-function hasDraft() {
-    return draftKeys.some(k => JSON.stringify(form[k] ?? null) !== JSON.stringify(BLANK_PLAYER[k]))
+    special_moves: [],
 }
 
-async function startCreating() {
-    if (creating.value) return
-    Object.assign(form, clone(BLANK_PLAYER))
-    form.selectedPlayerId = null
-    photoPath.value = null
-    form.clearErrors()
-    creating.value = true
-    if (activePanel.value === 'contract') activePanel.value = 'player'
+const form = useForm(clone(BLANK))
+// Photo enregistrée : affichée seulement, jamais renvoyée au serveur.
+const photoPath = ref(null)
+// Contrat édité : copie locale, enregistrée par ses propres routes.
+const contract = ref(null)
+const contractProcessing = ref(false)
+const fieldClass = 'mt-1 block w-full text-sm text-slate-900 bg-white border border-slate-300 rounded-full px-3 py-1.5 focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200'
+
+const activePanel = ref('player')
+
+const editor = useEntityEditor({
+    form,
+    items: () => props.players,
+    blank: BLANK,
+    entityLabel: 'Le nouveau joueur',
+    initial: () => ({ selectedId: props.selectedId, startCreate: props.startCreate }),
+    apply(player) {
+        Object.assign(form, {
+            id: player.id,
+            firstname: player.firstname,
+            lastname: player.lastname,
+            position: player.position,
+            secondary_positions: clone(player.secondary_positions ?? []),
+            cost: player.cost,
+            description: player.description ?? '',
+            special_moves: clone(player.special_moves ?? []),
+            photo: null, // efface aussi l'aperçu du fichier choisi
+            remove_photo: false,
+            ...Object.fromEntries(PLAYER_STATS.map(({ key }) => [key, player[key] ?? 0])),
+        })
+        photoPath.value = player.photo_path ?? null
+        contract.value = clone(player.contracts?.[0] ?? null)
+    },
+    onCreate() {
+        photoPath.value = null
+        contract.value = null
+        if (activePanel.value === 'contract') activePanel.value = 'player'
+    },
+})
+
+const panelTabs = computed(() => [
+    { key: 'player',   label: 'Fiche joueur' },
+    { key: 'moves',    label: 'Coups spéciaux', badge: form.special_moves?.length || null },
+    // Un contrat se rattache à un joueur existant : disponible après la création.
+    { key: 'contract', label: 'Contrat', badge: contract.value?.id ? '✓' : null,
+      disabled: editor.creating.value, disabledHint: "Crée d'abord le joueur" },
+])
+
+const overall = computed(() => {
+    const values = PLAYER_STATS.map(def => Number(form[def.key] ?? 0)).filter(v => Number.isFinite(v) && v > 0)
+    return values.length ? Math.round(values.reduce((a, b) => a + b, 0) / values.length) : 0
+})
+
+// ---------- Joueur ----------
+function submit() {
+    if (editor.creating.value) {
+        // transform() est mémorisé par le formulaire : on repart des seules données.
+        form.transform(({ id: _id, ...data }) => data).post(
+            route('game-saves.players.store', { gameSave: props.gameSave.id }),
+            {
+                preserveScroll: true,
+                forceFormData: true,
+                // Le serveur renvoie l'id du joueur créé : on l'ouvre en édition.
+                onSuccess: () => editor.reload(props.selectedId),
+            },
+        )
+        return
+    }
+    if (!form.id) return
+
+    form.transform(data => ({ ...data, _method: 'PUT' })).post(
+        route('game-saves.players.update', { gameSave: props.gameSave.id, player: form.id }),
+        {
+            preserveScroll: true,
+            forceFormData: true,
+            // Recharger le joueur enregistré (photo à jour, fichier remis à zéro).
+            onSuccess: () => editor.reload(form.id),
+        },
+    )
 }
 
+async function deletePlayer() {
+    if (!form.id) return
+    if (!(await confirmDialog({ title: 'Supprimer le joueur', message: 'Supprimer ce joueur ?', confirmLabel: 'Supprimer', danger: true }))) return
+
+    form.delete(route('game-saves.players.destroy', { gameSave: props.gameSave.id, player: form.id }), {
+        preserveScroll: true,
+        onSuccess: () => editor.afterDelete(),
+    })
+}
+
+// ---------- Contrat ----------
 function startNewContract() {
-    if (!form.id) return // pas de joueur sélectionné => sécurité
-
-    form.contract = {
+    if (!form.id) return
+    contract.value = {
         id: null,
         game_team_id: '',
         salary: 0,
@@ -498,140 +285,38 @@ function startNewContract() {
         is_starter: false,
     }
 }
-function updateContract() {
-    if (!form.contract) return
 
+function saveContract() {
+    if (!contract.value) return
     contractProcessing.value = true
 
-    const payload = {
-        game_team_id: form.contract.game_team_id,
-        salary: form.contract.salary,
-        start_week: form.contract.start_week,
-        end_week: form.contract.end_week,
-        is_starter: form.contract.is_starter,
-    }
-
-    // Succès et erreurs (422, contrat déjà actif…) s'affichent dans le toast
-    // global ; on débloque les boutons dans tous les cas.
+    const { game_team_id, salary, start_week, end_week, is_starter } = contract.value
+    const payload = { game_team_id, salary, start_week, end_week, is_starter }
+    // Succès et erreurs s'affichent dans le toast global.
     const options = {
         preserveScroll: true,
-        // Recharger le contrat enregistré (id créé, valeurs serveur) dans la copie locale.
+        // Recharger seulement le contrat (une saisie en cours sur la fiche est conservée).
         onSuccess: () => {
             const fresh = props.players.find(p => p.id === form.id)
-            if (fresh) form.contract = clone(fresh.contracts?.[0] ?? null)
+            contract.value = clone(fresh?.contracts?.[0] ?? null)
         },
         onFinish: () => { contractProcessing.value = false },
     }
 
-    if (form.contract.id) {
-        // UPDATE
-        router.put(
-            route('game-saves.contracts.update', {
-                gameSave: props.gameSave.id,
-                contract: form.contract.id,
-            }),
-            payload,
-            options
-        )
+    if (contract.value.id) {
+        router.put(route('game-saves.contracts.update', { gameSave: props.gameSave.id, contract: contract.value.id }), payload, options)
     } else {
-        // CREATE
-        router.post(
-            route('game-saves.contracts.store', {
-                gameSave: props.gameSave.id,
-                player: form.id,
-            }),
-            payload,
-            options
-        )
+        router.post(route('game-saves.contracts.store', { gameSave: props.gameSave.id, player: form.id }), payload, options)
     }
 }
 
 async function deleteContract() {
-    if (!form.contract || !form.contract.id) return
+    if (!contract.value?.id) return
     if (!(await confirmDialog({ title: 'Supprimer le contrat', message: 'Supprimer ce contrat ?', confirmLabel: 'Supprimer', danger: true }))) return
 
-    router.delete(
-        route('game-saves.contracts.destroy', {
-            gameSave: props.gameSave.id,
-            contract: form.contract.id
-        }),
-        {
-            preserveScroll: true,
-            onSuccess: () => {
-                form.contract = null   // <= Reset immédiat
-            }
-        }
-    )
+    router.delete(route('game-saves.contracts.destroy', { gameSave: props.gameSave.id, contract: contract.value.id }), {
+        preserveScroll: true,
+        onSuccess: () => { contract.value = null },
+    })
 }
-
-async function deletePlayer() {
-    if (!form.id) return
-    if (!(await confirmDialog({ title: 'Supprimer le joueur', message: 'Supprimer ce joueur ?', confirmLabel: 'Supprimer', danger: true }))) return
-
-    form.delete(
-        route('game-saves.players.destroy', {
-            gameSave: props.gameSave.id,
-            player: form.id,
-        }),
-        {
-            preserveScroll: true,
-            onSuccess: () => {
-                if (props.players.length > 0) {
-                    applyPlayer(props.players[0])
-                } else {
-                    form.reset()
-                }
-            }
-        }
-    )
-}
-
-function submit() {
-    if (creating.value) return createPlayer()
-    if (!form.id) return
-
-    form.transform(data => ({
-        ...data,
-        _method: 'PUT',
-    })).post(
-        route('game-saves.players.update', {
-            gameSave: props.gameSave.id,
-            player: form.id
-        }),
-        {
-            preserveScroll: true,
-            forceFormData: true,
-            // Recharger le joueur enregistré (photo à jour, fichier remis à zéro).
-            onSuccess: () => {
-                const fresh = props.players.find(p => p.id === form.id)
-                if (fresh) applyPlayer(fresh)
-            },
-        }
-    )
-}
-
-function createPlayer() {
-    // transform() est mémorisé par le formulaire : on retire le _method d'une mise à jour précédente.
-    form.transform(({ id: _id, contract: _contract, selectedPlayerId: _selected, ...data }) => data).post(
-        route('game-saves.players.store', { gameSave: props.gameSave.id }),
-        {
-            preserveScroll: true,
-            forceFormData: true,
-            // Le serveur renvoie l'id du joueur créé : on l'ouvre en édition.
-            onSuccess: () => {
-                const created = props.players.find(p => p.id === props.selectedId)
-                if (created) applyPlayer(created)
-            },
-        }
-    )
-}
-
-onMounted(() => {
-    if (props.startCreate) {
-        startCreating()
-        return
-    }
-    const initial = props.players.find(p => p.id === props.selectedId) ?? props.players[0]
-    if (initial) applyPlayer(initial)
-})
 </script>

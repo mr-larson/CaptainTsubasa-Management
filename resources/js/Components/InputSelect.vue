@@ -43,7 +43,7 @@ export default {
             :id="id"
             v-model="internalValue"
             :disabled="disabled"
-            class="appearance-none text-sm text-slate-900 bg-white border border-slate-300 rounded-full w-full md:w-56 leading-tight focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200"
+            class="appearance-none text-sm text-slate-900 bg-white border border-slate-300 rounded-full w-full leading-tight focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200"
         >
             <!-- option placeholder -->
             <option v-if="placeholder" disabled value="">

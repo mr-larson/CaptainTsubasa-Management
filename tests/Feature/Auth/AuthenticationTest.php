@@ -31,3 +31,12 @@ test('users can not authenticate with invalid password', function () {
 
     $this->assertGuest();
 });
+
+test('inertia login forces a full page reload so the route list matches the role', function () {
+    $user = User::factory()->create();
+
+    $this->withHeader('X-Inertia', 'true')->post('/login', [
+        'email' => $user->email,
+        'password' => 'password',
+    ])->assertStatus(409)->assertHeader('X-Inertia-Location');
+});

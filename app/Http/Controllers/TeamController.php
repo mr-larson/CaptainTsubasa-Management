@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\TeamRequest;
-use App\Http\Resources\TeamResource;
 use App\Models\Team;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Str;
@@ -13,31 +13,29 @@ use Illuminate\Support\Str;
 class TeamController extends Controller
 {
     /**
-     * Liste des équipes (vue "Index").
+     * Écran unique des équipes de la base : liste + fiche, création comprise
+     * (fiche vide sur la même page).
      */
-    public function index(): Response
+    public function index(Request $request): Response
     {
         return Inertia::render('Teams/Index', [
-            'teams' => TeamResource::collection(
-                Team::orderBy('name')->get()
-            ),
+            'teams'       => Team::orderBy('name')->get(),
+            // Équipe à ouvrir (ex. juste après sa création) / fiche vide demandée.
+            'selectedId'  => $request->integer('selected') ?: null,
+            'startCreate' => $request->boolean('create'),
         ]);
     }
 
-    /**
-     * Formulaire de création d’équipe.
-     */
-    public function create(): Response
+    /** Ancienne URL de création : ouvre l'écran en mode création. */
+    public function create(): RedirectResponse
     {
-        return Inertia::render('Teams/Create');
+        return redirect()->route('teams.index', ['create' => 1]);
     }
 
     /**
      * Enregistrement d’une nouvelle équipe.
      */
-    // App\Http\Controllers\TeamController.php
-
-    public function store(TeamRequest $request)
+    public function store(TeamRequest $request): RedirectResponse
     {
         $data = $request->validated();
 
@@ -56,17 +54,15 @@ class TeamController extends Controller
 
         $team->save();
 
-        return redirect()->back();
+        return redirect()
+            ->route('teams.index', ['selected' => $team->id])
+            ->with('success', 'Équipe créée.');
     }
 
-    /**
-     * Écran d’édition (avec liste dans la sidebar).
-     */
-    public function edit(): Response
+    /** Ancienne URL d'édition : même écran que la liste. */
+    public function edit(Request $request): Response
     {
-        return Inertia::render('Teams/Edit', [
-            'teams' => Team::orderBy('name')->get(),
-        ]);
+        return $this->index($request);
     }
 
     /**
@@ -97,7 +93,7 @@ class TeamController extends Controller
 
         $team->save();
 
-        return redirect()->back();
+        return back()->with('success', 'Équipe mise à jour.');
     }
 
     /**
@@ -108,8 +104,8 @@ class TeamController extends Controller
         $team->delete();
 
         return redirect()
-            ->route('teams.edit')
-            ->with('message', 'Équipe supprimée avec succès.');
+            ->route('teams.index')
+            ->with('success', 'Équipe supprimée.');
     }
 
     /**
