@@ -32,7 +32,7 @@ const isSelected = (item) => !props.creating && props.selectedId === item.id;
 </script>
 
 <template>
-    <div class="flex flex-col lg:flex-row gap-2 lg:h-[calc(100vh-15.5rem)] lg:min-h-[480px]">
+    <div class="flex flex-col lg:flex-row gap-2 lg:h-[calc(100vh-11rem)] lg:min-h-[480px]">
         <!-- LISTE -->
         <div class="lg:w-72 shrink-0 border border-slate-200 rounded-xl bg-slate-50 p-3 flex flex-col gap-3 max-h-[60vh] lg:max-h-none lg:h-full">
             <div class="flex items-center justify-between">
