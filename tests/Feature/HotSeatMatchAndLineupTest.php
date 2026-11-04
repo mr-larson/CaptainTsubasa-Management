@@ -79,4 +79,50 @@ class HotSeatMatchAndLineupTest extends TestCase
         $saved = $save->fresh()->state['lineup'][$mine->id]['slots'];
         $this->assertNotContains($players[3]->id, array_values($saved), 'Le remplaçant ne doit plus occuper de slot.');
     }
+
+    public function test_a_twelfth_starter_is_refused(): void
+    {
+        $save = $this->makeSave();
+        [$mine, $players] = $this->makeTeamWithSquad($save, ['is_controlled' => true, 'human_seat' => 1], 12);
+        $save->update(['controlled_game_team_id' => $mine->id]);
+
+        $sub = $players[11]->contracts()->first();
+        $sub->update(['is_starter' => false]);
+        foreach ($players->take(11) as $p) {
+            $p->contracts()->update(['is_starter' => true]);
+        }
+
+        $this->actingAs(User::find($save->user_id))
+            ->patch(route('game-contracts.toggle-starter', $sub))
+            ->assertSessionHasErrors('is_starter');
+
+        $this->assertFalse((bool) $sub->fresh()->is_starter);
+    }
+
+    public function test_promoting_a_substitute_fills_the_requested_empty_slot(): void
+    {
+        $save = $this->makeSave();
+        [$mine, $players] = $this->makeTeamWithSquad($save, ['is_controlled' => true, 'human_seat' => 1], 12);
+        $slots = [];
+        foreach ($players->take(11) as $i => $p) {
+            $slots[$i + 1] = $p->id;
+        }
+        $slots[2] = null;
+        $slots[9] = null;
+        $players[1]->contracts()->update(['is_starter' => false]);
+        $players[8]->contracts()->update(['is_starter' => false]);
+        $save->update([
+            'controlled_game_team_id' => $mine->id,
+            'state' => ['lineup' => [$mine->id => ['slots' => $slots]]],
+        ]);
+
+        $contract = $players[8]->contracts()->first();
+        $this->actingAs(User::find($save->user_id))
+            ->patch(route('game-contracts.toggle-starter', $contract), ['slot' => 9])
+            ->assertSessionHasNoErrors();
+
+        $saved = $save->fresh()->state['lineup'][$mine->id]['slots'];
+        $this->assertSame($players[8]->id, (int) $saved[9], 'Le joueur doit occuper le slot demandé, pas le premier libre.');
+        $this->assertTrue(empty($saved[2]));
+    }
 }

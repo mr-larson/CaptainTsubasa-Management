@@ -142,6 +142,8 @@ const {
     playerPhotoUrl, teamLogoUrl,
     playerPosition, slotToPlayer, playerForSlot, selectedSlot,
     isPickedUp, handlePlayerClick, handleDragStart, handleDragOver, handleDrop,
+    cancelPickup, pickUpPlayer, fillEmptySlot, handleDropOnSlot,
+    lastChange, undoLastChange, formationImpact, reorganizeLineup,
     FORMATIONS, FORMATION_LIST,
 } = useTeam({ gameSave: gameSaveRef, team: teamRef });
 
@@ -468,6 +470,15 @@ const saveGame = () => {
                                @drag-start="handleDragStart"
                                @drag-over="handleDragOver"
                                @drop-on="handleDrop"
+                               @drag-end="cancelPickup"
+                               @pick-up="pickUpPlayer"
+                               @cancel-pickup="cancelPickup"
+                               @fill-slot="fillEmptySlot"
+                               @drop-on-slot="handleDropOnSlot"
+                               :lastChange="lastChange"
+                               :formationImpact="formationImpact"
+                               @undo="undoLastChange"
+                               @reorganize="reorganizeLineup"
                                :clubStanding="clubStanding"
                                :standings="standings"
                                :injuriesCount="injuriesCount"

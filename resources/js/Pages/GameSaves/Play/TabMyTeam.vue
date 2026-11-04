@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, onMounted, onBeforeUnmount } from 'vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
 import RosterList from '@/Pages/GameSaves/Play/components/RosterList.vue';
 import PlayerStatusAlert from '@/Pages/GameSaves/Play/components/PlayerStatusAlert.vue';
@@ -12,6 +12,7 @@ import PitchView from '@/Pages/GameSaves/Play/components/PitchView.vue';
 import BenchCard from '@/Pages/GameSaves/Play/components/BenchCard.vue';
 import ClubIdentityCard from '@/Pages/GameSaves/Play/components/ClubIdentityCard.vue';
 import TeamRecordCard from '@/Pages/GameSaves/Play/components/TeamRecordCard.vue';
+import { masteryFor, roleFromPosition } from './lineupMastery.js';
 
 const props = defineProps({
     rosterWithStatus:     { type: Array,   required: true },
@@ -50,15 +51,32 @@ const props = defineProps({
     playerDeclarations:   { type: Object,  default: () => ({}) },
     currentWeek:          { type: Number,  default: 1 },
     currentSeason:        { type: Number,  default: 1 },
+    // Dernier changement de compo annulable : { id, label } | null
+    lastChange:           { type: Object,  default: null },
+    // (formationKey) => { asIs, optimized } (cf. useTeam.formationImpact)
+    formationImpact:      { type: Function, default: null },
 });
 
 const emit = defineEmits([
     'select-player', 'toggle-starter', 'toggle-captain', 'save-formation', 'update-number',
     'player-click', 'drag-start', 'drag-over', 'drop-on', 'make-promise', 'make-declaration',
-    'release-player',
+    'release-player', 'pick-up', 'cancel-pickup', 'fill-slot', 'drop-on-slot', 'drag-end',
+    'undo', 'reorganize',
 ]);
 
 const substitutes = computed(() => props.rosterWithStatus.filter(p => !p.is_starter));
+const startersCount = computed(() => props.rosterWithStatus.filter(p => p.is_starter).length);
+const onzeComplet   = computed(() => startersCount.value >= 11);
+
+const selectedIsPickedUp = computed(() => !!props.selectedMyPlayer && props.isPickedUp(props.selectedMyPlayer));
+
+// Échap annule la prise en cours (le clic à côté est géré sur la racine).
+const onKey = (e) => { if (e.key === 'Escape') emit('cancel-pickup'); };
+onMounted(() => window.addEventListener('keydown', onKey));
+onBeforeUnmount(() => {
+    window.removeEventListener('keydown', onKey);
+    emit('cancel-pickup'); // changement d'onglet : rien ne reste soulevé
+});
 
 // Numéro refusé par le serveur (déjà pris) : l'input revient à l'ancien numéro.
 function onNumberChange(event) {
@@ -144,39 +162,120 @@ const lastDeclarationSummary = computed(() => {
 });
 
 // ── Maîtrise du poste occupé (miroir de RosterService.positionMastery) ──
-const ROLE_BY_ZONE = { 0: 'GK', 1: 'DF', 2: 'MF', 3: 'MF', 4: 'FW' };
+// Titulaire soulevé : adéquation de chaque remplaçant à son poste (halos du banc).
+const pickedPlayer = computed(() => props.rosterWithStatus.find(p => props.isPickedUp(p)) ?? null);
+const benchFit = computed(() => {
+    const picked = pickedPlayer.value;
+    if (!picked?.is_starter) return null;
+    const slot = props.lineupForm.find(r => r.player_id === picked.id)?.slot;
+    const def  = slot ? props.formationData?.slots?.[slot] : null;
+    return def ? (sub) => masteryFor(sub, def) : null;
+});
 
-const roleFromPosition = (pos) => {
-    const p = String(pos || '').toLowerCase();
-    if (p.includes('goal')) return 'GK';
-    if (p.includes('def'))  return 'DF';
-    if (p.includes('mid'))  return 'MF';
-    if (p.includes('for') || p.includes('att')) return 'FW';
+// Réorganisation possible sur la formation actuelle ?
+const currentImpact = computed(() => props.formationImpact ? props.formationImpact(props.currentFormation) : null);
+const canReorganize = computed(() => {
+    const i = currentImpact.value;
+    if (!i) return false;
+    return i.optimized.off < i.asIs.off
+        || (i.optimized.off === i.asIs.off && i.optimized.secondary < i.asIs.secondary);
+});
+
+const slotMastery = (slot, slotDef) => masteryFor(props.playerForSlot(slot), slotDef);
+
+// ── Poste vide : remplaçants proposés, les plus adaptés d'abord ──
+const MASTERY_RANK = { primary: 0, secondary: 1, off: 2 };
+
+const unavailability = (p) => {
+    if (props.isPlayerInjured(p.id))   return { label: 'Blessé',   icon: '🤕' };
+    if (props.isPlayerSuspended(p.id)) return { label: 'Suspendu', icon: '🚫' };
+    if (props.isPlayerBenched(p.id))   return { label: 'Consigné par l\'adversaire', icon: '⛔' };
     return null;
 };
 
-// 'primary' | 'secondary' | 'off' | null
-const slotMastery = (slot, slotDef) => {
-    const player = props.playerForSlot(slot);
-    if (!player) return null;
-    const slotRole = ROLE_BY_ZONE[slotDef.zone] ?? null;
-    const natural  = roleFromPosition(player.position);
-    if (!slotRole || !natural) return null;
-    if (slotRole === natural) return 'primary';
-    const secondary = (player.secondary_positions ?? []).map(roleFromPosition);
-    return secondary.includes(slotRole) ? 'secondary' : 'off';
+// ── État du onze (ligne sous le terrain) ─────────────────────
+const ZONE_SHORT = ['gardien', 'défense', 'milieu déf.', 'milieu off.', 'attaque'];
+const POS_SHORT  = { GK: 'GK', DF: 'DEF', MF: 'MIL', FW: 'ATT' };
+
+const lineupIssues = computed(() => {
+    const issues = [];
+    const starters = props.rosterWithStatus.filter(p => p.is_starter);
+
+    if (starters.length < 11) {
+        issues.push({ key: 'count', level: 'warn', text: `Onze incomplet (${starters.length}/11) — clique un poste « + » sur le terrain` });
+    }
+
+    starters.forEach(p => {
+        const u = unavailability(p);
+        if (u) issues.push({ key: `u${p.id}`, level: 'error', player: p, text: `${u.icon} ${p.lastname} titulaire mais ${u.label.toLowerCase()}` });
+    });
+
+    Object.entries(props.formationData?.slots ?? {}).forEach(([slot, def]) => {
+        const p = props.playerForSlot(slot);
+        const m = masteryFor(p, def);
+        const natural = POS_SHORT[roleFromPosition(p?.position)] ?? '?';
+        if (m === 'off') {
+            issues.push({ key: `o${slot}`, level: 'error', player: p, text: `⚠ ${p.lastname} hors poste (${natural} en ${ZONE_SHORT[def.zone]}) — malus en match` });
+        } else if (m === 'secondary') {
+            issues.push({ key: `s${slot}`, level: 'info', player: p, text: `${p.lastname} en poste secondaire (${ZONE_SHORT[def.zone]})` });
+        }
+    });
+
+    const captain = props.rosterWithStatus.find(p => p.is_captain);
+    if (!captain) {
+        issues.push({ key: 'cap', level: 'warn', text: '👑 Aucun capitaine désigné' });
+    } else if (!captain.is_starter) {
+        issues.push({ key: 'cap', level: 'warn', player: captain, text: `👑 Le capitaine ${captain.lastname} est sur le banc` });
+    }
+    return issues;
+});
+
+const ISSUE_CHIP = {
+    error: 'bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100',
+    warn:  'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100',
+    info:  'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100',
 };
+
+const slotCandidates = (slot, slotDef) => substitutes.value
+    .map(p => {
+        const u = unavailability(p);
+        return { player: p, mastery: masteryFor(p, slotDef), unavailable: u?.label ?? null, unavailableIcon: u?.icon ?? null };
+    })
+    .sort((a, b) =>
+        (a.unavailable ? 1 : 0) - (b.unavailable ? 1 : 0)
+        || (MASTERY_RANK[a.mastery] ?? 3) - (MASTERY_RANK[b.mastery] ?? 3)
+        || Number(b.player.stamina ?? b.player.stats?.stamina ?? 0) - Number(a.player.stamina ?? a.player.stats?.stamina ?? 0)
+    );
 </script>
 
 <template>
-    <div class="flex-1 flex flex-col gap-4 overflow-y-auto min-h-0 pr-1 [&>*]:shrink-0">
+    <div class="flex-1 flex flex-col gap-4 overflow-y-auto min-h-0 pr-1 [&>*]:shrink-0"
+         @click="emit('cancel-pickup')">
 
         <!-- LIGNE 1 : Formation + Terrain + Banc -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
             <FormationCard class="lg:col-span-4"
                            :formation="currentFormation"
                            :formationData="formationData"
-                           @change="key => emit('save-formation', key)" />
+                           :impact="formationImpact"
+                           @change="key => emit('save-formation', key)">
+                <template #after-select>
+                    <button v-if="canReorganize" type="button"
+                            @click.stop="emit('reorganize')"
+                            class="-mt-1 w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all bg-amber-50 text-amber-700 border-amber-300 hover:bg-amber-100"
+                            title="Replace les mêmes titulaires sur les postes qui leur conviennent le mieux (en bougeant le moins de joueurs possible)">
+                        ⇄ Réorganiser le onze
+                        <span class="font-semibold opacity-80">
+                            <template v-if="currentImpact.optimized.off < currentImpact.asIs.off">
+                                ({{ currentImpact.asIs.off }} → {{ currentImpact.optimized.off }} hors poste)
+                            </template>
+                            <template v-else>
+                                ({{ currentImpact.asIs.secondary }} → {{ currentImpact.optimized.secondary }} en poste secondaire)
+                            </template>
+                        </span>
+                    </button>
+                </template>
+            </FormationCard>
 
             <PitchView class="lg:col-span-6"
                        :formationData="formationData"
@@ -186,19 +285,47 @@ const slotMastery = (slot, slotDef) => {
                        :isPickedUp="isPickedUp"
                        :players="rosterWithStatus"
                        :slotMastery="slotMastery"
+                       :slotCandidates="slotCandidates"
+                       :masteryFor="masteryFor"
+                       :playerStatus="unavailability"
                        @player-click="p => emit('player-click', p)"
                        @drag-start="(p, e) => emit('drag-start', p, e)"
+                       @drag-end="emit('drag-end')"
                        @drag-over="e => emit('drag-over', e)"
-                       @drop-on="(p, e) => emit('drop-on', p, e)" />
+                       @drop-on="(p, e) => emit('drop-on', p, e)"
+                       @fill-slot="(slot, p) => emit('fill-slot', slot, p)"
+                       @drop-on-slot="(slot, e) => emit('drop-on-slot', slot, e)"
+                       @cancel-pickup="emit('cancel-pickup')" />
 
             <BenchCard class="lg:col-span-2"
                        :substitutes="substitutes"
                        :selectedId="selectedMyPlayer?.id"
                        :isPickedUp="isPickedUp"
+                       :playerStatus="unavailability"
+                       :pickFit="benchFit"
                        @player-click="p => emit('player-click', p)"
                        @drag-start="(p, e) => emit('drag-start', p, e)"
+                       @drag-end="emit('drag-end')"
                        @drag-over="e => emit('drag-over', e)"
                        @drop-on="(p, e) => emit('drop-on', p, e)" />
+        </div>
+
+        <!-- État du onze : ce qui mérite attention avant le match -->
+        <div class="-mt-2 flex flex-wrap items-center gap-1.5">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1">État du onze</span>
+            <template v-if="lineupIssues.length">
+                <component :is="issue.player ? 'button' : 'span'" v-for="issue in lineupIssues" :key="issue.key"
+                           :type="issue.player ? 'button' : undefined"
+                           @click="issue.player && emit('select-player', issue.player)"
+                           class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] font-semibold transition-all"
+                           :class="[ISSUE_CHIP[issue.level], issue.player ? 'cursor-pointer' : 'cursor-default']"
+                           :title="issue.player ? 'Voir la fiche du joueur' : undefined">
+                    {{ issue.text }}
+                </component>
+            </template>
+            <span v-else class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] font-semibold bg-emerald-50 border-emerald-200 text-emerald-700">
+                ✓ Onze complet, tous à leur poste, capitaine désigné
+            </span>
         </div>
 
         <!-- LIGNE 2 : Infos club -->
@@ -270,15 +397,44 @@ const slotMastery = (slot, slotDef) => {
                     <!-- Identité + actions -->
                     <PlayerIdentityCard :player="selectedMyPlayer">
                         <template #actions>
-                            <!-- Toggle titulaire -->
-                            <button v-if="selectedMyPlayer.contract_id" type="button"
-                                    @click="emit('toggle-starter', selectedMyPlayer.contract_id)"
-                                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all"
-                                    :class="selectedMyPlayer.is_starter
-                                        ? 'bg-emerald-500 text-white border-emerald-600 hover:bg-emerald-600'
-                                        : 'bg-white text-slate-500 border-slate-300 hover:bg-slate-50'">
-                                {{ selectedMyPlayer.is_starter ? '✓ Titulaire' : '+ Titulariser' }}
-                            </button>
+                            <!-- Entrée / sortie du onze -->
+                            <template v-if="selectedMyPlayer.contract_id">
+                                <!-- Prise en cours : un seul bouton pour annuler -->
+                                <button v-if="selectedIsPickedUp" type="button"
+                                        @click.stop="emit('cancel-pickup')"
+                                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all bg-amber-400 text-slate-900 border-amber-500 hover:bg-amber-500"
+                                        title="Annuler (Échap)">
+                                    ✕ Annuler le remplacement
+                                </button>
+                                <template v-else-if="selectedMyPlayer.is_starter">
+                                    <button type="button"
+                                            @click.stop="emit('pick-up', selectedMyPlayer)"
+                                            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all bg-emerald-500 text-white border-emerald-600 hover:bg-emerald-600"
+                                            title="Puis clique un coéquipier (échange de poste), un remplaçant (il sort) ou un poste vide">
+                                        ⇄ Déplacer / remplacer…
+                                    </button>
+                                    <button type="button"
+                                            @click="emit('toggle-starter', selectedMyPlayer.contract_id)"
+                                            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all bg-white text-slate-500 border-slate-300 hover:bg-slate-50"
+                                            title="Le joueur passe sur le banc et son poste reste vide">
+                                        ↓ Sortir du onze
+                                    </button>
+                                </template>
+                                <!-- Remplaçant, onze complet : choisir qui il remplace -->
+                                <button v-else-if="onzeComplet" type="button"
+                                        @click.stop="emit('pick-up', selectedMyPlayer)"
+                                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all bg-white text-emerald-600 border-emerald-400 hover:bg-emerald-50"
+                                        title="Puis clique sur le terrain le titulaire qu'il remplace">
+                                    ⇄ Faire entrer…
+                                </button>
+                                <!-- Remplaçant, poste(s) vide(s) : titularisation directe -->
+                                <button v-else type="button"
+                                        @click="emit('toggle-starter', selectedMyPlayer.contract_id)"
+                                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all bg-white text-emerald-600 border-emerald-400 hover:bg-emerald-50"
+                                        :title="`Il prend le premier poste vide (${11 - startersCount} libre(s)) — ou clique un poste vide sur le terrain pour choisir`">
+                                    + Titulariser ({{ startersCount }}/11)
+                                </button>
+                            </template>
                             <button
                                 v-if="selectedMyPlayer.contract_id"
                                 type="button"
@@ -311,11 +467,9 @@ const slotMastery = (slot, slotDef) => {
                             </button>
                         </template>
                         <template #footer>
-                            <p v-if="selectedMyPlayer.is_starter" class="mt-3 text-[10px] text-slate-400 italic">
-                                💡 Glisse ce joueur sur un titulaire pour échanger les positions, ou sur un remplaçant pour le sortir.
-                            </p>
-                            <p v-else class="mt-3 text-[10px] text-emerald-600 italic">
-                                💡 Glisse ce remplaçant sur un titulaire pour le faire entrer en jeu.
+                            <p class="mt-3 text-[10px] text-slate-400 italic">
+                                💡 Sur le terrain : clique un joueur pour voir sa fiche, re-clique-le (ou glisse-le) pour le déplacer,
+                                puis clique sa cible. Les postes vides « + » se remplissent d'un clic. Échap pour annuler.
                             </p>
                             <p v-if="selectedMyPlayer.description" class="mt-2 text-xs text-slate-400 italic">{{ selectedMyPlayer.description }}</p>
                         </template>
@@ -471,5 +625,18 @@ const slotMastery = (slot, slotDef) => {
                 </div>
             </div>
         </div>
+        <!-- Annuler le dernier changement de compo -->
+        <Transition enter-from-class="opacity-0 translate-y-2" leave-to-class="opacity-0 translate-y-2"
+                    enter-active-class="transition duration-200" leave-active-class="transition duration-200">
+            <div v-if="lastChange" :key="lastChange.id"
+                 class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 pl-4 pr-1.5 py-1.5 rounded-full bg-slate-800 text-white text-xs font-semibold shadow-xl"
+                 @click.stop>
+                <span>✓ {{ lastChange.label }}</span>
+                <button type="button" @click="emit('undo')"
+                        class="px-3 py-1 rounded-full bg-white/15 hover:bg-white/30 font-bold">
+                    ↶ Annuler
+                </button>
+            </div>
+        </Transition>
     </div>
 </template>

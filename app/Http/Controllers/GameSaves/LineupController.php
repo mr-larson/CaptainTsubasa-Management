@@ -21,20 +21,35 @@ class LineupController extends Controller
         $this->authorizeGameSave('update', $contract->gameSave);
         if ($refused = $this->refuseUnlessActiveTeam($contract->gameSave, (int) $contract->game_team_id)) return $refused;
 
+        // Slot visé (optionnel) : titulariser directement sur un poste libre du terrain.
+        $data = $request->validate(['slot' => ['nullable', 'integer', 'between:1,11']]);
+
+        // Onze complet : titulariser un 12ᵉ joueur le rendrait invisible (ni
+        // terrain ni banc) — il faut passer par une substitution.
+        if (!$contract->is_starter) {
+            $starters = GameContract::where('game_team_id', $contract->game_team_id)
+                ->where('is_starter', true)
+                ->count();
+            if ($starters >= 11) {
+                return back()->withErrors(['is_starter' => 'Le onze est complet : choisis le titulaire à remplacer.']);
+            }
+        }
+
         $contract->is_starter = !$contract->is_starter;
         $contract->save();
 
-        $this->syncLineupSlot($contract->gameSave, $contract);
+        $this->syncLineupSlot($contract->gameSave, $contract, $data['slot'] ?? null);
 
-        return back()->with('success', 'Changement effectué');
+        return back()->with('success', $contract->is_starter ? 'Joueur titularisé.' : 'Joueur retiré du onze.');
     }
 
     /**
      * Garde state.lineup cohérent avec is_starter : un joueur passé remplaçant
      * libère son slot (sinon il s'affiche à la fois sur le terrain et sur le
-     * banc) ; un joueur titularisé prend le premier slot libre.
+     * banc) ; un joueur titularisé prend le slot demandé s'il est libre, sinon
+     * le premier slot libre.
      */
-    private function syncLineupSlot(GameSave $gameSave, GameContract $contract): void
+    private function syncLineupSlot(GameSave $gameSave, GameContract $contract, ?int $preferredSlot = null): void
     {
         $state  = $gameSave->state ?? [];
         $teamId = $contract->game_team_id;
@@ -53,6 +68,11 @@ class LineupController extends Controller
                     $slots[$slot] = null;
                 }
             }
+        }
+
+        if ($contract->is_starter && !$placed && $preferredSlot && empty($slots[$preferredSlot] ?? null)) {
+            $slots[$preferredSlot] = $playerId;
+            $placed = true;
         }
 
         if ($contract->is_starter && !$placed) {

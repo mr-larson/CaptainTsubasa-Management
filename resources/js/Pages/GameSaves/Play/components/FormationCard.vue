@@ -6,7 +6,16 @@ const props = defineProps({
     formation:     { type: String, required: true },
     formationData: { type: Object, default: null },
     readonly:      { type: Boolean, default: false },
+    // (key) => { asIs: {off, secondary}, optimized: {off, secondary} } — impact sur le onze actuel
+    impact:        { type: Function, default: null },
 });
+
+// Libellé d'option : hors-poste restants une fois le onze réorganisé sur cette formation.
+const optionLabel = (f) => {
+    if (!props.impact) return f.label;
+    const off = props.impact(f.key).optimized.off;
+    return off ? `${f.label}  ·  ⚠ ${off} hors poste` : `${f.label}  ·  ✓`;
+};
 
 const emit = defineEmits(['change']);
 </script>
@@ -23,8 +32,10 @@ const emit = defineEmits(['change']);
             @change="emit('change', $event.target.value)"
             class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-semibold bg-white text-slate-800 focus:ring-2 focus:ring-teal-300 focus:outline-none cursor-pointer"
         >
-            <option v-for="f in FORMATION_LIST" :key="f.key" :value="f.key">{{ f.label }}</option>
+            <option v-for="f in FORMATION_LIST" :key="f.key" :value="f.key">{{ optionLabel(f) }}</option>
         </select>
+
+        <slot name="after-select" />
 
         <p class="text-xs text-slate-500 leading-relaxed min-h-[2.5rem]">
             {{ FORMATIONS[formation]?.description ?? '—' }}
