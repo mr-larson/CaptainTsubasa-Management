@@ -20,7 +20,7 @@ use App\Services\BonusCardShopService;
 use App\Services\CareerObjectiveService;
 use App\Services\MatchSimulator;
 use App\Services\AITransferService;
-use App\Services\AILineupService;
+use App\Services\AiLineUpService;
 use App\Services\FoulAndInjuryService;
 use App\Services\MoraleService;
 use App\Services\PostMatchProgressionService;
@@ -293,7 +293,7 @@ class GameMatchController extends Controller
             // ─────────────────────────────────────────────────────────────
 
             // Ajuster les lineups IA (pour la semaine suivante)
-            app(AILineupService::class)->adjustLineupsForWeek($gameSave);
+            app(AiLineUpService::class)->adjustLineupsForWeek($gameSave);
 
             // Simuler les matchs IA restants (les matchs humains sont déjà "played")
             app(MatchSimulator::class)->simulateOtherMatchesOfWeek($match, $gameSave);
@@ -435,7 +435,7 @@ class GameMatchController extends Controller
                 ->get();
 
             app(MatchSimulator::class)->simulateMatchesCollection($matches, $gameSave);
-            app(AILineupService::class)->adjustLineupsForWeek($gameSave);
+            app(AiLineUpService::class)->adjustLineupsForWeek($gameSave);
             if ($gameSave->getConfig('ai_training_enabled', true)) {
                 app(AITrainingService::class)->trainForWeek($gameSave);
             }

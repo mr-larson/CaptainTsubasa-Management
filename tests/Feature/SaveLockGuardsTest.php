@@ -127,6 +127,11 @@ class SaveLockGuardsTest extends TestCase
 
         $this->assertSame(2, (int) $save->fresh()->season);
         $this->assertSame('intersaison_draft', $save->fresh()->phase);
+
+        // Retour / F5 sur l'écran de fin de saison après le passage en saison 2 :
+        // redirection vers Play, pas de TypeError 500.
+        $this->actingAs($user)->get(route('game-saves.season-end', $save))
+            ->assertRedirect(route('game-saves.Play', $save));
     }
 
     public function test_is_in_match_phase(): void

@@ -21,7 +21,7 @@ class GameSeasonController extends Controller
     /**
      * Écran de fin de saison : champion, MVP, primes de classement.
      */
-    public function show(Request $request, GameSave $gameSave): Response
+    public function show(Request $request, GameSave $gameSave): Response|RedirectResponse
     {
         $this->authorizeGameSave('view', $gameSave);
 

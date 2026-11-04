@@ -123,7 +123,7 @@ class MatchSimulator
         // Blessés et suspendus ne jouent pas : ils sont écartés et remplacés
         // comme les titulaires consignés par un malus. Indispensable pour les
         // équipes humaines simulées (simulate-week), dont le lineup n'est pas
-        // réajusté par AILineupService.
+        // réajusté par AiLineUpService.
         $unavailable = $this->unavailablePlayerIds((int) $m->game_save_id, (int) $m->week);
         if (!empty($unavailable)) {
             foreach ([(int) $m->home_team_id, (int) $m->away_team_id] as $teamId) {
@@ -789,7 +789,7 @@ class MatchSimulator
 
     /**
      * Ids des joueurs blessés ou suspendus pour un match de la semaine donnée
-     * (mêmes critères que AILineupService::adjustLineupsForWeek).
+     * (mêmes critères que AiLineUpService::adjustLineupsForWeek).
      *
      * @return array<int>
      */
