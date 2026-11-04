@@ -103,7 +103,7 @@ const config = reactive({
         ao_ashi: false,
         original: true,
     },
-    internationals_visible: true,
+    internationals_visible: false,
 });
 
 function resetDefaults() {
@@ -117,7 +117,7 @@ function resetDefaults() {
         ai_transfers_enabled: true, ai_training_enabled: true,
         initial_morale_random: true,
         visible_origins: { captain_tsubasa: true, ecole_des_champions: false, hungry_heart: false, blue_lock: false, ao_ashi: false, original: true },
-        internationals_visible: true,
+        internationals_visible: false,
     });
 }
 

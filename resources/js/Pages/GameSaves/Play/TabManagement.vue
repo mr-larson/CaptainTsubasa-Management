@@ -84,7 +84,7 @@ function resetDefaults() {
             ao_ashi: false,
             original: true,
         },
-        internationals_visible: true,
+        internationals_visible: false,
     };
     Object.assign(config, defaults);
 }
