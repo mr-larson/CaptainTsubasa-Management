@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, watch, onUnmounted } from 'vue';
 import { FORMATIONS, DEFAULT_FORMATION, LANE_Y, GK_LANE_Y } from '@/Pages/Match/engine/formations.js';
-import { isGoalEvent as isGoal, eventIcon, eventOutcome } from './matchEvents.js';
+import { isGoalEvent as isGoal, eventIcon, eventOutcome, eventKind } from './matchEvents.js';
 
 const props = defineProps({
     events:        { type: Array,  default: () => [] },
@@ -280,10 +280,42 @@ function clearTimer() {
     if (timer) { clearInterval(timer); timer = null; }
 }
 
+// ── Repères : buts et temps forts ────────────────────────────
+// Index « curseur » d'un événement = position + 1 (le curseur montre l'événement cursor-1).
+const goalSteps = computed(() =>
+    props.events.map((ev, i) => (isGoalEvent(ev) ? i + 1 : null)).filter(Boolean)
+);
+const KEY_KINDS = new Set(['goal', 'shot', 'heroic', 'card-yellow', 'card-red', 'injury']);
+const isKeyEvent = (ev) => KEY_KINDS.has(eventKind(ev)) || /spécial|special/i.test(`${ev?.text ?? ''} ${ev?.actionType ?? ''}`);
+const keySteps = computed(() =>
+    props.events.map((ev, i) => (isKeyEvent(ev) ? i + 1 : null)).filter(Boolean)
+);
+
+// Mode « temps forts » : la lecture saute directement d'un temps fort au suivant.
+const highlightsOnly = ref(false);
+
+const markerLeft = (stepIndex) => `${(stepIndex / Math.max(1, totalSteps.value)) * 100}%`;
+
+function nextGoal() {
+    pause();
+    const next = goalSteps.value.find(i => i > cursor.value);
+    cursor.value = next ?? totalSteps.value;
+}
+
+function prevGoal() {
+    pause();
+    const prev = [...goalSteps.value].reverse().find(i => i < cursor.value);
+    cursor.value = prev ?? 0;
+}
+
 function step() {
     if (cursor.value >= totalSteps.value) {
         playing.value = false;
         clearTimer();
+        return;
+    }
+    if (highlightsOnly.value) {
+        cursor.value = keySteps.value.find(i => i > cursor.value) ?? totalSteps.value;
         return;
     }
     cursor.value += 1;
@@ -330,7 +362,7 @@ function seek(value) {
 }
 
 function cycleSpeed() {
-    const speeds = [1, 2, 4];
+    const speeds = [1, 2, 4, 8];
     const idx = speeds.indexOf(speed.value);
     speed.value = speeds[(idx + 1) % speeds.length];
     if (playing.value) startTimer();
@@ -452,18 +484,29 @@ onUnmounted(() => clearTimer());
         </div>
 
         <!-- Barre de progression -->
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 pt-2">
             <span class="text-[10px] text-slate-400 tabular-nums w-10 text-right">{{ cursor }}/{{ totalSteps }}</span>
-            <input type="range" min="0" :max="totalSteps" :value="cursor"
-                   @input="seek($event.target.value)"
-                   class="flex-1 accent-emerald-600 h-1.5"/>
+            <div class="relative flex-1">
+                <input type="range" min="0" :max="totalSteps" :value="cursor"
+                       @input="seek($event.target.value)"
+                       class="w-full accent-emerald-600 h-1.5"/>
+                <!-- Buts sur la timeline (cliquables) -->
+                <button v-for="g in goalSteps" :key="g" type="button"
+                        @click="seek(g)"
+                        class="absolute -top-3 -translate-x-1/2 text-[10px] leading-none hover:scale-125 transition-transform"
+                        :style="{ left: markerLeft(g) }"
+                        :title="`But — action ${g}`">⚽</button>
+            </div>
         </div>
 
         <!-- Contrôles -->
-        <div class="flex items-center justify-center gap-2">
+        <div class="flex flex-wrap items-center justify-center gap-2">
             <button type="button" @click="restart"
                     class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-xs transition-all"
                     title="Revenir au début">⏮</button>
+            <button v-if="goalSteps.length" type="button" @click="prevGoal"
+                    class="px-2 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-[11px] font-bold text-slate-600 transition-all"
+                    title="But précédent">⏮ ⚽</button>
             <button type="button" @click="stepBackward"
                     class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-xs transition-all"
                     title="Action précédente">◀</button>
@@ -474,6 +517,15 @@ onUnmounted(() => clearTimer());
             <button type="button" @click="stepForward"
                     class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-xs transition-all"
                     title="Action suivante">▶|</button>
+            <button v-if="goalSteps.length" type="button" @click="nextGoal"
+                    class="px-2 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-[11px] font-bold text-slate-600 transition-all"
+                    title="But suivant">⚽ ⏭</button>
+            <button type="button" @click="highlightsOnly = !highlightsOnly"
+                    class="px-2 h-8 rounded-full flex items-center justify-center text-[11px] font-bold transition-all"
+                    :class="highlightsOnly ? 'bg-amber-400 text-slate-900' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'"
+                    :title="`Lecture des seuls temps forts (${keySteps.length} actions : buts, tirs, gestes spéciaux, cartons)`">
+                🔥 Temps forts
+            </button>
             <button type="button" @click="cycleSpeed"
                     class="px-2 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-[11px] font-bold text-slate-600 transition-all"
                     title="Vitesse de lecture">x{{ speed }}</button>

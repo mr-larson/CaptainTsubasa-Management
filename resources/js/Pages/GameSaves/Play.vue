@@ -558,6 +558,10 @@ const saveGame = () => {
                                  :opponentNameForTeam="opponentNameForTeam"
                                  :loadingMatchId="loadingMatchStatsId"
                                  :currentWeek="week"
+                                 :standings="standings"
+                                 :allMatches="matches"
+                                 :myTeamId="team?.id ?? null"
+                                 @change-tab="setTab"
                                  @select-team="selectCalendarTeam"
                                  @open-match-stats="openMatchStats"
                     />

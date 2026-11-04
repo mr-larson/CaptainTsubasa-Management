@@ -4,6 +4,8 @@ import { usePlayerUtils } from './usePlayerUtils.js';
 import MatchReplayPitch from './MatchReplayPitch.vue';
 import PlayerPhoto from '@/Components/PlayerPhoto.vue';
 import MatchProgression from './components/MatchProgression.vue';
+import MatchPlayersTable from './components/MatchPlayersTable.vue';
+import MatchPreview from './components/MatchPreview.vue';
 import { isGoalEvent, eventKind, eventIcon, eventOutcome } from './matchEvents.js';
 
 const props = defineProps({
@@ -25,9 +27,28 @@ const props = defineProps({
     // id du match dont le détail est en cours de chargement
     loadingMatchId:              { type: [Number, String], default: null },
     currentWeek:                 { type: Number, default: null },
+    // Aperçu des matchs à venir
+    standings:                   { type: Array, default: () => [] },
+    allMatches:                  { type: Array, default: () => [] },
+    myTeamId:                    { type: [Number, String], default: null },
 });
 
-const emit = defineEmits(['select-team', 'open-match-stats']);
+const emit = defineEmits(['select-team', 'open-match-stats', 'change-tab']);
+
+// ── Clic sur une ligne : match joué → stats ; match à venir → aperçu ──
+const previewMatch = ref(null);
+
+const isPlayable = (m) => !props.isByeMatch(m) && m.status === 'played' && m.has_stats;
+const isUpcoming = (m) => !props.isByeMatch(m) && m.status === 'scheduled';
+
+function onRowClick(match) {
+    if (isPlayable(match)) {
+        previewMatch.value = null;
+        emit('open-match-stats', match);
+    } else if (isUpcoming(match)) {
+        previewMatch.value = match;
+    }
+}
 
 // ==========================
 //   HELPERS
@@ -142,15 +163,50 @@ const annotatedEvents = computed(() => {
     });
 });
 
+const LOG_FILTER_FN = {
+    all:     () => true,
+    goals:   isGoalEv,
+    shots:   isShotEv,
+    heroics: isHeroEv,
+};
+const logFilterCount = (key) => annotatedEvents.value.filter(LOG_FILTER_FN[key]).length;
+
+// Ordre chronologique par défaut (on lit le match du coup d'envoi au coup de sifflet).
+const newestFirst = ref(false);
+
 const filteredLogEvents = computed(() => {
-    const list = annotatedEvents.value.filter(ev => {
-        if (logFilter.value === 'goals')   return isGoalEv(ev);
-        if (logFilter.value === 'shots')   return isShotEv(ev);
-        if (logFilter.value === 'heroics') return isHeroEv(ev);
-        return true;
-    });
-    return [...list].reverse();
+    const list = annotatedEvents.value.filter(LOG_FILTER_FN[logFilter.value] ?? LOG_FILTER_FN.all);
+    return newestFirst.value ? [...list].reverse() : list;
 });
+
+// Détail des dés d'un duel (logs du moteur joué : ev.meta = { attack, defense, result, … })
+const expandedEvent = ref(null);
+watch(() => props.selectedCalendarMatch?.id, () => { expandedEvent.value = null; });
+
+const fmt = (n) => (Number.isFinite(Number(n)) ? Number(n).toFixed(1) : '—');
+const diceBreakdown = (ev) => {
+    const m = ev?.meta;
+    if (!m?.attack || !m?.defense) return null;
+    const side = (s) => ({
+        total: fmt(s.total),
+        base:  fmt(s.base),
+        additions: (s.additions ?? []).map(a => `${a.label} ${a.value}`),
+        tired: Number(s.staminaFactor ?? 1) < 1 ? `fatigue ×${Number(s.staminaFactor).toFixed(2)}` : null,
+    });
+    return {
+        attack:  side(m.attack),
+        defense: side(m.defense),
+        winner:  m.result?.winner === 'attack' ? 'attaque' : m.result?.winner === 'defense' ? 'défense' : null,
+        diff:    fmt(Math.abs(m.result?.diff ?? 0)),
+        rule:    m.result?.bonusRuleLabel ?? null,
+        crit:    m.result?.critWinner ?? null,
+        reroll:  !!m.captainReroll,
+    };
+};
+const toggleEvent = (ev) => {
+    if (!diceBreakdown(ev)) return;
+    expandedEvent.value = expandedEvent.value === ev.index ? null : ev.index;
+};
 
 // Résultat d'un match pour une équipe donnée
 const matchResult = (match, teamId) => {
@@ -396,6 +452,7 @@ const manOfTheMatch = computed(() => {
     const player = [...matchRoster('home'), ...matchRoster('away')].find(p => String(p.id) === String(best.pid))
         ?? playersById.value[best.pid] ?? null;
     return {
+        pid:    best.pid,
         name:   rosterName(best.pid),
         player,
         team:   best.side ? props.teamById[best.side === 'home' ? props.selectedCalendarMatch?.home_team_id : props.selectedCalendarMatch?.away_team_id]?.name : null,
@@ -434,6 +491,7 @@ const listEl = ref(null);
 
 // Sans match sélectionné : on ouvre le dernier match joué de l'équipe affichée.
 watch(() => props.calendarTeam?.id, () => {
+    previewMatch.value = null;
     if (props.selectedCalendarMatch || props.loadingMatchId) return;
     const last = [...props.calendarRows].reverse().find(m => !props.isByeMatch(m) && m.status === 'played' && m.has_stats);
     if (last) emit('open-match-stats', last);
@@ -492,13 +550,14 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                          class="flex items-center gap-2 px-3 py-2 rounded-lg border transition-all"
                          :class="[
                             isByeMatch(match) ? 'bg-slate-50 border-slate-100 opacity-50' :
-                            match.status === 'played' && match.has_stats
+                            isPlayable(match) || isUpcoming(match)
                                 ? 'bg-white border-slate-200 cursor-pointer hover:border-teal-300 hover:bg-teal-50'
                                 : 'bg-white border-slate-100',
-                            selectedCalendarMatch?.id === match.id ? 'border-teal-400 bg-teal-50 shadow-sm' : '',
+                            (previewMatch ? previewMatch.id === match.id : selectedCalendarMatch?.id === match.id) ? 'border-teal-400 bg-teal-50 shadow-sm' : '',
                             currentWeek && Number(match.week) === Number(currentWeek) ? 'ring-2 ring-amber-300' : ''
                         ]"
-                         @click="!isByeMatch(match) && match.status === 'played' && match.has_stats && emit('open-match-stats', match)">
+                         :title="isUpcoming(match) ? 'Voir l\'avant-match' : undefined"
+                         @click="onRowClick(match)">
 
                         <!-- Tour (Coupe du Monde) ou semaine (ligue) -->
                         <div class="w-8 text-center shrink-0" :title="roundTitle(match)">
@@ -562,7 +621,20 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
             <!-- ============================================ -->
             <!-- STATS MATCH SÉLECTIONNÉ                      -->
             <!-- ============================================ -->
-            <div v-if="selectedCalendarMatch && selectedCalendarMatchStats"
+            <!-- Avant-match (match à venir) -->
+            <div v-if="previewMatch" class="lg:col-span-7">
+                <MatchPreview :match="previewMatch"
+                              :team="calendarTeam"
+                              :teamById="teamById"
+                              :standings="standings"
+                              :allMatches="allMatches"
+                              :myTeamId="myTeamId"
+                              :label="roundTitle(previewMatch)"
+                              @close="previewMatch = null"
+                              @prepare-lineup="emit('change-tab', 'my-team')" />
+            </div>
+
+            <div v-else-if="selectedCalendarMatch && selectedCalendarMatchStats"
                  class="lg:col-span-7 flex flex-col gap-3 max-h-[830px] overflow-y-auto pr-1">
 
                 <!-- Score du match -->
@@ -697,18 +769,22 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                                     :class="logFilter === f.key
                                         ? 'bg-teal-500 text-white border-teal-600'
                                         : 'bg-white text-slate-500 border-slate-200 hover:border-teal-300'">
-                                {{ f.label }}
+                                {{ f.label }} <span class="opacity-70">({{ logFilterCount(f.key) }})</span>
                             </button>
-                            <span class="text-[10px] text-slate-400 ml-1">
-                                {{ filteredLogEvents.length }}/{{ selectedCalendarEvents.length }}
-                            </span>
+                            <button type="button" @click="newestFirst = !newestFirst"
+                                    class="ml-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border border-slate-200 bg-white text-slate-500 hover:border-teal-300"
+                                    title="Inverser l'ordre">
+                                {{ newestFirst ? '↑ Plus récent d\'abord' : '↓ Chronologique' }}
+                            </button>
                         </div>
                     </div>
 
                     <div class="max-h-72 overflow-y-auto space-y-1 pr-1">
                         <div v-for="ev in filteredLogEvents" :key="ev.index"
                              class="flex items-start gap-2 px-2 py-1.5 rounded-lg text-[11px]"
-                             :class="playLogRowClass(ev)">
+                             :class="[playLogRowClass(ev), diceBreakdown(ev) ? 'cursor-pointer hover:ring-1 hover:ring-teal-200' : '']"
+                             :title="diceBreakdown(ev) ? 'Voir le détail des dés' : undefined"
+                             @click="toggleEvent(ev)">
                             <span class="shrink-0 font-mono text-[9px] px-1 py-0.5 rounded bg-white/70 text-slate-500">
                                 T{{ String(ev.turn).padStart(2, '0') }}
                             </span>
@@ -759,6 +835,28 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                                 <div v-else-if="ev.details?.length" class="text-[10px] text-slate-400">
                                     {{ ev.details.join(' · ') }}
                                 </div>
+
+                                <!-- Détail des dés (déplié au clic) -->
+                                <div v-if="expandedEvent === ev.index && diceBreakdown(ev)"
+                                     class="mt-1.5 grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[10px]">
+                                    <div class="rounded-md bg-emerald-50 border border-emerald-100 px-2 py-1">
+                                        <div class="font-bold text-emerald-700">Attaque {{ diceBreakdown(ev).attack.total }}</div>
+                                        <div class="text-emerald-700/80">base {{ diceBreakdown(ev).attack.base }}</div>
+                                        <div v-for="(a, i) in diceBreakdown(ev).attack.additions" :key="i" class="text-emerald-700/80">{{ a }}</div>
+                                        <div v-if="diceBreakdown(ev).attack.tired" class="text-rose-500">{{ diceBreakdown(ev).attack.tired }}</div>
+                                    </div>
+                                    <div class="rounded-md bg-rose-50 border border-rose-100 px-2 py-1">
+                                        <div class="font-bold text-rose-700">Défense {{ diceBreakdown(ev).defense.total }}</div>
+                                        <div class="text-rose-700/80">base {{ diceBreakdown(ev).defense.base }}</div>
+                                        <div v-for="(a, i) in diceBreakdown(ev).defense.additions" :key="i" class="text-rose-700/80">{{ a }}</div>
+                                        <div v-if="diceBreakdown(ev).defense.tired" class="text-rose-500">{{ diceBreakdown(ev).defense.tired }}</div>
+                                    </div>
+                                    <div v-if="diceBreakdown(ev).winner" class="sm:col-span-2 text-slate-500">
+                                        → Avantage {{ diceBreakdown(ev).winner }} de {{ diceBreakdown(ev).diff }}
+                                        <template v-if="diceBreakdown(ev).crit"> · critique ({{ diceBreakdown(ev).crit }})</template>
+                                        <template v-if="diceBreakdown(ev).reroll"> · relance du capitaine</template>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <p v-if="!filteredLogEvents.length" class="text-[11px] text-slate-400 italic text-center py-4">
@@ -779,7 +877,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                 </div>
             </div>
         </div>
-        <div v-if="calendarTeam && selectedCalendarMatch" class="grid grid-cols-1 gap-4">
+        <div v-if="calendarTeam && selectedCalendarMatch && !previewMatch" class="grid grid-cols-1 gap-4">
         <!-- Stats joueurs -->
             <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
                 <div class="flex items-center justify-between mb-3">
@@ -799,81 +897,11 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                         </button>
                     </div>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-xs min-w-max text-left">
-                        <thead class="border-b border-slate-200">
-                        <tr>
-                            <th class="py-1.5 pr-3 text-slate-500 font-semibold">Joueur</th>
-                            <th class="py-1.5 px-2 text-right text-slate-500 font-semibold">Tirs</th>
-                            <th class="py-1.5 px-2 text-right text-slate-500 font-semibold">Passes</th>
-                            <th class="py-1.5 px-2 text-right text-slate-500 font-semibold">Drib.</th>
-                            <th class="py-1.5 px-2 text-right text-slate-500 font-semibold" title="Arrêts réussis (mains, poings, arrêt spécial)">Arrêts</th>
-                            <th class="py-1.5 px-2 text-right text-slate-500 font-semibold">Interc.</th>
-                            <th class="py-1.5 px-2 text-right text-slate-500 font-semibold">Tacles</th>
-                            <th class="py-1.5 px-2 text-right text-slate-500 font-semibold">Blocks</th>
-                            <th class="py-1.5 px-2 text-right text-slate-500 font-semibold">D+</th>
-                            <th class="py-1.5 px-2 text-right text-slate-500 font-semibold">D-</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr v-for="p in matchRoster(selectedStatsTeam)" :key="p.id"
-                            class="border-b border-slate-100 last:border-0 hover:bg-white transition-colors">
-                            <td class="py-1.5 pr-3">
-                                <div class="flex items-center gap-2">
-                                    <div class="w-6 h-6 rounded-full overflow-hidden bg-slate-200 shrink-0">
-                                        <PlayerPhoto :src="playerPhotoUrl(p)" class="w-full h-full object-cover" alt="" />
-                                        <div v-if="!playerPhotoUrl(p)" class="w-full h-full flex items-center justify-center text-[8px] text-slate-400">?</div>
-                                    </div>
-                                    <div>
-                                        <div class="font-medium text-slate-700 truncate max-w-[80px]">{{ p.lastname }}</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <!-- Tirs — masqué pour GK -->
-                            <td class="py-1.5 px-2 text-right font-semibold"
-                                :class="isGK(p) ? 'text-slate-300' : 'text-slate-600'">
-                                {{ isGK(p) ? '—' : playerMatchStat(p.id, 'offense.shot.attempts') }}
-                            </td>
-                            <!-- Passes -->
-                            <td class="py-1.5 px-2 text-right font-semibold text-slate-600">
-                                {{ playerMatchStat(p.id, 'offense.pass.attempts') }}
-                            </td>
-                            <!-- Dribbles — masqué pour GK -->
-                            <td class="py-1.5 px-2 text-right font-semibold"
-                                :class="isGK(p) ? 'text-slate-300' : 'text-slate-600'">
-                                {{ isGK(p) ? '—' : playerMatchStat(p.id, 'offense.dribble.attempts') }}
-                            </td>
-                            <!-- Arrêts — uniquement pour GK, sinon — -->
-                            <td class="py-1.5 px-2 text-right font-semibold"
-                                :class="isGK(p) ? 'text-violet-600' : 'text-slate-300'">
-                                {{ isGK(p) ? playerSaves(p.id) : '—' }}
-                            </td>
-                            <!-- Interceptions — masqué pour GK -->
-                            <td class="py-1.5 px-2 text-right font-semibold"
-                                :class="isGK(p) ? 'text-slate-300' : 'text-slate-600'">
-                                {{ isGK(p) ? '—' : playerMatchStat(p.id, 'defense.intercept.attempts') }}
-                            </td>
-                            <!-- Tacles — masqué pour GK -->
-                            <td class="py-1.5 px-2 text-right font-semibold"
-                                :class="isGK(p) ? 'text-slate-300' : 'text-slate-600'">
-                                {{ isGK(p) ? '—' : playerMatchStat(p.id, 'defense.tackle.attempts') }}
-                            </td>
-                            <!-- Blocks -->
-                            <td class="py-1.5 px-2 text-right font-semibold text-slate-600">
-                                {{ playerMatchStat(p.id, 'defense.block.attempts') }}
-                            </td>
-                            <!-- D+ -->
-                            <td class="py-1.5 px-2 text-right font-bold text-emerald-600">
-                                {{ playerMatchStat(p.id, 'duelsWon') }}
-                            </td>
-                            <!-- D- -->
-                            <td class="py-1.5 px-2 text-right font-bold text-rose-500">
-                                {{ playerMatchStat(p.id, 'duelsLost') }}
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <MatchPlayersTable :players="matchRoster(selectedStatsTeam)"
+                                   :stats="selectedCalendarPlayersStats"
+                                   :starters="selectedCalendarMatchStats?.starters?.[selectedStatsTeam] ?? null"
+                                   :playtime="selectedCalendarMatchStats?.playtime ?? null"
+                                   :motmId="manOfTheMatch?.pid ?? null" />
             </div>
         </div>
         <!-- Aucune équipe -->
