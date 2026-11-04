@@ -119,7 +119,7 @@ class AuthorizationTest extends TestCase
 
         $this->actingAs($admin)->get(route('teams.index'))->assertOk();
         $this->actingAs($admin)->get(route('players.index'))->assertOk();
-        $this->actingAs($admin)->get(route('contracts.create'))->assertOk();
+        $this->actingAs($admin)->get(route('contracts.index'))->assertOk();
     }
 
     public function test_guest_is_redirected_from_reference_data(): void

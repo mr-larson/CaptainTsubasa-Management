@@ -12,7 +12,7 @@
                 :links="[
                     { href: route('players.index'), label: 'Joueurs', active: true },
                     { href: route('teams.index'), label: 'Équipes' },
-                    { href: route('contracts.edit'), label: 'Contrats' },
+                    { href: route('contracts.index'), label: 'Contrats' },
                 ]"
             />
 

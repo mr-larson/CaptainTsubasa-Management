@@ -83,4 +83,33 @@ class ReferenceDataEditorTest extends TestCase
 
         $this->assertSame(1, Contract::where('player_id', $player->id)->count());
     }
+
+    public function test_contract_created_from_contracts_screen_is_opened(): void
+    {
+        $admin = $this->admin();
+        $team = Team::create(['name' => 'Toho', 'budget' => 1000]);
+        $player = Player::create(['firstname' => 'Kojiro', 'lastname' => 'Hyuga', 'age' => 15, 'position' => 'Forward', 'cost' => 80, 'stats' => ['speed' => 60]]);
+
+        $this->actingAs($admin)->get(route('contracts.create'))
+            ->assertRedirect(route('contracts.index', ['create' => 1]));
+
+        $response = $this->actingAs($admin)->post(route('contracts.store'), [
+            'player_id'      => $player->id,
+            'team_id'        => $team->id,
+            'salary'         => 80,
+            'matches_total'  => 12,
+            'matches_played' => 5, // ignoré : un contrat neuf démarre à 0
+            'open_created'   => true,
+        ]);
+
+        $contract = Contract::where('player_id', $player->id)->firstOrFail();
+        $response->assertRedirect(route('contracts.index', ['selected' => $contract->id]));
+        $this->assertSame(0, (int) $contract->matches_played);
+
+        $this->actingAs($admin)->get(route('contracts.index', ['selected' => $contract->id]))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('Contracts/Index')
+                ->where('selectedId', $contract->id)
+                ->where('contracts.0.team_name', 'Toho'));
+    }
 }

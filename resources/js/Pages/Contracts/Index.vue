@@ -1,153 +1,192 @@
 <template>
-    <Head title="Contrats"/>
+    <Head title="Contrats" />
 
     <AuthenticatedLayout>
         <template #header>
-            <H2>Contrats</H2>
+            <H2>Contrats de la base</H2>
         </template>
 
-        <MobileSidebar>
-            <div class="h-full px-3 py-2 overflow-y-auto bg-slate-700">
-                <div class="p-3 mb-3 border-b text-center text-gray-200">
-                    <H2>Equipes</H2>
-                </div>
-                <div class="mb-2">
-                    <form>
-                        <label for="default-search"
-                               class="mb-2 text-sm font-medium text-gray-900 sr-only">Search</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true"
-                                     xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                          stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
-                                </svg>
+        <div class="p-4 sm:p-6 max-w-8xl mx-auto flex flex-col gap-4">
+            <EditorSubNav
+                :back="{ href: route('dataBaseMenu'), label: 'Base de données' }"
+                :links="[
+                    { href: route('players.index'), label: 'Joueurs' },
+                    { href: route('teams.index'), label: 'Équipes' },
+                    { href: route('contracts.index'), label: 'Contrats', active: true },
+                ]"
+            />
+
+            <EntityEditor
+                title="Contrats"
+                :items="contracts"
+                :selected-id="editor.selectedId.value"
+                :creating="editor.creating.value"
+                :search-text="c => `${c.player_name ?? ''} ${c.team_name ?? ''}`"
+                search-placeholder="Joueur ou équipe"
+                empty-label="Aucun contrat trouvé."
+                add-title="Créer un contrat"
+                :tabs="[{ key: 'contract', label: 'Fiche contrat' }]"
+                active-tab="contract"
+                @select="editor.select"
+                @create="editor.startCreating"
+            >
+                <template #item="{ item, selected }">
+                    <TeamLogo :team="{ name: item.team_name, logo_path: item.team_logo_path }" />
+                    <span class="flex-1 min-w-0">
+                        <span class="block truncate text-sm font-medium">{{ item.player_name ?? 'Joueur supprimé' }}</span>
+                        <span class="block truncate text-[11px]" :class="selected ? 'text-white/70' : 'text-slate-400'">
+                            {{ item.team_name ?? 'Équipe supprimée' }}
+                        </span>
+                    </span>
+                </template>
+
+                <template #badges>
+                    <span v-if="!editor.creating.value" class="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                          :class="remaining > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'">
+                        {{ remaining }} match{{ remaining > 1 ? 's' : '' }} restant{{ remaining > 1 ? 's' : '' }}
+                    </span>
+                </template>
+
+                <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-6 shadow-sm">
+                    <form @submit.prevent="submit" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <InputLabel for="player_id" value="Joueur" />
+                                <select id="player_id" v-model="form.player_id" required :class="fieldClass">
+                                    <option disabled value="">Choisir un joueur…</option>
+                                    <option v-for="p in players" :key="p.id" :value="p.id">{{ p.firstname }} {{ p.lastname }}</option>
+                                </select>
+                                <InputError class="mt-1" :message="form.errors.player_id" />
                             </div>
-                            <input type="search" id="default-search" v-model="searchQuery"
-                                   class="block w-full p-1 pl-10 text-sm text-gray-900 border border-gray-300  bg-gray-100 focus:ring-blue-500 focus:border-blue-500 rounded"
-                                   placeholder="Recherche" required>
+                            <div>
+                                <InputLabel for="team_id" value="Équipe" />
+                                <select id="team_id" v-model="form.team_id" required :class="fieldClass">
+                                    <option disabled value="">Choisir une équipe…</option>
+                                    <option v-for="t in teams" :key="t.id" :value="t.id">{{ t.name }}</option>
+                                </select>
+                                <InputError class="mt-1" :message="form.errors.team_id" />
+                            </div>
+                            <div>
+                                <InputLabel for="salary" value="Salaire (€ / match)" />
+                                <input id="salary" type="number" min="0" v-model="form.salary" :class="fieldClass" />
+                                <InputError class="mt-1" :message="form.errors.salary" />
+                            </div>
+                            <div>
+                                <InputLabel for="matches_total" value="Durée (matchs)" />
+                                <input id="matches_total" type="number" min="1" v-model="form.matches_total" :class="fieldClass" />
+                                <InputError class="mt-1" :message="form.errors.matches_total" />
+                            </div>
+                            <div>
+                                <InputLabel for="matches_played" value="Matchs joués" />
+                                <!-- Un nouveau contrat démarre toujours à 0 match joué (forcé côté serveur). -->
+                                <input id="matches_played" type="number" min="0" v-model="form.matches_played"
+                                       :disabled="editor.creating.value"
+                                       :class="[fieldClass, editor.creating.value ? 'bg-slate-100 text-slate-500' : '']" />
+                                <InputError class="mt-1" :message="form.errors.matches_played" />
+                            </div>
+                            <div>
+                                <InputLabel value="Matchs restants" />
+                                <input type="number" :value="remaining" disabled :class="[fieldClass, 'bg-slate-100 text-slate-500']" />
+                            </div>
                         </div>
+
+                        <ButtonGroup>
+                            <ButtonPrimary :disabled="form.processing">
+                                {{ editor.creating.value ? 'Créer le contrat' : 'Mettre à jour' }}
+                            </ButtonPrimary>
+                            <ButtonDanger v-if="!editor.creating.value" type="button" class="w-36"
+                                          :disabled="form.processing || !form.id" @click="deleteContract">
+                                Supprimer
+                            </ButtonDanger>
+                        </ButtonGroup>
                     </form>
                 </div>
-                <ul class="space-y-1 font-medium">
-                    <li v-for="team in filteredTeams" :key="team.id" @click="selectTeam(team)">
-                        <a href="#"
-                           :class="{'bg-slate-500': form.selectedTeamId === team.id}"
-                           class="flex items-center p-1 text-gray-100 transition duration-75 rounded-lg hover:bg-slate-500">
-                            <span class="ml-3">{{ team.name }}</span>
-                        </a>
-                    </li>
-                </ul>
-                <ul class="pt-3 mt-2 space-y-1 font-medium border-t border-gray-200">
-                    <li class="pt-2 flex">
-                        <Link :href="route('dataBaseMenu')"
-                              class="bg-slate-500 hover:bg-slate-600 border border-slate-300 shadow-gray-100 text-white p-1 w-full rounded text-center">
-                            Retour
-                        </Link>
-                    </li>
-                </ul>
-            </div>
-        </MobileSidebar>
-
-        <div class="p-4 sm:ml-64">
-            <div class="flex justify-center">
-                <h1 class="text-3xl font-bold text-slate-600 mb-4">Liste des équipes</h1>
-            </div>
-            <div class="p-4 border border-slate-300 rounded-lg md:mx-6 bg-white">
-                <form @submit.prevent="submit" enctype="multipart/form-data">
-                    <div class="flex flex-col md:grid lg:grid-cols-2 gap-4 text-slate-700">
-
-                        <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label class="text-sm font-semibold text-slate-600 w-1/3 text-right mb-1 md:mb-0 pr-4">Nom : </label>
-                            <span class="text-gray-900">{{ form.name }}</span>
-                        </div>
-
-                        <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label class="text-sm font-semibold text-slate-600 w-1/3 text-right mb-1 md:mb-0 pr-4">Victoire(s) : </label>
-                            <span class="text-gray-900">{{ form.wins }}</span>
-                        </div>
-
-                        <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label for="points" class="text-sm font-semibold text-slate-600 w-1/3 text-right mb-1 md:mb-0 pr-4">Points : </label>
-                            <span class="text-gray-900">{{ form.points }}</span>
-                        </div>
-
-                        <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label for="losses" class="text-sm font-semibold text-slate-600 w-1/3 text-right mb-1 md:mb-0 pr-4">Défaite(s) : </label>
-                            <span class="text-gray-900">{{ form.losses }}</span>
-                        </div>
-
-                        <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label for="budget" class="text-sm font-semibold text-slate-600 w-1/3 text-right mb-1 md:mb-0 pr-4">Budget</label>
-                            <span class="text-gray-900">{{ form.budget }}</span>
-                        </div>
-
-                        <div class="flex items-center m-3 gap-4 md:gap-0">
-                            <label class="text-sm font-semibold text-slate-600 w-1/3 text-right mb-1 md:mb-0 pr-4">Matchs
-                                nul(s) : </label>
-                            <span class="text-gray-900">{{ form.draws }}</span>
-                        </div>
-                    </div>
-                </form>
-            </div>
+            </EntityEditor>
         </div>
     </AuthenticatedLayout>
 </template>
 
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import {Head, Link} from '@inertiajs/vue3';
-import {ref, defineProps, reactive, onMounted, computed} from 'vue';
+import { Head, useForm } from '@inertiajs/vue3';
+import { confirmDialog } from '@/Composables/useDialog.js';
+import { computed } from 'vue';
 
-//Component
 import H2 from '@/Components/H2.vue';
-import MobileSidebar from '@/Components/MobileSidebar.vue';
+import EntityEditor from '@/Components/EntityEditor.vue';
+import EditorSubNav from '@/Components/EditorSubNav.vue';
+import TeamLogo from '@/Components/TeamLogo.vue';
+import InputLabel from '@/Components/InputLabel.vue';
+import InputError from '@/Components/InputError.vue';
+import ButtonGroup from '@/Components/ButtonGroup.vue';
+import ButtonPrimary from '@/Components/ButtonPrimary.vue';
+import ButtonDanger from '@/Components/ButtonDanger.vue';
+import { useEntityEditor, clone } from '@/Composables/useEntityEditor.js';
 
-
-// Propriétés du composant
 const props = defineProps({
-    teams: {
-        type: Array,
-        required: true
-    }
+    contracts: { type: Array, required: true },
+    teams: { type: Array, required: true },
+    players: { type: Array, required: true },
+    // Contrat à sélectionner à l'ouverture (ex. juste après sa création).
+    selectedId: { type: Number, default: null },
+    // Ouvre directement une fiche vide (ancienne URL /contracts/create).
+    startCreate: { type: Boolean, default: false },
 });
 
-// Réactif pour le formulaire d'édition
-const form = reactive({
-    selectedTeamId: null,
-    id: '',
-    name: '',
-    budget: '',
-    points: '',
-    wins: '',
-    draws: '',
-    losses: '',
+const BLANK = {
+    id: null,
+    player_id: '',
+    team_id: '',
+    salary: '',
+    matches_total: 10,
+    matches_played: 0,
+};
+
+const form = useForm(clone(BLANK));
+const fieldClass = 'mt-1 block w-full text-sm text-slate-900 bg-white border border-slate-300 rounded-full px-3 py-1.5 focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200';
+
+const remaining = computed(() => Math.max(0, Number(form.matches_total || 0) - Number(form.matches_played || 0)));
+
+const editor = useEntityEditor({
+    form,
+    items: () => props.contracts,
+    blank: BLANK,
+    entityLabel: 'Le nouveau contrat',
+    initial: () => ({ selectedId: props.selectedId, startCreate: props.startCreate }),
+    apply(contract) {
+        Object.assign(form, {
+            id: contract.id,
+            player_id: contract.player_id ?? '',
+            team_id: contract.team_id ?? '',
+            salary: contract.salary ?? '',
+            matches_total: contract.matches_total ?? 1,
+            matches_played: contract.matches_played ?? 0,
+        });
+    },
 });
 
-// Sélectionner une équipe dès le chargement si des équipes existent
-onMounted(() => {
-    if (props.teams.length > 0) {
-        selectTeam(props.teams[0]);
-    }
-});
+function submit() {
+    const creating = editor.creating.value;
+    if (!creating && !form.id) return;
 
-// Réactif pour la barre de recherche
-const searchQuery = ref("");
+    // open_created : le serveur renvoie sur cet écran avec le contrat créé sélectionné
+    // (depuis la fiche joueur, il revient simplement à la page d'origine).
+    form.transform(({ id: _id, ...data }) => (creating ? { ...data, open_created: true } : data)).post(
+        creating ? route('contracts.store') : route('contracts.update', form.id),
+        {
+            preserveScroll: true,
+            onSuccess: () => editor.reload(creating ? props.selectedId : form.id),
+        },
+    );
+}
 
-const filteredTeams = computed(() => {
-    if (!searchQuery.value) return props.teams;
-    return props.teams.filter(team => team.name.toLowerCase().includes(searchQuery.value.toLowerCase()));
-});
+async function deleteContract() {
+    if (!form.id) return;
+    if (!(await confirmDialog({ title: 'Supprimer le contrat', message: 'Voulez-vous vraiment supprimer ce contrat ?', confirmLabel: 'Supprimer', danger: true }))) return;
 
-function selectTeam(team) {
-    form.id = team.id;
-    form.name = team.name;
-    form.budget = team.budget;
-    form.points = team.points;
-    form.wins = team.wins;
-    form.draws = team.draws;
-    form.losses = team.losses;
-    form.selectedTeamId = team.id;
+    form.delete(route('contracts.destroy', form.id), {
+        preserveScroll: true,
+        onSuccess: () => editor.afterDelete(),
+    });
 }
 </script>
-

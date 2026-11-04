@@ -10,7 +10,7 @@ const sections = [
     { label: 'Mon profil',  desc: 'Modifier mes informations',     icon: '👤', route: 'profile.edit',   admin: false, color: 'border-slate-200 hover:border-teal-300 hover:bg-teal-50' },
     { label: 'Joueurs',     desc: 'Gérer les joueurs de la DB',    icon: '⚽', route: 'players.index',   admin: true,  color: 'border-slate-200 hover:border-teal-300 hover:bg-teal-50' },
     { label: 'Équipes',     desc: 'Gérer les équipes de la DB',    icon: '🏟️', route: 'teams.index',     admin: true,  color: 'border-slate-200 hover:border-teal-300 hover:bg-teal-50' },
-    { label: 'Contrats',    desc: 'Gérer les contrats de la DB',   icon: '📋', route: 'contracts.edit', admin: true,  color: 'border-slate-200 hover:border-teal-300 hover:bg-teal-50' },
+    { label: 'Contrats',    desc: 'Gérer les contrats de la DB',   icon: '📋', route: 'contracts.index', admin: true,  color: 'border-slate-200 hover:border-teal-300 hover:bg-teal-50' },
 ];
 
 // Les sections d'administration ne sont visibles que pour les admins.
