@@ -24,8 +24,8 @@ const POSITION_LABELS = { Goalkeeper: 'Gardien', Defender: 'Défenseur', Midfiel
 const positionLabel = (position) => POSITION_LABELS[position] ?? position;
 
 // Boutons réutilisés sur la page. Zones tactiles d'au moins 44 px de haut.
-const btnPrimary   = 'inline-flex min-h-[44px] items-center justify-center rounded-full bg-teal-500 px-6 text-sm font-bold text-slate-900 transition-colors hover:bg-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900';
-const btnSecondary = 'inline-flex min-h-[44px] items-center justify-center rounded-full border border-white/15 bg-white/5 px-6 text-sm font-medium text-slate-100 transition-colors hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-300';
+const btnPrimary   = 'inline-flex min-h-[44px] items-center justify-center rounded-full bg-teal-500 px-6 text-sm font-bold text-slate-900 transition-colors hover:bg-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 neon-btn';
+const btnSecondary = 'inline-flex min-h-[44px] items-center justify-center rounded-full border border-white/15 bg-white/5 px-6 text-sm font-medium text-slate-100 transition-colors hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-300 neon-btn neon-btn--ghost';
 
 const steps = [
     { n: 1, title: 'Prépare ton équipe',      desc: "Recrute, entraîne et compose ton effectif en tenant compte du budget et de l'endurance de tes joueurs." },
@@ -54,13 +54,13 @@ const faq = [
 <template>
     <Head title="Golden Eleven — jeu de gestion de football au tour par tour" />
 
-    <div class="min-h-screen bg-slate-900 text-[15px] leading-relaxed text-slate-100">
+    <div class="min-h-screen overflow-x-clip bg-slate-900 text-[15px] leading-relaxed text-slate-100">
 
         <!-- NAV : marque et action principale sur une seule ligne, même sur mobile -->
         <nav class="sticky top-0 z-50 flex items-center justify-between gap-3 border-b border-white/5 bg-slate-900/90 px-4 py-3 backdrop-blur md:px-10 md:py-4">
             <Link :href="route('welcome')" class="flex items-baseline gap-1.5 text-[17px]">
                 <span class="font-bold text-slate-100">Golden</span>
-                <span class="text-teal-300">Eleven</span>
+                <span class="neon-text text-teal-300">Eleven</span>
             </Link>
             <div class="flex items-center gap-2 sm:gap-4" v-if="canLogin">
                 <Link v-if="$page.props.auth?.user" :href="route('mainMenu')" :class="btnPrimary">Menu principal</Link>
@@ -83,7 +83,7 @@ const faq = [
                 </div>
                 <h1 v-pixel-reveal class="mb-5 text-[clamp(2rem,4vw,3rem)] font-extrabold leading-tight text-slate-50">
                     Ton équipe. Tes décisions.<br>
-                    <span class="text-teal-300">Un jeu de gestion de football au tour par tour.</span>
+                    <span class="neon-text text-teal-300">Un jeu de gestion de football au tour par tour.</span>
                 </h1>
                 <p v-pixel-reveal class="mb-6 max-w-[560px] text-base leading-7 text-slate-300">
                     Golden Eleven est un jeu sur navigateur inspiré de l'univers Captain Tsubasa.
@@ -91,7 +91,7 @@ const faq = [
                     Dispute une Ligue ou une Coupe du Monde, seul face à l'IA ou à plusieurs en local, à tour de rôle.
                 </p>
                 <div v-pixel-reveal class="mb-6 flex flex-wrap gap-3">
-                    <Link v-if="canRegister && !$page.props.auth?.user" :href="route('register')" :class="btnPrimary">Créer mon compte gratuit</Link>
+                    <Link v-if="canRegister && !$page.props.auth?.user" :href="route('register')" :class="[btnPrimary, 'neon-breathe']">Créer mon compte gratuit</Link>
                     <Link v-else-if="$page.props.auth?.user" :href="route('mainMenu')" :class="btnPrimary">Aller au menu principal</Link>
                     <a href="#deroulement" :class="btnSecondary">Voir comment se joue un match</a>
                 </div>
@@ -106,7 +106,7 @@ const faq = [
             </div>
 
             <!-- Visuel : une vraie capture de match si elle existe, sinon le personnage (décoratif) -->
-            <figure v-if="screenshots.match" v-pixel-reveal class="overflow-hidden rounded-2xl border border-white/10 bg-slate-800 shadow-2xl">
+            <figure v-if="screenshots.match" v-pixel-reveal class="neon-screen overflow-hidden rounded-2xl border border-white/10 bg-slate-800 shadow-2xl">
                 <img :src="screenshots.match"
                      alt="Écran de match : terrain, cartes d'action (tir, passe, dribble, centre) et détail d'un duel avec les jets de dés"
                      class="block w-full" width="1690" height="994" />
@@ -120,18 +120,18 @@ const faq = [
         </section>
 
         <!-- 2. DÉROULEMENT D'UNE PARTIE -->
-        <section id="deroulement" class="mx-auto max-w-[1200px] scroll-mt-20 border-t border-white/5 px-4 py-12 md:px-10 md:py-16">
-            <h2 v-pixel-reveal class="mb-2 text-2xl font-bold text-slate-50">Comment se déroule une partie</h2>
+        <section id="deroulement" class="mx-auto max-w-[1200px] scroll-mt-20 led-divider px-4 py-12 md:px-10 md:py-16">
+            <h2 v-pixel-reveal class="neon-title mb-2 text-2xl font-bold text-slate-50">Comment se déroule une partie</h2>
             <p v-pixel-reveal class="mb-8 max-w-[640px] text-slate-300">Chaque semaine de jeu suit la même boucle : préparer, jouer, s'adapter.</p>
             <ol class="grid gap-4 md:grid-cols-3">
-                <li v-for="s in steps" :key="s.n" v-pixel-reveal class="rounded-xl border border-white/10 bg-white/5 p-6">
-                    <div class="mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-teal-500 text-sm font-black text-slate-900">{{ s.n }}</div>
+                <li v-for="s in steps" :key="s.n" v-pixel-reveal class="neon-card rounded-xl border border-white/10 bg-white/5 p-6">
+                    <div class="mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-teal-500 text-sm font-black text-slate-900 neon-dot">{{ s.n }}</div>
                     <h3 class="mb-1.5 text-base font-semibold text-slate-50">{{ s.title }}</h3>
                     <p class="text-sm leading-6 text-slate-300">{{ s.desc }}</p>
                 </li>
             </ol>
 
-            <figure v-if="screenshots.dashboard" v-pixel-reveal class="mt-8 overflow-hidden rounded-2xl border border-white/10 bg-slate-800 shadow-2xl">
+            <figure v-if="screenshots.dashboard" v-pixel-reveal class="neon-screen mt-8 overflow-hidden rounded-2xl border border-white/10 bg-slate-800 shadow-2xl">
                 <img :src="screenshots.dashboard"
                      alt="Tableau de bord d'une partie : classement, bilan, budget, effectif et prochain adversaire"
                      class="block w-full" width="1692" height="880" loading="lazy" decoding="async" />
@@ -142,10 +142,10 @@ const faq = [
         </section>
 
         <!-- 3. CHOISIR SON EXPÉRIENCE -->
-        <section class="mx-auto max-w-[1200px] border-t border-white/5 px-4 py-12 md:px-10 md:py-16">
-            <h2 v-pixel-reveal class="mb-8 text-2xl font-bold text-slate-50">Deux compétitions</h2>
+        <section class="mx-auto max-w-[1200px] led-divider px-4 py-12 md:px-10 md:py-16">
+            <h2 v-pixel-reveal class="neon-title mb-8 text-2xl font-bold text-slate-50">Deux compétitions</h2>
             <div class="grid gap-4 md:grid-cols-2">
-                <div v-for="m in modes" :key="m.title" v-pixel-reveal class="rounded-xl border border-white/10 bg-white/5 p-6">
+                <div v-for="m in modes" :key="m.title" v-pixel-reveal class="neon-card rounded-xl border border-white/10 bg-white/5 p-6">
                     <h3 class="mb-1.5 text-lg font-semibold text-teal-300">{{ m.title }}</h3>
                     <p class="text-sm leading-6 text-slate-300">{{ m.desc }}</p>
                 </div>
@@ -159,8 +159,8 @@ const faq = [
         </section>
 
         <!-- 4. RETROUVER L'UNIVERS (aperçu court) -->
-        <section class="mx-auto max-w-[1200px] border-t border-white/5 px-4 py-12 md:px-10 md:py-16" v-if="featuredTeams.length || featuredPlayers.length">
-            <h2 v-pixel-reveal class="mb-2 text-2xl font-bold text-slate-50">L'univers Captain Tsubasa</h2>
+        <section class="mx-auto max-w-[1200px] led-divider px-4 py-12 md:px-10 md:py-16" v-if="featuredTeams.length || featuredPlayers.length">
+            <h2 v-pixel-reveal class="neon-title mb-2 text-2xl font-bold text-slate-50">L'univers Captain Tsubasa</h2>
             <p v-pixel-reveal class="mb-8 text-slate-300">
                 {{ teams.length }} équipes et {{ playerCount ?? players.length }} joueurs à recruter. Quelques exemples :
             </p>
@@ -176,7 +176,7 @@ const faq = [
             </ul>
 
             <ul v-if="featuredPlayers.length" class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6" aria-label="Joueurs">
-                <li v-for="p in featuredPlayers" :key="p.id" v-pixel-reveal class="overflow-hidden rounded-xl border border-white/10 bg-white/5">
+                <li v-for="p in featuredPlayers" :key="p.id" v-pixel-reveal class="neon-card overflow-hidden rounded-xl border border-white/10 bg-white/5">
                     <PlayerPhoto :src="`/storage/${p.photo_path}`" :alt="`${p.firstname} ${p.lastname}`" class="block aspect-square w-full object-cover object-top" />
                     <div class="px-3 py-2">
                         <div class="text-sm font-semibold text-slate-100">{{ p.firstname }} {{ p.lastname }}</div>
@@ -187,13 +187,13 @@ const faq = [
         </section>
 
         <!-- 5. QUESTIONS AVANT L'INSCRIPTION -->
-        <section class="mx-auto max-w-[1200px] border-t border-white/5 px-4 py-12 md:px-10 md:py-16">
-            <h2 v-pixel-reveal class="mb-2 text-2xl font-bold text-slate-50">Questions fréquentes</h2>
+        <section class="mx-auto max-w-[1200px] led-divider px-4 py-12 md:px-10 md:py-16">
+            <h2 v-pixel-reveal class="neon-title mb-2 text-2xl font-bold text-slate-50">Questions fréquentes</h2>
             <p v-pixel-reveal class="mb-8 text-slate-300">
                 Pour le détail des règles, lis le <Link :href="route('guide')" class="text-teal-300 underline hover:text-teal-200">guide « Comment jouer »</Link>.
             </p>
             <div class="grid gap-3 md:grid-cols-2">
-                <details v-for="item in faq" :key="item.q" v-pixel-reveal class="group rounded-xl border border-white/10 bg-white/5 px-5 py-4">
+                <details v-for="item in faq" :key="item.q" v-pixel-reveal class="neon-card group rounded-xl border border-white/10 bg-white/5 px-5 py-4">
                     <summary class="flex cursor-pointer list-none items-center justify-between gap-3 font-semibold text-slate-100 [&::-webkit-details-marker]:hidden">
                         {{ item.q }}
                         <span class="text-teal-300 transition-transform group-open:rotate-45" aria-hidden="true">+</span>
@@ -204,9 +204,9 @@ const faq = [
         </section>
 
         <!-- 6. INVITATION FINALE -->
-        <section class="mx-auto max-w-[1200px] border-t border-white/5 px-4 py-12 md:px-10 md:py-16">
-            <div v-pixel-reveal class="rounded-2xl border border-teal-300/20 bg-gradient-to-br from-teal-500/10 to-slate-900/80 px-6 py-8 text-center md:p-12">
-                <h2 class="mb-3 text-[26px] font-bold text-slate-50">Prêt à commencer ?</h2>
+        <section class="mx-auto max-w-[1200px] led-divider px-4 py-12 md:px-10 md:py-16">
+            <div v-pixel-reveal class="neon-card neon-card--lit rounded-2xl border border-teal-300/20 bg-gradient-to-br from-teal-500/10 to-slate-900/80 px-6 py-8 text-center md:p-12">
+                <h2 class="neon-title mb-3 text-[26px] font-bold text-slate-50">Prêt à commencer ?</h2>
                 <p class="mb-8 text-[15px] text-slate-300">Crée ton compte, puis lance ta première partie depuis le menu principal.</p>
                 <div class="flex flex-wrap justify-center gap-3">
                     <Link v-if="canRegister && !$page.props.auth?.user" :href="route('register')" :class="btnPrimary">Créer mon compte gratuit</Link>
@@ -232,3 +232,203 @@ const faq = [
         </footer>
     </div>
 </template>
+
+<style scoped>
+/*
+ * Touche néon rétro-futuriste, volontairement discrète : la page reste sombre,
+ * la lumière souligne les éléments interactifs et les séparations.
+ * Les segments lumineux avancent par crans (steps) comme une rampe LED, en écho
+ * à l'apparition pixelisée. Glows en box-/text-shadow statiques ; les seules
+ * animations continues portent sur opacity/transform (compositeur).
+ */
+@property --neon-a {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 0deg;
+}
+
+.neon-text {
+    text-shadow: 0 0 6px rgb(94 234 212 / 0.35), 0 0 22px rgb(45 212 191 / 0.18);
+}
+
+.neon-title {
+    text-shadow: 0 0 18px rgb(94 234 212 / 0.12);
+}
+/* « Allumage » du néon quand le titre finit de se dépixeliser. */
+.neon-title[data-pxr='done'] {
+    animation: neon-power-on 0.9s steps(1, end) both;
+}
+@keyframes neon-power-on {
+    0%   { text-shadow: 0 0 18px rgb(94 234 212 / 0.12); }
+    12%  { text-shadow: 0 0 6px rgb(94 234 212 / 0.55), 0 0 26px rgb(45 212 191 / 0.35); }
+    24%  { text-shadow: none; }
+    38%  { text-shadow: 0 0 6px rgb(94 234 212 / 0.5), 0 0 26px rgb(45 212 191 / 0.3); }
+    50%  { text-shadow: 0 0 4px rgb(94 234 212 / 0.2); }
+    64%  { text-shadow: 0 0 6px rgb(94 234 212 / 0.45), 0 0 30px rgb(45 212 191 / 0.28); }
+    100% { text-shadow: 0 0 18px rgb(94 234 212 / 0.12); }
+}
+
+/* ---------- Boutons : halo + segment LED qui fait le tour au survol ---------- */
+.neon-btn {
+    position: relative;
+    isolation: isolate;
+}
+.neon-btn::before,
+.neon-btn::after,
+.neon-card::before,
+.neon-card::after {
+    content: '';
+    position: absolute;
+    border-radius: inherit;
+    pointer-events: none;
+}
+/* Halo : box-shadow figé, seule son opacité varie. */
+.neon-btn::after {
+    inset: 0;
+    z-index: -1;
+    box-shadow: 0 0 10px rgb(45 212 191 / 0.55), 0 0 32px rgb(45 212 191 / 0.3);
+    opacity: 0.35;
+    transition: opacity 0.3s ease;
+}
+.neon-btn--ghost::after {
+    box-shadow: 0 0 8px rgb(45 212 191 / 0.35), inset 0 0 10px rgb(45 212 191 / 0.15);
+    opacity: 0;
+}
+/* Anneau lumineux : un segment conique masqué en bordure, qui tourne par crans. */
+.neon-btn::before,
+.neon-card::before {
+    inset: -1px;
+    padding: 1.5px;
+    background: conic-gradient(from var(--neon-a), transparent 0 62%, rgb(45 212 191 / 0.9) 78%, #e6fffb 84%, transparent 90%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.neon-btn:hover::after,
+.neon-btn:focus-visible::after {
+    opacity: 1;
+}
+.neon-btn:hover::before,
+.neon-btn:focus-visible::before {
+    opacity: 1;
+    animation: neon-chase 1.8s steps(36) infinite;
+}
+.neon-btn--ghost:hover,
+.neon-btn--ghost:focus-visible {
+    border-color: rgb(94 234 212 / 0.45);
+    color: rgb(204 251 241);
+}
+/* Bouton plein : l'anneau est décollé d'1 px pour se détacher du fond teal. */
+.neon-btn:not(.neon-btn--ghost)::before {
+    inset: -3.5px;
+    padding: 2px;
+}
+@keyframes neon-chase {
+    to { --neon-a: 360deg; }
+}
+
+/* CTA principal : respiration lente du halo. */
+.neon-breathe::after {
+    animation: neon-breathe 3.6s ease-in-out infinite;
+}
+/* Au survol, le halo passe à pleine intensité (l'animation l'emporterait sinon). */
+.neon-breathe:hover::after,
+.neon-breathe:focus-visible::after {
+    animation: none;
+}
+@keyframes neon-breathe {
+    0%, 100% { opacity: 0.3; }
+    50%      { opacity: 0.8; }
+}
+
+/* ---------- Cartes : bordure qui s'allume au survol ---------- */
+.neon-card {
+    position: relative;
+}
+.neon-card::before {
+    background: conic-gradient(from var(--neon-a), transparent 0 70%, rgb(45 212 191 / 0.7) 84%, rgb(204 251 241 / 0.9) 88%, transparent 93%);
+}
+.neon-card::after {
+    inset: 0;
+    box-shadow: inset 0 0 0 1px rgb(94 234 212 / 0.28), inset 0 0 24px rgb(45 212 191 / 0.08);
+    opacity: 0;
+    transition: opacity 0.35s ease;
+}
+.neon-card:hover::after,
+.neon-card:focus-within::after,
+.neon-card--lit::after {
+    opacity: 1;
+}
+.neon-card:hover::before {
+    opacity: 1;
+    animation: neon-chase 3.2s steps(48) infinite;
+}
+/* Bloc d'invitation finale : déjà « allumé », le segment tourne lentement en permanence. */
+.neon-card--lit::before {
+    opacity: 0.55;
+    animation: neon-chase 9s steps(72) infinite;
+}
+
+/* ---------- Captures : rétroéclairage d'écran ---------- */
+.neon-screen {
+    box-shadow: 0 0 0 1px rgb(94 234 212 / 0.12), 0 0 40px rgb(45 212 191 / 0.1), 0 25px 50px -12px rgb(0 0 0 / 0.6);
+}
+
+.neon-dot {
+    box-shadow: 0 0 10px rgb(45 212 191 / 0.55), 0 0 2px rgb(204 251 241 / 0.8);
+}
+
+/* ---------- Séparateurs : rampe LED avec un point lumineux qui la parcourt ---------- */
+.led-divider {
+    position: relative;
+}
+.led-divider::before,
+.led-divider::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    height: 1px;
+    pointer-events: none;
+}
+.led-divider::before {
+    left: 0;
+    right: 0;
+    background: linear-gradient(90deg, transparent, rgb(94 234 212 / 0.28) 30%, rgb(94 234 212 / 0.28) 70%, transparent);
+    box-shadow: 0 0 8px rgb(45 212 191 / 0.25);
+}
+.led-divider::after {
+    left: 0;
+    width: 90px;
+    background: linear-gradient(90deg, transparent, rgb(204 251 241 / 0.85), transparent);
+    box-shadow: 0 0 10px rgb(45 212 191 / 0.6);
+    opacity: 0;
+    animation: led-sweep 9s steps(60) infinite;
+}
+.led-divider:nth-of-type(odd)::after {
+    animation-delay: -4.5s;
+}
+@keyframes led-sweep {
+    0%   { transform: translateX(-90px); opacity: 0; }
+    4%   { opacity: 0.7; }
+    36%  { opacity: 0.7; }
+    40%  { transform: translateX(min(1200px, 100vw)); opacity: 0; }
+    100% { transform: translateX(min(1200px, 100vw)); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .neon-title[data-pxr='done'],
+    .neon-breathe::after,
+    .led-divider::after,
+    .neon-btn:hover::before,
+    .neon-btn:focus-visible::before,
+    .neon-card:hover::before,
+    .neon-card--lit::before {
+        animation: none;
+    }
+    .led-divider::after {
+        display: none;
+    }
+}
+</style>
