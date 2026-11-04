@@ -144,6 +144,8 @@ Route::middleware('auth')->group(function () {
             [GameMatchController::class, 'match'])->name('match');
         Route::get('/{gameSave}/matches/{match}/stats',
             [GameMatchController::class, 'stats'])->name('matches.stats');
+        Route::get('/{gameSave}/weeks/{week}/leaders',
+            [GameMatchController::class, 'weekLeaders'])->whereNumber('week')->name('weeks.leaders');
         Route::post('/{gameSave}/matches/{match}/finish',
             [GameMatchController::class, 'finishMatch'])->name('matches.finish');
         Route::post('/{gameSave}/simulate-week',

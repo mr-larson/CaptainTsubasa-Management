@@ -182,6 +182,17 @@ class GameMatchController extends Controller
     }
 
     /**
+     * Classements d'une journée (onglet Calendrier) : hommes du match,
+     * buteurs, passeurs, dribbleurs, gardiens, défenseurs, duels.
+     */
+    public function weekLeaders(GameSave $gameSave, int $week): JsonResponse
+    {
+        $this->authorizeGameSave('view', $gameSave);
+
+        return response()->json(app(\App\Services\WeekLeadersService::class)->forWeek($gameSave, $week));
+    }
+
+    /**
      * Finalise un match joué manuellement.
      */
     public function finishMatch(Request $request, GameSave $gameSave, GameMatch $match): RedirectResponse

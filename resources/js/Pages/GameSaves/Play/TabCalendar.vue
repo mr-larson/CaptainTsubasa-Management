@@ -1,5 +1,7 @@
 <script setup>
 import { computed, ref, watch, nextTick } from 'vue';
+import axios from 'axios';
+import PlayerPhoto from '@/Components/PlayerPhoto.vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
 import MatchPreview from './components/MatchPreview.vue';
 
@@ -23,11 +25,12 @@ const props = defineProps({
     // Match dont le détail est en cours de chargement / dernier ouvert
     loadingMatchId:      { type: [Number, String], default: null },
     selectedMatchId:     { type: [Number, String], default: null },
+    gameSaveId:          { type: [Number, String], required: true },
 });
 
 const emit = defineEmits(['select-team', 'open-match', 'change-tab']);
 
-const { teamLogoUrl } = usePlayerUtils();
+const { teamLogoUrl, playerPhotoUrl } = usePlayerUtils();
 
 // ==========================
 //   HELPERS
@@ -111,6 +114,53 @@ const journeeRest = computed(() => {
 });
 
 const isMine = (m) => props.myTeamId && [m.home_team_id, m.away_team_id].map(Number).includes(Number(props.myTeamId));
+
+// ==========================
+//   CLASSEMENTS DE LA JOURNÉE (chargés à la demande, par semaine)
+// ==========================
+const LEADER_TABS = [
+    { key: 'motm',      label: '⭐ Hommes du match', unit: () => 'pts de note' },
+    { key: 'scorers',   label: '⚽ Buteurs',         unit: (v) => (v > 1 ? 'buts' : 'but') },
+    { key: 'passers',   label: '🎯 Passeurs',        unit: (v) => (v > 1 ? 'passes' : 'passe') },
+    { key: 'dribblers', label: '🌀 Dribbleurs',      unit: (v) => (v > 1 ? 'dribbles' : 'dribble') },
+    { key: 'keepers',   label: '🧤 Arrêts',          unit: (v) => (v > 1 ? 'arrêts' : 'arrêt') },
+    { key: 'defenders', label: '🛡️ Défenseurs',      unit: (v) => (v > 1 ? 'ballons gagnés' : 'ballon gagné') },
+    { key: 'duels',     label: '⚔️ Duels',           unit: (v) => (v > 1 ? 'duels gagnés' : 'duel gagné') },
+    // Cartons et blessures de la semaine (les fautes ne sont pas conservées joueur par joueur)
+    { key: 'fouls',     label: '🟨 Fautes',          unit: () => '' },
+];
+const leaderTab = ref('motm');
+const leadersCache = ref({});
+const leadersLoading = ref(false);
+
+// La clé change quand un match de la semaine est joué : le classement est rechargé.
+const leadersKey = computed(() => {
+    const played = journeeMatches.value.filter(m => m.status === 'played').length;
+    return `${journeeWeek.value}-${played}`;
+});
+const leaders = computed(() => leadersCache.value[leadersKey.value] ?? null);
+const leaderRows = computed(() => leaders.value?.categories?.[leaderTab.value] ?? []);
+const leaderUnit = (v) => LEADER_TABS.find(t => t.key === leaderTab.value)?.unit(v) ?? '';
+
+watch(leadersKey, async (key) => {
+    const played = journeeMatches.value.some(m => m.status === 'played');
+    if (!played || leadersCache.value[key]) return;
+    leadersLoading.value = true;
+    try {
+        const { data } = await axios.get(route('game-saves.weeks.leaders', { gameSave: props.gameSaveId, week: journeeWeek.value }));
+        leadersCache.value = { ...leadersCache.value, [key]: data };
+    } catch {
+        // Classements indisponibles : la carte affiche simplement « aucun »
+    } finally {
+        leadersLoading.value = false;
+    }
+}, { immediate: true });
+
+const MEDALS = ['🥇', '🥈', '🥉'];
+const openLeaderMatch = (row) => {
+    const match = props.allMatches.find(m => m.id === row.match_id);
+    if (match) openRow(match, props.teamById[match.home_team_id]);
+};
 
 // ==========================
 //   SEMAINE EN COURS DANS LA LISTE
@@ -294,6 +344,57 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
 
                     <p v-if="journeeMatches.length && journeeRest.length && !journeeMatches.some(m => m.round)" class="mt-3 text-[11px] text-slate-400">
                         Au repos : {{ journeeRest.map(t => t.name).join(', ') }}
+                    </p>
+                </div>
+
+                <!-- Classements de la journée -->
+                <div v-if="!preview && journeeMatches.some(m => m.status === 'played')"
+                     class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+                    <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                        Classements de la semaine {{ journeeWeek }}
+                    </h4>
+                    <div class="flex flex-wrap gap-1 border-b border-slate-200 mb-3" role="tablist">
+                        <button v-for="t in LEADER_TABS" :key="t.key" type="button" role="tab"
+                                :aria-selected="leaderTab === t.key"
+                                @click="leaderTab = t.key"
+                                class="px-2.5 py-1.5 text-xs font-semibold border-b-2 -mb-px transition-all"
+                                :class="leaderTab === t.key ? 'border-teal-500 text-teal-700' : 'border-transparent text-slate-500 hover:text-slate-700'">
+                            {{ t.label }}
+                        </button>
+                    </div>
+
+                    <div v-if="leadersLoading && !leaders" class="py-6 flex justify-center">
+                        <div class="w-6 h-6 rounded-full border-4 border-teal-400 border-t-transparent animate-spin"></div>
+                    </div>
+                    <div v-else-if="leaderRows.length" class="space-y-1">
+                        <button v-for="(r, i) in leaderRows" :key="`${r.player_id}-${r.match_id}`" type="button"
+                                @click="openLeaderMatch(r)"
+                                class="w-full flex items-center gap-3 px-3 py-2 rounded-lg border border-slate-200 bg-white text-left hover:border-teal-300 hover:bg-teal-50 transition-all"
+                                title="Ouvrir le match">
+                            <span v-if="leaderTab !== 'fouls'" class="w-6 text-center text-sm shrink-0" :class="i > 2 ? 'text-xs font-bold text-slate-400' : ''">
+                                {{ MEDALS[i] ?? i + 1 }}
+                            </span>
+                            <span class="w-8 h-8 rounded-full overflow-hidden bg-slate-200 shrink-0">
+                                <PlayerPhoto :src="playerPhotoUrl(r)" class="w-full h-full object-cover" alt="" />
+                            </span>
+                            <span class="min-w-0 flex-1">
+                                <span class="block text-xs font-bold text-slate-700 truncate">{{ r.firstname }} {{ r.lastname }}</span>
+                                <span class="flex items-center gap-1 text-[10px] text-slate-400 truncate">
+                                    <img v-if="teamLogoUrl(teamById[r.team_id])" :src="teamLogoUrl(teamById[r.team_id])" class="w-3.5 h-3.5 object-contain" alt=""/>
+                                    {{ teamById[r.team_id]?.name ?? '—' }}
+                                    <template v-if="(leaderTab === 'motm' || leaderTab === 'fouls') && r.detail"> · {{ r.detail }}</template>
+                                </span>
+                            </span>
+                            <span class="text-right shrink-0">
+                                <span class="block text-sm font-black text-slate-800 tabular-nums">{{ r.value }}</span>
+                                <span class="block text-[10px] text-slate-400">
+                                    {{ leaderUnit(r.value) }}<template v-if="leaderTab === 'duels' && r.detail"> · {{ r.detail }}</template>
+                                </span>
+                            </span>
+                        </button>
+                    </div>
+                    <p v-else class="text-xs text-slate-400 italic text-center py-6">
+                        {{ leaderTab === 'fouls' ? 'Aucun carton ni blessure cette semaine.' : 'Personne dans cette catégorie cette semaine.' }}
                     </p>
                 </div>
             </div>
