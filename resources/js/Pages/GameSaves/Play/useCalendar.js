@@ -185,9 +185,13 @@ export function useCalendar({ matches, teams, team, week }) {
         return isHome ? selectedCalendarMatchStats.value.teams.away : selectedCalendarMatchStats.value.teams.home;
     });
 
+    // Le dernier match demandé l'emporte : un clic pendant un chargement n'est
+    // plus ignoré, et une réponse arrivée trop tard ne remplace pas la sélection.
+    let requestedMatchId = null;
+
     const openMatchStats = async (match) => {
         if (!match || match.status !== 'played' || !match.has_stats) return;
-        if (loadingMatchStatsId.value !== null) return;
+        requestedMatchId = match.id;
 
         if (!matchStatsCache.value[match.id]) {
             loadingMatchStatsId.value = match.id;
@@ -198,14 +202,16 @@ export function useCalendar({ matches, teams, team, week }) {
                 }));
                 matchStatsCache.value = { ...matchStatsCache.value, [match.id]: data.match_stats };
             } catch {
-                alertDialog({ title: 'Statistiques indisponibles', message: 'Impossible de charger le détail de ce match. Réessaie dans un instant.' });
+                if (requestedMatchId === match.id) {
+                    alertDialog({ title: 'Statistiques indisponibles', message: 'Impossible de charger le détail de ce match. Réessaie dans un instant.' });
+                }
                 return;
             } finally {
-                loadingMatchStatsId.value = null;
+                if (loadingMatchStatsId.value === match.id) loadingMatchStatsId.value = null;
             }
         }
 
-        selectedCalendarMatchId.value = match.id;
+        if (requestedMatchId === match.id) selectedCalendarMatchId.value = match.id;
     };
 
     return {

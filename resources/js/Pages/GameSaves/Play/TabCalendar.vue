@@ -41,14 +41,41 @@ const previewMatch = ref(null);
 const isPlayable = (m) => !props.isByeMatch(m) && m.status === 'played' && m.has_stats;
 const isUpcoming = (m) => !props.isByeMatch(m) && m.status === 'scheduled';
 
+// Mobile : la liste et la fiche s'affichent l'une après l'autre (retour par « ← Calendrier »).
+const mobileView = ref('list');
+
 function onRowClick(match) {
     if (isPlayable(match)) {
         previewMatch.value = null;
         emit('open-match-stats', match);
+        mobileView.value = 'detail';
     } else if (isUpcoming(match)) {
         previewMatch.value = match;
+        mobileView.value = 'detail';
     }
 }
+
+function onTeamChange(id) {
+    const t = props.calendarTeams.find(team => Number(team.id) === Number(id));
+    if (t) emit('select-team', t);
+    mobileView.value = 'list';
+}
+
+// ── Onglets de la fiche de match ──────────────────────────────
+const detailTab = ref('stats');
+const detailTabs = computed(() => {
+    const tabs = [
+        { key: 'stats',   label: '📊 Stats' },
+        { key: 'players', label: '👥 Joueurs' },
+    ];
+    if (props.selectedCalendarEvents.length) tabs.push({ key: 'log', label: '📋 Déroulé', count: props.selectedCalendarEvents.length });
+    if (props.selectedCalendarProgression.length) tabs.push({ key: 'progression', label: '📈 Progression', count: props.selectedCalendarProgression.length });
+    return tabs;
+});
+// Onglet indisponible sur ce match (pas de déroulé / de progression) → Stats
+watch(detailTabs, (tabs) => {
+    if (!tabs.some(t => t.key === detailTab.value)) detailTab.value = 'stats';
+});
 
 // ==========================
 //   HELPERS
@@ -482,7 +509,11 @@ const highlights = computed(() => {
 });
 
 const logSection = ref(null);
-const scrollToLog = () => logSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+const scrollToLog = async () => {
+    detailTab.value = 'log';
+    await nextTick();
+    logSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
 
 // ==========================
 //   OUVERTURE PAR DÉFAUT + SEMAINE EN COURS
@@ -512,39 +543,33 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
 <template>
     <div class="flex-1 flex flex-col gap-4 overflow-y-auto min-h-0 pr-1 [&>*]:shrink-0">
 
-        <!-- Sélecteur équipes — chips horizontales -->
-        <div class="border border-slate-200 rounded-xl bg-slate-50 p-3">
-            <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Équipes</h3>
-            <div class="flex flex-wrap gap-1.5">
-                <button v-for="t in calendarTeams" :key="t.id" type="button"
-                        @click="emit('select-team', t)"
-                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all"
-                        :class="calendarTeam?.id === t.id
-                        ? 'bg-teal-500 text-white border-teal-600 shadow-sm'
-                        : 'bg-white text-slate-600 border-slate-200 hover:border-teal-300 hover:text-teal-600'">
-                    <div class="w-4 h-4 rounded-full overflow-hidden shrink-0 bg-slate-100">
-                        <img loading="lazy" decoding="async" v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" class="w-full h-full object-contain" alt=""/>
-                    </div>
-                    {{ t.name }}
-                </button>
-            </div>
-        </div>
-
         <!-- Contenu principal : calendrier + stats -->
         <div v-if="calendarTeam" class="grid grid-cols-1 lg:grid-cols-12 gap-4">
 
             <!-- ============================================ -->
             <!-- CALENDRIER                                    -->
             <!-- ============================================ -->
-            <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 lg:col-span-5">
-                <div class="flex items-center gap-3 mb-3">
+            <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 lg:col-span-5 lg:sticky lg:top-0 lg:self-start"
+                 :class="mobileView === 'detail' ? 'hidden lg:block' : ''">
+                <!-- Équipe affichée : liste déroulante (remplace les 15 puces) -->
+                <div class="flex items-center gap-2 mb-3">
                     <div class="w-8 h-8 rounded-lg overflow-hidden bg-white border border-slate-200 shrink-0">
                         <img loading="lazy" decoding="async" v-if="teamLogoUrl(calendarTeam)" :src="teamLogoUrl(calendarTeam)" class="w-full h-full object-contain" alt=""/>
                     </div>
-                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">{{ calendarTeam.name }}</h3>
+                    <select :value="calendarTeam.id" @change="onTeamChange($event.target.value)"
+                            aria-label="Équipe affichée"
+                            class="flex-1 min-w-0 border border-slate-300 rounded-lg px-2 py-1.5 text-sm font-semibold bg-white text-slate-800 focus:ring-2 focus:ring-teal-300 focus:outline-none cursor-pointer">
+                        <option v-for="t in calendarTeams" :key="t.id" :value="t.id">
+                            {{ t.name }}{{ Number(t.id) === Number(myTeamId) ? ' (mon équipe)' : '' }}
+                        </option>
+                    </select>
+                    <button v-if="myTeamId && Number(calendarTeam.id) !== Number(myTeamId)" type="button"
+                            @click="onTeamChange(myTeamId)"
+                            class="shrink-0 px-2 py-1.5 rounded-lg text-[11px] font-bold border border-teal-300 text-teal-600 bg-white hover:bg-teal-50"
+                            title="Revenir au calendrier de mon équipe">🏠 Mon équipe</button>
                 </div>
 
-                <div ref="listEl" class="relative space-y-1 h-[630px] overflow-y-auto pr-1">
+                <div ref="listEl" class="relative space-y-1 max-h-[65vh] overflow-y-auto pr-1">
                     <div v-for="match in calendarRows" :key="match.id"
                          :data-week="match.week"
                          class="flex items-center gap-2 px-3 py-2 rounded-lg border transition-all"
@@ -621,8 +646,16 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
             <!-- ============================================ -->
             <!-- STATS MATCH SÉLECTIONNÉ                      -->
             <!-- ============================================ -->
+            <div class="lg:col-span-7 flex flex-col gap-3 min-w-0"
+                 :class="mobileView === 'list' ? 'hidden lg:flex' : ''">
+            <!-- Mobile : retour à la liste -->
+            <button type="button" @click="mobileView = 'list'"
+                    class="lg:hidden self-start px-3 py-1.5 rounded-full text-xs font-bold bg-white border border-slate-300 text-slate-600">
+                ← Calendrier
+            </button>
+
             <!-- Avant-match (match à venir) -->
-            <div v-if="previewMatch" class="lg:col-span-7">
+            <div v-if="previewMatch">
                 <MatchPreview :match="previewMatch"
                               :team="calendarTeam"
                               :teamById="teamById"
@@ -635,7 +668,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
             </div>
 
             <div v-else-if="selectedCalendarMatch && selectedCalendarMatchStats"
-                 class="lg:col-span-7 flex flex-col gap-3 max-h-[830px] overflow-y-auto pr-1">
+                 class="flex flex-col gap-3">
 
                 <!-- Score du match -->
                 <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
@@ -694,11 +727,11 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
 
                     <!-- Homme du match + temps forts -->
                     <div v-if="manOfTheMatch || highlights.length" class="mt-3 pt-3 border-t border-slate-200 space-y-2">
-                        <div v-if="manOfTheMatch" class="flex items-center gap-2 text-xs">
+                        <div v-if="manOfTheMatch" class="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs">
                             <div class="w-7 h-7 rounded-full overflow-hidden bg-amber-100 ring-2 ring-amber-300 shrink-0">
                                 <PlayerPhoto v-if="manOfTheMatch.player" :src="playerPhotoUrl(manOfTheMatch.player)" class="w-full h-full object-cover" alt="" />
                             </div>
-                            <span class="font-bold text-amber-700">⭐ Homme du match :</span>
+                            <span class="font-bold text-amber-700 whitespace-nowrap">⭐ Homme du match :</span>
                             <span class="font-semibold text-slate-700">{{ manOfTheMatch.name }}</span>
                             <span v-if="manOfTheMatch.team" class="text-slate-400">({{ manOfTheMatch.team }})</span>
                             <span v-if="manOfTheMatch.detail" class="text-slate-500">— {{ manOfTheMatch.detail }}</span>
@@ -723,8 +756,19 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                     </div>
                 </div>
 
+                <!-- Onglets de la fiche de match -->
+                <div class="flex flex-wrap gap-1 border-b border-slate-200" role="tablist">
+                    <button v-for="t in detailTabs" :key="t.key" type="button" role="tab"
+                            :aria-selected="detailTab === t.key"
+                            @click="detailTab = t.key"
+                            class="px-3 py-1.5 text-xs font-semibold border-b-2 -mb-px transition-all"
+                            :class="detailTab === t.key ? 'border-teal-500 text-teal-700' : 'border-transparent text-slate-500 hover:text-slate-700'">
+                        {{ t.label }}<span v-if="t.count !== undefined" class="opacity-60"> ({{ t.count }})</span>
+                    </button>
+                </div>
+
                 <!-- Barres comparatives équipes -->
-                <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+                <div v-show="detailTab === 'stats'" class="border border-slate-200 rounded-xl bg-slate-50 p-4">
                     <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">Comparatif équipes</h4>
                     <div class="space-y-2">
                         <div v-for="bar in statBars" :key="bar.label">
@@ -752,12 +796,40 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                 <!-- ============================================ -->
                 <!-- BLOC : Progression des joueurs               -->
                 <!-- ============================================ -->
-                <MatchProgression :progression="selectedCalendarProgression" :home-team-name="homeTeamName" :away-team-name="awayTeamName" />
+                <MatchProgression v-show="detailTab === 'progression'" :progression="selectedCalendarProgression" :home-team-name="homeTeamName" :away-team-name="awayTeamName" />
+
+                <!-- Joueurs -->
+                <div v-show="detailTab === 'players'">
+            <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                            Joueurs — {{ statsTeamName }}
+                        </h4>
+                        <div class="flex rounded-lg overflow-hidden border border-slate-200 text-[11px] font-semibold">
+                            <button type="button" @click="selectedStatsTeam = 'home'"
+                                    class="px-3 py-1 transition-all"
+                                    :class="selectedStatsTeam === 'home' ? 'bg-teal-500 text-white' : 'bg-white text-slate-500 hover:bg-slate-50'">
+                                {{ teamById[selectedCalendarMatch.home_team_id]?.name }}
+                            </button>
+                            <button type="button" @click="selectedStatsTeam = 'away'"
+                                    class="px-3 py-1 transition-all border-l border-slate-200"
+                                    :class="selectedStatsTeam === 'away' ? 'bg-teal-500 text-white' : 'bg-white text-slate-500 hover:bg-slate-50'">
+                                {{ teamById[selectedCalendarMatch.away_team_id]?.name }}
+                            </button>
+                        </div>
+                    </div>
+                    <MatchPlayersTable :players="matchRoster(selectedStatsTeam)"
+                                       :stats="selectedCalendarPlayersStats"
+                                       :starters="selectedCalendarMatchStats?.starters?.[selectedStatsTeam] ?? null"
+                                       :playtime="selectedCalendarMatchStats?.playtime ?? null"
+                                       :motmId="manOfTheMatch?.pid ?? null" />
+                </div>
+                </div>
 
                 <!-- ============================================ -->
                 <!-- BLOC : Déroulé du match (action par action)  -->
                 <!-- ============================================ -->
-                <div v-if="selectedCalendarEvents.length" ref="logSection" class="border border-slate-200 rounded-xl bg-slate-50 p-4 scroll-mt-2">
+                <div v-if="selectedCalendarEvents.length" v-show="detailTab === 'log'" ref="logSection" class="border border-slate-200 rounded-xl bg-slate-50 p-4 scroll-mt-2">
                     <div class="flex items-center justify-between mb-3 gap-2 flex-wrap">
                         <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
                             📋 Déroulé du match (action par action)
@@ -779,7 +851,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                         </div>
                     </div>
 
-                    <div class="max-h-72 overflow-y-auto space-y-1 pr-1">
+                    <div class="space-y-1">
                         <div v-for="ev in filteredLogEvents" :key="ev.index"
                              class="flex items-start gap-2 px-2 py-1.5 rounded-lg text-[11px]"
                              :class="[playLogRowClass(ev), diceBreakdown(ev) ? 'cursor-pointer hover:ring-1 hover:ring-teal-200' : '']"
@@ -866,47 +938,21 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                 </div>
             </div>
             <!-- Message si aucun match sélectionné -->
-            <div v-else class="lg:col-span-7 flex items-center justify-center rounded-xl border border-dashed border-slate-300 text-slate-400 text-sm">
+            <div v-else class="min-h-[300px] flex items-center justify-center rounded-xl border border-dashed border-slate-300 text-slate-400 text-sm">
                 <div v-if="loadingMatchId" class="text-center p-8">
                     <div class="w-8 h-8 mx-auto mb-3 rounded-full border-4 border-teal-400 border-t-transparent animate-spin"></div>
                     <p>Chargement du match…</p>
                 </div>
                 <div v-else class="text-center p-8">
                     <div class="text-3xl mb-2">📊</div>
-                    <p>Clique sur un match joué pour voir les statistiques</p>
+                    <p>Clique sur un match pour voir son résumé ou l'avant-match</p>
                 </div>
             </div>
-        </div>
-        <div v-if="calendarTeam && selectedCalendarMatch && !previewMatch" class="grid grid-cols-1 gap-4">
-        <!-- Stats joueurs -->
-            <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
-                <div class="flex items-center justify-between mb-3">
-                    <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                        Joueurs — {{ statsTeamName }}
-                    </h4>
-                    <div class="flex rounded-lg overflow-hidden border border-slate-200 text-[11px] font-semibold">
-                        <button type="button" @click="selectedStatsTeam = 'home'"
-                                class="px-3 py-1 transition-all"
-                                :class="selectedStatsTeam === 'home' ? 'bg-teal-500 text-white' : 'bg-white text-slate-500 hover:bg-slate-50'">
-                            {{ teamById[selectedCalendarMatch.home_team_id]?.name }}
-                        </button>
-                        <button type="button" @click="selectedStatsTeam = 'away'"
-                                class="px-3 py-1 transition-all border-l border-slate-200"
-                                :class="selectedStatsTeam === 'away' ? 'bg-teal-500 text-white' : 'bg-white text-slate-500 hover:bg-slate-50'">
-                            {{ teamById[selectedCalendarMatch.away_team_id]?.name }}
-                        </button>
-                    </div>
-                </div>
-                <MatchPlayersTable :players="matchRoster(selectedStatsTeam)"
-                                   :stats="selectedCalendarPlayersStats"
-                                   :starters="selectedCalendarMatchStats?.starters?.[selectedStatsTeam] ?? null"
-                                   :playtime="selectedCalendarMatchStats?.playtime ?? null"
-                                   :motmId="manOfTheMatch?.pid ?? null" />
             </div>
         </div>
         <!-- Aucune équipe -->
-        <div v-else class="flex items-center justify-center rounded-xl border border-dashed border-slate-300 p-10 text-slate-400 text-sm">
-            Sélectionne une équipe ci-dessus
+        <div v-if="!calendarTeam" class="flex items-center justify-center rounded-xl border border-dashed border-slate-300 p-10 text-slate-400 text-sm">
+            Aucune équipe à afficher
         </div>
     </div>
     <!-- ================================================ -->
