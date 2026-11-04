@@ -157,7 +157,28 @@ class GameMatchController extends Controller
     {
         $this->authorizeGameSave('view', $gameSave, $match);
 
-        return response()->json(['match_stats' => $match->match_stats]);
+        // Cartons et blessures de ce match (source fiable pour la feuille de match,
+        // y compris pour les matchs simulés qui n'ont pas ces événements dans le déroulé).
+        $incidents = [
+            'sanctions' => GameSanction::where('game_match_id', $match->id)
+                ->get(['game_player_id', 'type', 'weeks_suspended', 'week_return'])
+                ->map(fn ($s) => [
+                    'player_id'       => (int) $s->game_player_id,
+                    'type'            => $s->type,
+                    'weeks_suspended' => (int) $s->weeks_suspended,
+                    'week_return'     => $s->week_return,
+                ])->values(),
+            'injuries' => GameInjury::where('game_match_id', $match->id)
+                ->get(['game_player_id', 'description', 'weeks_out', 'week_return'])
+                ->map(fn ($i) => [
+                    'player_id'   => (int) $i->game_player_id,
+                    'description' => $i->description,
+                    'weeks_out'   => (int) $i->weeks_out,
+                    'week_return' => $i->week_return,
+                ])->values(),
+        ];
+
+        return response()->json(['match_stats' => $match->match_stats, 'incidents' => $incidents]);
     }
 
     /**

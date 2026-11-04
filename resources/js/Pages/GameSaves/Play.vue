@@ -25,6 +25,7 @@ import TabDashboard  from '@/Pages/GameSaves/Play/TabDashboard.vue';
 import TabMyTeam     from '@/Pages/GameSaves/Play/TabMyTeam.vue';
 import TabOtherTeams from '@/Pages/GameSaves/Play/TabOtherTeams.vue';
 import TabCalendar   from '@/Pages/GameSaves/Play/TabCalendar.vue';
+import TabMatch      from '@/Pages/GameSaves/Play/TabMatch.vue';
 import TabStandings  from '@/Pages/GameSaves/Play/TabStandings.vue';
 import TabTournament from '@/Pages/GameSaves/Play/TabTournament.vue';
 import TabStats      from '@/Pages/GameSaves/Play/TabStats.vue';
@@ -199,7 +200,7 @@ const {
     selectedCalendarMatch, selectedCalendarMatchStats,
     selectedCalendarMyTeamStats, selectedCalendarOpponentStats,
     selectedCalendarPlayersStats, openMatchStats, selectedCalendarProgression, loadingMatchStatsId,
-    selectedCalendarEvents,
+    selectedCalendarEvents, seasonWeeksCount, selectedCalendarMatchId,
 } = useCalendar({ matches: matchesRef, teams: teamsRef, team: teamRef, week });
 
 const playerSeasonStatsRef = computed(() => props.playerSeasonStats ?? {});
@@ -281,6 +282,7 @@ const tabs = computed(() => {
         { key: 'my-team',     label: 'Mon équipe'                     },
         { key: 'other-teams', label: wc ? 'Sélections' : 'Autres équipes' },
         { key: 'calendar',    label: 'Calendrier'                     },
+        { key: 'match',       label: 'Match'                          },
         { key: 'standings',   label: wc ? 'Tournoi' : 'Classement'    },
         { key: 'match-stats', label: 'Stats'                          },
         { key: 'training',    label: 'Entraînement'                   },
@@ -295,6 +297,19 @@ const activeTab = ref('dashboard');
 watch(activeTab, (key) => nextTick(() =>
     document.querySelector(`[role="tab"][data-tab="${key}"]`)?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
 ));
+
+// Calendrier → onglet Match. Un match d'une journée qui ne concerne pas l'équipe
+// suivie bascule d'abord le suivi sur l'équipe à domicile (la sélection se fait
+// parmi les matchs de l'équipe suivie).
+function openMatchFromCalendar(match) {
+    const involved = [match.home_team_id, match.away_team_id].map(Number);
+    if (!calendarTeam.value || !involved.includes(Number(calendarTeam.value.id))) {
+        const home = calendarTeams.value.find(t => Number(t.id) === Number(match.home_team_id));
+        if (home) selectCalendarTeam(home);
+    }
+    openMatchStats(match);
+    setTab('match');
+}
 
 // N'ouvre qu'un onglet existant (ex. Transferts masqué en Coupe du Monde).
 function setTab(key) {
@@ -544,26 +559,42 @@ const saveGame = () => {
                                  :calendarTeams="calendarTeams"
                                  :calendarTeam="calendarTeam"
                                  :calendarRows="calendarRows"
-                                 :calendarTeamRoster="calendarTeamRoster"
-                                 :calendarOpponentRoster="calendarOpponentRoster"
                                  :teamById="teamById"
-                                 :selectedCalendarMatch="selectedCalendarMatch"
-                                 :selectedCalendarMatchStats="selectedCalendarMatchStats"
-                                 :selectedCalendarMyTeamStats="selectedCalendarMyTeamStats"
-                                 :selectedCalendarOpponentStats="selectedCalendarOpponentStats"
-                                 :selectedCalendarPlayersStats="selectedCalendarPlayersStats"
-                                 :selectedCalendarProgression="selectedCalendarProgression"
-                                 :selectedCalendarEvents="selectedCalendarEvents"
                                  :isByeMatch="isByeMatch"
                                  :opponentNameForTeam="opponentNameForTeam"
-                                 :loadingMatchId="loadingMatchStatsId"
                                  :currentWeek="week"
+                                 :seasonWeeksCount="seasonWeeksCount"
                                  :standings="standings"
                                  :allMatches="matches"
                                  :myTeamId="team?.id ?? null"
+                                 :loadingMatchId="loadingMatchStatsId"
+                                 :selectedMatchId="selectedCalendarMatchId"
                                  @change-tab="setTab"
                                  @select-team="selectCalendarTeam"
-                                 @open-match-stats="openMatchStats"
+                                 @open-match="openMatchFromCalendar"
+                    />
+
+                    <!-- ======== MATCH (feuille, stats, déroulé…) ======== -->
+                    <TabMatch v-else-if="activeTab === 'match'"
+                              :calendarTeams="calendarTeams"
+                              :calendarTeam="calendarTeam"
+                              :calendarRows="calendarRows"
+                              :calendarTeamRoster="calendarTeamRoster"
+                              :calendarOpponentRoster="calendarOpponentRoster"
+                              :teamById="teamById"
+                              :selectedCalendarMatch="selectedCalendarMatch"
+                              :selectedCalendarMatchStats="selectedCalendarMatchStats"
+                              :selectedCalendarMyTeamStats="selectedCalendarMyTeamStats"
+                              :selectedCalendarOpponentStats="selectedCalendarOpponentStats"
+                              :selectedCalendarPlayersStats="selectedCalendarPlayersStats"
+                              :selectedCalendarProgression="selectedCalendarProgression"
+                              :selectedCalendarEvents="selectedCalendarEvents"
+                              :isByeMatch="isByeMatch"
+                              :opponentNameForTeam="opponentNameForTeam"
+                              :loadingMatchId="loadingMatchStatsId"
+                              :myTeamId="team?.id ?? null"
+                              @select-team="selectCalendarTeam"
+                              @open-match-stats="openMatchStats"
                     />
 
                     <!-- ======== CLASSEMENT ======== -->

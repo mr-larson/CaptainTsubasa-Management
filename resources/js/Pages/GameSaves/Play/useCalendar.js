@@ -200,7 +200,9 @@ export function useCalendar({ matches, teams, team, week }) {
                     gameSave: match.game_save_id,
                     match:    match.id,
                 }));
-                matchStatsCache.value = { ...matchStatsCache.value, [match.id]: data.match_stats };
+                // Cartons et blessures du match (feuille de match) joints aux stats
+                const stats = data.match_stats ? { ...data.match_stats, incidents: data.incidents ?? null } : null;
+                matchStatsCache.value = { ...matchStatsCache.value, [match.id]: stats };
             } catch {
                 if (requestedMatchId === match.id) {
                     alertDialog({ title: 'Statistiques indisponibles', message: 'Impossible de charger le détail de ce match. Réessaie dans un instant.' });
