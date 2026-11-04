@@ -533,12 +533,12 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
 
         <!-- Navigation : équipe suivie, match précédent / suivant, accès direct -->
         <div v-if="calendarTeam" class="border border-slate-200 rounded-xl bg-slate-50 p-3 flex flex-wrap items-center gap-2">
-            <div class="w-7 h-7 rounded-lg overflow-hidden bg-white border border-slate-200 shrink-0">
+            <div class="w-8 h-8 rounded-lg overflow-hidden bg-white border border-slate-200 shrink-0">
                 <img v-if="teamLogoUrl(calendarTeam)" :src="teamLogoUrl(calendarTeam)" class="w-full h-full object-contain" alt=""/>
             </div>
             <select :value="calendarTeam.id" @change="onTeamChange($event.target.value)"
                     aria-label="Équipe suivie"
-                    class="border border-slate-300 rounded-lg px-2 py-1 text-xs font-semibold bg-white text-slate-800 focus:ring-2 focus:ring-teal-300 focus:outline-none cursor-pointer">
+                    class="min-w-[220px] border border-slate-300 rounded-lg pl-3 pr-9 py-1.5 text-sm font-semibold bg-white text-slate-800 focus:ring-2 focus:ring-teal-300 focus:outline-none cursor-pointer">
                 <option v-for="t in calendarTeams" :key="t.id" :value="t.id">
                     {{ t.name }}{{ Number(t.id) === Number(myTeamId) ? ' (mon équipe)' : '' }}
                 </option>
@@ -546,16 +546,16 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
 
             <div class="flex items-center gap-1 ml-auto">
                 <button type="button" :disabled="!prevMatch" @click="openMatch(prevMatch)"
-                        class="px-2.5 py-1 rounded-lg text-xs font-bold border border-slate-300 bg-white text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed"
+                        class="px-3 py-1.5 rounded-lg text-sm font-bold border border-slate-300 bg-white text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed"
                         title="Match précédent">◀</button>
                 <select :value="selectedCalendarMatch?.id ?? ''" @change="onJump($event.target.value)"
                         aria-label="Aller au match"
-                        class="border border-slate-300 rounded-lg px-2 py-1 text-xs font-semibold bg-white text-slate-800 max-w-[220px] cursor-pointer">
+                        class="min-w-[260px] border border-slate-300 rounded-lg pl-3 pr-9 py-1.5 text-sm font-semibold bg-white text-slate-800 focus:ring-2 focus:ring-teal-300 focus:outline-none cursor-pointer">
                     <option v-if="!selectedCalendarMatch" value="" disabled>Choisir un match</option>
                     <option v-for="m in playedMatches" :key="m.id" :value="m.id">{{ navLabel(m) }}</option>
                 </select>
                 <button type="button" :disabled="!nextMatch" @click="openMatch(nextMatch)"
-                        class="px-2.5 py-1 rounded-lg text-xs font-bold border border-slate-300 bg-white text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed"
+                        class="px-3 py-1.5 rounded-lg text-sm font-bold border border-slate-300 bg-white text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed"
                         title="Match suivant">▶</button>
             </div>
         </div>
