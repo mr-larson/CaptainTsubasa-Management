@@ -25,8 +25,8 @@
 // Impaires pour que la dilatation donne des blocs exactement carrés.
 const LEVELS = [21, 15, 11, 7, 5, 3];
 const STEPS = LEVELS.length + 1;        // 0 = caché, 1..LEVELS = pixelisé, STEPS = net
-const STEP_MS = 75;                     // cadence des paliers (rythme rétro ~13 i/s)
-const STAGGER_MS = 90;                  // décalage auto entre blocs qui démarrent ensemble
+const STEP_MS = 55;                     // cadence des paliers (rythme rétro ~18 i/s)
+const STAGGER_MS = 65;                  // décalage auto entre blocs qui démarrent ensemble
 const PALETTE_UNTIL = 3;                // palette réduite sur les 3 paliers les plus grossiers
 const START = 1.0;                      // progression 0 quand le haut du bloc touche le bas de l'écran…
 const END = 0.78;                       // …et 1 quand il atteint 78 % de la hauteur d'écran
@@ -50,7 +50,7 @@ const reducedMotion = () =>
 
 // Fondu et légère montée continus (compositeur) sous les paliers de pixels.
 const CSS = `
-[data-pxr]{transition:opacity .5s ease-out,transform .8s cubic-bezier(.16,1,.3,1)}
+[data-pxr]{transition:opacity .4s ease-out,transform .65s cubic-bezier(.16,1,.3,1)}
 [data-pxr="hidden"]{opacity:0;transform:translate3d(0,20px,0)}
 `;
 
