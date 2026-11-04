@@ -2,6 +2,7 @@
 import { Head, Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import PlayerPhoto from '@/Components/PlayerPhoto.vue';
+import { vPixelReveal } from '@/Directives/pixelReveal';
 
 const props = defineProps({
     canLogin:        { type: Boolean, default: false },
@@ -77,27 +78,27 @@ const faq = [
         <section class="mx-auto grid max-w-[1280px] items-center gap-10 px-4 pb-10 pt-10 md:px-10 md:pb-16 md:pt-16"
                  :class="screenshots.match ? 'lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]' : 'md:grid-cols-[1fr_420px]'">
             <div>
-                <div class="mb-5 inline-flex items-center rounded-full border border-teal-300/25 bg-teal-500/15 px-3 py-1 text-xs font-semibold tracking-wide text-teal-300">
+                <div v-pixel-reveal class="mb-5 inline-flex items-center rounded-full border border-teal-300/25 bg-teal-500/15 px-3 py-1 text-xs font-semibold tracking-wide text-teal-300">
                     Version en développement
                 </div>
-                <h1 class="mb-5 text-[clamp(2rem,4vw,3rem)] font-extrabold leading-tight text-slate-50">
+                <h1 v-pixel-reveal class="mb-5 text-[clamp(2rem,4vw,3rem)] font-extrabold leading-tight text-slate-50">
                     Ton équipe. Tes décisions.<br>
                     <span class="text-teal-300">Un jeu de gestion de football au tour par tour.</span>
                 </h1>
-                <p class="mb-6 max-w-[560px] text-base leading-7 text-slate-300">
+                <p v-pixel-reveal class="mb-6 max-w-[560px] text-base leading-7 text-slate-300">
                     Golden Eleven est un jeu sur navigateur inspiré de l'univers Captain Tsubasa.
                     Recrute tes joueurs, prépare ton équipe et choisis tes actions pendant les matchs.
                     Dispute une Ligue ou une Coupe du Monde, seul face à l'IA ou à plusieurs en local, à tour de rôle.
                 </p>
-                <div class="mb-6 flex flex-wrap gap-3">
+                <div v-pixel-reveal class="mb-6 flex flex-wrap gap-3">
                     <Link v-if="canRegister && !$page.props.auth?.user" :href="route('register')" :class="btnPrimary">Créer mon compte gratuit</Link>
                     <Link v-else-if="$page.props.auth?.user" :href="route('mainMenu')" :class="btnPrimary">Aller au menu principal</Link>
                     <a href="#deroulement" :class="btnSecondary">Voir comment se joue un match</a>
                 </div>
-                <p v-if="canRegister && !$page.props.auth?.user" class="mb-8 text-sm text-slate-400">
+                <p v-if="canRegister && !$page.props.auth?.user" v-pixel-reveal class="mb-8 text-sm text-slate-400">
                     Une fois ton compte créé, tu pourras lancer ta première partie.
                 </p>
-                <ul class="flex flex-wrap gap-2 text-sm text-slate-200" aria-label="En bref">
+                <ul v-pixel-reveal class="flex flex-wrap gap-2 text-sm text-slate-200" aria-label="En bref">
                     <li class="rounded-full border border-white/10 bg-white/5 px-3 py-1">🌐 Sur navigateur</li>
                     <li class="rounded-full border border-white/10 bg-white/5 px-3 py-1">🎲 Matchs au tour par tour</li>
                     <li class="rounded-full border border-white/10 bg-white/5 px-3 py-1">🎮 Solo et multijoueur local</li>
@@ -105,7 +106,7 @@ const faq = [
             </div>
 
             <!-- Visuel : une vraie capture de match si elle existe, sinon le personnage (décoratif) -->
-            <figure v-if="screenshots.match" class="overflow-hidden rounded-2xl border border-white/10 bg-slate-800 shadow-2xl">
+            <figure v-if="screenshots.match" v-pixel-reveal class="overflow-hidden rounded-2xl border border-white/10 bg-slate-800 shadow-2xl">
                 <img :src="screenshots.match"
                      alt="Écran de match : terrain, cartes d'action (tir, passe, dribble, centre) et détail d'un duel avec les jets de dés"
                      class="block w-full" width="1690" height="994" />
@@ -113,24 +114,24 @@ const faq = [
                     Choisis ton action : tirer, passer, dribbler… Chaque duel se joue avec les stats des joueurs et un jet de dés.
                 </figcaption>
             </figure>
-            <div v-else class="hidden justify-center md:flex" aria-hidden="true">
+            <div v-else v-pixel-reveal class="hidden justify-center md:flex" aria-hidden="true">
                 <img src="/images/tsubas3.webp" alt="" class="max-h-[420px] object-contain drop-shadow-2xl" />
             </div>
         </section>
 
         <!-- 2. DÉROULEMENT D'UNE PARTIE -->
         <section id="deroulement" class="mx-auto max-w-[1200px] scroll-mt-20 border-t border-white/5 px-4 py-12 md:px-10 md:py-16">
-            <h2 class="mb-2 text-2xl font-bold text-slate-50">Comment se déroule une partie</h2>
-            <p class="mb-8 max-w-[640px] text-slate-300">Chaque semaine de jeu suit la même boucle : préparer, jouer, s'adapter.</p>
+            <h2 v-pixel-reveal class="mb-2 text-2xl font-bold text-slate-50">Comment se déroule une partie</h2>
+            <p v-pixel-reveal class="mb-8 max-w-[640px] text-slate-300">Chaque semaine de jeu suit la même boucle : préparer, jouer, s'adapter.</p>
             <ol class="grid gap-4 md:grid-cols-3">
-                <li v-for="s in steps" :key="s.n" class="rounded-xl border border-white/10 bg-white/5 p-6">
+                <li v-for="s in steps" :key="s.n" v-pixel-reveal class="rounded-xl border border-white/10 bg-white/5 p-6">
                     <div class="mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-teal-500 text-sm font-black text-slate-900">{{ s.n }}</div>
                     <h3 class="mb-1.5 text-base font-semibold text-slate-50">{{ s.title }}</h3>
                     <p class="text-sm leading-6 text-slate-300">{{ s.desc }}</p>
                 </li>
             </ol>
 
-            <figure v-if="screenshots.dashboard" class="mt-8 overflow-hidden rounded-2xl border border-white/10 bg-slate-800 shadow-2xl">
+            <figure v-if="screenshots.dashboard" v-pixel-reveal class="mt-8 overflow-hidden rounded-2xl border border-white/10 bg-slate-800 shadow-2xl">
                 <img :src="screenshots.dashboard"
                      alt="Tableau de bord d'une partie : classement, bilan, budget, effectif et prochain adversaire"
                      class="block w-full" width="1692" height="880" loading="lazy" decoding="async" />
@@ -142,30 +143,30 @@ const faq = [
 
         <!-- 3. CHOISIR SON EXPÉRIENCE -->
         <section class="mx-auto max-w-[1200px] border-t border-white/5 px-4 py-12 md:px-10 md:py-16">
-            <h2 class="mb-8 text-2xl font-bold text-slate-50">Deux compétitions</h2>
+            <h2 v-pixel-reveal class="mb-8 text-2xl font-bold text-slate-50">Deux compétitions</h2>
             <div class="grid gap-4 md:grid-cols-2">
-                <div v-for="m in modes" :key="m.title" class="rounded-xl border border-white/10 bg-white/5 p-6">
+                <div v-for="m in modes" :key="m.title" v-pixel-reveal class="rounded-xl border border-white/10 bg-white/5 p-6">
                     <h3 class="mb-1.5 text-lg font-semibold text-teal-300">{{ m.title }}</h3>
                     <p class="text-sm leading-6 text-slate-300">{{ m.desc }}</p>
                 </div>
             </div>
-            <p class="mt-6 max-w-[720px] text-sm leading-6 text-slate-300">
+            <p v-pixel-reveal class="mt-6 max-w-[720px] text-sm leading-6 text-slate-300">
                 Joue face à l'IA ou partage une partie en local avec plusieurs managers : chacun contrôle son équipe et joue à son tour.
             </p>
-            <div v-if="canRegister && !$page.props.auth?.user" class="mt-8">
+            <div v-if="canRegister && !$page.props.auth?.user" v-pixel-reveal class="mt-8">
                 <Link :href="route('register')" :class="btnPrimary">Créer mon compte gratuit</Link>
             </div>
         </section>
 
         <!-- 4. RETROUVER L'UNIVERS (aperçu court) -->
         <section class="mx-auto max-w-[1200px] border-t border-white/5 px-4 py-12 md:px-10 md:py-16" v-if="featuredTeams.length || featuredPlayers.length">
-            <h2 class="mb-2 text-2xl font-bold text-slate-50">L'univers Captain Tsubasa</h2>
-            <p class="mb-8 text-slate-300">
+            <h2 v-pixel-reveal class="mb-2 text-2xl font-bold text-slate-50">L'univers Captain Tsubasa</h2>
+            <p v-pixel-reveal class="mb-8 text-slate-300">
                 {{ teams.length }} équipes et {{ playerCount ?? players.length }} joueurs à recruter. Quelques exemples :
             </p>
 
             <ul v-if="featuredTeams.length" class="mb-8 grid grid-cols-4 gap-3 sm:grid-cols-8" aria-label="Équipes">
-                <li v-for="t in featuredTeams" :key="t.id" class="flex flex-col items-center gap-1.5 text-center">
+                <li v-for="t in featuredTeams" :key="t.id" v-pixel-reveal class="flex flex-col items-center gap-1.5 text-center">
                     <div class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-lg bg-white">
                         <img v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" alt="" loading="lazy" class="h-full w-full object-contain" />
                         <span v-else class="text-xl font-bold text-slate-700" aria-hidden="true">{{ t.name[0] }}</span>
@@ -175,7 +176,7 @@ const faq = [
             </ul>
 
             <ul v-if="featuredPlayers.length" class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6" aria-label="Joueurs">
-                <li v-for="p in featuredPlayers" :key="p.id" class="overflow-hidden rounded-xl border border-white/10 bg-white/5">
+                <li v-for="p in featuredPlayers" :key="p.id" v-pixel-reveal class="overflow-hidden rounded-xl border border-white/10 bg-white/5">
                     <PlayerPhoto :src="`/storage/${p.photo_path}`" :alt="`${p.firstname} ${p.lastname}`" class="block aspect-square w-full object-cover object-top" />
                     <div class="px-3 py-2">
                         <div class="text-sm font-semibold text-slate-100">{{ p.firstname }} {{ p.lastname }}</div>
@@ -187,12 +188,12 @@ const faq = [
 
         <!-- 5. QUESTIONS AVANT L'INSCRIPTION -->
         <section class="mx-auto max-w-[1200px] border-t border-white/5 px-4 py-12 md:px-10 md:py-16">
-            <h2 class="mb-2 text-2xl font-bold text-slate-50">Questions fréquentes</h2>
-            <p class="mb-8 text-slate-300">
+            <h2 v-pixel-reveal class="mb-2 text-2xl font-bold text-slate-50">Questions fréquentes</h2>
+            <p v-pixel-reveal class="mb-8 text-slate-300">
                 Pour le détail des règles, lis le <Link :href="route('guide')" class="text-teal-300 underline hover:text-teal-200">guide « Comment jouer »</Link>.
             </p>
             <div class="grid gap-3 md:grid-cols-2">
-                <details v-for="item in faq" :key="item.q" class="group rounded-xl border border-white/10 bg-white/5 px-5 py-4">
+                <details v-for="item in faq" :key="item.q" v-pixel-reveal class="group rounded-xl border border-white/10 bg-white/5 px-5 py-4">
                     <summary class="flex cursor-pointer list-none items-center justify-between gap-3 font-semibold text-slate-100 [&::-webkit-details-marker]:hidden">
                         {{ item.q }}
                         <span class="text-teal-300 transition-transform group-open:rotate-45" aria-hidden="true">+</span>
@@ -204,7 +205,7 @@ const faq = [
 
         <!-- 6. INVITATION FINALE -->
         <section class="mx-auto max-w-[1200px] border-t border-white/5 px-4 py-12 md:px-10 md:py-16">
-            <div class="rounded-2xl border border-teal-300/20 bg-gradient-to-br from-teal-500/10 to-slate-900/80 px-6 py-8 text-center md:p-12">
+            <div v-pixel-reveal class="rounded-2xl border border-teal-300/20 bg-gradient-to-br from-teal-500/10 to-slate-900/80 px-6 py-8 text-center md:p-12">
                 <h2 class="mb-3 text-[26px] font-bold text-slate-50">Prêt à commencer ?</h2>
                 <p class="mb-8 text-[15px] text-slate-300">Crée ton compte, puis lance ta première partie depuis le menu principal.</p>
                 <div class="flex flex-wrap justify-center gap-3">
