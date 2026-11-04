@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildMatchStats, computePlaytime } from '../../resources/js/Pages/Match/engine/matchStats.js';
+import { buildMatchStats, computePlaytime, orientToHomeAway } from '../../resources/js/Pages/Match/engine/matchStats.js';
 
 describe('computePlaytime', () => {
     it("donne le match complet aux titulaires sans incident", () => {
@@ -50,5 +50,38 @@ describe('buildMatchStats', () => {
         expect(stats.teams.away.goals).toBe(1);
         expect(stats.teams.away.shots).toBe(1);
         expect(stats.teams.home.goals).toBe(0);
+    });
+});
+
+describe('orientToHomeAway', () => {
+    const stats = () => ({
+        teams:    { home: { goals: 2, shots: 9 }, away: { goals: 0, shots: 10 } }, // home = internal (humain)
+        starters: { home: [1, 2], away: [3, 4] },
+        players:  { 1: { duelsWon: 3 } },
+        events:   [
+            { team: 'internal', actionType: 'shot-goal', meta: { meta: { attacker: { id: 1, team: 'internal' }, defender: { id: 3, team: 'external' } } } },
+            { team: 'external', actionType: 'pass-success' },
+            { actionType: 'kickoff' },
+        ],
+    });
+
+    it("ne change rien quand l'humain joue à domicile", () => {
+        const s = stats();
+        expect(orientToHomeAway(s, true)).toBe(s);
+    });
+
+    it("permute équipes, titulaires et camps quand l'humain joue à l'extérieur", () => {
+        const s   = stats();
+        const out = orientToHomeAway(s, false);
+        expect(out.teams.home.goals).toBe(0);
+        expect(out.teams.away.goals).toBe(2);
+        expect(out.starters).toEqual({ home: [3, 4], away: [1, 2] });
+        expect(out.events[0].team).toBe('external');
+        expect(out.events[0].meta.meta.attacker.team).toBe('external');
+        expect(out.events[0].meta.meta.defender.team).toBe('internal');
+        expect(out.events[1].team).toBe('internal');
+        expect(out.events[2]).toEqual({ actionType: 'kickoff' });
+        expect(out.players).toBe(s.players);   // clés par joueur : inchangées
+        expect(s.teams.home.goals).toBe(2);    // entrée non modifiée
     });
 });

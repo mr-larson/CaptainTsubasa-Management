@@ -49,7 +49,7 @@ import {
     resetCaptainRerollActionFlag,
 } from './engine/resolvers.js';
 
-import { buildMatchStats, computePlaytime } from './engine/matchStats.js';
+import { buildMatchStats, computePlaytime, orientToHomeAway } from './engine/matchStats.js';
 import { runShootout } from './engine/shootout.js';
 
 import {
@@ -739,6 +739,8 @@ export function initMatchEngine(rootEl, config = {}) {
             payload.match_stats.playtime = computePlaytime(
                 state.startersByTeam, state.substitutions, state.turns, state.exitTurns
             );
+            // Repère domicile / extérieur (l'humain peut jouer à l'extérieur)
+            payload.match_stats = orientToHomeAway(payload.match_stats, internalIsHome);
             matchConfig.onMatchEnd(payload);
         }
     }

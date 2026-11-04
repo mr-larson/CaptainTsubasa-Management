@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, watch, onUnmounted } from 'vue';
 import { FORMATIONS, DEFAULT_FORMATION, LANE_Y, GK_LANE_Y } from '@/Pages/Match/engine/formations.js';
+import { isGoalEvent as isGoal, eventIcon, eventOutcome } from './matchEvents.js';
 
 const props = defineProps({
     events:        { type: Array,  default: () => [] },
@@ -45,7 +46,7 @@ const isFinished = computed(() => cursor.value >= totalSteps.value);
 // Les matchs simulés IA taguent les buts en 'goal', le moteur réel en
 // 'shot-goal' / 'special-goal' (cf. _detectType dans engine/ui.js) — on couvre les deux.
 function isGoalEvent(ev) {
-    return /goal/i.test(ev?.actionType ?? '');
+    return isGoal(ev);
 }
 
 function parseZone(ev) {
@@ -102,11 +103,11 @@ const ballTrack = computed(() => {
             side = actingTeam;
             zone = 3;
             lane = 50;
-        } else if (ev.result === 'attack') {
+        } else if (eventOutcome(ev) === 'success') {
             // L'attaquant progresse vers le but adverse
             side = actingTeam;
             zone = explicitZone ?? Math.min(5, zone + 1);
-        } else if (ev.result === 'defense') {
+        } else if (eventOutcome(ev) === 'failed') {
             // Le porteur perd le ballon → l'adversaire récupère et repart depuis sa propre moitié
             side = other(actingTeam);
             zone = explicitZone ? Math.max(1, 6 - explicitZone) : 2;
@@ -260,20 +261,16 @@ const placedPlayers = computed(() => {
     ];
 });
 
-const ACTION_ICONS = {
-    goal: '⚽', shot: '🎯', pass: '🔁', dribble: '🌀',
-    intercept: '🛡️', tackle: '🦵', block: '✋', save: '🧤',
-    hands: '🧤', punch: '👊',
-};
 function actionIcon(ev) {
     if (!ev) return '⏳';
-    return ACTION_ICONS[ev.actionType] ?? '▶';
+    return eventIcon(ev);
 }
 
 function resultBadgeClass(ev) {
     if (!ev) return 'bg-slate-300';
     if (isGoalEvent(ev)) return 'bg-amber-500';
-    return ev.result === 'attack' ? 'bg-emerald-500' : 'bg-rose-500';
+    const outcome = eventOutcome(ev);
+    return outcome === 'success' ? 'bg-emerald-500' : outcome === 'failed' ? 'bg-rose-500' : 'bg-slate-400';
 }
 
 // ==========================

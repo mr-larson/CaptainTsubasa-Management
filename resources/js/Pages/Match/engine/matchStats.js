@@ -148,3 +148,44 @@ export function buildMatchStats(events, goalEvents = []) {
 
     return out;
 }
+
+/**
+ * Le moteur raisonne en `internal` / `external` (internal = équipe du joueur
+ * humain), mais match_stats est lu en repère domicile / extérieur (calendrier,
+ * replay, déroulé). `buildMatchStats` et les titulaires mappent internal → home :
+ * quand l'humain joue à l'extérieur, on permute pour que `home` désigne bien
+ * l'équipe à domicile, et on réécrit le camp des événements (`team`, acteurs)
+ * pour que `internal` = domicile, comme dans les matchs simulés (MatchSimulator).
+ * Retourne un nouvel objet (l'entrée n'est pas modifiée).
+ */
+export function orientToHomeAway(matchStats, internalIsHome = true) {
+    if (!matchStats || internalIsHome) return matchStats;
+
+    const flip = (side) => (side === 'internal' ? 'external' : side === 'external' ? 'internal' : side);
+    const flipActor = (actor) => (actor && typeof actor === 'object' && 'team' in actor
+        ? { ...actor, team: flip(actor.team) }
+        : actor);
+
+    const out = { ...matchStats };
+
+    if (matchStats.teams) {
+        out.teams = { home: matchStats.teams.away, away: matchStats.teams.home };
+    }
+    if (matchStats.starters) {
+        out.starters = { home: matchStats.starters.away ?? [], away: matchStats.starters.home ?? [] };
+    }
+    if (Array.isArray(matchStats.events)) {
+        out.events = matchStats.events.map((ev) => {
+            if (!ev || typeof ev !== 'object') return ev;
+            const e = { ...ev };
+            if ('team' in e) e.team = flip(e.team);
+            const inner = e.meta?.meta;
+            if (inner && (inner.attacker || inner.defender)) {
+                e.meta = { ...e.meta, meta: { ...inner, attacker: flipActor(inner.attacker), defender: flipActor(inner.defender) } };
+            }
+            return e;
+        });
+    }
+    out.internal_is_home = true; // repère normalisé (marqueur pour la réparation des anciens matchs)
+    return out;
+}

@@ -198,7 +198,7 @@ const {
     calendarRows, calendarTeamRoster, calendarOpponentRoster,
     selectedCalendarMatch, selectedCalendarMatchStats,
     selectedCalendarMyTeamStats, selectedCalendarOpponentStats,
-    selectedCalendarPlayersStats, openMatchStats, selectedCalendarProgression,
+    selectedCalendarPlayersStats, openMatchStats, selectedCalendarProgression, loadingMatchStatsId,
     selectedCalendarEvents,
 } = useCalendar({ matches: matchesRef, teams: teamsRef, team: teamRef, week });
 
@@ -556,6 +556,7 @@ const saveGame = () => {
                                  :selectedCalendarEvents="selectedCalendarEvents"
                                  :isByeMatch="isByeMatch"
                                  :opponentNameForTeam="opponentNameForTeam"
+                                 :loadingMatchId="loadingMatchStatsId"
                                  @select-team="selectCalendarTeam"
                                  @open-match-stats="openMatchStats"
                     />
