@@ -557,6 +557,7 @@ const saveGame = () => {
                                  :isByeMatch="isByeMatch"
                                  :opponentNameForTeam="opponentNameForTeam"
                                  :loadingMatchId="loadingMatchStatsId"
+                                 :currentWeek="week"
                                  @select-team="selectCalendarTeam"
                                  @open-match-stats="openMatchStats"
                     />

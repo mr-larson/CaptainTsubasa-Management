@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch, onBeforeUnmount } from 'vue';
+import { computed, ref, watch, nextTick, onBeforeUnmount } from 'vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
 import MatchReplayPitch from './MatchReplayPitch.vue';
 import PlayerPhoto from '@/Components/PlayerPhoto.vue';
@@ -24,6 +24,7 @@ const props = defineProps({
     selectedCalendarEvents:      { type: Array, default: () => [] },
     // id du match dont le détail est en cours de chargement
     loadingMatchId:              { type: [Number, String], default: null },
+    currentWeek:                 { type: Number, default: null },
 });
 
 const emit = defineEmits(['select-team', 'open-match-stats']);
@@ -190,17 +191,21 @@ const statsTeamName = computed(() => {
     return props.teamById[statsTeamId.value]?.name ?? '—';
 });
 
-// Barres comparatives pour les stats équipe
+// Comparatif équipes, dans l'ordre de l'en-tête : domicile à gauche, extérieur à droite.
+// (Après le passage d'un duel, le gagnant de l'un est le perdant de l'autre :
+// « duels gagnés » suffit.)
 const statBars = computed(() => {
-    if (!props.selectedCalendarMyTeamStats || !props.selectedCalendarOpponentStats) return [];
-    const my  = props.selectedCalendarMyTeamStats;
-    const opp = props.selectedCalendarOpponentStats;
+    const t = props.selectedCalendarMatchStats?.teams;
+    const m = props.selectedCalendarMatch;
+    if (!t?.home || !t?.away || !m) return [];
+    const row = (label, home, away) => ({ label, home: Number(home ?? 0), away: Number(away ?? 0) });
     return [
-        { label: 'Tirs',    my: my.shots    ?? 0, opp: opp.shots    ?? 0, color: 'bg-red-400' },
-        { label: 'Passes',  my: my.passes   ?? 0, opp: opp.passes   ?? 0, color: 'bg-teal-400' },
-        { label: 'Dribbles',my: my.dribbles ?? 0, opp: opp.dribbles ?? 0, color: 'bg-yellow-400' },
-        { label: 'Duels +', my: my.duelsWon ?? 0, opp: opp.duelsWon ?? 0, color: 'bg-emerald-400' },
-        { label: 'Duels -', my: my.duelsLost?? 0, opp: opp.duelsLost?? 0, color: 'bg-rose-400' },
+        row('Buts',          m.home_score,      m.away_score),
+        row('Tirs',          t.home.shots,      t.away.shots),
+        row('Passes',        t.home.passes,     t.away.passes),
+        row('Dribbles',      t.home.dribbles,   t.away.dribbles),
+        row('Duels gagnés',  t.home.duelsWon,   t.away.duelsWon),
+        row('Arrêts',        teamSaves('home'), teamSaves('away')),
     ];
 });
 
@@ -330,6 +335,118 @@ const replayEvents = computed(() => {
     return events.sort((a, b) => a.priority - b.priority);
 });
 
+// ==========================
+//   RÉSUMÉ (buteurs, homme du match, temps forts)
+// ==========================
+const lastName = (ref) => (ref?.id && playersById.value[ref.id]?.lastname) || (ref?.name ?? '').split(' ').pop() || '?';
+
+const sideOfPlayer = (pid) => {
+    if (matchRoster('home').some(p => String(p.id) === String(pid))) return 'home';
+    if (matchRoster('away').some(p => String(p.id) === String(pid))) return 'away';
+    return null;
+};
+
+const rosterName = (pid) =>
+    [...matchRoster('home'), ...matchRoster('away')].find(p => String(p.id) === String(pid))?.lastname
+    ?? playersById.value[pid]?.lastname ?? '?';
+
+// Buteurs : depuis le déroulé (avec le tour), sinon depuis les stats joueurs.
+const scorers = computed(() => {
+    const goals = annotatedEvents.value.filter(isGoalEv).map(ev => ({
+        side:    ev.team === 'internal' ? 'home' : 'away',
+        turn:    ev.turn,
+        name:    ev.attacker ? lastName(ev.attacker) : (ev.text?.match(/BUT\s*!\s*(.+?)\s+marque/i)?.[1] ?? '?'),
+        special: /special/i.test(ev.actionType ?? '') || /spécial/i.test(ev.text ?? ''),
+    }));
+    if (goals.length) return goals;
+
+    const out = [];
+    for (const [pid, st] of Object.entries(props.selectedCalendarPlayersStats ?? {})) {
+        const n = st?.offense?.goals ?? 0;
+        const side = sideOfPlayer(pid);
+        for (let i = 0; i < n && side; i++) out.push({ side, turn: null, name: rosterName(pid), special: false });
+    }
+    return out;
+});
+const scorersBySide = (side) => scorers.value.filter(g => g.side === side);
+
+// Homme du match : note simple sur les stats du match.
+const manOfTheMatch = computed(() => {
+    let best = null;
+    for (const [pid, st] of Object.entries(props.selectedCalendarPlayersStats ?? {})) {
+        const o = st?.offense ?? {}, d = st?.defense ?? {};
+        const saves = (d.hands?.success ?? 0) + (d.punch?.success ?? 0) + (d.gkSpecial?.success ?? 0);
+        const goals = o.goals ?? 0;
+        const score = goals * 4
+            + (o.shot?.success ?? 0) + (o.dribble?.success ?? 0) + (o.pass?.success ?? 0) * 0.5
+            + (d.intercept?.success ?? 0) + (d.tackle?.success ?? 0) + (d.block?.success ?? 0)
+            + saves * 1.5
+            + (st?.duelsWon ?? 0) - (st?.duelsLost ?? 0) * 0.5;
+        if (!best || score > best.score || (score === best.score && goals > best.goals)) {
+            best = { pid, score, goals, saves, duelsWon: st?.duelsWon ?? 0,
+                     dribbles: o.dribble?.success ?? 0, side: sideOfPlayer(pid) };
+        }
+    }
+    if (!best || best.score <= 0) return null;
+    const bits = [];
+    if (best.goals)    bits.push(`${best.goals} but${best.goals > 1 ? 's' : ''}`);
+    if (best.saves)    bits.push(`${best.saves} arrêt${best.saves > 1 ? 's' : ''}`);
+    if (best.dribbles) bits.push(`${best.dribbles} dribble${best.dribbles > 1 ? 's' : ''} réussi${best.dribbles > 1 ? 's' : ''}`);
+    if (best.duelsWon) bits.push(`${best.duelsWon} duel${best.duelsWon > 1 ? 's' : ''} gagné${best.duelsWon > 1 ? 's' : ''}`);
+    const player = [...matchRoster('home'), ...matchRoster('away')].find(p => String(p.id) === String(best.pid))
+        ?? playersById.value[best.pid] ?? null;
+    return {
+        name:   rosterName(best.pid),
+        player,
+        team:   best.side ? props.teamById[best.side === 'home' ? props.selectedCalendarMatch?.home_team_id : props.selectedCalendarMatch?.away_team_id]?.name : null,
+        detail: bits.slice(0, 3).join(', '),
+    };
+});
+
+// Temps forts : cartons, blessures, gestes héroïques, gros matchs de gardien.
+const highlights = computed(() => {
+    const list = [];
+    for (const ev of props.selectedCalendarEvents) {
+        const kind = eventKind(ev);
+        const detail = (ev.details ?? []).find(d => typeof d === 'string') ?? '';
+        if (kind === 'card-red' || kind === 'card-yellow' || kind === 'injury') {
+            list.push({ icon: eventIcon(ev), text: (detail || ev.text || '').replace(/^[🟨🟥🤕]\s*/u, ''), turn: ev.turn });
+        } else if (kind === 'heroic') {
+            list.push({ icon: '⭐', text: ev.text, turn: ev.turn });
+        }
+    }
+    for (const side of ['home', 'away']) {
+        for (const p of matchRoster(side)) {
+            const n = playerSaves(p.id);
+            if (n >= 3) list.push({ icon: '🧤', text: `${p.lastname} : ${n} arrêts`, turn: null });
+        }
+    }
+    return list.slice(0, 6);
+});
+
+const logSection = ref(null);
+const scrollToLog = () => logSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+// ==========================
+//   OUVERTURE PAR DÉFAUT + SEMAINE EN COURS
+// ==========================
+const listEl = ref(null);
+
+// Sans match sélectionné : on ouvre le dernier match joué de l'équipe affichée.
+watch(() => props.calendarTeam?.id, () => {
+    if (props.selectedCalendarMatch || props.loadingMatchId) return;
+    const last = [...props.calendarRows].reverse().find(m => !props.isByeMatch(m) && m.status === 'played' && m.has_stats);
+    if (last) emit('open-match-stats', last);
+}, { immediate: true });
+
+// Fait apparaître la semaine en cours dans la liste (sans faire défiler la page).
+watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
+    await nextTick();
+    const box = listEl.value;
+    const row = box?.querySelector(`[data-week="${props.currentWeek}"]`);
+    if (box && row) box.scrollTop = Math.max(0, row.offsetTop - box.offsetTop - box.clientHeight / 3);
+}, { immediate: true });
+
 const homeTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide === 'home'));
 const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide === 'away'));
 </script>
@@ -361,7 +478,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
             <!-- ============================================ -->
             <!-- CALENDRIER                                    -->
             <!-- ============================================ -->
-            <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 lg:col-span-4">
+            <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 lg:col-span-5">
                 <div class="flex items-center gap-3 mb-3">
                     <div class="w-8 h-8 rounded-lg overflow-hidden bg-white border border-slate-200 shrink-0">
                         <img loading="lazy" decoding="async" v-if="teamLogoUrl(calendarTeam)" :src="teamLogoUrl(calendarTeam)" class="w-full h-full object-contain" alt=""/>
@@ -369,21 +486,26 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                     <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">{{ calendarTeam.name }}</h3>
                 </div>
 
-                <div class="space-y-1 h-[630px] overflow-y-auto pr-1">
+                <div ref="listEl" class="relative space-y-1 h-[630px] overflow-y-auto pr-1">
                     <div v-for="match in calendarRows" :key="match.id"
-                         class="flex items-center gap-3 px-3 py-2 rounded-lg border transition-all"
+                         :data-week="match.week"
+                         class="flex items-center gap-2 px-3 py-2 rounded-lg border transition-all"
                          :class="[
                             isByeMatch(match) ? 'bg-slate-50 border-slate-100 opacity-50' :
                             match.status === 'played' && match.has_stats
                                 ? 'bg-white border-slate-200 cursor-pointer hover:border-teal-300 hover:bg-teal-50'
                                 : 'bg-white border-slate-100',
-                            selectedCalendarMatch?.id === match.id ? 'border-teal-400 bg-teal-50 shadow-sm' : ''
+                            selectedCalendarMatch?.id === match.id ? 'border-teal-400 bg-teal-50 shadow-sm' : '',
+                            currentWeek && Number(match.week) === Number(currentWeek) ? 'ring-2 ring-amber-300' : ''
                         ]"
                          @click="!isByeMatch(match) && match.status === 'played' && match.has_stats && emit('open-match-stats', match)">
 
                         <!-- Tour (Coupe du Monde) ou semaine (ligue) -->
                         <div class="w-8 text-center shrink-0" :title="roundTitle(match)">
-                            <div class="text-[10px] font-bold text-slate-400">{{ roundShort(match) }}</div>
+                            <div class="text-[10px] font-bold"
+                                 :class="currentWeek && Number(match.week) === Number(currentWeek) ? 'text-amber-600' : 'text-slate-400'">{{ roundShort(match) }}</div>
+                            <div v-if="currentWeek && Number(match.week) === Number(currentWeek)"
+                                 class="text-[8px] font-bold text-amber-600 leading-none">en cours</div>
                         </div>
 
                         <!-- Résultat badge -->
@@ -409,11 +531,9 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
 
                         <!-- Domicile/Extérieur -->
                         <div v-if="!isByeMatch(match)"
-                             class="text-[10px] font-semibold px-1.5 py-0.5 rounded shrink-0"
-                             :class="match.home_team_id === calendarTeam.id
-                                ? 'bg-blue-100 text-blue-600'
-                                : 'bg-slate-100 text-slate-500'">
-                            {{ match.home_team_id === calendarTeam.id ? 'Dom.' : 'Ext.' }}
+                             class="text-xs shrink-0"
+                             :title="match.home_team_id === calendarTeam.id ? 'À domicile' : 'À l\'extérieur'">
+                            {{ match.home_team_id === calendarTeam.id ? '🏠' : '✈️' }}
                         </div>
 
                         <!-- Score -->
@@ -443,7 +563,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
             <!-- STATS MATCH SÉLECTIONNÉ                      -->
             <!-- ============================================ -->
             <div v-if="selectedCalendarMatch && selectedCalendarMatchStats"
-                 class="lg:col-span-8 flex flex-col gap-3 max-h-[830px] overflow-y-auto pr-1">
+                 class="lg:col-span-7 flex flex-col gap-3 max-h-[830px] overflow-y-auto pr-1">
 
                 <!-- Score du match -->
                 <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
@@ -469,11 +589,6 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                                 {{ selectedCalendarMatch.away_score }}
                             </div>
                             <div class="text-[10px] text-slate-400 font-semibold mt-1">{{ roundTitle(selectedCalendarMatch) }}</div>
-                            <button type="button"
-                                    @click="showReplay = true"
-                                    class="mt-2 flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold bg-slate-800 text-white hover:bg-slate-700 transition-all mx-auto">
-                                ▶ Résumé
-                            </button>
                         </div>
 
                         <!-- Équipe extérieure -->
@@ -488,37 +603,77 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                             </div>
                         </div>
                     </div>
+
+                    <!-- Buteurs -->
+                    <div v-if="scorers.length" class="mt-3 grid grid-cols-2 gap-6 text-[11px]">
+                        <div class="text-right space-y-0.5">
+                            <div v-for="(g, i) in scorersBySide('home')" :key="'h' + i" class="text-slate-600">
+                                <span class="font-semibold">{{ g.name }}</span><span v-if="g.special" class="text-amber-600"> (spécial)</span>
+                                <span v-if="g.turn" class="text-slate-400"> T{{ g.turn }}</span> ⚽
+                            </div>
+                        </div>
+                        <div class="space-y-0.5">
+                            <div v-for="(g, i) in scorersBySide('away')" :key="'a' + i" class="text-slate-600">
+                                ⚽ <span class="font-semibold">{{ g.name }}</span><span v-if="g.special" class="text-amber-600"> (spécial)</span>
+                                <span v-if="g.turn" class="text-slate-400"> T{{ g.turn }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Homme du match + temps forts -->
+                    <div v-if="manOfTheMatch || highlights.length" class="mt-3 pt-3 border-t border-slate-200 space-y-2">
+                        <div v-if="manOfTheMatch" class="flex items-center gap-2 text-xs">
+                            <div class="w-7 h-7 rounded-full overflow-hidden bg-amber-100 ring-2 ring-amber-300 shrink-0">
+                                <PlayerPhoto v-if="manOfTheMatch.player" :src="playerPhotoUrl(manOfTheMatch.player)" class="w-full h-full object-cover" alt="" />
+                            </div>
+                            <span class="font-bold text-amber-700">⭐ Homme du match :</span>
+                            <span class="font-semibold text-slate-700">{{ manOfTheMatch.name }}</span>
+                            <span v-if="manOfTheMatch.team" class="text-slate-400">({{ manOfTheMatch.team }})</span>
+                            <span v-if="manOfTheMatch.detail" class="text-slate-500">— {{ manOfTheMatch.detail }}</span>
+                        </div>
+                        <div v-if="highlights.length" class="flex flex-wrap gap-1.5">
+                            <span v-for="(h, i) in highlights" :key="i"
+                                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white border border-slate-200 text-[10px] font-semibold text-slate-600">
+                                {{ h.icon }} {{ h.text }}<span v-if="h.turn" class="text-slate-400">· T{{ h.turn }}</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 flex justify-center gap-2">
+                        <button type="button" @click="showReplay = true"
+                                class="flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-bold bg-slate-800 text-white hover:bg-slate-700 transition-all">
+                            ▶ Revoir le match
+                        </button>
+                        <button v-if="selectedCalendarEvents.length" type="button" @click="scrollToLog"
+                                class="flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-bold bg-white border border-slate-300 text-slate-600 hover:bg-slate-100 transition-all">
+                            📋 Déroulé complet
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Barres comparatives équipes -->
                 <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
                     <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">Comparatif équipes</h4>
                     <div class="space-y-2">
-                        <div v-for="bar in statBars" :key="bar.label" class="flex items-center gap-2">
-                            <!-- Valeur gauche (calendarTeam) -->
-                            <div class="w-6 text-right text-xs font-black text-slate-700">{{ bar.my }}</div>
-
-                            <!-- Barre -->
-                            <div class="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden flex">
-                                <div class="h-full rounded-l-full transition-all"
-                                     :class="bar.color"
-                                     :style="{ width: statBarWidth(bar.my, bar.opp) + '%' }">
+                        <div v-for="bar in statBars" :key="bar.label">
+                            <div class="text-[10px] text-slate-400 text-center mb-0.5">{{ bar.label }}</div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 text-right text-xs font-black"
+                                     :class="bar.home > bar.away ? 'text-blue-600' : 'text-slate-500'">{{ bar.home }}</div>
+                                <div class="flex-1 h-2.5 bg-slate-100 rounded-full overflow-hidden flex">
+                                    <div class="h-full bg-blue-500 transition-all"
+                                         :style="{ width: statBarWidth(bar.home, bar.away) + '%' }"></div>
+                                    <div class="h-full bg-orange-400 transition-all"
+                                         :style="{ width: statBarWidth(bar.away, bar.home) + '%' }"></div>
                                 </div>
-                                <div class="h-full rounded-r-full bg-slate-300 transition-all"
-                                     :style="{ width: statBarWidth(bar.opp, bar.my) + '%' }">
-                                </div>
+                                <div class="w-8 text-left text-xs font-black"
+                                     :class="bar.away > bar.home ? 'text-orange-500' : 'text-slate-500'">{{ bar.away }}</div>
                             </div>
-
-                            <!-- Valeur droite (adversaire) -->
-                            <div class="w-6 text-left text-xs font-black text-slate-500">{{ bar.opp }}</div>
-
-                            <!-- Label -->
-                            <div class="w-14 text-[10px] text-slate-400 text-right">{{ bar.label }}</div>
                         </div>
                     </div>
-                    <div class="flex justify-between mt-2 text-[12px] text-orange-500">
-                        <span class="font-semibold text-blue-500">{{ calendarTeam?.name }}</span>
-                        <span>{{ opponentNameForTeam(selectedCalendarMatch, calendarTeam?.id) }}</span>
+                    <div class="flex justify-between mt-2 text-[11px] font-semibold">
+                        <span class="text-blue-600">🏠 {{ homeTeamName }}</span>
+                        <span class="text-orange-500">{{ awayTeamName }} ✈️</span>
                     </div>
                 </div>
 
@@ -530,7 +685,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                 <!-- ============================================ -->
                 <!-- BLOC : Déroulé du match (action par action)  -->
                 <!-- ============================================ -->
-                <div v-if="selectedCalendarEvents.length" class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+                <div v-if="selectedCalendarEvents.length" ref="logSection" class="border border-slate-200 rounded-xl bg-slate-50 p-4 scroll-mt-2">
                     <div class="flex items-center justify-between mb-3 gap-2 flex-wrap">
                         <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
                             📋 Déroulé du match (action par action)
@@ -613,7 +768,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                 </div>
             </div>
             <!-- Message si aucun match sélectionné -->
-            <div v-else class="lg:col-span-8 flex items-center justify-center rounded-xl border border-dashed border-slate-300 text-slate-400 text-sm">
+            <div v-else class="lg:col-span-7 flex items-center justify-center rounded-xl border border-dashed border-slate-300 text-slate-400 text-sm">
                 <div v-if="loadingMatchId" class="text-center p-8">
                     <div class="w-8 h-8 mx-auto mb-3 rounded-full border-4 border-teal-400 border-t-transparent animate-spin"></div>
                     <p>Chargement du match…</p>
