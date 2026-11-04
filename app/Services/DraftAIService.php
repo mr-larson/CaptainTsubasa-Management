@@ -206,9 +206,7 @@ class DraftAIService
 
     protected function getSeasonLength(GameSave $gameSave): int
     {
-        $teamCount = GameTeam::where('game_save_id', $gameSave->id)->count();
-        if ($teamCount < 2) return 28;
-        return $teamCount % 2 === 1 ? $teamCount * 2 : ($teamCount - 1) * 2;
+        return SeasonService::lengthForTeamCount(GameTeam::where('game_save_id', $gameSave->id)->count());
     }
 
     /**

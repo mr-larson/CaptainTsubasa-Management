@@ -142,6 +142,8 @@ Route::middleware('auth')->group(function () {
         // ── Matchs → GameMatchController ──────────────────────────
         Route::get('/{gameSave}/match',
             [GameMatchController::class, 'match'])->name('match');
+        Route::get('/{gameSave}/matches/{match}/stats',
+            [GameMatchController::class, 'stats'])->name('matches.stats');
         Route::post('/{gameSave}/matches/{match}/finish',
             [GameMatchController::class, 'finishMatch'])->name('matches.finish');
         Route::post('/{gameSave}/simulate-week',

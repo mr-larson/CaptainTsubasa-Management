@@ -9,6 +9,7 @@ use App\Models\GameSaves\GamePlayerMoraleLog;
 use App\Models\GameSaves\GameSanction;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Moral des joueurs — phase 1 : résultats, temps de jeu, salaire.
@@ -132,8 +133,9 @@ class MoraleService
             ->with(['contracts' => fn($q) => $q->activeAt($week)->with('gamePlayer')])
             ->get();
 
-        $logs = [];
-        $now  = now();
+        $logs          = [];
+        $moraleUpdates = [];   // game_player_id => nouveau moral
+        $now           = now();
 
         foreach ($teams as $team) {
             $context = $teamContext[$team->id] ?? null;
@@ -206,7 +208,7 @@ class MoraleService
 
                 if ($newMorale !== $morale) {
                     $player->morale = $newMorale;
-                    $player->save();
+                    $moraleUpdates[(int) $player->id] = $newMorale;
                 }
 
                 foreach ($events as $event) {
@@ -225,8 +227,21 @@ class MoraleService
             }
         }
 
-        if (!empty($logs)) {
-            GamePlayerMoraleLog::insert($logs);
+        // Un seul UPDATE (CASE id) au lieu d'un save() par joueur. Les valeurs
+        // sont des entiers calculés ici, bornés à 0-100.
+        foreach (array_chunk($moraleUpdates, 500, true) as $chunk) {
+            $cases = implode(' ', array_map(
+                fn($id, $value) => 'WHEN ' . (int) $id . ' THEN ' . (int) $value,
+                array_keys($chunk),
+                $chunk,
+            ));
+            GamePlayer::whereIn('id', array_keys($chunk))->update([
+                'morale' => DB::raw("CASE id {$cases} END"),
+            ]);
+        }
+
+        foreach (array_chunk($logs, 500) as $chunk) {
+            GamePlayerMoraleLog::insert($chunk);
         }
     }
 

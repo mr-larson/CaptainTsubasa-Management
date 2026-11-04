@@ -66,6 +66,7 @@ class GameSaveRequest extends FormRequest
             'competition_type' => ['nullable', 'string', 'in:college_league,world_cup'],
 
             'game_config'      => ['nullable', 'array'],
+            ...GameSave::configRules('game_config.'),
 
             // Graine du moral initial, générée à l'écran de sélection d'équipe
             // pour que le moral prévisualisé soit celui réellement appliqué.
@@ -93,5 +94,20 @@ class GameSaveRequest extends FormRequest
         }
 
         return $rules;
+    }
+
+    /**
+     * Gain d'entraînement min ≤ max (sinon random_int lève une ValueError).
+     */
+    public function after(): array
+    {
+        return [
+            function ($validator) {
+                $config = $this->input('game_config');
+                if (is_array($config) && ! (new GameSave)->hasValidTrainingGains($config)) {
+                    $validator->errors()->add('game_config', 'Le gain max doit être supérieur ou égal au gain min.');
+                }
+            },
+        ];
     }
 }

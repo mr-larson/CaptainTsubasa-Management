@@ -16,11 +16,20 @@ class SeasonService
     public const RANK_PRIZE_BASE = 6000;
     public const RANK_PRIZE_STEP = 400;
 
-    public function getSeasonLength(GameSave $gameSave): int
+    /**
+     * Nombre de semaines d'une saison aller-retour pour N équipes. Avec un
+     * nombre impair, une équipe fictive « repos » s'ajoute : N journées par
+     * phase au lieu de N-1. Seule source de vérité (création, draft, IA).
+     */
+    public static function lengthForTeamCount(int $teamCount): int
     {
-        $teamCount = GameTeam::where('game_save_id', $gameSave->id)->count();
         if ($teamCount < 2) return 28;
         return $teamCount % 2 === 1 ? $teamCount * 2 : ($teamCount - 1) * 2;
+    }
+
+    public function getSeasonLength(GameSave $gameSave): int
+    {
+        return self::lengthForTeamCount(GameTeam::where('game_save_id', $gameSave->id)->count());
     }
 
     public function isSeasonOver(GameSave $gameSave): bool

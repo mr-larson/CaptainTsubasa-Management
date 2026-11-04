@@ -1,5 +1,7 @@
 // resources/js/Pages/GameSaves/Play/useCalendar.js
 import { ref, computed } from 'vue';
+import axios from 'axios';
+import { alertDialog } from '@/Composables/useDialog.js';
 
 export function useCalendar({ matches, teams, team, week }) {
 
@@ -152,7 +154,14 @@ export function useCalendar({ matches, teams, team, week }) {
             : null
     );
 
-    const selectedCalendarMatchStats      = computed(() => selectedCalendarMatch.value?.match_stats ?? null);
+    // Détail des matchs chargé à la demande (la page ne reçoit pas les
+    // match_stats) et gardé en cache le temps de la page, par id de match.
+    const matchStatsCache = ref({});
+    const loadingMatchStatsId = ref(null);
+
+    const selectedCalendarMatchStats      = computed(() =>
+        selectedCalendarMatchId.value ? (matchStatsCache.value[selectedCalendarMatchId.value] ?? null) : null
+    );
     const selectedCalendarPlayersStats    = computed(() => selectedCalendarMatchStats.value?.players ?? {});
     const selectedCalendarProgression = computed(() =>
         selectedCalendarMatchStats.value?.progression ?? []
@@ -176,8 +185,26 @@ export function useCalendar({ matches, teams, team, week }) {
         return isHome ? selectedCalendarMatchStats.value.teams.away : selectedCalendarMatchStats.value.teams.home;
     });
 
-    const openMatchStats = (match) => {
-        if (!match || match.status !== 'played' || !match.match_stats) return;
+    const openMatchStats = async (match) => {
+        if (!match || match.status !== 'played' || !match.has_stats) return;
+        if (loadingMatchStatsId.value !== null) return;
+
+        if (!matchStatsCache.value[match.id]) {
+            loadingMatchStatsId.value = match.id;
+            try {
+                const { data } = await axios.get(route('game-saves.matches.stats', {
+                    gameSave: match.game_save_id,
+                    match:    match.id,
+                }));
+                matchStatsCache.value = { ...matchStatsCache.value, [match.id]: data.match_stats };
+            } catch {
+                alertDialog({ title: 'Statistiques indisponibles', message: 'Impossible de charger le détail de ce match. Réessaie dans un instant.' });
+                return;
+            } finally {
+                loadingMatchStatsId.value = null;
+            }
+        }
+
         selectedCalendarMatchId.value = match.id;
     };
 
@@ -194,6 +221,6 @@ export function useCalendar({ matches, teams, team, week }) {
         selectedCalendarMatchStats, selectedCalendarPlayersStats,
         selectedCalendarProgression,
         selectedCalendarEvents,
-        openMatchStats,
+        openMatchStats, loadingMatchStatsId,
     };
 }

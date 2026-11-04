@@ -28,10 +28,12 @@ use App\Services\CareerObjectiveService;
 use App\Services\DraftService;
 use App\Services\MoraleService;
 use App\Services\NationalTeamAssembler;
+use App\Services\SeasonService;
 use App\Services\PlayerStatsService;
 use App\Services\TournamentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -99,7 +101,13 @@ class GameSaveController extends Controller
             'competition_type'   => ['nullable', 'string', 'in:college_league,world_cup'],
             'game_config'        => ['nullable', 'array'],
             'period_package_id'  => ['nullable', 'integer', 'exists:period_packages,id'],
+            ...GameSave::configRules('game_config.'),
         ]);
+        $data['game_config'] = GameSave::sanitizeConfig($data['game_config'] ?? null) ?: null;
+
+        if ($data['game_config'] && ! (new GameSave)->hasValidTrainingGains($data['game_config'])) {
+            return back()->withErrors(['game_config' => 'Le gain max doit être supérieur ou égal au gain min.']);
+        }
 
         // L'étape 1 est gardée en session et l'écran de choix d'équipe servi
         // en GET : un F5, ou une erreur de validation au lancement (back()),
@@ -283,6 +291,7 @@ class GameSaveController extends Controller
     public function start(GameSaveRequest $request): RedirectResponse
     {
         $data = $request->validated();
+        $data['game_config'] = GameSave::sanitizeConfig($data['game_config'] ?? null) ?: null;
         $gameMode = $data['game_mode'] ?? 'prebuilt';
         $isDraft  = $gameMode === 'draft';
 
@@ -332,7 +341,7 @@ class GameSaveController extends Controller
         if ($package) {
             $packageTeams = $package->teams_json;
             $teamCount    = count($packageTeams);
-            $seasonLength = max(1, ($teamCount - 1) * 2);
+            $seasonLength = SeasonService::lengthForTeamCount($teamCount);
 
             foreach ($packageTeams as $t) {
                 $gameTeam = GameTeam::create([
@@ -354,7 +363,7 @@ class GameSaveController extends Controller
         } else {
             $teams        = Team::orderBy('id')->get();
             $teamCount    = $teams->count();
-            $seasonLength = max(1, ($teamCount - 1) * 2);
+            $seasonLength = SeasonService::lengthForTeamCount($teamCount);
 
             foreach ($teams as $team) {
                 $gameTeam = GameTeam::create([
@@ -622,7 +631,13 @@ class GameSaveController extends Controller
             'competition_type' => ['required', 'string', 'in:world_cup'],
             'nation'           => ['required', 'string', Rule::in(Nationality::ALL)],
             'game_config'      => ['nullable', 'array'],
+            ...GameSave::configRules('game_config.'),
         ]);
+        $data['game_config'] = GameSave::sanitizeConfig($data['game_config'] ?? null) ?: null;
+
+        if ($data['game_config'] && ! (new GameSave)->hasValidTrainingGains($data['game_config'])) {
+            return back()->withErrors(['game_config' => 'Le gain max doit être supérieur ou égal au gain min.']);
+        }
 
         // Nations réellement alignables (≥ 11 joueurs dont 1 gardien).
         $playable = collect($this->playableNations())
@@ -709,8 +724,17 @@ class GameSaveController extends Controller
 
         $this->ensureCalendar($gameSave, $gameTeams);
 
-        $matches = GameMatch::with(['homeTeam', 'awayTeam'])
+        // Sans match_stats (déroulé complet de chaque match, qui alourdissait
+        // la page à chaque semaine) : le détail se charge à la demande via
+        // game-saves.matches.stats. has_stats indique s'il est disponible.
+        // Équipes réduites au nom (le reste est déjà dans la prop teams).
+        $matches = GameMatch::with(['homeTeam:id,name', 'awayTeam:id,name'])
             ->where('game_save_id', $gameSave->id)
+            ->select([
+                'id', 'game_save_id', 'week', 'home_team_id', 'away_team_id',
+                'status', 'round', 'home_score', 'away_score',
+            ])
+            ->selectRaw('match_stats IS NOT NULL AS has_stats')
             ->orderBy('week')
             ->get();
 
@@ -1232,33 +1256,11 @@ class GameSaveController extends Controller
     {
         $this->authorizeGameSave('update', $gameSave);
 
-        $data = $request->validate([
-            'bonus_cards_enabled'     => ['boolean'],
-            'malus_cards_enabled'     => ['boolean'],
-            'match_stamina_cost'      => ['integer', 'min:0', 'max:20'],
-            'rest_stamina_recovery'   => ['integer', 'min:0', 'max:30'],
-            'match_max_turns'         => ['integer', 'min:10', 'max:80'],
-            'injury_on_foul'          => ['boolean'],
-            'suspension_on_3_yellows' => ['boolean'],
-            'training_max_per_week'   => ['integer', 'min:1', 'max:10'],
-            'training_gain_min'       => ['integer', 'min:0', 'max:10'],
-            'training_gain_max'       => ['integer', 'min:1', 'max:20'],
-            'training_stamina_cost'   => ['integer', 'min:0', 'max:15'],
-            'training_min_stamina'    => ['integer', 'min:0', 'max:50'],
-            'training_cost'           => ['integer', 'min:0', 'max:5000'],
-            'ai_transfers_enabled'    => ['boolean'],
-            'ai_training_enabled'     => ['boolean'],
-            'visible_origins'         => ['array'],
-            'visible_origins.*'       => ['boolean'],
-            'internationals_visible'  => ['boolean'],
-            'career_difficulty'       => ['string', 'in:none,survival,standard,conquest'],
-        ]);
+        // initial_morale_random n'a d'effet qu'à la création du monde.
+        $rules = Arr::except(GameSave::configRules(), ['initial_morale_random']);
+        $data  = GameSave::sanitizeConfig($request->validate($rules));
 
-        // Gain min ≤ gain max, en tenant compte de la valeur déjà enregistrée
-        // pour le champ non envoyé (sinon random_int lève une ValueError).
-        $gainMin = $data['training_gain_min'] ?? (int) $gameSave->getConfig('training_gain_min', config('training.gain_min', 1));
-        $gainMax = $data['training_gain_max'] ?? (int) $gameSave->getConfig('training_gain_max', config('training.gain_max', 5));
-        if ($gainMin > $gainMax) {
+        if (! $gameSave->hasValidTrainingGains($data)) {
             return back()->withErrors(['training_gain_max' => 'Le gain max doit être supérieur ou égal au gain min.']);
         }
 

@@ -78,14 +78,13 @@ class AITransferService
         $unavailableIds = array_unique(array_merge($injuredIds, $suspendedIds));
 
         foreach ($aiTeams as $team) {
-            $this->recruitForTeam($team, $freePlayers, $gameSave, $remainingWeeks, $unavailableIds);
+            $signedIds = $this->recruitForTeam($team, $freePlayers, $gameSave, $remainingWeeks, $unavailableIds);
 
-            // Rafraîchir les joueurs libres après chaque équipe
-            $freePlayers = GamePlayer::where('game_save_id', $gameSave->id)
-                ->whereDoesntHave('contracts', fn($q) => $q->where('game_save_id', $gameSave->id)->activeAt($week))
-                ->excludingFictional()
-                ->visibleForConfig($gameSave)
-                ->get();
+            // Les recrues de cette équipe ne sont plus libres pour les suivantes
+            // (retrait en mémoire, au lieu de relancer la requête à chaque équipe).
+            if (!empty($signedIds)) {
+                $freePlayers = $freePlayers->reject(fn($p) => in_array($p->id, $signedIds, true))->values();
+            }
 
             if ($freePlayers->isEmpty()) break;
         }
@@ -97,7 +96,9 @@ class AITransferService
         GameSave $gameSave,
         int $remainingWeeks,
         array $unavailableIds = []
-    ): void {
+    ): array {
+        $signedIds = [];
+
         $contracts    = $team->contracts->filter(fn($c) => $c->gamePlayer !== null);
         $squadPlayers = $contracts->map(fn($c) => $c->gamePlayer)->filter();
         $squadSize    = $squadPlayers->count();
@@ -105,7 +106,7 @@ class AITransferService
         $budget       = $team->budget ?? 0;
 
         // Ne jamais dépasser 18 joueurs
-        if ($squadSize >= self::TARGET_SQUAD) return;
+        if ($squadSize >= self::TARGET_SQUAD) return $signedIds;
 
         // Calcul du budget disponible selon taille effectif
         $budgetRatio = match(true) {
@@ -115,14 +116,14 @@ class AITransferService
         };
         $availableBudget = (int) floor($budget * $budgetRatio);
 
-        if ($availableBudget <= 0) return;
+        if ($availableBudget <= 0) return $signedIds;
 
         // Construire la liste de priorités de recrutement
         $needs = $this->buildRecruitmentNeeds(
             $contracts, $squadPlayers, $squadSize, $unavailableIds
         );
 
-        if (empty($needs)) return;
+        if (empty($needs)) return $signedIds;
 
         $signingsMade = 0;
 
@@ -190,7 +191,10 @@ class AITransferService
             $signingsMade++;
             $starterCount += $isStarter ? 1 : 0;
             $freePlayers = $freePlayers->reject(fn($p) => $p->id === $candidate->id);
+            $signedIds[] = $candidate->id;
         }
+
+        return $signedIds;
     }
 
     // ==========================
@@ -347,9 +351,7 @@ class AITransferService
 
     protected function getSeasonLength(GameSave $gameSave): int
     {
-        $teamCount = GameTeam::where('game_save_id', $gameSave->id)->count();
-        if ($teamCount < 2) return 28;
-        return $teamCount % 2 === 1 ? $teamCount * 2 : ($teamCount - 1) * 2;
+        return SeasonService::lengthForTeamCount(GameTeam::where('game_save_id', $gameSave->id)->count());
     }
 
     /**

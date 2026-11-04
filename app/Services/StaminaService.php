@@ -2,9 +2,12 @@
 
 namespace App\Services;
 
+use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameMatch;
+use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
+use Illuminate\Support\Facades\DB;
 
 class StaminaService
 {
@@ -81,25 +84,28 @@ class StaminaService
 
         $week = $gameSave->week ?? 1;
 
-        $teams = GameTeam::where('game_save_id', $gameSave->id)
-            ->with(['contracts' => fn($q) => $q->activeAt($week)->with('gamePlayer')])
-            ->get();
+        // Joueurs sous contrat actif dans la save (un joueur n'est compté
+        // qu'une fois), puis deux UPDATE en lot au lieu d'un save() par joueur.
+        // stamina est UNSIGNED : on compare avant de soustraire (pas de
+        // « out of range » MySQL). Les coûts sont des entiers validés (cast int).
+        $teamIds   = GameTeam::where('game_save_id', $gameSave->id)->pluck('id');
+        $playerIds = GameContract::whereIn('game_team_id', $teamIds)
+            ->activeAt($week)
+            ->distinct()
+            ->pluck('game_player_id')
+            ->map(fn($id) => (int) $id);
 
-        foreach ($teams as $team) {
-            foreach ($team->contracts as $c) {
-                $player = $c->gamePlayer;
-                if (!$player) continue;
+        [$played, $rested] = $playerIds->partition(fn($id) => isset($playedSet[(string) $id]));
 
-                $hasPlayed = isset($playedSet[(string) $player->id]);
-
-                if ($hasPlayed) {
-                    $player->stamina = max(0, $player->stamina - $matchCost);
-                } else {
-                    $player->stamina = min(100, $player->stamina + $restRecov);
-                }
-
-                $player->save();
-            }
+        if ($played->isNotEmpty() && $matchCost !== 0) {
+            GamePlayer::whereIn('id', $played->values())->update([
+                'stamina' => DB::raw('CASE WHEN stamina < ' . $matchCost . ' THEN 0 ELSE stamina - ' . $matchCost . ' END'),
+            ]);
+        }
+        if ($rested->isNotEmpty() && $restRecov !== 0) {
+            GamePlayer::whereIn('id', $rested->values())->update([
+                'stamina' => DB::raw('CASE WHEN stamina + ' . $restRecov . ' > 100 THEN 100 ELSE stamina + ' . $restRecov . ' END'),
+            ]);
         }
     }
 }

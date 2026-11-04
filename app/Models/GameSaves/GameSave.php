@@ -162,6 +162,78 @@ class GameSave extends Model
     public const INITIAL_MORALE_MIN = 45;
     public const INITIAL_MORALE_MAX = 75;
 
+    /**
+     * Règles de validation des réglages de partie, partagées par la création
+     * (préfixe 'game_config.') et l'écran de gestion (sans préfixe).
+     * Les bornes protègent le serveur : match_max_turns borne la boucle de
+     * simulation, training_cost ≥ 0 empêche un entraînement « rémunéré ».
+     */
+    public static function configRules(string $prefix = ''): array
+    {
+        $rules = [
+            'bonus_cards_enabled'     => ['boolean'],
+            'malus_cards_enabled'     => ['boolean'],
+            'match_stamina_cost'      => ['integer', 'min:0', 'max:20'],
+            'rest_stamina_recovery'   => ['integer', 'min:0', 'max:30'],
+            'match_max_turns'         => ['integer', 'min:10', 'max:80'],
+            'injury_on_foul'          => ['boolean'],
+            'suspension_on_3_yellows' => ['boolean'],
+            'training_max_per_week'   => ['integer', 'min:1', 'max:10'],
+            'training_gain_min'       => ['integer', 'min:0', 'max:10'],
+            'training_gain_max'       => ['integer', 'min:1', 'max:20'],
+            'training_stamina_cost'   => ['integer', 'min:0', 'max:15'],
+            'training_min_stamina'    => ['integer', 'min:0', 'max:50'],
+            'training_cost'           => ['integer', 'min:0', 'max:5000'],
+            'ai_transfers_enabled'    => ['boolean'],
+            'ai_training_enabled'     => ['boolean'],
+            'visible_origins'         => ['array'],
+            'visible_origins.*'       => ['boolean'],
+            'internationals_visible'  => ['boolean'],
+            'career_difficulty'       => ['string', 'in:none,survival,standard,conquest'],
+            'initial_morale_random'   => ['boolean'],
+        ];
+
+        $prefixed = [];
+        foreach ($rules as $key => $rule) {
+            $prefixed[$prefix . $key] = $rule;
+        }
+
+        return $prefixed;
+    }
+
+    /**
+     * Ne garde que les réglages connus (clés de DEFAULT_CONFIG, et origines
+     * connues pour visible_origins) : rien d'arbitraire ne finit dans le state.
+     */
+    public static function sanitizeConfig(?array $config): array
+    {
+        if (empty($config)) {
+            return [];
+        }
+
+        $clean = Arr::only($config, array_keys(self::DEFAULT_CONFIG));
+        if (isset($clean['visible_origins']) && is_array($clean['visible_origins'])) {
+            $clean['visible_origins'] = Arr::only(
+                $clean['visible_origins'],
+                array_keys(self::DEFAULT_CONFIG['visible_origins']),
+            );
+        }
+
+        return $clean;
+    }
+
+    /**
+     * Gain min ≤ gain max (sinon random_int lève une ValueError), en
+     * complétant le champ absent par la valeur déjà en vigueur.
+     */
+    public function hasValidTrainingGains(array $values): bool
+    {
+        $min = $values['training_gain_min'] ?? (int) $this->getConfig('training_gain_min', config('training.gain_min', 1));
+        $max = $values['training_gain_max'] ?? (int) $this->getConfig('training_gain_max', config('training.gain_max', 5));
+
+        return (int) $min <= (int) $max;
+    }
+
     public function getConfig(?string $key = null, $default = null)
     {
         $config = array_merge(self::DEFAULT_CONFIG, $this->state['config'] ?? []);

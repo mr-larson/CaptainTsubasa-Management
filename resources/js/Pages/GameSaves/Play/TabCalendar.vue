@@ -362,12 +362,12 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                          class="flex items-center gap-3 px-3 py-2 rounded-lg border transition-all"
                          :class="[
                             isByeMatch(match) ? 'bg-slate-50 border-slate-100 opacity-50' :
-                            match.status === 'played' && match.match_stats
+                            match.status === 'played' && match.has_stats
                                 ? 'bg-white border-slate-200 cursor-pointer hover:border-teal-300 hover:bg-teal-50'
                                 : 'bg-white border-slate-100',
                             selectedCalendarMatch?.id === match.id ? 'border-teal-400 bg-teal-50 shadow-sm' : ''
                         ]"
-                         @click="!isByeMatch(match) && match.status === 'played' && match.match_stats && emit('open-match-stats', match)">
+                         @click="!isByeMatch(match) && match.status === 'played' && match.has_stats && emit('open-match-stats', match)">
 
                         <!-- Tour (Coupe du Monde) ou semaine (ligue) -->
                         <div class="w-8 text-center shrink-0" :title="roundTitle(match)">
@@ -418,7 +418,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
 
                         <!-- Icône stats dispo -->
                         <div class="w-4 shrink-0">
-                            <span v-if="match.status === 'played' && match.match_stats" class="text-teal-400 text-xs">📊</span>
+                            <span v-if="match.status === 'played' && match.has_stats" class="text-teal-400 text-xs">📊</span>
                         </div>
                     </div>
                 </div>

@@ -26,6 +26,8 @@ class GameMatch extends Model
 
     protected $casts = [
         'match_stats' => 'array',
+        // Colonne calculée (select de la page Play) : détail disponible ou non.
+        'has_stats'   => 'boolean',
     ];
 
     public function homeTeam(): BelongsTo

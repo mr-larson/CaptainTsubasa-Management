@@ -27,11 +27,29 @@ class PostMatchProgressionService
 
         $report = [];
 
-        DB::transaction(function () use ($stats, $season, $match, &$state, &$report) {
+        // Les ids viennent de match_stats (envoyé par le client pour un match
+        // joué) : seuls les joueurs de CETTE save peuvent progresser.
+        // Joueurs et équipes chargés en une fois (pas de requête par joueur).
+        $playerIds = array_map('intval', array_keys($stats));
+        $players   = GamePlayer::where('game_save_id', $gameSave->id)
+            ->whereIn('id', $playerIds)
+            ->get()
+            ->keyBy('id');
+
+        $teamIdByPlayer = [];
+        GameContract::whereIn('game_player_id', $players->keys())
+            ->whereIn('game_team_id', [$match->home_team_id, $match->away_team_id])
+            ->orderBy('id')
+            ->get(['game_player_id', 'game_team_id'])
+            ->each(function ($c) use (&$teamIdByPlayer) {
+                $teamIdByPlayer[(int) $c->game_player_id] ??= (int) $c->game_team_id;
+            });
+
+        DB::transaction(function () use ($stats, $season, $match, $players, $teamIdByPlayer, &$state, &$report) {
             foreach ($stats as $playerId => $playerStats) {
                 $playerId = (int) $playerId;
-                $player   = GamePlayer::find($playerId);
-                if (!$player) continue;
+                $player   = $players->get($playerId);
+                if (!$player || !is_array($playerStats)) continue;
 
                 $alreadyGained = (int) ($state['season_progression'][$season][$playerId] ?? 0);
                 if ($alreadyGained >= self::SEASON_CAP_PER_PLAYER) continue;
@@ -76,13 +94,8 @@ class PostMatchProgressionService
                     $state['season_progression'][$season][$playerId] = $alreadyGained + $totalApplied;
 
                     // Détermine l'équipe et le side (home/away) pour affichage UI
-                    $contract = GameContract::where('game_player_id', $playerId)
-                        ->where(function ($q) use ($match) {
-                            $q->where('game_team_id', $match->home_team_id)
-                                ->orWhere('game_team_id', $match->away_team_id);
-                        })
-                        ->first();
-                    $teamSide = $contract && (int) $contract->game_team_id === (int) $match->home_team_id ? 'home' : 'away';
+                    $teamId   = $teamIdByPlayer[$playerId] ?? null;
+                    $teamSide = $teamId === (int) $match->home_team_id ? 'home' : 'away';
 
                     $report[] = [
                         'player_id'    => $playerId,
@@ -91,7 +104,7 @@ class PostMatchProgressionService
                         'photo_path'   => $player->photo_path,
                         'number'       => $player->number,
                         'team_side'    => $teamSide,
-                        'team_id'      => $contract?->game_team_id,
+                        'team_id'      => $teamId,
                         'match_id'     => $match->id,
                         'gains'        => $applied,
                         'total'        => $totalApplied,
