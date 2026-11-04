@@ -1,8 +1,12 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import PlayerPhoto from '@/Components/PlayerPhoto.vue';
+import PixelDust from '@/Components/Welcome/PixelDust.vue';
+import LedCounter from '@/Components/Welcome/LedCounter.vue';
+import PixelSprite from '@/Components/Welcome/PixelSprite.vue';
 import { vPixelReveal } from '@/Directives/pixelReveal';
+import { vParallax } from '@/Directives/parallax';
 
 const props = defineProps({
     canLogin:        { type: Boolean, default: false },
@@ -13,6 +17,34 @@ const props = defineProps({
     // Captures réelles du jeu (public/images/welcome/{match,dashboard}.webp), null si absentes.
     screenshots:     { type: Object,  default: () => ({}) },
 });
+
+// Parallaxe du hero (poussière, sprite) : scroll exposé en variable CSS --hero-y,
+// mis à jour une fois par frame et seulement tant que le hero est visible.
+const hero = ref(null);
+let heroRaf = 0;
+const onHeroScroll = () => {
+    if (heroRaf) return;
+    heroRaf = requestAnimationFrame(() => {
+        heroRaf = 0;
+        const el = hero.value;
+        if (el && window.scrollY < el.offsetTop + el.offsetHeight) el.style.setProperty('--hero-y', window.scrollY);
+    });
+};
+onMounted(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    window.addEventListener('scroll', onHeroScroll, { passive: true });
+    onHeroScroll();
+});
+onUnmounted(() => {
+    window.removeEventListener('scroll', onHeroScroll);
+    cancelAnimationFrame(heroRaf);
+});
+
+// Parallaxe sous le hero : profondeurs légèrement différentes pour donner du relief
+// (positif = premier plan, monte plus vite que la page ; négatif = arrière-plan).
+const STEP_DEPTH   = [0.025, 0, -0.025];
+const MODE_DEPTH   = [0.02, -0.02];
+const playerDepth  = (i) => (i % 2 ? 0.028 : -0.018);
 
 const teamLogoUrl = (team) => (team?.logo_path ? `/storage/${team.logo_path}` : null);
 
@@ -54,7 +86,10 @@ const faq = [
 <template>
     <Head title="Golden Eleven — jeu de gestion de football au tour par tour" />
 
-    <div class="min-h-screen overflow-x-clip bg-slate-900 text-[15px] leading-relaxed text-slate-100">
+    <div class="relative isolate min-h-screen overflow-x-clip bg-slate-900 text-[15px] leading-relaxed text-slate-100">
+
+        <!-- Poussière de pixels clairsemée derrière toute la page (le hero a la sienne, plus dense) -->
+        <PixelDust fixed :count="10" :intensity="0.5" :seed="23" />
 
         <!-- NAV : marque et action principale sur une seule ligne, même sur mobile -->
         <nav class="sticky top-0 z-50 flex items-center justify-between gap-3 border-b border-white/5 bg-slate-900/90 px-4 py-3 backdrop-blur md:px-10 md:py-4">
@@ -75,8 +110,11 @@ const faq = [
 
         <!-- 1. COMPRENDRE EN QUELQUES SECONDES -->
         <!-- Avec une capture du jeu, elle prend autant de place que le texte (lisible) ; sinon le personnage reste en colonne étroite. -->
-        <section class="mx-auto grid max-w-[1280px] items-center gap-10 px-4 pb-10 pt-10 md:px-10 md:pb-16 md:pt-16"
+        <section ref="hero" class="relative isolate mx-auto grid max-w-[1280px] items-center gap-10 px-4 pb-10 pt-10 md:px-10 md:pb-16 md:pt-16"
                  :class="screenshots.match ? 'lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]' : 'md:grid-cols-[1fr_420px]'">
+            <!-- Profondeur HD-2D : poussière de pixels lumineux en arrière-plan -->
+            <PixelDust />
+
             <div>
                 <div v-pixel-reveal class="mb-5 inline-flex items-center rounded-full border border-teal-300/25 bg-teal-500/15 px-3 py-1 text-xs font-semibold tracking-wide text-teal-300">
                     Version en développement
@@ -106,16 +144,26 @@ const faq = [
             </div>
 
             <!-- Visuel : une vraie capture de match si elle existe, sinon le personnage (décoratif) -->
-            <figure v-if="screenshots.match" v-pixel-reveal class="neon-screen overflow-hidden rounded-2xl border border-white/10 bg-slate-800 shadow-2xl">
-                <img :src="screenshots.match"
-                     alt="Écran de match : terrain, cartes d'action (tir, passe, dribble, centre) et détail d'un duel avec les jets de dés"
-                     class="block w-full" width="1690" height="994" />
-                <figcaption class="px-4 py-3 text-sm text-slate-300">
-                    Choisis ton action : tirer, passer, dribbler… Chaque duel se joue avec les stats des joueurs et un jet de dés.
-                </figcaption>
-            </figure>
-            <div v-else v-pixel-reveal class="hidden justify-center md:flex" aria-hidden="true">
-                <img src="/images/tsubas3.webp" alt="" class="max-h-[420px] object-contain drop-shadow-2xl" />
+            <!-- Premier plan HD-2D : le personnage en sprite pixel art devant la capture (grand écran) -->
+            <div v-if="screenshots.match" class="relative">
+                <figure v-pixel-reveal class="neon-screen overflow-hidden rounded-2xl border border-white/10 bg-slate-800 shadow-2xl">
+                    <img :src="screenshots.match"
+                         alt="Écran de match : terrain, cartes d'action (tir, passe, dribble, centre) et détail d'un duel avec les jets de dés"
+                         class="block w-full" width="1690" height="994" />
+                    <figcaption class="px-4 py-3 text-sm text-slate-300 lg:pl-28">
+                        Choisis ton action : tirer, passer, dribbler… Chaque duel se joue avec les stats des joueurs et un jet de dés.
+                    </figcaption>
+                </figure>
+                <div class="hero-sprite pointer-events-none absolute -bottom-8 -left-16 z-10 hidden lg:block" aria-hidden="true">
+                    <div v-pixel-reveal>
+                        <PixelSprite src="/images/tsubas3.webp" :rows="70" :scale="4" class="hero-sprite-idle" />
+                    </div>
+                </div>
+            </div>
+            <div v-else class="hero-sprite hero-sprite--solo hidden justify-center md:flex" aria-hidden="true">
+                <div v-pixel-reveal>
+                    <PixelSprite src="/images/tsubas3.webp" :rows="96" :scale="4" class="hero-sprite-idle" />
+                </div>
             </div>
         </section>
 
@@ -124,14 +172,14 @@ const faq = [
             <h2 v-pixel-reveal class="neon-title mb-2 text-2xl font-bold text-slate-50">Comment se déroule une partie</h2>
             <p v-pixel-reveal class="mb-8 max-w-[640px] text-slate-300">Chaque semaine de jeu suit la même boucle : préparer, jouer, s'adapter.</p>
             <ol class="grid gap-4 md:grid-cols-3">
-                <li v-for="s in steps" :key="s.n" v-pixel-reveal class="neon-card rounded-xl border border-white/10 bg-white/5 p-6">
+                <li v-for="(s, i) in steps" :key="s.n" v-pixel-reveal v-parallax="STEP_DEPTH[i % 3]" class="neon-card rounded-xl border border-white/10 bg-white/5 p-6">
                     <div class="mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-teal-500 text-sm font-black text-slate-900 neon-dot">{{ s.n }}</div>
                     <h3 class="mb-1.5 text-base font-semibold text-slate-50">{{ s.title }}</h3>
                     <p class="text-sm leading-6 text-slate-300">{{ s.desc }}</p>
                 </li>
             </ol>
 
-            <figure v-if="screenshots.dashboard" v-pixel-reveal class="neon-screen mt-8 overflow-hidden rounded-2xl border border-white/10 bg-slate-800 shadow-2xl">
+            <figure v-if="screenshots.dashboard" v-pixel-reveal v-parallax="{ y: -0.03, max: 26 }" class="neon-screen mt-8 overflow-hidden rounded-2xl border border-white/10 bg-slate-800 shadow-2xl">
                 <img :src="screenshots.dashboard"
                      alt="Tableau de bord d'une partie : classement, bilan, budget, effectif et prochain adversaire"
                      class="block w-full" width="1692" height="880" loading="lazy" decoding="async" />
@@ -145,7 +193,7 @@ const faq = [
         <section class="mx-auto max-w-[1200px] led-divider px-4 py-12 md:px-10 md:py-16">
             <h2 v-pixel-reveal class="neon-title mb-8 text-2xl font-bold text-slate-50">Deux compétitions</h2>
             <div class="grid gap-4 md:grid-cols-2">
-                <div v-for="m in modes" :key="m.title" v-pixel-reveal class="neon-card rounded-xl border border-white/10 bg-white/5 p-6">
+                <div v-for="(m, i) in modes" :key="m.title" v-pixel-reveal v-parallax="MODE_DEPTH[i % 2]" class="neon-card rounded-xl border border-white/10 bg-white/5 p-6">
                     <h3 class="mb-1.5 text-lg font-semibold text-teal-300">{{ m.title }}</h3>
                     <p class="text-sm leading-6 text-slate-300">{{ m.desc }}</p>
                 </div>
@@ -161,11 +209,14 @@ const faq = [
         <!-- 4. RETROUVER L'UNIVERS (aperçu court) -->
         <section class="mx-auto max-w-[1200px] led-divider px-4 py-12 md:px-10 md:py-16" v-if="featuredTeams.length || featuredPlayers.length">
             <h2 v-pixel-reveal class="neon-title mb-2 text-2xl font-bold text-slate-50">L'univers Captain Tsubasa</h2>
-            <p v-pixel-reveal class="mb-8 text-slate-300">
-                {{ teams.length }} équipes et {{ playerCount ?? players.length }} joueurs à recruter. Quelques exemples :
-            </p>
+            <!-- Tableau d'affichage façon stade -->
+            <div v-pixel-reveal class="mb-6 mt-6 flex flex-wrap gap-3">
+                <LedCounter :value="teams.length" label="Équipes" />
+                <LedCounter :value="playerCount ?? players.length" label="Joueurs à recruter" />
+            </div>
+            <p v-pixel-reveal class="mb-8 text-slate-300">Quelques exemples :</p>
 
-            <ul v-if="featuredTeams.length" class="mb-8 grid grid-cols-4 gap-3 sm:grid-cols-8" aria-label="Équipes">
+            <ul v-if="featuredTeams.length" v-parallax="{ x: -0.06, max: 26 }" class="mb-8 grid grid-cols-4 gap-3 sm:grid-cols-8" aria-label="Équipes">
                 <li v-for="t in featuredTeams" :key="t.id" v-pixel-reveal class="flex flex-col items-center gap-1.5 text-center">
                     <div class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-lg bg-white">
                         <img v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" alt="" loading="lazy" class="h-full w-full object-contain" />
@@ -176,7 +227,7 @@ const faq = [
             </ul>
 
             <ul v-if="featuredPlayers.length" class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6" aria-label="Joueurs">
-                <li v-for="p in featuredPlayers" :key="p.id" v-pixel-reveal class="neon-card overflow-hidden rounded-xl border border-white/10 bg-white/5">
+                <li v-for="(p, i) in featuredPlayers" :key="p.id" v-pixel-reveal v-parallax="playerDepth(i)" class="neon-card overflow-hidden rounded-xl border border-white/10 bg-white/5">
                     <PlayerPhoto :src="`/storage/${p.photo_path}`" :alt="`${p.firstname} ${p.lastname}`" class="block aspect-square w-full object-cover object-top" />
                     <div class="px-3 py-2">
                         <div class="text-sm font-semibold text-slate-100">{{ p.firstname }} {{ p.lastname }}</div>
@@ -203,9 +254,10 @@ const faq = [
             </div>
         </section>
 
-        <!-- 6. INVITATION FINALE -->
-        <section class="mx-auto max-w-[1200px] led-divider px-4 py-12 md:px-10 md:py-16">
-            <div v-pixel-reveal class="neon-card neon-card--lit rounded-2xl border border-teal-300/20 bg-gradient-to-br from-teal-500/10 to-slate-900/80 px-6 py-8 text-center md:p-12">
+        <!-- 6. INVITATION FINALE : un peu plus de poussière pour finir comme on a commencé -->
+        <section class="relative isolate mx-auto max-w-[1200px] led-divider px-4 py-12 md:px-10 md:py-16">
+            <PixelDust :count="12" :intensity="0.8" :seed="5" />
+            <div v-pixel-reveal v-parallax="0.025" class="neon-card neon-card--lit rounded-2xl border border-teal-300/20 bg-gradient-to-br from-teal-500/10 to-slate-900/80 px-6 py-8 text-center md:p-12">
                 <h2 class="neon-title mb-3 text-[26px] font-bold text-slate-50">Prêt à commencer ?</h2>
                 <p class="mb-8 text-[15px] text-slate-300">Crée ton compte, puis lance ta première partie depuis le menu principal.</p>
                 <div class="flex flex-wrap justify-center gap-3">
@@ -380,6 +432,34 @@ const faq = [
     box-shadow: 0 0 10px rgb(45 212 191 / 0.55), 0 0 2px rgb(204 251 241 / 0.8);
 }
 
+/* ---------- Hero HD-2D : sprite au premier plan ---------- */
+.hero-sprite {
+    /* Premier plan : défile un peu plus vite que la page (parallaxe). */
+    transform: translate3d(0, calc(var(--hero-y, 0) * -0.12px), 0);
+}
+/* Ombre portée au sol, sous les pieds. */
+.hero-sprite::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -6px;
+    width: 70%;
+    height: 18px;
+    transform: translateX(-50%);
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgb(0 0 0 / 0.55), transparent);
+    z-index: -1;
+}
+/* Liseré de lumière teal (rim light) + halo, et respiration « idle » à 2 frames. */
+.hero-sprite-idle {
+    filter: drop-shadow(1px 0 0 rgb(94 234 212 / 0.55)) drop-shadow(0 0 14px rgb(45 212 191 / 0.28));
+    animation: sprite-idle 1.4s steps(1, end) infinite;
+}
+@keyframes sprite-idle {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-4px); }
+}
+
 /* ---------- Séparateurs : rampe LED avec un point lumineux qui la parcourt ---------- */
 .led-divider {
     position: relative;
@@ -424,7 +504,8 @@ const faq = [
     .neon-btn:hover::before,
     .neon-btn:focus-visible::before,
     .neon-card:hover::before,
-    .neon-card--lit::before {
+    .neon-card--lit::before,
+    .hero-sprite-idle {
         animation: none;
     }
     .led-divider::after {

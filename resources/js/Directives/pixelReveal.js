@@ -30,6 +30,7 @@ const STAGGER_MS = 90;                  // décalage auto entre blocs qui démar
 const PALETTE_UNTIL = 3;                // palette réduite sur les 3 paliers les plus grossiers
 const START = 1.0;                      // progression 0 quand le haut du bloc touche le bas de l'écran…
 const END = 0.78;                       // …et 1 quand il atteint 78 % de la hauteur d'écran
+const EXIT = 0.16;                      // en sortie par le haut : repixelisation sur les 16 % du haut
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -230,7 +231,7 @@ function progressOf(unit, vh, maxScroll) {
 
     // Sortie par le haut, en miroir. En haut de page, même correction avec
     // la position du bloc à scroll 0.
-    const exitEnd = Math.min(vh * (1 - END), bottom + y);
+    const exitEnd = Math.min(vh * EXIT, bottom + y);
     const exit = exitEnd <= 1 ? (bottom > 0 ? 1 : 0) : bottom / exitEnd;
 
     // Visible à l'ouverture : l'entrée est considérée comme faite (pas de bloc
