@@ -67,6 +67,7 @@ const props = defineProps({
     tournament:         { type: Object, required: false, default: null },
     gameConfig:         { type: Object, default: () => ({}) },
     career:             { type: Object, required: false, default: null },
+    incomeModel:        { type: Object, required: false, default: null },
 });
 
 // Mode Coupe du Monde : adapte l'UI (onglet Classement → poules+bracket,
@@ -489,6 +490,10 @@ const saveGame = () => {
                                   @simulate-week="simulateWeek"
                                   @save-game="saveGame"
                                   :playerSeasonStats="playerSeasonStatsRef"
+                                  :career="career"
+                                  :incomeModel="props.incomeModel"
+                                  :trainingCost="props.gameConfig?.training_cost ?? 0"
+                                  :maxTrainings="props.gameConfig?.training_max_per_week ?? 3"
                                   @open-player="p => openReminder({ tab: 'my-team', player: p })"
                                   @quit="router.visit(route('mainMenu'))">
                         <!-- Téléphone/tablette : les cartes de la colonne gauche -->

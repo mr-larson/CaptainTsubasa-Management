@@ -112,18 +112,30 @@ class WeekClosingService
     }
 
     /**
-     * Revenus hebdomadaires de toutes les équipes : base + bonus de résultat.
-     * La difficulté du mandat réduit la base des équipes humaines (Ligue).
+     * Barème des revenus hebdomadaires d'une équipe humaine (affiché au Dashboard
+     * pour la projection budgétaire). La difficulté du mandat réduit la base (Ligue).
+     *
+     * @return array{base: int, win_bonus: int, draw_bonus: int}
      */
-    public function applyWeeklyIncome(GameSave $gameSave, int $week): void
+    public static function humanIncomeModel(GameSave $gameSave): array
     {
-        $humanBaseIncome = self::BASE_INCOME;
+        $base = self::BASE_INCOME;
         if ($gameSave->competition_type !== 'world_cup') {
             $preset = CareerObjectiveService::PRESETS[$gameSave->getConfig('career_difficulty', 'standard')] ?? null;
             if ($preset !== null) {
-                $humanBaseIncome = $preset['weekly_income'];
+                $base = $preset['weekly_income'];
             }
         }
+
+        return ['base' => $base, 'win_bonus' => self::WIN_BONUS, 'draw_bonus' => self::DRAW_BONUS];
+    }
+
+    /**
+     * Revenus hebdomadaires de toutes les équipes : base + bonus de résultat.
+     */
+    public function applyWeeklyIncome(GameSave $gameSave, int $week): void
+    {
+        $humanBaseIncome = self::humanIncomeModel($gameSave)['base'];
 
         // Une seule requête pour les matchs joués de la semaine (pas de N+1).
         $resultByTeam = [];

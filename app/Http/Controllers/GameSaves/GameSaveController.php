@@ -31,6 +31,7 @@ use App\Services\NationalTeamAssembler;
 use App\Services\SeasonService;
 use App\Services\PlayerStatsService;
 use App\Services\TournamentService;
+use App\Services\WeekClosingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -1024,6 +1025,7 @@ class GameSaveController extends Controller
                 ? app(TournamentService::class)->presentation($gameSave)
                 : null,
             'career'              => app(CareerObjectiveService::class)->presentation($gameSave),
+            'incomeModel'         => WeekClosingService::humanIncomeModel($gameSave),
         ]);
     }
 

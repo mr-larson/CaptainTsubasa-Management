@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
 import TeamStyleBadges from "@/Pages/GameSaves/Play/components/TeamStyleBadges.vue";
 import DashboardSquadCards from "@/Pages/GameSaves/Play/components/DashboardSquadCards.vue";
+import DashboardSeasonCards from "@/Pages/GameSaves/Play/components/DashboardSeasonCards.vue";
 
 const props = defineProps({
     gameSave:      { type: Object, required: true },
@@ -30,6 +31,10 @@ const props = defineProps({
     tournament:         { type: Object, default: null },
     isWorldCup:         { type: Boolean, default: false },
     playerSeasonStats:  { type: Object,  default: () => ({}) },
+    career:             { type: Object,  default: null },
+    incomeModel:        { type: Object,  default: null },
+    trainingCost:       { type: Number,  default: 0 },
+    maxTrainings:       { type: Number,  default: 3 },
 });
 
 const emit = defineEmits(['play-next-match', 'simulate-week', 'save-game', 'quit', 'change-tab', 'open-player']);
@@ -502,6 +507,14 @@ const matchesPlayed = computed(() =>
         <!-- ============================================ -->
         <DashboardSquadCards :roster="roster" :week="week" :playerSeasonStats="playerSeasonStats"
                              @open-player="p => emit('open-player', p)" />
+
+        <!-- ============================================ -->
+        <!-- LIGNE 6 : Trajectoire + finances            -->
+        <!-- ============================================ -->
+        <DashboardSeasonCards :team="clubStanding ?? team" :teams="standings" :matches="matches"
+                              :season="season" :week="week" :career="career" :isWorldCup="isWorldCup"
+                              :budget="teamBudget" :incomeModel="incomeModel"
+                              :trainingCost="trainingCost" :maxTrainings="maxTrainings" />
 
     </div>
 </template>
