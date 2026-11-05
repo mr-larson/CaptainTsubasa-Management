@@ -538,8 +538,8 @@ const filteredHistory = computed(() =>
                 <!-- Filtre équipe -->
                 <select :value="historyTeamFilter ?? 'null'"
                         @change="historyTeamFilter = $event.target.value === 'null' ? null : $event.target.value"
-                        class="border border-slate-300 rounded-lg px-3 py-1 text-xs bg-white focus:ring-2 focus:ring-teal-300 focus:outline-none">
-                    <option value="null">Toutes les équipes  </option>
+                        class="min-w-[200px] border border-slate-300 rounded-lg pl-3 pr-9 py-1 text-xs bg-white focus:ring-2 focus:ring-teal-300 focus:outline-none cursor-pointer">
+                    <option value="null">Toutes les équipes</option>
                     <option v-for="t in historyTeams" :key="t.id" :value="t.id">{{ t.name }}</option>
                 </select>
             </div>
