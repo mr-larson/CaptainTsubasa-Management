@@ -5,9 +5,9 @@ import PublicLayout from '@/Layouts/PublicLayout.vue';
 // Guide débutant : chaque règle citée ici correspond au comportement réel du
 // jeu (valeurs par défaut, certaines sont réglables dans « Gestion »).
 const counters = [
-    { attack: 'Passe',  defense: 'Interception', icon: '✋' },
-    { attack: 'Dribble', defense: 'Tacle',       icon: '⚔️' },
-    { attack: 'Tir',    defense: 'Contre (block)', icon: '🧱' },
+    { attack: 'Passe',   against: 'une passe',  defense: 'Interception',   icon: '✋' },
+    { attack: 'Dribble', against: 'un dribble', defense: 'Tacle',          icon: '⚔️' },
+    { attack: 'Tir',     against: 'un tir',     defense: 'Contre (block)', icon: '🧱' },
 ];
 </script>
 
@@ -62,7 +62,7 @@ const counters = [
             </p>
             <div class="mb-4 grid gap-2 sm:grid-cols-3">
                 <div v-for="c in counters" :key="c.attack" class="rounded-xl border border-white/10 bg-white/5 p-4 text-sm">
-                    <div class="text-slate-400">Contre une {{ c.attack.toLowerCase() }}</div>
+                    <div class="text-slate-400">Contre {{ c.against }}</div>
                     <div class="font-semibold text-slate-50">{{ c.icon }} {{ c.defense }}</div>
                 </div>
             </div>

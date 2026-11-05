@@ -66,6 +66,25 @@ const steps = [
     { n: 3, title: 'Gère la suite',           desc: 'Adapte ton équipe aux résultats, aux blessures et aux objectifs de ta compétition.' },
 ];
 
+// Exemple de tour : un vrai duel du jeu, chiffres compris. Règles réelles
+// (Match/engine) : score = stat + dé d20 / 2, et +2 pour la défense si elle
+// choisit le bon contre (sinon +2 pour l'attaque). Endurance pleine ici.
+const GOOD_COUNTER_BONUS = 2;
+const duel = {
+    attacker: { name: 'Taro Misaki',  photo: '/images/Taro_Misaki.webp',  action: 'Passe',        stat: 24, roll: 7 },
+    defender: { name: 'Ryo Ishizaki', photo: '/images/Ryo_Ishizaki.webp', action: 'Interception', stat: 21, roll: 14 },
+};
+const defenseOptions = [
+    { label: 'Interception', icon: '✋', good: true },
+    { label: 'Tacle',        icon: '⚔️', good: false },
+    { label: 'Contre',       icon: '🧱', good: false },
+];
+const attackTotal  = duel.attacker.stat + duel.attacker.roll / 2;
+const defenseTotal = duel.defender.stat + duel.defender.roll / 2 + GOOD_COUNTER_BONUS;
+const metaDescription = "Golden Eleven, jeu de gestion de football au tour par tour sur navigateur, inspiré de Captain Tsubasa : recrute, entraîne ton équipe et choisis chaque action en match. Gratuit.";
+const canonicalUrl = route('welcome');
+const fmt = (n) => n.toLocaleString('fr-FR', { maximumFractionDigits: 1 });
+
 const modes = [
     { title: 'Ligue',          desc: 'Gère un club sur une saison complète et réponds aux objectifs fixés par la direction du club.' },
     { title: 'Coupe du Monde', desc: 'Prends en main une sélection nationale : phase de poules, puis matchs à élimination directe.' },
@@ -85,7 +104,10 @@ const faq = [
 </script>
 
 <template>
-    <Head title="Golden Eleven — jeu de gestion de football au tour par tour" />
+    <Head title="Jeu de gestion de football au tour par tour">
+        <meta head-key="description" name="description" :content="metaDescription" />
+        <link head-key="canonical" rel="canonical" :href="canonicalUrl" />
+    </Head>
 
     <div class="relative isolate min-h-screen overflow-x-clip bg-slate-900 text-[15px] leading-relaxed text-slate-100">
 
@@ -93,6 +115,11 @@ const faq = [
         <PixelDust fixed :count="10" :intensity="0.5" :seed="23" />
         <!-- Traînée de poussière d'étoiles derrière la souris (souris uniquement) -->
         <StardustCursor />
+
+        <!-- Lien d'évitement : visible seulement au focus clavier -->
+        <a href="#contenu" class="sr-only z-[60] rounded-full bg-teal-500 px-4 py-2 text-sm font-bold text-slate-900 focus:not-sr-only focus:fixed focus:left-4 focus:top-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-200">
+            Aller au contenu
+        </a>
 
         <!-- NAV : marque et action principale sur une seule ligne, même sur mobile -->
         <nav class="sticky top-0 z-50 flex items-center justify-between gap-3 border-b border-white/5 bg-slate-900/90 px-4 py-3 backdrop-blur md:px-10 md:py-4">
@@ -111,6 +138,7 @@ const faq = [
             </div>
         </nav>
 
+        <main id="contenu" tabindex="-1" class="focus:outline-none">
         <!-- 1. COMPRENDRE EN QUELQUES SECONDES -->
         <!-- Avec une capture du jeu, elle prend autant de place que le texte (lisible) ; sinon le personnage reste en colonne étroite. -->
         <section ref="hero" class="relative isolate mx-auto grid max-w-[1280px] items-center gap-10 px-4 pb-10 pt-10 md:px-10 md:pb-16 md:pt-16"
@@ -134,11 +162,12 @@ const faq = [
                 <div v-pixel-reveal class="mb-6 flex flex-wrap gap-3">
                     <Link v-if="canRegister && !$page.props.auth?.user" :href="route('register')" :class="[btnPrimary, 'neon-breathe']">Créer mon compte gratuit</Link>
                     <Link v-else-if="$page.props.auth?.user" :href="route('mainMenu')" :class="btnPrimary">Aller au menu principal</Link>
-                    <a href="#deroulement" :class="btnSecondary">Voir comment se joue un match</a>
+                    <a href="#exemple-tour" :class="btnSecondary">Voir comment se joue un match</a>
                 </div>
-                <p v-if="canRegister && !$page.props.auth?.user" v-pixel-reveal class="mb-8 text-sm text-slate-400">
-                    Une fois ton compte créé, tu pourras lancer ta première partie.
-                </p>
+                <div v-pixel-reveal class="mb-8 space-y-1 text-sm text-slate-400">
+                    <p v-if="canRegister && !$page.props.auth?.user">Une fois ton compte créé, tu pourras lancer ta première partie.</p>
+                    <p><span aria-hidden="true">💻 </span>Pour jouer dans les meilleures conditions, privilégie un ordinateur.</p>
+                </div>
                 <ul v-pixel-reveal class="flex flex-wrap gap-2 text-sm text-slate-200" aria-label="En bref">
                     <li class="rounded-full border border-white/10 bg-white/5 px-3 py-1">🌐 Sur navigateur</li>
                     <li class="rounded-full border border-white/10 bg-white/5 px-3 py-1">🎲 Matchs au tour par tour</li>
@@ -167,6 +196,94 @@ const faq = [
                 <div v-pixel-reveal>
                     <PixelSprite src="/images/tsubas3.webp" :rows="96" :scale="4" class="hero-sprite-idle" />
                 </div>
+            </div>
+        </section>
+
+        <!-- 1 bis. UN TOUR EN EXEMPLE : passe adverse → choix de défense → duel -->
+        <section id="exemple-tour" class="mx-auto max-w-[1200px] scroll-mt-20 led-divider px-4 py-12 md:px-10 md:py-16" aria-labelledby="exemple-tour-titre">
+            <h2 id="exemple-tour-titre" v-pixel-reveal class="neon-title mb-2 text-2xl font-bold text-slate-50">Un tour de match, en exemple</h2>
+            <p v-pixel-reveal class="mb-8 max-w-[680px] text-slate-300">
+                Tu défends. L'adversaire a le ballon et tente une passe : à toi de choisir comment réagir.
+            </p>
+
+            <ol class="grid gap-4 lg:grid-cols-3">
+                <!-- Étape 1 : l'action adverse -->
+                <li v-pixel-reveal class="neon-card flex flex-col rounded-xl border border-white/10 bg-white/5 p-5">
+                    <div class="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                        <span class="flex h-6 w-6 items-center justify-center rounded-full bg-teal-500 text-[11px] font-black text-slate-700 neon-dot">1</span>
+                        L'adversaire attaque
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <img :src="duel.attacker.photo" alt="" width="56" height="56" loading="lazy" decoding="async"
+                             class="h-14 w-14 shrink-0 rounded-full border border-orange-300/40 bg-slate-800 object-cover object-top" />
+                        <div>
+                            <div class="font-semibold text-slate-100">{{ duel.attacker.name }}</div>
+                            <div class="text-sm text-orange-300">tente une passe <span aria-hidden="true">➡️</span></div>
+                        </div>
+                    </div>
+                    <div class="mt-4 rounded-lg border border-orange-300/20 bg-orange-400/10 px-3 py-2 text-sm text-slate-300">
+                        Sa stat de <strong class="text-slate-100">{{ duel.attacker.action }}</strong> : <span class="font-mono text-orange-200">{{ duel.attacker.stat }}</span>
+                    </div>
+                </li>
+
+                <!-- Étape 2 : ton choix défensif -->
+                <li v-pixel-reveal class="neon-card flex flex-col rounded-xl border border-white/10 bg-white/5 p-5">
+                    <div class="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                        <span class="flex h-6 w-6 items-center justify-center rounded-full bg-teal-500 text-[11px] font-black text-slate-700 neon-dot">2</span>
+                        Tu choisis ta défense
+                    </div>
+                    <ul class="grid grid-cols-3 gap-2" aria-label="Défenses possibles">
+                        <li v-for="o in defenseOptions" :key="o.label"
+                            class="rounded-lg border px-2 py-2.5 text-center text-xs"
+                            :class="o.good ? 'border-teal-300/60 bg-teal-500/15 text-teal-100 shadow-[0_0_14px_rgb(45_212_191/0.25)]' : 'border-white/10 bg-white/5 text-slate-400'">
+                            <div class="mb-1 text-lg" aria-hidden="true">{{ o.icon }}</div>
+                            {{ o.label }}
+                            <span v-if="o.good" class="sr-only">(ton choix)</span>
+                        </li>
+                    </ul>
+                    <p class="mt-4 text-sm leading-6 text-slate-300">
+                        <strong class="text-teal-200">Intercepter</strong> est le bon contre face à une passe :
+                        <span class="text-teal-200">+{{ GOOD_COUNTER_BONUS }}</span> pour ta défense.
+                        Un mauvais choix aurait donné ce bonus à l'attaque.
+                    </p>
+                </li>
+
+                <!-- Étape 3 : le duel -->
+                <li v-pixel-reveal class="neon-card neon-card--lit flex flex-col rounded-xl border border-teal-300/20 bg-white/5 p-5">
+                    <div class="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                        <span class="flex h-6 w-6 items-center justify-center rounded-full bg-teal-500 text-[11px] font-black text-slate-700 neon-dot">3</span>
+                        Le duel se joue aux dés
+                    </div>
+                    <dl class="space-y-3 text-sm">
+                        <div class="rounded-lg bg-slate-950/40 px-3 py-2">
+                            <dt class="mb-1 flex justify-between text-slate-400">
+                                <span>{{ duel.attacker.name }}</span><span class="font-mono text-slate-100">{{ fmt(attackTotal) }}</span>
+                            </dt>
+                            <dd class="font-mono text-xs text-slate-400">
+                                {{ duel.attacker.stat }} + dé <span class="duel-die">{{ duel.attacker.roll }}</span> ÷ 2
+                            </dd>
+                        </div>
+                        <div class="rounded-lg bg-slate-950/40 px-3 py-2">
+                            <dt class="mb-1 flex justify-between text-slate-400">
+                                <span>{{ duel.defender.name }} <span class="text-slate-500">(toi)</span></span><span class="font-mono text-teal-200">{{ fmt(defenseTotal) }}</span>
+                            </dt>
+                            <dd class="font-mono text-xs text-slate-400">
+                                {{ duel.defender.stat }} + dé <span class="duel-die">{{ duel.defender.roll }}</span> ÷ 2 <span class="text-teal-300">+ {{ GOOD_COUNTER_BONUS }} bon contre</span>
+                            </dd>
+                        </div>
+                    </dl>
+                    <p class="mt-4 rounded-lg border border-teal-300/30 bg-teal-500/10 px-3 py-2 text-sm font-semibold text-teal-100">
+                        <span aria-hidden="true">✅ </span>Passe interceptée : le ballon est à toi.
+                    </p>
+                </li>
+            </ol>
+
+            <p v-pixel-reveal class="mt-6 max-w-[720px] text-sm leading-6 text-slate-400">
+                Les stats, l'endurance et le dé décident de chaque duel. Plus de détails dans le
+                <Link :href="route('guide')" class="text-teal-300 underline hover:text-teal-200">guide « Comment jouer »</Link>.
+            </p>
+            <div v-if="canRegister && !$page.props.auth?.user" v-pixel-reveal class="mt-6">
+                <Link :href="route('register')" :class="[btnPrimary, 'neon-breathe']">Créer mon compte et jouer mon premier match</Link>
             </div>
         </section>
 
@@ -271,6 +388,8 @@ const faq = [
             </div>
         </section>
 
+        </main>
+
         <!-- PIED DE PAGE : liens pour les curieux et les développeurs -->
         <footer class="flex flex-col gap-3 border-t border-white/5 px-4 py-6 text-sm text-slate-400 sm:flex-row sm:items-center sm:justify-between md:px-10">
             <span>Golden Eleven · Projet indépendant et open source, inspiré de l'œuvre de Yōichi Takahashi</span>
@@ -300,6 +419,19 @@ const faq = [
     syntax: '<angle>';
     inherits: false;
     initial-value: 0deg;
+}
+
+/* Dé d20 de l'exemple de tour : petit carré façon LED. */
+.duel-die {
+    display: inline-flex;
+    min-width: 1.6em;
+    justify-content: center;
+    padding: 0 0.25em;
+    border: 1px solid rgb(94 234 212 / 0.45);
+    border-radius: 3px;
+    background: rgb(15 23 42 / 0.8);
+    color: rgb(204 251 241);
+    box-shadow: 0 0 8px rgb(45 212 191 / 0.25);
 }
 
 .neon-text {

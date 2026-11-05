@@ -4,7 +4,14 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title inertia>{{ config('app.name', 'Golden Eleven') }}</title>
+        @if (($page['component'] ?? null) === 'Welcome')
+            {{-- Rendu serveur pour les robots qui n'exécutent pas le JS ; Inertia reprend la main via les head-key. --}}
+            <title inertia>Jeu de gestion de football au tour par tour - Golden Eleven</title>
+            <meta inertia="description" name="description" content="Golden Eleven, jeu de gestion de football au tour par tour sur navigateur, inspiré de Captain Tsubasa : recrute, entraîne ton équipe et choisis chaque action en match. Gratuit.">
+            <link inertia="canonical" rel="canonical" href="{{ url('/') }}">
+        @else
+            <title inertia>{{ config('app.name', 'Golden Eleven') }}</title>
+        @endif
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
