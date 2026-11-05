@@ -25,6 +25,19 @@ class MatchSimulator
     private const HOME_BONUS                      = 0.5;
     private const SHOT_DISTANCE_PENALTY_PER_ZONE  = 1;
 
+    // Fautes / cartons des duels de champ (miroir de engine/fouls.js) :
+    // 1 naturel du défenseur = faute grave (rouge 15 %, jaune 75 %, faute 10 %) ;
+    // égalité parfaite = 25 % de faute, dont 20 % sanctionnée d'un jaune.
+    // Les blessures découlent des fautes côté FoulAndInjuryService, comme pour
+    // un match joué : les équipes simulées subissent le même régime que l'humain.
+    private const CRIT_FOUL_RED_CHANCE            = 0.15;
+    private const CRIT_FOUL_YELLOW_CHANCE         = 0.75;
+    private const TIE_FOUL_CHANCE                 = 0.25;
+    private const TIE_FOUL_YELLOW_CHANCE          = 0.20;
+    // Blessure d'épuisement (miroir fieldDuel.js / shot.js) : stamina à 0 après le duel.
+    private const EXHAUSTION_INJURY_CHANCE_FIELD  = 0.30;
+    private const EXHAUSTION_INJURY_CHANCE_SHOT   = 0.40;
+
     // Duel contextuel (miroir de DUEL_CONTEXT côté client) : chaque stat apporte
     // un bonus multiplicatif borné selon le contexte du duel (zone, type d'action).
     // Réglage « subtil » : au plus ~10-15 % de bascule à stat maximale.
@@ -142,6 +155,11 @@ class MatchSimulator
             $maxTurns
         );
 
+        // Les fautes ne sont pas stockées dans match_stats : elles deviennent
+        // blessures / cartons / suspensions via le même service qu'un match joué.
+        $foulEvents = $matchStats['foul_events'] ?? [];
+        unset($matchStats['foul_events']);
+
         $matchStats['lineups'] = app(MatchLineupSnapshot::class)->build($m);
 
         $m->home_score  = $homeScore;
@@ -149,6 +167,10 @@ class MatchSimulator
         $m->status      = 'played';
         $m->match_stats = $matchStats;
         $m->save();
+
+        if ($gameSave && !empty($foulEvents)) {
+            app(FoulAndInjuryService::class)->processMatchEvents($gameSave, $m, $foulEvents);
+        }
 
         // Progression post-match pour les joueurs IA
         if ($gameSave) {
@@ -203,6 +225,8 @@ class MatchSimulator
         ];
         $goalEvents = [];
         $events     = [];
+        $foulEvents = []; // fautes / cartons / blessures (format foulEvents du moteur client)
+        $exhaustedInjured = []; // une seule blessure d'épuisement par joueur et par match
         $heroicUsed = []; // "Dépassement de soi" : une seule fois par joueur et par match
 
         // État du ballon : équipe possédant, index de zone (0..MAX_ZONE_INDEX), face au gardien ?
@@ -360,6 +384,11 @@ class MatchSimulator
                 ];
             }
 
+            // ----- Fautes / cartons (duel de champ uniquement, comme le moteur) -----
+            if ($defCategory === 'defenseField' && $defender && $attacker) {
+                $this->rollFoul($foulEvents, $attacker, $defender, $defenseRoll === 1, $attackScore == $defenseScore);
+            }
+
             $isGoal = $success && $action === 'shot';
 
             // ----- Déroulé du match (action par action), miroir de `state.matchLog`
@@ -405,6 +434,16 @@ class MatchSimulator
             $this->applyStaminaCost($stamina, $attacker, $action, 'attack');
             $this->applyStaminaCost($stamina, $defender, $defAction, $defCategory);
 
+            // ----- Blessure d'épuisement (stamina à 0), comme le moteur client -----
+            $exhaustionChance = $action === 'shot' ? self::EXHAUSTION_INJURY_CHANCE_SHOT : self::EXHAUSTION_INJURY_CHANCE_FIELD;
+            foreach ([$attacker, $defender] as $p) {
+                if (!$p || isset($exhaustedInjured[(int) $p->id])) continue;
+                if (($stamina[(string) $p->id] ?? 1) <= 0 && random_int(1, 10000) <= $exhaustionChance * 10000) {
+                    $exhaustedInjured[(int) $p->id] = true;
+                    $foulEvents[] = ['type' => 'injury', 'player_id' => (int) $p->id, 'severity' => 'light'];
+                }
+            }
+
             // ----- Progression / changement de possession -----
             if ($action === 'shot') {
                 // Le ballon repart de zéro côté défenseur, qu'il y ait but ou arrêt
@@ -441,6 +480,7 @@ class MatchSimulator
             'teams'    => $teamStats,
             'players'  => $playerStats,
             'events'   => $events,
+            'foul_events' => $foulEvents,
             'starters' => $starters,
             'playtime' => $playtime,
         ];
@@ -1224,6 +1264,32 @@ class MatchSimulator
         $side          = $defSide;
         $zone          = 0;
         $frontOfKeeper = false;
+    }
+
+    /**
+     * Faute éventuelle sur un duel de champ (miroir de resolveFoulOutcome, engine/fouls.js).
+     */
+    private function rollFoul(array &$foulEvents, $attacker, $defender, bool $defenseCritFail, bool $isTie): void
+    {
+        $defId = (int) $defender->id;
+        $attId = (int) $attacker->id;
+
+        if ($defenseCritFail) {
+            $foulEvents[] = ['type' => 'foul', 'fouler_player_id' => $defId, 'victim_player_id' => $attId, 'is_crit_fail' => true];
+            $r = random_int(1, 10000) / 10000;
+            if ($r < self::CRIT_FOUL_RED_CHANCE) {
+                $foulEvents[] = ['type' => 'card', 'player_id' => $defId, 'card_type' => 'red'];
+            } elseif ($r < self::CRIT_FOUL_RED_CHANCE + self::CRIT_FOUL_YELLOW_CHANCE) {
+                $foulEvents[] = ['type' => 'card', 'player_id' => $defId, 'card_type' => 'yellow'];
+            }
+        }
+
+        if ($isTie && random_int(1, 10000) <= self::TIE_FOUL_CHANCE * 10000) {
+            $foulEvents[] = ['type' => 'foul', 'fouler_player_id' => $defId, 'victim_player_id' => $attId, 'is_crit_fail' => false];
+            if (random_int(1, 10000) <= self::TIE_FOUL_YELLOW_CHANCE * 10000) {
+                $foulEvents[] = ['type' => 'card', 'player_id' => $defId, 'card_type' => 'yellow'];
+            }
+        }
     }
 
     private function d20(): int
