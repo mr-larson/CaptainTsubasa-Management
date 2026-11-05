@@ -750,6 +750,31 @@ export function setActionBar(html, modeClass, ball, roster, bindFn, isKickoff) {
             });
         }
 
+        // Face au gardien : tir, techniques spéciales, ou passe en retrait. Les autres
+        // cartes (ignorées par handleAttackClick) sont retirées ; la partie « base »
+        // d'une carte qui porte un spécial est désactivée.
+        if (!isKickoff && ball?.frontOfKeeper && html.includes("attack-strip")) {
+            _ui.actionBarEl.querySelectorAll("#attack-strip > .skill-card").forEach(card => {
+                const btn = card.querySelector(".skill-card-main");
+                const action = btn?.dataset.action ?? "";
+                if (!btn || action === "shot" || action.startsWith("special")) return;
+                if (action === "pass") {
+                    const t = btn.querySelector('.skill-title');
+                    const s = btn.querySelector('.skill-sub');
+                    if (t) t.textContent = "Passe en retrait";
+                    if (s) s.textContent = "Remettre à un partenaire";
+                    return;
+                }
+                if (card.querySelector(".skill-card-special")) {
+                    btn.disabled = true;
+                    btn.classList.add("opacity-40", "cursor-not-allowed");
+                    btn.title = "Face au gardien : tir ou technique spéciale uniquement";
+                } else {
+                    card.style.display = "none";
+                }
+            });
+        }
+
         _ui.actionBarEl.classList.remove("fade-out");
         _ui.actionBarEl.classList.add("fade-in");
 

@@ -65,9 +65,17 @@ export function resolvePass(attackTeam, defenseTeam, defenseAction, defenderPick
 export function continuePass(attackTeam, defenseTeam, attackType, defenseAction, isSpecial, duel) {
     const b = ball();
 
+    // Passe en retrait (depuis un face-à-face avec le gardien) : vers un partenaire
+    // une zone plus bas, sans contrainte « vers l'avant ».
+    const isBackPass = !!shared.state.backPass;
+    shared.state.backPass = false;
+
     let targetZone = b.zoneIndex;
     let targetLane = b.laneIndex;
-    if (b.zoneIndex < MAX_ZONE_INDEX) {
+    if (isBackPass) {
+        targetZone = Math.max(0, b.zoneIndex - 1);
+        targetLane = [0, 1, 2][Math.floor(Math.random() * 3)];
+    } else if (b.zoneIndex < MAX_ZONE_INDEX) {
         targetZone = b.zoneIndex + 1;
         const opts = [b.laneIndex];
         if (b.laneIndex > 0)                opts.push(b.laneIndex - 1);
@@ -81,7 +89,10 @@ export function continuePass(attackTeam, defenseTeam, attackType, defenseAction,
         resetLastDribbler();
         const carrierEl        = getCarrierElement(attackTeam, b.number);
         const carrierXInternal = carrierEl ? getPlayerXInternal(attackTeam, carrierEl) : null;
-        const receiver = pickReceiverInCell(attackTeam, targetZone, targetLane, b.number, b.number, { forwardOnly: true, forwardFromXInternal: carrierXInternal, ignoreLaneForInitialPick: true });
+        const receiver = pickReceiverInCell(attackTeam, targetZone, targetLane, b.number, b.number,
+            isBackPass
+                ? { ignoreLaneForInitialPick: true }
+                : { forwardOnly: true, forwardFromXInternal: carrierXInternal, ignoreLaneForInitialPick: true });
 
         // ── Animations passeur + receveur
         playPlayerAnimation(attackTeam, b.number, 'passer');

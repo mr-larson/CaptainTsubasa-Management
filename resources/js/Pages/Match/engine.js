@@ -525,7 +525,12 @@ export function initMatchEngine(rootEl, config = {}) {
             return;
         }
 
-        if (ball.frontOfKeeper && !["shot", "special", "special-pass", "special-dribble"].includes(action)) return;
+        // Face au gardien : tir, technique spéciale, ou passe en retrait (le porteur
+        // renonce au face-à-face et remet à un partenaire, la passe reste interceptable).
+        if (ball.frontOfKeeper && action === "pass") {
+            ball.frontOfKeeper = false;
+            state.backPass = true;
+        } else if (ball.frontOfKeeper && !["shot", "special", "special-pass", "special-dribble"].includes(action)) return;
 
         // Une-deux : exige un partenaire de duo sur le terrain
         if (action === "one_two" && !roster.getDuoPartnerOnField(state.currentTeam, ball.number)) return;

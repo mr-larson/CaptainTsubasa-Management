@@ -156,7 +156,7 @@ export const TEXTS = {
         duelTieSub:  "{team} récupère (égalité).",
 
         frontOfKeeperMain: "Face au gardien !",
-        frontOfKeeperSub:  "Prochaine action : tir ou tir spécial.",
+        frontOfKeeperSub:  "Prochaine action : tir, tir spécial ou passe en retrait.",
 
         shotBlockedMain:   "Tir contré !",
         shotBlockedSub:    "{team} récupère avec le n°{number}.",
