@@ -5,6 +5,7 @@ import PlayerPhoto from '@/Components/PlayerPhoto.vue';
 import PixelDust from '@/Components/Welcome/PixelDust.vue';
 import LedCounter from '@/Components/Welcome/LedCounter.vue';
 import PixelSprite from '@/Components/Welcome/PixelSprite.vue';
+import StardustCursor from '@/Components/Welcome/StardustCursor.vue';
 import { vPixelReveal } from '@/Directives/pixelReveal';
 import { vParallax } from '@/Directives/parallax';
 
@@ -90,6 +91,8 @@ const faq = [
 
         <!-- Poussière de pixels clairsemée derrière toute la page (le hero a la sienne, plus dense) -->
         <PixelDust fixed :count="10" :intensity="0.5" :seed="23" />
+        <!-- Traînée de poussière d'étoiles derrière la souris (souris uniquement) -->
+        <StardustCursor />
 
         <!-- NAV : marque et action principale sur une seule ligne, même sur mobile -->
         <nav class="sticky top-0 z-50 flex items-center justify-between gap-3 border-b border-white/5 bg-slate-900/90 px-4 py-3 backdrop-blur md:px-10 md:py-4">
