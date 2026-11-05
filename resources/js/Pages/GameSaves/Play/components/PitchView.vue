@@ -22,6 +22,8 @@ const props = defineProps({
     playerStatus:   { type: Function, default: null },
     // (player, slotDef) => 'primary' | 'secondary' | 'off' | null — halos pendant la prise
     masteryFor:     { type: Function, default: null },
+    // (player) => { yellow: n, red: bool } — cartons affichés au-dessus du joueur
+    playerCards:    { type: Function, default: null },
 });
 
 const emit = defineEmits([
@@ -51,6 +53,14 @@ const pickFit = (slot, slotDef) => {
 };
 
 const statusOf  = (p) => (p && props.playerStatus ? props.playerStatus(p) : null);
+const cardsOf   = (p) => {
+    if (!p || !props.playerCards) return null;
+    const c = props.playerCards(p) ?? {};
+    const yellow = Math.min(Number(c.yellow) || 0, 3);
+    return (yellow || c.red) ? { yellow, red: !!c.red } : null;
+};
+const cardsTitle = (c) => [c.yellow ? `${c.yellow} carton${c.yellow > 1 ? 's' : ''} jaune${c.yellow > 1 ? 's' : ''}` : '', c.red ? 'suspendu (rouge)' : '']
+    .filter(Boolean).join(' · ');
 const staminaOf = (p) => Number(p?.stamina ?? p?.stats?.stamina ?? 0);
 const staminaBar = (v) => v >= 60 ? 'bg-emerald-400' : v >= 30 ? 'bg-amber-400' : 'bg-rose-500';
 
@@ -170,6 +180,15 @@ const MASTERY_CHIP = {
                             <img v-if="playerForSlot(slot) && playerPhotoUrl(playerForSlot(slot))"
                                  :src="playerPhotoUrl(playerForSlot(slot))" class="w-full h-full object-cover pointer-events-none" alt=""/>
                             <span v-else class="text-3xs font-bold text-white">{{ slot }}</span>
+                        </div>
+                        <!-- Cartons (au-dessus de la photo) -->
+                        <div v-if="cardsOf(playerForSlot(slot))"
+                             class="absolute top-0 left-1/2 -translate-x-1/2 z-10 flex gap-0.5 pointer-events-none"
+                             :title="cardsTitle(cardsOf(playerForSlot(slot)))">
+                            <span v-for="i in cardsOf(playerForSlot(slot)).yellow" :key="'y' + i"
+                                  class="w-1.5 h-2.5 rounded-[1px] bg-yellow-400 ring-1 ring-black/30 shadow-sm"></span>
+                            <span v-if="cardsOf(playerForSlot(slot)).red"
+                                  class="w-1.5 h-2.5 rounded-[1px] bg-red-600 ring-1 ring-black/30 shadow-sm"></span>
                         </div>
                         <!-- Indisponible (coin haut gauche) -->
                         <div v-if="statusOf(playerForSlot(slot))"

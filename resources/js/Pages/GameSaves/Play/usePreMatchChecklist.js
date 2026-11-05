@@ -2,7 +2,7 @@
 // Checklist « Avant le match » : une seule source pour la colonne gauche (grand
 // écran) et le Dashboard (téléphone/tablette).
 //   actions : ce que l'entraîneur peut encore faire cette semaine
-//   squad   : état du onze + risques (fatigue, cartons)
+//   squad   : état du onze + effectif indisponible (blessures, suspensions) + risques (fatigue, cartons)
 // Chaque item : { key, level: 'action'|'error'|'warn'|'info', text, tab, player? }
 import { computed, toValue } from 'vue';
 
@@ -20,12 +20,12 @@ const CHALLENGE_LABELS = {
 const plural = (n, word) => `${n} ${word}${n > 1 ? 's' : ''}`;
 
 export function usePreMatchChecklist({
-    roster, lineupIssues, remainingTrainings, availableCards, unboughtCardsCount,
+    roster: roster_, lineupIssues, remainingTrainings, availableCards, unboughtCardsCount,
     freePlayersCount, isWorldCup, playerPromises, sponsorChallenges, playerYellowCards,
-    suspensionOn3Yellows, week,
+    suspensionOn3Yellows, week, playerInjury, playerSuspension,
 }) {
     const playerById = computed(() =>
-        Object.fromEntries((toValue(roster) ?? []).map(p => [Number(p.id), p]))
+        Object.fromEntries((toValue(roster_) ?? []).map(p => [Number(p.id), p]))
     );
 
     const promiseItems = computed(() => {
@@ -64,7 +64,7 @@ export function usePreMatchChecklist({
 
         // Contrats qui se terminent cette semaine ou la suivante.
         const currentWeek = Number(toValue(week));
-        (toValue(roster) ?? [])
+        (toValue(roster_) ?? [])
             .filter(p => p.contract_end_week != null
                 && Number(p.contract_end_week) >= currentWeek
                 && Number(p.contract_end_week) <= currentWeek + 1)
@@ -96,7 +96,7 @@ export function usePreMatchChecklist({
 
     const squad = computed(() => {
         const items = (toValue(lineupIssues) ?? []).map(i => ({ ...i, tab: 'my-team' }));
-        const starters = (toValue(roster) ?? []).filter(p => p.is_starter);
+        const starters = (toValue(roster_) ?? []).filter(p => p.is_starter);
 
         starters.forEach(p => {
             const stamina = Number(p.stamina ?? p.stats?.stamina ?? 0);
@@ -106,15 +106,35 @@ export function usePreMatchChecklist({
             }
         });
 
-        if (toValue(suspensionOn3Yellows)) {
-            const yellows = toValue(playerYellowCards);
-            starters.forEach(p => {
-                if (Number(yellows(p.id)) === 2) {
-                    items.push({ key: `y${p.id}`, level: 'info', tab: 'my-team', player: p,
-                        text: `🟨 ${p.lastname} à 1 jaune de la suspension` });
-                }
-            });
-        }
+        // Remplaçants blessés / suspendus (les titulaires sont déjà signalés par lineupIssues).
+        const injuryOf     = toValue(playerInjury) ?? (() => null);
+        const suspensionOf = toValue(playerSuspension) ?? (() => null);
+        const roster = toValue(roster_) ?? [];
+        roster.filter(p => !p.is_starter).forEach(p => {
+            const inj = injuryOf(p.id);
+            if (inj) {
+                items.push({ key: `i${p.id}`, level: 'info', tab: 'my-team', player: p,
+                    text: `🤕 ${p.lastname} blessé${inj.week_return ? ` — retour S${inj.week_return}` : ''}` });
+            }
+            const sus = suspensionOf(p.id);
+            if (sus) {
+                items.push({ key: `r${p.id}`, level: 'info', tab: 'my-team', player: p,
+                    text: `🟥 ${p.lastname} suspendu${sus.week_return ? ` — retour S${sus.week_return}` : ''}` });
+            }
+        });
+
+        // Cartons jaunes en cours (tout l'effectif) ; à 2 jaunes, la suspension menace.
+        const yellows = toValue(playerYellowCards) ?? (() => 0);
+        const threat  = toValue(suspensionOn3Yellows);
+        roster.forEach(p => {
+            const n = Number(yellows(p.id)) || 0;
+            if (n <= 0) return;
+            const atRisk = threat && n === 2;
+            items.push({ key: `y${p.id}`, level: atRisk && p.is_starter ? 'warn' : 'info', tab: 'my-team', player: p,
+                text: atRisk
+                    ? `🟨 ${p.lastname} : 2 jaunes, à 1 de la suspension`
+                    : `🟨 ${p.lastname} : ${n} jaune${n > 1 ? 's' : ''}` });
+        });
 
         const ORDER = { error: 0, warn: 1, info: 2 };
         return items.sort((a, b) => (ORDER[a.level] ?? 3) - (ORDER[b.level] ?? 3));

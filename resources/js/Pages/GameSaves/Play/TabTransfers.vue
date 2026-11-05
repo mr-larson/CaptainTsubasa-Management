@@ -303,7 +303,9 @@ const filteredHistory = computed(() =>
             <!-- ============================================ -->
             <!-- LISTE JOUEURS LIBRES                         -->
             <!-- ============================================ -->
-            <div class="lg:col-span-5 border border-slate-200 rounded-xl bg-slate-50 p-3 max-h-[690px] overflow-y-auto">
+            <!-- Hauteur calée sur la colonne de droite (grand écran), scroll interne -->
+            <div class="lg:col-span-5 relative lg:min-h-[520px]">
+            <div class="border border-slate-200 rounded-xl bg-slate-50 p-3 max-h-[690px] lg:max-h-none lg:absolute lg:inset-0 overflow-y-auto">
                 <div class="flex items-center justify-between gap-2 mb-2">
                     <h3 class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Agents libres</h3>
                     <label class="flex items-center gap-1.5 text-2xs font-semibold text-slate-400">
@@ -421,6 +423,7 @@ const filteredHistory = computed(() =>
                         ? 'Aucun agent libre ne correspond aux filtres'
                         : 'Aucun agent libre disponible' }}
                 </div>
+            </div>
             </div>
 
             <!-- ============================================ -->

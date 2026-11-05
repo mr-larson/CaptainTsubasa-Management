@@ -178,14 +178,16 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
 </script>
 
 <template>
-    <div class="flex-1 flex flex-col gap-4 overflow-y-auto min-h-0 pr-1 [&>*]:shrink-0">
-        <div v-if="calendarTeam" class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+    <!-- ≥ lg : les deux colonnes prennent la hauteur de l'onglet et défilent chacune ;
+         en dessous, la page défile d'un bloc. -->
+    <div class="flex-1 flex flex-col gap-4 overflow-y-auto lg:overflow-hidden min-h-0 pr-1 lg:pr-0 [&>*]:shrink-0">
+        <div v-if="calendarTeam" class="grid grid-cols-1 lg:grid-cols-12 lg:grid-rows-1 lg:flex-1 lg:min-h-0 gap-4">
 
             <!-- ============================================ -->
             <!-- CALENDRIER                                    -->
             <!-- ============================================ -->
-            <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 lg:col-span-5 lg:sticky lg:top-0 lg:self-start"
-                 :class="previewMatch ? 'hidden lg:block' : ''">
+            <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 lg:col-span-5 lg:min-h-0 lg:flex-col"
+                 :class="previewMatch ? 'hidden lg:flex' : 'lg:flex'">
                 <!-- Équipe affichée : liste déroulante (remplace les 15 puces) -->
                 <div class="flex items-center gap-2 mb-3">
                     <div class="w-8 h-8 rounded-lg overflow-hidden bg-white border border-slate-200 shrink-0">
@@ -204,7 +206,7 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
                             title="Revenir au calendrier de mon équipe">🏠 Mon équipe</button>
                 </div>
 
-                <div ref="listEl" class="relative space-y-1 max-h-[65vh] overflow-y-auto pr-1">
+                <div ref="listEl" class="relative space-y-1 max-h-[65vh] lg:max-h-none lg:flex-1 lg:min-h-0 overflow-y-auto pr-1">
                     <div v-for="match in calendarRows" :key="match.id"
                          :data-week="match.week"
                          class="flex items-center gap-2 px-3 py-2 rounded-lg border transition-all"
@@ -281,7 +283,7 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
             <!-- ============================================ -->
             <!-- DROITE : avant-match ou journée               -->
             <!-- ============================================ -->
-            <div class="lg:col-span-7 flex flex-col gap-3 min-w-0">
+            <div class="lg:col-span-7 flex flex-col gap-3 min-w-0 lg:min-h-0 lg:overflow-y-auto lg:pr-1 [&>*]:shrink-0">
                 <template v-if="preview">
                     <ButtonSecondary size="sm" class="lg:hidden self-start" @click="preview = null">
                         ← Calendrier

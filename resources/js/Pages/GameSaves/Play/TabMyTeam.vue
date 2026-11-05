@@ -251,6 +251,7 @@ const slotCandidates = (slot, slotDef) => substitutes.value
                        :slotCandidates="slotCandidates"
                        :masteryFor="masteryFor"
                        :playerStatus="unavailability"
+                       :playerCards="p => ({ yellow: playerYellowCards(p.id), red: isPlayerSuspended(p.id) })"
                        @player-click="p => emit('player-click', p)"
                        @drag-start="(p, e) => emit('drag-start', p, e)"
                        @drag-end="emit('drag-end')"

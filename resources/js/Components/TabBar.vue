@@ -11,6 +11,8 @@ const props = defineProps({
     // true : les onglets passent à la ligne ; false : la barre défile horizontalement.
     wrap: { type: Boolean, default: false },
     label: { type: String, default: null },
+    // true : au-delà de l'iPad (≥ 1400px), les onglets se répartissent toute la largeur.
+    stretch: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(['update:modelValue']);
@@ -47,7 +49,7 @@ const SIZES = { md: 'px-3 py-2 text-sm', sm: 'px-3 py-1.5 text-xs' };
                 :disabled="t.disabled"
                 :title="t.disabled ? t.disabledHint : null"
                 class="whitespace-nowrap border-b-2 font-semibold transition-colors"
-                :class="[SIZES[size] ?? SIZES.md, t.disabled
+                :class="[SIZES[size] ?? SIZES.md, stretch ? 'min-[1400px]:flex-1 text-center' : '', t.disabled
                     ? 'border-transparent text-slate-300 cursor-not-allowed'
                     : modelValue === t.key
                         ? 'border-teal-500 text-teal-700'

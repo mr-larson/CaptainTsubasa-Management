@@ -4,6 +4,7 @@ import ButtonPrimary from '@/Components/ButtonPrimary.vue';
 import { ref, reactive, computed, watch } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import GameRules from '@/Components/GameRules.vue';
+import ClubStatusPanel from './components/ClubStatusPanel.vue';
 
 const props = defineProps({
     gameSave: { type: Object, required: true },
@@ -11,7 +12,11 @@ const props = defineProps({
     gameConfig: { type: Object, default: () => ({}) },
     career: { type: Object, default: null },
     initialSection: { type: String, default: null },
+    // Statut du club : données de l'équipe pilotée (cf. ClubStatusPanel)
+    clubStatus: { type: Object, default: null },
 });
+
+const emit = defineEmits(['open-player']);
 
 // ── Préférences d'affichage (compte utilisateur, toutes parties) ──
 const page = usePage();
@@ -28,15 +33,15 @@ const togglePixelArt = (event) => {
 
 // Réactifs : restent à jour après une action tant que l'onglet est monté.
 const stats = computed(() => props.managementStats ?? {});
-const expiringContracts = computed(() => stats.value.expiringContracts ?? []);
 
 const sections = computed(() => [
+    ...(props.clubStatus ? [{ key: 'status', label: 'Statut du club' }] : []),
     { key: 'dataBase', label: 'Base de données' },
     ...(props.career ? [{ key: 'rules', label: 'Règles & Objectif' }] : []),
     { key: 'profil',   label: 'Profil' },
     { key: 'config',   label: 'Configuration' },
 ]);
-const activeSection = ref(props.initialSection ?? 'dataBase');
+const activeSection = ref(props.initialSection ?? (props.clubStatus ? 'status' : 'dataBase'));
 
 watch(() => props.initialSection, (v) => { if (v) activeSection.value = v; });
 
@@ -123,8 +128,14 @@ function resetDefaults() {
         <!-- Panneau droit -->
         <div class="flex-1 border border-slate-200 rounded-lg bg-slate-50 p-3 sm:p-4 flex flex-col gap-4">
 
+            <!-- Statut du club (page par défaut) -->
+            <div v-if="activeSection === 'status' && clubStatus" class="flex-1 flex flex-col gap-3">
+                <h3 class="text-lg font-semibold text-slate-700">Statut du club</h3>
+                <ClubStatusPanel v-bind="clubStatus" @open-player="p => emit('open-player', p)" />
+            </div>
+
             <!-- Base de données -->
-            <div v-if="activeSection === 'dataBase'" class="flex-1 flex flex-col gap-3">
+            <div v-else-if="activeSection === 'dataBase'" class="flex-1 flex flex-col gap-3">
                 <h3 class="text-lg font-semibold text-slate-700 mb-1">Base de données</h3>
                 <p class="text-sm text-slate-600 mb-2">Crée, édite et assigne des joueurs, contrats et équipes.</p>
 
@@ -173,19 +184,6 @@ function resetDefaults() {
                             Gérer les équipes
                         </ButtonPrimary>
                     </div>
-                </div>
-
-                <!-- Raccourci : contrats arrivant à échéance -->
-                <div v-if="expiringContracts.length" class="border border-rose-200 rounded-lg bg-rose-50 p-3 flex flex-col gap-2">
-                    <h4 class="text-sm font-semibold text-rose-700">Contrats arrivant à échéance</h4>
-                    <p class="text-xs text-rose-600">{{ expiringContracts.length }} contrat(s) se terminent dans les 4 prochaines semaines.</p>
-                    <ul class="flex flex-col gap-1">
-                        <li v-for="c in expiringContracts" :key="c.id"
-                            class="flex items-center justify-between text-xs bg-white rounded-lg px-3 py-1.5 border border-rose-100">
-                            <span class="text-slate-700 font-medium">{{ c.player }} <span class="text-slate-400 font-normal">— {{ c.team }}</span></span>
-                            <span class="text-2xs font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">Semaine {{ c.end_week }}</span>
-                        </li>
-                    </ul>
                 </div>
             </div>
 

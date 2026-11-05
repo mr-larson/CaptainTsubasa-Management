@@ -39,7 +39,6 @@ import TabTransfers  from '@/Pages/GameSaves/Play/TabTransfers.vue';
 import TabBonusCards     from '@/Pages/GameSaves/Play/TabBonusCards.vue';
 import TabManagement from '@/Pages/GameSaves/Play/TabManagement.vue';
 import CareerMandateCard from '@/Pages/GameSaves/Play/CareerMandateCard.vue';
-import WeeklyRecapCard from '@/Pages/GameSaves/Play/WeeklyRecapCard.vue';
 
 // ==========================
 //   PROPS INERTIA
@@ -248,6 +247,20 @@ const squadAvailability = computed(() => ({
     available: rosterWithStatus.value.filter(p => !unavailability(p)).length,
     total:     rosterWithStatus.value.length,
 }));
+// Statut du club (onglet Gestion) : récap des états de l'équipe pilotée.
+const clubStatus = computed(() => ({
+    roster:               rosterWithStatus.value,
+    clubStanding:         clubStanding.value,
+    standingsCount:       standings.value.length,
+    teamBudget:           Number(teamBudget.value) || 0,
+    teamRecord:           teamRecord.value,
+    week:                 Number(week.value) || 1,
+    playerInjury,
+    playerSuspension,
+    playerYellowCards,
+    suspensionOn3Yellows: props.gameConfig?.suspension_on_3_yellows !== false,
+}));
+
 const openReminder = (item) => {
     activeTab.value = item.tab ?? 'my-team';
     if (item.player) selectMyPlayer(item.player);
@@ -310,6 +323,8 @@ const { actions: checklistActions, squad: checklistSquad } = usePreMatchChecklis
     playerYellowCards:    () => playerYellowCards,
     suspensionOn3Yellows: () => props.gameConfig?.suspension_on_3_yellows !== false,
     week,
+    playerInjury:         () => playerInjury,
+    playerSuspension:     () => playerSuspension,
 });
 
 // Conseils de l'adjoint (Dashboard) : suggestions applicables en un clic.
@@ -463,7 +478,6 @@ const saveGame = () => {
                 <div class="hidden min-[1400px]:flex min-[1400px]:basis-1/6 flex-col gap-3">
                     <CareerMandateCard v-if="career && career.mandate" compact
                                        :career="career" @open-rules="openCareerRules" />
-                    <WeeklyRecapCard v-if="weeklyRecap.length" :weeklyRecap="weeklyRecap" />
                     <RemindersCard :actions="checklistActions" :squad="checklistSquad" :availability="squadAvailability" @open="openReminder" />
                     <div class="flex-1 bg-contain bg-center bg-no-repeat bg-[url('/images/wakabayashi.webp')]"></div>
                 </div>
@@ -473,7 +487,7 @@ const saveGame = () => {
 
                     <!-- Onglets -->
                     <div class="mb-4 border-b border-slate-200 shrink-0">
-                        <TabBar v-model="activeTab" :tabs="tabs" label="Sections de la partie" />
+                        <TabBar v-model="activeTab" :tabs="tabs" stretch label="Sections de la partie" />
                     </div>
 
                     <!-- ======== DASHBOARD ======== -->
@@ -517,12 +531,8 @@ const saveGame = () => {
                         <template #side-cards>
                             <div class="min-[1400px]:hidden grid grid-cols-1 md:grid-cols-2 gap-3 items-start">
                                 <RemindersCard class="md:col-span-2" in-dashboard :actions="checklistActions" :squad="checklistSquad" :availability="squadAvailability" @open="openReminder" />
-                                <!-- Seule carte de sa ligne → pleine largeur -->
-                                <CareerMandateCard v-if="career && career.mandate" compact
-                                                   :class="{ 'md:col-span-2': !weeklyRecap.length }"
+                                <CareerMandateCard v-if="career && career.mandate" compact class="md:col-span-2"
                                                    :career="career" @open-rules="openCareerRules" />
-                                <WeeklyRecapCard v-if="weeklyRecap.length" :weeklyRecap="weeklyRecap"
-                                                 :class="{ 'md:col-span-2': !(career && career.mandate) }" />
                             </div>
                         </template>
                     </TabDashboard>
@@ -759,6 +769,8 @@ const saveGame = () => {
                                    :gameConfig="props.gameConfig"
                                    :career="career"
                                    :initialSection="managementInitialSection"
+                                   :clubStatus="clubStatus"
+                                   @open-player="p => openReminder({ tab: 'my-team', player: p })"
                     />
 
                 </div>

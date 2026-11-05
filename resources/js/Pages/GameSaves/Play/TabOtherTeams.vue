@@ -105,6 +105,7 @@ const selectedPlayerPerf = computed(() => {
                        :selectedSlot="otherSelectedSlot"
                        :isPickedUp="isOtherPickedUp"
                        :players="otherRosterWithStatus"
+                       :playerCards="p => ({ yellow: playerYellowCards(p.id), red: isPlayerSuspended(p.id) })"
                        @player-click="p => emit('select-player', p)" />
 
             <BenchCard class="lg:col-span-2"
