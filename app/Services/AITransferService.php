@@ -127,13 +127,19 @@ class AITransferService
 
         $signingsMade = 0;
 
+        // Les amateurs (filet de sécurité du marché) restent au joueur humain :
+        // l'IA n'en engage qu'en cas d'urgence (moins de 11 joueurs).
+        $pool = $squadSize < self::SQUAD_EMERGENCY
+            ? $freePlayers
+            : $freePlayers->reject(fn($p) => $p->origin === GamePlayer::ORIGIN_AMATEUR)->values();
+
         foreach ($needs as $need) {
             if ($signingsMade >= self::MAX_SIGNINGS_PER_WEEK) break;
             if ($availableBudget <= 0) break;
             if ($squadSize >= self::TARGET_SQUAD) break;
 
             $candidate = $this->findBestCandidate(
-                $freePlayers,
+                $pool,
                 $need['position_group'],
                 $squadPlayers,
                 $availableBudget,
@@ -191,6 +197,7 @@ class AITransferService
             $signingsMade++;
             $starterCount += $isStarter ? 1 : 0;
             $freePlayers = $freePlayers->reject(fn($p) => $p->id === $candidate->id);
+            $pool        = $pool->reject(fn($p) => $p->id === $candidate->id);
             $signedIds[] = $candidate->id;
         }
 

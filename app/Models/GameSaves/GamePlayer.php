@@ -58,6 +58,9 @@ class GamePlayer extends Model
     /** Origine des joueurs fictifs (générés pour compléter les sélections en Coupe du Monde). */
     public const ORIGIN_FICTIONAL = 'fictional';
 
+    /** Joueurs amateurs générés pour garnir le marché (cf. AmateurMarketService). */
+    public const ORIGIN_AMATEUR = 'amateur';
+
     /** Expose le coût avec majoration de polyvalence côté front. */
     protected $appends = ['adjusted_cost'];
 

@@ -597,6 +597,9 @@ class GameSaveController extends Controller
             $gameSave->save();
         }
 
+        // Marché : quelques amateurs libres dès la semaine 1 (filet de sécurité).
+        app(\App\Services\AmateurMarketService::class)->ensureFloor($gameSave);
+
         // 4. Mode draft : bonus budget + init draft state
         if ($isDraft) {
             $draftBonus = 5000;

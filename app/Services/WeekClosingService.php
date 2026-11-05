@@ -55,6 +55,8 @@ class WeekClosingService
         if ($gameSave->getConfig('ai_transfers_enabled', true)) {
             app(AITransferService::class)->recruitForWeek($gameSave);
         }
+        // Marché : toujours quelques amateurs libres pour compléter un effectif.
+        app(AmateurMarketService::class)->ensureFloor($gameSave);
 
         // 3. Revenus, défis sponsors, cartes consommées pour la semaine jouée.
         $this->applyWeeklyIncome($gameSave, $week);

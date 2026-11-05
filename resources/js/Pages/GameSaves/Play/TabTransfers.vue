@@ -54,6 +54,7 @@ const originFilters = [
     { key: 'ecole_des_champions', label: "L'École des Champions" },
     { key: 'ao_ashi',             label: 'Ao Ashi' },
     { key: 'original',            label: 'Originaux' },
+    { key: 'amateur',             label: 'Amateurs' },
 ];
 
 const originCount = (key) =>

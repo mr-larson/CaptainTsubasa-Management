@@ -204,7 +204,9 @@ class PeriodPackageImportTest extends TestCase
         $this->assertNull($team->base_team_id);
         $this->assertTrue($team->is_controlled);
 
-        $players = GamePlayer::where('game_save_id', $save->id)->get();
+        // Les amateurs générés pour le marché ne viennent pas du package.
+        $players = GamePlayer::where('game_save_id', $save->id)
+            ->where(fn ($q) => $q->whereNull('origin')->orWhere('origin', '!=', GamePlayer::ORIGIN_AMATEUR))->get();
         $this->assertCount(2, $players);
         $this->assertTrue($players->every(fn ($p) => $p->base_player_id === null));
 
