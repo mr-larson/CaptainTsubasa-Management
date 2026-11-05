@@ -27,7 +27,14 @@ const counters = [
                 <li>Choisis une compétition : la <strong>Ligue</strong> (championnat en aller-retour) ou la <strong>Coupe du Monde</strong> (poules puis élimination directe).</li>
                 <li>Choisis un mode : <strong>effectifs pré-faits</strong> (chaque équipe a déjà ses joueurs) ou <strong>draft</strong> (toutes les équipes recrutent tour par tour, entre 14 et 18 joueurs).</li>
                 <li>Sélectionne l'équipe que tu pilotes. Pour jouer à plusieurs sur le même appareil, ajoute une équipe par manager humain : chacun joue à son tour.</li>
-                <li>Pour la Ligue, un niveau de difficulté fixe l'objectif de la direction du club (rien, maintien, objectif standard ou conquête).</li>
+                <li>
+                    Avant de lancer la partie, le panneau de <strong>configuration</strong> te permet de l'adapter à ton goût :
+                    <ul class="mt-2 list-[circle] space-y-1 pl-5">
+                        <li><strong>Difficulté</strong> (Ligue) : le mandat de la direction fixe l'objectif, la patience du board et le budget (bac à sable, survie, standard ou conquête).</li>
+                        <li><strong>Règles du jeu</strong> : active ou non les cartes bonus et malus, les blessures, les suspensions, le moral aléatoire, les transferts et l'entraînement de l'IA, et règle la fatigue, l'entraînement ou la durée des matchs.</li>
+                        <li><strong>Joueurs inclus</strong> : choisis de quels univers viennent les joueurs disponibles (Captain Tsubasa, Blue Lock, Ao Ashi…) et si les internationaux sont inclus.</li>
+                    </ul>
+                </li>
             </ul>
         </section>
 
