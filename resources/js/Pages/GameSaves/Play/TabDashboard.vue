@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
 import TeamStyleBadges from "@/Pages/GameSaves/Play/components/TeamStyleBadges.vue";
+import DashboardSquadCards from "@/Pages/GameSaves/Play/components/DashboardSquadCards.vue";
 
 const props = defineProps({
     gameSave:      { type: Object, required: true },
@@ -28,9 +29,10 @@ const props = defineProps({
     matches:        { type: Array,   default: () => [] },
     tournament:         { type: Object, default: null },
     isWorldCup:         { type: Boolean, default: false },
+    playerSeasonStats:  { type: Object,  default: () => ({}) },
 });
 
-const emit = defineEmits(['play-next-match', 'simulate-week', 'save-game', 'quit', 'change-tab']);
+const emit = defineEmits(['play-next-match', 'simulate-week', 'save-game', 'quit', 'change-tab', 'open-player']);
 
 // ── Coupe du Monde : contexte de poule de l'équipe contrôlée + étape ──
 const wcStageLabel = computed(() => ({
@@ -152,6 +154,22 @@ const faceToFace = computed(() => [
     { label: 'Défense', me: props.averageDefense, opp: opponentAvgDefense.value, color: 'bg-blue-400' },
     { label: 'Stamina', me: props.averageStamina, opp: opponentAvgStamina.value, color: 'bg-emerald-400' },
 ]);
+// Joueurs adverses à surveiller : meilleur buteur et meilleur duelliste.
+const opponentThreats = computed(() => {
+    const players = opponentContracts.value.map(c => c.game_player ?? c.gamePlayer).filter(Boolean);
+    const statOf  = (p) => props.playerSeasonStats?.[p.id] ?? props.playerSeasonStats?.[String(p.id)] ?? null;
+    const best = (pick) => players
+        .map(p => ({ player: p, value: Number(pick(statOf(p)) ?? 0) }))
+        .filter(r => r.value > 0)
+        .sort((a, b) => b.value - a.value)[0] ?? null;
+    const scorer  = best(s => s?.offense?.goals);
+    const duelist = best(s => s?.duelsWon);
+    return [
+        scorer  && { key: 'goals', text: `⚽ ${scorer.player.lastname}`,  detail: `${scorer.value} but${scorer.value > 1 ? 's' : ''}` },
+        duelist && { key: 'duels', text: `💪 ${duelist.player.lastname}`, detail: `${duelist.value} duels gagnés` },
+    ].filter(Boolean);
+});
+
 const statMax = computed(() => Math.max(1, ...faceToFace.value.flatMap(s => [s.me, s.opp])));
 
 // ==========================
@@ -464,12 +482,26 @@ const matchesPlayed = computed(() =>
                     </span>
                 </div>
             </div>
+            <div v-if="opponentTeam && !isByeWeek && opponentThreats.length"
+                 class="mt-3 pt-3 border-t border-slate-200 flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-xs">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">À surveiller</span>
+                <span v-for="t in opponentThreats" :key="t.key" class="text-slate-700">
+                    <span class="font-semibold">{{ t.text }}</span>
+                    <span class="text-slate-400"> · {{ t.detail }}</span>
+                </span>
+            </div>
             <div v-if="team?.description || (opponentTeam && !isByeWeek && opponentTeam.description)"
                  class="mt-3 pt-3 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <p class="text-xs text-slate-400 italic leading-relaxed line-clamp-2">{{ team?.description }}</p>
                 <p v-if="opponentTeam && !isByeWeek" class="text-xs text-slate-400 italic leading-relaxed line-clamp-2 sm:text-right">{{ opponentTeam.description }}</p>
             </div>
         </div>
+
+        <!-- ============================================ -->
+        <!-- LIGNE 5 : Vestiaire, contrats, meilleurs joueurs -->
+        <!-- ============================================ -->
+        <DashboardSquadCards :roster="roster" :week="week" :playerSeasonStats="playerSeasonStats"
+                             @open-player="p => emit('open-player', p)" />
 
     </div>
 </template>

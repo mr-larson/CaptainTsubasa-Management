@@ -62,6 +62,15 @@ export function usePreMatchChecklist({
 
         items.push(...promiseItems.value);
 
+        // Contrats qui se terminent cette semaine ou la suivante.
+        const currentWeek = Number(toValue(week));
+        (toValue(roster) ?? [])
+            .filter(p => p.contract_end_week != null
+                && Number(p.contract_end_week) >= currentWeek
+                && Number(p.contract_end_week) <= currentWeek + 1)
+            .forEach(p => items.push({ key: `ct${p.id}`, level: 'warn', tab: 'my-team', player: p,
+                text: `📄 Contrat de ${p.lastname} : fin semaine ${p.contract_end_week}` }));
+
         (toValue(sponsorChallenges) ?? []).forEach((ch, i) => {
             items.push({ key: `sp${i}`, level: 'info', tab: 'cards',
                 text: `💰 Défi sponsor : ${CHALLENGE_LABELS[ch.challenge] ?? 'objectif'} (+${ch.reward ?? 0})` });

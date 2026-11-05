@@ -488,6 +488,8 @@ const saveGame = () => {
                                   @play-next-match="playNextMatch"
                                   @simulate-week="simulateWeek"
                                   @save-game="saveGame"
+                                  :playerSeasonStats="playerSeasonStatsRef"
+                                  @open-player="p => openReminder({ tab: 'my-team', player: p })"
                                   @quit="router.visit(route('mainMenu'))">
                         <!-- Téléphone/tablette : les cartes de la colonne gauche -->
                         <template #side-cards>

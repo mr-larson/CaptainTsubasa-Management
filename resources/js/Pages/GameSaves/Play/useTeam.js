@@ -33,6 +33,8 @@ export function useTeam({ gameSave, team }) {
                 return {
                     ...p,
                     contract_id:                      c.id,
+                    contract_end_week:                c.end_week ?? null,
+                    salary:                           c.salary ?? null,
                     is_starter:                       starterOverrides.value[p.id] ?? (c.is_starter ?? true),
                     is_captain:                       c.is_captain ?? false,
                     captain_rerolls_remaining:        c.captain_rerolls_remaining ?? 3,
