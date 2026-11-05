@@ -12,9 +12,10 @@ import { onMounted, onUnmounted, ref } from 'vue';
  */
 const canvas = ref(null);
 
-const MAX = 60;           // grains vivants au maximum
-const SPACING = 10;       // px de trajet entre deux émissions
-const LIFE = [550, 950];  // durée de vie (ms)
+const MAX = 36;           // grains vivants au maximum
+const SPACING = 16;       // px de trajet entre deux émissions
+const LIFE = [450, 800];  // durée de vie (ms)
+const ALPHA = 0.7;        // luminosité maximale d'un grain
 const COLORS = ['204 251 241', '153 246 228', '45 212 191', '255 255 255', '252 211 77'];
 
 let ctx = null;
@@ -41,7 +42,7 @@ function spawn(x, y, now) {
         y: y + (Math.random() - 0.5) * 6,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed + 0.012,            // légère retombée
-        size: Math.random() > 0.75 ? 3 : 2,
+        size: Math.random() > 0.88 ? 3 : 2,
         color: COLORS[Math.random() > 0.9 ? 4 : Math.floor(Math.random() * 4)],
         born: now,
         life: LIFE[0] + Math.random() * (LIFE[1] - LIFE[0]),
@@ -66,9 +67,9 @@ function frame(now) {
         g.vy *= 0.985;
         // Fondu + scintillement en crans (rythme rétro).
         const flicker = Math.sin(g.twinkle + now / 70) > -0.3 ? 1 : 0.45;
-        const a = (1 - age) * flicker;
+        const a = (1 - age) * flicker * ALPHA;
         const px = Math.round(g.x), py = Math.round(g.y);   // alignés sur la grille : pixels nets
-        ctx.fillStyle = `rgb(${g.color} / ${(a * 0.22).toFixed(3)})`;
+        ctx.fillStyle = `rgb(${g.color} / ${(a * 0.14).toFixed(3)})`;
         ctx.fillRect(px - g.size, py - g.size, g.size * 3, g.size * 3);   // halo
         ctx.fillStyle = `rgb(${g.color} / ${a.toFixed(3)})`;
         ctx.fillRect(px, py, g.size, g.size);
@@ -86,7 +87,7 @@ function onMove(e) {
     const dist = Math.hypot(dx, dy);
     if (dist < SPACING) return;
     // Sème des grains régulièrement le long du segment parcouru.
-    const n = Math.min(4, Math.floor(dist / SPACING));
+    const n = Math.min(2, Math.floor(dist / SPACING));
     for (let i = 1; i <= n; i++) spawn(last.x + (dx * i) / n, last.y + (dy * i) / n, now);
     last = { x, y };
     if (!raf) raf = requestAnimationFrame(frame);
