@@ -8,6 +8,8 @@ defineProps({
     squad:   { type: Array, default: () => [] },
     // Dans le Dashboard (téléphone/tablette) : même fond que les autres cartes.
     inDashboard: { type: Boolean, default: false },
+    // { available, total } : joueurs ni blessés, ni suspendus, ni consignés
+    availability: { type: Object, default: null },
 });
 
 const emit = defineEmits(['open']);
@@ -31,7 +33,14 @@ const LEVEL_CHIP = { ...ISSUE_CHIP, action: 'bg-teal-50 border-teal-200 text-tea
         </div>
 
         <div>
-            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">État du onze</div>
+            <div class="flex items-center justify-between gap-2 mb-1.5">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">État du onze</span>
+                <span v-if="availability" class="text-[10px] font-semibold"
+                      :class="availability.available < availability.total ? 'text-amber-600' : 'text-slate-400'"
+                      title="Joueurs ni blessés, ni suspendus, ni consignés">
+                    {{ availability.available }}/{{ availability.total }} disponibles
+                </span>
+            </div>
             <div class="flex flex-wrap items-start gap-1.5">
                 <button v-for="item in squad" :key="item.key" type="button"
                         @click="emit('open', item)"

@@ -243,6 +243,10 @@ const { lineupIssues, unavailability } = useLineupIssues({
     isPlayerSuspended: () => isPlayerSuspended,
     isPlayerBenched:   () => isPlayerBenched,
 });
+const squadAvailability = computed(() => ({
+    available: rosterWithStatus.value.filter(p => !unavailability(p)).length,
+    total:     rosterWithStatus.value.length,
+}));
 const openReminder = (item) => {
     activeTab.value = item.tab ?? 'my-team';
     if (item.player) selectMyPlayer(item.player);
@@ -467,7 +471,7 @@ const saveGame = () => {
                     <CareerMandateCard v-if="career && career.mandate" compact
                                        :career="career" @open-rules="openCareerRules" />
                     <WeeklyRecapCard v-if="weeklyRecap.length" :weeklyRecap="weeklyRecap" />
-                    <RemindersCard :actions="checklistActions" :squad="checklistSquad" @open="openReminder" />
+                    <RemindersCard :actions="checklistActions" :squad="checklistSquad" :availability="squadAvailability" @open="openReminder" />
                     <div class="flex-1 bg-contain bg-center bg-no-repeat bg-[url('/images/wakabayashi.webp')]"></div>
                 </div>
 
@@ -504,9 +508,6 @@ const saveGame = () => {
                                   :standings="standings"
                                   :teamRecord="teamRecord"
                                   :teamBudget="teamBudget"
-                                  :injuriesCount="injuriesCount"
-                                  :suspensionsCount="suspensionsCount"
-                                  :cardsCount="cardsCount"
                                   :averageAttack="averageAttack"
                                   :averageDefense="averageDefense"
                                   :averageStamina="averageStamina"
@@ -536,7 +537,7 @@ const saveGame = () => {
                         <!-- Téléphone/tablette : les cartes de la colonne gauche -->
                         <template #side-cards>
                             <div class="min-[1400px]:hidden grid grid-cols-1 md:grid-cols-2 gap-3 items-start">
-                                <RemindersCard class="md:col-span-2" in-dashboard :actions="checklistActions" :squad="checklistSquad" @open="openReminder" />
+                                <RemindersCard class="md:col-span-2" in-dashboard :actions="checklistActions" :squad="checklistSquad" :availability="squadAvailability" @open="openReminder" />
                                 <!-- Seule carte de sa ligne → pleine largeur -->
                                 <CareerMandateCard v-if="career && career.mandate" compact
                                                    :class="{ 'md:col-span-2': !weeklyRecap.length }"

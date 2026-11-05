@@ -5,6 +5,7 @@ import TeamStyleBadges from "@/Pages/GameSaves/Play/components/TeamStyleBadges.v
 import DashboardSquadCards from "@/Pages/GameSaves/Play/components/DashboardSquadCards.vue";
 import DashboardSeasonCards from "@/Pages/GameSaves/Play/components/DashboardSeasonCards.vue";
 import AssistantAdviceCard from "@/Pages/GameSaves/Play/components/AssistantAdviceCard.vue";
+import { useSeasonTrajectory } from "@/Pages/GameSaves/Play/useSeasonTrajectory.js";
 import SeasonChallengesCard from "@/Pages/GameSaves/Play/components/SeasonChallengesCard.vue";
 
 const props = defineProps({
@@ -17,9 +18,6 @@ const props = defineProps({
     standings:     { type: Array,  required: true },
     teamRecord:    { type: Object, required: true },
     teamBudget:    { type: Number, required: true },
-    injuriesCount:    { type: Number, required: true },
-    suspensionsCount: { type: Number, required: true },
-    cardsCount:       { type: Number, required: true },
     averageAttack:  { type: Number, required: true },
     averageDefense: { type: Number, required: true },
     averageStamina: { type: Number, required: true },
@@ -192,6 +190,18 @@ const rankStyle = computed(() => {
     return 'text-slate-500';
 });
 
+// Indicateurs du haut : évolution au classement, objectif, budget de fin de saison.
+const { positionDelta, objective, projection, totalWeeks: seasonEndWeek } = useSeasonTrajectory({
+    team: () => props.clubStanding ?? props.team, teams: () => props.standings,
+    matches: () => props.matches, season: () => props.season, week: () => props.week,
+    career: () => props.career, budget: () => props.teamBudget, incomeModel: () => props.incomeModel,
+});
+
+const scrollToFinances = () =>
+    document.getElementById('dashboard-finances')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+const KPI = 'border border-slate-200 rounded-xl bg-slate-50 p-2 text-left transition-colors hover:bg-slate-100 hover:border-slate-300';
+
 const matchesPlayed = computed(() =>
     (props.teamRecord.wins ?? 0) + (props.teamRecord.draws ?? 0) + (props.teamRecord.losses ?? 0)
 );
@@ -274,93 +284,80 @@ const matchesPlayed = computed(() =>
         </div>
 
         <!-- ============================================ -->
-        <!-- LIGNE 2 : 4 tuiles                          -->
+        <!-- LIGNE 2 : 3 indicateurs (clic → détail)     -->
         <!-- ============================================ -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <!-- Téléphone : Classement + Budget côte à côte, Bilan en dessous -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
 
             <!-- Classement — Coupe du Monde : position dans la poule -->
-            <div v-if="isWorldCup" class="border border-slate-200 rounded-xl bg-slate-50 p-2 flex flex-col items-center gap-1">
-                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+            <button v-if="isWorldCup" type="button" :class="KPI" class="flex flex-col items-center gap-1"
+                    @click="emit('change-tab', 'standings')" title="Voir le tournoi">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                     {{ wcStanding ? 'Poule ' + wcStanding.group : 'Tournoi' }}
-                </div>
-                <div class="text-3xl font-black mt-1 text-indigo-600">
+                </span>
+                <span class="text-3xl font-black text-indigo-600">
                     {{ wcStanding ? wcStanding.position : '—' }}<sup v-if="wcStanding" class="text-base">e</sup>
-                </div>
-                <div class="text-[10px] text-slate-400">{{ wcStanding ? '/ ' + wcStanding.total : wcStageLabel }}</div>
-                <div v-if="wcStanding"
-                     class="text-[10px] font-bold px-2 py-0.5 rounded-full mt-1"
-                     :class="wcStanding.qualified ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-500'">
+                </span>
+                <span class="text-[10px] text-slate-400">{{ wcStanding ? '/ ' + wcStanding.total : wcStageLabel }}</span>
+                <span v-if="wcStanding" class="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                      :class="wcStanding.qualified ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-500'">
                     {{ wcStanding.qualified ? 'Qualifié' : wcStanding.points + ' pts' }}
-                </div>
-            </div>
+                </span>
+            </button>
 
-            <!-- Classement — Ligue -->
-            <div v-else class="border border-slate-200 rounded-xl bg-slate-50 p-2 flex flex-col items-center gap-1">
-                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Classement</div>
-                <div class="text-3xl font-black mt-1" :class="rankStyle">
-                    {{ clubStanding?.position ?? '—' }}<sup v-if="clubStanding" class="text-base">e</sup>
-                </div>
-                <div class="text-[10px] text-slate-400">/ {{ standings.length }} équipes</div>
-                <div class="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden mt-1">
-                    <div class="h-full bg-teal-500 rounded-full"
-                         :style="{ width: clubStanding ? (100 - ((clubStanding.position - 1) / Math.max(standings.length - 1, 1)) * 100) + '%' : '0%' }">
-                    </div>
-                </div>
-            </div>
+            <!-- Classement — Ligue : position, points, évolution, objectif -->
+            <button v-else type="button" :class="KPI" class="flex flex-col items-center gap-1"
+                    @click="emit('change-tab', 'standings')" title="Voir le classement">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Classement</span>
+                <span class="flex items-baseline gap-2">
+                    <span class="text-3xl font-black" :class="rankStyle">
+                        {{ clubStanding?.position ?? '—' }}<sup v-if="clubStanding" class="text-base">e</sup>
+                    </span>
+                    <span v-if="positionDelta !== null" class="text-xs font-bold"
+                          :class="positionDelta > 0 ? 'text-emerald-600' : positionDelta < 0 ? 'text-rose-500' : 'text-slate-400'"
+                          :title="'Évolution depuis la semaine précédente'">
+                        {{ positionDelta > 0 ? '↑' + positionDelta : positionDelta < 0 ? '↓' + (-positionDelta) : '=' }}
+                    </span>
+                </span>
+                <span class="text-[10px] text-slate-400">/ {{ standings.length }} · <span class="font-bold text-teal-600">{{ clubStanding?.points ?? 0 }} pts</span></span>
+                <span v-if="objective" class="text-[10px] font-bold px-2 py-0.5 rounded-full border"
+                      :class="objective.ok ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                            : objective.out ? 'bg-rose-50 border-rose-200 text-rose-700'
+                            : 'bg-amber-50 border-amber-200 text-amber-700'"
+                      :title="'🎯 ' + career.mandate.label + ' — ' + objective.text">
+                    🎯 {{ objective.ok ? '✓' : objective.out ? '✗' : '↗' }} {{ objective.short }}
+                </span>
+            </button>
 
             <!-- Bilan -->
-            <div class="border border-slate-200 rounded-xl bg-slate-50 p-2">
-                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Bilan</div>
-                <div class="flex gap-2">
-                    <div class="flex-1 text-center bg-emerald-50 rounded-lg py-1.5">
-                        <div class="text-xl font-black text-emerald-600">{{ teamRecord.wins ?? 0 }}</div>
-                        <div class="text-[9px] text-emerald-500 font-semibold">V</div>
-                    </div>
-                    <div class="flex-1 text-center bg-slate-100 rounded-lg py-1.5">
-                        <div class="text-xl font-black text-slate-500">{{ teamRecord.draws ?? 0 }}</div>
-                        <div class="text-[9px] text-slate-400 font-semibold">N</div>
-                    </div>
-                    <div class="flex-1 text-center bg-rose-50 rounded-lg py-1.5">
-                        <div class="text-xl font-black text-rose-500">{{ teamRecord.losses ?? 0 }}</div>
-                        <div class="text-[9px] text-rose-400 font-semibold">D</div>
-                    </div>
-                </div>
-                <div class="text-center mt-1.5">
-                    <span class="text-xs font-black text-teal-600">{{ clubStanding?.points ?? 0 }} pts</span>
-                </div>
-            </div>
+            <button type="button" :class="KPI" class="col-span-2 order-last sm:col-span-1 sm:order-none"
+                    @click="emit('change-tab', 'calendar')" title="Voir le calendrier">
+                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 text-center">Bilan</span>
+                <span class="flex gap-2">
+                    <span class="flex-1 text-center bg-emerald-50 rounded-lg py-1.5">
+                        <span class="block text-xl font-black text-emerald-600">{{ teamRecord.wins ?? 0 }}</span>
+                        <span class="block text-[9px] text-emerald-500 font-semibold">V</span>
+                    </span>
+                    <span class="flex-1 text-center bg-slate-100 rounded-lg py-1.5">
+                        <span class="block text-xl font-black text-slate-500">{{ teamRecord.draws ?? 0 }}</span>
+                        <span class="block text-[9px] text-slate-400 font-semibold">N</span>
+                    </span>
+                    <span class="flex-1 text-center bg-rose-50 rounded-lg py-1.5">
+                        <span class="block text-xl font-black text-rose-500">{{ teamRecord.losses ?? 0 }}</span>
+                        <span class="block text-[9px] text-rose-400 font-semibold">D</span>
+                    </span>
+                </span>
+            </button>
 
             <!-- Budget -->
-            <div class="border border-slate-200 rounded-xl bg-slate-50 p-2 flex flex-col items-center gap-1">
-                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Budget</div>
-                <div class="text-2xl font-black text-teal-600 mt-1">{{ teamBudget }}</div>
-                <div class="text-[10px] text-slate-500 mt-1">{{ roster.length }} joueur(s)</div>
-            </div>
-
-            <!-- Effectif -->
-            <div class="border border-slate-200 rounded-xl bg-slate-50 p-2">
-                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Effectif</div>
-                <div class="space-y-1.5 text-xs">
-                    <div class="flex justify-between items-center">
-                        <span class="text-slate-500">Blessés</span>
-                        <span class="font-black" :class="injuriesCount > 0 ? 'text-rose-500' : 'text-slate-400'">
-                            {{ injuriesCount }}
-                        </span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-slate-500">Suspensions</span>
-                        <span class="font-black" :class="suspensionsCount > 0 ? 'text-amber-500' : 'text-slate-400'">
-                            {{ suspensionsCount }}
-                        </span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-slate-500">Cartons</span>
-                        <span class="font-black" :class="cardsCount > 0 ? 'text-yellow-500' : 'text-slate-400'">
-                            {{ cardsCount }}
-                        </span>
-                    </div>
-                </div>
-            </div>
+            <button type="button" :class="KPI" class="flex flex-col items-center gap-1"
+                    @click="scrollToFinances" title="Voir le détail des finances">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Budget</span>
+                <span class="text-3xl font-black text-teal-600 tabular-nums">{{ Number(teamBudget).toLocaleString('fr-FR') }}</span>
+                <span v-if="projection" class="text-[10px] text-slate-400">
+                    ≈ {{ projection.likely.toLocaleString('fr-FR') }} en S{{ seasonEndWeek }}
+                </span>
+            </button>
         </div>
 
         <!-- ============================================ -->

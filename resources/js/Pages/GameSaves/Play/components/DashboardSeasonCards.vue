@@ -2,6 +2,7 @@
 // Dashboard — trajectoire de la saison (position semaine par semaine, écart avec
 // l'objectif du mandat) et projection budgétaire.
 import { computed } from 'vue';
+import { useSeasonTrajectory } from '../useSeasonTrajectory.js';
 
 const props = defineProps({
     team:          { type: Object,  default: null },
@@ -17,69 +18,13 @@ const props = defineProps({
     maxTrainings:  { type: Number,  default: 3 },
 });
 
-const myId = computed(() => props.team?.id ?? null);
-
-const seasonMatches = computed(() => (props.matches ?? [])
-    .filter(m => m.season == null || Number(m.season) === Number(props.season)));
-
-const isMine = (m) => m.home_team_id === myId.value || m.away_team_id === myId.value;
-
-// ── Position semaine par semaine ─────────────────────────────
-// Rejoue le classement après chaque semaine avec le même départage que
-// useDashboard : points → diff. de buts → buts marqués → victoires → nom.
-const positionHistory = computed(() => {
-    if (myId.value == null || !props.teams.length) return [];
-    const played = seasonMatches.value.filter(m => m.status === 'played');
-    const weeks  = [...new Set(played.map(m => Number(m.week)))].sort((a, b) => a - b);
-    const rows   = Object.fromEntries(props.teams.map(t => [t.id, { id: t.id, name: t.name ?? '', pts: 0, gf: 0, ga: 0, w: 0 }]));
-
-    return weeks.map(w => {
-        played.filter(m => Number(m.week) === w).forEach(m => {
-            const h = rows[m.home_team_id], a = rows[m.away_team_id];
-            if (!h || !a) return;
-            const hs = Number(m.home_score) || 0, as = Number(m.away_score) || 0;
-            h.gf += hs; h.ga += as; a.gf += as; a.ga += hs;
-            if (hs > as)      { h.pts += 3; h.w++; }
-            else if (hs < as) { a.pts += 3; a.w++; }
-            else              { h.pts++; a.pts++; }
-        });
-        const order = Object.values(rows).sort((x, y) =>
-            (y.pts - x.pts) || ((y.gf - y.ga) - (x.gf - x.ga)) || (y.gf - x.gf) || (y.w - x.w) || x.name.localeCompare(y.name));
-        return { week: w, position: order.findIndex(r => r.id === myId.value) + 1 };
-    });
-});
-
-const teamCount = computed(() => Math.max(props.teams.length, 2));
-
-// ── Objectif du mandat ───────────────────────────────────────
-const targetRank = computed(() => props.career?.mandate?.target_rank ?? null);
-
-const remainingMatches = computed(() =>
-    seasonMatches.value.filter(m => isMine(m) && m.status !== 'played'
-        && m.home_team_id != null && m.away_team_id != null).length);
-
-const objective = computed(() => {
-    const target = targetRank.value;
-    if (!target || myId.value == null) return null;
-    const pts   = (t) => (t?.wins ?? 0) * 3 + (t?.draws ?? 0);
-    const myPos = props.teams.findIndex(t => t.id === myId.value) + 1;
-    const me    = props.teams[myPos - 1];
-    if (!me) return null;
-
-    if (myPos <= target) {
-        const chaser = props.teams[target]; // (target+1)e
-        return {
-            ok: true,
-            text: chaser ? `+${pts(me) - pts(chaser)} pt(s) sur la ${target + 1}e place (${chaser.name})` : 'Objectif atteint',
-        };
-    }
-    const holder = props.teams[target - 1];
-    const gap    = pts(holder) - pts(me);
-    return {
-        ok: false,
-        out: gap > remainingMatches.value * 3,
-        text: `À ${gap} pt(s) de la ${target}e place (${holder.name})`,
-    };
+const {
+    positionHistory, teamCount, targetRank, remainingMatches, objective,
+    totalWeeks, weeksLeft, projection,
+} = useSeasonTrajectory({
+    team: () => props.team, teams: () => props.teams, matches: () => props.matches,
+    season: () => props.season, week: () => props.week, career: () => props.career,
+    budget: () => props.budget, incomeModel: () => props.incomeModel,
 });
 
 // ── Graphe SVG ───────────────────────────────────────────────
@@ -96,29 +41,6 @@ const dotClass = (pos) => targetRank.value == null
     : pos <= targetRank.value ? 'bg-emerald-500' : 'bg-rose-500';
 
 // ── Finances ─────────────────────────────────────────────────
-const totalWeeks = computed(() => Math.max(props.week, ...seasonMatches.value.map(m => Number(m.week) || 0)));
-// Le revenu de la semaine en cours n'est versé qu'à sa clôture : elle compte.
-const weeksLeft  = computed(() => Math.max(0, totalWeeks.value - props.week + 1));
-
-const record = computed(() => ({
-    w: props.team?.wins ?? 0, d: props.team?.draws ?? 0, l: props.team?.losses ?? 0,
-}));
-
-// Bonus moyen par match au rythme actuel (victoires/nuls déjà obtenus).
-const avgBonus = computed(() => {
-    const m = props.incomeModel;
-    const played = record.value.w + record.value.d + record.value.l;
-    if (!m || !played) return 0;
-    return (record.value.w * m.win_bonus + record.value.d * m.draw_bonus) / played;
-});
-
-const projection = computed(() => {
-    const m = props.incomeModel;
-    if (!m) return null;
-    const base = props.budget + weeksLeft.value * m.base;
-    return { min: base, likely: Math.round(base + remainingMatches.value * avgBonus.value) };
-});
-
 const weeklyTrainingCost = computed(() => props.trainingCost * props.maxTrainings);
 
 const fmt = (n) => Number(n ?? 0).toLocaleString('fr-FR');
@@ -172,7 +94,7 @@ const fmt = (n) => Number(n ?? 0).toLocaleString('fr-FR');
         </div>
 
         <!-- Finances -->
-        <div class="border border-slate-200 rounded-xl bg-slate-50 p-4" :class="isWorldCup ? 'md:col-span-3' : ''">
+        <div id="dashboard-finances" class="border border-slate-200 rounded-xl bg-slate-50 p-4 scroll-mt-4" :class="isWorldCup ? 'md:col-span-3' : ''">
             <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Finances</h4>
             <div class="space-y-1.5 text-xs text-slate-600">
                 <div class="flex justify-between"><span>Budget</span><span class="font-black text-slate-700 tabular-nums">{{ fmt(budget) }}</span></div>
