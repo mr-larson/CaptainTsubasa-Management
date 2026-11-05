@@ -52,6 +52,13 @@ const otherSubstitutes = computed(() => props.otherRosterWithStatus.filter(p => 
 
 const { teamLogoUrl } = usePlayerUtils();
 
+// Indisponibilité (icône + contour rouge sur le terrain et le banc), comme dans Mon équipe.
+const otherUnavailability = (p) => {
+    if (props.isPlayerInjured(p.id))   return { label: 'Blessé',   icon: '🤕' };
+    if (props.isPlayerSuspended(p.id)) return { label: 'Suspendu', icon: '🚫' };
+    return null;
+};
+
 const selectedTeamRank = computed(() => {
     if (!props.selectedOtherTeam || !props.standings?.length) return null;
     const idx = props.standings.findIndex(r => r.id === props.selectedOtherTeam.id);
@@ -105,6 +112,7 @@ const selectedPlayerPerf = computed(() => {
                        :selectedSlot="otherSelectedSlot"
                        :isPickedUp="isOtherPickedUp"
                        :players="otherRosterWithStatus"
+                       :playerStatus="otherUnavailability"
                        :playerCards="p => ({ yellow: playerYellowCards(p.id), red: isPlayerSuspended(p.id) })"
                        @player-click="p => emit('select-player', p)" />
 
@@ -112,6 +120,7 @@ const selectedPlayerPerf = computed(() => {
                        :substitutes="otherSubstitutes"
                        :selectedId="selectedOtherPlayer?.id"
                        :isPickedUp="isOtherPickedUp"
+                       :playerStatus="otherUnavailability"
                        @player-click="p => emit('select-player', p)" />
         </div>
 
