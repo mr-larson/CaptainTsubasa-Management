@@ -102,22 +102,21 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <InputLabel value="Équipe" />
-                                <select v-model="contract.team_id" required :class="fieldClass">
-                                    <option disabled value="">Choisir...</option>
+                                <InputSelect v-model="contract.team_id" required placeholder="Choisir..." class="mt-1">
                                     <option v-for="team in teams" :key="team.id" :value="team.id">{{ team.name }}</option>
-                                </select>
+                                </InputSelect>
                             </div>
                             <div>
                                 <InputLabel value="Salaire (€ / match)" />
-                                <input type="number" min="0" v-model="contract.salary" :class="fieldClass" />
+                                <InputText type="number" min="0" v-model.number="contract.salary" class="mt-1" />
                             </div>
                             <div>
                                 <InputLabel value="Durée (matchs)" />
-                                <input type="number" min="1" v-model="contract.matches_total" :class="fieldClass" />
+                                <InputText type="number" min="1" v-model.number="contract.matches_total" class="mt-1" />
                             </div>
                             <div>
                                 <InputLabel value="Matchs joués" />
-                                <input type="number" min="0" v-model="contract.matches_played" :class="fieldClass" />
+                                <InputText type="number" min="0" v-model.number="contract.matches_played" class="mt-1" />
                             </div>
                         </div>
 
@@ -152,6 +151,8 @@ import EntityEditor from '@/Components/EntityEditor.vue';
 import EditorSubNav from '@/Components/EditorSubNav.vue';
 import PlayerStatsPreview from '@/Components/PlayerStatsPreview.vue';
 import InputLabel from '@/Components/InputLabel.vue';
+import InputSelect from '@/Components/InputSelect.vue';
+import InputText from '@/Components/InputText.vue';
 import ButtonGroup from '@/Components/ButtonGroup.vue';
 import ButtonPrimary from '@/Components/ButtonPrimary.vue';
 import ButtonDanger from '@/Components/ButtonDanger.vue';
@@ -192,7 +193,6 @@ const photoPath = ref(null);
 // Contrat édité : copie locale, enregistrée par les routes des contrats.
 const contract = ref(null);
 const contractForm = useForm({});
-const fieldClass = 'mt-1 block w-full text-sm text-slate-700 bg-white border border-slate-300 rounded-full px-3 py-1.5 focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200';
 
 const activePanel = ref('player');
 

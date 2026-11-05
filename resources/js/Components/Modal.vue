@@ -14,6 +14,11 @@ const props = defineProps({
         type: Boolean,
         default: true,
     },
+    // Classes ajoutées au panneau (ex. bordure de couleur, hauteur max).
+    panelClass: {
+        type: [String, Array, Object],
+        default: '',
+    },
 });
 
 const emit = defineEmits(['close']);
@@ -84,7 +89,7 @@ const maxWidthClass = computed(() => {
 <template>
     <Teleport to="body">
         <Transition leave-active-class="duration-200">
-            <div v-show="show" class="fixed inset-0 overflow-y-auto px-4 py-6 sm:px-0 z-50" scroll-region>
+            <div v-show="show" class="fixed inset-0 z-50 overflow-y-auto" scroll-region>
                 <Transition
                     enter-active-class="ease-out duration-300"
                     enter-from-class="opacity-0"
@@ -94,10 +99,12 @@ const maxWidthClass = computed(() => {
                     leave-to-class="opacity-0"
                 >
                     <div v-show="show" class="fixed inset-0 transform transition-all" @click="close">
-                        <div class="absolute inset-0 bg-gray-500 opacity-75" />
+                        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" />
                     </div>
                 </Transition>
 
+                <!-- Centrage vertical ; un clic hors du panneau ferme la modale. -->
+                <div class="relative flex min-h-full items-center justify-center px-4 py-6" @click.self="close">
                 <Transition
                     enter-active-class="ease-out duration-300"
                     enter-from-class="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
@@ -112,12 +119,13 @@ const maxWidthClass = computed(() => {
                         role="dialog"
                         aria-modal="true"
                         tabindex="-1"
-                        class="mb-6 bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:w-full sm:mx-auto focus:outline-none"
-                        :class="maxWidthClass"
+                        class="w-full bg-white rounded-2xl overflow-hidden shadow-2xl transform transition-all focus:outline-none"
+                        :class="[maxWidthClass, panelClass]"
                     >
                         <slot v-if="show" />
                     </div>
                 </Transition>
+                </div>
             </div>
         </Transition>
     </Teleport>

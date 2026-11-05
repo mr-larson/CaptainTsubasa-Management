@@ -45,7 +45,7 @@ const formatDate = (value) => {
                             </p>
                         </div>
                         <Link :href="route('period-packages.create')"
-                              class="flex items-center justify-center gap-2 px-4 py-2 bg-teal-500 hover:bg-teal-400 text-white text-sm font-semibold rounded-xl transition-all">
+                              class="flex items-center justify-center gap-2 px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white text-sm font-semibold rounded-xl transition-all">
                             📦 Importer une période
                         </Link>
                     </div>
@@ -55,7 +55,7 @@ const formatDate = (value) => {
                         <div class="text-5xl">📦</div>
                         <p class="text-sm">Aucune période importée pour le moment.</p>
                         <Link :href="route('period-packages.create')"
-                              class="px-6 py-2 bg-teal-500 hover:bg-teal-400 text-white text-sm font-semibold rounded-xl transition-all">
+                              class="px-6 py-2 bg-teal-500 hover:bg-teal-600 text-white text-sm font-semibold rounded-xl transition-all">
                             Importer une période
                         </Link>
                     </div>

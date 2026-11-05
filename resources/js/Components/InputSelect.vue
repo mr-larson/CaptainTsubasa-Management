@@ -1,57 +1,31 @@
-<script>
-export default {
-    name: 'InputSelect',
+<script setup>
+import { computed } from 'vue';
+import { fieldClass } from './fieldStyles';
 
-    // API v-model standard Vue 3 : modelValue / update:modelValue
-    props: {
-        modelValue: {
-            type: [String, Number],
-            default: ''
-        },
-        id: {
-            type: String,
-            default: ''
-        },
-        placeholder: {
-            type: String,
-            default: 'Select an option'
-        },
-        disabled: {
-            type: Boolean,
-            default: false
-        }
-    },
+// Les attributs passés (class, required, aria-*, @change…) tombent directement sur le <select>.
+const props = defineProps({
+    modelValue: { type: [String, Number, Boolean], default: '' },
+    // Option désactivée affichée tant que rien n'est choisi ; '' pour ne pas en afficher.
+    placeholder: { type: String, default: 'Choisir…' },
+    // md : formulaire (pilule) ; sm : contrôle compact des écrans de jeu (rectangle, text-xs).
+    size: { type: String, default: 'md' },
+});
 
-    emits: ['update:modelValue'],
+const emit = defineEmits(['update:modelValue']);
 
-    computed: {
-        internalValue: {
-            get() {
-                return this.modelValue;
-            },
-            set(value) {
-                this.$emit('update:modelValue', value);
-            }
-        }
-    }
-};
+const internalValue = computed({
+    get: () => props.modelValue,
+    set: (value) => emit('update:modelValue', value),
+});
 </script>
 
 <template>
-    <div class="relative">
-        <select
-            :id="id"
-            v-model="internalValue"
-            :disabled="disabled"
-            class="appearance-none text-sm text-slate-700 bg-white border border-slate-300 rounded-full w-full leading-tight focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200"
-        >
-            <!-- option placeholder -->
-            <option v-if="placeholder" disabled value="">
-                {{ placeholder }}
-            </option>
-
-            <!-- options passées par le parent -->
-            <slot></slot>
-        </select>
-    </div>
+    <select v-model="internalValue" :class="['w-full', size === 'sm'
+        ? ['py-1.5 pl-2.5 pr-8', fieldClass({ shape: 'rect', size: 'sm' })]
+        : fieldClass()]">
+        <option v-if="placeholder" disabled value="">
+            {{ placeholder }}
+        </option>
+        <slot />
+    </select>
 </template>

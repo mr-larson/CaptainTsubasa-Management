@@ -17,7 +17,7 @@ const messages = computed(() =>
 </script>
 
 <template>
-    <ul v-if="messages.length" class="mt-1 space-y-0.5 text-sm text-red-600" role="alert">
+    <ul v-if="messages.length" class="mt-1 space-y-0.5 text-sm text-rose-600" role="alert">
         <li v-for="(message, i) in messages" :key="i">{{ message }}</li>
     </ul>
 </template>

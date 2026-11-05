@@ -97,29 +97,28 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <InputLabel value="Équipe" />
-                                <select v-model="contract.game_team_id" required :class="fieldClass">
-                                    <option disabled value="">Choisir...</option>
+                                <InputSelect v-model="contract.game_team_id" required placeholder="Choisir..." class="mt-1">
                                     <option v-for="team in teams" :key="team.id" :value="team.id">{{ team.name }}</option>
-                                </select>
+                                </InputSelect>
                             </div>
                             <div>
                                 <InputLabel value="Salaire" />
-                                <input type="number" v-model="contract.salary" :class="fieldClass" />
+                                <InputText type="number" v-model.number="contract.salary" class="mt-1" />
                             </div>
                             <div>
                                 <InputLabel value="Début (semaine)" />
-                                <input type="number" v-model="contract.start_week" :class="fieldClass" />
+                                <InputText type="number" v-model.number="contract.start_week" class="mt-1" />
                             </div>
                             <div>
                                 <InputLabel value="Fin (semaine)" />
-                                <input type="number" v-model="contract.end_week" :class="fieldClass" />
+                                <InputText type="number" v-model.number="contract.end_week" class="mt-1" />
                             </div>
                             <div>
                                 <InputLabel value="Titulaire ?" />
-                                <select v-model="contract.is_starter" :class="fieldClass">
+                                <InputSelect v-model="contract.is_starter" placeholder="" class="mt-1">
                                     <option :value="true">Oui</option>
                                     <option :value="false">Non</option>
-                                </select>
+                                </InputSelect>
                             </div>
                         </div>
 
@@ -154,6 +153,8 @@ import EntityEditor from '@/Components/EntityEditor.vue'
 import EditorSubNav from '@/Components/EditorSubNav.vue'
 import PlayerStatsPreview from '@/Components/PlayerStatsPreview.vue'
 import InputLabel from '@/Components/InputLabel.vue'
+import InputSelect from '@/Components/InputSelect.vue'
+import InputText from '@/Components/InputText.vue'
 import ButtonGroup from '@/Components/ButtonGroup.vue'
 import ButtonPrimary from '@/Components/ButtonPrimary.vue'
 import ButtonDanger from '@/Components/ButtonDanger.vue'
@@ -188,7 +189,6 @@ const photoPath = ref(null)
 // Contrat édité : copie locale, enregistrée par ses propres routes.
 const contract = ref(null)
 const contractProcessing = ref(false)
-const fieldClass = 'mt-1 block w-full text-sm text-slate-700 bg-white border border-slate-300 rounded-full px-3 py-1.5 focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200'
 
 const activePanel = ref('player')
 

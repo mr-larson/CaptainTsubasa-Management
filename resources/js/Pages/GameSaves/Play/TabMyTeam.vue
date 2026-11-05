@@ -1,4 +1,7 @@
 <script setup>
+import { fieldClass } from '@/Components/fieldStyles';
+import ButtonSecondary from '@/Components/ButtonSecondary.vue';
+import ButtonDanger from '@/Components/ButtonDanger.vue';
 import { computed, onMounted, onBeforeUnmount } from 'vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
 import RosterList from '@/Pages/GameSaves/Play/components/RosterList.vue';
@@ -374,12 +377,9 @@ const slotCandidates = (slot, slotDef) => substitutes.value
                                             title="Puis clique un coéquipier (échange de poste), un remplaçant (il sort) ou un poste vide">
                                         ⇄ Déplacer / remplacer…
                                     </button>
-                                    <button type="button"
-                                            @click="emit('toggle-starter', selectedMyPlayer.contract_id)"
-                                            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all bg-white text-slate-500 border-slate-300 hover:bg-slate-50"
-                                            title="Le joueur passe sur le banc et son poste reste vide">
+                                    <ButtonSecondary size="sm" @click="emit('toggle-starter', selectedMyPlayer.contract_id)" title="Le joueur passe sur le banc et son poste reste vide">
                                         ↓ Sortir du onze
-                                    </button>
+                                    </ButtonSecondary>
                                 </template>
                                 <!-- Remplaçant, onze complet : choisir qui il remplace -->
                                 <button v-else-if="onzeComplet" type="button"
@@ -416,16 +416,13 @@ const slotCandidates = (slot, slotDef) => substitutes.value
                                     max="99"
                                     :value="selectedMyPlayer.number"
                                     @change="onNumberChange($event)"
-                                    class="w-14 border border-slate-300 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-teal-300 focus:outline-none"
+                                    class="w-14 px-2 py-1" :class="fieldClass({ shape: 'rect', size: 'sm' })"
                                 />
                             </div>
                             <!-- Résiliation -->
-                            <button v-if="selectedMyPlayer.contract_id" type="button"
-                                    @click="emit('release-player', selectedMyPlayer)"
-                                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all bg-white text-rose-500 border-rose-300 hover:bg-rose-50"
-                                    title="Résilier le contrat : salaire déjà versé non remboursé, relation avec le coach rompue (-100)">
+                            <ButtonDanger size="sm" v-if="selectedMyPlayer.contract_id" @click="emit('release-player', selectedMyPlayer)" title="Résilier le contrat : salaire déjà versé non remboursé, relation avec le coach rompue (-100)">
                                 ✖ Résilier
-                            </button>
+                            </ButtonDanger>
                         </template>
                         <template #footer>
                             <p class="mt-3 text-2xs text-slate-400 italic">

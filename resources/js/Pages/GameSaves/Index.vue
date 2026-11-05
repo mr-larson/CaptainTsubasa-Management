@@ -51,7 +51,7 @@ const formatDate = (value) => {
                                 📦 Mes périodes
                             </Link>
                             <Link :href="route('game-saves.create')"
-                                  class="flex items-center justify-center gap-2 px-4 py-2 bg-teal-500 hover:bg-teal-400 text-white text-sm font-semibold rounded-xl transition-all">
+                                  class="flex items-center justify-center gap-2 px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white text-sm font-semibold rounded-xl transition-all">
                                 ⚽ Nouvelle partie
                             </Link>
                         </div>
@@ -63,7 +63,7 @@ const formatDate = (value) => {
                         <div class="text-5xl">💾</div>
                         <p class="text-sm">Tu n'as pas encore de partie sauvegardée.</p>
                         <Link :href="route('game-saves.create')"
-                              class="px-6 py-2 bg-teal-500 hover:bg-teal-400 text-white text-sm font-semibold rounded-xl transition-all">
+                              class="px-6 py-2 bg-teal-500 hover:bg-teal-600 text-white text-sm font-semibold rounded-xl transition-all">
                             Créer une partie
                         </Link>
                     </div>
@@ -90,7 +90,7 @@ const formatDate = (value) => {
                             <!-- Actions -->
                             <div class="flex items-center gap-2 shrink-0">
                                 <button type="button" @click="play(save)"
-                                        class="px-4 py-1.5 bg-teal-500 hover:bg-teal-400 text-white text-xs font-semibold rounded-lg transition-all">
+                                        class="px-4 py-1.5 bg-teal-500 hover:bg-teal-600 text-white text-xs font-semibold rounded-lg transition-all">
                                     ▶ Jouer
                                 </button>
                                 <button type="button" @click="destroySave(save)"

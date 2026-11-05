@@ -1,5 +1,8 @@
 <script setup>
+import { fieldClass, TEXTAREA_CLASS } from '@/Components/fieldStyles';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import ButtonPrimary from '@/Components/ButtonPrimary.vue';
+import InputError from '@/Components/InputError.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import H2 from '@/Components/H2.vue';
@@ -49,15 +52,15 @@ function submit() {
                     <div>
                         <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Nom</label>
                         <input v-model="form.name" type="text"
-                               class="mt-1 w-full rounded-lg border border-slate-300 bg-slate-50 text-sm px-3 py-2" />
-                        <p v-if="form.errors.name" class="text-sm text-red-600 mt-1">{{ form.errors.name }}</p>
+                               class="mt-1 w-full px-3 py-2" :class="fieldClass()" />
+                        <InputError class="mt-1" :message="form.errors.name" />
                     </div>
 
                     <div>
                         <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Description</label>
                         <textarea v-model="form.description" rows="3"
-                                  class="mt-1 w-full rounded-lg border border-slate-300 bg-slate-50 text-sm px-3 py-2"></textarea>
-                        <p v-if="form.errors.description" class="text-sm text-red-600 mt-1">{{ form.errors.description }}</p>
+                                  class="mt-1 w-full px-3 py-2" :class="TEXTAREA_CLASS"></textarea>
+                        <InputError class="mt-1" :message="form.errors.description" />
                     </div>
 
                     <div>
@@ -65,15 +68,15 @@ function submit() {
                         <div class="mt-1 flex items-center gap-3">
                             <input ref="zipInput" type="file" accept=".zip" class="hidden" @change="onZipChange" />
                             <button type="button"
-                                    class="shrink-0 px-3 py-1.5 rounded-l-full border border-gray-300 bg-stone-50 text-sm text-slate-700 hover:bg-white"
+                                    class="shrink-0 px-3 py-1.5 rounded-l-full border border-slate-300 bg-white text-sm text-slate-700 hover:bg-white"
                                     @click="openZipPicker">
                                 Choisir
                             </button>
-                            <div class="flex-1 px-3 py-1.5 rounded-r-full border border-l-0 border-gray-300 bg-stone-50 text-sm text-slate-600 truncate">
+                            <div class="flex-1 px-3 py-1.5 rounded-r-full border border-l-0 border-slate-300 bg-white text-sm text-slate-600 truncate">
                                 {{ selectedZipName || 'Aucun fichier choisi' }}
                             </div>
                         </div>
-                        <p v-if="form.errors.zip" class="text-sm text-red-600 mt-1">{{ form.errors.zip }}</p>
+                        <InputError class="mt-1" :message="form.errors.zip" />
                         <p class="text-xs text-slate-400 mt-2">
                             Structure attendue : manifest.json, teams.json, players.json, contracts.json,
                             et un dossier images/players / images/teams. Taille max : 20 Mo.
@@ -87,14 +90,13 @@ function submit() {
 
                     <div class="flex items-center justify-between pt-4">
                         <Link :href="route('period-packages.index')"
-                              class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-500 text-sm font-semibold rounded-xl border border-slate-200 transition-all">
+                              class="inline-flex min-h-10 items-center justify-center rounded-full border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50">
                             ← Annuler
                         </Link>
-                        <button type="submit" :disabled="form.processing"
-                                class="px-6 py-2 bg-teal-500 hover:bg-teal-400 text-white text-sm font-semibold rounded-xl transition-all disabled:opacity-50">
+                        <ButtonPrimary :disabled="form.processing">
                             <span v-if="form.processing">Import en cours...</span>
                             <span v-else>Importer</span>
-                        </button>
+                        </ButtonPrimary>
                     </div>
                 </form>
             </div>

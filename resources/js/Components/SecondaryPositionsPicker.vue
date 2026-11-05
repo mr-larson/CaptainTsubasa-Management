@@ -5,10 +5,10 @@
             :key="p"
             class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-sm select-none focus-within:ring-2 focus-within:ring-teal-300"
             :class="p === position
-                ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
+                ? 'border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed'
                 : (model.includes(p)
                     ? 'border-teal-500 bg-teal-50 text-teal-700 cursor-pointer'
-                    : 'border-gray-300 bg-stone-50 text-slate-600 hover:bg-white cursor-pointer')"
+                    : 'border-slate-300 bg-white text-slate-600 hover:bg-white cursor-pointer')"
         >
             <input
                 type="checkbox"

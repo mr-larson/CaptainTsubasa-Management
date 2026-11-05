@@ -1,7 +1,22 @@
+<script setup>
+import { computed } from 'vue';
+import { BUTTON_BASE, buttonSize } from './buttonStyles';
+
+// Action destructive secondaire (contour rose). Pour une confirmation pleine : ButtonPrimary tone="rose".
+const props = defineProps({
+    type: { type: String, default: 'button' },
+    size: { type: String, default: 'md' }, // sm | md | lg
+});
+
+const classes = computed(() => [
+    BUTTON_BASE,
+    buttonSize(props.size),
+    'border border-rose-300 bg-white font-semibold text-rose-600 hover:bg-rose-50 focus-visible:ring-rose-300',
+]);
+</script>
+
 <template>
-    <button
-        class="mb-2 inline-flex min-h-[40px] items-center justify-center rounded-full border border-rose-300 bg-white px-5 text-sm font-semibold text-rose-600 transition-colors hover:bg-rose-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-300 focus-visible:ring-offset-2 disabled:opacity-50"
-    >
+    <button :type="type" :class="classes">
         <slot />
     </button>
 </template>

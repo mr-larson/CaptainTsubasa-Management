@@ -1,5 +1,7 @@
 <script setup>
+import { fieldClass } from '@/Components/fieldStyles';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import ButtonPrimary from '@/Components/ButtonPrimary.vue';
 import H2 from '@/Components/H2.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { alertDialog } from '@/Composables/useDialog.js';
@@ -540,10 +542,9 @@ onMounted(() => {
                         {{ pickLog.length }} joueurs ont été sélectionnés.
                         Ton équipe compte {{ myRosterCount }} joueurs.
                     </p>
-                    <button @click="goToPlay"
-                            class="mt-6 px-8 py-3 bg-teal-500 hover:bg-teal-400 text-white font-bold rounded-xl text-sm transition-all shadow-lg shadow-teal-200">
+                    <ButtonPrimary type="button" size="lg" class="mt-6" @click="goToPlay">
                         ⚽ Commencer la saison
-                    </button>
+                    </ButtonPrimary>
                 </div>
 
                 <!-- ══════ DRAFT EN COURS ══════ -->
@@ -592,7 +593,7 @@ onMounted(() => {
 
                                 <!-- Sélecteur équipe -->
                                 <select v-model="inspectedTeamId"
-                                        class="w-full border border-slate-200 rounded-lg px-2 py-1 text-[11px] font-semibold text-slate-700 bg-slate-50 mb-2 focus:ring-2 focus:ring-amber-300 focus:outline-none">
+                                        class="w-full px-2 py-1 mb-2" :class="fieldClass({ shape: 'rect', size: 'sm' })">
                                     <option v-for="t in draftOrderTeams" :key="t.id" :value="t.id">
                                         {{ t.name }} ({{ t.rosterCount }})
                                     </option>
@@ -677,7 +678,7 @@ onMounted(() => {
                                 <!-- Recherche -->
                                 <div class="relative flex-1 min-w-[160px]">
                                     <input type="search" v-model="searchQuery"
-                                           class="w-full pl-14 pr-3 py-2 text-xs border border-slate-200 rounded-xl bg-white focus:ring-2 focus:ring-amber-300 focus:outline-none"
+                                           class="w-full pl-14 pr-3 py-2" :class="fieldClass({ size: 'sm' })"
                                            placeholder="Rechercher un joueur..."/>
                                 </div>
 

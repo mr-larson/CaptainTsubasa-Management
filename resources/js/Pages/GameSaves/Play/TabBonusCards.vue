@@ -1,4 +1,8 @@
 <script setup>
+import Modal from '@/Components/Modal.vue';
+import TabBar from '@/Components/TabBar.vue';
+import ButtonSecondary from '@/Components/ButtonSecondary.vue';
+import ButtonPrimary from '@/Components/ButtonPrimary.vue';
 import { ref, computed } from 'vue';
 
 const props = defineProps({
@@ -24,6 +28,10 @@ const emit = defineEmits(['buy', 'activate']);
 //   ÉTAT LOCAL
 // ==========================
 const activeTab      = ref('shop');   // 'shop' | 'inventory'
+const shopTabs = computed(() => [
+    { key: 'shop',      label: '🛒 Boutique' },
+    { key: 'inventory', label: '🎒 Inventaire', badge: availableCards.value.length || null },
+]);
 const selectedCard   = ref(null);     // carte inventaire sélectionnée
 const targetPlayerId = ref(null);     // pour cartes "player"
 const targetTeamId   = ref(null);     // pour malus à cible choisie (target="team")
@@ -201,23 +209,8 @@ const canConfirm = computed(() => {
             </div>
 
             <!-- Onglets -->
-            <div class="flex gap-1 mt-4 border-b border-slate-200">
-                <button type="button"
-                        @click="activeTab = 'shop'"
-                        class="px-4 py-2 text-xs font-semibold border-b-2 transition-all"
-                        :class="activeTab === 'shop' ? 'border-teal-500 text-teal-600' : 'border-transparent text-slate-500 hover:text-slate-700'">
-                    🛒 Boutique
-                </button>
-                <button type="button"
-                        @click="activeTab = 'inventory'"
-                        class="px-4 py-2 text-xs font-semibold border-b-2 transition-all"
-                        :class="activeTab === 'inventory' ? 'border-teal-500 text-teal-600' : 'border-transparent text-slate-500 hover:text-slate-700'">
-                    🎒 Inventaire
-                    <span v-if="availableCards.length"
-                          class="ml-1 bg-teal-500 text-white text-3xs font-black px-1.5 py-0.5 rounded-full">
-                        {{ availableCards.length }}
-                    </span>
-                </button>
+            <div class="mt-4 border-b border-slate-200">
+                <TabBar v-model="activeTab" :tabs="shopTabs" size="sm" label="Boutique et inventaire" />
             </div>
         </div>
 
@@ -353,19 +346,9 @@ const canConfirm = computed(() => {
                             </div>
 
                             <!-- Bouton achat -->
-                            <button type="button"
-                                    @click="buyOffer(offer)"
-                                    :disabled="!canAfford(offer.cost) || isAlreadyBought(offer)"
-                                    class="w-full py-2 rounded-xl text-xs font-bold transition-all"
-                                    :class="isAlreadyBought(offer)
-                                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                                    : !canAfford(offer.cost)
-                                        ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                                        : group.key === 'malus'
-                                            ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-sm active:scale-95'
-                                            : 'bg-teal-500 hover:bg-teal-600 text-white shadow-sm active:scale-95'">
+                            <ButtonPrimary type="button" size="sm" class="w-full" :tone="group.key === 'malus' ? 'rose' : 'teal'" @click="buyOffer(offer)" :disabled="!canAfford(offer.cost) || isAlreadyBought(offer)">
                                     {{ isAlreadyBought(offer) ? '✓ Déjà achetée' : canAfford(offer.cost) ? 'Acheter' : 'Budget insuffisant' }}
-                            </button>
+                            </ButtonPrimary>
                         </div>
                     </div>
                 </div>
@@ -468,13 +451,9 @@ const canConfirm = computed(() => {
         <!-- ================================================ -->
         <!-- MODAL ACTIVATION                                  -->
         <!-- ================================================ -->
-        <Teleport to="body">
-            <div v-if="selectedCard"
-                 class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
-                 @click.self="cancelActivate">
-
-                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md border-2"
-                     :class="tierClasses(selectedCard.tier).border">
+        <Modal :show="!!selectedCard" max-width="md"
+               :panel-class="['border-2', selectedCard ? tierClasses(selectedCard.tier).border : '']"
+               @close="cancelActivate">
 
                     <!-- Header -->
                     <div class="p-5 border-b border-slate-100">
@@ -568,26 +547,14 @@ const canConfirm = computed(() => {
 
                     <!-- Actions -->
                     <div class="p-4 flex gap-2 justify-end">
-                        <button type="button"
-                                @click="cancelActivate"
-                                class="px-4 py-2 text-xs font-semibold rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all">
+                        <ButtonSecondary size="sm" @click="cancelActivate">
                             Annuler
-                        </button>
-                        <button type="button"
-                                @click="confirmActivate"
-                                :disabled="!canConfirm"
-                                class="px-5 py-2 text-xs font-bold rounded-xl transition-all disabled:opacity-40"
-                                :class="!canConfirm
-                                    ? 'bg-slate-200 text-slate-400'
-                                    : isSelectedMalus
-                                        ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-sm'
-                                        : 'bg-teal-500 hover:bg-teal-600 text-white shadow-sm'">
+                        </ButtonSecondary>
+                        <ButtonPrimary type="button" size="sm" :tone="isSelectedMalus ? 'rose' : 'teal'" @click="confirmActivate" :disabled="!canConfirm">
                             {{ isSelectedMalus ? '☠️ Infliger le malus' : '✨ Activer la carte' }}
-                        </button>
+                        </ButtonPrimary>
                     </div>
-                </div>
-            </div>
-        </Teleport>
+        </Modal>
 
     </div>
 </template>

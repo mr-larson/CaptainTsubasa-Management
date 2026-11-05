@@ -1,4 +1,5 @@
 <script setup>
+import TabBar from '@/Components/TabBar.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 import { Head, router } from '@inertiajs/vue3';
@@ -389,14 +390,6 @@ function setTab(key) {
     activeTab.value = tabs.value.some(t => t.key === key) ? key : 'dashboard';
 }
 
-// Navigation au clavier entre onglets (flèches gauche / droite).
-function focusSiblingTab(step) {
-    const keys = tabs.value.map(t => t.key);
-    const next = keys[(keys.indexOf(activeTab.value) + step + keys.length) % keys.length];
-    activeTab.value = next;
-    nextTick(() => document.querySelector(`[role="tab"][data-tab="${next}"]`)?.focus());
-}
-
 // Section à pré-sélectionner dans l'onglet Gestion (ex: depuis l'aide objectif).
 const managementInitialSection = ref(null);
 
@@ -480,21 +473,7 @@ const saveGame = () => {
 
                     <!-- Onglets -->
                     <div class="mb-4 border-b border-slate-200 shrink-0">
-                        <nav class="-mb-px flex space-x-1 overflow-x-auto" role="tablist" aria-label="Sections de la partie"
-                             @keydown.right.prevent="focusSiblingTab(1)" @keydown.left.prevent="focusSiblingTab(-1)">
-                            <button v-for="tab in tabs" :key="tab.key" type="button"
-                                    role="tab"
-                                    :aria-selected="activeTab === tab.key"
-                                    :tabindex="activeTab === tab.key ? 0 : -1"
-                                    :data-tab="tab.key"
-                                    @click="activeTab = tab.key"
-                                    :class="['whitespace-nowrap py-2 px-3 text-sm font-medium border-b-2 rounded-t-md',
-                                    activeTab === tab.key
-                                        ? 'border-teal-500 text-slate-700 bg-slate-50'
-                                        : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300']">
-                                {{ tab.label }}
-                            </button>
-                        </nav>
+                        <TabBar v-model="activeTab" :tabs="tabs" label="Sections de la partie" />
                     </div>
 
                     <!-- ======== DASHBOARD ======== -->

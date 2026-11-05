@@ -1,5 +1,7 @@
 <script setup>
 import Modal from '@/Components/Modal.vue';
+import ButtonPrimary from '@/Components/ButtonPrimary.vue';
+import ButtonSecondary from '@/Components/ButtonSecondary.vue';
 import { dialogState, closeDialog } from '@/Composables/useDialog.js';
 </script>
 
@@ -16,17 +18,12 @@ import { dialogState, closeDialog } from '@/Composables/useDialog.js';
             </ul>
 
             <div class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-                <button v-if="!dialogState.alertOnly" type="button" @click="closeDialog(false)"
-                        class="inline-flex min-h-[44px] items-center justify-center rounded-full border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-600 hover:bg-slate-50">
+                <ButtonSecondary v-if="!dialogState.alertOnly" size="lg" class="shadow-none" @click="closeDialog(false)">
                     {{ dialogState.cancelLabel }}
-                </button>
-                <button type="button" @click="closeDialog(true)"
-                        class="inline-flex min-h-[44px] items-center justify-center rounded-full px-5 text-sm font-bold"
-                        :class="dialogState.danger
-                            ? 'bg-rose-500 text-white hover:bg-rose-600'
-                            : 'bg-teal-500 text-slate-700 hover:bg-teal-400'">
+                </ButtonSecondary>
+                <ButtonPrimary type="button" size="lg" :tone="dialogState.danger ? 'rose' : 'teal'" @click="closeDialog(true)">
                     {{ dialogState.confirmLabel }}
-                </button>
+                </ButtonPrimary>
             </div>
         </div>
     </Modal>

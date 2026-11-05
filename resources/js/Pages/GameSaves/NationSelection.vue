@@ -1,5 +1,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import ButtonPrimary from '@/Components/ButtonPrimary.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import H2 from '@/Components/H2.vue';
 import { computed } from 'vue';
@@ -95,14 +96,13 @@ function launch() {
                     <p class="text-xs text-slate-400">
                         Ton effectif national est constitué automatiquement à partir des meilleurs joueurs de la nation.
                     </p>
-                    <button type="button"
-                            @click="launch"
-                            :disabled="!form.nation || form.processing"
-                            class="shrink-0 flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-500 hover:bg-indigo-400 text-white text-sm font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]">
+                    <ButtonPrimary type="button" size="lg" tone="indigo" class="shrink-0"
+                                   :disabled="!form.nation || form.processing"
+                                   @click="launch">
                         <span v-if="form.processing">Création...</span>
                         <span v-else-if="form.nation">🏆 Lancer avec {{ form.nation }}</span>
                         <span v-else>Sélectionne une nation</span>
-                    </button>
+                    </ButtonPrimary>
                 </div>
             </div>
         </div>

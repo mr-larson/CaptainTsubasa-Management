@@ -72,14 +72,14 @@ onBeforeUnmount(() => revokePreview());
             <div class="flex items-center w-full md:w-56">
                 <button
                     type="button"
-                    class="shrink-0 px-3 py-1.5 rounded-l-full border border-gray-300 bg-stone-50 text-sm text-slate-700 hover:bg-white focus:outline-none focus:border-slate-700"
+                    class="shrink-0 px-3 py-1.5 rounded-l-full border border-slate-300 bg-white text-sm text-slate-700 hover:bg-white focus:outline-none focus:border-slate-700"
                     @click="openPicker"
                 >
                     Choisir
                 </button>
 
                 <div
-                    class="flex-1 px-3 py-1.5 rounded-r-full border border-l-0 border-gray-300 bg-stone-50 text-sm text-slate-600 truncate"
+                    class="flex-1 px-3 py-1.5 rounded-r-full border border-l-0 border-slate-300 bg-white text-sm text-slate-600 truncate"
                     :title="selectedName || 'Aucun fichier choisi'"
                 >
                     {{ selectedName || 'Aucun fichier choisi' }}

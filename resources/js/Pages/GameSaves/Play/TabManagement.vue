@@ -1,4 +1,6 @@
 <script setup>
+import ButtonSecondary from '@/Components/ButtonSecondary.vue';
+import ButtonPrimary from '@/Components/ButtonPrimary.vue';
 import { ref, reactive, computed, watch } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import GameRules from '@/Components/GameRules.vue';
@@ -160,18 +162,16 @@ function resetDefaults() {
                     <div class="border border-slate-200 rounded-lg bg-white p-3 flex flex-col gap-2">
                         <h4 class="text-sm font-semibold text-slate-700">Joueurs</h4>
                         <p class="text-xs text-slate-500">Crée, édite et supprime les joueurs de la base de données.</p>
-                        <button type="button" class="mt-2 px-3 py-1.5 text-xs rounded-full bg-teal-500 hover:bg-teal-600 text-white font-semibold"
-                                @click="router.get(route('game-saves.players.index', { gameSave: gameSave.id }))">
+                        <ButtonPrimary type="button" size="sm" class="mt-2" @click="router.get(route('game-saves.players.index', { gameSave: gameSave.id }))">
                             Gérer les joueurs
-                        </button>
+                        </ButtonPrimary>
                     </div>
                     <div class="border border-slate-200 rounded-lg bg-white p-3 flex flex-col gap-2">
                         <h4 class="text-sm font-semibold text-slate-700">Équipes</h4>
                         <p class="text-xs text-slate-500">Accéder à la gestion complète des équipes.</p>
-                        <button type="button" class="mt-2 px-3 py-1.5 text-xs rounded-full bg-teal-500 hover:bg-teal-600 text-white font-semibold"
-                                @click="router.get(route('game-saves.teams.index', { gameSave: gameSave.id }))">
+                        <ButtonPrimary type="button" size="sm" class="mt-2" @click="router.get(route('game-saves.teams.index', { gameSave: gameSave.id }))">
                             Gérer les équipes
-                        </button>
+                        </ButtonPrimary>
                     </div>
                 </div>
 
@@ -195,10 +195,9 @@ function resetDefaults() {
                 <div class="border border-slate-200 rounded-lg bg-white p-3 flex flex-col gap-2">
                     <h4 class="text-sm font-semibold text-slate-700">Édition de mon profil</h4>
                     <p class="text-xs text-slate-500">Accéder aux informations de ton compte (nom, email, mot de passe…).</p>
-                    <button type="button" class="mt-2 px-3 py-1.5 text-xs rounded-full bg-teal-500 hover:bg-teal-600 text-white font-semibold"
-                            @click="router.get(route('profile.edit'))">
+                    <ButtonPrimary type="button" size="sm" class="mt-2" @click="router.get(route('profile.edit'))">
                         Modifier mon profil
-                    </button>
+                    </ButtonPrimary>
                 </div>
                 <div class="border border-slate-200 rounded-lg bg-white p-3 flex flex-col gap-2">
                     <h4 class="text-sm font-semibold text-slate-700">Affichage</h4>
@@ -232,15 +231,12 @@ function resetDefaults() {
                         <p class="text-sm text-slate-500">Paramètres appliqués à cette sauvegarde.</p>
                     </div>
                     <div class="flex items-center gap-2">
-                        <button type="button" @click="resetDefaults"
-                                class="px-3 py-1.5 text-xs rounded-full border border-slate-300 bg-white hover:bg-slate-50 text-slate-600 font-medium">
+                        <ButtonSecondary size="sm" @click="resetDefaults">
                             Réinitialiser
-                        </button>
-                        <button type="button" @click="saveConfig" :disabled="saving"
-                                class="px-4 py-1.5 text-xs rounded-full font-semibold text-white transition-all"
-                                :class="saved ? 'bg-emerald-500' : 'bg-teal-500 hover:bg-teal-600'">
+                        </ButtonSecondary>
+                        <ButtonPrimary type="button" size="sm" :tone="saved ? 'emerald' : 'teal'" @click="saveConfig" :disabled="saving">
                             {{ saving ? 'Enregistrement…' : saved ? 'Enregistré !' : 'Enregistrer' }}
-                        </button>
+                        </ButtonPrimary>
                     </div>
                 </div>
 

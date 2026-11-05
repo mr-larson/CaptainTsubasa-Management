@@ -9,7 +9,7 @@ const emit = defineEmits(['apply']);
 
 const ACTION_STYLE = {
     rotate:  'bg-amber-500 hover:bg-amber-400 text-white',
-    train:   'bg-teal-500 hover:bg-teal-400 text-white',
+    train:   'bg-teal-500 hover:bg-teal-600 text-white',
     recruit: 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-300',
 };
 </script>

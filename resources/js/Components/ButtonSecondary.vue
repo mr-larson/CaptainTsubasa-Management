@@ -1,17 +1,21 @@
 <script setup>
-defineProps({
-    type: {
-        type: String,
-        default: 'button',
-    },
+import { computed } from 'vue';
+import { BUTTON_BASE, buttonSize } from './buttonStyles';
+
+const props = defineProps({
+    type: { type: String, default: 'button' },
+    size: { type: String, default: 'md' }, // sm | md | lg
 });
+
+const classes = computed(() => [
+    BUTTON_BASE,
+    buttonSize(props.size),
+    'border border-slate-300 bg-white font-semibold text-slate-600 hover:bg-slate-50 focus-visible:ring-slate-300',
+]);
 </script>
 
 <template>
-    <button
-        :type="type"
-        class="mb-2 inline-flex min-h-[40px] min-w-[9rem] items-center justify-center rounded-full border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 focus-visible:ring-offset-2 disabled:opacity-50"
-    >
+    <button :type="type" :class="classes">
         <slot />
     </button>
 </template>

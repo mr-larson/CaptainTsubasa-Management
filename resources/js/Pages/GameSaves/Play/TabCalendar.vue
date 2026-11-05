@@ -1,4 +1,7 @@
 <script setup>
+import TabBar from '@/Components/TabBar.vue';
+import { fieldClass } from '@/Components/fieldStyles';
+import ButtonSecondary from '@/Components/ButtonSecondary.vue';
 import { computed, ref, watch, nextTick } from 'vue';
 import axios from 'axios';
 import PlayerPhoto from '@/Components/PlayerPhoto.vue';
@@ -190,7 +193,7 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
                     </div>
                     <select :value="calendarTeam.id" @change="onTeamChange($event.target.value)"
                             aria-label="Équipe affichée"
-                            class="flex-1 min-w-0 border border-slate-300 rounded-lg px-2 py-1.5 text-sm font-semibold bg-white text-slate-700 focus:ring-2 focus:ring-teal-300 focus:outline-none cursor-pointer">
+                            class="flex-1 min-w-0 px-2 py-1.5 cursor-pointer" :class="fieldClass({ shape: 'rect' })">
                         <option v-for="t in calendarTeams" :key="t.id" :value="t.id">
                             {{ t.name }}{{ Number(t.id) === Number(myTeamId) ? ' (mon équipe)' : '' }}
                         </option>
@@ -280,10 +283,9 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
             <!-- ============================================ -->
             <div class="lg:col-span-7 flex flex-col gap-3 min-w-0">
                 <template v-if="preview">
-                    <button type="button" @click="preview = null"
-                            class="lg:hidden self-start px-3 py-1.5 rounded-full text-xs font-bold bg-white border border-slate-300 text-slate-600">
+                    <ButtonSecondary size="sm" class="lg:hidden self-start" @click="preview = null">
                         ← Calendrier
-                    </button>
+                    </ButtonSecondary>
                     <MatchPreview :match="preview.match"
                                   :team="preview.team"
                                   :teamById="teamById"
@@ -353,14 +355,8 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
                     <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">
                         Classements de la semaine {{ journeeWeek }}
                     </h4>
-                    <div class="flex flex-wrap gap-1 border-b border-slate-200 mb-3" role="tablist">
-                        <button v-for="t in LEADER_TABS" :key="t.key" type="button" role="tab"
-                                :aria-selected="leaderTab === t.key"
-                                @click="leaderTab = t.key"
-                                class="px-2.5 py-1.5 text-xs font-semibold border-b-2 -mb-px transition-all"
-                                :class="leaderTab === t.key ? 'border-teal-500 text-teal-700' : 'border-transparent text-slate-500 hover:text-slate-700'">
-                            {{ t.label }}
-                        </button>
+                    <div class="border-b border-slate-200 mb-3">
+                        <TabBar v-model="leaderTab" :tabs="LEADER_TABS" size="sm" wrap label="Classements de la semaine" />
                     </div>
 
                     <div v-if="leadersLoading && !leaders" class="py-6 flex justify-center">

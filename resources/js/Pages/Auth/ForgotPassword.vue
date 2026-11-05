@@ -25,11 +25,11 @@ const submit = () => {
     <GuestLayout>
         <Head title="Mot de passe oublié" />
 
-        <div class="mb-4 text-sm text-gray-600">
+        <div class="mb-4 text-sm text-slate-600">
             Mot de passe oublié ? Indique ton adresse e-mail : tu recevras un lien pour en choisir un nouveau.
         </div>
 
-        <div v-if="status" class="mb-4 font-medium text-sm text-green-600">
+        <div v-if="status" class="mb-4 font-medium text-sm text-emerald-600">
             {{ status }}
         </div>
 

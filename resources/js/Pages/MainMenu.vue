@@ -38,7 +38,7 @@ import H2 from '@/Components/H2.vue';
                         <div class="flex flex-col gap-3">
 
                             <Link :href="route('game-saves.create')"
-                                  class="group flex items-center gap-4 px-6 py-4 bg-teal-500 hover:bg-teal-400 text-white rounded-2xl font-bold text-base transition-all shadow-sm hover:shadow-md active:scale-[0.98]">
+                                  class="group flex items-center gap-4 px-6 py-4 bg-teal-500 hover:bg-teal-600 text-white rounded-2xl font-bold text-base transition-all shadow-sm hover:shadow-md active:scale-[0.98]">
                                 <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl shrink-0">
                                     ⚽
                                 </div>

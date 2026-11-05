@@ -146,8 +146,7 @@
                             <!-- ⚠️ ID utilisé par engine.js -->
                             <select
                                 id="controlled-team-select"
-                                class="rounded-full px-8 py-2 text-xs font-semibold bg-slate-100 border border-slate-200 shadow-sm
-           focus:outline-none focus:ring-2 focus:ring-slate-300"
+                                class="px-8 py-2" :class="fieldClass({ size: 'sm' })"
                             >
                                 <option value="internal" :selected="engineConfig.controlledSide === 'internal'">
                                     {{ engineConfig.teams.internal.name }}
@@ -360,6 +359,7 @@
 </template>
 
 <script setup>
+import { fieldClass } from '@/Components/fieldStyles';
 // ==========================
 //  Imports Vue / Inertia
 // ==========================

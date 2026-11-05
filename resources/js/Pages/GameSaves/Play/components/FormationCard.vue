@@ -1,4 +1,5 @@
 <script setup>
+import { fieldClass } from '@/Components/fieldStyles';
 import { FORMATIONS, FORMATION_LIST } from '@/Pages/Match/engine/formations.js';
 
 /** Carte "Formation" : sélecteur + description + répartition par zone. */
@@ -30,7 +31,7 @@ const emit = defineEmits(['change']);
         <select v-else
             :value="formation"
             @change="emit('change', $event.target.value)"
-            class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-semibold bg-white text-slate-700 focus:ring-2 focus:ring-teal-300 focus:outline-none cursor-pointer"
+            class="w-full px-3 py-2 cursor-pointer" :class="fieldClass({ shape: 'rect' })"
         >
             <option v-for="f in FORMATION_LIST" :key="f.key" :value="f.key">{{ optionLabel(f) }}</option>
         </select>

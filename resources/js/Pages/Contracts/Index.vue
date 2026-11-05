@@ -52,41 +52,38 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <InputLabel for="player_id" value="Joueur" />
-                                <select id="player_id" v-model="form.player_id" required :class="fieldClass">
-                                    <option disabled value="">Choisir un joueur…</option>
+                                <InputSelect id="player_id" v-model="form.player_id" required placeholder="Choisir un joueur…" class="mt-1">
                                     <option v-for="p in players" :key="p.id" :value="p.id">{{ p.firstname }} {{ p.lastname }}</option>
-                                </select>
+                                </InputSelect>
                                 <InputError class="mt-1" :message="form.errors.player_id" />
                             </div>
                             <div>
                                 <InputLabel for="team_id" value="Équipe" />
-                                <select id="team_id" v-model="form.team_id" required :class="fieldClass">
-                                    <option disabled value="">Choisir une équipe…</option>
+                                <InputSelect id="team_id" v-model="form.team_id" required placeholder="Choisir une équipe…" class="mt-1">
                                     <option v-for="t in teams" :key="t.id" :value="t.id">{{ t.name }}</option>
-                                </select>
+                                </InputSelect>
                                 <InputError class="mt-1" :message="form.errors.team_id" />
                             </div>
                             <div>
                                 <InputLabel for="salary" value="Salaire (€ / match)" />
-                                <input id="salary" type="number" min="0" v-model="form.salary" :class="fieldClass" />
+                                <InputText id="salary" type="number" min="0" v-model.number="form.salary" class="mt-1" />
                                 <InputError class="mt-1" :message="form.errors.salary" />
                             </div>
                             <div>
                                 <InputLabel for="matches_total" value="Durée (matchs)" />
-                                <input id="matches_total" type="number" min="1" v-model="form.matches_total" :class="fieldClass" />
+                                <InputText id="matches_total" type="number" min="1" v-model.number="form.matches_total" class="mt-1" />
                                 <InputError class="mt-1" :message="form.errors.matches_total" />
                             </div>
                             <div>
                                 <InputLabel for="matches_played" value="Matchs joués" />
                                 <!-- Un nouveau contrat démarre toujours à 0 match joué (forcé côté serveur). -->
-                                <input id="matches_played" type="number" min="0" v-model="form.matches_played"
-                                       :disabled="editor.creating.value"
-                                       :class="[fieldClass, editor.creating.value ? 'bg-slate-100 text-slate-500' : '']" />
+                                <InputText id="matches_played" type="number" min="0" v-model.number="form.matches_played"
+                                       :disabled="editor.creating.value" class="mt-1" />
                                 <InputError class="mt-1" :message="form.errors.matches_played" />
                             </div>
                             <div>
                                 <InputLabel value="Matchs restants" />
-                                <input type="number" :value="remaining" disabled :class="[fieldClass, 'bg-slate-100 text-slate-500']" />
+                                <InputText type="number" :model-value="remaining" disabled class="mt-1" />
                             </div>
                         </div>
 
@@ -117,6 +114,8 @@ import EntityEditor from '@/Components/EntityEditor.vue';
 import EditorSubNav from '@/Components/EditorSubNav.vue';
 import TeamLogo from '@/Components/TeamLogo.vue';
 import InputLabel from '@/Components/InputLabel.vue';
+import InputSelect from '@/Components/InputSelect.vue';
+import InputText from '@/Components/InputText.vue';
 import InputError from '@/Components/InputError.vue';
 import ButtonGroup from '@/Components/ButtonGroup.vue';
 import ButtonPrimary from '@/Components/ButtonPrimary.vue';
@@ -143,7 +142,6 @@ const BLANK = {
 };
 
 const form = useForm(clone(BLANK));
-const fieldClass = 'mt-1 block w-full text-sm text-slate-700 bg-white border border-slate-300 rounded-full px-3 py-1.5 focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200';
 
 const remaining = computed(() => Math.max(0, Number(form.matches_total || 0) - Number(form.matches_played || 0)));
 

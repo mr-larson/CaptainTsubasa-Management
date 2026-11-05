@@ -1,4 +1,5 @@
 <script setup>
+import ButtonSecondary from '@/Components/ButtonSecondary.vue';
 import { computed } from 'vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
 import TeamStyleBadges from "@/Pages/GameSaves/Play/components/TeamStyleBadges.vue";
@@ -244,17 +245,12 @@ const matchesPlayed = computed(() =>
 
                 <!-- Boutons actions -->
                 <div class="flex gap-2 shrink-0">
-                    <button type="button"
-                            class="px-4 py-1.5 text-xs rounded-full font-semibold border transition-all disabled:opacity-40"
-                            :class="saving ? 'bg-slate-100 text-slate-400 border-slate-200' : 'bg-cyan-50 text-cyan-600 border-cyan-300 hover:bg-cyan-100'"
-                            :disabled="saving" @click="emit('save-game')">
+                    <ButtonSecondary size="sm" :disabled="saving" @click="emit('save-game')">
                         {{ saving ? '...' : '💾 Sauvegarder' }}
-                    </button>
-                    <button type="button"
-                            class="px-4 py-1.5 text-xs rounded-full font-semibold border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 transition-all"
-                            @click="emit('quit')">
+                    </ButtonSecondary>
+                    <ButtonSecondary size="sm" @click="emit('quit')">
                         Quitter
-                    </button>
+                    </ButtonSecondary>
                 </div>
             </div>
 
@@ -405,15 +401,12 @@ const matchesPlayed = computed(() =>
                                 {{ lastHeadToHead.scored }}-{{ lastHeadToHead.conceded }}
                             </span>
                         </div>
-                        <button v-if="isByeWeek" type="button"
-                                class="px-5 py-2 rounded-full font-bold text-xs bg-slate-200 hover:bg-slate-300 text-slate-600 transition-all disabled:opacity-50 disabled:cursor-wait"
-                                :disabled="simulating"
-                                @click="emit('simulate-week')">
+                        <ButtonSecondary size="sm" v-if="isByeWeek" :disabled="simulating" @click="emit('simulate-week')">
                             ⏭ Simuler S{{ week }}
-                        </button>
+                        </ButtonSecondary>
                         <button v-else type="button"
                                 class="px-6 py-1.5 rounded-full font-bold text-sm text-white shadow-sm transition-all hover:scale-105 active:scale-95"
-                                :class="nextMatchInfo.isHome ? 'bg-teal-500 hover:bg-teal-400' : 'bg-orange-500 hover:bg-orange-400'"
+                                :class="nextMatchInfo.isHome ? 'bg-teal-500 hover:bg-teal-600' : 'bg-orange-500 hover:bg-orange-600'"
                                 @click="emit('play-next-match')">
                             ▶ Jouer
                         </button>
@@ -445,12 +438,9 @@ const matchesPlayed = computed(() =>
                     <div class="text-sm font-semibold text-slate-600">Semaine {{ week }} — Pas de match</div>
                     <div class="text-xs text-slate-400 mt-0.5">Semaine de repos ou en attente du calendrier</div>
                 </div>
-                <button type="button"
-                        class="px-6 py-2 rounded-full font-semibold text-sm bg-slate-200 hover:bg-slate-300 text-slate-600 transition-all disabled:opacity-50 disabled:cursor-wait"
-                        :disabled="simulating"
-                        @click="emit('simulate-week')">
+                <ButtonSecondary size="md" :disabled="simulating" @click="emit('simulate-week')">
                     ⏭ Simuler la semaine
-                </button>
+                </ButtonSecondary>
             </div>
         </div>
 

@@ -1,4 +1,7 @@
 <script setup>
+import { fieldClass } from '@/Components/fieldStyles';
+import ButtonSecondary from '@/Components/ButtonSecondary.vue';
+import ButtonPrimary from '@/Components/ButtonPrimary.vue';
 import { computed, ref, watch } from 'vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
 import PlayerPhoto from '@/Components/PlayerPhoto.vue';
@@ -263,7 +266,7 @@ const filteredHistory = computed(() =>
             <div class="md:col-span-9 flex flex-col gap-3">
                 <!-- Barre de recherche (comme le draft) -->
                 <input type="search" v-model="searchQuery"
-                       class="w-full px-4 py-2 text-sm border border-slate-200 rounded-xl bg-white focus:ring-2 focus:ring-teal-300 focus:outline-none"
+                       class="w-full px-4 py-2" :class="fieldClass()"
                        placeholder="Rechercher un joueur..."/>
 
                 <!-- Filtres origine (œuvre de provenance) -->
@@ -306,7 +309,7 @@ const filteredHistory = computed(() =>
                     <label class="flex items-center gap-1.5 text-2xs font-semibold text-slate-400">
                         Trier par
                         <select v-model="sortKey"
-                                class="py-1 pl-2 pr-7 text-xs font-semibold text-slate-600 border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-teal-300 focus:border-teal-300">
+                                class="py-1 pl-2 pr-7" :class="fieldClass({ shape: 'rect', size: 'sm' })">
                             <option v-for="o in sortOptions" :key="o.key" :value="o.key">{{ o.label }}</option>
                         </select>
                     </label>
@@ -480,7 +483,7 @@ const filteredHistory = computed(() =>
                             <input type="number" min="1" max="60"
                                    :value="transferMatches"
                                    @input="emit('update:transferMatches', +$event.target.value)"
-                                   class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-sm bg-white focus:ring-2 focus:ring-teal-300 focus:outline-none"/>
+                                   class="w-full px-3 py-1.5" :class="fieldClass({ shape: 'rect' })"/>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Salaire / match (€)</label>
@@ -510,20 +513,12 @@ const filteredHistory = computed(() =>
                     </div>
 
                     <div class="flex gap-2 justify-end">
-                        <button type="button"
-                                class="px-4 py-1.5 text-sm rounded-full border border-slate-300 text-slate-600 hover:bg-slate-100 transition-all"
-                                @click="selectedPlayer = null">
+                        <ButtonSecondary size="sm" @click="selectedPlayer = null">
                             Annuler
-                        </button>
-                        <button type="button"
-                                class="px-5 py-1.5 text-sm rounded-full font-semibold transition-all disabled:opacity-40"
-                                :class="canAfford && team && transferMatches > 0 && !transferProcessing
-                                ? 'bg-teal-500 hover:bg-teal-600 text-white shadow-sm'
-                                : 'bg-slate-200 text-slate-400'"
-                                :disabled="!canAfford || !team || transferMatches <= 0 || transferProcessing"
-                                @click="emit('confirm-transfer', selectedPlayer)">
+                        </ButtonSecondary>
+                        <ButtonPrimary type="button" size="sm" :disabled="!canAfford || !team || transferMatches <= 0 || transferProcessing" @click="emit('confirm-transfer', selectedPlayer)">
                             Confirmer l'offre
-                        </button>
+                        </ButtonPrimary>
                     </div>
                 </div>
             </div>
@@ -545,7 +540,7 @@ const filteredHistory = computed(() =>
                 <!-- Filtre équipe -->
                 <select :value="historyTeamFilter ?? 'null'"
                         @change="historyTeamFilter = $event.target.value === 'null' ? null : $event.target.value"
-                        class="min-w-[200px] border border-slate-300 rounded-lg pl-3 pr-9 py-1 text-xs bg-white focus:ring-2 focus:ring-teal-300 focus:outline-none cursor-pointer">
+                        class="min-w-[200px] pl-3 pr-9 py-1 cursor-pointer" :class="fieldClass({ shape: 'rect', size: 'sm' })">
                     <option value="null">Toutes les équipes</option>
                     <option v-for="t in historyTeams" :key="t.id" :value="t.id">{{ t.name }}</option>
                 </select>

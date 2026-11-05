@@ -1,4 +1,5 @@
 <script setup>
+import { fieldClass, TEXTAREA_CLASS } from '@/Components/fieldStyles';
 import { computed } from 'vue';
 import FormField from '@/Components/FormField.vue';
 import ImageFilePicker from '@/Components/ImageFilePicker.vue';
@@ -23,7 +24,7 @@ const emit = defineEmits(['remove-logo', 'logo-preview']);
 
 const { tacticalLabel, tacticalIcon, philosophyLabel, philosophyIcon } = useTeamStyles();
 
-const selectClass = 'mt-1 w-full rounded border border-gray-300 bg-stone-50 text-sm text-slate-700 focus:outline-none focus:bg-white focus:border-purple-300';
+const selectClass = ['mt-1 w-full', fieldClass()];
 
 const containerClass = computed(() => (props.layout === 'grid'
     ? 'grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4'
@@ -81,7 +82,7 @@ const containerClass = computed(() => (props.layout === 'grid'
                     <button
                         v-if="logoUrl"
                         type="button"
-                        class="px-3 py-1.5 rounded-full border border-red-300 bg-red-50 text-sm text-red-700 hover:bg-red-100"
+                        class="px-3 py-1.5 rounded-full border border-rose-300 bg-rose-50 text-sm text-rose-700 hover:bg-rose-100"
                         @click="emit('remove-logo')"
                     >
                         Supprimer
@@ -102,7 +103,7 @@ const containerClass = computed(() => (props.layout === 'grid'
                 v-model="form.description"
                 rows="3"
                 placeholder="Description de l'équipe (optionnel)"
-                class="mt-1 w-full rounded border border-gray-300 bg-stone-50 text-sm text-slate-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-300"
+                class="mt-1 w-full" :class="TEXTAREA_CLASS"
             ></textarea>
         </FormField>
     </div>

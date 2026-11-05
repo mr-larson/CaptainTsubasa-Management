@@ -1,7 +1,34 @@
+<script setup>
+import { computed } from 'vue';
+import { BUTTON_BASE, buttonSize } from './buttonStyles';
+
+const props = defineProps({
+    // 'submit' par défaut : les formulaires BDD comptent dessus.
+    type: { type: String, default: 'submit' },
+    size: { type: String, default: 'md' }, // sm | md | lg
+    // teal = action principale ; indigo = Coupe du Monde ; rose = confirmation destructive ; emerald = succès.
+    tone: { type: String, default: 'teal' },
+});
+
+const TONES = {
+    teal: 'bg-teal-500 hover:bg-teal-600 focus-visible:ring-teal-400',
+    indigo: 'bg-indigo-500 hover:bg-indigo-600 focus-visible:ring-indigo-400',
+    rose: 'bg-rose-500 hover:bg-rose-600 focus-visible:ring-rose-400',
+    // Retour de succès (ex. « Enregistré ! »).
+    emerald: 'bg-emerald-500 hover:bg-emerald-600 focus-visible:ring-emerald-400',
+};
+
+const classes = computed(() => [
+    BUTTON_BASE,
+    buttonSize(props.size),
+    TONES[props.tone] ?? TONES.teal,
+    'font-bold text-white',
+    props.size === 'lg' ? '' : 'shadow-sm',
+]);
+</script>
+
 <template>
-    <button
-        class="mb-2 inline-flex min-h-[40px] min-w-[9rem] items-center justify-center rounded-full bg-teal-500 px-5 text-sm font-bold text-slate-700 shadow-sm transition-colors hover:bg-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-    >
+    <button :type="type" :class="classes">
         <slot />
     </button>
 </template>

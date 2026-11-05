@@ -22,7 +22,7 @@ const navLinks = [
 <template>
     <div>
         <div class="h-screen flex flex-col overflow-hidden">
-            <nav class="bg-slate-700 text-gray-100 border-b border-gray-100 shrink-0">
+            <nav class="bg-slate-700 text-slate-100 border-b border-slate-100 shrink-0">
                 <!-- Primary Navigation Menu -->
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div class="flex justify-between h-16">
@@ -45,7 +45,7 @@ const navLinks = [
                                         <span class="inline-flex rounded-md">
                                             <button
                                                 type="button"
-                                                class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
+                                                class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-slate-500 bg-white hover:text-slate-700 focus:outline-none transition ease-in-out duration-150"
                                             >
                                                 {{ $page.props.auth.user.name }}
 
@@ -69,7 +69,7 @@ const navLinks = [
                                         <DropdownLink v-for="link in navLinks" :key="link.route" :href="route(link.route)">
                                             {{ link.label }}
                                         </DropdownLink>
-                                        <div class="border-t border-gray-100 my-1"></div>
+                                        <div class="border-t border-slate-100 my-1"></div>
                                         <DropdownLink :href="route('profile.edit')"> Profil </DropdownLink>
                                         <DropdownLink :href="route('logout')" method="post" as="button">
                                             Déconnexion
@@ -83,7 +83,7 @@ const navLinks = [
                         <div class="-mr-2 flex items-center sm:hidden">
                             <button
                                 @click="showingNavigationDropdown = !showingNavigationDropdown"
-                                class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out"
+                                class="inline-flex items-center justify-center p-2 rounded-md text-slate-400 hover:text-slate-500 hover:bg-slate-100 focus:outline-none focus:bg-slate-100 focus:text-slate-500 transition duration-150 ease-in-out"
                             >
                                 <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                                     <path
@@ -115,12 +115,12 @@ const navLinks = [
                 <!-- Responsive Navigation Menu -->
                 <div :class="{ block: showingNavigationDropdown, hidden: !showingNavigationDropdown }" class="sm:hidden">
                     <!-- Responsive Settings Options -->
-                    <div class="pt-4 pb-1 border-t border-gray-200">
+                    <div class="pt-4 pb-1 border-t border-slate-200">
                         <div class="px-4">
                             <div class="font-medium text-base text-slate-700">
                                 {{ $page.props.auth.user.name }}
                             </div>
-                            <div class="font-medium text-sm text-gray-500">{{ $page.props.auth.user.email }}</div>
+                            <div class="font-medium text-sm text-slate-500">{{ $page.props.auth.user.email }}</div>
                         </div>
 
                         <div class="mt-3 space-y-1">

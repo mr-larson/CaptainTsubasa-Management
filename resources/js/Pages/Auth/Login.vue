@@ -43,7 +43,7 @@ const submit = () => {
             Connecte-toi pour reprendre ta partie ou en démarrer une nouvelle.
         </p>
 
-        <div v-if="status" class="mb-4 font-medium text-sm text-green-600">
+        <div v-if="status" class="mb-4 font-medium text-sm text-emerald-600">
             {{ status }}
         </div>
 

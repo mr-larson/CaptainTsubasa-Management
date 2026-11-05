@@ -1,4 +1,6 @@
 <script setup>
+import { fieldClass } from '@/Components/fieldStyles';
+import ButtonPrimary from '@/Components/ButtonPrimary.vue';
 import { ref, computed } from 'vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
 import PlayerPhoto from '@/Components/PlayerPhoto.vue';
@@ -246,15 +248,9 @@ const selectedPlayerPerf = computed(() => {
                     <PlayerIdentityCard :player="selectedPlayer"
                                         :subtitle="`${selectedPlayer.position} • Stamina ${selectedPlayer.stamina ?? '—'}`">
                         <template #actions>
-                            <button type="button"
-                                    @click="emit('add-slot', selectedPlayer.id)"
-                                    :disabled="trainingButtonState.disabled"
-                                    class="px-4 py-2 rounded-full text-xs font-bold transition-all"
-                                    :class="trainingButtonState.disabled
-                                        ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                                        : 'bg-teal-500 hover:bg-teal-600 text-white shadow-sm'">
+                            <ButtonPrimary type="button" size="sm" @click="emit('add-slot', selectedPlayer.id)" :disabled="trainingButtonState.disabled">
                                 {{ trainingButtonState.label }}
-                            </button>
+                            </ButtonPrimary>
                         </template>
                         <template #footer>
                             <p v-if="selectedPlayer.description" class="mt-2 text-xs text-slate-400 italic line-clamp-2">
@@ -324,7 +320,7 @@ const selectedPlayerPerf = computed(() => {
 
                                 <!-- Select stat -->
                                 <select v-model="slot.stat"
-                                        class="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-xs bg-white focus:ring-2 focus:ring-teal-300 focus:outline-none">
+                                        class="w-full px-2 py-1.5" :class="fieldClass({ shape: 'rect', size: 'sm' })">
                                     <option v-for="s in statsForSlot(slot)" :key="s.key" :value="s.key">
                                         {{ s.label }}
                                     </option>
@@ -352,16 +348,10 @@ const selectedPlayerPerf = computed(() => {
                         </div>
 
                         <!-- Bouton Lancer -->
-                        <button type="button"
-                                class="w-full px-4 py-2 text-sm rounded-full font-semibold transition-all disabled:opacity-40"
-                                :class="(canSubmitTraining && canAffordSelected)
-            ? 'bg-teal-500 hover:bg-teal-600 text-white shadow-sm'
-            : 'bg-slate-200 text-slate-400'"
-                                @click="emit('submit-training')"
-                                :disabled="!canSubmitTraining || !canAffordSelected">
+                        <ButtonPrimary type="button" class="w-full" @click="emit('submit-training')" :disabled="!canSubmitTraining || !canAffordSelected">
                             Lancer l'entraînement
                             <span v-if="trainingCost > 0 && selectedCount > 0"> — {{ totalTrainingCost }} €</span>
-                        </button>
+                        </ButtonPrimary>
                     </div>
 
                     <p v-if="trainingCost > 0 && selectedCount > 0 && !canAffordSelected"

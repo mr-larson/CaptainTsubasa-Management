@@ -23,11 +23,11 @@ const verificationLinkSent = computed(() => props.status === 'verification-link-
     <GuestLayout>
         <Head title="Vérification de l'adresse e-mail" />
 
-        <div class="mb-4 text-sm text-gray-600">
+        <div class="mb-4 text-sm text-slate-600">
             Merci pour ton inscription ! Avant de commencer, confirme ton adresse e-mail en cliquant sur le lien que nous venons de t'envoyer. Rien reçu ? Tu peux en demander un nouveau.
         </div>
 
-        <div class="mb-4 font-medium text-sm text-green-600" v-if="verificationLinkSent">
+        <div class="mb-4 font-medium text-sm text-emerald-600" v-if="verificationLinkSent">
             Un nouveau lien de vérification vient d'être envoyé à l'adresse indiquée lors de l'inscription.
         </div>
 
@@ -39,7 +39,7 @@ const verificationLinkSent = computed(() => props.status === 'verification-link-
                     :href="route('logout')"
                     method="post"
                     as="button"
-                    class="underline text-sm text-gray-600 hover:text-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    class="underline text-sm text-slate-600 hover:text-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
                     >Se déconnecter</Link
                 >
             </div>

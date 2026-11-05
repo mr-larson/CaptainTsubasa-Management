@@ -23,7 +23,7 @@ const props = defineProps({
             {{ label }}
         </label>
         <slot />
-        <p v-if="error" class="text-sm text-red-600 mt-1">
+        <p v-if="error" class="text-sm text-rose-600 mt-1">
             {{ error }}
         </p>
         <slot name="after" />

@@ -1,4 +1,5 @@
 <script setup>
+import { TEXTAREA_CLASS } from '@/Components/fieldStyles';
 import { computed } from 'vue';
 import FormField from '@/Components/FormField.vue';
 import FormErrorList from '@/Components/FormErrorList.vue';
@@ -117,7 +118,7 @@ const fullClass = computed(() => (props.layout === 'grid' ? 'sm:col-span-3' : 'l
                 v-model="form.description"
                 rows="3"
                 placeholder="Description du joueur (optionnel)"
-                class="mt-1 w-full rounded border border-gray-300 bg-stone-50 text-sm text-slate-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-300"
+                class="mt-1 w-full" :class="TEXTAREA_CLASS"
             ></textarea>
         </FormField>
     </div>

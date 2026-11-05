@@ -1,4 +1,5 @@
 <script setup>
+import { TEXTAREA_CLASS } from '@/Components/fieldStyles';
 import InputLabel from '@/Components/InputLabel.vue';
 import InputText from '@/Components/InputText.vue';
 import InputSelect from '@/Components/InputSelect.vue';
@@ -83,7 +84,7 @@ function removeSpecialMove(index) {
 
                     <button
                         type="button"
-                        class="text-xs px-2 py-1 rounded-full bg-red-50 text-red-600 hover:bg-red-100 border border-red-200"
+                        class="text-xs px-2 py-1 rounded-full bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200"
                         @click="removeSpecialMove(index)"
                     >
                         Supprimer
@@ -142,7 +143,7 @@ function removeSpecialMove(index) {
                             <textarea
                                 v-model="move.description"
                                 rows="3"
-                                class="mt-1 w-full rounded border border-gray-300 bg-stone-50 text-sm"
+                                class="mt-1 w-full" :class="TEXTAREA_CLASS"
                             ></textarea>
                         </div>
                     </div>

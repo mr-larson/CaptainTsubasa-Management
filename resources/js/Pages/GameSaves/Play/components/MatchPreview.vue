@@ -1,4 +1,5 @@
 <script setup>
+import ButtonPrimary from '@/Components/ButtonPrimary.vue';
 import { computed } from 'vue';
 import { usePlayerUtils } from '../usePlayerUtils.js';
 
@@ -110,10 +111,9 @@ const canPrepare = computed(() => props.myTeamId && Number(props.myTeamId) === N
         </div>
 
         <div v-if="canPrepare" class="flex justify-center">
-            <button type="button" @click="emit('prepare-lineup')"
-                    class="px-4 py-1.5 rounded-full text-xs font-bold bg-teal-500 text-white hover:bg-teal-600 transition-all">
+            <ButtonPrimary type="button" size="sm" @click="emit('prepare-lineup')">
                 ⚙️ Préparer ma compo
-            </button>
+            </ButtonPrimary>
         </div>
     </div>
 </template>

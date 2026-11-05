@@ -1,4 +1,6 @@
 <script setup>
+import TabBar from '@/Components/TabBar.vue';
+import { fieldClass } from '@/Components/fieldStyles';
 import { computed, ref } from 'vue';
 
 // Écran d'édition commun (joueurs / équipes, en partie ou en base) :
@@ -60,7 +62,7 @@ const isSelected = (item) => !props.creating && props.selectedId === item.id;
                 <input
                     type="search"
                     v-model="searchQuery"
-                    class="block w-full py-1.5 pl-9 pr-3 text-sm text-slate-700 bg-white border border-slate-200 rounded-full focus:ring-2 focus:ring-teal-300 focus:border-teal-300 focus:outline-none"
+                    class="block w-full py-1.5 pl-9 pr-3" :class="fieldClass()"
                     :placeholder="searchPlaceholder"
                 >
             </div>
@@ -87,25 +89,7 @@ const isSelected = (item) => !props.creating && props.selectedId === item.id;
         <!-- CARTE À ONGLETS -->
         <div class="flex-1 min-w-0 min-h-0 bg-slate-50 border border-slate-200 rounded-2xl shadow-sm flex flex-col">
             <div class="shrink-0 flex items-end justify-between flex-wrap gap-3 px-6 md:px-8 pt-4 border-b border-slate-200">
-                <nav class="flex gap-1 -mb-px" role="tablist">
-                    <button v-for="t in tabs" :key="t.key" type="button" role="tab"
-                            :aria-selected="activeTab === t.key"
-                            :disabled="t.disabled"
-                            :title="t.disabled ? t.disabledHint : null"
-                            @click="emit('update:activeTab', t.key)"
-                            class="px-3 py-2 text-sm font-semibold border-b-2 transition-colors"
-                            :class="t.disabled
-                                ? 'border-transparent text-slate-300 cursor-not-allowed'
-                                : activeTab === t.key
-                                    ? 'border-teal-500 text-teal-600'
-                                    : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'">
-                        {{ t.label }}
-                        <span v-if="t.badge" class="ml-1 text-2xs font-bold px-1.5 py-0.5 rounded-full"
-                              :class="activeTab === t.key ? 'bg-teal-50 text-teal-600' : 'bg-slate-100 text-slate-500'">
-                            {{ t.badge }}
-                        </span>
-                    </button>
-                </nav>
+                <TabBar :model-value="activeTab" :tabs="tabs" @update:model-value="key => emit('update:activeTab', key)" />
 
                 <div class="flex items-center gap-2 pb-2">
                     <span v-if="creating" class="text-2xs font-bold px-2 py-0.5 rounded-full bg-teal-50 text-teal-700">

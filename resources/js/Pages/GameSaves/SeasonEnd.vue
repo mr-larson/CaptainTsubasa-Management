@@ -1,5 +1,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import ButtonPrimary from '@/Components/ButtonPrimary.vue';
 import H2 from '@/Components/H2.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
@@ -230,16 +231,11 @@ function startNewSeason() {
                             l'ordre de sélection est inversé par rapport au classement.
                         </template>
                     </p>
-                    <button
-                        @click="startNewSeason"
-                        :disabled="isStarting"
-                        class="px-8 py-3 rounded-xl text-white font-semibold shadow-lg transition disabled:opacity-50"
-                        :class="isGameOver ? 'bg-slate-700 hover:bg-slate-600' : 'bg-emerald-600 hover:bg-emerald-700'"
-                    >
+                    <ButtonPrimary type="button" size="lg" :disabled="isStarting" @click="startNewSeason">
                         <template v-if="isStarting">Préparation…</template>
                         <template v-else-if="isGameOver">Voir le bilan de carrière →</template>
                         <template v-else>{{ `Démarrer la saison ${(recap?.season ?? gameSave.season) + 1}` }}</template>
-                    </button>
+                    </ButtonPrimary>
                 </div>
 
             </div>

@@ -1,5 +1,7 @@
 <script setup>
+import { fieldClass, TEXTAREA_CLASS } from '@/Components/fieldStyles';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import ButtonPrimary from '@/Components/ButtonPrimary.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref, reactive, computed } from 'vue';
 import H2 from '@/Components/H2.vue';
@@ -196,7 +198,7 @@ function submit() {
                                 type="text"
                                 v-model="form.label"
                                 placeholder="ex: Saison Nankatsu 1"
-                                class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-300 focus:border-teal-300 transition-all"
+                                class="w-full px-4 py-2.5" :class="fieldClass()"
                             />
                             <p v-if="form.errors.label" class="text-xs text-rose-500">{{ form.errors.label }}</p>
                         </div>
@@ -277,7 +279,7 @@ function submit() {
                             <select
                                 id="period_package"
                                 v-model="form.period_package_id"
-                                class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-teal-300 focus:border-teal-300 transition-all"
+                                class="w-full px-4 py-2.5" :class="fieldClass()"
                             >
                                 <option :value="null">Collège (effectif standard)</option>
                                 <option v-for="pkg in availablePackages" :key="pkg.id" :value="pkg.id">
@@ -354,23 +356,16 @@ function submit() {
                         <!-- Boutons -->
                         <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 border-t border-slate-100">
                             <Link :href="route('mainMenu')"
-                                  class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-500 text-sm font-semibold rounded-xl border border-slate-200 transition-all text-center">
+                                  class="inline-flex min-h-11 items-center justify-center rounded-full border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50">
                                 ← Retour
                             </Link>
-                            <button
-                                type="submit"
-                                :disabled="form.processing"
-                                class="flex items-center justify-center gap-2 px-6 py-2.5 text-white text-sm font-bold rounded-xl transition-all disabled:opacity-50 active:scale-[0.98]"
-                                :class="form.competition_type === 'world_cup'
-                                    ? 'bg-indigo-500 hover:bg-indigo-400'
-                                    : (form.game_mode === 'draft'
-                                        ? 'bg-amber-500 hover:bg-amber-400'
-                                        : 'bg-teal-500 hover:bg-teal-400')">
+                            <ButtonPrimary size="lg" :tone="form.competition_type === 'world_cup' ? 'indigo' : 'teal'"
+                                           :disabled="form.processing">
                                 <span v-if="form.processing">Création...</span>
                                 <span v-else-if="form.competition_type === 'world_cup'">🌍 Choisir ma sélection</span>
                                 <span v-else-if="form.game_mode === 'draft'">🎯 Lancer le draft</span>
                                 <span v-else>⚽ Démarrer la partie</span>
-                            </button>
+                            </ButtonPrimary>
                         </div>
                     </form>
 
@@ -635,14 +630,14 @@ function submit() {
                     <div>
                         <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Nom</label>
                         <input v-model="importForm.name" type="text"
-                               class="mt-1 w-full rounded-lg border border-slate-300 bg-slate-50 text-sm px-3 py-2" />
+                               class="mt-1 w-full px-3 py-2" :class="fieldClass()" />
                         <p v-if="importForm.errors.name" class="text-xs text-rose-500 mt-1">{{ importForm.errors.name }}</p>
                     </div>
 
                     <div>
                         <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Description</label>
                         <textarea v-model="importForm.description" rows="2"
-                                  class="mt-1 w-full rounded-lg border border-slate-300 bg-slate-50 text-sm px-3 py-2"></textarea>
+                                  class="mt-1 w-full px-3 py-2" :class="TEXTAREA_CLASS"></textarea>
                     </div>
 
                     <div>
@@ -662,7 +657,7 @@ function submit() {
                             Annuler
                         </button>
                         <button type="submit" :disabled="importForm.processing"
-                                class="px-4 py-2 text-xs font-semibold rounded-lg bg-teal-500 hover:bg-teal-400 text-white disabled:opacity-50">
+                                class="px-4 py-2 text-xs font-semibold rounded-lg bg-teal-500 hover:bg-teal-600 text-white disabled:opacity-50">
                             <span v-if="importForm.processing">Import en cours...</span>
                             <span v-else>Importer</span>
                         </button>

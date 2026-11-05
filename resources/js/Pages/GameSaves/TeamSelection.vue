@@ -43,7 +43,7 @@
                                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
                             </svg>
                             <input type="search" v-model="searchQuery"
-                                   class="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-full bg-slate-50 focus:ring-2 focus:ring-teal-300 focus:outline-none"
+                                   class="w-full pl-8 pr-3 py-1.5" :class="fieldClass({ size: 'sm' })"
                                    placeholder="Rechercher..."/>
                         </div>
 
@@ -164,24 +164,20 @@
                             </div>
 
                             <!-- Action — DRAFT : lancer directement (mono-équipe) -->
-                            <button v-if="!isMultiMode" type="button"
-                                    class="w-full py-3 rounded-xl font-bold text-sm transition-all"
-                                    :class="startForm.team_id
-                    ? 'bg-amber-500 hover:bg-amber-400 text-white shadow-lg shadow-amber-200 hover:scale-[1.01] active:scale-[0.99]'
-                    : 'bg-slate-100 text-slate-400 cursor-not-allowed'"
-                                    :disabled="!startForm.team_id || startForm.processing"
-                                    @click="startWithTeam">
+                            <ButtonPrimary v-if="!isMultiMode" type="button" size="lg" class="w-full"
+                                           :disabled="!startForm.team_id || startForm.processing"
+                                           @click="startWithTeam">
                                 <span v-if="startForm.processing">Chargement...</span>
                                 <span v-else>🎯 Drafter avec {{ selectedTeam.name }}</span>
-                            </button>
+                            </ButtonPrimary>
 
                             <!-- Action — PREBUILT : hot-seat multi-manager -->
                             <template v-else>
                                 <button type="button"
-                                        class="w-full py-3 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2"
+                                        class="w-full min-h-11 px-4 rounded-full font-bold text-sm transition-colors flex items-center justify-center gap-2"
                                         :class="isHumanTeam(selectedTeam)
-                        ? 'bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100'
-                        : 'bg-teal-500 hover:bg-teal-400 text-white shadow-lg shadow-teal-200 hover:scale-[1.01] active:scale-[0.99]'"
+                        ? 'bg-white text-rose-600 border border-rose-300 hover:bg-rose-50'
+                        : 'bg-teal-500 hover:bg-teal-600 text-white shadow-md'"
                                         @click="toggleHumanTeam(selectedTeam)">
                                     <template v-if="isHumanTeam(selectedTeam)">
                                         <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
@@ -219,16 +215,12 @@
                                         Aucune équipe pilotée pour l'instant : choisis une équipe à gauche puis clique sur « Piloter ».
                                     </p>
 
-                                    <button type="button"
-                                            class="w-full py-3 rounded-xl font-bold text-sm transition-all"
-                                            :class="humanTeams.length
-                        ? 'bg-teal-500 hover:bg-teal-400 text-white shadow-lg shadow-teal-200 hover:scale-[1.01] active:scale-[0.99]'
-                        : 'bg-slate-100 text-slate-400 cursor-not-allowed'"
-                                            :disabled="!humanTeams.length || startForm.processing"
-                                            @click="startWithTeam">
+                                    <ButtonPrimary type="button" size="lg" class="w-full"
+                                                   :disabled="!humanTeams.length || startForm.processing"
+                                                   @click="startWithTeam">
                                         <span v-if="startForm.processing">Chargement...</span>
                                         <span v-else>{{ gameMode === 'draft' ? '🎯 Lancer le draft' : '▶ Lancer la partie' }} ({{ humanTeams.length }} joueur{{ humanTeams.length > 1 ? 's' : '' }})</span>
-                                    </button>
+                                    </ButtonPrimary>
                                 </div>
                             </template>
                         </div>
@@ -379,6 +371,8 @@
 </template>
 
 <script setup>
+import { fieldClass } from '@/Components/fieldStyles';
+import ButtonPrimary from '@/Components/ButtonPrimary.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';

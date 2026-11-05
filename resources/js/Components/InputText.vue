@@ -1,11 +1,14 @@
 <script setup>
 import { onMounted, ref } from 'vue';
+import { fieldClass } from './fieldStyles';
 
 defineProps({
     modelValue: {
         type: [String, Number],
-        required: true,
+        default: '',
     },
+    // md : formulaire (pilule) ; sm : contrôle compact des écrans de jeu (rectangle, text-xs).
+    size: { type: String, default: 'md' },
 });
 
 defineEmits(['update:modelValue']);
@@ -23,7 +26,9 @@ defineExpose({ focus: () => input.value.focus() });
 
 <template>
     <input
-        class="appearance-none text-sm text-slate-700 bg-white border border-slate-300 rounded-full w-full leading-tight focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200"
+        :class="['appearance-none w-full', size === 'sm'
+            ? ['px-2.5 py-1.5', fieldClass({ shape: 'rect', size: 'sm' })]
+            : fieldClass()]"
         :value="modelValue"
         @input="$emit('update:modelValue', $event.target.value)"
         ref="input"

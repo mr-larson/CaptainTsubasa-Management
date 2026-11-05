@@ -1,4 +1,9 @@
 <script setup>
+import Modal from '@/Components/Modal.vue';
+import TabBar from '@/Components/TabBar.vue';
+import { fieldClass } from '@/Components/fieldStyles';
+import ButtonSecondary from '@/Components/ButtonSecondary.vue';
+import ButtonPrimary from '@/Components/ButtonPrimary.vue';
 import { computed, ref, watch, nextTick, onBeforeUnmount } from 'vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
 import MatchReplayPitch from './MatchReplayPitch.vue';
@@ -538,7 +543,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
             </div>
             <select :value="calendarTeam.id" @change="onTeamChange($event.target.value)"
                     aria-label="Équipe suivie"
-                    class="min-w-[220px] border border-slate-300 rounded-lg pl-3 pr-9 py-1.5 text-sm font-semibold bg-white text-slate-700 focus:ring-2 focus:ring-teal-300 focus:outline-none cursor-pointer">
+                    class="min-w-[220px] pl-3 pr-9 py-1.5 cursor-pointer" :class="fieldClass({ shape: 'rect' })">
                 <option v-for="t in calendarTeams" :key="t.id" :value="t.id">
                     {{ t.name }}{{ Number(t.id) === Number(myTeamId) ? ' (mon équipe)' : '' }}
                 </option>
@@ -550,7 +555,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                         title="Match précédent">◀</button>
                 <select :value="selectedCalendarMatch?.id ?? ''" @change="onJump($event.target.value)"
                         aria-label="Aller au match"
-                        class="min-w-[260px] border border-slate-300 rounded-lg pl-3 pr-9 py-1.5 text-sm font-semibold bg-white text-slate-700 focus:ring-2 focus:ring-teal-300 focus:outline-none cursor-pointer">
+                        class="min-w-[260px] pl-3 pr-9 py-1.5 cursor-pointer" :class="fieldClass({ shape: 'rect' })">
                     <option v-if="!selectedCalendarMatch" value="" disabled>Choisir un match</option>
                     <option v-for="m in playedMatches" :key="m.id" :value="m.id">{{ navLabel(m) }}</option>
                 </select>
@@ -636,26 +641,18 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                 </div>
 
                 <div class="mt-3 flex justify-center gap-2">
-                    <button type="button" @click="showReplay = true"
-                            class="flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-bold bg-slate-700 text-white hover:bg-slate-600 transition-all">
+                    <ButtonPrimary type="button" size="sm" @click="showReplay = true">
                         ▶ Revoir le match
-                    </button>
-                    <button v-if="selectedCalendarEvents.length" type="button" @click="scrollToLog"
-                            class="flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-bold bg-white border border-slate-300 text-slate-600 hover:bg-slate-100 transition-all">
+                    </ButtonPrimary>
+                    <ButtonSecondary size="sm" v-if="selectedCalendarEvents.length" @click="scrollToLog">
                         📋 Déroulé complet
-                    </button>
+                    </ButtonSecondary>
                 </div>
             </div>
 
             <!-- Onglets de la fiche de match -->
-            <div class="flex flex-wrap gap-1 border-b border-slate-200" role="tablist">
-                <button v-for="t in detailTabs" :key="t.key" type="button" role="tab"
-                        :aria-selected="detailTab === t.key"
-                        @click="detailTab = t.key"
-                        class="px-3 py-1.5 text-xs font-semibold border-b-2 -mb-px transition-all"
-                        :class="detailTab === t.key ? 'border-teal-500 text-teal-700' : 'border-transparent text-slate-500 hover:text-slate-700'">
-                    {{ t.label }}<span v-if="t.count !== undefined" class="opacity-60"> ({{ t.count }})</span>
-                </button>
+            <div class="border-b border-slate-200">
+                <TabBar v-model="detailTab" :tabs="detailTabs" size="sm" wrap label="Fiche de match" />
             </div>
 
             <!-- Feuille de match -->
@@ -854,12 +851,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
     <!-- ================================================ -->
     <!-- MODAL REPLAY                                      -->
     <!-- ================================================ -->
-    <Teleport to="body">
-        <div v-if="showReplay"
-             class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-             @click.self="showReplay = false">
-
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden">
+    <Modal :show="showReplay" max-width="2xl" panel-class="max-h-[80vh] flex flex-col" @close="showReplay = false">
 
                 <!-- Header -->
                 <div class="p-4 bg-slate-700 text-white flex flex-wrap items-center justify-between gap-2 shrink-0">
@@ -981,7 +973,5 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </Teleport>
+    </Modal>
 </template>
