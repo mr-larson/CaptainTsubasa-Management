@@ -8,6 +8,16 @@ const props = defineProps({
     gameSave: { type: Object, required: true },
     career:   { type: Object, required: true },
     lastRecap: { type: Object, default: null },
+    // Saison en cours au moment de la fin du mandat (licenciement en cours de saison).
+    finalSeason: { type: Object, default: null },
+});
+
+// Licenciement en cours de saison : la saison interrompue compte comme une saison dirigée.
+const midSeason = computed(() => props.career.fired_reason === 'mid_season' && !!props.finalSeason);
+const seasonsManaged = computed(() => props.career.history.length + (midSeason.value ? 1 : 0));
+const goalDiff = computed(() => {
+    const d = (props.finalSeason?.goals_for ?? 0) - (props.finalSeason?.goals_against ?? 0);
+    return d > 0 ? `+${d}` : String(d);
 });
 
 const won = computed(() => props.career.status === 'won');
@@ -64,7 +74,7 @@ const difficultyLabel = {
                         <p class="text-xs text-slate-400 uppercase tracking-wider mt-1">Titres</p>
                     </div>
                     <div class="bg-white rounded-2xl shadow p-4 text-center">
-                        <p class="text-3xl font-black text-slate-700">{{ career.history.length }}</p>
+                        <p class="text-3xl font-black text-slate-700">{{ seasonsManaged }}</p>
                         <p class="text-xs text-slate-400 uppercase tracking-wider mt-1">Saisons</p>
                     </div>
                     <div class="bg-white rounded-2xl shadow p-4 text-center">
@@ -74,6 +84,49 @@ const difficultyLabel = {
                         </p>
                         <p class="text-xs text-slate-400 uppercase tracking-wider mt-1">Confiance</p>
                     </div>
+                </div>
+
+                <!-- Saison interrompue (licenciement en cours de saison) -->
+                <div v-if="midSeason" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6">
+                    <div class="flex flex-wrap items-baseline justify-between gap-2 mb-4">
+                        <h3 class="font-semibold text-slate-700">
+                            Saison {{ finalSeason.season }} — {{ finalSeason.team }}
+                        </h3>
+                        <span class="text-xs text-slate-400">interrompue après la semaine {{ finalSeason.last_week }}</span>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                        <div class="rounded-xl bg-slate-50 p-3">
+                            <p class="text-2xl font-black"
+                               :class="finalSeason.target_rank && finalSeason.rank > finalSeason.target_rank ? 'text-rose-500' : 'text-slate-700'">
+                                {{ finalSeason.rank }}<sup class="text-sm">e</sup>
+                                <span class="text-sm font-semibold text-slate-400">/ {{ finalSeason.team_count }}</span>
+                            </p>
+                            <p class="text-2xs font-bold uppercase tracking-wider text-slate-400 mt-1">Classement</p>
+                        </div>
+                        <div class="rounded-xl bg-slate-50 p-3">
+                            <p class="text-2xl font-black text-slate-700">
+                                <span class="text-emerald-600">{{ finalSeason.wins }}</span>-<span class="text-slate-500">{{ finalSeason.draws }}</span>-<span class="text-rose-500">{{ finalSeason.losses }}</span>
+                            </p>
+                            <p class="text-2xs font-bold uppercase tracking-wider text-slate-400 mt-1">Bilan V-N-D</p>
+                        </div>
+                        <div class="rounded-xl bg-slate-50 p-3">
+                            <p class="text-2xl font-black text-slate-700">{{ finalSeason.points }}</p>
+                            <p class="text-2xs font-bold uppercase tracking-wider text-slate-400 mt-1">Points</p>
+                        </div>
+                        <div class="rounded-xl bg-slate-50 p-3">
+                            <p class="text-2xl font-black text-slate-700">
+                                {{ finalSeason.goals_for }}-{{ finalSeason.goals_against }}
+                                <span class="text-sm font-semibold text-slate-400">({{ goalDiff }})</span>
+                            </p>
+                            <p class="text-2xs font-bold uppercase tracking-wider text-slate-400 mt-1">Buts pour-contre</p>
+                        </div>
+                    </div>
+                    <p v-if="finalSeason.objective" class="mt-4 text-sm text-slate-500">
+                        🎯 Objectif du mandat : <span class="font-semibold text-slate-700">{{ finalSeason.objective }}</span>
+                        <template v-if="finalSeason.target_rank && finalSeason.rank > finalSeason.target_rank">
+                          — à {{ finalSeason.rank - finalSeason.target_rank }} place(s) de la zone visée au moment du départ.
+                        </template>
+                    </p>
                 </div>
 
                 <!-- Palmarès saison par saison -->
@@ -114,11 +167,11 @@ const difficultyLabel = {
                 <!-- Actions -->
                 <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 pb-10">
                     <Link :href="route('mainMenu')"
-                          class="px-6 py-3 rounded-xl bg-white border border-slate-200 text-slate-600 font-semibold shadow hover:bg-slate-50 transition text-center">
+                          class="inline-flex min-h-11 items-center justify-center rounded-full border border-slate-300 bg-white px-8 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50">
                         Menu principal
                     </Link>
                     <Link :href="route('game-saves.create')"
-                          class="px-6 py-3 rounded-xl bg-teal-600 text-white font-semibold shadow-lg hover:bg-teal-700 transition text-center">
+                          class="inline-flex min-h-11 items-center justify-center rounded-full bg-teal-500 px-8 text-sm font-bold text-white shadow-md transition-colors hover:bg-teal-600">
                         Nouvelle partie
                     </Link>
                 </div>

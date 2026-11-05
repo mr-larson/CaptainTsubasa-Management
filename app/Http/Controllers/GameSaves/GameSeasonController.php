@@ -5,7 +5,9 @@ namespace App\Http\Controllers\GameSaves;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\AuthorizesGameSave;
 use App\Http\Controllers\Concerns\LocksGameSave;
+use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GameSave;
+use App\Models\GameSaves\GameTeam;
 use App\Services\CareerObjectiveService;
 use App\Services\SeasonService;
 use Illuminate\Http\RedirectResponse;
@@ -94,6 +96,55 @@ class GameSeasonController extends Controller
                 'last_verdict'    => $data['last_verdict'],
             ],
             'lastRecap' => $state['last_season_recap'] ?? null,
+            'finalSeason' => $this->currentSeasonSummary($gameSave, $data),
         ]);
+    }
+
+    /**
+     * Bilan de la saison en cours au moment de la fin du mandat (licenciement en
+     * cours de saison) : rang, bilan, buts, semaine. Les matchs ne concernent que
+     * la saison courante (le calendrier est purgé à chaque intersaison).
+     */
+    private function currentSeasonSummary(GameSave $gameSave, array $career): ?array
+    {
+        $teamId = (int) $gameSave->controlled_game_team_id;
+        $teams  = GameTeam::where('game_save_id', $gameSave->id)->get(['id', 'name']);
+        if (! $teamId || $teams->isEmpty()) return null;
+
+        $rows = $teams->mapWithKeys(fn ($t) => [$t->id => ['id' => $t->id, 'name' => $t->name, 'pts' => 0, 'w' => 0, 'd' => 0, 'l' => 0, 'gf' => 0, 'ga' => 0]])->all();
+        $played = GameMatch::where('game_save_id', $gameSave->id)->where('status', 'played')->get();
+        foreach ($played as $m) {
+            $h = (int) $m->home_team_id; $a = (int) $m->away_team_id;
+            if (! isset($rows[$h], $rows[$a])) continue;
+            $hs = (int) $m->home_score; $as = (int) $m->away_score;
+            $rows[$h]['gf'] += $hs; $rows[$h]['ga'] += $as;
+            $rows[$a]['gf'] += $as; $rows[$a]['ga'] += $hs;
+            if ($hs > $as)      { $rows[$h]['w']++; $rows[$h]['pts'] += 3; $rows[$a]['l']++; }
+            elseif ($hs < $as)  { $rows[$a]['w']++; $rows[$a]['pts'] += 3; $rows[$h]['l']++; }
+            else                { $rows[$h]['d']++; $rows[$a]['d']++; $rows[$h]['pts']++; $rows[$a]['pts']++; }
+        }
+
+        // Départage identique au classement du jeu : points, diff., buts, victoires, nom.
+        $order = collect($rows)->sort(fn ($x, $y) =>
+            [$y['pts'], $y['gf'] - $y['ga'], $y['gf'], $y['w'], $x['name']] <=> [$x['pts'], $x['gf'] - $x['ga'], $x['gf'], $x['w'], $y['name']]
+        )->values();
+        $me = $order->firstWhere('id', $teamId);
+        if (! $me || ($me['w'] + $me['d'] + $me['l']) === 0) return null;
+
+        return [
+            'team'        => $me['name'],
+            'season'      => (int) ($gameSave->season ?? 1),
+            'last_week'   => (int) ($played->max('week') ?? 0),
+            'rank'        => $order->search(fn ($r) => $r['id'] === $teamId) + 1,
+            'team_count'  => $order->count(),
+            'wins'        => $me['w'],
+            'draws'       => $me['d'],
+            'losses'      => $me['l'],
+            'goals_for'   => $me['gf'],
+            'goals_against' => $me['ga'],
+            'points'      => $me['pts'],
+            'objective'   => $career['mandate']['label'] ?? null,
+            'target_rank' => $career['mandate']['target_rank'] ?? null,
+        ];
     }
 }
