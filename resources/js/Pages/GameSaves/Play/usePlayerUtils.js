@@ -1,4 +1,5 @@
 // resources/js/Pages/GameSaves/Play/usePlayerUtils.js
+import { usePixelArt } from '@/utils/pixelArt.js';
 
 const STAT_KEYS = [
     'speed', 'stamina', 'attack', 'defense',
@@ -66,6 +67,9 @@ const NATIONALITY_FLAGS = {
 };
 
 export function usePlayerUtils() {
+    // Mode Pixel : les photos pointent vers leur variante pixel art si activé.
+    const { photoSrc } = usePixelArt();
+
 
     const overallOf = (player) => {
         if (!player) return 0;
@@ -79,8 +83,8 @@ export function usePlayerUtils() {
 
     const playerPhotoUrl = (p) => {
         if (!p) return null;
-        if (p.photo_path)         return `/storage/${p.photo_path}`;
-        if (p.player?.photo_path) return `/storage/${p.player.photo_path}`;
+        if (p.photo_path)         return photoSrc(`/storage/${p.photo_path}`);
+        if (p.player?.photo_path) return photoSrc(`/storage/${p.player.photo_path}`);
         return null;
     };
 

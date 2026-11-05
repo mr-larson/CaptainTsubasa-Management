@@ -1,6 +1,6 @@
 <script setup>
 import { ref, reactive, computed, watch } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import GameRules from '@/Components/GameRules.vue';
 
 const props = defineProps({
@@ -10,6 +10,19 @@ const props = defineProps({
     career: { type: Object, default: null },
     initialSection: { type: String, default: null },
 });
+
+// ── Préférences d'affichage (compte utilisateur, toutes parties) ──
+const page = usePage();
+const pixelArt = computed(() => !!page.props.auth?.user?.pixel_art);
+const savingPixelArt = ref(false);
+const togglePixelArt = (event) => {
+    savingPixelArt.value = true;
+    router.patch(route('profile.preferences'), { pixel_art: event.target.checked }, {
+        preserveScroll: true,
+        preserveState: true,
+        onFinish: () => { savingPixelArt.value = false; },
+    });
+};
 
 // Réactifs : restent à jour après une action tant que l'onglet est monté.
 const stats = computed(() => props.managementStats ?? {});
@@ -186,6 +199,19 @@ function resetDefaults() {
                             @click="router.get(route('profile.edit'))">
                         Modifier mon profil
                     </button>
+                </div>
+                <div class="border border-slate-200 rounded-lg bg-white p-3 flex flex-col gap-2">
+                    <h4 class="text-sm font-semibold text-slate-700">Affichage</h4>
+                    <label class="flex items-start gap-2 text-sm text-slate-700 cursor-pointer">
+                        <input type="checkbox" :checked="pixelArt" :disabled="savingPixelArt" @change="togglePixelArt"
+                               class="mt-0.5 rounded border-slate-300 text-teal-500 focus:ring-teal-400 disabled:opacity-40" />
+                        <span>
+                            <span class="font-semibold">Mode Pixel</span>
+                            <span class="block text-xs text-slate-500">
+                                Photos des joueurs en pixel art. S'applique à toutes tes parties ; les joueurs sans photo gardent la silhouette.
+                            </span>
+                        </span>
+                    </label>
                 </div>
             </div>
 

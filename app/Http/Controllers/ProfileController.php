@@ -41,6 +41,20 @@ class ProfileController extends Controller
     }
 
     /**
+     * Préférences d'affichage (valables pour toutes les parties de l'utilisateur).
+     */
+    public function updatePreferences(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'pixel_art' => ['required', 'boolean'],
+        ]);
+
+        $request->user()->forceFill($data)->save();
+
+        return back();
+    }
+
+    /**
      * Delete the user's account.
      */
     public function destroy(Request $request): RedirectResponse

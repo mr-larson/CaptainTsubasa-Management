@@ -36,6 +36,14 @@ class PublishImagesCommand extends Command
 
     private const QUALITY = 80;
 
+    /*
+     * Variante « mode Pixel » des photos joueurs (préférence d'affichage) :
+     * public/storage/players/pixel/slug.png, petite image à palette réduite,
+     * agrandie côté navigateur sans lissage (image-rendering: pixelated).
+     */
+    private const PIXEL_SIZE   = 64;
+    private const PIXEL_COLORS = 24;
+
     public function handle(): int
     {
         if (! function_exists('imagewebp')) {
@@ -86,6 +94,8 @@ class PublishImagesCommand extends Command
             }
         }
 
+        $generated += $this->publishPixelVariants($dry, $force);
+
         if ($generated === 0) {
             $this->info('Rien à générer : public/storage est à jour.');
         } elseif ($dry) {
@@ -95,6 +105,82 @@ class PublishImagesCommand extends Command
         }
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Génère players/pixel/slug.png pour chaque photo joueur publiée (manquante
+     * ou plus ancienne que sa source WebP).
+     */
+    private function publishPixelVariants(bool $dry, bool $force): int
+    {
+        $src = public_path('storage/players');
+        $dst = public_path('storage/players/pixel');
+        if (! File::isDirectory($src)) {
+            return 0;
+        }
+        File::ensureDirectoryExists($dst);
+
+        $count = 0;
+        foreach (File::files($src) as $file) {
+            if (strtolower($file->getExtension()) !== 'webp') {
+                continue;
+            }
+            $slug   = $file->getFilenameWithoutExtension();
+            $target = "{$dst}/{$slug}.png";
+            if (! $force && is_file($target) && filemtime($target) >= $file->getMTime()) {
+                continue;
+            }
+
+            $this->line(($dry ? '[dry-run] ' : '').(is_file($target) ? 'maj    ' : 'nouveau').'  players/pixel/'.$slug.'.png');
+            if (! $dry) {
+                $this->pixelate($file->getPathname(), $target);
+            }
+            $count++;
+        }
+
+        return $count;
+    }
+
+    /**
+     * Réduit l'image à PIXEL_SIZE px (côté le plus long), binarise la
+     * transparence puis limite la palette : rendu « sprite » une fois agrandi.
+     */
+    private function pixelate(string $source, string $target): void
+    {
+        $image = imagecreatefromstring(file_get_contents($source));
+        if ($image === false) {
+            throw new \RuntimeException("Image illisible : {$source}");
+        }
+
+        $width  = imagesx($image);
+        $height = imagesy($image);
+        $ratio  = self::PIXEL_SIZE / max($width, $height);
+        $w      = max(1, (int) round($width * $ratio));
+        $h      = max(1, (int) round($height * $ratio));
+
+        $small = imagecreatetruecolor($w, $h);
+        imagealphablending($small, false);
+        imagesavealpha($small, true);
+        imagefill($small, 0, 0, imagecolorallocatealpha($small, 0, 0, 0, 127));
+        imagecopyresampled($small, $image, 0, 0, 0, 0, $w, $h, $width, $height);
+        imagedestroy($image);
+
+        // Transparence tout-ou-rien : pas de franges semi-transparentes.
+        for ($y = 0; $y < $h; $y++) {
+            for ($x = 0; $x < $w; $x++) {
+                $c     = imagecolorat($small, $x, $y);
+                $alpha = ($c >> 24) & 0x7F;
+                $color = $alpha > 63
+                    ? imagecolorallocatealpha($small, 0, 0, 0, 127)
+                    : imagecolorallocatealpha($small, ($c >> 16) & 0xFF, ($c >> 8) & 0xFF, $c & 0xFF, 0);
+                imagesetpixel($small, $x, $y, $color);
+            }
+        }
+
+        imagetruecolortopalette($small, false, self::PIXEL_COLORS);
+        imagesavealpha($small, true);
+        imagepng($small, $target, 9);
+        imagedestroy($small);
     }
 
     /**

@@ -83,3 +83,27 @@ test('correct password must be provided to delete account', function () {
 
     $this->assertNotNull($user->fresh());
 });
+
+test('pixel art display preference is off by default and can be toggled', function () {
+    $user = User::factory()->create();
+    expect($user->fresh()->pixel_art)->toBeFalse();
+
+    $this->actingAs($user)
+        ->from('/mainMenu')
+        ->patch('/profile/preferences', ['pixel_art' => true])
+        ->assertSessionHasNoErrors()
+        ->assertRedirect('/mainMenu');
+    expect($user->fresh()->pixel_art)->toBeTrue();
+
+    $this->actingAs($user)->patch('/profile/preferences', ['pixel_art' => false]);
+    expect($user->fresh()->pixel_art)->toBeFalse();
+});
+
+test('pixel art preference rejects a non boolean value', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->patch('/profile/preferences', ['pixel_art' => 'maybe'])
+        ->assertSessionHasErrors('pixel_art');
+    expect($user->fresh()->pixel_art)->toBeFalse();
+});

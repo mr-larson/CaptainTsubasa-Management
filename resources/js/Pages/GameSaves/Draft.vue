@@ -7,6 +7,7 @@ import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import TeamStyleBadges from '@/Pages/GameSaves/Play/components/TeamStyleBadges.vue';
 import Modal from '@/Components/Modal.vue';
 import PlayerPhoto from '@/Components/PlayerPhoto.vue';
+import { usePixelArt } from '@/utils/pixelArt.js';
 import PlayerIdentityCard from '@/Pages/GameSaves/Play/components/PlayerIdentityCard.vue';
 import RadarChart from '@/Pages/GameSaves/Play/components/RadarChart.vue';
 import StatBars from '@/Pages/GameSaves/Play/components/StatBars.vue';
@@ -15,6 +16,8 @@ import DraftPickAnimation from '@/Pages/GameSaves/Draft/DraftPickAnimation.vue';
 import DraftOrderList from '@/Pages/GameSaves/Draft/DraftOrderList.vue';
 import DraftPickLog from '@/Pages/GameSaves/Draft/DraftPickLog.vue';
 import { positionColor, positionGroup } from '@/Pages/GameSaves/Draft/draftPositions.js';
+
+const { photoSrc } = usePixelArt();
 
 const { keyStatsFor, moraleState } = usePlayerUtils();
 
@@ -753,7 +756,7 @@ onMounted(() => {
                                                         class="flex items-center gap-2 text-left group/name"
                                                         title="Voir la fiche du joueur">
                                                     <div class="w-7 h-7 rounded-full overflow-hidden bg-slate-200 shrink-0">
-                                                        <img loading="lazy" decoding="async" v-if="player.photo_path" :src="`/storage/${player.photo_path}`"
+                                                        <img loading="lazy" decoding="async" v-if="player.photo_path" :src="photoSrc(`/storage/${player.photo_path}`)"
                                                              class="w-full h-full object-cover" alt=""/>
                                                         <div v-else class="w-full h-full flex items-center justify-center text-[9px] text-slate-400">?</div>
                                                     </div>
