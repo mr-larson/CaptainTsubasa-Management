@@ -53,7 +53,6 @@ const props = defineProps({
     activeInjuries:    { type: Array,  default: () => [] },
     activeSuspensions: { type: Array,  default: () => [] },
     activeYellowCards: { type: Object, default: () => ({}) },
-    weeklyRecap:       { type: Array,  default: () => [] },
     bonusCardOffers:    { type: Array, default: () => [] },
     bonusCardInventory: { type: Array, default: () => [] },
     sponsorChallenges:  { type: Array, default: () => [] },

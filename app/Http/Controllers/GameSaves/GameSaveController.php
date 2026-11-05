@@ -760,25 +760,12 @@ class GameSaveController extends Controller
             ->orderBy('firstname')
             ->get();
 
-        // ─── Récap pour l'onglet Gestion ───
-        $expiringContracts = GameContract::where('game_save_id', $gameSave->id)
-            ->whereBetween('end_week', [$currentWeek, $currentWeek + 4])
-            ->with(['gamePlayer', 'gameTeam'])
-            ->orderBy('end_week')
-            ->get()
-            ->map(fn($c) => [
-                'id'          => $c->id,
-                'player'      => $c->gamePlayer?->full_name ?? 'Joueur inconnu',
-                'team'        => $c->gameTeam?->name ?? 'Équipe inconnue',
-                'end_week'    => $c->end_week,
-            ]);
-
+        // ─── Compteurs de l'onglet Gestion (page Base de données) ───
         $managementStats = [
             'playersCount'           => GamePlayer::where('game_save_id', $gameSave->id)->count(),
             'teamsCount'             => $gameTeams->count(),
             'activeContractsCount'   => $gameTeams->sum(fn($team) => $team->contracts->count()),
             'freePlayersCount'       => $freePlayers->count(),
-            'expiringContracts'      => $expiringContracts,
         ];
 
         // ─── Stats saison agrégées depuis game_matches.match_stats ───
@@ -818,43 +805,6 @@ class GameSaveController extends Controller
             ->groupBy('game_player_id')
             ->map(fn($cards) => $suspensionOn3Yellows ? $cards->count() % 3 : $cards->count())
             ->filter();
-
-        // ─── Récap de la semaine écoulée (blessures et suspensions survenues) ───
-        $previousWeek = $currentWeek - 1;
-
-        $weeklyRecap = collect();
-        // Récap de MON équipe (équipe active en hot-seat), pas de toute la ligue.
-        $recapPlayerIds = $controlledTeam ? $controlledTeam->contracts->pluck('game_player_id') : collect();
-
-        if ($previousWeek >= 1) {
-            $weeklyRecap = $weeklyRecap
-                ->merge(
-                    GameInjury::where('game_save_id', $gameSave->id)
-                        ->whereIn('game_player_id', $recapPlayerIds)
-                        ->where('week_injured', $previousWeek)
-                        ->with('gamePlayer')
-                        ->get()
-                        ->map(fn($i) => [
-                            'type'    => 'injury',
-                            'player'  => $i->gamePlayer?->full_name ?? 'Joueur inconnu',
-                            'message' => "{$i->gamePlayer?->full_name} blessé " . ($i->weeks_out > 1 ? "{$i->weeks_out} semaines" : "1 semaine"),
-                        ])
-                )
-                ->merge(
-                    GameSanction::where('game_save_id', $gameSave->id)
-                        ->whereIn('game_player_id', $recapPlayerIds)
-                        ->whereIn('type', ['red', 'double_yellow'])
-                        ->where('week_match', $previousWeek)
-                        ->with('gamePlayer')
-                        ->get()
-                        ->map(fn($s) => [
-                            'type'    => 'suspension',
-                            'player'  => $s->gamePlayer?->full_name ?? 'Joueur inconnu',
-                            'message' => "{$s->gamePlayer?->full_name} suspendu " . ($s->weeks_suspended > 1 ? "{$s->weeks_suspended} matchs" : "1 match"),
-                        ])
-                )
-                ->values();
-        }
 
         // ─── Moral : derniers changements par joueur (équipe contrôlée) ───
         $controlledPlayerIds = $controlledTeam
@@ -1023,7 +973,6 @@ class GameSaveController extends Controller
             'activeInjuries'      => $activeInjuries,
             'activeSuspensions'   => $activeSuspensions,
             'activeYellowCards'   => $activeYellowCards,
-            'weeklyRecap'         => $weeklyRecap,
             'moraleLogs'          => $moraleLogs,
             'playerPromises'      => $playerPromises,
             'playerDeclarations'  => $playerDeclarations,
