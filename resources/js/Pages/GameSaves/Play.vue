@@ -534,7 +534,7 @@ const saveGame = () => {
                         <!-- Téléphone/tablette : les cartes de la colonne gauche -->
                         <template #side-cards>
                             <div class="min-[1400px]:hidden grid grid-cols-1 md:grid-cols-2 gap-3 items-start">
-                                <RemindersCard class="md:col-span-2" :actions="checklistActions" :squad="checklistSquad" @open="openReminder" />
+                                <RemindersCard class="md:col-span-2" in-dashboard :actions="checklistActions" :squad="checklistSquad" @open="openReminder" />
                                 <!-- Seule carte de sa ligne → pleine largeur -->
                                 <CareerMandateCard v-if="career && career.mandate" compact
                                                    :class="{ 'md:col-span-2': !weeklyRecap.length }"

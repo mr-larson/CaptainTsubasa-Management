@@ -6,6 +6,8 @@ import { ISSUE_CHIP } from './useLineupIssues.js';
 defineProps({
     actions: { type: Array, default: () => [] },
     squad:   { type: Array, default: () => [] },
+    // Dans le Dashboard (téléphone/tablette) : même fond que les autres cartes.
+    inDashboard: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(['open']);
@@ -15,7 +17,8 @@ const LEVEL_CHIP = { ...ISSUE_CHIP, action: 'bg-teal-50 border-teal-200 text-tea
 </script>
 
 <template>
-    <div class="border border-slate-200 rounded-xl bg-white p-3 flex flex-col gap-3">
+    <div class="border border-slate-200 rounded-xl flex flex-col gap-3"
+         :class="inDashboard ? 'bg-slate-50 p-4' : 'bg-white p-3'">
         <div v-if="actions.length">
             <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Avant le match</div>
             <div class="flex flex-wrap items-start gap-1.5">

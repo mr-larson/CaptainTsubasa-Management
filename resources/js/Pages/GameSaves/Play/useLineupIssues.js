@@ -11,7 +11,7 @@ const POS_SHORT  = { GK: 'GK', DF: 'DEF', MF: 'MIL', FW: 'ATT' };
 export const ISSUE_CHIP = {
     error: 'bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100',
     warn:  'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100',
-    info:  'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100',
+    info:  'bg-white border-slate-200 text-slate-500 hover:bg-slate-100',
 };
 
 export function useLineupIssues({ roster, formationData, playerForSlot, isPlayerInjured, isPlayerSuspended, isPlayerBenched }) {
