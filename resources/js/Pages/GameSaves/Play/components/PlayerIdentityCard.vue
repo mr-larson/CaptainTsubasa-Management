@@ -1,4 +1,5 @@
 <script setup>
+import { positionLabel } from '@/Enums/positionBadges.js';
 import { usePlayerUtils } from '../usePlayerUtils.js';
 import SecondaryPositions from './SecondaryPositions.vue';
 import PlayerPhoto from '@/Components/PlayerPhoto.vue';
@@ -51,7 +52,7 @@ const { overallOf, playerPhotoUrl, nationalityFlag } = usePlayerUtils();
                 </div>
 
                 <p class="text-xs text-slate-400 mt-0.5">
-                    {{ subtitle ?? `${player.position} • ${player.cost ?? 0} €` }}
+                    {{ subtitle ?? `${positionLabel(player.position)} • ${player.cost ?? 0} €` }}
                 </p>
 
                 <SecondaryPositions :player="player" class="mt-1.5" />

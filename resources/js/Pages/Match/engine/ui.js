@@ -8,6 +8,9 @@ import {
 } from './dice.js';
 import { LogEntry } from './ui/logEntry.js';
 
+// Libellés FR des postes (miroir de PlayerPosition::labels()).
+const POSITION_FR = { Goalkeeper: 'Gardien', Defender: 'Défenseur', Midfielder: 'Milieu', Forward: 'Attaquant' };
+
 // Cartes d'action : construites dans ./ui/actionCards.js, réexportées ici (API inchangée).
 export { buildAttackActionsHTML, buildDefenseFieldHTML, buildDefenseGKHTML } from './ui/actionCards.js';
 
@@ -436,7 +439,7 @@ export function updateSideCard(prefix, team, slotNumber) {
 
     const fullName = info ? `${info.firstname} ${info.lastname}`.trim() : "";
     setText(`#${prefix}-name`,   fullName || `#${slotNumber}`);
-    setText(`#${prefix}-role`,   info?.position || "—");
+    setText(`#${prefix}-role`,   POSITION_FR[info?.position] ?? info?.position ?? "—");
     setText(`#${prefix}-number`, info ? String(info.number) : String(slotNumber));
     setText(`#${prefix}-team`,   _TEAMS[team].label);
 

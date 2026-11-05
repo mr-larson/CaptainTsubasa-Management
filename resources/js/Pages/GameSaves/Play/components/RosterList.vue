@@ -1,4 +1,5 @@
 <script setup>
+import { positionLabel } from '@/Enums/positionBadges.js';
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { usePlayerUtils } from '../usePlayerUtils.js';
@@ -103,7 +104,7 @@ const benchTitle = (p) => {
                     <!-- Nom + poste -->
                     <div class="flex-1 min-w-0">
                         <div class="text-xs font-semibold truncate">{{ p.lastname }}</div>
-                        <div class="text-2xs opacity-60 truncate">{{ p.position }}</div>
+                        <div class="text-2xs opacity-60 truncate">{{ positionLabel(p.position) }}</div>
                     </div>
 
                     <!-- Icônes statut -->

@@ -27,3 +27,13 @@ export const positionGroupClass = (group) => POSITION_GROUP_COLORS[group] ?? 'bg
 // Classe d'une pastille à partir du poste complet (Goalkeeper, Defender…).
 export const positionBadgeClass = (position) => positionGroupClass(POSITION_TO_GROUP[position]);
 export const positionShort = (position) => POSITION_SHORT[position] ?? position;
+
+const POSITION_LABELS = {
+    Goalkeeper: 'Gardien',
+    Defender: 'Défenseur',
+    Midfielder: 'Milieu',
+    Forward: 'Attaquant',
+};
+
+// Libellé français d'un poste complet (Goalkeeper → Gardien) ; inchangé si inconnu.
+export const positionLabel = (position) => POSITION_LABELS[position] ?? position ?? '';

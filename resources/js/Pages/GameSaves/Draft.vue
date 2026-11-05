@@ -1,4 +1,5 @@
 <script setup>
+import { positionLabel } from '@/Enums/positionBadges.js';
 import { fieldClass } from '@/Components/fieldStyles';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ButtonPrimary from '@/Components/ButtonPrimary.vue';
@@ -875,7 +876,7 @@ onMounted(() => {
                     <!-- Identité -->
                     <PlayerIdentityCard :player="inspectedPlayer"
                                         :showCaptainBadge="false"
-                                        :subtitle="`${inspectedPlayer.position} • ${draftCost(inspectedPlayer)} € (${weeklyCost(inspectedPlayer)} €/sem)`" />
+                                        :subtitle="`${positionLabel(inspectedPlayer.position)} • ${draftCost(inspectedPlayer)} € (${weeklyCost(inspectedPlayer)} €/sem)`" />
 
                     <!-- Radar + Barres -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">

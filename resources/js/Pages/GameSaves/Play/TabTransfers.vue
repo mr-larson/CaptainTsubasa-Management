@@ -1,4 +1,5 @@
 <script setup>
+import { positionLabel } from '@/Enums/positionBadges.js';
 import { fieldClass } from '@/Components/fieldStyles';
 import ButtonSecondary from '@/Components/ButtonSecondary.vue';
 import ButtonPrimary from '@/Components/ButtonPrimary.vue';
@@ -348,7 +349,7 @@ const filteredHistory = computed(() =>
                             </div>
                             <div class="text-2xs truncate"
                                  :class="selectedPlayer?.id === p.id ? 'text-white/70' : 'text-slate-400'">
-                                {{ p.position }}
+                                {{ positionLabel(p.position) }}
                             </div>
                         </div>
 
@@ -452,7 +453,7 @@ const filteredHistory = computed(() =>
                         </div>
                         <div class="flex-1">
                             <h3 class="text-base font-bold text-slate-700">{{ selectedPlayer.firstname }} {{ selectedPlayer.lastname }}</h3>
-                            <p class="text-xs text-slate-400 mt-0.5">{{ selectedPlayer.position }} • Coût de base : {{ selectedPlayer.cost ?? 0 }} €/match</p>
+                            <p class="text-xs text-slate-400 mt-0.5">{{ positionLabel(selectedPlayer.position) }} • Coût de base : {{ selectedPlayer.cost ?? 0 }} €/match</p>
                             <span class="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full text-2xs font-semibold"
                                   :class="moraleState(selectedPlayer.morale).chip"
                                   title="Le moral d'un joueur libre n'évolue pas tant qu'il est sans club">
@@ -563,7 +564,7 @@ const filteredHistory = computed(() =>
                         <div class="text-xs font-semibold text-slate-700 truncate">
                             {{ entry.player.firstname }} {{ entry.player.lastname }}
                         </div>
-                        <div class="text-2xs text-slate-400">{{ entry.player.position }}</div>
+                        <div class="text-2xs text-slate-400">{{ positionLabel(entry.player.position) }}</div>
                     </div>
                     <!-- Équipe -->
                     <div class="flex items-center gap-1.5 shrink-0">
@@ -613,7 +614,7 @@ const filteredHistory = computed(() =>
                                     </div>
                                     <div class="text-left leading-tight">
                                         <div class="text-slate-700">{{ p.lastname }}</div>
-                                        <div class="text-3xs text-slate-400 font-normal">{{ p.position }}</div>
+                                        <div class="text-3xs text-slate-400 font-normal">{{ positionLabel(p.position) }}</div>
                                     </div>
                                     <button type="button" @click="toggleCompare(p)"
                                             class="text-slate-300 hover:text-rose-500" title="Retirer" aria-label="Retirer">✕</button>

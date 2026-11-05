@@ -238,7 +238,14 @@ class GameSaveController extends Controller
             }
         }
 
+        // Budget de départ réel d'une équipe humaine (cf. start()) : fixé par la
+        // difficulté du mandat, pas par le budget de référence du club.
+        $difficulty       = $gameConfig['career_difficulty'] ?? 'standard';
+        $humanStartBudget = CareerObjectiveService::PRESETS[$difficulty]['start_budget']
+            ?? ($difficulty === 'none' ? CareerObjectiveService::SANDBOX_START_BUDGET : null);
+
         return Inertia::render('GameSaves/TeamSelection', [
+            'humanStartBudget' => $humanStartBudget,
             'label'           => $data['label'] ?? null,
             'period'          => $data['period'],
             'teams'           => $teams,

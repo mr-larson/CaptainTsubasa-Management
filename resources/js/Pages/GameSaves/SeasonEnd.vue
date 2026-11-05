@@ -1,4 +1,5 @@
 <script setup>
+import { positionLabel } from '@/Enums/positionBadges.js';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ButtonPrimary from '@/Components/ButtonPrimary.vue';
 import H2 from '@/Components/H2.vue';
@@ -99,7 +100,7 @@ function startNewSeason() {
                         <p class="text-xs uppercase tracking-widest text-slate-400">MVP de la saison</p>
                         <h3 class="text-xl font-bold text-slate-700">{{ recap.mvp.name }}</h3>
                         <p class="text-sm text-slate-500">
-                            {{ recap.mvp.team_name }} · {{ recap.mvp.position }} ·
+                            {{ recap.mvp.team_name }} · {{ positionLabel(recap.mvp.position) }} ·
                             {{ recap.mvp.goals }} but(s)
                         </p>
                     </div>

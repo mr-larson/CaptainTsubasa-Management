@@ -1,4 +1,5 @@
 <script setup>
+import { positionLabel } from '@/Enums/positionBadges.js';
 import { fieldClass } from '@/Components/fieldStyles';
 import ButtonPrimary from '@/Components/ButtonPrimary.vue';
 import { ref, computed } from 'vue';
@@ -246,7 +247,7 @@ const selectedPlayerPerf = computed(() => {
 
                     <!-- Identité -->
                     <PlayerIdentityCard :player="selectedPlayer"
-                                        :subtitle="`${selectedPlayer.position} • Stamina ${selectedPlayer.stamina ?? '—'}`">
+                                        :subtitle="`${positionLabel(selectedPlayer.position)} • Stamina ${selectedPlayer.stamina ?? '—'}`">
                         <template #actions>
                             <ButtonPrimary type="button" size="sm" @click="emit('add-slot', selectedPlayer.id)" :disabled="trainingButtonState.disabled">
                                 {{ trainingButtonState.label }}
@@ -349,8 +350,7 @@ const selectedPlayerPerf = computed(() => {
 
                         <!-- Bouton Lancer -->
                         <ButtonPrimary type="button" class="w-full" @click="emit('submit-training')" :disabled="!canSubmitTraining || !canAffordSelected">
-                            Lancer l'entraînement
-                            <span v-if="trainingCost > 0 && selectedCount > 0"> — {{ totalTrainingCost }} €</span>
+                            <span class="text-center">Lancer l'entraînement<template v-if="trainingCost > 0 && selectedCount > 0"><span class="whitespace-nowrap"> — {{ totalTrainingCost }} €</span></template></span>
                         </ButtonPrimary>
                     </div>
 

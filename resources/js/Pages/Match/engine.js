@@ -362,6 +362,8 @@ export function initMatchEngine(rootEl, config = {}) {
 
             refreshUI();
             if (ui.matchEndActionsEl) ui.matchEndActionsEl.classList.remove("hidden");
+            // « Suite » remplace « Retour » : un seul bouton, qui ne déborde plus sur le logo.
+            rootEl.ownerDocument.getElementById("btn-back-to-game")?.classList.add("hidden");
 
             if (ui.finishMatchBtn) {
                 ui.finishMatchBtn.onclick = submitResult;

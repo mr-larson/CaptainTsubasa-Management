@@ -216,24 +216,24 @@ export const TEXTS = {
     },
     cards: {
         attack: {
-            shot:    { icon: "⚽️", title: "Shot",    sub: "Puissant tir" },
-            pass:    { icon: "➡️",  title: "Pass",    sub: "Passe avant" },
+            shot:    { icon: "⚽️", title: "Tir",     sub: "Puissant tir" },
+            pass:    { icon: "➡️",  title: "Passe",   sub: "Passe avant" },
             dribble: { icon: "🌀",  title: "Dribble", sub: "Dribble un adversaire" },
             one_two: { icon: "🤝",  title: "Une-deux", sub: "Combinaison de duo" },
-            special: { icon: "🔥",  title: "Special", sub: "Action spéciale" },
+            special: { icon: "🔥",  title: "Spécial", sub: "Action spéciale" },
             cross:     { icon: "🎯", title: "Centre",       sub: "Centre dans la surface" },
             long_pass: { icon: "🚀", title: "Passe longue", sub: "Lancement vers le milieu offensif" },
         },
         defenseField: {
-            block:          { icon: "🧱", title: "Block",     sub: "Contre de tir" },
-            intercept:      { icon: "✋", title: "Intercept", sub: "Couper une passe" },
-            tackle:         { icon: "⚔️", title: "Tackle",    sub: "Intervenir un dribble" },
-            "field-special":{ icon: "🔥", title: "Special",   sub: "Action spéciale" },
+            block:          { icon: "🧱", title: "Contre",    sub: "Contre de tir" },
+            intercept:      { icon: "✋", title: "Interception", sub: "Couper une passe" },
+            tackle:         { icon: "⚔️", title: "Tacle",     sub: "Intervenir sur un dribble" },
+            "field-special":{ icon: "🔥", title: "Spécial",   sub: "Action spéciale" },
         },
         defenseGK: {
             hands:      { icon: "🧤", title: "Arrêt main",        sub: "Capte le tir proprement" },
             punch:      { icon: "👊", title: "Dégagement poing",  sub: "Repousse le ballon au loin" },
-            "gk-special":{ icon: "🔥", title: "Special",          sub: "Action spéciale" },
+            "gk-special":{ icon: "🔥", title: "Spécial",          sub: "Action spéciale" },
         },
     },
 };

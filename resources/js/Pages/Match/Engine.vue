@@ -26,6 +26,7 @@
                         <!-- Left: actions -->
                         <div class="flex items-center gap-3 justify-start">
                             <Link
+                                id="btn-back-to-game"
                                 :href="route('game-saves.Play', { gameSave: engineConfig.gameSaveId })"
                                 class="bg-gradient-to-br from-slate-500 to-slate-600 hover:from-slate-600 hover:to-slate-700
                        font-semibold text-white py-1 px-5 border border-white/30 rounded-full drop-shadow-md"

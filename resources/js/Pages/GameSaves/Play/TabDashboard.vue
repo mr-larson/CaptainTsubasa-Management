@@ -206,6 +206,7 @@ const KPI = 'border border-slate-200 rounded-xl bg-slate-50 p-2 text-left transi
 const matchesPlayed = computed(() =>
     (props.teamRecord.wins ?? 0) + (props.teamRecord.draws ?? 0) + (props.teamRecord.losses ?? 0)
 );
+const hasPlayed = computed(() => matchesPlayed.value > 0);
 </script>
 
 <template>
@@ -307,7 +308,8 @@ const matchesPlayed = computed(() =>
                 <span class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Classement</span>
                 <span class="flex items-baseline gap-2">
                     <span class="text-3xl font-black" :class="rankStyle">
-                        {{ clubStanding?.position ?? '—' }}<sup v-if="clubStanding" class="text-base">e</sup>
+                        <!-- Avant le 1er match, le rang n'est que l'ordre alphabétique : on affiche « — ». -->
+                        {{ hasPlayed ? (clubStanding?.position ?? '—') : '—' }}<sup v-if="clubStanding && hasPlayed" class="text-base">e</sup>
                     </span>
                     <span v-if="positionDelta !== null" class="text-xs font-bold"
                           :class="positionDelta > 0 ? 'text-emerald-600' : positionDelta < 0 ? 'text-rose-500' : 'text-slate-400'"

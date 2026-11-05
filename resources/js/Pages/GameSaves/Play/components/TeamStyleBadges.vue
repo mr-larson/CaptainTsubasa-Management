@@ -24,12 +24,14 @@ const sizeClass = {
               class="rounded-full font-semibold border inline-flex items-center gap-1"
               :title="`Style tactique : ${tacticalLabel(team.tactical_style)}`">
             <span>{{ tacticalIcon(team.tactical_style) }}</span>
+            <span class="opacity-60">Jeu</span>
             <span>{{ tacticalLabel(team.tactical_style) }}</span>
         </span>
         <span :class="[sizeClass, philosophyColor(team.management_philosophy)]"
               class="rounded-full font-semibold border inline-flex items-center gap-1"
               :title="`Philosophie : ${philosophyLabel(team.management_philosophy)}`">
             <span>{{ philosophyIcon(team.management_philosophy) }}</span>
+            <span class="opacity-60">Gestion</span>
             <span>{{ philosophyLabel(team.management_philosophy) }}</span>
         </span>
     </div>

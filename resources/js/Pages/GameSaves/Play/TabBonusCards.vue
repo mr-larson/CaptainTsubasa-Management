@@ -1,4 +1,5 @@
 <script setup>
+import { positionLabel } from '@/Enums/positionBadges.js';
 import Modal from '@/Components/Modal.vue';
 import TabBar from '@/Components/TabBar.vue';
 import ButtonSecondary from '@/Components/ButtonSecondary.vue';
@@ -485,7 +486,7 @@ const canConfirm = computed(() => {
                                         ? 'bg-teal-500 text-white border-teal-600'
                                         : 'bg-white border-slate-200 hover:border-teal-300 text-slate-700'">
                                 <span class="font-semibold">{{ p.lastname }}</span>
-                                <span class="opacity-70 ml-1">— {{ p.position }}</span>
+                                <span class="opacity-70 ml-1">— {{ positionLabel(p.position) }}</span>
                                 <span v-if="isInjuryCard" class="ml-1 text-rose-400">🤕</span>
                                 <span v-if="targetMeta(selectedCard, p)"
                                       class="ml-auto font-semibold"

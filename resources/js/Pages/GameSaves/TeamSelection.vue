@@ -102,8 +102,8 @@
 
                                 <div class="grid grid-cols-2 gap-2 text-xs">
                                     <div class="bg-slate-50 rounded-lg p-2.5 text-center">
-                                        <div class="text-lg font-black text-teal-600">{{ selectedTeam.budget ?? 0 }}</div>
-                                        <div class="text-slate-400 font-semibold">Budget €</div>
+                                        <div class="text-lg font-black text-teal-600">{{ startBudget }}</div>
+                                        <div class="text-slate-400 font-semibold">Budget de départ €</div>
                                     </div>
                                     <div class="bg-slate-50 rounded-lg p-2.5 text-center">
                                         <div class="text-lg font-black text-slate-700">{{ roster.length }}</div>
@@ -173,11 +173,19 @@
 
                             <!-- Action — PREBUILT : hot-seat multi-manager -->
                             <template v-else>
+                                <!-- Solo : lancement direct, sans passer par la liste des managers -->
+                                <ButtonPrimary v-if="!humanTeams.length" type="button" size="lg" class="w-full"
+                                               :disabled="startForm.processing"
+                                               @click="startSolo(selectedTeam)">
+                                    <span v-if="startForm.processing">Chargement...</span>
+                                    <span v-else>▶ Jouer avec {{ selectedTeam.name }}</span>
+                                </ButtonPrimary>
                                 <button type="button"
                                         class="w-full min-h-11 px-4 rounded-full font-bold text-sm transition-colors flex items-center justify-center gap-2"
                                         :class="isHumanTeam(selectedTeam)
                         ? 'bg-white text-rose-600 border border-rose-300 hover:bg-rose-50'
-                        : 'bg-teal-500 hover:bg-teal-600 text-white shadow-md'"
+                        : humanTeams.length ? 'bg-teal-500 hover:bg-teal-600 text-white shadow-md'
+                        : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'"
                                         @click="toggleHumanTeam(selectedTeam)">
                                     <template v-if="isHumanTeam(selectedTeam)">
                                         <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
@@ -185,7 +193,7 @@
                                     </template>
                                     <template v-else>
                                         <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-                                        <span>Piloter {{ selectedTeam.name }} (Joueur {{ humanTeams.length + 1 }})</span>
+                                        <span>{{ humanTeams.length ? 'Piloter' : 'Partie à plusieurs : piloter' }} {{ selectedTeam.name }} (Joueur {{ humanTeams.length + 1 }})</span>
                                     </template>
                                 </button>
                                 <p class="-mt-2 text-[11px] text-slate-400 text-center leading-snug">
@@ -263,7 +271,7 @@
                                                         </span>
                                                         <span class="shrink-0 px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wide"
                                                               :class="posBadgeClass(player.position)">
-                                                            {{ player.position }}
+                                                            {{ positionLabel(player.position) }}
                                                         </span>
                                                     </div>
                                                     <!-- Stats clés (adaptées au poste) : libellé, valeur teintée, mini-barre colorée -->
@@ -349,7 +357,7 @@
                                             </div>
                                             <div class="flex items-start gap-2">
                                                 <span class="text-amber-500 font-bold shrink-0">4.</span>
-                                                <p>Ton budget total : <span class="font-bold">{{ (selectedTeam.budget ?? 0) + 5000 }} €</span> (budget club + bonus draft).</p>
+                                                <p>Ton budget total : <span class="font-bold">{{ startBudget + 5000 }} €</span> (budget de départ + bonus draft).</p>
                                             </div>
                                         </div>
                                     </div>
@@ -371,6 +379,7 @@
 </template>
 
 <script setup>
+import { positionLabel } from '@/Enums/positionBadges.js';
 import { positionGroupClass } from '@/Enums/positionBadges.js';
 import { fieldClass } from '@/Components/fieldStyles';
 import ButtonPrimary from '@/Components/ButtonPrimary.vue';
@@ -393,6 +402,8 @@ const props = defineProps({
     gameMode: { type: String, default: 'prebuilt' },
     competitionType: { type: String, default: 'college_league' },
     gameConfig:      { type: Object, default: null },
+    // Budget de départ réel d'une équipe pilotée (selon la difficulté) ; null = budget du club.
+    humanStartBudget: { type: Number, default: null },
     // Graine du moral initial : null si l'option "moral aléatoire" est désactivée
     // (également null en mode package, cf. store()).
     moraleSeed:      { type: Number, default: null },
@@ -500,6 +511,12 @@ function selectTeam(team) {
     if (!isMultiMode.value) startForm.team_id = team.id;
 }
 
+// Solo : une seule équipe pilotée, lancement immédiat.
+function startSolo(team) {
+    humanTeams.value = [team];
+    startWithTeam();
+}
+
 function startWithTeam() {
     // Mode draft : une seule équipe.
     if (!isMultiMode.value) {
@@ -558,6 +575,9 @@ const statTone = (v) => Number(v) >= 70 ? 'text-emerald-600'
 const overallBadgeClass = (o) => o >= 70 ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
     : o >= 50 ? 'bg-amber-50 border-amber-300 text-amber-700'
     : 'bg-slate-100 border-slate-200 text-slate-500';
+
+// Budget affiché = budget de départ réel en partie (difficulté), sinon celui du club.
+const startBudget = computed(() => props.humanStartBudget ?? selectedTeam.value?.budget ?? 0);
 
 // Badge de poste coloré (couleurs communes, libellé brut conservé).
 const posBadgeClass = (pos) => positionGroupClass(positionGroup(pos));

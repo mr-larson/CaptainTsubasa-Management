@@ -387,6 +387,8 @@ const applyAdvice = (a) => {
     } else if (a.type === 'train') {
         selectedTrainings.value = a.plan.map(c => ({ player_id: c.player.id, stat: c.stat }));
         activeTab.value = 'training';
+    } else if (a.type === 'captain') {
+        toggleCaptain(a.player.contract_id);
     } else if (a.type === 'recruit') {
         transferFocus.value = a.candidate;
         activeTab.value = 'transfers';

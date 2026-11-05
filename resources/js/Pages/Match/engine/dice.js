@@ -286,7 +286,7 @@ function ensureRollOverlay() {
  * Joue l'animation des deux dés vers un résultat déjà résolu.
  * Skippable au clic (ou Échap). Résout la promesse à la fermeture.
  */
-function playDuelAnimation(aRoll, dRoll, breakdown, mode, finalWinner, isCrit) {
+function playDuelAnimation(aRoll, dRoll, breakdown, mode, finalWinner, isCrit, scores = null) {
     return new Promise((resolve) => {
         const overlay = ensureRollOverlay();
         if (!overlay) { resolve(); return; }
@@ -317,6 +317,7 @@ function playDuelAnimation(aRoll, dRoll, breakdown, mode, finalWinner, isCrit) {
                 </div>
                 ${advBadge(roll)}
                 <div class="droll-bonus" data-bonus="${side}">&nbsp;</div>
+                <div class="droll-total" data-total="${side}">&nbsp;</div>
             </div>`;
 
         overlay.innerHTML = `
@@ -360,7 +361,12 @@ function playDuelAnimation(aRoll, dRoll, breakdown, mode, finalWinner, isCrit) {
                 altEl.classList.add('droll-die--settled', 'droll-die--discarded');
             }
             const bonusEl = overlay.querySelector(`[data-bonus="${side}"]`);
-            if (bonusEl) bonusEl.textContent = `bonus +${roll.bonus.toFixed(1)}`;
+            if (bonusEl) bonusEl.textContent = `apport du dé +${roll.bonus.toFixed(1)}`;
+            // Total décisif (stats, contexte, bonus compris) : c'est lui qui départage,
+            // pas la face du dé seule.
+            const totalEl = overlay.querySelector(`[data-total="${side}"]`);
+            const total   = scores?.[side];
+            if (totalEl && Number.isFinite(total)) totalEl.textContent = `= ${total.toFixed(1)}`;
         };
 
         const showVerdict = () => {
@@ -583,7 +589,7 @@ export function showDuelDice(attackScore, defenseScore, aRoll, dRoll, breakdown)
 
         // Chip masqué pendant l'animation, révélé à la fin
         duelDiceEl.classList.remove('visible', 'pop');
-        playDuelAnimation(aRoll, dRoll, breakdown, mode, finalWinner, !!breakdown?.result?.critWinner)
+        playDuelAnimation(aRoll, dRoll, breakdown, mode, finalWinner, !!breakdown?.result?.critWinner, { attack: attackScore, defense: defenseScore })
             .then(() => { revealChip(); done(); });
     });
 }

@@ -2,6 +2,7 @@
 // « Conseils de l'adjoint » : suggestions concrètes et applicables en un clic.
 //   rotate  : un titulaire indisponible ou épuisé → le meilleur remplaçant pour son poste
 //   train   : qui entraîner cette semaine, et sur quelle stat (point faible du poste)
+//   captain : capitaine indisponible ou sur le banc → brassard au meilleur titulaire disponible
 //   recruit : le titulaire le plus faible → le meilleur joueur libre abordable à son poste
 import { computed, toValue } from 'vue';
 import { masteryFor } from './lineupMastery.js';
@@ -13,6 +14,8 @@ const MASTERY_RANK = { primary: 0, secondary: 1 };
 const RECRUIT_MIN_GAIN = 5;
 // Durée de contrat proposée par défaut dans la modale de transfert.
 const RECRUIT_MATCHES = 10;
+// Part maximale du budget que l'adjoint propose de dépenser en entraînement chaque semaine.
+const TRAINING_BUDGET_SHARE = 0.4;
 // Libellés complets (mêmes que l'onglet Entraînement).
 const STAT_NAMES = {
     shot: 'Tir', pass: 'Passe', dribble: 'Dribble', attack: 'Attaque', defense: 'Défense',
@@ -46,13 +49,19 @@ export function useAssistantAdvice({
             const tired   = staminaOf(starter) < LOW_STAMINA;
             if (!status && !tired) return;
 
-            const best = subs
+            const candidates = subs
                 .filter(s => !used.has(s.id) && !isOut(s) && staminaOf(s) >= LOW_STAMINA)
-                .map(s => ({ sub: s, mastery: masteryFor(s, def) }))
-                .filter(c => c.mastery in MASTERY_RANK)
-                .sort((a, b) => (MASTERY_RANK[a.mastery] - MASTERY_RANK[b.mastery])
-                    || (overallOf(b.sub) - overallOf(a.sub))
-                    || (staminaOf(b.sub) - staminaOf(a.sub)))[0];
+                .map(s => ({ sub: s, mastery: masteryFor(s, def) }));
+            const byMastery = (a, b) => (MASTERY_RANK[a.mastery] - MASTERY_RANK[b.mastery])
+                || (overallOf(b.sub) - overallOf(a.sub))
+                || (staminaOf(b.sub) - staminaOf(a.sub));
+            let best = candidates.filter(c => c.mastery in MASTERY_RANK).sort(byMastery)[0];
+            // Titulaire indisponible sans remplaçant du poste : mieux vaut un joueur
+            // hors poste qu'un trou (le meilleur, puis le plus frais).
+            if (!best && status) {
+                best = candidates
+                    .sort((a, b) => (overallOf(b.sub) - overallOf(a.sub)) || (staminaOf(b.sub) - staminaOf(a.sub)))[0];
+            }
             if (!best) return;
 
             used.add(best.sub.id);
@@ -63,7 +72,7 @@ export function useAssistantAdvice({
                 icon: status ? status.icon : '🔋',
                 title: `${best.sub.lastname} à la place de ${starter.lastname}`,
                 detail: (status ? `${starter.lastname} : ${status.label.toLowerCase()}` : `${starter.lastname} épuisé (stamina ${staminaOf(starter)})`)
-                    + ` · ${best.sub.lastname} : stamina ${staminaOf(best.sub)}${best.mastery === 'secondary' ? ', poste secondaire' : ''}`,
+                    + ` · ${best.sub.lastname} : stamina ${staminaOf(best.sub)}${best.mastery === 'secondary' ? ', poste secondaire' : best.mastery in MASTERY_RANK ? '' : ', hors poste (malus)'}`,
                 actionLabel: 'Faire le changement',
                 starter, sub: best.sub,
             });
@@ -78,7 +87,8 @@ export function useAssistantAdvice({
     const trainingPlan = computed(() => {
         const slots = Number(toValue(remainingTrainings)) || 0;
         const cost  = Number(toValue(trainingCost)) || 0;
-        const affordable = cost > 0 ? Math.floor(Number(toValue(budget)) / cost) : slots;
+        // L'adjoint garde une réserve : au plus TRAINING_BUDGET_SHARE du budget par semaine.
+        const affordable = cost > 0 ? Math.floor((Number(toValue(budget)) * TRAINING_BUDGET_SHARE) / cost) : slots;
         const n = Math.min(slots, affordable);
         if (n <= 0) return [];
 
@@ -114,6 +124,34 @@ export function useAssistantAdvice({
         };
     });
 
+    // ── Capitaine ────────────────────────────────────────────
+    const captain = computed(() => {
+        const players = toValue(roster) ?? [];
+        const isOut   = toValue(unavailability);
+        const current = players.find(p => p.is_captain);
+        const problem = !current ? 'aucun capitaine'
+            : isOut(current) ? `${current.lastname} ${isOut(current).label.toLowerCase()}`
+            : !current.is_starter ? `${current.lastname} sur le banc`
+            : null;
+        if (!problem) return null;
+
+        const best = players
+            .filter(p => p.is_starter && !isOut(p) && p.id !== current?.id)
+            .sort((a, b) => overallOf(b) - overallOf(a))[0];
+        if (!best) return null;
+
+        return {
+            key: 'captain',
+            type: 'captain',
+            severity: 1,
+            icon: '👑',
+            title: `Brassard pour ${best.lastname}`,
+            detail: `Capitaine actuel : ${problem} · ${best.lastname}, meilleur titulaire disponible (${overallOf(best)})`,
+            actionLabel: 'Donner le brassard',
+            player: best,
+        };
+    });
+
     // ── Recrutement ──────────────────────────────────────────
     const recruit = computed(() => {
         if (toValue(isWorldCup)) return null;
@@ -145,7 +183,7 @@ export function useAssistantAdvice({
         };
     });
 
-    const advice = computed(() => [...rotations.value, training.value, recruit.value]
+    const advice = computed(() => [...rotations.value, captain.value, training.value, recruit.value]
         .filter(Boolean)
         .sort((a, b) => a.severity - b.severity));
 
