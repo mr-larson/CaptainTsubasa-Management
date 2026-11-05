@@ -52,7 +52,7 @@ const closeModal = () => {
 
         <Modal :show="confirmingUserDeletion" @close="closeModal">
             <div class="p-6">
-                <h2 class="text-lg font-medium text-slate-900">
+                <h2 class="text-lg font-medium text-slate-700">
                     Are you sure you want to delete your account?
                 </h2>
 

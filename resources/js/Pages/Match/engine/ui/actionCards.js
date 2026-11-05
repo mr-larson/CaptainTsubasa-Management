@@ -15,11 +15,11 @@ const specialIcon = (baseAction) => SPECIAL_ICONS[baseAction] ?? "🔥";
 // sémantiques (skill-power, def-cost…) restent : le JS s'en sert comme repères.
 const CARD = {
     icon:       'text-lg leading-none',
-    title:      'text-[13px] font-extrabold tracking-[0.2px] text-slate-900',
-    sub:        'text-[11px] text-slate-900/70',
+    title:      'text-[13px] font-extrabold tracking-[0.2px] text-slate-700',
+    sub:        'text-[11px] text-slate-700/70',
     bottom:     'mt-1.5 flex flex-col items-start gap-0.5',
-    power:      'text-lg font-black tabular-nums text-slate-900',
-    cost:       'whitespace-nowrap text-[11px] font-bold text-slate-900/75 [&>span]:font-black [&>span]:text-slate-900/90',
+    power:      'text-lg font-black tabular-nums text-slate-700',
+    cost:       'whitespace-nowrap text-[11px] font-bold text-slate-700/75 [&>span]:font-black [&>span]:text-slate-700/90',
     spIcon:     'text-[15px] leading-none',
     spTitle:    'line-clamp-2 text-[10px] font-extrabold leading-tight text-amber-800',
     spFoot:     'flex flex-col gap-px',

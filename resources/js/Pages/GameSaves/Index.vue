@@ -42,7 +42,7 @@ const formatDate = (value) => {
                     <!-- Header -->
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                         <div>
-                            <h1 class="text-xl font-bold text-slate-800">Charger une partie</h1>
+                            <h1 class="text-xl font-bold text-slate-700">Charger une partie</h1>
                             <p class="text-xs text-slate-400 mt-0.5">Sélectionne une sauvegarde ou crée une nouvelle partie</p>
                         </div>
                         <div class="flex items-center gap-2">
@@ -75,7 +75,7 @@ const formatDate = (value) => {
 
                             <!-- Infos -->
                             <div class="flex-1 min-w-0">
-                                <div class="text-sm font-bold text-slate-800">
+                                <div class="text-sm font-bold text-slate-700">
                                     {{ save.label ?? `Sauvegarde #${save.id}` }}
                                 </div>
                                 <div class="text-xs text-slate-400 mt-0.5">

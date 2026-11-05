@@ -13,7 +13,7 @@ export default {
     props: {
         customClass: {
             type: String,
-            default: "text-2xl font-bold text-slate-800 mb-4"
+            default: "text-2xl font-bold text-slate-700 mb-4"
         }
   }
 };

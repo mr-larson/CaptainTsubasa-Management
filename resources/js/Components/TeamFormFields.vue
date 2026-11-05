@@ -23,7 +23,7 @@ const emit = defineEmits(['remove-logo', 'logo-preview']);
 
 const { tacticalLabel, tacticalIcon, philosophyLabel, philosophyIcon } = useTeamStyles();
 
-const selectClass = 'mt-1 w-full rounded border border-gray-300 bg-stone-50 text-sm text-gray-900 focus:outline-none focus:bg-white focus:border-purple-300';
+const selectClass = 'mt-1 w-full rounded border border-gray-300 bg-stone-50 text-sm text-slate-700 focus:outline-none focus:bg-white focus:border-purple-300';
 
 const containerClass = computed(() => (props.layout === 'grid'
     ? 'grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4'
@@ -102,7 +102,7 @@ const containerClass = computed(() => (props.layout === 'grid'
                 v-model="form.description"
                 rows="3"
                 placeholder="Description de l'équipe (optionnel)"
-                class="mt-1 w-full rounded border border-gray-300 bg-stone-50 text-sm text-gray-900 leading-tight focus:outline-none focus:bg-white focus:border-purple-300"
+                class="mt-1 w-full rounded border border-gray-300 bg-stone-50 text-sm text-slate-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-300"
             ></textarea>
         </FormField>
     </div>

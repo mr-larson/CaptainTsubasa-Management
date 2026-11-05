@@ -39,7 +39,7 @@ const formatDate = (value) => {
 
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                         <div>
-                            <h1 class="text-xl font-bold text-slate-800">Bibliothèque de périodes</h1>
+                            <h1 class="text-xl font-bold text-slate-700">Bibliothèque de périodes</h1>
                             <p class="text-xs text-slate-400 mt-0.5">
                                 Importe un fichier de période (effectifs, équipes, contrats) pour le choisir à la création d'une partie.
                             </p>
@@ -65,7 +65,7 @@ const formatDate = (value) => {
                              class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-teal-300 hover:bg-teal-50 transition-all">
 
                             <div class="flex-1 min-w-0">
-                                <div class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                                <div class="text-sm font-bold text-slate-700 flex items-center gap-2">
                                     {{ pkg.name }}
                                     <span v-if="pkg.is_shared" class="px-2 py-0.5 rounded-full bg-teal-100 text-teal-700 text-[10px] font-bold uppercase tracking-wide">Partagée</span>
                                     <span v-else class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 text-[10px] font-bold uppercase tracking-wide">Privée</span>

@@ -177,7 +177,7 @@ const MASTERY_CHIP = {
                              :title="statusOf(playerForSlot(slot)).label">{{ statusOf(playerForSlot(slot)).icon }}</div>
                         <!-- Capitaine (coin bas droit de la photo) -->
                         <div v-if="playerForSlot(slot)?.is_captain"
-                             class="absolute top-5 -right-1.5 w-3.5 h-3.5 rounded-sm bg-amber-400 border border-white text-[8px] leading-[11px] text-slate-900 text-center font-black pointer-events-none"
+                             class="absolute top-5 -right-1.5 w-3.5 h-3.5 rounded-sm bg-amber-400 border border-white text-[8px] leading-[11px] text-slate-700 text-center font-black pointer-events-none"
                              title="Capitaine">C</div>
                         <!-- Stamina -->
                         <div v-if="playerForSlot(slot)" class="mt-0.5 w-8 h-[3px] rounded-full bg-black/40 overflow-hidden pointer-events-none"
@@ -190,14 +190,14 @@ const MASTERY_CHIP = {
                                  class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-red-500 border border-white text-[8px] leading-[12px] text-white text-center font-bold pointer-events-none"
                                  title="Hors poste : malus appliqué en match">!</div>
                             <div v-else-if="slotMastery(slot, slotDef) === 'secondary'"
-                                 class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-400 border border-white text-[8px] leading-[12px] text-slate-900 text-center font-bold pointer-events-none"
+                                 class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-400 border border-white text-[8px] leading-[12px] text-slate-700 text-center font-bold pointer-events-none"
                                  title="Poste secondaire : bonus réduit">2</div>
                         </template>
                         <div class="mt-0.5 px-1 rounded border-l-2 text-[9px] font-semibold leading-tight text-center max-w-[64px] truncate pointer-events-none"
                              :title="ZONE_NAMES[slotDef.zone]"
                              :class="[ZONE_BORDER[slotDef.zone], isPickedUp(playerForSlot(slot))
-                                ? 'bg-amber-300 text-slate-900'
-                                : selectedSlot === Number(slot) ? 'bg-yellow-300 text-slate-900'
+                                ? 'bg-amber-300 text-slate-700'
+                                : selectedSlot === Number(slot) ? 'bg-yellow-300 text-slate-700'
                                 : statusOf(playerForSlot(slot)) ? 'bg-rose-600/90 text-white' : 'bg-black/60 text-white']">
                             {{ playerForSlot(slot)?.lastname ?? '—' }}
                         </div>
@@ -205,7 +205,7 @@ const MASTERY_CHIP = {
                 </div>
 
                 <div v-if="pickedPlayer"
-                     class="absolute bottom-1 left-1/2 -translate-x-1/2 max-w-[95%] flex items-center gap-2 bg-amber-400/95 text-slate-900 text-[10px] font-bold pl-3 pr-1 py-0.5 rounded-full shadow-md pointer-events-none whitespace-nowrap">
+                     class="absolute bottom-1 left-1/2 -translate-x-1/2 max-w-[95%] flex items-center gap-2 bg-amber-400/95 text-slate-700 text-[10px] font-bold pl-3 pr-1 py-0.5 rounded-full shadow-md pointer-events-none whitespace-nowrap">
                     <span class="truncate">⚡ {{ pickupHint }}</span>
                     <span v-if="masteryFor" class="shrink-0 flex items-center gap-1 text-[9px] font-semibold">
                         <span class="w-2 h-2 rounded-full bg-emerald-400"></span>poste

@@ -7,7 +7,7 @@ import { dialogState, closeDialog } from '@/Composables/useDialog.js';
     <!-- Modal gère déjà Échap, le piège de focus et le retour du focus -->
     <Modal :show="dialogState.open" max-width="md" @close="closeDialog(false)">
         <div class="p-6" :aria-labelledby="dialogState.title ? 'app-dialog-title' : undefined">
-            <h2 v-if="dialogState.title" id="app-dialog-title" class="mb-2 text-lg font-bold text-slate-800">
+            <h2 v-if="dialogState.title" id="app-dialog-title" class="mb-2 text-lg font-bold text-slate-700">
                 {{ dialogState.title }}
             </h2>
             <p class="whitespace-pre-line text-sm leading-6 text-slate-600">{{ dialogState.message }}</p>
@@ -24,7 +24,7 @@ import { dialogState, closeDialog } from '@/Composables/useDialog.js';
                         class="inline-flex min-h-[44px] items-center justify-center rounded-full px-5 text-sm font-bold"
                         :class="dialogState.danger
                             ? 'bg-rose-500 text-white hover:bg-rose-600'
-                            : 'bg-teal-500 text-slate-900 hover:bg-teal-400'">
+                            : 'bg-teal-500 text-slate-700 hover:bg-teal-400'">
                     {{ dialogState.confirmLabel }}
                 </button>
             </div>

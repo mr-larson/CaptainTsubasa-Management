@@ -164,7 +164,7 @@ const hasStarters = computed(() => sides.value.some(s => s.starters.length));
                                 <PlayerPhoto :src="playerPhotoUrl(r.p)" class="w-full h-full object-cover" alt="" />
                             </span>
                             <span class="font-semibold text-slate-700 truncate">{{ r.p.lastname }}</span>
-                            <span v-if="r.captain" class="shrink-0 px-1 rounded bg-amber-400 text-[9px] font-black text-slate-900" title="Capitaine">C</span>
+                            <span v-if="r.captain" class="shrink-0 px-1 rounded bg-amber-400 text-[9px] font-black text-slate-700" title="Capitaine">C</span>
                             <span v-if="r.motm" class="shrink-0" title="Homme du match">⭐</span>
                             <span class="shrink-0 text-[9px] font-bold text-slate-400">{{ { GK: 'GK', DEF: 'DEF', MID: 'MIL', ATT: 'ATT' }[r.group] ?? '' }}</span>
 

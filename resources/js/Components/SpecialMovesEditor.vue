@@ -49,7 +49,7 @@ function removeSpecialMove(index) {
 <template>
     <div>
         <div class="flex items-center justify-between mb-4">
-            <h2 class="text-lg font-semibold text-slate-800">
+            <h2 class="text-lg font-semibold text-slate-700">
                 Techniques spéciales
             </h2>
 
@@ -74,7 +74,7 @@ function removeSpecialMove(index) {
 
                 <!-- Header de la technique -->
                 <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-sm font-semibold text-slate-800">
+                    <h3 class="text-sm font-semibold text-slate-700">
                         Technique #{{ index + 1 }}
                         <span v-if="move.label" class="text-slate-500 font-normal">
                             — {{ move.label }}

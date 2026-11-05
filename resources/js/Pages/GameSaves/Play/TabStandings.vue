@@ -82,7 +82,7 @@ const rankIcon = (rank) => {
                         <span v-else class="text-xl">🏟️</span>
                     </div>
                     <div>
-                        <div class="text-sm font-bold text-slate-800">{{ team?.name }}</div>
+                        <div class="text-sm font-bold text-slate-700">{{ team?.name }}</div>
                         <div class="text-xs text-slate-400">
                             {{ myStanding.wins }}V · {{ myStanding.draws }}N · {{ myStanding.losses }}D
                         </div>
@@ -188,7 +188,7 @@ const rankIcon = (rank) => {
                             :class="(goalsFor(row) - goalsAgainst(row)) >= 0 ? 'text-emerald-600' : 'text-rose-500'">
                             {{ goalDiff(row) }}
                         </td>
-                        <td class="py-2 px-2 text-right font-black text-slate-800 text-sm">{{ row.points }}</td>
+                        <td class="py-2 px-2 text-right font-black text-slate-700 text-sm">{{ row.points }}</td>
 
                         <!-- Forme -->
                         <td class="py-2 pl-4">

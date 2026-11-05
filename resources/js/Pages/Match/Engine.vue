@@ -138,7 +138,7 @@
                             <!-- ⚠️ ID utilisé par engine.js -->
                             <button
                                 id="mode-one-player"
-                                class="rounded-full px-5 py-2 text-xs font-semibold shadow-sm bg-slate-100 border border-slate-200 text-slate-800 hover:bg-slate-200 active:translate-y-px"
+                                class="rounded-full px-5 py-2 text-xs font-semibold shadow-sm bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200 active:translate-y-px"
                             >
                                 Mode 2 joueurs
                             </button>
@@ -326,7 +326,7 @@
                                     <button id="dice-anim-toggle" type="button" class="dice-anim-toggle" title="Animation des dés : normale / rapide / désactivée"></button>
                                 </div>
                                 <div class="mt-2 flex items-center justify-between gap-2">
-                                    <div id="current-action-title" class="font-bold text-slate-900 truncate min-w-0">–</div>
+                                    <div id="current-action-title" class="font-bold text-slate-700 truncate min-w-0">–</div>
                                     <div id="duel-dice-display" class="dice-chip shrink-0"></div>
                                 </div>
                                 <div id="current-action-detail" class="text-slate-600">Les duels et détails apparaîtront ici.</div>
@@ -351,7 +351,7 @@
                 <!-- Mobile (< lg) : barre collée en bas de l'écran pour garder actions et terrain visibles ensemble. -->
                 <div id="bars-container" class="mt-4 flex flex-col gap-2.5 lg:mt-[30px] max-lg:sticky max-lg:bottom-0 max-lg:z-30 max-lg:pb-[env(safe-area-inset-bottom)]">
                     <div id="action-bar" class="mx-auto block w-full rounded-2xl border border-black/5 bg-white/85 p-3 shadow-[0_12px_22px_rgba(0,0,0,0.18)] max-lg:max-h-[45vh] max-lg:overflow-y-auto"></div>
-                    <div id="info-text" class="text-xs text-slate-900/75"></div>
+                    <div id="info-text" class="text-xs text-slate-700/75"></div>
                 </div>
 
             </div>

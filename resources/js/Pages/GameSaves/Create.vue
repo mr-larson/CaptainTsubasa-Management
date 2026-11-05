@@ -147,7 +147,7 @@ function submit() {
                     <div class="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <div>
                             <div class="text-xs font-bold text-teal-500 uppercase tracking-widest mb-1">Nouvelle sauvegarde</div>
-                            <h1 class="text-lg sm:text-xl font-bold text-slate-800">
+                            <h1 class="text-lg sm:text-xl font-bold text-slate-700">
                                 {{ showConfig ? 'Configuration avancée' : showRules ? 'Règles du jeu' : 'Création d\'une partie' }}
                             </h1>
                             <p class="text-xs text-slate-400 mt-1">
@@ -192,7 +192,7 @@ function submit() {
                                 type="text"
                                 v-model="form.label"
                                 placeholder="ex: Saison Nankatsu 1"
-                                class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-300 focus:border-teal-300 transition-all"
+                                class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-300 focus:border-teal-300 transition-all"
                             />
                             <p v-if="form.errors.label" class="text-xs text-rose-500">{{ form.errors.label }}</p>
                         </div>
@@ -273,7 +273,7 @@ function submit() {
                             <select
                                 id="period_package"
                                 v-model="form.period_package_id"
-                                class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-teal-300 focus:border-teal-300 transition-all"
+                                class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-teal-300 focus:border-teal-300 transition-all"
                             >
                                 <option :value="null">Collège (effectif standard)</option>
                                 <option v-for="pkg in availablePackages" :key="pkg.id" :value="pkg.id">
@@ -446,14 +446,14 @@ function submit() {
                                     <label class="text-[10px] text-slate-500">Coût stamina / match</label>
                                     <div class="flex items-center gap-2">
                                         <input type="range" v-model.number="config.match_stamina_cost" min="0" max="20" class="flex-1 h-1 accent-teal-500" />
-                                        <span class="text-xs font-bold text-slate-800 w-5 text-right">{{ config.match_stamina_cost }}</span>
+                                        <span class="text-xs font-bold text-slate-700 w-5 text-right">{{ config.match_stamina_cost }}</span>
                                     </div>
                                 </div>
                                 <div class="flex flex-col gap-1">
                                     <label class="text-[10px] text-slate-500">Récupération remplaçants</label>
                                     <div class="flex items-center gap-2">
                                         <input type="range" v-model.number="config.rest_stamina_recovery" min="0" max="30" class="flex-1 h-1 accent-teal-500" />
-                                        <span class="text-xs font-bold text-slate-800 w-5 text-right">{{ config.rest_stamina_recovery }}</span>
+                                        <span class="text-xs font-bold text-slate-700 w-5 text-right">{{ config.rest_stamina_recovery }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -468,7 +468,7 @@ function submit() {
                                 <label class="text-[10px] text-slate-500">Tours par match</label>
                                 <div class="flex items-center gap-2">
                                     <input type="range" v-model.number="config.match_max_turns" min="10" max="80" step="5" class="flex-1 h-1 accent-teal-500" />
-                                    <span class="text-xs font-bold text-slate-800 w-5 text-right">{{ config.match_max_turns }}</span>
+                                    <span class="text-xs font-bold text-slate-700 w-5 text-right">{{ config.match_max_turns }}</span>
                                 </div>
                             </div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -495,28 +495,28 @@ function submit() {
                                     <label class="text-[10px] text-slate-500">Sessions / sem.</label>
                                     <div class="flex items-center gap-1">
                                         <input type="range" v-model.number="config.training_max_per_week" min="1" max="10" class="flex-1 h-1 accent-teal-500" />
-                                        <span class="text-[10px] font-bold text-slate-800 w-3 text-right">{{ config.training_max_per_week }}</span>
+                                        <span class="text-[10px] font-bold text-slate-700 w-3 text-right">{{ config.training_max_per_week }}</span>
                                     </div>
                                 </div>
                                 <div class="flex flex-col gap-1">
                                     <label class="text-[10px] text-slate-500">Gain min</label>
                                     <div class="flex items-center gap-1">
                                         <input type="range" v-model.number="config.training_gain_min" min="0" max="10" class="flex-1 h-1 accent-teal-500" />
-                                        <span class="text-[10px] font-bold text-slate-800 w-3 text-right">{{ config.training_gain_min }}</span>
+                                        <span class="text-[10px] font-bold text-slate-700 w-3 text-right">{{ config.training_gain_min }}</span>
                                     </div>
                                 </div>
                                 <div class="flex flex-col gap-1">
                                     <label class="text-[10px] text-slate-500">Gain max</label>
                                     <div class="flex items-center gap-1">
                                         <input type="range" v-model.number="config.training_gain_max" min="1" max="20" class="flex-1 h-1 accent-teal-500" />
-                                        <span class="text-[10px] font-bold text-slate-800 w-3 text-right">{{ config.training_gain_max }}</span>
+                                        <span class="text-[10px] font-bold text-slate-700 w-3 text-right">{{ config.training_gain_max }}</span>
                                     </div>
                                 </div>
                                 <div class="flex flex-col gap-1">
                                     <label class="text-[10px] text-slate-500">Coût stamina</label>
                                     <div class="flex items-center gap-1">
                                         <input type="range" v-model.number="config.training_stamina_cost" min="0" max="15" class="flex-1 h-1 accent-teal-500" />
-                                        <span class="text-[10px] font-bold text-slate-800 w-3 text-right">{{ config.training_stamina_cost }}</span>
+                                        <span class="text-[10px] font-bold text-slate-700 w-3 text-right">{{ config.training_stamina_cost }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -525,14 +525,14 @@ function submit() {
                                     <label class="text-[10px] text-slate-500">Stamina min. requise</label>
                                     <div class="flex items-center gap-2">
                                         <input type="range" v-model.number="config.training_min_stamina" min="0" max="50" step="5" class="flex-1 h-1 accent-teal-500" />
-                                        <span class="text-xs font-bold text-slate-800 w-5 text-right">{{ config.training_min_stamina }}</span>
+                                        <span class="text-xs font-bold text-slate-700 w-5 text-right">{{ config.training_min_stamina }}</span>
                                     </div>
                                 </div>
                                 <div class="flex flex-col gap-1">
                                     <label class="text-[10px] text-slate-500">Coût / séance (€)</label>
                                     <div class="flex items-center gap-2">
                                         <input type="range" v-model.number="config.training_cost" min="0" max="2000" step="50" class="flex-1 h-1 accent-teal-500" />
-                                        <span class="text-xs font-bold text-slate-800 w-10 text-right">{{ config.training_cost }}</span>
+                                        <span class="text-xs font-bold text-slate-700 w-10 text-right">{{ config.training_cost }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -600,7 +600,7 @@ function submit() {
         <!-- Import inline d'une période : reste sur cet écran (redirect_to=create) -->
         <Modal :show="showImportModal" max-width="lg" @close="showImportModal = false">
             <div class="p-6">
-                <h3 class="text-lg font-bold text-slate-800 mb-1">Importer une période</h3>
+                <h3 class="text-lg font-bold text-slate-700 mb-1">Importer une période</h3>
                 <p class="text-xs text-slate-400 mb-4">
                     Dépose un fichier .zip au format attendu (voir « Exporter un modèle » pour un exemple à éditer).
                     Elle sera ajoutée à ta bibliothèque et immédiatement sélectionnable ci-dessus.

@@ -43,7 +43,7 @@ const sides = computed(() => [
                             <div v-if="!p.photo_path" class="w-full h-full flex items-center justify-center text-[10px] text-slate-400">?</div>
                         </div>
                         <div class="flex-1 min-w-0">
-                            <div class="text-xs font-bold text-slate-800 truncate">{{ p.lastname }}</div>
+                            <div class="text-xs font-bold text-slate-700 truncate">{{ p.lastname }}</div>
                             <div class="flex flex-wrap gap-1 mt-0.5">
                                 <span v-for="(detail, stat) in p.gains" :key="stat" :class="STAT_LABELS[stat]?.color"
                                       class="px-1.5 py-0.5 rounded text-[9px] font-bold inline-flex items-center gap-0.5"

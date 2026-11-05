@@ -99,7 +99,7 @@ function resetDefaults() {
                 <button v-for="sec in sections" :key="sec.key" type="button"
                         @click="activeSection = sec.key"
                         :class="['shrink-0 md:w-full text-left text-sm px-2 py-1 rounded whitespace-nowrap',
-                        activeSection === sec.key ? 'bg-teal-100 text-slate-900' : 'bg-white hover:bg-slate-100 text-slate-700']">
+                        activeSection === sec.key ? 'bg-teal-100 text-slate-700' : 'bg-white hover:bg-slate-100 text-slate-700']">
                     {{ sec.label }}
                 </button>
             </nav>
@@ -110,21 +110,21 @@ function resetDefaults() {
 
             <!-- Base de données -->
             <div v-if="activeSection === 'dataBase'" class="flex-1 flex flex-col gap-3">
-                <h3 class="text-lg font-semibold text-slate-800 mb-1">Base de données</h3>
+                <h3 class="text-lg font-semibold text-slate-700 mb-1">Base de données</h3>
                 <p class="text-sm text-slate-600 mb-2">Crée, édite et assigne des joueurs, contrats et équipes.</p>
 
                 <!-- Compteurs -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div class="border border-slate-200 rounded-xl bg-white p-3 flex flex-col items-center gap-1">
-                        <span class="text-2xl font-black text-slate-800">{{ stats.playersCount ?? '—' }}</span>
+                        <span class="text-2xl font-black text-slate-700">{{ stats.playersCount ?? '—' }}</span>
                         <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Joueurs</span>
                     </div>
                     <div class="border border-slate-200 rounded-xl bg-white p-3 flex flex-col items-center gap-1">
-                        <span class="text-2xl font-black text-slate-800">{{ stats.teamsCount ?? '—' }}</span>
+                        <span class="text-2xl font-black text-slate-700">{{ stats.teamsCount ?? '—' }}</span>
                         <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Équipes</span>
                     </div>
                     <div class="border border-slate-200 rounded-xl bg-white p-3 flex flex-col items-center gap-1">
-                        <span class="text-2xl font-black text-slate-800">{{ stats.activeContractsCount ?? '—' }}</span>
+                        <span class="text-2xl font-black text-slate-700">{{ stats.activeContractsCount ?? '—' }}</span>
                         <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Contrats actifs</span>
                     </div>
                     <button type="button"
@@ -133,7 +133,7 @@ function resetDefaults() {
                                 ? 'border-amber-200 bg-amber-50 hover:bg-amber-100'
                                 : 'border-slate-200 bg-white'"
                             @click="router.get(route('game-saves.players.index', { gameSave: gameSave.id }))">
-                        <span class="text-2xl font-black" :class="(stats.freePlayersCount ?? 0) > 0 ? 'text-amber-600' : 'text-slate-800'">
+                        <span class="text-2xl font-black" :class="(stats.freePlayersCount ?? 0) > 0 ? 'text-amber-600' : 'text-slate-700'">
                             {{ stats.freePlayersCount ?? '—' }}
                         </span>
                         <span class="text-[10px] font-bold uppercase tracking-wider"
@@ -178,7 +178,7 @@ function resetDefaults() {
 
             <!-- Profil -->
             <div v-else-if="activeSection === 'profil'" class="flex-1 flex flex-col gap-3">
-                <h3 class="text-lg font-semibold text-slate-800 mb-1">Mon profil</h3>
+                <h3 class="text-lg font-semibold text-slate-700 mb-1">Mon profil</h3>
                 <div class="border border-slate-200 rounded-lg bg-white p-3 flex flex-col gap-2">
                     <h4 class="text-sm font-semibold text-slate-700">Édition de mon profil</h4>
                     <p class="text-xs text-slate-500">Accéder aux informations de ton compte (nom, email, mot de passe…).</p>
@@ -192,7 +192,7 @@ function resetDefaults() {
             <!-- Règles & Objectif -->
             <div v-else-if="activeSection === 'rules'" class="flex-1 flex flex-col gap-3 overflow-y-auto pr-1">
                 <div>
-                    <h3 class="text-lg font-semibold text-slate-800 mb-1">Règles & Objectif</h3>
+                    <h3 class="text-lg font-semibold text-slate-700 mb-1">Règles & Objectif</h3>
                     <p class="text-sm text-slate-500">Comment fonctionne le jeu, les matchs, la draft et tes objectifs de carrière.</p>
                 </div>
                 <GameRules :career="career" />
@@ -202,7 +202,7 @@ function resetDefaults() {
             <div v-else-if="activeSection === 'config'" class="flex-1 flex flex-col gap-3 overflow-y-auto">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
-                        <h3 class="text-lg font-semibold text-slate-800">Configuration du jeu</h3>
+                        <h3 class="text-lg font-semibold text-slate-700">Configuration du jeu</h3>
                         <p class="text-sm text-slate-500">Paramètres appliqués à cette sauvegarde.</p>
                     </div>
                     <div class="flex items-center gap-2">
@@ -251,7 +251,7 @@ function resetDefaults() {
                                 <input type="range" v-model.number="config.match_stamina_cost"
                                        min="0" max="20" step="1"
                                        class="flex-1 h-1.5 accent-teal-500" />
-                                <span class="text-xs font-bold text-slate-800 w-6 text-right">{{ config.match_stamina_cost }}</span>
+                                <span class="text-xs font-bold text-slate-700 w-6 text-right">{{ config.match_stamina_cost }}</span>
                             </div>
                         </div>
                         <div class="flex flex-col gap-1">
@@ -260,7 +260,7 @@ function resetDefaults() {
                                 <input type="range" v-model.number="config.rest_stamina_recovery"
                                        min="0" max="30" step="1"
                                        class="flex-1 h-1.5 accent-teal-500" />
-                                <span class="text-xs font-bold text-slate-800 w-6 text-right">{{ config.rest_stamina_recovery }}</span>
+                                <span class="text-xs font-bold text-slate-700 w-6 text-right">{{ config.rest_stamina_recovery }}</span>
                             </div>
                         </div>
                     </div>
@@ -277,7 +277,7 @@ function resetDefaults() {
                             <input type="range" v-model.number="config.match_max_turns"
                                    min="10" max="80" step="5"
                                    class="flex-1 h-1.5 accent-teal-500" />
-                            <span class="text-xs font-bold text-slate-800 w-6 text-right">{{ config.match_max_turns }}</span>
+                            <span class="text-xs font-bold text-slate-700 w-6 text-right">{{ config.match_max_turns }}</span>
                         </div>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -306,7 +306,7 @@ function resetDefaults() {
                                 <input type="range" v-model.number="config.training_max_per_week"
                                        min="1" max="10" step="1"
                                        class="flex-1 h-1.5 accent-teal-500" />
-                                <span class="text-xs font-bold text-slate-800 w-4 text-right">{{ config.training_max_per_week }}</span>
+                                <span class="text-xs font-bold text-slate-700 w-4 text-right">{{ config.training_max_per_week }}</span>
                             </div>
                         </div>
                         <div class="flex flex-col gap-1">
@@ -315,7 +315,7 @@ function resetDefaults() {
                                 <input type="range" v-model.number="config.training_gain_min"
                                        min="0" max="10" step="1"
                                        class="flex-1 h-1.5 accent-teal-500" />
-                                <span class="text-xs font-bold text-slate-800 w-4 text-right">{{ config.training_gain_min }}</span>
+                                <span class="text-xs font-bold text-slate-700 w-4 text-right">{{ config.training_gain_min }}</span>
                             </div>
                         </div>
                         <div class="flex flex-col gap-1">
@@ -324,7 +324,7 @@ function resetDefaults() {
                                 <input type="range" v-model.number="config.training_gain_max"
                                        :min="Math.max(1, config.training_gain_min)" max="20" step="1"
                                        class="flex-1 h-1.5 accent-teal-500" />
-                                <span class="text-xs font-bold text-slate-800 w-4 text-right">{{ config.training_gain_max }}</span>
+                                <span class="text-xs font-bold text-slate-700 w-4 text-right">{{ config.training_gain_max }}</span>
                             </div>
                         </div>
                         <div class="flex flex-col gap-1">
@@ -333,7 +333,7 @@ function resetDefaults() {
                                 <input type="range" v-model.number="config.training_stamina_cost"
                                        min="0" max="15" step="1"
                                        class="flex-1 h-1.5 accent-teal-500" />
-                                <span class="text-xs font-bold text-slate-800 w-4 text-right">{{ config.training_stamina_cost }}</span>
+                                <span class="text-xs font-bold text-slate-700 w-4 text-right">{{ config.training_stamina_cost }}</span>
                             </div>
                         </div>
                     </div>
@@ -344,7 +344,7 @@ function resetDefaults() {
                                 <input type="range" v-model.number="config.training_min_stamina"
                                        min="0" max="50" step="5"
                                        class="flex-1 h-1.5 accent-teal-500" />
-                                <span class="text-xs font-bold text-slate-800 w-6 text-right">{{ config.training_min_stamina }}</span>
+                                <span class="text-xs font-bold text-slate-700 w-6 text-right">{{ config.training_min_stamina }}</span>
                             </div>
                         </div>
                         <div class="flex flex-col gap-1">
@@ -353,7 +353,7 @@ function resetDefaults() {
                                 <input type="range" v-model.number="config.training_cost"
                                        min="0" max="2000" step="50"
                                        class="flex-1 h-1.5 accent-teal-500" />
-                                <span class="text-xs font-bold text-slate-800 w-10 text-right">{{ config.training_cost }}</span>
+                                <span class="text-xs font-bold text-slate-700 w-10 text-right">{{ config.training_cost }}</span>
                             </div>
                         </div>
                     </div>

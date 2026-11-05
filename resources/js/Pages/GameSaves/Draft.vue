@@ -518,7 +518,7 @@ onMounted(() => {
                     <div class="text-xs font-bold text-amber-500 uppercase tracking-widest mb-1">
                         🎯 Draft — Saison {{ gameSave.season }}
                     </div>
-                    <h1 class="text-2xl font-black text-slate-800">
+                    <h1 class="text-2xl font-black text-slate-700">
                         Tour {{ draft?.round ?? 1 }} — Pick {{ (draft?.current_pick_index ?? 0) + 1 }} / {{ draft?.order?.length ?? 0 }}
                     </h1>
                     <p class="text-sm text-slate-400 mt-1">
@@ -532,7 +532,7 @@ onMounted(() => {
                 <!-- ══════ DRAFT TERMINÉ ══════ -->
                 <div v-if="draftCompleted" class="text-center py-16">
                     <div class="text-5xl mb-4">🏆</div>
-                    <h2 class="text-2xl font-black text-slate-800 mb-2">Draft terminé !</h2>
+                    <h2 class="text-2xl font-black text-slate-700 mb-2">Draft terminé !</h2>
                     <p class="text-sm text-slate-500 mb-2">
                         {{ pickLog.length }} joueurs ont été sélectionnés.
                         Ton équipe compte {{ myRosterCount }} joueurs.
@@ -648,7 +648,7 @@ onMounted(() => {
                                         Le draft de {{ currentTeam?.name ?? 'l\'IA' }} ne progresse plus.
                                     </span>
                                     <button type="button" @click="retryAiPicks"
-                                            class="px-4 py-1.5 rounded-full text-xs font-bold bg-slate-800 text-white hover:bg-slate-700">
+                                            class="px-4 py-1.5 rounded-full text-xs font-bold bg-slate-700 text-white hover:bg-slate-600">
                                         Réessayer
                                     </button>
                                 </div>
@@ -758,7 +758,7 @@ onMounted(() => {
                                                         <div v-else class="w-full h-full flex items-center justify-center text-[9px] text-slate-400">?</div>
                                                     </div>
                                                     <div class="min-w-0">
-                                                        <div class="font-semibold text-slate-800 truncate max-w-[120px] group-hover/name:text-amber-600 group-hover/name:underline">
+                                                        <div class="font-semibold text-slate-700 truncate max-w-[120px] group-hover/name:text-amber-600 group-hover/name:underline">
                                                             {{ player.lastname }}<span v-if="duoOf(player)" :title="duoTitle(player)" class="ml-1">🤝</span>
                                                         </div>
                                                         <div class="text-[9px] text-slate-400 truncate max-w-[120px]">{{ player.firstname }}</div>

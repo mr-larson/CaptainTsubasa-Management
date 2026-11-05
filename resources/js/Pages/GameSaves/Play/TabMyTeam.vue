@@ -345,20 +345,20 @@ const slotCandidates = (slot, slotDef) => substitutes.value
             <div class="md:col-span-4 border border-slate-200 rounded-xl bg-slate-50 p-4">
                 <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Club</h4>
                 <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-slate-600">
-                    <div class="flex justify-between"><span>Attaque moy.</span><span class="font-bold text-slate-800">{{ averageAttack }}</span></div>
+                    <div class="flex justify-between"><span>Attaque moy.</span><span class="font-bold text-slate-700">{{ averageAttack }}</span></div>
                     <div class="flex justify-between"><span>Blessés</span>
-                        <span class="font-bold" :class="injuriesCount > 0 ? 'text-rose-500' : 'text-slate-800'">{{ injuriesCount }}</span>
+                        <span class="font-bold" :class="injuriesCount > 0 ? 'text-rose-500' : 'text-slate-700'">{{ injuriesCount }}</span>
                     </div>
-                    <div class="flex justify-between"><span>Défense moy.</span><span class="font-bold text-slate-800">{{ averageDefense }}</span></div>
+                    <div class="flex justify-between"><span>Défense moy.</span><span class="font-bold text-slate-700">{{ averageDefense }}</span></div>
                     <div class="flex justify-between"><span>Suspensions</span>
-                        <span class="font-bold" :class="suspensionsCount > 0 ? 'text-amber-500' : 'text-slate-800'">{{ suspensionsCount }}</span>
+                        <span class="font-bold" :class="suspensionsCount > 0 ? 'text-amber-500' : 'text-slate-700'">{{ suspensionsCount }}</span>
                     </div>
-                    <div class="flex justify-between"><span>Stamina moy.</span><span class="font-bold text-slate-800">{{ averageStamina }}</span></div>
+                    <div class="flex justify-between"><span>Stamina moy.</span><span class="font-bold text-slate-700">{{ averageStamina }}</span></div>
                     <div class="flex justify-between"><span>Moral moy.</span>
                         <span class="font-bold" :class="moraleState(averageMorale).text">{{ moraleState(averageMorale).emoji }} {{ averageMorale }}</span>
                     </div>
                     <div class="flex justify-between"><span>Cartons</span>
-                        <span class="font-bold" :class="cardsCount > 0 ? 'text-yellow-500' : 'text-slate-800'">{{ cardsCount }}</span>
+                        <span class="font-bold" :class="cardsCount > 0 ? 'text-yellow-500' : 'text-slate-700'">{{ cardsCount }}</span>
                     </div>
                 </div>
             </div>
@@ -402,7 +402,7 @@ const slotCandidates = (slot, slotDef) => substitutes.value
                                 <!-- Prise en cours : un seul bouton pour annuler -->
                                 <button v-if="selectedIsPickedUp" type="button"
                                         @click.stop="emit('cancel-pickup')"
-                                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all bg-amber-400 text-slate-900 border-amber-500 hover:bg-amber-500"
+                                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all bg-amber-400 text-slate-700 border-amber-500 hover:bg-amber-500"
                                         title="Annuler (Échap)">
                                     ✕ Annuler le remplacement
                                 </button>
@@ -455,7 +455,7 @@ const slotCandidates = (slot, slotDef) => substitutes.value
                                     max="99"
                                     :value="selectedMyPlayer.number"
                                     @change="onNumberChange($event)"
-                                    class="w-14 border border-slate-300 rounded-lg px-2 py-1 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-teal-300 focus:outline-none"
+                                    class="w-14 border border-slate-300 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-teal-300 focus:outline-none"
                                 />
                             </div>
                             <!-- Résiliation -->
@@ -629,7 +629,7 @@ const slotCandidates = (slot, slotDef) => substitutes.value
         <Transition enter-from-class="opacity-0 translate-y-2" leave-to-class="opacity-0 translate-y-2"
                     enter-active-class="transition duration-200" leave-active-class="transition duration-200">
             <div v-if="lastChange" :key="lastChange.id"
-                 class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 pl-4 pr-1.5 py-1.5 rounded-full bg-slate-800 text-white text-xs font-semibold shadow-xl"
+                 class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 pl-4 pr-1.5 py-1.5 rounded-full bg-slate-700 text-white text-xs font-semibold shadow-xl"
                  @click.stop>
                 <span>✓ {{ lastChange.label }}</span>
                 <button type="button" @click="emit('undo')"

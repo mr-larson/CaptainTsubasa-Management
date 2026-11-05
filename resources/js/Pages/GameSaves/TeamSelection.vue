@@ -92,7 +92,7 @@
                                         <span v-else class="text-4xl">🏟️</span>
                                     </div>
                                     <div class="text-center">
-                                        <h2 class="text-lg font-black text-slate-800">{{ selectedTeam.name }}</h2>
+                                        <h2 class="text-lg font-black text-slate-700">{{ selectedTeam.name }}</h2>
                                         <p class="text-xs text-slate-400 mt-0.5">{{ selectedTeam.description ?? '—' }}</p>
                                         <div class="mt-2 flex justify-center">
                                             <TeamStyleBadges :team="selectedTeam" size="sm" />
@@ -266,7 +266,7 @@
                                                 </div>
                                                 <div class="flex-1 min-w-0">
                                                     <div class="flex items-center gap-1.5">
-                                                        <span class="text-xs font-bold text-slate-800 truncate">
+                                                        <span class="text-xs font-bold text-slate-700 truncate">
                                                             {{ player.firstname }} {{ player.lastname }}
                                                         </span>
                                                         <span class="shrink-0 px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wide"

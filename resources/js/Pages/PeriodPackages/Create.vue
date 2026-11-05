@@ -65,7 +65,7 @@ function submit() {
                         <div class="mt-1 flex items-center gap-3">
                             <input ref="zipInput" type="file" accept=".zip" class="hidden" @change="onZipChange" />
                             <button type="button"
-                                    class="shrink-0 px-3 py-1.5 rounded-l-full border border-gray-300 bg-stone-50 text-sm text-gray-900 hover:bg-white"
+                                    class="shrink-0 px-3 py-1.5 rounded-l-full border border-gray-300 bg-stone-50 text-sm text-slate-700 hover:bg-white"
                                     @click="openZipPicker">
                                 Choisir
                             </button>

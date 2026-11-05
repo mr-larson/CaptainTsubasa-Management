@@ -48,7 +48,7 @@ function launch() {
                 <div class="mb-6 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                     <div>
                         <div class="text-xs font-bold text-indigo-500 uppercase tracking-widest mb-1">Tournoi mondial</div>
-                        <h1 class="text-xl font-bold text-slate-800">{{ label || 'Nouvelle Coupe du Monde' }}</h1>
+                        <h1 class="text-xl font-bold text-slate-700">{{ label || 'Nouvelle Coupe du Monde' }}</h1>
                         <p class="text-xs text-slate-400 mt-1">
                             {{ playableCount }} sélection(s) prête(s) à concourir. Les nations grisées n'ont pas encore
                             assez de joueurs pour aligner un onze.

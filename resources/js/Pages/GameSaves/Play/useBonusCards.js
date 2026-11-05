@@ -84,7 +84,7 @@ export function useBonusCards({ gameSave, bonusCardOffers, bonusCardInventory })
     const tierBadge = (tier) => ({
         bronze: 'bg-amber-500 text-white',
         silver: 'bg-slate-400 text-white',
-        gold:   'bg-yellow-400 text-slate-900',
+        gold:   'bg-yellow-400 text-slate-700',
     }[tier] ?? 'bg-slate-200');
 
     const phaseLabel = (phase) => ({

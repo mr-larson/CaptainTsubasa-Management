@@ -27,7 +27,7 @@ const submit = () => {
     <GuestLayout>
         <Head title="Inscription" />
 
-        <h1 class="text-xl font-semibold text-slate-800 mb-1">
+        <h1 class="text-xl font-semibold text-slate-700 mb-1">
             Créer un compte
         </h1>
         <p class="text-xs text-slate-500 mb-4">

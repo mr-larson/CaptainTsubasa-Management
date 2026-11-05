@@ -57,7 +57,7 @@ const POSITION_LABELS = { Goalkeeper: 'Gardien', Defender: 'Défenseur', Midfiel
 const positionLabel = (position) => POSITION_LABELS[position] ?? position;
 
 // Boutons réutilisés sur la page. Zones tactiles d'au moins 44 px de haut.
-const btnPrimary   = 'inline-flex min-h-[44px] items-center justify-center rounded-full bg-teal-500 px-6 text-sm font-bold text-slate-900 transition-colors hover:bg-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 neon-btn';
+const btnPrimary   = 'inline-flex min-h-[44px] items-center justify-center rounded-full bg-teal-500 px-6 text-sm font-bold text-slate-700 transition-colors hover:bg-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 neon-btn';
 const btnSecondary = 'inline-flex min-h-[44px] items-center justify-center rounded-full border border-white/15 bg-white/5 px-6 text-sm font-medium text-slate-100 transition-colors hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-300 neon-btn neon-btn--ghost';
 
 const steps = [
@@ -149,7 +149,7 @@ const faq = [
             <!-- Visuel : une vraie capture de match si elle existe, sinon le personnage (décoratif) -->
             <!-- Premier plan HD-2D : le personnage en sprite pixel art devant la capture (grand écran) -->
             <div v-if="screenshots.match" class="relative">
-                <figure v-pixel-reveal class="neon-screen overflow-hidden rounded-2xl border border-white/10 bg-slate-800 shadow-2xl">
+                <figure v-pixel-reveal class="neon-screen overflow-hidden rounded-2xl border border-white/10 bg-slate-700 shadow-2xl">
                     <img :src="screenshots.match"
                          alt="Écran de match : terrain, cartes d'action (tir, passe, dribble, centre) et détail d'un duel avec les jets de dés"
                          class="block w-full" width="1690" height="994" />
@@ -176,13 +176,13 @@ const faq = [
             <p v-pixel-reveal class="mb-8 max-w-[640px] text-slate-300">Chaque semaine de jeu suit la même boucle : préparer, jouer, s'adapter.</p>
             <ol class="grid gap-4 md:grid-cols-3">
                 <li v-for="(s, i) in steps" :key="s.n" v-pixel-reveal v-parallax="STEP_DEPTH[i % 3]" class="neon-card rounded-xl border border-white/10 bg-white/5 p-6">
-                    <div class="mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-teal-500 text-sm font-black text-slate-900 neon-dot">{{ s.n }}</div>
+                    <div class="mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-teal-500 text-sm font-black text-slate-700 neon-dot">{{ s.n }}</div>
                     <h3 class="mb-1.5 text-base font-semibold text-slate-50">{{ s.title }}</h3>
                     <p class="text-sm leading-6 text-slate-300">{{ s.desc }}</p>
                 </li>
             </ol>
 
-            <figure v-if="screenshots.dashboard" v-pixel-reveal v-parallax="{ y: -0.03, max: 26 }" class="neon-screen mt-8 overflow-hidden rounded-2xl border border-white/10 bg-slate-800 shadow-2xl">
+            <figure v-if="screenshots.dashboard" v-pixel-reveal v-parallax="{ y: -0.03, max: 26 }" class="neon-screen mt-8 overflow-hidden rounded-2xl border border-white/10 bg-slate-700 shadow-2xl">
                 <img :src="screenshots.dashboard"
                      alt="Tableau de bord d'une partie : classement, bilan, budget, effectif et prochain adversaire"
                      class="block w-full" width="1692" height="880" loading="lazy" decoding="async" />

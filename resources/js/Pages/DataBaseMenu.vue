@@ -41,7 +41,7 @@ const visibleSections = computed(() => sections.filter(s => !s.admin || isAdmin.
                         <!-- Titre -->
                         <div>
                             <div class="text-xs font-bold text-teal-500 uppercase tracking-widest mb-2">Administration</div>
-                            <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-800 leading-tight">
+                            <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-700 leading-tight">
                                 Éditer les<br><span class="text-teal-500">données</span>
                             </h1>
                             <p class="text-slate-400 text-sm mt-2">Gère les équipes, joueurs et contrats de la base.</p>

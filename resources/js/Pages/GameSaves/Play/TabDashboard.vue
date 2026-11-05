@@ -220,7 +220,7 @@ const matchesPlayed = computed(() =>
                         <span v-else class="w-full h-full flex items-center justify-center text-lg">🏟️</span>
                     </div>
                     <div>
-                        <div class="text-sm font-bold text-slate-800">{{ team?.name ?? '—' }}</div>
+                        <div class="text-sm font-bold text-slate-700">{{ team?.name ?? '—' }}</div>
                         <div class="text-xs text-slate-400 mb-1">{{ periodLabel(gameSave.period) }}</div>
                         <TeamStyleBadges :team="team" size="sm" />
                     </div>
@@ -400,7 +400,7 @@ const matchesPlayed = computed(() =>
                             <img v-if="teamLogoUrl(team)" :src="teamLogoUrl(team)" class="w-full h-full object-contain" alt=""/>
                             <span v-else class="text-2xl">🏟️</span>
                         </div>
-                        <div class="text-sm font-bold text-slate-800 text-center">{{ team?.name ?? '—' }}</div>
+                        <div class="text-sm font-bold text-slate-700 text-center">{{ team?.name ?? '—' }}</div>
                         <div class="text-[10px] text-slate-400">{{ clubStanding ? `${clubStanding.position}e au classement` : '' }}</div>
                     </div>
 
@@ -427,7 +427,7 @@ const matchesPlayed = computed(() =>
                             <img v-if="teamLogoUrl(opponentTeam)" :src="teamLogoUrl(opponentTeam)" class="w-full h-full object-contain" alt=""/>
                             <span v-else class="text-2xl">⚽</span>
                         </div>
-                        <div class="text-sm font-bold text-slate-800 text-center">{{ nextMatchInfo.opponentName }}</div>
+                        <div class="text-sm font-bold text-slate-700 text-center">{{ nextMatchInfo.opponentName }}</div>
                         <div class="text-[10px] text-slate-400">
                             {{ standings.findIndex(r => r.id === opponentTeam?.id) + 1 > 0
                             ? `${standings.findIndex(r => r.id === opponentTeam?.id) + 1}e au classement`

@@ -72,7 +72,7 @@ onBeforeUnmount(() => revokePreview());
             <div class="flex items-center w-full md:w-56">
                 <button
                     type="button"
-                    class="shrink-0 px-3 py-1.5 rounded-l-full border border-gray-300 bg-stone-50 text-sm text-gray-900 hover:bg-white focus:outline-none focus:border-slate-700"
+                    class="shrink-0 px-3 py-1.5 rounded-l-full border border-gray-300 bg-stone-50 text-sm text-slate-700 hover:bg-white focus:outline-none focus:border-slate-700"
                     @click="openPicker"
                 >
                     Choisir

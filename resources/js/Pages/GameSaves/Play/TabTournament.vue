@@ -33,7 +33,7 @@ function score(match) {
         <div class="flex items-center justify-between gap-4">
             <div>
                 <div class="text-xs font-bold text-indigo-500 uppercase tracking-widest">Coupe du Monde</div>
-                <div class="text-lg font-bold text-slate-800">{{ stageLabel }}</div>
+                <div class="text-lg font-bold text-slate-700">{{ stageLabel }}</div>
             </div>
             <div v-if="tournament.champion"
                  class="flex items-center gap-3 px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-100 to-yellow-50 border border-amber-300">
@@ -82,7 +82,7 @@ function score(match) {
                             <td class="text-center text-slate-500 px-1.5">{{ row.draws }}</td>
                             <td class="text-center text-slate-500 px-1.5">{{ row.losses }}</td>
                             <td class="text-center text-slate-500 px-1.5">{{ row.gd > 0 ? '+' : '' }}{{ row.gd }}</td>
-                            <td class="text-center font-bold text-slate-800 px-1.5 pr-4">{{ row.points }}</td>
+                            <td class="text-center font-bold text-slate-700 px-1.5 pr-4">{{ row.points }}</td>
                         </tr>
                     </tbody>
                 </table>

@@ -190,7 +190,7 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
                     </div>
                     <select :value="calendarTeam.id" @change="onTeamChange($event.target.value)"
                             aria-label="Équipe affichée"
-                            class="flex-1 min-w-0 border border-slate-300 rounded-lg px-2 py-1.5 text-sm font-semibold bg-white text-slate-800 focus:ring-2 focus:ring-teal-300 focus:outline-none cursor-pointer">
+                            class="flex-1 min-w-0 border border-slate-300 rounded-lg px-2 py-1.5 text-sm font-semibold bg-white text-slate-700 focus:ring-2 focus:ring-teal-300 focus:outline-none cursor-pointer">
                         <option v-for="t in calendarTeams" :key="t.id" :value="t.id">
                             {{ t.name }}{{ Number(t.id) === Number(myTeamId) ? ' (mon équipe)' : '' }}
                         </option>
@@ -326,7 +326,7 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
                                 <img v-if="teamLogoUrl(teamById[m.home_team_id])" :src="teamLogoUrl(teamById[m.home_team_id])" class="w-5 h-5 object-contain shrink-0" alt=""/>
                             </div>
                             <div class="text-center min-w-[64px]">
-                                <span v-if="m.status === 'played'" class="px-2 py-0.5 rounded bg-slate-800 text-white text-xs font-black tabular-nums">
+                                <span v-if="m.status === 'played'" class="px-2 py-0.5 rounded bg-slate-700 text-white text-xs font-black tabular-nums">
                                     {{ m.home_score }} - {{ m.away_score }}
                                 </span>
                                 <span v-else class="text-[11px] text-slate-400 font-semibold">vs</span>
@@ -386,7 +386,7 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
                                 </span>
                             </span>
                             <span class="text-right shrink-0">
-                                <span class="block text-sm font-black text-slate-800 tabular-nums">{{ r.value }}</span>
+                                <span class="block text-sm font-black text-slate-700 tabular-nums">{{ r.value }}</span>
                                 <span class="block text-[10px] text-slate-400">
                                     {{ leaderUnit(r.value) }}<template v-if="leaderTab === 'duels' && r.detail"> · {{ r.detail }}</template>
                                 </span>

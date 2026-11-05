@@ -60,16 +60,16 @@ const difficultyLabel = {
                 <!-- Chiffres clés -->
                 <div class="grid grid-cols-3 gap-3">
                     <div class="bg-white rounded-2xl shadow p-4 text-center">
-                        <p class="text-3xl font-black text-slate-800">{{ career.titles_won }}</p>
+                        <p class="text-3xl font-black text-slate-700">{{ career.titles_won }}</p>
                         <p class="text-xs text-slate-400 uppercase tracking-wider mt-1">Titres</p>
                     </div>
                     <div class="bg-white rounded-2xl shadow p-4 text-center">
-                        <p class="text-3xl font-black text-slate-800">{{ career.history.length }}</p>
+                        <p class="text-3xl font-black text-slate-700">{{ career.history.length }}</p>
                         <p class="text-xs text-slate-400 uppercase tracking-wider mt-1">Saisons</p>
                     </div>
                     <div class="bg-white rounded-2xl shadow p-4 text-center">
                         <p class="text-3xl font-black"
-                           :class="career.confidence <= 25 ? 'text-rose-500' : 'text-slate-800'">
+                           :class="career.confidence <= 25 ? 'text-rose-500' : 'text-slate-700'">
                             {{ career.confidence }}
                         </p>
                         <p class="text-xs text-slate-400 uppercase tracking-wider mt-1">Confiance</p>

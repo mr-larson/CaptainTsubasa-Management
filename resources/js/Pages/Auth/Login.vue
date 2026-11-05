@@ -36,7 +36,7 @@ const submit = () => {
     <GuestLayout>
         <Head title="Connexion" />
 
-        <h1 class="text-xl font-semibold text-slate-800 mb-1">
+        <h1 class="text-xl font-semibold text-slate-700 mb-1">
             Connexion
         </h1>
         <p class="text-xs text-slate-500 mb-4">

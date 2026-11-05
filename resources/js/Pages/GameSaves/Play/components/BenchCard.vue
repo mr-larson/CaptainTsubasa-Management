@@ -77,9 +77,9 @@ const staminaBar = (v) => v >= 60 ? 'bg-emerald-400' : v >= 30 ? 'bg-amber-400' 
                         </div>
                         <div class="mt-0.5 px-1 rounded text-[9px] font-semibold leading-tight text-center max-w-[56px] truncate pointer-events-none"
                              :class="isPickedUp(p)
-                                ? 'bg-amber-300 text-slate-900'
+                                ? 'bg-amber-300 text-slate-700'
                                 : selectedId === p.id
-                                    ? 'bg-teal-300 text-slate-900'
+                                    ? 'bg-teal-300 text-slate-700'
                                     : 'bg-slate-300 text-slate-700'">
                             {{ p.lastname }}
                         </div>

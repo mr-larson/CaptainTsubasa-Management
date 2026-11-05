@@ -330,7 +330,7 @@ const filteredHistory = computed(() =>
                         <!-- Infos -->
                         <div class="flex-1 min-w-0">
                             <div class="text-xs font-semibold truncate"
-                                 :class="selectedPlayer?.id === p.id ? 'text-white' : 'text-slate-800'">
+                                 :class="selectedPlayer?.id === p.id ? 'text-white' : 'text-slate-700'">
                                 {{ p.lastname }} {{ p.firstname }}
                             </div>
                             <div class="text-[10px] truncate"
@@ -427,7 +427,7 @@ const filteredHistory = computed(() =>
                                 <div v-if="!playerPhotoUrl(selectedPlayer)" class="w-full h-full flex items-center justify-center text-3xl text-slate-200">👤</div>
                             </div>
                             <div class="absolute -top-2 -right-2 w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-[11px] font-black shadow"
-                                 :class="overallOf(selectedPlayer)>=70?'bg-emerald-500 text-white':overallOf(selectedPlayer)>=50?'bg-amber-400 text-slate-900':'bg-slate-400 text-white'">
+                                 :class="overallOf(selectedPlayer)>=70?'bg-emerald-500 text-white':overallOf(selectedPlayer)>=50?'bg-amber-400 text-slate-700':'bg-slate-400 text-white'">
                                 {{ overallOf(selectedPlayer) }}
                             </div>
                             <span v-if="nationalityFlag(selectedPlayer)"
@@ -437,7 +437,7 @@ const filteredHistory = computed(() =>
                             </span>
                         </div>
                         <div class="flex-1">
-                            <h3 class="text-base font-bold text-slate-800">{{ selectedPlayer.firstname }} {{ selectedPlayer.lastname }}</h3>
+                            <h3 class="text-base font-bold text-slate-700">{{ selectedPlayer.firstname }} {{ selectedPlayer.lastname }}</h3>
                             <p class="text-xs text-slate-400 mt-0.5">{{ selectedPlayer.position }} • Coût de base : {{ selectedPlayer.cost ?? 0 }} €/match</p>
                             <span class="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold"
                                   :class="moraleState(selectedPlayer.morale).chip"
@@ -606,7 +606,7 @@ const filteredHistory = computed(() =>
                                         <div v-if="!playerPhotoUrl(p)" class="w-full h-full flex items-center justify-center text-[9px] text-slate-400">?</div>
                                     </div>
                                     <div class="text-left leading-tight">
-                                        <div class="text-slate-800">{{ p.lastname }}</div>
+                                        <div class="text-slate-700">{{ p.lastname }}</div>
                                         <div class="text-[9px] text-slate-400 font-normal">{{ p.position }}</div>
                                     </div>
                                     <button type="button" @click="toggleCompare(p)"

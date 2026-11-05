@@ -412,7 +412,7 @@ const saveGame = () => {
 
                     <!-- Onglets -->
                     <div class="mb-4 border-b border-slate-200 shrink-0">
-                        <nav class="-mb-px flex space-x-2 overflow-x-auto" role="tablist" aria-label="Sections de la partie"
+                        <nav class="-mb-px flex space-x-1 overflow-x-auto" role="tablist" aria-label="Sections de la partie"
                              @keydown.right.prevent="focusSiblingTab(1)" @keydown.left.prevent="focusSiblingTab(-1)">
                             <button v-for="tab in tabs" :key="tab.key" type="button"
                                     role="tab"
@@ -420,9 +420,9 @@ const saveGame = () => {
                                     :tabindex="activeTab === tab.key ? 0 : -1"
                                     :data-tab="tab.key"
                                     @click="activeTab = tab.key"
-                                    :class="['whitespace-nowrap py-2 px-4 text-sm font-medium border-b-2 rounded-t-md',
+                                    :class="['whitespace-nowrap py-2 px-3 text-sm font-medium border-b-2 rounded-t-md',
                                     activeTab === tab.key
-                                        ? 'border-teal-500 text-slate-900 bg-slate-50'
+                                        ? 'border-teal-500 text-slate-700 bg-slate-50'
                                         : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300']">
                                 {{ tab.label }}
                             </button>

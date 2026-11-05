@@ -86,7 +86,7 @@
                 <!-- CONTRAT -->
                 <div v-show="activePanel === 'contract'" class="bg-white border border-slate-200 rounded-xl p-4 sm:p-6 shadow-sm">
                     <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-lg font-semibold text-slate-800">Contrat</h2>
+                        <h2 class="text-lg font-semibold text-slate-700">Contrat</h2>
                         <button v-if="!contract" type="button" @click="startNewContract"
                                 class="flex items-center justify-center h-9 px-3 rounded-full bg-teal-500 text-white text-sm font-medium hover:bg-teal-600 shadow-md">
                             + Ajouter
@@ -188,7 +188,7 @@ const photoPath = ref(null)
 // Contrat édité : copie locale, enregistrée par ses propres routes.
 const contract = ref(null)
 const contractProcessing = ref(false)
-const fieldClass = 'mt-1 block w-full text-sm text-slate-900 bg-white border border-slate-300 rounded-full px-3 py-1.5 focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200'
+const fieldClass = 'mt-1 block w-full text-sm text-slate-700 bg-white border border-slate-300 rounded-full px-3 py-1.5 focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200'
 
 const activePanel = ref('player')
 

@@ -384,7 +384,7 @@ onUnmounted(() => clearTimer());
                 <img v-if="homeLogo" :src="homeLogo" class="w-5 h-5 object-contain shrink-0" alt=""/>
                 <span class="text-xs font-black text-slate-700 truncate">{{ homeName }}</span>
             </div>
-            <div class="px-3 py-1 rounded-lg bg-slate-800 text-white font-black text-sm tabular-nums shrink-0">
+            <div class="px-3 py-1 rounded-lg bg-slate-700 text-white font-black text-sm tabular-nums shrink-0">
                 {{ liveScore.home }} - {{ liveScore.away }}
                 <span v-if="isFinished" class="ml-1 text-[9px] font-normal text-slate-400">(final {{ finalHomeScore }}-{{ finalAwayScore }})</span>
             </div>
@@ -430,7 +430,7 @@ onUnmounted(() => clearTimer());
                     </div>
                     <div v-if="p.isActor"
                          class="mt-0.5 px-1 rounded text-[7px] font-bold leading-tight whitespace-nowrap"
-                         :class="p.actorRole === 'attacker' ? 'bg-amber-300 text-slate-900' : 'bg-white/90 text-slate-700'">
+                         :class="p.actorRole === 'attacker' ? 'bg-amber-300 text-slate-700' : 'bg-white/90 text-slate-700'">
                         {{ p.lastname }}
                     </div>
                 </div>
@@ -522,7 +522,7 @@ onUnmounted(() => clearTimer());
                     title="But suivant">⚽ ⏭</button>
             <button type="button" @click="highlightsOnly = !highlightsOnly"
                     class="px-2 h-8 rounded-full flex items-center justify-center text-[11px] font-bold transition-all"
-                    :class="highlightsOnly ? 'bg-amber-400 text-slate-900' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'"
+                    :class="highlightsOnly ? 'bg-amber-400 text-slate-700' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'"
                     :title="`Lecture des seuls temps forts (${keySteps.length} actions : buts, tirs, gestes spéciaux, cartons)`">
                 🔥 Temps forts
             </button>

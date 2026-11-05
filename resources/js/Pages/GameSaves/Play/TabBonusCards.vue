@@ -97,7 +97,7 @@ const targetMeta = (card, player) => {
 const tierClasses = (tier) => ({
     bronze: { border: 'border-amber-300', bg: 'bg-amber-50',   badge: 'bg-amber-500 text-white',      label: 'Bronze', glow: 'shadow-amber-100' },
     silver: { border: 'border-slate-300', bg: 'bg-slate-50',   badge: 'bg-slate-400 text-white',      label: 'Argent', glow: 'shadow-slate-100' },
-    gold:   { border: 'border-yellow-300',bg: 'bg-yellow-50',  badge: 'bg-yellow-400 text-slate-900', label: 'Or',     glow: 'shadow-yellow-100' },
+    gold:   { border: 'border-yellow-300',bg: 'bg-yellow-50',  badge: 'bg-yellow-400 text-slate-700', label: 'Or',     glow: 'shadow-yellow-100' },
 }[tier] ?? { border: 'border-slate-200', bg: 'bg-white', badge: 'bg-slate-200', label: '?', glow: '' });
 
 const phaseLabel = (phase) => ({
@@ -319,7 +319,7 @@ const canConfirm = computed(() => {
                                 <div class="flex items-center gap-2">
                                     <span class="text-3xl">{{ offer.icon }}</span>
                                     <div>
-                                        <div class="text-sm font-black text-slate-800">{{ offer.name }}</div>
+                                        <div class="text-sm font-black text-slate-700">{{ offer.name }}</div>
                                         <div class="flex items-center gap-1 mt-0.5">
                                             <span class="text-[10px] font-bold px-2 py-0.5 rounded-full"
                                                   :class="tierClasses(offer.tier).badge">
@@ -408,7 +408,7 @@ const canConfirm = computed(() => {
                                 <div class="flex items-center gap-2">
                                     <span class="text-2xl">{{ card.icon }}</span>
                                     <div class="flex-1 min-w-0">
-                                        <div class="text-xs font-black text-slate-800 truncate">{{ card.name }}</div>
+                                        <div class="text-xs font-black text-slate-700 truncate">{{ card.name }}</div>
                                         <div class="flex items-center gap-1 mt-0.5">
                                             <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
                                                   :class="tierClasses(card.tier).badge">
@@ -481,7 +481,7 @@ const canConfirm = computed(() => {
                         <div class="flex items-center gap-3">
                             <span class="text-4xl">{{ selectedCard.icon }}</span>
                             <div>
-                                <h3 class="font-black text-slate-800">{{ selectedCard.name }}</h3>
+                                <h3 class="font-black text-slate-700">{{ selectedCard.name }}</h3>
                                 <span class="text-[11px] font-bold px-2 py-0.5 rounded-full"
                                       :class="tierClasses(selectedCard.tier).badge">
                                     {{ tierClasses(selectedCard.tier).label }}

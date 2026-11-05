@@ -70,7 +70,7 @@ export class LogEntry {
             <div class="flex min-w-0 flex-1 items-start gap-1.5">
                 <span class="log-icon mt-px shrink-0 text-[13px] leading-none">${this._cfg.icon}</span>
                 <div class="flex min-w-0 flex-1 flex-col gap-px">
-                    <div class="flex flex-wrap items-baseline gap-1 font-semibold text-slate-900"><span>${this.mainText}</span>${dice}</div>
+                    <div class="flex flex-wrap items-baseline gap-1 font-semibold text-slate-700"><span>${this.mainText}</span>${dice}</div>
                     ${detail}
                 </div>
             </div>

@@ -37,7 +37,7 @@ function startNewSeason() {
 
                 <div class="text-center py-6">
                     <p class="text-sm uppercase tracking-widest text-slate-400">Fin de la saison {{ recap?.season ?? gameSave.season }}</p>
-                    <h1 class="text-3xl font-bold text-slate-800 mt-1">Bilan de la saison</h1>
+                    <h1 class="text-3xl font-bold text-slate-700 mt-1">Bilan de la saison</h1>
                 </div>
 
                 <!-- Verdict de la direction -->
@@ -55,7 +55,7 @@ function startNewSeason() {
                                    : verdict.met ? 'text-teal-600' : 'text-amber-600'">
                                 Verdict de la direction
                             </p>
-                            <h3 class="text-lg font-bold text-slate-800 mt-1">
+                            <h3 class="text-lg font-bold text-slate-700 mt-1">
                                 <template v-if="verdict.outcome === 'won'">🏆 Mission accomplie — {{ verdict.titles_won }} titre(s) !</template>
                                 <template v-else-if="verdict.outcome === 'fired'">📉 La direction met fin à ton mandat</template>
                                 <template v-else-if="verdict.met">✅ Objectif atteint</template>
@@ -94,7 +94,7 @@ function startNewSeason() {
                     <PlayerPhoto :src="recap.mvp.photo_path ? `/storage/${recap.mvp.photo_path}` : null" class="w-16 h-16 rounded-full object-cover bg-slate-100" />
                     <div>
                         <p class="text-xs uppercase tracking-widest text-slate-400">MVP de la saison</p>
-                        <h3 class="text-xl font-bold text-slate-800">{{ recap.mvp.name }}</h3>
+                        <h3 class="text-xl font-bold text-slate-700">{{ recap.mvp.name }}</h3>
                         <p class="text-sm text-slate-500">
                             {{ recap.mvp.team_name }} · {{ recap.mvp.position }} ·
                             {{ recap.mvp.goals }} but(s)
@@ -183,7 +183,7 @@ function startNewSeason() {
                         @click="startNewSeason"
                         :disabled="isStarting"
                         class="px-8 py-3 rounded-xl text-white font-semibold shadow-lg transition disabled:opacity-50"
-                        :class="isGameOver ? 'bg-slate-700 hover:bg-slate-800' : 'bg-emerald-600 hover:bg-emerald-700'"
+                        :class="isGameOver ? 'bg-slate-700 hover:bg-slate-600' : 'bg-emerald-600 hover:bg-emerald-700'"
                     >
                         <template v-if="isStarting">Préparation…</template>
                         <template v-else-if="isGameOver">Voir le bilan de carrière →</template>

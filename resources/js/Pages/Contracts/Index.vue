@@ -143,7 +143,7 @@ const BLANK = {
 };
 
 const form = useForm(clone(BLANK));
-const fieldClass = 'mt-1 block w-full text-sm text-slate-900 bg-white border border-slate-300 rounded-full px-3 py-1.5 focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200';
+const fieldClass = 'mt-1 block w-full text-sm text-slate-700 bg-white border border-slate-300 rounded-full px-3 py-1.5 focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200';
 
 const remaining = computed(() => Math.max(0, Number(form.matches_total || 0) - Number(form.matches_played || 0)));
 

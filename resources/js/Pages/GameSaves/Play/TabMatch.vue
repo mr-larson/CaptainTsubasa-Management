@@ -538,7 +538,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
             </div>
             <select :value="calendarTeam.id" @change="onTeamChange($event.target.value)"
                     aria-label="Équipe suivie"
-                    class="min-w-[220px] border border-slate-300 rounded-lg pl-3 pr-9 py-1.5 text-sm font-semibold bg-white text-slate-800 focus:ring-2 focus:ring-teal-300 focus:outline-none cursor-pointer">
+                    class="min-w-[220px] border border-slate-300 rounded-lg pl-3 pr-9 py-1.5 text-sm font-semibold bg-white text-slate-700 focus:ring-2 focus:ring-teal-300 focus:outline-none cursor-pointer">
                 <option v-for="t in calendarTeams" :key="t.id" :value="t.id">
                     {{ t.name }}{{ Number(t.id) === Number(myTeamId) ? ' (mon équipe)' : '' }}
                 </option>
@@ -550,7 +550,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                         title="Match précédent">◀</button>
                 <select :value="selectedCalendarMatch?.id ?? ''" @change="onJump($event.target.value)"
                         aria-label="Aller au match"
-                        class="min-w-[260px] border border-slate-300 rounded-lg pl-3 pr-9 py-1.5 text-sm font-semibold bg-white text-slate-800 focus:ring-2 focus:ring-teal-300 focus:outline-none cursor-pointer">
+                        class="min-w-[260px] border border-slate-300 rounded-lg pl-3 pr-9 py-1.5 text-sm font-semibold bg-white text-slate-700 focus:ring-2 focus:ring-teal-300 focus:outline-none cursor-pointer">
                     <option v-if="!selectedCalendarMatch" value="" disabled>Choisir un match</option>
                     <option v-for="m in playedMatches" :key="m.id" :value="m.id">{{ navLabel(m) }}</option>
                 </select>
@@ -579,7 +579,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
 
                     <!-- Score + bouton replay -->
                     <div class="text-center shrink-0">
-                        <div class="text-3xl font-black text-slate-800">
+                        <div class="text-3xl font-black text-slate-700">
                             {{ selectedCalendarMatch.home_score }}
                             <span class="text-slate-300 mx-1">-</span>
                             {{ selectedCalendarMatch.away_score }}
@@ -637,7 +637,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
 
                 <div class="mt-3 flex justify-center gap-2">
                     <button type="button" @click="showReplay = true"
-                            class="flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-bold bg-slate-800 text-white hover:bg-slate-700 transition-all">
+                            class="flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-bold bg-slate-700 text-white hover:bg-slate-600 transition-all">
                         ▶ Revoir le match
                     </button>
                     <button v-if="selectedCalendarEvents.length" type="button" @click="scrollToLog"
@@ -768,7 +768,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                             <div class="font-semibold text-slate-700 flex items-center gap-1.5 flex-wrap">
                                 <span>{{ ev.text }}</span>
                                 <span v-if="ev.score"
-                                      class="px-1.5 py-0.5 rounded bg-slate-800 text-white text-[10px] font-black tabular-nums">
+                                      class="px-1.5 py-0.5 rounded bg-slate-700 text-white text-[10px] font-black tabular-nums">
                                     {{ ev.score }}
                                 </span>
                             </div>
@@ -862,7 +862,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
             <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden">
 
                 <!-- Header -->
-                <div class="p-4 bg-slate-800 text-white flex flex-wrap items-center justify-between gap-2 shrink-0">
+                <div class="p-4 bg-slate-700 text-white flex flex-wrap items-center justify-between gap-2 shrink-0">
                     <div class="flex items-center gap-3">
                         <span class="text-lg">▶</span>
                         <div>
@@ -968,16 +968,16 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                     <!-- Stats équipe résumé -->
                     <div class="mt-4 pt-4 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-4 text-center text-xs">
                         <div class="flex justify-around text-slate-500">
-                            <div><div class="font-black text-slate-800">{{ selectedCalendarMatchStats?.teams?.home?.shots ?? 0 }}</div><div>Tirs</div></div>
-                            <div><div class="font-black text-slate-800">{{ selectedCalendarMatchStats?.teams?.home?.passes ?? 0 }}</div><div>Passes</div></div>
-                            <div><div class="font-black text-slate-800">{{ teamSaves('home') }}</div><div>Arrêts</div></div>
-                            <div><div class="font-black text-slate-800">{{ selectedCalendarMatchStats?.teams?.home?.duelsWon ?? 0 }}</div><div>D+</div></div>
+                            <div><div class="font-black text-slate-700">{{ selectedCalendarMatchStats?.teams?.home?.shots ?? 0 }}</div><div>Tirs</div></div>
+                            <div><div class="font-black text-slate-700">{{ selectedCalendarMatchStats?.teams?.home?.passes ?? 0 }}</div><div>Passes</div></div>
+                            <div><div class="font-black text-slate-700">{{ teamSaves('home') }}</div><div>Arrêts</div></div>
+                            <div><div class="font-black text-slate-700">{{ selectedCalendarMatchStats?.teams?.home?.duelsWon ?? 0 }}</div><div>D+</div></div>
                         </div>
                         <div class="flex justify-around text-slate-500">
-                            <div><div class="font-black text-slate-800">{{ selectedCalendarMatchStats?.teams?.away?.shots ?? 0 }}</div><div>Tirs</div></div>
-                            <div><div class="font-black text-slate-800">{{ selectedCalendarMatchStats?.teams?.away?.passes ?? 0 }}</div><div>Passes</div></div>
-                            <div><div class="font-black text-slate-800">{{ teamSaves('away') }}</div><div>Arrêts</div></div>
-                            <div><div class="font-black text-slate-800">{{ selectedCalendarMatchStats?.teams?.away?.duelsWon ?? 0 }}</div><div>D+</div></div>
+                            <div><div class="font-black text-slate-700">{{ selectedCalendarMatchStats?.teams?.away?.shots ?? 0 }}</div><div>Tirs</div></div>
+                            <div><div class="font-black text-slate-700">{{ selectedCalendarMatchStats?.teams?.away?.passes ?? 0 }}</div><div>Passes</div></div>
+                            <div><div class="font-black text-slate-700">{{ teamSaves('away') }}</div><div>Arrêts</div></div>
+                            <div><div class="font-black text-slate-700">{{ selectedCalendarMatchStats?.teams?.away?.duelsWon ?? 0 }}</div><div>D+</div></div>
                         </div>
                     </div>
                 </div>

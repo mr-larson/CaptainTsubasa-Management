@@ -14,11 +14,11 @@ import { Link } from '@inertiajs/vue3';
             </Link>
             <div class="flex items-center gap-2 sm:gap-4">
                 <Link v-if="$page.props.auth?.user" :href="route('mainMenu')"
-                      class="inline-flex min-h-[44px] items-center rounded-full bg-teal-500 px-4 text-sm font-bold text-slate-900 hover:bg-teal-400">Menu principal</Link>
+                      class="inline-flex min-h-[44px] items-center rounded-full bg-teal-500 px-4 text-sm font-bold text-slate-700 hover:bg-teal-400">Menu principal</Link>
                 <template v-else>
                     <Link :href="route('login')" class="inline-flex min-h-[44px] items-center px-2 text-sm text-slate-300 hover:text-teal-300">Connexion</Link>
                     <Link :href="route('register')"
-                          class="inline-flex min-h-[44px] items-center whitespace-nowrap rounded-full bg-teal-500 px-4 text-sm font-bold text-slate-900 hover:bg-teal-400">S'inscrire</Link>
+                          class="inline-flex min-h-[44px] items-center whitespace-nowrap rounded-full bg-teal-500 px-4 text-sm font-bold text-slate-700 hover:bg-teal-400">S'inscrire</Link>
                 </template>
             </div>
         </nav>

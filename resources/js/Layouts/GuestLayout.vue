@@ -1,10 +1,10 @@
 <template>
-    <div class="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 text-slate-100 flex items-center justify-center px-4">
+    <div class="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-700 text-slate-100 flex items-center justify-center px-4">
         <!-- Conteneur principal -->
         <div class="w-full max-w-md">
             <!-- Carte formulaire -->
             <div
-                class="w-full bg-white rounded-xl border border-slate-200 shadow-lg px-6 py-6 md:px-8 md:py-8 text-slate-900"
+                class="w-full bg-white rounded-xl border border-slate-200 shadow-lg px-6 py-6 md:px-8 md:py-8 text-slate-700"
             >
                 <!-- Header : logo + lien retour -->
                 <div class="mb-4 flex items-center justify-between">

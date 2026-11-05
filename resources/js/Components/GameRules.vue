@@ -60,7 +60,7 @@ const verdictOutcomeLabel = (o) => ({
 
             <div v-if="career.mandate" class="flex items-baseline gap-2 mb-1 flex-wrap">
                 <span class="text-lg">🎯</span>
-                <span class="text-base font-bold text-slate-800">{{ career.mandate.label }}</span>
+                <span class="text-base font-bold text-slate-700">{{ career.mandate.label }}</span>
                 <span class="text-xs text-slate-400">
                     (classement attendu : {{ career.mandate.expected_rank }}<sup>e</sup> / {{ career.mandate.team_count }})
                 </span>

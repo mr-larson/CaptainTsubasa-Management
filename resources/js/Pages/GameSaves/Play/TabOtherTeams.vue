@@ -133,31 +133,31 @@ const selectedPlayerPerf = computed(() => {
                 <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-slate-600">
                     <div class="flex justify-between">
                         <span>Attaque moy.</span>
-                        <span class="font-bold text-slate-800">{{ averageTeamStat(otherRosterWithStatus, 'attack') }}</span>
+                        <span class="font-bold text-slate-700">{{ averageTeamStat(otherRosterWithStatus, 'attack') }}</span>
                     </div>
                     <div class="flex justify-between">
                         <span>Blessés</span>
-                        <span class="font-bold" :class="injuriesCountForTeam(selectedOtherTeam.id) > 0 ? 'text-rose-500' : 'text-slate-800'">
+                        <span class="font-bold" :class="injuriesCountForTeam(selectedOtherTeam.id) > 0 ? 'text-rose-500' : 'text-slate-700'">
                             {{ injuriesCountForTeam(selectedOtherTeam.id) }}
                         </span>
                     </div>
                     <div class="flex justify-between">
                         <span>Défense moy.</span>
-                        <span class="font-bold text-slate-800">{{ averageTeamStat(otherRosterWithStatus, 'defense') }}</span>
+                        <span class="font-bold text-slate-700">{{ averageTeamStat(otherRosterWithStatus, 'defense') }}</span>
                     </div>
                     <div class="flex justify-between">
                         <span>Suspensions</span>
-                        <span class="font-bold" :class="suspensionsCountForTeam(selectedOtherTeam.id) > 0 ? 'text-amber-500' : 'text-slate-800'">
+                        <span class="font-bold" :class="suspensionsCountForTeam(selectedOtherTeam.id) > 0 ? 'text-amber-500' : 'text-slate-700'">
                             {{ suspensionsCountForTeam(selectedOtherTeam.id) }}
                         </span>
                     </div>
                     <div class="flex justify-between">
                         <span>Stamina moy.</span>
-                        <span class="font-bold text-slate-800">{{ averageTeamStat(otherRosterWithStatus, 'stamina') }}</span>
+                        <span class="font-bold text-slate-700">{{ averageTeamStat(otherRosterWithStatus, 'stamina') }}</span>
                     </div>
                     <div class="flex justify-between">
                         <span>Cartons</span>
-                        <span class="font-bold" :class="cardsCountForTeam(selectedOtherTeam.id) > 0 ? 'text-yellow-500' : 'text-slate-800'">
+                        <span class="font-bold" :class="cardsCountForTeam(selectedOtherTeam.id) > 0 ? 'text-yellow-500' : 'text-slate-700'">
                             {{ cardsCountForTeam(selectedOtherTeam.id) }}
                         </span>
                     </div>

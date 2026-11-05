@@ -24,13 +24,13 @@ const emit = defineEmits(['change']);
     <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 flex flex-col gap-3">
         <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Formation</h3>
 
-        <div v-if="readonly" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm font-semibold bg-white text-slate-800">
+        <div v-if="readonly" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm font-semibold bg-white text-slate-700">
             {{ FORMATION_LIST.find(f => f.key === formation)?.label ?? formation }}
         </div>
         <select v-else
             :value="formation"
             @change="emit('change', $event.target.value)"
-            class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-semibold bg-white text-slate-800 focus:ring-2 focus:ring-teal-300 focus:outline-none cursor-pointer"
+            class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-semibold bg-white text-slate-700 focus:ring-2 focus:ring-teal-300 focus:outline-none cursor-pointer"
         >
             <option v-for="f in FORMATION_LIST" :key="f.key" :value="f.key">{{ optionLabel(f) }}</option>
         </select>

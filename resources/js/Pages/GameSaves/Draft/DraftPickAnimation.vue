@@ -20,7 +20,7 @@ defineProps({
                         <div v-else class="w-full h-full flex items-center justify-center text-2xl text-slate-400">👤</div>
                     </div>
                     <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{{ pick.team_name }}</div>
-                    <div class="text-xl font-black text-slate-800">{{ pick.player_name }}</div>
+                    <div class="text-xl font-black text-slate-700">{{ pick.player_name }}</div>
                     <div class="mt-1 text-sm text-slate-500">{{ pick.position }} • {{ pick.cost }} €</div>
                 </div>
             </div>
