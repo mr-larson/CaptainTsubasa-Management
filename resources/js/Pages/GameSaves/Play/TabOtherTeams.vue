@@ -1,5 +1,6 @@
 <script setup>
-import { computed, onMounted, onBeforeUnmount } from 'vue';
+import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue';
+import PlayerMoraleCard from '@/Pages/GameSaves/Play/components/PlayerMoraleCard.vue';
 import { fieldClass } from '@/Components/fieldStyles';
 import ButtonSecondary from '@/Components/ButtonSecondary.vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
@@ -47,6 +48,9 @@ const props = defineProps({
     playerYellowCards:      { type: Function, default: () => () => 0 },
     // Option « Accès aux autres clubs » (équipe IA) : composition modifiable comme Mon équipe.
     editable:               { type: Boolean,  default: false },
+    gameSaveId:             { type: Number,   required: true },
+    currentWeek:            { type: Number,   default: 1 },
+    currentSeason:          { type: Number,   default: 1 },
 });
 
 // Lecture seule par défaut : on choisit une équipe et on consulte un joueur.
@@ -55,7 +59,26 @@ const emit = defineEmits([
     'select-team', 'select-player',
     'player-click', 'drag-start', 'drag-over', 'drop-on', 'drag-end', 'cancel-pickup',
     'change-formation', 'toggle-starter', 'toggle-captain', 'update-number',
+    'make-promise', 'make-declaration',
 ]);
+
+// Carte « Moral » : chargée à la demande pour le joueur affiché (rechargée après
+// chaque rechargement de page, donc après une promesse ou une déclaration).
+const morale = ref({ logs: [], promises: [], declarations: [] });
+const moraleFor = ref(null);
+let moraleRequest = 0;
+watch(() => props.selectedOtherPlayer, async (player) => {
+    if (!player?.id) { moraleFor.value = null; return; }
+    const req = ++moraleRequest;
+    try {
+        const { data } = await axios.get(route('game-saves.players.morale', { gameSave: props.gameSaveId, player: player.id }));
+        if (req !== moraleRequest) return;
+        morale.value = data;
+        moraleFor.value = player.id;
+    } catch {
+        if (req === moraleRequest) { morale.value = { logs: [], promises: [], declarations: [] }; moraleFor.value = player.id; }
+    }
+}, { immediate: true });
 
 const onPlayerClick = (p) => emit(props.editable ? 'player-click' : 'select-player', p);
 const onDragStart   = (p, e) => { if (props.editable) emit('drag-start', p, e); };
@@ -282,6 +305,15 @@ const selectedPlayerPerf = computed(() => {
                             <p v-if="selectedOtherPlayer.description" class="mt-2 text-xs text-slate-400 italic">{{ selectedOtherPlayer.description }}</p>
                         </template>
                     </PlayerIdentityCard>
+
+                    <!-- Moral (lecture seule, ou éditable avec l'option « Accès aux autres clubs ») -->
+                    <PlayerMoraleCard :player="selectedOtherPlayer"
+                                      :class="moraleFor === selectedOtherPlayer.id ? '' : 'opacity-60'"
+                                      :logs="morale.logs" :promises="morale.promises" :declarations="morale.declarations"
+                                      :currentWeek="currentWeek" :currentSeason="currentSeason"
+                                      :editable="editable"
+                                      @make-promise="(p, t) => emit('make-promise', p, t)"
+                                      @make-declaration="(p, t) => emit('make-declaration', p, t)" />
 
                     <!-- Radar + Barres -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">

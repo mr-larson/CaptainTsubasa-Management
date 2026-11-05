@@ -116,6 +116,22 @@ class GameSave extends Model
     }
 
     /**
+     * L'équipe peut-elle être gérée par le joueur qui a la main ?
+     * - toujours son équipe (siège actif) ;
+     * - les équipes IA si l'option « Accès aux autres clubs » est active ;
+     * - jamais celle d'un autre manager humain (hot-seat).
+     */
+    public function canManageTeam(int $teamId): bool
+    {
+        if ($teamId === (int) $this->controlled_game_team_id) {
+            return true;
+        }
+
+        return (bool) $this->getConfig('other_teams_editable')
+            && ! in_array($teamId, array_map('intval', $this->controlledGameTeamIds()), true);
+    }
+
+    /**
      * Phases pendant lesquelles des matchs se jouent (ligue ou Coupe du Monde).
      * Hors de ces phases (draft, fin de saison, tournoi terminé), terminer un
      * match ou simuler une semaine est refusé.

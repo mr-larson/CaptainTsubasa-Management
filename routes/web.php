@@ -181,6 +181,8 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{gameSave}/players/{player}',       [GamePlayerController::class, 'destroy'])->name('players.destroy');
         Route::patch('/{gameSave}/players/{player}/number', [GamePlayerController::class, 'updateNumber'])
             ->name('players.update-number');
+        Route::get('/{gameSave}/players/{player}/morale', [GamePlayerController::class, 'morale'])
+            ->name('players.morale');
 
         // Promesses (relation coach)
         Route::post('/{gameSave}/players/{player}/promises',

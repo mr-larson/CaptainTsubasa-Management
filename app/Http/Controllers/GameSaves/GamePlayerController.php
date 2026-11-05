@@ -8,6 +8,7 @@ use App\Http\Requests\GameSaves\GamePlayerRequest;
 use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
+use App\Services\PlayerMoraleSummary;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -202,6 +203,23 @@ class GamePlayerController extends Controller
         }
 
         Storage::disk('public')->delete($path);
+    }
+
+    /**
+     * Carte « Moral » d'un joueur (onglet Autres équipes, chargée à la demande) :
+     * derniers changements, promesses et dernière déclaration publique.
+     */
+    public function morale(GameSave $gameSave, GamePlayer $player, PlayerMoraleSummary $summary): \Illuminate\Http\JsonResponse
+    {
+        $this->authorizeGameSave('view', $gameSave, $player);
+
+        $ids = [$player->id];
+
+        return response()->json([
+            'logs'         => $summary->moraleLogs($gameSave, $ids)->get($player->id, collect())->values(),
+            'promises'     => $summary->promises($gameSave, $ids)->get($player->id, collect())->values(),
+            'declarations' => $summary->declarations($gameSave, $ids)->get($player->id, collect())->values(),
+        ]);
     }
 
     public function updateNumber(Request $request, GameSave $gameSave, GamePlayer $player): \Illuminate\Http\RedirectResponse

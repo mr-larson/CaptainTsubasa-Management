@@ -34,15 +34,16 @@ class GamePromiseController extends Controller
             ->activeAt($week)
             ->first();
 
-        $controlledTeamId = (int) ($gameSave->controlled_game_team_id ?? 0);
+        // Son équipe, ou une équipe IA avec l'option « Accès aux autres clubs ».
+        $teamId = $contract ? (int) $contract->game_team_id : 0;
 
-        if (!$contract || (int) $contract->game_team_id !== $controlledTeamId) {
+        if (!$contract || ! $gameSave->canManageTeam($teamId)) {
             return back()->withErrors([
                 'promise' => 'Ce joueur ne fait pas partie de ton équipe.',
             ]);
         }
 
-        $result = app(PromiseService::class)->create($gameSave, $player, $controlledTeamId, $data['type'] ?? 'playing_time');
+        $result = app(PromiseService::class)->create($gameSave, $player, $teamId, $data['type'] ?? 'playing_time');
 
         if (is_string($result)) {
             return back()->withErrors(['promise' => $result]);

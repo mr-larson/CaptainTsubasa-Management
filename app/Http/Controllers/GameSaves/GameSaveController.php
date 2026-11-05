@@ -12,9 +12,6 @@ use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameInjury;
 use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GamePlayer;
-use App\Models\GameSaves\GamePlayerMoraleLog;
-use App\Models\GameSaves\GameDeclaration;
-use App\Models\GameSaves\GamePromise;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameSanction;
 use App\Models\GameSaves\GameTeam;
@@ -28,6 +25,7 @@ use App\Services\CareerObjectiveService;
 use App\Services\SeasonChallengeService;
 use App\Services\DraftService;
 use App\Services\MoraleService;
+use App\Services\PlayerMoraleSummary;
 use App\Services\NationalTeamAssembler;
 use App\Services\SeasonService;
 use App\Services\PlayerStatsService;
@@ -811,55 +809,11 @@ class GameSaveController extends Controller
             ? $controlledTeam->contracts->pluck('game_player_id')
             : collect();
 
-        $moraleLogs = GamePlayerMoraleLog::where('game_save_id', $gameSave->id)
-            ->whereIn('game_player_id', $controlledPlayerIds)
-            ->orderByDesc('id')
-            ->limit(200)
-            ->get()
-            ->groupBy('game_player_id')
-            ->map(fn($logs) => $logs->take(6)->map(fn($l) => [
-                'source' => $l->source,
-                'value'  => $l->value,
-                'label'  => $l->label,
-                'week'   => $l->week,
-                'season' => $l->season,
-            ])->values());
-
-        // ─── Promesses (équipe contrôlée) : en cours + dernières évaluées ───
-        $playerPromises = GamePromise::where('game_save_id', $gameSave->id)
-            ->whereIn('game_player_id', $controlledPlayerIds)
-            ->orderByDesc('id')
-            ->limit(100)
-            ->get()
-            ->groupBy('game_player_id')
-            ->map(fn($promises) => $promises->take(2)->map(fn($p) => [
-                'id'             => $p->id,
-                'type'           => $p->type,
-                'start_week'     => $p->start_week,
-                'due_week'       => $p->due_week,
-                'target_matches' => $p->target_matches,
-                'played_matches' => $p->played_matches,
-                'target_turns'   => $p->target_turns,
-                'played_turns'   => $p->played_turns,
-                'status'         => $p->status,
-            ])->values());
-
-        // ─── Déclarations publiques (équipe contrôlée) : dernière par joueur ───
-        $playerDeclarations = GameDeclaration::where('game_save_id', $gameSave->id)
-            ->whereIn('game_player_id', $controlledPlayerIds)
-            ->orderByDesc('id')
-            ->limit(100)
-            ->get()
-            ->groupBy('game_player_id')
-            ->map(fn($declarations) => $declarations->take(1)->map(fn($d) => [
-                'type'           => $d->type,
-                'deserved'       => $d->deserved,
-                'outcome'        => $d->outcome,
-                'affinity_delta' => $d->affinity_delta,
-                'morale_delta'   => $d->morale_delta,
-                'week'           => $d->week,
-                'season'         => $d->season,
-            ])->values());
+        // Moral, promesses (en cours + dernières évaluées), dernière déclaration publique.
+        $moraleSummary      = app(PlayerMoraleSummary::class);
+        $moraleLogs         = $moraleSummary->moraleLogs($gameSave, $controlledPlayerIds);
+        $playerPromises     = $moraleSummary->promises($gameSave, $controlledPlayerIds);
+        $playerDeclarations = $moraleSummary->declarations($gameSave, $controlledPlayerIds);
 
         // ─── Bonus cards ───
         $controlledTeamId = $gameSave->controlled_game_team_id;

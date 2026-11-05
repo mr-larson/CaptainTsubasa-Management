@@ -34,15 +34,16 @@ class GameDeclarationController extends Controller
             ->activeAt($week)
             ->first();
 
-        $controlledTeamId = (int) ($gameSave->controlled_game_team_id ?? 0);
+        // Son équipe, ou une équipe IA avec l'option « Accès aux autres clubs ».
+        $teamId = $contract ? (int) $contract->game_team_id : 0;
 
-        if (!$contract || (int) $contract->game_team_id !== $controlledTeamId) {
+        if (!$contract || ! $gameSave->canManageTeam($teamId)) {
             return back()->withErrors([
                 'declaration' => 'Ce joueur ne fait pas partie de ton équipe.',
             ]);
         }
 
-        $result = app(DeclarationService::class)->declare($gameSave, $player, $data['type'], $controlledTeamId);
+        $result = app(DeclarationService::class)->declare($gameSave, $player, $data['type'], $teamId);
 
         if (is_string($result)) {
             return back()->withErrors(['declaration' => $result]);

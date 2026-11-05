@@ -243,14 +243,8 @@ class LineupController extends Controller
      */
     private function refuseUnlessActiveTeam(GameSave $gameSave, int $teamId): ?\Illuminate\Http\RedirectResponse
     {
-        if ($teamId === (int) $gameSave->controlled_game_team_id) {
-            return null;
-        }
-
-        // Option « Accès aux autres clubs » : les équipes IA deviennent modifiables.
-        // Les autres managers humains (hot-seat) restent protégés.
-        $humanTeamIds = array_map('intval', $gameSave->controlledGameTeamIds());
-        if ($gameSave->getConfig('other_teams_editable') && ! in_array($teamId, $humanTeamIds, true)) {
+        // Son équipe, ou une équipe IA avec l'option « Accès aux autres clubs ».
+        if ($gameSave->canManageTeam($teamId)) {
             return null;
         }
 
