@@ -420,7 +420,7 @@ onUnmounted(() => clearTimer());
                      :style="{ left: p.x + '%', top: p.y + '%' }">
                     <div class="rounded-full flex items-center justify-center font-black text-white shadow transition-all"
                          :class="[
-                            p.side === 'internal' ? 'bg-sky-600' : 'bg-rose-600',
+                            p.side === 'internal' ? 'bg-blue-500' : 'bg-orange-500',
                             p.isActor
                                 ? 'w-6 h-6 text-2xs ring-2 ring-amber-300 scale-110'
                                 : 'w-5 h-5 text-3xs ring-1 ring-white/50 opacity-90',

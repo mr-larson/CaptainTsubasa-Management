@@ -133,20 +133,20 @@ const rankIcon = (rank) => {
 
             <div class="overflow-x-auto">
                 <table class="w-full text-xs min-w-max text-left">
-                    <thead class="border-b border-slate-200">
+                    <thead class="border-b border-slate-200 text-2xs font-bold uppercase tracking-wider text-slate-400">
                     <tr>
-                        <th class="py-2 w-8 text-center text-slate-400 font-semibold">#</th>
-                        <th class="py-2 pr-4 text-slate-500 font-semibold">Équipe</th>
-                        <th class="py-2 px-2 text-right text-slate-500 font-semibold">J</th>
-                        <th class="py-2 px-2 text-right text-slate-500 font-semibold">V</th>
-                        <th class="py-2 px-2 text-right text-slate-500 font-semibold">N</th>
-                        <th class="py-2 px-2 text-right text-slate-500 font-semibold">D</th>
-                        <th class="py-2 px-2 text-right text-slate-500 font-semibold">BP</th>
-                        <th class="py-2 px-2 text-right text-slate-500 font-semibold">BC</th>
-                        <th class="py-2 px-2 text-right text-slate-500 font-semibold">Diff</th>
-                        <th class="py-2 px-2 text-right text-slate-500 font-semibold">Pts</th>
-                        <th class="py-2 pl-4 text-slate-500 font-semibold">Forme</th>
-                        <th class="py-2 pl-4 text-slate-500 font-semibold w-32">Progression</th>
+                        <th class="py-2 w-8 text-center">#</th>
+                        <th class="py-2 pr-4">Équipe</th>
+                        <th class="py-2 px-2 text-right">J</th>
+                        <th class="py-2 px-2 text-right">V</th>
+                        <th class="py-2 px-2 text-right">N</th>
+                        <th class="py-2 px-2 text-right">D</th>
+                        <th class="py-2 px-2 text-right">BP</th>
+                        <th class="py-2 px-2 text-right">BC</th>
+                        <th class="py-2 px-2 text-right">Diff</th>
+                        <th class="py-2 px-2 text-right">Pts</th>
+                        <th class="py-2 pl-4">Forme</th>
+                        <th class="py-2 pl-4 w-32">Progression</th>
                     </tr>
                     </thead>
                     <tbody>

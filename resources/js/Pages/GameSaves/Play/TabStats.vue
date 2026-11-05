@@ -227,9 +227,9 @@ const sortIcon = (key) => {
 
                 <div class="overflow-x-auto">
                     <table class="w-full text-xs min-w-max text-left">
-                        <thead class="border-b border-slate-200">
+                        <thead class="border-b border-slate-200 text-2xs font-bold uppercase tracking-wider text-slate-400">
                         <tr>
-                            <th class="py-2 pr-4 text-slate-500 font-semibold">Équipe</th>
+                            <th class="py-2 pr-4">Équipe</th>
                             <th v-for="col in [
                                     { key: 'shots',     label: 'Tirs'    },
                                     { key: 'shotSuccess',label: 'Buts' },
@@ -246,7 +246,7 @@ const sortIcon = (key) => {
                                 :class="sortKey === col.key ? 'text-teal-600 font-bold' : 'text-slate-500 font-semibold'"
                                 @click="setSort(col.key)" tabindex="0" @keydown.enter.prevent="setSort(col.key)"
                             >
-                                {{ col.label }} <span class="text-2xs">{{ sortIcon(col.key) }}</span>
+                                {{ col.label }} <span>{{ sortIcon(col.key) }}</span>
                             </th>
                         </tr>
                         </thead>

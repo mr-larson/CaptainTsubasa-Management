@@ -48,7 +48,7 @@ const emit = defineEmits(['change']);
                 <template v-if="formationData">
                     <span v-for="(label, zone) in ['GK','DEF','MDF','MOF','ATT']" :key="zone"
                           class="px-2 py-0.5 rounded-full text-2xs font-bold"
-                          :class="[zone==0?'bg-yellow-100 text-yellow-700':zone==1?'bg-blue-100 text-blue-700':zone==2?'bg-green-100 text-green-700':zone==3?'bg-orange-100 text-orange-700':'bg-red-100 text-red-700']">
+                          :class="[zone==0?'bg-amber-100 text-amber-700':zone==1?'bg-blue-100 text-blue-700':zone==2?'bg-emerald-100 text-emerald-700':zone==3?'bg-orange-100 text-orange-700':'bg-rose-100 text-rose-700']">
                         {{ label }} ×{{ Object.values(formationData.slots).filter(s => s.zone === zone).length }}
                     </span>
                 </template>

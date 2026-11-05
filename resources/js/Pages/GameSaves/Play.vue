@@ -469,7 +469,7 @@ const saveGame = () => {
                 </div>
 
                 <!-- Carte principale -->
-                <div class="flex-1 min-w-0 min-h-0 p-3 sm:p-4 border border-slate-300 rounded-lg min-[1400px]:mx-6 bg-white flex flex-col overflow-hidden">
+                <div class="flex-1 min-w-0 min-h-0 p-3 sm:p-4 border border-slate-200 rounded-xl shadow-sm min-[1400px]:mx-6 bg-white flex flex-col overflow-hidden">
 
                     <!-- Onglets -->
                     <div class="mb-4 border-b border-slate-200 shrink-0">

@@ -50,21 +50,21 @@ function score(match) {
         <!-- Poules -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div v-for="group in tournament.groups" :key="group.key"
-                 class="border border-slate-200 rounded-2xl bg-white overflow-hidden">
+                 class="border border-slate-200 rounded-xl bg-white overflow-hidden">
                 <div class="px-4 py-2.5 bg-slate-50 border-b border-slate-100 text-sm font-bold text-slate-700">
                     Groupe {{ group.key }}
                 </div>
                 <div class="overflow-x-auto">
                 <table class="w-full text-sm min-w-[380px]">
-                    <thead>
-                        <tr class="text-[11px] text-slate-400 uppercase tracking-wide">
-                            <th class="text-left font-semibold py-2 pl-4">Sélection</th>
-                            <th class="font-semibold px-1.5">J</th>
-                            <th class="font-semibold px-1.5">G</th>
-                            <th class="font-semibold px-1.5">N</th>
-                            <th class="font-semibold px-1.5">P</th>
-                            <th class="font-semibold px-1.5">Diff</th>
-                            <th class="font-semibold px-1.5 pr-4">Pts</th>
+                    <thead class="border-b border-slate-200 text-2xs font-bold uppercase tracking-wider text-slate-400">
+                        <tr>
+                            <th class="text-left py-2 pl-4">Sélection</th>
+                            <th class="px-1.5">J</th>
+                            <th class="px-1.5">G</th>
+                            <th class="px-1.5">N</th>
+                            <th class="px-1.5">P</th>
+                            <th class="px-1.5">Diff</th>
+                            <th class="px-1.5 pr-4">Pts</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -95,7 +95,7 @@ function score(match) {
 
         <!-- Tableau final (bracket) -->
         <div v-if="semis.length || finale.length"
-             class="border border-slate-200 rounded-2xl bg-white p-4">
+             class="border border-slate-200 rounded-xl bg-white p-4">
             <div class="text-sm font-bold text-slate-700 mb-3">Phase à élimination directe</div>
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
 

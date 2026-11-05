@@ -83,7 +83,7 @@ const difficultyLabel = {
                     </div>
                     <div class="overflow-x-auto">
                     <table class="w-full text-sm min-w-[400px]">
-                        <thead class="text-slate-400 uppercase text-xs">
+                        <thead class="border-b border-slate-200 text-2xs font-bold uppercase tracking-wider text-slate-400">
                             <tr>
                                 <th class="text-left px-6 py-2">Saison</th>
                                 <th class="text-left px-2 py-2">Objectif</th>

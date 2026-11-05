@@ -1,3 +1,4 @@
+import { positionGroupClass } from '@/Enums/positionBadges.js';
 // resources/js/Pages/GameSaves/Play/usePlayerUtils.js
 import { usePixelArt } from '@/utils/pixelArt.js';
 
@@ -33,14 +34,6 @@ const POSITION_LABELS = {
     Defender:   'Défenseur',
     Midfielder: 'Milieu',
     Forward:    'Attaquant',
-};
-
-// Couleurs de badge par groupe de poste (cohérentes avec le Draft).
-const POSITION_GROUP_COLORS = {
-    GK:  'bg-yellow-100 text-yellow-700',
-    DEF: 'bg-blue-100 text-blue-700',
-    MID: 'bg-green-100 text-green-700',
-    ATT: 'bg-red-100 text-red-700',
 };
 
 // Drapeaux par nationalité (miroir de App\Enums\Nationality::FLAGS).
@@ -116,7 +109,7 @@ export function usePlayerUtils() {
     };
 
     const positionLabel = (pos) => POSITION_LABELS[pos] ?? pos ?? '';
-    const positionGroupColor = (pos) => POSITION_GROUP_COLORS[positionGroup(pos)] ?? 'bg-slate-100 text-slate-600';
+    const positionGroupColor = (pos) => positionGroupClass(positionGroup(pos));
 
     const statLabel = (k) => STAT_LABELS[k] ?? k;
     const statColor = (k) => STAT_COLORS[k] ?? 'bg-slate-400';

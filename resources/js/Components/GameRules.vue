@@ -123,8 +123,8 @@ const verdictOutcomeLabel = (o) => ({
         <div v-if="careerHistory.length" class="border border-slate-200 rounded-xl bg-white p-4">
             <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Historique des saisons</h4>
             <table class="w-full text-xs">
-                <thead>
-                <tr class="text-2xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">
+                <thead class="border-b border-slate-200 text-2xs font-bold uppercase tracking-wider text-slate-400">
+                <tr>
                     <th class="text-left py-1">Saison</th>
                     <th class="text-center py-1">Objectif</th>
                     <th class="text-center py-1">Classé</th>
@@ -229,8 +229,8 @@ const verdictOutcomeLabel = (o) => ({
         <div class="border border-slate-200 rounded-xl bg-white p-4">
             <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Niveaux de difficulté</h4>
             <table class="w-full text-xs">
-                <thead>
-                <tr class="text-2xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">
+                <thead class="border-b border-slate-200 text-2xs font-bold uppercase tracking-wider text-slate-400">
+                <tr>
                     <th class="text-left py-1">Niveau</th>
                     <th class="text-center py-1">Confiance départ</th>
                     <th class="text-center py-1">Titres à gagner</th>

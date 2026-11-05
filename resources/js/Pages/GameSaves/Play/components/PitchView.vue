@@ -34,7 +34,7 @@ const { playerPhotoUrl } = usePlayerUtils();
 const ZONE_LABELS = ['GK', 'DEF', 'MDF', 'MOF', 'ATT'];
 const ZONE_NAMES  = ['gardien', 'défenseur', 'milieu défensif', 'milieu offensif', 'attaquant'];
 // Liseré du nom = couleur de la zone (même code que la « Répartition » de la carte Formation)
-const ZONE_BORDER = ['border-yellow-400', 'border-blue-400', 'border-green-400', 'border-orange-400', 'border-red-400'];
+const ZONE_BORDER = ['border-amber-400', 'border-blue-400', 'border-emerald-400', 'border-orange-400', 'border-rose-400'];
 
 // Pendant la prise : adéquation du joueur soulevé à chaque autre poste.
 const HALO = {
@@ -162,10 +162,10 @@ const MASTERY_CHIP = {
                                 isPickedUp(playerForSlot(slot))
                                     ? 'border-amber-300 ring-4 ring-amber-300/60 animate-pulse'
                                     : selectedSlot === Number(slot)
-                                        ? 'border-yellow-300 ring-2 ring-yellow-200'
+                                        ? 'border-amber-300 ring-2 ring-amber-200'
                                         : statusOf(playerForSlot(slot)) ? 'border-rose-500 ring-2 ring-rose-500/70'
                                         : 'border-white/70',
-                                slotDef.zone===0?'bg-yellow-500':slotDef.zone===1?'bg-blue-500':slotDef.zone===2?'bg-green-500':slotDef.zone===3?'bg-orange-500':'bg-red-500'
+                                slotDef.zone===0?'bg-amber-500':slotDef.zone===1?'bg-blue-500':slotDef.zone===2?'bg-emerald-500':slotDef.zone===3?'bg-orange-500':'bg-rose-500'
                             ]">
                             <img v-if="playerForSlot(slot) && playerPhotoUrl(playerForSlot(slot))"
                                  :src="playerPhotoUrl(playerForSlot(slot))" class="w-full h-full object-cover pointer-events-none" alt=""/>
@@ -187,7 +187,7 @@ const MASTERY_CHIP = {
                         </div>
                         <template v-if="slotMastery">
                             <div v-if="slotMastery(slot, slotDef) === 'off'"
-                                 class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-red-500 border border-white text-[8px] leading-[12px] text-white text-center font-bold pointer-events-none"
+                                 class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-rose-500 border border-white text-[8px] leading-[12px] text-white text-center font-bold pointer-events-none"
                                  title="Hors poste : malus appliqué en match">!</div>
                             <div v-else-if="slotMastery(slot, slotDef) === 'secondary'"
                                  class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-400 border border-white text-[8px] leading-[12px] text-slate-700 text-center font-bold pointer-events-none"
@@ -197,7 +197,7 @@ const MASTERY_CHIP = {
                              :title="ZONE_NAMES[slotDef.zone]"
                              :class="[ZONE_BORDER[slotDef.zone], isPickedUp(playerForSlot(slot))
                                 ? 'bg-amber-300 text-slate-700'
-                                : selectedSlot === Number(slot) ? 'bg-yellow-300 text-slate-700'
+                                : selectedSlot === Number(slot) ? 'bg-amber-300 text-slate-700'
                                 : statusOf(playerForSlot(slot)) ? 'bg-rose-600/90 text-white' : 'bg-black/60 text-white']">
                             {{ playerForSlot(slot)?.lastname ?? '—' }}
                         </div>

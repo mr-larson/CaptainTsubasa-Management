@@ -96,11 +96,11 @@ const COLUMNS = [
     <div>
         <div class="overflow-x-auto">
             <table class="w-full text-xs min-w-max text-left">
-                <thead class="border-b border-slate-200">
+                <thead class="border-b border-slate-200 text-2xs font-bold uppercase tracking-wider text-slate-400">
                 <tr>
-                    <th class="py-1.5 pr-3 text-slate-500 font-semibold">Joueur</th>
+                    <th class="py-1.5 pr-3">Joueur</th>
                     <th v-for="c in COLUMNS" :key="c.key" :title="`${c.title} — cliquer pour trier`"
-                        class="py-1.5 px-2 text-right font-semibold cursor-pointer select-none hover:text-teal-600"
+                        class="py-1.5 px-2 text-right cursor-pointer select-none hover:text-teal-600"
                         :class="sortKey === c.key ? 'text-teal-600' : 'text-slate-500'"
                         @click="toggleSort(c.key)">
                         {{ c.label }}<span v-if="sortKey === c.key"> ▾</span>

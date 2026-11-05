@@ -1,4 +1,5 @@
 <script setup>
+import { positionGroupClass } from '@/Enums/positionBadges.js';
 import { usePlayerUtils } from '../usePlayerUtils.js';
 
 /** Carte "Banc" : remplaçants en grille, draggables vers le terrain. */
@@ -16,12 +17,6 @@ const emit = defineEmits(['player-click', 'drag-start', 'drag-over', 'drop-on', 
 
 const { playerPhotoUrl, positionGroup } = usePlayerUtils();
 
-const POS_CHIP = {
-    GK:  'bg-yellow-100 text-yellow-700',
-    DEF: 'bg-blue-100 text-blue-700',
-    MID: 'bg-green-100 text-green-700',
-    ATT: 'bg-red-100 text-red-700',
-};
 const FIT_RING = {
     primary:   'ring-4 ring-emerald-400',
     secondary: 'ring-4 ring-amber-300',
@@ -85,7 +80,7 @@ const staminaBar = (v) => v >= 60 ? 'bg-emerald-400' : v >= 30 ? 'bg-amber-400' 
                         </div>
                         <div class="mt-0.5 flex items-center gap-1 pointer-events-none">
                             <span class="px-1 rounded text-[8px] font-bold leading-tight"
-                                  :class="POS_CHIP[positionGroup(p.position)] ?? 'bg-slate-200 text-slate-600'">
+                                  :class="positionGroupClass(positionGroup(p.position))">
                                 {{ positionGroup(p.position) === 'OTHER' ? '?' : positionGroup(p.position) }}
                             </span>
                             <span class="w-5 h-[3px] rounded-full bg-slate-300 overflow-hidden">

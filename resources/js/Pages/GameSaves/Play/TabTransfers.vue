@@ -275,8 +275,8 @@ const filteredHistory = computed(() =>
                             @click="originFilter = o.key"
                             class="px-3 py-1.5 rounded-full text-xs font-semibold border transition-all"
                             :class="originFilter === o.key
-                            ? 'bg-indigo-500 text-white border-indigo-600 shadow-sm'
-                            : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:text-indigo-600'">
+                            ? 'bg-slate-700 text-white border-slate-700 shadow-sm'
+                            : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400 hover:text-slate-700'">
                         {{ o.label }}
                         <span class="ml-1 opacity-60">({{ originCount(o.key) }})</span>
                     </button>

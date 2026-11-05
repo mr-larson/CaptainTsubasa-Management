@@ -476,8 +476,8 @@ function formatBreakdownHTML(b) {
     const winnerLabel = winner === "attack"  ? "✓ Attaque gagne"
         : winner === "defense" ? "✗ Défense gagne"
             : "= Égalité";
-    const winnerClass = winner === "attack"  ? "text-green-500"
-        : winner === "defense" ? "text-red-500"
+    const winnerClass = winner === "attack"  ? "text-emerald-500"
+        : winner === "defense" ? "text-rose-500"
             : "text-slate-400";
 
     const resultLine = b.result?.critWinner
@@ -560,10 +560,10 @@ export function showDuelDice(attackScore, defenseScore, aRoll, dRoll, breakdown)
 
         // Chip compact — juste les scores
         const winnerLabel = winner === 'attack' ? '✓ Attaque' : winner === 'defense' ? '✗ Défense' : '= Égalité';
-        const winnerClass = winner === 'attack' ? 'text-green-500' : winner === 'defense' ? 'text-red-500' : 'text-slate-400';
+        const winnerClass = winner === 'attack' ? 'text-emerald-500' : winner === 'defense' ? 'text-rose-500' : 'text-slate-400';
 
         duelDiceEl.textContent = `${aTag} vs ${dTag} — ${winnerLabel}`;
-        duelDiceEl.classList.remove('text-green-500', 'text-red-500', 'text-slate-400');
+        duelDiceEl.classList.remove('text-emerald-500', 'text-rose-500', 'text-slate-400');
         duelDiceEl.classList.add(winnerClass, 'font-bold');
         duelDiceEl.classList.add("visible", "pop");
         setTimeout(() => duelDiceEl.classList.remove("pop"), 500);

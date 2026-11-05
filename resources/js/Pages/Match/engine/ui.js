@@ -485,7 +485,7 @@ export function updateSideCard(prefix, team, slotNumber) {
         // 🤕 Indisponible (inséré en premier = apparaît à gauche)
         if (info?.isAvailable === false) {
             const b = document.createElement('div');
-            b.className = 'status-badge whitespace-nowrap rounded px-1 text-3xs font-black bg-red-500 py-px text-white';
+            b.className = 'status-badge whitespace-nowrap rounded px-1 text-3xs font-black bg-rose-500 py-px text-white';
             b.textContent = totalYellows >= 2 ? '🚫' : '🤕';
             b.title = totalYellows >= 2 ? 'Expulsé' : 'Blessé / Indisponible';
             statusBar.insertBefore(b, statusBar.firstChild);
@@ -569,7 +569,7 @@ export function updateSideCard(prefix, team, slotNumber) {
             const stMax  = _state.staminaMax[subPid] ?? 100;
             const stCur  = _state.stamina[subPid]    ?? stMax;
             const pct    = stMax > 0 ? Math.round(stCur / stMax * 100) : 100;
-            const color  = pct >= 75 ? 'text-green-500' : pct >= 50 ? 'text-amber-500' : 'text-red-500';
+            const color  = pct >= 75 ? 'text-emerald-500' : pct >= 50 ? 'text-amber-500' : 'text-rose-500';
 
             const item = document.createElement('button');
             item.type = 'button';

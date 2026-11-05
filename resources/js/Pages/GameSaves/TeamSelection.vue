@@ -155,11 +155,11 @@
                             <div v-if="gameMode !== 'draft'" class="border border-slate-200 rounded-xl bg-white p-4 flex flex-col items-center">
                                 <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2 self-start">Profil</h4>
                                 <svg viewBox="0 0 160 160" class="w-36 h-36">
-                                    <polygon v-for="(pts,i) in radarGrids" :key="i" :points="pts" fill="none" stroke="#e2e8f0" stroke-width="0.8"/>
-                                    <line v-for="(ax,i) in radarAxes" :key="'a'+i" x1="80" y1="80" :x2="ax.x2" :y2="ax.y2" stroke="#e2e8f0" stroke-width="0.8"/>
-                                    <polygon :points="radarPolygon" fill="rgba(20,184,166,0.2)" stroke="#14b8a6" stroke-width="1.5" stroke-linejoin="round"/>
-                                    <circle v-for="(pt,i) in radarPoints" :key="'p'+i" :cx="pt.x" :cy="pt.y" r="2" fill="#14b8a6" stroke="white" stroke-width="1"/>
-                                    <text v-for="(pt,i) in radarPoints" :key="'t'+i" :x="pt.lx" :y="pt.ly" text-anchor="middle" dominant-baseline="middle" font-size="7" fill="#94a3b8" font-weight="600">{{ pt.label }}</text>
+                                    <polygon class="stroke-slate-200" v-for="(pts,i) in radarGrids" :key="i" :points="pts" fill="none" stroke-width="0.8"/>
+                                    <line class="stroke-slate-200" v-for="(ax,i) in radarAxes" :key="'a'+i" x1="80" y1="80" :x2="ax.x2" :y2="ax.y2" stroke-width="0.8"/>
+                                    <polygon class="stroke-teal-500 fill-teal-500/20" :points="radarPolygon" stroke-width="1.5" stroke-linejoin="round"/>
+                                    <circle class="fill-teal-500 stroke-white" v-for="(pt,i) in radarPoints" :key="'p'+i" :cx="pt.x" :cy="pt.y" r="2" stroke-width="1"/>
+                                    <text class="fill-slate-400" v-for="(pt,i) in radarPoints" :key="'t'+i" :x="pt.lx" :y="pt.ly" text-anchor="middle" dominant-baseline="middle" font-size="7" font-weight="600">{{ pt.label }}</text>
                                 </svg>
                             </div>
 
@@ -371,6 +371,7 @@
 </template>
 
 <script setup>
+import { positionGroupClass } from '@/Enums/positionBadges.js';
 import { fieldClass } from '@/Components/fieldStyles';
 import ButtonPrimary from '@/Components/ButtonPrimary.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
@@ -558,13 +559,8 @@ const overallBadgeClass = (o) => o >= 70 ? 'bg-emerald-50 border-emerald-300 tex
     : o >= 50 ? 'bg-amber-50 border-amber-300 text-amber-700'
     : 'bg-slate-100 border-slate-200 text-slate-500';
 
-// Badge de poste coloré (couleur par groupe GK / DEF / MID / ATT, libellé brut conservé).
-const posBadgeClass = (pos) => ({
-    GK:  'bg-violet-100 text-violet-700',
-    DEF: 'bg-blue-100 text-blue-700',
-    MID: 'bg-teal-100 text-teal-700',
-    ATT: 'bg-orange-100 text-orange-700',
-}[positionGroup(pos)] ?? 'bg-slate-100 text-slate-500');
+// Badge de poste coloré (couleurs communes, libellé brut conservé).
+const posBadgeClass = (pos) => positionGroupClass(positionGroup(pos));
 
 // ==========================
 //   RADAR
