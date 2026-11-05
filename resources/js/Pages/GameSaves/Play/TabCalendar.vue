@@ -216,7 +216,7 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
                                 ? 'bg-white border-slate-200 cursor-pointer hover:border-teal-300 hover:bg-teal-50'
                                 : 'bg-white border-slate-100',
                             (previewMatch ? previewMatch.id === match.id : String(selectedMatchId) === String(match.id)) ? 'border-teal-400 bg-teal-50 shadow-sm' : '',
-                            currentWeek && Number(match.week) === Number(currentWeek) ? 'ring-2 ring-amber-300' : ''
+                            currentWeek && Number(match.week) === Number(currentWeek) ? 'ring-2 ring-inset ring-amber-300' : ''
                         ]"
                          :title="isUpcoming(match) ? 'Voir l\'avant-match' : isPlayable(match) ? 'Ouvrir le match' : undefined"
                          @click="openRow(match)">
