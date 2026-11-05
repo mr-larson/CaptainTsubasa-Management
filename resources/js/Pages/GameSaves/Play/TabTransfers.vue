@@ -19,6 +19,8 @@ const props = defineProps({
     transferProcessing:   { type: Boolean, default: false },
     transferHistory:      { type: Array, default: () => [] },
     roster:               { type: Array,   default: () => [] },
+    // Joueur à ouvrir d'office (ex. conseil de recrutement du Dashboard)
+    focusPlayer:          { type: Object,  default: null },
 });
 
 const emit = defineEmits([
@@ -137,6 +139,11 @@ const selectPlayer = (p) => {
     emit('update:transferSalary', p.adjusted_cost ?? p.cost ?? 0);
     emit('update:transferMatches', 10);
 };
+
+watch(() => props.focusPlayer?.id, (id) => {
+    const p = id != null ? props.availableFreePlayers.find(fp => fp.id === id) : null;
+    if (p) selectPlayer(p);
+}, { immediate: true });
 
 // Meilleur joueur de mon effectif au même poste (pour comparaison)
 const bestTeamPlayerSamePos = computed(() => {

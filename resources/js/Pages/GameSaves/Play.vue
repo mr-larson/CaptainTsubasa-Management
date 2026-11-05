@@ -33,6 +33,7 @@ import TabTraining   from '@/Pages/GameSaves/Play/TabTraining.vue';
 import RemindersCard from '@/Pages/GameSaves/Play/RemindersCard.vue';
 import { useLineupIssues } from '@/Pages/GameSaves/Play/useLineupIssues.js';
 import { usePreMatchChecklist } from '@/Pages/GameSaves/Play/usePreMatchChecklist.js';
+import { useAssistantAdvice } from '@/Pages/GameSaves/Play/useAssistantAdvice.js';
 import TabTransfers  from '@/Pages/GameSaves/Play/TabTransfers.vue';
 import TabBonusCards     from '@/Pages/GameSaves/Play/TabBonusCards.vue';
 import TabManagement from '@/Pages/GameSaves/Play/TabManagement.vue';
@@ -148,7 +149,7 @@ const {
     playerPosition, slotToPlayer, playerForSlot, selectedSlot,
     isPickedUp, handlePlayerClick, handleDragStart, handleDragOver, handleDrop,
     cancelPickup, pickUpPlayer, fillEmptySlot, handleDropOnSlot,
-    lastChange, undoLastChange, formationImpact, reorganizeLineup,
+    lastChange, undoLastChange, formationImpact, reorganizeLineup, substitutePlayer,
     FORMATIONS, FORMATION_LIST,
 } = useTeam({ gameSave: gameSaveRef, team: teamRef });
 
@@ -233,7 +234,7 @@ const {
 
 // Rappels « À faire / État du onze » : colonne gauche sur grand écran (tous les
 // onglets), dans le Dashboard sur téléphone/tablette.
-const { lineupIssues } = useLineupIssues({
+const { lineupIssues, unavailability } = useLineupIssues({
     roster:            rosterWithStatus,
     formationData,
     playerForSlot:     () => playerForSlot,
@@ -305,6 +306,36 @@ const { actions: checklistActions, squad: checklistSquad } = usePreMatchChecklis
     week,
 });
 
+// Conseils de l'adjoint (Dashboard) : suggestions applicables en un clic.
+const { advice: assistantAdvice } = useAssistantAdvice({
+    roster:             rosterWithStatus,
+    formationData,
+    playerForSlot:      () => playerForSlot,
+    unavailability:     () => unavailability,
+    remainingTrainings: remainingTrainingsThisWeek,
+    hasBeenTrained:     () => hasPlayerBeenTrainedThisWeek,
+    trainingCost:       () => props.gameConfig?.training_cost ?? 0,
+    minStamina:         () => props.gameConfig?.training_min_stamina ?? 10,
+    staminaCost:        () => props.gameConfig?.training_stamina_cost ?? 0,
+    freePlayers:        availableFreePlayers,
+    budget:             teamBudget,
+    isWorldCup,
+});
+
+const applyAdvice = (a) => {
+    if (a.type === 'rotate') {
+        substitutePlayer(a.starter.id, a.sub.id);
+    } else if (a.type === 'train') {
+        selectedTrainings.value = a.plan.map(c => ({ player_id: c.player.id, stat: c.stat }));
+        activeTab.value = 'training';
+    } else if (a.type === 'recruit') {
+        transferFocus.value = a.candidate;
+        activeTab.value = 'transfers';
+    }
+};
+// Joueur à ouvrir dans l'onglet Transferts ; oublié dès qu'on quitte l'onglet.
+const transferFocus = ref(null);
+
 // ==========================
 //   ONGLETS
 // ==========================
@@ -327,6 +358,8 @@ const tabs = computed(() => {
     ];
 });
 const activeTab = ref('dashboard');
+
+watch(activeTab, (key) => { if (key !== 'transfers') transferFocus.value = null; });
 
 // Mobile : la barre d'onglets défile horizontalement, on garde l'onglet actif visible.
 watch(activeTab, (key) => nextTick(() =>
@@ -490,6 +523,8 @@ const saveGame = () => {
                                   @simulate-week="simulateWeek"
                                   @save-game="saveGame"
                                   :playerSeasonStats="playerSeasonStatsRef"
+                                  :advice="assistantAdvice"
+                                  @apply-advice="applyAdvice"
                                   :career="career"
                                   :incomeModel="props.incomeModel"
                                   :trainingCost="props.gameConfig?.training_cost ?? 0"
@@ -499,10 +534,13 @@ const saveGame = () => {
                         <!-- Téléphone/tablette : les cartes de la colonne gauche -->
                         <template #side-cards>
                             <div class="min-[1400px]:hidden grid grid-cols-1 md:grid-cols-2 gap-3 items-start">
-                                <RemindersCard :actions="checklistActions" :squad="checklistSquad" @open="openReminder" />
+                                <RemindersCard class="md:col-span-2" :actions="checklistActions" :squad="checklistSquad" @open="openReminder" />
+                                <!-- Seule carte de sa ligne → pleine largeur -->
                                 <CareerMandateCard v-if="career && career.mandate" compact
+                                                   :class="{ 'md:col-span-2': !weeklyRecap.length }"
                                                    :career="career" @open-rules="openCareerRules" />
-                                <WeeklyRecapCard v-if="weeklyRecap.length" :weeklyRecap="weeklyRecap" />
+                                <WeeklyRecapCard v-if="weeklyRecap.length" :weeklyRecap="weeklyRecap"
+                                                 :class="{ 'md:col-span-2': !(career && career.mandate) }" />
                             </div>
                         </template>
                     </TabDashboard>
@@ -702,6 +740,7 @@ const saveGame = () => {
                                   :transferTotalCost="transferTotalCost"
                                   :transferProcessing="transferProcessing"
                                   :roster="roster"
+                                  :focusPlayer="transferFocus"
                                   @open-modal="openTransferModal"
                                   @close-modal="closeTransferModal"
                                   @confirm-transfer="confirmTransfer"

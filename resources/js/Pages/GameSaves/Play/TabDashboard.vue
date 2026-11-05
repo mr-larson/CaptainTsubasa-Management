@@ -4,6 +4,7 @@ import { usePlayerUtils } from './usePlayerUtils.js';
 import TeamStyleBadges from "@/Pages/GameSaves/Play/components/TeamStyleBadges.vue";
 import DashboardSquadCards from "@/Pages/GameSaves/Play/components/DashboardSquadCards.vue";
 import DashboardSeasonCards from "@/Pages/GameSaves/Play/components/DashboardSeasonCards.vue";
+import AssistantAdviceCard from "@/Pages/GameSaves/Play/components/AssistantAdviceCard.vue";
 
 const props = defineProps({
     gameSave:      { type: Object, required: true },
@@ -32,12 +33,13 @@ const props = defineProps({
     isWorldCup:         { type: Boolean, default: false },
     playerSeasonStats:  { type: Object,  default: () => ({}) },
     career:             { type: Object,  default: null },
+    advice:             { type: Array,   default: () => [] },
     incomeModel:        { type: Object,  default: null },
     trainingCost:       { type: Number,  default: 0 },
     maxTrainings:       { type: Number,  default: 3 },
 });
 
-const emit = defineEmits(['play-next-match', 'simulate-week', 'save-game', 'quit', 'change-tab', 'open-player']);
+const emit = defineEmits(['play-next-match', 'simulate-week', 'save-game', 'quit', 'change-tab', 'open-player', 'apply-advice']);
 
 // ── Coupe du Monde : contexte de poule de l'équipe contrôlée + étape ──
 const wcStageLabel = computed(() => ({
@@ -452,6 +454,9 @@ const matchesPlayed = computed(() =>
                 </button>
             </div>
         </div>
+
+        <!-- Conseils de l'adjoint -->
+        <AssistantAdviceCard :advice="advice" @apply="a => emit('apply-advice', a)" />
 
         <!-- Cartes de la colonne gauche (rappels, mandat, récap) sur petit écran -->
         <slot name="side-cards" />
