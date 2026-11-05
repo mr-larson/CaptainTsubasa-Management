@@ -88,11 +88,11 @@ const counters = [
         <div class="rounded-2xl border border-teal-300/20 bg-gradient-to-br from-teal-500/10 to-slate-900/80 p-6 text-center">
             <p class="mb-4 text-slate-200">Tes parties sont sauvegardées sur ton compte : tu peux les reprendre quand tu veux.</p>
             <Link v-if="!$page.props.auth?.user" :href="route('register')"
-                  class="inline-flex min-h-[44px] items-center justify-center rounded-full bg-teal-500 px-6 text-sm font-bold text-slate-700 hover:bg-teal-400">
+                  class="inline-flex min-h-11 items-center justify-center rounded-full bg-teal-500 px-6 text-sm font-bold text-slate-700 hover:bg-teal-400">
                 Créer mon compte gratuit
             </Link>
             <Link v-else :href="route('game-saves.create')"
-                  class="inline-flex min-h-[44px] items-center justify-center rounded-full bg-teal-500 px-6 text-sm font-bold text-slate-700 hover:bg-teal-400">
+                  class="inline-flex min-h-11 items-center justify-center rounded-full bg-teal-500 px-6 text-sm font-bold text-slate-700 hover:bg-teal-400">
                 Lancer une partie
             </Link>
         </div>

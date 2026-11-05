@@ -273,7 +273,7 @@ const slotCandidates = (slot, slotDef) => substitutes.value
         <!-- État du onze : ce qui mérite attention avant le match -->
         <!-- Grand écran : déjà affiché en permanence dans la colonne gauche -->
         <div class="-mt-2 flex flex-wrap items-center gap-1.5 min-[1400px]:hidden">
-            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1">État du onze</span>
+            <span class="text-2xs font-bold text-slate-400 uppercase tracking-wider mr-1">État du onze</span>
             <template v-if="lineupIssues.length">
                 <component :is="issue.player ? 'button' : 'span'" v-for="issue in lineupIssues" :key="issue.key"
                            :type="issue.player ? 'button' : undefined"
@@ -304,7 +304,7 @@ const slotCandidates = (slot, slotDef) => substitutes.value
 
             <!-- Stats + Effectif -->
             <div class="md:col-span-4 border border-slate-200 rounded-xl bg-slate-50 p-4">
-                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Club</h4>
+                <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">Club</h4>
                 <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-slate-600">
                     <div class="flex justify-between"><span>Attaque moy.</span><span class="font-bold text-slate-700">{{ averageAttack }}</span></div>
                     <div class="flex justify-between"><span>Blessés</span>
@@ -428,7 +428,7 @@ const slotCandidates = (slot, slotDef) => substitutes.value
                             </button>
                         </template>
                         <template #footer>
-                            <p class="mt-3 text-[10px] text-slate-400 italic">
+                            <p class="mt-3 text-2xs text-slate-400 italic">
                                 💡 Sur le terrain : clique un joueur pour voir sa fiche, re-clique-le (ou glisse-le) pour le déplacer,
                                 puis clique sa cible. Les postes vides « + » se remplissent d'un clic. Échap pour annuler.
                             </p>
@@ -439,7 +439,7 @@ const slotCandidates = (slot, slotDef) => substitutes.value
                     <!-- Moral -->
                     <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
                         <div class="flex items-center justify-between mb-2">
-                            <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Moral</h4>
+                            <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Moral</h4>
                             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold"
                                   :class="selectedPlayerMorale.chip">
                                 {{ selectedPlayerMorale.emoji }} {{ selectedPlayerMorale.label }}
@@ -456,16 +456,16 @@ const slotCandidates = (slot, slotDef) => substitutes.value
                         <!-- Effets en match -->
                         <div class="flex flex-wrap items-center gap-1.5 mb-3">
                             <span v-if="selectedPlayerMoraleEffect"
-                                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold"
+                                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs font-bold"
                                   :class="selectedPlayerMoraleEffect.positive ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'"
                                   title="Appliqué à toutes les actions en match (duels, tirs, arrêts)">
                                 ⚔️ Effet en match : {{ selectedPlayerMoraleEffect.pct }}
                             </span>
-                            <span v-else class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-500">
+                            <span v-else class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs font-semibold bg-slate-100 text-slate-500">
                                 ⚔️ Aucun effet en match
                             </span>
                             <span v-if="selectedPlayerIsHeroic"
-                                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700"
+                                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs font-bold bg-amber-100 text-amber-700"
                                   title="5 % de chance de relancer gratuitement un duel perdu (une fois par match)">
                                 🔥 Dépassement de soi
                             </span>
@@ -474,7 +474,7 @@ const slotCandidates = (slot, slotDef) => substitutes.value
                         <!-- Relation coach -->
                         <div class="border-t border-slate-200 pt-3 mb-3">
                             <div class="flex items-center justify-between mb-1.5">
-                                <h5 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Relation coach</h5>
+                                <h5 class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Relation coach</h5>
                                 <span class="text-[11px] font-bold" :class="affinityDisplay.text">
                                     {{ affinityDisplay.label }}
                                     <span class="opacity-60">{{ selectedPlayerAffinity > 0 ? '+' : '' }}{{ selectedPlayerAffinity }}</span>
@@ -490,7 +490,7 @@ const slotCandidates = (slot, slotDef) => substitutes.value
                             <!-- Promesses -->
                             <div class="flex flex-wrap items-center gap-1.5 mb-2">
                                 <span v-if="activePromise"
-                                      class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-100 text-sky-700"
+                                      class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs font-bold bg-sky-100 text-sky-700"
                                       :title="activePromise.type === 'renewal'
                                           ? `Signe-lui un nouveau contrat avant la semaine ${activePromise.due_week}`
                                           : activePromise.type === 'playing_time'
@@ -502,16 +502,16 @@ const slotCandidates = (slot, slotDef) => substitutes.value
                                     <template v-else>avant S{{ activePromise.due_week }}</template>
                                 </span>
                                 <template v-else>
-                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Promettre :</span>
+                                    <span class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Promettre :</span>
                                     <button v-for="pt in PROMISE_TYPES" :key="pt.type" type="button"
                                             @click="emit('make-promise', selectedMyPlayer, pt.type)"
-                                            class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold border border-sky-300 bg-white text-sky-600 hover:bg-sky-50 transition-all"
+                                            class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-2xs font-bold border border-sky-300 bg-white text-sky-600 hover:bg-sky-50 transition-all"
                                             :title="`${pt.hint}. Tenue : +${pt.kept} relation, +${pt.kept} moral. Rompue : −${pt.broken} relation, −${pt.broken} moral.`">
                                         {{ pt.icon }} {{ pt.label }}
                                     </button>
                                 </template>
                                 <span v-if="lastResolvedPromise"
-                                      class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                                      class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs font-semibold"
                                       :class="lastResolvedPromise.status === 'kept' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'">
                                     {{ lastResolvedPromise.status === 'kept' ? '✓ Promesse tenue' : '✗ Promesse rompue' }}
                                     <template v-if="lastResolvedPromise.type === 'playing_time'">
@@ -525,27 +525,27 @@ const slotCandidates = (slot, slotDef) => substitutes.value
 
                             <!-- Déclarations publiques -->
                             <div class="flex flex-wrap items-center gap-1.5">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Presse :</span>
+                                <span class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Presse :</span>
                                 <template v-if="!declarationOnCooldown">
                                     <button type="button"
                                             @click="emit('make-declaration', selectedMyPlayer, 'praise')"
-                                            class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold border border-emerald-300 bg-white text-emerald-600 hover:bg-emerald-50 transition-all"
+                                            class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-2xs font-bold border border-emerald-300 bg-white text-emerald-600 hover:bg-emerald-50 transition-all"
                                             title="Féliciter publiquement. Mérité (en forme) : +8 relation, +4 moral. Immérité : +4 relation seulement.">
                                         📣 Féliciter
                                     </button>
                                     <button type="button"
                                             @click="emit('make-declaration', selectedMyPlayer, 'criticize')"
-                                            class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold border border-rose-300 bg-white text-rose-600 hover:bg-rose-50 transition-all"
+                                            class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-2xs font-bold border border-rose-300 bg-white text-rose-600 hover:bg-rose-50 transition-all"
                                             title="Critiquer publiquement. En méforme : peut provoquer une réaction d'orgueil (+5 moral)… ou être mal vécu. En forme : toujours injuste (−15 relation, −8 moral).">
                                         📢 Critiquer
                                     </button>
                                 </template>
-                                <span v-else class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-400"
+                                <span v-else class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs font-semibold bg-slate-100 text-slate-400"
                                       :title="`Prochaine déclaration possible en semaine ${lastDeclaration.week + 3}`">
                                     ⏳ Déjà exprimé récemment
                                 </span>
                                 <span v-if="lastDeclarationSummary"
-                                      class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                                      class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs font-semibold"
                                       :class="lastDeclarationSummary.positive ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'">
                                     {{ lastDeclarationSummary.text }} (S{{ lastDeclaration.week }})
                                 </span>
@@ -553,18 +553,18 @@ const slotCandidates = (slot, slotDef) => substitutes.value
                         </div>
 
                         <div v-if="selectedPlayerMoraleLogs.length" class="space-y-1">
-                            <h5 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Derniers changements</h5>
+                            <h5 class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Derniers changements</h5>
                             <div v-for="(log, i) in selectedPlayerMoraleLogs" :key="i"
                                  class="flex items-center gap-2 text-xs">
                                 <span class="w-8 text-right font-black shrink-0"
                                       :class="log.value > 0 ? 'text-emerald-600' : 'text-rose-500'">
                                     {{ log.value > 0 ? '+' : '' }}{{ log.value }}
                                 </span>
-                                <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 text-[10px] font-semibold shrink-0">
+                                <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 text-2xs font-semibold shrink-0">
                                     {{ moraleSourceLabel(log.source) }}
                                 </span>
                                 <span class="text-slate-600 truncate">{{ log.label }}</span>
-                                <span class="ml-auto text-[10px] text-slate-400 shrink-0">S{{ log.week }}</span>
+                                <span class="ml-auto text-2xs text-slate-400 shrink-0">S{{ log.week }}</span>
                             </div>
                         </div>
                         <p v-else class="text-xs text-slate-400 italic">Aucun changement de moral pour l'instant.</p>

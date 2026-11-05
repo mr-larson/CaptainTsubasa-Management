@@ -83,7 +83,7 @@ function launch() {
                         </span>
                         <div v-if="form.nation === nation.name"
                              class="absolute top-2 right-2 w-5 h-5 rounded-full bg-indigo-500 flex items-center justify-center">
-                            <span class="text-white text-[10px] font-bold">✓</span>
+                            <span class="text-white text-2xs font-bold">✓</span>
                         </div>
                     </button>
                 </div>

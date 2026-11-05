@@ -10,7 +10,7 @@ defineProps({
 
 <template>
     <div class="border border-slate-200 rounded-xl bg-white p-3 flex-1 max-h-[300px] overflow-y-auto">
-        <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Ordre — Tour {{ round }}</h4>
+        <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">Ordre — Tour {{ round }}</h4>
         <div class="space-y-1">
             <div v-for="t in teams" :key="t.id"
                  class="flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs transition-all"
@@ -21,7 +21,7 @@ defineProps({
                 <span class="flex-1 truncate" :class="isHumanTeam(t.id) ? 'text-amber-700 font-semibold' : 'text-slate-600'">
                     {{ t.name }}
                 </span>
-                <span class="text-[10px] text-slate-400">{{ t.rosterCount }}</span>
+                <span class="text-2xs text-slate-400">{{ t.rosterCount }}</span>
             </div>
         </div>
     </div>

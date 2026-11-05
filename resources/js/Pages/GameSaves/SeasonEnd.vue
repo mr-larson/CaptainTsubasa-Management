@@ -69,7 +69,7 @@ function startNewSeason() {
                             </p>
                         </div>
                         <div class="text-right shrink-0">
-                            <p class="text-[10px] uppercase tracking-wider text-slate-400">Confiance</p>
+                            <p class="text-2xs uppercase tracking-wider text-slate-400">Confiance</p>
                             <p class="text-2xl font-black"
                                :class="verdict.confidence <= 25 ? 'text-rose-500' : 'text-slate-700'">
                                 {{ verdict.confidence }}
@@ -173,7 +173,7 @@ function startNewSeason() {
                                 <td class="px-2 py-2 flex items-center gap-2">
                                     <img v-if="row.logo_path" :src="`/storage/${row.logo_path}`" class="w-6 h-6 rounded-full object-contain bg-slate-100" />
                                     {{ row.name }}
-                                    <span v-if="row.is_controlled" class="text-[10px] text-teal-600">• toi</span>
+                                    <span v-if="row.is_controlled" class="text-2xs text-teal-600">• toi</span>
                                 </td>
                                 <td class="text-center px-2 py-2">{{ row.achieved }} / {{ row.total }}</td>
                                 <td class="text-center px-2 py-2 font-semibold">{{ row.points }}</td>
@@ -190,7 +190,7 @@ function startNewSeason() {
                                 <span>{{ o.status === 'done' ? '✅' : '❌' }}</span>
                                 <span class="flex-1" :class="o.status === 'done' ? 'text-slate-700' : 'text-slate-400'">{{ o.label }}</span>
                                 <span class="text-xs text-slate-400 tabular-nums">{{ o.key === 'rank_max' ? o.value + 'e' : o.value.toLocaleString() }}</span>
-                                <span class="text-[10px] text-slate-400 w-20 text-right">{{ o.tier_label }} · {{ o.points }} pt{{ o.points > 1 ? 's' : '' }}</span>
+                                <span class="text-2xs text-slate-400 w-20 text-right">{{ o.tier_label }} · {{ o.points }} pt{{ o.points > 1 ? 's' : '' }}</span>
                             </li>
                         </ul>
                     </div>

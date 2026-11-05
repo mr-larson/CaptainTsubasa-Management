@@ -230,15 +230,15 @@ const matchesPlayed = computed(() =>
                 <div class="flex items-center gap-6">
                     <div class="text-center">
                         <div class="text-lg font-black text-slate-700">{{ season }}</div>
-                        <div class="text-[10px] text-slate-400 font-semibold">Saison</div>
+                        <div class="text-2xs text-slate-400 font-semibold">Saison</div>
                     </div>
                     <div class="text-center">
                         <div class="text-lg font-black text-teal-600">{{ week }}</div>
-                        <div class="text-[10px] text-slate-400 font-semibold">Semaine</div>
+                        <div class="text-2xs text-slate-400 font-semibold">Semaine</div>
                     </div>
                     <div class="text-center">
                         <div class="text-lg font-black text-slate-700">{{ matchesPlayed }}</div>
-                        <div class="text-[10px] text-slate-400 font-semibold">Matchs joués</div>
+                        <div class="text-2xs text-slate-400 font-semibold">Matchs joués</div>
                     </div>
                 </div>
 
@@ -260,7 +260,7 @@ const matchesPlayed = computed(() =>
 
             <!-- Barre progression saison -->
             <div>
-                <div class="flex justify-between text-[10px] text-slate-400 mb-1">
+                <div class="flex justify-between text-2xs text-slate-400 mb-1">
                     <span>Semaine 1</span>
                     <span class="font-semibold text-teal-500">{{ seasonProgress }}% de la saison</span>
                     <span>Semaine {{ totalWeeks }}</span>
@@ -292,14 +292,14 @@ const matchesPlayed = computed(() =>
             <!-- Classement — Coupe du Monde : position dans la poule -->
             <button v-if="isWorldCup" type="button" :class="KPI" class="flex flex-col items-center gap-1"
                     @click="emit('change-tab', 'standings')" title="Voir le tournoi">
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                <span class="text-2xs font-bold text-slate-400 uppercase tracking-wider">
                     {{ wcStanding ? 'Poule ' + wcStanding.group : 'Tournoi' }}
                 </span>
                 <span class="text-3xl font-black text-indigo-600">
                     {{ wcStanding ? wcStanding.position : '—' }}<sup v-if="wcStanding" class="text-base">e</sup>
                 </span>
-                <span class="text-[10px] text-slate-400">{{ wcStanding ? '/ ' + wcStanding.total : wcStageLabel }}</span>
-                <span v-if="wcStanding" class="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                <span class="text-2xs text-slate-400">{{ wcStanding ? '/ ' + wcStanding.total : wcStageLabel }}</span>
+                <span v-if="wcStanding" class="text-2xs font-bold px-2 py-0.5 rounded-full"
                       :class="wcStanding.qualified ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-500'">
                     {{ wcStanding.qualified ? 'Qualifié' : wcStanding.points + ' pts' }}
                 </span>
@@ -308,7 +308,7 @@ const matchesPlayed = computed(() =>
             <!-- Classement — Ligue : position, points, évolution, objectif -->
             <button v-else type="button" :class="KPI" class="flex flex-col items-center gap-1"
                     @click="emit('change-tab', 'standings')" title="Voir le classement">
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Classement</span>
+                <span class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Classement</span>
                 <span class="flex items-baseline gap-2">
                     <span class="text-3xl font-black" :class="rankStyle">
                         {{ clubStanding?.position ?? '—' }}<sup v-if="clubStanding" class="text-base">e</sup>
@@ -319,8 +319,8 @@ const matchesPlayed = computed(() =>
                         {{ positionDelta > 0 ? '↑' + positionDelta : positionDelta < 0 ? '↓' + (-positionDelta) : '=' }}
                     </span>
                 </span>
-                <span class="text-[10px] text-slate-400">/ {{ standings.length }} · <span class="font-bold text-teal-600">{{ clubStanding?.points ?? 0 }} pts</span></span>
-                <span v-if="objective" class="text-[10px] font-bold px-2 py-0.5 rounded-full border"
+                <span class="text-2xs text-slate-400">/ {{ standings.length }} · <span class="font-bold text-teal-600">{{ clubStanding?.points ?? 0 }} pts</span></span>
+                <span v-if="objective" class="text-2xs font-bold px-2 py-0.5 rounded-full border"
                       :class="objective.ok ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
                             : objective.out ? 'bg-rose-50 border-rose-200 text-rose-700'
                             : 'bg-amber-50 border-amber-200 text-amber-700'"
@@ -332,19 +332,19 @@ const matchesPlayed = computed(() =>
             <!-- Bilan -->
             <button type="button" :class="KPI" class="col-span-2 order-last sm:col-span-1 sm:order-none"
                     @click="emit('change-tab', 'calendar')" title="Voir le calendrier">
-                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 text-center">Bilan</span>
+                <span class="block text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2 text-center">Bilan</span>
                 <span class="flex gap-2">
                     <span class="flex-1 text-center bg-emerald-50 rounded-lg py-1.5">
                         <span class="block text-xl font-black text-emerald-600">{{ teamRecord.wins ?? 0 }}</span>
-                        <span class="block text-[9px] text-emerald-500 font-semibold">V</span>
+                        <span class="block text-3xs text-emerald-500 font-semibold">V</span>
                     </span>
                     <span class="flex-1 text-center bg-slate-100 rounded-lg py-1.5">
                         <span class="block text-xl font-black text-slate-500">{{ teamRecord.draws ?? 0 }}</span>
-                        <span class="block text-[9px] text-slate-400 font-semibold">N</span>
+                        <span class="block text-3xs text-slate-400 font-semibold">N</span>
                     </span>
                     <span class="flex-1 text-center bg-rose-50 rounded-lg py-1.5">
                         <span class="block text-xl font-black text-rose-500">{{ teamRecord.losses ?? 0 }}</span>
-                        <span class="block text-[9px] text-rose-400 font-semibold">D</span>
+                        <span class="block text-3xs text-rose-400 font-semibold">D</span>
                     </span>
                 </span>
             </button>
@@ -352,9 +352,9 @@ const matchesPlayed = computed(() =>
             <!-- Budget -->
             <button type="button" :class="KPI" class="flex flex-col items-center gap-1"
                     @click="scrollToFinances" title="Voir le détail des finances">
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Budget</span>
+                <span class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Budget</span>
                 <span class="text-3xl font-black text-teal-600 tabular-nums">{{ Number(teamBudget).toLocaleString('fr-FR') }}</span>
-                <span v-if="projection" class="text-[10px] text-slate-400">
+                <span v-if="projection" class="text-2xs text-slate-400">
                     ≈ {{ projection.likely.toLocaleString('fr-FR') }} en S{{ seasonEndWeek }}
                 </span>
             </button>
@@ -373,7 +373,7 @@ const matchesPlayed = computed(() =>
             <div v-if="!isByeWeek && nextMatch && nextMatchInfo" class="p-1.5">
                 <!-- Label -->
                 <div class="text-center">
-            <span class="text-[10px] font-bold uppercase tracking-widest"
+            <span class="text-2xs font-bold uppercase tracking-widest"
                   :class="nextMatchInfo.isHome ? 'text-teal-500' : 'text-orange-500'">
                 {{ nextMatchInfo.isHome ? '🏠 Domicile' : '✈️ Extérieur' }}
                 &nbsp;•&nbsp; Semaine {{ nextMatchInfo.week }}
@@ -389,17 +389,17 @@ const matchesPlayed = computed(() =>
                             <span v-else class="text-2xl">🏟️</span>
                         </div>
                         <div class="text-sm font-bold text-slate-700 text-center">{{ team?.name ?? '—' }}</div>
-                        <div class="text-[10px] text-slate-400">{{ clubStanding ? `${clubStanding.position}e au classement` : '' }}</div>
+                        <div class="text-2xs text-slate-400">{{ clubStanding ? `${clubStanding.position}e au classement` : '' }}</div>
                         <div v-if="myForm.length" class="flex gap-1" aria-label="Forme récente">
                             <span v-for="(r, i) in myForm" :key="i" :title="r.title"
-                                  class="w-5 h-5 rounded text-[10px] font-black flex items-center justify-center" :class="FORM_STYLE[r.label]">{{ r.label }}</span>
+                                  class="w-5 h-5 rounded text-2xs font-black flex items-center justify-center" :class="FORM_STYLE[r.label]">{{ r.label }}</span>
                         </div>
                     </div>
 
                     <!-- VS + Bouton central -->
                     <div class="text-center shrink-0 flex flex-col items-center gap-3">
                         <div class="text-3xl font-black text-slate-300">VS</div>
-                        <div v-if="lastHeadToHead" class="text-[10px] text-slate-400 -mt-2">
+                        <div v-if="lastHeadToHead" class="text-2xs text-slate-400 -mt-2">
                             Dernier duel (S{{ lastHeadToHead.week }}) :
                             <span class="font-bold" :class="{ 'text-emerald-600': lastHeadToHead.label === 'V', 'text-rose-500': lastHeadToHead.label === 'D', 'text-slate-500': lastHeadToHead.label === 'N' }">
                                 {{ lastHeadToHead.scored }}-{{ lastHeadToHead.conceded }}
@@ -426,14 +426,14 @@ const matchesPlayed = computed(() =>
                             <span v-else class="text-2xl">⚽</span>
                         </div>
                         <div class="text-sm font-bold text-slate-700 text-center">{{ nextMatchInfo.opponentName }}</div>
-                        <div class="text-[10px] text-slate-400">
+                        <div class="text-2xs text-slate-400">
                             {{ standings.findIndex(r => r.id === opponentTeam?.id) + 1 > 0
                             ? `${standings.findIndex(r => r.id === opponentTeam?.id) + 1}e au classement`
                             : '' }}
                         </div>
                         <div v-if="opponentForm.length" class="flex gap-1" aria-label="Forme récente de l'adversaire">
                             <span v-for="(r, i) in opponentForm" :key="i" :title="r.title"
-                                  class="w-5 h-5 rounded text-[10px] font-black flex items-center justify-center" :class="FORM_STYLE[r.label]">{{ r.label }}</span>
+                                  class="w-5 h-5 rounded text-2xs font-black flex items-center justify-center" :class="FORM_STYLE[r.label]">{{ r.label }}</span>
                         </div>
                     </div>
                 </div>
@@ -465,9 +465,9 @@ const matchesPlayed = computed(() =>
         <!-- ============================================ -->
         <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
             <div class="flex items-center justify-between gap-2 mb-3">
-                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">{{ team?.name ?? 'Mon équipe' }}</h4>
-                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider shrink-0">Forces</h4>
-                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate text-right">
+                <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider truncate">{{ team?.name ?? 'Mon équipe' }}</h4>
+                <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider shrink-0">Forces</h4>
+                <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider truncate text-right">
                     {{ opponentTeam && !isByeWeek ? nextMatchInfo?.opponentName : 'Pas d\'adversaire' }}
                 </h4>
             </div>
@@ -493,7 +493,7 @@ const matchesPlayed = computed(() =>
             </div>
             <div v-if="opponentTeam && !isByeWeek && opponentThreats.length"
                  class="mt-3 pt-3 border-t border-slate-200 flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-xs">
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">À surveiller</span>
+                <span class="text-2xs font-bold text-slate-400 uppercase tracking-wider">À surveiller</span>
                 <span v-for="t in opponentThreats" :key="t.key" class="text-slate-700">
                     <span class="font-semibold">{{ t.text }}</span>
                     <span class="text-slate-400"> · {{ t.detail }}</span>

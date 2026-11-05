@@ -21,12 +21,12 @@ const CARD = {
     power:      'text-lg font-black tabular-nums text-slate-700',
     cost:       'whitespace-nowrap text-[11px] font-bold text-slate-700/75 [&>span]:font-black [&>span]:text-slate-700/90',
     spIcon:     'text-[15px] leading-none',
-    spTitle:    'line-clamp-2 text-[10px] font-extrabold leading-tight text-amber-800',
+    spTitle:    'line-clamp-2 text-2xs font-extrabold leading-tight text-amber-800',
     spFoot:     'flex flex-col gap-px',
     spPower:    'text-[13px] font-black tabular-nums text-amber-800',
-    spCost:     'whitespace-nowrap text-[9px] font-bold text-amber-800/85 [&>span]:font-black',
+    spCost:     'whitespace-nowrap text-3xs font-bold text-amber-800/85 [&>span]:font-black',
     cooldown:   'pointer-events-none absolute right-1 top-1 rounded-full bg-white/75 px-1 text-[8px] font-extrabold leading-tight text-amber-800/85',
-    cooldownMain: 'pointer-events-none absolute right-2 top-2 rounded-full bg-white/75 px-1 text-[9px] font-extrabold leading-tight text-amber-800/85',
+    cooldownMain: 'pointer-events-none absolute right-2 top-2 rounded-full bg-white/75 px-1 text-3xs font-extrabold leading-tight text-amber-800/85',
 };
 
 const specialDataAttr = (move) => `data-special='${JSON.stringify(move).replace(/'/g, "&#39;")}'`;

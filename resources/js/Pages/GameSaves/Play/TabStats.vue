@@ -141,7 +141,7 @@ const sortIcon = (key) => {
             <!-- Filtre équipe -->
             <div class="border border-slate-200 rounded-xl bg-slate-50 p-3">
                 <div class="flex flex-wrap gap-1.5 items-center">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1">Filtrer :</span>
+                    <span class="text-2xs font-bold text-slate-400 uppercase tracking-wider mr-1">Filtrer :</span>
                     <button type="button"
                             @click="selectedTeamFilter = null"
                             class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all"
@@ -187,7 +187,7 @@ const sortIcon = (key) => {
                              :class="isMyTeam(p.teamId) ? 'bg-teal-100 border border-teal-200' : 'bg-white/70'"
                         >
                             <!-- Rang -->
-                            <div class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black text-white shrink-0"
+                            <div class="w-5 h-5 rounded-full flex items-center justify-center text-2xs font-black text-white shrink-0"
                                  :class="rank === 0 ? 'bg-yellow-400' : rank === 1 ? 'bg-slate-400' : rank === 2 ? 'bg-amber-600' : category.badge">
                                 {{ rank + 1 }}
                             </div>
@@ -203,7 +203,7 @@ const sortIcon = (key) => {
                                 <div class="text-[11px] font-semibold truncate" :class="isMyTeam(p.teamId) ? 'text-teal-800' : 'text-slate-700'">
                                     {{ p.lastname }}
                                 </div>
-                                <div class="text-[9px] opacity-60 truncate">{{ p.teamName }}</div>
+                                <div class="text-3xs opacity-60 truncate">{{ p.teamName }}</div>
                             </div>
 
                             <!-- Valeur -->
@@ -212,7 +212,7 @@ const sortIcon = (key) => {
                             </div>
                         </div>
 
-                        <p v-if="!category.players.length" class="text-[10px] text-slate-400 italic text-center py-2">
+                        <p v-if="!category.players.length" class="text-2xs text-slate-400 italic text-center py-2">
                             Aucune donnée
                         </p>
                     </div>
@@ -246,7 +246,7 @@ const sortIcon = (key) => {
                                 :class="sortKey === col.key ? 'text-teal-600 font-bold' : 'text-slate-500 font-semibold'"
                                 @click="setSort(col.key)" tabindex="0" @keydown.enter.prevent="setSort(col.key)"
                             >
-                                {{ col.label }} <span class="text-[10px]">{{ sortIcon(col.key) }}</span>
+                                {{ col.label }} <span class="text-2xs">{{ sortIcon(col.key) }}</span>
                             </th>
                         </tr>
                         </thead>
@@ -265,7 +265,7 @@ const sortIcon = (key) => {
                                           :class="isMyTeam(t.id) ? 'text-teal-700' : 'text-slate-700'">
                                             {{ t.name }}
                                         </span>
-                                    <span v-if="isMyTeam(t.id)" class="text-[9px] bg-teal-500 text-white px-1.5 py-0.5 rounded-full font-bold shrink-0">
+                                    <span v-if="isMyTeam(t.id)" class="text-3xs bg-teal-500 text-white px-1.5 py-0.5 rounded-full font-bold shrink-0">
                                             MON ÉQUIPE
                                         </span>
                                 </div>

@@ -37,8 +37,8 @@ const staminaBar = (v) => v >= 60 ? 'bg-emerald-400' : v >= 30 ? 'bg-amber-400' 
 <template>
     <div class="h-[280px] border border-slate-200 rounded-xl bg-slate-100 overflow-hidden shadow-sm flex flex-col">
         <div class="px-3 py-1.5 bg-slate-200/60 border-b border-slate-200 flex items-center justify-between shrink-0">
-            <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Banc</h4>
-            <span class="text-[10px] font-bold text-slate-400">{{ substitutes.length }}</span>
+            <h4 class="text-2xs font-bold text-slate-500 uppercase tracking-wider">Banc</h4>
+            <span class="text-2xs font-bold text-slate-400">{{ substitutes.length }}</span>
         </div>
 
         <div class="flex-1 overflow-y-auto p-2">
@@ -62,7 +62,7 @@ const staminaBar = (v) => v >= 60 ? 'bg-emerald-400' : v >= 30 ? 'bg-amber-400' 
                     <div class="relative flex flex-col items-center transition-transform duration-150"
                          :class="[isPickedUp(p) ? 'scale-110' : 'hover:scale-105', statusOf(p) && !isPickedUp(p) ? 'opacity-50' : '']">
                         <div v-if="statusOf(p)"
-                             class="absolute -top-1 left-0 w-4 h-4 rounded-full bg-white shadow text-[10px] leading-4 text-center z-10">{{ statusOf(p).icon }}</div>
+                             class="absolute -top-1 left-0 w-4 h-4 rounded-full bg-white shadow text-2xs leading-4 text-center z-10">{{ statusOf(p).icon }}</div>
                         <div class="w-8 h-8 rounded-full border-2 flex items-center justify-center overflow-hidden shadow-md transition-all bg-slate-400"
                              :class="[
                                 isPickedUp(p)
@@ -73,9 +73,9 @@ const staminaBar = (v) => v >= 60 ? 'bg-emerald-400' : v >= 30 ? 'bg-amber-400' 
                                         : 'border-white/70'
                              ]">
                             <img v-if="playerPhotoUrl(p)" :src="playerPhotoUrl(p)" class="w-full h-full object-cover pointer-events-none" alt=""/>
-                            <span v-else class="text-[9px] font-bold text-white">?</span>
+                            <span v-else class="text-3xs font-bold text-white">?</span>
                         </div>
-                        <div class="mt-0.5 px-1 rounded text-[9px] font-semibold leading-tight text-center max-w-[56px] truncate pointer-events-none"
+                        <div class="mt-0.5 px-1 rounded text-3xs font-semibold leading-tight text-center max-w-[56px] truncate pointer-events-none"
                              :class="isPickedUp(p)
                                 ? 'bg-amber-300 text-slate-700'
                                 : selectedId === p.id
@@ -96,7 +96,7 @@ const staminaBar = (v) => v >= 60 ? 'bg-emerald-400' : v >= 30 ? 'bg-amber-400' 
                     </div>
                 </div>
             </div>
-            <p v-else class="text-[10px] text-slate-400 text-center py-4 italic">
+            <p v-else class="text-2xs text-slate-400 text-center py-4 italic">
                 Aucun remplaçant
             </p>
         </div>

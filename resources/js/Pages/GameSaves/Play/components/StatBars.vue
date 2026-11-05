@@ -44,7 +44,7 @@ const valueOf = (key) => props.player?.[key] ?? props.player?.stats?.[key] ?? nu
 
 <template>
     <div class="border border-slate-200 rounded-xl bg-slate-50 p-3">
-        <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Statistiques</h4>
+        <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">Statistiques</h4>
         <div class="space-y-1.5">
             <div v-for="stat in stats" :key="stat.key" class="flex items-center gap-2 text-xs">
                 <span class="w-16 text-slate-500 shrink-0 text-[11px]">{{ stat.label }}</span>
@@ -60,12 +60,12 @@ const valueOf = (key) => props.player?.[key] ?? props.player?.stats?.[key] ?? nu
                 <span class="w-6 text-right font-bold text-slate-700 text-[11px]">
                     {{ valueOf(stat.key) ?? '—' }}
                 </span>
-                <span v-if="comparePlayer" class="w-5 text-right text-[10px] text-slate-400">
+                <span v-if="comparePlayer" class="w-5 text-right text-2xs text-slate-400">
                     {{ comparePlayer[stat.key] ?? comparePlayer.stats?.[stat.key] ?? '—' }}
                 </span>
             </div>
         </div>
-        <p v-if="comparePlayer && compareLabel" class="text-[9px] text-slate-400 mt-2">
+        <p v-if="comparePlayer && compareLabel" class="text-3xs text-slate-400 mt-2">
             Comparé à {{ compareLabel }}
         </p>
     </div>

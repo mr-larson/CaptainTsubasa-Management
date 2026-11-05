@@ -33,17 +33,17 @@
                     <span class="flex-1 truncate text-sm font-medium">{{ item.firstname }} {{ item.lastname }}</span>
                     <span v-if="item.position"
                           :class="selected ? 'bg-white/20 text-white' : positionBadgeClass(item.position)"
-                          class="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0">
+                          class="text-2xs font-bold px-2 py-0.5 rounded-full shrink-0">
                         {{ positionShort(item.position) }}
                     </span>
                 </template>
 
                 <template #badges>
                     <span v-if="form.position" :class="positionBadgeClass(form.position)"
-                          class="text-[10px] font-bold px-2 py-0.5 rounded-full">
+                          class="text-2xs font-bold px-2 py-0.5 rounded-full">
                         {{ form.position }}
                     </span>
-                    <span v-if="overall" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                    <span v-if="overall" class="text-2xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
                         OVR {{ overall }}
                     </span>
                 </template>

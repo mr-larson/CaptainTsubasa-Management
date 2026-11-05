@@ -485,7 +485,7 @@ export function updateSideCard(prefix, team, slotNumber) {
         // 🤕 Indisponible (inséré en premier = apparaît à gauche)
         if (info?.isAvailable === false) {
             const b = document.createElement('div');
-            b.className = 'status-badge whitespace-nowrap rounded px-1 text-[9px] font-black bg-red-500 py-px text-white';
+            b.className = 'status-badge whitespace-nowrap rounded px-1 text-3xs font-black bg-red-500 py-px text-white';
             b.textContent = totalYellows >= 2 ? '🚫' : '🤕';
             b.title = totalYellows >= 2 ? 'Expulsé' : 'Blessé / Indisponible';
             statusBar.insertBefore(b, statusBar.firstChild);
@@ -494,7 +494,7 @@ export function updateSideCard(prefix, team, slotNumber) {
         // 🟨 Cartons jaunes
         if (totalYellows > 0) {
             const b = document.createElement('div');
-            b.className = 'status-badge whitespace-nowrap rounded px-1 text-[9px] font-black bg-yellow-500 py-px text-stone-900';
+            b.className = 'status-badge whitespace-nowrap rounded px-1 text-3xs font-black bg-yellow-500 py-px text-stone-900';
             b.textContent = `${totalYellows}🟨`;
             b.title = `${totalYellows} carton(s) jaune`;
             statusBar.insertBefore(b, statusBar.firstChild);
@@ -504,7 +504,7 @@ export function updateSideCard(prefix, team, slotNumber) {
         if (info?.isCaptain) {
             const rerolls = _state?.captainReroll?.[team]?.rerollsRemaining ?? 0;
             const b = document.createElement('div');
-            b.className = 'status-badge whitespace-nowrap rounded px-1 text-[9px] font-black cursor-default bg-amber-500 px-[5px] py-px text-white';
+            b.className = 'status-badge whitespace-nowrap rounded px-1 text-3xs font-black cursor-default bg-amber-500 px-[5px] py-px text-white';
             b.setAttribute('data-captain-reroll', team);
             b.textContent = `👑 ${rerolls}`;
             b.title = `Capitaine — ${rerolls} relance(s) restante(s)`;
@@ -554,7 +554,7 @@ export function updateSideCard(prefix, team, slotNumber) {
         panel.className = 'sub-panel hidden absolute right-1 top-8 z-[80] min-w-[180px] overflow-hidden rounded-[10px] border border-slate-200 bg-white shadow-lg';
 
         const header = document.createElement('div');
-        header.className = 'bg-sky-500 px-2.5 py-1.5 text-[10px] font-bold text-white';
+        header.className = 'bg-sky-500 px-2.5 py-1.5 text-2xs font-bold text-white';
         header.textContent = `🔄 Choisir remplaçant`;
         panel.appendChild(header);
 
@@ -577,9 +577,9 @@ export function updateSideCard(prefix, team, slotNumber) {
             item.innerHTML = `
             <div>
                 <div class="font-bold">${subInfo.lastname}</div>
-                <div class="text-[9px] text-slate-400">${subInfo.position ?? '—'}</div>
+                <div class="text-3xs text-slate-400">${subInfo.position ?? '—'}</div>
             </div>
-            <span class="${color} text-[10px] font-bold">${pct}%⚡</span>`;
+            <span class="${color} text-2xs font-bold">${pct}%⚡</span>`;
             item.onclick = () => {
                 if (_state._performSubstitution) {
                     const ok = _state._performSubstitution(team, slotNumber, slot);

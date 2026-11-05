@@ -41,7 +41,7 @@
                 </template>
 
                 <template #badges>
-                    <span v-if="!editor.creating.value" class="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                    <span v-if="!editor.creating.value" class="text-2xs font-bold px-2 py-0.5 rounded-full"
                           :class="remaining > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'">
                         {{ remaining }} match{{ remaining > 1 ? 's' : '' }} restant{{ remaining > 1 ? 's' : '' }}
                     </span>

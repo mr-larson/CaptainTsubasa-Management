@@ -72,7 +72,7 @@ const rankIcon = (rank) => {
                          :class="myRank === 1 ? 'text-yellow-500' : myRank <= 3 ? 'text-amber-500' : myRank <= 6 ? 'text-teal-500' : 'text-slate-500'">
                         {{ myRank }}<sup class="text-xl">e</sup>
                     </div>
-                    <div class="text-[10px] text-slate-400 font-semibold">/ {{ standings.length }}</div>
+                    <div class="text-2xs text-slate-400 font-semibold">/ {{ standings.length }}</div>
                 </div>
 
                 <!-- Logo + nom -->
@@ -93,31 +93,31 @@ const rankIcon = (rank) => {
                 <div class="flex gap-4 flex-1">
                     <div class="text-center">
                         <div class="text-xl font-black text-teal-600">{{ myStanding.points }}</div>
-                        <div class="text-[10px] text-slate-400 font-semibold">Points</div>
+                        <div class="text-2xs text-slate-400 font-semibold">Points</div>
                     </div>
                     <div class="text-center">
                         <div class="text-xl font-black text-slate-700">{{ goalsFor(myStanding) }}</div>
-                        <div class="text-[10px] text-slate-400 font-semibold">Buts marqués</div>
+                        <div class="text-2xs text-slate-400 font-semibold">Buts marqués</div>
                     </div>
                     <div class="text-center">
                         <div class="text-xl font-black text-slate-700">{{ goalsAgainst(myStanding) }}</div>
-                        <div class="text-[10px] text-slate-400 font-semibold">Buts encaissés</div>
+                        <div class="text-2xs text-slate-400 font-semibold">Buts encaissés</div>
                     </div>
                     <div class="text-center">
                         <div class="text-xl font-black"
                              :class="(goalsFor(myStanding) - goalsAgainst(myStanding)) >= 0 ? 'text-emerald-600' : 'text-rose-500'">
                             {{ goalDiff(myStanding) }}
                         </div>
-                        <div class="text-[10px] text-slate-400 font-semibold">Diff. buts</div>
+                        <div class="text-2xs text-slate-400 font-semibold">Diff. buts</div>
                     </div>
                 </div>
 
                 <!-- Forme récente -->
                 <div class="shrink-0">
-                    <div class="text-[10px] text-slate-400 font-semibold mb-1.5">Forme récente</div>
+                    <div class="text-2xs text-slate-400 font-semibold mb-1.5">Forme récente</div>
                     <div class="flex gap-1">
                         <span v-for="(r, i) in recentFormFor(team?.id)" :key="i"
-                              class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black"
+                              class="w-6 h-6 rounded-full flex items-center justify-center text-2xs font-black"
                               :class="r.class">
                             {{ r.label }}
                         </span>
@@ -171,7 +171,7 @@ const rankIcon = (rank) => {
                                         {{ row.name }}
                                     </span>
                                 <span v-if="team?.id === row.id"
-                                      class="text-[9px] bg-teal-500 text-white px-1.5 py-0.5 rounded-full font-bold shrink-0">
+                                      class="text-3xs bg-teal-500 text-white px-1.5 py-0.5 rounded-full font-bold shrink-0">
                                         MOI
                                     </span>
                             </div>
@@ -194,11 +194,11 @@ const rankIcon = (rank) => {
                         <td class="py-2 pl-4">
                             <div class="flex gap-0.5">
                                     <span v-for="(r, i) in recentFormFor(row.id)" :key="i"
-                                          class="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black"
+                                          class="w-5 h-5 rounded-full flex items-center justify-center text-3xs font-black"
                                           :class="r.class">
                                         {{ r.label }}
                                     </span>
-                                <span v-if="!recentFormFor(row.id).length" class="text-[10px] text-slate-300">—</span>
+                                <span v-if="!recentFormFor(row.id).length" class="text-2xs text-slate-300">—</span>
                             </div>
                         </td>
 
@@ -211,7 +211,7 @@ const rankIcon = (rank) => {
                                          :style="{ width: (((row.points ?? 0) / maxPoints) * 100) + '%' }">
                                     </div>
                                 </div>
-                                <span class="text-[10px] text-slate-400 w-4 text-right">{{ row.points }}</span>
+                                <span class="text-2xs text-slate-400 w-4 text-right">{{ row.points }}</span>
                             </div>
                         </td>
                     </tr>

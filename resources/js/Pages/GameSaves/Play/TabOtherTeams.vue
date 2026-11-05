@@ -70,7 +70,7 @@ const selectedPlayerPerf = computed(() => {
 
         <!-- LIGNE 1 : Sélecteur équipe (chips horizontales) -->
         <div class="border border-slate-200 rounded-xl bg-slate-50 p-3">
-            <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Équipes de la ligue</h3>
+            <h3 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">Équipes de la ligue</h3>
             <div class="flex flex-wrap gap-1.5">
                 <button
                     v-for="t in otherTeams" :key="t.id"
@@ -129,7 +129,7 @@ const selectedPlayerPerf = computed(() => {
 
             <!-- Stats + Effectif -->
             <div class="md:col-span-4 border border-slate-200 rounded-xl bg-slate-50 p-4">
-                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Club</h4>
+                <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">Club</h4>
                 <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-slate-600">
                     <div class="flex justify-between">
                         <span>Attaque moy.</span>

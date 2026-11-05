@@ -61,7 +61,7 @@ const rewardMax = computed(() => props.challenges.objectives.reduce((s, o) => s 
                 <div class="flex items-center gap-2 min-w-0">
                     <span class="shrink-0" :title="o.family_label">{{ o.family_icon }}</span>
                     <span class="text-xs font-semibold text-slate-700 leading-snug flex-1 min-w-0">{{ o.label }}</span>
-                    <span class="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-full border" :class="TIER_CLS[o.tier]">
+                    <span class="shrink-0 text-2xs font-bold px-1.5 py-0.5 rounded-full border" :class="TIER_CLS[o.tier]">
                         {{ o.tier_label }} · {{ o.points }} pt{{ o.points > 1 ? 's' : '' }}
                     </span>
                 </div>
@@ -69,14 +69,14 @@ const rewardMax = computed(() => props.challenges.objectives.reduce((s, o) => s 
                     <div class="flex-1 h-1.5 rounded-full bg-slate-200 overflow-hidden">
                         <div class="h-full rounded-full transition-all" :class="barCls(o)" :style="{ width: progress(o) + '%' }"></div>
                     </div>
-                    <span class="text-[10px] text-slate-500 w-24 text-right tabular-nums">{{ valueText(o) }}</span>
-                    <span class="text-[10px] font-semibold w-24 text-right" :class="STATUS[o.status].cls">
+                    <span class="text-2xs text-slate-500 w-24 text-right tabular-nums">{{ valueText(o) }}</span>
+                    <span class="text-2xs font-semibold w-24 text-right" :class="STATUS[o.status].cls">
                         {{ STATUS[o.status].icon }} {{ STATUS[o.status].text }}
                     </span>
                 </div>
             </li>
         </ul>
-        <p class="text-[10px] text-slate-400 mt-3">
+        <p class="text-2xs text-slate-400 mt-3">
             Sans effet sur le championnat : chaque défi réussi rapporte une prime et des points pour le classement des défis de fin de saison. Toutes les équipes ont les leurs.
         </p>
     </div>

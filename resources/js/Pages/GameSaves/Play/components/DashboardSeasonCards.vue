@@ -51,7 +51,7 @@ const fmt = (n) => Number(n ?? 0).toLocaleString('fr-FR');
         <!-- Trajectoire -->
         <div v-if="!isWorldCup" class="md:col-span-2 border border-slate-200 rounded-xl bg-slate-50 p-4">
             <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Trajectoire</h4>
+                <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Trajectoire</h4>
                 <div v-if="objective" class="flex flex-wrap items-center gap-2 text-[11px]">
                     <span class="font-semibold text-slate-500">🎯 {{ career.mandate.label }}</span>
                     <span class="px-2 py-0.5 rounded-full border font-semibold"
@@ -82,10 +82,10 @@ const fmt = (n) => Number(n ?? 0).toLocaleString('fr-FR');
                       :class="dotClass(p.position)"
                       :style="{ left: (p.x / W * 100) + '%', top: (p.y / H * 100) + '%' }"
                       :title="`Semaine ${p.week} : ${p.position}e`"></span>
-                <span class="absolute -left-1 text-[9px] text-slate-400" :style="{ top: (yFor(1) / H * 100) + '%', transform: 'translateY(-50%)' }">1</span>
-                <span class="absolute -left-1 text-[9px] text-slate-400" :style="{ top: (yFor(teamCount) / H * 100) + '%', transform: 'translateY(-50%)' }">{{ teamCount }}</span>
+                <span class="absolute -left-1 text-3xs text-slate-400" :style="{ top: (yFor(1) / H * 100) + '%', transform: 'translateY(-50%)' }">1</span>
+                <span class="absolute -left-1 text-3xs text-slate-400" :style="{ top: (yFor(teamCount) / H * 100) + '%', transform: 'translateY(-50%)' }">{{ teamCount }}</span>
             </div>
-            <div v-if="points.length" class="flex justify-between text-[10px] text-slate-400 mt-1 px-1">
+            <div v-if="points.length" class="flex justify-between text-2xs text-slate-400 mt-1 px-1">
                 <span>S{{ points[0].week }}</span>
                 <span v-if="targetRank" class="text-emerald-600">zone verte = objectif</span>
                 <span>S{{ points.at(-1).week }} · {{ points.at(-1).position }}e</span>
@@ -95,7 +95,7 @@ const fmt = (n) => Number(n ?? 0).toLocaleString('fr-FR');
 
         <!-- Finances -->
         <div id="dashboard-finances" class="border border-slate-200 rounded-xl bg-slate-50 p-4 scroll-mt-4" :class="isWorldCup ? 'md:col-span-3' : ''">
-            <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Finances</h4>
+            <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">Finances</h4>
             <div class="space-y-1.5 text-xs text-slate-600">
                 <div class="flex justify-between"><span>Budget</span><span class="font-black text-slate-700 tabular-nums">{{ fmt(budget) }}</span></div>
                 <div v-if="incomeModel" class="flex justify-between gap-2">
@@ -114,7 +114,7 @@ const fmt = (n) => Number(n ?? 0).toLocaleString('fr-FR');
                         <span>Fin de saison (S{{ totalWeeks }})</span>
                         <span class="font-black text-teal-600 tabular-nums">≈ {{ fmt(projection.likely) }}</span>
                     </div>
-                    <p class="text-[10px] text-slate-400 mt-0.5 leading-snug">
+                    <p class="text-2xs text-slate-400 mt-0.5 leading-snug">
                         Au rythme actuel, hors achats ({{ weeksLeft }} sem. de revenus). Minimum garanti : {{ fmt(projection.min) }}.
                     </p>
                 </div>

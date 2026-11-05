@@ -191,11 +191,11 @@ const canConfirm = computed(() => {
                 <div class="flex items-center gap-3">
                     <div class="text-center px-4 py-2 rounded-xl border bg-emerald-50 border-emerald-200">
                         <div class="text-lg font-black text-emerald-600">{{ teamBudget }} €</div>
-                        <div class="text-[10px] font-semibold text-emerald-500">Budget</div>
+                        <div class="text-2xs font-semibold text-emerald-500">Budget</div>
                     </div>
                     <div class="text-center px-4 py-2 rounded-xl border bg-teal-50 border-teal-200">
                         <div class="text-lg font-black text-teal-600">{{ availableCards.length }}</div>
-                        <div class="text-[10px] font-semibold text-teal-500">En inventaire</div>
+                        <div class="text-2xs font-semibold text-teal-500">En inventaire</div>
                     </div>
                 </div>
             </div>
@@ -214,7 +214,7 @@ const canConfirm = computed(() => {
                         :class="activeTab === 'inventory' ? 'border-teal-500 text-teal-600' : 'border-transparent text-slate-500 hover:text-slate-700'">
                     🎒 Inventaire
                     <span v-if="availableCards.length"
-                          class="ml-1 bg-teal-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">
+                          class="ml-1 bg-teal-500 text-white text-3xs font-black px-1.5 py-0.5 rounded-full">
                         {{ availableCards.length }}
                     </span>
                 </button>
@@ -236,7 +236,7 @@ const canConfirm = computed(() => {
                 </div>
                 <div class="text-right shrink-0">
                     <div class="text-sm font-black text-sky-700">+{{ ch.reward }} €</div>
-                    <div class="text-[9px] font-semibold text-sky-500">si réussi</div>
+                    <div class="text-3xs font-semibold text-sky-500">si réussi</div>
                 </div>
             </div>
 
@@ -305,7 +305,7 @@ const canConfirm = computed(() => {
                             :class="group.key === 'malus' ? 'text-rose-600' : 'text-slate-500'">
                             {{ group.label }}
                         </h4>
-                        <span class="text-[10px] text-slate-400">{{ group.hint }}</span>
+                        <span class="text-2xs text-slate-400">{{ group.hint }}</span>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -321,12 +321,12 @@ const canConfirm = computed(() => {
                                     <div>
                                         <div class="text-sm font-black text-slate-700">{{ offer.name }}</div>
                                         <div class="flex items-center gap-1 mt-0.5">
-                                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                                            <span class="text-2xs font-bold px-2 py-0.5 rounded-full"
                                                   :class="tierClasses(offer.tier).badge">
                                                 {{ tierClasses(offer.tier).label }}
                                             </span>
                                             <span v-if="group.key === 'malus'"
-                                                  class="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-rose-500 text-white">
+                                                  class="text-3xs font-black px-1.5 py-0.5 rounded-full bg-rose-500 text-white">
                                                 MALUS
                                             </span>
                                         </div>
@@ -344,10 +344,10 @@ const canConfirm = computed(() => {
 
                             <!-- Tags -->
                             <div class="flex gap-1.5 flex-wrap">
-                                <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/70 border border-slate-200 text-slate-600">
+                                <span class="text-2xs font-semibold px-2 py-0.5 rounded-full bg-white/70 border border-slate-200 text-slate-600">
                                     {{ phaseLabel(offer.execution_phase) }}
                                 </span>
-                                <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/70 border border-slate-200 text-slate-600">
+                                <span class="text-2xs font-semibold px-2 py-0.5 rounded-full bg-white/70 border border-slate-200 text-slate-600">
                                     {{ targetLabel(offer.target) }}
                                 </span>
                             </div>
@@ -410,30 +410,30 @@ const canConfirm = computed(() => {
                                     <div class="flex-1 min-w-0">
                                         <div class="text-xs font-black text-slate-700 truncate">{{ card.name }}</div>
                                         <div class="flex items-center gap-1 mt-0.5">
-                                            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                                            <span class="text-2xs font-bold px-1.5 py-0.5 rounded-full"
                                                   :class="tierClasses(card.tier).badge">
                                                 {{ tierClasses(card.tier).label }}
                                             </span>
                                             <span v-if="group.key === 'malus'"
-                                                  class="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-rose-500 text-white">
+                                                  class="text-3xs font-black px-1.5 py-0.5 rounded-full bg-rose-500 text-white">
                                                 MALUS
                                             </span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <p class="text-[10px] text-slate-600 leading-relaxed">{{ card.description }}</p>
+                                <p class="text-2xs text-slate-600 leading-relaxed">{{ card.description }}</p>
 
                                 <div class="flex gap-1 flex-wrap">
-                                    <span class="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-white/80 border border-slate-200 text-slate-500">
+                                    <span class="text-3xs font-semibold px-1.5 py-0.5 rounded-full bg-white/80 border border-slate-200 text-slate-500">
                                         {{ phaseLabel(card.execution_phase) }}
                                     </span>
-                                    <span class="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-white/80 border border-slate-200 text-slate-500">
+                                    <span class="text-3xs font-semibold px-1.5 py-0.5 rounded-full bg-white/80 border border-slate-200 text-slate-500">
                                         {{ targetLabel(card.target) }}
                                     </span>
                                 </div>
 
-                                <div class="text-[10px] font-semibold text-center rounded-lg py-1"
+                                <div class="text-2xs font-semibold text-center rounded-lg py-1"
                                      :class="group.key === 'malus' ? 'text-rose-600 bg-rose-50' : 'text-teal-600 bg-teal-50'">
                                     Cliquer pour activer
                                 </div>
@@ -457,8 +457,8 @@ const canConfirm = computed(() => {
                          class="border rounded-xl p-2 opacity-50 flex items-center gap-2 border-slate-200 bg-slate-100">
                         <span class="text-xl">{{ card.icon }}</span>
                         <div class="min-w-0">
-                            <div class="text-[10px] font-bold text-slate-600 truncate">{{ card.name }}</div>
-                            <div class="text-[9px] text-slate-400">S{{ card.used_season }}·S{{ card.used_week }}</div>
+                            <div class="text-2xs font-bold text-slate-600 truncate">{{ card.name }}</div>
+                            <div class="text-3xs text-slate-400">S{{ card.used_season }}·S{{ card.used_week }}</div>
                         </div>
                     </div>
                 </div>

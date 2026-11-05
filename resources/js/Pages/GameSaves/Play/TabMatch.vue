@@ -584,7 +584,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                             <span class="text-slate-300 mx-1">-</span>
                             {{ selectedCalendarMatch.away_score }}
                         </div>
-                        <div class="text-[10px] text-slate-400 font-semibold mt-1">{{ roundTitle(selectedCalendarMatch) }}</div>
+                        <div class="text-2xs text-slate-400 font-semibold mt-1">{{ roundTitle(selectedCalendarMatch) }}</div>
                     </div>
 
                     <!-- Équipe extérieure -->
@@ -629,7 +629,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                     </div>
                     <div v-if="highlights.length" class="flex flex-wrap gap-1.5">
                         <span v-for="(h, i) in highlights" :key="i"
-                              class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white border border-slate-200 text-[10px] font-semibold text-slate-600">
+                              class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white border border-slate-200 text-2xs font-semibold text-slate-600">
                             {{ h.icon }} {{ h.text }}<span v-if="h.turn" class="text-slate-400">· T{{ h.turn }}</span>
                         </span>
                     </div>
@@ -670,10 +670,10 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
 
             <!-- Barres comparatives équipes -->
             <div v-show="detailTab === 'stats'" class="border border-slate-200 rounded-xl bg-slate-50 p-4">
-                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">Comparatif équipes</h4>
+                <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-3">Comparatif équipes</h4>
                 <div class="space-y-2">
                     <div v-for="bar in statBars" :key="bar.label">
-                        <div class="text-[10px] text-slate-400 text-center mb-0.5">{{ bar.label }}</div>
+                        <div class="text-2xs text-slate-400 text-center mb-0.5">{{ bar.label }}</div>
                         <div class="flex items-center gap-2">
                             <div class="w-8 text-right text-xs font-black"
                                  :class="bar.home > bar.away ? 'text-blue-600' : 'text-slate-500'">{{ bar.home }}</div>
@@ -703,7 +703,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
             <div v-show="detailTab === 'players'">
         <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
                 <div class="flex items-center justify-between mb-3">
-                    <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider">
                         Joueurs — {{ statsTeamName }}
                     </h4>
                     <div class="flex rounded-lg overflow-hidden border border-slate-200 text-[11px] font-semibold">
@@ -732,20 +732,20 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
             <!-- ============================================ -->
             <div v-if="selectedCalendarEvents.length" v-show="detailTab === 'log'" ref="logSection" class="border border-slate-200 rounded-xl bg-slate-50 p-4 scroll-mt-2">
                 <div class="flex items-center justify-between mb-3 gap-2 flex-wrap">
-                    <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                    <h4 class="text-2xs font-bold text-slate-500 uppercase tracking-wider">
                         📋 Déroulé du match (action par action)
                     </h4>
                     <div class="flex items-center gap-1.5">
                         <button v-for="f in LOG_FILTERS" :key="f.key" type="button"
                                 @click="logFilter = f.key"
-                                class="px-2 py-0.5 rounded-full text-[10px] font-semibold border transition-all"
+                                class="px-2 py-0.5 rounded-full text-2xs font-semibold border transition-all"
                                 :class="logFilter === f.key
                                     ? 'bg-teal-500 text-white border-teal-600'
                                     : 'bg-white text-slate-500 border-slate-200 hover:border-teal-300'">
                             {{ f.label }} <span class="opacity-70">({{ logFilterCount(f.key) }})</span>
                         </button>
                         <button type="button" @click="newestFirst = !newestFirst"
-                                class="ml-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border border-slate-200 bg-white text-slate-500 hover:border-teal-300"
+                                class="ml-1 px-2 py-0.5 rounded-full text-2xs font-semibold border border-slate-200 bg-white text-slate-500 hover:border-teal-300"
                                 title="Inverser l'ordre">
                             {{ newestFirst ? '↑ Plus récent d\'abord' : '↓ Chronologique' }}
                         </button>
@@ -758,7 +758,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                          :class="[playLogRowClass(ev), diceBreakdown(ev) ? 'cursor-pointer hover:ring-1 hover:ring-teal-200' : '']"
                          :title="diceBreakdown(ev) ? 'Voir le détail des dés' : undefined"
                          @click="toggleEvent(ev)">
-                        <span class="shrink-0 font-mono text-[9px] px-1 py-0.5 rounded bg-white/70 text-slate-500">
+                        <span class="shrink-0 font-mono text-3xs px-1 py-0.5 rounded bg-white/70 text-slate-500">
                             T{{ String(ev.turn).padStart(2, '0') }}
                         </span>
                         <span v-if="ev.team" class="w-2 h-2 rounded-full mt-1 shrink-0"
@@ -768,7 +768,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                             <div class="font-semibold text-slate-700 flex items-center gap-1.5 flex-wrap">
                                 <span>{{ ev.text }}</span>
                                 <span v-if="ev.score"
-                                      class="px-1.5 py-0.5 rounded bg-slate-700 text-white text-[10px] font-black tabular-nums">
+                                      class="px-1.5 py-0.5 rounded bg-slate-700 text-white text-2xs font-black tabular-nums">
                                     {{ ev.score }}
                                 </span>
                             </div>
@@ -776,16 +776,16 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                             <!-- Duel : acteurs structurés (logs récents) -->
                             <div v-if="ev.attacker || ev.defender" class="mt-1 flex items-center gap-1.5 flex-wrap">
                                 <span v-if="ev.attacker"
-                                      class="inline-flex items-center gap-1 pl-0.5 pr-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">
+                                      class="inline-flex items-center gap-1 pl-0.5 pr-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-2xs font-bold">
                                     <span class="w-4 h-4 rounded-full overflow-hidden bg-emerald-200 shrink-0">
                                         <img loading="lazy" decoding="async" v-if="eventPlayerPhoto(ev.attacker)" :src="eventPlayerPhoto(ev.attacker)" class="w-full h-full object-cover" alt=""/>
                                     </span>
                                     N°{{ ev.attacker.number ?? '?' }} {{ ev.attacker.name }}
                                     <span v-if="eventActionLabel(ev.action)" class="opacity-60 font-semibold">· {{ eventActionLabel(ev.action) }}</span>
                                 </span>
-                                <span v-if="ev.attacker && ev.defender" class="text-[10px] text-slate-400">⚔️</span>
+                                <span v-if="ev.attacker && ev.defender" class="text-2xs text-slate-400">⚔️</span>
                                 <span v-if="ev.defender"
-                                      class="inline-flex items-center gap-1 pl-0.5 pr-1.5 py-0.5 rounded-full bg-rose-100 text-rose-700 text-[10px] font-bold">
+                                      class="inline-flex items-center gap-1 pl-0.5 pr-1.5 py-0.5 rounded-full bg-rose-100 text-rose-700 text-2xs font-bold">
                                     <span class="w-4 h-4 rounded-full overflow-hidden bg-rose-200 shrink-0">
                                         <img loading="lazy" decoding="async" v-if="eventPlayerPhoto(ev.defender)" :src="eventPlayerPhoto(ev.defender)" class="w-full h-full object-cover" alt=""/>
                                     </span>
@@ -805,13 +805,13 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                             </div>
 
                             <!-- Fallback anciens matchs : détails texte -->
-                            <div v-else-if="ev.details?.length" class="text-[10px] text-slate-400">
+                            <div v-else-if="ev.details?.length" class="text-2xs text-slate-400">
                                 {{ ev.details.join(' · ') }}
                             </div>
 
                             <!-- Détail des dés (déplié au clic) -->
                             <div v-if="expandedEvent === ev.index && diceBreakdown(ev)"
-                                 class="mt-1.5 grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[10px]">
+                                 class="mt-1.5 grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-2xs">
                                 <div class="rounded-md bg-emerald-50 border border-emerald-100 px-2 py-1">
                                     <div class="font-bold text-emerald-700">Attaque {{ diceBreakdown(ev).attack.total }}</div>
                                     <div class="text-emerald-700/80">base {{ diceBreakdown(ev).attack.base }}</div>
@@ -871,7 +871,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                                 <span class="mx-2 text-slate-400">{{ selectedCalendarMatch.home_score }} - {{ selectedCalendarMatch.away_score }}</span>
                                 {{ teamById[selectedCalendarMatch.away_team_id]?.name }}
                             </div>
-                            <div class="text-[10px] text-slate-400">{{ roundTitle(selectedCalendarMatch) }}</div>
+                            <div class="text-2xs text-slate-400">{{ roundTitle(selectedCalendarMatch) }}</div>
                         </div>
                     </div>
                     <button type="button" @click="showReplay = false"
@@ -925,7 +925,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                                     </div>
                                     <div class="min-w-0">
                                         <div class="text-xs font-semibold text-slate-700">{{ ev.text }}</div>
-                                        <div v-if="ev.detail" class="text-[10px] text-slate-400">{{ ev.detail }}</div>
+                                        <div v-if="ev.detail" class="text-2xs text-slate-400">{{ ev.detail }}</div>
                                     </div>
                                 </div>
                             </div>
@@ -957,7 +957,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                                     </div>
                                     <div class="min-w-0">
                                         <div class="text-xs font-semibold text-slate-700">{{ ev.text }}</div>
-                                        <div v-if="ev.detail" class="text-[10px] text-slate-400">{{ ev.detail }}</div>
+                                        <div v-if="ev.detail" class="text-2xs text-slate-400">{{ ev.detail }}</div>
                                     </div>
                                 </div>
                             </div>

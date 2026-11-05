@@ -453,12 +453,12 @@ const saveGame = () => {
                               :class="p.is_active
                                   ? 'bg-teal-500 text-white border-teal-600 shadow-sm'
                                   : 'bg-white text-slate-500 border-slate-200'">
-                            <span class="w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-black"
+                            <span class="w-4 h-4 rounded-full flex items-center justify-center text-2xs font-black"
                                   :class="p.is_active ? 'bg-white/90 text-teal-700' : 'bg-slate-100 text-slate-400'">
                                 {{ p.seat }}
                             </span>
                             {{ p.name }}
-                            <span v-if="p.is_active" class="text-[10px] font-bold uppercase">• à toi de jouer</span>
+                            <span v-if="p.is_active" class="text-2xs font-bold uppercase">• à toi de jouer</span>
                         </span>
                     </div>
                 </div>

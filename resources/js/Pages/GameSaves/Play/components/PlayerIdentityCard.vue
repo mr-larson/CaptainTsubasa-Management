@@ -42,10 +42,10 @@ const { overallOf, playerPhotoUrl, nationalityFlag } = usePlayerUtils();
                 <h3 class="text-base font-bold text-slate-700">{{ player.firstname }} {{ player.lastname }}</h3>
 
                 <div v-if="showCaptainBadge && player.is_captain" class="flex items-center gap-1.5 mt-1">
-                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold uppercase tracking-wide">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-2xs font-bold uppercase tracking-wide">
                         👑 Capitaine
                     </span>
-                    <span class="text-[10px] text-slate-400">
+                    <span class="text-2xs text-slate-400">
                         {{ player.captain_rerolls_remaining ?? 3 }} relances/match
                     </span>
                 </div>

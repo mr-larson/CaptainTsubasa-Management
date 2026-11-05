@@ -386,7 +386,7 @@ onUnmounted(() => clearTimer());
             </div>
             <div class="px-3 py-1 rounded-lg bg-slate-700 text-white font-black text-sm tabular-nums shrink-0">
                 {{ liveScore.home }} - {{ liveScore.away }}
-                <span v-if="isFinished" class="ml-1 text-[9px] font-normal text-slate-400">(final {{ finalHomeScore }}-{{ finalAwayScore }})</span>
+                <span v-if="isFinished" class="ml-1 text-3xs font-normal text-slate-400">(final {{ finalHomeScore }}-{{ finalAwayScore }})</span>
             </div>
             <div class="flex items-center gap-2 min-w-0 flex-row-reverse">
                 <img v-if="awayLogo" :src="awayLogo" class="w-5 h-5 object-contain shrink-0" alt=""/>
@@ -422,8 +422,8 @@ onUnmounted(() => clearTimer());
                          :class="[
                             p.side === 'internal' ? 'bg-sky-600' : 'bg-rose-600',
                             p.isActor
-                                ? 'w-6 h-6 text-[10px] ring-2 ring-amber-300 scale-110'
-                                : 'w-5 h-5 text-[9px] ring-1 ring-white/50 opacity-90',
+                                ? 'w-6 h-6 text-2xs ring-2 ring-amber-300 scale-110'
+                                : 'w-5 h-5 text-3xs ring-1 ring-white/50 opacity-90',
                          ]"
                          :title="`N°${p.number ?? '?'} ${p.lastname}`">
                         {{ p.number ?? '?' }}
@@ -439,7 +439,7 @@ onUnmounted(() => clearTimer());
             <!-- ballon -->
             <div class="absolute -translate-y-1/2 -translate-x-1/2 transition-all duration-700 ease-out z-10"
                  :style="{ left: ballPosition + '%', top: ballLane + '%' }">
-                <div class="w-5 h-5 rounded-full bg-white shadow-lg flex items-center justify-center text-[10px] ring-2 ring-amber-400">
+                <div class="w-5 h-5 rounded-full bg-white shadow-lg flex items-center justify-center text-2xs ring-2 ring-amber-400">
                     ⚽
                 </div>
             </div>
@@ -467,25 +467,25 @@ onUnmounted(() => clearTimer());
                 <!-- Acteurs du duel (logs structurés) -->
                 <div v-if="currentActors" class="mt-1 flex flex-wrap items-center gap-1.5">
                     <span v-if="currentActors.attacker"
-                          class="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-700">
+                          class="text-2xs px-1.5 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-700">
                         N°{{ currentActors.attacker.number ?? '?' }} {{ currentActors.attacker.name }}
                     </span>
-                    <span v-if="currentActors.attacker && currentActors.defender" class="text-[10px] text-slate-400">⚔️</span>
+                    <span v-if="currentActors.attacker && currentActors.defender" class="text-2xs text-slate-400">⚔️</span>
                     <span v-if="currentActors.defender"
-                          class="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-rose-100 text-rose-700">
+                          class="text-2xs px-1.5 py-0.5 rounded-full font-bold bg-rose-100 text-rose-700">
                         N°{{ currentActors.defender.number ?? '?' }} {{ currentActors.defender.name }}
                     </span>
                 </div>
                 <div v-if="currentEvent?.details?.length" class="mt-1 flex flex-wrap gap-1">
                     <span v-for="(d, i) in currentEvent.details" :key="i"
-                          class="text-[10px] px-1.5 py-0.5 rounded bg-white border border-slate-200 text-slate-500">{{ d }}</span>
+                          class="text-2xs px-1.5 py-0.5 rounded bg-white border border-slate-200 text-slate-500">{{ d }}</span>
                 </div>
             </div>
         </div>
 
         <!-- Barre de progression -->
         <div class="flex items-center gap-2 pt-2">
-            <span class="text-[10px] text-slate-400 tabular-nums w-10 text-right">{{ cursor }}/{{ totalSteps }}</span>
+            <span class="text-2xs text-slate-400 tabular-nums w-10 text-right">{{ cursor }}/{{ totalSteps }}</span>
             <div class="relative flex-1">
                 <input type="range" min="0" :max="totalSteps" :value="cursor"
                        @input="seek($event.target.value)"
@@ -493,7 +493,7 @@ onUnmounted(() => clearTimer());
                 <!-- Buts sur la timeline (cliquables) -->
                 <button v-for="g in goalSteps" :key="g" type="button"
                         @click="seek(g)"
-                        class="absolute -top-3 -translate-x-1/2 text-[10px] leading-none hover:scale-125 transition-transform"
+                        class="absolute -top-3 -translate-x-1/2 text-2xs leading-none hover:scale-125 transition-transform"
                         :style="{ left: markerLeft(g) }"
                         :title="`But — action ${g}`">⚽</button>
             </div>

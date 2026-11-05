@@ -42,7 +42,7 @@ const hasNoPerf = computed(() => perfChips.value.every(c => c.val === 0));
 
 <template>
     <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
-        <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">Performance saison</h4>
+        <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-3">Performance saison</h4>
         <div v-if="perfChips.length" class="flex flex-wrap gap-2">
             <div v-for="chip in perfChips" :key="chip.label"
                  class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
@@ -50,13 +50,13 @@ const hasNoPerf = computed(() => perfChips.value.every(c => c.val === 0));
                 <span>{{ chip.icon }}</span>
                 <span>{{ chip.label }}</span>
                 <span class="font-black">{{ chip.val }}</span>
-                <span v-if="chip.sub !== null" class="opacity-50 text-[10px]">/ {{ chip.sub }} ✓</span>
+                <span v-if="chip.sub !== null" class="opacity-50 text-2xs">/ {{ chip.sub }} ✓</span>
             </div>
         </div>
         <p v-if="!perfChips.length" class="text-xs text-slate-400 italic">
             Aucune donnée de performance pour ce joueur.
         </p>
-        <p v-else-if="hasNoPerf" class="mt-2 text-[10px] text-slate-400 italic">
+        <p v-else-if="hasNoPerf" class="mt-2 text-2xs text-slate-400 italic">
             Aucun match joué pour le moment cette saison.
         </p>
     </div>

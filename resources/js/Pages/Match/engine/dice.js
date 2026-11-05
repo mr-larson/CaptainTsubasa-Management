@@ -487,7 +487,7 @@ function formatBreakdownHTML(b) {
 
     // Badge captain reroll
     const rerollBadge = b.captainReroll
-        ? `<div class="mb-1.5 rounded bg-amber-500 px-2 py-0.5 text-center text-[9px] font-bold tracking-wider text-white">👑 CAPTAIN REROLL — 2d20 Avantage</div>`
+        ? `<div class="mb-1.5 rounded bg-amber-500 px-2 py-0.5 text-center text-3xs font-bold tracking-wider text-white">👑 CAPTAIN REROLL — 2d20 Avantage</div>`
         : "";
 
     // Contexte joueurs

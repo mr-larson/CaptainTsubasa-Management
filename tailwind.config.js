@@ -18,6 +18,12 @@ export default {
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
+            // Micro-texte des écrans de jeu (badges, en-têtes de tableau, légendes).
+            // Taille seule, sans line-height : rendu identique aux anciens text-[10px] / text-[9px].
+            fontSize: {
+                '2xs': '10px',
+                '3xs': '9px',
+            },
             // Apparition « rebond » (annonce d'un pick au draft).
             keyframes: {
                 'bounce-in': {

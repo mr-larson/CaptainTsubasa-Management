@@ -59,7 +59,7 @@
                                         :alt="internalIsHome ? 'Logo domicile' : 'Logo extérieur'"
                                         class="h-full w-full object-contain"
                                     />
-                                    <span v-else class="text-[10px] opacity-60">—</span>
+                                    <span v-else class="text-2xs opacity-60">—</span>
                                 </div>
 
                                 <!-- ⚠️ ID utilisé par engine.js -->
@@ -92,7 +92,7 @@
                                         :alt="internalIsHome ? 'Logo extérieur' : 'Logo domicile'"
                                         class="h-full w-full object-contain"
                                     />
-                                    <span v-else class="text-[10px] opacity-60">—</span>
+                                    <span v-else class="text-2xs opacity-60">—</span>
                                 </div>
                             </div>
                         </div>
@@ -322,7 +322,7 @@
                             <!-- ✅ shrink-0 : empêche l’entête de “manger” la place scroll -->
                             <div id="log-current" class="shrink-0">
                                 <div class="flex items-center justify-between gap-2">
-                                    <div class="text-[10px] uppercase tracking-widest font-bold text-slate-600 whitespace-nowrap">ACTION</div>
+                                    <div class="text-2xs uppercase tracking-widest font-bold text-slate-600 whitespace-nowrap">ACTION</div>
                                     <button id="dice-anim-toggle" type="button" class="dice-anim-toggle" title="Animation des dés : normale / rapide / désactivée"></button>
                                 </div>
                                 <div class="mt-2 flex items-center justify-between gap-2">
@@ -350,7 +350,7 @@
                      ======================================================= -->
                 <!-- Mobile (< lg) : barre collée en bas de l'écran pour garder actions et terrain visibles ensemble. -->
                 <div id="bars-container" class="mt-4 flex flex-col gap-2.5 lg:mt-[30px] max-lg:sticky max-lg:bottom-0 max-lg:z-30 max-lg:pb-[env(safe-area-inset-bottom)]">
-                    <div id="action-bar" class="mx-auto block w-full rounded-2xl border border-black/5 bg-white/85 p-3 shadow-[0_12px_22px_rgba(0,0,0,0.18)] max-lg:max-h-[45vh] max-lg:overflow-y-auto"></div>
+                    <div id="action-bar" class="mx-auto block w-full rounded-2xl border border-black/5 bg-white/85 p-3 shadow-xl max-lg:max-h-[45vh] max-lg:overflow-y-auto"></div>
                     <div id="info-text" class="text-xs text-slate-700/75"></div>
                 </div>
 

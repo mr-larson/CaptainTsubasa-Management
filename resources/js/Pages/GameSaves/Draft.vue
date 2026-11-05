@@ -561,7 +561,7 @@ onMounted(() => {
                                     </div>
                                     <div>
                                         <div class="text-xs font-bold text-amber-700">{{ myTeam?.name }}</div>
-                                        <div class="text-[10px] text-amber-500">{{ myRosterCount }}/18 joueurs • {{ myBudget }} €</div>
+                                        <div class="text-2xs text-amber-500">{{ myRosterCount }}/18 joueurs • {{ myBudget }} €</div>
                                     </div>
                                 </div>
                                 <TeamStyleBadges :team="myTeam" size="sm" />
@@ -571,20 +571,20 @@ onMounted(() => {
                             <div class="border border-slate-200 rounded-xl bg-white p-3">
                                 <div class="mb-2">
                                     <div class="flex items-center justify-between mb-1.5">
-                                        <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Effectif</h4>
-                                        <span class="text-[10px] font-bold text-slate-400">{{ inspectedRoster.length }}</span>
+                                        <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Effectif</h4>
+                                        <span class="text-2xs font-bold text-slate-400">{{ inspectedRoster.length }}</span>
                                     </div>
                                     <div class="flex gap-1">
-        <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-yellow-100 text-yellow-700">
+        <span class="px-1.5 py-0.5 rounded text-3xs font-bold bg-yellow-100 text-yellow-700">
             GK {{ inspectedPosCounts.GK }}
         </span>
-                                        <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-100 text-blue-700">
+                                        <span class="px-1.5 py-0.5 rounded text-3xs font-bold bg-blue-100 text-blue-700">
             DEF {{ inspectedPosCounts.DEF }}
         </span>
-                                        <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-green-100 text-green-700">
+                                        <span class="px-1.5 py-0.5 rounded text-3xs font-bold bg-green-100 text-green-700">
             MID {{ inspectedPosCounts.MID }}
         </span>
-                                        <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-red-100 text-red-700">
+                                        <span class="px-1.5 py-0.5 rounded text-3xs font-bold bg-red-100 text-red-700">
             ATT {{ inspectedPosCounts.ATT }}
         </span>
                                     </div>
@@ -609,12 +609,12 @@ onMounted(() => {
                                         </div>
                                         <span class="flex-1 font-semibold text-slate-700 truncate">{{ pick.player_name }}</span>
                                         <span :class="positionColor(pick.position)"
-                                              class="px-1 py-0.5 rounded text-[9px] font-bold">
+                                              class="px-1 py-0.5 rounded text-3xs font-bold">
                 {{ positionGroup(pick.position) }}
             </span>
-                                        <span class="text-[9px] text-slate-400">{{ pick.cost }}€</span>
+                                        <span class="text-3xs text-slate-400">{{ pick.cost }}€</span>
                                     </div>
-                                    <p v-if="!inspectedRoster.length" class="text-[10px] text-slate-400 italic text-center py-2">
+                                    <p v-if="!inspectedRoster.length" class="text-2xs text-slate-400 italic text-center py-2">
                                         Aucun joueur pioché
                                     </p>
                                 </div>
@@ -694,7 +694,7 @@ onMounted(() => {
                                 </div>
 
                                 <!-- Tri : clic sur les en-têtes de colonnes du tableau -->
-                                <span class="text-[10px] text-slate-400 italic self-center">💡 Clique un en-tête de colonne pour trier</span>
+                                <span class="text-2xs text-slate-400 italic self-center">💡 Clique un en-tête de colonne pour trier</span>
                             </div>
 
                             <!-- Grille joueurs -->
@@ -703,7 +703,7 @@ onMounted(() => {
                                 <div class="max-h-[60vh] overflow-auto">
                                     <table class="w-full text-xs min-w-[900px]">
                                         <thead class="sticky top-0 bg-slate-50 border-b border-slate-200 z-10">
-                                        <tr class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                        <tr class="text-2xs font-bold text-slate-400 uppercase tracking-wider">
                                             <th class="py-2 pl-3 pr-1 w-8 text-center" title="Comparer">⚖️</th>
                                             <th class="text-left py-2 pl-1 pr-2 cursor-pointer select-none hover:text-amber-600 transition-colors"
                                                 :class="sortBy === 'name' ? 'text-amber-600' : ''"
@@ -758,13 +758,13 @@ onMounted(() => {
                                                     <div class="w-7 h-7 rounded-full overflow-hidden bg-slate-200 shrink-0">
                                                         <img loading="lazy" decoding="async" v-if="player.photo_path" :src="photoSrc(`/storage/${player.photo_path}`)"
                                                              class="w-full h-full object-cover" alt=""/>
-                                                        <div v-else class="w-full h-full flex items-center justify-center text-[9px] text-slate-400">?</div>
+                                                        <div v-else class="w-full h-full flex items-center justify-center text-3xs text-slate-400">?</div>
                                                     </div>
                                                     <div class="min-w-0">
                                                         <div class="font-semibold text-slate-700 truncate max-w-[120px] group-hover/name:text-amber-600 group-hover/name:underline">
                                                             {{ player.lastname }}<span v-if="duoOf(player)" :title="duoTitle(player)" class="ml-1">🤝</span>
                                                         </div>
-                                                        <div class="text-[9px] text-slate-400 truncate max-w-[120px]">{{ player.firstname }}</div>
+                                                        <div class="text-3xs text-slate-400 truncate max-w-[120px]">{{ player.firstname }}</div>
                                                     </div>
                                                 </button>
                                             </td>
@@ -772,7 +772,7 @@ onMounted(() => {
                                             <!-- Poste -->
                                             <td class="py-1.5 px-1 text-center">
                         <span :class="positionColor(player.position)"
-                              class="px-1.5 py-0.5 rounded text-[9px] font-bold">
+                              class="px-1.5 py-0.5 rounded text-3xs font-bold">
                             {{ positionGroup(player.position) }}
                         </span>
                                             </td>
@@ -789,7 +789,7 @@ onMounted(() => {
 
                                             <!-- Moral de départ -->
                                             <td class="py-1.5 px-1 text-center">
-                        <span class="font-black text-[10px] tabular-nums"
+                        <span class="font-black text-2xs tabular-nums"
                               :class="moraleState(player.morale).text"
                               :title="`Moral : ${moraleState(player.morale).label}`">
                             {{ moraleState(player.morale).emoji }} {{ player.morale ?? 60 }}
@@ -814,7 +814,7 @@ onMounted(() => {
                                             <!-- Coût -->
                                             <td class="py-1.5 px-2 text-right">
                                                 <span class="font-semibold text-amber-600">{{ draftCost(player) }} €</span>
-                                                <span class="text-[9px] text-slate-400 ml-1">{{ weeklyCost(player) }} €/sem</span>
+                                                <span class="text-3xs text-slate-400 ml-1">{{ weeklyCost(player) }} €/sem</span>
                                             </td>
 
                                             <!-- Bouton -->
@@ -822,10 +822,10 @@ onMounted(() => {
                                                 <button v-if="canAfford(player)"
                                                         @click.stop="pickPlayer(player)"
                                                         :disabled="isProcessing"
-                                                        class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-amber-500 text-white hover:bg-amber-400 transition-all active:scale-95 disabled:opacity-50">
+                                                        class="px-2.5 py-1 rounded-lg text-2xs font-bold bg-amber-500 text-white hover:bg-amber-400 transition-all active:scale-95 disabled:opacity-50">
                                                     Piocher
                                                 </button>
-                                                <span v-else class="text-[9px] text-rose-400 font-semibold">Trop cher</span>
+                                                <span v-else class="text-3xs text-rose-400 font-semibold">Trop cher</span>
                                             </td>
                                         </tr>
                                         </tbody>
@@ -847,9 +847,9 @@ onMounted(() => {
                                         </div>
                                         <div class="flex-1 text-left">
                                             <p class="text-sm font-semibold text-slate-700">{{ pick.player_name }}</p>
-                                            <p class="text-[10px] text-slate-400">{{ pick.team_name }}</p>
+                                            <p class="text-2xs text-slate-400">{{ pick.team_name }}</p>
                                         </div>
-                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                                        <span class="text-2xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
                                             {{ positionGroup(pick.position) }}
                                         </span>
                                     </div>

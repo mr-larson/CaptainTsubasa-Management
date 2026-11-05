@@ -67,8 +67,8 @@ const formatDate = (value) => {
                             <div class="flex-1 min-w-0">
                                 <div class="text-sm font-bold text-slate-700 flex items-center gap-2">
                                     {{ pkg.name }}
-                                    <span v-if="pkg.is_shared" class="px-2 py-0.5 rounded-full bg-teal-100 text-teal-700 text-[10px] font-bold uppercase tracking-wide">Partagée</span>
-                                    <span v-else class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 text-[10px] font-bold uppercase tracking-wide">Privée</span>
+                                    <span v-if="pkg.is_shared" class="px-2 py-0.5 rounded-full bg-teal-100 text-teal-700 text-2xs font-bold uppercase tracking-wide">Partagée</span>
+                                    <span v-else class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 text-2xs font-bold uppercase tracking-wide">Privée</span>
                                 </div>
                                 <div class="text-xs text-slate-400 mt-0.5">
                                     {{ pkg.description || 'Sans description' }}

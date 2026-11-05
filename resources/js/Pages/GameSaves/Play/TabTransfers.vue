@@ -245,14 +245,14 @@ const filteredHistory = computed(() =>
                 <div class="flex flex-wrap gap-2 mt-auto">
                     <div class="text-center px-4 py-2 rounded-xl border bg-teal-50 border-teal-200">
                         <div class="text-xl font-black text-teal-600">{{ teamBudget }} €</div>
-                        <div class="text-[10px] text-teal-400 font-semibold">Budget actuel</div>
+                        <div class="text-2xs text-teal-400 font-semibold">Budget actuel</div>
                     </div>
                     <div v-if="transferTarget" class="text-center px-4 py-2 rounded-xl border"
                          :class="canAfford ? 'bg-emerald-50 border-emerald-200' : 'bg-rose-50 border-rose-200'">
                         <div class="text-xl font-black" :class="canAfford ? 'text-emerald-600' : 'text-rose-500'">
                             {{ budgetAfter }} €
                         </div>
-                        <div class="text-[10px] font-semibold" :class="canAfford ? 'text-emerald-400' : 'text-rose-400'">
+                        <div class="text-2xs font-semibold" :class="canAfford ? 'text-emerald-400' : 'text-rose-400'">
                             Après transfert
                         </div>
                     </div>
@@ -302,8 +302,8 @@ const filteredHistory = computed(() =>
             <!-- ============================================ -->
             <div class="lg:col-span-5 border border-slate-200 rounded-xl bg-slate-50 p-3 max-h-[690px] overflow-y-auto">
                 <div class="flex items-center justify-between gap-2 mb-2">
-                    <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Agents libres</h3>
-                    <label class="flex items-center gap-1.5 text-[10px] font-semibold text-slate-400">
+                    <h3 class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Agents libres</h3>
+                    <label class="flex items-center gap-1.5 text-2xs font-semibold text-slate-400">
                         Trier par
                         <select v-model="sortKey"
                                 class="py-1 pl-2 pr-7 text-xs font-semibold text-slate-600 border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-teal-300 focus:border-teal-300">
@@ -325,10 +325,10 @@ const filteredHistory = computed(() =>
                             <div class="w-10 h-10 rounded-full overflow-hidden bg-slate-200 border-2"
                                  :class="selectedPlayer?.id === p.id ? 'border-white/50' : 'border-slate-100'">
                                 <PlayerPhoto :src="playerPhotoUrl(p)" class="w-full h-full object-cover" alt="" />
-                                <div v-if="!playerPhotoUrl(p)" class="w-full h-full flex items-center justify-center text-[10px] text-slate-400">?</div>
+                                <div v-if="!playerPhotoUrl(p)" class="w-full h-full flex items-center justify-center text-2xs text-slate-400">?</div>
                             </div>
                             <span v-if="nationalityFlag(p)"
-                                  class="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-white border border-slate-200 flex items-center justify-center text-[10px] leading-none shadow-sm"
+                                  class="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-white border border-slate-200 flex items-center justify-center text-2xs leading-none shadow-sm"
                                   :title="p.nationality">
                                 {{ nationalityFlag(p) }}
                             </span>
@@ -340,7 +340,7 @@ const filteredHistory = computed(() =>
                                  :class="selectedPlayer?.id === p.id ? 'text-white' : 'text-slate-700'">
                                 {{ p.lastname }} {{ p.firstname }}
                             </div>
-                            <div class="text-[10px] truncate"
+                            <div class="text-2xs truncate"
                                  :class="selectedPlayer?.id === p.id ? 'text-white/70' : 'text-slate-400'">
                                 {{ p.position }}
                             </div>
@@ -446,7 +446,7 @@ const filteredHistory = computed(() =>
                         <div class="flex-1">
                             <h3 class="text-base font-bold text-slate-700">{{ selectedPlayer.firstname }} {{ selectedPlayer.lastname }}</h3>
                             <p class="text-xs text-slate-400 mt-0.5">{{ selectedPlayer.position }} • Coût de base : {{ selectedPlayer.cost ?? 0 }} €/match</p>
-                            <span class="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                            <span class="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full text-2xs font-semibold"
                                   :class="moraleState(selectedPlayer.morale).chip"
                                   title="Le moral d'un joueur libre n'évolue pas tant qu'il est sans club">
                                 {{ moraleState(selectedPlayer.morale).emoji }}
@@ -472,7 +472,7 @@ const filteredHistory = computed(() =>
 
                 <!-- Formulaire offre -->
                 <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
-                    <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">💼 Proposer un contrat</h4>
+                    <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-3">💼 Proposer un contrat</h4>
 
                     <div class="grid grid-cols-2 gap-4 mb-3">
                         <div>
@@ -486,7 +486,7 @@ const filteredHistory = computed(() =>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Salaire / match (€)</label>
                             <div class="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-slate-100 text-slate-600 font-semibold flex items-center justify-between">
                                 <span>{{ transferSalary }} €</span>
-                                <span class="text-[10px] text-slate-400 font-normal">fixé</span>
+                                <span class="text-2xs text-slate-400 font-normal">fixé</span>
                             </div>
                         </div>
                     </div>
@@ -557,21 +557,21 @@ const filteredHistory = computed(() =>
                     <!-- Photo -->
                     <div class="w-8 h-8 rounded-full overflow-hidden bg-slate-200 shrink-0">
                         <PlayerPhoto :src="playerPhotoUrl(entry.player)" class="w-full h-full object-cover" alt="" />
-                        <div v-if="!playerPhotoUrl(entry.player)" class="w-full h-full flex items-center justify-center text-[9px] text-slate-400">?</div>
+                        <div v-if="!playerPhotoUrl(entry.player)" class="w-full h-full flex items-center justify-center text-3xs text-slate-400">?</div>
                     </div>
                     <!-- Nom -->
                     <div class="flex-1 min-w-0">
                         <div class="text-xs font-semibold text-slate-700 truncate">
                             {{ entry.player.firstname }} {{ entry.player.lastname }}
                         </div>
-                        <div class="text-[10px] text-slate-400">{{ entry.player.position }}</div>
+                        <div class="text-2xs text-slate-400">{{ entry.player.position }}</div>
                     </div>
                     <!-- Équipe -->
                     <div class="flex items-center gap-1.5 shrink-0">
                         <span class="text-xs text-slate-600 font-semibold">→ {{ entry.team.name }}</span>
                     </div>
                     <!-- Semaine -->
-                    <div class="text-[10px] text-slate-400 shrink-0">S{{ entry.start_week }}</div>
+                    <div class="text-2xs text-slate-400 shrink-0">S{{ entry.start_week }}</div>
                     <!-- Salaire -->
                     <div class="text-xs font-bold text-teal-600 shrink-0">{{ entry.salary }} €</div>
                 </div>
@@ -610,11 +610,11 @@ const filteredHistory = computed(() =>
                                 <div class="flex items-center justify-center gap-2">
                                     <div class="w-7 h-7 rounded-full overflow-hidden bg-slate-200 shrink-0">
                                         <PlayerPhoto :src="playerPhotoUrl(p)" class="w-full h-full object-cover" alt="" />
-                                        <div v-if="!playerPhotoUrl(p)" class="w-full h-full flex items-center justify-center text-[9px] text-slate-400">?</div>
+                                        <div v-if="!playerPhotoUrl(p)" class="w-full h-full flex items-center justify-center text-3xs text-slate-400">?</div>
                                     </div>
                                     <div class="text-left leading-tight">
                                         <div class="text-slate-700">{{ p.lastname }}</div>
-                                        <div class="text-[9px] text-slate-400 font-normal">{{ p.position }}</div>
+                                        <div class="text-3xs text-slate-400 font-normal">{{ p.position }}</div>
                                     </div>
                                     <button type="button" @click="toggleCompare(p)"
                                             class="text-slate-300 hover:text-rose-500" title="Retirer" aria-label="Retirer">✕</button>

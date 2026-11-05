@@ -72,7 +72,7 @@ const radarAxes = computed(() =>
 
 <template>
     <div class="border border-slate-200 rounded-xl bg-slate-50 p-3 flex flex-col items-center">
-        <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 self-start">Profil technique</h4>
+        <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-1 self-start">Profil technique</h4>
         <svg viewBox="0 0 180 180" class="w-40 h-40">
             <polygon v-if="comparePolygon" :points="comparePolygon"
                      fill="rgba(148,163,184,0.15)" stroke="#94a3b8" stroke-width="1" stroke-dasharray="3,2"/>
@@ -82,7 +82,7 @@ const radarAxes = computed(() =>
             <circle v-for="(pt,i) in radarPoints" :key="'p'+i" :cx="pt.x" :cy="pt.y" r="2.5" :fill="accentColors.stroke" stroke="white" stroke-width="1"/>
             <text v-for="(pt,i) in radarPoints" :key="'t'+i" :x="pt.lx" :y="pt.ly" text-anchor="middle" dominant-baseline="middle" font-size="8" fill="#94a3b8" font-weight="600">{{ pt.label }}</text>
         </svg>
-        <p v-if="comparePlayer && compareLabel" class="text-[9px] text-slate-400 mt-1">
+        <p v-if="comparePlayer && compareLabel" class="text-3xs text-slate-400 mt-1">
             <span class="inline-block w-3 h-0.5 bg-slate-300 mr-1 align-middle"></span>
             {{ compareLabel }}
         </p>

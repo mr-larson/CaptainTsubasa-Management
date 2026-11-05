@@ -48,7 +48,7 @@
                         </div>
 
                         <!-- Compteur -->
-                        <div class="text-[10px] text-slate-400 font-semibold px-1 shrink-0">
+                        <div class="text-2xs text-slate-400 font-semibold px-1 shrink-0">
                             {{ filteredTeams.length }} équipe(s)
                         </div>
 
@@ -68,7 +68,7 @@
                                 </div>
                                 <span class="truncate">{{ team.name }}</span>
                                 <span v-if="isMultiMode && isHumanTeam(team)"
-                                      class="ml-auto shrink-0 w-5 h-5 rounded-full bg-white/90 text-teal-700 text-[10px] font-black flex items-center justify-center">
+                                      class="ml-auto shrink-0 w-5 h-5 rounded-full bg-white/90 text-teal-700 text-2xs font-black flex items-center justify-center">
                                     {{ seatOf(team) }}
                                 </span>
                             </button>
@@ -114,7 +114,7 @@
 
                             <!-- Stats moyennes (prebuilt uniquement) -->
                             <div v-if="gameMode !== 'draft'" class="border border-slate-200 rounded-xl bg-white p-4">
-                                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">Forces</h4>
+                                <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-3">Forces</h4>
                                 <div class="space-y-2">
                                     <div v-for="stat in [
                     { label: 'Attaque',  val: avgAttack,  color: 'bg-orange-400' },
@@ -142,7 +142,7 @@
 
                             <!-- Info draft (draft uniquement) -->
                             <div v-if="gameMode === 'draft'" class="border border-amber-200 rounded-xl bg-amber-50 p-4">
-                                <h4 class="text-[10px] font-bold text-amber-600 uppercase tracking-wider mb-2">🎯 Mode Draft</h4>
+                                <h4 class="text-2xs font-bold text-amber-600 uppercase tracking-wider mb-2">🎯 Mode Draft</h4>
                                 <div class="space-y-2 text-xs text-amber-700">
                                     <p>L'équipe démarre <span class="font-bold">sans joueur</span>. Tu construiras ton effectif lors du draft.</p>
                                     <p>Chaque équipe reçoit un <span class="font-bold">bonus de 5 000 €</span> pour recruter.</p>
@@ -153,7 +153,7 @@
 
                             <!-- Radar (prebuilt uniquement) -->
                             <div v-if="gameMode !== 'draft'" class="border border-slate-200 rounded-xl bg-white p-4 flex flex-col items-center">
-                                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 self-start">Profil</h4>
+                                <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2 self-start">Profil</h4>
                                 <svg viewBox="0 0 160 160" class="w-36 h-36">
                                     <polygon v-for="(pts,i) in radarGrids" :key="i" :points="pts" fill="none" stroke="#e2e8f0" stroke-width="0.8"/>
                                     <line v-for="(ax,i) in radarAxes" :key="'a'+i" x1="80" y1="80" :x2="ax.x2" :y2="ax.y2" stroke="#e2e8f0" stroke-width="0.8"/>
@@ -198,14 +198,14 @@
 
                                 <!-- Récap hot-seat + lancement -->
                                 <div class="border border-slate-200 rounded-xl bg-white p-4">
-                                    <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                                    <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">
                                         Managers humains — {{ humanTeams.length }}
                                     </h4>
 
                                     <div v-if="humanTeams.length" class="space-y-1.5 mb-3">
                                         <div v-for="(t, i) in humanTeams" :key="t.id"
                                              class="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-slate-50 border border-slate-100">
-                                            <span class="w-5 h-5 rounded-full bg-teal-500 text-white text-[10px] font-black flex items-center justify-center shrink-0">{{ i + 1 }}</span>
+                                            <span class="w-5 h-5 rounded-full bg-teal-500 text-white text-2xs font-black flex items-center justify-center shrink-0">{{ i + 1 }}</span>
                                             <div class="w-6 h-6 rounded-md overflow-hidden bg-white border border-slate-200 shrink-0 flex items-center justify-center">
                                                 <img loading="lazy" decoding="async" v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" class="w-full h-full object-contain" alt=""/>
                                                 <span v-else class="text-[8px] text-slate-400">—</span>
@@ -246,8 +246,8 @@
                                     <!-- Groupes de postes : GK → DEF → MID → ATT, triés par note -->
                                     <div v-for="group in groupedRoster" :key="group.key">
                                         <div class="flex items-center gap-2 mb-1.5 px-0.5">
-                                            <span class="text-[10px] font-black uppercase tracking-wider" :class="group.text">{{ group.label }}</span>
-                                            <span class="text-[10px] font-bold text-slate-300 tabular-nums">{{ group.players.length }}</span>
+                                            <span class="text-2xs font-black uppercase tracking-wider" :class="group.text">{{ group.label }}</span>
+                                            <span class="text-2xs font-bold text-slate-300 tabular-nums">{{ group.players.length }}</span>
                                             <div class="flex-1 h-px bg-slate-100"></div>
                                         </div>
                                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -279,7 +279,7 @@
                                                         <div v-for="k in keyStatsFor(player.position)" :key="k" class="flex-1 min-w-0">
                                                             <div class="flex items-center justify-between gap-1">
                                                                 <span class="text-[8px] font-semibold uppercase text-slate-400 truncate">{{ statLabel(k) }}</span>
-                                                                <span class="text-[10px] font-black tabular-nums" :class="statTone(statValue(player, k))">
+                                                                <span class="text-2xs font-black tabular-nums" :class="statTone(statValue(player, k))">
                                                                     {{ statValue(player, k) }}
                                                                 </span>
                                                             </div>
@@ -297,7 +297,7 @@
                                                     </div>
                                                     <span class="text-[7px] font-bold uppercase text-slate-300 tracking-wider">Note</span>
                                                     <span v-if="player.morale_preview != null"
-                                                          class="text-[10px] font-black tabular-nums"
+                                                          class="text-2xs font-black tabular-nums"
                                                           :class="moraleState(player.morale_preview).text"
                                                           :title="`Moral de départ : ${moraleState(player.morale_preview).label}`">
                                                         {{ moraleState(player.morale_preview).emoji }} {{ player.morale_preview }}
@@ -321,7 +321,7 @@
                                 <div class="space-y-4">
                                     <!-- Style tactique -->
                                     <div class="border border-slate-100 rounded-xl bg-slate-50 p-4">
-                                        <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Style tactique</h4>
+                                        <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">Style tactique</h4>
                                         <p class="text-sm text-slate-700">
                                             Cette équipe jouera avec un style
                                             <span class="font-bold">{{ styleLabel(selectedTeam.tactical_style) }}</span>.
@@ -331,7 +331,7 @@
 
                                     <!-- Philosophie -->
                                     <div class="border border-slate-100 rounded-xl bg-slate-50 p-4">
-                                        <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Philosophie de gestion</h4>
+                                        <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">Philosophie de gestion</h4>
                                         <p class="text-sm text-slate-700">
                                             Approche
                                             <span class="font-bold">{{ philosophyLabel(selectedTeam.management_philosophy) }}</span> :
@@ -341,7 +341,7 @@
 
                                     <!-- Règles du draft -->
                                     <div class="border border-amber-100 rounded-xl bg-amber-50/50 p-4">
-                                        <h4 class="text-[10px] font-bold text-amber-500 uppercase tracking-wider mb-3">Comment ça marche</h4>
+                                        <h4 class="text-2xs font-bold text-amber-500 uppercase tracking-wider mb-3">Comment ça marche</h4>
                                         <div class="space-y-2 text-xs text-slate-600">
                                             <div class="flex items-start gap-2">
                                                 <span class="text-amber-500 font-bold shrink-0">1.</span>
@@ -383,7 +383,6 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import H2 from '@/Components/H2.vue';
-import H1 from '@/Components/H1.vue';
 import PlayerPhoto from '@/Components/PlayerPhoto.vue';
 import TeamStyleBadges from '@/Pages/GameSaves/Play/components/TeamStyleBadges.vue';
 import { usePlayerUtils } from '@/Pages/GameSaves/Play/usePlayerUtils.js';

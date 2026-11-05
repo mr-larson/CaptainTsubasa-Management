@@ -15,7 +15,7 @@ defineEmits(['open-rules']);
             <span class="text-base shrink-0">🎯</span>
             <p class="text-xs font-bold text-slate-700 truncate">{{ career.mandate.label }}</p>
             <button type="button" @click="$emit('open-rules')"
-                    class="shrink-0 w-4 h-4 rounded-full bg-slate-200 text-slate-500 text-[10px] font-bold flex items-center justify-center hover:bg-teal-500 hover:text-white transition-colors"
+                    class="shrink-0 w-4 h-4 rounded-full bg-slate-200 text-slate-500 text-2xs font-bold flex items-center justify-center hover:bg-teal-500 hover:text-white transition-colors"
                     title="Voir le détail des règles et objectifs">ℹ</button>
         </div>
         <p class="text-[11px] text-slate-400 mt-1">{{ career.difficulty_label }}</p>
@@ -49,7 +49,7 @@ defineEmits(['open-rules']);
                         Objectif : {{ career.mandate.label }}
                         <span class="text-slate-400 font-normal">· {{ career.difficulty_label }}</span>
                         <button type="button" @click="$emit('open-rules')"
-                                class="shrink-0 w-4 h-4 rounded-full bg-slate-200 text-slate-500 text-[10px] font-bold flex items-center justify-center hover:bg-teal-500 hover:text-white transition-colors"
+                                class="shrink-0 w-4 h-4 rounded-full bg-slate-200 text-slate-500 text-2xs font-bold flex items-center justify-center hover:bg-teal-500 hover:text-white transition-colors"
                                 title="Voir le détail des règles et objectifs">ℹ</button>
                     </p>
                     <p class="text-[11px] text-slate-400">

@@ -87,7 +87,7 @@ function score(match) {
                     </tbody>
                 </table>
                 </div>
-                <div class="px-4 py-1.5 text-[10px] text-emerald-600 bg-emerald-50/40 border-t border-slate-50">
+                <div class="px-4 py-1.5 text-2xs text-emerald-600 bg-emerald-50/40 border-t border-slate-50">
                     Les 2 premiers sont qualifiés.
                 </div>
             </div>
@@ -107,12 +107,12 @@ function score(match) {
                         <div class="flex items-center justify-between px-3 py-2"
                              :class="isWinner(m, 'home') ? 'bg-indigo-50 font-bold text-indigo-700' : 'text-slate-600'">
                             <span>{{ m.home?.flag }} {{ m.home?.name ?? '—' }}</span>
-                            <span>{{ m.played ? m.home_score : '' }}<span v-if="m.shootout" class="ml-1 text-[10px] font-normal text-slate-400" title="Tirs au but">({{ m.shootout.home }})</span></span>
+                            <span>{{ m.played ? m.home_score : '' }}<span v-if="m.shootout" class="ml-1 text-2xs font-normal text-slate-400" title="Tirs au but">({{ m.shootout.home }})</span></span>
                         </div>
                         <div class="flex items-center justify-between px-3 py-2 border-t border-slate-100"
                              :class="isWinner(m, 'away') ? 'bg-indigo-50 font-bold text-indigo-700' : 'text-slate-600'">
                             <span>{{ m.away?.flag }} {{ m.away?.name ?? '—' }}</span>
-                            <span>{{ m.played ? m.away_score : '' }}<span v-if="m.shootout" class="ml-1 text-[10px] font-normal text-slate-400" title="Tirs au but">({{ m.shootout.away }})</span></span>
+                            <span>{{ m.played ? m.away_score : '' }}<span v-if="m.shootout" class="ml-1 text-2xs font-normal text-slate-400" title="Tirs au but">({{ m.shootout.away }})</span></span>
                         </div>
                     </div>
                 </div>
@@ -128,12 +128,12 @@ function score(match) {
                         <div class="flex items-center justify-between px-3 py-2.5"
                              :class="isWinner(m, 'home') ? 'bg-amber-50 font-bold text-amber-700' : 'text-slate-600'">
                             <span>{{ m.home?.flag }} {{ m.home?.name ?? '—' }}</span>
-                            <span>{{ m.played ? m.home_score : '' }}<span v-if="m.shootout" class="ml-1 text-[10px] font-normal text-slate-400" title="Tirs au but">({{ m.shootout.home }})</span></span>
+                            <span>{{ m.played ? m.home_score : '' }}<span v-if="m.shootout" class="ml-1 text-2xs font-normal text-slate-400" title="Tirs au but">({{ m.shootout.home }})</span></span>
                         </div>
                         <div class="flex items-center justify-between px-3 py-2.5 border-t border-amber-100"
                              :class="isWinner(m, 'away') ? 'bg-amber-50 font-bold text-amber-700' : 'text-slate-600'">
                             <span>{{ m.away?.flag }} {{ m.away?.name ?? '—' }}</span>
-                            <span>{{ m.played ? m.away_score : '' }}<span v-if="m.shootout" class="ml-1 text-[10px] font-normal text-slate-400" title="Tirs au but">({{ m.shootout.away }})</span></span>
+                            <span>{{ m.played ? m.away_score : '' }}<span v-if="m.shootout" class="ml-1 text-2xs font-normal text-slate-400" title="Tirs au but">({{ m.shootout.away }})</span></span>
                         </div>
                     </div>
                     </template>

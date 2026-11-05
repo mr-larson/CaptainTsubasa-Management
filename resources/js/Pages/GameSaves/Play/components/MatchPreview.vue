@@ -72,7 +72,7 @@ const canPrepare = computed(() => props.myTeamId && Number(props.myTeamId) === N
 <template>
     <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 flex flex-col gap-4">
         <div class="flex items-center justify-between">
-            <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+            <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider">
                 Avant-match · {{ label }} · {{ isHome ? '🏠 à domicile' : '✈️ à l\'extérieur' }}
             </h4>
             <button type="button" @click="emit('close')" class="text-[11px] text-slate-400 hover:text-slate-700">✕</button>
@@ -92,16 +92,16 @@ const canPrepare = computed(() => props.myTeamId && Number(props.myTeamId) === N
                     <div class="text-[11px] text-slate-500">{{ s.record }} · buts {{ s.goals }}</div>
                     <div class="flex items-center gap-1" title="5 derniers matchs (du plus ancien au plus récent)">
                         <span v-for="(r, k) in s.form" :key="k"
-                              class="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black"
+                              class="w-5 h-5 rounded-full flex items-center justify-center text-3xs font-black"
                               :class="FORM_CLASS[r]">{{ r }}</span>
-                        <span v-if="!s.form.length" class="text-[10px] text-slate-400 italic">Pas encore joué</span>
+                        <span v-if="!s.form.length" class="text-2xs text-slate-400 italic">Pas encore joué</span>
                     </div>
                 </template>
             </div>
         </div>
 
         <div v-if="headToHead.length" class="border-t border-slate-200 pt-3">
-            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Déjà joué cette saison</div>
+            <div class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Déjà joué cette saison</div>
             <div v-for="m in headToHead" :key="m.id" class="text-xs text-slate-600">
                 S{{ m.week }} : {{ teamById[m.home_team_id]?.name }}
                 <span class="font-black">{{ m.home_score }} - {{ m.away_score }}</span>

@@ -25,13 +25,13 @@ const sides = computed(() => [
 
 <template>
     <div v-if="progression.length" class="border border-slate-200 rounded-xl bg-slate-50 p-4">
-        <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3">📈 Progression suite à ce match</h4>
+        <h4 class="text-2xs font-bold text-slate-500 uppercase tracking-wider mb-3">📈 Progression suite à ce match</h4>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div v-for="side in sides" :key="side.key">
                 <div class="text-xs font-bold text-slate-600 mb-2 pb-1.5 border-b border-slate-200">
                     {{ side.name }}
-                    <span class="text-[10px] text-slate-400 font-normal ml-1">
+                    <span class="text-2xs text-slate-400 font-normal ml-1">
                         ({{ side.players.length }} joueur{{ side.players.length > 1 ? 's' : '' }})
                     </span>
                 </div>
@@ -40,13 +40,13 @@ const sides = computed(() => [
                     <div v-for="p in side.players" :key="p.player_id" class="flex items-center gap-2 p-2 bg-white/80 rounded-lg">
                         <div class="w-8 h-8 rounded-full overflow-hidden bg-slate-200 shrink-0">
                             <PlayerPhoto :src="p.photo_path ? `/storage/${p.photo_path}` : null" class="w-full h-full object-cover" alt="" />
-                            <div v-if="!p.photo_path" class="w-full h-full flex items-center justify-center text-[10px] text-slate-400">?</div>
+                            <div v-if="!p.photo_path" class="w-full h-full flex items-center justify-center text-2xs text-slate-400">?</div>
                         </div>
                         <div class="flex-1 min-w-0">
                             <div class="text-xs font-bold text-slate-700 truncate">{{ p.lastname }}</div>
                             <div class="flex flex-wrap gap-1 mt-0.5">
                                 <span v-for="(detail, stat) in p.gains" :key="stat" :class="STAT_LABELS[stat]?.color"
-                                      class="px-1.5 py-0.5 rounded text-[9px] font-bold inline-flex items-center gap-0.5"
+                                      class="px-1.5 py-0.5 rounded text-3xs font-bold inline-flex items-center gap-0.5"
                                       :title="STAT_LABELS[stat]?.label">
                                     <span>{{ STAT_LABELS[stat]?.icon }}</span>
                                     <span>+{{ detail.gain }}</span>

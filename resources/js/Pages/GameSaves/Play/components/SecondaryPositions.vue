@@ -20,12 +20,12 @@ const secondaries = computed(() => {
 
 <template>
     <div v-if="secondaries.length" class="flex flex-wrap items-center gap-1">
-        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide mr-0.5"
+        <span class="text-2xs font-bold text-slate-400 uppercase tracking-wide mr-0.5"
               title="Postes où ce joueur peut aussi évoluer (bonus de poste réduit)">
             Aussi
         </span>
         <span v-for="pos in secondaries" :key="pos"
-              class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold"
+              class="inline-flex items-center px-1.5 py-0.5 rounded text-2xs font-bold"
               :class="positionGroupColor(pos)"
               :title="positionLabel(pos)">
             {{ positionGroup(pos) }}

@@ -21,7 +21,7 @@ const { sanctionTypeLabel } = usePlayerUtils();
         <span class="text-lg">🤕</span>
         <div>
             <div class="text-xs font-bold text-rose-700">Joueur blessé</div>
-            <div class="text-[10px] text-rose-500">
+            <div class="text-2xs text-rose-500">
                 {{ playerInjury(player.id)?.description ?? 'Blessure' }}
                 — Retour semaine {{ playerInjury(player.id)?.week_return ?? '—' }}
             </div>
@@ -32,7 +32,7 @@ const { sanctionTypeLabel } = usePlayerUtils();
         <span class="text-lg">🚫</span>
         <div>
             <div class="text-xs font-bold text-amber-700">Joueur suspendu</div>
-            <div class="text-[10px] text-amber-500">
+            <div class="text-2xs text-amber-500">
                 {{ sanctionTypeLabel(playerSuspension(player.id)?.type) }}
                 <template v-if="playerSuspension(player.id)?.weeks_suspended">
                     — {{ playerSuspension(player.id).weeks_suspended }} semaine(s)
@@ -46,7 +46,7 @@ const { sanctionTypeLabel } = usePlayerUtils();
         <span class="text-lg">⛔</span>
         <div>
             <div class="text-xs font-bold text-rose-700">Joueur consigné par l'adversaire</div>
-            <div class="text-[10px] text-rose-500">
+            <div class="text-2xs text-rose-500">
                 {{ playerBench(player.id)?.card_name ?? 'Malus adverse' }}
                 — ne peut pas débuter le prochain match. Sortez-le du onze de départ.
             </div>

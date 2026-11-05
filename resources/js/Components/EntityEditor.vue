@@ -100,7 +100,7 @@ const isSelected = (item) => !props.creating && props.selectedId === item.id;
                                     ? 'border-teal-500 text-teal-600'
                                     : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'">
                         {{ t.label }}
-                        <span v-if="t.badge" class="ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                        <span v-if="t.badge" class="ml-1 text-2xs font-bold px-1.5 py-0.5 rounded-full"
                               :class="activeTab === t.key ? 'bg-teal-50 text-teal-600' : 'bg-slate-100 text-slate-500'">
                             {{ t.badge }}
                         </span>
@@ -108,7 +108,7 @@ const isSelected = (item) => !props.creating && props.selectedId === item.id;
                 </nav>
 
                 <div class="flex items-center gap-2 pb-2">
-                    <span v-if="creating" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-50 text-teal-700">
+                    <span v-if="creating" class="text-2xs font-bold px-2 py-0.5 rounded-full bg-teal-50 text-teal-700">
                         Nouveau
                     </span>
                     <slot name="badges" />

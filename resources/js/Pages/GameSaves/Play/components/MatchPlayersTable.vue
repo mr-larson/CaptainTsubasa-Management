@@ -122,7 +122,7 @@ const COLUMNS = [
                                     {{ r.p.lastname }}
                                     <span v-if="String(r.pid) === String(motmId)" title="Homme du match">⭐</span>
                                 </div>
-                                <div class="text-[9px] text-slate-400">
+                                <div class="text-3xs text-slate-400">
                                     {{ r.starter === true ? 'Titulaire' : r.starter === false && r.used ? 'Entré en jeu' : r.used ? '' : 'Non utilisé' }}
                                 </div>
                             </div>
@@ -143,7 +143,7 @@ const COLUMNS = [
                     <td class="py-1.5 px-2 text-right text-slate-600">{{ r.defense.ok }}/{{ r.defense.tot }}</td>
                     <td class="py-1.5 px-2 text-right">
                         <span class="font-bold text-emerald-600">{{ r.won }}</span>
-                        <span v-if="r.duelsPct !== null" class="text-[10px] text-slate-400"> ({{ r.duelsPct }} %)</span>
+                        <span v-if="r.duelsPct !== null" class="text-2xs text-slate-400"> ({{ r.duelsPct }} %)</span>
                     </td>
                 </tr>
                 </tbody>

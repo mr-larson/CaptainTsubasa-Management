@@ -82,7 +82,7 @@ const verdictOutcomeLabel = (o) => ({
                          :class="career.confidence <= 25 ? 'bg-rose-500' : career.confidence <= 50 ? 'bg-amber-400' : 'bg-emerald-500'"
                          :style="{ width: career.confidence + '%' }"></div>
                 </div>
-                <p class="text-[10px] text-slate-400 mt-1">⚠️ Sous 25 le board est en alerte · à 0 c'est le licenciement.</p>
+                <p class="text-2xs text-slate-400 mt-1">⚠️ Sous 25 le board est en alerte · à 0 c'est le licenciement.</p>
             </div>
 
             <!-- Titres -->
@@ -124,7 +124,7 @@ const verdictOutcomeLabel = (o) => ({
             <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Historique des saisons</h4>
             <table class="w-full text-xs">
                 <thead>
-                <tr class="text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">
+                <tr class="text-2xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">
                     <th class="text-left py-1">Saison</th>
                     <th class="text-center py-1">Objectif</th>
                     <th class="text-center py-1">Classé</th>
@@ -222,7 +222,7 @@ const verdictOutcomeLabel = (o) => ({
                 <li><strong>Fin de saison</strong> : gros bonus si l'objectif est atteint (et plus encore en le dépassant), forte pénalité sinon — d'autant plus que le ratage est large.</li>
                 <li><strong>Titre de champion</strong> : compte pour ta condition de victoire de carrière.</li>
             </ul>
-            <p class="text-[10px] text-slate-400">💡 Les clubs IA paient aussi leurs entraînements : un club fauché s'entraîne moins.</p>
+            <p class="text-2xs text-slate-400">💡 Les clubs IA paient aussi leurs entraînements : un club fauché s'entraîne moins.</p>
         </div>
 
         <!-- Barème par difficulté -->
@@ -230,7 +230,7 @@ const verdictOutcomeLabel = (o) => ({
             <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Niveaux de difficulté</h4>
             <table class="w-full text-xs">
                 <thead>
-                <tr class="text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">
+                <tr class="text-2xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">
                     <th class="text-left py-1">Niveau</th>
                     <th class="text-center py-1">Confiance départ</th>
                     <th class="text-center py-1">Titres à gagner</th>
@@ -244,7 +244,7 @@ const verdictOutcomeLabel = (o) => ({
                     :class="career && career.difficulty === d.key ? 'bg-teal-50' : ''">
                     <td class="py-1.5 font-semibold text-slate-700">
                         {{ d.label }}
-                        <span v-if="career && career.difficulty === d.key" class="text-[9px] font-bold text-teal-600 ml-1">• en cours</span>
+                        <span v-if="career && career.difficulty === d.key" class="text-3xs font-bold text-teal-600 ml-1">• en cours</span>
                     </td>
                     <td class="py-1.5 text-center text-slate-600">{{ d.confidence }}</td>
                     <td class="py-1.5 text-center text-slate-600">{{ d.titles }} 🏆</td>
@@ -254,9 +254,9 @@ const verdictOutcomeLabel = (o) => ({
                 </tr>
                 </tbody>
             </table>
-            <p class="text-[10px] text-slate-400 mt-2">En mode « Bac à sable », aucun objectif n'est suivi : les saisons s'enchaînent librement (budget de départ 2500 €, revenus pleins).</p>
-            <p class="text-[10px] text-slate-400">🎲 Défis de saison : chaque équipe (IA comprise) tire 5 objectifs par saison, un par famille (résultats, attaque & défense, vestiaire, gestion, exploits) — 2 faciles (1 pt, 150 €), 2 moyens (2 pts, 300 €), 1 difficile (3 pts, 500 €). Seuils adaptés à la force de l'effectif. Sans effet sur le championnat : un classement des défis est publié en fin de saison.</p>
-            <p class="text-[10px] text-slate-400">💰 Budget de départ et revenu de base réduits ne concernent que ton club : les clubs IA partent avec le budget réglé à la création (2500 € par défaut) et 500 €/sem.</p>
+            <p class="text-2xs text-slate-400 mt-2">En mode « Bac à sable », aucun objectif n'est suivi : les saisons s'enchaînent librement (budget de départ 2500 €, revenus pleins).</p>
+            <p class="text-2xs text-slate-400">🎲 Défis de saison : chaque équipe (IA comprise) tire 5 objectifs par saison, un par famille (résultats, attaque & défense, vestiaire, gestion, exploits) — 2 faciles (1 pt, 150 €), 2 moyens (2 pts, 300 €), 1 difficile (3 pts, 500 €). Seuils adaptés à la force de l'effectif. Sans effet sur le championnat : un classement des défis est publié en fin de saison.</p>
+            <p class="text-2xs text-slate-400">💰 Budget de départ et revenu de base réduits ne concernent que ton club : les clubs IA partent avec le budget réglé à la création (2500 € par défaut) et 500 €/sem.</p>
         </div>
     </div>
 </template>

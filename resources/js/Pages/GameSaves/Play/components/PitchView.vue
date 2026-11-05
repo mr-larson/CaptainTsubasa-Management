@@ -146,7 +146,7 @@ const MASTERY_CHIP = {
                          :class="pickedPlayer ? 'scale-110' : ''">
                         <div class="w-8 h-8 rounded-full border-2 border-dashed flex items-center justify-center text-white font-black text-sm shadow-md"
                              :class="pickedPlayer ? 'border-amber-300 bg-amber-300/30 animate-pulse' : 'border-white/80 bg-black/25'">+</div>
-                        <div class="mt-0.5 px-1 rounded border-l-2 text-[9px] font-semibold leading-tight bg-black/60 text-white pointer-events-none"
+                        <div class="mt-0.5 px-1 rounded border-l-2 text-3xs font-semibold leading-tight bg-black/60 text-white pointer-events-none"
                              :class="ZONE_BORDER[slotDef.zone]">
                             {{ ZONE_LABELS[slotDef.zone] ?? slot }} vide
                         </div>
@@ -169,11 +169,11 @@ const MASTERY_CHIP = {
                             ]">
                             <img v-if="playerForSlot(slot) && playerPhotoUrl(playerForSlot(slot))"
                                  :src="playerPhotoUrl(playerForSlot(slot))" class="w-full h-full object-cover pointer-events-none" alt=""/>
-                            <span v-else class="text-[9px] font-bold text-white">{{ slot }}</span>
+                            <span v-else class="text-3xs font-bold text-white">{{ slot }}</span>
                         </div>
                         <!-- Indisponible (coin haut gauche) -->
                         <div v-if="statusOf(playerForSlot(slot))"
-                             class="absolute -top-1.5 -left-1.5 w-4 h-4 rounded-full bg-white shadow text-[10px] leading-4 text-center"
+                             class="absolute -top-1.5 -left-1.5 w-4 h-4 rounded-full bg-white shadow text-2xs leading-4 text-center"
                              :title="statusOf(playerForSlot(slot)).label">{{ statusOf(playerForSlot(slot)).icon }}</div>
                         <!-- Capitaine (coin bas droit de la photo) -->
                         <div v-if="playerForSlot(slot)?.is_captain"
@@ -193,7 +193,7 @@ const MASTERY_CHIP = {
                                  class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-400 border border-white text-[8px] leading-[12px] text-slate-700 text-center font-bold pointer-events-none"
                                  title="Poste secondaire : bonus réduit">2</div>
                         </template>
-                        <div class="mt-0.5 px-1 rounded border-l-2 text-[9px] font-semibold leading-tight text-center max-w-[64px] truncate pointer-events-none"
+                        <div class="mt-0.5 px-1 rounded border-l-2 text-3xs font-semibold leading-tight text-center max-w-[64px] truncate pointer-events-none"
                              :title="ZONE_NAMES[slotDef.zone]"
                              :class="[ZONE_BORDER[slotDef.zone], isPickedUp(playerForSlot(slot))
                                 ? 'bg-amber-300 text-slate-700'
@@ -205,15 +205,15 @@ const MASTERY_CHIP = {
                 </div>
 
                 <div v-if="pickedPlayer"
-                     class="absolute bottom-1 left-1/2 -translate-x-1/2 max-w-[95%] flex items-center gap-2 bg-amber-400/95 text-slate-700 text-[10px] font-bold pl-3 pr-1 py-0.5 rounded-full shadow-md pointer-events-none whitespace-nowrap">
+                     class="absolute bottom-1 left-1/2 -translate-x-1/2 max-w-[95%] flex items-center gap-2 bg-amber-400/95 text-slate-700 text-2xs font-bold pl-3 pr-1 py-0.5 rounded-full shadow-md pointer-events-none whitespace-nowrap">
                     <span class="truncate">⚡ {{ pickupHint }}</span>
-                    <span v-if="masteryFor" class="shrink-0 flex items-center gap-1 text-[9px] font-semibold">
+                    <span v-if="masteryFor" class="shrink-0 flex items-center gap-1 text-3xs font-semibold">
                         <span class="w-2 h-2 rounded-full bg-emerald-400"></span>poste
                         <span class="w-2 h-2 rounded-full bg-amber-300 ml-1"></span>2nd
                         <span class="w-2 h-2 rounded-full bg-rose-500 ml-1"></span>hors
                     </span>
                     <button type="button" @click.stop="emit('cancel-pickup')"
-                            class="shrink-0 px-1.5 rounded-full bg-white/60 hover:bg-white text-[10px] pointer-events-auto"
+                            class="shrink-0 px-1.5 rounded-full bg-white/60 hover:bg-white text-2xs pointer-events-auto"
                             title="Annuler (Échap)">✕ Échap</button>
                 </div>
 
@@ -226,7 +226,7 @@ const MASTERY_CHIP = {
                             Poste {{ ZONE_LABELS[openSlotDef.zone] }} vide — qui faire entrer ?
                         </span>
                         <button type="button" @click="openSlot = null"
-                                class="text-[10px] font-bold text-slate-400 hover:text-slate-700 px-1.5">✕</button>
+                                class="text-2xs font-bold text-slate-400 hover:text-slate-700 px-1.5">✕</button>
                     </div>
                     <div class="flex-1 overflow-y-auto p-1.5 space-y-1">
                         <button v-for="c in openSlotCandidates" :key="c.player.id" type="button"
@@ -236,10 +236,10 @@ const MASTERY_CHIP = {
                             <img v-if="playerPhotoUrl(c.player)" :src="playerPhotoUrl(c.player)" class="w-6 h-6 rounded-full object-cover" alt="" />
                             <span class="flex-1 min-w-0 text-xs font-semibold text-slate-700 truncate">{{ c.player.lastname }}</span>
                             <span v-if="c.unavailable" class="text-[11px]" :title="c.unavailable">{{ c.unavailableIcon }}</span>
-                            <span v-if="c.mastery" class="px-1.5 py-0.5 rounded-full text-[9px] font-bold" :class="MASTERY_CHIP[c.mastery].class">
+                            <span v-if="c.mastery" class="px-1.5 py-0.5 rounded-full text-3xs font-bold" :class="MASTERY_CHIP[c.mastery].class">
                                 {{ MASTERY_CHIP[c.mastery].label }}
                             </span>
-                            <span class="w-8 text-right text-[10px] font-bold text-slate-400" title="Stamina">{{ c.player.stamina ?? c.player.stats?.stamina ?? '—' }}</span>
+                            <span class="w-8 text-right text-2xs font-bold text-slate-400" title="Stamina">{{ c.player.stamina ?? c.player.stats?.stamina ?? '—' }}</span>
                         </button>
                         <p v-if="!openSlotCandidates.length" class="text-xs text-slate-400 italic text-center py-4">
                             Aucun remplaçant disponible.

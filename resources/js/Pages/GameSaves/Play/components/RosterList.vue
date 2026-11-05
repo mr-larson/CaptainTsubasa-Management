@@ -79,10 +79,10 @@ const benchTitle = (p) => {
 
 <template>
     <div class="border border-slate-200 rounded-xl bg-slate-50 p-3 overflow-y-auto">
-        <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">{{ title }}</h3>
+        <h3 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">{{ title }}</h3>
         <div v-if="players.length" class="space-y-3">
             <div v-for="group in groupedPlayers" :key="group.key" class="space-y-1">
-                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-1">
+                <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider px-1">
                     {{ group.label }} <span class="opacity-60">({{ group.players.length }})</span>
                 </h4>
                 <button v-for="p in group.players" :key="p.id" type="button"
@@ -97,13 +97,13 @@ const benchTitle = (p) => {
                     <!-- Photo -->
                     <div class="w-7 h-7 rounded-full overflow-hidden bg-slate-200 shrink-0">
                         <PlayerPhoto :src="playerPhotoUrl(p)" class="w-full h-full object-cover" alt="" />
-                        <div v-if="!playerPhotoUrl(p)" class="w-full h-full flex items-center justify-center text-[9px] text-slate-400">?</div>
+                        <div v-if="!playerPhotoUrl(p)" class="w-full h-full flex items-center justify-center text-3xs text-slate-400">?</div>
                     </div>
 
                     <!-- Nom + poste -->
                     <div class="flex-1 min-w-0">
                         <div class="text-xs font-semibold truncate">{{ p.lastname }}</div>
-                        <div class="text-[10px] opacity-60 truncate">{{ p.position }}</div>
+                        <div class="text-2xs opacity-60 truncate">{{ p.position }}</div>
                     </div>
 
                     <!-- Icônes statut -->
@@ -118,14 +118,14 @@ const benchTitle = (p) => {
                         <span v-else-if="isPlayerBenched(p.id)" :title="benchTitle(p)" class="text-[11px]">⛔</span>
                         <span v-else-if="playerYellowCards(p.id) > 0"
                               :title="`${playerYellowCards(p.id)} carton(s) jaune`"
-                              class="text-[9px] font-black bg-yellow-400 text-yellow-900 px-1 rounded">
+                              class="text-3xs font-black bg-yellow-400 text-yellow-900 px-1 rounded">
                             {{ playerYellowCards(p.id) }}🟨
                         </span>
                     </div>
 
                     <!-- Stamina bar + valeur -->
                     <div class="w-12 flex flex-col items-end gap-0.5 shrink-0">
-                        <div class="text-[10px] font-bold"
+                        <div class="text-2xs font-bold"
                              :class="selectedId === p.id ? 'text-white/80' : 'text-slate-500'">
                             {{ p.stamina ?? p.stats?.stamina ?? '—' }}
                         </div>

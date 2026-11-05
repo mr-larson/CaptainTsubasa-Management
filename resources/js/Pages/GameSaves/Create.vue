@@ -226,7 +226,7 @@ function submit() {
                                     </p>
                                     <div v-if="form.competition_type === 'college_league'"
                                          class="absolute top-2 right-2 w-5 h-5 rounded-full bg-teal-500 flex items-center justify-center">
-                                        <span class="text-white text-[10px] font-bold">✓</span>
+                                        <span class="text-white text-2xs font-bold">✓</span>
                                     </div>
                                 </button>
 
@@ -249,7 +249,7 @@ function submit() {
                                     </p>
                                     <div v-if="form.competition_type === 'world_cup'"
                                          class="absolute top-2 right-2 w-5 h-5 rounded-full bg-indigo-500 flex items-center justify-center">
-                                        <span class="text-white text-[10px] font-bold">✓</span>
+                                        <span class="text-white text-2xs font-bold">✓</span>
                                     </div>
                                 </button>
                             </div>
@@ -318,7 +318,7 @@ function submit() {
                                     </p>
                                     <div v-if="form.game_mode === 'prebuilt'"
                                          class="absolute top-2 right-2 w-5 h-5 rounded-full bg-teal-500 flex items-center justify-center">
-                                        <span class="text-white text-[10px] font-bold">✓</span>
+                                        <span class="text-white text-2xs font-bold">✓</span>
                                     </div>
                                 </button>
 
@@ -341,7 +341,7 @@ function submit() {
                                     </p>
                                     <div v-if="form.game_mode === 'draft'"
                                          class="absolute top-2 right-2 w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center">
-                                        <span class="text-white text-[10px] font-bold">✓</span>
+                                        <span class="text-white text-2xs font-bold">✓</span>
                                     </div>
                                 </button>
                             </div>
@@ -382,7 +382,7 @@ function submit() {
                             <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                                 <span>🎯</span> Mandat de la direction
                             </h4>
-                            <p class="text-[10px] text-slate-400 -mt-1">
+                            <p class="text-2xs text-slate-400 -mt-1">
                                 Définit l'objectif de classement, la patience du board et la condition de victoire de carrière.
                             </p>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -396,7 +396,7 @@ function submit() {
                                           :class="config.career_difficulty === lvl.key ? 'text-teal-700' : 'text-slate-700'">
                                         <span>{{ lvl.icon }}</span> {{ lvl.label }}
                                     </span>
-                                    <span class="text-[10px] leading-snug"
+                                    <span class="text-2xs leading-snug"
                                           :class="config.career_difficulty === lvl.key ? 'text-teal-600' : 'text-slate-400'">
                                         {{ lvl.desc }}
                                     </span>
@@ -407,7 +407,7 @@ function submit() {
                                        class="mt-0.5 rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
                                 <span>
                                     🎲 Défis de saison
-                                    <span class="block text-[10px] text-slate-400">5 objectifs tirés au sort par équipe et par saison (primes + classement des défis, sans effet sur le championnat).</span>
+                                    <span class="block text-2xs text-slate-400">5 objectifs tirés au sort par équipe et par saison (primes + classement des défis, sans effet sur le championnat).</span>
                                 </span>
                             </label>
                         </div>
@@ -443,7 +443,7 @@ function submit() {
                                        class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
                                 Moral initial aléatoire (45–75 par joueur)
                             </label>
-                            <p class="text-[10px] text-slate-400">
+                            <p class="text-2xs text-slate-400">
                                 Décoché : tous les joueurs démarrent à 60 (neutre). Appliqué uniquement à la création de la partie.
                             </p>
                         </div>
@@ -455,14 +455,14 @@ function submit() {
                             </h4>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div class="flex flex-col gap-1">
-                                    <label class="text-[10px] text-slate-500">Coût stamina / match</label>
+                                    <label class="text-2xs text-slate-500">Coût stamina / match</label>
                                     <div class="flex items-center gap-2">
                                         <input type="range" v-model.number="config.match_stamina_cost" min="0" max="20" class="flex-1 h-1 accent-teal-500" />
                                         <span class="text-xs font-bold text-slate-700 w-5 text-right">{{ config.match_stamina_cost }}</span>
                                     </div>
                                 </div>
                                 <div class="flex flex-col gap-1">
-                                    <label class="text-[10px] text-slate-500">Récupération remplaçants</label>
+                                    <label class="text-2xs text-slate-500">Récupération remplaçants</label>
                                     <div class="flex items-center gap-2">
                                         <input type="range" v-model.number="config.rest_stamina_recovery" min="0" max="30" class="flex-1 h-1 accent-teal-500" />
                                         <span class="text-xs font-bold text-slate-700 w-5 text-right">{{ config.rest_stamina_recovery }}</span>
@@ -477,7 +477,7 @@ function submit() {
                                 <span>⚽</span> Match
                             </h4>
                             <div class="flex flex-col gap-1 max-w-xs">
-                                <label class="text-[10px] text-slate-500">Tours par match</label>
+                                <label class="text-2xs text-slate-500">Tours par match</label>
                                 <div class="flex items-center gap-2">
                                     <input type="range" v-model.number="config.match_max_turns" min="10" max="80" step="5" class="flex-1 h-1 accent-teal-500" />
                                     <span class="text-xs font-bold text-slate-700 w-5 text-right">{{ config.match_max_turns }}</span>
@@ -503,7 +503,7 @@ function submit() {
                                 <span>💰</span> Économie
                             </h4>
                             <div class="flex flex-col gap-1 max-w-xs">
-                                <label class="text-[10px] text-slate-500">Budget de départ des clubs IA</label>
+                                <label class="text-2xs text-slate-500">Budget de départ des clubs IA</label>
                                 <div class="flex items-center gap-2">
                                     <input type="range" v-model.number="config.ai_start_budget" min="0" max="10000" step="250" class="flex-1 h-1 accent-teal-500" />
                                     <span class="text-xs font-bold text-slate-700 w-14 text-right">{{ config.ai_start_budget }} €</span>
@@ -518,44 +518,44 @@ function submit() {
                             </h4>
                             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                                 <div class="flex flex-col gap-1">
-                                    <label class="text-[10px] text-slate-500">Sessions / sem.</label>
+                                    <label class="text-2xs text-slate-500">Sessions / sem.</label>
                                     <div class="flex items-center gap-1">
                                         <input type="range" v-model.number="config.training_max_per_week" min="1" max="10" class="flex-1 h-1 accent-teal-500" />
-                                        <span class="text-[10px] font-bold text-slate-700 w-3 text-right">{{ config.training_max_per_week }}</span>
+                                        <span class="text-2xs font-bold text-slate-700 w-3 text-right">{{ config.training_max_per_week }}</span>
                                     </div>
                                 </div>
                                 <div class="flex flex-col gap-1">
-                                    <label class="text-[10px] text-slate-500">Gain min</label>
+                                    <label class="text-2xs text-slate-500">Gain min</label>
                                     <div class="flex items-center gap-1">
                                         <input type="range" v-model.number="config.training_gain_min" min="0" max="10" class="flex-1 h-1 accent-teal-500" />
-                                        <span class="text-[10px] font-bold text-slate-700 w-3 text-right">{{ config.training_gain_min }}</span>
+                                        <span class="text-2xs font-bold text-slate-700 w-3 text-right">{{ config.training_gain_min }}</span>
                                     </div>
                                 </div>
                                 <div class="flex flex-col gap-1">
-                                    <label class="text-[10px] text-slate-500">Gain max</label>
+                                    <label class="text-2xs text-slate-500">Gain max</label>
                                     <div class="flex items-center gap-1">
                                         <input type="range" v-model.number="config.training_gain_max" min="1" max="20" class="flex-1 h-1 accent-teal-500" />
-                                        <span class="text-[10px] font-bold text-slate-700 w-3 text-right">{{ config.training_gain_max }}</span>
+                                        <span class="text-2xs font-bold text-slate-700 w-3 text-right">{{ config.training_gain_max }}</span>
                                     </div>
                                 </div>
                                 <div class="flex flex-col gap-1">
-                                    <label class="text-[10px] text-slate-500">Coût stamina</label>
+                                    <label class="text-2xs text-slate-500">Coût stamina</label>
                                     <div class="flex items-center gap-1">
                                         <input type="range" v-model.number="config.training_stamina_cost" min="0" max="15" class="flex-1 h-1 accent-teal-500" />
-                                        <span class="text-[10px] font-bold text-slate-700 w-3 text-right">{{ config.training_stamina_cost }}</span>
+                                        <span class="text-2xs font-bold text-slate-700 w-3 text-right">{{ config.training_stamina_cost }}</span>
                                     </div>
                                 </div>
                             </div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div class="flex flex-col gap-1">
-                                    <label class="text-[10px] text-slate-500">Stamina min. requise</label>
+                                    <label class="text-2xs text-slate-500">Stamina min. requise</label>
                                     <div class="flex items-center gap-2">
                                         <input type="range" v-model.number="config.training_min_stamina" min="0" max="50" step="5" class="flex-1 h-1 accent-teal-500" />
                                         <span class="text-xs font-bold text-slate-700 w-5 text-right">{{ config.training_min_stamina }}</span>
                                     </div>
                                 </div>
                                 <div class="flex flex-col gap-1">
-                                    <label class="text-[10px] text-slate-500">Coût / séance (€)</label>
+                                    <label class="text-2xs text-slate-500">Coût / séance (€)</label>
                                     <div class="flex items-center gap-2">
                                         <input type="range" v-model.number="config.training_cost" min="0" max="2000" step="50" class="flex-1 h-1 accent-teal-500" />
                                         <span class="text-xs font-bold text-slate-700 w-10 text-right">{{ config.training_cost }}</span>

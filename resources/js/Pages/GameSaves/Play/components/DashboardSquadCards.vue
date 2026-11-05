@@ -70,7 +70,7 @@ const ROW = 'w-full flex items-center justify-between gap-2 px-2 py-1 rounded-lg
         <!-- Vestiaire -->
         <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
             <div class="flex items-center justify-between mb-2">
-                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Vestiaire</h4>
+                <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Vestiaire</h4>
                 <span class="text-xs font-bold" :class="moraleState(averageMorale).text"
                       title="Moral moyen de l'effectif">
                     {{ moraleState(averageMorale).emoji }} {{ averageMorale }}
@@ -92,8 +92,8 @@ const ROW = 'w-full flex items-center justify-between gap-2 px-2 py-1 rounded-lg
         <!-- Contrats -->
         <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
             <div class="flex items-center justify-between mb-2">
-                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Contrats</h4>
-                <span class="text-[10px] text-slate-400">d'ici la semaine {{ week + CONTRACT_WINDOW }}</span>
+                <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Contrats</h4>
+                <span class="text-2xs text-slate-400">d'ici la semaine {{ week + CONTRACT_WINDOW }}</span>
             </div>
             <div v-if="expiring.length" class="flex flex-col -mx-2">
                 <button v-for="c in expiring.slice(0, MAX_ROWS)" :key="c.player.id" type="button"
@@ -113,7 +113,7 @@ const ROW = 'w-full flex items-center justify-between gap-2 px-2 py-1 rounded-lg
 
         <!-- Meilleurs joueurs -->
         <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
-            <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Meilleurs joueurs</h4>
+            <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">Meilleurs joueurs</h4>
             <div v-if="topScorers.length || topDuelists.length" class="grid grid-cols-2 gap-3">
                 <div v-for="col in [
                         { title: '⚽ Buteurs', rows: topScorers },

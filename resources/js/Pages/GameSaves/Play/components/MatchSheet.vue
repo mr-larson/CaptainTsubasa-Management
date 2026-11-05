@@ -153,22 +153,22 @@ const hasStarters = computed(() => sides.value.some(s => s.starters.length));
                     { key: 'bench',    label: 'Remplaçants', rows: s.bench },
                 ]" :key="block.key">
                     <div v-if="block.rows.length" class="mb-3">
-                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">{{ block.label }}</div>
+                        <div class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-1">{{ block.label }}</div>
                         <button v-for="r in block.rows" :key="r.pid" type="button"
                                 @click="emit('show-player', s.side, r.pid)"
                                 class="w-full flex items-center gap-2 px-1.5 py-1 rounded-md text-left text-xs hover:bg-white transition-colors"
                                 :class="r.used ? '' : 'opacity-45'"
                                 title="Voir ses stats du match">
-                            <span class="w-5 text-right font-mono text-[10px] text-slate-400 shrink-0">{{ r.p.number ?? '—' }}</span>
+                            <span class="w-5 text-right font-mono text-2xs text-slate-400 shrink-0">{{ r.p.number ?? '—' }}</span>
                             <span class="w-5 h-5 rounded-full overflow-hidden bg-slate-200 shrink-0">
                                 <PlayerPhoto :src="playerPhotoUrl(r.p)" class="w-full h-full object-cover" alt="" />
                             </span>
                             <span class="font-semibold text-slate-700 truncate">{{ r.p.lastname }}</span>
-                            <span v-if="r.captain" class="shrink-0 px-1 rounded bg-amber-400 text-[9px] font-black text-slate-700" title="Capitaine">C</span>
+                            <span v-if="r.captain" class="shrink-0 px-1 rounded bg-amber-400 text-3xs font-black text-slate-700" title="Capitaine">C</span>
                             <span v-if="r.motm" class="shrink-0" title="Homme du match">⭐</span>
-                            <span class="shrink-0 text-[9px] font-bold text-slate-400">{{ { GK: 'GK', DEF: 'DEF', MID: 'MIL', ATT: 'ATT' }[r.group] ?? '' }}</span>
+                            <span class="shrink-0 text-3xs font-bold text-slate-400">{{ { GK: 'GK', DEF: 'DEF', MID: 'MIL', ATT: 'ATT' }[r.group] ?? '' }}</span>
 
-                            <span class="ml-auto flex flex-wrap justify-end items-center gap-1 text-[10px] text-slate-500">
+                            <span class="ml-auto flex flex-wrap justify-end items-center gap-1 text-2xs text-slate-500">
                                 <span v-for="(g, i) in r.goals" :key="'g' + i" class="whitespace-nowrap" :title="g.special ? 'But (geste spécial)' : 'But'">
                                     ⚽<template v-if="g.turn"> T{{ g.turn }}</template><span v-if="g.special" class="text-amber-600">★</span>
                                 </span>
@@ -197,7 +197,7 @@ const hasStarters = computed(() => sides.value.some(s => s.starters.length));
         <p v-else class="text-xs text-slate-400 italic text-center py-6">
             La composition de ce match n'a pas été enregistrée.
         </p>
-        <p v-if="hasStarters && !stats.lineups" class="mt-3 text-[10px] text-slate-400 italic">
+        <p v-if="hasStarters && !stats.lineups" class="mt-3 text-2xs text-slate-400 italic">
             Match antérieur à l'enregistrement des effectifs : les remplaçants sont ceux de l'effectif actuel.
         </p>
     </div>

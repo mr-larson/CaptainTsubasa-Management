@@ -130,15 +130,15 @@ function resetDefaults() {
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div class="border border-slate-200 rounded-xl bg-white p-3 flex flex-col items-center gap-1">
                         <span class="text-2xl font-black text-slate-700">{{ stats.playersCount ?? '—' }}</span>
-                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Joueurs</span>
+                        <span class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Joueurs</span>
                     </div>
                     <div class="border border-slate-200 rounded-xl bg-white p-3 flex flex-col items-center gap-1">
                         <span class="text-2xl font-black text-slate-700">{{ stats.teamsCount ?? '—' }}</span>
-                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Équipes</span>
+                        <span class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Équipes</span>
                     </div>
                     <div class="border border-slate-200 rounded-xl bg-white p-3 flex flex-col items-center gap-1">
                         <span class="text-2xl font-black text-slate-700">{{ stats.activeContractsCount ?? '—' }}</span>
-                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Contrats actifs</span>
+                        <span class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Contrats actifs</span>
                     </div>
                     <button type="button"
                             class="border rounded-xl p-3 flex flex-col items-center gap-1 transition-all"
@@ -149,7 +149,7 @@ function resetDefaults() {
                         <span class="text-2xl font-black" :class="(stats.freePlayersCount ?? 0) > 0 ? 'text-amber-600' : 'text-slate-700'">
                             {{ stats.freePlayersCount ?? '—' }}
                         </span>
-                        <span class="text-[10px] font-bold uppercase tracking-wider"
+                        <span class="text-2xs font-bold uppercase tracking-wider"
                               :class="(stats.freePlayersCount ?? 0) > 0 ? 'text-amber-600' : 'text-slate-400'">
                             Joueurs libres
                         </span>
@@ -183,7 +183,7 @@ function resetDefaults() {
                         <li v-for="c in expiringContracts" :key="c.id"
                             class="flex items-center justify-between text-xs bg-white rounded-lg px-3 py-1.5 border border-rose-100">
                             <span class="text-slate-700 font-medium">{{ c.player }} <span class="text-slate-400 font-normal">— {{ c.team }}</span></span>
-                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">Semaine {{ c.end_week }}</span>
+                            <span class="text-2xs font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">Semaine {{ c.end_week }}</span>
                         </li>
                     </ul>
                 </div>

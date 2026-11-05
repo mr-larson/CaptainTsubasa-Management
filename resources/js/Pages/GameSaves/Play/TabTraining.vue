@@ -176,7 +176,7 @@ const selectedPlayerPerf = computed(() => {
                     <!-- Budget & coût par séance -->
                     <div v-if="trainingCost > 0" class="text-center px-4 py-2 rounded-xl border bg-white border-slate-200">
                         <div class="text-2xl font-black text-slate-700">{{ teamBudget }} €</div>
-                        <div class="text-[10px] font-semibold text-slate-400">budget · {{ trainingCost }} €/séance</div>
+                        <div class="text-2xs font-semibold text-slate-400">budget · {{ trainingCost }} €/séance</div>
                     </div>
                     <!-- Entraînements manuels restants -->
                     <div class="text-center px-4 py-2 rounded-xl border"
@@ -185,7 +185,7 @@ const selectedPlayerPerf = computed(() => {
                              :class="remainingTrainingsThisWeek > 0 ? 'text-teal-600' : 'text-slate-400'">
                             {{ remainingTrainingsThisWeek }}
                         </div>
-                        <div class="text-[10px] font-semibold"
+                        <div class="text-2xs font-semibold"
                              :class="remainingTrainingsThisWeek > 0 ? 'text-teal-500' : 'text-slate-400'">
                             séance(s) restante(s)
                         </div>
@@ -193,7 +193,7 @@ const selectedPlayerPerf = computed(() => {
                     <!-- Entraînements IA cette semaine -->
                     <div class="text-center px-4 py-2 rounded-xl border bg-amber-50 border-amber-200">
                         <div class="text-2xl font-black text-amber-500">{{ aiTrainingEntries.length }}</div>
-                        <div class="text-[10px] font-semibold text-amber-400">entr. auto</div>
+                        <div class="text-2xs font-semibold text-amber-400">entr. auto</div>
                     </div>
                 </div>
             </div>
@@ -218,7 +218,7 @@ const selectedPlayerPerf = computed(() => {
                             @select="selectPlayer">
                     <template #badge="{ player, selected }">
                         <div v-if="hasPlayerBeenTrainedThisWeek(player.id)"
-                             class="text-[9px] px-1.5 py-0.5 rounded-full font-bold shrink-0"
+                             class="text-3xs px-1.5 py-0.5 rounded-full font-bold shrink-0"
                              :class="selected ? 'bg-white text-teal-600' : 'bg-teal-500 text-white'"
                              title="Déjà entraîné cette semaine">
                             ✓
@@ -305,13 +305,13 @@ const selectedPlayerPerf = computed(() => {
                                     <div class="w-7 h-7 rounded-full overflow-hidden bg-slate-200 shrink-0">
                                         <PlayerPhoto :src="playerPhotoUrl(playerForEntry({ player_id: slot.player_id }))"
                                              class="w-full h-full object-cover" alt="" />
-                                        <div v-if="!playerPhotoUrl(playerForEntry({ player_id: slot.player_id }))" class="w-full h-full flex items-center justify-center text-[9px] text-slate-400">?</div>
+                                        <div v-if="!playerPhotoUrl(playerForEntry({ player_id: slot.player_id }))" class="w-full h-full flex items-center justify-center text-3xs text-slate-400">?</div>
                                     </div>
                                     <div class="flex-1 min-w-0">
                                         <div class="text-xs font-semibold truncate text-slate-700">
                                             {{ playerForEntry({ player_id: slot.player_id })?.lastname ?? '—' }}
                                         </div>
-                                        <div class="text-[10px] text-slate-400 truncate">
+                                        <div class="text-2xs text-slate-400 truncate">
                                             {{ playerForEntry({ player_id: slot.player_id })?.position ?? '' }}
                                         </div>
                                     </div>
@@ -393,13 +393,13 @@ const selectedPlayerPerf = computed(() => {
                     <div class="flex flex-wrap gap-1.5 mb-3">
                         <button type="button"
                                 @click="aiTeamFilter = null"
-                                class="px-2.5 py-1 rounded-full text-[10px] font-semibold border transition-all"
+                                class="px-2.5 py-1 rounded-full text-2xs font-semibold border transition-all"
                                 :class="aiTeamFilter === null ? 'bg-amber-400 text-white border-amber-500' : 'bg-white text-slate-500 border-slate-200 hover:border-amber-300'">
                             Toutes
                         </button>
                         <button v-for="t in aiTeams" :key="t.id" type="button"
                                 @click="aiTeamFilter = aiTeamFilter === t.id ? null : t.id"
-                                class="px-2.5 py-1 rounded-full text-[10px] font-semibold border transition-all"
+                                class="px-2.5 py-1 rounded-full text-2xs font-semibold border transition-all"
                                 :class="aiTeamFilter === t.id ? 'bg-amber-400 text-white border-amber-500' : 'bg-white text-slate-500 border-slate-200 hover:border-amber-300'">
                             {{ t.name }}
                         </button>
@@ -410,14 +410,14 @@ const selectedPlayerPerf = computed(() => {
                              class="flex items-center gap-3 px-3 py-2 rounded-lg bg-amber-50 border border-amber-100">
 
                             <div class="w-8 h-8 rounded-full overflow-hidden bg-slate-200 shrink-0">
-                                <div class="w-full h-full flex items-center justify-center text-[9px] text-slate-400">
+                                <div class="w-full h-full flex items-center justify-center text-3xs text-slate-400">
                                     {{ entry.player_name?.charAt(0) ?? '?' }}
                                 </div>
                             </div>
 
                             <div class="flex-1 min-w-0">
                                 <div class="text-xs font-semibold text-slate-700 truncate">{{ entry.player_name }}</div>
-                                <div class="text-[10px] text-amber-600 font-semibold truncate">{{ entry.team_name }}</div>
+                                <div class="text-2xs text-amber-600 font-semibold truncate">{{ entry.team_name }}</div>
                             </div>
 
                             <div class="flex items-center gap-1.5">
@@ -448,14 +448,14 @@ const selectedPlayerPerf = computed(() => {
                             <div class="w-8 h-8 rounded-full overflow-hidden bg-slate-200 shrink-0">
                                 <PlayerPhoto :src="playerForManualEntry(entry) ? playerPhotoUrl(playerForManualEntry(entry)) : null"
                                      class="w-full h-full object-cover" alt="" />
-                                <div v-if="!(playerForManualEntry(entry) && playerPhotoUrl(playerForManualEntry(entry)))" class="w-full h-full flex items-center justify-center text-[9px] text-slate-400">?</div>
+                                <div v-if="!(playerForManualEntry(entry) && playerPhotoUrl(playerForManualEntry(entry)))" class="w-full h-full flex items-center justify-center text-3xs text-slate-400">?</div>
                             </div>
 
                             <div class="flex-1 min-w-0">
                                 <div class="text-xs font-semibold text-slate-700 truncate">
                                     {{ playerForManualEntry(entry)?.lastname ?? `Joueur #${entry.player_id}` }}
                                 </div>
-                                <div class="text-[10px] text-slate-400">Stamina -{{ entry.stamina_cost }}</div>
+                                <div class="text-2xs text-slate-400">Stamina -{{ entry.stamina_cost }}</div>
                             </div>
 
                             <div class="flex items-center gap-1.5">
