@@ -247,6 +247,13 @@ class LineupController extends Controller
             return null;
         }
 
+        // Option « Accès aux autres clubs » : les équipes IA deviennent modifiables.
+        // Les autres managers humains (hot-seat) restent protégés.
+        $humanTeamIds = array_map('intval', $gameSave->controlledGameTeamIds());
+        if ($gameSave->getConfig('other_teams_editable') && ! in_array($teamId, $humanTeamIds, true)) {
+            return null;
+        }
+
         return back()->withErrors(['team_id' => "La composition d'une autre équipe ne peut pas être modifiée."]);
     }
 }

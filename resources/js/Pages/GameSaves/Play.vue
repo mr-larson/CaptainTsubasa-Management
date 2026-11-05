@@ -246,19 +246,47 @@ const squadAvailability = computed(() => ({
     available: rosterWithStatus.value.filter(p => !unavailability(p)).length,
     total:     rosterWithStatus.value.length,
 }));
-// Statut du club (onglet Gestion) : récap des états de l'équipe pilotée.
-const clubStatus = computed(() => ({
-    roster:               rosterWithStatus.value,
-    clubStanding:         clubStanding.value,
-    standingsCount:       standings.value.length,
-    teamBudget:           Number(teamBudget.value) || 0,
-    teamRecord:           teamRecord.value,
-    week:                 Number(week.value) || 1,
+// Statut du club (onglet Gestion) : notre club par défaut, ou n'importe quel
+// club choisi dans le sélecteur du panneau.
+const clubStatusTeamId = ref(null);
+const rosterForTeam = (t) => (t?.contracts ?? [])
+    .map(c => {
+        const p = c.game_player ?? c.gamePlayer ?? c.player ?? null;
+        return p ? { ...p, contract_id: c.id, is_starter: c.is_starter ?? true, is_captain: c.is_captain ?? false, contract_end_week: c.end_week ?? null } : null;
+    })
+    .filter(Boolean);
+const clubStatus = computed(() => {
+    const myId     = teamRef.value?.id ?? null;
+    const viewedId = clubStatusTeamId.value ?? myId;
+    const isMine   = viewedId === myId;
+    const viewed   = isMine ? teamRef.value : (teamsRef.value ?? []).find(t => t.id === viewedId);
+    const index    = standings.value.findIndex(r => r.id === viewedId);
+    return {
+        teams:            (teamsRef.value ?? []).map(t => ({ id: t.id, name: t.name, mine: t.id === myId }))
+                                                 .sort((a, b) => Number(b.mine) - Number(a.mine) || a.name.localeCompare(b.name)),
+        teamId:           viewedId,
+        isMine,
+        roster:           isMine ? rosterWithStatus.value : rosterForTeam(viewed),
+        clubStanding:     index === -1 ? null : { ...standings.value[index], position: index + 1 },
+        standingsCount:   standings.value.length,
+        teamBudget:       Number(viewed?.budget) || 0,
+        teamRecord:       { wins: viewed?.wins ?? 0, draws: viewed?.draws ?? 0, losses: viewed?.losses ?? 0 },
+        week:             Number(week.value) || 1,
     playerInjury,
     playerSuspension,
     playerYellowCards,
-    suspensionOn3Yellows: props.gameConfig?.suspension_on_3_yellows !== false,
-}));
+        suspensionOn3Yellows: props.gameConfig?.suspension_on_3_yellows !== false,
+    };
+});
+
+// Clic sur un joueur du statut du club : sa fiche dans Mon équipe ou Autres équipes.
+const openClubStatusPlayer = (p) => {
+    if (clubStatus.value.isMine) return openReminder({ tab: 'my-team', player: p });
+    const t = (teamsRef.value ?? []).find(x => x.id === clubStatus.value.teamId);
+    if (t) selectOtherTeam(t);
+    activeTab.value = 'other-teams';
+    nextTick(() => selectOtherPlayer(p));
+};
 
 const openReminder = (item) => {
     activeTab.value = item.tab ?? 'my-team';
@@ -284,11 +312,22 @@ const {
     otherFormation, otherFormationData,
     otherPlayerPosition, otherPlayerForSlot, otherSelectedSlot,
     updatePlayerNumber, isOtherPickedUp,
+    toggleOtherStarter, toggleOtherCaptain, saveOtherFormation,
+    handleOtherPlayerClick, handleOtherDragStart, handleOtherDragOver, handleOtherDrop, cancelOtherPickup,
 } = useOtherTeam({
     gameSave: gameSaveRef,
     teams: teamsRef,
     controlledTeamId: computed(() => teamRef.value?.id ?? null),
 });
+
+// Option « Accès aux autres clubs » : composition des équipes IA modifiable
+// (les autres managers humains restent en lecture seule, le serveur le refuse aussi).
+const humanTeamIds = computed(() => new Set((props.hotSeat?.players ?? []).map(p => Number(p.game_team_id))));
+const otherTeamEditable = computed(() =>
+    props.gameConfig?.other_teams_editable === true
+    && !!selectedOtherTeam.value
+    && !humanTeamIds.value.has(Number(selectedOtherTeam.value.id))
+);
 
 // ==========================
 //   CARTES BONUS
@@ -621,8 +660,19 @@ const saveGame = () => {
                                    :isPlayerSuspended="isPlayerSuspended"
                                    :playerYellowCards="playerYellowCards"
                                    :isOtherPickedUp="isOtherPickedUp"
+                                   :editable="otherTeamEditable"
                                    @select-team="selectOtherTeam"
                                    @select-player="selectOtherPlayer"
+                                   @player-click="handleOtherPlayerClick"
+                                   @drag-start="handleOtherDragStart"
+                                   @drag-over="handleOtherDragOver"
+                                   @drop-on="handleOtherDrop"
+                                   @drag-end="cancelOtherPickup"
+                                   @cancel-pickup="cancelOtherPickup"
+                                   @change-formation="saveOtherFormation"
+                                   @toggle-starter="toggleOtherStarter"
+                                   @toggle-captain="toggleOtherCaptain"
+                                   @update-number="updatePlayerNumber"
                     />
 
                     <!-- ======== CALENDRIER ======== -->
@@ -769,7 +819,8 @@ const saveGame = () => {
                                    :career="career"
                                    :initialSection="managementInitialSection"
                                    :clubStatus="clubStatus"
-                                   @open-player="p => openReminder({ tab: 'my-team', player: p })"
+                                   @select-club="id => clubStatusTeamId = id"
+                                   @open-player="openClubStatusPlayer"
                     />
 
                 </div>

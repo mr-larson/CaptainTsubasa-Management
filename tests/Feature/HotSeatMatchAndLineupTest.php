@@ -58,6 +58,37 @@ class HotSeatMatchAndLineupTest extends TestCase
         $this->assertSame('5-2-2-1', $mine->fresh()->formation);
     }
 
+    public function test_ai_team_lineup_is_editable_when_other_teams_access_is_enabled(): void
+    {
+        $save = $this->makeSave();
+        [$mine]                 = $this->makeTeamWithSquad($save, ['is_controlled' => true, 'human_seat' => 1]);
+        [$rival]                = $this->makeTeamWithSquad($save, ['is_controlled' => true, 'human_seat' => 2]);
+        [$ai, $aiPlayers]       = $this->makeTeamWithSquad($save);
+        $state = $save->state ?? [];
+        $state['config'] = array_merge($state['config'] ?? [], ['other_teams_editable' => true]);
+        $save->update(['controlled_game_team_id' => $mine->id, 'state' => $state]);
+
+        $user     = User::find($save->user_id);
+        $contract = $aiPlayers[0]->contracts()->first();
+
+        // Équipe IA : formation et capitaine modifiables.
+        $this->actingAs($user)
+            ->post(route('game-saves.lineup.formation', $save), ['team_id' => $ai->id, 'formation' => '5-2-2-1'])
+            ->assertSessionHasNoErrors();
+        $this->assertSame('5-2-2-1', $ai->fresh()->formation);
+
+        $this->actingAs($user)
+            ->patch(route('game-contracts.toggle-captain', $contract))
+            ->assertSessionHasNoErrors();
+        $this->assertTrue((bool) $contract->fresh()->is_captain);
+
+        // L'autre manager humain reste protégé.
+        $this->actingAs($user)
+            ->post(route('game-saves.lineup.formation', $save), ['team_id' => $rival->id, 'formation' => '5-2-2-1'])
+            ->assertSessionHasErrors('team_id');
+        $this->assertNotSame('5-2-2-1', $rival->fresh()->formation);
+    }
+
     public function test_benching_a_starter_frees_his_lineup_slot(): void
     {
         $save = $this->makeSave();

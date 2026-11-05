@@ -158,6 +158,8 @@ class GameSave extends Model
         'initial_morale_random'     => true,
         // Budget de départ des clubs IA (création du monde uniquement)
         'ai_start_budget'           => 2500,
+        // Accès aux autres clubs : composition des équipes IA modifiable depuis « Autres équipes »
+        'other_teams_editable'      => false,
     ];
 
     // Bornes du moral initial aléatoire : de "mécontent haut" à "satisfait",
@@ -196,6 +198,7 @@ class GameSave extends Model
             'season_challenges_enabled' => ['boolean'],
             'initial_morale_random'   => ['boolean'],
             'ai_start_budget'         => ['integer', 'min:0', 'max:20000'],
+            'other_teams_editable'    => ['boolean'],
         ];
 
         $prefixed = [];

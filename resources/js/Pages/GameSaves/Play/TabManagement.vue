@@ -5,6 +5,7 @@ import { ref, reactive, computed, watch } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import GameRules from '@/Components/GameRules.vue';
 import ClubStatusPanel from './components/ClubStatusPanel.vue';
+import { fieldClass } from '@/Components/fieldStyles';
 
 const props = defineProps({
     gameSave: { type: Object, required: true },
@@ -16,7 +17,14 @@ const props = defineProps({
     clubStatus: { type: Object, default: null },
 });
 
-const emit = defineEmits(['open-player']);
+const emit = defineEmits(['open-player', 'select-club']);
+
+// Sélecteur d'équipe du statut du club ; le reste est transmis au panneau.
+const statusPanelProps = computed(() => {
+    if (!props.clubStatus) return {};
+    const { teams, teamId, isMine, ...panel } = props.clubStatus;
+    return panel;
+});
 
 // ── Préférences d'affichage (compte utilisateur, toutes parties) ──
 const page = usePage();
@@ -105,6 +113,7 @@ function resetDefaults() {
             original: true,
         },
         internationals_visible: false,
+        other_teams_editable: false,
     };
     Object.assign(config, defaults);
 }
@@ -130,8 +139,17 @@ function resetDefaults() {
 
             <!-- Statut du club (page par défaut) -->
             <div v-if="activeSection === 'status' && clubStatus" class="flex-1 flex flex-col gap-3">
-                <h3 class="text-lg font-semibold text-slate-700">Statut du club</h3>
-                <ClubStatusPanel v-bind="clubStatus" @open-player="p => emit('open-player', p)" />
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <h3 class="text-lg font-semibold text-slate-700">Statut du club</h3>
+                    <select :value="clubStatus.teamId" @change="emit('select-club', Number($event.target.value))"
+                            aria-label="Club affiché"
+                            class="w-full sm:w-64 pl-3 pr-9 py-1.5 cursor-pointer" :class="fieldClass({ shape: 'rect' })">
+                        <option v-for="t in clubStatus.teams" :key="t.id" :value="t.id">
+                            {{ t.name }}{{ t.mine ? ' (mon club)' : '' }}
+                        </option>
+                    </select>
+                </div>
+                <ClubStatusPanel v-bind="statusPanelProps" @open-player="p => emit('open-player', p)" />
             </div>
 
             <!-- Base de données -->
@@ -400,6 +418,24 @@ function resetDefaults() {
                             Joueurs internationaux visibles
                         </label>
                     </div>
+                </div>
+
+                <!-- Accès aux autres clubs -->
+                <div class="border border-slate-200 rounded-lg bg-white p-4 flex flex-col gap-3">
+                    <h4 class="text-sm font-bold text-slate-700 flex items-center gap-1.5">
+                        <span class="text-base">🔓</span> Accès aux autres clubs
+                    </h4>
+                    <label class="flex items-start gap-2 text-sm text-slate-700 cursor-pointer">
+                        <input type="checkbox" v-model="config.other_teams_editable"
+                               class="mt-0.5 rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
+                        <span>
+                            Modifier la composition des autres équipes
+                            <span class="block text-xs text-slate-400">
+                                Dans « Autres équipes » : formation, titulaires, remplacements, capitaine et numéros des clubs gérés par l'IA,
+                                comme pour ton équipe. Les autres managers humains (hot-seat) restent protégés.
+                            </span>
+                        </span>
+                    </label>
                 </div>
 
                 <!-- IA -->
