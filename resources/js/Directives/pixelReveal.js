@@ -23,11 +23,21 @@
 
 // Taille des pixels (px CSS) pour chaque palier, du plus grossier au plus fin.
 // Impaires pour que la dilatation donne des blocs exactement carrés.
-const LEVELS = [21, 15, 11, 7, 5, 3];
+const LEVELS = [21, 15, 11, 7, 5, 3];      // images
+// Texte : grille plus fine, pour qu'une ligne devienne des lettres « en briques »
+// et non une barre pleine (une cellule de 21 px avale une ligne de 15 px).
+const TEXT_LEVELS = [13, 11, 9, 7, 5, 3];
+// Ces tailles valent pour un texte de 22 px et plus ; en dessous, la grille est
+// réduite au prorata de la taille de police (un paragraphe de 15 px plafonne à ~9 px).
+const TEXT_REF_PX = 22;
+const textCell = (level, k) => {
+    const s = Math.max(3, Math.round(TEXT_LEVELS[level] * k));
+    return s % 2 ? s : s - 1;   // tailles impaires : un filtre existe pour chacune de 3 à 13
+};
 const STEPS = LEVELS.length + 1;        // 0 = caché, 1..LEVELS = pixelisé, STEPS = net
 const STEP_MS = 55;                     // cadence des paliers (rythme rétro ~18 i/s)
 const STAGGER_MS = 65;                  // décalage auto entre blocs qui démarrent ensemble
-const PALETTE_UNTIL = 3;                // palette réduite sur les 3 paliers les plus grossiers
+const PALETTE_UNTIL = 3;                // images : palette réduite sur les 3 paliers les plus grossiers
 const START = 1.0;                      // progression 0 quand le haut du bloc touche le bas de l'écran…
 const END = 0.78;                       // …et 1 quand il atteint 78 % de la hauteur d'écran
 const EXIT = 0.16;                      // en sortie par le haut : repixelisation sur les 16 % du haut
@@ -70,16 +80,15 @@ function ensureFilters() {
     svg.setAttribute('focusable', 'false');
     svg.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;pointer-events:none';
 
-    // Alpha : un bloc devient plein dès que ~12 % de sa surface est couverte,
-    // ce qui garde des lettres « en briques » lisibles plutôt qu'un voile gris.
-    const alphaTable = '0 1 1 1 1 1 1 1';
-    const paletteTable = '0 0.17 0.33 0.5 0.67 0.83 1';
+    // Alpha : la couverture moyenne de chaque bloc est amplifiée puis ramenée à
+    // 4 niveaux (0 / 35 % / 70 % / plein). Les blocs pleins dessinent les lettres,
+    // les intermédiaires les bords et les espaces : on devine la forme des mots
+    // au lieu d'une barre uniforme. Couleur du texte conservée (pas de palette).
+    const alphaBoost = '<feComponentTransfer><feFuncA type="linear" slope="2.4"/></feComponentTransfer>';
+    const alphaSteps = '<feComponentTransfer><feFuncA type="discrete" tableValues="0 0.35 0.7 1"/></feComponentTransfer>';
 
-    svg.innerHTML = `<defs>${LEVELS.map((s, i) => {
+    svg.innerHTML = `<defs>${TEXT_LEVELS.map((s) => {
         const c = Math.floor(s / 2);
-        const palette = i < PALETTE_UNTIL
-            ? `<feFuncR type="discrete" tableValues="${paletteTable}"/><feFuncG type="discrete" tableValues="${paletteTable}"/><feFuncB type="discrete" tableValues="${paletteTable}"/>`
-            : '';
         return `<filter id="pxr-${s}" x="0" y="0" width="1" height="1" color-interpolation-filters="sRGB">
             <feGaussianBlur in="SourceGraphic" stdDeviation="${(s * 0.32).toFixed(2)}" result="blur"/>
             <feFlood x="${c}" y="${c}" width="1" height="1" flood-color="#fff"/>
@@ -87,7 +96,7 @@ function ensureFilters() {
             <feTile result="grid"/>
             <feComposite in="blur" in2="grid" operator="in"/>
             <feMorphology operator="dilate" radius="${c}"/>
-            <feComponentTransfer><feFuncA type="discrete" tableValues="${alphaTable}"/>${palette}</feComponentTransfer>
+            ${alphaBoost}${alphaSteps}
         </filter>`;
     }).join('')}</defs>`;
     document.body.appendChild(svg);
@@ -179,7 +188,7 @@ function applyStep(unit, step) {
 
     for (const t of unit.targets) {
         if (t.type === 'text') {
-            t.el.style.filter = level >= 0 ? `url(#pxr-${LEVELS[level]})` : '';
+            t.el.style.filter = level >= 0 ? `url(#pxr-${textCell(level, t.k)})` : '';
         } else if (t.urls) {
             if (level >= 0) {
                 t.el.style.imageRendering = 'pixelated';
@@ -295,7 +304,10 @@ function onIntersect(entries) {
 // dans l'arbre seulement là où il y a des images à séparer du texte.
 function collectTargets(el, out = []) {
     if (el.tagName === 'IMG') out.push({ type: 'image', el });
-    else if (!el.querySelector('img')) out.push({ type: 'text', el });
+    else if (!el.querySelector('img')) {
+        const fontSize = parseFloat(getComputedStyle(el).fontSize) || 16;
+        out.push({ type: 'text', el, k: Math.min(1, fontSize / TEXT_REF_PX) });
+    }
     else for (const child of el.children) collectTargets(child, out);
     return out;
 }
