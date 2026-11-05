@@ -24,8 +24,10 @@ class CareerObjectiveService
      * Réglages par niveau de mandat choisi à la création.
      *
      * start_budget / weekly_income ne s'appliquent qu'aux équipes humaines :
-     * l'IA garde les valeurs de base (5000 / 500), l'écart relatif fait la difficulté.
+     * l'IA part avec le réglage ai_start_budget (2500 par défaut) et 500 €/sem. Bac à sable : SANDBOX_START_BUDGET, l'écart relatif fait la difficulté.
      */
+    public const SANDBOX_START_BUDGET = 2500;
+
     public const PRESETS = [
         'survival' => [
             'label'         => 'Survie',
@@ -34,7 +36,7 @@ class CareerObjectiveService
             'rank_offset'   => 2,   // objectif plus indulgent (rang plus bas toléré)
             'win_bonus'     => 20,
             'fail_penalty'  => 16,
-            'start_budget'  => 5000, // board indulgent : matelas financier préservé
+            'start_budget'  => 1500,
             'weekly_income' => 500,
         ],
         'standard' => [
@@ -44,7 +46,7 @@ class CareerObjectiveService
             'rank_offset'   => 0,
             'win_bonus'     => 18,
             'fail_penalty'  => 22,
-            'start_budget'  => 4000,
+            'start_budget'  => 1000,
             'weekly_income' => 450,
         ],
         'conquest' => [
@@ -54,7 +56,7 @@ class CareerObjectiveService
             'rank_offset'   => -2,  // objectif exigeant (doit finir plus haut)
             'win_bonus'     => 15,
             'fail_penalty'  => 28,
-            'start_budget'  => 2500, // le board exige ET tient les cordons de la bourse
+            'start_budget'  => 500, // le board exige ET tient les cordons de la bourse
             'weekly_income' => 350,
         ],
     ];
@@ -378,7 +380,7 @@ class CareerObjectiveService
      *
      * @return Collection<int, float>
      */
-    private function teamStrengths(GameSave $gameSave): Collection
+    public function teamStrengths(GameSave $gameSave): Collection
     {
         $currentWeek = (int) ($gameSave->week ?? 1);
 

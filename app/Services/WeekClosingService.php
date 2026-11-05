@@ -22,7 +22,7 @@ class WeekClosingService
     public const OUTCOME_GAME_OVER  = 'game_over';
     public const OUTCOME_SEASON_END = 'season_end';
 
-    private const BASE_INCOME = 500;
+    public const BASE_INCOME = 500;
     private const WIN_BONUS   = 300;
     private const DRAW_BONUS  = 100;
 

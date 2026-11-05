@@ -68,6 +68,7 @@ const props = defineProps({
     tournament:         { type: Object, required: false, default: null },
     gameConfig:         { type: Object, default: () => ({}) },
     career:             { type: Object, required: false, default: null },
+    seasonChallenges:   { type: Object, required: false, default: null },
     incomeModel:        { type: Object, required: false, default: null },
 });
 
@@ -526,6 +527,7 @@ const saveGame = () => {
                                   :advice="assistantAdvice"
                                   @apply-advice="applyAdvice"
                                   :career="career"
+                                  :seasonChallenges="seasonChallenges"
                                   :incomeModel="props.incomeModel"
                                   :trainingCost="props.gameConfig?.training_cost ?? 0"
                                   :maxTrainings="props.gameConfig?.training_max_per_week ?? 3"

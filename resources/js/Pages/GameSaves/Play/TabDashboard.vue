@@ -5,6 +5,7 @@ import TeamStyleBadges from "@/Pages/GameSaves/Play/components/TeamStyleBadges.v
 import DashboardSquadCards from "@/Pages/GameSaves/Play/components/DashboardSquadCards.vue";
 import DashboardSeasonCards from "@/Pages/GameSaves/Play/components/DashboardSeasonCards.vue";
 import AssistantAdviceCard from "@/Pages/GameSaves/Play/components/AssistantAdviceCard.vue";
+import SeasonChallengesCard from "@/Pages/GameSaves/Play/components/SeasonChallengesCard.vue";
 
 const props = defineProps({
     gameSave:      { type: Object, required: true },
@@ -33,6 +34,7 @@ const props = defineProps({
     isWorldCup:         { type: Boolean, default: false },
     playerSeasonStats:  { type: Object,  default: () => ({}) },
     career:             { type: Object,  default: null },
+    seasonChallenges:   { type: Object,  default: null },
     advice:             { type: Array,   default: () => [] },
     incomeModel:        { type: Object,  default: null },
     trainingCost:       { type: Number,  default: 0 },
@@ -506,6 +508,9 @@ const matchesPlayed = computed(() =>
                 <p v-if="opponentTeam && !isByeWeek" class="text-xs text-slate-400 italic leading-relaxed line-clamp-2 sm:text-right">{{ opponentTeam.description }}</p>
             </div>
         </div>
+
+        <!-- Défis de la saison (second classement, sans effet sur le championnat) -->
+        <SeasonChallengesCard v-if="seasonChallenges?.objectives?.length" :challenges="seasonChallenges" />
 
         <!-- ============================================ -->
         <!-- LIGNE 5 : Vestiaire, contrats, meilleurs joueurs -->

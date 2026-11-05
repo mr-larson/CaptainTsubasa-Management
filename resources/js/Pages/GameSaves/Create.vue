@@ -71,14 +71,15 @@ const originLabels = {
 };
 
 const careerLevels = [
-    { key: 'none',     icon: '∞',  label: 'Bac à sable',  desc: 'Aucun objectif. Les saisons s\'enchaînent à l\'infini. Budget 5000 €, revenus pleins.' },
-    { key: 'survival', icon: '🛡️', label: 'Survie',       desc: 'Petit club. La direction tolère un objectif modeste mais reste impatiente. 1 titre pour gagner. Budget 5000 €, 500 €/sem.' },
-    { key: 'standard', icon: '⚖️', label: 'Standard',     desc: 'Objectif calé sur la force de l\'effectif. 2 titres pour gagner. Budget 4000 €, 450 €/sem.' },
-    { key: 'conquest', icon: '👑', label: 'Conquête',     desc: 'Gros club. Le board exige le haut du tableau ET tient les cordons de la bourse. 3 titres pour gagner. Budget 2500 €, 350 €/sem.' },
+    { key: 'none',     icon: '∞',  label: 'Bac à sable',  desc: 'Aucun objectif. Les saisons s\'enchaînent à l\'infini. Budget 2500 €, revenus pleins.' },
+    { key: 'survival', icon: '🛡️', label: 'Survie',       desc: 'Petit club. La direction tolère un objectif modeste mais reste impatiente. 1 titre pour gagner. Budget 1500 €, 500 €/sem.' },
+    { key: 'standard', icon: '⚖️', label: 'Standard',     desc: 'Objectif calé sur la force de l\'effectif. 2 titres pour gagner. Budget 1000 €, 450 €/sem.' },
+    { key: 'conquest', icon: '👑', label: 'Conquête',     desc: 'Gros club. Le board exige le haut du tableau ET tient les cordons de la bourse. 3 titres pour gagner. Budget 500 €, 350 €/sem.' },
 ];
 
 const config = reactive({
     career_difficulty: 'standard',
+    season_challenges_enabled: true,
     bonus_cards_enabled: true,
     malus_cards_enabled: true,
     match_stamina_cost: 5,
@@ -95,6 +96,7 @@ const config = reactive({
     ai_transfers_enabled: true,
     ai_training_enabled: true,
     initial_morale_random: true,
+    ai_start_budget: 2500,
     visible_origins: {
         captain_tsubasa: true,
         ecole_des_champions: false,
@@ -109,6 +111,7 @@ const config = reactive({
 function resetDefaults() {
     Object.assign(config, {
         career_difficulty: 'standard',
+        season_challenges_enabled: true,
         bonus_cards_enabled: true, malus_cards_enabled: true,
         match_stamina_cost: 5, rest_stamina_recovery: 10, match_max_turns: 45,
         injury_on_foul: true, suspension_on_3_yellows: true,
@@ -116,6 +119,7 @@ function resetDefaults() {
         training_stamina_cost: 2, training_min_stamina: 10, training_cost: 200,
         ai_transfers_enabled: true, ai_training_enabled: true,
         initial_morale_random: true,
+        ai_start_budget: 2500,
         visible_origins: { captain_tsubasa: true, ecole_des_champions: false, hungry_heart: false, blue_lock: false, ao_ashi: false, original: true },
         internationals_visible: false,
     });
@@ -398,6 +402,14 @@ function submit() {
                                     </span>
                                 </button>
                             </div>
+                            <label class="flex items-start gap-2 text-xs text-slate-700 cursor-pointer mt-1">
+                                <input type="checkbox" v-model="config.season_challenges_enabled"
+                                       class="mt-0.5 rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
+                                <span>
+                                    🎲 Défis de saison
+                                    <span class="block text-[10px] text-slate-400">5 objectifs tirés au sort par équipe et par saison (primes + classement des défis, sans effet sur le championnat).</span>
+                                </span>
+                            </label>
                         </div>
 
                         <!-- Cartes -->
@@ -482,6 +494,20 @@ function submit() {
                                            class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
                                     Suspension 3 jaunes
                                 </label>
+                            </div>
+                        </div>
+
+                        <!-- Économie -->
+                        <div class="border border-slate-200 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
+                            <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                <span>💰</span> Économie
+                            </h4>
+                            <div class="flex flex-col gap-1 max-w-xs">
+                                <label class="text-[10px] text-slate-500">Budget de départ des clubs IA</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="range" v-model.number="config.ai_start_budget" min="0" max="10000" step="250" class="flex-1 h-1 accent-teal-500" />
+                                    <span class="text-xs font-bold text-slate-700 w-14 text-right">{{ config.ai_start_budget }} €</span>
+                                </div>
                             </div>
                         </div>
 

@@ -153,8 +153,11 @@ class GameSave extends Model
         ],
         'internationals_visible'    => true,
         'career_difficulty'         => 'standard',
+        'season_challenges_enabled' => true,
         // Appliqué uniquement à la création du monde (sans effet en cours de partie)
         'initial_morale_random'     => true,
+        // Budget de départ des clubs IA (création du monde uniquement)
+        'ai_start_budget'           => 2500,
     ];
 
     // Bornes du moral initial aléatoire : de "mécontent haut" à "satisfait",
@@ -190,7 +193,9 @@ class GameSave extends Model
             'visible_origins.*'       => ['boolean'],
             'internationals_visible'  => ['boolean'],
             'career_difficulty'       => ['string', 'in:none,survival,standard,conquest'],
+            'season_challenges_enabled' => ['boolean'],
             'initial_morale_random'   => ['boolean'],
+            'ai_start_budget'         => ['integer', 'min:0', 'max:20000'],
         ];
 
         $prefixed = [];

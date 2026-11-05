@@ -25,6 +25,7 @@ use App\Models\Team;
 use App\Enums\Nationality;
 use App\Services\BonusCardShopService;
 use App\Services\CareerObjectiveService;
+use App\Services\SeasonChallengeService;
 use App\Services\DraftService;
 use App\Services\MoraleService;
 use App\Services\NationalTeamAssembler;
@@ -385,9 +386,18 @@ class GameSaveController extends Controller
             }
         }
 
+        // Budget de départ des clubs IA (réglage de création, les humains sont ajustés ci-dessous).
+        $aiStartBudget = (int) $gameSave->getConfig('ai_start_budget', 2500);
+        foreach ($gameTeamsByBaseId as $baseId => $gameTeam) {
+            if (!in_array($baseId, $humanTeamIds, false)) {
+                $gameTeam->update(['budget' => $aiStartBudget]);
+            }
+        }
+
         // Marquer chaque équipe humaine (is_controlled + siège dans l'ordre choisi).
         // La difficulté du mandat ajuste aussi leur budget de départ (l'IA garde le sien).
-        $difficultyPreset = CareerObjectiveService::PRESETS[$gameSave->getConfig('career_difficulty', 'standard')] ?? null;
+        $difficulty       = $gameSave->getConfig('career_difficulty', 'standard');
+        $difficultyPreset = CareerObjectiveService::PRESETS[$difficulty] ?? null;
 
         $seat = 1;
         $firstControlled = null;
@@ -400,6 +410,8 @@ class GameSaveController extends Controller
             $gameTeam->human_seat    = $seat++;
             if ($difficultyPreset !== null) {
                 $gameTeam->budget = $difficultyPreset['start_budget'];
+            } elseif ($difficulty === 'none') {
+                $gameTeam->budget = CareerObjectiveService::SANDBOX_START_BUDGET;
             }
             $gameTeam->save();
             $firstControlled ??= $gameTeam;
@@ -707,6 +719,7 @@ class GameSaveController extends Controller
         // Fixe l'objectif de la direction pour la saison courante si besoin
         // (couvre le mode draft : l'effectif n'existe qu'après la draft).
         $career->ensureSeasonMandate($gameSave);
+        app(SeasonChallengeService::class)->ensureSeasonChallenges($gameSave);
 
         $currentWeek = $gameSave->week ?? 1;
 
@@ -1025,6 +1038,7 @@ class GameSaveController extends Controller
                 ? app(TournamentService::class)->presentation($gameSave)
                 : null,
             'career'              => app(CareerObjectiveService::class)->presentation($gameSave),
+            'seasonChallenges'    => app(SeasonChallengeService::class)->presentation($gameSave),
             'incomeModel'         => WeekClosingService::humanIncomeModel($gameSave),
         ]);
     }
@@ -1259,7 +1273,7 @@ class GameSaveController extends Controller
         $this->authorizeGameSave('update', $gameSave);
 
         // initial_morale_random n'a d'effet qu'à la création du monde.
-        $rules = Arr::except(GameSave::configRules(), ['initial_morale_random']);
+        $rules = Arr::except(GameSave::configRules(), ['initial_morale_random', 'ai_start_budget']);
         $data  = GameSave::sanitizeConfig($request->validate($rules));
 
         if (! $gameSave->hasValidTrainingGains($data)) {

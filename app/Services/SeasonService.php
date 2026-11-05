@@ -49,6 +49,9 @@ class SeasonService
         $champion  = $standings->first();
         $mvp       = $this->findSeasonMvp($gameSave);
 
+        // Défis de saison : évalués AVANT les primes de classement (objectif budget).
+        $challenges = app(SeasonChallengeService::class)->evaluateSeasonEnd($gameSave, $standings);
+
         $standingsRecap = [];
         foreach ($standings as $i => $team) {
             $rank  = $i + 1;
@@ -115,6 +118,7 @@ class SeasonService
             'standings' => $standingsRecap,
             'transfer_requests' => $transferRequests,
             'career_verdict'    => $careerVerdict,
+            'challenges'        => $challenges,
         ];
 
         $state = $gameSave->state ?? [];
@@ -235,7 +239,7 @@ class SeasonService
      * @param  \Illuminate\Support\Collection<int, GameTeam>  $teams
      * @return \Illuminate\Support\Collection<int, GameTeam>
      */
-    private function sortStandings($teams)
+    public function sortStandings($teams)
     {
         return $teams->sort(function ($a, $b) {
             $pa = ($a->wins ?? 0) * 3 + ($a->draws ?? 0);

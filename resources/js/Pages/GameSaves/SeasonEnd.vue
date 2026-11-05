@@ -13,6 +13,8 @@ const props = defineProps({
 const isStarting = ref(false);
 
 const verdict   = computed(() => props.recap?.career_verdict ?? null);
+const challenges = computed(() => props.recap?.challenges ?? null);
+const myChallengeRows = computed(() => (challenges.value ?? []).filter(r => r.is_controlled && r.objectives?.length));
 const isGameOver = computed(() => ['fired', 'won'].includes(verdict.value?.outcome));
 
 function startNewSeason() {
@@ -142,6 +144,55 @@ function startNewSeason() {
                             </tr>
                         </tbody>
                     </table>
+                    </div>
+                </div>
+
+                <!-- Classement des défis de saison -->
+                <div v-if="challenges?.length" class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                    <div class="px-4 sm:px-6 py-4 border-b border-slate-100">
+                        <h3 class="font-semibold text-slate-700">🎲 Classement des défis de saison</h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Facile 1 pt · Moyen 2 pts · Difficile 3 pts. Départage : défis réussis, puis rang en championnat.</p>
+                    </div>
+                    <div class="overflow-x-auto">
+                    <table class="w-full text-sm min-w-[460px]">
+                        <thead class="text-slate-400 uppercase text-xs">
+                            <tr>
+                                <th class="text-left px-6 py-2">#</th>
+                                <th class="text-left px-2 py-2">Équipe</th>
+                                <th class="text-center px-2 py-2">Défis</th>
+                                <th class="text-center px-2 py-2">Pts</th>
+                                <th class="text-center px-2 py-2">Champ.</th>
+                                <th class="text-right px-6 py-2">Primes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="row in challenges" :key="row.team_id"
+                                class="border-t border-slate-50"
+                                :class="{ 'bg-amber-50': row.rank === 1, 'font-semibold': row.is_controlled }">
+                                <td class="px-6 py-2 font-semibold text-slate-600">{{ row.rank }}</td>
+                                <td class="px-2 py-2 flex items-center gap-2">
+                                    <img v-if="row.logo_path" :src="`/storage/${row.logo_path}`" class="w-6 h-6 rounded-full object-contain bg-slate-100" />
+                                    {{ row.name }}
+                                    <span v-if="row.is_controlled" class="text-[10px] text-teal-600">• toi</span>
+                                </td>
+                                <td class="text-center px-2 py-2">{{ row.achieved }} / {{ row.total }}</td>
+                                <td class="text-center px-2 py-2 font-semibold">{{ row.points }}</td>
+                                <td class="text-center px-2 py-2 text-slate-400">{{ row.league_rank }}e</td>
+                                <td class="text-right px-6 py-2 text-emerald-600 font-medium">+{{ row.reward.toLocaleString() }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    </div>
+                    <div v-for="row in myChallengeRows" :key="'d' + row.team_id" class="px-4 sm:px-6 py-4 border-t border-slate-100">
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Bilan — {{ row.name }}</p>
+                        <ul class="flex flex-col gap-1.5">
+                            <li v-for="o in row.objectives" :key="o.key" class="flex items-center gap-2 text-sm">
+                                <span>{{ o.status === 'done' ? '✅' : '❌' }}</span>
+                                <span class="flex-1" :class="o.status === 'done' ? 'text-slate-700' : 'text-slate-400'">{{ o.label }}</span>
+                                <span class="text-xs text-slate-400 tabular-nums">{{ o.key === 'rank_max' ? o.value + 'e' : o.value.toLocaleString() }}</span>
+                                <span class="text-[10px] text-slate-400 w-20 text-right">{{ o.tier_label }} · {{ o.points }} pt{{ o.points > 1 ? 's' : '' }}</span>
+                            </li>
+                        </ul>
                     </div>
                 </div>
 
