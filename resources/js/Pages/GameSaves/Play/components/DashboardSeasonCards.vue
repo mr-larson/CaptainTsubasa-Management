@@ -1,7 +1,7 @@
 <script setup>
 // Dashboard — trajectoire de la saison (position semaine par semaine, écart avec
 // l'objectif du mandat) et projection budgétaire.
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useSeasonTrajectory } from '../useSeasonTrajectory.js';
 
 const props = defineProps({
@@ -39,6 +39,28 @@ const linePath = computed(() => points.value.map((p, i) => `${i ? 'L' : 'M'}${p.
 const dotClass = (pos) => targetRank.value == null
     ? 'bg-teal-500'
     : pos <= targetRank.value ? 'bg-emerald-500' : 'bg-rose-500';
+
+// ── Infobulle des pastilles (survol, focus clavier ou tap) ─────
+const hoveredWeek = ref(null);
+const hovered = computed(() => points.value.find(p => p.week === hoveredWeek.value) ?? null);
+const RESULT_STYLE = {
+    V: { icon: '✅', text: 'text-emerald-300' },
+    N: { icon: '🤝', text: 'text-slate-300' },
+    D: { icon: '❌', text: 'text-rose-300' },
+};
+// Bulle centrée sur la pastille, recalée aux bords ; sous la pastille si elle est en haut.
+const tooltipStyle = computed(() => {
+    const p = hovered.value;
+    if (!p) return {};
+    const xPct = p.x / W * 100, yPct = p.y / H * 100;
+    const tx = xPct < 20 ? '0%' : xPct > 80 ? '-100%' : '-50%';
+    const below = yPct < 35;
+    return {
+        left: `${xPct}%`,
+        top: `${yPct}%`,
+        transform: `translate(${tx}, ${below ? '12px' : 'calc(-100% - 12px)'})`,
+    };
+});
 
 // ── Finances ─────────────────────────────────────────────────
 const weeklyTrainingCost = computed(() => props.trainingCost * props.maxTrainings);
@@ -78,10 +100,37 @@ const fmt = (n) => Number(n ?? 0).toLocaleString('fr-FR');
             <!-- Points et libellés en HTML (le SVG est étiré, le texte ne doit pas l'être) -->
             <div v-if="points.length" class="relative -mt-32 h-32 pointer-events-none">
                 <span v-for="p in points" :key="p.week"
-                      class="absolute w-2.5 h-2.5 -ml-[5px] -mt-[5px] rounded-full ring-2 ring-white pointer-events-auto"
-                      :class="dotClass(p.position)"
+                      tabindex="0" role="button"
+                      :aria-label="`Semaine ${p.week} : ${p.position}e`"
+                      class="absolute w-2.5 h-2.5 -ml-[5px] -mt-[5px] rounded-full ring-2 ring-white pointer-events-auto cursor-pointer transition-transform focus:outline-none"
+                      :class="[dotClass(p.position), hoveredWeek === p.week ? 'scale-150 z-10' : 'hover:scale-125']"
                       :style="{ left: (p.x / W * 100) + '%', top: (p.y / H * 100) + '%' }"
-                      :title="`Semaine ${p.week} : ${p.position}e`"></span>
+                      @mouseenter="hoveredWeek = p.week" @mouseleave="hoveredWeek = null"
+                      @focus="hoveredWeek = p.week" @blur="hoveredWeek = null"
+                      @click="hoveredWeek = hoveredWeek === p.week ? null : p.week"></span>
+
+                <!-- Infobulle -->
+                <div v-if="hovered" role="tooltip"
+                     class="absolute z-20 whitespace-nowrap rounded-lg bg-slate-700 px-2.5 py-1.5 text-[11px] text-white shadow-lg"
+                     :style="tooltipStyle">
+                    <div class="font-bold">
+                        Semaine {{ hovered.week }} · {{ hovered.position }}<sup>e</sup>
+                        <span v-if="hovered.delta" class="ml-1" :class="hovered.delta > 0 ? 'text-emerald-300' : 'text-rose-300'">
+                            {{ hovered.delta > 0 ? '▲' : '▼' }} {{ Math.abs(hovered.delta) }}
+                        </span>
+                        <span v-else-if="hovered.delta === 0" class="ml-1 text-slate-400">=</span>
+                    </div>
+                    <div class="text-slate-300">
+                        <template v-if="hovered.match">
+                            {{ RESULT_STYLE[hovered.match.result].icon }}
+                            <span class="font-bold" :class="RESULT_STYLE[hovered.match.result].text">{{ hovered.match.result }} {{ hovered.match.score }}</span>
+                            {{ hovered.match.home ? 'contre' : 'à' }} {{ hovered.match.opponent }}
+                            <span class="text-slate-400">({{ hovered.match.home ? 'dom.' : 'ext.' }})</span>
+                        </template>
+                        <template v-else>💤 Repos</template>
+                        <span class="text-slate-400"> · {{ hovered.points }} pt{{ hovered.points > 1 ? 's' : '' }}</span>
+                    </div>
+                </div>
                 <span class="absolute -left-1 text-3xs text-slate-400" :style="{ top: (yFor(1) / H * 100) + '%', transform: 'translateY(-50%)' }">1</span>
                 <span class="absolute -left-1 text-3xs text-slate-400" :style="{ top: (yFor(teamCount) / H * 100) + '%', transform: 'translateY(-50%)' }">{{ teamCount }}</span>
             </div>

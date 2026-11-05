@@ -34,8 +34,32 @@ export function useSeasonTrajectory({ team, teams, matches, season, week, career
             });
             const order = Object.values(rows).sort((x, y) =>
                 (y.pts - x.pts) || ((y.gf - y.ga) - (x.gf - x.ga)) || (y.gf - x.gf) || (y.w - x.w) || x.name.localeCompare(y.name));
-            return { week: w, position: order.findIndex(r => r.id === myId.value) + 1 };
-        });
+
+            // Match de l'équipe cette semaine (infobulle) ; null = repos.
+            const mine = played.find(m => Number(m.week) === w && isMine(m));
+            let match = null;
+            if (mine) {
+                const home = mine.home_team_id === myId.value;
+                const us = Number(home ? mine.home_score : mine.away_score) || 0;
+                const them = Number(home ? mine.away_score : mine.home_score) || 0;
+                match = {
+                    home,
+                    opponent: rows[home ? mine.away_team_id : mine.home_team_id]?.name ?? '?',
+                    score: `${us}-${them}`,
+                    result: us > them ? 'V' : us < them ? 'D' : 'N',
+                };
+            }
+            return {
+                week: w,
+                position: order.findIndex(r => r.id === myId.value) + 1,
+                points: rows[myId.value]?.pts ?? 0,
+                match,
+            };
+        }).map((entry, i, list) => ({
+            ...entry,
+            // Places gagnées (+) ou perdues (−) depuis la semaine précédente.
+            delta: i ? list[i - 1].position - entry.position : null,
+        }));
     });
 
     // Places gagnées (+) ou perdues (−) sur la dernière semaine jouée.
