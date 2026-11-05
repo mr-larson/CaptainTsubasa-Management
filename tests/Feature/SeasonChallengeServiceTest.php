@@ -214,19 +214,64 @@ class SeasonChallengeServiceTest extends TestCase
         $this->assertSame('failed', $mine['objectives'][0]['status']);
     }
 
-    public function test_signings_only_count_contracts_after_the_draw(): void
+    public function test_signings_are_counted_at_signature_even_if_the_player_leaves(): void
+    {
+        $save = $this->makeSave();
+        [$me, $other] = $this->world($save); // contrats de l'effectif : avant le tirage → non comptés
+        $this->service->ensureSeasonChallenges($save);
+        $save = $save->fresh();
+        $this->forceObjectives($save, $me, [['key' => 'signings_min', 'tier' => 'medium', 'target' => 2]]);
+
+        $recrue = $this->makeContract($save, $me, $this->makePlayer($save), ['start_week' => 3]);
+        $this->makeContract($save, $me, $this->makePlayer($save), ['start_week' => 4]);
+        $recrue->delete(); // libérée : reste comptée
+
+        $p = $this->service->presentation($save->fresh());
+        $this->assertSame(2, $p['objectives'][0]['value']);
+        $this->assertSame('done', $p['objectives'][0]['status']);
+        $this->assertSame(0, $other->fresh()->season_signings);
+    }
+
+    public function test_draft_contracts_of_a_new_season_are_not_counted(): void
     {
         $save = $this->makeSave();
         [$me] = $this->world($save);
         $this->service->ensureSeasonChallenges($save);
+
+        // Saison suivante, défis pas encore tirés (draft en cours).
         $save = $save->fresh();
-        $this->forceObjectives($save, $me, [['key' => 'signings_min', 'tier' => 'easy', 'target' => 1]]);
+        $save->season = 2;
+        $save->save();
+        $this->makeContract($save, $me, $this->makePlayer($save));
 
-        $this->travel(5)->seconds();
-        $this->makeContract($save, $me, $this->makePlayer($save), ['start_week' => 3]);
+        $this->assertSame(0, $me->fresh()->season_signings);
+    }
 
+    public function test_top_scorer_counts_only_goals_scored_for_the_club(): void
+    {
+        $save = $this->makeSave();
+        [$me, $b] = $this->world($save);
+        $this->service->ensureSeasonChallenges($save);
+        $save = $save->fresh();
+        $this->forceObjectives($save, $me, [['key' => 'top_scorer_min', 'tier' => 'easy', 'target' => 3]]);
+
+        $striker = $this->makePlayer($save);
+        $lineup  = fn (array $ids) => ['formation' => null, 'players' => array_map(fn ($id) => ['id' => $id], $ids)];
+
+        // 2 buts pour moi…
+        $this->makeMatch($save, $me, $b, ['status' => 'played', 'home_score' => 2, 'away_score' => 0, 'week' => 1, 'match_stats' => [
+            'lineups' => ['home' => $lineup([$striker->id]), 'away' => $lineup([])],
+            'players' => [$striker->id => ['offense' => ['goals' => 2]]],
+        ]]);
+        // …puis 5 buts sous les couleurs de B (transféré) : ne comptent pas pour moi.
+        $this->makeMatch($save, $b, $me, ['status' => 'played', 'home_score' => 5, 'away_score' => 0, 'week' => 2, 'match_stats' => [
+            'lineups' => ['home' => $lineup([$striker->id]), 'away' => $lineup([])],
+            'players' => [$striker->id => ['offense' => ['goals' => 5]]],
+        ]]);
+
+        // Le joueur n'est plus sous contrat chez moi : ses 2 buts restent comptés.
         $p = $this->service->presentation($save->fresh());
-        $this->assertSame(1, $p['objectives'][0]['value']);
-        $this->assertSame('done', $p['objectives'][0]['status']);
+        $this->assertSame(2, $p['objectives'][0]['value']);
+        $this->assertSame('off_track', $p['objectives'][0]['status']);
     }
 }

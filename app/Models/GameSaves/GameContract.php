@@ -11,6 +11,16 @@ class GameContract extends Model
     use HasFactory;
     use BelongsToGameSave;
 
+    protected static function booted(): void
+    {
+        // Défi « Recruter X joueurs » : compté à la signature (une recrue
+        // repartie ensuite reste comptée). Requête d'incrément directe : ne
+        // touche pas aux modèles GameSave / GameTeam déjà chargés par l'appelant.
+        static::created(function (GameContract $contract) {
+            \App\Services\SeasonChallengeService::recordSigning($contract);
+        });
+    }
+
     protected $fillable = [
         'game_save_id',
         'game_team_id',

@@ -8,7 +8,6 @@ use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Random\Engine\Mt19937;
 use Random\Randomizer;
@@ -116,6 +115,9 @@ class SeasonChallengeService
                 'objectives'      => $this->drawFor($gameSave, (int) $id, $season, $ctx),
             ];
         }
+
+        // Compteur de recrues remis à zéro avant d'ouvrir la saison des défis.
+        GameTeam::where('game_save_id', $gameSave->id)->update(['season_signings' => 0]);
 
         $state = $gameSave->state ?? [];
         $state['challenges'] = [
@@ -253,7 +255,7 @@ class SeasonChallengeService
                 'clean_sheets_min'  => $games->filter(fn ($g) => $g['ga'] === 0)->count(),
                 'top_scorer_min'    => $this->topScorerGoals($gameSave, $teamId),
                 'avg_morale_min'    => $this->averageMorale($gameSave, $teamId),
-                'signings_min'      => $this->signings($gameSave, $teamId),
+                'signings_min'      => (int) ($team->season_signings ?? 0),
                 'budget_min'        => (int) ($team->budget ?? 0),
                 'cards_used_min'    => GameBonusCard::where('game_save_id', $gameSave->id)
                     ->where('game_team_id', $teamId)
@@ -290,13 +292,35 @@ class SeasonChallengeService
             ->pluck('game_player_id');
     }
 
+    /**
+     * Meilleur total de buts d'un joueur SOUS LES COULEURS du club : buts
+     * attribués match par match d'après la composition enregistrée
+     * (match_stats.lineups). Un buteur parti garde ses buts pour le club ;
+     * une recrue n'apporte pas ceux marqués ailleurs.
+     */
     private function topScorerGoals(GameSave $gameSave, int $teamId): int
     {
-        $stats = PlayerStatsService::aggregateForSave($gameSave);
+        $goals = [];
 
-        return (int) $this->teamPlayerIds($gameSave, $teamId)
-            ->map(fn ($pid) => (int) ($stats[(string) $pid]['offense']['goals'] ?? 0))
-            ->max();
+        GameMatch::where('game_save_id', $gameSave->id)
+            ->where('status', 'played')
+            ->whereNotNull('match_stats')
+            ->where(fn ($q) => $q->where('home_team_id', $teamId)->orWhere('away_team_id', $teamId))
+            ->get(['home_team_id', 'match_stats'])
+            ->each(function (GameMatch $m) use ($teamId, &$goals) {
+                $side   = (int) $m->home_team_id === $teamId ? 'home' : 'away';
+                $squad  = array_map('intval', array_column($m->match_stats['lineups'][$side]['players'] ?? [], 'id'));
+                if (! $squad) {
+                    return; // ancien match sans composition : attribution impossible
+                }
+                foreach ($m->match_stats['players'] ?? [] as $pid => $p) {
+                    if (in_array((int) $pid, $squad, true)) {
+                        $goals[(int) $pid] = ($goals[(int) $pid] ?? 0) + (int) ($p['offense']['goals'] ?? 0);
+                    }
+                }
+            });
+
+        return $goals ? max($goals) : 0;
     }
 
     private function averageMorale(GameSave $gameSave, int $teamId): int
@@ -309,15 +333,18 @@ class SeasonChallengeService
         return (int) round(GamePlayer::whereIn('id', $ids)->avg('morale') ?? 0);
     }
 
-    /** Contrats signés après le tirage (la draft de début de saison ne compte pas). */
-    private function signings(GameSave $gameSave, int $teamId): int
+    /**
+     * Comptabilise une recrue si les défis de la saison courante sont tirés
+     * (la draft de début de saison a lieu avant le tirage : elle ne compte pas).
+     */
+    public static function recordSigning(GameContract $contract): void
     {
-        $drawnAt = $gameSave->state['challenges']['drawn_at'] ?? null;
+        $save = GameSave::query()->select(['id', 'season', 'competition_type', 'state'])->find($contract->game_save_id);
+        if (! $save || (int) ($save->state['challenges']['season'] ?? 0) !== (int) ($save->season ?? 1)) {
+            return;
+        }
 
-        return GameContract::where('game_save_id', $gameSave->id)
-            ->where('game_team_id', $teamId)
-            ->when($drawnAt, fn ($q) => $q->where('created_at', '>', Carbon::parse($drawnAt)))
-            ->count();
+        GameTeam::whereKey($contract->game_team_id)->increment('season_signings');
     }
 
     /**
