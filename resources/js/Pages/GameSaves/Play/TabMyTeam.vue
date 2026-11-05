@@ -12,7 +12,8 @@ import PitchView from '@/Pages/GameSaves/Play/components/PitchView.vue';
 import BenchCard from '@/Pages/GameSaves/Play/components/BenchCard.vue';
 import ClubIdentityCard from '@/Pages/GameSaves/Play/components/ClubIdentityCard.vue';
 import TeamRecordCard from '@/Pages/GameSaves/Play/components/TeamRecordCard.vue';
-import { masteryFor, roleFromPosition } from './lineupMastery.js';
+import { masteryFor } from './lineupMastery.js';
+import { useLineupIssues, ISSUE_CHIP } from './useLineupIssues.js';
 
 const props = defineProps({
     rosterWithStatus:     { type: Array,   required: true },
@@ -186,55 +187,14 @@ const slotMastery = (slot, slotDef) => masteryFor(props.playerForSlot(slot), slo
 // ── Poste vide : remplaçants proposés, les plus adaptés d'abord ──
 const MASTERY_RANK = { primary: 0, secondary: 1, off: 2 };
 
-const unavailability = (p) => {
-    if (props.isPlayerInjured(p.id))   return { label: 'Blessé',   icon: '🤕' };
-    if (props.isPlayerSuspended(p.id)) return { label: 'Suspendu', icon: '🚫' };
-    if (props.isPlayerBenched(p.id))   return { label: 'Consigné par l\'adversaire', icon: '⛔' };
-    return null;
-};
-
-// ── État du onze (ligne sous le terrain) ─────────────────────
-const ZONE_SHORT = ['gardien', 'défense', 'milieu déf.', 'milieu off.', 'attaque'];
-const POS_SHORT  = { GK: 'GK', DF: 'DEF', MF: 'MIL', FW: 'ATT' };
-
-const lineupIssues = computed(() => {
-    const issues = [];
-    const starters = props.rosterWithStatus.filter(p => p.is_starter);
-
-    if (starters.length < 11) {
-        issues.push({ key: 'count', level: 'warn', text: `Onze incomplet (${starters.length}/11) — clique un poste « + » sur le terrain` });
-    }
-
-    starters.forEach(p => {
-        const u = unavailability(p);
-        if (u) issues.push({ key: `u${p.id}`, level: 'error', player: p, text: `${u.icon} ${p.lastname} titulaire mais ${u.label.toLowerCase()}` });
-    });
-
-    Object.entries(props.formationData?.slots ?? {}).forEach(([slot, def]) => {
-        const p = props.playerForSlot(slot);
-        const m = masteryFor(p, def);
-        const natural = POS_SHORT[roleFromPosition(p?.position)] ?? '?';
-        if (m === 'off') {
-            issues.push({ key: `o${slot}`, level: 'error', player: p, text: `⚠ ${p.lastname} hors poste (${natural} en ${ZONE_SHORT[def.zone]}) — malus en match` });
-        } else if (m === 'secondary') {
-            issues.push({ key: `s${slot}`, level: 'info', player: p, text: `${p.lastname} en poste secondaire (${ZONE_SHORT[def.zone]})` });
-        }
-    });
-
-    const captain = props.rosterWithStatus.find(p => p.is_captain);
-    if (!captain) {
-        issues.push({ key: 'cap', level: 'warn', text: '👑 Aucun capitaine désigné' });
-    } else if (!captain.is_starter) {
-        issues.push({ key: 'cap', level: 'warn', player: captain, text: `👑 Le capitaine ${captain.lastname} est sur le banc` });
-    }
-    return issues;
+const { unavailability, lineupIssues } = useLineupIssues({
+    roster:            () => props.rosterWithStatus,
+    formationData:     () => props.formationData,
+    playerForSlot:     () => props.playerForSlot,
+    isPlayerInjured:   () => props.isPlayerInjured,
+    isPlayerSuspended: () => props.isPlayerSuspended,
+    isPlayerBenched:   () => props.isPlayerBenched,
 });
-
-const ISSUE_CHIP = {
-    error: 'bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100',
-    warn:  'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100',
-    info:  'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100',
-};
 
 const slotCandidates = (slot, slotDef) => substitutes.value
     .map(p => {
@@ -311,7 +271,8 @@ const slotCandidates = (slot, slotDef) => substitutes.value
         </div>
 
         <!-- État du onze : ce qui mérite attention avant le match -->
-        <div class="-mt-2 flex flex-wrap items-center gap-1.5">
+        <!-- Grand écran : déjà affiché en permanence dans la colonne gauche -->
+        <div class="-mt-2 flex flex-wrap items-center gap-1.5 min-[1400px]:hidden">
             <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1">État du onze</span>
             <template v-if="lineupIssues.length">
                 <component :is="issue.player ? 'button' : 'span'" v-for="issue in lineupIssues" :key="issue.key"

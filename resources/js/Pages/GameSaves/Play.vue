@@ -30,6 +30,9 @@ import TabStandings  from '@/Pages/GameSaves/Play/TabStandings.vue';
 import TabTournament from '@/Pages/GameSaves/Play/TabTournament.vue';
 import TabStats      from '@/Pages/GameSaves/Play/TabStats.vue';
 import TabTraining   from '@/Pages/GameSaves/Play/TabTraining.vue';
+import RemindersCard from '@/Pages/GameSaves/Play/RemindersCard.vue';
+import { useLineupIssues } from '@/Pages/GameSaves/Play/useLineupIssues.js';
+import { usePreMatchChecklist } from '@/Pages/GameSaves/Play/usePreMatchChecklist.js';
 import TabTransfers  from '@/Pages/GameSaves/Play/TabTransfers.vue';
 import TabBonusCards     from '@/Pages/GameSaves/Play/TabBonusCards.vue';
 import TabManagement from '@/Pages/GameSaves/Play/TabManagement.vue';
@@ -227,6 +230,21 @@ const {
     maxPerWeek: computed(() => props.gameConfig?.training_max_per_week),
 });
 
+// Rappels « À faire / État du onze » : colonne gauche sur grand écran (tous les
+// onglets), dans le Dashboard sur téléphone/tablette.
+const { lineupIssues } = useLineupIssues({
+    roster:            rosterWithStatus,
+    formationData,
+    playerForSlot:     () => playerForSlot,
+    isPlayerInjured:   () => isPlayerInjured,
+    isPlayerSuspended: () => isPlayerSuspended,
+    isPlayerBenched:   () => isPlayerBenched,
+});
+const openReminder = (item) => {
+    activeTab.value = item.tab ?? 'my-team';
+    if (item.player) selectMyPlayer(item.player);
+};
+
 const {
     availableFreePlayers,
     showTransferModal, transferTarget,
@@ -268,6 +286,22 @@ const {
     gameSave: gameSaveRef,
     bonusCardOffers:    bonusCardOffersRef,
     bonusCardInventory: bonusCardInventoryRef,
+});
+
+// Checklist « Avant le match » (colonne gauche / Dashboard)
+const { actions: checklistActions, squad: checklistSquad } = usePreMatchChecklist({
+    roster:               rosterWithStatus,
+    lineupIssues,
+    remainingTrainings:   remainingTrainingsThisWeek,
+    availableCards,
+    unboughtCardsCount,
+    freePlayersCount,
+    isWorldCup,
+    playerPromises:       () => props.playerPromises,
+    sponsorChallenges:    () => props.sponsorChallenges,
+    playerYellowCards:    () => playerYellowCards,
+    suspensionOn3Yellows: () => props.gameConfig?.suspension_on_3_yellows !== false,
+    week,
 });
 
 // ==========================
@@ -370,13 +404,6 @@ const saveGame = () => {
 
         <div class="p-2 sm:p-3 h-full flex flex-col overflow-hidden">
 
-            <!-- Objectif + récap semaine au-dessus du contenu (mobile/tablette — pas de colonne visuelle) -->
-            <div v-if="(career && career.mandate) || weeklyRecap.length"
-                 class="xl:hidden max-w-3xl w-full mx-auto mb-4 shrink-0 flex flex-col gap-2">
-                <CareerMandateCard v-if="career && career.mandate" :career="career" @open-rules="openCareerRules" />
-                <WeeklyRecapCard v-if="weeklyRecap.length" :weeklyRecap="weeklyRecap" />
-            </div>
-
             <!-- Hot-seat multi-manager : indicateur de tour -->
             <div v-if="hotSeat" class="max-w-3xl w-full mx-auto mb-4 shrink-0">
                 <div class="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-teal-200 bg-teal-50">
@@ -399,16 +426,18 @@ const saveGame = () => {
             </div>
 
             <div class="flex flex-row flex-1 min-h-0">
-                <!-- Visuel gauche (uniquement sur grand écran ; masqué sur tablette/iPad Pro) -->
-                <div class="hidden xl:flex xl:basis-1/6 flex-col gap-3">
+                <!-- Colonne gauche (grand écran uniquement ; ≥1400px pour exclure l'iPad Pro paysage).
+                     En dessous, ces cartes sont dans le Dashboard. -->
+                <div class="hidden min-[1400px]:flex min-[1400px]:basis-1/6 flex-col gap-3">
                     <CareerMandateCard v-if="career && career.mandate" compact
                                        :career="career" @open-rules="openCareerRules" />
                     <WeeklyRecapCard v-if="weeklyRecap.length" :weeklyRecap="weeklyRecap" />
+                    <RemindersCard :actions="checklistActions" :squad="checklistSquad" @open="openReminder" />
                     <div class="flex-1 bg-contain bg-center bg-no-repeat bg-[url('/images/wakabayashi.webp')]"></div>
                 </div>
 
                 <!-- Carte principale -->
-                <div class="flex-1 min-w-0 min-h-0 p-3 sm:p-4 border border-slate-300 rounded-lg xl:mx-6 bg-white flex flex-col overflow-hidden">
+                <div class="flex-1 min-w-0 min-h-0 p-3 sm:p-4 border border-slate-300 rounded-lg min-[1400px]:mx-6 bg-white flex flex-col overflow-hidden">
 
                     <!-- Onglets -->
                     <div class="mb-4 border-b border-slate-200 shrink-0">
@@ -453,17 +482,23 @@ const saveGame = () => {
                                   :saving="saving"
                                   :simulating="simulating"
                                   :matches="matches"
-                                  :unboughtCardsCount="unboughtCardsCount"
-                                  :freePlayersCount="freePlayersCount"
                                   :tournament="tournament"
                                   :isWorldCup="isWorldCup"
                                   @change-tab="setTab"
-                                  :isPlayerInjured="isPlayerInjured"
                                   @play-next-match="playNextMatch"
                                   @simulate-week="simulateWeek"
                                   @save-game="saveGame"
-                                  @quit="router.visit(route('mainMenu'))"
-                    />
+                                  @quit="router.visit(route('mainMenu'))">
+                        <!-- Téléphone/tablette : les cartes de la colonne gauche -->
+                        <template #side-cards>
+                            <div class="min-[1400px]:hidden grid grid-cols-1 md:grid-cols-2 gap-3 items-start">
+                                <RemindersCard :actions="checklistActions" :squad="checklistSquad" @open="openReminder" />
+                                <CareerMandateCard v-if="career && career.mandate" compact
+                                                   :career="career" @open-rules="openCareerRules" />
+                                <WeeklyRecapCard v-if="weeklyRecap.length" :weeklyRecap="weeklyRecap" />
+                            </div>
+                        </template>
+                    </TabDashboard>
 
                     <!-- ======== MON ÉQUIPE ======== -->
                     <TabMyTeam v-else-if="activeTab === 'my-team'"
