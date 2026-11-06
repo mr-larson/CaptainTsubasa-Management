@@ -598,7 +598,11 @@ export function initMatchEngine(rootEl, config = {}) {
 
         const defPrefix = defTeam === "internal" ? "home" : "away";
         updateSideCard(defPrefix, defTeam, state.pendingDefenseContext.defenderSlot || 6);
-        highlightDuelStats(state.currentTeam, action, isKeeperChoiceUI);
+        // Défenseur humain : l'action adverse reste cachée, il doit la deviner (pierre-
+        // feuille-ciseaux). Face au gardien, c'est forcément un tir : rien à cacher.
+        const hideAttack = !isAITeam(defTeam) && !isKeeperChoiceUI;
+        if (hideAttack) highlightDuelStats();
+        else highlightDuelStats(state.currentTeam, action, isKeeperChoiceUI);
 
         let html;
         // Après
@@ -644,6 +648,9 @@ export function initMatchEngine(rootEl, config = {}) {
                 `${TEAMS[state.currentTeam].label} tente : ${(TEXTS.cards.attack[action]?.title ?? action).toUpperCase()} !`,
                 defensePrompt(TEAMS[defTeam].label, isAITeam(defTeam))
             );
+        }
+        if (hideAttack) {
+            setMessage(`${TEAMS[state.currentTeam].label} passe à l'attaque !`, defensePrompt(TEAMS[defTeam].label, false));
         }
 
         setActionBar(html, `mode-defense-${defTeam}`, ball, roster, bindActionButtons, false);
