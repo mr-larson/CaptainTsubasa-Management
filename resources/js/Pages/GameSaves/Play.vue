@@ -551,12 +551,8 @@ const saveGame = () => {
                 <div class="flex-1 min-w-0 min-h-0 p-3 sm:p-4 border border-slate-200 rounded-xl shadow-sm min-[1400px]:mx-6 bg-white flex flex-col overflow-hidden">
 
                     <!-- Onglets -->
-                    <div class="mb-4 border-b border-slate-200 shrink-0 flex items-end gap-2">
-                        <TabBar class="flex-1 min-w-0" v-model="activeTab" :tabs="tabs" stretch label="Sections de la partie" />
-                        <!-- Aide consultable au moment du doute, sans quitter la partie -->
-                        <a :href="route('guide') + '#preparer'" target="_blank" rel="noopener"
-                           class="shrink-0 mb-1.5 px-2.5 py-1 rounded-full text-xs font-semibold text-slate-500 border border-slate-200 hover:text-teal-600 hover:border-teal-300"
-                           title="Comment jouer (nouvel onglet)">❔ Aide</a>
+                    <div class="mb-4 border-b border-slate-200 shrink-0">
+                        <TabBar v-model="activeTab" :tabs="tabs" stretch label="Sections de la partie" />
                     </div>
 
                     <!-- ======== DASHBOARD ======== -->

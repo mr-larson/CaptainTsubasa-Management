@@ -42,6 +42,9 @@ const props = defineProps({
 
 const emit = defineEmits(['play-next-match', 'simulate-week', 'save-game', 'quit', 'change-tab', 'open-player', 'apply-advice']);
 
+// Guide « Comment jouer » dans un nouvel onglet, pour ne pas quitter la partie.
+const openHelp = () => window.open(route('guide') + '#preparer', '_blank', 'noopener');
+
 // ── Coupe du Monde : contexte de poule de l'équipe contrôlée + étape ──
 const wcStageLabel = computed(() => ({
     group: 'Phase de poules', semi: 'Demi-finales', final: 'Finale', done: 'Terminé',
@@ -251,6 +254,10 @@ const hasPlayed = computed(() => matchesPlayed.value > 0);
                     </ButtonSecondary>
                     <ButtonSecondary size="sm" @click="emit('quit')">
                         Quitter
+                    </ButtonSecondary>
+                    <!-- Aide consultable au moment du doute, sans quitter la partie -->
+                    <ButtonSecondary size="sm" title="Comment jouer (nouvel onglet)" @click="openHelp">
+                        ❔ Aide
                     </ButtonSecondary>
                 </div>
             </div>
