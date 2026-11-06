@@ -693,9 +693,10 @@ export function updateCardsPower(ball) {
         let vs   = ATTACK_VS[a];
         let slot = previewSlot;
         if (a === "shot" && ball.frontOfKeeper) { vs = ["hand_save", "Arrêt du gardien"]; slot = 1; }
-        if (!vs || !slot) { el.textContent = ""; return; }
+        if (!vs || !slot || _state?.isKickoff) { el.textContent = ""; return; }   // coup d'envoi : passe sans duel
         const value = Number(_roster.getPlayerInfo(attackDefTeam, slot)?.stats?.[vs[0]] ?? 0);
-        el.innerHTML = `face à ${vs[1]} adverse <b>${value}</b>`;
+        el.innerHTML = `vs ${vs[1]} <b>${value}</b>`;
+        el.title     = `Face à : ${vs[1]} de l'adversaire (${value})`;
     });
 
     const mode = [..._ui.actionBarEl.classList].find(c => c.startsWith("mode-defense-"));
@@ -710,7 +711,11 @@ export function updateCardsPower(ball) {
     _ui.actionBarEl.querySelectorAll(".def-card-main").forEach((btn) => {
         const vs = VS_STAT[btn.dataset.defense];
         const el = btn.querySelector(".def-vs");
-        if (el && vs) el.innerHTML = `face à ${vs[1]} adverse <b>${Number(carrierStats[vs[0]] ?? 0)}</b>`;
+        if (el && vs) {
+            const value = Number(carrierStats[vs[0]] ?? 0);
+            el.innerHTML = `vs ${vs[1]} <b>${value}</b>`;
+            el.title     = `Face à : ${vs[1]} de l'attaquant (${value})`;
+        }
     });
 
     if (isGK) {

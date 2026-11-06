@@ -14,13 +14,15 @@ const specialIcon = (baseAction) => SPECIAL_ICONS[baseAction] ?? "🔥";
 // Typographie des cartes d'action et de défense (classes Tailwind). Les noms
 // sémantiques (skill-power, def-cost…) restent : le JS s'en sert comme repères.
 const CARD = {
-    icon:       'text-lg leading-none',
-    title:      'text-[13px] font-extrabold tracking-[0.2px] text-slate-700',
-    sub:        'text-[11px] text-slate-700/70',
-    bottom:     'mt-1.5 flex flex-col items-start gap-0.5',
-    power:      'text-lg font-black tabular-nums text-slate-700',
-    vs:         'text-[11px] font-semibold text-rose-500/90 [&>b]:font-black',
-    cost:       'whitespace-nowrap text-[11px] font-bold text-slate-700/75 [&>span]:font-black [&>span]:text-slate-700/90',
+    // Carte compacte sur 3 lignes : [icône titre … valeur] / risque / [stat adverse … énergie]
+    head:       'flex items-center gap-2 min-w-0',
+    icon:       'text-xl leading-none shrink-0',
+    title:      'flex-1 min-w-0 truncate text-[15px] font-extrabold tracking-[0.2px] text-slate-700',
+    sub:        'truncate text-xs text-slate-700/70',
+    bottom:     'flex items-center justify-between gap-2 min-w-0',
+    power:      'shrink-0 text-2xl font-black leading-none tabular-nums text-slate-700',
+    vs:         'min-w-0 truncate text-xs font-semibold text-rose-500/90 [&>b]:font-black',
+    cost:       'whitespace-nowrap text-xs font-bold text-slate-700/75 [&>span]:font-black [&>span]:text-slate-700/90',
     spIcon:     'text-[15px] leading-none',
     spTitle:    'line-clamp-2 text-2xs font-extrabold leading-tight text-amber-800',
     spFoot:     'flex flex-col gap-px',
@@ -44,11 +46,13 @@ function buildStandaloneSpecialCard(actionKey, move, defaultCfg) {
     return `<div class="skill-card">
         <button class="skill-card-main" data-action="${actionKey}" ${specialDataAttr(move ?? {})}>
             ${specialCooldownBadge(move, CARD.cooldownMain)}
-            <div class="skill-icon ${CARD.icon}">${specialIcon(move?.base_action)}</div>
-            <div class="skill-title ${CARD.title}">${move?.label || defaultCfg.title}</div>
+            <div class="${CARD.head}">
+                <div class="skill-icon ${CARD.icon}">${specialIcon(move?.base_action)}</div>
+                <div class="skill-title ${CARD.title}">${move?.label || defaultCfg.title}</div>
+                <div class="skill-power ${CARD.power}"></div>
+            </div>
             <div class="skill-sub ${CARD.sub}">${move?.description || defaultCfg.sub}</div>
             <div class="skill-bottom ${CARD.bottom}">
-                <div class="skill-power ${CARD.power}"></div>
                 <div class="skill-cost ${CARD.cost}">Énergie <span></span></div>
             </div>
         </button>
@@ -74,11 +78,13 @@ function buildActionCard(kind, dataAttr, key, cfg, special) {
         </button>` : '';
     return `<div class="${kind}-card${special ? ' has-special' : ''}">
         <button class="${kind}-card-main" ${dataAttr}="${key}">
-            <div class="${kind}-icon ${CARD.icon}">${cfg.icon}</div>
-            <div class="${kind}-title ${CARD.title}">${cfg.title}</div>
+            <div class="${CARD.head}">
+                <div class="${kind}-icon ${CARD.icon}">${cfg.icon}</div>
+                <div class="${kind}-title ${CARD.title}">${cfg.title}</div>
+                <div class="${kind}-power ${CARD.power}"></div>
+            </div>
             <div class="${kind}-sub ${CARD.sub}">${cfg.sub}</div>
             <div class="${kind}-bottom ${CARD.bottom}">
-                <div class="${kind}-power ${CARD.power}"></div>
                 <div class="${kind}-vs ${CARD.vs}"></div>
                 <div class="${kind}-cost ${CARD.cost}">Énergie <span></span></div>
             </div>
