@@ -67,8 +67,13 @@
                                     <span v-else class="text-[8px] text-slate-400">—</span>
                                 </div>
                                 <span class="truncate">{{ team.name }}</span>
+                                <span v-if="teamNote(team) != null"
+                                      class="ml-auto shrink-0 px-1.5 py-0.5 rounded-md text-2xs font-black tabular-nums"
+                                      :class="(isMultiMode ? isHumanTeam(team) : startForm.team_id === team.id) ? 'bg-white/90 text-teal-700' : 'bg-slate-100 text-slate-600'"
+                                      title="Note d'équipe (niveau du onze, moral, endurance)">{{ teamNote(team) }}</span>
                                 <span v-if="isMultiMode && isHumanTeam(team)"
-                                      class="ml-auto shrink-0 w-5 h-5 rounded-full bg-white/90 text-teal-700 text-2xs font-black flex items-center justify-center">
+                                      class="shrink-0 w-5 h-5 rounded-full bg-white/90 text-teal-700 text-2xs font-black flex items-center justify-center"
+                                      :class="teamNote(team) == null ? 'ml-auto' : ''">
                                     {{ seatOf(team) }}
                                 </span>
                             </button>
@@ -100,7 +105,15 @@
                                     </div>
                                 </div>
 
-                                <div class="grid grid-cols-2 gap-2 text-xs">
+                                <div class="grid gap-2 text-xs" :class="teamRating ? 'grid-cols-3' : 'grid-cols-2'">
+                                    <div v-if="teamRating" class="bg-slate-50 rounded-lg p-2.5 text-center"
+                                         :title="`Niveau du onze probable ${teamRating.level} · moral ${signedPct(teamRating.morale)} · endurance ${signedPct(teamRating.stamina)}`">
+                                        <div class="text-lg font-black text-violet-600">{{ teamRating.note }}</div>
+                                        <div class="text-slate-400 font-semibold">Note d'équipe</div>
+                                        <div class="mt-0.5 text-[10px] leading-tight text-slate-400">
+                                            niveau {{ teamRating.level }} · moral {{ signedPct(teamRating.morale) }} · endur. {{ signedPct(teamRating.stamina) }}
+                                        </div>
+                                    </div>
                                     <div class="bg-slate-50 rounded-lg p-2.5 text-center">
                                         <div class="text-lg font-black text-teal-600">{{ startBudget }}</div>
                                         <div class="text-slate-400 font-semibold">Budget de départ €</div>
@@ -258,8 +271,10 @@
                                             <div class="flex-1 h-px bg-slate-100"></div>
                                         </div>
                                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                            <div v-for="player in group.players" :key="player.id"
-                                                 class="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-slate-50 hover:bg-white hover:border-slate-200 transition-all">
+                                            <button v-for="player in group.players" :key="player.id" type="button"
+                                                 @click="detailPlayer = player"
+                                                 :title="`Voir la fiche de ${player.firstname} ${player.lastname}`"
+                                                 class="w-full text-left flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-slate-50 hover:bg-white hover:border-teal-200 hover:shadow-sm transition-all cursor-pointer">
                                                 <div class="relative shrink-0">
                                                     <div class="w-12 h-12 rounded-xl overflow-hidden bg-slate-200 border border-slate-100">
                                                         <PlayerPhoto :src="playerPhotoUrl(player)" class="w-full h-full object-cover" alt="" />
@@ -296,6 +311,17 @@
                                                             </div>
                                                         </div>
                                                     </div>
+                                                    <!-- Endurance : du rouge (épuisé) au vert (en forme) -->
+                                                    <div class="flex items-center gap-1.5 mt-1.5" :title="`Endurance ${statValue(player, 'stamina')}`">
+                                                        <span class="text-[8px] font-semibold uppercase text-slate-400 shrink-0">Endurance</span>
+                                                        <div class="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                                                            <div class="h-full rounded-full" :class="staminaBar(statValue(player, 'stamina'))"
+                                                                 :style="{ width: Math.min(statValue(player, 'stamina'), 100) + '%' }"></div>
+                                                        </div>
+                                                        <span class="text-2xs font-black tabular-nums shrink-0" :class="staminaText(statValue(player, 'stamina'))">
+                                                            {{ statValue(player, 'stamina') }}
+                                                        </span>
+                                                    </div>
                                                 </div>
                                                 <div class="flex flex-col items-center gap-0.5 shrink-0">
                                                     <div class="w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-black border-2"
@@ -310,7 +336,7 @@
                                                         {{ moraleState(player.morale_preview).emoji }} {{ player.morale_preview }}
                                                     </span>
                                                 </div>
-                                            </div>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -382,6 +408,75 @@
                 </div><!-- fin grid 12 -->
             </div><!-- fin max-w -->
         </div>
+        <!-- Fiche détaillée d'un joueur (clic sur sa carte) -->
+        <Modal :show="!!detailPlayer" max-width="2xl" @close="detailPlayer = null">
+            <div v-if="detailPlayer" class="p-5 space-y-4">
+                <div class="flex items-start gap-4">
+                    <div class="relative shrink-0">
+                        <div class="w-20 h-20 rounded-xl overflow-hidden bg-slate-200 border border-slate-100">
+                            <PlayerPhoto :src="playerPhotoUrl(detailPlayer)" class="w-full h-full object-cover" alt="" />
+                            <div v-if="!playerPhotoUrl(detailPlayer)" class="w-full h-full flex items-center justify-center text-slate-400 text-2xl">👤</div>
+                        </div>
+                        <span v-if="nationalityFlag(detailPlayer)"
+                              class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center text-xs shadow-sm"
+                              :title="detailPlayer.nationality">{{ nationalityFlag(detailPlayer) }}</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="text-lg font-bold text-slate-700">{{ detailPlayer.firstname }} {{ detailPlayer.lastname }}</h3>
+                        <div class="flex flex-wrap items-center gap-1.5 mt-1">
+                            <span class="px-1.5 py-0.5 rounded text-2xs font-black uppercase tracking-wide" :class="posBadgeClass(detailPlayer.position)">
+                                {{ positionLabel(detailPlayer.position) }}
+                            </span>
+                            <SecondaryPositions :player="detailPlayer" />
+                        </div>
+                        <p v-if="detailPlayer.description" class="mt-2 text-xs text-slate-500 italic">{{ detailPlayer.description }}</p>
+                    </div>
+                    <div class="flex flex-col items-center gap-0.5 shrink-0">
+                        <div class="w-12 h-12 rounded-full flex items-center justify-center text-sm font-black border-2"
+                             :class="overallBadgeClass(overallOf(detailPlayer))">{{ overallOf(detailPlayer) }}</div>
+                        <span class="text-[8px] font-bold uppercase text-slate-400 tracking-wider">Note</span>
+                    </div>
+                    <button type="button" @click="detailPlayer = null" aria-label="Fermer"
+                            class="shrink-0 -mt-1 -mr-1 w-8 h-8 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100">✕</button>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <!-- Moral -->
+                    <div v-if="detailPlayer.morale_preview != null" class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                        <div class="flex items-center justify-between text-xs mb-1.5">
+                            <span class="font-bold text-slate-500 uppercase tracking-wider text-2xs">Moral</span>
+                            <span class="font-black" :class="moraleState(detailPlayer.morale_preview).text">
+                                {{ moraleState(detailPlayer.morale_preview).emoji }} {{ moraleState(detailPlayer.morale_preview).label }} · {{ detailPlayer.morale_preview }}
+                            </span>
+                        </div>
+                        <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
+                            <div class="h-full rounded-full" :class="moraleState(detailPlayer.morale_preview).bar"
+                                 :style="{ width: Math.min(detailPlayer.morale_preview, 100) + '%' }"></div>
+                        </div>
+                        <p class="mt-1.5 text-2xs text-slate-500">
+                            Effet en match : {{ moraleMatchEffect(detailPlayer.morale_preview)?.pct ?? 'aucun' }}
+                        </p>
+                    </div>
+                    <!-- Endurance -->
+                    <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                        <div class="flex items-center justify-between text-xs mb-1.5">
+                            <span class="font-bold text-slate-500 uppercase tracking-wider text-2xs">Endurance</span>
+                            <span class="font-black" :class="staminaText(statValue(detailPlayer, 'stamina'))">{{ statValue(detailPlayer, 'stamina') }}</span>
+                        </div>
+                        <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
+                            <div class="h-full rounded-full" :class="staminaBar(statValue(detailPlayer, 'stamina'))"
+                                 :style="{ width: Math.min(statValue(detailPlayer, 'stamina'), 100) + '%' }"></div>
+                        </div>
+                        <p class="mt-1.5 text-2xs text-slate-500">Plus elle est haute, plus il tient le match et enchaîne les actions.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <RadarChart :player="detailPlayer" accent="teal" />
+                    <StatBars :player="detailPlayer" />
+                </div>
+            </div>
+        </Modal>
     </AuthenticatedLayout>
 </template>
 
@@ -395,6 +490,10 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import H2 from '@/Components/H2.vue';
 import PlayerPhoto from '@/Components/PlayerPhoto.vue';
+import Modal from '@/Components/Modal.vue';
+import RadarChart from '@/Pages/GameSaves/Play/components/RadarChart.vue';
+import StatBars from '@/Pages/GameSaves/Play/components/StatBars.vue';
+import SecondaryPositions from '@/Pages/GameSaves/Play/components/SecondaryPositions.vue';
 import TeamStyleBadges from '@/Pages/GameSaves/Play/components/TeamStyleBadges.vue';
 import { usePlayerUtils } from '@/Pages/GameSaves/Play/usePlayerUtils.js';
 
@@ -425,7 +524,7 @@ const selectedTeam = ref(null);
 // Helpers d'affichage partagés (cohérence avec le reste de l'app, cf. dashboard / effectif).
 const {
     overallOf, keyStatsFor, statLabel, statColor,
-    positionGroup, playerPhotoUrl, teamLogoUrl, nationalityFlag, moraleState,
+    positionGroup, playerPhotoUrl, teamLogoUrl, nationalityFlag, moraleState, moraleMatchEffect,
 } = usePlayerUtils();
 
 const filteredTeams = computed(() => {
@@ -576,6 +675,39 @@ const avgMorale = computed(() => {
     if (!values.length) return null;
     return Math.round(values.reduce((a, v) => a + Number(v), 0) / values.length);
 });
+
+// ==========================
+//   NOTE D'ÉQUIPE
+// ==========================
+// Niveau du onze probable (moyenne des 11 meilleures notes), corrigé par le moral
+// (effet en match moyen, -10 % à +5 %) et l'endurance moyenne (-10 % à +10 %
+// autour de 60). Sert à comparer les équipes d'un coup d'œil.
+const moralePct = (m) => parseFloat(moraleMatchEffect(m)?.pct ?? '0') || 0;
+const teamRatingOf = (players) => {
+    if (!players.length) return null;
+    const best  = [...players].sort((a, b) => overallOf(b) - overallOf(a)).slice(0, 11);
+    const level = best.reduce((sum, p) => sum + overallOf(p), 0) / best.length;
+    const morales = players.map(p => p.morale_preview).filter(v => v != null);
+    const morale  = morales.length ? morales.reduce((sum, m) => sum + moralePct(m), 0) / morales.length : 0;
+    const stamina = players.reduce((sum, p) => sum + statValue(p, 'stamina'), 0) / players.length;
+    const staminaAdj = Math.max(-10, Math.min(10, (stamina - 60) / 4));
+    return {
+        note:    Math.round(level * (1 + morale / 100) * (1 + staminaAdj / 100)),
+        level:   Math.round(level),
+        morale:  Math.round(morale * 10) / 10,
+        stamina: Math.round(staminaAdj * 10) / 10,
+    };
+};
+const teamRating = computed(() => teamRatingOf(roster.value));
+const teamNote   = (team) => teamRatingOf((team.contracts ?? []).map(c => c.player).filter(Boolean))?.note ?? null;
+const signedPct  = (v) => `${v > 0 ? '+' : ''}${v} %`;
+
+// Endurance : couleur du rouge (épuisé) au vert (en pleine forme).
+const staminaBar  = (v) => v >= 85 ? 'bg-emerald-500' : v >= 70 ? 'bg-lime-500' : v >= 50 ? 'bg-amber-400' : v >= 30 ? 'bg-orange-500' : 'bg-rose-500';
+const staminaText = (v) => v >= 85 ? 'text-emerald-600' : v >= 70 ? 'text-lime-600' : v >= 50 ? 'text-amber-600' : v >= 30 ? 'text-orange-600' : 'text-rose-600';
+
+// Fiche détaillée d'un joueur (modale au clic sur sa carte).
+const detailPlayer = ref(null);
 
 // overallOf / keyStatsFor / statLabel / statColor / positionGroup proviennent du
 // composable partagé usePlayerUtils (déstructuré plus haut) — on n'ajoute ici que
