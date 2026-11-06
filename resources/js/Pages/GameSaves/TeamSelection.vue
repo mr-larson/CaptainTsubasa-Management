@@ -204,11 +204,11 @@
                                         @click="toggleHumanTeam(selectedTeam)">
                                     <template v-if="isHumanTeam(selectedTeam)">
                                         <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
-                                        <span>Ne plus piloter {{ selectedTeam.name }} (Joueur {{ seatOf(selectedTeam) }})</span>
+                                        <span class="truncate">Retirer le joueur {{ seatOf(selectedTeam) }}</span>
                                     </template>
                                     <template v-else>
                                         <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-                                        <span>{{ humanTeams.length ? 'Piloter' : 'Partie à plusieurs : piloter' }} {{ selectedTeam.name }} (Joueur {{ humanTeams.length + 1 }})</span>
+                                        <span class="truncate">{{ humanTeams.length ? `Ajouter en joueur ${humanTeams.length + 1}` : 'Partie à plusieurs' }}</span>
                                     </template>
                                 </button>
                                 <p class="-mt-2 text-[11px] text-slate-400 text-center leading-snug">
