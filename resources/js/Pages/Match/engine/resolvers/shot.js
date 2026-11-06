@@ -5,7 +5,7 @@ import { buildDuelMeta, buildFieldDuelBreakdown, resolveCritOutcome, rollD20Adva
 import { applyStaminaCost, staminaFactor } from '../stamina.js';
 import { specialBaseFor } from '../RosterService.js';
 import { getCellCenter, getKeeperId, getPlayerId, otherTeam } from '../field.js';
-import { buildDefenseGKHTML, pushLogEntry, setActionBar, setMessage, showFreeKickBanner, syncRecovererCard, updateSideCard } from '../ui.js';
+import { buildDefenseGKHTML, highlightDuelStats, pushLogEntry, setActionBar, setMessage, showFreeKickBanner, syncRecovererCard, updateSideCard } from '../ui.js';
 import { playPlayerAnimation } from '../playerAnim.js';
 import { defensePrompt } from '../turnPrompt.js';
 import { _moveBall, amendLastDuelEvent, animateGoalThenReset, animateShotToKeeper, applyCritBoost, ball, shared, recordDuelEvent, resetLastDribbler } from './context.js';
@@ -112,6 +112,7 @@ export function continueShot(attackTeam, defenseTeam, defenseAction, isSpecial, 
     animateShotToKeeper(defenseTeam, () => {
         const defPrefix = defenseTeam === "internal" ? "home" : "away";
         updateSideCard(defPrefix, defenseTeam, 1);
+        highlightDuelStats(attackTeam, "shot", true);
         shared.state.pendingDefenseContext = { defenseTeam, defenderId: getKeeperId(defenseTeam), defenderSlot: 1 };
 
         setActionBar(buildDefenseGKHTML(defenseTeam, shared.roster), "mode-defense-" + defenseTeam, b, shared.roster, shared.bindActionButtons, false);
@@ -181,6 +182,7 @@ export function startFreeKick() {
     animateShotToKeeper(defenseTeam, () => {
         const defPrefix = defenseTeam === "internal" ? "home" : "away";
         updateSideCard(defPrefix, defenseTeam, 1);
+        highlightDuelStats(attackTeam, "shot", true);
         shared.state.pendingDefenseContext = { defenseTeam, defenderId: getKeeperId(defenseTeam), defenderSlot: 1 };
 
         setActionBar(buildDefenseGKHTML(defenseTeam, shared.roster), "mode-defense-" + defenseTeam, b, shared.roster, shared.bindActionButtons, false);

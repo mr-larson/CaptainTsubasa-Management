@@ -580,7 +580,16 @@ export function showDuelDice(attackScore, defenseScore, aRoll, dRoll, breakdown)
         if (tip) tip.innerHTML = formatBreakdownHTML(breakdown);
     };
 
-    const mode = getDiceAnimMode();
+    // Mise en scène complète réservée aux duels marquants (tir, coup spécial,
+    // gardien, jet critique) ; les duels courants (passe, dribble…) passent
+    // d'un cran plus vite pour garder le rythme.
+    const attackKey = String(breakdown?.meta?.attacker?.actionKey ?? '');
+    const defenseKey = String(breakdown?.meta?.defender?.actionKey ?? '');
+    const isKeyDuel = !!breakdown?.result?.critWinner
+        || /shot|special/.test(attackKey)
+        || ['hands', 'punch', 'gk-special'].includes(defenseKey);
+    const baseMode = getDiceAnimMode();
+    const mode = isKeyDuel ? baseMode : ({ normal: 'fast', fast: 'off' }[baseMode] ?? baseMode);
 
     // Le jet de dé est lui-même une étape de la file : il ne démarre qu'une
     // fois les révélations précédentes (faute, carton...) affichées, et la

@@ -212,18 +212,18 @@ export const TEXTS = {
     },
     cards: {
         attack: {
-            shot:    { icon: "⚽️", title: "Tir",     sub: "Puissant tir" },
-            pass:    { icon: "➡️",  title: "Passe",   sub: "Passe avant" },
-            dribble: { icon: "🌀",  title: "Dribble", sub: "Dribble un adversaire" },
+            shot:    { icon: "⚽️", title: "Tir",     sub: "Risque : contre, puis le gardien" },
+            pass:    { icon: "➡️",  title: "Passe",   sub: "Risque : interception" },
+            dribble: { icon: "🌀",  title: "Dribble", sub: "Risque : tacle" },
             one_two: { icon: "🤝",  title: "Une-deux", sub: "Combinaison de duo" },
             special: { icon: "🔥",  title: "Spécial", sub: "Action spéciale" },
             cross:     { icon: "🎯", title: "Centre",       sub: "Centre dans la surface" },
-            long_pass: { icon: "🚀", title: "Passe longue", sub: "Lancement vers le milieu offensif" },
+            long_pass: { icon: "🚀", title: "Passe longue", sub: "Vers le milieu offensif · risque : interception" },
         },
         defenseField: {
-            block:          { icon: "🧱", title: "Contre",    sub: "Contre de tir" },
-            intercept:      { icon: "✋", title: "Interception", sub: "Couper une passe" },
-            tackle:         { icon: "⚔️", title: "Tacle",     sub: "Intervenir sur un dribble" },
+            block:          { icon: "🧱", title: "Contre",    sub: "Efficace contre un tir" },
+            intercept:      { icon: "✋", title: "Interception", sub: "Efficace contre une passe" },
+            tackle:         { icon: "⚔️", title: "Tacle",     sub: "Efficace contre un dribble" },
             "field-special":{ icon: "🔥", title: "Spécial",   sub: "Action spéciale" },
         },
         defenseGK: {

@@ -535,3 +535,6 @@
 @media (max-width: 1023px) {
     #log-card { min-height: 0; max-height: 220px; }
 }
+
+/* Stats utiles au duel en cours (fiches latérales) */
+.duel-stat { background: #ccfbf1; color: #0f766e; border-radius: 4px; margin: 0 -4px; padding: 0 4px; font-weight: 700; }

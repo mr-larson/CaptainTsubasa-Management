@@ -158,14 +158,6 @@
                 </div>
 
                 <!-- =======================================================
-                     MESSAGE PANEL (JS only)
-                     ======================================================= -->
-                <div id="message-panel" class="sr-only">
-                    <div id="message-main"></div>
-                    <div id="message-sub"></div>
-                </div>
-
-                <!-- =======================================================
                      MAIN ROW : left cards / field / right log
                      ======================================================= -->
                 <div id="main-row" class="grid min-h-0 grid-cols-1 lg:grid-cols-10 gap-6 items-stretch">
@@ -185,13 +177,12 @@
                             <div class="flex items-center gap-3 min-w-0">
                                 <div
                                     id="home-portrait"
-                                    class="shrink-0 h-[90px] w-[90px] rounded shadow-md bg-gradient-to-br from-slate-100 via-slate-200 to-slate-400 relative overflow-hidden"
+                                    class="shrink-0 h-16 w-16 rounded shadow-md bg-gradient-to-br from-slate-100 via-slate-200 to-slate-400 relative overflow-hidden"
                                 ></div>
                                 <div class="min-w-0 flex-1 text-xs space-y-0.5">
-                                    <div id="home-name" class="text-base font-bold truncate">—</div>
-                                    <div>Poste : <span id="home-role" class="font-semibold">—</span></div>
-                                    <div>Numéro : <span id="home-number" class="font-semibold">—</span></div>
-                                    <div>Équipe : <span id="home-team" class="font-semibold">{{ homeName }}</span></div>
+                                    <div id="home-name" class="text-sm font-bold leading-tight line-clamp-2 break-words">—</div>
+                                    <div class="text-slate-500"><span id="home-role" class="font-semibold">—</span> · n°<span id="home-number" class="font-semibold">—</span></div>
+                                    <div class="text-slate-500 truncate"><span id="home-team" class="font-semibold">{{ homeName }}</span></div>
                                 </div>
                             </div>
 
@@ -208,6 +199,7 @@
                                 <div class="flex justify-between"><span>Poings :</span> <strong id="home-stat-punch_save">—</strong></div>
                             </div>
 
+                            <div class="-mb-2 flex justify-between text-[11px] text-slate-500"><span>Endurance</span><strong id="home-energy-value" class="text-slate-700">—</strong></div>
                             <div class="h-2.5 w-full overflow-hidden rounded-full bg-gradient-to-r from-blue-200 to-white shadow-inner ring-1 ring-black/5">
                                 <div id="home-energy-fill" class="h-full w-full e-high"></div>
                             </div>
@@ -225,13 +217,12 @@
                             <div class="flex items-center gap-3 min-w-0">
                                 <div
                                     id="away-portrait"
-                                    class="shrink-0 h-[90px] w-[90px] rounded shadow-md bg-gradient-to-br from-slate-100 via-slate-200 to-slate-400 relative overflow-hidden"
+                                    class="shrink-0 h-16 w-16 rounded shadow-md bg-gradient-to-br from-slate-100 via-slate-200 to-slate-400 relative overflow-hidden"
                                 ></div>
                                 <div class="min-w-0 flex-1 text-xs space-y-0.5">
-                                    <div id="away-name" class="text-base font-bold truncate">—</div>
-                                    <div>Poste : <span id="away-role" class="font-semibold">—</span></div>
-                                    <div>Numéro : <span id="away-number" class="font-semibold">—</span></div>
-                                    <div>Équipe : <span id="away-team" class="font-semibold">{{ awayName }}</span></div>
+                                    <div id="away-name" class="text-sm font-bold leading-tight line-clamp-2 break-words">—</div>
+                                    <div class="text-slate-500"><span id="away-role" class="font-semibold">—</span> · n°<span id="away-number" class="font-semibold">—</span></div>
+                                    <div class="text-slate-500 truncate"><span id="away-team" class="font-semibold">{{ awayName }}</span></div>
                                 </div>
                             </div>
 
@@ -248,6 +239,7 @@
                                 <div class="flex justify-between"><span>Poings :</span> <strong id="away-stat-punch_save">—</strong></div>
                             </div>
 
+                            <div class="-mb-2 flex justify-between text-[11px] text-slate-500"><span>Endurance</span><strong id="away-energy-value" class="text-slate-700">—</strong></div>
                             <div class="h-2.5 w-full overflow-hidden rounded-full bg-gradient-to-r from-rose-100 to-white shadow-inner ring-1 ring-black/5">
                                 <div id="away-energy-fill" class="h-full w-full e-high"></div>
                             </div>
@@ -346,7 +338,13 @@
                      SKILL BARS (injecté par engine.js)
                      ======================================================= -->
                 <!-- Mobile (< lg) : barre collée en bas de l'écran pour garder actions et terrain visibles ensemble. -->
-                <div id="bars-container" class="mt-4 flex flex-col gap-2.5 lg:mt-[30px] max-lg:sticky max-lg:bottom-0 max-lg:z-30 max-lg:pb-[env(safe-area-inset-bottom)]">
+                <div id="bars-container" class="mt-3 flex flex-col gap-2 lg:mt-3 max-lg:sticky max-lg:bottom-0 max-lg:z-[60] max-lg:pb-[env(safe-area-inset-bottom)]">
+                    <!-- Invite de tour (écrite par engine.js) : qui doit agir, juste au-dessus des cartes. -->
+                    <div id="message-panel" aria-live="polite"
+                         class="mx-auto flex w-full flex-wrap items-baseline justify-center gap-x-2 rounded-xl bg-slate-800/90 px-4 py-1.5 text-center text-white shadow-md">
+                        <span id="message-main" class="text-sm font-bold"></span>
+                        <span id="message-sub" class="text-xs font-semibold text-teal-200"></span>
+                    </div>
                     <div id="action-bar" class="mx-auto block w-full rounded-2xl border border-black/5 bg-white/85 p-3 shadow-xl max-lg:max-h-[45vh] max-lg:overflow-y-auto"></div>
                     <div id="info-text" class="text-xs text-slate-700/75"></div>
                 </div>

@@ -29,7 +29,7 @@ import {
 
 import {
     initUIModule, disposeUIModule,
-    setMessage, setAIOverlay, updateScoreUI, pushLogEntry,
+    setMessage, setAIOverlay, updateScoreUI, pushLogEntry, highlightDuelStats,
     updateSideCard, syncRecovererCard, updateTeamCard, updateCardsPower,
     buildAttackActionsHTML, buildDefenseFieldHTML, buildDefenseGKHTML,
     setActionBar, applyRosterToDOM, resetLogHistory
@@ -373,6 +373,7 @@ export function initMatchEngine(rootEl, config = {}) {
         }
 
         setMessage(...attackPrompt(TEAMS[state.currentTeam].label, isAITeam(state.currentTeam)));
+        highlightDuelStats();
         state.phase = "attack";
         state.pendingAttack = null;
         state.pendingShotContext = null;
@@ -597,6 +598,7 @@ export function initMatchEngine(rootEl, config = {}) {
 
         const defPrefix = defTeam === "internal" ? "home" : "away";
         updateSideCard(defPrefix, defTeam, state.pendingDefenseContext.defenderSlot || 6);
+        highlightDuelStats(state.currentTeam, action, isKeeperChoiceUI);
 
         let html;
         // Après
@@ -639,7 +641,7 @@ export function initMatchEngine(rootEl, config = {}) {
         } else {
             html = buildDefenseFieldHTML(defTeam, state.pendingDefenseContext.defenderSlot, roster);
             setMessage(
-                `${TEAMS[state.currentTeam].label} prépare un ${action.toUpperCase()} !`,
+                `${TEAMS[state.currentTeam].label} tente : ${(TEXTS.cards.attack[action]?.title ?? action).toUpperCase()} !`,
                 defensePrompt(TEAMS[defTeam].label, isAITeam(defTeam))
             );
         }

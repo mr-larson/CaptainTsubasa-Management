@@ -476,6 +476,7 @@ export function updateSideCard(prefix, team, slotNumber) {
         fillEl.style.width = `${Math.max(0, ratio * 100)}%`;
         fillEl.className   = `energy-fill e-${getStaminaTier(playerId)}`;
     }
+    setText(`#${prefix}-energy-value`, `${Math.max(0, Math.round(ratio * 100))} %`);
 
     const portraitEl = _rootEl.querySelector(`#${prefix}-portrait`);
     if (portraitEl) setCardPhoto(portraitEl, info?.photo);
@@ -818,4 +819,28 @@ export function applyRosterToDOM(roster, rootEl) {
             }
         }
     }
+}
+
+// -----------------------------------------------------------
+//   Stats utiles au duel en cours (fiches latérales)
+// -----------------------------------------------------------
+// Stat de l'attaquant selon son geste, et stat du « bon contre » côté défenseur.
+const DUEL_ATTACK_STAT  = { pass: 'pass', one_two: 'pass', cross: 'pass', long_pass: 'pass', 'special-pass': 'pass',
+                            dribble: 'dribble', 'special-dribble': 'dribble', shot: 'shot', special: 'shot' };
+const DUEL_COUNTER_STAT = { pass: 'intercept', dribble: 'tackle', shot: 'block' };
+
+/** Surligne la stat de l'attaquant et celle du contre adapté ; sans argument, efface. */
+export function highlightDuelStats(attackTeam = null, attackAction = null, keeper = false) {
+    _rootEl?.querySelectorAll('.duel-stat').forEach(el => el.classList.remove('duel-stat'));
+    if (!attackTeam || !attackAction) return;
+
+    const attackStat = DUEL_ATTACK_STAT[attackAction];
+    if (!attackStat) return;
+    const attackPrefix  = attackTeam === 'internal' ? 'home' : 'away';
+    const defensePrefix = attackPrefix === 'home' ? 'away' : 'home';
+    const counters = keeper ? ['hand_save', 'punch_save'] : [DUEL_COUNTER_STAT[attackStat]];
+
+    const mark = (prefix, key) => _rootEl?.querySelector(`#${prefix}-stat-${key}`)?.parentElement?.classList.add('duel-stat');
+    mark(attackPrefix, attackStat);
+    counters.forEach(k => mark(defensePrefix, k));
 }
