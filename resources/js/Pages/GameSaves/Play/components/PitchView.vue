@@ -181,9 +181,9 @@ const MASTERY_CHIP = {
                                  :src="playerPhotoUrl(playerForSlot(slot))" class="w-full h-full object-cover pointer-events-none" alt=""/>
                             <span v-else class="text-3xs font-bold text-white">{{ slot }}</span>
                         </div>
-                        <!-- Cartons (au-dessus de la photo) -->
+                        <!-- Cartons (coin bas gauche de la photo, en miroir du capitaine) -->
                         <div v-if="cardsOf(playerForSlot(slot))"
-                             class="absolute top-0 left-1/2 -translate-x-1/2 z-10 flex gap-0.5 pointer-events-none"
+                             class="absolute top-5 -left-1.5 z-10 flex gap-0.5 pointer-events-none"
                              :title="cardsTitle(cardsOf(playerForSlot(slot)))">
                             <span v-for="i in cardsOf(playerForSlot(slot)).yellow" :key="'y' + i"
                                   class="w-1.5 h-2.5 rounded-[1px] bg-yellow-400 ring-1 ring-black/30 shadow-sm"></span>
