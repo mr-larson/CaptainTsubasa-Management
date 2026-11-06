@@ -174,6 +174,9 @@
                             <!-- Action — PREBUILT : hot-seat multi-manager -->
                             <template v-else>
                                 <!-- Solo : lancement direct, sans passer par la liste des managers -->
+                                <p v-if="!humanTeams.length" class="-mb-1 text-center text-xs font-semibold text-slate-600">
+                                    {{ launchRecap }}
+                                </p>
                                 <ButtonPrimary v-if="!humanTeams.length" type="button" size="lg" class="w-full"
                                                :disabled="startForm.processing"
                                                @click="startSolo(selectedTeam)">
@@ -453,7 +456,7 @@ const launchRecap = computed(() => [
     props.competitionType === 'college_league' ? 'Ligue' : 'Coupe du Monde',
     humanTeams.value.length > 1 ? `Hot-seat ${humanTeams.value.length} joueurs` : 'Solo',
     props.gameMode === 'draft' ? 'Draft' : 'Effectifs pré-faits',
-    humanTeams.value.map(t => t.name).join(', '),
+    (humanTeams.value.length ? humanTeams.value : [selectedTeam.value]).filter(Boolean).map(t => t.name).join(', '),
 ].filter(Boolean).join(' · '));
 
 const isHumanTeam = (team) => humanTeams.value.some(t => t.id === team.id);

@@ -34,7 +34,13 @@ class RegisteredUserController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:'.User::class,
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'password' => ['required', Rules\Password::defaults()],
+            // Erreur rattachée au champ de confirmation (et non au mot de passe),
+            // pour qu'elle s'affiche sous le champ que l'utilisateur doit corriger.
+            'password_confirmation' => ['required', 'same:password'],
+        ], [
+            'email.unique' => 'Cette adresse e-mail est déjà utilisée. Tu as déjà un compte ? Connecte-toi.',
+            'password_confirmation.same' => 'Les deux mots de passe ne correspondent pas.',
         ]);
 
         $user = User::create([

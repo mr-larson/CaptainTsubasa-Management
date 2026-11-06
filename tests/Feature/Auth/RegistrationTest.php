@@ -19,3 +19,16 @@ test('new users can register', function () {
     $this->assertAuthenticated();
     $response->assertRedirect(RouteServiceProvider::HOME);
 });
+
+test('a mismatched confirmation is reported on the confirmation field', function () {
+    $response = $this->from('/register')->post('/register', [
+        'name' => 'Test User',
+        'email' => 'mismatch@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'different',
+    ]);
+
+    $response->assertSessionHasErrors('password_confirmation');
+    $response->assertSessionDoesntHaveErrors('password');
+    $this->assertGuest();
+});

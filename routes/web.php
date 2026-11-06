@@ -50,6 +50,36 @@ Route::get('/', function () {
 Route::get('/comment-jouer', fn () => Inertia::render('Guide'))->name('guide');
 Route::get('/confidentialite', fn () => Inertia::render('Privacy'))->name('privacy');
 
+// Référencement : URLs absolues construites depuis APP_URL (goldeneleven.be en prod).
+// Ne pas déposer de robots.txt / sitemap.xml statiques dans public/ : ils masqueraient ces routes.
+Route::get('/robots.txt', fn () => response(implode("\n", [
+    'User-agent: *',
+    'Allow: /$',
+    'Allow: /comment-jouer',
+    'Allow: /confidentialite',
+    'Allow: /register',
+    'Allow: /build/',
+    'Allow: /storage/',
+    'Allow: /images/',
+    'Disallow: /',
+    '',
+    'Sitemap: ' . route('sitemap'),
+    '',
+]), 200, ['Content-Type' => 'text/plain; charset=UTF-8']))->name('robots');
+
+Route::get('/sitemap.xml', function () {
+    $urls = collect(['welcome' => '1.0', 'guide' => '0.8', 'register' => '0.5', 'privacy' => '0.3'])
+        ->filter(fn ($priority, $name) => Route::has($name))
+        ->map(fn ($priority, $name) => "  <url><loc>" . e(route($name)) . "</loc><priority>{$priority}</priority></url>")
+        ->implode("\n");
+
+    return response(
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n{$urls}\n</urlset>\n",
+        200,
+        ['Content-Type' => 'application/xml; charset=UTF-8'],
+    );
+})->name('sitemap');
+
 /*
 |--------------------------------------------------------------------------
 | Routes protégées (auth)
