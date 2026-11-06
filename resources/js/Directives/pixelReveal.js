@@ -6,7 +6,8 @@
  * haut comme par le bas) et rejoue l'effet à son retour. Les paliers suivent la position de scroll
  * (comme les pages produit Apple) mais avancent au plus d'un cran toutes les
  * STEP_MS : à l'ouverture de la page ou après un saut d'ancre, l'effet se joue
- * donc en entier au lieu d'être sauté.
+ * donc en entier au lieu d'être sauté. Plus le scroll est rapide (dans les deux
+ * sens), plus l'effet s'estompe : paliers raccourcis puis sautés, sans décalage.
  *
  * - Texte / blocs : `filter: url(#pxr-N)` vers un filtre SVG partagé. Le vrai
  *   texte reste dans le DOM (lecteurs d'écran, SEO, sélection), seul son rendu
@@ -41,6 +42,11 @@ const PALETTE_UNTIL = 3;                // images : palette réduite sur les 3 p
 const START = 1.0;                      // progression 0 quand le haut du bloc touche le bas de l'écran…
 const END = 0.78;                       // …et 1 quand il atteint 78 % de la hauteur d'écran
 const EXIT = 0.16;                      // en sortie par le haut : repixelisation sur les 16 % du haut
+// Vitesse de scroll : plus on défile vite (dans un sens ou dans l'autre), plus
+// l'effet s'estompe — paliers raccourcis puis sautés, plus de décalage entre
+// blocs ni de fondu long. Un scroll lent garde l'effet complet.
+const FAST_PX_PER_MS = 2.5;             // ~2 500 px/s : apparition quasi immédiate
+const SPEED_DECAY_MS = 220;             // sans scroll, la vitesse retombe à 0 en ~0,2 s
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -50,6 +56,9 @@ let observer = null;
 let rafId = 0;
 let lastStart = 0;
 let scrolled = false;                   // premier scroll de l'utilisateur
+let scrollSpeed = 0;                    // px/ms, lissée
+let lastScrollY = 0;
+let lastScrollAt = 0;
 
 const reducedMotion = () =>
     typeof window === 'undefined' || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -62,6 +71,7 @@ const reducedMotion = () =>
 const CSS = `
 [data-pxr]{transition:opacity .4s ease-out,transform .65s cubic-bezier(.16,1,.3,1)}
 [data-pxr="hidden"]{opacity:0;transform:translate3d(0,20px,0)}
+html[data-pxr-fast] [data-pxr]{transition-duration:.12s,.18s}
 `;
 
 function ensureStyle() {
@@ -248,10 +258,33 @@ function progressOf(unit, vh, maxScroll) {
     return Math.min(1, Math.max(0, unit.full ? exit : Math.min(enter, exit)));
 }
 
+/**
+ * Rythme de l'effet selon la vitesse de scroll `fast` (0 = lent, 1 = très rapide) :
+ * délai entre paliers, décalage entre blocs, et nombre de paliers franchis d'un coup.
+ */
+export function paceForSpeed(fast) {
+    const f = Math.min(1, Math.max(0, fast));
+    return {
+        stepMs:  STEP_MS * (1 - f),
+        stagger: STAGGER_MS * (1 - f),
+        stride:  1 + Math.round(f * (STEPS - 1)),
+    };
+}
+
+// 0 = scroll lent ou arrêté (effet complet) … 1 = scroll très rapide (effet estompé).
+function speedFactor(now) {
+    const decay = Math.max(0, 1 - (now - lastScrollAt) / SPEED_DECAY_MS);
+    return Math.min(1, (scrollSpeed * decay) / FAST_PX_PER_MS);
+}
+
 function tick(now) {
     rafId = 0;
     const vh = window.innerHeight;
     const maxScroll = document.documentElement.scrollHeight - vh;
+    const fast = speedFactor(now);
+    const { stepMs, stagger, stride } = paceForSpeed(fast);
+    if (fast >= 0.5) document.documentElement.dataset.pxrFast = '';
+    else delete document.documentElement.dataset.pxrFast;
     let busy = false;
     for (const unit of active) {
         if (!unit.ready) { busy = true; continue; }
@@ -262,21 +295,36 @@ function tick(now) {
         if (unit.step === 0) {
             // Démarrage : décalage automatique entre blocs qui entrent ensemble.
             if (!unit.startAt) {
-                unit.startAt = Math.max(now + unit.delay, lastStart + STAGGER_MS);
+                unit.startAt = fast >= 0.5
+                    ? now
+                    : Math.max(now + unit.delay * (1 - fast), lastStart + stagger);
                 lastStart = unit.startAt;
             }
             if (now < unit.startAt) continue;
         }
-        if (now - unit.lastStep < STEP_MS) continue;
+        if (now - unit.lastStep < stepMs) continue;
         unit.lastStep = now;
-        applyStep(unit, unit.step + (target > unit.step ? 1 : -1));
+        applyStep(unit, target > unit.step
+            ? Math.min(target, unit.step + stride)
+            : Math.max(target, unit.step - stride));
     }
     // Rien ne bouge : la boucle s'arrête, le prochain scroll/resize la relance.
     if (busy) rafId = requestAnimationFrame(tick);
 }
 
 const schedule = () => { if (!rafId && active.size) rafId = requestAnimationFrame(tick); };
-const onScroll = () => { scrolled = true; schedule(); };
+const onScroll = () => {
+    scrolled = true;
+    const now = performance.now();
+    const y = window.scrollY;
+    if (lastScrollAt) {
+        const v = Math.abs(y - lastScrollY) / Math.max(1, now - lastScrollAt);
+        scrollSpeed = scrollSpeed * 0.6 + v * 0.4;
+    }
+    lastScrollY = y;
+    lastScrollAt = now;
+    schedule();
+};
 
 function onIntersect(entries) {
     for (const entry of entries) {
@@ -365,6 +413,9 @@ export const vPixelReveal = {
             observer.disconnect();
             observer = null;
             scrolled = false;
+            scrollSpeed = 0;
+            lastScrollAt = 0;
+            delete document.documentElement.dataset.pxrFast;
             window.removeEventListener('scroll', onScroll);
             window.removeEventListener('resize', schedule);
             cancelAnimationFrame(rafId);
