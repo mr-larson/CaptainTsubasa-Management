@@ -102,8 +102,8 @@ export function computeAIAttackChoice(ball, specialCooldown) {
 // -----------------------------------------------------------
 //   Choix défense IA
 // -----------------------------------------------------------
-export function computeAIDefenseChoice(attackAction, defendingTeam, opts, specialCooldown, turns) {
-    const { isKeeperDuel = false } = opts;
+export function computeAIDefenseChoice(defendingTeam, opts, specialCooldown, turns) {
+    const { isKeeperDuel = false, ball = null } = opts;
     const slot       = isKeeperDuel ? 1 : (_state.pendingDefenseContext?.defenderSlot || 6);
     const defenderId = isKeeperDuel
         ? getKeeperId(defendingTeam)
@@ -117,26 +117,43 @@ export function computeAIDefenseChoice(attackAction, defendingTeam, opts, specia
         return Math.random() < 0.60 ? "hands" : "punch";
     }
 
+    // L'IA ne voit pas l'action choisie par l'attaquant : elle la devine,
+    // comme le joueur humain, puis joue le contre de sa supposition.
+    const counter = COUNTER_OF[guessAttack(ball)];
+
     if (canSpecial) {
-        const rpsMap = { shot: "block", pass: "intercept", dribble: "tackle", one_two: "intercept" };
-        const goodBase = rpsMap[attackAction];
-        if (goodBase && specials.some(m => m.base_action === goodBase) && Math.random() < 0.40) return "field-special";
+        if (specials.some(m => m.base_action === counter) && Math.random() < 0.40) return "field-special";
         if (Math.random() < 0.25) return "field-special";
     }
 
-    return _computeDefenseFallback(attackAction);
+    return counter;
 }
 
-function _computeDefenseFallback(attackAction) {
-    const r = Math.random();
-    switch (attackAction) {
-        case "pass":    return r < 0.7 ? "intercept" : (r < 0.9 ? "tackle" : "block");
-        case "dribble": return r < 0.7 ? "tackle"    : (r < 0.9 ? "intercept" : "block");
-        case "one_two": return r < 0.7 ? "intercept" : (r < 0.9 ? "tackle" : "block");
-        case "shot":    return r < 0.75 ? "block" : "intercept";
-        case "special":
-        case "special-pass":
-        case "special-dribble": return r < 0.65 ? "field-special" : "block";
-        default:        return "intercept";
+const COUNTER_OF = { pass: "intercept", dribble: "tackle", shot: "block" };
+
+/**
+ * Supposition de l'IA sur l'action adverse, à partir de ce qu'elle voit :
+ * la zone du ballon (pas de tir avant le milieu offensif, tir probable dans la
+ * dernière zone) et le profil du porteur (il joue plus souvent son point fort).
+ * Tirage pondéré, pas la plus probable à coup sûr : elle peut se tromper.
+ */
+export function guessAttack(ball) {
+    const attackTeam = ball?.team ?? (_state.currentTeam);
+    const stats = _roster.getPlayerInfo(attackTeam, ball?.number)?.stats ?? {};
+    const zone  = Math.min(4, (ball?.zoneIndex ?? 0) + 1); // 1=DEF … 4=ATT
+    const stat  = (k) => Math.max(1, Number(stats[k] ?? 0));
+    const avg   = (stat("pass") + stat("dribble") + stat("shot")) / 3;
+
+    const weights = {
+        pass:    1.0 * stat("pass") / avg,
+        dribble: 0.8 * stat("dribble") / avg,
+        shot:    zone >= 3 ? (zone === 4 ? 1.4 : 0.6) * stat("shot") / avg : 0,
+    };
+
+    const total = weights.pass + weights.dribble + weights.shot;
+    let r = Math.random() * total;
+    for (const [action, w] of Object.entries(weights)) {
+        if ((r -= w) < 0) return action;
     }
+    return "pass";
 }

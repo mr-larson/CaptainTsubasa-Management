@@ -404,9 +404,10 @@ export function initMatchEngine(rootEl, config = {}) {
             (state.pendingShotContext && state.pendingShotContext.stage === "keeper") ||
             ball.frontOfKeeper;
 
+        // L'action choisie (attackAction) n'est PAS transmise : l'IA la devine.
         const defense = computeAIDefenseChoice(
-            attackAction, defendingTeam,
-            { isKeeperDuel },
+            defendingTeam,
+            { isKeeperDuel, ball },
             state.specialCooldown, state.turns
         );
         setTimeout(() => { if (state.disposed) return; setAIOverlay(false); handleDefenseClick(defense); }, AI_THINK_MS);
