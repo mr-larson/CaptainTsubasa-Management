@@ -257,7 +257,7 @@
 
                     <!-- CENTER : field -->
                     <div id="field-wrapper" class="lg:col-span-6 min-w-0 relative">
-                        <div id="ai-turn-overlay">Tour de l'IA…</div>
+                        <div id="ai-turn-overlay">L'adversaire réfléchit…</div>
 
                         <div id="field">
                             <div id="border-rect" class="pitch-line"></div>

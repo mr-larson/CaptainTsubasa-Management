@@ -148,7 +148,7 @@ const lastDeclarationSummary = computed(() => {
                       :title="activePromise.type === 'renewal'
                           ? `Signe-lui un nouveau contrat avant la semaine ${activePromise.due_week}`
                           : activePromise.type === 'playing_time'
-                              ? `Il doit jouer au moins ${activePromise.target_turns} tours à son prochain match`
+                              ? `Il doit jouer au moins ${activePromise.target_turns} tours à son prochain match où il est disponible (un match manqué pour blessure ou suspension ne compte pas)`
                               : `Il doit être titulaire sur ${activePromise.target_matches} matchs entre la semaine ${activePromise.start_week} et la semaine ${activePromise.due_week}`">
                     🤝 Promesse en cours — {{ promiseTypeLabel(activePromise.type) }}
                     <template v-if="activePromise.type === 'playing_time'">: ≥{{ activePromise.target_turns }} tours au prochain match</template>

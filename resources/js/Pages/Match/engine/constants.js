@@ -133,15 +133,13 @@ export const TEXTS = {
     teams: { internal: "Domicile", external: "Extérieur" },
     ui: {
         gameStartMain: "Le match commence !",
-        gameStartSub:  "Internal a la balle. Remise en jeu : passe obligatoire.",
-        chooseAttackSub: "Choisis Pass / Dribble / Shot.",
 
         dribbleForbiddenMain: "Face au gardien !",
         dribbleForbiddenSub:  "Tu dois tirer, plus de dribble possible.",
 
-        aiAttackTurn:     "Tour de l'IA (attaque)",
-        aiDefenseTurn:    "Tour de l'IA (défense)",
-        aiThinkingDefault:"Tour de l'IA…",
+        aiAttackTurn:     "L'adversaire choisit son action…",
+        aiDefenseTurn:    "L'adversaire choisit sa défense…",
+        aiThinkingDefault:"L'adversaire réfléchit…",
 
         matchEndMain:   "Fin du match !",
         matchEndPrefix: "Score final ",
@@ -165,7 +163,6 @@ export const TEXTS = {
 
         shotOnTargetMain: "Tir cadré !",
         shotOnTargetSub:  "{team} : le gardien va intervenir.",
-        shotGKChoiceSub:  "{team} : Arrêt main / Dégagement poing / Special.",
 
         goalMain:        "BUT pour {team} !",
         goalSpecialMain: "BUT SPÉCIAL pour {team} !",

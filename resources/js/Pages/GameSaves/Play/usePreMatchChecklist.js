@@ -37,8 +37,15 @@ export function usePreMatchChecklist({
             (promises ?? []).filter(pr => pr.status === 'pending').forEach(pr => {
                 const base = { key: `pr${pr.id}`, tab: 'my-team', player: p };
                 if (pr.type === 'playing_time') {
-                    items.push({ ...base, level: p.is_starter ? 'info' : 'warn',
-                        text: `🤝 ${p.lastname} doit jouer ${pr.target_turns ?? 15} tours ce match${p.is_starter ? '' : ' (remplaçant)'}` });
+                    // Blessé ou suspendu : le serveur ne compte pas ce match
+                    // (PromiseService::wasUnavailable), la promesse passe au suivant.
+                    const unavailable = (toValue(playerInjury) ?? (() => null))(p.id)
+                        ? 'blessé' : (toValue(playerSuspension) ?? (() => null))(p.id) ? 'suspendu' : null;
+                    items.push(unavailable
+                        ? { ...base, level: 'info',
+                            text: `🤝 Promesse de temps de jeu à ${p.lastname} reportée (${unavailable}, ce match ne compte pas)` }
+                        : { ...base, level: p.is_starter ? 'info' : 'warn',
+                            text: `🤝 ${p.lastname} doit jouer ${pr.target_turns ?? 15} tours ce match${p.is_starter ? '' : ' (remplaçant)'}` });
                 } else if (pr.type === 'starter') {
                     items.push({ ...base, level: p.is_starter ? 'info' : 'warn',
                         text: `⭐ Titularisation promise à ${p.lastname} (${pr.played_matches ?? 0}/${pr.target_matches ?? 4}${p.is_starter ? '' : ', sur le banc'})` });

@@ -51,6 +51,7 @@ import {
 
 import { buildMatchStats, computePlaytime, orientToHomeAway } from './engine/matchStats.js';
 import { runShootout } from './engine/shootout.js';
+import { attackPrompt, defensePrompt } from './engine/turnPrompt.js';
 
 import {
     initFoulsModule, resolveFoulOutcome,
@@ -371,7 +372,7 @@ export function initMatchEngine(rootEl, config = {}) {
             return;
         }
 
-        setMessage(`${TEAMS[state.currentTeam].label} a la balle`, TEXTS.ui.chooseAttackSub);
+        setMessage(...attackPrompt(TEAMS[state.currentTeam].label, isAITeam(state.currentTeam)));
         state.phase = "attack";
         state.pendingAttack = null;
         state.pendingShotContext = null;
@@ -607,39 +608,39 @@ export function initMatchEngine(rootEl, config = {}) {
                 html = buildDefenseGKHTML(defTeam, roster);
                 setMessage(
                     `${TEAMS[state.currentTeam].label} : ${action === "special" ? specialLabel.toUpperCase() : "TIR"} !`,
-                    `${TEAMS[defTeam].label} (gardien) : Arrêt main / Poing / Special.`
+                    defensePrompt(TEAMS[defTeam].label, isAITeam(defTeam), true)
                 );
             } else {
                 html = buildDefenseFieldHTML(defTeam, state.pendingDefenseContext.defenderSlot, roster);
                 setMessage(
                     `${TEAMS[state.currentTeam].label} : ${action === "special" ? specialLabel.toUpperCase() : "TIR"} !`,
-                    `${TEAMS[defTeam].label} : Block / Intercept / Tackle / Special.`
+                    defensePrompt(TEAMS[defTeam].label, isAITeam(defTeam))
                 );
             }
         } else if (action === "special-pass") {
             html = buildDefenseFieldHTML(defTeam, state.pendingDefenseContext.defenderSlot, roster);
             setMessage(
                 `${TEAMS[state.currentTeam].label} : ${specialLabel.toUpperCase()} !`,
-                `${TEAMS[defTeam].label} : Block / Intercept / Tackle / Special.`
+                defensePrompt(TEAMS[defTeam].label, isAITeam(defTeam))
             );
         } else if (action === "special-dribble") {
             html = buildDefenseFieldHTML(defTeam, state.pendingDefenseContext.defenderSlot, roster);
             setMessage(
                 `${TEAMS[state.currentTeam].label} : ${specialLabel.toUpperCase()} !`,
-                `${TEAMS[defTeam].label} : Block / Intercept / Tackle / Special.`
+                defensePrompt(TEAMS[defTeam].label, isAITeam(defTeam))
             );
         } else if (action === "one_two") {
             const duo = roster.getDuoPartnerOnField(state.currentTeam, ball.number);
             html = buildDefenseFieldHTML(defTeam, state.pendingDefenseContext.defenderSlot, roster);
             setMessage(
                 `${TEAMS[state.currentTeam].label} prépare un UNE-DEUX${duo?.label ? ` (${duo.label})` : ""} !`,
-                `${TEAMS[defTeam].label} : Block / Intercept / Tackle / Special.`
+                defensePrompt(TEAMS[defTeam].label, isAITeam(defTeam))
             );
         } else {
             html = buildDefenseFieldHTML(defTeam, state.pendingDefenseContext.defenderSlot, roster);
             setMessage(
                 `${TEAMS[state.currentTeam].label} prépare un ${action.toUpperCase()} !`,
-                `${TEAMS[defTeam].label} : Block / Intercept / Tackle / Special.`
+                defensePrompt(TEAMS[defTeam].label, isAITeam(defTeam))
             );
         }
 
@@ -814,7 +815,10 @@ export function initMatchEngine(rootEl, config = {}) {
         updateSideCard("home", "internal", 8);
         updateSideCard("away", "external", 8);
 
-        setMessage(TEXTS.ui.gameStartMain, TEXTS.ui.gameStartSub);
+        setMessage(
+            TEXTS.ui.gameStartMain,
+            `${attackPrompt(TEAMS[kickoffTeam].label, isAITeam(kickoffTeam))[0]} · coup d'envoi : passe obligatoire.`
+        );
 
         state.actionEvents.push({
             gameSaveId: matchConfig.gameSaveId ?? null,

@@ -185,7 +185,9 @@ const LOG_FILTERS = [
 
 const isGoalEv  = isGoalEvent;
 const isShotEv  = (ev) => isGoalEv(ev) || eventKind(ev) === 'shot' || ev?.action === 'shot';
-const isHeroEv  = (ev) => eventKind(ev) === 'heroic' || /héroï|dépassement|reroll|spécial/i.test(ev?.text ?? '');
+// Temps forts : buts, expulsions, blessures et gestes héroïques / coups spéciaux.
+const HIGHLIGHT_KINDS = ['goal', 'card-red', 'injury', 'heroic'];
+const isHeroEv  = (ev) => HIGHLIGHT_KINDS.includes(eventKind(ev)) || /héroï|dépassement|reroll|spécial/i.test(ev?.text ?? '');
 
 // Événements annotés du score courant, puis filtrés (affichage antichronologique)
 const annotatedEvents = computed(() => {

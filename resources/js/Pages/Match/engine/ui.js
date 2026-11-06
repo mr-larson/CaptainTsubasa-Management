@@ -110,6 +110,12 @@ function _ensureOverlayEl() {
     return _overlayEl;
 }
 
+function _hideToastNow() {
+    if (!_toastEl) return;
+    if (_toastTimer) { clearTimeout(_toastTimer); _toastTimer = null; }
+    _toastEl.classList.remove('visible', 'hiding');
+}
+
 /**
  * Écrit réellement le toast/bannière — sans garde anti-spoiler, puisque les
  * appelants internes (pushLogEntry, showFreeKickBanner) sont déjà séquencés
@@ -135,6 +141,9 @@ function _renderEventNotification(type, text, subText = null) {
     } else if (type === 'red' || type === 'injury' || type === 'freekick') {
         const overlay = _ensureOverlayEl();
         if (!overlay) return null;
+        // Un toast précédent (« But ! X ») ne doit pas rester affiché par-dessus
+        // un événement plus récent (ex. coup franc adverse).
+        _hideToastNow();
         const icon = type === 'red' ? '🟥' : type === 'injury' ? '🤕' : '⚽';
         overlay.className = `event-overlay event-overlay--${type}`;
         overlay.innerHTML = `
@@ -185,6 +194,9 @@ function _awaitDwell(done, dwellMs, skipEl = null) {
 // Bannière plein terrain « ⚽ Coup franc ! » — appelée par les résolveurs.
 export function showFreeKickBanner(teamLabel, takerNumber) {
     enqueueRevealStep(done => {
+        // Le bloc « Action » suit l'action en cours, pas le dernier événement marquant.
+        if (_ui?.currentActionTitleEl)  _ui.currentActionTitleEl.textContent  = `Coup franc — ${teamLabel}`;
+        if (_ui?.currentActionDetailEl) _ui.currentActionDetailEl.textContent = `Tireur : n°${takerNumber}`;
         const el = _renderEventNotification('freekick', 'Coup franc !', `${teamLabel} — n°${takerNumber}`);
         _awaitDwell(done, revealDwellMs('freekick'), el);
     });

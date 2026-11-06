@@ -456,7 +456,16 @@ function openCareerRules() {
 // ==========================
 //   ACTIONS GLOBALES
 // ==========================
-const playNextMatch  = () => router.get(route('game-saves.match', { gameSave: props.gameSave.id }));
+// La page du match est lourde à charger : sans retour visuel, le clic sur « Jouer »
+// semblait sans effet (et invitait à recliquer).
+const launchingMatch = ref(false);
+const playNextMatch  = () => {
+    if (launchingMatch.value) return;
+    router.get(route('game-saves.match', { gameSave: props.gameSave.id }), {}, {
+        onStart:  () => { launchingMatch.value = true; },
+        onFinish: () => { launchingMatch.value = false; },
+    });
+};
 const simulating     = ref(false);
 const simulateWeek   = () => {
     if (simulating.value) return;
@@ -485,6 +494,7 @@ const saveGame = () => {
 
     <AuthenticatedLayout>
         <LoadingOverlay :show="simulating" message="Simulation de la semaine en cours…" />
+        <LoadingOverlay :show="launchingMatch" message="Préparation du match…" />
         <template #header>
             <H2>Session de jeu — {{ gameSave.label ?? `Sauvegarde #${gameSave.id}` }}</H2>
         </template>

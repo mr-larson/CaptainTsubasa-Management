@@ -7,6 +7,7 @@ import { specialBaseFor } from '../RosterService.js';
 import { getCellCenter, getKeeperId, getPlayerId, otherTeam } from '../field.js';
 import { buildDefenseGKHTML, pushLogEntry, setActionBar, setMessage, showFreeKickBanner, syncRecovererCard, updateSideCard } from '../ui.js';
 import { playPlayerAnimation } from '../playerAnim.js';
+import { defensePrompt } from '../turnPrompt.js';
 import { _moveBall, amendLastDuelEvent, animateGoalThenReset, animateShotToKeeper, applyCritBoost, ball, shared, recordDuelEvent, resetLastDribbler } from './context.js';
 import { applyDuelBonuses, getCounterTag, getLogTitleForDuel } from './duelRules.js';
 import { aiShouldReroll, consumeReroll } from './captainReroll.js';
@@ -114,7 +115,7 @@ export function continueShot(attackTeam, defenseTeam, defenseAction, isSpecial, 
         shared.state.pendingDefenseContext = { defenseTeam, defenderId: getKeeperId(defenseTeam), defenderSlot: 1 };
 
         setActionBar(buildDefenseGKHTML(defenseTeam, shared.roster), "mode-defense-" + defenseTeam, b, shared.roster, shared.bindActionButtons, false);
-        setMessage(TEXTS.ui.shotOnTargetMain, TEXTS.ui.shotGKChoiceSub.replace("{team}", shared.TEAMS[defenseTeam].label));
+        setMessage(TEXTS.ui.shotOnTargetMain, defensePrompt(shared.TEAMS[defenseTeam].label, shared.isAITeam(defenseTeam), true));
 
         shared.state.phase = "defense";
         shared.state.pendingAttack = attackType;
@@ -183,7 +184,7 @@ export function startFreeKick() {
         shared.state.pendingDefenseContext = { defenseTeam, defenderId: getKeeperId(defenseTeam), defenderSlot: 1 };
 
         setActionBar(buildDefenseGKHTML(defenseTeam, shared.roster), "mode-defense-" + defenseTeam, b, shared.roster, shared.bindActionButtons, false);
-        setMessage(TEXTS.ui.freeKickMain, TEXTS.ui.shotGKChoiceSub.replace("{team}", shared.TEAMS[defenseTeam].label));
+        setMessage(TEXTS.ui.freeKickMain, defensePrompt(shared.TEAMS[defenseTeam].label, shared.isAITeam(defenseTeam), true));
 
         shared.state.phase = "defense";
         shared.state.pendingAttack = "shot";
