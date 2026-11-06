@@ -1,11 +1,8 @@
 <template>
     <Head title="Match" />
 
-    <AuthenticatedLayout>
+    <AuthenticatedLayout hide-nav>
         <LoadingOverlay :show="submittingResult" message="Enregistrement du match et fin de semaine…" />
-        <template #header>
-            <H2>Match</H2>
-        </template>
 
         <div class="w-full px-4 lg:px-8 mt-4">
             <div id="game-wrapper" ref="gameRoot" class="mx-auto w-full max-w-[1500px]">
@@ -369,7 +366,6 @@ import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { confirmDialog } from '@/Composables/useDialog.js';
 import { onMounted, onBeforeUnmount, ref, computed } from 'vue';
-import H2 from '@/Components/H2.vue';
 import { FORMATIONS, DEFAULT_FORMATION } from './engine/formations.js';
 
 // ==========================

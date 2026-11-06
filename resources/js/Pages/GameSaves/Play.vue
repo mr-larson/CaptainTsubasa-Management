@@ -515,11 +515,15 @@ const saveGame = () => {
             <div class="flex flex-row flex-1 min-h-0">
                 <!-- Colonne gauche (grand écran uniquement ; ≥1400px pour exclure l'iPad Pro paysage).
                      En dessous, ces cartes sont dans le Dashboard. -->
-                <div class="hidden min-[1400px]:flex min-[1400px]:basis-1/6 flex-col gap-3">
-                    <CareerMandateCard v-if="career && career.mandate" compact
+                <div class="hidden min-[1400px]:flex min-[1400px]:basis-1/6 flex-col gap-3 min-h-0">
+                    <CareerMandateCard v-if="career && career.mandate" compact class="shrink-0"
                                        :career="career" @open-rules="openCareerRules" />
-                    <RemindersCard :actions="checklistActions" :squad="checklistSquad" :availability="squadAvailability" @open="openReminder" />
-                    <div class="flex-1 bg-contain bg-center bg-no-repeat bg-[url('/images/wakabayashi.webp')]"></div>
+                    <!-- La checklist défile si elle dépasse la hauteur dispo ; l'illustration
+                         prend la place restante et disparaît quand elle serait trop petite. -->
+                    <RemindersCard class="min-h-0 overflow-y-auto" :actions="checklistActions" :squad="checklistSquad" :availability="squadAvailability" @open="openReminder" />
+                    <div class="sidebar-mascot-slot flex-1 min-h-0">
+                        <div class="sidebar-mascot h-full bg-contain bg-center bg-no-repeat bg-[url('/images/wakabayashi.webp')]"></div>
+                    </div>
                 </div>
 
                 <!-- Carte principale -->
@@ -835,3 +839,13 @@ const saveGame = () => {
         </div>
     </AuthenticatedLayout>
 </template>
+
+<style scoped>
+/* Illustration de la colonne gauche : masquée sous 160px de haut pour ne pas
+   afficher un morceau tronqué quand la checklist occupe presque tout l'espace. */
+.sidebar-mascot-slot { container-type: size; }
+.sidebar-mascot { display: none; }
+@container (min-height: 160px) {
+    .sidebar-mascot { display: block; }
+}
+</style>

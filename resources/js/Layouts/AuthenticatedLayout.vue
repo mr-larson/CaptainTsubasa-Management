@@ -7,6 +7,11 @@ import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import FlashToasts from '@/Components/FlashToasts.vue';
 import AppDialog from '@/Components/AppDialog.vue';
 
+defineProps({
+    // Pages plein écran (match) : pas de barre de navigation, la page a son propre bouton Retour.
+    hideNav: { type: Boolean, default: false },
+});
+
 const showingNavigationDropdown = ref(false);
 
 // Navigation disponible depuis toutes les pages (menu utilisateur et menu mobile).
@@ -22,7 +27,7 @@ const navLinks = [
 <template>
     <div>
         <div class="h-screen flex flex-col overflow-hidden">
-            <nav class="bg-slate-700 text-slate-100 border-b border-slate-100 shrink-0">
+            <nav v-if="!hideNav" class="bg-slate-700 text-slate-100 border-b border-slate-100 shrink-0">
                 <!-- Primary Navigation Menu -->
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div class="flex justify-between h-16">
