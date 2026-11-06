@@ -59,12 +59,12 @@ function score(match) {
                     <thead class="border-b border-slate-200 text-2xs font-bold uppercase tracking-wider text-slate-400">
                         <tr>
                             <th class="text-left py-2 pl-4">Sélection</th>
-                            <th class="px-1.5">J</th>
-                            <th class="px-1.5">G</th>
-                            <th class="px-1.5">N</th>
-                            <th class="px-1.5">P</th>
-                            <th class="px-1.5">Diff</th>
-                            <th class="px-1.5 pr-4">Pts</th>
+                            <th class="px-1.5"><abbr title="Matchs joués" class="cursor-help no-underline">J</abbr></th>
+                            <th class="px-1.5"><abbr title="Matchs gagnés" class="cursor-help no-underline">G</abbr></th>
+                            <th class="px-1.5"><abbr title="Matchs nuls" class="cursor-help no-underline">N</abbr></th>
+                            <th class="px-1.5"><abbr title="Matchs perdus" class="cursor-help no-underline">P</abbr></th>
+                            <th class="px-1.5"><abbr title="Différence de buts" class="cursor-help no-underline">Diff</abbr></th>
+                            <th class="px-1.5 pr-4"><abbr title="Points : 3 par victoire, 1 par nul" class="cursor-help no-underline">Pts</abbr></th>
                         </tr>
                     </thead>
                     <tbody>

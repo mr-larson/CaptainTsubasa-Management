@@ -162,7 +162,8 @@ export function initDiceUI(duelDiceEl) {
 // -----------------------------------------------------------
 const DICE_ANIM_STORAGE_KEY = 'ctm-dice-anim';
 const DICE_ANIM_MODES       = ['normal', 'fast', 'off'];
-const DICE_ANIM_LABELS      = { normal: '🎲 normale', fast: '🎲 rapide', off: '🎲 off' };
+// Le bouton règle la vitesse d'animation des dés (pas le résultat) : on le dit.
+const DICE_ANIM_LABELS      = { normal: '🎲 Anim. normale', fast: '🎲 Anim. rapide', off: '🎲 Sans anim.' };
 
 let _chipToken    = 0;      // seul le dernier duel a le droit d'écrire le chip
 

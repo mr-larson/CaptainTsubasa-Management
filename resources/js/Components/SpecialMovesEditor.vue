@@ -20,7 +20,7 @@ const BASE_ACTIONS = [
     { value: 'shot',       label: 'Tir' },
     { value: 'pass',       label: 'Passe' },
     { value: 'dribble',    label: 'Dribble' },
-    { value: 'block',      label: 'Block' },
+    { value: 'block',      label: 'Contre' },
     { value: 'intercept',  label: 'Interception' },
     { value: 'tackle',     label: 'Tacle' },
     { value: 'hand_save',  label: 'Arrêt main' },

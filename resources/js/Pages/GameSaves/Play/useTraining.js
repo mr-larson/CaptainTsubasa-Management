@@ -33,7 +33,7 @@ export function useTraining({ gameSave, season, week, teamId, maxPerWeek }) {
         { key: 'attack',     label: 'Attaque'        },
         { key: 'defense',    label: 'Défense'        },
         { key: 'speed',      label: 'Vitesse'        },
-        { key: 'block',      label: 'Block'          },
+        { key: 'block',      label: 'Contre'         },
         { key: 'intercept',  label: 'Interception'   },
         { key: 'tackle',     label: 'Tacle'          },
         { key: 'hand_save',  label: 'Arrêt main'     },

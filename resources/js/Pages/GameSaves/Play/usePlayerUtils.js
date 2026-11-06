@@ -10,7 +10,7 @@ const STAT_KEYS = [
 
 const STAT_LABELS = {
     shot: 'Tir', pass: 'Passe', dribble: 'Dribble', attack: 'Att',
-    defense: 'Def', speed: 'Vit', block: 'Block', intercept: 'Interc',
+    defense: 'Def', speed: 'Vit', block: 'Contre', intercept: 'Interc',
     tackle: 'Tacle', stamina: 'End', hand_save: 'Main', punch_save: 'Poings',
 };
 

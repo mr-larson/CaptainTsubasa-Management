@@ -5,7 +5,7 @@ import { getCellCenter, getPlayerId } from '../field.js';
 import { pushLogEntry, setMessage, syncRecovererCard } from '../ui.js';
 import { playPlayerAnimation } from '../playerAnim.js';
 import { _moveBall, ball, shared, resetLastDribbler } from './context.js';
-import { getCounterTag, getLogTitleForDuel } from './duelRules.js';
+import { defenseTag, getCounterTag, getLogTitleForDuel } from './duelRules.js';
 import { runFieldDuel } from './fieldDuel.js';
 import { startFreeKick } from './shot.js';
 
@@ -43,8 +43,8 @@ export function resolveDribble(attackTeam, defenseTeam, defenseAction, defenderP
 
     if (duel.isTie) {
         pushLogEntry(
-            isSpecial ? "Duel equilibre (special dribble)" : "Duel equilibre (dribble)",
-            ["Defense: " + defenseAction, getCounterTag(attackType, defenseAction)],
+            isSpecial ? "Duel équilibré (dribble spécial)" : "Duel équilibré (dribble)",
+            [defenseTag(defenseAction), getCounterTag(attackType, defenseAction)],
             duel.diceTag, shared.state, duel.breakdown ?? null
         );
         shared.state.phase = "attack"; shared.state.pendingAttack = null;
@@ -92,9 +92,9 @@ export function continueDribble(attackTeam, defenseTeam, attackType, defenseActi
 
             const successMsg = isOneTwo
                 ? (duo?.label ? duo.label + " !" : "Une-deux réussi !")
-                : (isSpecial ? "Dribble special reussi !" : "Dribble reussi !");
+                : (isSpecial ? "Dribble spécial réussi !" : "Dribble réussi !");
             setMessage(successMsg, shared.TEAMS[attackTeam].label + " avance en zone " + (newZone + 1));
-            pushLogEntry(isOneTwo ? "oneTwoSuccessTitle" : "dribbleSuccessTitle", [duoDetail, isSpecial ? "(Special dribble)" : null, "Zone " + (newZone + 1), "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, shared.state, duel.breakdown ?? null);
+            pushLogEntry(isOneTwo ? "oneTwoSuccessTitle" : "dribbleSuccessTitle", [duoDetail, isSpecial ? "(dribble spécial)" : null, "Zone " + (newZone + 1), defenseTag(defenseAction), getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, shared.state, duel.breakdown ?? null);
             shared.animateAndThen(() => { shared.advanceTurn(attackTeam); });
             return;
         }
@@ -110,7 +110,7 @@ export function continueDribble(attackTeam, defenseTeam, attackType, defenseActi
             b.zoneIndex = oldZone; b.laneIndex = lane; b.frontOfKeeper = true;
 
             setMessage(TEXTS.ui.frontOfKeeperMain, TEXTS.ui.frontOfKeeperSub);
-            pushLogEntry("frontOfKeeperTitle", [duoDetail, isSpecial ? "(Special dribble)" : null, "Zone " + (oldZone + 1), "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, shared.state, duel.breakdown ?? null);
+            pushLogEntry("frontOfKeeperTitle", [duoDetail, isSpecial ? "(dribble spécial)" : null, "Zone " + (oldZone + 1), defenseTag(defenseAction), getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, shared.state, duel.breakdown ?? null);
             shared.animateAndThen(() => { shared.advanceTurn(attackTeam); });
             return;
         }
@@ -130,9 +130,9 @@ export function continueDribble(attackTeam, defenseTeam, attackType, defenseActi
     const logTitle = getLogTitleForDuel(attackType, defenseAction, "defense");
     const msgTitle = isOneTwo
         ? (defenseAction === "intercept" ? TEXTS.logs.oneTwoFailTitle : TEXTS.logs.oneTwoRecoveredTitle)
-        : (defenseAction === "tackle" ? "Dribble stoppe" : TEXTS.logs.dribbleRecoveredTitle);
-    setMessage(msgTitle, shared.TEAMS[defenseTeam].label + " recupere avec le n " + slot);
-    pushLogEntry(logTitle, [duoDetail, isSpecial ? "(Special dribble)" : null, "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, shared.state, duel.breakdown ?? null);
+        : (defenseAction === "tackle" ? "Dribble stoppé" : TEXTS.logs.dribbleRecoveredTitle);
+    setMessage(msgTitle, shared.TEAMS[defenseTeam].label + " récupère avec le n°" + slot);
+    pushLogEntry(logTitle, [duoDetail, isSpecial ? "(dribble spécial)" : null, defenseTag(defenseAction), getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, shared.state, duel.breakdown ?? null);
     shared.animateAndThen(() => { shared.advanceTurn(defenseTeam); });
 }
 
@@ -177,8 +177,8 @@ export function resolveOneTwo(attackTeam, defenseTeam, defenseAction, defenderPi
 
     if (duel.isTie) {
         pushLogEntry(
-            "Duel equilibre (une-deux)",
-            ["Defense: " + defenseAction, getCounterTag(attackType, defenseAction)],
+            "Duel équilibré (une-deux)",
+            [defenseTag(defenseAction), getCounterTag(attackType, defenseAction)],
             duel.diceTag, shared.state, duel.breakdown ?? null
         );
         shared.state.phase = "attack"; shared.state.pendingAttack = null;

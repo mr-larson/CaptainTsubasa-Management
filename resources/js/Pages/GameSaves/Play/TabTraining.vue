@@ -103,7 +103,7 @@ const filteredAiEntries = computed(() =>
 // ── Stat label local (libellés longs vs courts du composable) ──
 const statLabel = (key) => ({
     shot: 'Tir', pass: 'Passe', dribble: 'Dribble', attack: 'Attaque',
-    defense: 'Défense', speed: 'Vitesse', block: 'Block',
+    defense: 'Défense', speed: 'Vitesse', block: 'Contre',
     intercept: 'Interc.', tackle: 'Tacle', stamina: 'Stamina',
     hand_save: 'Main', punch_save: 'Poings',
 }[key] ?? key);

@@ -164,7 +164,7 @@ export function doReroll(ctx, heroic = false) {
 
     const attackerInfo = shared.roster.getPlayerInfo(attackTeam, b.number);
     const attackerName = ((attackerInfo?.firstname ?? '') + ' ' + (attackerInfo?.lastname ?? '')).trim();
-    const resultLabel  = newRawResult === "attack" ? "✓ Réussi!" : "✗ Echec";
+    const resultLabel  = newRawResult === "attack" ? "✓ Réussi !" : "✗ Échec";
 
     if (heroic) {
         pushLogEntry(

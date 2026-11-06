@@ -144,8 +144,8 @@ export const TEXTS = {
         matchEndMain:   "Fin du match !",
         matchEndPrefix: "Score final ",
 
-        specialCooldownMain: "Special indisponible",
-        specialCooldownSub:  "Attends le cooldown avant de relancer un Special.",
+        specialCooldownMain: "Coup spécial indisponible",
+        specialCooldownSub:  "Attends quelques tours avant de relancer un coup spécial.",
 
         keeperRestartMain: "Relance du gardien",
         keeperRestartSub:  "Passe obligatoire après une relance.",
@@ -173,7 +173,6 @@ export const TEXTS = {
     },
     logs: {
         kickoffTitle:  "Coup d'envoi",
-        kickoffDetail: "Internal engage (pass obligatoire)",
 
         passSuccessTitle:  "Passe réussie",
         passFailTitle:     "Passe interceptée",
@@ -196,7 +195,7 @@ export const TEXTS = {
         shotSavedTitle:      "Tir – arrêté",
         shotRecoveredTitle:  "Tir récupéré",
         shotBlockedTitle:    "Tir contré",
-        specialRecoveredTitle:"Special récupéré",
+        specialRecoveredTitle:"Coup spécial récupéré",
 
         matchEndTitle:      "Fin du match",
         frontOfKeeperTitle: "Dribble réussi – face au gardien",

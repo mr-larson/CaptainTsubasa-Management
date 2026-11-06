@@ -5,7 +5,7 @@ import { getCarrierElement, getPlayerId, getPlayerXInternal, pickReceiverInCell 
 import { pushLogEntry, setMessage, syncRecovererCard } from '../ui.js';
 import { playPlayerAnimation } from '../playerAnim.js';
 import { _moveBall, ball, shared, resetLastDribbler, restoreBasePositions } from './context.js';
-import { getCounterTag, getLogTitleForDuel } from './duelRules.js';
+import { defenseTag, getCounterTag, getLogTitleForDuel } from './duelRules.js';
 
 import { runFieldDuel } from './fieldDuel.js';
 import { startFreeKick } from './shot.js';
@@ -31,8 +31,8 @@ export function resolvePass(attackTeam, defenseTeam, defenseAction, defenderPick
 
     if (duel.isTie) {
         pushLogEntry(
-            isSpecial ? "Duel equilibre (special pass)" : "Duel equilibre (pass)",
-            ["Defense: " + defenseAction, getCounterTag(attackType, defenseAction)],
+            isSpecial ? "Duel équilibré (passe spéciale)" : "Duel équilibré (passe)",
+            [defenseTag(defenseAction), getCounterTag(attackType, defenseAction)],
             duel.diceTag, shared.state, duel.breakdown ?? null
         );
         shared.state.phase = "attack"; shared.state.pendingAttack = null;
@@ -46,14 +46,14 @@ export function resolvePass(attackTeam, defenseTeam, defenseAction, defenderPick
     if (wasKickoff) {
         if (duel.duelResult === "attack") {
             const receiver = [5, 6][Math.floor(Math.random() * 2)];
-            setMessage(isSpecial ? "Passe speciale reussie !" : "Remise en jeu reussie !", shared.TEAMS[attackTeam].label + " joue vers le n " + receiver);
-            pushLogEntry("kickoffTitle", [isSpecial ? "(Special pass)" : null, "Vers n " + receiver, "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, shared.state, duel.breakdown ?? null);
+            setMessage(isSpecial ? "Passe spéciale réussie !" : "Remise en jeu réussie !", shared.TEAMS[attackTeam].label + " joue vers le n°" + receiver);
+            pushLogEntry("kickoffTitle", [isSpecial ? "(passe spéciale)" : null, "Vers le n°" + receiver, defenseTag(defenseAction), getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, shared.state, duel.breakdown ?? null);
             shared.animateAndThen(() => { restoreBasePositions(); _moveBall(attackTeam, receiver); shared.advanceTurn(attackTeam); });
         } else {
             const receiver = duel.defenderSlot ?? 6;
-            const verb     = defenseAction === "intercept" ? "intercepte" : "recupere";
-            setMessage("Remise en jeu ratee !", shared.TEAMS[defenseTeam].label + " " + verb + " avec le n " + receiver);
-            pushLogEntry("kickoffTitle", [isSpecial ? "(Special pass)" : null, "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, shared.state, duel.breakdown ?? null);
+            const verb     = defenseAction === "intercept" ? "intercepte" : "récupère";
+            setMessage("Remise en jeu ratée !", shared.TEAMS[defenseTeam].label + " " + verb + " avec le n°" + receiver);
+            pushLogEntry("kickoffTitle", [isSpecial ? "(passe spéciale)" : null, defenseTag(defenseAction), getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, shared.state, duel.breakdown ?? null);
             shared.animateAndThen(() => { restoreBasePositions(); _moveBall(defenseTeam, receiver); shared.advanceTurn(defenseTeam); });
         }
         return;
@@ -99,8 +99,8 @@ export function continuePass(attackTeam, defenseTeam, attackType, defenseAction,
         playPlayerAnimation(attackTeam, receiver, 'receiver');
 
         _moveBall(attackTeam, receiver);
-        setMessage(isSpecial ? "Passe speciale reussie !" : TEXTS.logs.passSuccessTitle, shared.TEAMS[attackTeam].label + " trouve le n " + receiver);
-        pushLogEntry("passSuccessTitle", [isSpecial ? "(Special pass)" : null, "Vers n " + receiver, "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, shared.state, duel.breakdown ?? null);
+        setMessage(isSpecial ? "Passe spéciale réussie !" : TEXTS.logs.passSuccessTitle, shared.TEAMS[attackTeam].label + " trouve le n°" + receiver);
+        pushLogEntry("passSuccessTitle", [isSpecial ? "(passe spéciale)" : null, "Vers le n°" + receiver, defenseTag(defenseAction), getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, shared.state, duel.breakdown ?? null);
         shared.animateAndThen(() => { shared.advanceTurn(attackTeam); });
         return;
     }
@@ -118,8 +118,8 @@ export function continuePass(attackTeam, defenseTeam, attackType, defenseAction,
 
     const logTitle = getLogTitleForDuel(attackType, defenseAction, "defense");
     const msgTitle = defenseAction === "intercept" ? TEXTS.logs.passFailTitle : TEXTS.logs.passRecoveredTitle;
-    setMessage(msgTitle, shared.TEAMS[defenseTeam].label + " recupere avec le n " + receiver);
-    pushLogEntry(logTitle, [isSpecial ? "(Special pass)" : null, "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, shared.state, duel.breakdown ?? null);
+    setMessage(msgTitle, shared.TEAMS[defenseTeam].label + " récupère avec le n°" + receiver);
+    pushLogEntry(logTitle, [isSpecial ? "(passe spéciale)" : null, defenseTag(defenseAction), getCounterTag(attackType, defenseAction)].filter(Boolean), duel.diceTag, shared.state, duel.breakdown ?? null);
     shared.animateAndThen(() => { shared.advanceTurn(defenseTeam); });
 }
 
@@ -133,7 +133,7 @@ export function resolveCross(attackTeam, defenseTeam) {
     if (shared.state.pendingFreeKick) { startFreeKick(); return; }
 
     if (duel.isTie) {
-        pushLogEntry("Duel equilibre (centre)", ["Defense: heading", getCounterTag("cross", "heading")], duel.diceTag, shared.state, duel.breakdown ?? null);
+        pushLogEntry("Duel équilibré (centre)", [defenseTag("heading"), getCounterTag("cross", "heading")], duel.diceTag, shared.state, duel.breakdown ?? null);
         shared.state.phase = "attack"; shared.state.pendingAttack = null;
         shared.animateAndThen(() => { shared.advanceTurn(defenseTeam); });
         return;
@@ -150,8 +150,8 @@ export function resolveCross(attackTeam, defenseTeam) {
         playPlayerAnimation(attackTeam, receiver, 'receiver');
 
         _moveBall(attackTeam, receiver);
-        setMessage("Centre reussi !", shared.TEAMS[attackTeam].label + " trouve le n " + receiver + " dans la surface");
-        pushLogEntry("Centre reussi", ["Vers n " + receiver, "Defense: heading", getCounterTag("cross", "heading")], duel.diceTag, shared.state, duel.breakdown ?? null);
+        setMessage("Centre réussi !", shared.TEAMS[attackTeam].label + " trouve le n°" + receiver + " dans la surface");
+        pushLogEntry("Centre réussi", ["Vers le n°" + receiver, defenseTag("heading"), getCounterTag("cross", "heading")], duel.diceTag, shared.state, duel.breakdown ?? null);
         shared.animateAndThen(() => { shared.advanceTurn(attackTeam); });
         return;
     }
@@ -166,8 +166,8 @@ export function resolveCross(attackTeam, defenseTeam) {
     _moveBall(defenseTeam, receiver);
     syncRecovererCard(defenseTeam, receiver);
 
-    setMessage("Centre repousse !", shared.TEAMS[defenseTeam].label + " degage avec le n " + receiver);
-    pushLogEntry("Centre repousse (tete)", ["Defense: heading", getCounterTag("cross", "heading")], duel.diceTag, shared.state, duel.breakdown ?? null);
+    setMessage("Centre repoussé !", shared.TEAMS[defenseTeam].label + " dégage avec le n°" + receiver);
+    pushLogEntry("Centre repoussé (tête)", [defenseTag("heading"), getCounterTag("cross", "heading")], duel.diceTag, shared.state, duel.breakdown ?? null);
     shared.animateAndThen(() => { shared.advanceTurn(defenseTeam); });
 }
 
@@ -178,7 +178,7 @@ export function resolveLongPass(attackTeam, defenseTeam) {
     if (shared.state.pendingFreeKick) { startFreeKick(); return; }
 
     if (duel.isTie) {
-        pushLogEntry("Duel equilibre (passe longue)", ["Defense: intercept", getCounterTag("long_pass", "intercept")], duel.diceTag, shared.state, duel.breakdown ?? null);
+        pushLogEntry("Duel équilibré (passe longue)", [defenseTag("intercept"), getCounterTag("long_pass", "intercept")], duel.diceTag, shared.state, duel.breakdown ?? null);
         shared.state.phase = "attack"; shared.state.pendingAttack = null;
         shared.animateAndThen(() => { shared.advanceTurn(defenseTeam); });
         return;
@@ -195,8 +195,8 @@ export function resolveLongPass(attackTeam, defenseTeam) {
         playPlayerAnimation(attackTeam, receiver, 'receiver');
 
         _moveBall(attackTeam, receiver);
-        setMessage("Passe longue reussie !", shared.TEAMS[attackTeam].label + " trouve le n " + receiver);
-        pushLogEntry("Passe longue reussie", ["Vers n " + receiver, "Defense: intercept", getCounterTag("long_pass", "intercept")], duel.diceTag, shared.state, duel.breakdown ?? null);
+        setMessage("Passe longue réussie !", shared.TEAMS[attackTeam].label + " trouve le n°" + receiver);
+        pushLogEntry("Passe longue réussie", ["Vers le n°" + receiver, defenseTag("intercept"), getCounterTag("long_pass", "intercept")], duel.diceTag, shared.state, duel.breakdown ?? null);
         shared.animateAndThen(() => { shared.advanceTurn(attackTeam); });
         return;
     }
@@ -211,7 +211,7 @@ export function resolveLongPass(attackTeam, defenseTeam) {
     _moveBall(defenseTeam, receiver);
     syncRecovererCard(defenseTeam, receiver);
 
-    setMessage("Passe longue interceptee !", shared.TEAMS[defenseTeam].label + " recupere avec le n " + receiver);
-    pushLogEntry("Passe longue interceptee", ["Defense: intercept", getCounterTag("long_pass", "intercept")], duel.diceTag, shared.state, duel.breakdown ?? null);
+    setMessage("Passe longue interceptée !", shared.TEAMS[defenseTeam].label + " récupère avec le n°" + receiver);
+    pushLogEntry("Passe longue interceptée", [defenseTag("intercept"), getCounterTag("long_pass", "intercept")], duel.diceTag, shared.state, duel.breakdown ?? null);
     shared.animateAndThen(() => { shared.advanceTurn(defenseTeam); });
 }

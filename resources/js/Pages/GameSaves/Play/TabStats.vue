@@ -164,7 +164,7 @@ const sortIcon = (key) => {
                 </div>
             </div>
             <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
-                <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">🏆 Top performers</h3>
+                <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">🏆 Meilleurs joueurs <span class="normal-case font-semibold text-slate-400 tracking-normal">· cumul de tous les matchs joués de la partie</span></h3>
 
                 <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
                     <div v-for="(category, ci) in [
@@ -236,12 +236,13 @@ const sortIcon = (key) => {
                                     { key: 'passes',    label: 'Passes'  },
                                     { key: 'dribbles',  label: 'Dribbles'},
                                     { key: 'saves', label: 'Arrêts' },
-                                    { key: 'intercepts',label: 'Interc.' },
+                                    { key: 'intercepts',label: 'Interc.', title: 'Interceptions' },
                                     { key: 'tackles',   label: 'Tacles'  },
-                                    { key: 'blocks',    label: 'Blocks'  },
-                                    { key: 'duelsWon',  label: 'D. Won'  },
-                                    { key: 'duelsLost', label: 'D. Lost' },
+                                    { key: 'blocks',    label: 'Contres', title: 'Tirs contrés' },
+                                    { key: 'duelsWon',  label: 'Duels G.', title: 'Duels gagnés' },
+                                    { key: 'duelsLost', label: 'Duels P.', title: 'Duels perdus' },
                                 ]" :key="col.key"
+                                :title="col.title ?? null"
                                 class="py-2 px-2 text-right cursor-pointer select-none hover:text-teal-600 transition-colors"
                                 :class="sortKey === col.key ? 'text-teal-600 font-bold' : 'text-slate-500 font-semibold'"
                                 @click="setSort(col.key)" tabindex="0" @keydown.enter.prevent="setSort(col.key)"

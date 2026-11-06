@@ -9,7 +9,7 @@ import { buildDefenseGKHTML, pushLogEntry, setActionBar, setMessage, showFreeKic
 import { playPlayerAnimation } from '../playerAnim.js';
 import { defensePrompt } from '../turnPrompt.js';
 import { _moveBall, amendLastDuelEvent, animateGoalThenReset, animateShotToKeeper, applyCritBoost, ball, shared, recordDuelEvent, resetLastDribbler } from './context.js';
-import { applyDuelBonuses, getCounterTag, getLogTitleForDuel } from './duelRules.js';
+import { applyDuelBonuses, defenseTag, getCounterTag, getLogTitleForDuel } from './duelRules.js';
 import { aiShouldReroll, consumeReroll } from './captainReroll.js';
 import { performKeeperClearance, runFieldDuel } from './fieldDuel.js';
 
@@ -50,7 +50,7 @@ export function resolveShot(attackTeam, defenseTeam, defenseAction, isSpecial = 
     if (shared.state.pendingFreeKick) { startFreeKick(); return; }
 
     if (duel.isTie) {
-        pushLogEntry("Duel equilibre (shot)", ["Defense: " + defenseAction, getCounterTag(attackType, defenseAction)], duel.diceTag, shared.state, duel.breakdown ?? null);
+        pushLogEntry("Duel équilibré (tir)", [defenseTag(defenseAction), getCounterTag(attackType, defenseAction)], duel.diceTag, shared.state, duel.breakdown ?? null);
         shared.state.phase = "attack"; shared.state.pendingAttack = null;
         shared.animateAndThen(() => { shared.advanceTurn(defenseTeam); });
         return;
@@ -80,13 +80,13 @@ export function continueShot(attackTeam, defenseTeam, defenseAction, isSpecial, 
             (isBlock ? TEXTS.ui.shotBlockedSub : TEXTS.ui.shotRecoveredSub)
                 .replace("{team}", shared.TEAMS[defenseTeam].label).replace("{number}", number)
         );
-        pushLogEntry(getLogTitleForDuel(attackType, defenseAction, "defense"), ["Defense: " + defenseAction, getCounterTag(attackType, defenseAction)], duel.diceTag, shared.state, duel.breakdown ?? null);
+        pushLogEntry(getLogTitleForDuel(attackType, defenseAction, "defense"), [defenseTag(defenseAction), getCounterTag(attackType, defenseAction)], duel.diceTag, shared.state, duel.breakdown ?? null);
         shared.state.phase = "attack"; shared.state.pendingAttack = null;
         shared.animateAndThen(() => { shared.advanceTurn(defenseTeam); });
         return;
     }
 
-    pushLogEntry(TEXTS.ui.shotOnTargetMain, ["Zone " + (originZone + 1), "Defense: " + defenseAction, getCounterTag(attackType, defenseAction)], duel.diceTag, shared.state, duel.breakdown ?? null);
+    pushLogEntry(TEXTS.ui.shotOnTargetMain, ["Zone " + (originZone + 1), defenseTag(defenseAction), getCounterTag(attackType, defenseAction)], duel.diceTag, shared.state, duel.breakdown ?? null);
     setMessage(TEXTS.ui.shotOnTargetMain, TEXTS.ui.shotOnTargetSub.replace("{team}", shared.TEAMS[defenseTeam].label));
 
     const zonesToGoal = Math.max(0, MAX_ZONE_INDEX - originZone);

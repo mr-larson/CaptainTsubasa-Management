@@ -8,7 +8,7 @@ export const PLAYER_STATS = [
     { key: 'shot',       label: 'Tir',          color: 'bg-red-400' },
     { key: 'pass',       label: 'Passe',        color: 'bg-teal-400' },
     { key: 'dribble',    label: 'Dribble',      color: 'bg-yellow-400' },
-    { key: 'block',      label: 'Block',        color: 'bg-indigo-400' },
+    { key: 'block',      label: 'Contre',       color: 'bg-indigo-400' },
     { key: 'intercept',  label: 'Interception', color: 'bg-purple-400' },
     { key: 'tackle',     label: 'Tacle',        color: 'bg-pink-400' },
     { key: 'heading',    label: 'Jeu de tête',  color: 'bg-cyan-400', short: 'Tête' },

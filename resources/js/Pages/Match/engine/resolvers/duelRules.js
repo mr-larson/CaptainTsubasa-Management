@@ -19,11 +19,11 @@ export function isGoodDefenseChoice(attackAction, defenseAction) {
 }
 
 export function getCounterTag(attackAction, defenseAction) {
-    return isGoodDefenseChoice(attackAction, defenseAction) ? "OK Bon contre" : "X Mauvais choix";
+    return isGoodDefenseChoice(attackAction, defenseAction) ? "✓ Bon choix défensif" : "✗ Mauvais choix défensif";
 }
 
 export function getLogTitleForDuel(attackAction, defenseAction, duelWinner) {
-    if (duelWinner === "tie")    return "Duel equilibre";
+    if (duelWinner === "tie")    return "Duel équilibré";
     if (duelWinner === "attack") {
         if (attackAction === "pass")    return TEXTS.logs.passSuccessTitle;
         if (attackAction === "dribble") return TEXTS.logs.dribbleSuccessTitle;
@@ -45,4 +45,14 @@ export function applyDuelBonuses({ attackAction, defenseAction, attackScore, def
     return good
         ? { attackScore, defenseScore: defenseScore + DUEL_RULES.GOOD_COUNTER_BONUS }
         : { attackScore: attackScore + DUEL_RULES.GENERIC_ATTACK_BONUS, defenseScore };
+}
+
+// Libellé « Défense : Interception » pour le journal (mêmes noms que les cartes).
+const DEFENSE_LABELS = {
+    ...Object.fromEntries(Object.entries(TEXTS.cards.defenseField).map(([k, c]) => [k, c.title])),
+    ...Object.fromEntries(Object.entries(TEXTS.cards.defenseGK).map(([k, c]) => [k, c.title])),
+    heading: "Tête",
+};
+export function defenseTag(defenseAction) {
+    return "Défense : " + (DEFENSE_LABELS[defenseAction] ?? defenseAction);
 }

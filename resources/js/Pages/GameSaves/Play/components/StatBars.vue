@@ -18,7 +18,7 @@ const GK_STATS = [
     { label: 'Arrêt ✋', key: 'hand_save',  color: 'bg-violet-400' },
     { label: 'Arrêt 👊', key: 'punch_save', color: 'bg-fuchsia-400' },
     { label: 'Attaque',  key: 'attack',     color: 'bg-orange-400' },
-    { label: 'Block',    key: 'block',      color: 'bg-indigo-400' },
+    { label: 'Contre',   key: 'block',      color: 'bg-indigo-400' },
 ];
 
 const FIELD_STATS = [
@@ -29,7 +29,7 @@ const FIELD_STATS = [
     { label: 'Tir',     key: 'shot',      color: 'bg-red-400' },
     { label: 'Passe',   key: 'pass',      color: 'bg-teal-400' },
     { label: 'Dribble', key: 'dribble',   color: 'bg-yellow-400' },
-    { label: 'Block',   key: 'block',     color: 'bg-indigo-400' },
+    { label: 'Contre',  key: 'block',     color: 'bg-indigo-400' },
     { label: 'Interc.', key: 'intercept', color: 'bg-purple-400' },
     { label: 'Tacle',   key: 'tackle',    color: 'bg-pink-400' },
     { label: 'Tête',    key: 'heading',   color: 'bg-cyan-400' },

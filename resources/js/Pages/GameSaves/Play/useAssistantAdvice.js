@@ -19,7 +19,7 @@ const TRAINING_BUDGET_SHARE = 0.4;
 // Libellés complets (mêmes que l'onglet Entraînement).
 const STAT_NAMES = {
     shot: 'Tir', pass: 'Passe', dribble: 'Dribble', attack: 'Attaque', defense: 'Défense',
-    speed: 'Vitesse', block: 'Block', intercept: 'Interception', tackle: 'Tacle',
+    speed: 'Vitesse', block: 'Contre', intercept: 'Interception', tackle: 'Tacle',
     hand_save: 'Arrêt main', punch_save: 'Arrêt poings',
 };
 

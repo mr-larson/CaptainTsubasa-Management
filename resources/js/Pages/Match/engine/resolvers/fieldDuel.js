@@ -7,7 +7,7 @@ import { specialBaseFor } from '../RosterService.js';
 import { getCarrierElement, getPlayerId, pickFieldDefender, pickReceiverInCell } from '../field.js';
 import { pushLogEntry, setMessage, syncRecovererCard, updateSideCard, updateTeamCard } from '../ui.js';
 import { _moveBall, animateBallToXY, applyCritBoost, ball, shared, givePossessionOnTie, recordDuelEvent, resetLastDribbler } from './context.js';
-import { isGoodDefenseChoice } from './duelRules.js';
+import { defenseTag, isGoodDefenseChoice } from './duelRules.js';
 import { aiShouldReroll, canAttackerReroll, doReroll, showCaptainRerollPrompt, tryHeroicMoment } from './captainReroll.js';
 
 // -----------------------------------------------------------
@@ -301,10 +301,10 @@ export function performKeeperClearance(defenseTeam, defenseAction, afterClearanc
 
     setMessage(TEXTS.ui.keeperRestartMain, TEXTS.ui.keeperRestartSub + " (#" + receiver + ")");
     pushLogEntry("keeperRestartMain", [
-        "Action: " + defenseAction,
+        defenseTag(defenseAction),
         "Bonus +" + shared.state.pendingClearanceBonus,
         "Vers zone " + (targetZone + 1) + ", ligne " + (targetLane + 1),
-        "Receveur: #" + receiver,
+        "Receveur : n°" + receiver,
     ], null, shared.state);
 
     shared.ui.ballEl.style.left  = kx + "%";

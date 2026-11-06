@@ -137,14 +137,14 @@ const rankIcon = (rank) => {
                     <tr>
                         <th class="py-2 w-8 text-center">#</th>
                         <th class="py-2 pr-4">Équipe</th>
-                        <th class="py-2 px-2 text-right">J</th>
-                        <th class="py-2 px-2 text-right">V</th>
-                        <th class="py-2 px-2 text-right">N</th>
-                        <th class="py-2 px-2 text-right">D</th>
-                        <th class="py-2 px-2 text-right">BP</th>
-                        <th class="py-2 px-2 text-right">BC</th>
-                        <th class="py-2 px-2 text-right">Diff</th>
-                        <th class="py-2 px-2 text-right">Pts</th>
+                        <th class="py-2 px-2 text-right"><abbr title="Matchs joués" class="cursor-help no-underline">J</abbr></th>
+                        <th class="py-2 px-2 text-right"><abbr title="Victoires" class="cursor-help no-underline">V</abbr></th>
+                        <th class="py-2 px-2 text-right"><abbr title="Matchs nuls" class="cursor-help no-underline">N</abbr></th>
+                        <th class="py-2 px-2 text-right"><abbr title="Défaites" class="cursor-help no-underline">D</abbr></th>
+                        <th class="py-2 px-2 text-right"><abbr title="Buts pour (marqués)" class="cursor-help no-underline">BP</abbr></th>
+                        <th class="py-2 px-2 text-right"><abbr title="Buts contre (encaissés)" class="cursor-help no-underline">BC</abbr></th>
+                        <th class="py-2 px-2 text-right"><abbr title="Différence de buts (BP − BC)" class="cursor-help no-underline">Diff</abbr></th>
+                        <th class="py-2 px-2 text-right"><abbr title="Points : 3 par victoire, 1 par nul" class="cursor-help no-underline">Pts</abbr></th>
                         <th class="py-2 pl-4">Forme</th>
                         <th class="py-2 pl-4 w-32">Progression</th>
                     </tr>

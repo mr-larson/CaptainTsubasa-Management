@@ -196,13 +196,13 @@
                             </div>
 
                             <div class="grid grid-cols-2 gap-x-3 gap-y-1 rounded-xl bg-slate-100 p-2 text-[11px] ring-1 ring-black/5">
-                                <div class="flex justify-between"><span>Shot :</span> <strong id="home-stat-shot">—</strong></div>
-                                <div class="flex justify-between"><span>Block :</span> <strong id="home-stat-block">—</strong></div>
-                                <div class="flex justify-between"><span>Pass :</span> <strong id="home-stat-pass">—</strong></div>
-                                <div class="flex justify-between"><span>Intercept :</span> <strong id="home-stat-intercept">—</strong></div>
+                                <div class="flex justify-between"><span>Tir :</span> <strong id="home-stat-shot">—</strong></div>
+                                <div class="flex justify-between"><span>Contre :</span> <strong id="home-stat-block">—</strong></div>
+                                <div class="flex justify-between"><span>Passe :</span> <strong id="home-stat-pass">—</strong></div>
+                                <div class="flex justify-between"><span>Interc. :</span> <strong id="home-stat-intercept">—</strong></div>
                                 <div class="flex justify-between"><span>Dribble :</span> <strong id="home-stat-dribble">—</strong></div>
-                                <div class="flex justify-between"><span>Tackle :</span> <strong id="home-stat-tackle">—</strong></div>
-                                <div class="flex justify-between"><span>Attack :</span> <strong id="home-stat-attack">—</strong></div>
+                                <div class="flex justify-between"><span>Tacle :</span> <strong id="home-stat-tackle">—</strong></div>
+                                <div class="flex justify-between"><span>Attaque :</span> <strong id="home-stat-attack">—</strong></div>
                                 <div class="flex justify-between"><span>Défense :</span> <strong id="home-stat-defense">—</strong></div>
                                 <div class="flex justify-between"><span>Arrêt :</span> <strong id="home-stat-hand_save">—</strong></div>
                                 <div class="flex justify-between"><span>Poings :</span> <strong id="home-stat-punch_save">—</strong></div>
@@ -236,13 +236,13 @@
                             </div>
 
                             <div class="grid grid-cols-2 gap-x-3 gap-y-1 rounded-xl bg-slate-100 p-2 text-[11px] ring-1 ring-black/5">
-                                <div class="flex justify-between"><span>Shot :</span> <strong id="away-stat-shot">—</strong></div>
-                                <div class="flex justify-between"><span>Block :</span> <strong id="away-stat-block">—</strong></div>
-                                <div class="flex justify-between"><span>Pass :</span> <strong id="away-stat-pass">—</strong></div>
-                                <div class="flex justify-between"><span>Intercept :</span> <strong id="away-stat-intercept">—</strong></div>
+                                <div class="flex justify-between"><span>Tir :</span> <strong id="away-stat-shot">—</strong></div>
+                                <div class="flex justify-between"><span>Contre :</span> <strong id="away-stat-block">—</strong></div>
+                                <div class="flex justify-between"><span>Passe :</span> <strong id="away-stat-pass">—</strong></div>
+                                <div class="flex justify-between"><span>Interc. :</span> <strong id="away-stat-intercept">—</strong></div>
                                 <div class="flex justify-between"><span>Dribble :</span> <strong id="away-stat-dribble">—</strong></div>
-                                <div class="flex justify-between"><span>Tackle :</span> <strong id="away-stat-tackle">—</strong></div>
-                                <div class="flex justify-between"><span>Attack :</span> <strong id="away-stat-attack">—</strong></div>
+                                <div class="flex justify-between"><span>Tacle :</span> <strong id="away-stat-tackle">—</strong></div>
+                                <div class="flex justify-between"><span>Attaque :</span> <strong id="away-stat-attack">—</strong></div>
                                 <div class="flex justify-between"><span>Défense :</span> <strong id="away-stat-defense">—</strong></div>
                                 <div class="flex justify-between"><span>Arrêt :</span> <strong id="away-stat-hand_save">—</strong></div>
                                 <div class="flex justify-between"><span>Poings :</span> <strong id="away-stat-punch_save">—</strong></div>
@@ -320,7 +320,7 @@
                             <div id="log-current" class="shrink-0">
                                 <div class="flex items-center justify-between gap-2">
                                     <div class="text-2xs uppercase tracking-widest font-bold text-slate-600 whitespace-nowrap">ACTION</div>
-                                    <button id="dice-anim-toggle" type="button" class="dice-anim-toggle" title="Animation des dés : normale / rapide / désactivée"></button>
+                                    <button id="dice-anim-toggle" type="button" class="dice-anim-toggle" title="Vitesse d'animation des dés : normale, rapide ou sans animation (ne change pas le résultat)"></button>
                                 </div>
                                 <div class="mt-2 flex items-center justify-between gap-2">
                                     <div id="current-action-title" class="font-bold text-slate-700 truncate min-w-0">–</div>
