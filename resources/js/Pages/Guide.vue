@@ -52,7 +52,7 @@ const counters = [
         <section id="match" class="mb-10 scroll-mt-6">
             <h2 class="mb-3 text-xl font-bold text-teal-300">3. Jouer un match</h2>
             <p class="mb-3 text-slate-300">
-                Un match dure 45 tours par défaut (réglable). Quand ton équipe a le ballon, tu choisis une action : passe,
+                Un match dure 30 tours par défaut (réglable). Quand ton équipe a le ballon, tu choisis une action : passe,
                 dribble, tir, centre, passe longue, une-deux avec un partenaire de duo, ou une technique spéciale.
                 Quand l'adversaire attaque, tu choisis comment défendre.
             </p>

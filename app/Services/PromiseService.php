@@ -24,9 +24,18 @@ use App\Models\GameSaves\GameSave;
  */
 class PromiseService
 {
-    // Nombre de tours d'un match complet (miroir MatchSimulator::MAX_TURNS /
-    // moteur client GAME_RULES.MAX_TURNS).
+    // Repli « titulaire = match complet » pour les vieux matchs sans playtime
+    // (joués quand la durée par défaut était de 45 tours).
     const FULL_MATCH_TURNS = 45;
+
+    /**
+     * Temps de jeu promis : un tiers de la durée de match réglée pour la save
+     * (10 tours sur 30 par défaut, 15 sur 45).
+     */
+    public static function playingTimeTarget(GameSave $gameSave): int
+    {
+        return max(1, (int) ceil((int) $gameSave->getConfig('match_max_turns') / 3));
+    }
 
     // Paramètres par type : window (semaines), target (matchs), turns (tours),
     // kept / broken : delta appliqué à la relation coach ET au moral.
@@ -68,7 +77,7 @@ class PromiseService
             'start_week'     => $week,
             'due_week'       => $week + $config['window'] - 1,
             'target_matches' => $config['target'] ?? 0,
-            'target_turns'   => $config['turns'] ?? null,
+            'target_turns'   => isset($config['turns']) ? self::playingTimeTarget($gameSave) : null,
             'season'         => (int) ($gameSave->season ?? 1),
         ]);
     }

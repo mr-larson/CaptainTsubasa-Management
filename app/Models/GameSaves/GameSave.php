@@ -148,7 +148,7 @@ class GameSave extends Model
         'malus_cards_enabled'       => true,
         'match_stamina_cost'        => 5,
         'rest_stamina_recovery'     => 10,
-        'match_max_turns'           => 45,
+        'match_max_turns'           => 30,
         'injury_on_foul'            => true,
         'suspension_on_3_yellows'   => true,
         'training_max_per_week'     => 3,

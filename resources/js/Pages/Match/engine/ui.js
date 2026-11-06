@@ -1,5 +1,5 @@
 // resources/js/Pages/Match/engine/ui.js
-import { TEXTS, STATS, ACTION_BAR_FADE_MS } from './constants.js';
+import { TEXTS, STATS, ACTION_BAR_FADE_MS, GAME_RULES } from './constants.js';
 import { getStaminaRatio, getStaminaTier } from './stamina.js';
 import { getPlayerId } from './field.js';
 import {
@@ -279,7 +279,7 @@ export function updateScoreUI(state) {
     else applyScore();
 
     // Durée de match réglable (10-80 tours) : la minute affichée reste sur 90'.
-    const minutes = Math.round(state.turns / (state.maxTurns || 45) * 90);
+    const minutes = Math.round(state.turns / (state.maxTurns || GAME_RULES.MAX_TURNS) * 90);
     const t = String(minutes).padStart(2, "0");
     if (_ui.turnsDisplayEl)   _ui.turnsDisplayEl.textContent = t + "'";
     if (_ui.turnIndicatorEl)  _ui.turnIndicatorEl.textContent = t + "'";

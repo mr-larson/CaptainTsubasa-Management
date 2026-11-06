@@ -60,7 +60,7 @@ const lastResolvedPromise = computed(() =>
 );
 
 const PROMISE_TYPES = [
-    { type: 'playing_time', icon: '🤝', label: 'Temps de jeu',  hint: 'Il jouera au moins 15 tours (~30 min) à son prochain match', kept: 5,  broken: 10 },
+    { type: 'playing_time', icon: '🤝', label: 'Temps de jeu',  hint: 'Il jouera au moins un tiers du match (~30 min) à son prochain match', kept: 5,  broken: 10 },
     { type: 'starter',      icon: '⭐', label: 'Titularisation', hint: 'Il sera titulaire sur 4 matchs dans les 5 prochaines semaines', kept: 10, broken: 15 },
     { type: 'renewal',      icon: '📜', label: 'Prolongation',   hint: 'Tu lui signeras un nouveau contrat sous 4 semaines', kept: 15, broken: 20 },
 ];

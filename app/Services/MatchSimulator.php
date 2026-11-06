@@ -18,7 +18,7 @@ class MatchSimulator
 {
     use EvaluatesPlayers;
 
-    private const MAX_TURNS                       = 45;
+    private const MAX_TURNS                       = 30;
     private const MAX_ZONE_INDEX                  = 4;   // 5 zones, index 0..4
     private const ENDURANCE_DEFAULT               = 100;
     private const CRIT_STAMINA_BOOST              = 10;
@@ -186,7 +186,7 @@ class MatchSimulator
      * matchStats est au même format que celui produit par engine.js côté client.
      */
     /**
-     * Moteur de simulation "complet" en 45 tours, miroir du moteur client
+     * Moteur de simulation "complet" en 30 tours par défaut (réglable), miroir du moteur client
      * (resources/js/Pages/Match/engine/*) : progression par zones (0..4),
      * duels RPS (pierre-feuille-ciseaux) attaque/défense, gestion de la
      * stamina et bonus du domicile. Produit un `match_stats` strictement

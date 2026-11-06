@@ -1,6 +1,6 @@
 // resources/js/Pages/Match/engine/resolvers/captainReroll.js
 // Relance du capitaine et « dépassement de soi ».
-import { DUEL_RULES, HEROIC_CHANCE, HEROIC_MORALE_THRESHOLD, MORALE_DEFAULT, TEXTS } from '../constants.js';
+import { DUEL_RULES, GAME_RULES, HEROIC_CHANCE, HEROIC_MORALE_THRESHOLD, MORALE_DEFAULT, TEXTS } from '../constants.js';
 import { buildDuelMeta, buildFieldDuelBreakdown, resolveCritOutcome, rollD20Advantage, rollD20WithCrit, showDuelDice } from '../dice.js';
 import { getPlayerId } from '../field.js';
 import { pushLogEntry, setActionBar } from '../ui.js';
@@ -68,8 +68,8 @@ export function aiShouldReroll(attackTeam) {
     const oppTeam   = attackTeam === "internal" ? "external" : "internal";
     const oppScore  = shared.state.score?.[oppTeam] ?? 0;
 
-    // Fin de match : derniers ~22 % des tours (35 sur 45 par défaut), quelle que soit la durée réglée.
-    if (turn >= Math.round((shared.state.maxTurns || 45) * 0.78)) return Math.random() < 0.85;
+    // Fin de match : derniers ~22 % des tours (23 sur 30 par défaut), quelle que soit la durée réglée.
+    if (turn >= Math.round((shared.state.maxTurns || GAME_RULES.MAX_TURNS) * 0.78)) return Math.random() < 0.85;
     if (selfScore < oppScore)    return Math.random() < 0.65; // En retard
     if (selfScore === oppScore)  return Math.random() < 0.50; // Egalité
     return Math.random() < 0.25;                              // En avance → économiser

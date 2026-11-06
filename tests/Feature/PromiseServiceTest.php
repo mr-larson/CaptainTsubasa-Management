@@ -39,9 +39,21 @@ class PromiseServiceTest extends TestCase
         $this->assertInstanceOf(GamePromise::class, $promise);
         $this->assertSame(1, $promise->start_week);
         $this->assertSame(5, $promise->due_week); // fenêtre de 5 semaines
-        $this->assertSame(15, $promise->target_turns);
+        $this->assertSame(10, $promise->target_turns); // un tiers des 30 tours par défaut
         // status a un défaut SQL ('pending') appliqué au rechargement.
         $this->assertSame('pending', $promise->fresh()->status);
+    }
+
+    public function test_playing_time_target_follows_match_length(): void
+    {
+        $save = $this->makeSave(['week' => 1, 'state' => ['config' => ['match_max_turns' => 45]]]);
+        $team = $this->makeTeam($save);
+        $player = $this->makePlayer($save);
+        $this->makeContract($save, $team, $player);
+
+        $promise = $this->service->create($save, $player, $team->id, 'playing_time');
+
+        $this->assertSame(15, $promise->target_turns);
     }
 
     public function test_create_rejects_unknown_type_and_duplicates(): void
