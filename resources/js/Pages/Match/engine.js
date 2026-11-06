@@ -581,8 +581,9 @@ export function initMatchEngine(rootEl, config = {}) {
 
         if (!isKeeperChoiceUI) {
             const snap = state.defensePreview;
+            // Le défenseur annoncé (fiche latérale, stats sur les cartes) défend
+            // quelle que soit l'action choisie : on ne retire plus au sort.
             const snapOk = snap &&
-                snap.attackAction === action &&
                 snap.defenseTeam  === defTeam &&
                 snap.ballSnapshot?.team         === ball.team &&
                 snap.ballSnapshot?.number       === ball.number &&

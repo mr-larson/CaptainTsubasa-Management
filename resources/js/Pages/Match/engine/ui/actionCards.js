@@ -79,7 +79,7 @@ function buildActionCard(kind, dataAttr, key, cfg, special) {
             <div class="${kind}-sub ${CARD.sub}">${cfg.sub}</div>
             <div class="${kind}-bottom ${CARD.bottom}">
                 <div class="${kind}-power ${CARD.power}"></div>
-                ${kind === 'def' ? `<div class="def-vs ${CARD.vs}"></div>` : ''}
+                <div class="${kind}-vs ${CARD.vs}"></div>
                 <div class="${kind}-cost ${CARD.cost}">Énergie <span></span></div>
             </div>
         </button>${specialHTML}

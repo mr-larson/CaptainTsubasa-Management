@@ -680,6 +680,24 @@ export function updateCardsPower(ball) {
         if (el) el.textContent = String(Number(carrierStats[specialMap[btn.dataset.action]] ?? 0));
     });
 
+    // Cartes d'attaque : stat de contre du défenseur annoncé (fiche adverse), et
+    // arrêt du gardien pour un tir face à lui. Centre et passe longue opposent un
+    // autre joueur (duel aérien, relais) : rien d'affiché.
+    const ATTACK_VS = { pass: ["intercept", "Interc."], one_two: ["intercept", "Interc."], dribble: ["tackle", "Tacle"], shot: ["block", "Contre"] };
+    const attackDefTeam = ball.team === "internal" ? "external" : "internal";
+    const previewSlot   = _state?.defensePreview?.picked?.defenderSlot ?? null;
+    _ui.actionBarEl.querySelectorAll(".skill-card-main").forEach((btn) => {
+        const el = btn.querySelector(".skill-vs");
+        if (!el) return;
+        const a  = btn.dataset.action;
+        let vs   = ATTACK_VS[a];
+        let slot = previewSlot;
+        if (a === "shot" && ball.frontOfKeeper) { vs = ["hand_save", "Arrêt du gardien"]; slot = 1; }
+        if (!vs || !slot) { el.textContent = ""; return; }
+        const value = Number(_roster.getPlayerInfo(attackDefTeam, slot)?.stats?.[vs[0]] ?? 0);
+        el.innerHTML = `face à ${vs[1]} adverse <b>${value}</b>`;
+    });
+
     const mode = [..._ui.actionBarEl.classList].find(c => c.startsWith("mode-defense-"));
     if (!mode) return;
 
