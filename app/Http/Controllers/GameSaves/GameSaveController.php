@@ -10,6 +10,7 @@ use App\Models\Contract;
 use App\Models\GameSaves\GameBonusCard;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameInjury;
+use App\Models\GameSaves\GamePositionTraining;
 use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSave;
@@ -804,6 +805,17 @@ class GameSaveController extends Controller
                 'week_return'     => $s->week_return,
             ]);
 
+        // Formations de poste en cours (joueur indisponible jusqu'à week_return).
+        $activePositionTrainings = GamePositionTraining::where('game_save_id', $gameSave->id)
+            ->whereNull('completed_at')
+            ->get()
+            ->map(fn ($t) => [
+                'game_player_id'  => $t->game_player_id,
+                'target_position' => $t->target_position,
+                'week_start'      => $t->week_start,
+                'week_return'     => $t->week_return,
+            ]);
+
         // Jaunes du cycle en cours (vers la prochaine suspension). Les sanctions
         // sont purgées à l'intersaison, donc tout est de la saison courante.
         $suspensionOn3Yellows = (bool) $gameSave->getConfig('suspension_on_3_yellows', true);
@@ -936,6 +948,7 @@ class GameSaveController extends Controller
             'playerSeasonStats'   => $playerSeasonStats,
             'activeInjuries'      => $activeInjuries,
             'activeSuspensions'   => $activeSuspensions,
+            'activePositionTrainings' => $activePositionTrainings,
             'activeYellowCards'   => $activeYellowCards,
             'moraleLogs'          => $moraleLogs,
             'playerPromises'      => $playerPromises,

@@ -86,6 +86,9 @@ class WeekClosingService
         }
         $gameSave->save();
 
+        // Formations de poste arrivées à terme : le joueur revient avec son nouveau poste.
+        app(PositionTrainingService::class)->completeDue($gameSave, (int) $gameSave->week);
+
         if ($bonusEnabled) {
             app(BonusCardShopService::class)->generateWeeklyOffers($gameSave);
             app(AiBonusCardService::class)->processWeek($gameSave);

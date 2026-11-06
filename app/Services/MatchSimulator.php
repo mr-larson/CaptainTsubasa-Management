@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\TeamStyle;
 use App\Helpers\FormationHelper;
 use App\Models\GameSaves\GameInjury;
+use App\Models\GameSaves\GamePositionTraining;
 use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GameSanction;
 use App\Models\GameSaves\GameSave;
@@ -845,6 +846,7 @@ class MatchSimulator
                 ->where('weeks_suspended', '>', 0)
                 ->pluck('game_player_id')
                 ->all(),
+            GamePositionTraining::unavailablePlayerIds($gameSaveId, $week),
         ))));
     }
 

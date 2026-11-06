@@ -207,6 +207,8 @@ class SeasonService
         // jaunes se cumuleraient d'une saison à l'autre). L'intersaison soigne
         // et purge les sanctions ; les promesses en cours deviennent caduques
         // (sans effet sur le moral : leur fenêtre a disparu avec le calendrier).
+        // Formations de poste en cours : terminées pendant l'intersaison.
+        app(PositionTrainingService::class)->completeDue($gameSave, 0, all: true);
         GameInjury::where('game_save_id', $gameSave->id)->delete();
         GameSanction::where('game_save_id', $gameSave->id)->delete();
         GamePromise::where('game_save_id', $gameSave->id)

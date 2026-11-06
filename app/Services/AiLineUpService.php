@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\TeamStyle;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameInjury;
+use App\Models\GameSaves\GamePositionTraining;
 use App\Models\GameSaves\GameSanction;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
@@ -47,7 +48,10 @@ class AiLineUpService
             ->pluck('game_player_id')
             ->toArray();
 
-        $unavailableIds = array_unique(array_merge($injuredIds, $suspendedIds));
+        $unavailableIds = array_unique(array_merge(
+            $injuredIds, $suspendedIds,
+            GamePositionTraining::unavailablePlayerIds($gameSave->id, $currentWeek),
+        ));
 
         $aiTeams = GameTeam::where('game_save_id', $gameSave->id)
             ->when($controlledTeamIds, fn($q) => $q->whereNotIn('id', $controlledTeamIds))

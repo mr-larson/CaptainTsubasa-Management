@@ -185,6 +185,8 @@ Route::middleware('auth')->group(function () {
         // Entraînement
         Route::post('/{gameSave}/training',
             [TrainingController::class, 'store'])->name('training.store');
+        Route::post('/{gameSave}/position-training',
+            [TrainingController::class, 'storePosition'])->name('position-training.store');
 
         // Lineup & formation
         Route::post('/{gameSave}/lineup',

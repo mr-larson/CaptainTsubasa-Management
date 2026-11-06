@@ -43,7 +43,7 @@ const counters = [
             <p class="mb-3 text-slate-300">Le tableau de bord résume ta situation et ce qu'il reste à faire avant le match.</p>
             <ul class="list-disc space-y-2 pl-5 text-slate-300">
                 <li><strong>Mon équipe</strong> : formation, titulaires, capitaine et numéros. Un joueur blessé ou suspendu ne peut pas jouer.</li>
-                <li><strong>Entraînement</strong> : jusqu'à 3 séances par semaine, chacune améliore une statistique mais coûte de l'endurance.</li>
+                <li><strong>Entraînement</strong> : jusqu'à 3 séances par semaine, chacune améliore une statistique mais coûte de l'endurance. Une séance peut aussi <strong>former un joueur à un nouveau poste</strong> : il est absent 1 match pour une ligne voisine, 2 matchs pour deux lignes d'écart, 3 pour devenir gardien (un gardien devient défenseur en 2 matchs, milieu ou attaquant en 3).</li>
                 <li><strong>Transferts</strong> : recrute des joueurs libres pour un nombre de matchs donné, dans la limite de ton budget.</li>
                 <li><strong>Cartes bonus</strong> : achète des cartes pour améliorer ton équipe, parier sur un match ou gêner ton prochain adversaire.</li>
             </ul>

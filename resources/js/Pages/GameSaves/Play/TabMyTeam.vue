@@ -24,6 +24,7 @@ const props = defineProps({
     isPlayerInjured:      { type: Function, default: () => () => false },
     isPlayerSuspended:    { type: Function, default: () => () => false },
     isPlayerBenched:      { type: Function, default: () => () => false },
+    playerPositionTraining: { type: Function, default: () => null },
     playerYellowCards:    { type: Function, default: () => () => 0 },
     playerInjury:         { type: Function, default: () => () => null },
     playerSuspension:     { type: Function, default: () => () => null },
@@ -131,6 +132,7 @@ const { unavailability, lineupIssues } = useLineupIssues({
     isPlayerInjured:   () => props.isPlayerInjured,
     isPlayerSuspended: () => props.isPlayerSuspended,
     isPlayerBenched:   () => props.isPlayerBenched,
+    positionTraining:  () => props.playerPositionTraining,
 });
 
 const slotCandidates = (slot, slotDef) => substitutes.value

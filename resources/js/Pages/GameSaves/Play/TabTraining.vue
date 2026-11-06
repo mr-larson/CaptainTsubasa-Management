@@ -2,7 +2,7 @@
 import { positionLabel } from '@/Enums/positionBadges.js';
 import { fieldClass } from '@/Components/fieldStyles';
 import ButtonPrimary from '@/Components/ButtonPrimary.vue';
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
 import PlayerPhoto from '@/Components/PlayerPhoto.vue';
 import RosterList from '@/Pages/GameSaves/Play/components/RosterList.vue';
@@ -22,6 +22,7 @@ const props = defineProps({
     minStamina:                  { type: Number,   default: 10 },
     trainingCost:                { type: Number,   default: 0 },
     staminaCost:                 { type: Number,   default: 0 },
+    playerPositionTraining:      { type: Function, default: () => null },
     trainingState:               { type: Object,   default: null },
     remainingTrainingsThisWeek:  { type: Number,   required: true },
     hasPlayerBeenTrainedThisWeek:{ type: Function, required: true },
@@ -40,7 +41,7 @@ const props = defineProps({
     playerSuspension:            { type: Function, default: () => () => null },
 });
 
-const emit = defineEmits(['add-slot', 'remove-slot', 'submit-training', 'prev-ai-week', 'next-ai-week']);
+const emit = defineEmits(['add-slot', 'remove-slot', 'submit-training', 'prev-ai-week', 'next-ai-week', 'train-position']);
 
 const { playerPhotoUrl, statColor } = usePlayerUtils();
 
@@ -87,6 +88,38 @@ const selectedPlayer   = computed(() => {
     return props.roster.find(p => p.id === selectedPlayerId.value) ?? null;
 });
 const selectPlayer = (p) => { selectedPlayerId.value = p.id; };
+
+// ── Formation à un nouveau poste (miroir de PositionTrainingService::durationFor) ──
+const ALL_POSITIONS = ['Goalkeeper', 'Defender', 'Midfielder', 'Forward'];
+const LINE = { Defender: 1, Midfielder: 2, Forward: 3 };
+const knownPositions = (p) => [p.position, ...(p.secondary_positions ?? [])].filter(Boolean);
+const positionTrainingWeeks = (p, target) => {
+    if (target === 'Goalkeeper') return 3;
+    const lines = knownPositions(p).map(pos => LINE[pos]).filter(Boolean);
+    if (!lines.length) return target === 'Defender' ? 2 : 3;
+    return Math.min(...lines.map(l => Math.abs(l - LINE[target])));
+};
+const positionTarget = ref(null);
+const positionOptions = computed(() => {
+    const p = selectedPlayer.value;
+    if (!p) return [];
+    const known = knownPositions(p);
+    return ALL_POSITIONS.filter(pos => !known.includes(pos))
+        .map(pos => ({ value: pos, label: positionLabel(pos), weeks: positionTrainingWeeks(p, pos) }))
+        .sort((a, b) => a.weeks - b.weeks);   // la formation la plus courte d'abord
+});
+watch(selectedPlayer, () => { positionTarget.value = positionOptions.value[0]?.value ?? null; }, { immediate: true });
+const currentPositionTraining = computed(() => selectedPlayer.value ? props.playerPositionTraining(selectedPlayer.value.id) : null);
+const positionTrainingState = computed(() => {
+    const p = selectedPlayer.value;
+    if (!p || !positionTarget.value) return { disabled: true, reason: '' };
+    if (props.remainingTrainingsThisWeek - selectedCount.value <= 0) return { disabled: true, reason: 'Plus de séance disponible cette semaine.' };
+    if (props.hasPlayerBeenTrainedThisWeek(p.id)) return { disabled: true, reason: 'Déjà entraîné cette semaine.' };
+    if (props.isPlayerInjured(p.id) || props.isPlayerSuspended(p.id)) return { disabled: true, reason: 'Indisponible : il pourra se former à son retour.' };
+    if (props.trainingCost > props.teamBudget - totalTrainingCost.value) return { disabled: true, reason: 'Budget insuffisant.' };
+    return { disabled: false, reason: '' };
+});
+const selectedPositionWeeks = computed(() => positionOptions.value.find(o => o.value === positionTarget.value)?.weeks ?? 0);
 
 // ── Filtre IA ──────────────────────────────────────────────
 const aiTeamFilter = ref(null);
@@ -264,6 +297,39 @@ const selectedPlayerPerf = computed(() => {
                             </p>
                         </template>
                     </PlayerIdentityCard>
+
+                    <!-- Formation à un nouveau poste -->
+                    <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+                        <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">🎓 Former à un nouveau poste</h4>
+                        <p class="text-xs text-slate-500 mb-3">
+                            Postes maîtrisés : <span class="font-semibold text-slate-700">{{ knownPositions(selectedPlayer).map(positionLabel).join(', ') }}</span>.
+                            Le poste appris devient secondaire (bonus réduit, plus de malus « hors poste »). Le joueur est absent pendant la formation.
+                        </p>
+
+                        <div v-if="currentPositionTraining"
+                             class="rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-xs text-violet-700">
+                            🎓 En formation au poste de <span class="font-bold">{{ positionLabel(currentPositionTraining.target_position) }}</span>
+                            — de retour en semaine {{ currentPositionTraining.week_return }}.
+                        </div>
+                        <p v-else-if="!positionOptions.length" class="text-xs text-slate-400 italic">Il maîtrise déjà tous les postes.</p>
+                        <template v-else>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <select v-model="positionTarget" class="flex-1 min-w-[160px] px-2 py-1.5" :class="fieldClass({ shape: 'rect', size: 'sm' })">
+                                    <option v-for="o in positionOptions" :key="o.value" :value="o.value">
+                                        {{ o.label }} — absent {{ o.weeks }} match{{ o.weeks > 1 ? 's' : '' }}
+                                    </option>
+                                </select>
+                                <ButtonPrimary type="button" size="sm" :disabled="positionTrainingState.disabled"
+                                               @click="emit('train-position', { playerId: selectedPlayer.id, position: positionTarget })">
+                                    Lancer la formation<template v-if="trainingCost > 0"> — {{ trainingCost }} €</template>
+                                </ButtonPrimary>
+                            </div>
+                            <p class="mt-2 text-2xs" :class="positionTrainingState.reason ? 'text-rose-500' : 'text-slate-400'">
+                                {{ positionTrainingState.reason
+                                    || `Compte comme une séance de la semaine. ${selectedPlayer.lastname} manquera ${selectedPositionWeeks} match${selectedPositionWeeks > 1 ? 's' : ''}.` }}
+                            </p>
+                        </template>
+                    </div>
 
                     <!-- Radar + Barres stats -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">

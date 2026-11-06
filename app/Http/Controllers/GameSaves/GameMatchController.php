@@ -11,6 +11,7 @@ use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
 use App\Models\GameSaves\GameInjury;
+use App\Models\GameSaves\GamePositionTraining;
 use App\Models\GameSaves\GameSanction;
 use App\Models\PlayerLink;
 use App\Services\BonusCardActivationService;
@@ -440,7 +441,10 @@ class GameMatchController extends Controller
         $benchedByMalus = app(BonusCardActivationService::class)
             ->getBenchedPlayerIds($gameSave, $team->id);
 
-        $unavailableIds = array_unique(array_merge($injuredPlayerIds, $suspendedPlayerIds, $benchedByMalus));
+        $unavailableIds = array_unique(array_merge(
+            $injuredPlayerIds, $suspendedPlayerIds, $benchedByMalus,
+            GamePositionTraining::unavailablePlayerIds($gameSave->id, $currentWeek),
+        ));
 
         // Modificateurs de stats "ce match" : boosts propres + debuffs reçus
         $statMods = app(BonusCardActivationService::class)

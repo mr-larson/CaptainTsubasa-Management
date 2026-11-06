@@ -52,6 +52,7 @@ const props = defineProps({
     playerSeasonStats: { type: Object, default: () => ({}) },
     activeInjuries:    { type: Array,  default: () => [] },
     activeSuspensions: { type: Array,  default: () => [] },
+    activePositionTrainings: { type: Array, default: () => [] },
     activeYellowCards: { type: Object, default: () => ({}) },
     bonusCardOffers:    { type: Array, default: () => [] },
     bonusCardInventory: { type: Array, default: () => [] },
@@ -179,6 +180,15 @@ const isPlayerBenched = (playerId) =>
 const playerBench = (playerId) =>
     benchedByMalus.value.find(m => Number(m.target_player_id) === Number(playerId)) ?? null;
 
+// Formations de poste en cours : joueur indisponible jusqu'à week_return.
+const playerPositionTraining = (playerId) =>
+    (props.activePositionTrainings ?? []).find(t => Number(t.game_player_id) === Number(playerId)) ?? null;
+const trainPosition = ({ playerId, position }) => router.post(
+    route('game-saves.position-training.store', { gameSave: props.gameSave.id }),
+    { player_id: playerId, position },
+    { preserveScroll: true },
+);
+
 // Équipes ciblables par un malus à cible choisie (toutes sauf la mienne,
 // triées par classement → [0] = leader, pour l'affichage des cartes "leader").
 const targetableTeams = computed(() => {
@@ -241,6 +251,7 @@ const { lineupIssues, unavailability } = useLineupIssues({
     isPlayerInjured:   () => isPlayerInjured,
     isPlayerSuspended: () => isPlayerSuspended,
     isPlayerBenched:   () => isPlayerBenched,
+    positionTraining:  () => playerPositionTraining,
 });
 const squadAvailability = computed(() => ({
     available: rosterWithStatus.value.filter(p => !unavailability(p)).length,
@@ -643,6 +654,7 @@ const saveGame = () => {
                                :isPlayerInjured="isPlayerInjured"
                                :isPlayerSuspended="isPlayerSuspended"
                                :isPlayerBenched="isPlayerBenched"
+                               :playerPositionTraining="playerPositionTraining"
                                :playerYellowCards="playerYellowCards"
                                :playerInjury="playerInjury"
                                :playerSuspension="playerSuspension"
@@ -771,6 +783,7 @@ const saveGame = () => {
                                  :teamBudget="teamBudget"
                                  :trainingCost="props.gameConfig?.training_cost ?? 0"
                                  :staminaCost="props.gameConfig?.training_stamina_cost ?? 2"
+                                 :playerPositionTraining="playerPositionTraining"
                                  :maxPerWeek="props.gameConfig?.training_max_per_week ?? 3"
                                  :minStamina="props.gameConfig?.training_min_stamina ?? 10"
                                  :trainingState="trainingState"
@@ -791,6 +804,7 @@ const saveGame = () => {
                                  @add-slot="addTrainingSlot"
                                  @remove-slot="removeTrainingSlot"
                                  @submit-training="submitTraining"
+                                 @train-position="trainPosition"
                                  @prev-ai-week="prevAiWeek"
                                  @next-ai-week="nextAiWeek"
                     />

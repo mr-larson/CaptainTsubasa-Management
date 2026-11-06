@@ -14,11 +14,12 @@ export const ISSUE_CHIP = {
     info:  'bg-white border-slate-200 text-slate-500 hover:bg-slate-100',
 };
 
-export function useLineupIssues({ roster, formationData, playerForSlot, isPlayerInjured, isPlayerSuspended, isPlayerBenched }) {
+export function useLineupIssues({ roster, formationData, playerForSlot, isPlayerInjured, isPlayerSuspended, isPlayerBenched, positionTraining = null }) {
     const unavailability = (p) => {
         if (toValue(isPlayerInjured)(p.id))   return { label: 'Blessé',   icon: '🤕' };
         if (toValue(isPlayerSuspended)(p.id)) return { label: 'Suspendu', icon: '🚫' };
         if (toValue(isPlayerBenched)(p.id))   return { label: 'Consigné par l\'adversaire', icon: '⛔' };
+        if (toValue(positionTraining)?.(p.id)) return { label: 'En formation', icon: '🎓' };
         return null;
     };
 
