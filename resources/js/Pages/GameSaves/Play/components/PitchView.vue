@@ -70,8 +70,8 @@ const pickupHint = computed(() => {
     const p = pickedPlayer.value;
     if (!p) return '';
     return p.is_starter
-        ? `${p.lastname} : clique un coéquipier, un remplaçant ou un poste vide`
-        : `${p.lastname} entre : clique le titulaire qui sort`;
+        ? `Choisis le remplaçant de ${p.lastname} (ou un coéquipier, un poste vide pour le déplacer)`
+        : `${p.lastname} entre : choisis le titulaire qui sort`;
 });
 
 // ── Poste vide : sélecteur de remplaçants ────────────────────

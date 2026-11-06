@@ -223,6 +223,10 @@
                                         Aucune équipe pilotée pour l'instant : choisis une équipe à gauche puis clique sur « Piloter ».
                                     </p>
 
+                                    <p v-if="humanTeams.length" class="mb-2 text-center text-xs font-semibold text-slate-600">
+                                        {{ launchRecap }}
+                                    </p>
+
                                     <ButtonPrimary type="button" size="lg" class="w-full"
                                                    :disabled="!humanTeams.length || startForm.processing"
                                                    @click="startWithTeam">
@@ -442,6 +446,15 @@ const startForm = useForm({
 // Disponible dans les deux modes (prebuilt ET draft).
 const isMultiMode = computed(() => true);
 const humanTeams  = ref([]);
+
+// Récapitulatif avant lancement (« Ligue · Solo · Effectifs pré-faits · Nankatsu »),
+// pour vérifier ses choix après être passé par la configuration.
+const launchRecap = computed(() => [
+    props.competitionType === 'college_league' ? 'Ligue' : 'Coupe du Monde',
+    humanTeams.value.length > 1 ? `Hot-seat ${humanTeams.value.length} joueurs` : 'Solo',
+    props.gameMode === 'draft' ? 'Draft' : 'Effectifs pré-faits',
+    humanTeams.value.map(t => t.name).join(', '),
+].filter(Boolean).join(' · '));
 
 const isHumanTeam = (team) => humanTeams.value.some(t => t.id === team.id);
 const seatOf      = (team) => humanTeams.value.findIndex(t => t.id === team.id) + 1;

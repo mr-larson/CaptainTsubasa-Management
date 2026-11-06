@@ -151,6 +151,17 @@ watch(() => props.focusPlayer?.id, (id) => {
 }, { immediate: true });
 
 // Meilleur joueur de mon effectif au même poste (pour comparaison)
+// Titulaire que la recrue remplacerait (le plus faible à son poste) : même
+// comparaison que le conseil de l'adjoint, mais pour chaque offre.
+const replacedStarter = computed(() => {
+    if (!selectedPlayer.value) return null;
+    const group = positionGroup(selectedPlayer.value.position);
+    const starters = props.roster.filter(p => p.is_starter && positionGroup(p.position) === group);
+    if (!starters.length) return null;
+    return starters.reduce((weak, p) => overallOf(p) < overallOf(weak) ? p : weak, starters[0]);
+});
+const overallGain = computed(() => replacedStarter.value ? overallOf(selectedPlayer.value) - overallOf(replacedStarter.value) : null);
+
 const bestTeamPlayerSamePos = computed(() => {
     if (!selectedPlayer.value || !props.roster.length) return null;
     const group = positionGroup(selectedPlayer.value.position);
@@ -497,6 +508,17 @@ const filteredHistory = computed(() =>
                                 <span class="text-2xs text-slate-400 font-normal">fixé</span>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Comparaison avec le titulaire remplacé -->
+                    <div class="mb-3 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600">
+                        <template v-if="replacedStarter">
+                            🔁 Remplacerait <span class="font-bold">{{ replacedStarter.lastname }}</span>, ton titulaire le plus faible à ce poste :
+                            note {{ overallOf(replacedStarter) }} → {{ overallOf(selectedPlayer) }}
+                            <span class="font-bold" :class="overallGain > 0 ? 'text-emerald-600' : overallGain < 0 ? 'text-rose-500' : 'text-slate-500'">({{ overallGain > 0 ? '+' : '' }}{{ overallGain }})</span>
+                            · {{ transferSalary }} €/match × {{ transferMatches }} = {{ transferTotalCost }} €
+                        </template>
+                        <template v-else>Aucun titulaire à ce poste : il renforcerait directement ton onze.</template>
                     </div>
 
                     <!-- Résumé coût -->

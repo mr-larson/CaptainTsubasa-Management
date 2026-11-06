@@ -216,7 +216,7 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
                                 ? 'bg-white border-slate-200 cursor-pointer hover:border-teal-300 hover:bg-teal-50'
                                 : 'bg-white border-slate-100',
                             (previewMatch ? previewMatch.id === match.id : String(selectedMatchId) === String(match.id)) ? 'border-teal-400 bg-teal-50 shadow-sm' : '',
-                            currentWeek && Number(match.week) === Number(currentWeek) ? 'ring-2 ring-inset ring-amber-300' : ''
+                            currentWeek && Number(match.week) === Number(currentWeek) ? 'ring-2 ring-inset ring-amber-400 !bg-amber-50 shadow-sm' : ''
                         ]"
                          :title="isUpcoming(match) ? 'Voir l\'avant-match' : isPlayable(match) ? 'Ouvrir le match' : undefined"
                          @click="openRow(match)">
@@ -226,7 +226,7 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
                             <div class="text-2xs font-bold"
                                  :class="currentWeek && Number(match.week) === Number(currentWeek) ? 'text-amber-600' : 'text-slate-400'">{{ roundShort(match) }}</div>
                             <div v-if="currentWeek && Number(match.week) === Number(currentWeek)"
-                                 class="text-[8px] font-bold text-amber-600 leading-none">en cours</div>
+                                 class="text-3xs font-black uppercase text-amber-600 leading-none">▶ en cours</div>
                         </div>
 
                         <!-- Résultat badge -->

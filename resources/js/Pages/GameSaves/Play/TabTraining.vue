@@ -11,6 +11,7 @@ import PlayerIdentityCard from '@/Pages/GameSaves/Play/components/PlayerIdentity
 import RadarChart from '@/Pages/GameSaves/Play/components/RadarChart.vue';
 import StatBars from '@/Pages/GameSaves/Play/components/StatBars.vue';
 import PerfChips from '@/Pages/GameSaves/Play/components/PerfChips.vue';
+import { LOW_STAMINA } from './usePreMatchChecklist.js';
 
 const props = defineProps({
     season:                      { type: Number,   required: true },
@@ -20,6 +21,7 @@ const props = defineProps({
     maxPerWeek:                  { type: Number,   default: 3 },
     minStamina:                  { type: Number,   default: 10 },
     trainingCost:                { type: Number,   default: 0 },
+    staminaCost:                 { type: Number,   default: 0 },
     trainingState:               { type: Object,   default: null },
     remainingTrainingsThisWeek:  { type: Number,   required: true },
     hasPlayerBeenTrainedThisWeek:{ type: Function, required: true },
@@ -41,6 +43,9 @@ const props = defineProps({
 const emit = defineEmits(['add-slot', 'remove-slot', 'submit-training', 'prev-ai-week', 'next-ai-week']);
 
 const { playerPhotoUrl, statColor } = usePlayerUtils();
+
+// Endurance du joueur au prochain match une fois la séance payée.
+const staminaAfter = (slot) => Math.max(0, Number(playerForEntry({ player_id: slot.player_id })?.stamina ?? 0) - props.staminaCost);
 
 // Coût total des séances sélectionnées et budget restant après paiement.
 const selectedCount = computed(() => props.selectedTrainings.filter(s => s.player_id).length);
@@ -309,7 +314,13 @@ const selectedPlayerPerf = computed(() => {
                                             {{ playerForEntry({ player_id: slot.player_id })?.lastname ?? '—' }}
                                         </div>
                                         <div class="text-2xs text-slate-400 truncate">
-                                            {{ playerForEntry({ player_id: slot.player_id })?.position ?? '' }}
+                                            {{ positionLabel(playerForEntry({ player_id: slot.player_id })?.position) }}
+                                        </div>
+                                        <!-- Endurance attendue au prochain match (la séance se paie avant le match) -->
+                                        <div class="text-2xs truncate"
+                                             :class="staminaAfter(slot) < LOW_STAMINA && playerForEntry({ player_id: slot.player_id })?.is_starter ? 'text-rose-500 font-semibold' : 'text-slate-500'">
+                                            Endurance au match : {{ playerForEntry({ player_id: slot.player_id })?.stamina ?? 0 }} → {{ staminaAfter(slot) }}
+                                            <template v-if="staminaAfter(slot) < LOW_STAMINA && playerForEntry({ player_id: slot.player_id })?.is_starter"> · titulaire fatigué</template>
                                         </div>
                                     </div>
                                     <button type="button"

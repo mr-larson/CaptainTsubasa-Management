@@ -558,6 +558,19 @@ export function updateSideCard(prefix, team, slotNumber) {
         }
         if (!subs.length) return;
 
+        // Remplaçants du même poste d'abord (gardien pour un gardien…), puis
+        // les plus frais : l'endurance du sortant est rappelée dans l'en-tête.
+        const outInfo = _roster.getPlayerInfo(team, slotNumber);
+        const outPos  = outInfo?.position ?? '';
+        const staminaPct = (s) => {
+            const pid = getPlayerId(team, s);
+            const max = _state.staminaMax[pid] ?? 100;
+            const cur = _state.stamina[pid] ?? max;
+            return max > 0 ? Math.round(cur / max * 100) : 100;
+        };
+        const fitRank = (info) => info.position === outPos ? 0 : (info.secondaryPositions ?? []).includes(outPos) ? 1 : 2;
+        subs.sort((a, b) => fitRank(a.info) - fitRank(b.info) || staminaPct(b.slot) - staminaPct(a.slot));
+
         const subBtn = document.createElement('button');
         subBtn.id = `${prefix}-sub-btn`;
         subBtn.title = `Remplacer (${(_state.MAX_SUBSTITUTIONS ?? 3) - (_state.substitutionCount?.[team] ?? 0)} restant(s))`;
@@ -571,7 +584,7 @@ export function updateSideCard(prefix, team, slotNumber) {
 
         const header = document.createElement('div');
         header.className = 'bg-sky-500 px-2.5 py-1.5 text-2xs font-bold text-white';
-        header.textContent = `🔄 Choisir remplaçant`;
+        header.textContent = `🔄 Remplacer ${outInfo?.lastname ?? ''} (${staminaPct(slotNumber)} %⚡)`;
         panel.appendChild(header);
 
         // Liste défilable : si beaucoup de remplaçants, on peut scroller
@@ -581,11 +594,12 @@ export function updateSideCard(prefix, team, slotNumber) {
         panel.appendChild(listEl);
 
         subs.forEach(({ slot, info: subInfo }) => {
-            const subPid = getPlayerId(team, slot);
-            const stMax  = _state.staminaMax[subPid] ?? 100;
-            const stCur  = _state.stamina[subPid]    ?? stMax;
-            const pct    = stMax > 0 ? Math.round(stCur / stMax * 100) : 100;
+            const pct    = staminaPct(slot);
             const color  = pct >= 75 ? 'text-emerald-500' : pct >= 50 ? 'text-amber-500' : 'text-rose-500';
+            const rank   = fitRank(subInfo);
+            const fitTag = rank === 0 ? '<span class="text-emerald-600">même poste</span>'
+                : rank === 1 ? '<span class="text-amber-600">poste secondaire</span>'
+                : '<span class="text-rose-500">hors poste</span>';
 
             const item = document.createElement('button');
             item.type = 'button';
@@ -593,7 +607,7 @@ export function updateSideCard(prefix, team, slotNumber) {
             item.innerHTML = `
             <div>
                 <div class="font-bold">${subInfo.lastname}</div>
-                <div class="text-3xs text-slate-400">${subInfo.position ?? '—'}</div>
+                <div class="text-3xs text-slate-400">${POSITION_FR[subInfo.position] ?? subInfo.position ?? '—'} · ${fitTag}</div>
             </div>
             <span class="${color} text-2xs font-bold">${pct}%⚡</span>`;
             item.onclick = () => {

@@ -21,7 +21,7 @@ const counters = [
             entre les matchs, puis tu choisis tes actions pendant les rencontres.
         </p>
 
-        <section class="mb-10">
+        <section id="creer" class="mb-10 scroll-mt-6">
             <h2 class="mb-3 text-xl font-bold text-teal-300">1. Créer une partie</h2>
             <ul class="list-disc space-y-2 pl-5 text-slate-300">
                 <li>Choisis une compétition : la <strong>Ligue</strong> (championnat en aller-retour) ou la <strong>Coupe du Monde</strong> (poules puis élimination directe).</li>
@@ -38,7 +38,7 @@ const counters = [
             </ul>
         </section>
 
-        <section class="mb-10">
+        <section id="preparer" class="mb-10 scroll-mt-6">
             <h2 class="mb-3 text-xl font-bold text-teal-300">2. Préparer la semaine</h2>
             <p class="mb-3 text-slate-300">Le tableau de bord résume ta situation et ce qu'il reste à faire avant le match.</p>
             <ul class="list-disc space-y-2 pl-5 text-slate-300">
@@ -49,7 +49,7 @@ const counters = [
             </ul>
         </section>
 
-        <section class="mb-10">
+        <section id="match" class="mb-10 scroll-mt-6">
             <h2 class="mb-3 text-xl font-bold text-teal-300">3. Jouer un match</h2>
             <p class="mb-3 text-slate-300">
                 Un match dure 45 tours par défaut (réglable). Quand ton équipe a le ballon, tu choisis une action : passe,
@@ -76,7 +76,7 @@ const counters = [
             </ul>
         </section>
 
-        <section class="mb-10">
+        <section id="suite" class="mb-10 scroll-mt-6">
             <h2 class="mb-3 text-xl font-bold text-teal-300">4. Gérer la suite</h2>
             <ul class="list-disc space-y-2 pl-5 text-slate-300">
                 <li>Après le match, la semaine se termine : les autres matchs sont simulés, le classement, le budget et l'endurance sont mis à jour.</li>

@@ -409,7 +409,7 @@ const tabs = computed(() => {
         { key: 'my-team',     label: 'Mon équipe'                     },
         { key: 'other-teams', label: wc ? 'Sélections' : 'Autres équipes' },
         { key: 'calendar',    label: 'Calendrier'                     },
-        { key: 'match',       label: 'Match'                          },
+        { key: 'match',       label: 'Résultats'                      }, // historique des matchs joués (on ne lance pas de match ici)
         { key: 'standings',   label: wc ? 'Tournoi' : 'Classement'    },
         { key: 'match-stats', label: 'Stats'                          },
         { key: 'training',    label: 'Entraînement'                   },
@@ -540,8 +540,12 @@ const saveGame = () => {
                 <div class="flex-1 min-w-0 min-h-0 p-3 sm:p-4 border border-slate-200 rounded-xl shadow-sm min-[1400px]:mx-6 bg-white flex flex-col overflow-hidden">
 
                     <!-- Onglets -->
-                    <div class="mb-4 border-b border-slate-200 shrink-0">
-                        <TabBar v-model="activeTab" :tabs="tabs" stretch label="Sections de la partie" />
+                    <div class="mb-4 border-b border-slate-200 shrink-0 flex items-end gap-2">
+                        <TabBar class="flex-1 min-w-0" v-model="activeTab" :tabs="tabs" stretch label="Sections de la partie" />
+                        <!-- Aide consultable au moment du doute, sans quitter la partie -->
+                        <a :href="route('guide') + '#preparer'" target="_blank" rel="noopener"
+                           class="shrink-0 mb-1.5 px-2.5 py-1 rounded-full text-xs font-semibold text-slate-500 border border-slate-200 hover:text-teal-600 hover:border-teal-300"
+                           title="Comment jouer (nouvel onglet)">❔ Aide</a>
                     </div>
 
                     <!-- ======== DASHBOARD ======== -->
@@ -653,6 +657,7 @@ const saveGame = () => {
 
                     <!-- ======== AUTRES ÉQUIPES ======== -->
                     <TabOtherTeams v-else-if="activeTab === 'other-teams'"
+                                   :nextOpponentId="nextMatch ? (nextMatch.home_team_id === team?.id ? nextMatch.away_team_id : nextMatch.home_team_id) : null"
                                    :otherTeams="otherTeams"
                                    :selectedOtherTeam="selectedOtherTeam"
                                    :otherRosterWithStatus="otherRosterWithStatus"
@@ -765,6 +770,7 @@ const saveGame = () => {
                                  :roster="rosterWithStatus"
                                  :teamBudget="teamBudget"
                                  :trainingCost="props.gameConfig?.training_cost ?? 0"
+                                 :staminaCost="props.gameConfig?.training_stamina_cost ?? 2"
                                  :maxPerWeek="props.gameConfig?.training_max_per_week ?? 3"
                                  :minStamina="props.gameConfig?.training_min_stamina ?? 10"
                                  :trainingState="trainingState"
@@ -801,7 +807,7 @@ const saveGame = () => {
                                   :transferReason="transferReason"
                                   :transferTotalCost="transferTotalCost"
                                   :transferProcessing="transferProcessing"
-                                  :roster="roster"
+                                  :roster="rosterWithStatus"
                                   :focusPlayer="transferFocus"
                                   @open-modal="openTransferModal"
                                   @close-modal="closeTransferModal"

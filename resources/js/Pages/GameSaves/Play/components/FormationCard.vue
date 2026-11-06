@@ -11,11 +11,13 @@ const props = defineProps({
     impact:        { type: Function, default: null },
 });
 
-// Libellé d'option : hors-poste restants une fois le onze réorganisé sur cette formation.
+// Libellé d'option : le ✓ seul laissait croire que le onze actuel était prêt,
+// alors qu'il peut falloir le réorganiser ; on distingue les deux cas.
 const optionLabel = (f) => {
     if (!props.impact) return f.label;
-    const off = props.impact(f.key).optimized.off;
-    return off ? `${f.label}  ·  ⚠ ${off} hors poste` : `${f.label}  ·  ✓`;
+    const { asIs, optimized } = props.impact(f.key);
+    if (optimized.off) return `${f.label}  ·  ⚠ ${optimized.off} hors poste`;
+    return asIs.off ? `${f.label}  ·  ✓ après réorganisation` : `${f.label}  ·  ✓ onze en place`;
 };
 
 const emit = defineEmits(['change']);

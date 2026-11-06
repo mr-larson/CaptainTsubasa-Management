@@ -51,10 +51,15 @@ const props = defineProps({
     gameSaveId:             { type: Number,   required: true },
     currentWeek:            { type: Number,   default: 1 },
     currentSeason:          { type: Number,   default: 1 },
+    nextOpponentId:         { type: Number,   default: null },
 });
 
 // Lecture seule par défaut : on choisit une équipe et on consulte un joueur.
 // Avec `editable` : formation, terrain/banc (déplacer, remplacer), titulaire, capitaine, numéro.
+// Prochain adversaire en tête de liste : c'est l'équipe qu'on vient le plus souvent observer.
+const sortedTeams = computed(() => [...props.otherTeams].sort((a, b) =>
+    (b.id === props.nextOpponentId) - (a.id === props.nextOpponentId)));
+
 const emit = defineEmits([
     'select-team', 'select-player',
     'player-click', 'drag-start', 'drag-over', 'drop-on', 'drag-end', 'cancel-pickup',
@@ -132,7 +137,7 @@ const selectedPlayerPerf = computed(() => {
             <h3 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">Équipes de la ligue</h3>
             <div class="flex flex-wrap gap-1.5">
                 <button
-                    v-for="t in otherTeams" :key="t.id"
+                    v-for="t in sortedTeams" :key="t.id"
                     type="button"
                     @click="emit('select-team', t)"
                     class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all"
@@ -144,6 +149,9 @@ const selectedPlayerPerf = computed(() => {
                         <img v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" class="w-full h-full object-contain" alt=""/>
                     </div>
                     {{ t.name }}
+                    <span v-if="t.id === nextOpponentId"
+                          class="ml-0.5 px-1.5 rounded-full text-3xs font-bold uppercase"
+                          :class="selectedOtherTeam?.id === t.id ? 'bg-white/25 text-white' : 'bg-orange-100 text-orange-600'">🎯 Prochain adversaire</span>
                 </button>
             </div>
         </div>

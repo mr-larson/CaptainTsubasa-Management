@@ -110,11 +110,17 @@ const tierClasses = (tier) => ({
 }[tier] ?? { border: 'border-slate-200', bg: 'bg-white', badge: 'bg-slate-200', label: '?', glow: '' });
 
 const phaseLabel = (phase) => ({
-    immediate:    '⚡ Immédiat',
+    immediate:    '⚡ Effet immédiat',
     pre_match:    '🏟️ Pré-match',
     post_match:   '🔚 Post-match',
     weekly_reset: '📅 Hebdo',
 }[phase] ?? phase);
+
+// Défis sponsor : la carte se joue tout de suite, mais la prime dépend du
+// prochain match — « Immédiat » prêtait à confusion. On distingue les deux moments.
+const timingLabel = (card) => card?.effect_type === 'revenue_challenge'
+    ? '⚡ Se joue maintenant · ⏳ résultat après le prochain match'
+    : phaseLabel(card?.execution_phase);
 
 const targetLabel = (target) => ({
     self:     '👥 Équipe',
@@ -339,7 +345,7 @@ const canConfirm = computed(() => {
                             <!-- Tags -->
                             <div class="flex gap-1.5 flex-wrap">
                                 <span class="text-2xs font-semibold px-2 py-0.5 rounded-full bg-white/70 border border-slate-200 text-slate-600">
-                                    {{ phaseLabel(offer.execution_phase) }}
+                                    {{ timingLabel(offer) }}
                                 </span>
                                 <span class="text-2xs font-semibold px-2 py-0.5 rounded-full bg-white/70 border border-slate-200 text-slate-600">
                                     {{ targetLabel(offer.target) }}
@@ -410,7 +416,7 @@ const canConfirm = computed(() => {
 
                                 <div class="flex gap-1 flex-wrap">
                                     <span class="text-3xs font-semibold px-1.5 py-0.5 rounded-full bg-white/80 border border-slate-200 text-slate-500">
-                                        {{ phaseLabel(card.execution_phase) }}
+                                        {{ timingLabel(card) }}
                                     </span>
                                     <span class="text-3xs font-semibold px-1.5 py-0.5 rounded-full bg-white/80 border border-slate-200 text-slate-500">
                                         {{ targetLabel(card.target) }}
