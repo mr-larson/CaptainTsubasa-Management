@@ -105,22 +105,21 @@
                                     </div>
                                 </div>
 
-                                <div class="grid gap-2 text-xs" :class="teamRating ? 'grid-cols-3' : 'grid-cols-2'">
+                                <div class="grid gap-2 text-xs" :class="teamRating ? 'grid-cols-2' : 'grid-cols-1'">
                                     <div v-if="teamRating" class="bg-slate-50 rounded-lg p-2.5 text-center"
                                          :title="`Niveau du onze probable ${teamRating.level} · moral ${signedPct(teamRating.morale)} · endurance ${signedPct(teamRating.stamina)}`">
                                         <div class="text-lg font-black text-violet-600">{{ teamRating.note }}</div>
                                         <div class="text-slate-400 font-semibold">Note d'équipe</div>
-                                        <div class="mt-0.5 text-[10px] leading-tight text-slate-400">
-                                            niveau {{ teamRating.level }} · moral {{ signedPct(teamRating.morale) }} · endur. {{ signedPct(teamRating.stamina) }}
+                                        <div class="mt-0.5 text-[10px] leading-snug text-slate-400">
+                                            <div>niveau {{ teamRating.level }}</div>
+                                            <div>moral {{ signedPct(teamRating.morale) }} · endur. {{ signedPct(teamRating.stamina) }}</div>
                                         </div>
                                     </div>
+                                    <!-- Budget et effectif regroupés -->
                                     <div class="bg-slate-50 rounded-lg p-2.5 text-center">
-                                        <div class="text-lg font-black text-teal-600">{{ startBudget }}</div>
-                                        <div class="text-slate-400 font-semibold">Budget de départ €</div>
-                                    </div>
-                                    <div class="bg-slate-50 rounded-lg p-2.5 text-center">
-                                        <div class="text-lg font-black text-slate-700">{{ roster.length }}</div>
-                                        <div class="text-slate-400 font-semibold">Joueurs</div>
+                                        <div class="text-lg font-black text-teal-600">{{ startBudget.toLocaleString('fr-FR') }} €</div>
+                                        <div class="text-slate-400 font-semibold">Budget de départ</div>
+                                        <div class="mt-0.5 text-[10px] leading-snug text-slate-400">{{ roster.length }} joueur{{ roster.length > 1 ? 's' : '' }} sous contrat</div>
                                     </div>
                                 </div>
                             </div>
@@ -700,7 +699,7 @@ const teamRatingOf = (players) => {
 };
 const teamRating = computed(() => teamRatingOf(roster.value));
 const teamNote   = (team) => teamRatingOf((team.contracts ?? []).map(c => c.player).filter(Boolean))?.note ?? null;
-const signedPct  = (v) => `${v > 0 ? '+' : ''}${v} %`;
+const signedPct  = (v) => `${v > 0 ? '+' : ''}${v.toLocaleString('fr-FR')} %`;
 
 // Endurance : couleur du rouge (épuisé) au vert (en pleine forme).
 const staminaBar  = (v) => v >= 85 ? 'bg-emerald-500' : v >= 70 ? 'bg-lime-500' : v >= 50 ? 'bg-amber-400' : v >= 30 ? 'bg-orange-500' : 'bg-rose-500';
