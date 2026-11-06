@@ -686,6 +686,15 @@ export function updateCardsPower(ball) {
     const defenseTeam = mode.includes("external") ? "external" : "internal";
     const isGK        = !!_ui.actionBarEl.querySelector('.def-card-main[data-defense="hands"]');
 
+    // Stat du porteur adverse que chaque défense affronte (ex. Interception
+    // face à sa Passe), pour comparer avant de choisir.
+    const VS_STAT = { block: ["shot", "Tir"], intercept: ["pass", "Passe"], tackle: ["dribble", "Dribble"], hands: ["shot", "Tir"], punch: ["shot", "Tir"] };
+    _ui.actionBarEl.querySelectorAll(".def-card-main").forEach((btn) => {
+        const vs = VS_STAT[btn.dataset.defense];
+        const el = btn.querySelector(".def-vs");
+        if (el && vs) el.innerHTML = `face à ${vs[1]} adverse <b>${Number(carrierStats[vs[0]] ?? 0)}</b>`;
+    });
+
     if (isGK) {
         const gkStats = _roster.getPlayerInfo(defenseTeam, 1)?.stats ?? {};
         const mapGK   = { hands: "hand_save", punch: "punch_save" };

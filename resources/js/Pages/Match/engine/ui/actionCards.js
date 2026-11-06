@@ -19,6 +19,7 @@ const CARD = {
     sub:        'text-[11px] text-slate-700/70',
     bottom:     'mt-1.5 flex flex-col items-start gap-0.5',
     power:      'text-lg font-black tabular-nums text-slate-700',
+    vs:         'text-[11px] font-semibold text-rose-500/90 [&>b]:font-black',
     cost:       'whitespace-nowrap text-[11px] font-bold text-slate-700/75 [&>span]:font-black [&>span]:text-slate-700/90',
     spIcon:     'text-[15px] leading-none',
     spTitle:    'line-clamp-2 text-2xs font-extrabold leading-tight text-amber-800',
@@ -78,6 +79,7 @@ function buildActionCard(kind, dataAttr, key, cfg, special) {
             <div class="${kind}-sub ${CARD.sub}">${cfg.sub}</div>
             <div class="${kind}-bottom ${CARD.bottom}">
                 <div class="${kind}-power ${CARD.power}"></div>
+                ${kind === 'def' ? `<div class="def-vs ${CARD.vs}"></div>` : ''}
                 <div class="${kind}-cost ${CARD.cost}">Énergie <span></span></div>
             </div>
         </button>${specialHTML}
