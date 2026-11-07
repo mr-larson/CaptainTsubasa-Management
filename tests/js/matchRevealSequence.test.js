@@ -5,7 +5,7 @@ import { initFieldModule } from '../../resources/js/Pages/Match/engine/field.js'
 import { initResolversModule, resolveDribble, resolveShotKeeperDuel } from '../../resources/js/Pages/Match/engine/resolvers.js';
 import { runFieldDuel } from '../../resources/js/Pages/Match/engine/resolvers/fieldDuel.js';
 import { initStaminaModule } from '../../resources/js/Pages/Match/engine/stamina.js';
-import { disposeUIModule, initUIModule, pushLogEntry, resetLogHistory } from '../../resources/js/Pages/Match/engine/ui.js';
+import { disposeUIModule, highlightDuelPlayers, initUIModule, pushLogEntry, resetLogHistory } from '../../resources/js/Pages/Match/engine/ui.js';
 
 vi.mock('../../resources/js/Pages/Match/engine/resolvers/fieldDuel.js', () => ({
     runFieldDuel: vi.fn(),
@@ -29,7 +29,7 @@ function element() {
 }
 
 describe('enchaînement des révélations et du terrain', () => {
-    let state, carrier, overlay, diceOverlay, ballEl, finishDice, animateAndThen;
+    let state, carrier, defender, keeper, overlay, diceOverlay, ballEl, finishDice, animateAndThen;
 
     beforeEach(() => {
         vi.useFakeTimers();
@@ -52,6 +52,7 @@ describe('enchaînement des révélations et du terrain', () => {
             score: { internal: 0, external: 0 },
             stamina: {},
             staminaMax: {},
+            touchHeat: {},
             actionEvents: [],
             _applyKickoffFn: vi.fn(),
             _moveBallFn: vi.fn(),
@@ -64,14 +65,28 @@ describe('enchaînement des révélations et du terrain', () => {
         ballEl.style.left = '55%';
         ballEl.style.top = '50%';
 
-        const keeper = { style: { left: '95%', top: '50%' } };
+        defender = element();
+        defender.dataset = { player: 'E6', zone: '3' };
+        defender.style.left = '45%';
+        defender.style.top = '50%';
+        keeper = element();
+        keeper.classList.add('goalkeeper');
+        keeper.dataset.player = 'E1';
+        keeper.style.left = '95%';
+        keeper.style.top = '50%';
         const field = { appendChild: el => { overlay = el; } };
         const rootEl = {
             querySelector: selector => ({
                 '#field': field,
                 '[data-player="I8"]': carrier,
+                '[data-player="E6"]': defender,
+                '[data-player="E1"]': keeper,
+                '.player.external.goalkeeper': keeper,
                 '.player.external.goalkeeper[data-player="E1"]': keeper,
             })[selector] ?? null,
+            querySelectorAll: selector => selector === '.player.duel-player'
+                ? [carrier, defender, keeper].filter(player => player.classList.contains('duel-player'))
+                : selector === '.player.external' ? [defender, keeper] : [],
         };
         const ui = { ballEl };
         const roster = {
@@ -152,6 +167,10 @@ describe('enchaînement des révélations et du terrain', () => {
 
     it('montre le but après les dés puis attend la fin du mouvement avant l’engagement', async () => {
         vi.spyOn(Math, 'random').mockReturnValue(0.5);
+        highlightDuelPlayers('internal', 8, 'external', 6);
+        expect(defender.classList.contains('duel-player')).toBe(true);
+        expect(keeper.classList.contains('duel-player')).toBe(false);
+
         resolveShotKeeperDuel({
             attackTeam: 'internal',
             defenseTeam: 'external',
@@ -160,6 +179,9 @@ describe('enchaînement des révélations et du terrain', () => {
             logParts: ['Coup franc'],
         }, 'hands');
 
+        expect(carrier.classList.contains('duel-player')).toBe(true);
+        expect(defender.classList.contains('duel-player')).toBe(false);
+        expect(keeper.classList.contains('duel-player')).toBe(true);
         expect(diceOverlay.classList.contains('visible')).toBe(true);
         expect(ballEl.style.left).toBe('55%');
         expect(animateAndThen).not.toHaveBeenCalled();

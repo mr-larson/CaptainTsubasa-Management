@@ -30,7 +30,7 @@ import {
 import {
     initUIModule, disposeUIModule,
     setMessage, setAIOverlay, updateScoreUI, pushLogEntry, highlightDuelStats,
-    updateSideCard, syncRecovererCard, updateTeamCard, updateCardsPower,
+    updateSideCard, highlightDuelPlayers, updateTeamCard, updateCardsPower,
     buildAttackActionsHTML, buildDefenseFieldHTML, buildDefenseGKHTML,
     setActionBar, applyRosterToDOM, resetLogHistory
 } from './engine/ui.js';
@@ -484,10 +484,16 @@ export function initMatchEngine(rootEl, config = {}) {
             (state.pendingShotContext && state.pendingShotContext.stage === "keeper") ||
             (ball.frontOfKeeper && ["shot", "special", "special-pass", "special-dribble"].includes(action));
 
-        if (isKeeperStage) { updateSideCard(prefix, defenseTeam, 1); return; }
+        if (isKeeperStage) {
+            updateSideCard(prefix, defenseTeam, 1);
+            highlightDuelPlayers(ball.team, ball.number, defenseTeam, 1);
+            return;
+        }
 
         if (state.pendingDefenseContext?.defenderSlot) {
-            updateSideCard(prefix, defenseTeam, state.pendingDefenseContext.defenderSlot);
+            const { defenderSlot } = state.pendingDefenseContext;
+            updateSideCard(prefix, defenseTeam, defenderSlot);
+            highlightDuelPlayers(ball.team, ball.number, defenseTeam, defenderSlot);
             return;
         }
 
@@ -504,6 +510,7 @@ export function initMatchEngine(rootEl, config = {}) {
         } : null;
 
         updateSideCard(prefix, defenseTeam, picked?.defenderSlot || 6);
+        highlightDuelPlayers(ball.team, ball.number, defenseTeam, picked?.defenderSlot);
     }
 
     // ==========================
@@ -598,9 +605,9 @@ export function initMatchEngine(rootEl, config = {}) {
         }
 
         const defPrefix = defTeam === "internal" ? "home" : "away";
-        updateSideCard(defPrefix, defTeam, state.pendingDefenseContext.defenderSlot || 6);
-        // Défenseur humain : l'action adverse reste cachée, il doit la deviner (pierre-
-        // feuille-ciseaux). Face au gardien, c'est forcément un tir : rien à cacher.
+        const { defenderSlot } = state.pendingDefenseContext;
+        updateSideCard(defPrefix, defTeam, defenderSlot || 6);
+        highlightDuelPlayers(ball.team, ball.number, defTeam, defenderSlot);
         const hideAttack = !isAITeam(defTeam) && !isKeeperChoiceUI;
         if (hideAttack) highlightDuelStats();
         else highlightDuelStats(state.currentTeam, action, isKeeperChoiceUI);

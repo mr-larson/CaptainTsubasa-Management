@@ -5,7 +5,7 @@ import { buildDuelMeta, buildFieldDuelBreakdown, resolveCritOutcome, rollD20Adva
 import { applyStaminaCost, staminaFactor } from '../stamina.js';
 import { specialBaseFor } from '../RosterService.js';
 import { getKeeperId, getPlayerId, otherTeam } from '../field.js';
-import { buildDefenseGKHTML, highlightDuelStats, pushLogEntry, setActionBar, setMessage, syncRecovererCard, updateSideCard } from '../ui.js';
+import { buildDefenseGKHTML, highlightDuelPlayers, highlightDuelStats, pushLogEntry, setActionBar, setMessage, syncRecovererCard, updateSideCard } from '../ui.js';
 import { playPlayerAnimation } from '../playerAnim.js';
 import { defensePrompt } from '../turnPrompt.js';
 import { afterFieldDuel, afterReveals, givePossessionOnTie, _moveBall, amendLastDuelEvent, animateGoalThenReset, animateShotToKeeper, applyCritBoost, ball, shared, recordDuelEvent, resetLastDribbler } from './context.js';
@@ -100,6 +100,7 @@ export function continueShot(attackTeam, defenseTeam, defenseAction, isSpecial, 
     animateShotToKeeper(defenseTeam, () => {
         const defPrefix = defenseTeam === "internal" ? "home" : "away";
         updateSideCard(defPrefix, defenseTeam, 1);
+        highlightDuelPlayers(attackTeam, b.number, defenseTeam, 1);
         highlightDuelStats(attackTeam, "shot", true);
         shared.state.pendingDefenseContext = { defenseTeam, defenderId: getKeeperId(defenseTeam), defenderSlot: 1 };
 
@@ -166,6 +167,7 @@ export function startFreeKick() {
         animateShotToKeeper(defenseTeam, () => {
             const defPrefix = defenseTeam === "internal" ? "home" : "away";
             updateSideCard(defPrefix, defenseTeam, 1);
+            highlightDuelPlayers(attackTeam, b.number, defenseTeam, 1);
             highlightDuelStats(attackTeam, "shot", true);
             shared.state.pendingDefenseContext = { defenseTeam, defenderId: getKeeperId(defenseTeam), defenderSlot: 1 };
 
@@ -271,6 +273,7 @@ export function resolveShotKeeperDuel(ctx, defenseAction) {
     const b          = ball();
     const attackerId = getPlayerId(attackTeam, b.number);
     const keeperId   = getKeeperId(defenseTeam);
+    highlightDuelPlayers(attackTeam, b.number, defenseTeam, keeperId ? 1 : null);
 
     // `attack` : boost offensif selon la zone du tir (réutilisé par tir en jeu,
     // tir face au gardien et coup franc — point unique pour les 3 chemins).

@@ -67,14 +67,37 @@
    ========================================================================== */
 .player {
     position: absolute; width: 35px; height: 35px; border-radius: 999px;
-    border: 2px solid #fff; display: flex; align-items: center; justify-content: center;
+    border: 1.5px solid #fff; display: flex; align-items: center; justify-content: center;
     font-size: 12px; font-weight: 700; transform: translate(-50%, -50%);
     text-shadow: 0 0 3px rgba(0,0,0,0.6);
-    transition: left 0.70s cubic-bezier(0.22,0.61,0.36,1), top 0.70s cubic-bezier(0.22,0.61,0.36,1), box-shadow 0.20s;
+    transition: left 0.70s cubic-bezier(0.22,0.61,0.36,1), top 0.70s cubic-bezier(0.22,0.61,0.36,1), box-shadow 0.35s ease-out, border-color 0.35s ease-out;
 }
 .player.internal { background: radial-gradient(circle at 30% 30%, theme('colors.blue.300') 0, theme('colors.blue.600') 70%); box-shadow: 0 3px 6px rgba(0,0,0,0.45); }
 .player.external { background: radial-gradient(circle at 30% 30%, theme('colors.orange.200') 0, theme('colors.orange.500') 70%); box-shadow: 0 3px 6px rgba(0,0,0,0.45); }
-.player.goalkeeper { box-shadow: 0 0 8px rgba(255,255,0,0.9), 0 3px 6px rgba(0,0,0,0.55); }
+.player.duel-player {
+    border-color: #fff5d4;
+    box-shadow: 0 0 11px 2px rgb(255 210 95 / 0.6), 0 3px 6px rgb(0 0 0 / 0.45);
+}
+.player.duel-player::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    pointer-events: none;
+    background: conic-gradient(transparent 60%, rgb(255 201 73 / 0.45) 74%, #ffd977 83%, #fffdf2 87%, transparent 92%);
+    mask-image: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 1px));
+    animation: duel-ring-appear 0.35s ease-out both, duel-ring-sweep 2s linear infinite;
+}
+@keyframes duel-ring-appear {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes duel-ring-sweep {
+    to { transform: rotate(1turn); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .player.duel-player::before { animation: none; }
+}
 
 /* ✅ Joueur indisponible (blessé ou suspendu) */
 .player.unavailable {

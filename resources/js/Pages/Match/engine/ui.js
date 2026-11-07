@@ -631,6 +631,17 @@ export function updateSideCard(prefix, team, slotNumber) {
     }
 }
 
+export function highlightDuelPlayers(attackTeam, attackerSlot, defenseTeam, defenderSlot) {
+    const attacker = _rootEl.querySelector(`[data-player="${getPlayerId(attackTeam, attackerSlot)}"]`);
+    const defender = _rootEl.querySelector(`[data-player="${getPlayerId(defenseTeam, defenderSlot)}"]`);
+
+    _rootEl.querySelectorAll(".player.duel-player").forEach(player => {
+        if (player !== attacker && player !== defender) player.classList.remove("duel-player");
+    });
+    attacker?.classList.add("duel-player");
+    defender?.classList.add("duel-player");
+}
+
 export function syncRecovererCard(defenseTeam, slot) {
     updateSideCard(defenseTeam === "internal" ? "home" : "away", defenseTeam, slot);
 }

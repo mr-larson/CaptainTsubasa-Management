@@ -5,7 +5,7 @@ import { buildDuelMeta, buildFieldDuelBreakdown, resolveCritOutcome, rollD20With
 import { applyStaminaCost, staminaFactor } from '../stamina.js';
 import { specialBaseFor } from '../RosterService.js';
 import { getCarrierElement, getPlayerId, pickFieldDefender, pickReceiverInCell, setBallToKeeperVisual } from '../field.js';
-import { pushLogEntry, setMessage, syncRecovererCard, updateSideCard, updateTeamCard } from '../ui.js';
+import { highlightDuelPlayers, pushLogEntry, setMessage, syncRecovererCard, updateSideCard, updateTeamCard } from '../ui.js';
 import { afterReveals, _moveBall, animateBallToXY, applyCritBoost, ball, shared, recordDuelEvent, resetLastDribbler } from './context.js';
 import { defenseTag, isGoodDefenseChoice } from './duelRules.js';
 import { aiShouldReroll, canAttackerReroll, doReroll, showCaptainRerollPrompt, tryHeroicMoment } from './captainReroll.js';
@@ -23,6 +23,7 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
     }
 
     const { defenderId, defenderSlot } = picked;
+    highlightDuelPlayers(attackTeam, b.number, defenseTeam, defenderSlot);
 
     updateSideCard(attackTeam  === "internal" ? "home" : "away", attackTeam,  b.number);
     updateSideCard(defenseTeam === "internal" ? "home" : "away", defenseTeam, defenderSlot);
