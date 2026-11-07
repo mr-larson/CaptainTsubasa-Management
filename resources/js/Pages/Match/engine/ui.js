@@ -705,6 +705,7 @@ export function updateCardsPower(ball) {
 
     const defenseTeam = mode.includes("external") ? "external" : "internal";
     const isGK        = !!_ui.actionBarEl.querySelector('.def-card-main[data-defense="hands"]');
+    const shotContext = isGK && _state.pendingShotContext?.stage === "keeper" ? _state.pendingShotContext : null;
 
     // Stat du porteur adverse que chaque défense affronte (ex. Interception
     // face à sa Passe), pour comparer avant de choisir.
@@ -713,6 +714,15 @@ export function updateCardsPower(ball) {
         const vs = VS_STAT[btn.dataset.defense];
         const el = btn.querySelector(".def-vs");
         if (el && vs) {
+            if (shotContext) {
+                const value = shotContext.gkAttackBase.toLocaleString("fr-FR", { maximumFractionDigits: 1 });
+                const penalty = shotContext.distancePenalty;
+                el.innerHTML = `vs Puissance du tir <b>${value}</b>`;
+                el.title = penalty > 0
+                    ? `Puissance du tir avant les dés, malus de distance inclus (−${penalty})`
+                    : "Puissance de base du tir avant les dés";
+                return;
+            }
             const value = Number(carrierStats[vs[0]] ?? 0);
             el.innerHTML = `vs ${vs[1]} <b>${value}</b>`;
             el.title     = `Face à : ${vs[1]} de l'attaquant (${value})`;

@@ -79,7 +79,8 @@ export function continueShot(attackTeam, defenseTeam, defenseAction, isSpecial, 
     pushLogEntry(TEXTS.ui.shotOnTargetMain, ["Zone " + (originZone + 1), defenseTag(defenseAction), getCounterTag(attackType, defenseAction)], duel.diceTag, shared.state, duel.breakdown ?? null);
     setMessage(TEXTS.ui.shotOnTargetMain, TEXTS.ui.shotOnTargetSub.replace("{team}", shared.TEAMS[defenseTeam].label));
 
-    const zonesToGoal = Math.max(0, MAX_ZONE_INDEX - originZone);
+    const distancePenalty = isSpecial ? 0
+        : Math.max(0, MAX_ZONE_INDEX - originZone) * DUEL_RULES.SHOT_DISTANCE_PENALTY_PER_LINE;
     let gkAttackBase;
     if (isSpecial) {
         const move = shared.roster.getSpecialMove(attackTeam, b.number, "attack", "shot");
@@ -87,7 +88,7 @@ export function continueShot(attackTeam, defenseTeam, defenseAction, isSpecial, 
             ? specialBaseFor(move, attackTeam, b.number, shared.roster)
             : shared.roster.attackBaseFor("special", attackTeam, b.number);
     } else {
-        gkAttackBase = shared.roster.attackBaseFor("shot", attackTeam, b.number) - (zonesToGoal * DUEL_RULES.SHOT_DISTANCE_PENALTY_PER_LINE);
+        gkAttackBase = shared.roster.attackBaseFor("shot", attackTeam, b.number) - distancePenalty;
     }
 
     // ── Animation du tireur AVANT le déplacement du ballon
@@ -95,7 +96,7 @@ export function continueShot(attackTeam, defenseTeam, defenseAction, isSpecial, 
 
     b.zoneIndex = MAX_ZONE_INDEX; b.laneIndex = originLane;
 
-    shared.state.pendingShotContext = { stage: "keeper", attackTeam, defenseTeam, originZone, originLane, isSpecial, gkAttackBase, logParts: ["Zone " + (originZone + 1)] };
+    shared.state.pendingShotContext = { stage: "keeper", attackTeam, defenseTeam, originZone, originLane, isSpecial, gkAttackBase, distancePenalty, logParts: ["Zone " + (originZone + 1)] };
 
     animateShotToKeeper(defenseTeam, () => {
         const defPrefix = defenseTeam === "internal" ? "home" : "away";
