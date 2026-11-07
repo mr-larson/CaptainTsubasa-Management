@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\GameSaves;
 
 use App\Http\Controllers\Controller;
+use App\Models\BonusCard;
 use App\Http\Controllers\Concerns\AuthorizesGameSave;
 use App\Http\Controllers\Concerns\LocksGameSave;
 use App\Http\Requests\GameSaves\GameSaveRequest;
@@ -875,13 +876,16 @@ class GameSaveController extends Controller
                     'used_week'        => $c->used_week,
                     'used_season'      => $c->used_season,
                     'name'             => $c->bonusCard->name,
-                    'description'      => $c->bonusCard->description,
+                    'description'      => $c->bonusCard->effect_type === 'opponent_stamina_drain'
+                        ? BonusCard::teamStaminaDrainDescription($c->tier) : $c->bonusCard->description,
                     'icon'             => $c->bonusCard->icon,
                     'kind'             => $c->bonusCard->kind,
                     'target'           => $c->bonusCard->target,
                     'execution_phase'  => $c->bonusCard->execution_phase,
                     'effect_type'      => $c->bonusCard->effect_type,
-                    'effect_value'     => $c->bonusCard->effect_value,
+                    'effect_value'     => $c->bonusCard->effect_type === 'opponent_stamina_drain'
+                        ? array_replace($c->bonusCard->effect_value ?? [], ['amount' => BonusCard::teamStaminaDrainAmount($c->tier)])
+                        : $c->bonusCard->effect_value,
                 ])
             : collect();
 

@@ -137,7 +137,16 @@ class BonusCardActivationTest extends TestCase
         $result = $this->service->activate($gameCard, $save);
 
         $this->assertSame(11, $result['drained'], 'Tous les titulaires adverses sont touchés.');
-        $this->assertSame(70, (int) $players->first()->fresh()->stamina); // 100 - 30
+        $this->assertSame(90, (int) $players->first()->fresh()->stamina);
+
+        $anotherSource = $this->makeTeam($save);
+        $this->makeMatch($save, $anotherSource, $opponent, ['week' => 1]);
+        $silver = $this->makeGameCard($save, $anotherSource, $card, ['tier' => 'silver']);
+        $gold = $this->makeGameCard($save, $anotherSource, $card, ['tier' => 'gold']);
+        $this->service->activate($silver, $save);
+        $this->assertSame(75, (int) $players->first()->fresh()->stamina);
+        $this->service->activate($gold, $save);
+        $this->assertSame(55, (int) $players->first()->fresh()->stamina);
     }
 
     public function test_opponent_bench_starter_registers_pending_malus(): void

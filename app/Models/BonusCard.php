@@ -19,6 +19,21 @@ class BonusCard extends Model
         'effect_value' => 'array',
     ];
 
+    public static function teamStaminaDrainAmount(string $tier): int
+    {
+        return match ($tier) {
+            'gold' => 20,
+            'silver' => 15,
+            default => 10,
+        };
+    }
+
+    public static function teamStaminaDrainDescription(string $tier): string
+    {
+        return 'Retire ' . self::teamStaminaDrainAmount($tier)
+            . ' points d’endurance aux titulaires de l’équipe ciblée.';
+    }
+
     public function gameBonusCards(): HasMany
     {
         return $this->hasMany(GameBonusCard::class);

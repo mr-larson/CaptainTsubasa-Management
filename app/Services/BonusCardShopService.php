@@ -87,7 +87,14 @@ class BonusCardShopService
             $offers = array_values(array_filter($offers, fn($o) => ($o['kind'] ?? 'bonus') !== 'malus'));
         }
 
-        return array_map(fn (array $offer) => array_replace($offer, ['cost' => BonusCard::SHOP_PRICE]), $offers);
+        return array_map(function (array $offer) {
+            $offer['cost'] = BonusCard::SHOP_PRICE;
+            if (($offer['effect_type'] ?? null) === 'opponent_stamina_drain') {
+                $offer['description'] = BonusCard::teamStaminaDrainDescription($offer['tier']);
+                $offer['effect_value']['amount'] = BonusCard::teamStaminaDrainAmount($offer['tier']);
+            }
+            return $offer;
+        }, $offers);
     }
 
     // ──────────────────────────────────────────────────────────
@@ -116,7 +123,7 @@ class BonusCardShopService
             $offers[] = [
                 'bonus_card_id'   => $card->id,
                 'kind'            => $card->kind,
-                'tier'            => $tier,
+                'tier'            => $card->effect_type === 'opponent_stamina_drain' ? $card->tier : $tier,
                 'cost'            => BonusCard::SHOP_PRICE,
                 'name'            => $card->name,
                 'description'     => $card->description,

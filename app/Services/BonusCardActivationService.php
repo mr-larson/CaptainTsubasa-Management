@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Helpers\FormationHelper;
+use App\Models\BonusCard;
 use App\Models\GameSaves\GameBonusCard;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameInjury;
@@ -333,9 +334,15 @@ class BonusCardActivationService
         if ($blocked = $this->shieldBlock($gameSave, $opponentId)) {
             return $blocked;
         }
-        $amount     = (int) ($gameBonusCard->bonusCard->effect_value['amount'] ?? 0);
 
-        $starters = $this->opponentStarters($opponentId);
+        $amount = BonusCard::teamStaminaDrainAmount($gameBonusCard->tier);
+
+        $starters = GameContract::where('game_team_id', $opponentId)
+            ->activeAt((int) ($gameSave->week ?? 1))
+            ->where('is_starter', true)
+            ->with('gamePlayer')
+            ->get()
+            ->unique('game_player_id');
 
         $drained = 0;
         foreach ($starters as $contract) {
