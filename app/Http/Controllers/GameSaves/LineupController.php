@@ -3,6 +3,7 @@ namespace App\Http\Controllers\GameSaves;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\AuthorizesGameSave;
+use App\Http\Controllers\Concerns\LocksGameSave;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 class LineupController extends Controller
 {
     use AuthorizesGameSave;
+    use LocksGameSave;
 
     /**
      * Toggle titulaire / remplaçant sur un contrat.
@@ -19,28 +21,32 @@ class LineupController extends Controller
     public function toggleStarter(Request $request, GameContract $contract)
     {
         $this->authorizeGameSave('update', $contract->gameSave);
-        if ($refused = $this->refuseUnlessActiveTeam($contract->gameSave, (int) $contract->game_team_id)) return $refused;
-
-        // Slot visé (optionnel) : titulariser directement sur un poste libre du terrain.
         $data = $request->validate(['slot' => ['nullable', 'integer', 'between:1,11']]);
 
-        // Onze complet : titulariser un 12ᵉ joueur le rendrait invisible (ni
-        // terrain ni banc) — il faut passer par une substitution.
-        if (!$contract->is_starter) {
-            $starters = GameContract::where('game_team_id', $contract->game_team_id)
+        return $this->withSaveLock($contract->gameSave, function (GameSave $gameSave) use ($contract, $data) {
+            $contract->refresh();
+            if ($refused = $this->refuseUnlessActiveTeam($gameSave, (int) $contract->game_team_id)) return $refused;
+            $week = (int) $gameSave->week;
+            if (!$contract->isActive($week)) {
+                return back()->withErrors(['is_starter' => 'Ce contrat n’est plus actif.']);
+            }
+
+            $starterIds = GameContract::where('game_team_id', $contract->game_team_id)
+                ->activeAt($week)
                 ->where('is_starter', true)
-                ->count();
-            if ($starters >= 11) {
+                ->distinct()
+                ->pluck('game_player_id');
+            if (!$contract->is_starter && $starterIds->count() >= 11) {
                 return back()->withErrors(['is_starter' => 'Le onze est complet : choisis le titulaire à remplacer.']);
             }
-        }
 
-        $contract->is_starter = !$contract->is_starter;
-        $contract->save();
+            $contract->is_starter = !$contract->is_starter;
+            $contract->save();
 
-        $this->syncLineupSlot($contract->gameSave, $contract, $data['slot'] ?? null);
+            $this->syncLineupSlot($gameSave, $contract, $starterIds->all(), $data['slot'] ?? null);
 
-        return back()->with('success', $contract->is_starter ? 'Joueur titularisé.' : 'Joueur retiré du onze.');
+            return back()->with('success', $contract->is_starter ? 'Joueur titularisé.' : 'Joueur retiré du onze.');
+        });
     }
 
     /**
@@ -49,7 +55,7 @@ class LineupController extends Controller
      * banc) ; un joueur titularisé prend le slot demandé s'il est libre, sinon
      * le premier slot libre.
      */
-    private function syncLineupSlot(GameSave $gameSave, GameContract $contract, ?int $preferredSlot = null): void
+    private function syncLineupSlot(GameSave $gameSave, GameContract $contract, array $starterIds, ?int $preferredSlot = null): void
     {
         $state  = $gameSave->state ?? [];
         $teamId = $contract->game_team_id;
@@ -61,6 +67,9 @@ class LineupController extends Controller
         $playerId = (int) $contract->game_player_id;
         $placed   = false;
         foreach ($slots as $slot => $pid) {
+            if ((int) $pid !== $playerId && !in_array((int) $pid, $starterIds, true)) {
+                $slots[$slot] = null;
+            }
             if ((int) $pid === $playerId) {
                 if ($contract->is_starter) {
                     $placed = true;

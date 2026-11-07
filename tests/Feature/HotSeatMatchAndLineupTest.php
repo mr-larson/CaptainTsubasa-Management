@@ -132,28 +132,26 @@ class HotSeatMatchAndLineupTest extends TestCase
 
     public function test_promoting_a_substitute_fills_the_requested_empty_slot(): void
     {
-        $save = $this->makeSave();
+        $save = $this->makeSave(['week' => 2]);
         [$mine, $players] = $this->makeTeamWithSquad($save, ['is_controlled' => true, 'human_seat' => 1], 12);
         $slots = [];
         foreach ($players->take(11) as $i => $p) {
             $slots[$i + 1] = $p->id;
         }
-        $slots[2] = null;
-        $slots[9] = null;
-        $players[1]->contracts()->update(['is_starter' => false]);
-        $players[8]->contracts()->update(['is_starter' => false]);
+        $players[1]->contracts()->update(['end_week' => 1]);
+        $players[8]->contracts()->update(['end_week' => 1]);
         $save->update([
             'controlled_game_team_id' => $mine->id,
             'state' => ['lineup' => [$mine->id => ['slots' => $slots]]],
         ]);
 
-        $contract = $players[8]->contracts()->first();
+        $contract = $players[11]->contracts()->first();
         $this->actingAs(User::find($save->user_id))
             ->patch(route('game-contracts.toggle-starter', $contract), ['slot' => 9])
             ->assertSessionHasNoErrors();
 
         $saved = $save->fresh()->state['lineup'][$mine->id]['slots'];
-        $this->assertSame($players[8]->id, (int) $saved[9], 'Le joueur doit occuper le slot demandé, pas le premier libre.');
+        $this->assertSame($players[11]->id, (int) $saved[9], 'Le contrat expiré doit libérer le slot demandé.');
         $this->assertTrue(empty($saved[2]));
     }
 }

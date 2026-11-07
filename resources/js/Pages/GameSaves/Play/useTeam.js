@@ -166,18 +166,22 @@ export function useTeam({ gameSave, team }) {
     };
 
     const initLineupForm = () => {
+        const unplaced = new Set(starters.value.map(player => player.id));
         const slots = [];
         for (let slot = 1; slot <= 11; slot++) {
-            slots.push({ slot, player_id: initialLineupSlots.value[slot] ?? null });
+            const playerId = initialLineupSlots.value[slot];
+            slots.push({ slot, player_id: unplaced.delete(playerId) ? playerId : null });
         }
-        if (!Object.keys(initialLineupSlots.value).length) {
-            starters.value.forEach((p, i) => { if (i < 11) slots[i].player_id = p.id; });
+        for (const playerId of unplaced) {
+            const available = slots.find(row => !row.player_id);
+            if (!available) break;
+            available.player_id = playerId;
         }
         lineupForm.value = slots;
     };
 
     initLineupForm();
-    watch(() => [team.value?.id, gameSave.value.state], () => initLineupForm());
+    watch(() => [team.value?.id, team.value?.contracts, gameSave.value.state], () => initLineupForm());
 
     const saveLineup = () => {
         if (!team.value) return;
