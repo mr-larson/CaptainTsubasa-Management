@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Enums\Nationality;
-use Database\Seeders\Concerns\CalculatesWeeklyCost;
+use App\Models\Traits\CalculatesWeeklyCost;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 

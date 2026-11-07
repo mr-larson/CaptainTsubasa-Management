@@ -3,7 +3,10 @@ import PlayerMoraleCard from '@/Pages/GameSaves/Play/components/PlayerMoraleCard
 import { fieldClass } from '@/Components/fieldStyles';
 import ButtonSecondary from '@/Components/ButtonSecondary.vue';
 import ButtonDanger from '@/Components/ButtonDanger.vue';
-import { computed, onMounted, onBeforeUnmount } from 'vue';
+import ButtonPrimary from '@/Components/ButtonPrimary.vue';
+import Modal from '@/Components/Modal.vue';
+import { useForm } from '@inertiajs/vue3';
+import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
 import RosterList from '@/Pages/GameSaves/Play/components/RosterList.vue';
 import PlayerStatusAlert from '@/Pages/GameSaves/Play/components/PlayerStatusAlert.vue';
@@ -44,6 +47,8 @@ const props = defineProps({
     team:                 { type: Object,  default: null },
     teamRecord:           { type: Object,  default: () => ({ wins: 0, draws: 0, losses: 0 }) },
     teamBudget:           { type: Number,  default: 0 },
+    gameSaveId:           { type: Number,  required: true },
+    contractSeasonEndWeek:{ type: Number,  default: null },
     clubStanding:         { type: Object,  default: null },
     standings:            { type: Array,   default: () => [] },
     injuriesCount:        { type: Number,  default: 0 },
@@ -92,6 +97,37 @@ function onNumberChange(event) {
 }
 
 const { moraleState } = usePlayerUtils();
+
+const renewalPlayer = ref(null);
+const renewalForm = useForm({ weeks: 1, end_week: null });
+const renewalLimit = (player) => player?.contract_end_week >= props.currentWeek && props.contractSeasonEndWeek
+    ? Math.max(0, props.contractSeasonEndWeek - player.contract_end_week)
+    : 0;
+const renewalCost = computed(() => (renewalPlayer.value?.renewal_cost ?? 0) * renewalForm.weeks);
+const canSubmitRenewal = computed(() =>
+    Number.isInteger(renewalForm.weeks) && renewalForm.weeks >= 1
+    && renewalForm.weeks <= renewalLimit(renewalPlayer.value)
+    && renewalCost.value <= props.teamBudget && !renewalForm.processing
+);
+
+function openRenewal(player) {
+    renewalForm.reset();
+    renewalForm.clearErrors();
+    renewalForm.end_week = player.contract_end_week;
+    renewalPlayer.value = player;
+}
+
+function closeRenewal() {
+    if (!renewalForm.processing) renewalPlayer.value = null;
+}
+
+function submitRenewal() {
+    if (!canSubmitRenewal.value) return;
+    renewalForm.patch(route('game-saves.contracts.renew', {
+        gameSave: props.gameSaveId,
+        contract: renewalPlayer.value.contract_id,
+    }), { preserveScroll: true, onSuccess: () => { renewalPlayer.value = null; } });
+}
 
 // ── Moral moyen (carte Club) ─────────────────────────────────
 const averageMorale = computed(() => {
@@ -361,6 +397,10 @@ const slotCandidates = (slot, slotDef) => substitutes.value
                             <ButtonDanger size="sm" v-if="selectedMyPlayer.contract_id" @click="emit('release-player', selectedMyPlayer)" title="Résilier le contrat : salaire déjà versé non remboursé, relation avec le coach rompue (-100)">
                                 ✖ Résilier
                             </ButtonDanger>
+                            <ButtonSecondary v-if="selectedMyPlayer.contract_id && renewalLimit(selectedMyPlayer)"
+                                             type="button" size="sm" @click="openRenewal(selectedMyPlayer)">
+                                Prolonger
+                            </ButtonSecondary>
                         </template>
                         <template #footer>
                             <p class="mt-3 text-2xs text-slate-400 italic">
@@ -396,6 +436,34 @@ const slotCandidates = (slot, slotDef) => substitutes.value
                 </div>
             </div>
         </div>
+        <Modal :show="!!renewalPlayer" max-width="md" @close="closeRenewal">
+            <form v-if="renewalPlayer" class="space-y-4 p-5" @submit.prevent="submitRenewal">
+                <h3 class="text-lg font-bold text-slate-800">Prolonger {{ renewalPlayer.firstname }} {{ renewalPlayer.lastname }}</h3>
+                <p class="text-sm text-slate-500">
+                    Le contrat actuel se termine en semaine {{ renewalForm.end_week }}.
+                    La prolongation peut aller jusqu’à la semaine {{ contractSeasonEndWeek }}.
+                </p>
+                <label class="block text-sm font-semibold text-slate-700">
+                    Semaines supplémentaires (max. {{ renewalLimit(renewalPlayer) }})
+                    <input v-model.number="renewalForm.weeks" type="number" required min="1"
+                           :max="renewalLimit(renewalPlayer)" class="mt-1 block w-full px-3 py-1.5"
+                           :class="fieldClass({ shape: 'rect' })" />
+                </label>
+                <dl class="grid grid-cols-2 gap-2 rounded-lg bg-slate-50 p-3 text-sm text-slate-700">
+                    <dt>Salaire recalculé</dt><dd class="text-right font-semibold">{{ renewalPlayer.renewal_cost }} GL / semaine</dd>
+                    <dt>Coût total</dt><dd class="text-right font-semibold">{{ renewalCost }} GL</dd>
+                    <dt>Budget après signature</dt><dd class="text-right font-semibold" :class="{ 'text-rose-600': renewalCost > teamBudget }">{{ teamBudget - renewalCost }} GL</dd>
+                </dl>
+                <p v-if="renewalForm.errors.weeks || renewalForm.errors.end_week" role="alert" class="text-sm text-rose-600">
+                    {{ renewalForm.errors.weeks || renewalForm.errors.end_week }}
+                </p>
+                <div class="flex justify-end gap-2">
+                    <ButtonSecondary type="button" :disabled="renewalForm.processing" @click="closeRenewal">Annuler</ButtonSecondary>
+                    <ButtonPrimary :disabled="!canSubmitRenewal">Confirmer la prolongation</ButtonPrimary>
+                </div>
+            </form>
+        </Modal>
+
         <!-- Annuler le dernier changement de compo -->
         <Transition enter-from-class="opacity-0 translate-y-2" leave-to-class="opacity-0 translate-y-2"
                     enter-active-class="transition duration-200" leave-active-class="transition duration-200">

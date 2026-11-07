@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Player;
 use App\Models\Team;
-use Database\Seeders\Concerns\CalculatesWeeklyCost;
+use App\Models\Traits\CalculatesWeeklyCost;
 use Database\Seeders\Concerns\GuardsReferenceReseed;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;

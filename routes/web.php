@@ -233,6 +233,8 @@ Route::middleware('auth')->group(function () {
             [GameContractController::class, 'destroy'])->name('contracts.destroy');
         Route::delete('/{gameSave}/contracts/{contract}/release',
             [GameContractController::class, 'release'])->name('contracts.release');
+        Route::patch('/{gameSave}/contracts/{contract}/renew',
+            [GameContractController::class, 'renew'])->name('contracts.renew');
 
         // Routes JSON pour le match engine
         Route::post('/{gameSave}/captain-reroll/{contract}',

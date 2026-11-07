@@ -45,6 +45,7 @@ import CareerMandateCard from '@/Pages/GameSaves/Play/CareerMandateCard.vue';
 // ==========================
 const props = defineProps({
     gameSave:          { type: Object, required: true },
+    contractSeasonEndWeek: { type: Number, default: null },
     teams:             { type: Array,  required: true },
     freePlayers:       { type: Array,  required: true },
     matches:           { type: Array,  required: true },
@@ -647,6 +648,8 @@ const saveGame = () => {
                                @make-promise="makePromise"
                                @make-declaration="makeDeclaration"
                                @release-player="releasePlayer"
+                               :gameSaveId="gameSave.id"
+                               :contractSeasonEndWeek="contractSeasonEndWeek"
                                :isPlayerInjured="isPlayerInjured"
                                :isPlayerSuspended="isPlayerSuspended"
                                :isPlayerBenched="isPlayerBenched"

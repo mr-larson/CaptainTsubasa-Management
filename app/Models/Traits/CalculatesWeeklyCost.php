@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Seeders\Concerns;
+namespace App\Models\Traits;
 
 trait CalculatesWeeklyCost
 {

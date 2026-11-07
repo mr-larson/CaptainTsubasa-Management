@@ -745,6 +745,13 @@ class GameSaveController extends Controller
             ?? $gameTeams->firstWhere('base_team_id', $gameSave->team_id)
             ?? $gameTeams->first();
 
+        $canRenewContracts = $gameSave->competition_type !== 'world_cup' && ($gameSave->phase ?? 'season') === 'season';
+        if ($canRenewContracts && $controlledTeam) {
+            foreach ($controlledTeam->contracts as $contract) {
+                $contract->gamePlayer?->append('renewal_cost');
+            }
+        }
+
         $this->ensureCalendar($gameSave, $gameTeams);
 
         // Sans match_stats (déroulé complet de chaque match, qui alourdissait
@@ -937,6 +944,7 @@ class GameSaveController extends Controller
         );
 
         return Inertia::render('GameSaves/Play', [
+            'contractSeasonEndWeek' => $canRenewContracts ? SeasonService::lengthForTeamCount($gameTeams->count()) : null,
             'gameSave'            => $gameSave,
             'managementStats'     => $managementStats,
             'duoLinks'            => $duoLinks,

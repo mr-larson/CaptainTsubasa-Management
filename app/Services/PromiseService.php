@@ -170,7 +170,7 @@ class PromiseService
     {
         if ($week < $promise->due_week) return null;
 
-        $kept = \App\Models\GameSaves\GameContract::where('game_save_id', $promise->game_save_id)
+        $kept = $promise->renewal_signed_at !== null || \App\Models\GameSaves\GameContract::where('game_save_id', $promise->game_save_id)
             ->where('game_player_id', $promise->game_player_id)
             ->where('game_team_id', $promise->game_team_id)
             ->where('created_at', '>', $promise->created_at)

@@ -4,6 +4,7 @@ namespace App\Models\GameSaves;
 
 use App\Models\GameSaves\Concerns\BelongsToGameSave;
 use App\Models\Player;
+use App\Models\Traits\CalculatesWeeklyCost;
 use App\Models\Traits\HasFullName;
 use App\Models\Traits\HasPhotoUrl;
 use App\Models\Traits\HasSoccerStats;
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
 class GamePlayer extends Model
 {
     use HasFactory;
+    use CalculatesWeeklyCost;
     use HasSoccerStats;
     use HasFullName;
     use HasPhotoUrl;
@@ -144,6 +146,13 @@ class GamePlayer extends Model
     public function getAdjustedCostAttribute(): int
     {
         return (int) round(($this->cost ?? 0) * $this->versatilityFactor());
+    }
+
+    public function getRenewalCostAttribute(): int
+    {
+        $cost = $this->calculateWeeklyCost($this->getAttributes(), $this->position);
+
+        return (int) round($cost * $this->versatilityFactor());
     }
 
 }
