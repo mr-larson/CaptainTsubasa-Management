@@ -371,26 +371,28 @@ class BonusCardActivationService
     private function applyOpponentBenchStarter(GameSave $gameSave, GameBonusCard $gameBonusCard, ?int $targetTeamId = null): array
     {
         $opponentId = $this->resolveMalusTargetTeamId($gameSave, $gameBonusCard, $targetTeamId);
-        if ($blocked = $this->shieldBlock($gameSave, $opponentId)) {
-            return $blocked;
-        }
-        $pick       = (string) ($gameBonusCard->bonusCard->effect_value['pick'] ?? 'random');
+        $week = (int) ($gameSave->week ?? 1);
+        $starters = $this->opponentStarters($opponentId)
+            ->filter(fn (GameContract $contract) => $contract->isActive($week));
 
         // Candidats : titulaires de champ (on épargne le gardien pour ne pas
         // laisser la cible sans dernier rempart).
-        $candidates = $this->opponentStarters($opponentId)
-            ->filter(fn ($c) => $c->gamePlayer && FormationHelper::roleFromPosition($c->gamePlayer->position) !== 'GK')
+        $outfield = $starters
+            ->filter(fn ($c) => FormationHelper::roleFromPosition($c->gamePlayer->position) !== 'GK');
+
+        $alreadyBenched = $this->getBenchedPlayerIds($gameSave, $opponentId);
+        $candidates = ($outfield->isNotEmpty() ? $outfield : $starters)
+            ->reject(fn ($c) => in_array((int) $c->game_player_id, $alreadyBenched, true))
             ->values();
 
         if ($candidates->isEmpty()) {
-            // Repli : tous les titulaires (effectif réduit / que des gardiens).
-            $candidates = $this->opponentStarters($opponentId)->filter(fn ($c) => $c->gamePlayer)->values();
+            throw ValidationException::withMessages(['card' => 'Aucun autre titulaire adverse ne peut être consigné.']);
+        }
+        if ($blocked = $this->shieldBlock($gameSave, $opponentId)) {
+            return $blocked;
         }
 
-        if ($candidates->isEmpty()) {
-            throw ValidationException::withMessages(['card' => 'L\'adversaire n\'a aucun titulaire à consigner.']);
-        }
-
+        $pick = (string) ($gameBonusCard->bonusCard->effect_value['pick'] ?? 'random');
         $chosen = $pick === 'key'
             ? $candidates->sortByDesc(fn ($c) => $this->playerRating($c->gamePlayer))->first()
             : $candidates->random();

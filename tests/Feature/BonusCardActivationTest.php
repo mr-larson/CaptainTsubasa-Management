@@ -166,6 +166,15 @@ class BonusCardActivationTest extends TestCase
         $benched = $this->service->getBenchedPlayerIds($save, $opponent->id);
         $this->assertCount(1, $benched);
         $this->assertSame($save->state['pending_malus'][0]['target_player_id'], $benched[0]);
+
+        $this->service->activate($this->makeGameCard($save, $source, $card), $save);
+        $randomCard = $this->makeBonusCard([
+            'kind' => 'malus', 'target' => 'opponent',
+            'effect_type' => 'opponent_bench_starter', 'effect_value' => ['pick' => 'random'],
+        ]);
+        $this->service->activate($this->makeGameCard($save, $source, $randomCard), $save);
+
+        $this->assertCount(3, $this->service->getBenchedPlayerIds($save->fresh(), $opponent->id));
     }
 
     public function test_malus_shield_blocks_an_incoming_malus_once(): void
