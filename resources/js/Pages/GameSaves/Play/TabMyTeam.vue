@@ -235,6 +235,7 @@ const slotCandidates = (slot, slotDef) => substitutes.value
                               :team="team"
                               :rank="clubStanding?.position ?? null"
                               :total="standings.length"
+                              :averageOverall="clubStanding?.average_overall ?? null"
                               :budget="teamBudget" />
 
             <TeamRecordCard class="md:col-span-3"

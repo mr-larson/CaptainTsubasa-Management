@@ -8,6 +8,7 @@ const props = defineProps({
     rank:   { type: Number, default: null },
     total:  { type: Number, default: null },
     budget: { type: Number, default: null },
+    averageOverall: { type: Number, default: null },
 });
 
 const { teamLogoUrl } = usePlayerUtils();
@@ -25,6 +26,9 @@ const { teamLogoUrl } = usePlayerUtils();
             <h3 class="text-base font-bold text-slate-700 truncate">{{ team?.name ?? '—' }}</h3>
             <p v-if="rank" class="text-xs text-slate-500">
                 {{ rank }}<sup>e</sup> / {{ total }} &nbsp;•&nbsp; {{ budget ?? 0 }} GL
+            </p>
+            <p v-if="averageOverall !== null" class="text-xs text-slate-500">
+                Note d’équipe <strong class="tabular-nums text-slate-700">{{ averageOverall }}</strong>
             </p>
             <p v-if="team?.description" class="text-xs text-slate-400 leading-relaxed line-clamp-3">
                 {{ team.description }}

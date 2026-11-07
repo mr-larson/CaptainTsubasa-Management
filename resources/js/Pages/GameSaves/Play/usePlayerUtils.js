@@ -59,20 +59,23 @@ const NATIONALITY_FLAGS = {
     'Thaïlande':       '🇹🇭',
 };
 
+export function overallOf(player) {
+    if (!player) return 0;
+    const values = STAT_KEYS
+        .map(key => Number(player.stats?.[key] ?? player[key] ?? 0))
+        .filter(value => Number.isFinite(value) && value > 0);
+    if (!values.length) return 0;
+    return Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
+}
+
+export function averageOverall(players) {
+    if (!players.length) return null;
+    return Math.round(players.reduce((sum, player) => sum + overallOf(player), 0) / players.length);
+}
+
 export function usePlayerUtils() {
     // Mode Pixel : les photos pointent vers leur variante pixel art si activé.
     const { photoSrc } = usePixelArt();
-
-
-    const overallOf = (player) => {
-        if (!player) return 0;
-        const src    = player.stats ?? player;
-        const values = STAT_KEYS
-            .map(k => Number(src?.[k] ?? player?.[k] ?? 0))
-            .filter(v => Number.isFinite(v) && v > 0);
-        if (!values.length) return 0;
-        return Math.round(values.reduce((a, b) => a + b, 0) / values.length);
-    };
 
     const playerPhotoUrl = (p) => {
         if (!p) return null;

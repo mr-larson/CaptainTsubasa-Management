@@ -92,6 +92,10 @@ const rankIcon = (rank) => {
                 <!-- Stats rapides -->
                 <div class="flex gap-4 flex-1">
                     <div class="text-center">
+                        <div class="text-xl font-black text-slate-700">{{ myStanding.average_overall ?? '—' }}</div>
+                        <div class="text-2xs text-slate-400 font-semibold">Note d’équipe</div>
+                    </div>
+                    <div class="text-center">
                         <div class="text-xl font-black text-teal-600">{{ myStanding.points }}</div>
                         <div class="text-2xs text-slate-400 font-semibold">Points</div>
                     </div>
@@ -137,6 +141,7 @@ const rankIcon = (rank) => {
                     <tr>
                         <th class="py-2 w-8 text-center">#</th>
                         <th class="py-2 pr-4">Équipe</th>
+                        <th class="py-2 px-2 text-right"><abbr title="Moyenne des notes de l’effectif" class="cursor-help no-underline">Note</abbr></th>
                         <th class="py-2 px-2 text-right"><abbr title="Matchs joués" class="cursor-help no-underline">J</abbr></th>
                         <th class="py-2 px-2 text-right"><abbr title="Victoires" class="cursor-help no-underline">V</abbr></th>
                         <th class="py-2 px-2 text-right"><abbr title="Matchs nuls" class="cursor-help no-underline">N</abbr></th>
@@ -178,6 +183,7 @@ const rankIcon = (rank) => {
                         </td>
 
                         <!-- Stats -->
+                        <td class="py-2 px-2 text-right font-bold tabular-nums text-slate-700">{{ row.average_overall ?? '—' }}</td>
                         <td class="py-2 px-2 text-right font-semibold text-slate-600">{{ row.played }}</td>
                         <td class="py-2 px-2 text-right font-bold text-emerald-600">{{ row.wins }}</td>
                         <td class="py-2 px-2 text-right font-semibold text-slate-500">{{ row.draws }}</td>

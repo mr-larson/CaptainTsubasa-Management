@@ -108,6 +108,7 @@ function onNumberChange(event) {
 const otherSubstitutes = computed(() => props.otherRosterWithStatus.filter(p => !p.is_starter));
 
 const { teamLogoUrl } = usePlayerUtils();
+const overallByTeamId = computed(() => new Map(props.standings.map(row => [row.id, row.average_overall])));
 
 // Indisponibilité (icône + contour rouge sur le terrain et le banc), comme dans Mon équipe.
 const otherUnavailability = (p) => {
@@ -149,6 +150,9 @@ const selectedPlayerPerf = computed(() => {
                         <img v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" class="w-full h-full object-contain" alt=""/>
                     </div>
                     {{ t.name }}
+                    <span class="tabular-nums opacity-80" title="Moyenne des notes de l’effectif">
+                        · {{ overallByTeamId.get(t.id) ?? '—' }}
+                    </span>
                     <span v-if="t.id === nextOpponentId"
                           class="ml-0.5 px-1.5 rounded-full text-3xs font-bold uppercase"
                           :class="selectedOtherTeam?.id === t.id ? 'bg-white/25 text-white' : 'bg-orange-100 text-orange-600'">🎯 Prochain adversaire</span>
@@ -204,6 +208,7 @@ const selectedPlayerPerf = computed(() => {
                               :team="selectedOtherTeam"
                               :rank="selectedTeamRank"
                               :total="standings.length"
+                              :averageOverall="overallByTeamId.get(selectedOtherTeam.id) ?? null"
                               :budget="selectedOtherTeam.budget ?? 0" />
 
             <TeamRecordCard class="md:col-span-3"

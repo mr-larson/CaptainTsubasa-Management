@@ -1,5 +1,6 @@
 // resources/js/Pages/GameSaves/Play/useDashboard.js
 import { computed } from 'vue';
+import { averageOverall } from './usePlayerUtils.js';
 
 export function useDashboard({ teams, gameSave, team, roster, activeInjuries, activeSuspensions, activeYellowCards }) {
 
@@ -21,6 +22,9 @@ export function useDashboard({ teams, gameSave, team, roster, activeInjuries, ac
                 goals_for: gf,
                 goals_against: ga,
                 goal_diff: gf - ga,
+                average_overall: averageOverall((t.contracts ?? [])
+                    .map(contract => contract.game_player ?? contract.gamePlayer ?? contract.player)
+                    .filter(Boolean)),
             };
         });
         // Départage : points → différence de buts → buts marqués → victoires → nom.

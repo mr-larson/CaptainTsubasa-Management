@@ -29,7 +29,7 @@ const props = defineProps({
 
 const emit = defineEmits(['select']);
 
-const { playerPhotoUrl, sanctionTypeLabel, moraleState, positionGroup } = usePlayerUtils();
+const { overallOf, playerPhotoUrl, sanctionTypeLabel, moraleState, positionGroup } = usePlayerUtils();
 
 // Joueurs regroupés par poste (Gardien, Défenseur, Milieu, Attaquant), dans
 // l'ordre du terrain. L'ordre interne à chaque groupe est conservé tel quel.
@@ -106,6 +106,10 @@ const benchTitle = (p) => {
                         <div class="text-xs font-semibold truncate">{{ p.lastname }}</div>
                         <div class="text-2xs opacity-60 truncate">{{ positionLabel(p.position) }}</div>
                     </div>
+
+                    <span class="shrink-0 rounded border border-current/20 px-1 text-2xs font-bold tabular-nums" title="Note globale">
+                        {{ overallOf(p) }}
+                    </span>
 
                     <!-- Icônes statut -->
                     <div class="flex items-center gap-0.5 shrink-0">
