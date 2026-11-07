@@ -111,7 +111,7 @@ class PositionTrainingService
 
         // Quota et coût partagés avec les séances d'entraînement de la semaine.
         $maxPerWeek = (int) $gameSave->getConfig('training_max_per_week', config('training.max_trainings_per_week', 3));
-        $cost       = (int) $gameSave->getConfig('training_cost', config('training.cost', 0));
+        $cost       = (int) $gameSave->getConfig('position_training_cost');
 
         $state    = $gameSave->state ?? [];
         $training = $state['training'] ?? null;

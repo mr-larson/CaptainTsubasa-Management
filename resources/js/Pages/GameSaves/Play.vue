@@ -816,6 +816,7 @@ const saveGame = () => {
                                  :roster="rosterWithStatus"
                                  :teamBudget="teamBudget"
                                  :trainingCost="props.gameConfig?.training_cost ?? 0"
+                                 :positionTrainingCost="props.gameConfig?.position_training_cost ?? 200"
                                  :staminaCost="props.gameConfig?.training_stamina_cost ?? 2"
                                  :playerPositionTraining="playerPositionTraining"
                                  :maxPerWeek="props.gameConfig?.training_max_per_week ?? 3"

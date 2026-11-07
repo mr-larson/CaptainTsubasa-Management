@@ -156,19 +156,19 @@ class TrainingServiceTest extends TestCase
         $player = $this->makePlayer($save, ['stamina' => 100]);
         $this->makeContract($save, $team, $player);
 
-        // Coût par défaut = 200 GL par séance.
+        // Coût par défaut = 150 billets par séance.
         $applied = $this->service->applyTrainings($save, 1, 1, [
             ['player_id' => $player->id, 'stat' => 'shot'],
         ]);
 
-        $this->assertSame(800, (int) $team->fresh()->budget, 'Le budget est débité du coût de la séance.');
-        $this->assertSame(200, (int) $applied[0]['cost']);
+        $this->assertSame(850, (int) $team->fresh()->budget, 'Le budget est débité du coût de la séance.');
+        $this->assertSame(150, (int) $applied[0]['cost']);
     }
 
     public function test_training_rejected_when_budget_insufficient(): void
     {
         $save = $this->makeSave();
-        $team = $this->makeTeam($save, ['is_controlled' => true, 'budget' => 100]); // < 200
+        $team = $this->makeTeam($save, ['is_controlled' => true, 'budget' => 100]); // < 150
         $save->controlled_game_team_id = $team->id;
         $save->save();
 

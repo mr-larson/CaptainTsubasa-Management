@@ -56,7 +56,7 @@ class PositionTrainingTest extends TestCase
         $this->assertSame([], GamePositionTraining::unavailablePlayerIds($save->id, 3));
 
         // Coût d'une séance (config par défaut) et quota consommé.
-        $this->assertSame(1000 - (int) $save->getConfig('training_cost'), (int) $team->fresh()->budget);
+        $this->assertSame(800, (int) $team->fresh()->budget);
         $entries = $save->fresh()->state['training']['entries'];
         $this->assertCount(1, $entries);
         $this->assertSame('position', $entries[0]['stat']);

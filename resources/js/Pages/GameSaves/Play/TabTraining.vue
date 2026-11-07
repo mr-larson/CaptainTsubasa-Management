@@ -21,6 +21,7 @@ const props = defineProps({
     maxPerWeek:                  { type: Number,   default: 3 },
     minStamina:                  { type: Number,   default: 10 },
     trainingCost:                { type: Number,   default: 0 },
+    positionTrainingCost:        { type: Number,   default: 200 },
     staminaCost:                 { type: Number,   default: 0 },
     playerPositionTraining:      { type: Function, default: () => null },
     trainingState:               { type: Object,   default: null },
@@ -116,7 +117,7 @@ const positionTrainingState = computed(() => {
     if (props.remainingTrainingsThisWeek - selectedCount.value <= 0) return { disabled: true, reason: 'Plus de séance disponible cette semaine.' };
     if (props.hasPlayerBeenTrainedThisWeek(p.id)) return { disabled: true, reason: 'Déjà entraîné cette semaine.' };
     if (props.isPlayerInjured(p.id) || props.isPlayerSuspended(p.id)) return { disabled: true, reason: 'Indisponible : il pourra se former à son retour.' };
-    if (props.trainingCost > props.teamBudget - totalTrainingCost.value) return { disabled: true, reason: 'Budget insuffisant.' };
+    if (props.positionTrainingCost > props.teamBudget - totalTrainingCost.value) return { disabled: true, reason: 'Budget insuffisant.' };
     return { disabled: false, reason: '' };
 });
 const selectedPositionWeeks = computed(() => positionOptions.value.find(o => o.value === positionTarget.value)?.weeks ?? 0);
@@ -321,7 +322,7 @@ const selectedPlayerPerf = computed(() => {
                                 </select>
                                 <ButtonPrimary type="button" size="sm" :disabled="positionTrainingState.disabled"
                                                @click="emit('train-position', { playerId: selectedPlayer.id, position: positionTarget })">
-                                    Lancer la formation<template v-if="trainingCost > 0"> — {{ trainingCost }} <GameBanknote /></template>
+                                    Lancer la formation<template v-if="positionTrainingCost > 0"> — {{ positionTrainingCost }} <GameBanknote /></template>
                                 </ButtonPrimary>
                             </div>
                             <p class="mt-2 text-2xs" :class="positionTrainingState.reason ? 'text-rose-500' : 'text-slate-400'">

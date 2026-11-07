@@ -101,7 +101,7 @@ function resetDefaults() {
         training_gain_max: 5,
         training_stamina_cost: 2,
         training_min_stamina: 10,
-        training_cost: 200,
+        training_cost: 150, position_training_cost: 200,
         ai_transfers_enabled: true,
         ai_training_enabled: true,
         visible_origins: {
@@ -388,13 +388,14 @@ function resetDefaults() {
                                 <span class="text-xs font-bold text-slate-700 w-6 text-right">{{ config.training_min_stamina }}</span>
                             </div>
                         </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-slate-600">Coût par séance d'entraînement (<GameBanknote />)</label>
+                        <div v-for="(label, key) in { training_cost: 'Coût par séance simple', position_training_cost: 'Coût par formation de poste' }"
+                             :key="key" class="flex flex-col gap-1">
+                            <label class="text-xs text-slate-600">{{ label }} (<GameBanknote />)</label>
                             <div class="flex items-center gap-2">
-                                <input type="range" v-model.number="config.training_cost"
+                                <input type="range" v-model.number="config[key]"
                                        min="0" max="2000" step="50"
                                        class="flex-1 h-1.5 accent-teal-500" />
-                                <span class="text-xs font-bold text-slate-700 w-10 text-right">{{ config.training_cost }}</span>
+                                <span class="text-xs font-bold text-slate-700 w-10 text-right">{{ config[key] }}</span>
                             </div>
                         </div>
                     </div>

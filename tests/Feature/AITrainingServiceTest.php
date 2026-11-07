@@ -72,15 +72,15 @@ class AITrainingServiceTest extends TestCase
             ->where('team_id', $team->id)
             ->count();
 
-        // Coût par défaut = 200 GL : le budget est débité d'exactement 200 GL par séance.
+        // Coût par défaut = 150 billets : le budget est débité d'exactement 150 billets par séance.
         $this->assertGreaterThan(0, $sessions);
-        $this->assertSame(100000 - $sessions * 200, (int) $team->fresh()->budget);
+        $this->assertSame(100000 - $sessions * 150, (int) $team->fresh()->budget);
     }
 
     public function test_ai_skips_training_when_broke(): void
     {
         $save = $this->makeSave(['week' => 1, 'season' => 1]);
-        [$team] = $this->makeTeamWithSquad($save, ['budget' => 100]); // < 200
+        [$team] = $this->makeTeamWithSquad($save, ['budget' => 100]); // < 150
 
         $staminaBefore = (int) GamePlayer::where('game_save_id', $save->id)->sum('stamina');
 

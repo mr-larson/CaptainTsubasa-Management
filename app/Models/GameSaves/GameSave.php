@@ -156,7 +156,8 @@ class GameSave extends Model
         'training_gain_max'         => 5,
         'training_stamina_cost'     => 2,
         'training_min_stamina'      => 10,
-        'training_cost'             => 200,
+        'training_cost'             => 150,
+        'position_training_cost'    => 200,
         'ai_transfers_enabled'      => true,
         'ai_training_enabled'       => true,
         'visible_origins'           => [
@@ -205,6 +206,7 @@ class GameSave extends Model
             'training_stamina_cost'   => ['integer', 'min:0', 'max:15'],
             'training_min_stamina'    => ['integer', 'min:0', 'max:50'],
             'training_cost'           => ['integer', 'min:0', 'max:5000'],
+            'position_training_cost'  => ['integer', 'min:0', 'max:5000'],
             'ai_transfers_enabled'    => ['boolean'],
             'ai_training_enabled'     => ['boolean'],
             'visible_origins'         => ['array'],
