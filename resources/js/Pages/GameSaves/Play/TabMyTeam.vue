@@ -103,11 +103,16 @@ const renewalForm = useForm({ weeks: 1, end_week: null });
 const renewalLimit = (player) => player?.contract_end_week >= props.currentWeek && props.contractSeasonEndWeek
     ? Math.max(0, props.contractSeasonEndWeek - player.contract_end_week)
     : 0;
+const renewalMaxWeeks = computed(() => renewalLimit(renewalPlayer.value));
+const renewalCoveredWeeks = computed(() => Math.max(0, renewalForm.end_week - props.currentWeek));
+const renewalEndWeek = computed(() =>
+    Number.isInteger(renewalForm.weeks) && renewalForm.weeks >= 1 && renewalForm.weeks <= renewalMaxWeeks.value
+        ? renewalForm.end_week + renewalForm.weeks
+        : null
+);
 const renewalCost = computed(() => (renewalPlayer.value?.renewal_cost ?? 0) * renewalForm.weeks);
 const canSubmitRenewal = computed(() =>
-    Number.isInteger(renewalForm.weeks) && renewalForm.weeks >= 1
-    && renewalForm.weeks <= renewalLimit(renewalPlayer.value)
-    && renewalCost.value <= props.teamBudget && !renewalForm.processing
+    renewalEndWeek.value !== null && renewalCost.value <= props.teamBudget && !renewalForm.processing
 );
 
 function openRenewal(player) {
@@ -439,17 +444,19 @@ const slotCandidates = (slot, slotDef) => substitutes.value
         <Modal :show="!!renewalPlayer" max-width="md" @close="closeRenewal">
             <form v-if="renewalPlayer" class="space-y-4 p-5" @submit.prevent="submitRenewal">
                 <h3 class="text-lg font-bold text-slate-800">Prolonger {{ renewalPlayer.firstname }} {{ renewalPlayer.lastname }}</h3>
-                <p class="text-sm text-slate-500">
-                    Le contrat actuel se termine en semaine {{ renewalForm.end_week }}.
-                    La prolongation peut aller jusqu’à la semaine {{ contractSeasonEndWeek }}.
-                </p>
+                <dl class="grid grid-cols-[1fr_auto] gap-2 rounded-lg bg-slate-50 p-3 text-sm text-slate-700">
+                    <dt>Fin du contrat actuel</dt><dd class="text-right font-semibold">Semaine {{ renewalForm.end_week }}</dd>
+                    <dt>Semaines à venir déjà couvertes</dt><dd class="text-right font-semibold">{{ renewalCoveredWeeks }}</dd>
+                    <dt>Semaines encore ajoutables</dt><dd class="text-right font-semibold">{{ renewalMaxWeeks }}</dd>
+                </dl>
                 <label class="block text-sm font-semibold text-slate-700">
-                    Semaines supplémentaires (max. {{ renewalLimit(renewalPlayer) }})
+                    Semaines à ajouter
                     <input v-model.number="renewalForm.weeks" type="number" required min="1"
-                           :max="renewalLimit(renewalPlayer)" class="mt-1 block w-full px-3 py-1.5"
+                           :max="renewalMaxWeeks" class="mt-1 block w-full px-3 py-1.5"
                            :class="fieldClass({ shape: 'rect' })" />
                 </label>
                 <dl class="grid grid-cols-2 gap-2 rounded-lg bg-slate-50 p-3 text-sm text-slate-700">
+                    <dt>Fin après prolongation</dt><dd class="text-right font-semibold">{{ renewalEndWeek === null ? '—' : `Semaine ${renewalEndWeek}` }}</dd>
                     <dt>Salaire recalculé</dt><dd class="text-right font-semibold">{{ renewalPlayer.renewal_cost }} <GameBanknote /> / semaine</dd>
                     <dt>Coût total</dt><dd class="text-right font-semibold">{{ renewalCost }} <GameBanknote /></dd>
                     <dt>Budget après signature</dt><dd class="text-right font-semibold" :class="{ 'text-rose-600': renewalCost > teamBudget }">{{ teamBudget - renewalCost }} <GameBanknote /></dd>
