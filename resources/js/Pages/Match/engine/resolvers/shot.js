@@ -102,7 +102,7 @@ export function continueShot(attackTeam, defenseTeam, defenseAction, isSpecial, 
         const defPrefix = defenseTeam === "internal" ? "home" : "away";
         updateSideCard(defPrefix, defenseTeam, 1);
         highlightDuelPlayers(attackTeam, b.number, defenseTeam, 1);
-        highlightDuelStats(attackTeam, "shot", true);
+        highlightDuelStats(attackTeam, true);
         shared.state.pendingDefenseContext = { defenseTeam, defenderId: getKeeperId(defenseTeam), defenderSlot: 1 };
 
         setActionBar(buildDefenseGKHTML(defenseTeam, shared.roster), "mode-defense-" + defenseTeam, b, shared.roster, shared.bindActionButtons, false);
@@ -169,7 +169,7 @@ export function startFreeKick() {
             const defPrefix = defenseTeam === "internal" ? "home" : "away";
             updateSideCard(defPrefix, defenseTeam, 1);
             highlightDuelPlayers(attackTeam, b.number, defenseTeam, 1);
-            highlightDuelStats(attackTeam, "shot", true);
+            highlightDuelStats(attackTeam, true);
             shared.state.pendingDefenseContext = { defenseTeam, defenderId: getKeeperId(defenseTeam), defenderSlot: 1 };
 
             setActionBar(buildDefenseGKHTML(defenseTeam, shared.roster), "mode-defense-" + defenseTeam, b, shared.roster, shared.bindActionButtons, false);

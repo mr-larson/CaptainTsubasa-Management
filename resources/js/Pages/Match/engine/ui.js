@@ -883,23 +883,17 @@ export function applyRosterToDOM(roster, rootEl) {
 // -----------------------------------------------------------
 //   Stats utiles au duel en cours (fiches latérales)
 // -----------------------------------------------------------
-// Stat de l'attaquant selon son geste, et stat du « bon contre » côté défenseur.
-const DUEL_ATTACK_STAT  = { pass: 'pass', one_two: 'pass', cross: 'pass', long_pass: 'pass', 'special-pass': 'pass',
-                            dribble: 'dribble', 'special-dribble': 'dribble', shot: 'shot', special: 'shot' };
-const DUEL_COUNTER_STAT = { pass: 'intercept', dribble: 'tackle', shot: 'block' };
-
-/** Surligne la stat de l'attaquant et celle du contre adapté ; sans argument, efface. */
-export function highlightDuelStats(attackTeam = null, attackAction = null, keeper = false) {
+/** Surligne les choix du duel sur les deux fiches. Sans équipe, efface le surlignage. */
+export function highlightDuelStats(attackTeam = null, keeper = false) {
     _rootEl?.querySelectorAll('.duel-stat').forEach(el => el.classList.remove('duel-stat'));
-    if (!attackTeam || !attackAction) return;
+    if (!attackTeam) return;
 
-    const attackStat = DUEL_ATTACK_STAT[attackAction];
-    if (!attackStat) return;
     const attackPrefix  = attackTeam === 'internal' ? 'home' : 'away';
     const defensePrefix = attackPrefix === 'home' ? 'away' : 'home';
-    const counters = keeper ? ['hand_save', 'punch_save'] : [DUEL_COUNTER_STAT[attackStat]];
+    const attacks = keeper ? ['shot'] : ['shot', 'pass', 'dribble'];
+    const counters = keeper ? ['hand_save', 'punch_save'] : ['block', 'intercept', 'tackle'];
 
     const mark = (prefix, key) => _rootEl?.querySelector(`#${prefix}-stat-${key}`)?.parentElement?.classList.add('duel-stat');
-    mark(attackPrefix, attackStat);
+    attacks.forEach(k => mark(attackPrefix, k));
     counters.forEach(k => mark(defensePrefix, k));
 }

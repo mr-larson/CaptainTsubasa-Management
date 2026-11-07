@@ -531,6 +531,7 @@ export function initMatchEngine(rootEl, config = {}) {
         const defTeam      = otherTeam(state.currentTeam);
         const defaultAction= state.isKickoff ? "pass" : (ball.frontOfKeeper ? "shot" : "pass");
         setDefenderPreviewFor(defaultAction, defTeam);
+        highlightDuelStats(state.isKickoff ? null : state.currentTeam, ball.frontOfKeeper);
 
         if (isAITeam(state.currentTeam)) scheduleAIAttack();
         updateCardsPower(ball);
@@ -608,9 +609,7 @@ export function initMatchEngine(rootEl, config = {}) {
         const { defenderSlot } = state.pendingDefenseContext;
         updateSideCard(defPrefix, defTeam, defenderSlot || 6);
         highlightDuelPlayers(ball.team, ball.number, defTeam, defenderSlot);
-        const hideAttack = !isAITeam(defTeam) && !isKeeperChoiceUI;
-        if (hideAttack) highlightDuelStats();
-        else highlightDuelStats(state.currentTeam, action, isKeeperChoiceUI);
+        highlightDuelStats(state.currentTeam, isKeeperChoiceUI);
 
         let html;
         // Après
@@ -657,7 +656,7 @@ export function initMatchEngine(rootEl, config = {}) {
                 defensePrompt(TEAMS[defTeam].label, isAITeam(defTeam))
             );
         }
-        if (hideAttack) {
+        if (!isAITeam(defTeam) && !isKeeperChoiceUI) {
             setMessage(`${TEAMS[state.currentTeam].label} passe à l'attaque !`, defensePrompt(TEAMS[defTeam].label, false));
         }
 

@@ -559,4 +559,4 @@
 }
 
 /* Stats utiles au duel en cours (fiches latérales) */
-.duel-stat { background: #ccfbf1; color: #0f766e; border-radius: 4px; margin: 0 -4px; padding: 0 4px; font-weight: 700; }
+.duel-stat { background: linear-gradient(90deg, rgb(153 246 228 / 0.42), rgb(153 246 228 / 0.18)); color: #0f766e; border-radius: 4px; margin: 0 -4px; padding: 0 4px; font-weight: 700; }
