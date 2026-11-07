@@ -273,12 +273,41 @@ const clubStatus = computed(() => {
     const isMine   = viewedId === myId;
     const viewed   = isMine ? teamRef.value : (teamsRef.value ?? []).find(t => t.id === viewedId);
     const index    = standings.value.findIndex(r => r.id === viewedId);
+    const roster = isMine ? rosterWithStatus.value : rosterForTeam(viewed);
+    const cards = isMine && props.gameConfig?.bonus_cards_enabled !== false
+        ? props.bonusCardInventory : null;
+    const state = props.gameSave.state ?? {};
+    const teamMatches = id => Number(id) === Number(myId);
+    const effects = cards === null ? [] : [
+        ...(state.active_pre_match_cards ?? []).filter(c => teamMatches(c.game_team_id)).map(c => {
+            const card = cards.find(item => item.id === c.game_bonus_card_id);
+            return { name: card?.name ?? 'Bonus de match', icon: card?.icon, detail: 'Prochain match', type: 'Bonus' };
+        }),
+        ...props.sponsorChallenges.map(c => ({
+            name: c.card_name, icon: c.icon, detail: `${c.reward} GL en jeu`, type: 'Défi sponsor',
+        })),
+        ...(props.activeShields > 0 ? [{
+            name: 'Cellule de crise', icon: '🛡️', detail: `${props.activeShields} protection(s)`, type: 'Bonus',
+        }] : []),
+        ...(props.gameConfig?.malus_cards_enabled === false ? [] : [
+            ...props.incomingMalus,
+            ...(state.pending_stat_debuffs ?? []).filter(c => teamMatches(c.target_team_id)),
+        ].map(c => ({
+            name: c.card_name ?? 'Malus de match',
+            icon: c.icon ?? '🚫',
+            detail: c.player_name ?? roster.find(p => p.id === c.target_player_id)?.lastname ?? 'Prochain match',
+            type: 'Malus',
+        }))),
+    ];
     return {
         teams:            (teamsRef.value ?? []).map(t => ({ id: t.id, name: t.name, mine: t.id === myId }))
                                                  .sort((a, b) => Number(b.mine) - Number(a.mine) || a.name.localeCompare(b.name)),
         teamId:           viewedId,
         isMine,
-        roster:           isMine ? rosterWithStatus.value : rosterForTeam(viewed),
+        roster,
+        cardsInHand:      cards?.filter(c => c.status === 'available') ?? null,
+        activeEffects:    effects,
+        playerPromises:   isMine ? props.playerPromises : null,
         clubStanding:     index === -1 ? null : { ...standings.value[index], position: index + 1 },
         standingsCount:   standings.value.length,
         teamBudget:       Number(viewed?.budget) || 0,

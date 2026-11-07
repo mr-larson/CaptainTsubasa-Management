@@ -16,6 +16,9 @@ const props = defineProps({
     playerSuspension:  { type: Function, default: () => null },
     playerYellowCards: { type: Function, default: () => 0 },
     suspensionOn3Yellows: { type: Boolean, default: true },
+    cardsInHand:       { type: Array, default: null },
+    activeEffects:     { type: Array, default: () => [] },
+    playerPromises:    { type: Object, default: null },
 });
 
 const emit = defineEmits(['open-player']);
@@ -60,6 +63,21 @@ const average = (key, fallback) => props.roster.length
     : 0;
 const averageMorale = computed(() => average('morale', 60));
 const averageStamina = computed(() => average('stamina', 0));
+
+const promises = computed(() => props.roster.flatMap(player =>
+    (props.playerPromises?.[player.id] ?? [])
+        .filter(promise => promise.status === 'pending')
+        .map(promise => ({ player, promise }))
+).sort((a, b) => a.promise.due_week - b.promise.due_week));
+
+function promiseText(promise) {
+    switch (promise.type) {
+        case 'starter': return `Titularisations · ${promise.played_matches ?? 0}/${promise.target_matches ?? 4}`;
+        case 'playing_time': return `Temps de jeu · ${promise.target_turns ?? 15} tours`;
+        case 'renewal': return 'Prolongation de contrat';
+        default: return 'Promesse en cours';
+    }
+}
 
 const KPI = 'border border-slate-200 rounded-xl bg-white p-3 flex flex-col items-center gap-0.5';
 const KPI_LABEL = 'text-2xs font-bold text-slate-400 uppercase tracking-wider';
@@ -155,6 +173,40 @@ const EMPTY = 'text-xs text-emerald-600';
                     <span :class="[PILL, moraleState(p.morale).chip]">{{ moraleState(p.morale).emoji }} {{ p.morale ?? 60 }}</span>
                 </button>
                 <p v-if="!tired.length && !unhappy.length" :class="EMPTY">✓ Personne d'épuisé ni de mécontent</p>
+            </section>
+            <section v-if="cardsInHand !== null" :class="SECTION">
+                <h4 class="text-sm font-semibold text-slate-700">🎒 Cartes en main <span class="text-slate-400 font-normal">({{ cardsInHand.length }})</span></h4>
+                <div v-for="card in cardsInHand" :key="card.id"
+                     class="flex items-center justify-between gap-2 rounded-lg border border-slate-100 px-2.5 py-1.5 text-xs">
+                    <span class="font-semibold text-slate-700" :title="card.description">{{ card.icon }} {{ card.name }}</span>
+                    <span v-if="card.kind === 'malus'" :class="[PILL, 'bg-rose-100 text-rose-700']">Malus</span>
+                </div>
+                <p v-if="!cardsInHand.length" :class="EMPTY">Aucune carte en main</p>
+            </section>
+
+            <section v-if="cardsInHand !== null" :class="SECTION">
+                <h4 class="text-sm font-semibold text-slate-700">⚡ Bonus et malus actifs <span class="text-slate-400 font-normal">({{ activeEffects.length }})</span></h4>
+                <div v-for="(effect, index) in activeEffects" :key="index"
+                     class="flex items-center justify-between gap-2 rounded-lg border border-slate-100 px-2.5 py-1.5 text-xs">
+                    <span>
+                        <span class="font-semibold text-slate-700">{{ effect.icon }} {{ effect.name }}</span>
+                        <span class="text-slate-500"> · {{ effect.detail }}</span>
+                    </span>
+                    <span :class="[PILL, effect.type === 'Malus' ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700']">{{ effect.type }}</span>
+                </div>
+                <p v-if="!activeEffects.length" :class="EMPTY">Aucun effet actif</p>
+            </section>
+
+            <section v-if="playerPromises !== null" :class="SECTION" class="lg:col-span-2">
+                <h4 class="text-sm font-semibold text-slate-700">🤝 Promesses en cours <span class="text-slate-400 font-normal">({{ promises.length }})</span></h4>
+                <button v-for="{ player, promise } in promises" :key="promise.id" type="button" :class="ROW" @click="emit('open-player', player)">
+                    <span>
+                        <span class="font-semibold text-slate-700">{{ player.firstname }} {{ player.lastname }}</span>
+                        <span class="text-slate-500"> · {{ promiseText(promise) }}</span>
+                    </span>
+                    <span :class="[PILL, 'bg-sky-100 text-sky-700']">Échéance S{{ promise.due_week }}</span>
+                </button>
+                <p v-if="!promises.length" :class="EMPTY">Aucune promesse en cours</p>
             </section>
         </div>
     </div>

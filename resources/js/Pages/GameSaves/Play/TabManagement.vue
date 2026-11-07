@@ -120,7 +120,7 @@ function resetDefaults() {
 </script>
 
 <template>
-    <div class="flex-1 flex flex-col md:flex-row gap-4 overflow-y-auto min-h-0">
+    <div class="flex-1 flex flex-col md:flex-row gap-4 overflow-y-auto md:overflow-hidden min-h-0">
         <!-- Sidebar -->
         <div class="md:w-1/5 shrink-0 border border-slate-200 rounded-lg bg-slate-50 p-3">
             <h3 class="text-md font-semibold text-slate-700 mb-2">Gestion</h3>
@@ -135,11 +135,12 @@ function resetDefaults() {
         </div>
 
         <!-- Panneau droit -->
-        <div class="flex-1 border border-slate-200 rounded-lg bg-slate-50 p-3 sm:p-4 flex flex-col gap-4">
+        <div class="flex-1 min-w-0 border border-slate-200 rounded-lg bg-slate-50 p-3 sm:p-4 flex flex-col gap-4 md:min-h-0"
+             :class="activeSection === 'status' && clubStatus ? 'md:overflow-hidden' : 'md:overflow-y-auto'">
 
             <!-- Statut du club (page par défaut) -->
-            <div v-if="activeSection === 'status' && clubStatus" class="flex-1 flex flex-col gap-3">
-                <div class="flex flex-wrap items-center justify-between gap-3">
+            <div v-if="activeSection === 'status' && clubStatus" class="flex-1 flex flex-col gap-3 md:min-h-0">
+                <div class="flex shrink-0 flex-wrap items-center justify-between gap-3">
                     <h3 class="text-lg font-semibold text-slate-700">Statut du club</h3>
                     <select :value="clubStatus.teamId" @change="emit('select-club', Number($event.target.value))"
                             aria-label="Club affiché"
@@ -149,7 +150,9 @@ function resetDefaults() {
                         </option>
                     </select>
                 </div>
-                <ClubStatusPanel v-bind="statusPanelProps" @open-player="p => emit('open-player', p)" />
+                <div class="md:min-h-0 md:overflow-y-auto md:pr-1">
+                    <ClubStatusPanel v-bind="statusPanelProps" @open-player="p => emit('open-player', p)" />
+                </div>
             </div>
 
             <!-- Base de données -->
