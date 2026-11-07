@@ -416,8 +416,8 @@ function playDuelAnimation(aRoll, dRoll, breakdown, mode, finalWinner, isCrit, s
         document.addEventListener('keydown', onKey);
 
         const T = mode === 'fast'
-            ? { settleA: 300, settleD: 480, verdict: 560, hold: 4000 }
-            : { settleA: 800, settleD: 1050, verdict: 1200, hold: 6500 };
+            ? { settleA: 300, settleD: 480, verdict: 560, hold: 1500 }
+            : { settleA: 800, settleD: 1050, verdict: 1200, hold: 4000 };
 
         later(() => settleSide('attack',  dieA, dieAAlt, aRoll), T.settleA);
         later(() => settleSide('defense', dieD, dieDAlt, dRoll), T.settleD);

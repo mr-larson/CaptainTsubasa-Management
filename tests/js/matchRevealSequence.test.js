@@ -164,7 +164,7 @@ describe('enchaînement des révélations et du terrain', () => {
         expect(ballEl.style.left).toBe('55%');
         expect(animateAndThen).not.toHaveBeenCalled();
 
-        await vi.advanceTimersByTimeAsync(7699);
+        await vi.advanceTimersByTimeAsync(5199);
         expect(diceOverlay.classList.contains('visible')).toBe(true);
         expect(ballEl.style.left).toBe('55%');
         await vi.advanceTimersByTimeAsync(1);
@@ -178,7 +178,7 @@ describe('enchaînement des révélations et du terrain', () => {
         expect(state._moveBallFn).toHaveBeenCalledWith('external', 8);
     });
 
-    it('garde la défense bleue à gauche et montre le verdict rapide pendant quatre secondes', async () => {
+    it('garde la défense bleue à gauche et montre le verdict rapide pendant 1,5 seconde', async () => {
         vi.stubGlobal('localStorage', { getItem: () => 'fast' });
         const verdict = element();
         diceOverlay.querySelector = selector => selector === '.droll-verdict' ? verdict : null;
@@ -192,7 +192,7 @@ describe('enchaînement des révélations et du terrain', () => {
         expect(html).toMatch(/droll-die--internal" data-die="defense"[\s\S]*droll-die--external" data-die="attack"/);
         await vi.advanceTimersByTimeAsync(560);
         expect(verdict.textContent).toContain('La défense tient bon');
-        await vi.advanceTimersByTimeAsync(3999);
+        await vi.advanceTimersByTimeAsync(1499);
         expect(diceOverlay.classList.contains('visible')).toBe(true);
         await vi.advanceTimersByTimeAsync(1);
         expect(diceOverlay.classList.contains('visible')).toBe(false);
