@@ -245,7 +245,7 @@ const selectedPlayerPerf = computed(() => {
                         <span class="font-bold text-slate-700">{{ averageTeamStat(otherRosterWithStatus, 'stamina') }}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span>Cartons</span>
+                        <span>Joueurs avertis</span>
                         <span class="font-bold" :class="cardsCountForTeam(selectedOtherTeam.id) > 0 ? 'text-yellow-500' : 'text-slate-700'">
                             {{ cardsCountForTeam(selectedOtherTeam.id) }}
                         </span>

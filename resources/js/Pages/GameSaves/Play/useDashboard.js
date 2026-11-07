@@ -64,47 +64,29 @@ export function useDashboard({ teams, gameSave, team, roster, activeInjuries, ac
     const suspensions = computed(() => activeSuspensions?.value ?? []);
     const yellowCards = computed(() => activeYellowCards?.value ?? {});
 
-    const injuriesCount    = computed(() => injuries.value.length);
-    const suspensionsCount = computed(() => suspensions.value.length);
-    const cardsCount       = computed(() => Object.keys(yellowCards.value).length);
+    const injuriesByPlayer = computed(() => new Map([...injuries.value].reverse().map(i => [Number(i.game_player_id), i])));
+    const suspensionsByPlayer = computed(() => new Map([...suspensions.value].reverse().map(s => [Number(s.game_player_id), s])));
 
-    // Par équipe — filtre par les joueurs de l'équipe
-    const injuriesCountForTeam = (teamId) => {
-        const t = (teams.value ?? []).find(t => t.id === teamId);
-        if (!t) return 0;
-        const playerIds = new Set((t.contracts ?? []).map(c => c.game_player_id));
-        return injuries.value.filter(i => playerIds.has(i.game_player_id)).length;
-    };
+    const playerInjury = (playerId) => injuriesByPlayer.value.get(Number(playerId)) ?? null;
+    const playerSuspension = (playerId) => suspensionsByPlayer.value.get(Number(playerId)) ?? null;
+    const isPlayerInjured = (playerId) => playerInjury(playerId) !== null;
+    const isPlayerSuspended = (playerId) => playerSuspension(playerId) !== null;
+    const playerYellowCards = (playerId) => yellowCards.value[playerId] ?? 0;
+    const isPlayerBooked = (playerId) => playerYellowCards(playerId) > 0;
 
-    const suspensionsCountForTeam = (teamId) => {
-        const t = (teams.value ?? []).find(t => t.id === teamId);
-        if (!t) return 0;
-        const playerIds = new Set((t.contracts ?? []).map(c => c.game_player_id));
-        return suspensions.value.filter(s => playerIds.has(s.game_player_id)).length;
-    };
+    // Un joueur peut avoir plusieurs sanctions. Chaque compteur porte sur
+    // les joueurs de l’effectif, comme la liste du statut du club.
+    const countPlayers = (ids, predicate) => [...new Set(ids.map(Number))].filter(predicate).length;
+    const rosterIds = computed(() => roster.value.map(player => player.id));
+    const injuriesCount = computed(() => countPlayers(rosterIds.value, isPlayerInjured));
+    const suspensionsCount = computed(() => countPlayers(rosterIds.value, isPlayerSuspended));
+    const cardsCount = computed(() => countPlayers(rosterIds.value, isPlayerBooked));
 
-    const cardsCountForTeam = (teamId) => {
-        const t = (teams.value ?? []).find(t => t.id === teamId);
-        if (!t) return 0;
-        const playerIds = new Set((t.contracts ?? []).map(c => c.game_player_id));
-        return [...playerIds].filter(id => yellowCards.value[id] > 0).length;
-    };
-
-    // Helpers pour vérifier le statut d'un joueur spécifique
-    const isPlayerInjured = (playerId) =>
-        injuries.value.some(i => i.game_player_id === playerId);
-
-    const isPlayerSuspended = (playerId) =>
-        suspensions.value.some(s => s.game_player_id === playerId);
-
-    const playerYellowCards = (playerId) =>
-        yellowCards.value[playerId] ?? 0;
-
-    const playerInjury = (playerId) =>
-        injuries.value.find(i => i.game_player_id === playerId) ?? null;
-
-    const playerSuspension = (playerId) =>
-        suspensions.value.find(s => s.game_player_id === playerId) ?? null;
+    const playerIdsForTeam = (teamId) =>
+        (teams.value ?? []).find(t => Number(t.id) === Number(teamId))?.contracts?.map(c => c.game_player_id) ?? [];
+    const injuriesCountForTeam = (teamId) => countPlayers(playerIdsForTeam(teamId), isPlayerInjured);
+    const suspensionsCountForTeam = (teamId) => countPlayers(playerIdsForTeam(teamId), isPlayerSuspended);
+    const cardsCountForTeam = (teamId) => countPlayers(playerIdsForTeam(teamId), isPlayerBooked);
 
     // ==========================
     //   STATS MOYENNES

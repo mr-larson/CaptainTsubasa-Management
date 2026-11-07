@@ -295,7 +295,7 @@ const slotCandidates = (slot, slotDef) => substitutes.value
                     <div class="flex justify-between"><span>Moral moy.</span>
                         <span class="font-bold" :class="moraleState(averageMorale).text">{{ moraleState(averageMorale).emoji }} {{ averageMorale }}</span>
                     </div>
-                    <div class="flex justify-between"><span>Cartons</span>
+                    <div class="flex justify-between"><span>Joueurs avertis</span>
                         <span class="font-bold" :class="cardsCount > 0 ? 'text-yellow-500' : 'text-slate-700'">{{ cardsCount }}</span>
                     </div>
                 </div>
