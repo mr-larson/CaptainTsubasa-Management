@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { FIELD_RULES } from '../../resources/js/Pages/Match/engine/constants.js';
-import { enqueueRevealStep } from '../../resources/js/Pages/Match/engine/dice.js';
+import { enqueueRevealStep, showDuelDice } from '../../resources/js/Pages/Match/engine/dice.js';
 import { initFieldModule } from '../../resources/js/Pages/Match/engine/field.js';
 import { initResolversModule, resolveDribble, resolveShotKeeperDuel } from '../../resources/js/Pages/Match/engine/resolvers.js';
 import { runFieldDuel } from '../../resources/js/Pages/Match/engine/resolvers/fieldDuel.js';
@@ -164,7 +164,10 @@ describe('enchaînement des révélations et du terrain', () => {
         expect(ballEl.style.left).toBe('55%');
         expect(animateAndThen).not.toHaveBeenCalled();
 
-        await vi.advanceTimersByTimeAsync(2100);
+        await vi.advanceTimersByTimeAsync(7699);
+        expect(diceOverlay.classList.contains('visible')).toBe(true);
+        expect(ballEl.style.left).toBe('55%');
+        await vi.advanceTimersByTimeAsync(1);
         expect(diceOverlay.classList.contains('visible')).toBe(false);
         expect(ballEl.style.left).toBe(`${FIELD_RULES.GOAL_X.internal}%`);
         expect(state._applyKickoffFn).not.toHaveBeenCalled();
@@ -173,5 +176,25 @@ describe('enchaînement des révélations et du terrain', () => {
         finishGoal();
         expect(state._applyKickoffFn).toHaveBeenCalledOnce();
         expect(state._moveBallFn).toHaveBeenCalledWith('external', 8);
+    });
+
+    it('garde la défense bleue à gauche et montre le verdict rapide pendant quatre secondes', async () => {
+        vi.stubGlobal('localStorage', { getItem: () => 'fast' });
+        const verdict = element();
+        diceOverlay.querySelector = selector => selector === '.droll-verdict' ? verdict : null;
+        const roll = { roll: 10, bonus: 2 };
+        showDuelDice(10, 12, roll, roll, {
+            meta: { attacker: { team: 'external' }, defender: { team: 'internal' } },
+            result: { winner: 'defense' },
+        });
+
+        const html = diceOverlay.innerHTML;
+        expect(html).toMatch(/droll-die--internal" data-die="defense"[\s\S]*droll-die--external" data-die="attack"/);
+        await vi.advanceTimersByTimeAsync(560);
+        expect(verdict.textContent).toContain('La défense tient bon');
+        await vi.advanceTimersByTimeAsync(3999);
+        expect(diceOverlay.classList.contains('visible')).toBe(true);
+        await vi.advanceTimersByTimeAsync(1);
+        expect(diceOverlay.classList.contains('visible')).toBe(false);
     });
 });

@@ -294,11 +294,6 @@ function playDuelAnimation(aRoll, dRoll, breakdown, mode, finalWinner, isCrit, s
         const logCard = document.getElementById('log-card');
         const meta    = breakdown?.meta ?? null;
 
-        const teamClass = (p, fallback) =>
-            p?.team === 'internal' ? 'droll-die--internal'
-                : p?.team === 'external' ? 'droll-die--external'
-                    : fallback;
-
         const playerLine = (p, fallback) => p?.name
             ? `${p.number != null ? '#' + escapeHTML(p.number) + ' ' : ''}${escapeHTML(p.name)}`
             : fallback;
@@ -307,26 +302,29 @@ function playDuelAnimation(aRoll, dRoll, breakdown, mode, finalWinner, isCrit, s
             ? `<div class="droll-adv">${breakdown?.captainReroll ? '👑 Reroll capitaine' : '🔥 Dépassement de soi'} — 2d20</div>`
             : '';
 
-        const sideHTML = (side, roll, p, dieCls) => `
+        const sideHTML = (side, roll, p, team) => `
             <div class="droll-side">
-                <div class="droll-label droll-label--${side}">${side === 'attack' ? '⚔️ Attaque' : '🛡️ Défense'}</div>
+                <div class="droll-label droll-label--${team}">${side === 'attack' ? '⚔️ Attaque' : '🛡️ Défense'}</div>
                 <div class="droll-name">${playerLine(p, side === 'attack' ? 'Attaquant' : 'Défenseur')}</div>
                 <div class="droll-action">${p?.actionLabel ? escapeHTML(p.actionLabel) : '&nbsp;'}</div>
                 <div class="droll-dice-row">
-                    <div class="droll-die ${dieCls}" data-die="${side}">?</div>
-                    ${roll.isAdvantage ? `<div class="droll-die droll-die--alt ${dieCls}" data-die="${side}-alt">?</div>` : ''}
+                    <div class="droll-die droll-die--${team}" data-die="${side}">?</div>
+                    ${roll.isAdvantage ? `<div class="droll-die droll-die--alt droll-die--${team}" data-die="${side}-alt">?</div>` : ''}
                 </div>
                 ${advBadge(roll)}
                 <div class="droll-bonus" data-bonus="${side}">&nbsp;</div>
                 <div class="droll-total" data-total="${side}">&nbsp;</div>
             </div>`;
 
+        const attackOnLeft = meta?.attacker?.team !== 'external' && meta?.defender?.team !== 'internal';
+        const attackHTML = sideHTML('attack', aRoll, meta?.attacker, attackOnLeft ? 'internal' : 'external');
+        const defenseHTML = sideHTML('defense', dRoll, meta?.defender, attackOnLeft ? 'external' : 'internal');
         overlay.innerHTML = `
             <div class="droll-card" role="status">
                 <div class="droll-row">
-                    ${sideHTML('attack', aRoll, meta?.attacker, teamClass(meta?.attacker, 'droll-die--attack'))}
+                    ${attackOnLeft ? attackHTML : defenseHTML}
                     <div class="droll-vs">VS</div>
-                    ${sideHTML('defense', dRoll, meta?.defender, teamClass(meta?.defender, 'droll-die--defense'))}
+                    ${attackOnLeft ? defenseHTML : attackHTML}
                 </div>
                 <div class="droll-verdict">&nbsp;</div>
                 <div class="droll-hint">cliquer pour passer</div>
@@ -418,13 +416,13 @@ function playDuelAnimation(aRoll, dRoll, breakdown, mode, finalWinner, isCrit, s
         document.addEventListener('keydown', onKey);
 
         const T = mode === 'fast'
-            ? { settleA: 300, settleD: 480, verdict: 560,  close: 1150 }
-            : { settleA: 800, settleD: 1050, verdict: 1200, close: 2100 };
+            ? { settleA: 300, settleD: 480, verdict: 560, hold: 4000 }
+            : { settleA: 800, settleD: 1050, verdict: 1200, hold: 6500 };
 
         later(() => settleSide('attack',  dieA, dieAAlt, aRoll), T.settleA);
         later(() => settleSide('defense', dieD, dieDAlt, dRoll), T.settleD);
         later(showVerdict, T.verdict);
-        later(finish, T.close);
+        later(finish, T.verdict + T.hold);
     });
 }
 
@@ -580,16 +578,7 @@ export function showDuelDice(attackScore, defenseScore, aRoll, dRoll, breakdown)
         if (tip) tip.innerHTML = formatBreakdownHTML(breakdown);
     };
 
-    // Mise en scène complète réservée aux duels marquants (tir, coup spécial,
-    // gardien, jet critique) ; les duels courants (passe, dribble…) passent
-    // d'un cran plus vite pour garder le rythme.
-    const attackKey = String(breakdown?.meta?.attacker?.actionKey ?? '');
-    const defenseKey = String(breakdown?.meta?.defender?.actionKey ?? '');
-    const isKeyDuel = !!breakdown?.result?.critWinner
-        || /shot|special/.test(attackKey)
-        || ['hands', 'punch', 'gk-special'].includes(defenseKey);
-    const baseMode = getDiceAnimMode();
-    const mode = isKeyDuel ? baseMode : ({ normal: 'fast', fast: 'off' }[baseMode] ?? baseMode);
+    const mode = getDiceAnimMode();
 
     // Le jet de dé est lui-même une étape de la file : il ne démarre qu'une
     // fois les révélations précédentes (faute, carton...) affichées, et la
