@@ -21,6 +21,8 @@ class DeclarationService
     const PRAISE_DESERVED_AFFINITY   = 8;
     const PRAISE_DESERVED_MORALE     = 4;
     const PRAISE_UNDESERVED_AFFINITY = 4; // sonne creux : effet réduit, pas de moral
+    private const PRAISE_MALUS_CHANCE = 25;
+    private const MATCH_MALUS = ['attack' => -2, 'defense' => -2, 'speed' => -2];
 
     // Critiquer un joueur en méforme : électrochoc ou mal vécu
     const CRITICIZE_PROUD_CHANCE     = 60;
@@ -52,19 +54,26 @@ class DeclarationService
             return 'Tu t\'es déjà exprimé publiquement sur ce joueur récemment.';
         }
 
-        $deserved = $this->isInForm($gameSave, $player, $teamId);
+        $duelBalance = $this->lastMatchDuelBalance($gameSave, $player, $teamId);
+        $deserved = $duelBalance > 0;
 
         if ($type === 'praise') {
             $outcome       = 'well_received';
             $affinityDelta = $deserved ? self::PRAISE_DESERVED_AFFINITY : self::PRAISE_UNDESERVED_AFFINITY;
             $moraleDelta   = $deserved ? self::PRAISE_DESERVED_MORALE : 0;
+            if ($duelBalance < 0 && $this->roll() <= self::PRAISE_MALUS_CHANCE
+                && $this->queueMatchModifier($gameSave, $player, $teamId, $week, self::MATCH_MALUS)) {
+                $outcome = 'match_malus';
+                $affinityDelta = 0;
+            }
             // deserved = en forme → la félicitation est méritée
             $isDeserved = $deserved;
         } else {
             // criticize : "mérité" = le joueur est en méforme
             $isDeserved = !$deserved;
             if ($isDeserved) {
-                if ($this->roll() <= self::CRITICIZE_PROUD_CHANCE && $this->queueMatchBoost($gameSave, $player, $teamId, $week)) {
+                if ($this->roll() <= self::CRITICIZE_PROUD_CHANCE
+                    && $this->queueMatchModifier($gameSave, $player, $teamId, $week, self::MATCH_BOOST)) {
                     $outcome       = 'match_boost';
                     $affinityDelta = self::CRITICIZE_PROUD_AFFINITY;
                     $moraleDelta   = self::CRITICIZE_PROUD_MORALE;
@@ -122,7 +131,7 @@ class DeclarationService
         return random_int(1, 100);
     }
 
-    private function queueMatchBoost(GameSave $gameSave, GamePlayer $player, int $teamId, int $week): bool
+    private function queueMatchModifier(GameSave $gameSave, GamePlayer $player, int $teamId, int $week, array $modifier): bool
     {
         $matchId = GameMatch::where('game_save_id', $gameSave->id)
             ->where('status', 'scheduled')
@@ -132,7 +141,7 @@ class DeclarationService
         if ($matchId === null) return false;
 
         $state = $gameSave->state ?? [];
-        $state['declaration_match_boosts'][$matchId][$teamId][$player->id] = self::MATCH_BOOST;
+        $state['declaration_match_boosts'][$matchId][$teamId][$player->id] = $modifier;
         $gameSave->state = $state;
         $gameSave->save();
         return true;
@@ -148,11 +157,7 @@ class DeclarationService
         $gameSave->save();
     }
 
-    /**
-     * Le joueur est-il en forme ? Référence : son dernier match d'équipe joué
-     * (a participé ET duels gagnés > duels perdus).
-     */
-    private function isInForm(GameSave $gameSave, GamePlayer $player, int $teamId): bool
+    private function lastMatchDuelBalance(GameSave $gameSave, GamePlayer $player, int $teamId): int
     {
         $match = GameMatch::where('game_save_id', $gameSave->id)
             ->where('status', 'played')
@@ -160,12 +165,8 @@ class DeclarationService
             ->orderByDesc('week')
             ->first();
 
-        $stats = $match?->match_stats['players'][(string) $player->id]
-            ?? $match?->match_stats['players'][$player->id]
-            ?? null;
+        $stats = $match?->match_stats['players'][$player->id] ?? [];
 
-        if (!$stats) return false; // n'a pas joué (ou aucun match) → pas en forme
-
-        return (int) ($stats['duelsWon'] ?? 0) > (int) ($stats['duelsLost'] ?? 0);
+        return (int) ($stats['duelsWon'] ?? 0) - (int) ($stats['duelsLost'] ?? 0);
     }
 }
