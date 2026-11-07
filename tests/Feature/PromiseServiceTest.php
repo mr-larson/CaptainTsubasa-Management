@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\GameSaves\GamePlayerMoraleLog;
 use App\Models\GameSaves\GamePromise;
+use App\Services\PlayerMoraleSummary;
 use App\Services\PromiseService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsGameWorld;
@@ -122,6 +123,46 @@ class PromiseServiceTest extends TestCase
         $this->assertTrue(
             GamePlayerMoraleLog::where('game_player_id', $player->id)->where('source', 'promise')->exists()
         );
+    }
+
+    public function test_pending_starter_promise_shows_and_saves_progress_before_the_deadline(): void
+    {
+        $save = $this->makeSave(['week' => 2]);
+        $team = $this->makeTeam($save);
+        $opp = $this->makeTeam($save);
+        $player = $this->makePlayer($save);
+        $this->makeContract($save, $team, $player);
+
+        $promise = $this->service->create($save, $player, $team->id, 'starter');
+        foreach ([
+            [1, 'played', [$player->id]],
+            [2, 'played', [$player->id]],
+            [3, 'played', []],
+            [4, 'scheduled', [$player->id]],
+        ] as [$week, $status, $starters]) {
+            $this->makeMatch($save, $opp, $team, [
+                'week' => $week,
+                'status' => $status,
+                'match_stats' => [
+                    'starters' => ['home' => [], 'away' => $starters],
+                    'playtime' => [$player->id => 15],
+                ],
+            ]);
+        }
+
+        // Le match compte dans l'interface même avant la clôture de la semaine.
+        $summary = app(PlayerMoraleSummary::class)->promises($save, [$player->id]);
+        $this->assertSame(1, $summary[$player->id][0]['played_matches']);
+
+        $this->service->evaluateForWeek($save, 2);
+        $this->service->evaluateForWeek($save, 2);
+        $this->assertSame('pending', $promise->fresh()->status);
+        $this->assertSame(1, $promise->fresh()->played_matches);
+        $this->assertFalse(GamePlayerMoraleLog::where('game_player_id', $player->id)->exists());
+
+        // L'entrée en jeu en semaine 3 et le match programmé ne comptent pas.
+        $this->service->evaluateForWeek($save, 4);
+        $this->assertSame(1, $promise->fresh()->played_matches);
     }
 
     public function test_starter_promise_is_kept_when_target_met(): void

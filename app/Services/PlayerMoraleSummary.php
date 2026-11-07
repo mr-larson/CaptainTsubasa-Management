@@ -35,11 +35,14 @@ class PlayerMoraleSummary
 
     public function promises(GameSave $gameSave, Collection|array $playerIds): Collection
     {
-        return GamePromise::where('game_save_id', $gameSave->id)
+        $promises = GamePromise::where('game_save_id', $gameSave->id)
             ->whereIn('game_player_id', $playerIds)
             ->orderByDesc('id')
             ->limit(100)
-            ->get()
+            ->get();
+        $starterProgress = app(PromiseService::class)->starterProgress($gameSave, $promises, (int) ($gameSave->week ?? 1));
+
+        return $promises
             ->groupBy('game_player_id')
             ->map(fn($promises) => $promises->take(2)->map(fn($p) => [
                 'id'             => $p->id,
@@ -47,7 +50,7 @@ class PlayerMoraleSummary
                 'start_week'     => $p->start_week,
                 'due_week'       => $p->due_week,
                 'target_matches' => $p->target_matches,
-                'played_matches' => $p->played_matches,
+                'played_matches' => $starterProgress[$p->id] ?? $p->played_matches,
                 'target_turns'   => $p->target_turns,
                 'played_turns'   => $p->played_turns,
                 'status'         => $p->status,

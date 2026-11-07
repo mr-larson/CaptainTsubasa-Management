@@ -9,6 +9,7 @@ use App\Models\GameSaves\GamePlayerMoraleLog;
 use App\Models\GameSaves\GamePromise;
 use App\Models\GameSaves\GameSanction;
 use App\Models\GameSaves\GameSave;
+use Illuminate\Support\Collection;
 
 /**
  * Promesses du coach aux joueurs.
@@ -99,6 +100,7 @@ class PromiseService
         $season = (int) ($gameSave->season ?? 1);
         $now    = now();
         $logs   = [];
+        $starterProgress = $this->starterProgress($gameSave, $promises, $week);
 
         foreach ($promises as $promise) {
             $player = $promise->gamePlayer;
@@ -110,7 +112,7 @@ class PromiseService
             $resolution = match ($promise->type) {
                 'renewal'      => $this->evaluateRenewal($promise, $week),
                 'playing_time' => $this->evaluatePlayingTime($promise, $week),
-                default        => $this->evaluateStarter($promise, $week),
+                default        => $this->evaluateStarter($promise, $week, $starterProgress[$promise->id] ?? 0),
             };
 
             // null = pas encore résolue (ex. prochain match pas encore joué).
@@ -186,11 +188,15 @@ class PromiseService
      * Titularisation : figurer dans le 11 de départ sur `target_matches` matchs
      * de la fenêtre. Résolue à l'échéance.
      */
-    private function evaluateStarter(GamePromise $promise, int $week): ?array
+    private function evaluateStarter(GamePromise $promise, int $week, int $started): ?array
     {
-        if ($week < $promise->due_week) return null;
+        if ($week < $promise->due_week) {
+            if ($promise->played_matches !== $started) {
+                $promise->update(['played_matches' => $started]);
+            }
+            return null;
+        }
 
-        $started = $this->countStartedMatches($promise);
         $target  = $this->effectiveTarget($promise);
         $kept    = $started >= $target;
 
@@ -250,24 +256,33 @@ class PromiseService
     }
 
     /**
-     * Nombre de matchs de la fenêtre où le joueur figurait dans le 11 de départ.
+     * Titularisations par promesse en cours, d'après les matchs déjà joués.
+     * Un seul chargement des feuilles de match pour toutes les promesses.
      */
-    private function countStartedMatches(GamePromise $promise): int
+    public function starterProgress(GameSave $gameSave, Collection $promises, int $week): array
     {
-        $matches = GameMatch::where('game_save_id', $promise->game_save_id)
-            ->whereBetween('week', [$promise->start_week, $promise->due_week])
+        $promises = $promises->where('type', 'starter')->where('status', 'pending')
+            ->filter(fn (GamePromise $promise) => $promise->start_week <= $week);
+        if ($promises->isEmpty()) return [];
+
+        $teamIds = $promises->pluck('game_team_id')->unique()->values();
+        $matches = GameMatch::where('game_save_id', $gameSave->id)
+            ->whereBetween('week', [$promises->min('start_week'), min($week, $promises->max('due_week'))])
             ->where('status', 'played')
-            ->where(fn($q) => $q
-                ->where('home_team_id', $promise->game_team_id)
-                ->orWhere('away_team_id', $promise->game_team_id))
+            ->where(fn ($q) => $q
+                ->whereIn('home_team_id', $teamIds)
+                ->orWhereIn('away_team_id', $teamIds))
             ->get();
 
-        $count = 0;
-        foreach ($matches as $match) {
-            if ($this->startedMatch($match, (int) $promise->game_player_id)) $count++;
-        }
-
-        return $count;
+        return $promises->mapWithKeys(fn (GamePromise $promise) => [
+            $promise->id => $matches->filter(fn (GameMatch $match) =>
+                $match->week >= $promise->start_week
+                && $match->week <= $promise->due_week
+                && ((int) $match->home_team_id === (int) $promise->game_team_id
+                    || (int) $match->away_team_id === (int) $promise->game_team_id)
+                && $this->startedMatch($match, (int) $promise->game_player_id)
+            )->count(),
+        ])->all();
     }
 
     /**
