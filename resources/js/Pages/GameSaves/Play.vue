@@ -285,7 +285,7 @@ const clubStatus = computed(() => {
             return { name: card?.name ?? 'Bonus de match', icon: card?.icon, detail: 'Prochain match', type: 'Bonus' };
         }),
         ...props.sponsorChallenges.map(c => ({
-            name: c.card_name, icon: c.icon, detail: `${c.reward} GL en jeu`, type: 'Défi sponsor',
+            name: c.card_name, icon: c.icon, detail: `${c.reward} billets en jeu`, type: 'Défi sponsor',
         })),
         ...(props.activeShields > 0 ? [{
             name: 'Cellule de crise', icon: '🛡️', detail: `${props.activeShields} protection(s)`, type: 'Bonus',

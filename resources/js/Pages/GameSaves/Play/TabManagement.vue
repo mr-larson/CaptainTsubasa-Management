@@ -389,7 +389,7 @@ function resetDefaults() {
                             </div>
                         </div>
                         <div class="flex flex-col gap-1">
-                            <label class="text-xs text-slate-600">Coût par séance d'entraînement (GL)</label>
+                            <label class="text-xs text-slate-600">Coût par séance d'entraînement (<GameBanknote />)</label>
                             <div class="flex items-center gap-2">
                                 <input type="range" v-model.number="config.training_cost"
                                        min="0" max="2000" step="50"

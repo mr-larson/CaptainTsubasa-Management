@@ -25,7 +25,7 @@ const { teamLogoUrl } = usePlayerUtils();
         <div class="min-w-0 flex flex-col gap-1">
             <h3 class="text-base font-bold text-slate-700 truncate">{{ team?.name ?? '—' }}</h3>
             <p v-if="rank" class="text-xs text-slate-500">
-                {{ rank }}<sup>e</sup> / {{ total }} &nbsp;•&nbsp; {{ budget ?? 0 }} GL
+                {{ rank }}<sup>e</sup> / {{ total }} &nbsp;•&nbsp; {{ budget ?? 0 }} <GameBanknote />
             </p>
             <p v-if="averageOverall !== null" class="text-xs text-slate-500">
                 Note d’équipe <strong class="tabular-nums text-slate-700">{{ averageOverall }}</strong>

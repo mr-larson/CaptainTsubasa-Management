@@ -450,9 +450,9 @@ const slotCandidates = (slot, slotDef) => substitutes.value
                            :class="fieldClass({ shape: 'rect' })" />
                 </label>
                 <dl class="grid grid-cols-2 gap-2 rounded-lg bg-slate-50 p-3 text-sm text-slate-700">
-                    <dt>Salaire recalculé</dt><dd class="text-right font-semibold">{{ renewalPlayer.renewal_cost }} GL / semaine</dd>
-                    <dt>Coût total</dt><dd class="text-right font-semibold">{{ renewalCost }} GL</dd>
-                    <dt>Budget après signature</dt><dd class="text-right font-semibold" :class="{ 'text-rose-600': renewalCost > teamBudget }">{{ teamBudget - renewalCost }} GL</dd>
+                    <dt>Salaire recalculé</dt><dd class="text-right font-semibold">{{ renewalPlayer.renewal_cost }} <GameBanknote /> / semaine</dd>
+                    <dt>Coût total</dt><dd class="text-right font-semibold">{{ renewalCost }} <GameBanknote /></dd>
+                    <dt>Budget après signature</dt><dd class="text-right font-semibold" :class="{ 'text-rose-600': renewalCost > teamBudget }">{{ teamBudget - renewalCost }} <GameBanknote /></dd>
                 </dl>
                 <p v-if="renewalForm.errors.weeks || renewalForm.errors.end_week" role="alert" class="text-sm text-rose-600">
                     {{ renewalForm.errors.weeks || renewalForm.errors.end_week }}

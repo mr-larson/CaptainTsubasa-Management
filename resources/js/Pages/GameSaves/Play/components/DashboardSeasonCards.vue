@@ -146,25 +146,25 @@ const fmt = (n) => Number(n ?? 0).toLocaleString('fr-FR');
         <div id="dashboard-finances" class="border border-slate-200 rounded-xl bg-slate-50 p-4 scroll-mt-4" :class="isWorldCup ? 'md:col-span-3' : ''">
             <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">Finances</h4>
             <div class="space-y-1.5 text-xs text-slate-600">
-                <div class="flex justify-between"><span>Budget</span><span class="font-black text-slate-700 tabular-nums">{{ fmt(budget) }}</span></div>
+                <div class="flex justify-between"><span>Budget</span><span class="font-black text-slate-700 tabular-nums">{{ fmt(budget) }} <GameBanknote /></span></div>
                 <div v-if="incomeModel" class="flex justify-between gap-2">
                     <span>Revenu / semaine</span>
                     <span class="text-right tabular-nums">
-                        <span class="font-bold text-slate-700">+{{ fmt(incomeModel.base) }}</span>
-                        <span class="text-slate-400"> · V +{{ fmt(incomeModel.win_bonus) }} · N +{{ fmt(incomeModel.draw_bonus) }}</span>
+                        <span class="font-bold text-slate-700">+{{ fmt(incomeModel.base) }} <GameBanknote /></span>
+                        <span class="text-slate-400"> · V +{{ fmt(incomeModel.win_bonus) }} <GameBanknote /> · N +{{ fmt(incomeModel.draw_bonus) }} <GameBanknote /></span>
                     </span>
                 </div>
                 <div v-if="weeklyTrainingCost > 0" class="flex justify-between">
                     <span>Entraînements / sem.</span>
-                    <span class="font-bold text-slate-700 tabular-nums">−{{ fmt(weeklyTrainingCost) }}</span>
+                    <span class="font-bold text-slate-700 tabular-nums">−{{ fmt(weeklyTrainingCost) }} <GameBanknote /></span>
                 </div>
                 <div v-if="projection" class="pt-2 mt-1 border-t border-slate-200">
                     <div class="flex justify-between">
                         <span>Fin de saison (S{{ totalWeeks }})</span>
-                        <span class="font-black text-teal-600 tabular-nums">≈ {{ fmt(projection.likely) }}</span>
+                        <span class="font-black text-teal-600 tabular-nums">≈ {{ fmt(projection.likely) }} <GameBanknote /></span>
                     </div>
                     <p class="text-2xs text-slate-400 mt-0.5 leading-snug">
-                        Au rythme actuel, hors achats ({{ weeksLeft }} sem. de revenus). Minimum garanti : {{ fmt(projection.min) }}.
+                        Au rythme actuel, hors achats ({{ weeksLeft }} sem. de revenus). Minimum garanti : {{ fmt(projection.min) }} <GameBanknote />.
                     </p>
                 </div>
             </div>

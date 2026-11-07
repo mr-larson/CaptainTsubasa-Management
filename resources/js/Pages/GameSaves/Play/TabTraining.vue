@@ -216,8 +216,8 @@ const selectedPlayerPerf = computed(() => {
                 <div class="flex flex-wrap gap-3">
                     <!-- Budget & coût par séance -->
                     <div v-if="trainingCost > 0" class="text-center px-4 py-2 rounded-xl border bg-white border-slate-200">
-                        <div class="text-2xl font-black text-slate-700">{{ teamBudget }} GL</div>
-                        <div class="text-2xs font-semibold text-slate-400">budget · {{ trainingCost }} GL/séance</div>
+                        <div class="text-2xl font-black text-slate-700">{{ teamBudget }} <GameBanknote /></div>
+                        <div class="text-2xs font-semibold text-slate-400">budget · {{ trainingCost }} <GameBanknote />/séance</div>
                     </div>
                     <!-- Entraînements manuels restants -->
                     <div class="text-center px-4 py-2 rounded-xl border"
@@ -321,7 +321,7 @@ const selectedPlayerPerf = computed(() => {
                                 </select>
                                 <ButtonPrimary type="button" size="sm" :disabled="positionTrainingState.disabled"
                                                @click="emit('train-position', { playerId: selectedPlayer.id, position: positionTarget })">
-                                    Lancer la formation<template v-if="trainingCost > 0"> — {{ trainingCost }} GL</template>
+                                    Lancer la formation<template v-if="trainingCost > 0"> — {{ trainingCost }} <GameBanknote /></template>
                                 </ButtonPrimary>
                             </div>
                             <p class="mt-2 text-2xs" :class="positionTrainingState.reason ? 'text-rose-500' : 'text-slate-400'">
@@ -360,7 +360,7 @@ const selectedPlayerPerf = computed(() => {
                         🏋️ Entraînement manuel
                     </h4>
                     <p class="text-xs text-slate-400 mb-3">
-                        Choisis jusqu'à {{ maxPerWeek }} joueurs différents et la stat à améliorer (+1 à +5, coûte de la stamina<span v-if="trainingCost > 0"> et {{ trainingCost }} GL par séance</span>).
+                        Choisis jusqu'à {{ maxPerWeek }} joueurs différents et la stat à améliorer (+1 à +5, coûte de la stamina<span v-if="trainingCost > 0"> et {{ trainingCost }} <GameBanknote /> par séance</span>).
                     </p>
 
                     <div class="space-y-2 mb-3">
@@ -420,20 +420,20 @@ const selectedPlayerPerf = computed(() => {
                              class="flex items-center justify-between text-xs mb-2 px-1">
                             <span class="text-slate-500">Coût total ({{ selectedCount }} séance{{ selectedCount > 1 ? 's' : '' }})</span>
                             <span class="font-bold" :class="canAffordSelected ? 'text-slate-700' : 'text-rose-500'">
-                                {{ totalTrainingCost }} GL
-                                <span class="font-normal text-slate-400">→ reste {{ budgetAfter }} GL</span>
+                                {{ totalTrainingCost }} <GameBanknote />
+                                <span class="font-normal text-slate-400">→ reste {{ budgetAfter }} <GameBanknote /></span>
                             </span>
                         </div>
 
                         <!-- Bouton Lancer -->
                         <ButtonPrimary type="button" class="w-full" @click="emit('submit-training')" :disabled="!canSubmitTraining || !canAffordSelected">
-                            <span class="text-center">Lancer l'entraînement<template v-if="trainingCost > 0 && selectedCount > 0"><span class="whitespace-nowrap"> — {{ totalTrainingCost }} GL</span></template></span>
+                            <span class="text-center">Lancer l'entraînement<template v-if="trainingCost > 0 && selectedCount > 0"><span class="whitespace-nowrap"> — {{ totalTrainingCost }} <GameBanknote /></span></template></span>
                         </ButtonPrimary>
                     </div>
 
                     <p v-if="trainingCost > 0 && selectedCount > 0 && !canAffordSelected"
                        class="mt-3 text-xs text-rose-600 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2">
-                        Budget insuffisant : il te faut {{ totalTrainingCost }} GL pour ces séances.
+                        Budget insuffisant : il te faut {{ totalTrainingCost }} <GameBanknote /> pour ces séances.
                     </p>
                     <p v-else-if="remainingTrainingsThisWeek <= 0"
                        class="mt-3 text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">

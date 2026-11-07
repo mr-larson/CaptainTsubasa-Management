@@ -142,7 +142,7 @@ function startNewSeason() {
                                     {{ (row.goal_diff ?? 0) > 0 ? '+' : '' }}{{ row.goal_diff ?? 0 }}
                                 </td>
                                 <td class="text-center px-2 py-2 font-semibold">{{ row.points }}</td>
-                                <td class="text-right px-6 py-2 text-emerald-600 font-medium">+{{ row.prize.toLocaleString() }}</td>
+                                <td class="text-right px-6 py-2 text-emerald-600 font-medium">+{{ row.prize.toLocaleString() }} <GameBanknote /></td>
                             </tr>
                         </tbody>
                     </table>
@@ -180,7 +180,7 @@ function startNewSeason() {
                                 <td class="text-center px-2 py-2">{{ row.achieved }} / {{ row.total }}</td>
                                 <td class="text-center px-2 py-2 font-semibold">{{ row.points }}</td>
                                 <td class="text-center px-2 py-2 text-slate-400">{{ row.league_rank }}e</td>
-                                <td class="text-right px-6 py-2 text-emerald-600 font-medium">+{{ row.reward.toLocaleString() }}</td>
+                                <td class="text-right px-6 py-2 text-emerald-600 font-medium">+{{ row.reward.toLocaleString() }} <GameBanknote /></td>
                             </tr>
                         </tbody>
                     </table>

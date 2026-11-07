@@ -23,7 +23,7 @@ defineProps({
                     </div>
                     <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{{ pick.team_name }}</div>
                     <div class="text-xl font-black text-slate-700">{{ pick.player_name }}</div>
-                    <div class="mt-1 text-sm text-slate-500">{{ pick.position }} • {{ pick.cost }} GL</div>
+                    <div class="mt-1 text-sm text-slate-500">{{ pick.position }} • {{ pick.cost }} <GameBanknote /></div>
                 </div>
             </div>
         </Transition>

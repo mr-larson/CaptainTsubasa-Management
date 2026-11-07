@@ -107,7 +107,7 @@
                                 </InputSelect>
                             </div>
                             <div>
-                                <InputLabel value="Salaire (GL / match)" />
+                                <InputLabel value="Salaire (billets / match)" />
                                 <InputText type="number" min="0" v-model.number="contract.salary" class="mt-1" />
                             </div>
                             <div>

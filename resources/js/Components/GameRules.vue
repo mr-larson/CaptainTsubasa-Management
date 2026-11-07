@@ -13,9 +13,9 @@ const props = defineProps({
 
 // Barème statique (miroir de CareerObjectiveService).
 const DIFFICULTY_PRESETS = [
-    { key: 'survival', label: 'Survie',   confidence: 45, titles: 1, budget: '1500 GL', income: '500 GL/sem', rank: 'Objectif indulgent (rang toléré +2)' },
-    { key: 'standard', label: 'Standard', confidence: 50, titles: 2, budget: '1000 GL', income: '450 GL/sem', rank: 'Objectif = classement attendu' },
-    { key: 'conquest', label: 'Conquête', confidence: 55, titles: 3, budget: '500 GL', income: '350 GL/sem', rank: 'Objectif exigeant (rang −2)' },
+    { key: 'survival', label: 'Survie',   confidence: 45, titles: 1, budget: '1500 billets', income: '500 billets/sem', rank: 'Objectif indulgent (rang toléré +2)' },
+    { key: 'standard', label: 'Standard', confidence: 50, titles: 2, budget: '1000 billets', income: '450 billets/sem', rank: 'Objectif = classement attendu' },
+    { key: 'conquest', label: 'Conquête', confidence: 55, titles: 3, budget: '500 billets', income: '350 billets/sem', rank: 'Objectif exigeant (rang −2)' },
 ];
 
 // Présentation des pages/onglets du jeu.
@@ -254,9 +254,10 @@ const verdictOutcomeLabel = (o) => ({
                 </tr>
                 </tbody>
             </table>
-            <p class="text-2xs text-slate-400 mt-2">En mode « Bac à sable », aucun objectif n'est suivi : les saisons s'enchaînent librement (budget de départ 2500 GL, revenus pleins).</p>
-            <p class="text-2xs text-slate-400">🎲 Défis de saison : chaque équipe (IA comprise) tire 5 objectifs par saison, un par famille (résultats, attaque & défense, vestiaire, gestion, exploits) — 2 faciles (1 pt, 150 GL), 2 moyens (2 pts, 300 GL), 1 difficile (3 pts, 500 GL). Seuils adaptés à la force de l'effectif. Sans effet sur le championnat : un classement des défis est publié en fin de saison.</p>
-            <p class="text-2xs text-slate-400">💰 Budget de départ et revenu de base réduits ne concernent que ton club : les clubs IA partent avec le budget réglé à la création (2500 GL par défaut) et 500 GL/sem.</p>
+            <p class="text-2xs text-slate-500 mt-2"><GameBanknote /> Ce billet représente la monnaie virtuelle de Golden Eleven.</p>
+            <p class="text-2xs text-slate-400 mt-2">En mode « Bac à sable », aucun objectif n'est suivi : les saisons s'enchaînent librement (budget de départ 2500 <GameBanknote />, revenus pleins).</p>
+            <p class="text-2xs text-slate-400">🎲 Défis de saison : chaque équipe (IA comprise) tire 5 objectifs par saison, un par famille (résultats, attaque & défense, vestiaire, gestion, exploits) — 2 faciles (1 pt, 150 <GameBanknote />), 2 moyens (2 pts, 300 <GameBanknote />), 1 difficile (3 pts, 500 <GameBanknote />). Seuils adaptés à la force de l'effectif. Sans effet sur le championnat : un classement des défis est publié en fin de saison.</p>
+            <p class="text-2xs text-slate-400">💰 Budget de départ et revenu de base réduits ne concernent que ton club : les clubs IA partent avec le budget réglé à la création (2500 <GameBanknote /> par défaut) et 500 <GameBanknote />/sem.</p>
         </div>
     </div>
 </template>
