@@ -164,7 +164,7 @@ function startNewSeason() {
                                 <th class="text-center px-2 py-2">Défis</th>
                                 <th class="text-center px-2 py-2">Pts</th>
                                 <th class="text-center px-2 py-2">Champ.</th>
-                                <th class="text-right px-6 py-2">Primes</th>
+                                <th class="text-right px-6 py-2">Primes cumulées</th>
                             </tr>
                         </thead>
                         <tbody>

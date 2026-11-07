@@ -256,7 +256,7 @@ class SeasonChallengeService
                 'top_scorer_min'    => $this->topScorerGoals($gameSave, $teamId),
                 'avg_morale_min'    => $this->averageMorale($gameSave, $teamId),
                 'signings_min'      => (int) ($team->season_signings ?? 0),
-                'budget_min'        => (int) ($team->budget ?? 0),
+                'budget_min'        => (int) ($team->budget ?? 0) - array_sum($entry['paid_rewards'] ?? []),
                 'cards_used_min'    => GameBonusCard::where('game_save_id', $gameSave->id)
                     ->where('game_team_id', $teamId)
                     ->where('status', 'used')
@@ -390,12 +390,14 @@ class SeasonChallengeService
     {
         $values = $this->measure($gameSave, $team, $entry, $rank, $strengthRanks);
 
-        return array_map(function (array $o) use ($values, $final) {
+        return array_map(function (array $o) use ($values, $final, $entry) {
             $value = $values[$o['key']] ?? 0;
+            $paid = (int) ($entry['paid_rewards'][$o['key']] ?? 0);
 
             return $o + [
                 'value'        => $value,
-                'status'       => $this->status($o['key'], $value, (int) $o['target'], $final),
+                'status'       => $paid > 0 ? 'done' : $this->status($o['key'], $value, (int) $o['target'], $final),
+                'reward_paid'  => $paid,
                 'family_label' => self::FAMILIES[$o['family']]['label'] ?? $o['family'],
                 'family_icon'  => self::FAMILIES[$o['family']]['icon'] ?? '🎯',
                 'tier_label'   => self::TIERS[$o['tier']]['label'] ?? $o['tier'],
@@ -420,6 +422,63 @@ class SeasonChallengeService
     // ==========================
     //   PRÉSENTATION & FIN DE SAISON
     // ==========================
+
+    /**
+     * Verse les primes définitivement acquises. Appelé sous le verrou de la
+     * sauvegarde, dans la même transaction que le match, la signature ou la carte.
+     */
+    public function payCompleted(GameSave $gameSave, ?array $teamIds = null, ?array $keys = null): void
+    {
+        $state = $gameSave->state ?? [];
+        $data = $state['challenges'] ?? null;
+        if (! $this->isEnabled($gameSave) || ($gameSave->phase ?? 'season') !== 'season'
+            || (int) ($data['season'] ?? 0) !== (int) ($gameSave->season ?? 1)) {
+            return;
+        }
+
+        $finalKeys = array_merge(self::MAX_KEYS, self::FINAL_STATE_KEYS);
+        $entries = [];
+        foreach ($data['teams'] as $id => $entry) {
+            if ($teamIds !== null && !in_array((int) $id, $teamIds, true)) continue;
+            $entry['objectives'] = array_filter($entry['objectives'], fn ($objective) =>
+                !in_array($objective['key'], $finalKeys, true)
+                && !isset($entry['paid_rewards'][$objective['key']])
+                && ($keys === null || in_array($objective['key'], $keys, true))
+            );
+            if ($entry['objectives']) $entries[$id] = $entry;
+        }
+        if (!$entries) return;
+
+        $strengthRanks = $this->strengthRanks($gameSave);
+        $changed = false;
+        foreach (GameTeam::where('game_save_id', $gameSave->id)->whereKey(array_keys($entries))->get() as $team) {
+            $objectives = $this->evaluateTeam($gameSave, $team, $entries[$team->id], null, $strengthRanks, false);
+            if ($this->creditRewards($team, $state['challenges']['teams'][$team->id], $objectives)) {
+                $changed = true;
+            }
+        }
+
+        if ($changed) {
+            $gameSave->state = $state;
+            $gameSave->save();
+        }
+    }
+
+    private function creditRewards(GameTeam $team, array &$entry, array $objectives): bool
+    {
+        $amount = 0;
+        foreach ($objectives as $objective) {
+            $key = $objective['key'];
+            if ($objective['status'] !== 'done' || isset($entry['paid_rewards'][$key])) continue;
+
+            $entry['paid_rewards'][$key] = (int) $objective['reward'];
+            $amount += (int) $objective['reward'];
+        }
+        if ($amount <= 0) return false;
+
+        $team->increment('budget', $amount);
+        return true;
+    }
 
     /**
      * Défis de l'équipe active pour le dashboard (progression en direct).
@@ -448,6 +507,7 @@ class SeasonChallengeService
             'objectives'     => $objectives,
             'points_secured' => array_sum(array_map(fn ($o) => $o['status'] === 'done' ? $o['points'] : 0, $objectives)),
             'points_max'     => array_sum(array_column($objectives, 'points')),
+            'reward_paid'    => array_sum(array_column($objectives, 'reward_paid')),
         ];
     }
 
@@ -464,13 +524,15 @@ class SeasonChallengeService
      */
     public function evaluateSeasonEnd(GameSave $gameSave, Collection $standings): ?array
     {
-        $data = $gameSave->state['challenges'] ?? null;
+        $state = $gameSave->state ?? [];
+        $data = $state['challenges'] ?? null;
         if (! $this->isEnabled($gameSave) || ! $data || (int) $data['season'] !== (int) ($gameSave->season ?? 1)) {
             return null;
         }
 
         $strengthRanks = $this->strengthRanks($gameSave);
         $rows = [];
+        $changed = false;
 
         foreach ($standings->values() as $i => $team) {
             $entry = $data['teams'][$team->id] ?? $data['teams'][(string) $team->id] ?? null;
@@ -495,10 +557,14 @@ class SeasonChallengeService
                 'objectives'    => $team->is_controlled ? array_values($objectives) : null,
             ];
 
-            if ($reward > 0) {
-                $team->budget = (int) ($team->budget ?? 0) + $reward;
-                $team->save();
+            if ($this->creditRewards($team, $state['challenges']['teams'][$team->id], $achieved)) {
+                $changed = true;
             }
+        }
+
+        if ($changed) {
+            $gameSave->state = $state;
+            $gameSave->save();
         }
 
         usort($rows, fn ($a, $b) => [$b['points'], $b['achieved'], $a['league_rank']]

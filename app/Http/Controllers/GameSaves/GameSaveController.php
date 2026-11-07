@@ -727,8 +727,15 @@ class GameSaveController extends Controller
 
         // Fixe l'objectif de la direction pour la saison courante si besoin
         // (couvre le mode draft : l'effectif n'existe qu'après la draft).
-        $career->ensureSeasonMandate($gameSave);
-        app(SeasonChallengeService::class)->ensureSeasonChallenges($gameSave);
+        $this->withSaveLock($gameSave, function (GameSave $gameSave) use ($career) {
+            if (($gameSave->phase ?? 'season') !== 'season') return;
+
+            $career->ensureSeasonMandate($gameSave);
+            $challenges = app(SeasonChallengeService::class);
+            $challenges->ensureSeasonChallenges($gameSave);
+            // Rattrape les objectifs déjà réussis dans les sauvegardes existantes.
+            $challenges->payCompleted($gameSave, [(int) $gameSave->controlled_game_team_id]);
+        });
 
         $currentWeek = $gameSave->week ?? 1;
 
@@ -1103,6 +1110,8 @@ class GameSaveController extends Controller
             ];
             $gameSave->state = $state;
             $gameSave->save();
+
+            app(SeasonChallengeService::class)->payCompleted($gameSave, [(int) $team->id], ['signings_min']);
 
             return back()->with('success', 'Joueur signé et budget mis à jour.');
         });

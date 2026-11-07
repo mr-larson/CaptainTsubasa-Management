@@ -116,12 +116,17 @@ class BonusCardController extends Controller
             $result = $this->withSaveLock($gameSave, function (GameSave $gameSave) use ($request, $gameBonusCard) {
                 $gameBonusCard->refresh();
 
-                return $this->activationService->activate(
+                $result = $this->activationService->activate(
                     $gameBonusCard,
                     $gameSave,
                     $request->input('target_player_id'),
                     $request->input('target_team_id'),
                 );
+                app(\App\Services\SeasonChallengeService::class)->payCompleted(
+                    $gameSave, [(int) $gameBonusCard->game_team_id], ['cards_used_min']
+                );
+
+                return $result;
             });
             return back()->with('success', $result['message'] ?? 'Carte activée !');
         } catch (\Illuminate\Validation\ValidationException $e) {

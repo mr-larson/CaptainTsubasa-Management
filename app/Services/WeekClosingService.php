@@ -93,6 +93,7 @@ class WeekClosingService
             app(BonusCardShopService::class)->generateWeeklyOffers($gameSave);
             app(AiBonusCardService::class)->processWeek($gameSave);
         }
+        app(SeasonChallengeService::class)->payCompleted($gameSave);
 
         // 6. Coupe du Monde : progression du tournoi au lieu de la fin de saison.
         if ($gameSave->competition_type === 'world_cup') {

@@ -176,6 +176,12 @@ class SeasonChallengeServiceTest extends TestCase
         $c->update(['losses' => 1, 'goals_against' => 1]);
         $b->update(['goals_against' => 2]);
 
+        $this->service->payCompleted($save);
+        $this->service->payCompleted($save->fresh());
+        $this->assertSame(1150, $me->fresh()->budget);
+        $this->assertSame(1000, $b->fresh()->budget);
+
+        $save->refresh();
         $standings = app(SeasonService::class)->sortStandings(GameTeam::where('game_save_id', $save->id)->get());
         $rows = $this->service->evaluateSeasonEnd($save, $standings);
 
@@ -194,6 +200,32 @@ class SeasonChallengeServiceTest extends TestCase
         $this->assertSame(1000 + 150, $me->fresh()->budget);
         $this->assertSame(1000 + 500, $b->fresh()->budget);
         $this->assertSame(1000, $c->fresh()->budget);
+    }
+
+    public function test_free_agent_signing_is_capped_by_the_season_and_pays_the_challenge_immediately(): void
+    {
+        $save = $this->makeSave(['week' => 5]);
+        [$team] = $this->world($save);
+        foreach (range(1, 11) as $i) {
+            $this->makeTeamWithSquad($save);
+        }
+        $this->service->ensureSeasonChallenges($save);
+        $this->forceObjectives($save, $team, [['key' => 'signings_min', 'tier' => 'medium', 'target' => 1]]);
+        $player = $this->makePlayer($save, ['cost' => 10]);
+        $url = route('game-saves.free-agents.sign', [$save, $player]);
+
+        $this->actingAs($save->user)
+            ->post($url, ['team_id' => $team->id, 'matches_total' => 26])
+            ->assertSessionHasErrors('matches_total');
+        $this->assertSame(1000, $team->fresh()->budget);
+
+        $this->post($url, ['team_id' => $team->id, 'matches_total' => 25])
+            ->assertSessionHasNoErrors();
+        $this->assertSame(1050, $team->fresh()->budget); // 1000 - 25 × 10 + 300.
+        $this->assertSame(300, $this->service->presentation($save->fresh())['reward_paid']);
+
+        $this->post($url, ['team_id' => $team->id, 'matches_total' => 25]);
+        $this->assertSame(1050, $team->fresh()->budget);
     }
 
     public function test_budget_objective_is_judged_before_league_prizes(): void

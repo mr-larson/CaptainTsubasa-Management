@@ -18,6 +18,7 @@ use App\Services\BonusCardActivationService;
 use App\Services\CareerObjectiveService;
 use App\Services\FoulAndInjuryService;
 use App\Services\PostMatchProgressionService;
+use App\Services\SeasonChallengeService;
 use App\Services\WeekClosingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -288,6 +289,7 @@ class GameMatchController extends Controller
             // 4. Progression post-match (joueurs de ce match)
             app(PostMatchProgressionService::class)->applyForMatch($gameSave, $match);
             $gameSave->refresh();
+            app(SeasonChallengeService::class)->payCompleted($gameSave, [(int) $homeTeamId, (int) $awayTeamId]);
 
 
             // 6. (Les cartes pre_match sont consommées en fin de semaine pour TOUTES

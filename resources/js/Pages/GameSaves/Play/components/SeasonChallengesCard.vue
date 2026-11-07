@@ -52,7 +52,7 @@ const rewardMax = computed(() => props.challenges.objectives.reduce((s, o) => s 
             <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">🎲 Défis de la saison</h3>
             <span class="text-[11px] text-slate-400">
                 <span class="font-bold text-slate-700">{{ challenges.points_secured }}</span> / {{ challenges.points_max }} pts acquis
-                · jusqu'à {{ rewardMax.toLocaleString() }} GL de primes
+                · {{ (challenges.reward_paid ?? 0).toLocaleString() }} / {{ rewardMax.toLocaleString() }} GL versés
             </span>
         </div>
 
@@ -72,12 +72,13 @@ const rewardMax = computed(() => props.challenges.objectives.reduce((s, o) => s 
                     <span class="text-2xs text-slate-500 w-24 text-right tabular-nums">{{ valueText(o) }}</span>
                     <span class="text-2xs font-semibold w-24 text-right" :class="STATUS[o.status].cls">
                         {{ STATUS[o.status].icon }} {{ STATUS[o.status].text }}
+                        <span v-if="o.reward_paid" class="block">+{{ o.reward_paid }} GL versés</span>
                     </span>
                 </div>
             </li>
         </ul>
         <p class="text-2xs text-slate-400 mt-3">
-            Sans effet sur le championnat : chaque défi réussi rapporte une prime et des points pour le classement des défis de fin de saison. Toutes les équipes ont les leurs.
+            Les primes sont versées dès que le résultat est définitif. Les défis qui dépendent du bilan final sont validés en fin de saison.
         </p>
     </div>
 </template>
