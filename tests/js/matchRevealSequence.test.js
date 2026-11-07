@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { FIELD_RULES } from '../../resources/js/Pages/Match/engine/constants.js';
 import { enqueueRevealStep, showDuelDice } from '../../resources/js/Pages/Match/engine/dice.js';
-import { initFieldModule } from '../../resources/js/Pages/Match/engine/field.js';
+import { initFieldModule, pickFieldDefender } from '../../resources/js/Pages/Match/engine/field.js';
 import { initResolversModule, resolveDribble, resolveShotKeeperDuel } from '../../resources/js/Pages/Match/engine/resolvers.js';
 import { runFieldDuel } from '../../resources/js/Pages/Match/engine/resolvers/fieldDuel.js';
 import { initStaminaModule } from '../../resources/js/Pages/Match/engine/stamina.js';
@@ -115,6 +115,14 @@ describe('enchaînement des révélations et du terrain', () => {
         vi.unstubAllGlobals();
         vi.resetAllMocks();
         vi.restoreAllMocks();
+    });
+
+    it('choisit un défenseur disponible dans la zone voisine si la zone visée est vide', () => {
+        expect(pickFieldDefender('external', 3, 0)).toEqual({
+            defenderId: 'E6', defenderSlot: 6, defZone: 3,
+        });
+        defender.classList.add('unavailable');
+        expect(pickFieldDefender('external', 3, 0)).toBeNull();
     });
 
     it('garde le pion et le ballon en place jusqu’à la fin des dés', () => {

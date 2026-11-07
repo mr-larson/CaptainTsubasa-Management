@@ -301,14 +301,18 @@ export function mapAttackZoneToDefenseZone(originZone) {
 }
 
 export function pickFieldDefender(defenseTeam, originZone, originLane) {
-    const defZone    = mapAttackZoneToDefenseZone(originZone);
-    const defenderId = pickWeightedPlayerInZone(defenseTeam, defZone, originLane, { topK: 8, ignoreLane: true });
-    if (!defenderId) return null;
-    return {
-        defenderId,
-        defenderSlot: parseInt(defenderId.slice(1), 10),
-        defZone,
-    };
+    const targetZone = mapAttackZoneToDefenseZone(originZone);
+    const zones = Array.from({ length: MAX_ZONE_INDEX + 1 }, (_, zone) => zone)
+        .sort((a, b) => Math.abs(a - targetZone) - Math.abs(b - targetZone));
+
+    for (const defZone of zones) {
+        const defenderId = pickWeightedPlayerInZone(defenseTeam, defZone, originLane, { topK: 8, ignoreLane: true });
+        if (defenderId) {
+            return { defenderId, defenderSlot: parseInt(defenderId.slice(1), 10), defZone };
+        }
+    }
+
+    return null;
 }
 
 // -----------------------------------------------------------
