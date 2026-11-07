@@ -1,7 +1,7 @@
 // resources/js/Pages/Match/engine/resolvers/pass.js
 // Passes, centres et passes longues.
 import { MAX_ZONE_INDEX, TEXTS, laneY } from '../constants.js';
-import { getCarrierElement, getPlayerId, getPlayerXInternal, pickReceiverInCell } from '../field.js';
+import { getCarrierElement, getPlayerXInternal, pickReceiverInCell } from '../field.js';
 import { pushLogEntry, setMessage, syncRecovererCard } from '../ui.js';
 import { playPlayerAnimation } from '../playerAnim.js';
 import { afterFieldDuel, givePossessionOnTie, _moveBall, ball, shared, resetLastDribbler, restoreBasePositions } from './context.js';
@@ -14,14 +14,13 @@ import { startFreeKick } from './shot.js';
 //   resolvePass + continuePass
 // -----------------------------------------------------------
 export function resolvePass(attackTeam, defenseTeam, defenseAction, defenderPick = null, isSpecial = false) {
-    const b          = ball();
     const wasKickoff = shared.state.isKickoff;
     shared.state.isKickoff             = false;
     shared.state.keeperRestartMustPass = false;
 
     const attackType = isSpecial ? "special" : "pass";
 
-    const duel = runFieldDuel({ attackTeam, defenseTeam, attackType, defenseAction, defenderPick });
+    const duel = runFieldDuel({ attackTeam, defenseTeam, attackType, defenseAction, defenderPick, specialAction: "pass" });
     afterFieldDuel(duel, result => {
         if (shared.state.pendingFreeKick) { startFreeKick(); return; }
 
@@ -36,8 +35,6 @@ export function resolvePass(attackTeam, defenseTeam, defenseAction, defenderPick
             shared.animateAndThen(() => { shared.advanceTurn(defenseTeam); });
             return;
         }
-
-        if (isSpecial) shared.markSpecialUsed(getPlayerId(attackTeam, b.number));
 
         // Kickoff
         if (wasKickoff) {

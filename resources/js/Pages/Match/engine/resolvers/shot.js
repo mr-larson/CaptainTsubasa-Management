@@ -25,9 +25,9 @@ export function resolveShot(attackTeam, defenseTeam, defenseAction, isSpecial = 
 
     if (b.frontOfKeeper) {
         // ── Tir face au gardien
-        const moves     = shared.roster.getSpecialMoves(attackTeam, b.number).filter(m => m?.mode === "attack");
+        const move = shared.roster.getSpecialMove(attackTeam, b.number, "attack", "shot");
         const gkAttBase = isSpecial
-            ? (moves.length > 0 ? specialBaseFor(moves[0], attackTeam, b.number, shared.roster) : shared.roster.attackBaseFor("special", attackTeam, b.number))
+            ? (move ? specialBaseFor(move, attackTeam, b.number, shared.roster) : shared.roster.attackBaseFor("special", attackTeam, b.number))
             : shared.roster.attackBaseFor("shot", attackTeam, b.number);
         resolveShotKeeperDuel({ stage: "keeper", attackTeam, defenseTeam, originZone, originLane, isSpecial, gkAttackBase: gkAttBase, directShot: true, logParts: ["Zone " + (originZone + 1)] }, defenseAction);
         return;
@@ -82,9 +82,9 @@ export function continueShot(attackTeam, defenseTeam, defenseAction, isSpecial, 
     const zonesToGoal = Math.max(0, MAX_ZONE_INDEX - originZone);
     let gkAttackBase;
     if (isSpecial) {
-        const moves = shared.roster.getSpecialMoves(attackTeam, b.number).filter(m => m?.mode === "attack");
-        gkAttackBase = moves.length > 0
-            ? specialBaseFor(moves[0], attackTeam, b.number, shared.roster)
+        const move = shared.roster.getSpecialMove(attackTeam, b.number, "attack", "shot");
+        gkAttackBase = move
+            ? specialBaseFor(move, attackTeam, b.number, shared.roster)
             : shared.roster.attackBaseFor("special", attackTeam, b.number);
     } else {
         gkAttackBase = shared.roster.attackBaseFor("shot", attackTeam, b.number) - (zonesToGoal * DUEL_RULES.SHOT_DISTANCE_PENALTY_PER_LINE);
@@ -281,9 +281,9 @@ export function resolveShotKeeperDuel(ctx, defenseAction) {
 
     let defenseBase;
     if (defenseAction === "gk-special") {
-        const moves = shared.roster.getSpecialMoves(defenseTeam, 1).filter(m => m?.mode === "defense");
-        defenseBase = moves.length > 0
-            ? specialBaseFor(moves[0], defenseTeam, 1, shared.roster)
+        const move = shared.roster.getSpecialMove(defenseTeam, 1, "defense");
+        defenseBase = move
+            ? specialBaseFor(move, defenseTeam, 1, shared.roster)
             : shared.roster.defenseBaseFor("gk-special", defenseTeam, 1, true);
     } else {
         defenseBase = shared.roster.defenseBaseFor(defenseAction, defenseTeam, 1, true);
@@ -335,7 +335,7 @@ export function resolveShotKeeperDuel(ctx, defenseAction) {
     const HOME_BONUS_VALUE = 0.5;
     const breakdown = buildFieldDuelBreakdown({
         attackBaseRaw:  gkAttackBase,
-        defenseBaseRaw: shared.roster.defenseBaseFor(defenseAction, defenseTeam, 1, true),
+        defenseBaseRaw: defenseBase,
         attackStamF:    staminaFactor(attackerId),
         defenseStamF:   gkFactor,
         aRoll, dRoll,
@@ -376,7 +376,7 @@ export function resolveShotKeeperDuel(ctx, defenseAction) {
     checkInjury(attackerId);
     checkInjury(keeperId);
     if (keeperId) applyStaminaCost(keeperId, "defenseGK", defenseAction);
-    if (isSpecial) shared.markSpecialUsed(attackerId);
+    if (isSpecial) shared.markSpecialUsed(attackerId, "attack", "shot");
     if (defenseAction === "gk-special" && keeperId) shared.markSpecialUsed(keeperId, "defense");
 
     if (!critWinner && attackScore === defenseScore) {

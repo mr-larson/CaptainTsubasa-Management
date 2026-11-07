@@ -2,6 +2,7 @@
 import { TEXTS, STATS, ACTION_BAR_FADE_MS, GAME_RULES } from './constants.js';
 import { getStaminaRatio, getStaminaTier } from './stamina.js';
 import { getPlayerId } from './field.js';
+import { specialActionStat } from './RosterService.js';
 import {
     isDiceAnimating, runAfterDiceAnimation, showBreakdownTooltip, hideBreakdownTooltip, isBreakdownTooltipVisible,
     enqueueRevealStep, revealDwellMs, resetEventQueue,
@@ -658,11 +659,11 @@ export function updateCardsPower(ball) {
             el.textContent = String(Math.round((Number(carrierStats.pass ?? 0) + partnerPass) / 2));
             return;
         }
-        const map = { pass: "pass", dribble: "dribble", shot: "shot", special: "attack", cross: "pass", long_pass: "pass" };
+        const map = { pass: "pass", dribble: "dribble", shot: "shot", special: "shot", cross: "pass", long_pass: "pass" };
         el.textContent = String(Number(carrierStats[map[a]] ?? 0));
     });
 
-    const specialMap = { special: "attack", "special-pass": "pass", "special-dribble": "dribble" };
+    const specialMap = { special: "shot", "special-pass": "pass", "special-dribble": "dribble" };
     _ui.actionBarEl.querySelectorAll(".skill-card-special").forEach((btn) => {
         const el = btn.querySelector(".skill-special-power");
         if (el) el.textContent = String(Number(carrierStats[specialMap[btn.dataset.action]] ?? 0));
@@ -715,7 +716,8 @@ export function updateCardsPower(ball) {
         });
         _ui.actionBarEl.querySelectorAll(".def-card-special").forEach((btn) => {
             const el = btn.querySelector(".def-special-power");
-            if (el) el.textContent = String(Number(gkStats.defense ?? 0));
+            const move = _roster.getSpecialMove(defenseTeam, 1, "defense");
+            if (el && move) el.textContent = String(specialActionStat(move, defenseTeam, 1, _roster));
         });
         return;
     }
@@ -732,7 +734,8 @@ export function updateCardsPower(ball) {
     });
     _ui.actionBarEl.querySelectorAll(".def-card-special").forEach((btn) => {
         const el = btn.querySelector(".def-special-power");
-        if (el) el.textContent = String(Number(dStats.defense ?? 0));
+        const move = _roster.getSpecialMove(defenseTeam, slot, "defense");
+        if (el && move) el.textContent = String(specialActionStat(move, defenseTeam, slot, _roster));
     });
 }
 

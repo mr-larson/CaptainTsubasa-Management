@@ -13,7 +13,7 @@ import { aiShouldReroll, canAttackerReroll, doReroll, showCaptainRerollPrompt, t
 // -----------------------------------------------------------
 //   runFieldDuel
 // -----------------------------------------------------------
-export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseAction, defenderPick = null }) {
+export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseAction, defenderPick = null, specialAction = "shot" }) {
     const b          = ball();
     const attackerId = getPlayerId(attackTeam, b.number);
 
@@ -32,9 +32,9 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
     // Bases attaque
     let attackBaseRaw;
     if (attackType === "special") {
-        const moves = shared.roster.getSpecialMoves(attackTeam, b.number).filter(m => m?.mode === "attack");
-        attackBaseRaw = moves.length > 0
-            ? specialBaseFor(moves[0], attackTeam, b.number, shared.roster)
+        const move = shared.roster.getSpecialMove(attackTeam, b.number, "attack", specialAction);
+        attackBaseRaw = move
+            ? specialBaseFor(move, attackTeam, b.number, shared.roster)
             : shared.roster.attackBaseFor("special", attackTeam, b.number);
     } else if (attackType === "one_two") {
         // Une-deux : moyenne des passes du duo (repli passe simple si le
@@ -50,9 +50,9 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
     // Bases defense
     let defenseBaseRaw;
     if (defenseAction === "field-special") {
-        const moves = shared.roster.getSpecialMoves(defenseTeam, defenderSlot).filter(m => m?.mode === "defense");
-        defenseBaseRaw = moves.length > 0
-            ? specialBaseFor(moves[0], defenseTeam, defenderSlot, shared.roster)
+        const move = shared.roster.getSpecialMove(defenseTeam, defenderSlot, "defense");
+        defenseBaseRaw = move
+            ? specialBaseFor(move, defenseTeam, defenderSlot, shared.roster)
             : shared.roster.defenseBaseFor("field-special", defenseTeam, defenderSlot, false);
     } else {
         defenseBaseRaw = shared.roster.defenseBaseFor(defenseAction, defenseTeam, defenderSlot, false);
@@ -154,7 +154,7 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
     checkInjury(attackerId);
     checkInjury(defenderId);
 
-    if (attackType    === "special")       shared.markSpecialUsed(attackerId);
+    if (attackType    === "special")       shared.markSpecialUsed(attackerId, "attack", specialAction);
     if (defenseAction === "field-special") shared.markSpecialUsed(defenderId, "defense");
 
     const diceTag    = attackScore.toFixed(1) + "-" + defenseScore.toFixed(1);

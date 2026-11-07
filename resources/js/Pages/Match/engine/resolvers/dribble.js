@@ -27,7 +27,7 @@ export function resolveDribble(attackTeam, defenseTeam, defenseAction, defenderP
     const lane       = b.laneIndex;
     const attackType = isSpecial ? "special" : "dribble";
 
-    const duel = runFieldDuel({ attackTeam, defenseTeam, attackType, defenseAction, defenderPick });
+    const duel = runFieldDuel({ attackTeam, defenseTeam, attackType, defenseAction, defenderPick, specialAction: "dribble" });
     afterFieldDuel(duel, result => {
         if (shared.state.pendingFreeKick) { startFreeKick(); return; }
 
@@ -42,8 +42,6 @@ export function resolveDribble(attackTeam, defenseTeam, defenseAction, defenderP
             shared.animateAndThen(() => { shared.advanceTurn(defenseTeam); });
             return;
         }
-
-        if (isSpecial) shared.markSpecialUsed(getPlayerId(attackTeam, b.number));
 
         continueDribble(attackTeam, defenseTeam, attackType, defenseAction, isSpecial, result, oldZone, lane);
     });

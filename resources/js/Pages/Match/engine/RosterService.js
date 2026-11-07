@@ -165,6 +165,11 @@ export class RosterService {
         return Array.isArray(moves) ? moves : [];
     }
 
+    getSpecialMove(team, slotNumber, mode, baseAction = null) {
+        return this.getSpecialMoves(team, slotNumber)
+            .find(move => move?.mode === mode && (baseAction === null || move.base_action === baseAction));
+    }
+
     /**
      * Partenaire de duo (une-deux) actuellement sur le terrain dans la même
      * équipe : { slot, label, partnerInfo } ou null. Le partenaire doit être
@@ -375,14 +380,16 @@ export class RosterService {
 // -----------------------------------------------------------
 //   Helper special moves (hors classe, utilisé par resolvers)
 // -----------------------------------------------------------
+export function specialActionStat(move, team, slotNumber, roster) {
+    const baseAction = String(move.base_action || "").trim();
+    const aliases = { hands: "hand_save", punch: "punch_save" };
+    return roster.getStat(team, slotNumber, aliases[baseAction] ?? baseAction);
+}
+
 export function specialBaseFor(move, team, slotNumber, roster) {
     if (!move) return 0;
-    const info       = roster.getPlayerInfo(team, slotNumber);
-    const stats      = info?.stats ?? {};
-    const baseAction = String(move.base_action || "").trim();
-    const mode       = String(move.mode || "attack").toLowerCase();
-    const actionStat = Number(stats[baseAction] ?? 0) || 0;
-    const globalKey  = (mode === "defense") ? "defense" : "attack";
-    const globalStat = Number(stats[globalKey] ?? 0) || 0;
-    return ((actionStat + globalStat) / 2) * roster.moraleFactor(team, slotNumber);
+    const actionStat = specialActionStat(move, team, slotNumber, roster);
+    const globalStat = roster.getStat(team, slotNumber, move.mode === "defense" ? "defense" : "attack");
+    const coefficient = roster.STAT_COEF;
+    return (actionStat * coefficient + globalStat * (1 - coefficient)) * roster.moraleFactor(team, slotNumber);
 }

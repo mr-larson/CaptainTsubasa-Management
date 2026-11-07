@@ -204,10 +204,9 @@ export function initMatchEngine(rootEl, config = {}) {
         };
     }
 
-    function specialMovesFor(playerId, mode) {
+    function specialMoveFor(playerId, mode, baseAction) {
         const ts = teamSlotFromPlayerId(playerId);
-        if (!ts) return [];
-        return roster.getSpecialMoves(ts.team, ts.slot).filter(m => m?.mode === mode);
+        return ts ? roster.getSpecialMove(ts.team, ts.slot, mode, baseAction) : null;
     }
 
     function isMoveOffCooldown(playerId, move) {
@@ -216,19 +215,13 @@ export function initMatchEngine(rootEl, config = {}) {
         return !readyAt || state.turns >= readyAt;
     }
 
-    function canUseSpecial(playerId, mode = "attack") {
-        if (!playerId) return false;
-        const moves = specialMovesFor(playerId, mode);
-        return moves.some(move => isMoveOffCooldown(playerId, move));
+    function canUseSpecial(playerId, mode = "attack", baseAction = null) {
+        return isMoveOffCooldown(playerId, specialMoveFor(playerId, mode, baseAction));
     }
 
-    function markSpecialUsed(playerId, mode = "attack") {
-        if (!playerId) return;
-        const moves = specialMovesFor(playerId, mode);
-        if (!moves.length) return;
-        // On marque la technique effectivement disponible (donc utilisée) ;
-        // à défaut (déjà toutes en cooldown), on retombe sur la première.
-        const move = moves.find(m => isMoveOffCooldown(playerId, m)) ?? moves[0];
+    function markSpecialUsed(playerId, mode = "attack", baseAction = null) {
+        const move = specialMoveFor(playerId, mode, baseAction);
+        if (!move) return;
         state.specialCooldown[playerId] = state.specialCooldown[playerId] ?? {};
         state.specialCooldown[playerId][move.key] = state.turns + (move.cooldown ?? state.SPECIAL_COOLDOWN_TURNS);
     }
@@ -536,12 +529,6 @@ export function initMatchEngine(rootEl, config = {}) {
         updateCardsPower(ball);
     }
 
-    // Helper : récupère le base_action du special du porteur actuel
-    function getSpecialBaseAction(team, slotNumber) {
-        const moves = roster.getSpecialMoves(team, slotNumber).filter(m => m?.mode === "attack");
-        return moves[0]?.base_action ?? "shot";
-    }
-
     // ==========================
     //   HANDLERS CLICKS
     // ==========================
@@ -575,28 +562,14 @@ export function initMatchEngine(rootEl, config = {}) {
             return;
         }
 
-        // Après
-        if (action === "special" || action === "special-pass" || action === "special-dribble") {
+        const specialAction = { special: "shot", "special-pass": "pass", "special-dribble": "dribble" }[action];
+        if (specialAction) {
             const attackerId = getPlayerId(state.currentTeam, ball.number);
-            if (!canUseSpecial(attackerId)) {
+            if (!canUseSpecial(attackerId, "attack", specialAction)) {
                 setMessage(TEXTS.ui.specialCooldownMain, TEXTS.ui.specialCooldownSub);
                 state.phase = "attack"; state.pendingAttack = null;
                 return;
             }
-        }
-
-        if (action === "special") {
-            const baseAction = getSpecialBaseAction(state.currentTeam, ball.number);
-            // Réorienter : pass/dribble spéciaux ne vont pas vers le gardien
-            if ((baseAction === "pass" || baseAction === "dribble") && ball.frontOfKeeper) {
-                // Devant le gardien, on force tir même pour pass/dribble spéciaux
-                // (pas de passe logique face au gardien)
-            } else if (baseAction === "pass") {
-                action = "special-pass";
-            } else if (baseAction === "dribble") {
-                action = "special-dribble";
-            }
-            // base_action === "shot" → reste "special", comportement inchangé
         }
 
         state.pendingAttack = action;

@@ -146,7 +146,7 @@ export function buildAttackActionsHTML(ball, roster) {
 }
 
 const FIELD_DEFENSE_KEYS = ["block", "intercept", "tackle"];
-const GK_DEFENSE_KEYS    = { hand_save: "hands", punch_save: "punch" };
+const GK_DEFENSE_KEYS    = { hand_save: "hands", hands: "hands", punch_save: "punch", punch: "punch" };
 
 export function buildDefenseFieldHTML(defenderTeam, defenderSlot, roster) {
     const cfg  = TEXTS.cards.defenseField;
