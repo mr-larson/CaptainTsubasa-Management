@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import { positionLabel } from '@/Enums/positionBadges.js';
 import { usePlayerUtils } from '../usePlayerUtils.js';
 import { LOW_STAMINA } from '../usePreMatchChecklist.js';
 
@@ -19,10 +20,12 @@ const props = defineProps({
     cardsInHand:       { type: Array, default: null },
     activeEffects:     { type: Array, default: () => [] },
     playerPromises:    { type: Object, default: null },
+    trainingEntries:   { type: Array, default: () => [] },
+    positionTrainings: { type: Array, default: () => [] },
 });
 
 const emit = defineEmits(['open-player']);
-const { moraleState } = usePlayerUtils();
+const { moraleState, statLabel } = usePlayerUtils();
 
 const LOW_MORALE = 40;
 const CONTRACT_HORIZON = 4;
@@ -69,6 +72,24 @@ const promises = computed(() => props.roster.flatMap(player =>
         .filter(promise => promise.status === 'pending')
         .map(promise => ({ player, promise }))
 ).sort((a, b) => a.promise.due_week - b.promise.due_week));
+
+const trainings = computed(() => {
+    const roster = new Map(props.roster.map(player => [Number(player.id), player]));
+    return [
+        ...props.positionTrainings.map(entry => ({
+            player: roster.get(Number(entry.game_player_id)),
+            type: 'position',
+            detail: `Formation · ${positionLabel(entry.target_position)}`,
+            badge: `Retour S${entry.week_return}`,
+        })),
+        ...props.trainingEntries.filter(entry => entry.stat !== 'position').map(entry => ({
+            player: roster.get(Number(entry.player_id)),
+            type: 'stat',
+            detail: `Séance effectuée · ${statLabel(entry.stat)}`,
+            badge: `+${entry.gain ?? 0}`,
+        })),
+    ].filter(entry => entry.player);
+});
 
 function promiseText(promise) {
     switch (promise.type) {
@@ -197,7 +218,7 @@ const EMPTY = 'text-xs text-emerald-600';
                 <p v-if="!activeEffects.length" :class="EMPTY">Aucun effet actif</p>
             </section>
 
-            <section v-if="playerPromises !== null" :class="SECTION" class="lg:col-span-2">
+            <section v-if="playerPromises !== null" :class="SECTION">
                 <h4 class="text-sm font-semibold text-slate-700">🤝 Promesses en cours <span class="text-slate-400 font-normal">({{ promises.length }})</span></h4>
                 <button v-for="{ player, promise } in promises" :key="promise.id" type="button" :class="ROW" @click="emit('open-player', player)">
                     <span>
@@ -207,6 +228,19 @@ const EMPTY = 'text-xs text-emerald-600';
                     <span :class="[PILL, 'bg-sky-100 text-sky-700']">Échéance S{{ promise.due_week }}</span>
                 </button>
                 <p v-if="!promises.length" :class="EMPTY">Aucune promesse en cours</p>
+            </section>
+
+            <section v-if="playerPromises !== null" :class="SECTION">
+                <h4 class="text-sm font-semibold text-slate-700">🎓 Entraînements en cours <span class="text-slate-400 font-normal">({{ trainings.length }})</span></h4>
+                <button v-for="entry in trainings" :key="`${entry.type}-${entry.player.id}`" type="button"
+                        :class="ROW" @click="emit('open-player', entry.player)">
+                    <span>
+                        <span class="font-semibold text-slate-700">{{ entry.player.firstname }} {{ entry.player.lastname }}</span>
+                        <span class="text-slate-500"> · {{ entry.detail }}</span>
+                    </span>
+                    <span :class="[PILL, entry.type === 'position' ? 'bg-indigo-100 text-indigo-700' : 'bg-teal-100 text-teal-700']">{{ entry.badge }}</span>
+                </button>
+                <p v-if="!trainings.length" :class="EMPTY">Aucune formation en cours ni séance cette semaine</p>
             </section>
         </div>
     </div>

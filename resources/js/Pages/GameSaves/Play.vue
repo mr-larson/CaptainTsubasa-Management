@@ -232,7 +232,7 @@ const {
 const selectedMyPlayerPerf = computed(() => _selectedMyPlayerPerf(selectedMyPlayer).value);
 
 const {
-    trainingState, remainingTrainingsThisWeek,
+    trainingState, myEntriesThisWeek, remainingTrainingsThisWeek,
     hasPlayerBeenTrainedThisWeek, availableTrainingStats,
     selectedTrainings, addTrainingSlot, removeTrainingSlot,
     canSubmitTraining, submitTraining,
@@ -308,6 +308,8 @@ const clubStatus = computed(() => {
         cardsInHand:      cards?.filter(c => c.status === 'available') ?? null,
         activeEffects:    effects,
         playerPromises:   isMine ? props.playerPromises : null,
+        trainingEntries:  isMine ? myEntriesThisWeek.value : [],
+        positionTrainings: isMine ? props.activePositionTrainings : [],
         clubStanding:     index === -1 ? null : { ...standings.value[index], position: index + 1 },
         standingsCount:   standings.value.length,
         teamBudget:       Number(viewed?.budget) || 0,

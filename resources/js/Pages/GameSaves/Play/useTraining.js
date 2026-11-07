@@ -99,7 +99,7 @@ export function useTraining({ gameSave, season, week, teamId, maxPerWeek }) {
     const nextAiWeek = () => { if (aiCurrentDisplayWeek.value < aiWeekMax.value) aiDisplayWeek.value = aiCurrentDisplayWeek.value + 1 }
 
     return {
-        trainingState,
+        trainingState, myEntriesThisWeek,
         remainingTrainingsThisWeek,
         hasPlayerBeenTrainedThisWeek,
         availableTrainingStats,
