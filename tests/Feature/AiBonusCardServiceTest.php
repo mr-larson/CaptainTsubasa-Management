@@ -76,14 +76,14 @@ class AiBonusCardServiceTest extends TestCase
 
         // Carte achetée (stat_boost score 60 ≥ seuil bronze 35), budget débité, réserve préservée.
         $this->assertSame(1, GameBonusCard::where('game_team_id', $team->id)->count());
-        $this->assertSame(4900, (int) $team->fresh()->budget);
+        $this->assertSame(4800, (int) $team->fresh()->budget);
     }
 
     public function test_offer_above_budget_minus_reserve_is_skipped(): void
     {
         $save = $this->makeSave(['week' => 1, 'season' => 1]);
-        // Budget tout juste insuffisant : 550 < coût (100) + réserve (500).
-        $team = $this->makeTeam($save, ['budget' => 550]);
+        // L'ancien prix en cache passerait, le prix commun dépasse la réserve.
+        $team = $this->makeTeam($save, ['budget' => 650]);
         $card = $this->makeBonusCard(['effect_type' => 'stat_boost', 'execution_phase' => 'pre_match', 'cost' => 100]);
 
         $save->state = ['shop' => [

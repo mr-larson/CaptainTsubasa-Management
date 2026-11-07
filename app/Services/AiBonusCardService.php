@@ -56,7 +56,7 @@ class AiBonusCardService
         $context = $this->buildTeamContext($gameSave, $team);
 
         foreach ($offers as $offer) {
-            $cost = (int) ($offer['cost'] ?? 0);
+            $cost = BonusCard::SHOP_PRICE;
 
             // Ne jamais dépasser le budget - réserve
             if ($budget < $cost + self::TRANSFER_RESERVE) continue;
@@ -64,7 +64,7 @@ class AiBonusCardService
             // Évaluer si la carte vaut l'achat
             $score = $this->scoreOffer($offer, $context);
 
-            // Seuil d'achat selon le tier : l'IA est plus sélective sur les cartes chères
+            // Seuil d'achat selon le tier, indépendamment du prix commun.
             $threshold = match ($offer['tier'] ?? 'bronze') {
                 'gold'   => 70,
                 'silver' => 50,

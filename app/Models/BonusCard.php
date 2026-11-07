@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class BonusCard extends Model
 {
+    public const SHOP_PRICE = 200;
+
     protected $fillable = [
         'name', 'description', 'kind', 'tier', 'target', 'execution_phase',
         'effect_type', 'effect_value', 'cost', 'base_weight', 'icon',
