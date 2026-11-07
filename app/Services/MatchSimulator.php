@@ -129,8 +129,8 @@ class MatchSimulator
                 (int) $m->away_team_id => $activation->getBenchedPlayerIds($gameSave, (int) $m->away_team_id),
             ];
             $modsByTeam = [
-                (int) $m->home_team_id => $activation->getMatchStatModifiers($gameSave, (int) $m->home_team_id),
-                (int) $m->away_team_id => $activation->getMatchStatModifiers($gameSave, (int) $m->away_team_id),
+                (int) $m->home_team_id => $activation->getMatchStatModifiers($gameSave, (int) $m->home_team_id, $m->id),
+                (int) $m->away_team_id => $activation->getMatchStatModifiers($gameSave, (int) $m->away_team_id, $m->id),
             ];
         }
 
@@ -176,6 +176,7 @@ class MatchSimulator
         // Progression post-match pour les joueurs IA
         if ($gameSave) {
             app(PostMatchProgressionService::class)->applyForMatch($gameSave, $m);
+            app(DeclarationService::class)->consumeMatchBoosts($gameSave, $m->id);
         }
 
         $this->applyResultToStandings($m);

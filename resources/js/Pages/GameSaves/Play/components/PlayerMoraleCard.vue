@@ -86,6 +86,7 @@ const lastDeclarationSummary = computed(() => {
     const d = lastDeclaration.value;
     if (!d) return null;
     if (d.type === 'praise') return { text: '📣 Félicité', positive: true };
+    if (d.outcome === 'match_boost') return { text: '📢 Critiqué — réaction d’orgueil, −3 moral', positive: false };
     if (d.outcome === 'proud_reaction') return { text: '📢 Critiqué — réaction d\'orgueil', positive: true };
     return { text: '📢 Critiqué — mal vécu', positive: false };
 });
@@ -195,7 +196,7 @@ const lastDeclarationSummary = computed(() => {
                     <button type="button"
                             @click="emit('make-declaration', player, 'criticize')"
                             class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-2xs font-bold border border-rose-300 bg-white text-rose-600 hover:bg-rose-50 transition-all"
-                            title="Critiquer publiquement. En méforme : peut provoquer une réaction d'orgueil (+5 moral)… ou être mal vécu. En forme : toujours injuste (−15 relation, −8 moral).">
+                            title="En méforme, 60 % de chances de gagner +3 en attaque, défense et vitesse pour le prochain match (−3 moral). Sinon, −5 moral. En forme, −8 moral et aucun bonus.">
                         📢 Critiquer
                     </button>
                 </template>

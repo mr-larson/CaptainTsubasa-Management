@@ -23,8 +23,8 @@ class DeclarationService
     const PRAISE_UNDESERVED_AFFINITY = 4; // sonne creux : effet réduit, pas de moral
 
     // Critiquer un joueur en méforme : électrochoc ou mal vécu
-    const CRITICIZE_PROUD_CHANCE     = 0.6;
-    const CRITICIZE_PROUD_MORALE     = 5;
+    const CRITICIZE_PROUD_CHANCE     = 60;
+    const CRITICIZE_PROUD_MORALE     = -3;
     const CRITICIZE_PROUD_AFFINITY   = -5;
     const CRITICIZE_BACKFIRE_AFFINITY = -10;
     const CRITICIZE_BACKFIRE_MORALE   = -5;
@@ -32,6 +32,7 @@ class DeclarationService
     // Critiquer un joueur en forme : toujours injuste
     const CRITICIZE_UNFAIR_AFFINITY = -15;
     const CRITICIZE_UNFAIR_MORALE   = -8;
+    private const MATCH_BOOST = ['attack' => 3, 'defense' => 3, 'speed' => 3];
 
     /**
      * Prononce une déclaration. Retourne le GameDeclaration créé,
@@ -63,8 +64,8 @@ class DeclarationService
             // criticize : "mérité" = le joueur est en méforme
             $isDeserved = !$deserved;
             if ($isDeserved) {
-                if (mt_rand() / mt_getrandmax() < self::CRITICIZE_PROUD_CHANCE) {
-                    $outcome       = 'proud_reaction';
+                if ($this->roll() <= self::CRITICIZE_PROUD_CHANCE && $this->queueMatchBoost($gameSave, $player, $teamId, $week)) {
+                    $outcome       = 'match_boost';
                     $affinityDelta = self::CRITICIZE_PROUD_AFFINITY;
                     $moraleDelta   = self::CRITICIZE_PROUD_MORALE;
                 } else {
@@ -105,8 +106,8 @@ class DeclarationService
                 'value'          => $moraleDelta,
                 'label'          => $type === 'praise'
                     ? 'Félicité publiquement par le coach'
-                    : ($outcome === 'proud_reaction'
-                        ? 'Critiqué publiquement — réaction d\'orgueil'
+                    : ($outcome === 'match_boost'
+                        ? 'Critiqué publiquement — réaction d’orgueil, bonus au prochain match'
                         : 'Critiqué publiquement — mal vécu'),
                 'week'           => $week,
                 'season'         => (int) ($gameSave->season ?? 1),
@@ -114,6 +115,37 @@ class DeclarationService
         }
 
         return $declaration;
+    }
+
+    protected function roll(): int
+    {
+        return random_int(1, 100);
+    }
+
+    private function queueMatchBoost(GameSave $gameSave, GamePlayer $player, int $teamId, int $week): bool
+    {
+        $matchId = GameMatch::where('game_save_id', $gameSave->id)
+            ->where('status', 'scheduled')
+            ->where('week', '>=', $week)
+            ->where(fn ($q) => $q->where('home_team_id', $teamId)->orWhere('away_team_id', $teamId))
+            ->orderBy('week')->orderBy('id')->value('id');
+        if ($matchId === null) return false;
+
+        $state = $gameSave->state ?? [];
+        $state['declaration_match_boosts'][$matchId][$teamId][$player->id] = self::MATCH_BOOST;
+        $gameSave->state = $state;
+        $gameSave->save();
+        return true;
+    }
+
+    public function consumeMatchBoosts(GameSave $gameSave, int $matchId): void
+    {
+        $state = $gameSave->state ?? [];
+        if (!isset($state['declaration_match_boosts'][$matchId])) return;
+
+        unset($state['declaration_match_boosts'][$matchId]);
+        $gameSave->state = $state;
+        $gameSave->save();
     }
 
     /**

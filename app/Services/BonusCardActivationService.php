@@ -897,10 +897,10 @@ class BonusCardActivationService
      *
      * @return array{team: array<string,int>, players: array<int,array<string,int>>}
      */
-    public function getMatchStatModifiers(GameSave $gameSave, int $teamId): array
+    public function getMatchStatModifiers(GameSave $gameSave, int $teamId, ?int $matchId = null): array
     {
         $team    = $this->getPreMatchStatBoosts($gameSave, $teamId); // boosts propres (positifs)
-        $players = [];
+        $players = $gameSave->state['declaration_match_boosts'][$matchId][$teamId] ?? [];
 
         foreach ($gameSave->state['pending_stat_debuffs'] ?? [] as $d) {
             if ((int) ($d['target_team_id'] ?? 0) !== $teamId) continue;

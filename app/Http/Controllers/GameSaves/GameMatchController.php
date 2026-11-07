@@ -17,6 +17,7 @@ use App\Models\PlayerLink;
 use App\Services\BonusCardActivationService;
 use App\Services\CareerObjectiveService;
 use App\Services\FoulAndInjuryService;
+use App\Services\DeclarationService;
 use App\Services\PostMatchProgressionService;
 use App\Services\SeasonChallengeService;
 use App\Services\WeekClosingService;
@@ -137,14 +138,14 @@ class GameMatchController extends Controller
                         'name'      => $internalTeam->name,
                         'logo_path' => $internalTeam->logo_path,
                         'formation' => $internalFormation,
-                        'players'   => $this->mapPlayers($internalTeam, $gameSave),
+                        'players'   => $this->mapPlayers($internalTeam, $gameSave, $match->id),
                     ],
                     'external' => [
                         'id'        => $externalTeam->id,
                         'name'      => $externalTeam->name,
                         'logo_path' => $externalTeam->logo_path,
                         'formation' => $externalFormation,
-                        'players'   => $this->mapPlayers($externalTeam, $gameSave),
+                        'players'   => $this->mapPlayers($externalTeam, $gameSave, $match->id),
                     ],
                 ],
             ],
@@ -289,6 +290,7 @@ class GameMatchController extends Controller
             // 4. Progression post-match (joueurs de ce match)
             app(PostMatchProgressionService::class)->applyForMatch($gameSave, $match);
             $gameSave->refresh();
+            app(DeclarationService::class)->consumeMatchBoosts($gameSave, $match->id);
             app(SeasonChallengeService::class)->payCompleted($gameSave, [(int) $homeTeamId, (int) $awayTeamId]);
 
 
@@ -419,7 +421,7 @@ class GameMatchController extends Controller
     //   HELPERS PRIVÉS
     // ==========================
 
-    private function mapPlayers(GameTeam $team, GameSave $gameSave): \Illuminate\Support\Collection
+    private function mapPlayers(GameTeam $team, GameSave $gameSave, int $matchId): \Illuminate\Support\Collection
     {
         $state      = $gameSave->state ?? [];
         $lineups    = $state['lineup'] ?? [];
@@ -450,7 +452,7 @@ class GameMatchController extends Controller
 
         // Modificateurs de stats "ce match" : boosts propres + debuffs reçus
         $statMods = app(BonusCardActivationService::class)
-            ->getMatchStatModifiers($gameSave, $team->id);
+            ->getMatchStatModifiers($gameSave, $team->id, $matchId);
 
         $contracts = $team->contracts->loadMissing('gamePlayer');
 

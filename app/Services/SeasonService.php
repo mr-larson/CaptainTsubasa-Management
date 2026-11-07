@@ -220,7 +220,7 @@ class SeasonService
         $gameSave->phase  = 'intersaison_draft';
 
         $state = $gameSave->state ?? [];
-        unset($state['lineup']);
+        unset($state['lineup'], $state['declaration_match_boosts']);
         // Tous les contrats ont expiré : les signatures d'agents libres de la
         // saison passée n'ont plus lieu d'être (et bornent la taille du state).
         unset($state['free_agent_signings']);
