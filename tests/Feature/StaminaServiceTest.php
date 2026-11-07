@@ -114,4 +114,26 @@ class StaminaServiceTest extends TestCase
 
         $this->assertSame(45, (int) $played->fresh()->stamina);
     }
+
+    public function test_free_agents_recover_weekly_until_they_sign_or_reach_full_stamina(): void
+    {
+        $save = $this->makeSave(['week' => 2]);
+        $team = $this->makeTeam($save);
+        $free = $this->makePlayer($save, ['stamina' => 50]);
+        $nearFull = $this->makePlayer($save, ['stamina' => 99]);
+        $this->makeContract($save, $team, $free, ['end_week' => 1]);
+
+        StaminaService::applyAfterWeek($save, 2);
+        $this->assertSame(53, (int) $free->fresh()->stamina);
+        $this->assertSame(100, (int) $nearFull->fresh()->stamina);
+
+        $save->update(['week' => 3]);
+        StaminaService::applyAfterWeek($save, 3);
+        $this->assertSame(56, (int) $free->fresh()->stamina);
+
+        $save->update(['week' => 4]);
+        $this->makeContract($save, $team, $free, ['start_week' => 4]);
+        StaminaService::applyAfterWeek($save, 4);
+        $this->assertSame(66, (int) $free->fresh()->stamina);
+    }
 }

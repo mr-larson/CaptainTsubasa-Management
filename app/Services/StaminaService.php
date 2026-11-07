@@ -13,6 +13,7 @@ class StaminaService
 {
     const MATCH_STAMINA_COST    = 5;
     const REST_STAMINA_RECOVERY = 10;
+    private const FREE_AGENT_RECOVERY = 3;
 
     /**
      * Applique stamina d'après-match pour UN match spécifique.
@@ -46,6 +47,17 @@ class StaminaService
         }
 
         self::applyStaminaChanges($gameSave, array_keys($playedPlayerIds));
+
+        if ($gameSave->competition_type !== 'world_cup') {
+            $recovery = self::FREE_AGENT_RECOVERY;
+            GamePlayer::where('game_save_id', $gameSave->id)
+                ->excludingFictional()
+                ->whereDoesntHave('contracts', fn ($q) => $q->activeAt($week))
+                ->where('stamina', '<', 100)
+                ->update([
+                    'stamina' => DB::raw("CASE WHEN stamina + {$recovery} > 100 THEN 100 ELSE stamina + {$recovery} END"),
+                ]);
+        }
     }
 
     /**
