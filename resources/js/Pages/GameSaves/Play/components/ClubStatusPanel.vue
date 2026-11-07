@@ -20,6 +20,7 @@ const props = defineProps({
     cardsInHand:       { type: Array, default: null },
     activeEffects:     { type: Array, default: () => [] },
     playerPromises:    { type: Object, default: null },
+    contractDepartures: { type: Array, default: () => [] },
     trainingEntries:   { type: Array, default: () => [] },
     positionTrainings: { type: Array, default: () => [] },
 });
@@ -111,6 +112,14 @@ const EMPTY = 'text-xs text-emerald-600';
 
 <template>
     <div class="flex flex-col gap-4">
+        <section v-if="contractDepartures.length" class="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+            <h4 class="font-semibold">Départs volontaires</h4>
+            <ul class="mt-1 space-y-1">
+                <li v-for="(departure, index) in contractDepartures" :key="index">
+                    {{ departure.player_name }} a quitté le club et devient agent libre ({{ departure.reason }}).
+                </li>
+            </ul>
+        </section>
         <!-- Indicateurs -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div :class="KPI">

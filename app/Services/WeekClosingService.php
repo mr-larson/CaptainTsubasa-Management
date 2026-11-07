@@ -77,6 +77,7 @@ class WeekClosingService
         StaminaService::applyAfterWeek($gameSave, $week);
         app(MoraleService::class)->applyAfterWeek($gameSave, $week);
         app(PromiseService::class)->evaluateForWeek($gameSave, $week);
+        app(ContractDepartureService::class)->resolveForWeek($gameSave, $week);
 
         // 5. Semaine suivante : la main repasse au joueur du siège 1.
         $gameSave->week = max((int) ($gameSave->week ?? 1), $week + 1);

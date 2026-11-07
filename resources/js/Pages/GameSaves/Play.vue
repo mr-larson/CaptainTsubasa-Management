@@ -277,6 +277,7 @@ const clubStatus = computed(() => {
     const cards = isMine && props.gameConfig?.bonus_cards_enabled !== false
         ? props.bonusCardInventory : null;
     const state = props.gameSave.state ?? {};
+    const departures = state.contract_departures;
     const teamMatches = id => Number(id) === Number(myId);
     const effects = cards === null ? [] : [
         ...(state.active_pre_match_cards ?? []).filter(c => teamMatches(c.game_team_id)).map(c => {
@@ -308,6 +309,8 @@ const clubStatus = computed(() => {
         cardsInHand:      cards?.filter(c => c.status === 'available') ?? null,
         activeEffects:    effects,
         playerPromises:   isMine ? props.playerPromises : null,
+        contractDepartures: isMine && departures?.season === season.value && departures.week === week.value - 1
+            ? (departures.entries ?? []).filter(entry => teamMatches(entry.team_id)) : [],
         trainingEntries:  isMine ? myEntriesThisWeek.value : [],
         positionTrainings: isMine ? props.activePositionTrainings : [],
         clubStanding:     index === -1 ? null : { ...standings.value[index], position: index + 1 },
