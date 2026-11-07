@@ -89,6 +89,35 @@ class MoraleServiceTest extends TestCase
         $this->assertTrue($logs->contains('source', 'playing_time'));
     }
 
+    public function test_training_this_week_prevents_the_bench_penalty_and_its_log(): void
+    {
+        $save = $this->makeSave(['week' => 2]);
+        $home = $this->makeTeam($save);
+        $away = $this->makeTeam($save);
+        $trained = $this->makePlayer($save);
+        $aiTrained = $this->makePlayer($save);
+        $untrained = $this->makePlayer($save);
+        $this->makeContract($save, $home, $trained, ['is_starter' => false]);
+        $this->makeContract($save, $away, $aiTrained, ['is_starter' => false]);
+        $this->makeContract($save, $home, $untrained, ['is_starter' => false]);
+        $save->update(['state' => [
+            'training' => ['season' => 1, 'week' => 2, 'entries' => [['player_id' => $trained->id]]],
+            'ai_training_history' => [
+                ['season' => 1, 'week' => 2, 'player_id' => $aiTrained->id],
+                ['season' => 1, 'week' => 1, 'player_id' => $untrained->id],
+            ],
+        ]]);
+        $this->makeMatch($save, $home, $away, ['week' => 2, 'status' => 'played', 'home_score' => 0, 'away_score' => 0]);
+
+        $this->service->applyAfterWeek($save, 2);
+
+        $this->assertSame(60, (int) $trained->fresh()->morale);
+        $this->assertSame(60, (int) $aiTrained->fresh()->morale);
+        $this->assertSame(59, (int) $untrained->fresh()->morale);
+        $this->assertSame([$untrained->id], GamePlayerMoraleLog::where('source', 'playing_time')
+            ->where('label', 'Resté sur le banc')->pluck('game_player_id')->all());
+    }
+
     public function test_no_played_match_leaves_morale_untouched(): void
     {
         $save = $this->makeSave(['week' => 1]);

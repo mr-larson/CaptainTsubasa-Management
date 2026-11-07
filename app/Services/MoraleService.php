@@ -128,6 +128,15 @@ class MoraleService
         }
 
         $unavailableIds = $this->resolveUnavailablePlayerIds($gameSave, $week);
+        $training = $gameSave->state['training'] ?? [];
+        $sessions = (int) ($training['season'] ?? 0) === $season && (int) ($training['week'] ?? 0) === $week
+            ? ($training['entries'] ?? [])
+            : [];
+        $trainedIds = collect($gameSave->state['ai_training_history'] ?? [])
+            ->filter(fn ($entry) => (int) $entry['season'] === $season && (int) $entry['week'] === $week)
+            ->merge($sessions)
+            ->pluck('player_id')
+            ->flip();
 
         $teams = GameTeam::where('game_save_id', $gameSave->id)
             ->with(['contracts' => fn($q) => $q->activeAt($week)->with('gamePlayer')])
@@ -166,7 +175,7 @@ class MoraleService
                         ];
                     }
 
-                    // 2. Temps de jeu — gelé si blessé ou suspendu
+                    // 2. Temps de jeu : pas de malus d’absence après une séance cette semaine.
                     if (!$unavailable) {
                         $hasPlayed = isset($context['playedIds'][(string) $player->id]);
 
@@ -176,7 +185,7 @@ class MoraleService
                                 'value'  => $contract->is_starter ? self::PLAYED_STARTER_DELTA : self::PLAYED_BENCH_DELTA,
                                 'label'  => 'A joué contre ' . $context['opponent'],
                             ];
-                        } else {
+                        } elseif (!$trainedIds->has($player->id)) {
                             $events[] = [
                                 'source' => 'playing_time',
                                 'value'  => $contract->is_starter ? self::MISSED_STARTER_DELTA : self::MISSED_BENCH_DELTA,
