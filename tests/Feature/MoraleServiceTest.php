@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\GameSaves\GamePlayerMoraleLog;
 use App\Services\MoraleService;
+use App\Services\WeekClosingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsGameWorld;
 use Tests\TestCase;
@@ -116,6 +117,40 @@ class MoraleServiceTest extends TestCase
         $this->assertSame(59, (int) $untrained->fresh()->morale);
         $this->assertSame([$untrained->id], GamePlayerMoraleLog::where('source', 'playing_time')
             ->where('label', 'Resté sur le banc')->pluck('game_player_id')->all());
+    }
+
+    public function test_week_closing_excuses_a_player_benched_by_a_card_before_consuming_it(): void
+    {
+        $save = $this->makeSave();
+        $save->setConfig(['ai_training_enabled' => false, 'ai_transfers_enabled' => false]);
+        $home = $this->makeTeam($save, ['is_controlled' => true]);
+        $away = $this->makeTeam($save);
+        $blocked = $this->makePlayer($save);
+        $substitute = $this->makePlayer($save);
+        $opponent = $this->makePlayer($save);
+        $this->makeContract($save, $home, $blocked);
+        $this->makeContract($save, $home, $substitute, ['is_starter' => false]);
+        $this->makeContract($save, $away, $opponent);
+        $state = $save->state;
+        $state['pending_malus'] = [[
+            'effect_type' => 'opponent_bench_starter',
+            'target_team_id' => $home->id,
+            'target_player_id' => $blocked->id,
+        ]];
+        $save->update(['controlled_game_team_id' => $home->id, 'state' => $state]);
+        $this->makeMatch($save, $home, $away, [
+            'status' => 'played', 'home_score' => 0, 'away_score' => 0,
+            'match_stats' => ['players' => [$opponent->id => []]],
+        ]);
+
+        app(WeekClosingService::class)->close($save, 1);
+
+        $this->assertSame(60, (int) $blocked->fresh()->morale);
+        $this->assertSame(59, (int) $substitute->fresh()->morale);
+        $this->assertDatabaseMissing('game_player_morale_logs', [
+            'game_player_id' => $blocked->id, 'source' => 'playing_time',
+        ]);
+        $this->assertEmpty($save->fresh()->state['pending_malus'] ?? []);
     }
 
     public function test_no_played_match_leaves_morale_untouched(): void

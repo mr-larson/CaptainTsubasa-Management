@@ -69,13 +69,13 @@ class WeekClosingService
             $activation->resolveSponsorChallenges($gameSave, $week);
             $activation->consumePreMatchCardsForPlayedWeek($gameSave, $week);
         }
-        if ($malusEnabled) {
-            $activation->consumeMalusForPlayedWeek($gameSave, $week);
-        }
 
         // 4. Stamina, moral et promesses de la semaine jouée (avant incrément).
         StaminaService::applyAfterWeek($gameSave, $week);
         app(MoraleService::class)->applyAfterWeek($gameSave, $week);
+        if ($malusEnabled) {
+            $activation->consumeMalusForPlayedWeek($gameSave, $week);
+        }
         app(PromiseService::class)->evaluateForWeek($gameSave, $week);
         app(ContractDepartureService::class)->resolveForWeek($gameSave, $week);
 

@@ -128,6 +128,7 @@ class MoraleService
         }
 
         $unavailableIds = $this->resolveUnavailablePlayerIds($gameSave, $week);
+        $activation = app(BonusCardActivationService::class);
         $training = $gameSave->state['training'] ?? [];
         $sessions = (int) ($training['season'] ?? 0) === $season && (int) ($training['week'] ?? 0) === $week
             ? ($training['entries'] ?? [])
@@ -148,6 +149,7 @@ class MoraleService
 
         foreach ($teams as $team) {
             $context = $teamContext[$team->id] ?? null;
+            $benchedByMalus = array_flip($activation->getBenchedPlayerIds($gameSave, $team->id));
 
             foreach ($team->contracts as $contract) {
                 $player = $contract->gamePlayer;
@@ -175,7 +177,7 @@ class MoraleService
                         ];
                     }
 
-                    // 2. Temps de jeu : pas de malus d’absence après une séance cette semaine.
+                    // 2. Temps de jeu : une séance ou une consignation excuse l’absence.
                     if (!$unavailable) {
                         $hasPlayed = isset($context['playedIds'][(string) $player->id]);
 
@@ -185,7 +187,7 @@ class MoraleService
                                 'value'  => $contract->is_starter ? self::PLAYED_STARTER_DELTA : self::PLAYED_BENCH_DELTA,
                                 'label'  => 'A joué contre ' . $context['opponent'],
                             ];
-                        } elseif (!$trainedIds->has($player->id)) {
+                        } elseif (!$trainedIds->has($player->id) && !isset($benchedByMalus[$player->id])) {
                             $events[] = [
                                 'source' => 'playing_time',
                                 'value'  => $contract->is_starter ? self::MISSED_STARTER_DELTA : self::MISSED_BENCH_DELTA,
