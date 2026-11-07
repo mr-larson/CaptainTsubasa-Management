@@ -96,6 +96,7 @@ function promiseText(promise) {
         case 'starter': return `Titularisations · ${promise.played_matches ?? 0}/${promise.target_matches ?? 4}`;
         case 'playing_time': return `Temps de jeu · ${promise.target_turns ?? 15} tours`;
         case 'renewal': return 'Prolongation de contrat';
+        case 'rest': return 'Repos · aucun match ni entraînement';
         default: return 'Promesse en cours';
     }
 }

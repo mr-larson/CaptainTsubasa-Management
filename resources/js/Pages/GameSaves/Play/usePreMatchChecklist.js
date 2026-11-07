@@ -49,6 +49,9 @@ export function usePreMatchChecklist({
                 } else if (pr.type === 'starter') {
                     items.push({ ...base, level: p.is_starter ? 'info' : 'warn',
                         text: `⭐ Titularisation promise à ${p.lastname} (${pr.played_matches ?? 0}/${pr.target_matches ?? 4}${p.is_starter ? '' : ', sur le banc'})` });
+                } else if (pr.type === 'rest') {
+                    items.push({ ...base, level: p.is_starter ? 'warn' : 'info',
+                        text: `💤 Repos promis à ${p.lastname} en S${pr.due_week}${p.is_starter ? ' (titulaire)' : ''}` });
                 } else if (pr.type === 'renewal') {
                     const left = Number(pr.due_week) - currentWeek;
                     items.push({ ...base, level: left <= 1 ? 'warn' : 'info',

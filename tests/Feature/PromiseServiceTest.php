@@ -224,4 +224,40 @@ class PromiseServiceTest extends TestCase
 
         $this->assertSame('broken', GamePromise::where('game_player_id', $player->id)->first()->status);
     }
+
+    public function test_rest_promise_requires_a_week_without_playing_or_training(): void
+    {
+        $save = $this->makeSave(['week' => 3]);
+        $team = $this->makeTeam($save);
+        $opponent = $this->makeTeam($save);
+        $rested = $this->makePlayer($save);
+        $substitute = $this->makePlayer($save);
+        $trained = $this->makePlayer($save);
+
+        foreach ([$rested, $substitute, $trained] as $player) {
+            $this->makeContract($save, $team, $player, ['is_starter' => false]);
+        }
+        $restPromise = $this->service->create($save, $rested, $team->id, 'rest');
+        $subPromise = $this->service->create($save, $substitute, $team->id, 'rest');
+        $trainingPromise = $this->service->create($save, $trained, $team->id, 'rest');
+
+        $this->assertSame(3, $restPromise->due_week);
+        $this->makeMatch($save, $team, $opponent, [
+            'week' => 3,
+            'status' => 'played',
+            'match_stats' => ['starters' => ['home' => [], 'away' => []], 'playtime' => [$substitute->id => 1]],
+        ]);
+        $save->update(['state' => ['training' => [
+            'season' => 1, 'week' => 3, 'entries' => [['player_id' => $trained->id]],
+        ]]]);
+
+        $this->service->evaluateForWeek($save, 2);
+        $this->assertSame('pending', $restPromise->fresh()->status);
+        $this->service->evaluateForWeek($save, 3);
+
+        $this->assertSame('kept', $restPromise->fresh()->status);
+        $this->assertSame('broken', $subPromise->fresh()->status);
+        $this->assertSame(1, $subPromise->fresh()->played_turns);
+        $this->assertSame('broken', $trainingPromise->fresh()->status);
+    }
 }

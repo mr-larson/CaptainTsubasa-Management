@@ -63,6 +63,7 @@ const PROMISE_TYPES = [
     { type: 'playing_time', icon: '🤝', label: 'Temps de jeu',  hint: 'Il jouera au moins un tiers du match (~30 min) à son prochain match', kept: 5,  broken: 10 },
     { type: 'starter',      icon: '⭐', label: 'Titularisation', hint: 'Il sera titulaire sur 4 matchs dans les 5 prochaines semaines', kept: 10, broken: 15 },
     { type: 'renewal',      icon: '📜', label: 'Prolongation',   hint: 'Tu lui signeras un nouveau contrat sous 4 semaines', kept: 15, broken: 20 },
+    { type: 'rest',         icon: '💤', label: 'Repos',          hint: 'Il ne doit jouer aucun tour ni suivre d’entraînement cette semaine', kept: 5, broken: 10 },
 ];
 
 const promiseTypeLabel = (type) => PROMISE_TYPES.find(t => t.type === type)?.label ?? type;
@@ -149,10 +150,13 @@ const lastDeclarationSummary = computed(() => {
                           ? `Signe-lui un nouveau contrat avant la semaine ${activePromise.due_week}`
                           : activePromise.type === 'playing_time'
                               ? `Il doit jouer au moins ${activePromise.target_turns} tours à son prochain match où il est disponible (un match manqué pour blessure ou suspension ne compte pas)`
-                              : `Il doit être titulaire sur ${activePromise.target_matches} matchs entre la semaine ${activePromise.start_week} et la semaine ${activePromise.due_week}`">
+                              : activePromise.type === 'rest'
+                                  ? 'Aucun match ni entraînement cette semaine'
+                                  : `Il doit être titulaire sur ${activePromise.target_matches} matchs entre la semaine ${activePromise.start_week} et la semaine ${activePromise.due_week}`">
                     🤝 Promesse en cours — {{ promiseTypeLabel(activePromise.type) }}
                     <template v-if="activePromise.type === 'playing_time'">: ≥{{ activePromise.target_turns }} tours au prochain match</template>
                     <template v-else-if="activePromise.type === 'starter'">: {{ activePromise.target_matches }} matchs titulaire avant S{{ activePromise.due_week }}</template>
+                    <template v-else-if="activePromise.type === 'rest'">: aucun match ni entraînement en S{{ activePromise.due_week }}</template>
                     <template v-else>avant S{{ activePromise.due_week }}</template>
                 </span>
                 <template v-else-if="editable">
@@ -174,6 +178,7 @@ const lastDeclarationSummary = computed(() => {
                     <template v-else-if="lastResolvedPromise.type === 'starter'">
                         ({{ lastResolvedPromise.played_matches ?? 0 }}/{{ lastResolvedPromise.target_matches }})
                     </template>
+                    <template v-else-if="lastResolvedPromise.type === 'rest'">· Repos</template>
                 </span>
             </div>
 

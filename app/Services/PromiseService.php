@@ -6,6 +6,7 @@ use App\Models\GameSaves\GameInjury;
 use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GamePlayerMoraleLog;
+use App\Models\GameSaves\GamePositionTraining;
 use App\Models\GameSaves\GamePromise;
 use App\Models\GameSaves\GameSanction;
 use App\Models\GameSaves\GameSave;
@@ -44,6 +45,7 @@ class PromiseService
         'playing_time' => ['window' => 5, 'target' => 0, 'turns' => 15, 'kept' => 5,  'broken' => -10],
         'starter'      => ['window' => 5, 'target' => 4,                'kept' => 10, 'broken' => -15],
         'renewal'      => ['window' => 4, 'target' => 0,                'kept' => 15, 'broken' => -20],
+        'rest'         => ['window' => 1, 'target' => 0,                'kept' => 5,  'broken' => -10],
     ];
 
     const AFFINITY_MIN = -100;
@@ -112,6 +114,7 @@ class PromiseService
             $resolution = match ($promise->type) {
                 'renewal'      => $this->evaluateRenewal($promise, $week),
                 'playing_time' => $this->evaluatePlayingTime($promise, $week),
+                'rest'         => $this->evaluateRest($gameSave, $promise, $week),
                 default        => $this->evaluateStarter($promise, $week, $starterProgress[$promise->id] ?? 0),
             };
 
@@ -160,6 +163,38 @@ class PromiseService
         $config = self::TYPES[$type] ?? self::TYPES['starter'];
 
         return $kept ? $config['kept'] : $config['broken'];
+    }
+
+    private function evaluateRest(GameSave $gameSave, GamePromise $promise, int $week): ?array
+    {
+        if ($week < $promise->due_week) return null;
+
+        $restWeek = $promise->start_week;
+        $playerId = (int) $promise->game_player_id;
+        $turns = GameMatch::where('game_save_id', $gameSave->id)
+            ->where('week', $restWeek)
+            ->where('status', 'played')
+            ->where(fn ($q) => $q->where('home_team_id', $promise->game_team_id)
+                ->orWhere('away_team_id', $promise->game_team_id))
+            ->get()
+            ->sum(fn (GameMatch $match) => $this->turnsPlayed($match, $playerId));
+
+        $training = $gameSave->state['training'] ?? [];
+        $sessions = (int) ($training['season'] ?? 0) === $promise->season
+            && (int) ($training['week'] ?? 0) === $restWeek ? ($training['entries'] ?? []) : [];
+        $trained = collect($sessions)->contains(fn ($entry) => (int) $entry['player_id'] === $playerId)
+            || collect($gameSave->state['ai_training_history'] ?? [])->contains(fn ($entry) =>
+                (int) $entry['player_id'] === $playerId && (int) $entry['season'] === $promise->season
+                && (int) $entry['week'] === $restWeek
+            )
+            || GamePositionTraining::where('game_save_id', $gameSave->id)
+                ->where('game_player_id', $playerId)
+                ->where('week_start', '<=', $restWeek)
+                ->where('week_return', '>', $restWeek)
+                ->exists();
+
+        $kept = $turns === 0 && !$trained;
+        return [$kept, $kept ? 'Promesse de repos tenue' : 'Promesse de repos non tenue', null, $turns];
     }
 
     /**
