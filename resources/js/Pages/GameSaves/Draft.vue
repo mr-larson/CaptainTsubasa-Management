@@ -563,7 +563,7 @@ onMounted(() => {
                                     </div>
                                     <div>
                                         <div class="text-xs font-bold text-amber-700">{{ myTeam?.name }}</div>
-                                        <div class="text-2xs text-amber-500">{{ myRosterCount }}/18 joueurs • {{ myBudget }} €</div>
+                                        <div class="text-2xs text-amber-500">{{ myRosterCount }}/18 joueurs • {{ myBudget }} GL</div>
                                     </div>
                                 </div>
                                 <TeamStyleBadges :team="myTeam" size="sm" />
@@ -614,7 +614,7 @@ onMounted(() => {
                                               class="px-1 py-0.5 rounded text-3xs font-bold">
                 {{ positionGroup(pick.position) }}
             </span>
-                                        <span class="text-3xs text-slate-400">{{ pick.cost }}€</span>
+                                        <span class="text-3xs text-slate-400">{{ pick.cost }}GL</span>
                                     </div>
                                     <p v-if="!inspectedRoster.length" class="text-2xs text-slate-400 italic text-center py-2">
                                         Aucun joueur pioché
@@ -815,8 +815,8 @@ onMounted(() => {
 
                                             <!-- Coût -->
                                             <td class="py-1.5 px-2 text-right">
-                                                <span class="font-semibold text-amber-600">{{ draftCost(player) }} €</span>
-                                                <span class="text-3xs text-slate-400 ml-1">{{ weeklyCost(player) }} €/sem</span>
+                                                <span class="font-semibold text-amber-600">{{ draftCost(player) }} GL</span>
+                                                <span class="text-3xs text-slate-400 ml-1">{{ weeklyCost(player) }} GL/sem</span>
                                             </td>
 
                                             <!-- Bouton -->
@@ -876,7 +876,7 @@ onMounted(() => {
                     <!-- Identité -->
                     <PlayerIdentityCard :player="inspectedPlayer"
                                         :showCaptainBadge="false"
-                                        :subtitle="`${positionLabel(inspectedPlayer.position)} • ${draftCost(inspectedPlayer)} € (${weeklyCost(inspectedPlayer)} €/sem)`" />
+                                        :subtitle="`${positionLabel(inspectedPlayer.position)} • ${draftCost(inspectedPlayer)} GL (${weeklyCost(inspectedPlayer)} GL/sem)`" />
 
                     <!-- Radar + Barres -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">

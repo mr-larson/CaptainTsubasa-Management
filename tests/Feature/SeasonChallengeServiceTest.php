@@ -203,7 +203,7 @@ class SeasonChallengeServiceTest extends TestCase
         $this->service->ensureSeasonChallenges($save);
         $save = $save->fresh();
 
-        // 1000 € en caisse, objectif 2000 € : la prime de classement (≥ 4800 €)
+        // 1000 GL en caisse, objectif 2000 GL : la prime de classement (≥ 4800 GL)
         // ne doit pas le faire valider.
         $this->forceObjectives($save, $me, [['key' => 'budget_min', 'tier' => 'easy', 'target' => 2000]]);
 

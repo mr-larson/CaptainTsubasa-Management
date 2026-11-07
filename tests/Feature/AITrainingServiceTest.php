@@ -72,7 +72,7 @@ class AITrainingServiceTest extends TestCase
             ->where('team_id', $team->id)
             ->count();
 
-        // Coût par défaut = 200 € : le budget est débité d'exactement 200 € par séance.
+        // Coût par défaut = 200 GL : le budget est débité d'exactement 200 GL par séance.
         $this->assertGreaterThan(0, $sessions);
         $this->assertSame(100000 - $sessions * 200, (int) $team->fresh()->budget);
     }

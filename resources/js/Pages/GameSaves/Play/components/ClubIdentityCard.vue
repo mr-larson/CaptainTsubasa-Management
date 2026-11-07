@@ -24,7 +24,7 @@ const { teamLogoUrl } = usePlayerUtils();
         <div class="min-w-0 flex flex-col gap-1">
             <h3 class="text-base font-bold text-slate-700 truncate">{{ team?.name ?? '—' }}</h3>
             <p v-if="rank" class="text-xs text-slate-500">
-                {{ rank }}<sup>e</sup> / {{ total }} &nbsp;•&nbsp; {{ budget ?? 0 }} €
+                {{ rank }}<sup>e</sup> / {{ total }} &nbsp;•&nbsp; {{ budget ?? 0 }} GL
             </p>
             <p v-if="team?.description" class="text-xs text-slate-400 leading-relaxed line-clamp-3">
                 {{ team.description }}

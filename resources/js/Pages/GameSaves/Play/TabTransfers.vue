@@ -12,6 +12,7 @@ import SecondaryPositions from '@/Pages/GameSaves/Play/components/SecondaryPosit
 
 const props = defineProps({
     availableFreePlayers: { type: Array,   required: true },
+    visibleOrigins:       { type: Object,  default: () => ({}) },
     team:                 { type: Object,  default: null },
     teamBudget:           { type: Number,  required: true },
     showTransferModal:    { type: Boolean, required: true },
@@ -47,7 +48,7 @@ const searchQuery = ref('');
 //   FILTRE ORIGINE (œuvre de provenance)
 // ==========================
 const originFilter = ref('ALL');
-const originFilters = [
+const originOptions = [
     { key: 'ALL',                 label: 'Toutes' },
     { key: 'captain_tsubasa',     label: 'Captain Tsubasa' },
     { key: 'blue_lock',           label: 'Blue Lock' },
@@ -57,6 +58,16 @@ const originFilters = [
     { key: 'original',            label: 'Originaux' },
     { key: 'amateur',             label: 'Amateurs' },
 ];
+
+const originFilters = computed(() => originOptions.filter(({ key }) => {
+    // Comme le filtre serveur, une origine absente des réglages reste visible.
+    const enabled = props.visibleOrigins?.[key];
+    return enabled === undefined || enabled === true || enabled === 1 || enabled === '1';
+}));
+
+watch(originFilters, (options) => {
+    if (!options.some(({ key }) => key === originFilter.value)) originFilter.value = 'ALL';
+});
 
 const originCount = (key) =>
     key === 'ALL'
@@ -203,7 +214,7 @@ const compareStatRows = [
     { key: 'block', label: 'Blocage' },
     { key: 'hand_save', label: 'Main' },
     { key: 'punch_save', label: 'Poing' },
-    { key: 'cost', label: 'Coût (€/match)', lowerBetter: true },
+    { key: 'cost', label: 'Coût (GL/match)', lowerBetter: true },
 ];
 
 const compareStatValue = (player, key) => {
@@ -260,13 +271,13 @@ const filteredHistory = computed(() =>
                 </div>
                 <div class="flex flex-wrap gap-2 mt-auto">
                     <div class="text-center px-4 py-2 rounded-xl border bg-teal-50 border-teal-200">
-                        <div class="text-xl font-black text-teal-600">{{ teamBudget }} €</div>
+                        <div class="text-xl font-black text-teal-600">{{ teamBudget }} GL</div>
                         <div class="text-2xs text-teal-400 font-semibold">Budget actuel</div>
                     </div>
                     <div v-if="transferTarget" class="text-center px-4 py-2 rounded-xl border"
                          :class="canAfford ? 'bg-emerald-50 border-emerald-200' : 'bg-rose-50 border-rose-200'">
                         <div class="text-xl font-black" :class="canAfford ? 'text-emerald-600' : 'text-rose-500'">
-                            {{ budgetAfter }} €
+                            {{ budgetAfter }} GL
                         </div>
                         <div class="text-2xs font-semibold" :class="canAfford ? 'text-emerald-400' : 'text-rose-400'">
                             Après transfert
@@ -464,7 +475,7 @@ const filteredHistory = computed(() =>
                         </div>
                         <div class="flex-1">
                             <h3 class="text-base font-bold text-slate-700">{{ selectedPlayer.firstname }} {{ selectedPlayer.lastname }}</h3>
-                            <p class="text-xs text-slate-400 mt-0.5">{{ positionLabel(selectedPlayer.position) }} • Coût de base : {{ selectedPlayer.cost ?? 0 }} €/match</p>
+                            <p class="text-xs text-slate-400 mt-0.5">{{ positionLabel(selectedPlayer.position) }} • Coût de base : {{ selectedPlayer.cost ?? 0 }} GL/match</p>
                             <span class="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full text-2xs font-semibold"
                                   :class="moraleState(selectedPlayer.morale).chip"
                                   title="Le moral d'un joueur libre n'évolue pas tant qu'il est sans club">
@@ -502,9 +513,9 @@ const filteredHistory = computed(() =>
                                    class="w-full px-3 py-1.5" :class="fieldClass({ shape: 'rect' })"/>
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Salaire / match (€)</label>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Salaire / match (GL)</label>
                             <div class="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-slate-100 text-slate-600 font-semibold flex items-center justify-between">
-                                <span>{{ transferSalary }} €</span>
+                                <span>{{ transferSalary }} GL</span>
                                 <span class="text-2xs text-slate-400 font-normal">fixé</span>
                             </div>
                         </div>
@@ -516,7 +527,7 @@ const filteredHistory = computed(() =>
                             🔁 Remplacerait <span class="font-bold">{{ replacedStarter.lastname }}</span>, ton titulaire le plus faible à ce poste :
                             note {{ overallOf(replacedStarter) }} → {{ overallOf(selectedPlayer) }}
                             <span class="font-bold" :class="overallGain > 0 ? 'text-emerald-600' : overallGain < 0 ? 'text-rose-500' : 'text-slate-500'">({{ overallGain > 0 ? '+' : '' }}{{ overallGain }})</span>
-                            · {{ transferSalary }} €/match × {{ transferMatches }} = {{ transferTotalCost }} €
+                            · {{ transferSalary }} GL/match × {{ transferMatches }} = {{ transferTotalCost }} GL
                         </template>
                         <template v-else>Aucun titulaire à ce poste : il renforcerait directement ton onze.</template>
                     </div>
@@ -527,13 +538,13 @@ const filteredHistory = computed(() =>
                         <div class="flex-1">
                             <div class="text-xs text-slate-500">Coût total</div>
                             <div class="text-lg font-black" :class="canAfford ? 'text-emerald-600' : 'text-rose-500'">
-                                {{ transferTotalCost }} €
+                                {{ transferTotalCost }} GL
                             </div>
                         </div>
                         <div class="text-right">
                             <div class="text-xs text-slate-500">Budget restant</div>
                             <div class="text-sm font-bold" :class="canAfford ? 'text-emerald-600' : 'text-rose-500'">
-                                {{ budgetAfter }} €
+                                {{ budgetAfter }} GL
                             </div>
                         </div>
                         <div v-if="!canAfford" class="text-rose-500 text-sm">⚠️ Budget insuffisant</div>
@@ -595,7 +606,7 @@ const filteredHistory = computed(() =>
                     <!-- Semaine -->
                     <div class="text-2xs text-slate-400 shrink-0">S{{ entry.start_week }}</div>
                     <!-- Salaire -->
-                    <div class="text-xs font-bold text-teal-600 shrink-0">{{ entry.salary }} €</div>
+                    <div class="text-xs font-bold text-teal-600 shrink-0">{{ entry.salary }} GL</div>
                 </div>
             </div>
 

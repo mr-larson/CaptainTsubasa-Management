@@ -73,10 +73,10 @@ const originLabels = {
 };
 
 const careerLevels = [
-    { key: 'none',     icon: '∞',  label: 'Bac à sable',  desc: 'Aucun objectif. Les saisons s\'enchaînent à l\'infini. Budget 2500 €, revenus pleins.' },
-    { key: 'survival', icon: '🛡️', label: 'Survie',       desc: 'Petit club. La direction tolère un objectif modeste mais reste impatiente. 1 titre pour gagner. Budget 1500 €, 500 €/sem.' },
-    { key: 'standard', icon: '⚖️', label: 'Standard',     desc: 'Objectif calé sur la force de l\'effectif. 2 titres pour gagner. Budget 1000 €, 450 €/sem.' },
-    { key: 'conquest', icon: '👑', label: 'Conquête',     desc: 'Gros club. Le board exige le haut du tableau ET tient les cordons de la bourse. 3 titres pour gagner. Budget 500 €, 350 €/sem.' },
+    { key: 'none',     icon: '∞',  label: 'Bac à sable',  desc: 'Aucun objectif. Les saisons s\'enchaînent à l\'infini. Budget 2500 GL, revenus pleins.' },
+    { key: 'survival', icon: '🛡️', label: 'Survie',       desc: 'Petit club. La direction tolère un objectif modeste mais reste impatiente. 1 titre pour gagner. Budget 1500 GL, 500 GL/sem.' },
+    { key: 'standard', icon: '⚖️', label: 'Standard',     desc: 'Objectif calé sur la force de l\'effectif. 2 titres pour gagner. Budget 1000 GL, 450 GL/sem.' },
+    { key: 'conquest', icon: '👑', label: 'Conquête',     desc: 'Gros club. Le board exige le haut du tableau ET tient les cordons de la bourse. 3 titres pour gagner. Budget 500 GL, 350 GL/sem.' },
 ];
 
 const config = reactive({
@@ -501,7 +501,7 @@ function submit() {
                                 <label class="text-2xs text-slate-500">Budget de départ des clubs IA</label>
                                 <div class="flex items-center gap-2">
                                     <input type="range" v-model.number="config.ai_start_budget" min="0" max="10000" step="250" class="flex-1 h-1 accent-teal-500" />
-                                    <span class="text-xs font-bold text-slate-700 w-14 text-right">{{ config.ai_start_budget }} €</span>
+                                    <span class="text-xs font-bold text-slate-700 w-14 text-right">{{ config.ai_start_budget }} GL</span>
                                 </div>
                             </div>
                         </div>
@@ -550,7 +550,7 @@ function submit() {
                                     </div>
                                 </div>
                                 <div class="flex flex-col gap-1">
-                                    <label class="text-2xs text-slate-500">Coût / séance (€)</label>
+                                    <label class="text-2xs text-slate-500">Coût / séance (GL)</label>
                                     <div class="flex items-center gap-2">
                                         <input type="range" v-model.number="config.training_cost" min="0" max="2000" step="50" class="flex-1 h-1 accent-teal-500" />
                                         <span class="text-xs font-bold text-slate-700 w-10 text-right">{{ config.training_cost }}</span>

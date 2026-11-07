@@ -2,6 +2,7 @@
 // Résolution des fautes / cartons consécutifs à un duel.
 
 import { FREE_KICK } from './constants.js';
+import { runAfterDiceAnimation } from './dice.js';
 
 let _state  = null;
 let _roster = null;
@@ -40,7 +41,7 @@ function countYellows(playerDbId) {
 
 function expelPlayer(domId, dbId) {
     const el = _rootEl.querySelector(`[data-player="${domId}"]`);
-    if (el) el.classList.add('unavailable');
+    if (el) runAfterDiceAnimation(() => el.classList.add('unavailable'));
     if (dbId != null) _state.exitTurns[dbId] ??= _state.turns;
 }
 

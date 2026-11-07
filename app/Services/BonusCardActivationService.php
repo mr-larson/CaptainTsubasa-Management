@@ -159,8 +159,8 @@ class BonusCardActivationService
 
         $abs = abs($gain);
         $msg = $gain >= 0
-            ? "📈 La campagne a payé : +{$abs} € au budget (désormais {$team->budget} €)."
-            : "📉 La campagne a fait un flop : −{$abs} € sur le budget (désormais {$team->budget} €).";
+            ? "📈 La campagne a payé : +{$abs} GL au budget (désormais {$team->budget} GL)."
+            : "📉 La campagne a fait un flop : −{$abs} GL sur le budget (désormais {$team->budget} GL).";
 
         return ['message' => $msg, 'gain' => $gain, 'new_budget' => $team->budget];
     }
@@ -189,7 +189,7 @@ class BonusCardActivationService
         $gameSave->state = $state;
         $gameSave->save();
 
-        return ['message' => "Défi sponsor activé : {$card->name}. Récompense de {$reward} € au prochain match si l'objectif est atteint."];
+        return ['message' => "Défi sponsor activé : {$card->name}. Récompense de {$reward} GL au prochain match si l'objectif est atteint."];
     }
 
     private function applyMoraleBoost(GameSave $gameSave, GameBonusCard $gameBonusCard, ?int $targetPlayerId): array
@@ -298,7 +298,7 @@ class BonusCardActivationService
             ? "(dernier match : {$scored} but(s)" . ($won ? ', victoire' : '') . ')'
             : '(aucun match joué récemment)';
 
-        return ['message' => "👕 Vente de maillots : +{$gain} € au budget {$detail}.", 'gain' => $gain];
+        return ['message' => "👕 Vente de maillots : +{$gain} GL au budget {$detail}.", 'gain' => $gain];
     }
 
     /**
@@ -496,7 +496,7 @@ class BonusCardActivationService
         $team->save();
         $lost = $before - $team->budget;
 
-        return ['message' => "💸 {$team->name} : −{$lost} € de budget (désormais {$team->budget} €)."];
+        return ['message' => "💸 {$team->name} : −{$lost} GL de budget (désormais {$team->budget} GL)."];
     }
 
     /**

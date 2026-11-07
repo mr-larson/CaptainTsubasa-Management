@@ -4,9 +4,9 @@ import { DUEL_RULES, TEXTS, ZONE_BOUNDS_INTERNAL, laneY } from '../constants.js'
 import { buildDuelMeta, buildFieldDuelBreakdown, resolveCritOutcome, rollD20WithCrit, showDuelDice } from '../dice.js';
 import { applyStaminaCost, staminaFactor } from '../stamina.js';
 import { specialBaseFor } from '../RosterService.js';
-import { getCarrierElement, getPlayerId, pickFieldDefender, pickReceiverInCell } from '../field.js';
+import { getCarrierElement, getPlayerId, pickFieldDefender, pickReceiverInCell, setBallToKeeperVisual } from '../field.js';
 import { pushLogEntry, setMessage, syncRecovererCard, updateSideCard, updateTeamCard } from '../ui.js';
-import { _moveBall, animateBallToXY, applyCritBoost, ball, shared, givePossessionOnTie, recordDuelEvent, resetLastDribbler } from './context.js';
+import { afterReveals, _moveBall, animateBallToXY, applyCritBoost, ball, shared, recordDuelEvent, resetLastDribbler } from './context.js';
 import { defenseTag, isGoodDefenseChoice } from './duelRules.js';
 import { aiShouldReroll, canAttackerReroll, doReroll, showCaptainRerollPrompt, tryHeroicMoment } from './captainReroll.js';
 
@@ -19,7 +19,6 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
 
     const picked = defenderPick ?? pickFieldDefender(defenseTeam, b.zoneIndex, b.laneIndex);
     if (!picked) {
-        givePossessionOnTie(defenseTeam);
         return { isTie: true, duelResult: "tie", diceTag: "", attackerId };
     }
 
@@ -127,12 +126,13 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
         breakdown,
     });
 
+    showDuelDice(attackScore, defenseScore, aRoll, dRoll, breakdown);
+
     if (shared.resolveFoulOutcome) {
         const finalResult = critWinner ?? (attackScore > defenseScore ? "attack" : attackScore < defenseScore ? "defense" : "tie");
         shared.resolveFoulOutcome({ attackerId, defenderId, duelResult: finalResult, aRoll, dRoll });
     }
 
-    showDuelDice(attackScore, defenseScore, aRoll, dRoll, breakdown);
     applyStaminaCost(attackerId, "attack", attackType);
     applyStaminaCost(defenderId, "defenseField", defenseAction);
 
@@ -182,12 +182,9 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
                 shared.state.pendingCaptainReroll = {
                     attackTeam, defenseTeam, attackType, defenseAction,
                     attackBaseRaw, defenseBaseRaw, attackStamF, defenseStamF,
-                    defenderId, defenderSlot, diceTag, clearanceBonus,
-                    isSpecial: attackType === "special",
-                    oldZone: b.zoneIndex, lane: b.laneIndex,
-                    originZone: b.zoneIndex, originLane: b.laneIndex,
+                    defenderId, defenderSlot, diceTag, clearanceBonus, breakdown,
                 };
-                showCaptainRerollPrompt(attackTeam);
+                afterReveals(() => showCaptainRerollPrompt(attackTeam));
                 return { isTie: false, duelResult: "pending_reroll", defenderId, defenderSlot, diceTag, attackerId, breakdown };
             }
         }
@@ -196,7 +193,6 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
 
     const diff = attackScore - defenseScore;
     if (diff === 0) {
-        givePossessionOnTie(defenseTeam, defenderId);
         return { isTie: true, duelResult: "tie", defenderId, defenderSlot, diceTag, attackerId, breakdown };
     }
 
@@ -228,14 +224,9 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
             shared.state.pendingCaptainReroll = {
                 attackTeam, defenseTeam, attackType, defenseAction,
                 attackBaseRaw, defenseBaseRaw, attackStamF, defenseStamF,
-                defenderId, defenderSlot, diceTag, clearanceBonus,
-                isSpecial: attackType === "special",
-                oldZone:   b.zoneIndex,
-                lane:      b.laneIndex,
-                originZone: b.zoneIndex,
-                originLane: b.laneIndex,
+                defenderId, defenderSlot, diceTag, clearanceBonus, breakdown,
             };
-            showCaptainRerollPrompt(attackTeam);
+            afterReveals(() => showCaptainRerollPrompt(attackTeam));
             return { isTie: false, duelResult: "pending_reroll", defenderId, defenderSlot, diceTag, attackerId, breakdown };
         }
     }
@@ -307,9 +298,7 @@ export function performKeeperClearance(defenseTeam, defenseAction, afterClearanc
         "Receveur : n°" + receiver,
     ], null, shared.state);
 
-    shared.ui.ballEl.style.left  = kx + "%";
-    shared.ui.ballEl.style.top   = ky + "%";
-    shared.ui.ballEl.textContent = "1";
+    setBallToKeeperVisual(defenseTeam);
 
     const receiverEl = getCarrierElement(defenseTeam, receiver);
     if (!receiverEl) { fallback(); return; }
@@ -318,13 +307,16 @@ export function performKeeperClearance(defenseTeam, defenseAction, afterClearanc
     const ry = parseFloat(receiverEl.style.top);
 
     const st = shared.state;
+    st.isAnimating = true;
     setTimeout(() => {
         if (st.disposed) return;
-        animateBallToXY(rx, ry, () => {
-            b.frontOfKeeper = false;
-            resetLastDribbler();
-            _moveBall(defenseTeam, receiver);
-            if (afterClearance) afterClearance();
+        shared.afterFieldMotion(() => {
+            animateBallToXY(rx, ry, () => {
+                b.frontOfKeeper = false;
+                resetLastDribbler();
+                _moveBall(defenseTeam, receiver);
+                afterClearance?.();
+            });
         });
     }, GK_HOLD);
 }

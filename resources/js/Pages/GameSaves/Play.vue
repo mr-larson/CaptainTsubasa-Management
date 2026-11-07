@@ -808,6 +808,7 @@ const saveGame = () => {
                     <!-- ======== TRANSFERTS ======== -->
                     <TabTransfers v-else-if="activeTab === 'transfers'"
                                   :availableFreePlayers="availableFreePlayers"
+                                  :visibleOrigins="props.gameConfig?.visible_origins"
                                   :team="teamRef"
                                   :teamBudget="teamBudget"
                                   :showTransferModal="showTransferModal"

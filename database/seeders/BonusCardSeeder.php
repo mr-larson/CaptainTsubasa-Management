@@ -89,7 +89,7 @@ class BonusCardSeeder extends Seeder
             // ── Finance — Pub (pari : gain aléatoire ±) ─────────
             [
                 'name'            => 'Affiche locale',
-                'description'     => 'Campagne d\'affichage au résultat incertain : rapporte entre -100 € et +400 € au budget.',
+                'description'     => 'Campagne d\'affichage au résultat incertain : rapporte entre -100 GL et +400 GL au budget.',
                 'tier'            => 'bronze',
                 'target'          => 'finance',
                 'execution_phase' => 'immediate',
@@ -101,7 +101,7 @@ class BonusCardSeeder extends Seeder
             ],
             [
                 'name'            => 'Spot TV',
-                'description'     => 'Spot télévisé au résultat incertain : rapporte entre -300 € et +900 € au budget.',
+                'description'     => 'Spot télévisé au résultat incertain : rapporte entre -300 GL et +900 GL au budget.',
                 'tier'            => 'silver',
                 'target'          => 'finance',
                 'execution_phase' => 'immediate',
@@ -113,7 +113,7 @@ class BonusCardSeeder extends Seeder
             ],
             [
                 'name'            => 'Campagne nationale',
-                'description'     => 'Grande campagne nationale au résultat incertain : rapporte entre -500 € et +2200 € au budget. Coup de pouce pour les équipes en difficulté.',
+                'description'     => 'Grande campagne nationale au résultat incertain : rapporte entre -500 GL et +2200 GL au budget. Coup de pouce pour les équipes en difficulté.',
                 'tier'            => 'gold',
                 'target'          => 'finance',
                 'execution_phase' => 'immediate',
@@ -127,7 +127,7 @@ class BonusCardSeeder extends Seeder
             // ── Finance — Sponsor (défi : récompense si objectif atteint au prochain match) ──
             [
                 'name'            => 'Prime de victoire',
-                'description'     => 'Le sponsor verse +600 € si tu gagnes ton prochain match. Sinon, la mise est perdue.',
+                'description'     => 'Le sponsor verse +600 GL si tu gagnes ton prochain match. Sinon, la mise est perdue.',
                 'tier'            => 'bronze',
                 'target'          => 'finance',
                 'execution_phase' => 'immediate',
@@ -139,7 +139,7 @@ class BonusCardSeeder extends Seeder
             ],
             [
                 'name'            => 'Prime offensive',
-                'description'     => 'Le sponsor verse +1200 € si ton équipe marque au moins 3 buts au prochain match. Sinon, la mise est perdue.',
+                'description'     => 'Le sponsor verse +1200 GL si ton équipe marque au moins 3 buts au prochain match. Sinon, la mise est perdue.',
                 'tier'            => 'silver',
                 'target'          => 'finance',
                 'execution_phase' => 'immediate',
@@ -151,7 +151,7 @@ class BonusCardSeeder extends Seeder
             ],
             [
                 'name'            => 'Prime défensive',
-                'description'     => 'Le sponsor verse +1200 € si ton équipe n\'encaisse aucun but au prochain match. Sinon, la mise est perdue.',
+                'description'     => 'Le sponsor verse +1200 GL si ton équipe n\'encaisse aucun but au prochain match. Sinon, la mise est perdue.',
                 'tier'            => 'silver',
                 'target'          => 'finance',
                 'execution_phase' => 'immediate',
@@ -163,7 +163,7 @@ class BonusCardSeeder extends Seeder
             ],
             [
                 'name'            => 'Prime du spectacle',
-                'description'     => 'Le sponsor verse +1400 € si tu gagnes ton prochain match avec au moins 2 buts d\'écart. Sinon, la mise est perdue.',
+                'description'     => 'Le sponsor verse +1400 GL si tu gagnes ton prochain match avec au moins 2 buts d\'écart. Sinon, la mise est perdue.',
                 'tier'            => 'silver',
                 'target'          => 'finance',
                 'execution_phase' => 'immediate',
@@ -175,7 +175,7 @@ class BonusCardSeeder extends Seeder
             ],
             [
                 'name'            => 'Méga-contrat',
-                'description'     => 'Le sponsor verse +2500 € si tu gagnes ton prochain match en marquant au moins 3 buts. Sinon, la mise est perdue.',
+                'description'     => 'Le sponsor verse +2500 GL si tu gagnes ton prochain match en marquant au moins 3 buts. Sinon, la mise est perdue.',
                 'tier'            => 'gold',
                 'target'          => 'finance',
                 'execution_phase' => 'immediate',
@@ -445,7 +445,7 @@ class BonusCardSeeder extends Seeder
             ],
             [
                 'name'            => 'Vente de maillots',
-                'description'     => 'Revenu indexé sur votre dernier match : 200 € + 150 €/but marqué + 500 € si victoire.',
+                'description'     => 'Revenu indexé sur votre dernier match : 200 GL + 150 GL/but marqué + 500 GL si victoire.',
                 'kind'            => 'bonus',
                 'tier'            => 'silver',
                 'target'          => 'finance',
@@ -488,7 +488,7 @@ class BonusCardSeeder extends Seeder
             ],
             [
                 'name'            => 'Contrôle fiscal',
-                'description'     => 'Cible automatiquement le 1er du classement : −600 € sur son budget.',
+                'description'     => 'Cible automatiquement le 1er du classement : −600 GL sur son budget.',
                 'kind'            => 'malus',
                 'tier'            => 'gold',
                 'target'          => 'team',

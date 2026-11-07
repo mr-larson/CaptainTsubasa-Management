@@ -86,7 +86,7 @@ const EMPTY = 'text-xs text-emerald-600';
                 <span :class="KPI_LABEL">Bilan V-N-D</span>
             </div>
             <div :class="KPI">
-                <span class="text-2xl font-black text-teal-600">{{ teamBudget.toLocaleString('fr-FR') }} €</span>
+                <span class="text-2xl font-black text-teal-600">{{ teamBudget.toLocaleString('fr-FR') }} GL</span>
                 <span :class="KPI_LABEL">Budget</span>
             </div>
             <div :class="KPI">

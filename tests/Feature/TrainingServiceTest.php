@@ -156,7 +156,7 @@ class TrainingServiceTest extends TestCase
         $player = $this->makePlayer($save, ['stamina' => 100]);
         $this->makeContract($save, $team, $player);
 
-        // Coût par défaut = 200 € par séance.
+        // Coût par défaut = 200 GL par séance.
         $applied = $this->service->applyTrainings($save, 1, 1, [
             ['player_id' => $player->id, 'stat' => 'shot'],
         ]);

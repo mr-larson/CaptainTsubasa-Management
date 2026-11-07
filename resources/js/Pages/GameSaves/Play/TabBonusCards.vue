@@ -205,7 +205,7 @@ const canConfirm = computed(() => {
                 </div>
                 <div class="flex items-center gap-3">
                     <div class="text-center px-4 py-2 rounded-xl border bg-emerald-50 border-emerald-200">
-                        <div class="text-lg font-black text-emerald-600">{{ teamBudget }} €</div>
+                        <div class="text-lg font-black text-emerald-600">{{ teamBudget }} GL</div>
                         <div class="text-2xs font-semibold text-emerald-500">Budget</div>
                     </div>
                     <div class="text-center px-4 py-2 rounded-xl border bg-teal-50 border-teal-200">
@@ -235,7 +235,7 @@ const canConfirm = computed(() => {
                     <div class="text-[11px] text-sky-600">{{ challengeLabel(ch.challenge) }}</div>
                 </div>
                 <div class="text-right shrink-0">
-                    <div class="text-sm font-black text-sky-700">+{{ ch.reward }} €</div>
+                    <div class="text-sm font-black text-sky-700">+{{ ch.reward }} GL</div>
                     <div class="text-3xs font-semibold text-sky-500">si réussi</div>
                 </div>
             </div>
@@ -255,7 +255,7 @@ const canConfirm = computed(() => {
                 </div>
                 <div class="text-right shrink-0">
                     <div class="text-sm font-black" :class="r.success ? 'text-emerald-700' : 'text-rose-400'">
-                        {{ r.success ? '+' + r.reward + ' €' : '0 €' }}
+                        {{ r.success ? '+' + r.reward + ' GL' : '0 GL' }}
                     </div>
                 </div>
             </div>
@@ -334,7 +334,7 @@ const canConfirm = computed(() => {
                                 </div>
                                 <div class="text-right shrink-0">
                                     <div class="text-lg font-black" :class="canAfford(offer.cost) ? 'text-emerald-600' : 'text-rose-500'">
-                                        {{ offer.cost }} €
+                                        {{ offer.cost }} GL
                                     </div>
                                 </div>
                             </div>

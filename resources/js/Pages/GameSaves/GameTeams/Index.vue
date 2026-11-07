@@ -36,7 +36,7 @@
 
                 <template #badges>
                     <span class="text-2xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
-                        Budget : {{ Number(form.budget || 0).toLocaleString('fr-FR') }} €
+                        Budget : {{ Number(form.budget || 0).toLocaleString('fr-FR') }} GL
                     </span>
                 </template>
 

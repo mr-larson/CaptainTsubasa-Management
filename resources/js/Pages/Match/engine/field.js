@@ -20,7 +20,7 @@ function getBallProfile(distance) {
 
 let _ballClassTimer = null;
 
-function applyBallMotion(targetX, targetY) {
+export function applyBallMotion(targetX, targetY) {
     if (!_ui.ballEl) return;
 
     const currentX = parseFloat(_ui.ballEl.style.left) || targetX;
@@ -387,8 +387,7 @@ export function setBallToKeeperVisual(defenseTeam) {
         : '.player.external.goalkeeper[data-player="E1"]';
     const keeperEl = _rootEl.querySelector(sel);
     if (!keeperEl || !_ui.ballEl) return;
-    _ui.ballEl.style.left    = `${parseFloat(keeperEl.style.left)}%`;
-    _ui.ballEl.style.top     = `${parseFloat(keeperEl.style.top)}%`;
+    applyBallMotion(parseFloat(keeperEl.style.left), parseFloat(keeperEl.style.top));
     _ui.ballEl.textContent   = "1";
 }
 

@@ -134,7 +134,7 @@ class TrainingService
 
         if ($totalCost > (int) ($controlledTeam->budget ?? 0)) {
             throw ValidationException::withMessages([
-                'trainings' => "Budget insuffisant : {$totalCost} € nécessaires pour {$this->plural(count($trainings), 'entraînement')}.",
+                'trainings' => "Budget insuffisant : {$totalCost} GL nécessaires pour {$this->plural(count($trainings), 'entraînement')}.",
             ]);
         }
 

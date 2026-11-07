@@ -46,6 +46,7 @@ function isPlayerSentOff(team, slot) {
  * Retourne true si le remplacement a eu lieu.
  */
 export function performSubstitution(team, outSlot, inSlot) {
+    if (_state.isAnimating || _state.pendingCaptainReroll) return false;
     if ((_state.substitutionCount[team] ?? 0) >= _state.MAX_SUBSTITUTIONS) return false;
     if (outSlot === inSlot) return false;
 

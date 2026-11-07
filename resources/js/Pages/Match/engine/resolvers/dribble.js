@@ -4,7 +4,7 @@ import { FIELD_RULES, MAX_ZONE_INDEX, TEXTS, laneY } from '../constants.js';
 import { getCellCenter, getPlayerId } from '../field.js';
 import { pushLogEntry, setMessage, syncRecovererCard } from '../ui.js';
 import { playPlayerAnimation } from '../playerAnim.js';
-import { _moveBall, ball, shared, resetLastDribbler } from './context.js';
+import { afterFieldDuel, givePossessionOnTie, _moveBall, ball, shared, resetLastDribbler } from './context.js';
 import { defenseTag, getCounterTag, getLogTitleForDuel } from './duelRules.js';
 import { runFieldDuel } from './fieldDuel.js';
 import { startFreeKick } from './shot.js';
@@ -28,33 +28,25 @@ export function resolveDribble(attackTeam, defenseTeam, defenseAction, defenderP
     const attackType = isSpecial ? "special" : "dribble";
 
     const duel = runFieldDuel({ attackTeam, defenseTeam, attackType, defenseAction, defenderPick });
+    afterFieldDuel(duel, result => {
+        if (shared.state.pendingFreeKick) { startFreeKick(); return; }
 
-    // Reroll en attente → stocker aussi oldZone/lane pour la continuation
-    if (duel.duelResult === "pending_reroll") {
-        if (shared.state.pendingCaptainReroll) {
-            shared.state.pendingCaptainReroll.oldZone = oldZone;
-            shared.state.pendingCaptainReroll.lane    = lane;
-            shared.state.pendingCaptainReroll.isSpecial = isSpecial;
+        if (result.isTie) {
+            givePossessionOnTie(defenseTeam, result.defenderId);
+            pushLogEntry(
+                isSpecial ? "Duel équilibré (dribble spécial)" : "Duel équilibré (dribble)",
+                [defenseTag(defenseAction), getCounterTag(attackType, defenseAction)],
+                result.diceTag, shared.state, result.breakdown ?? null
+            );
+            shared.state.phase = "attack"; shared.state.pendingAttack = null;
+            shared.animateAndThen(() => { shared.advanceTurn(defenseTeam); });
+            return;
         }
-        return;
-    }
 
-    if (shared.state.pendingFreeKick) { startFreeKick(); return; }
+        if (isSpecial) shared.markSpecialUsed(getPlayerId(attackTeam, b.number));
 
-    if (duel.isTie) {
-        pushLogEntry(
-            isSpecial ? "Duel équilibré (dribble spécial)" : "Duel équilibré (dribble)",
-            [defenseTag(defenseAction), getCounterTag(attackType, defenseAction)],
-            duel.diceTag, shared.state, duel.breakdown ?? null
-        );
-        shared.state.phase = "attack"; shared.state.pendingAttack = null;
-        shared.animateAndThen(() => { shared.advanceTurn(defenseTeam); });
-        return;
-    }
-
-    if (isSpecial) shared.markSpecialUsed(getPlayerId(attackTeam, b.number));
-
-    continueDribble(attackTeam, defenseTeam, attackType, defenseAction, isSpecial, duel, oldZone, lane);
+        continueDribble(attackTeam, defenseTeam, attackType, defenseAction, isSpecial, result, oldZone, lane);
+    });
 }
 
 export function continueDribble(attackTeam, defenseTeam, attackType, defenseAction, isSpecial, duel, oldZone, lane) {
@@ -163,28 +155,21 @@ export function resolveOneTwo(attackTeam, defenseTeam, defenseAction, defenderPi
     const attackType = "one_two";
 
     const duel = runFieldDuel({ attackTeam, defenseTeam, attackType, defenseAction, defenderPick });
+    afterFieldDuel(duel, result => {
+        if (shared.state.pendingFreeKick) { startFreeKick(); return; }
 
-    if (duel.duelResult === "pending_reroll") {
-        if (shared.state.pendingCaptainReroll) {
-            shared.state.pendingCaptainReroll.oldZone   = oldZone;
-            shared.state.pendingCaptainReroll.lane      = lane;
-            shared.state.pendingCaptainReroll.isSpecial = false;
+        if (result.isTie) {
+            givePossessionOnTie(defenseTeam, result.defenderId);
+            pushLogEntry(
+                "Duel équilibré (une-deux)",
+                [defenseTag(defenseAction), getCounterTag(attackType, defenseAction)],
+                result.diceTag, shared.state, result.breakdown ?? null
+            );
+            shared.state.phase = "attack"; shared.state.pendingAttack = null;
+            shared.animateAndThen(() => { shared.advanceTurn(defenseTeam); });
+            return;
         }
-        return;
-    }
 
-    if (shared.state.pendingFreeKick) { startFreeKick(); return; }
-
-    if (duel.isTie) {
-        pushLogEntry(
-            "Duel équilibré (une-deux)",
-            [defenseTag(defenseAction), getCounterTag(attackType, defenseAction)],
-            duel.diceTag, shared.state, duel.breakdown ?? null
-        );
-        shared.state.phase = "attack"; shared.state.pendingAttack = null;
-        shared.animateAndThen(() => { shared.advanceTurn(defenseTeam); });
-        return;
-    }
-
-    continueDribble(attackTeam, defenseTeam, attackType, defenseAction, false, duel, oldZone, lane);
+        continueDribble(attackTeam, defenseTeam, attackType, defenseAction, false, result, oldZone, lane);
+    });
 }

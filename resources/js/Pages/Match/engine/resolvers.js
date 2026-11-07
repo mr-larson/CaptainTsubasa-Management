@@ -6,7 +6,7 @@ import { shared } from './resolvers/context.js';
 export function initResolversModule({
                                         state, roster, ui, TEAMS, rootEl, basePos,
                                         advanceTurn, showAttackBarForCurrentTeam, refreshUI,
-                                        animateAndThen, scheduleAIDefense, isAITeam,
+                                        animateAndThen, afterFieldMotion, scheduleAIDefense, isAITeam,
                                         canUseSpecial, markSpecialUsed, bindActionButtons,
                                         resolveFoulOutcome,
                                     }) {
@@ -21,6 +21,7 @@ export function initResolversModule({
     shared.showAttackBarForCurrentTeam = showAttackBarForCurrentTeam;
     shared.refreshUI = refreshUI;
     shared.animateAndThen = animateAndThen;
+    shared.afterFieldMotion = afterFieldMotion;
     shared.scheduleAIDefense = scheduleAIDefense;
     shared.isAITeam = isAITeam;
     shared.canUseSpecial = canUseSpecial;

@@ -52,7 +52,7 @@ const { overallOf, playerPhotoUrl, nationalityFlag } = usePlayerUtils();
                 </div>
 
                 <p class="text-xs text-slate-400 mt-0.5">
-                    {{ subtitle ?? `${positionLabel(player.position)} • ${player.cost ?? 0} €` }}
+                    {{ subtitle ?? `${positionLabel(player.position)} • ${player.cost ?? 0} GL` }}
                 </p>
 
                 <SecondaryPositions :player="player" class="mt-1.5" />

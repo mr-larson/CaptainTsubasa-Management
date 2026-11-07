@@ -127,7 +127,7 @@ class PositionTrainingService
             $fail("{$player->lastname} a déjà été entraîné cette semaine.");
         }
         if ($cost > (int) ($team->budget ?? 0)) {
-            $fail("Budget insuffisant : {$cost} € nécessaires.");
+            $fail("Budget insuffisant : {$cost} GL nécessaires.");
         }
 
         $duration = self::durationFor($known, $target);

@@ -39,7 +39,7 @@ function barCls(o) {
 
 function valueText(o) {
     if (o.key === 'rank_max') return `${o.value}e / ${o.target}e`;
-    if (o.key === 'budget_min') return `${o.value.toLocaleString()} / ${o.target.toLocaleString()} €`;
+    if (o.key === 'budget_min') return `${o.value.toLocaleString()} / ${o.target.toLocaleString()} GL`;
     return `${o.value} / ${o.target}`;
 }
 
@@ -52,7 +52,7 @@ const rewardMax = computed(() => props.challenges.objectives.reduce((s, o) => s 
             <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">🎲 Défis de la saison</h3>
             <span class="text-[11px] text-slate-400">
                 <span class="font-bold text-slate-700">{{ challenges.points_secured }}</span> / {{ challenges.points_max }} pts acquis
-                · jusqu'à {{ rewardMax.toLocaleString() }} € de primes
+                · jusqu'à {{ rewardMax.toLocaleString() }} GL de primes
             </span>
         </div>
 

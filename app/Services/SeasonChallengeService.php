@@ -30,7 +30,7 @@ class SeasonChallengeService
 {
     public const PER_SEASON = 5;
 
-    /** Points (classement des défis) et prime (€) par niveau. */
+    /** Points (classement des défis) et prime (GL) par niveau. */
     public const TIERS = [
         'easy'   => ['label' => 'Facile',    'points' => 1, 'reward' => 150, 'mult' => 0.6],
         'medium' => ['label' => 'Moyen',     'points' => 2, 'reward' => 300, 'mult' => 0.85],
@@ -202,7 +202,7 @@ class SeasonChallengeService
             'top_scorer_min'    => "Avoir un buteur à {$t} buts",
             'avg_morale_min'    => "Moral moyen de l'effectif ≥ {$t} en fin de saison",
             'signings_min'      => "Recruter {$t} joueur(s) en cours de saison",
-            'budget_min'        => "Finir avec au moins {$t} € en caisse (avant primes)",
+            'budget_min'        => "Finir avec au moins {$t} GL en caisse (avant primes)",
             'cards_used_min'    => "Jouer {$t} cartes",
             'beat_stronger_min' => "Battre {$t} fois une équipe réputée plus forte",
             'big_wins_min'      => "Gagner {$t} match(s) par 3 buts d'écart ou plus",

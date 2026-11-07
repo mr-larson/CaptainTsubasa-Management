@@ -118,7 +118,7 @@ function _hideToastNow() {
 
 /**
  * Écrit réellement le toast/bannière — sans garde anti-spoiler, puisque les
- * appelants internes (pushLogEntry, showFreeKickBanner) sont déjà séquencés
+ * appels depuis pushLogEntry sont déjà séquencés
  * par la file de révélation (enqueueRevealStep). Renvoie l'élément affiché
  * (ou null), pour permettre un clic dessus qui saute la pause d'affichage.
  */
@@ -153,53 +153,37 @@ function _renderEventNotification(type, text, subText = null) {
         `;
         overlay.getBoundingClientRect();
         overlay.classList.add('visible');
-        setTimeout(() => overlay.classList.remove('visible'), 2200);
         return overlay;
     }
     return null;
 }
 
-/**
- * API publique défensive — conservée pour un éventuel appelant hors file.
- * Les chemins internes (pushLogEntry, showFreeKickBanner) appellent
- * directement _renderEventNotification, déjà séquencés par la file.
- */
 export function showEventNotification(type, text, subText = null) {
-    if (isDiceAnimating()) {
-        runAfterDiceAnimation(() => showEventNotification(type, text, subText));
-        return;
-    }
-    _renderEventNotification(type, text, subText);
+    enqueueRevealStep(done => {
+        const el = _renderEventNotification(type, text, subText);
+        _awaitDwell(done, revealDwellMs(type), el);
+    });
 }
 
 /**
  * Attend `dwellMs` avant d'appeler `done()` — sauf clic sur `skipEl` (s'il est
  * fourni), qui saute la pause immédiatement. Utilisé par les étapes de la
- * file (pushLogEntry, showFreeKickBanner) pour rythmer leur révélation.
+ * file pour rythmer leur révélation.
  */
 function _awaitDwell(done, dwellMs, skipEl = null) {
-    if (dwellMs <= 0) { done(); return; }
     let resolved = false;
+    let timer;
     const finish = () => {
         if (resolved) return;
         resolved = true;
+        clearTimeout(timer);
+        skipEl?.removeEventListener('click', finish);
+        if (skipEl && skipEl === _overlayEl) skipEl.classList.remove('visible');
         done();
     };
-    const timer = setTimeout(finish, dwellMs);
-    if (skipEl) {
-        skipEl.addEventListener('click', () => { clearTimeout(timer); finish(); }, { once: true });
-    }
-}
-
-// Bannière plein terrain « ⚽ Coup franc ! » — appelée par les résolveurs.
-export function showFreeKickBanner(teamLabel, takerNumber) {
-    enqueueRevealStep(done => {
-        // Le bloc « Action » suit l'action en cours, pas le dernier événement marquant.
-        if (_ui?.currentActionTitleEl)  _ui.currentActionTitleEl.textContent  = `Coup franc — ${teamLabel}`;
-        if (_ui?.currentActionDetailEl) _ui.currentActionDetailEl.textContent = `Tireur : n°${takerNumber}`;
-        const el = _renderEventNotification('freekick', 'Coup franc !', `${teamLabel} — n°${takerNumber}`);
-        _awaitDwell(done, revealDwellMs('freekick'), el);
-    });
+    if (dwellMs <= 0) { finish(); return; }
+    timer = setTimeout(finish, dwellMs);
+    skipEl?.addEventListener('click', finish);
 }
 
 /** Renvoie l'élément toast/overlay affiché (ou null si le type n'en a pas). */
@@ -217,6 +201,10 @@ function _triggerEventNotification(actionType, main, details) {
         const scorer = extractName(firstDetail);
         const icon   = actionType === 'special-goal' ? '🔥' : '⚽';
         return _renderEventNotification('goal', `${icon} But ! ${scorer}`);
+
+    } else if (actionType === 'free-kick') {
+        if (_ui?.currentActionDetailEl) _ui.currentActionDetailEl.textContent = firstDetail;
+        return _renderEventNotification('freekick', 'Coup franc !', firstDetail);
 
     } else if (actionType === 'card-red') {
         const name = extractName(firstDetail);

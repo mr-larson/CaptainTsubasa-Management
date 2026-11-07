@@ -117,7 +117,7 @@
                                     </div>
                                     <!-- Budget et effectif regroupés -->
                                     <div class="bg-slate-50 rounded-lg p-2.5 text-center">
-                                        <div class="text-lg font-black text-teal-600">{{ startBudget.toLocaleString('fr-FR') }} €</div>
+                                        <div class="text-lg font-black text-teal-600">{{ startBudget.toLocaleString('fr-FR') }} GL</div>
                                         <div class="text-slate-400 font-semibold">Budget de départ</div>
                                         <div class="mt-0.5 text-[10px] leading-snug text-slate-400">{{ roster.length }} joueur{{ roster.length > 1 ? 's' : '' }} sous contrat</div>
                                     </div>
@@ -157,7 +157,7 @@
                                 <h4 class="text-2xs font-bold text-amber-600 uppercase tracking-wider mb-2">🎯 Mode Draft</h4>
                                 <div class="space-y-2 text-xs text-amber-700">
                                     <p>L'équipe démarre <span class="font-bold">sans joueur</span>. Tu construiras ton effectif lors du draft.</p>
-                                    <p>Chaque équipe reçoit un <span class="font-bold">bonus de 5 000 €</span> pour recruter.</p>
+                                    <p>Chaque équipe reçoit un <span class="font-bold">bonus de 5 000 GL</span> pour recruter.</p>
                                     <p>Ordre de pioche : <span class="font-bold">aléatoire</span> (tirage au sort).</p>
                                     <p>Objectif : constituer un effectif de <span class="font-bold">14 à 18 joueurs</span>.</p>
                                 </div>
@@ -389,7 +389,7 @@
                                             </div>
                                             <div class="flex items-start gap-2">
                                                 <span class="text-amber-500 font-bold shrink-0">4.</span>
-                                                <p>Ton budget total : <span class="font-bold">{{ startBudget + 5000 }} €</span> (budget de départ + bonus draft).</p>
+                                                <p>Ton budget total : <span class="font-bold">{{ startBudget + 5000 }} GL</span> (budget de départ + bonus draft).</p>
                                             </div>
                                         </div>
                                     </div>

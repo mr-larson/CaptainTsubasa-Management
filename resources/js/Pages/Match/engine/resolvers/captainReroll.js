@@ -4,12 +4,8 @@ import { DUEL_RULES, GAME_RULES, HEROIC_CHANCE, HEROIC_MORALE_THRESHOLD, MORALE_
 import { buildDuelMeta, buildFieldDuelBreakdown, resolveCritOutcome, rollD20Advantage, rollD20WithCrit, showDuelDice } from '../dice.js';
 import { getPlayerId } from '../field.js';
 import { pushLogEntry, setActionBar } from '../ui.js';
-import { amendLastDuelEvent, ball, shared, givePossessionOnTie } from './context.js';
+import { amendLastDuelEvent, ball, shared } from './context.js';
 import { isGoodDefenseChoice } from './duelRules.js';
-
-import { continuePass } from './pass.js';
-import { continueDribble } from './dribble.js';
-import { continueShot } from './shot.js';
 
 // -----------------------------------------------------------
 //   CAPTAIN REROLL — helpers
@@ -194,7 +190,6 @@ export function doReroll(ctx, heroic = false) {
     }
 
     if (newRawResult === "tie") {
-        givePossessionOnTie(defenseTeam, defenderId);
         return { isTie: true, duelResult: "tie", defenderId, defenderSlot, diceTag: newDiceTag, attackerId: getPlayerId(attackTeam, b.number), breakdown };
     }
     return { isTie: false, duelResult: newRawResult, defenderId, defenderSlot, diceTag: newDiceTag, attackerId: getPlayerId(attackTeam, b.number), breakdown };
@@ -247,7 +242,7 @@ function onCaptainRerollConfirm() {
     shared.state.pendingCaptainReroll = null;
 
     const duel = doReroll(ctx);
-    continuePendingAction(ctx, duel);
+    ctx.resume(duel);
 }
 
 function onCaptainRerollSkip() {
@@ -261,26 +256,12 @@ function onCaptainRerollSkip() {
     }
 
     // Continuer avec le résultat "defense" original
-    continuePendingAction(ctx, {
+    ctx.resume({
         isTie: false,
         duelResult: "defense",
         defenderId: ctx.defenderId,
         defenderSlot: ctx.defenderSlot,
         diceTag: ctx.diceTag,
+        breakdown: ctx.breakdown,
     });
-}
-
-/**
- * Reprend le flux de l'action (pass/dribble/shot) après décision reroll.
- */
-export function continuePendingAction(ctx, duel) {
-    const { attackTeam, defenseTeam, attackType, defenseAction, isSpecial } = ctx;
-
-    if (attackType === "pass" || attackType === "special") {
-        continuePass(attackTeam, defenseTeam, attackType, defenseAction, isSpecial, duel);
-    } else if (attackType === "dribble" || attackType === "one_two") {
-        continueDribble(attackTeam, defenseTeam, attackType, defenseAction, isSpecial, duel, ctx.oldZone, ctx.lane);
-    } else if (attackType === "shot") {
-        continueShot(attackTeam, defenseTeam, defenseAction, isSpecial, duel, ctx.originZone, ctx.originLane);
-    }
 }

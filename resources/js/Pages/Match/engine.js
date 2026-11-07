@@ -15,7 +15,7 @@ import {
 
 import {
     initDiceUI, bindDuelTooltipEvents, showDuelDice, showSpecialTooltip, hideBreakdownTooltip,
-    disposeDiceUI,
+    disposeDiceUI, runAfterDiceAnimation,
 } from './engine/dice.js';
 
 import {
@@ -233,14 +233,32 @@ export function initMatchEngine(rootEl, config = {}) {
         state.specialCooldown[playerId][move.key] = state.turns + (move.cooldown ?? state.SPECIAL_COOLDOWN_TURNS);
     }
 
+    function afterFieldMotion(callback) {
+        // Lire les animations du terrain inclut les transitions déclenchées
+        // par les positions qui viennent d'être écrites dans le DOM.
+        const animations = ui.ballEl?.parentElement?.getAnimations?.({ subtree: true }) ?? [];
+        const motion = animations.filter(({ effect, transitionProperty, animationName }) => {
+            const target = effect?.target;
+            if (target !== ui.ballEl && !target?.classList?.contains("player")) return false;
+            return transitionProperty === "left" || transitionProperty === "top" || animationName?.startsWith("player-anim-");
+        });
+        if (!motion.length) { callback(); return; }
+
+        Promise.allSettled(motion.map(animation => animation.finished)).then(() => {
+            if (!state.disposed) callback();
+        });
+    }
+
     function animateAndThen(cb) {
-        if (!ui.ballEl) { if (cb) cb(); return; }
         state.isAnimating = true;
-        ui.ballEl.classList.add("ball-kick");
+        ui.ballEl?.classList.add("ball-kick");
         setTimeout(() => {
-            ui.ballEl.classList.remove("ball-kick");
-            state.isAnimating = false;
-            if (cb) cb();
+            if (state.disposed) return;
+            ui.ballEl?.classList.remove("ball-kick");
+            afterFieldMotion(() => {
+                state.isAnimating = false;
+                cb?.();
+            });
         }, ANIM_MS);
     }
 
@@ -310,6 +328,15 @@ export function initMatchEngine(rootEl, config = {}) {
     //   ADVANCE TURN
     // ==========================
     function advanceTurn(newTeam) {
+        state.isAnimating = true;
+        afterFieldMotion(() => runAfterDiceAnimation(() => {
+            if (state.disposed) return;
+            state.isAnimating = false;
+            finishTurn(newTeam);
+        }));
+    }
+
+    function finishTurn(newTeam) {
         if (state.isGameOver) return;
 
         decayHeat();
@@ -423,6 +450,7 @@ export function initMatchEngine(rootEl, config = {}) {
         showAttackBarForCurrentTeam: () => showAttackBarForCurrentTeam(),
         refreshUI,
         animateAndThen,
+        afterFieldMotion,
         scheduleAIDefense,
         isAITeam,
         canUseSpecial,
@@ -451,8 +479,6 @@ export function initMatchEngine(rootEl, config = {}) {
             restoreBasePositions(basePositions);
             state._moveBallFn(attackTeam, number);
             advanceTurn(attackTeam);
-            showAttackBarForCurrentTeam();
-            refreshUI();
         });
     }
 

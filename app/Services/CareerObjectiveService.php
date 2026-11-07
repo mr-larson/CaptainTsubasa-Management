@@ -24,7 +24,7 @@ class CareerObjectiveService
      * Réglages par niveau de mandat choisi à la création.
      *
      * start_budget / weekly_income ne s'appliquent qu'aux équipes humaines :
-     * l'IA part avec le réglage ai_start_budget (2500 par défaut) et 500 €/sem. Bac à sable : SANDBOX_START_BUDGET, l'écart relatif fait la difficulté.
+     * l'IA part avec le réglage ai_start_budget (2500 par défaut) et 500 GL/sem. Bac à sable : SANDBOX_START_BUDGET, l'écart relatif fait la difficulté.
      */
     public const SANDBOX_START_BUDGET = 2500;
 

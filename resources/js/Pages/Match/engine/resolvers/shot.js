@@ -4,11 +4,11 @@ import { DUEL_RULES, FREE_KICK, MAX_ZONE_INDEX, TEXTS } from '../constants.js';
 import { buildDuelMeta, buildFieldDuelBreakdown, resolveCritOutcome, rollD20Advantage, rollD20WithCrit, showDuelDice } from '../dice.js';
 import { applyStaminaCost, staminaFactor } from '../stamina.js';
 import { specialBaseFor } from '../RosterService.js';
-import { getCellCenter, getKeeperId, getPlayerId, otherTeam } from '../field.js';
-import { buildDefenseGKHTML, highlightDuelStats, pushLogEntry, setActionBar, setMessage, showFreeKickBanner, syncRecovererCard, updateSideCard } from '../ui.js';
+import { getKeeperId, getPlayerId, otherTeam } from '../field.js';
+import { buildDefenseGKHTML, highlightDuelStats, pushLogEntry, setActionBar, setMessage, syncRecovererCard, updateSideCard } from '../ui.js';
 import { playPlayerAnimation } from '../playerAnim.js';
 import { defensePrompt } from '../turnPrompt.js';
-import { _moveBall, amendLastDuelEvent, animateGoalThenReset, animateShotToKeeper, applyCritBoost, ball, shared, recordDuelEvent, resetLastDribbler } from './context.js';
+import { afterFieldDuel, afterReveals, givePossessionOnTie, _moveBall, amendLastDuelEvent, animateGoalThenReset, animateShotToKeeper, applyCritBoost, ball, shared, recordDuelEvent, resetLastDribbler } from './context.js';
 import { applyDuelBonuses, defenseTag, getCounterTag, getLogTitleForDuel } from './duelRules.js';
 import { aiShouldReroll, consumeReroll } from './captainReroll.js';
 import { performKeeperClearance, runFieldDuel } from './fieldDuel.js';
@@ -25,38 +25,28 @@ export function resolveShot(attackTeam, defenseTeam, defenseAction, isSpecial = 
 
     if (b.frontOfKeeper) {
         // ── Tir face au gardien
-        playPlayerAnimation(attackTeam, b.number, 'shoot');
-
         const moves     = shared.roster.getSpecialMoves(attackTeam, b.number).filter(m => m?.mode === "attack");
         const gkAttBase = isSpecial
             ? (moves.length > 0 ? specialBaseFor(moves[0], attackTeam, b.number, shared.roster) : shared.roster.attackBaseFor("special", attackTeam, b.number))
             : shared.roster.attackBaseFor("shot", attackTeam, b.number);
-        resolveShotKeeperDuel({ stage: "keeper", attackTeam, defenseTeam, originZone, originLane, isSpecial, gkAttackBase: gkAttBase, logParts: ["Zone " + (originZone + 1)] }, defenseAction);
+        resolveShotKeeperDuel({ stage: "keeper", attackTeam, defenseTeam, originZone, originLane, isSpecial, gkAttackBase: gkAttBase, directShot: true, logParts: ["Zone " + (originZone + 1)] }, defenseAction);
         return;
     }
 
     const duel = runFieldDuel({ attackTeam, defenseTeam, attackType, defenseAction, defenderPick });
+    afterFieldDuel(duel, result => {
+        if (shared.state.pendingFreeKick) { startFreeKick(); return; }
 
-    if (duel.duelResult === "pending_reroll") {
-        if (shared.state.pendingCaptainReroll) {
-            shared.state.pendingCaptainReroll.originZone = originZone;
-            shared.state.pendingCaptainReroll.originLane = originLane;
-            shared.state.pendingCaptainReroll.isSpecial  = isSpecial;
-            shared.state.pendingCaptainReroll.attackType = attackType;
+        if (result.isTie) {
+            givePossessionOnTie(defenseTeam, result.defenderId);
+            pushLogEntry("Duel équilibré (tir)", [defenseTag(defenseAction), getCounterTag(attackType, defenseAction)], result.diceTag, shared.state, result.breakdown ?? null);
+            shared.state.phase = "attack"; shared.state.pendingAttack = null;
+            shared.animateAndThen(() => { shared.advanceTurn(defenseTeam); });
+            return;
         }
-        return;
-    }
 
-    if (shared.state.pendingFreeKick) { startFreeKick(); return; }
-
-    if (duel.isTie) {
-        pushLogEntry("Duel équilibré (tir)", [defenseTag(defenseAction), getCounterTag(attackType, defenseAction)], duel.diceTag, shared.state, duel.breakdown ?? null);
-        shared.state.phase = "attack"; shared.state.pendingAttack = null;
-        shared.animateAndThen(() => { shared.advanceTurn(defenseTeam); });
-        return;
-    }
-
-    continueShot(attackTeam, defenseTeam, defenseAction, isSpecial, duel, originZone, originLane);
+        continueShot(attackTeam, defenseTeam, defenseAction, isSpecial, result, originZone, originLane);
+    });
 }
 
 export function continueShot(attackTeam, defenseTeam, defenseAction, isSpecial, duel, originZone, originLane) {
@@ -103,9 +93,7 @@ export function continueShot(attackTeam, defenseTeam, defenseAction, isSpecial, 
     // ── Animation du tireur AVANT le déplacement du ballon
     playPlayerAnimation(attackTeam, b.number, 'shoot');
 
-    const center = getCellCenter(attackTeam, MAX_ZONE_INDEX, originLane);
     b.zoneIndex = MAX_ZONE_INDEX; b.laneIndex = originLane;
-    if (shared.ui.ballEl) { shared.ui.ballEl.style.left = center.x + "%"; shared.ui.ballEl.style.top = center.y + "%"; }
 
     shared.state.pendingShotContext = { stage: "keeper", attackTeam, defenseTeam, originZone, originLane, isSpecial, gkAttackBase, logParts: ["Zone " + (originZone + 1)] };
 
@@ -143,12 +131,10 @@ export function startFreeKick() {
     const originZone  = fk.zoneIndex;
     const originLane  = fk.laneIndex;
 
-    // Forcer le porteur sur le tireur fauté : dans le cas limite (double critFail →
-    // égalité), runFieldDuel a pu donner la possession à la défense avant notre garde.
+    // Le tireur est le joueur qui a subi la faute.
     b.team   = attackTeam;
     b.number = takerSlot;
     b.frontOfKeeper = false;
-    resetLastDribbler();
     shared.state.phase = "attack";
     shared.state.pendingAttack = null;
     shared.state.pendingDefenseContext = null;
@@ -157,40 +143,39 @@ export function startFreeKick() {
     const takerNum  = takerInfo?.number ?? takerSlot;
 
     // Bannière plein terrain + message + entrée de déroulé (le matchLog capte zone/lane).
-    showFreeKickBanner(shared.TEAMS[attackTeam].label, takerNum);
     setMessage(
         TEXTS.ui.freeKickMain,
         TEXTS.ui.freeKickSub.replace("{team}", shared.TEAMS[attackTeam].label).replace("{number}", takerNum)
     );
     pushLogEntry("freeKickTitle", [`${shared.TEAMS[attackTeam].label} — n°${takerNum}`, "Zone " + (originZone + 1)], null, shared.state);
 
-    // Animation du tireur + base offensive bonifiée (coup franc = occasion franche).
-    playPlayerAnimation(attackTeam, takerSlot, 'shoot');
-    const gkAttackBase = shared.roster.attackBaseFor("shot", attackTeam, takerSlot) + FREE_KICK.ATTACK_BONUS;
+    afterReveals(() => {
+        // Animation du tireur + base offensive bonifiée (coup franc = occasion franche).
+        playPlayerAnimation(attackTeam, takerSlot, 'shoot');
+        const gkAttackBase = shared.roster.attackBaseFor("shot", attackTeam, takerSlot) + FREE_KICK.ATTACK_BONUS;
 
-    // Ballon placé devant le but, puis duel gardien (flux existant).
-    const center = getCellCenter(attackTeam, MAX_ZONE_INDEX, originLane);
-    b.zoneIndex = MAX_ZONE_INDEX; b.laneIndex = originLane;
-    if (shared.ui.ballEl) { shared.ui.ballEl.style.left = center.x + "%"; shared.ui.ballEl.style.top = center.y + "%"; }
+        // Ballon placé devant le but, puis duel gardien (flux existant).
+        b.zoneIndex = MAX_ZONE_INDEX; b.laneIndex = originLane;
 
-    shared.state.pendingShotContext = {
-        stage: "keeper", attackTeam, defenseTeam,
-        originZone, originLane, isSpecial: false,
-        gkAttackBase, logParts: ["Coup franc"], isFreeKick: true,
-    };
+        shared.state.pendingShotContext = {
+            stage: "keeper", attackTeam, defenseTeam,
+            originZone, originLane, isSpecial: false,
+            gkAttackBase, logParts: ["Coup franc"], isFreeKick: true,
+        };
 
-    animateShotToKeeper(defenseTeam, () => {
-        const defPrefix = defenseTeam === "internal" ? "home" : "away";
-        updateSideCard(defPrefix, defenseTeam, 1);
-        highlightDuelStats(attackTeam, "shot", true);
-        shared.state.pendingDefenseContext = { defenseTeam, defenderId: getKeeperId(defenseTeam), defenderSlot: 1 };
+        animateShotToKeeper(defenseTeam, () => {
+            const defPrefix = defenseTeam === "internal" ? "home" : "away";
+            updateSideCard(defPrefix, defenseTeam, 1);
+            highlightDuelStats(attackTeam, "shot", true);
+            shared.state.pendingDefenseContext = { defenseTeam, defenderId: getKeeperId(defenseTeam), defenderSlot: 1 };
 
-        setActionBar(buildDefenseGKHTML(defenseTeam, shared.roster), "mode-defense-" + defenseTeam, b, shared.roster, shared.bindActionButtons, false);
-        setMessage(TEXTS.ui.freeKickMain, defensePrompt(shared.TEAMS[defenseTeam].label, shared.isAITeam(defenseTeam), true));
+            setActionBar(buildDefenseGKHTML(defenseTeam, shared.roster), "mode-defense-" + defenseTeam, b, shared.roster, shared.bindActionButtons, false);
+            setMessage(TEXTS.ui.freeKickMain, defensePrompt(shared.TEAMS[defenseTeam].label, shared.isAITeam(defenseTeam), true));
 
-        shared.state.phase = "defense";
-        shared.state.pendingAttack = "shot";
-        if (shared.isAITeam(defenseTeam)) shared.scheduleAIDefense("shot", defenseTeam);
+            shared.state.phase = "defense";
+            shared.state.pendingAttack = "shot";
+            if (shared.isAITeam(defenseTeam)) shared.scheduleAIDefense("shot", defenseTeam);
+        });
     });
 }
 
@@ -227,12 +212,14 @@ function _showKeeperRerollPrompt(defenseTeam, gkInfo, onConfirm, onSkip) {
     }, false);
 }
 
-function _continueKeeperDuelResult(duelResult, attackTeam, defenseTeam, isSpecial, originZone, logParts, diceTag, breakdown = null) {
+function _continueKeeperDuelResult(duelResult, attackTeam, defenseTeam, isSpecial, originZone, logParts, diceTag, breakdown, defenseAction, directShot) {
     const b = ball();
     b.frontOfKeeper = false;
     resetLastDribbler();
 
-    // ── Animation du plongeon du gardien si arrêt (path captain reroll)
+    if (directShot) playPlayerAnimation(attackTeam, b.number, 'shoot');
+
+    // ── Animation du plongeon du gardien si arrêt
     if (duelResult === "defense") {
         playPlayerAnimation(defenseTeam, 1, 'save', { direction: Math.random() < 0.5 ? -1 : 1 });
     }
@@ -271,7 +258,7 @@ function _continueKeeperDuelResult(duelResult, attackTeam, defenseTeam, isSpecia
     }
 
     pushLogEntry("shotSavedTitle", ["Zone " + (originZone + 1)].concat(logParts), diceTag, shared.state, breakdown);
-    performKeeperClearance(defenseTeam, "hands", () => {
+    performKeeperClearance(defenseTeam, defenseAction, () => {
         shared.advanceTurn(defenseTeam);
     });
 }
@@ -280,7 +267,7 @@ function _continueKeeperDuelResult(duelResult, attackTeam, defenseTeam, isSpecia
 //   resolveShotKeeperDuel
 // -----------------------------------------------------------
 export function resolveShotKeeperDuel(ctx, defenseAction) {
-    const { attackTeam, defenseTeam, originZone, isSpecial, gkAttackBase, logParts } = ctx;
+    const { attackTeam, defenseTeam, originZone, isSpecial, gkAttackBase, logParts, directShot } = ctx;
     const b          = ball();
     const attackerId = getPlayerId(attackTeam, b.number);
     const keeperId   = getKeeperId(defenseTeam);
@@ -392,14 +379,22 @@ export function resolveShotKeeperDuel(ctx, defenseAction) {
     if (isSpecial) shared.markSpecialUsed(attackerId);
     if (defenseAction === "gk-special" && keeperId) shared.markSpecialUsed(keeperId, "defense");
 
-    b.frontOfKeeper = false;
-    resetLastDribbler();
-
     if (!critWinner && attackScore === defenseScore) {
-        pushLogEntry("shotGKEqualTitle", ["Zone " + (originZone + 1)], diceTag, shared.state, breakdown);
-        performKeeperClearance(defenseTeam, "hands", () => { shared.advanceTurn(defenseTeam); });
+        afterReveals(() => {
+            b.frontOfKeeper = false;
+            resetLastDribbler();
+            if (directShot) playPlayerAnimation(attackTeam, b.number, 'shoot');
+            pushLogEntry("shotGKEqualTitle", ["Zone " + (originZone + 1)], diceTag, shared.state, breakdown);
+            performKeeperClearance(defenseTeam, "hands", () => { shared.advanceTurn(defenseTeam); });
+        });
         return;
     }
+
+    const revealResult = (result, tag, resultBreakdown, clearanceAction) => {
+        afterReveals(() => {
+            _continueKeeperDuelResult(result, attackTeam, defenseTeam, isSpecial, originZone, logParts, tag, resultBreakdown, clearanceAction, directShot);
+        });
+    };
 
     let duelResult = critWinner ?? (attackScore > defenseScore ? "attack" : "defense");
 
@@ -442,9 +437,9 @@ export function resolveShotKeeperDuel(ctx, defenseAction) {
                         originZone, logParts,
                         isKeeperReroll: true,
                     };
-                    _showKeeperRerollPrompt(defenseTeam, gkInfo, () => {
+                    afterReveals(() => _showKeeperRerollPrompt(defenseTeam, gkInfo, () => {
                         // Confirm
-                        const ctx = shared.state.pendingCaptainReroll;
+                        if (!shared.state.pendingCaptainReroll) return;
                         shared.state.pendingCaptainReroll = null;
                         consumeReroll(defenseTeam);
                         const newDroll2      = rollD20Advantage();
@@ -459,61 +454,20 @@ export function resolveShotKeeperDuel(ctx, defenseAction) {
                             `2d20 (${newDroll2.roll1}, ${newDroll2.roll2}) → ${newDroll2.roll}`,
                             newResult === "defense" ? "✓ Arrêt !" : "✗ But quand même",
                         ], null, shared.state, rerollBreakdown);
-                        _continueKeeperDuelResult(newResult, attackTeam, defenseTeam, isSpecial, originZone, logParts, newAScore.toFixed(1) + "-" + newDScore.toFixed(1), rerollBreakdown);
+                        revealResult(newResult, newAScore.toFixed(1) + "-" + newDScore.toFixed(1), rerollBreakdown, "hands");
                     }, () => {
                         // Skip
+                        if (!shared.state.pendingCaptainReroll) return;
                         shared.state.pendingCaptainReroll = null;
                         if (shared.state.captainReroll?.[defenseTeam]) {
                             shared.state.captainReroll[defenseTeam].usedOnCurrentAction = true;
                         }
-                        _continueKeeperDuelResult(duelResult, attackTeam, defenseTeam, isSpecial, originZone, logParts, diceTag, breakdown);
-                    });
+                        revealResult(duelResult, diceTag, breakdown, "hands");
+                    }));
                     return; // Attendre le choix du joueur
                 }
             }
         }
     }
-    // ── FIN CAPTAIN REROLL GARDIEN ──
-
-    // ── Animation du plongeon du gardien si arrêt
-    if (duelResult === "defense") {
-        playPlayerAnimation(defenseTeam, 1, 'save', { direction: Math.random() < 0.5 ? -1 : 1 });
-    }
-
-    if (duelResult === "attack") {
-        shared.state.score[attackTeam]++;
-        const scorerInfo = shared.roster.getPlayerInfo(attackTeam, ball().number);
-        if (scorerInfo?.id) {
-            shared.state.goalEvents = shared.state.goalEvents ?? [];
-            shared.state.goalEvents.push({ player_id: scorerInfo.id, turn: shared.state.turns });
-        }
-        setMessage(
-            (isSpecial ? TEXTS.ui.goalSpecialMain : TEXTS.ui.goalMain).replace("{team}", shared.TEAMS[attackTeam].label),
-            TEXTS.ui.goalSub.replace("{scoreInternal}", shared.state.score.internal).replace("{scoreExternal}", shared.state.score.external)
-        );
-
-        const scorerName = (() => {
-            const info = shared.roster.getPlayerInfo(attackTeam, ball().number);
-            if (!info) return null;
-            const teamLabel = shared.TEAMS[attackTeam].label;
-            return `${info.lastname} n°${info.number} (${teamLabel})`;
-        })();
-        pushLogEntry(
-            isSpecial ? "shotGoalSpecialTitle" : "shotGoalTitle",
-            [scorerName, "Zone " + (originZone + 1)].concat(logParts).filter(Boolean),
-            diceTag, shared.state, breakdown
-        );
-
-        animateGoalThenReset(attackTeam, () => {
-            shared.state.isKickoff = true;
-            shared.state.keeperRestartMustPass = false;
-            shared.state._applyKickoffFn?.();
-            _moveBall(defenseTeam, 8);
-            shared.advanceTurn(defenseTeam);
-        });
-        return;
-    }
-
-    pushLogEntry("shotSavedTitle", ["Zone " + (originZone + 1)].concat(logParts), diceTag, shared.state, breakdown);
-    performKeeperClearance(defenseTeam, defenseAction, () => { shared.advanceTurn(defenseTeam); });
+    revealResult(duelResult, diceTag, breakdown, defenseAction);
 }

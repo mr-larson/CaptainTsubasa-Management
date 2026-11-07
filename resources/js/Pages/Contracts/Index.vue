@@ -65,7 +65,7 @@
                                 <InputError class="mt-1" :message="form.errors.team_id" />
                             </div>
                             <div>
-                                <InputLabel for="salary" value="Salaire (€ / match)" />
+                                <InputLabel for="salary" value="Salaire (GL / match)" />
                                 <InputText id="salary" type="number" min="0" v-model.number="form.salary" class="mt-1" />
                                 <InputError class="mt-1" :message="form.errors.salary" />
                             </div>

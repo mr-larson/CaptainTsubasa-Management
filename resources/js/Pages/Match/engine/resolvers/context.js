@@ -1,7 +1,8 @@
 // resources/js/Pages/Match/engine/resolvers/context.js
 // Contexte partagé et helpers communs (positions, animations, enregistrement des duels).
 import { CRIT_STAMINA_BOOST, FIELD_RULES, TEXTS } from '../constants.js';
-import { isGoalkeeperId, pickWeightedPlayerInZone, setBallToKeeperVisual } from '../field.js';
+import { runAfterDiceAnimation } from '../dice.js';
+import { applyBallMotion, isGoalkeeperId, pickWeightedPlayerInZone, setBallToKeeperVisual } from '../field.js';
 import { setMessage } from '../ui.js';
 
 // Dépendances injectées par initResolversModule (resolvers.js), partagées par
@@ -9,7 +10,7 @@ import { setMessage } from '../ui.js';
 export const shared = {
     state: null, roster: null, ui: null, TEAMS: null, rootEl: null, basePos: null,
     advanceTurn: null,            // rafraîchit déjà barre d'actions et UI : ne pas les rappeler après
-    showAttackBarForCurrentTeam: null, refreshUI: null, animateAndThen: null,
+    showAttackBarForCurrentTeam: null, refreshUI: null, animateAndThen: null, afterFieldMotion: null,
     scheduleAIDefense: null, isAITeam: null, canUseSpecial: null, markSpecialUsed: null,
     bindActionButtons: null, resolveFoulOutcome: null, homeTeam: 'internal',
 };
@@ -18,6 +19,26 @@ export const shared = {
 //   Helpers locaux
 // -----------------------------------------------------------
 export const ball = () => shared.state.ball;
+
+// Verrouille les commandes pendant que les révélations précèdent le jeu sur le terrain.
+export function afterReveals(callback) {
+    const state = shared.state;
+    state.isAnimating = true;
+    runAfterDiceAnimation(() => {
+        if (state.disposed) return;
+        state.isAnimating = false;
+        callback();
+    });
+}
+
+export function afterFieldDuel(duel, callback) {
+    const resume = result => afterReveals(() => callback(result));
+    if (duel.duelResult === "pending_reroll") {
+        shared.state.pendingCaptainReroll.resume = resume;
+        return;
+    }
+    resume(duel);
+}
 
 export function resetLastDribbler() {
     if (!shared.state.lastDribblerId) return;
@@ -48,8 +69,7 @@ export function applyCritBoost(playerId) {
 // -----------------------------------------------------------
 export function animateGoalThenReset(attackTeam, cb) {
     if (!shared.ui.ballEl) { if (cb) cb(); return; }
-    shared.ui.ballEl.style.left = FIELD_RULES.GOAL_X[attackTeam] + "%";
-    shared.ui.ballEl.style.top  = FIELD_RULES.GOAL_Y + "%";
+    applyBallMotion(FIELD_RULES.GOAL_X[attackTeam], FIELD_RULES.GOAL_Y);
     shared.animateAndThen(() => { if (cb) cb(); });
 }
 
@@ -57,14 +77,18 @@ export function animateShotToKeeper(defenseTeam, cb) {
     setBallToKeeperVisual(defenseTeam);
     const st = shared.state;
     shared.animateAndThen(() => {
-        setTimeout(() => { if (!st.disposed && cb) cb(); }, st._GK_HOLD_MS ?? 300);
+        st.isAnimating = true;
+        setTimeout(() => {
+            if (st.disposed) return;
+            st.isAnimating = false;
+            cb?.();
+        }, st._GK_HOLD_MS ?? 300);
     });
 }
 
 export function animateBallToXY(x, y, cb) {
     if (!shared.ui.ballEl) { if (cb) cb(); return; }
-    shared.ui.ballEl.style.left = x + "%";
-    shared.ui.ballEl.style.top  = y + "%";
+    applyBallMotion(x, y);
     shared.animateAndThen(() => { if (cb) cb(); });
 }
 
