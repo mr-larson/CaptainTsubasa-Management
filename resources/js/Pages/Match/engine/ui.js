@@ -666,7 +666,8 @@ export function updateCardsPower(ball) {
     const specialMap = { special: "shot", "special-pass": "pass", "special-dribble": "dribble" };
     _ui.actionBarEl.querySelectorAll(".skill-card-special").forEach((btn) => {
         const el = btn.querySelector(".skill-special-power");
-        if (el) el.textContent = String(Number(carrierStats[specialMap[btn.dataset.action]] ?? 0));
+        const move = _roster.getSpecialMove(ball.team, ball.number, "attack", specialMap[btn.dataset.action]);
+        if (el && move) el.textContent = String(specialActionStat(move, ball.team, ball.number, _roster));
     });
 
     // Cartes d'attaque : stat de contre du défenseur annoncé (fiche adverse), et

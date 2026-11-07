@@ -317,7 +317,7 @@ export class RosterService {
     // -----------------------------------------------------------
     //   Bases de calcul duel
     // -----------------------------------------------------------
-    attackBaseFor(actionKey, team, slotNumber) {
+    attackBaseFor(actionKey, team, slotNumber, statBonus = 0) {
         const base = STATS.attack[actionKey]?.power ?? 10;
         const map  = {
             pass:    { stat: "pass",    bonus: "pass"    },
@@ -337,13 +337,13 @@ export class RosterService {
 
         const m = map[actionKey] ?? null;
         let raw = base;
-        if (m) raw = base + this.getStat(team, slotNumber, m.stat) * this.STAT_COEF;
+        if (m) raw = base + (this.getStat(team, slotNumber, m.stat) + statBonus) * this.STAT_COEF;
         if (m) raw *= this.positionBonusMultiplier(team, slotNumber, m.bonus);
         raw *= this.moraleFactor(team, slotNumber);
         return raw;
     }
 
-    defenseBaseFor(defenseAction, defenseTeam, defenseSlotNumber, isKeeper = false) {
+    defenseBaseFor(defenseAction, defenseTeam, defenseSlotNumber, isKeeper = false, statBonus = 0) {
         const baseField = STATS.defenseField[defenseAction]?.power;
         const baseGk    = STATS.defenseGK[defenseAction]?.power;
         const base      = baseField ?? baseGk ?? 10;
@@ -351,7 +351,7 @@ export class RosterService {
         if (isKeeper) {
             const mapGK   = { hands: "hand_save", punch: "punch_save", "gk-special": "defense" };
             const statKey = mapGK[defenseAction] ?? null;
-            let raw = base + (statKey ? this.getStat(defenseTeam, defenseSlotNumber, statKey) * this.STAT_COEF : 0);
+            let raw = base + ((statKey ? this.getStat(defenseTeam, defenseSlotNumber, statKey) : 0) + statBonus) * this.STAT_COEF;
             raw *= this.positionBonusMultiplier(defenseTeam, defenseSlotNumber, "gk");
             raw *= this.moraleFactor(defenseTeam, defenseSlotNumber);
             return raw;
@@ -369,7 +369,7 @@ export class RosterService {
 
         const mapField = { block: "block", intercept: "intercept", tackle: "tackle", "field-special": "defense" };
         const statKey  = mapField[defenseAction] ?? null;
-        let raw = base + (statKey ? this.getStat(defenseTeam, defenseSlotNumber, statKey) * this.STAT_COEF : 0);
+        let raw = base + ((statKey ? this.getStat(defenseTeam, defenseSlotNumber, statKey) : 0) + statBonus) * this.STAT_COEF;
         const bonusTag = (defenseAction === "block") ? "block" : "defend";
         raw *= this.positionBonusMultiplier(defenseTeam, defenseSlotNumber, bonusTag);
         raw *= this.moraleFactor(defenseTeam, defenseSlotNumber);
@@ -380,16 +380,29 @@ export class RosterService {
 // -----------------------------------------------------------
 //   Helper special moves (hors classe, utilisé par resolvers)
 // -----------------------------------------------------------
+const KEEPER_ACTION_BY_STAT = { hand_save: "hands", punch_save: "punch" };
+
+function specialStatBonus(move, team, slotNumber, roster) {
+    const globalStat = move.mode === "defense" ? "defense" : "attack";
+    const bonus = Math.round(roster.getStat(team, slotNumber, globalStat) * 0.15);
+    return Math.max(2, Math.min(6, bonus));
+}
+
 export function specialActionStat(move, team, slotNumber, roster) {
     const baseAction = String(move.base_action || "").trim();
     const aliases = { hands: "hand_save", punch: "punch_save" };
-    return roster.getStat(team, slotNumber, aliases[baseAction] ?? baseAction);
+    return roster.getStat(team, slotNumber, aliases[baseAction] ?? baseAction) + specialStatBonus(move, team, slotNumber, roster);
 }
 
 export function specialBaseFor(move, team, slotNumber, roster) {
     if (!move) return 0;
-    const actionStat = specialActionStat(move, team, slotNumber, roster);
-    const globalStat = roster.getStat(team, slotNumber, move.mode === "defense" ? "defense" : "attack");
-    const coefficient = roster.STAT_COEF;
-    return (actionStat * coefficient + globalStat * (1 - coefficient)) * roster.moraleFactor(team, slotNumber);
+    const baseAction = String(move.base_action || "").trim();
+    const bonus = specialStatBonus(move, team, slotNumber, roster);
+    if (move.mode !== "defense") {
+        return roster.attackBaseFor(baseAction, team, slotNumber, bonus);
+    }
+
+    const action = KEEPER_ACTION_BY_STAT[baseAction] ?? baseAction;
+    const isKeeper = action === "hands" || action === "punch";
+    return roster.defenseBaseFor(action, team, slotNumber, isKeeper, bonus);
 }
