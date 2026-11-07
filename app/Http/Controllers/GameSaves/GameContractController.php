@@ -7,12 +7,12 @@ use App\Http\Controllers\Concerns\AuthorizesGameSave;
 use App\Http\Controllers\Concerns\LocksGameSave;
 use App\Http\Requests\GameSaves\GameContractRequest;
 use App\Models\GameSaves\GameContract;
-use App\Models\GameSaves\GamePromise;
 use App\Models\GameSaves\GameSave;
 
 
 use App\Models\GameSaves\GamePlayer;
 use App\Services\MoraleService;
+use App\Services\PromiseService;
 use App\Services\SeasonService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -122,16 +122,14 @@ class GameContractController extends Controller
 
             $team->decrement('budget', $totalCost);
             $contract->update(['end_week' => $endWeek, 'salary' => $salary]);
-            GamePromise::where('game_save_id', $gameSave->id)
-                ->where('game_player_id', $player->id)
-                ->where('game_team_id', $team->id)
-                ->where('type', 'renewal')
-                ->where('status', 'pending')
-                ->where('start_week', '<=', $week)
-                ->where('due_week', '>=', $week)
-                ->update(['renewal_signed_at' => now()]);
+            $promiseKept = app(PromiseService::class)->fulfillRenewal($gameSave, $player, $team->id);
 
-            return back()->with('success', "Contrat de {$player->full_name} prolongé jusqu’en semaine {$endWeek}.");
+            $message = "Contrat de {$player->full_name} prolongé jusqu’en semaine {$endWeek}.";
+            if ($promiseKept) {
+                $message .= ' Promesse de prolongation tenue.';
+            }
+
+            return back()->with('success', $message);
         });
     }
 

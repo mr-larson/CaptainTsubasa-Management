@@ -181,6 +181,7 @@ const lastDeclarationSummary = computed(() => {
                         ({{ lastResolvedPromise.played_matches ?? 0 }}/{{ lastResolvedPromise.target_matches }})
                     </template>
                     <template v-else-if="lastResolvedPromise.type === 'rest'">· Repos</template>
+                    <template v-else-if="lastResolvedPromise.type === 'renewal'">· Prolongation</template>
                 </span>
             </div>
 

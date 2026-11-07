@@ -225,6 +225,21 @@ class PromiseServiceTest extends TestCase
         $this->assertSame('broken', GamePromise::where('game_player_id', $player->id)->first()->status);
     }
 
+    public function test_previously_signed_renewal_is_recognized_at_the_next_week_closing(): void
+    {
+        $save = $this->makeSave(['week' => 5]);
+        $team = $this->makeTeam($save);
+        $player = $this->makePlayer($save);
+        $promise = $this->service->create($save, $player, $team->id, 'renewal');
+        $promise->renewal_signed_at = now();
+        $promise->save();
+
+        $this->service->evaluateForWeek($save, 5);
+
+        $this->assertSame('kept', $promise->fresh()->status);
+        $this->assertEquals(75, $player->fresh()->morale);
+    }
+
     public function test_rest_promise_requires_a_week_without_playing_or_training(): void
     {
         $save = $this->makeSave(['week' => 3]);

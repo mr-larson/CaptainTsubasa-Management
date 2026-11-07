@@ -10,6 +10,7 @@ use App\Models\GameSaves\GamePositionTraining;
 use App\Models\GameSaves\GamePromise;
 use App\Models\GameSaves\GameSanction;
 use App\Models\GameSaves\GameSave;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 /**
@@ -85,6 +86,31 @@ class PromiseService
         ]);
     }
 
+    public function fulfillRenewal(GameSave $gameSave, GamePlayer $player, int $teamId): bool
+    {
+        $week = (int) ($gameSave->week ?? 1);
+        $season = (int) ($gameSave->season ?? 1);
+        $promise = GamePromise::where('game_save_id', $gameSave->id)
+            ->where('game_player_id', $player->id)
+            ->where('game_team_id', $teamId)
+            ->where('season', $season)
+            ->where('type', 'renewal')
+            ->where('status', 'pending')
+            ->where('start_week', '<=', $week)
+            ->where('due_week', '>=', $week)
+            ->first();
+
+        if (!$promise) return false;
+
+        $now = now();
+        $promise->renewal_signed_at = $now;
+        GamePlayerMoraleLog::insert([
+            $this->resolve($promise, $player, [true, 'Promesse de prolongation tenue', null, null], $week, $season, $now),
+        ]);
+
+        return true;
+    }
+
     /**
      * Évalue les promesses en cours (appelé après chaque semaine jouée).
      * Chaque évaluateur renvoie [kept, label, playedMatches, playedTurns] si la
@@ -121,38 +147,43 @@ class PromiseService
             // null = pas encore résolue (ex. prochain match pas encore joué).
             if ($resolution === null) continue;
 
-            [$kept, $label, $playedMatches, $playedTurns] = $resolution;
-
-            $promise->update([
-                'status'         => $kept ? 'kept' : 'broken',
-                'played_matches' => $playedMatches,
-                'played_turns'   => $playedTurns,
-            ]);
-
-            $delta = $this->delta($promise->type, $kept);
-
-            $player->coach_affinity = max(self::AFFINITY_MIN, min(self::AFFINITY_MAX,
-                (int) $player->coach_affinity + $delta
-            ));
-            $player->morale = max(0, min(100, (int) $player->morale + $delta));
-            $player->save();
-
-            $logs[] = [
-                'game_save_id'   => $gameSave->id,
-                'game_player_id' => $player->id,
-                'source'         => 'promise',
-                'value'          => $delta,
-                'label'          => $label,
-                'week'           => $week,
-                'season'         => $season,
-                'created_at'     => $now,
-                'updated_at'     => $now,
-            ];
+            $logs[] = $this->resolve($promise, $player, $resolution, $week, $season, $now);
         }
 
         if (!empty($logs)) {
             GamePlayerMoraleLog::insert($logs);
         }
+    }
+
+    private function resolve(GamePromise $promise, GamePlayer $player, array $resolution, int $week, int $season, Carbon $now): array
+    {
+        [$kept, $label, $playedMatches, $playedTurns] = $resolution;
+
+        $promise->update([
+            'status'         => $kept ? 'kept' : 'broken',
+            'played_matches' => $playedMatches,
+            'played_turns'   => $playedTurns,
+        ]);
+
+        $delta = $this->delta($promise->type, $kept);
+
+        $player->coach_affinity = max(self::AFFINITY_MIN, min(self::AFFINITY_MAX,
+            (int) $player->coach_affinity + $delta
+        ));
+        $player->morale = max(0, min(100, (int) $player->morale + $delta));
+        $player->save();
+
+        return [
+            'game_save_id'   => $promise->game_save_id,
+            'game_player_id' => $player->id,
+            'source'         => 'promise',
+            'value'          => $delta,
+            'label'          => $label,
+            'week'           => $week,
+            'season'         => $season,
+            'created_at'     => $now,
+            'updated_at'     => $now,
+        ];
     }
 
     /**
@@ -199,11 +230,11 @@ class PromiseService
 
     /**
      * Prolongation : tenue si un nouveau contrat a été signé après la promesse.
-     * Résolue uniquement à l'échéance.
+     * Rattrape les prolongations déjà enregistrées sur les anciennes sauvegardes.
      */
     private function evaluateRenewal(GamePromise $promise, int $week): ?array
     {
-        if ($week < $promise->due_week) return null;
+        if ($week < $promise->due_week && $promise->renewal_signed_at === null) return null;
 
         $kept = $promise->renewal_signed_at !== null || \App\Models\GameSaves\GameContract::where('game_save_id', $promise->game_save_id)
             ->where('game_player_id', $promise->game_player_id)

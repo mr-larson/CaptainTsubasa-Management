@@ -37,8 +37,12 @@ class GameContractRenewalTest extends TestCase
 
         $this->patch($url, ['end_week' => 5, 'weeks' => 26])->assertSessionHasErrors('weeks');
         $this->assertSame(5, $contract->fresh()->end_week);
+        $this->assertSame('pending', $promise->fresh()->status);
 
         $this->patch($url, ['end_week' => 5, 'weeks' => 1])->assertSessionHasNoErrors();
+        $this->assertSame('kept', $promise->fresh()->status);
+        $this->assertEquals(75, $player->fresh()->morale);
+        $this->assertEquals(15, $player->fresh()->coach_affinity);
         $this->assertSame(6, $contract->fresh()->end_week);
         $this->assertSame(83, $contract->fresh()->salary);
         $this->assertEquals(2917, $team->fresh()->budget);
@@ -55,5 +59,13 @@ class GameContractRenewalTest extends TestCase
 
         $promises->evaluateForWeek($save, $promise->due_week);
         $this->assertSame('kept', $promise->fresh()->status);
+        $this->assertEquals(75, $player->fresh()->morale);
+        $this->assertEquals(15, $player->fresh()->coach_affinity);
+        $this->assertDatabaseHas('game_player_morale_logs', [
+            'game_player_id' => $player->id,
+            'source' => 'promise',
+            'value' => 15,
+            'week' => 5,
+        ]);
     }
 }
