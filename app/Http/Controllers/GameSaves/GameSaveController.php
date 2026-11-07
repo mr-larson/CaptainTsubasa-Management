@@ -988,7 +988,7 @@ class GameSaveController extends Controller
 
         $data = $request->validate([
             'team_id'       => ['required', 'integer', Rule::exists('game_teams', 'id')->where('game_save_id', $gameSave->id)],
-            'matches_total' => ['required', 'integer', 'min:1', 'max:60'],
+            'matches_total' => ['required', 'integer', 'min:1'],
             'reason'        => ['nullable', 'string', 'max:1000'],
         ]);
 
@@ -1000,6 +1000,13 @@ class GameSaveController extends Controller
             $team = GameTeam::where('game_save_id', $gameSave->id)->findOrFail($data['team_id']);
 
             $startWeek = $gameSave->week ?? 1;
+            $remainingWeeks = max(0, app(SeasonService::class)->getSeasonLength($gameSave) - $startWeek);
+            if (($gameSave->phase ?? 'season') !== 'season' || $remainingWeeks === 0) {
+                return back()->withErrors(['matches_total' => 'Il ne reste plus de semaines disponibles pour signer un joueur.']);
+            }
+            if ($data['matches_total'] > $remainingWeeks) {
+                return back()->withErrors(['matches_total' => "La durée maximale restante est de {$remainingWeeks} semaine(s)."]);
+            }
 
             $alreadyHasContract = GameContract::where('game_save_id', $gameSave->id)
                 ->where('game_player_id', $player->id)

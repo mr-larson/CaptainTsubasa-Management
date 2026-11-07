@@ -305,6 +305,7 @@ const openReminder = (item) => {
     if (item.player) selectMyPlayer(item.player);
 };
 
+const transferMaxWeeks = computed(() => Math.max(0, (props.contractSeasonEndWeek ?? 0) - week.value));
 const {
     availableFreePlayers,
     showTransferModal, transferTarget,
@@ -312,7 +313,7 @@ const {
     transferTotalCost, transferProcessing,
     openTransferModal, closeTransferModal, confirmTransfer,
     transferHistory,
-} = useTransfers({ gameSave: gameSaveRef, freePlayers: freePlayersRef, team: teamRef, teams: teamsRef });
+} = useTransfers({ gameSave: gameSaveRef, freePlayers: freePlayersRef, team: teamRef, teams: teamsRef, maxWeeks: transferMaxWeeks });
 
 // ==========================
 //   AUTRES ÉQUIPES
@@ -817,6 +818,7 @@ const saveGame = () => {
                                   :showTransferModal="showTransferModal"
                                   :transferTarget="transferTarget"
                                   :transferMatches="transferMatches"
+                                  :transferMaxWeeks="transferMaxWeeks"
                                   :transferSalary="transferSalary"
                                   :transferReason="transferReason"
                                   :transferTotalCost="transferTotalCost"

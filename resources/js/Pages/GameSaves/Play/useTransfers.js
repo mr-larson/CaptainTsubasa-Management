@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue';
 import { router } from '@inertiajs/vue3';
 
-export function useTransfers({ gameSave, freePlayers, team, teams }) {
+export function useTransfers({ gameSave, freePlayers, team, teams, maxWeeks }) {
 
     // ==========================
     //   AGENTS LIBRES
@@ -29,7 +29,7 @@ export function useTransfers({ gameSave, freePlayers, team, teams }) {
 
     const openTransferModal = (player) => {
         transferTarget.value    = player;
-        transferMatches.value   = 10;
+        transferMatches.value   = Math.min(10, maxWeeks.value);
         // Coût ajusté = coût + légère majoration de polyvalence (postes secondaires)
         transferSalary.value    = player.adjusted_cost ?? player.cost ?? 0;
         transferReason.value    = '';
@@ -46,7 +46,9 @@ export function useTransfers({ gameSave, freePlayers, team, teams }) {
     // `player` est passé explicitement par l'onglet : ne pas repasser par
     // openTransferModal, qui réinitialiserait la durée saisie.
     const confirmTransfer = (player = transferTarget.value) => {
-        if (!team.value || !player || transferProcessing.value) return;
+        if (!team.value || !player || transferProcessing.value
+            || !Number.isInteger(transferMatches.value) || transferMatches.value < 1
+            || transferMatches.value > maxWeeks.value) return;
         transferProcessing.value = true;
         router.post(
             route('game-saves.free-agents.sign', { gameSave: gameSave.value.id, player: player.id }),

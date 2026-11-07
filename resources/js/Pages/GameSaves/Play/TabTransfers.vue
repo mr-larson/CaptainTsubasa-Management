@@ -18,6 +18,7 @@ const props = defineProps({
     showTransferModal:    { type: Boolean, required: true },
     transferTarget:       { type: Object,  default: null },
     transferMatches:      { type: Number,  required: true },
+    transferMaxWeeks:     { type: Number,  required: true },
     transferSalary:       { type: Number,  required: true },
     transferReason:       { type: String,  required: true },
     transferTotalCost:    { type: Number,  required: true },
@@ -153,7 +154,7 @@ const selectPlayer = (p) => {
     // Le salaire fait autorité côté serveur (coût ajusté à la polyvalence) :
     // on l'affiche sans le rendre éditable, le serveur l'imposera de toute façon.
     emit('update:transferSalary', p.adjusted_cost ?? p.cost ?? 0);
-    emit('update:transferMatches', 10);
+    emit('update:transferMatches', Math.min(10, props.transferMaxWeeks));
 };
 
 watch(() => props.focusPlayer?.id, (id) => {
@@ -506,14 +507,14 @@ const filteredHistory = computed(() =>
 
                     <div class="grid grid-cols-2 gap-4 mb-3">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Durée (matchs)</label>
-                            <input type="number" min="1" max="60"
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Durée (semaines, max. {{ transferMaxWeeks }})</label>
+                            <input type="number" min="1" :max="transferMaxWeeks" :disabled="!transferMaxWeeks"
                                    :value="transferMatches"
                                    @input="emit('update:transferMatches', +$event.target.value)"
                                    class="w-full px-3 py-1.5" :class="fieldClass({ shape: 'rect' })"/>
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Salaire / match (GL)</label>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Salaire / semaine (GL)</label>
                             <div class="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-slate-100 text-slate-600 font-semibold flex items-center justify-between">
                                 <span>{{ transferSalary }} GL</span>
                                 <span class="text-2xs text-slate-400 font-normal">fixé</span>
@@ -527,7 +528,7 @@ const filteredHistory = computed(() =>
                             🔁 Remplacerait <span class="font-bold">{{ replacedStarter.lastname }}</span>, ton titulaire le plus faible à ce poste :
                             note {{ overallOf(replacedStarter) }} → {{ overallOf(selectedPlayer) }}
                             <span class="font-bold" :class="overallGain > 0 ? 'text-emerald-600' : overallGain < 0 ? 'text-rose-500' : 'text-slate-500'">({{ overallGain > 0 ? '+' : '' }}{{ overallGain }})</span>
-                            · {{ transferSalary }} GL/match × {{ transferMatches }} = {{ transferTotalCost }} GL
+                            · {{ transferSalary }} GL/semaine × {{ transferMatches }} = {{ transferTotalCost }} GL
                         </template>
                         <template v-else>Aucun titulaire à ce poste : il renforcerait directement ton onze.</template>
                     </div>
@@ -554,7 +555,7 @@ const filteredHistory = computed(() =>
                         <ButtonSecondary size="sm" @click="selectedPlayer = null">
                             Annuler
                         </ButtonSecondary>
-                        <ButtonPrimary type="button" size="sm" :disabled="!canAfford || !team || transferMatches <= 0 || transferProcessing" @click="emit('confirm-transfer', selectedPlayer)">
+                        <ButtonPrimary type="button" size="sm" :disabled="!canAfford || !team || !Number.isInteger(transferMatches) || transferMatches < 1 || transferMatches > transferMaxWeeks || transferProcessing" @click="emit('confirm-transfer', selectedPlayer)">
                             Confirmer l'offre
                         </ButtonPrimary>
                     </div>
