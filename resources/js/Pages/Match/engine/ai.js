@@ -77,8 +77,7 @@ export function computeAIAttackChoice(ball, specialCooldown) {
     // Disponibilité PAR TECHNIQUE (cooldown indépendant pour chaque move)
     const canUse = (move) => moveIsReady(playerId, specialCooldown, turns, move) && canSpendOnSpecial(team, playerId);
 
-    // Une-deux : partenaire de duo sur le terrain ET assez d'endurance pour
-    // encaisser le coût élevé (9) sans finir le match à sec.
+    // Une-deux : partenaire sur le terrain et réserve d'endurance suffisante.
     const canOneTwo = !!_roster.getDuoPartnerOnField(team, slot)
         && getStamina(playerId) >= 12 && getStaminaRatio(playerId) >= 0.35;
 

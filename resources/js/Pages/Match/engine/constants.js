@@ -249,10 +249,8 @@ export const STATS = {
         shot:    { power: 10, cost: 10 },
         pass:    { power: 10, cost: 6 },
         dribble: { power: 10, cost: 4  },
-        // Une-deux (duo d'alchimie) : progression comme un dribble mais résolue
-        // sur la passe. Coût volontairement élevé (presque un tir) : c'est le
-        // frein anti-spam — pas de bonus numérique en plus du swap de stat.
-        one_two: { power: 10, cost: 9  },
+        // Une-deux (duo d'alchimie) : progresse comme un dribble et se résout sur la passe.
+        one_two: { power: 10, cost: 5  },
         special: { power: 12, cost: 15 },
         // Spéciaux passe/dribble : même coût/puissance que le spécial générique
         // (repris tel quel lors du passage à un slot dédié par carte).
