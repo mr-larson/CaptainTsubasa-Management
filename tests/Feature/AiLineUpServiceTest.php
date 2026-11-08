@@ -67,6 +67,34 @@ class AiLineUpServiceTest extends TestCase
         $this->assertTrue((bool) $freshContract->fresh()->is_starter);
     }
 
+    public function test_interactive_match_starts_with_the_fresh_replacement_in_the_saved_slot(): void
+    {
+        $save = $this->makeSave();
+        [$human] = $this->makeTeamWithSquad($save, ['is_controlled' => true]);
+        [$ai, $players] = $this->makeTeamWithSquad($save, [
+            'formation' => '4-2-1-3',
+            'management_philosophy' => TeamStyle::PHILOSOPHY_ECONOMIST,
+            'tactical_style' => TeamStyle::TACTICAL_COUNTER,
+        ], 12);
+        $tired = $players[5];
+        $fresh = $players[11];
+        $tired->update(['stamina' => 30]);
+        $slots = $players->take(11)->mapWithKeys(fn ($player, $index) => [$index + 1 => $player->id])->all();
+        $save->update([
+            'controlled_game_team_id' => $human->id,
+            'state' => ['lineup' => [$ai->id => ['slots' => $slots]]],
+        ]);
+        $this->makeMatch($save, $human, $ai);
+
+        $response = $this->actingAs($save->user)->get(route('game-saves.match', $save))->assertOk();
+        $team = $response->viewData('page')['props']['engineConfig']['teams']['external'];
+        $this->assertSame('counter', $team['tacticalStyle']);
+        $this->assertSame('economist', $team['managementPhilosophy']);
+        $this->assertSame($fresh->id, $team['players'][5]['id']);
+        $this->assertSame($fresh->id, $save->fresh()->state['lineup'][$ai->id]['slots'][6]);
+        $this->assertFalse((bool) $tired->contracts()->first()->is_starter);
+    }
+
     public function test_no_rotation_when_squad_is_fresh(): void
     {
         $save = $this->makeSave(['week' => 1]);

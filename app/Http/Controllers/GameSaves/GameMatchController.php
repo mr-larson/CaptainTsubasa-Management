@@ -14,6 +14,7 @@ use App\Models\GameSaves\GameInjury;
 use App\Models\GameSaves\GamePositionTraining;
 use App\Models\GameSaves\GameSanction;
 use App\Models\PlayerLink;
+use App\Services\AiLineUpService;
 use App\Services\BonusCardActivationService;
 use App\Services\CareerObjectiveService;
 use App\Services\FoulAndInjuryService;
@@ -76,6 +77,14 @@ class GameMatchController extends Controller
             ->whereIn('game_team_id', [$match->home_team_id, $match->away_team_id])
             ->where('is_captain', true)
             ->update(['captain_rerolls_remaining' => 3, 'captain_reroll_used_this_action' => false]);
+        if ((int) $match->week === $week) {
+            $this->withSaveLock($gameSave, function (GameSave $save) use ($match, $week) {
+                if ((int) $save->week !== $week || $save->hasPendingMidseasonBreak()) return;
+                if ($match->fresh()?->status !== 'scheduled') return;
+
+                app(AiLineUpService::class)->adjustLineupsForWeek($save, [$match->home_team_id, $match->away_team_id]);
+            });
+        }
         $match->load(['homeTeam.contracts' => $activeContracts, 'awayTeam.contracts' => $activeContracts]);
 
         $homeTeam = $match->homeTeam;
@@ -440,9 +449,6 @@ class GameMatchController extends Controller
     private function mapPlayers(GameTeam $team, GameSave $gameSave, int $matchId): \Illuminate\Support\Collection
     {
         $state      = $gameSave->state ?? [];
-        $lineups    = $state['lineup'] ?? [];
-        $teamLineup = $lineups[$team->id]['slots'] ?? null;
-
         $currentWeek = $gameSave->week ?? 1;
 
         // Joueurs blessés ou suspendus cette semaine
@@ -471,6 +477,7 @@ class GameMatchController extends Controller
             ->getMatchStatModifiers($gameSave, $team->id, $matchId);
 
         $contracts = $team->contracts->loadMissing('gamePlayer');
+        $teamLineup = $state['lineup'][$team->id]['slots'] ?? null;
 
         // Duos d'alchimie : partenaires « une-deux » présents dans la même équipe
         // (résolus via base_player_id → player_links).
