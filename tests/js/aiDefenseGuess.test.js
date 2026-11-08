@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { initAIModule, guessAttack } from '../../resources/js/Pages/Match/engine/ai.js';
+import { describe, it, expect, vi } from 'vitest';
+import { computeAIAttackChoice, initAIModule, guessAttack } from '../../resources/js/Pages/Match/engine/ai.js';
+import { initStaminaModule } from '../../resources/js/Pages/Match/engine/stamina.js';
 
 // Porteur factice : seules ses stats d'attaque comptent pour la supposition.
 const withCarrier = (stats) => initAIModule(
@@ -33,4 +34,34 @@ describe('guessAttack (supposition de l\'IA en défense)', () => {
         expect(counts.pass).toBeGreaterThan(0);
         expect(counts.dribble).toBeGreaterThan(0);
     });
+});
+
+it('utilise le style tactique et ménage les joueurs à court d’endurance', () => {
+    const team = { tacticalStyle: 'counter', managementPhilosophy: 'economist' };
+    const state = {
+        currentTeam: 'internal',
+        turns: 2,
+        stamina: { I8: 40 },
+        staminaMax: { I8: 40 },
+        _matchConfig: { teams: { internal: team } },
+    };
+    const roster = {
+        getSpecialMoves: () => [{ key: 'special-shot', mode: 'attack', base_action: 'shot' }],
+        getDuoPartnerOnField: () => null,
+        getPlayerInfo: () => ({ stats: { shot: 30, pass: 30, dribble: 30 } }),
+    };
+    initStaminaModule(state, roster, null);
+    initAIModule(state, roster);
+    const random = vi.spyOn(Math, 'random').mockReturnValue(0.1);
+    try {
+        const ball = { team: 'internal', number: 8, zoneIndex: 0 };
+        expect(computeAIAttackChoice(ball, {})).toBe('long_pass');
+        team.tacticalStyle = 'possession';
+        expect(computeAIAttackChoice(ball, {})).toBe('pass');
+        expect(computeAIAttackChoice({ ...ball, frontOfKeeper: true }, {})).toBe('special');
+        state.stamina.I8 = 20;
+        expect(computeAIAttackChoice({ ...ball, frontOfKeeper: true }, {})).toBe('shot');
+    } finally {
+        random.mockRestore();
+    }
 });
