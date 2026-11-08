@@ -22,6 +22,7 @@ use App\Models\Player;
 use App\Models\PlayerLink;
 use App\Models\Team;
 use App\Enums\Nationality;
+use App\Services\AiLineUpService;
 use App\Services\BonusCardShopService;
 use App\Services\CareerObjectiveService;
 use App\Services\SeasonChallengeService;
@@ -729,13 +730,18 @@ class GameSaveController extends Controller
         // Fixe l'objectif de la direction pour la saison courante si besoin
         // (couvre le mode draft : l'effectif n'existe qu'après la draft).
         $this->withSaveLock($gameSave, function (GameSave $gameSave) use ($career) {
-            if (($gameSave->phase ?? 'season') !== 'season') return;
+            if (!$gameSave->isInMatchPhase()) return;
 
-            $career->ensureSeasonMandate($gameSave);
-            $challenges = app(SeasonChallengeService::class);
-            $challenges->ensureSeasonChallenges($gameSave);
-            // Rattrape les objectifs déjà réussis dans les sauvegardes existantes.
-            $challenges->payCompleted($gameSave, [(int) $gameSave->controlled_game_team_id]);
+            if (($gameSave->phase ?? 'season') === 'season') {
+                $career->ensureSeasonMandate($gameSave);
+                $challenges = app(SeasonChallengeService::class);
+                $challenges->ensureSeasonChallenges($gameSave);
+                // Rattrape les objectifs déjà réussis dans les sauvegardes existantes.
+                $challenges->payCompleted($gameSave, [(int) $gameSave->controlled_game_team_id]);
+            }
+
+            $this->ensureCalendar($gameSave);
+            app(AiLineUpService::class)->prepareScheduledTeams($gameSave, (int) ($gameSave->week ?? 1));
         });
 
         $currentWeek = $gameSave->week ?? 1;
@@ -759,8 +765,6 @@ class GameSaveController extends Controller
                 $contract->gamePlayer?->append('renewal_cost');
             }
         }
-
-        $this->ensureCalendar($gameSave, $gameTeams);
 
         // Sans match_stats (déroulé complet de chaque match, qui alourdissait
         // la page à chaque semaine) : le détail se charge à la demande via
@@ -1161,7 +1165,7 @@ class GameSaveController extends Controller
     //   HELPERS PRIVÉS
     // ==========================
 
-    private function ensureCalendar(GameSave $gameSave, Collection $teams): void
+    private function ensureCalendar(GameSave $gameSave): void
     {
         // En Coupe du Monde, le calendrier (poules + élimination directe) est
         // géré par le moteur de tournoi (Phase 4), pas par le round-robin de ligue.
@@ -1169,7 +1173,7 @@ class GameSaveController extends Controller
 
         if ($gameSave->matches()->exists()) return;
 
-        $teamIds   = $teams->pluck('id')->values()->all();
+        $teamIds   = $gameSave->gameTeams()->pluck('id')->all();
         $teamCount = count($teamIds);
         if ($teamCount < 2) return;
 

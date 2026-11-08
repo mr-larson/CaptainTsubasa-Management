@@ -33,10 +33,8 @@ class WeekClosingService
      */
     public function close(GameSave $gameSave, int $week): string
     {
-        // 1. Lineups IA ajustés pour les matchs de CETTE semaine (indisponibles,
-        //    rotation selon la stamina), puis simulation des matchs restants.
-        app(AiLineUpService::class)->adjustLineupsForWeek($gameSave);
-
+        // 1. Préparer les équipes qui n’ont pas encore joué, puis simuler leurs matchs.
+        app(AiLineUpService::class)->prepareScheduledTeams($gameSave, $week);
         $remaining = GameMatch::query()
             ->where('game_save_id', $gameSave->id)
             ->where('week', $week)

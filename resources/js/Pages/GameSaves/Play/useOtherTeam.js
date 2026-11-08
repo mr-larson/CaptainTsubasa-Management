@@ -90,20 +90,23 @@ export function useOtherTeam({ gameSave, teams, controlledTeamId }) {
     const otherLineupForm = ref([]);
 
     const initOtherLineupForm = () => {
+        const unplaced = new Set(otherRosterWithStatus.value.filter(p => p.is_starter).map(p => p.id));
         const slots = [];
         for (let slot = 1; slot <= 11; slot++) {
-            slots.push({ slot, player_id: otherLineupSlots.value[slot] ?? null });
+            const playerId = otherLineupSlots.value[slot];
+            slots.push({ slot, player_id: unplaced.delete(playerId) ? playerId : null });
         }
-        if (!Object.keys(otherLineupSlots.value).length) {
-            const starters = otherRosterWithStatus.value.filter(p => p.is_starter);
-            starters.forEach((p, i) => { if (i < 11) slots[i].player_id = p.id; });
+        for (const playerId of unplaced) {
+            const available = slots.find(row => !row.player_id);
+            if (!available) break;
+            available.player_id = playerId;
         }
         otherLineupForm.value = slots;
     };
 
     initOtherLineupForm();
     watch(
-        () => [selectedOtherTeam.value?.id, gameSave.value.state],
+        () => [selectedOtherTeam.value?.id, selectedOtherTeam.value?.contracts, gameSave.value.state],
         () => initOtherLineupForm()
     );
 

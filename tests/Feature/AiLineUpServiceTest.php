@@ -86,7 +86,14 @@ class AiLineUpServiceTest extends TestCase
         ]);
         $this->makeMatch($save, $human, $ai);
 
-        $response = $this->actingAs($save->user)->get(route('game-saves.match', $save))->assertOk();
+        $this->actingAs($save->user);
+        $preview = $this->get(route('game-saves.Play', $save))->assertOk();
+        $previewTeam = collect($preview->viewData('page')['props']['teams'])->firstWhere('id', $ai->id);
+        $previewSlots = $preview->viewData('page')['props']['gameSave']['state']['lineup'][$ai->id]['slots'];
+        $this->assertSame($fresh->id, $previewSlots[6]);
+        $this->assertTrue(collect($previewTeam['contracts'])->firstWhere('game_player_id', $fresh->id)['is_starter']);
+
+        $response = $this->get(route('game-saves.match', $save))->assertOk();
         $team = $response->viewData('page')['props']['engineConfig']['teams']['external'];
         $this->assertSame('counter', $team['tacticalStyle']);
         $this->assertSame('economist', $team['managementPhilosophy']);
@@ -113,13 +120,18 @@ class AiLineUpServiceTest extends TestCase
         $save->update(['controlled_game_team_id' => $human->id]);
         $this->makeMatch($save, $human, $ai);
 
-        $response = $this->actingAs($save->user)->get(route('game-saves.match', $save))->assertOk();
+        $this->actingAs($save->user);
+        $preview = $this->get(route('game-saves.Play', $save))->assertOk();
+        $previewTeam = collect($preview->viewData('page')['props']['teams'])->firstWhere('id', $ai->id);
+        $this->assertStringStartsWith('3-', $previewTeam['formation']);
+        $response = $this->get(route('game-saves.match', $save))->assertOk();
         $team = $response->viewData('page')['props']['engineConfig']['teams']['external'];
         $formation = $ai->fresh()->formation;
         $lineup = $save->fresh()->state['lineup'][$ai->id];
 
         $this->assertStringStartsWith('3-', $formation);
         $this->assertSame($formation, $team['formation']);
+        $this->assertSame($previewTeam['formation'], $team['formation']);
         $this->assertSame($formation, $lineup['formation']);
         $this->assertCount(11, array_unique($lineup['slots']));
         $this->assertNotContains($injured->id, $lineup['slots']);

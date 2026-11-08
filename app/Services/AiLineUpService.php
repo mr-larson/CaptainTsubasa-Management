@@ -6,6 +6,7 @@ use App\Enums\TeamStyle;
 use App\Helpers\FormationHelper;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameInjury;
+use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GamePositionTraining;
 use App\Models\GameSaves\GameSanction;
 use App\Models\GameSaves\GameSave;
@@ -36,6 +37,23 @@ class AiLineUpService
         TeamStyle::TACTICAL_COUNTER => [1 => 1, 2 => 1, 4 => 1],
     ];
     private const ZONE_POSITIONS = ['GK', 'DEF', 'MID', 'MID', 'ATT'];
+
+    public function prepareScheduledTeams(GameSave $gameSave, int $week): void
+    {
+        if ($gameSave->hasPendingMidseasonBreak()) return;
+
+        $teamIds = GameMatch::where('game_save_id', $gameSave->id)
+            ->where('week', $week)
+            ->where('status', 'scheduled')
+            ->get(['home_team_id', 'away_team_id'])
+            ->flatMap(fn ($match) => [$match->home_team_id, $match->away_team_id])
+            ->unique()
+            ->all();
+
+        if ($teamIds) {
+            $this->adjustLineupsForWeek($gameSave, $teamIds);
+        }
+    }
 
     /**
      * Ajuste le lineup de toutes les équipes IA avant un match.
