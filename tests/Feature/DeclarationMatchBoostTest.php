@@ -61,6 +61,34 @@ class DeclarationMatchBoostTest extends TestCase
         $this->assertSame([], $modifiers->getMatchStatModifiers($save->fresh(), $team->id, $next->id)['players']);
     }
 
+    public function test_deserved_praise_boosts_only_the_next_match(): void
+    {
+        $save = $this->makeSave(['week' => 2]);
+        [$team, $players] = $this->makeTeamWithSquad($save);
+        [$opponent] = $this->makeTeamWithSquad($save);
+        $player = $players->first();
+        $this->makeMatch($save, $team, $opponent, [
+            'status' => 'played',
+            'match_stats' => ['players' => [$player->id => ['duelsWon' => 2, 'duelsLost' => 1]]],
+        ]);
+        $next = $this->makeMatch($save, $team, $opponent, ['week' => 2]);
+        $later = $this->makeMatch($save, $opponent, $team, ['week' => 3]);
+
+        $result = app(DeclarationService::class)->declare($save, $player, 'praise', $team->id);
+
+        $this->assertSame('match_boost', $result->outcome);
+        $this->assertEquals(64, $player->fresh()->morale);
+        $this->assertEquals(8, $player->fresh()->coach_affinity);
+        $modifiers = app(BonusCardActivationService::class);
+        $this->assertSame([
+            $player->id => ['attack' => 2, 'defense' => 2, 'speed' => 2],
+        ], $modifiers->getMatchStatModifiers($save, $team->id, $next->id)['players']);
+        $this->assertSame([], $modifiers->getMatchStatModifiers($save, $team->id, $later->id)['players']);
+
+        app(MatchSimulator::class)->simulateMatchesCollection(collect([$next]), $save);
+        $this->assertSame([], $modifiers->getMatchStatModifiers($save->fresh(), $team->id, $next->id)['players']);
+    }
+
     public function test_criticism_can_cost_morale_and_boost_only_the_next_match(): void
     {
         $save = $this->makeSave();

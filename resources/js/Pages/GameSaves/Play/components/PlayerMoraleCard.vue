@@ -86,6 +86,7 @@ const lastDeclarationSummary = computed(() => {
     const d = lastDeclaration.value;
     if (!d) return null;
     if (d.outcome === 'match_malus') return { text: '📣 Félicité — relâchement', positive: false };
+    if (d.type === 'praise' && d.outcome === 'match_boost') return { text: '📣 Félicité — bonus au prochain match', positive: true };
     if (d.type === 'praise') return { text: '📣 Félicité', positive: true };
     if (d.outcome === 'match_boost') return { text: '📢 Critiqué — réaction d’orgueil, −3 moral', positive: false };
     if (d.outcome === 'proud_reaction') return { text: '📢 Critiqué — réaction d\'orgueil', positive: true };
@@ -192,7 +193,7 @@ const lastDeclarationSummary = computed(() => {
                     <button type="button"
                             @click="emit('make-declaration', player, 'praise')"
                             class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-2xs font-bold border border-emerald-300 bg-white text-emerald-600 hover:bg-emerald-50 transition-all"
-                            title="En forme : +8 relation et +4 moral. Après un match avec plus de duels perdus que gagnés, 25 % de risque de relâchement (−2 en attaque, défense et vitesse au prochain match). Hors de ces cas : +4 relation.">
+                            title="Après un match avec plus de duels gagnés que perdus, +8 relation, +4 moral et +2 en attaque, défense et vitesse au prochain match. Avec plus de duels perdus que gagnés, 25 % de risque de relâchement (−2 en attaque, défense et vitesse au prochain match). Dans les autres cas, +4 relation.">
                         📣 Féliciter
                     </button>
                     <button type="button"

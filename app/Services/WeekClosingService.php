@@ -81,6 +81,8 @@ class WeekClosingService
 
         // 5. Semaine suivante : la main repasse au joueur du siège 1.
         $gameSave->week = max((int) ($gameSave->week ?? 1), $week + 1);
+        $seasonService = app(SeasonService::class);
+        $seasonService->scheduleMidseasonBreak($gameSave, $week);
         $firstHuman = $gameSave->controlledGameTeams()->first();
         if ($firstHuman) {
             $gameSave->controlled_game_team_id = $firstHuman->id;
@@ -99,6 +101,7 @@ class WeekClosingService
         // 6. Coupe du Monde : progression du tournoi au lieu de la fin de saison.
         if ($gameSave->competition_type === 'world_cup') {
             app(TournamentService::class)->advance($gameSave);
+            app(AiCoachService::class)->prepareForWeek($gameSave, $week);
             return self::OUTCOME_PLAY;
         }
 
@@ -109,11 +112,12 @@ class WeekClosingService
             return self::OUTCOME_GAME_OVER;
         }
 
-        $seasonService = app(SeasonService::class);
         if ($seasonService->isSeasonOver($gameSave)) {
             $seasonService->endSeason($gameSave);
             return self::OUTCOME_SEASON_END;
         }
+
+        app(AiCoachService::class)->prepareForWeek($gameSave, $week);
 
         return self::OUTCOME_PLAY;
     }

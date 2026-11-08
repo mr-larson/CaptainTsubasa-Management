@@ -163,9 +163,8 @@ class FoulAndInjuryService
         DB::transaction(function () use ($gameSave, $match, $playerId, $week, $suspensionEnabled) {
             // Le 3e jaune est stocké en 'double_yellow' : il doit compter, sinon
             // le cumul reste bloqué à 2 et chaque jaune suivant suspend.
-            $yellowCount = GameSanction::where('game_save_id', $gameSave->id)
+            $yellowCount = GameSanction::currentYellowCardCycle($gameSave)
                 ->where('game_player_id', $playerId)
-                ->whereIn('type', ['yellow', 'double_yellow'])
                 ->count();
 
             $newCount = $yellowCount + 1;

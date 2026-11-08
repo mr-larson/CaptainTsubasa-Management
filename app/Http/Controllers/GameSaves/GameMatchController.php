@@ -20,6 +20,7 @@ use App\Services\FoulAndInjuryService;
 use App\Services\DeclarationService;
 use App\Services\PostMatchProgressionService;
 use App\Services\SeasonChallengeService;
+use App\Services\SeasonService;
 use App\Services\WeekClosingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -35,9 +36,12 @@ class GameMatchController extends Controller
     /**
      * Écran de match jouable pour une session.
      */
-    public function match(Request $request, GameSave $gameSave): Response
+    public function match(Request $request, GameSave $gameSave): Response|RedirectResponse
     {
         $this->authorizeGameSave('view', $gameSave);
+        if ($gameSave->hasPendingMidseasonBreak()) {
+            return redirect()->route('game-saves.Play', $gameSave);
+        }
 
         // Équipe jouée = joueur ACTIF (hot-seat), repli sur l'équipe propriétaire.
         $controlledGameTeam = ($gameSave->controlled_game_team_id
@@ -228,7 +232,7 @@ class GameMatchController extends Controller
         return $this->withSaveLock($gameSave, function (GameSave $gameSave) use ($match, $data, $homeTeamId, $awayTeamId, $homeScore, $awayScore) {
             $match->refresh();
 
-            if ($match->status === 'played' || ! $gameSave->isInMatchPhase()) {
+            if ($match->status === 'played' || ! $gameSave->isInMatchPhase() || $gameSave->hasPendingMidseasonBreak()) {
                 return redirect()->route('game-saves.Play', $gameSave);
             }
 
@@ -388,6 +392,14 @@ class GameMatchController extends Controller
                 return redirect()->route('game-saves.Play', $gameSave);
             }
 
+            if ($request->boolean('midseason_break')) {
+                app(SeasonService::class)->completeMidseasonBreak($gameSave);
+                return redirect()->route('game-saves.Play', $gameSave);
+            }
+            if ($gameSave->hasPendingMidseasonBreak()) {
+                return redirect()->route('game-saves.Play', $gameSave);
+            }
+
             // Hot-seat : on ne simule jamais le match d'un manager humain. Si
             // l'un d'eux doit encore jouer, la main lui passe.
             $nextHuman = $this->nextHumanWithPendingMatch($gameSave, $week);
@@ -460,14 +472,14 @@ class GameMatchController extends Controller
         // (résolus via base_player_id → player_links).
         $duoPartners = $this->duoPartnersFor($contracts);
 
-        $starters = $contracts->sortByDesc('is_starter')->values();
+        $starters = $contracts->sortByDesc('is_starter')->unique('game_player_id')->values();
         $ordered   = collect();
 
         if ($teamLineup) {
             for ($slot = 1; $slot <= 11; $slot++) {
                 $pid = $teamLineup[$slot] ?? null;
                 if ($pid) {
-                    $c = $starters->firstWhere('game_player_id', $pid);
+                    $c = $starters->where('is_starter', true)->firstWhere('game_player_id', $pid);
                     if ($c) {
                         $ordered->push([$slot, $c]);
                         $starters = $starters->reject(fn($cc) => $cc->id === $c->id)->values();
@@ -536,8 +548,11 @@ class GameMatchController extends Controller
             ];
         })->values();
 
-        $subContracts = $team->contracts
+        $startingPlayerIds = $starters11->pluck('id')->filter();
+        $subContracts = $contracts
             ->filter(fn($c) => !$c->is_starter && $c->gamePlayer)
+            ->whereNotIn('game_player_id', $startingPlayerIds)
+            ->unique('game_player_id')
             ->values();
         $subs = $subContracts->map(function ($c) use ($unavailableIds, $statMods, $duoPartners) {
             $p = $c->gamePlayer;

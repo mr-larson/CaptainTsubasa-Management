@@ -25,6 +25,7 @@ const props = defineProps({
     nextMatch:      { type: Object, default: null },
     nextMatchInfo:  { type: Object, default: null },
     isByeWeek:      { type: Boolean, required: true },
+    midseasonBreakRecovery: { type: Number, default: null },
     teamById:       { type: Object, required: true },
     saving:         { type: Boolean, required: true },
     simulating:     { type: Boolean, default: false },
@@ -370,12 +371,24 @@ const hasPlayed = computed(() => matchesPlayed.value > 0);
         <!-- ============================================ -->
         <div class="rounded-xl overflow-hidden bg-slate-50"
              :class="{
-         'border-2 border-teal-400':   !isByeWeek && nextMatchInfo?.isHome,
-         'border-2 border-orange-400': !isByeWeek && !nextMatchInfo?.isHome,
-         'border border-slate-200':    isByeWeek,
+         'border-2 border-teal-400':   midseasonBreakRecovery === null && !isByeWeek && nextMatchInfo?.isHome,
+         'border-2 border-orange-400': midseasonBreakRecovery === null && !isByeWeek && !nextMatchInfo?.isHome,
+         'border border-slate-200':    isByeWeek || midseasonBreakRecovery !== null,
      }">
 
-            <div v-if="!isByeWeek && nextMatch && nextMatchInfo" class="p-1.5">
+            <div v-if="midseasonBreakRecovery !== null" class="p-5 flex flex-wrap items-center justify-between gap-4">
+                <div>
+                    <div class="text-sm font-bold text-slate-700">Trêve de mi-saison</div>
+                    <div class="mt-1 text-xs text-slate-600">
+                        Une semaine sans match. Tous les joueurs récupèrent jusqu’à {{ midseasonBreakRecovery }} points
+                        d’endurance et le compteur de cartons jaunes repart à zéro.
+                    </div>
+                </div>
+                <ButtonSecondary :disabled="simulating" @click="emit('simulate-week')">
+                    Terminer la trêve
+                </ButtonSecondary>
+            </div>
+            <div v-else-if="!isByeWeek && nextMatch && nextMatchInfo" class="p-1.5">
                 <!-- Label -->
                 <div class="text-center">
             <span class="text-2xs font-bold uppercase tracking-widest"

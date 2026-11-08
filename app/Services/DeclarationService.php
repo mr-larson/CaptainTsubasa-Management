@@ -22,6 +22,7 @@ class DeclarationService
     const PRAISE_DESERVED_MORALE     = 4;
     const PRAISE_UNDESERVED_AFFINITY = 4; // sonne creux : effet réduit, pas de moral
     private const PRAISE_MALUS_CHANCE = 25;
+    private const PRAISE_MATCH_BOOST = ['attack' => 2, 'defense' => 2, 'speed' => 2];
     private const MATCH_MALUS = ['attack' => -2, 'defense' => -2, 'speed' => -2];
 
     // Critiquer un joueur en méforme : électrochoc ou mal vécu
@@ -61,7 +62,9 @@ class DeclarationService
             $outcome       = 'well_received';
             $affinityDelta = $deserved ? self::PRAISE_DESERVED_AFFINITY : self::PRAISE_UNDESERVED_AFFINITY;
             $moraleDelta   = $deserved ? self::PRAISE_DESERVED_MORALE : 0;
-            if ($duelBalance < 0 && $this->roll() <= self::PRAISE_MALUS_CHANCE
+            if ($deserved && $this->queueMatchModifier($gameSave, $player, $teamId, $week, self::PRAISE_MATCH_BOOST)) {
+                $outcome = 'match_boost';
+            } elseif ($duelBalance < 0 && $this->roll() <= self::PRAISE_MALUS_CHANCE
                 && $this->queueMatchModifier($gameSave, $player, $teamId, $week, self::MATCH_MALUS)) {
                 $outcome = 'match_malus';
                 $affinityDelta = 0;

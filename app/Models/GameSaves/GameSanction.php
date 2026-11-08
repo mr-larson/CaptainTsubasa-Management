@@ -28,6 +28,15 @@ class GameSanction extends Model
         'yellow_card_count' => 'integer',
     ];
 
+    public function scopeCurrentYellowCardCycle($query, GameSave $gameSave)
+    {
+        $break = $gameSave->state['midseason_break'] ?? [];
+
+        return $query->where('game_save_id', $gameSave->id)
+            ->whereIn('type', ['yellow', 'double_yellow'])
+            ->when($break['completed'] ?? false, fn ($query) => $query->where('week_match', '>=', $break['return_week']));
+    }
+
     public function gamePlayer(): BelongsTo
     {
         return $this->belongsTo(GamePlayer::class);

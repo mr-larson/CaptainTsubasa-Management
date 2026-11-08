@@ -30,6 +30,32 @@ class HotSeatMatchAndLineupTest extends TestCase
         $this->assertSame('both', $response->viewData('page')['props']['engineConfig']['controlMode']);
     }
 
+    public function test_match_does_not_duplicate_a_player_from_a_stale_lineup_on_the_bench(): void
+    {
+        $save = $this->makeSave();
+        [$mine] = $this->makeTeamWithSquad($save, ['is_controlled' => true]);
+        [$opponent, $players] = $this->makeTeamWithSquad($save, [], 13);
+        $benched = $players[1];
+        $replacement = $players[11];
+        $fallback = $players[2];
+        $benched->contracts()->update(['is_starter' => false]);
+        $fallback->contracts()->update(['is_starter' => false]);
+        $replacement->contracts()->update(['is_starter' => true]);
+        $slots = $players->take(11)->values()->mapWithKeys(fn ($player, $index) => [$index + 1 => $player->id])->all();
+        $save->update([
+            'controlled_game_team_id' => $mine->id,
+            'state' => ['lineup' => [$opponent->id => ['slots' => $slots]]],
+        ]);
+        $this->makeMatch($save, $mine, $opponent);
+
+        $response = $this->actingAs($save->user)->get(route('game-saves.match', $save))->assertOk();
+        $roster = collect($response->viewData('page')['props']['engineConfig']['teams']['external']['players']);
+
+        $this->assertTrue($roster->firstWhere('id', $replacement->id)['is_starter']);
+        $ids = $roster->pluck('id')->filter();
+        $this->assertSame($ids->count(), $ids->unique()->count());
+    }
+
     public function test_lineup_of_another_team_cannot_be_changed(): void
     {
         $save = $this->makeSave();

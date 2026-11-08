@@ -834,8 +834,7 @@ class GameSaveController extends Controller
         // Jaunes du cycle en cours (vers la prochaine suspension). Les sanctions
         // sont purgées à l'intersaison, donc tout est de la saison courante.
         $suspensionOn3Yellows = (bool) $gameSave->getConfig('suspension_on_3_yellows', true);
-        $activeYellowCards = GameSanction::where('game_save_id', $gameSave->id)
-            ->whereIn('type', ['yellow', 'double_yellow'])
+        $activeYellowCards = GameSanction::currentYellowCardCycle($gameSave)
             ->get()
             ->groupBy('game_player_id')
             ->map(fn($cards) => $suspensionOn3Yellows ? $cards->count() % 3 : $cards->count())
@@ -955,6 +954,7 @@ class GameSaveController extends Controller
         );
 
         return Inertia::render('GameSaves/Play', [
+            'midseasonBreakRecovery' => $gameSave->hasPendingMidseasonBreak() ? SeasonService::MIDSEASON_RECOVERY : null,
             'contractSeasonEndWeek' => $canRenewContracts ? SeasonService::lengthForTeamCount($gameTeams->count()) : null,
             'gameSave'            => $gameSave,
             'managementStats'     => $managementStats,

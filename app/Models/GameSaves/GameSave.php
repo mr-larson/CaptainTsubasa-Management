@@ -143,6 +143,14 @@ class GameSave extends Model
         return in_array($this->phase ?? 'season', self::MATCH_PHASES, true);
     }
 
+    public function hasPendingMidseasonBreak(): bool
+    {
+        $break = $this->state['midseason_break'] ?? [];
+
+        return (int) ($break['return_week'] ?? 0) === (int) $this->week
+            && !($break['completed'] ?? true);
+    }
+
     public const DEFAULT_CONFIG = [
         'bonus_cards_enabled'       => true,
         'malus_cards_enabled'       => true,

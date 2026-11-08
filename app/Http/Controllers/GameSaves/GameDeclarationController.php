@@ -54,7 +54,9 @@ class GameDeclarationController extends Controller
             }
 
             $message = match ($result->outcome) {
-                'match_boost' => 'Réaction d’orgueil : +3 en attaque, défense et vitesse pour le prochain match, −3 de moral.',
+                'match_boost' => $result->type === 'praise'
+                    ? 'Félicitations méritées : +2 en attaque, défense et vitesse pour le prochain match.'
+                    : 'Réaction d’orgueil : +3 en attaque, défense et vitesse pour le prochain match, −3 de moral.',
                 'match_malus' => 'Relâchement : −2 en attaque, défense et vitesse pour le prochain match.',
                 default => 'Déclaration faite.',
             };

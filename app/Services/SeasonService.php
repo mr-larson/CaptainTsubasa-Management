@@ -10,11 +10,13 @@ use App\Models\GameSaves\GamePromise;
 use App\Models\GameSaves\GameSanction;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
+use Illuminate\Support\Facades\DB;
 
 class SeasonService
 {
     public const RANK_PRIZE_BASE = 6000;
     public const RANK_PRIZE_STEP = 400;
+    public const MIDSEASON_RECOVERY = 20;
 
     /**
      * Nombre de semaines d'une saison aller-retour pour N équipes. Avec un
@@ -35,6 +37,32 @@ class SeasonService
     public function isSeasonOver(GameSave $gameSave): bool
     {
         return ($gameSave->week ?? 1) > $this->getSeasonLength($gameSave);
+    }
+
+    public function scheduleMidseasonBreak(GameSave $gameSave, int $closedWeek): void
+    {
+        if ($gameSave->competition_type === 'world_cup' || $closedWeek * 2 !== $this->getSeasonLength($gameSave)) {
+            return;
+        }
+
+        $state = $gameSave->state ?? [];
+        $state['midseason_break'] ??= ['return_week' => $closedWeek + 1, 'completed' => false];
+        $gameSave->state = $state;
+    }
+
+    public function completeMidseasonBreak(GameSave $gameSave): void
+    {
+        if (!$gameSave->hasPendingMidseasonBreak()) return;
+
+        $recovery = self::MIDSEASON_RECOVERY;
+        GamePlayer::where('game_save_id', $gameSave->id)
+            ->where('stamina', '<', 100)
+            ->update(['stamina' => DB::raw("CASE WHEN stamina + {$recovery} > 100 THEN 100 ELSE stamina + {$recovery} END")]);
+
+        $state = $gameSave->state;
+        $state['midseason_break']['completed'] = true;
+        $gameSave->state = $state;
+        $gameSave->save();
     }
 
     /**
@@ -220,7 +248,7 @@ class SeasonService
         $gameSave->phase  = 'intersaison_draft';
 
         $state = $gameSave->state ?? [];
-        unset($state['lineup'], $state['declaration_match_boosts']);
+        unset($state['lineup'], $state['declaration_match_boosts'], $state['midseason_break']);
         // Tous les contrats ont expiré : les signatures d'agents libres de la
         // saison passée n'ont plus lieu d'être (et bornent la taille du state).
         unset($state['free_agent_signings']);

@@ -46,6 +46,7 @@ import CareerMandateCard from '@/Pages/GameSaves/Play/CareerMandateCard.vue';
 const props = defineProps({
     gameSave:          { type: Object, required: true },
     contractSeasonEndWeek: { type: Number, default: null },
+    midseasonBreakRecovery: { type: Number, default: null },
     teams:             { type: Array,  required: true },
     freePlayers:       { type: Array,  required: true },
     matches:           { type: Array,  required: true },
@@ -520,7 +521,7 @@ const simulateWeek   = () => {
     // `week` sert de clé d'idempotence côté serveur (double clic).
     router.post(
         route('game-saves.simulate-week', { gameSave: props.gameSave.id }),
-        { week: props.gameSave.week },
+        { week: props.gameSave.week, midseason_break: props.midseasonBreakRecovery !== null },
         { preserveScroll: true, preserveState: false, onFinish: () => { simulating.value = false; } },
     );
 };
@@ -608,6 +609,7 @@ const saveGame = () => {
                                   :nextMatch="nextMatch"
                                   :nextMatchInfo="nextMatchInfo"
                                   :isByeWeek="isByeWeek"
+                                  :midseasonBreakRecovery="props.midseasonBreakRecovery"
                                   :teamById="teamById"
                                   :saving="saving"
                                   :simulating="simulating"
