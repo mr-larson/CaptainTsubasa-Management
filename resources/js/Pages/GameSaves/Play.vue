@@ -45,6 +45,7 @@ import CareerMandateCard from '@/Pages/GameSaves/Play/CareerMandateCard.vue';
 // ==========================
 const props = defineProps({
     gameSave:          { type: Object, required: true },
+    playerChemistry:  { type: Object, default: () => ({}) },
     contractSeasonEndWeek: { type: Number, default: null },
     midseasonBreakRecovery: { type: Number, default: null },
     teams:             { type: Array,  required: true },
@@ -644,6 +645,7 @@ const saveGame = () => {
                     <TabMyTeam v-else-if="activeTab === 'my-team'"
                                :rosterWithStatus="rosterWithStatus"
                                :selectedMyPlayer="selectedMyPlayer"
+                               :playerChemistry="props.playerChemistry"
                                :currentFormation="currentFormation"
                                :formationData="formationData"
                                :miniPitchMarkerStyle="miniPitchMarkerStyle"

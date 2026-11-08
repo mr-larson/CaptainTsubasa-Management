@@ -58,6 +58,32 @@ export function computePlaytime(startersByTeam, substitutions, totalTurns, exitT
     return playtime;
 }
 
+export function computePresence(startingSlots, substitutions, totalTurns, exitTurns = {}) {
+    const presence = { home: [], away: [] };
+    for (const [team, side] of [["internal", "home"], ["external", "away"]]) {
+        const active = new Map();
+        startingSlots[team].forEach((id, index) => {
+            if (id != null) active.set(index + 1, { id, slot: index + 1, from: 0 });
+        });
+        const closeSlot = (slot, turn) => {
+            const segment = active.get(slot);
+            if (!segment) return;
+            const to = Math.min(turn, exitTurns[segment.id] ?? totalTurns);
+            if (to > segment.from) presence[side].push({ ...segment, to });
+            active.delete(slot);
+        };
+        for (const change of substitutions) {
+            if (change.team !== team) continue;
+            closeSlot(change.outSlot, change.turn);
+            if (change.inPlayerId != null) {
+                active.set(change.outSlot, { id: change.inPlayerId, slot: change.outSlot, from: change.turn });
+            }
+        }
+        for (const slot of active.keys()) closeSlot(slot, totalTurns);
+    }
+    return presence;
+}
+
 export function buildMatchStats(events, goalEvents = []) {
     const out = {
         players: {},
@@ -173,6 +199,9 @@ export function orientToHomeAway(matchStats, internalIsHome = true) {
     }
     if (matchStats.starters) {
         out.starters = { home: matchStats.starters.away ?? [], away: matchStats.starters.home ?? [] };
+    }
+    if (matchStats.presence) {
+        out.presence = { home: matchStats.presence.away, away: matchStats.presence.home };
     }
     if (Array.isArray(matchStats.events)) {
         out.events = matchStats.events.map((ev) => {

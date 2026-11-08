@@ -176,6 +176,7 @@ class MatchSimulator
         // Progression post-match pour les joueurs IA
         if ($gameSave) {
             app(PostMatchProgressionService::class)->applyForMatch($gameSave, $m);
+            app(PlayerChemistryService::class)->recordMatch($gameSave, $m, simulated: true);
             app(DeclarationService::class)->consumeMatchBoosts($gameSave, $m->id);
         }
 

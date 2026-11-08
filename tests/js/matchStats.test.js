@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { buildMatchStats, computePlaytime, orientToHomeAway } from '../../resources/js/Pages/Match/engine/matchStats.js';
+import { buildMatchStats, computePlaytime, computePresence, orientToHomeAway } from '../../resources/js/Pages/Match/engine/matchStats.js';
+import { RosterService } from '../../resources/js/Pages/Match/engine/RosterService.js';
 
 describe('computePlaytime', () => {
     it("donne le match complet aux titulaires sans incident", () => {
@@ -84,4 +85,33 @@ describe('orientToHomeAway', () => {
         expect(out.players).toBe(s.players);   // clés par joueur : inchangées
         expect(s.teams.home.goals).toBe(2);    // entrée non modifiée
     });
+});
+
+it('conserve les créneaux et les postes distincts après remplacement et inversion du terrain', () => {
+    const presence = computePresence(
+        { internal: [null, 2, 3], external: [9] },
+        [{ team: 'internal', outSlot: 2, inPlayerId: 4, turn: 12 }],
+        30,
+        { 3: 20 },
+    );
+    expect(orientToHomeAway({ presence }, false).presence.away).toEqual([
+        { id: 2, slot: 2, from: 0, to: 12 },
+        { id: 3, slot: 3, from: 0, to: 20 },
+        { id: 4, slot: 2, from: 12, to: 30 },
+    ]);
+});
+
+it('réserve le une-deux acquis aux joueurs de même ligne ou de lignes voisines', () => {
+    const defender = { id: 2, duoPartners: [{ id: 3, learned: true }] };
+    const partner = { id: 3 };
+    const internal = new Map([[2, defender], [11, partner]]);
+    const roster = new RosterService({ rosters: { internal }, formations: { internal: '4-2-2-2' } });
+
+    expect(roster.getDuoPartnerOnField('internal', 2)).toBeNull();
+    internal.delete(11);
+    internal.set(6, partner);
+    expect(roster.getDuoPartnerOnField('internal', 2)?.slot).toBe(6);
+    internal.delete(6);
+    internal.set(3, partner);
+    expect(roster.getDuoPartnerOnField('internal', 2)?.slot).toBe(3);
 });

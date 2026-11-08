@@ -49,7 +49,7 @@ import {
     resetCaptainRerollActionFlag,
 } from './engine/resolvers.js';
 
-import { buildMatchStats, computePlaytime, orientToHomeAway } from './engine/matchStats.js';
+import { buildMatchStats, computePlaytime, computePresence, orientToHomeAway } from './engine/matchStats.js';
 import { runShootout } from './engine/shootout.js';
 import { attackPrompt, defensePrompt } from './engine/turnPrompt.js';
 
@@ -763,6 +763,10 @@ export function initMatchEngine(rootEl, config = {}) {
             payload.match_stats.playtime = computePlaytime(
                 state.startersByTeam, state.substitutions, state.turns, state.exitTurns
             );
+            payload.match_stats.presence_turns = state.turns;
+            payload.match_stats.presence = computePresence(
+                state.startingSlots, state.substitutions, state.turns, state.exitTurns
+            );
             // Repère domicile / extérieur (l'humain peut jouer à l'extérieur)
             payload.match_stats = orientToHomeAway(payload.match_stats, internalIsHome);
             matchConfig.onMatchEnd(payload);
@@ -815,12 +819,14 @@ export function initMatchEngine(rootEl, config = {}) {
         // 11 de départ figé (avant tout remplacement) : sert au calcul du temps
         // de jeu par joueur et à la promesse de titularisation. Un titulaire
         // indisponible (blessé, suspendu, consigné) n'a pas joué.
-        const startersOf = (team) => Array.from({ length: 11 }, (_, i) => roster.getPlayerInfo(team, i + 1))
-            .filter(info => info?.id != null && info.isAvailable !== false)
-            .map(info => info.id);
+        const startersOf = (team) => Array.from({ length: 11 }, (_, i) => {
+            const info = roster.getPlayerInfo(team, i + 1);
+            return info?.id != null && info.isAvailable !== false ? info.id : null;
+        });
+        state.startingSlots = { internal: startersOf("internal"), external: startersOf("external") };
         state.startersByTeam = {
-            internal: startersOf("internal"),
-            external: startersOf("external"),
+            internal: state.startingSlots.internal.filter(id => id !== null),
+            external: state.startingSlots.external.filter(id => id !== null),
         };
 
         applyKickoffPositions(basePositions);

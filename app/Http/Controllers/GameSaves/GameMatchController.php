@@ -20,6 +20,7 @@ use App\Services\CareerObjectiveService;
 use App\Services\FoulAndInjuryService;
 use App\Services\DeclarationService;
 use App\Services\PostMatchProgressionService;
+use App\Services\PlayerChemistryService;
 use App\Services\SeasonChallengeService;
 use App\Services\SeasonService;
 use App\Services\WeekClosingService;
@@ -275,6 +276,7 @@ class GameMatchController extends Controller
 
             // Instantané des effectifs : l'historique reste juste après les transferts.
             if (is_array($stats)) {
+                unset($stats['chemistry_recorded']);
                 $stats['lineups'] = app(\App\Services\MatchLineupSnapshot::class)->build($match);
             }
 
@@ -306,6 +308,7 @@ class GameMatchController extends Controller
 
             // 4. Progression post-match (joueurs de ce match)
             app(PostMatchProgressionService::class)->applyForMatch($gameSave, $match);
+            app(PlayerChemistryService::class)->recordMatch($gameSave, $match);
             $gameSave->refresh();
             app(DeclarationService::class)->consumeMatchBoosts($gameSave, $match->id);
             app(SeasonChallengeService::class)->payCompleted($gameSave, [(int) $homeTeamId, (int) $awayTeamId]);
@@ -481,7 +484,7 @@ class GameMatchController extends Controller
 
         // Duos d'alchimie : partenaires « une-deux » présents dans la même équipe
         // (résolus via base_player_id → player_links).
-        $duoPartners = $this->duoPartnersFor($contracts);
+        $duoPartners = $this->duoPartnersFor($gameSave, $contracts);
 
         $starters = $contracts->sortByDesc('is_starter')->unique('game_player_id')->values();
         $ordered   = collect();
@@ -598,7 +601,7 @@ class GameMatchController extends Controller
      * (le une-deux exige les deux joueurs dans la même équipe) :
      * [game_player_id => [['id' => game_player_id partenaire, 'label' => ?string], …]].
      */
-    private function duoPartnersFor(\Illuminate\Support\Collection $contracts): array
+    private function duoPartnersFor(GameSave $gameSave, \Illuminate\Support\Collection $contracts): array
     {
         $players = $contracts->map(fn ($c) => $c->gamePlayer)->filter();
 
@@ -608,13 +611,8 @@ class GameMatchController extends Controller
                 $gameIdsByBase[$p->base_player_id][] = $p->id;
             }
         }
-        if (empty($gameIdsByBase)) {
-            return [];
-        }
-
         $partnerMap = PlayerLink::partnerMapFor(array_keys($gameIdsByBase));
-
-        $result = [];
+        $result = app(PlayerChemistryService::class)->confirmedPartners($gameSave, $players->pluck('id')->all());
         foreach ($players as $p) {
             foreach ($partnerMap[$p->base_player_id] ?? [] as $entry) {
                 foreach ($gameIdsByBase[$entry['partner_id']] ?? [] as $partnerGameId) {

@@ -180,12 +180,17 @@ export class RosterService {
         const partners = info?.duoPartners ?? [];
         if (!info?.id || !partners.length) return null;
 
+        const ranks = { DF: 0, MF: 1, FW: 2 };
+        const rank = ranks[this.getSlotRole(team, slotNumber)];
         for (let slot = 1; slot <= 11; slot++) {
             if (slot === slotNumber) continue;
             const other = this.getPlayerInfo(team, slot);
             if (!other?.id || other.isAvailable === false) continue;
             const match = partners.find(d => d?.id === other.id);
-            if (match) return { slot, label: match.label ?? null, partnerInfo: other };
+            const partnerRank = ranks[this.getSlotRole(team, slot)];
+            if (match && (!match.learned || Math.abs(rank - partnerRank) <= 1)) {
+                return { slot, label: match.label ?? null, partnerInfo: other };
+            }
         }
         return null;
     }

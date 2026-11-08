@@ -100,6 +100,7 @@ class WeekClosingService
         if ($gameSave->competition_type === 'world_cup') {
             app(TournamentService::class)->advance($gameSave);
             app(AiCoachService::class)->prepareForWeek($gameSave, $week);
+            app(PlayerChemistryService::class)->attemptForAiTeams($gameSave);
             return self::OUTCOME_PLAY;
         }
 
@@ -116,6 +117,7 @@ class WeekClosingService
         }
 
         app(AiCoachService::class)->prepareForWeek($gameSave, $week);
+        app(PlayerChemistryService::class)->attemptForAiTeams($gameSave);
 
         return self::OUTCOME_PLAY;
     }

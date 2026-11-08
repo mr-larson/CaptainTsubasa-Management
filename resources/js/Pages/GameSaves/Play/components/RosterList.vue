@@ -51,12 +51,17 @@ const staminaOf = (p) => p.stamina ?? p.stats?.stamina ?? 0;
 
 // Duos d'alchimie : badge 🤝 quand le partenaire de duo est dans le même
 // effectif (débloque l'action une-deux en match).
-const duoLinks = usePage().props.duoLinks ?? {};
+const page = usePage();
 const rosterBaseIds = computed(() =>
     new Set(props.players.map(p => p.base_player_id).filter(Boolean))
 );
-const duoInfo = (p) =>
-    (duoLinks[p.base_player_id] ?? []).find(d => rosterBaseIds.value.has(d.partner_base_id)) ?? null;
+const rosterById = computed(() => new Map(props.players.map(player => [player.id, player])));
+const duoInfo = (p) => {
+    const learned = (page.props.learnedDuos?.[p.id] ?? []).find(duo => rosterById.value.has(duo.id));
+    if (learned) return { label: learned.label, partner_name: rosterById.value.get(learned.id).lastname };
+
+    return (page.props.duoLinks?.[p.base_player_id] ?? []).find(d => rosterBaseIds.value.has(d.partner_base_id)) ?? null;
+};
 const duoTitle = (p) => {
     const d = duoInfo(p);
     return d ? `${d.label ?? 'Duo'} avec ${d.partner_name} — débloque le une-deux en match` : '';

@@ -1,4 +1,5 @@
 <script setup>
+import PlayerChemistryCard from '@/Pages/GameSaves/Play/components/PlayerChemistryCard.vue';
 import PlayerMoraleCard from '@/Pages/GameSaves/Play/components/PlayerMoraleCard.vue';
 import { fieldClass } from '@/Components/fieldStyles';
 import ButtonSecondary from '@/Components/ButtonSecondary.vue';
@@ -23,6 +24,7 @@ import { masteryFor } from './lineupMastery.js';
 import { useLineupIssues, ISSUE_CHIP } from './useLineupIssues.js';
 
 const props = defineProps({
+    playerChemistry: { type: Object, default: () => ({}) },
     rosterWithStatus:     { type: Array,   required: true },
     isPlayerInjured:      { type: Function, default: () => () => false },
     isPlayerSuspended:    { type: Function, default: () => () => false },
@@ -424,6 +426,11 @@ const slotCandidates = (slot, slotDef) => substitutes.value
                                       :currentWeek="currentWeek" :currentSeason="currentSeason"
                                       @make-promise="(p, t) => emit('make-promise', p, t)"
                                       @make-declaration="(p, t) => emit('make-declaration', p, t)" />
+
+                    <PlayerChemistryCard :key="selectedMyPlayer.id"
+                                         :gameSaveId="gameSaveId"
+                                         :playerId="selectedMyPlayer.id"
+                                         :relations="playerChemistry[selectedMyPlayer.id] ?? []" />
 
                     <!-- Radar + Barres -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">

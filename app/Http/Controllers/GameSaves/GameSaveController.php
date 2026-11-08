@@ -29,6 +29,7 @@ use App\Services\SeasonChallengeService;
 use App\Services\DraftService;
 use App\Services\MoraleService;
 use App\Services\PlayerMoraleSummary;
+use App\Services\PlayerChemistryService;
 use App\Services\NationalTeamAssembler;
 use App\Services\SeasonService;
 use App\Services\PlayerStatsService;
@@ -957,12 +958,18 @@ class GameSaveController extends Controller
                 ->all()
         );
 
+        $chemistry = app(PlayerChemistryService::class);
+        $clubPlayers = $controlledTeam?->contracts->pluck('gamePlayer')->filter() ?? collect();
+        $rosterIds = $gameTeams->flatMap(fn ($team) => $team->contracts->pluck('game_player_id'))->unique()->all();
+
         return Inertia::render('GameSaves/Play', [
             'midseasonBreakRecovery' => $gameSave->hasPendingMidseasonBreak() ? SeasonService::MIDSEASON_RECOVERY : null,
             'contractSeasonEndWeek' => $canRenewContracts ? SeasonService::lengthForTeamCount($gameTeams->count()) : null,
             'gameSave'            => $gameSave,
             'managementStats'     => $managementStats,
             'duoLinks'            => $duoLinks,
+            'playerChemistry'      => $chemistry->summary($gameSave, $clubPlayers),
+            'learnedDuos'          => $chemistry->confirmedPartners($gameSave, $rosterIds),
             'teams'               => $gameTeams,
             'matches'             => $matches,
             'freePlayers'         => $freePlayers,
