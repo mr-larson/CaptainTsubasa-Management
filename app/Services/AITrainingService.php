@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Enums\TeamStyle;
+use App\Models\GameSaves\GameInjury;
+use App\Models\GameSaves\GamePositionTraining;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
 use Illuminate\Support\Facades\DB;
@@ -41,6 +43,9 @@ class AITrainingService
 
         $week   = $gameSave->week ?? 1;
         $season = $gameSave->season ?? 1;
+        $unavailableIds = GameInjury::where('game_save_id', $gameSave->id)
+            ->where('week_return', '>', $week)->pluck('game_player_id')
+            ->merge(GamePositionTraining::unavailablePlayerIds($gameSave->id, $week))->all();
 
         // Toutes les équipes de la save
         $allTeams = GameTeam::where('game_save_id', $gameSave->id)
@@ -61,7 +66,14 @@ class AITrainingService
             }
 
             // Équipe IA : entraînement complet, mais chaque séance coûte de l'argent.
-            $results = $this->trainTeam($team, gainMax: 3, tacticalStyle: $team->tactical_style, gameSave: $gameSave, chargeCost: true);
+            $results = $this->trainTeam(
+                $team,
+                gainMax: (int) $gameSave->getConfig('training_gain_max'),
+                excludePlayerIds: $unavailableIds,
+                tacticalStyle: $team->tactical_style,
+                gameSave: $gameSave,
+                chargeCost: true,
+            );
 
             foreach ($results as $entry) {
                 $allEntries[] = array_merge($entry, ['team_id' => $team->id, 'team_name' => $team->name]);
@@ -115,15 +127,15 @@ class AITrainingService
         $statMax      = config('training.stat_max', 100);
         $gainMin      = $gameSave ? (int) $gameSave->getConfig('training_gain_min') : 1;
         $trainingCost = ($chargeCost && $gameSave) ? (int) $gameSave->getConfig('training_cost') : 0;
-        $trainCount   = rand(1, 3);
+        $trainCount   = $gameSave ? (int) $gameSave->getConfig('training_max_per_week') : 3;
 
-        // Priorité aux titulaires, sinon remplaçants
-        $starterContracts = $contracts->where('is_starter', true);
-        $subContracts     = $contracts->where('is_starter', false);
+        // Un titulaire doit garder une réserve pour la prochaine rencontre.
+        $stars = $team->management_philosophy === TeamStyle::PHILOSOPHY_STARS;
+        $starterReserve = $team->management_philosophy === TeamStyle::PHILOSOPHY_ECONOMIST ? 80 : 75;
 
         // Pool de joueurs éligibles (stamina suffisante + pas exclus)
         $eligiblePool = $contracts->filter(fn($c) =>
-            $c->gamePlayer->stamina >= $minStamina &&
+            $c->gamePlayer->stamina >= max($minStamina, $c->is_starter ? $starterReserve + $staminaCost : $staminaCost) &&
             !in_array($c->gamePlayer->id, $excludePlayerIds)
         );
 
@@ -140,10 +152,10 @@ class AITrainingService
                 $c->gamePlayer->stamina >= $minStamina
             );
 
-            // Préférer les titulaires
-            $starterPool = $pool->filter(fn($c) => $c->is_starter);
-            if ($starterPool->isNotEmpty()) {
-                $pool = $starterPool;
+            // Former en priorité le banc, sauf si le club mise sur ses vedettes.
+            $preferred = $pool->filter(fn ($contract) => (bool) $contract->is_starter === $stars);
+            if ($preferred->isNotEmpty()) {
+                $pool = $preferred;
             }
 
             if ($pool->isEmpty()) break;
@@ -238,7 +250,7 @@ class AITrainingService
         $values = [];
         foreach ($stats as $k) {
             $val = (int) ($player->{$k} ?? 0);
-            if ($val >= 100) continue;
+            if ($val >= 100 || $k === 'stamina') continue;
 
             // Appliquer le biais : les stats alignées au style paraissent plus basses
             if (in_array($k, $priorityStats)) {

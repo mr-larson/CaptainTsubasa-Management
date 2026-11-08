@@ -45,6 +45,24 @@ class AITrainingServiceTest extends TestCase
         $this->assertLessThan($staminaBefore, $staminaAfter);
     }
 
+    public function test_economist_trains_the_bench_and_preserves_tired_starters(): void
+    {
+        $save = $this->makeSave();
+        $save->setConfig(['training_max_per_week' => 1, 'training_gain_min' => 5, 'training_gain_max' => 5]);
+        [$team, $players] = $this->makeTeamWithSquad($save, [
+            'management_philosophy' => 'economist', 'budget' => 1000,
+        ], 12);
+        $players[0]->update(['stamina' => 70]);
+
+        $this->service->trainForWeek($save);
+
+        $sessions = $save->fresh()->state['ai_training_history'];
+        $this->assertCount(1, $sessions);
+        $this->assertSame($players[11]->id, $sessions[0]['player_id']);
+        $this->assertSame(5, $sessions[0]['gain']);
+        $this->assertSame(70, $players[0]->fresh()->stamina);
+    }
+
     public function test_training_is_idempotent_within_the_same_week(): void
     {
         $save = $this->makeSave(['week' => 1, 'season' => 1]);
