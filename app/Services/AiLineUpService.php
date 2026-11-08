@@ -148,7 +148,21 @@ class AiLineUpService
             $best = $baseline;
         }
 
-        if ($bestFormation === $current) return false;
+        $savedSlots = $state['lineup'][$team->id]['slots'] ?? [];
+        $seen = [];
+        $currentMisplaced = 0;
+        foreach ($formations[$current] as $slot => $zone) {
+            $playerId = (int) ($savedSlots[$slot] ?? 0);
+            $candidate = $candidates[self::ZONE_POSITIONS[$zone]]->get($playerId);
+            if (isset($seen[$playerId]) || !($candidate['fits'] ?? false)) {
+                $currentMisplaced++;
+            }
+            $seen[$playerId] = true;
+        }
+
+        if ($bestFormation === $current && $currentMisplaced <= $best['misplaced']) {
+            return false;
+        }
 
         $slots = $best['slots'];
         foreach ($team->contracts as $contract) {
@@ -307,6 +321,7 @@ class AiLineUpService
 
             if (!$replacement) {
                 $replacement = $availableSubs
+                    ->reject(fn ($contract) => $this->positionGroup($contract->gamePlayer->position) === 'GK')
                     ->sortByDesc(fn ($contract) => $this->readiness($contract->gamePlayer, $this->positionGroup($contract->gamePlayer->position)))
                     ->first();
             }

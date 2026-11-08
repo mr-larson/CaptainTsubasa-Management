@@ -141,6 +141,28 @@ class AiLineUpServiceTest extends TestCase
         $this->assertSame($lineup, $save->fresh()->state['lineup'][$ai->id]);
     }
 
+    public function test_ai_repairs_misplaced_players_without_changing_an_adequate_formation(): void
+    {
+        $save = $this->makeSave();
+        [$ai, $players] = $this->makeTeamWithSquad($save, ['formation' => '4-2-1-3'], 12);
+        $keeper = $players[0];
+        $defender = $players[1];
+        $midfielder = $players[5];
+        $slots = $players->take(11)->mapWithKeys(fn ($player, $index) => [$index + 1 => $player->id])->all();
+        $slots[1] = $midfielder->id;
+        $slots[2] = $keeper->id;
+        $slots[6] = $defender->id;
+        $save->update(['state' => ['lineup' => [$ai->id => ['slots' => $slots]]]]);
+
+        $this->service->adjustLineupsForWeek($save);
+
+        $lineup = $save->fresh()->state['lineup'][$ai->id];
+        $this->assertSame('4-2-1-3', $ai->fresh()->formation);
+        $this->assertSame($keeper->id, $lineup['slots'][1]);
+        $this->assertContains($defender->id, array_slice($lineup['slots'], 1, 4));
+        $this->assertContains($midfielder->id, array_slice($lineup['slots'], 5, 3));
+    }
+
     public function test_no_rotation_when_squad_is_fresh(): void
     {
         $save = $this->makeSave(['week' => 1]);
