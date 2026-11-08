@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\TeamStyle;
+use App\Helpers\FormationHelper;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameInjury;
 use App\Models\GameSaves\GamePositionTraining;
@@ -26,6 +27,15 @@ class AiLineUpService
         TeamStyle::PHILOSOPHY_BALANCED   => 60,  // Mix raisonnable
         TeamStyle::PHILOSOPHY_ECONOMIST  => 70,  // Rotation agressive, préserve tout le monde
     ];
+
+    private const FORMATION_CHANGE_MARGIN = 8;
+    private const STYLE_ZONE_WEIGHTS = [
+        TeamStyle::TACTICAL_OFFENSIVE => [3 => 1, 4 => 2],
+        TeamStyle::TACTICAL_DEFENSIVE => [1 => 2, 2 => 1],
+        TeamStyle::TACTICAL_POSSESSION => [2 => 2, 3 => 2],
+        TeamStyle::TACTICAL_COUNTER => [1 => 1, 2 => 1, 4 => 1],
+    ];
+    private const ZONE_POSITIONS = ['GK', 'DEF', 'MID', 'MID', 'ATT'];
 
     /**
      * Ajuste le lineup de toutes les équipes IA avant un match.
@@ -60,17 +70,138 @@ class AiLineUpService
             ->get();
 
         $state = $gameSave->state ?? [];
+        $cards = app(BonusCardActivationService::class);
 
         foreach ($aiTeams as $team) {
-            // Étape 1 : rotation proactive selon philosophie
-            $this->applyPhilosophyRotation($team, $unavailableIds);
+            $unavailableForMatch = array_merge($unavailableIds, $cards->getBenchedPlayerIds($gameSave, $team->id));
+            if ($this->adaptFormation($team, $unavailableForMatch, $state)) continue;
 
-            // Étape 2 : remplacement des indisponibles restants
+            $this->applyPhilosophyRotation($team, $unavailableIds, $state);
             $this->adjustTeamLineup($team, $unavailableIds, $state);
         }
 
         $gameSave->state = $state;
         $gameSave->save();
+    }
+
+    private function adaptFormation(GameTeam $team, array $unavailableIds, array &$state): bool
+    {
+        $current = $team->formation ?? FormationHelper::DEFAULT_FORMATION;
+        $formations = FormationHelper::SLOT_ZONES;
+        if (!isset($formations[$current])) return false;
+
+        $available = $team->contracts
+            ->filter(fn ($contract) => $contract->gamePlayer
+                && !in_array($contract->game_player_id, $unavailableIds))
+            ->unique('game_player_id');
+        $byPosition = $available->groupBy(fn ($contract) => $this->positionGroup($contract->gamePlayer->position ?? ''));
+        $keepers = $byPosition->get('GK', collect());
+        if ($keepers->isEmpty() || $available->count() - $keepers->count() < 10) return false;
+
+        $styleWeights = self::STYLE_ZONE_WEIGHTS[$team->tactical_style] ?? [];
+        $starterPreference = $team->management_philosophy === TeamStyle::PHILOSOPHY_STARS ? 4 : 2;
+        $candidates = [];
+        foreach (array_unique(self::ZONE_POSITIONS) as $position) {
+            $pool = $position === 'GK' ? $keepers : $available->diff($keepers);
+            $candidates[$position] = $pool->map(function (GameContract $contract) use ($position, $starterPreference) {
+                $player = $contract->gamePlayer;
+                $fits = in_array($position, $this->playerPositionGroups($player), true);
+                $score = $this->readiness($player, $position) * ($fits ? 1 : 0.65);
+
+                return ['id' => (int) $player->id, 'fits' => $fits, 'score' => $score + ($contract->is_starter ? $starterPreference : 0)];
+            })->sortByDesc('score')->keyBy('id');
+        }
+
+        $baseline = $this->scoreFormation($formations[$current], $candidates, $styleWeights);
+        $bestFormation = $current;
+        $best = $baseline;
+        foreach ($formations as $formation => $zones) {
+            if ($formation === $current) continue;
+            $option = $this->scoreFormation($zones, $candidates, $styleWeights);
+            if ($option['misplaced'] < $best['misplaced']
+                || ($option['misplaced'] === $best['misplaced'] && $option['score'] > $best['score'])) {
+                $bestFormation = $formation;
+                $best = $option;
+            }
+        }
+
+        if ($best['misplaced'] === $baseline['misplaced'] && $best['score'] < $baseline['score'] + self::FORMATION_CHANGE_MARGIN) {
+            $bestFormation = $current;
+            $best = $baseline;
+        }
+
+        if ($bestFormation === $current) return false;
+
+        $slots = $best['slots'];
+        foreach ($team->contracts as $contract) {
+            $contract->is_starter = in_array((int) $contract->game_player_id, $slots, true);
+            if ($contract->isDirty('is_starter')) $contract->save();
+        }
+        $team->formation = $bestFormation;
+        $team->save();
+        $state['lineup'][$team->id] = array_replace($state['lineup'][$team->id] ?? [], [
+            'formation' => $bestFormation,
+            'slots' => $slots,
+        ]);
+
+        return true;
+    }
+
+    private function scoreFormation(array $zones, array $candidates, array $styleWeights): array
+    {
+        $positions = array_map(fn ($zone) => self::ZONE_POSITIONS[$zone], $zones);
+        $needs = array_count_values($positions);
+        $surplus = [];
+        foreach ($needs as $position => $count) {
+            $surplus[$position] = $candidates[$position]->where('fits', true)->count() - $count;
+        }
+        asort($surplus);
+
+        $slots = [];
+        $used = [];
+        foreach (array_keys($surplus) as $position) {
+            foreach (array_keys($positions, $position, true) as $slot) {
+                $visited = [];
+                $this->assignCompatiblePlayer($slot, $positions, $candidates, $slots, $used, $visited);
+            }
+        }
+
+        $misplaced = count($positions) - count($slots);
+        $score = 0;
+        foreach ($positions as $slot => $position) {
+            if (!isset($slots[$slot])) {
+                $candidate = $candidates[$position]->first(fn ($player) => !isset($used[$player['id']]));
+                $slots[$slot] = $candidate['id'];
+                $used[$candidate['id']] = $slot;
+            }
+            $score += $candidates[$position]->get($slots[$slot])['score'] + ($styleWeights[$zones[$slot]] ?? 0);
+        }
+        ksort($slots);
+
+        return ['slots' => $slots, 'score' => $score, 'misplaced' => $misplaced];
+    }
+
+    private function assignCompatiblePlayer(int $slot, array $positions, array $candidates, array &$slots, array &$used, array &$visited): bool
+    {
+        $pool = $candidates[$positions[$slot]];
+        $free = $pool->first(fn ($candidate) => $candidate['fits'] && !isset($used[$candidate['id']]));
+        if ($free) {
+            $slots[$slot] = $free['id'];
+            $used[$free['id']] = $slot;
+            return true;
+        }
+
+        foreach ($pool as $id => $candidate) {
+            if (!$candidate['fits'] || isset($visited[$id])) continue;
+            $visited[$id] = true;
+            if ($this->assignCompatiblePlayer($used[$id], $positions, $candidates, $slots, $used, $visited)) {
+                $slots[$slot] = $id;
+                $used[$id] = $slot;
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

@@ -95,6 +95,40 @@ class AiLineUpServiceTest extends TestCase
         $this->assertFalse((bool) $tired->contracts()->first()->is_starter);
     }
 
+    public function test_ai_changes_formation_to_cover_a_shortage_of_defenders(): void
+    {
+        $save = $this->makeSave();
+        [$human] = $this->makeTeamWithSquad($save, ['is_controlled' => true]);
+        [$ai, $players] = $this->makeTeamWithSquad($save, [
+            'formation' => '5-2-2-1',
+            'tactical_style' => TeamStyle::TACTICAL_POSSESSION,
+        ], 13);
+        // Deux attaquants et cinq milieux sont prêts, mais un des quatre défenseurs est blessé.
+        $players[10]->update(['position' => 'MID']);
+        $injured = $players[4];
+        GameInjury::create([
+            'game_save_id' => $save->id, 'game_player_id' => $injured->id,
+            'severity' => 'moderate', 'weeks_out' => 2, 'week_injured' => 1, 'week_return' => 3,
+        ]);
+        $save->update(['controlled_game_team_id' => $human->id]);
+        $this->makeMatch($save, $human, $ai);
+
+        $response = $this->actingAs($save->user)->get(route('game-saves.match', $save))->assertOk();
+        $team = $response->viewData('page')['props']['engineConfig']['teams']['external'];
+        $formation = $ai->fresh()->formation;
+        $lineup = $save->fresh()->state['lineup'][$ai->id];
+
+        $this->assertStringStartsWith('3-', $formation);
+        $this->assertSame($formation, $team['formation']);
+        $this->assertSame($formation, $lineup['formation']);
+        $this->assertCount(11, array_unique($lineup['slots']));
+        $this->assertNotContains($injured->id, $lineup['slots']);
+        $this->assertSame(array_values($lineup['slots']), array_column(array_slice($team['players'], 0, 11), 'id'));
+        $this->service->adjustLineupsForWeek($save->fresh());
+        $this->assertSame($formation, $ai->fresh()->formation);
+        $this->assertSame($lineup, $save->fresh()->state['lineup'][$ai->id]);
+    }
+
     public function test_no_rotation_when_squad_is_fresh(): void
     {
         $save = $this->makeSave(['week' => 1]);
