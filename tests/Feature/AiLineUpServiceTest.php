@@ -4,7 +4,9 @@ namespace Tests\Feature;
 
 use App\Enums\TeamStyle;
 use App\Models\GameSaves\GameInjury;
+use App\Services\AITrainingService;
 use App\Services\AiLineUpService;
+use App\Services\StaminaService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsGameWorld;
 use Tests\TestCase;
@@ -65,6 +67,60 @@ class AiLineUpServiceTest extends TestCase
 
         $this->assertFalse((bool) $tiredContract->fresh()->is_starter);
         $this->assertTrue((bool) $freshContract->fresh()->is_starter);
+    }
+
+    public function test_collective_alternates_close_keepers_and_trains_the_one_who_rested(): void
+    {
+        $save = $this->makeSave();
+        $save->setConfig(['training_max_per_week' => 1]);
+        $team = $this->makeTeam($save, [
+            'management_philosophy' => TeamStyle::PHILOSOPHY_COLLECTIVE,
+            'tactical_style' => TeamStyle::TACTICAL_DEFENSIVE,
+        ]);
+        $opponent = $this->makeTeam($save, ['is_controlled' => true]);
+        $first = $this->makePlayer($save, ['position' => 'Goalkeeper', 'stamina' => 95, 'hand_save' => 35, 'punch_save' => 30]);
+        $second = $this->makePlayer($save, ['position' => 'Goalkeeper', 'stamina' => 100, 'hand_save' => 35, 'punch_save' => 30]);
+        $firstContract = $this->makeContract($save, $team, $first);
+        $secondContract = $this->makeContract($save, $team, $second, ['is_starter' => false]);
+        $save->update(['state' => array_replace($save->state, ['lineup' => [$team->id => ['slots' => [1 => $first->id]]]])]);
+
+        $this->service->adjustLineupsForWeek($save);
+        $this->service->adjustLineupsForWeek($save->fresh());
+        $this->assertTrue((bool) $secondContract->fresh()->is_starter);
+        $this->assertSame($second->id, $save->fresh()->state['lineup'][$team->id]['slots'][1]);
+
+        $this->makeMatch($save, $team, $opponent, [
+            'status' => 'played',
+            'match_stats' => ['playtime' => [$second->id => 30, $first->id => 0], 'players' => []],
+        ]);
+        app(AITrainingService::class)->trainForWeek($save->fresh());
+        $this->assertSame($first->id, $save->fresh()->state['ai_training_history'][0]['player_id']);
+        StaminaService::applyAfterWeek($save, 1);
+
+        $save->refresh()->update(['week' => 2]);
+        $this->service->adjustLineupsForWeek($save);
+        $this->assertTrue((bool) $firstContract->fresh()->is_starter);
+    }
+
+    public function test_field_rotation_uses_the_slot_role_of_a_player_at_a_secondary_position(): void
+    {
+        $save = $this->makeSave();
+        $team = $this->makeTeam($save, [
+            'formation' => '4-2-1-3',
+            'management_philosophy' => TeamStyle::PHILOSOPHY_ECONOMIST,
+        ]);
+        $starter = $this->makePlayer($save, ['position' => 'Forward', 'secondary_positions' => ['Midfielder'], 'stamina' => 90]);
+        $midfielder = $this->makePlayer($save, ['position' => 'Midfielder']);
+        $forward = $this->makePlayer($save, ['position' => 'Forward']);
+        $this->makeContract($save, $team, $starter);
+        $this->makeContract($save, $team, $midfielder, ['is_starter' => false]);
+        $this->makeContract($save, $team, $forward, ['is_starter' => false]);
+        $save->update(['state' => ['lineup' => [$team->id => ['slots' => [6 => $starter->id]]]]]);
+
+        $this->service->adjustLineupsForWeek($save);
+
+        $this->assertSame($midfielder->id, $save->fresh()->state['lineup'][$team->id]['slots'][6]);
+        $this->assertSame('MID', $save->fresh()->state['ai_rotation'][$team->id]['resting_roles'][$starter->id]);
     }
 
     public function test_interactive_match_starts_with_the_fresh_replacement_in_the_saved_slot(): void

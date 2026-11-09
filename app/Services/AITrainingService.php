@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\TeamStyle;
 use App\Models\GameSaves\GameInjury;
+use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GamePositionTraining;
 use App\Models\GameSaves\GameSanction;
 use App\Models\GameSaves\GameSave;
@@ -26,7 +27,7 @@ class AITrainingService
     // Stats boostées en priorité par style tactique (bias -15 sur leur valeur apparente)
     private const STYLE_PRIORITY_STATS = [
         TeamStyle::TACTICAL_OFFENSIVE  => ['shot', 'dribble', 'attack', 'speed'],
-        TeamStyle::TACTICAL_DEFENSIVE  => ['defense', 'tackle', 'block', 'intercept'],
+        TeamStyle::TACTICAL_DEFENSIVE  => ['defense', 'tackle', 'block', 'intercept', 'hand_save', 'punch_save'],
         TeamStyle::TACTICAL_POSSESSION => ['pass', 'intercept', 'stamina', 'dribble'],
         TeamStyle::TACTICAL_COUNTER    => ['speed', 'shot', 'defense', 'tackle'],
         TeamStyle::TACTICAL_BALANCED   => [],
@@ -55,7 +56,14 @@ class AITrainingService
             ->with(['contracts' => fn($q) => $q->activeAt($week)->with('gamePlayer')])
             ->get();
 
-        $controlledTeamIds = $gameSave->controlledGameTeamIds();
+        $controlledTeamIds = [...$gameSave->controlledGameTeamIds(), (int) $gameSave->controlled_game_team_id];
+        $playedByTeam = [];
+        foreach (GameMatch::where('game_save_id', $gameSave->id)->where('week', $week)->where('status', 'played')->get() as $match) {
+            $played = array_fill_keys(StaminaService::resolvePlayedPlayerIds($match), true);
+            foreach ([$match->home_team_id, $match->away_team_id] as $teamId) {
+                $playedByTeam[$teamId] = ($playedByTeam[$teamId] ?? []) + $played;
+            }
+        }
         $aiEntries         = []; // jamais d'auto-entraînement humain → toujours vide
 
         $allEntries = []; // historique complet toutes équipes
@@ -76,6 +84,7 @@ class AITrainingService
                 tacticalStyle: $team->tactical_style,
                 gameSave: $gameSave,
                 chargeCost: true,
+                played: $playedByTeam[$team->id] ?? null,
             );
 
             foreach ($results as $entry) {
@@ -119,7 +128,7 @@ class AITrainingService
         $gameSave->save();
     }
 
-    protected function trainTeam(GameTeam $team, int $gainMax = 3, array $excludePlayerIds = [], ?string $tacticalStyle = null, ?GameSave $gameSave = null, bool $chargeCost = false): array
+    protected function trainTeam(GameTeam $team, int $gainMax = 3, array $excludePlayerIds = [], ?string $tacticalStyle = null, ?GameSave $gameSave = null, bool $chargeCost = false, ?array $played = null): array
     {
         $contracts = $team->contracts->filter(fn($c) => $c->gamePlayer !== null);
         if ($contracts->isEmpty()) return [];
@@ -137,33 +146,43 @@ class AITrainingService
             $trainCount -= collect($training['entries'] ?? [])->where('team_id', $team->id)->count();
         }
 
-        // Un titulaire doit garder une réserve pour la prochaine rencontre.
+        // À la clôture, l'entraînement précède la récupération et le coût du match.
         $stars = $team->management_philosophy === TeamStyle::PHILOSOPHY_STARS;
         $starterReserve = $team->management_philosophy === TeamStyle::PHILOSOPHY_ECONOMIST ? 80 : 75;
+        $restRecovery = $gameSave ? (int) $gameSave->getConfig('rest_stamina_recovery') : 0;
+        $matchCost = $gameSave ? (int) $gameSave->getConfig('match_stamina_cost') : 0;
+        $rotation = $gameSave?->state['ai_rotation'][$team->id] ?? [];
+        $restingRoles = ($rotation['week'] ?? null) === (int) $gameSave?->week
+            && ($rotation['season'] ?? null) === (int) $gameSave?->season ? ($rotation['resting_roles'] ?? []) : [];
+        $rested = fn ($c) => $played !== null && !isset($played[$c->game_player_id]);
+        $isKeeper = fn ($c) => $this->relevantStatsForPosition($c->gamePlayer->position ?? '') === self::STATS_BY_POSITION['GK'];
 
-        // Pool de joueurs éligibles (stamina suffisante + pas exclus)
-        $eligiblePool = $contracts->filter(fn($c) =>
-            $c->gamePlayer->stamina >= max($minStamina, $c->is_starter ? $starterReserve + $staminaCost : $staminaCost) &&
-            !in_array($c->gamePlayer->id, $excludePlayerIds)
-        );
+        $eligiblePool = $contracts->filter(function ($c) use ($played, $rested, $starterReserve, $matchCost, $restRecovery, $staminaCost, $minStamina, $excludePlayerIds) {
+            $reserve = $played === null
+                ? ($c->is_starter ? $starterReserve : 0)
+                : ($rested($c) ? max(50, 70 - $restRecovery) : $starterReserve + $matchCost);
+            return $c->gamePlayer->stamina >= max($minStamina, $reserve + $staminaCost)
+                && !in_array($c->game_player_id, $excludePlayerIds);
+        });
 
-        if ($eligiblePool->isEmpty()) return [];
-
-        // Garder un suivi des joueurs déjà entraînés ce tour pour éviter les doublons
         $trainedThisRound = [];
-        $results          = [];
+        $results = [];
+        $trainedKeeper = false;
 
-        for ($i = 0; $i < $trainCount; $i++) {
-            // Pool disponible (pas déjà entraîné ce tour)
-            $pool = $eligiblePool->filter(fn($c) =>
-                !in_array($c->gamePlayer->id, $trainedThisRound) &&
-                $c->gamePlayer->stamina >= $minStamina
-            );
+        while (count($results) < $trainCount) {
+            $pool = $eligiblePool->reject(fn ($c) =>
+                in_array($c->game_player_id, $trainedThisRound, true) || ($trainedKeeper && $isKeeper($c)));
+            $restedKeepers = $pool->filter(fn ($c) => $rested($c) && $isKeeper($c));
+            $rotated = $pool->filter(fn ($c) => $rested($c) && isset($restingRoles[$c->game_player_id]));
+            $preferred = $pool->filter(fn ($c) => $played !== null
+                ? $rested($c) || ($stars && $c->is_starter)
+                : (bool) $c->is_starter === $stars);
 
-            // Former en priorité le banc, sauf si le club mise sur ses vedettes.
-            $preferred = $pool->filter(fn ($contract) => (bool) $contract->is_starter === $stars);
-            if ($preferred->isNotEmpty()) {
-                $pool = $preferred;
+            foreach ([$restedKeepers, $rotated, $preferred] as $priority) {
+                if ($priority->isNotEmpty()) {
+                    $pool = $priority;
+                    break;
+                }
             }
 
             if ($pool->isEmpty()) break;
@@ -185,7 +204,9 @@ class AITrainingService
             }
 
             $player  = $contract->gamePlayer;
-            $statKey = $this->bestStatToTrain($player, $tacticalStyle);
+            $trainedThisRound[] = $player->id;
+            $role = $rested($contract) ? ($restingRoles[$player->id] ?? null) : null;
+            $statKey = $this->bestStatToTrain($player, $tacticalStyle, $role);
 
             if (!$statKey) continue;
 
@@ -218,7 +239,7 @@ class AITrainingService
                 'cost'         => $trainingCost,
             ];
 
-            $trainedThisRound[] = $player->id;
+            $trainedKeeper = $trainedKeeper || $isKeeper($contract);
         }
 
         return $results;
@@ -245,9 +266,12 @@ class AITrainingService
      * Choisit la meilleure stat à entraîner pour ce joueur selon son poste.
      * Applique un biais vers les stats alignées au style tactique de l'équipe.
      */
-    protected function bestStatToTrain($player, ?string $tacticalStyle = null): ?string
+    protected function bestStatToTrain($player, ?string $tacticalStyle = null, ?string $role = null): ?string
     {
-        $stats = $this->relevantStatsForPosition($player->position ?? '');
+        $stats = $this->relevantStatsForPosition($role ?? $player->position ?? '');
+        if ($stats === self::STATS_BY_POSITION['GK'] && $tacticalStyle === TeamStyle::TACTICAL_POSSESSION) {
+            $stats[] = 'pass';
+        }
         if (empty($stats)) return null;
 
         // Stats prioritaires selon le style tactique
@@ -258,7 +282,9 @@ class AITrainingService
         $values = [];
         foreach ($stats as $k) {
             $val = (int) ($player->{$k} ?? 0);
-            if ($val >= 100 || $k === 'stamina') continue;
+            // Une fois le niveau visé atteint, le club travaille un autre point.
+            $target = in_array($k, $priorityStats, true) ? 60 : 55;
+            if ($val >= $target || $k === 'stamina') continue;
 
             // Appliquer le biais : les stats alignées au style paraissent plus basses
             if (in_array($k, $priorityStats)) {

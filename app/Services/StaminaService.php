@@ -62,11 +62,15 @@ class StaminaService
 
     /**
      * Détermine les IDs joueurs ayant joué un match.
-     * 1. Source primaire : match_stats.players (jeu manuel)
-     * 2. Fallback : contrats is_starter des 2 équipes (match simulé sans stats)
+     * Le temps de jeu distingue un joueur réellement au repos d'un titulaire
+     * qui a disputé le match sans action enregistrée.
      */
-    protected static function resolvePlayedPlayerIds(GameMatch $match): array
+    public static function resolvePlayedPlayerIds(GameMatch $match): array
     {
+        if (isset($match->match_stats['playtime'])) {
+            return array_map('strval', array_keys(array_filter($match->match_stats['playtime'])));
+        }
+
         if (!empty($match->match_stats['players'])) {
             return array_map('strval', array_keys($match->match_stats['players']));
         }
