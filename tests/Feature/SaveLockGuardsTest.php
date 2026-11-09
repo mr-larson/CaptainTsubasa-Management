@@ -115,6 +115,49 @@ class SaveLockGuardsTest extends TestCase
         $this->assertSame($seat2->id, (int) $save->fresh()->controlled_game_team_id);
     }
 
+    public function test_simulating_one_match_records_it_once_and_hands_over_to_the_next_manager(): void
+    {
+        $save = $this->makeSave();
+        [$seat1] = $this->makeTeamWithSquad($save, ['is_controlled' => true, 'human_seat' => 1]);
+        [$ai] = $this->makeTeamWithSquad($save);
+        $seat2 = $this->makeTeam($save, ['is_controlled' => true, 'human_seat' => 2]);
+        $otherAi = $this->makeTeam($save);
+        $save->update(['controlled_game_team_id' => $seat1->id]);
+
+        $match = $this->makeMatch($save, $seat1, $ai);
+        $pending = $this->makeMatch($save, $seat2, $otherAi);
+        $url = route('game-saves.matches.simulate', [$save, $match]);
+
+        $this->actingAs($save->user)->post($url)
+            ->assertRedirect(route('game-saves.Play', $save))
+            ->assertSessionHas('success');
+        $this->post($url)->assertRedirect(route('game-saves.Play', $save));
+
+        $match->refresh();
+        $seat1->refresh();
+        $this->assertSame('played', $match->status);
+        $this->assertNotEmpty($match->match_stats['events']);
+        $this->assertCount(11, $match->match_stats['starters']['home']);
+        $this->assertSame(1, $seat1->wins + $seat1->draws + $seat1->losses);
+        $this->assertSame('scheduled', $pending->fresh()->status);
+        $this->assertSame(1, (int) $save->fresh()->week);
+        $this->assertSame($seat2->id, (int) $save->fresh()->controlled_game_team_id);
+    }
+
+    public function test_simulating_a_match_between_two_managers_is_refused(): void
+    {
+        $save = $this->makeSave();
+        $seat1 = $this->makeTeam($save, ['is_controlled' => true, 'human_seat' => 1]);
+        $seat2 = $this->makeTeam($save, ['is_controlled' => true, 'human_seat' => 2]);
+        $save->update(['controlled_game_team_id' => $seat1->id]);
+        $match = $this->makeMatch($save, $seat1, $seat2);
+
+        $this->actingAs($save->user)->post(route('game-saves.matches.simulate', [$save, $match]))
+            ->assertForbidden();
+
+        $this->assertSame('scheduled', $match->fresh()->status);
+    }
+
     public function test_replayed_season_continue_starts_only_one_new_season(): void
     {
         $save = $this->makeSave(['phase' => 'season_end', 'week' => 7, 'season' => 1]);

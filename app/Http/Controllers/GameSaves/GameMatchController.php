@@ -18,6 +18,7 @@ use App\Services\AiLineUpService;
 use App\Services\BonusCardActivationService;
 use App\Services\CareerObjectiveService;
 use App\Services\FoulAndInjuryService;
+use App\Services\MatchSimulator;
 use App\Services\DeclarationService;
 use App\Services\PostMatchProgressionService;
 use App\Services\PlayerChemistryService;
@@ -317,46 +318,59 @@ class GameMatchController extends Controller
             app(SeasonChallengeService::class)->payCompleted($gameSave, [(int) $homeTeamId, (int) $awayTeamId]);
 
 
-            // 6. (Les cartes pre_match sont consommées en fin de semaine pour TOUTES
-            //     les équipes ayant joué — humaines et IA — cf. plus bas.)
-            $controlledTeamIds = $gameSave->controlledGameTeamIds();
+            return $this->continueAfterMatch($gameSave, (int) $match->week);
+        });
+    }
 
-            // ─────────────────────────────────────────────────────────────
-            //  GATING : tant qu'il reste un match humain à jouer cette
-            //  semaine, on n'avance PAS — la semaine ne se clôt qu'au dernier.
-            // ─────────────────────────────────────────────────────────────
-            $weekToClose = (int) $match->week;
+    public function simulateMatch(GameSave $gameSave, GameMatch $match, MatchSimulator $simulator): RedirectResponse
+    {
+        $this->authorizeGameSave('update', $gameSave, $match);
 
-            $remainingHumanMatches = GameMatch::where('game_save_id', $gameSave->id)
-                ->where('week', $weekToClose)
-                ->where('status', 'scheduled')
-                ->where(function ($q) use ($controlledTeamIds) {
-                    $q->whereIn('home_team_id', $controlledTeamIds)
-                        ->orWhereIn('away_team_id', $controlledTeamIds);
-                })
-                ->count();
-
-            if ($remainingHumanMatches > 0) {
-                // D'autres joueurs humains doivent encore disputer leur match :
-                // on passe la main au prochain joueur (siège suivant non joué).
-                $next = $this->nextHumanWithPendingMatch($gameSave, $weekToClose);
-                if ($next) {
-                    $gameSave->controlled_game_team_id = $next->id;
-                    $gameSave->save();
-                }
-
-                return redirect()->route('game-saves.Play', $gameSave);
+        return $this->withSaveLock($gameSave, function (GameSave $save) use ($match, $simulator) {
+            $match->refresh();
+            if ($match->status !== 'scheduled' || (int) $match->week !== (int) $save->week
+                || !$save->isInMatchPhase() || $save->hasPendingMidseasonBreak()) {
+                return redirect()->route('game-saves.Play', $save);
             }
 
-            // ─────────────────────────────────────────────────────────────
-            //  FIN DE SEMAINE : tous les matchs humains sont joués. Les matchs
-            //  IA restants sont simulés et le pipeline déroulé une seule fois.
-            // ─────────────────────────────────────────────────────────────
-            return $this->redirectAfterWeek(
-                $gameSave,
-                app(WeekClosingService::class)->close($gameSave, $weekToClose),
-            );
+            if (app(CareerObjectiveService::class)->isGameOver($save)) {
+                return redirect()->route('game-saves.game-over', $save);
+            }
+
+            $activeTeamId = (int) $save->controlled_game_team_id;
+            if (!$activeTeamId && $save->team_id) {
+                $activeTeamId = (int) GameTeam::where('game_save_id', $save->id)
+                    ->where('base_team_id', $save->team_id)->value('id');
+            }
+            $homeId = (int) $match->home_team_id;
+            $awayId = (int) $match->away_team_id;
+            abort_unless($activeTeamId && in_array($activeTeamId, [$homeId, $awayId], true), 403);
+            $opponentId = $homeId === $activeTeamId ? $awayId : $homeId;
+            abort_if(in_array($opponentId, $save->controlledGameTeamIds(), true), 403, 'Ce match oppose deux managers humains.');
+
+            app(AiLineUpService::class)->adjustLineupsForWeek($save, [$opponentId]);
+            $simulator->simulateMatchesCollection(collect([$match]), $save);
+            $save->refresh();
+            app(SeasonChallengeService::class)->payCompleted($save, [$homeId, $awayId]);
+
+            $result = "{$match->homeTeam->name} {$match->home_score}–{$match->away_score} {$match->awayTeam->name}";
+
+            return $this->continueAfterMatch($save, (int) $match->week)->with('success', "Match simulé · {$result}");
         });
+    }
+
+    private function continueAfterMatch(GameSave $save, int $week): RedirectResponse
+    {
+        // Les autres managers jouent leur match avant la clôture de la semaine.
+        $next = $this->nextHumanWithPendingMatch($save, $week);
+        if ($next) {
+            $save->controlled_game_team_id = $next->id;
+            $save->save();
+
+            return redirect()->route('game-saves.Play', $save);
+        }
+
+        return $this->redirectAfterWeek($save, app(WeekClosingService::class)->close($save, $week));
     }
 
     /**

@@ -516,16 +516,33 @@ function openCareerRules() {
 // La page du match est lourde à charger : sans retour visuel, le clic sur « Jouer »
 // semblait sans effet (et invitait à recliquer).
 const launchingMatch = ref(false);
+const simulatingMatch = ref(false);
+const simulating = ref(false);
+const canSimulateMatch = computed(() => {
+    const match = nextMatch.value;
+    const activeTeamId = Number(team.value?.id);
+    if (!match || !activeTeamId || Number(match.week) !== Number(props.gameSave.week)) return false;
+    const opponent = Number(match.home_team_id) === activeTeamId ? match.away_team_id : match.home_team_id;
+    return !humanTeamIds.value.has(Number(opponent));
+});
 const playNextMatch  = () => {
-    if (launchingMatch.value) return;
+    if (launchingMatch.value || simulatingMatch.value || simulating.value) return;
     router.get(route('game-saves.match', { gameSave: props.gameSave.id }), {}, {
         onStart:  () => { launchingMatch.value = true; },
         onFinish: () => { launchingMatch.value = false; },
     });
 };
-const simulating     = ref(false);
+const simulateMatch = () => {
+    if (!canSimulateMatch.value || launchingMatch.value || simulatingMatch.value || simulating.value) return;
+    simulatingMatch.value = true;
+    router.post(
+        route('game-saves.matches.simulate', { gameSave: props.gameSave.id, match: nextMatch.value.id }),
+        {},
+        { preserveScroll: true, preserveState: false, onFinish: () => { simulatingMatch.value = false; } },
+    );
+};
 const simulateWeek   = () => {
-    if (simulating.value) return;
+    if (simulating.value || simulatingMatch.value || launchingMatch.value) return;
     simulating.value = true;
     // `week` sert de clé d'idempotence côté serveur (double clic).
     router.post(
@@ -551,7 +568,7 @@ const saveGame = () => {
 
     <AuthenticatedLayout>
         <LoadingOverlay :show="simulating" message="Simulation de la semaine en cours…" />
-        <LoadingOverlay :show="launchingMatch" message="Préparation du match…" />
+        <LoadingOverlay :show="launchingMatch || simulatingMatch" :message="simulatingMatch ? 'Simulation du match…' : 'Préparation du match…'" />
         <template #header>
             <H2>Session de jeu — {{ gameSave.label ?? `Sauvegarde #${gameSave.id}` }}</H2>
         </template>
@@ -621,12 +638,15 @@ const saveGame = () => {
                                   :midseasonBreakRecovery="props.midseasonBreakRecovery"
                                   :teamById="teamById"
                                   :saving="saving"
-                                  :simulating="simulating"
+                                  :simulating="simulating || simulatingMatch"
+                                  :launchingMatch="launchingMatch"
+                                  :canSimulateMatch="canSimulateMatch"
                                   :matches="matches"
                                   :tournament="tournament"
                                   :isWorldCup="isWorldCup"
                                   @change-tab="setTab"
                                   @play-next-match="playNextMatch"
+                                  @simulate-match="simulateMatch"
                                   @simulate-week="simulateWeek"
                                   @save-game="saveGame"
                                   :playerSeasonStats="playerSeasonStatsRef"

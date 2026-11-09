@@ -180,6 +180,8 @@ Route::middleware('auth')->group(function () {
             [GameMatchController::class, 'weekLeaders'])->whereNumber('week')->name('weeks.leaders');
         Route::post('/{gameSave}/matches/{match}/finish',
             [GameMatchController::class, 'finishMatch'])->name('matches.finish');
+        Route::post('/{gameSave}/matches/{match}/simulate',
+            [GameMatchController::class, 'simulateMatch'])->name('matches.simulate');
         Route::post('/{gameSave}/simulate-week',
             [GameMatchController::class, 'simulateWeek'])->name('simulate-week');
 

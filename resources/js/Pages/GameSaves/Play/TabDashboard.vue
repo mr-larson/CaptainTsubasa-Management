@@ -29,6 +29,8 @@ const props = defineProps({
     teamById:       { type: Object, required: true },
     saving:         { type: Boolean, required: true },
     simulating:     { type: Boolean, default: false },
+    launchingMatch: { type: Boolean, default: false },
+    canSimulateMatch: { type: Boolean, default: false },
     matches:        { type: Array,   default: () => [] },
     tournament:         { type: Object, default: null },
     isWorldCup:         { type: Boolean, default: false },
@@ -41,7 +43,7 @@ const props = defineProps({
     maxTrainings:       { type: Number,  default: 3 },
 });
 
-const emit = defineEmits(['play-next-match', 'simulate-week', 'save-game', 'quit', 'change-tab', 'open-player', 'apply-advice']);
+const emit = defineEmits(['play-next-match', 'simulate-match', 'simulate-week', 'save-game', 'quit', 'change-tab', 'open-player', 'apply-advice']);
 
 // Guide « Comment jouer » dans un nouvel onglet, pour ne pas quitter la partie.
 const openHelp = () => window.open(route('guide') + '#preparer', '_blank', 'noopener');
@@ -426,12 +428,19 @@ const hasPlayed = computed(() => matchesPlayed.value > 0);
                         <ButtonSecondary size="sm" v-if="isByeWeek" :disabled="simulating" @click="emit('simulate-week')">
                             ⏭ Simuler S{{ week }}
                         </ButtonSecondary>
-                        <button v-else type="button"
-                                class="px-6 py-1.5 rounded-full font-bold text-sm text-white shadow-sm transition-all hover:scale-105 active:scale-95"
-                                :class="nextMatchInfo.isHome ? 'bg-teal-500 hover:bg-teal-600' : 'bg-orange-500 hover:bg-orange-600'"
-                                @click="emit('play-next-match')">
-                            ▶ Jouer
-                        </button>
+                        <div v-else class="flex flex-wrap items-center justify-center gap-2">
+                            <button type="button"
+                                    class="px-6 py-1.5 rounded-full font-bold text-sm text-white shadow-sm transition-all hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                                    :class="nextMatchInfo.isHome ? 'bg-teal-500 hover:bg-teal-600' : 'bg-orange-500 hover:bg-orange-600'"
+                                    :disabled="simulating || launchingMatch"
+                                    @click="emit('play-next-match')">
+                                ▶ Jouer
+                            </button>
+                            <ButtonSecondary v-if="canSimulateMatch" size="sm"
+                                             :disabled="simulating || launchingMatch" @click="emit('simulate-match')">
+                                ⏩ Simuler le match
+                            </ButtonSecondary>
+                        </div>
                     </div>
 
                     <!-- Adversaire -->
