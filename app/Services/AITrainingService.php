@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\TeamStyle;
 use App\Models\GameSaves\GameInjury;
 use App\Models\GameSaves\GamePositionTraining;
+use App\Models\GameSaves\GameSanction;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
 use Illuminate\Support\Facades\DB;
@@ -45,6 +46,8 @@ class AITrainingService
         $season = $gameSave->season ?? 1;
         $unavailableIds = GameInjury::where('game_save_id', $gameSave->id)
             ->where('week_return', '>', $week)->pluck('game_player_id')
+            ->merge(GameSanction::where('game_save_id', $gameSave->id)->where('week_return', '>', $week)
+                ->where('weeks_suspended', '>', 0)->pluck('game_player_id'))
             ->merge(GamePositionTraining::unavailablePlayerIds($gameSave->id, $week))->all();
 
         // Toutes les équipes de la save
@@ -128,6 +131,11 @@ class AITrainingService
         $gainMin      = $gameSave ? (int) $gameSave->getConfig('training_gain_min') : 1;
         $trainingCost = ($chargeCost && $gameSave) ? (int) $gameSave->getConfig('training_cost') : 0;
         $trainCount   = $gameSave ? (int) $gameSave->getConfig('training_max_per_week') : 3;
+        $training = $gameSave?->state['training'] ?? [];
+        if ((int) ($training['week'] ?? 0) === (int) $gameSave?->week
+            && (int) ($training['season'] ?? 0) === (int) $gameSave?->season) {
+            $trainCount -= collect($training['entries'] ?? [])->where('team_id', $team->id)->count();
+        }
 
         // Un titulaire doit garder une réserve pour la prochaine rencontre.
         $stars = $team->management_philosophy === TeamStyle::PHILOSOPHY_STARS;

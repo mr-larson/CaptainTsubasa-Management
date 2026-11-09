@@ -547,12 +547,16 @@ const selectedPlayerPerf = computed(() => {
                                 <div class="text-2xs text-amber-600 font-semibold truncate">{{ entry.team_name }}</div>
                             </div>
 
-                            <div class="flex items-center gap-1.5">
+                            <div v-if="entry.formation_label" class="text-right text-xs text-slate-600">
+                                <div class="font-semibold">{{ entry.stat === 'position' ? 'Nouveau poste' : 'Technique spéciale' }} · {{ entry.formation_label }}</div>
+                                <div class="text-2xs text-slate-500">{{ entry.cost }} GL · retour S{{ entry.week_return }}</div>
+                            </div>
+                            <div v-else class="flex items-center gap-1.5">
                                 <div class="w-2 h-2 rounded-full" :class="statColor(entry.stat)"></div>
                                 <span class="text-xs text-slate-600 font-medium">{{ statLabel(entry.stat) }}</span>
                             </div>
 
-                            <div class="px-2 py-0.5 rounded-full text-xs font-black bg-amber-200 text-amber-700">
+                            <div v-if="!entry.formation_label" class="px-2 py-0.5 rounded-full text-xs font-black bg-amber-200 text-amber-700">
                                 +{{ entry.gain }}
                             </div>
                         </div>

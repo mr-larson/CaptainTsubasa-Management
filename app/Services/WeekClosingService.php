@@ -99,6 +99,7 @@ class WeekClosingService
         // 6. Coupe du Monde : progression du tournoi au lieu de la fin de saison.
         if ($gameSave->competition_type === 'world_cup') {
             app(TournamentService::class)->advance($gameSave);
+            app(AiFormationTrainingService::class)->planForWeek($gameSave);
             app(AiCoachService::class)->prepareForWeek($gameSave, $week);
             app(PlayerChemistryService::class)->attemptForAiTeams($gameSave);
             return self::OUTCOME_PLAY;
@@ -116,6 +117,7 @@ class WeekClosingService
             return self::OUTCOME_SEASON_END;
         }
 
+        app(AiFormationTrainingService::class)->planForWeek($gameSave);
         app(AiCoachService::class)->prepareForWeek($gameSave, $week);
         app(PlayerChemistryService::class)->attemptForAiTeams($gameSave);
 

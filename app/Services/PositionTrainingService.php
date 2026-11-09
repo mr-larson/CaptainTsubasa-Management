@@ -8,6 +8,7 @@ use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GamePositionTraining;
 use App\Models\GameSaves\GameSanction;
 use App\Models\GameSaves\GameSave;
+use App\Models\GameSaves\GameTeam;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -56,17 +57,17 @@ class PositionTrainingService
      *
      * @throws ValidationException
      */
-    public function start(GameSave $gameSave, int $playerId, string $target, ?array $move = null): GamePositionTraining
+    public function start(GameSave $gameSave, int $playerId, string $target, ?array $move = null, ?GameTeam $team = null): GamePositionTraining
     {
         $season  = (int) ($gameSave->season ?? 1);
         $week    = (int) ($gameSave->week ?? 1);
-        $teamId  = (int) $gameSave->controlled_game_team_id;
-        $team    = $gameSave->controlledGameTeam;
+        $team ??= $gameSave->controlledGameTeam;
+        $teamId = (int) ($team?->id ?? 0);
 
         $errorKey = $move ? 'special_training' : 'position_training';
         $fail = fn (string $message) => throw ValidationException::withMessages([$errorKey => $message]);
 
-        if (!$team) {
+        if (!$team || (int) $team->game_save_id !== (int) $gameSave->id) {
             $fail('Aucune équipe contrôlée définie pour cette sauvegarde.');
         }
 
