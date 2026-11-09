@@ -10,6 +10,7 @@ export function isGoodDefenseChoice(attackAction, defenseAction) {
     const a = String(attackAction).toLowerCase();
     if (a === "cross" || a === "special-cross") return null;
     const [kind, base] = String(defenseAction).toLowerCase().split(":");
+    if (kind === "simulation-failed") return null;
     const d = a === "special" || !base ? kind : base;
     if (["hands", "punch", "gk-special"].includes(d)) return true;
     return (
@@ -58,6 +59,7 @@ const DEFENSE_LABELS = {
     ...Object.fromEntries(Object.entries(TEXTS.cards.defenseField).map(([k, c]) => [k, c.title])),
     ...Object.fromEntries(Object.entries(TEXTS.cards.defenseGK).map(([k, c]) => [k, c.title])),
     heading: "Tête",
+    "simulation-failed": "Simulation ratée",
 };
 export function defenseTag(defenseAction) {
     const [kind, base] = defenseAction.split(":");

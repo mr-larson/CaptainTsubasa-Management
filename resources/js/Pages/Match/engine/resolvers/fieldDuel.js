@@ -17,6 +17,15 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
     const b          = ball();
     const attackerId = getPlayerId(attackTeam, b.number);
 
+    if (defenseAction === "simulation-failed") {
+        // La simulation a remplacé le contre de champ. Le tir passe néanmoins
+        // par son duel habituel contre le gardien.
+        applyStaminaCost(attackerId, "attack", attackType);
+        if (attackType === "special") shared.markSpecialUsed(attackerId, "attack", specialAction);
+        recordDuelEvent({ attackTeam, defenseTeam, attackSlot: b.number, attackAction: attackType, duelResult: "attack" });
+        return { isTie: false, duelResult: "attack", attackerId };
+    }
+
     const picked = defenderPick ?? pickFieldDefender(defenseTeam, b.zoneIndex, b.laneIndex);
     if (!picked) {
         return { isTie: true, duelResult: "tie", diceTag: "", attackerId };

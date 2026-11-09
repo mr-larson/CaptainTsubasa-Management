@@ -12,7 +12,7 @@ export const EVENT_ICONS = {
     intercept: '🛡️', tackle: '⚔️', block: '🧱',
     'card-yellow': '🟨', 'card-red': '🟥', foul: '⚠️', 'free-kick': '🦶',
     kickoff: '🚩', injury: '🤕', substitution: '🔄', 'gk-restart': '🧤',
-    matchend: '🏁', heroic: '⭐',
+    matchend: '🏁', heroic: '⭐', simulation: '🎭',
 };
 
 export const isGoalEvent = (ev) => /goal/i.test(ev?.actionType ?? '');

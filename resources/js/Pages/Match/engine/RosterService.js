@@ -37,6 +37,7 @@ export class RosterService {
                 hand_save:  src.hand_save  ?? 0,
                 punch_save: src.punch_save ?? 0,
                 heading:    src.heading    ?? 0,
+                luck:       src.luck       ?? 50,
             };
         };
 

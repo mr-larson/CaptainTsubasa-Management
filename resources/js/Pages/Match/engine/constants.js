@@ -1,4 +1,5 @@
 // resources/js/Pages/Match/engine/constants.js
+import { SIMULATION_COST } from "./luck.js";
 
 // ==========================
 //   CONSTANTES TIMING
@@ -224,6 +225,7 @@ export const TEXTS = {
             block:          { icon: "🧱", title: "Contre",    sub: "Efficace contre un tir" },
             intercept:      { icon: "✋", title: "Interception", sub: "Efficace contre une passe" },
             tackle:         { icon: "⚔️", title: "Tacle",     sub: "Efficace contre un dribble" },
+            simulation: { icon: "🎭", title: "Simulation", sub: "Tenter de récupérer le ballon · risque de carton" },
             "field-special":{ icon: "🔥", title: "Spécial",   sub: "Action spéciale" },
         },
         defenseGK: {
@@ -265,6 +267,7 @@ export const STATS = {
         intercept:       { power: 10, cost: 3  },
         tackle:          { power: 10, cost: 3  },
         heading:         { power: 10, cost: 5  },
+        simulation:      { cost: SIMULATION_COST },
         "field-special": { power: 12, cost: 10 },
     },
     defenseGK: {

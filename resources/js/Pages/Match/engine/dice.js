@@ -591,6 +591,30 @@ export function showDuelDice(attackScore, defenseScore, aRoll, dRoll, breakdown)
     });
 }
 
+export function showSimulationRoll(roll, threshold, success) {
+    const el = document.getElementById("duel-dice-display");
+    if (!el) return;
+
+    const token = ++_chipToken;
+    _lastBreakdown = null;
+    hideBreakdownTooltip();
+    enqueueRevealStep(done => {
+        const mode = getDiceAnimMode();
+        const reveal = () => {
+            if (token === _chipToken) {
+                el.textContent = `🎭 ${roll} · Seuil > ${threshold} · ${success ? "Réussite" : "Échec"}`;
+                el.classList.remove("text-emerald-500", "text-rose-500", "text-slate-400");
+                el.classList.add("visible", success ? "text-emerald-500" : "text-rose-500");
+            }
+            done();
+        };
+        if (mode === "off") { reveal(); return; }
+        el.textContent = "🎭 🎲 …";
+        el.classList.add("visible");
+        setTimeout(reveal, mode === "fast" ? 180 : 400);
+    });
+}
+
 /** Affiche le détail d'un duel (breakdown) ancré sur n'importe quel élément — utilisé par le clic sur l'historique. */
 export function showBreakdownTooltip(breakdown, anchorEl) {
     if (!breakdown || !anchorEl) return;

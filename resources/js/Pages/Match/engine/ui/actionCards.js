@@ -142,12 +142,15 @@ function buildDefenseCardWithSpecial(key, cfg, team, slot, roster, kind) {
     return buildDefCard(key, cfg[key], move ? { action: `${kind}:${key}`, move } : null);
 }
 
-export function buildDefenseFieldHTML(defenderTeam, defenderSlot, roster) {
+export function buildDefenseFieldHTML(defenderTeam, defenderSlot, roster, simulationChance = null) {
     const cfg = TEXTS.cards.defenseField;
     return `<div id="defense-strip">
         ${["block", "intercept", "tackle"].map(key =>
             buildDefenseCardWithSpecial(key, cfg, defenderTeam, defenderSlot, roster, "field-special")
         ).join("")}
+        ${simulationChance === null ? "" : buildDefCard("simulation", {
+            ...cfg.simulation, sub: `${simulationChance} % de réussite · Risque de carton`,
+        })}
     </div>`;
 }
 

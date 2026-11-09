@@ -332,6 +332,8 @@ function _detectType(key, details) {
 
     if (k.includes('kickoff'))                                 return ['kickoff',          'neutral'];
     if (k.includes('matchend'))                                return ['matchend',          'neutral'];
+    if (k === 'simulation réussie')                           return ['simulation',        'success'];
+    if (k === 'simulation ratée')                             return ['simulation',        'failed'];
     if (k.includes('substitution'))                            return ['substitution',      'neutral'];
     if (k === 'passsuccesstitle')                              return ['pass-success',      'success'];
     if (k === 'passrecoveredtitle')                            return ['pass-recovered',    'success'];
@@ -461,7 +463,7 @@ export function updateSideCard(prefix, team, slotNumber) {
     setText(`#${prefix}-team`,   _TEAMS[team].label);
 
     const stat = (k) => Number(info?.stats?.[k] ?? 0) || 0;
-    ["shot","pass","dribble","attack","block","intercept","tackle","defense","hand_save","punch_save","heading"]
+    ["shot","pass","dribble","attack","block","intercept","tackle","defense","hand_save","punch_save","heading","luck"]
         .forEach(k => setText(`#${prefix}-stat-${k}`, String(stat(k))));
 
     const isGK = (info?.position || "").toLowerCase().includes("goalkeeper");
@@ -794,7 +796,7 @@ export function updateCardsPower(ball) {
     if (!slot) return;
 
     const dStats = _roster.getPlayerInfo(defenseTeam, slot)?.stats ?? {};
-    const mapF   = { block: "block", intercept: "intercept", tackle: "tackle" };
+    const mapF   = { block: "block", intercept: "intercept", tackle: "tackle", simulation: "luck" };
     _ui.actionBarEl.querySelectorAll(".def-card-main").forEach((btn) => {
         const el = btn.querySelector(".def-power");
         if (el) el.textContent = String(Number(dStats[mapF[btn.dataset.defense]] ?? 0));

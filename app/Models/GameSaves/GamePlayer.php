@@ -3,6 +3,7 @@
 namespace App\Models\GameSaves;
 
 use App\Helpers\HeadingRating;
+use App\Helpers\PlayerLuck;
 use App\Models\GameSaves\Concerns\BelongsToGameSave;
 use App\Models\Player;
 use App\Models\Traits\CalculatesWeeklyCost;
@@ -54,6 +55,7 @@ class GamePlayer extends Model
 
 
     protected $casts = [
+        'luck' => 'integer',
         'special_moves' => 'array',
         'secondary_positions' => 'array',
     ];
@@ -61,6 +63,7 @@ class GamePlayer extends Model
     protected static function booted(): void
     {
         static::creating(function (GamePlayer $player) {
+            $player->luck ??= PlayerLuck::roll();
             $player->heading ??= HeadingRating::forProfile($player->position, $player->getAttributes());
         });
     }

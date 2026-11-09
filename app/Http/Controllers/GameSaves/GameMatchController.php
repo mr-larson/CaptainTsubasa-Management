@@ -639,7 +639,7 @@ class GameMatchController extends Controller
             'attack' => $p->attack, 'defense' => $p->defense,
             'shot' => $p->shot, 'pass' => $p->pass, 'dribble' => $p->dribble,
             'block' => $p->block, 'intercept' => $p->intercept, 'tackle' => $p->tackle,
-            'heading' => $p->heading, 'hand_save' => $p->hand_save, 'punch_save' => $p->punch_save,
+            'heading' => $p->heading, 'luck' => $p->luck, 'hand_save' => $p->hand_save, 'punch_save' => $p->punch_save,
         ];
 
         foreach ($deltas as $stat => $amount) {

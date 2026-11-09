@@ -23,6 +23,7 @@ const LOG_TYPES = {
     foul:              { icon: '⚠️', color: 'slate'  },
     'free-kick':       { icon: '⚽', color: 'blue'   },
     substitution:      { icon: '🔄', color: 'blue'   },
+    simulation:        { icon: '🎭', color: 'amber'  },
     unknown:           { icon: '▸',  color: 'slate'  },
 };
 

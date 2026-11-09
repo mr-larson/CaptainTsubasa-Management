@@ -6,6 +6,7 @@ import {
     PASSIVE_STAMINA_DRAIN_PER_TURN,
 } from './engine/constants.js';
 
+import { SIMULATION_COST, simulationThreshold, resolveSimulationRoll } from "./engine/luck.js";
 import { RosterService } from './engine/RosterService.js';
 
 import {
@@ -15,7 +16,7 @@ import {
 
 import {
     initDiceUI, bindDuelTooltipEvents, showDuelDice, showSpecialTooltip, hideBreakdownTooltip,
-    disposeDiceUI, runAfterDiceAnimation,
+    disposeDiceUI, runAfterDiceAnimation, rollDie, showSimulationRoll,
 } from './engine/dice.js';
 
 import {
@@ -54,7 +55,7 @@ import { runShootout } from './engine/shootout.js';
 import { attackPrompt, defensePrompt } from './engine/turnPrompt.js';
 
 import {
-    initFoulsModule, resolveFoulOutcome,
+    initFoulsModule, resolveFoulOutcome, giveMatchCard,
 } from './engine/fouls.js';
 
 import {
@@ -149,6 +150,7 @@ export function initMatchEngine(rootEl, config = {}) {
         matchLog:       [],
         actionEvents:   [],
         foulEvents:     [],
+        simulationUsed: { internal: false, external: false },
         exitTurns:      {},   // game_player_id → tour de sortie forcée (expulsion, blessure)
         substitutions:      [],
         substitutionCount:  { internal: 0, external: 0 },
@@ -425,7 +427,12 @@ export function initMatchEngine(rootEl, config = {}) {
             ball.frontOfKeeper;
 
         // L'action choisie (attackAction) n'est PAS transmise : l'IA la devine.
-        const defense = computeAIDefenseChoice(
+        const defenderSlot = state.pendingDefenseContext?.defenderSlot;
+        const takesRisk = !isKeeperDuel && canAttemptSimulation(defendingTeam, defenderSlot)
+            && state.turns >= MAX_TURNS * 0.65
+            && state.score[ball.team] - state.score[defendingTeam] === 1
+            && roster.getStat(defendingTeam, defenderSlot, "luck") >= 55;
+        const defense = takesRisk ? "simulation" : computeAIDefenseChoice(
             defendingTeam,
             { isKeeperDuel, ball },
             state.specialCooldown, state.turns
@@ -625,6 +632,9 @@ export function initMatchEngine(rootEl, config = {}) {
         // Après
         const specialMoves = roster.getSpecialMoves(state.currentTeam, ball.number).filter(m => m?.mode === "attack");
         const specialLabel = specialMoves[0]?.label ?? "ACTION SPÉCIALE";
+        const simulationChance = !isKeeperChoiceUI && canAttemptSimulation(defTeam, defenderSlot)
+            ? (20 - simulationThreshold(roster.getStat(defTeam, defenderSlot, "luck"))) * 5
+            : null;
 
         if (action === "shot" || action === "special") {
             if (ball.frontOfKeeper) {
@@ -634,33 +644,33 @@ export function initMatchEngine(rootEl, config = {}) {
                     defensePrompt(TEAMS[defTeam].label, isAITeam(defTeam), true)
                 );
             } else {
-                html = buildDefenseFieldHTML(defTeam, state.pendingDefenseContext.defenderSlot, roster);
+                html = buildDefenseFieldHTML(defTeam, defenderSlot, roster, simulationChance);
                 setMessage(
                     `${TEAMS[state.currentTeam].label} : ${action === "special" ? specialLabel.toUpperCase() : "TIR"} !`,
                     defensePrompt(TEAMS[defTeam].label, isAITeam(defTeam))
                 );
             }
         } else if (action === "special-pass") {
-            html = buildDefenseFieldHTML(defTeam, state.pendingDefenseContext.defenderSlot, roster);
+            html = buildDefenseFieldHTML(defTeam, defenderSlot, roster, simulationChance);
             setMessage(
                 `${TEAMS[state.currentTeam].label} : ${specialLabel.toUpperCase()} !`,
                 defensePrompt(TEAMS[defTeam].label, isAITeam(defTeam))
             );
         } else if (action === "special-dribble") {
-            html = buildDefenseFieldHTML(defTeam, state.pendingDefenseContext.defenderSlot, roster);
+            html = buildDefenseFieldHTML(defTeam, defenderSlot, roster, simulationChance);
             setMessage(
                 `${TEAMS[state.currentTeam].label} : ${specialLabel.toUpperCase()} !`,
                 defensePrompt(TEAMS[defTeam].label, isAITeam(defTeam))
             );
         } else if (action === "one_two") {
             const duo = roster.getDuoPartnerOnField(state.currentTeam, ball.number);
-            html = buildDefenseFieldHTML(defTeam, state.pendingDefenseContext.defenderSlot, roster);
+            html = buildDefenseFieldHTML(defTeam, defenderSlot, roster, simulationChance);
             setMessage(
                 `${TEAMS[state.currentTeam].label} prépare un UNE-DEUX${duo?.label ? ` (${duo.label})` : ""} !`,
                 defensePrompt(TEAMS[defTeam].label, isAITeam(defTeam))
             );
         } else {
-            html = buildDefenseFieldHTML(defTeam, state.pendingDefenseContext.defenderSlot, roster);
+            html = buildDefenseFieldHTML(defTeam, defenderSlot, roster, simulationChance);
             setMessage(
                 `${TEAMS[state.currentTeam].label} tente : ${(TEXTS.cards.attack[action]?.title ?? action).toUpperCase()} !`,
                 defensePrompt(TEAMS[defTeam].label, isAITeam(defTeam))
@@ -672,6 +682,51 @@ export function initMatchEngine(rootEl, config = {}) {
 
         setActionBar(html, `mode-defense-${defTeam}`, ball, roster, bindActionButtons, false);
         if (isAITeam(defTeam)) scheduleAIDefense(action, defTeam);
+    }
+
+    function canAttemptSimulation(team, slot) {
+        if (!slot || slot === 1 || state.isKickoff || state.simulationUsed[team]) return false;
+        const player = roster.getPlayerInfo(team, slot);
+        const playerEl = getCarrierElement(team, slot);
+        return player?.id != null && player.isAvailable !== false && playerEl && !playerEl.classList.contains("unavailable")
+            && (state.stamina[getPlayerId(team, slot)] ?? 0) >= SIMULATION_COST;
+    }
+
+    function attemptSimulation(team, slot) {
+        const defenderId = getPlayerId(team, slot);
+        const player = roster.getPlayerInfo(team, slot);
+        const roll = rollDie();
+        const { threshold, success, card } = resolveSimulationRoll(player.stats?.luck, roll);
+
+        state.simulationUsed[team] = true;
+        state.isAnimating = true;
+        state.stamina[defenderId] -= SIMULATION_COST;
+        updateStaminaUI(defenderId);
+        showSimulationRoll(roll, threshold, success);
+        pushLogEntry(success ? "Simulation réussie" : "Simulation ratée", [
+            player.lastname,
+            success ? "Coup franc · récupération du ballon" : "L’attaque se poursuit",
+        ], `${roll} > ${threshold}`, state, null, { team });
+        if (card) giveMatchCard(defenderId, card);
+
+        runAfterDiceAnimation(() => {
+            if (state.disposed) return;
+            state.isAnimating = false;
+            if (!success) {
+                if (card) updateSideCard(team === "internal" ? "home" : "away", team, slot);
+                handleDefenseClick("simulation-failed");
+                return;
+            }
+
+            state.phase = "resolving";
+            state.backPass = false;
+            state.lastDribblerId = null;
+            state.pendingClearanceBonus = 0;
+            state.keeperRestartMustPass = false;
+            state._moveBallFn(team, slot);
+            setMessage("Coup franc", `${TEAMS[team].label} récupère le ballon`);
+            advanceTurn(team);
+        });
     }
 
     function handleDefenseClick(defense) {
@@ -687,6 +742,12 @@ export function initMatchEngine(rootEl, config = {}) {
         const attackTeam  = state.currentTeam;
         const defenseTeam = otherTeam(state.currentTeam);
         const attack      = state.pendingAttack;
+
+        if (defense === "simulation") {
+            const slot = state.pendingDefenseContext?.defenderSlot;
+            if (!isKeeperDuel && canAttemptSimulation(defenseTeam, slot)) attemptSimulation(defenseTeam, slot);
+            return;
+        }
 
         if (!isKeeperDuel && defenseKind === "field-special") {
             const defenderId = state.pendingDefenseContext?.defenderId ?? null;
@@ -826,6 +887,7 @@ export function initMatchEngine(rootEl, config = {}) {
         resetLogHistory();
         state.substitutions     = [];
         state.substitutionCount = { internal: 0, external: 0 };
+        state.simulationUsed = { internal: false, external: false };
 
         // 11 de départ figé (avant tout remplacement) : sert au calcul du temps
         // de jeu par joueur et à la promesse de titularisation. Un titulaire

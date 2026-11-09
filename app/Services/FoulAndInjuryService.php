@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Helpers\PlayerLuck;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameInjury;
 use App\Models\GameSaves\GameMatch;
@@ -13,13 +14,8 @@ use Illuminate\Support\Facades\DB;
 class FoulAndInjuryService
 {
     // Probabilités de blessure selon la sévérité du crit
-    private const INJURY_CHANCE_CRIT_FAIL  = 0.30; // 40% chance sur critFail
+    private const INJURY_CHANCE_CRIT_FAIL  = 0.30;
     private const INJURY_CHANCE_FOUL       = 0.10; // 10% chance sur faute simple
-
-    // Probabilités carton
-    private const YELLOW_CHANCE_FOUL       = 0.25; // 25% sur faute simple
-    private const YELLOW_CHANCE_CRIT       = 0.50; // 50% sur critFail défenseur
-    private const RED_CHANCE_CRIT          = 0.15; // 15% carton rouge direct sur critFail défenseur
 
     // Durées blessures (en semaines)
     private const INJURY_WEEKS = [
@@ -52,6 +48,8 @@ class FoulAndInjuryService
             ->map(fn ($id) => (int) $id)
             ->all();
 
+        $luckByPlayer = $injuryEnabled ? GamePlayer::whereIn('id', $matchPlayerIds)->pluck('luck', 'id')->all() : [];
+
         foreach ($actionEvents as $event) {
             if (!is_array($event)) continue;
             foreach (['player_id', 'fouler_player_id', 'victim_player_id'] as $key) {
@@ -63,7 +61,7 @@ class FoulAndInjuryService
             $eventType = $event['type'] ?? null;
 
             if ($eventType === 'foul' && $injuryEnabled) {
-                $this->processFoulEvent($gameSave, $match, $event, $week);
+                $this->processFoulEvent($gameSave, $match, $event, $week, $luckByPlayer[$event['victim_player_id'] ?? 0] ?? null);
             }
 
             if ($eventType === 'injury' && $injuryEnabled) {
@@ -80,16 +78,15 @@ class FoulAndInjuryService
     //   TRAITEMENT FAUTE
     // ==========================
 
-    protected function processFoulEvent(GameSave $gameSave, GameMatch $match, array $event, int $week): void
+    protected function processFoulEvent(GameSave $gameSave, GameMatch $match, array $event, int $week, ?int $victimLuck): void
     {
-        $foulerId   = isset($event['fouler_player_id']) ? (int) $event['fouler_player_id'] : null;
         $victimId   = isset($event['victim_player_id']) ? (int) $event['victim_player_id'] : null;
         $isCritFail = $event['is_crit_fail'] ?? false;
 
         // Blessure pour la victime seulement
         if ($victimId) {
             $chance = $isCritFail ? self::INJURY_CHANCE_CRIT_FAIL : self::INJURY_CHANCE_FOUL;
-            if (mt_rand(1, 100) <= ($chance * 100)) {
+            if (random_int(0, 9999) < $chance * PlayerLuck::incidentMultiplier($victimLuck) * 10000) {
                 $severity = $isCritFail ? $this->rollSeverity(0.3, 0.5, 0.2) : 'light';
                 $this->createInjury($gameSave, $match, $victimId, $severity, $week);
             }

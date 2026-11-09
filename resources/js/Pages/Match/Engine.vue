@@ -202,7 +202,7 @@
                                 <div class="flex justify-between"><span>Arrêt :</span> <strong id="home-stat-hand_save">—</strong></div>
                                 <div class="flex justify-between"><span>Poings :</span> <strong id="home-stat-punch_save">—</strong></div>
                                 <div class="flex justify-between"><span>Tête :</span> <strong id="home-stat-heading">—</strong></div>
-                                <div class="flex justify-between"><span>Chance :</span> <strong>0</strong></div>
+                                <div class="flex justify-between"><span>Chance :</span> <strong id="home-stat-luck">—</strong></div>
                             </div>
 
                             <div class="-mb-2 flex justify-between text-[11px] text-slate-500"><span>Endurance</span><strong id="home-energy-value" class="text-slate-700">—</strong></div>
@@ -244,7 +244,7 @@
                                 <div class="flex justify-between"><span>Arrêt :</span> <strong id="away-stat-hand_save">—</strong></div>
                                 <div class="flex justify-between"><span>Poings :</span> <strong id="away-stat-punch_save">—</strong></div>
                                 <div class="flex justify-between"><span>Tête :</span> <strong id="away-stat-heading">—</strong></div>
-                                <div class="flex justify-between"><span>Chance :</span> <strong>0</strong></div>
+                                <div class="flex justify-between"><span>Chance :</span> <strong id="away-stat-luck">—</strong></div>
                             </div>
 
                             <div class="-mb-2 flex justify-between text-[11px] text-slate-500"><span>Endurance</span><strong id="away-energy-value" class="text-slate-700">—</strong></div>

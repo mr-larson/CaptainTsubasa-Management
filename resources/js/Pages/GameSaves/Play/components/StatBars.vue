@@ -46,6 +46,9 @@ const valueOf = (key) => props.player?.[key] ?? props.player?.stats?.[key] ?? nu
 <template>
     <div class="border border-slate-200 rounded-xl bg-slate-50 p-3">
         <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">Statistiques</h4>
+        <div v-if="player?.luck != null" class="mb-2 flex justify-between text-xs text-slate-500">
+            <span>Chance</span><strong class="text-slate-700">{{ player.luck }}/100</strong>
+        </div>
         <div class="space-y-1.5">
             <div v-for="stat in stats" :key="stat.key" class="flex items-center gap-2 text-xs">
                 <span class="w-16 text-slate-500 shrink-0 text-[11px]">{{ stat.label }}</span>

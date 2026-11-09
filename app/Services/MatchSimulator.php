@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Helpers\PlayerLuck;
 use App\Enums\TeamStyle;
 use App\Helpers\FormationHelper;
 use App\Models\GameSaves\GameInjury;
@@ -31,10 +32,7 @@ class MatchSimulator
     // égalité parfaite = 25 % de faute, dont 20 % sanctionnée d'un jaune.
     // Les blessures découlent des fautes côté FoulAndInjuryService, comme pour
     // un match joué : les équipes simulées subissent le même régime que l'humain.
-    private const CRIT_FOUL_RED_CHANCE            = 0.15;
-    private const CRIT_FOUL_YELLOW_CHANCE         = 0.75;
     private const TIE_FOUL_CHANCE                 = 0.25;
-    private const TIE_FOUL_YELLOW_CHANCE          = 0.20;
     // Blessure d'épuisement (miroir fieldDuel.js / shot.js) : stamina à 0 après le duel.
     private const EXHAUSTION_INJURY_CHANCE_FIELD  = 0.30;
     private const EXHAUSTION_INJURY_CHANCE_SHOT   = 0.40;
@@ -1277,20 +1275,19 @@ class MatchSimulator
     {
         $defId = (int) $defender->id;
         $attId = (int) $attacker->id;
+        $multiplier = PlayerLuck::incidentMultiplier($defender->luck ?? null);
 
         if ($defenseCritFail) {
             $foulEvents[] = ['type' => 'foul', 'fouler_player_id' => $defId, 'victim_player_id' => $attId, 'is_crit_fail' => true];
-            $r = random_int(1, 10000) / 10000;
-            if ($r < self::CRIT_FOUL_RED_CHANCE) {
+            $r = random_int(0, 9999) / 10000;
+            if ($r < PlayerLuck::CRITICAL_RED) {
                 $foulEvents[] = ['type' => 'card', 'player_id' => $defId, 'card_type' => 'red'];
-            } elseif ($r < self::CRIT_FOUL_RED_CHANCE + self::CRIT_FOUL_YELLOW_CHANCE) {
+            } elseif ($r < PlayerLuck::CRITICAL_RED + PlayerLuck::CRITICAL_YELLOW * $multiplier) {
                 $foulEvents[] = ['type' => 'card', 'player_id' => $defId, 'card_type' => 'yellow'];
             }
-        }
-
-        if ($isTie && random_int(1, 10000) <= self::TIE_FOUL_CHANCE * 10000) {
+        } elseif ($isTie && random_int(0, 9999) < self::TIE_FOUL_CHANCE * 10000) {
             $foulEvents[] = ['type' => 'foul', 'fouler_player_id' => $defId, 'victim_player_id' => $attId, 'is_crit_fail' => false];
-            if (random_int(1, 10000) <= self::TIE_FOUL_YELLOW_CHANCE * 10000) {
+            if (random_int(0, 9999) < PlayerLuck::TIE_YELLOW * $multiplier * 10000) {
                 $foulEvents[] = ['type' => 'card', 'player_id' => $defId, 'card_type' => 'yellow'];
             }
         }

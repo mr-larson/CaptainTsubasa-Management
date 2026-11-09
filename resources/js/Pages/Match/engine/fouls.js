@@ -3,6 +3,7 @@
 
 import { FREE_KICK } from './constants.js';
 import { runAfterDiceAnimation } from './dice.js';
+import { LUCK_RULES, incidentMultiplier } from './luck.js';
 
 let _state  = null;
 let _roster = null;
@@ -56,6 +57,19 @@ function giveYellowCard(defenderId, defenderDbId, defenderName) {
     }
 }
 
+export function giveMatchCard(defenderId, card) {
+    const id = getDbId(defenderId);
+    if (id == null) return;
+    const name = getPlayerName(defenderId);
+    if (card === 'yellow') {
+        giveYellowCard(defenderId, id, name);
+    } else if (card === 'red') {
+        _state.foulEvents.push({ type: 'card', player_id: id, card_type: 'red' });
+        expelPlayer(defenderId, id);
+        _pushLogEntry('foulCardTitle', [`🟥 ${name} — Carton rouge ! Expulsé !`], null, _state);
+    }
+}
+
 /**
  * Résout les conséquences disciplinaires (faute / carton) d'un duel défensif
  * en cas d'échec critique de la défense ou d'égalité.
@@ -64,6 +78,9 @@ export function resolveFoulOutcome({ attackerId, defenderId, duelResult, dRoll }
     const attackerDbId = getDbId(attackerId);
     const defenderDbId = getDbId(defenderId);
     const defenderName = getPlayerName(defenderId);
+    const defTeam = defenderId?.startsWith('I') ? 'internal' : 'external';
+    const defSlot = Number(defenderId?.slice(1));
+    const multiplier = incidentMultiplier(_roster.getPlayerInfo(defTeam, defSlot)?.stats?.luck);
 
     const isCritFailDefense = dRoll?.critFail ?? false;
     const isTie             = duelResult === 'tie';
@@ -72,12 +89,10 @@ export function resolveFoulOutcome({ attackerId, defenderId, duelResult, dRoll }
         _state.foulEvents.push({ type: 'foul', fouler_player_id: defenderDbId, victim_player_id: attackerDbId, is_crit_fail: true });
         const r = Math.random();
 
-        if (r < 0.15) {
-            _state.foulEvents.push({ type: 'card', player_id: defenderDbId, card_type: 'red' });
-            expelPlayer(defenderId, defenderDbId);
-            _pushLogEntry('foulCardTitle', [`🟥 ${defenderName} — Carton rouge ! Expulsé !`], null, _state);
-        } else if (r < 0.90) {
-            giveYellowCard(defenderId, defenderDbId, defenderName);
+        if (r < LUCK_RULES.criticalRed) {
+            giveMatchCard(defenderId, 'red');
+        } else if (r < LUCK_RULES.criticalRed + LUCK_RULES.criticalYellow * multiplier) {
+            giveMatchCard(defenderId, 'yellow');
         } else {
             _pushLogEntry('foulTitle', [`⚠️ ${defenderName} — Faute`], null, _state);
         }
@@ -95,11 +110,9 @@ export function resolveFoulOutcome({ attackerId, defenderId, duelResult, dRoll }
                 laneIndex: b.laneIndex,
             };
         }
-    }
-
-    if (isTie && Math.random() < 0.25) {
+    } else if (isTie && Math.random() < 0.25) {
         _state.foulEvents.push({ type: 'foul', fouler_player_id: defenderDbId, victim_player_id: attackerDbId, is_crit_fail: false });
-        if (Math.random() < 0.20) {
+        if (Math.random() < LUCK_RULES.tieYellow * multiplier) {
             giveYellowCard(defenderId, defenderDbId, defenderName);
         }
     }
