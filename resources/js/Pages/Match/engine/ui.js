@@ -461,7 +461,7 @@ export function updateSideCard(prefix, team, slotNumber) {
     setText(`#${prefix}-team`,   _TEAMS[team].label);
 
     const stat = (k) => Number(info?.stats?.[k] ?? 0) || 0;
-    ["shot","pass","dribble","attack","block","intercept","tackle","defense","hand_save","punch_save"]
+    ["shot","pass","dribble","attack","block","intercept","tackle","defense","hand_save","punch_save","heading"]
         .forEach(k => setText(`#${prefix}-stat-${k}`, String(stat(k))));
 
     const isGK = (info?.position || "").toLowerCase().includes("goalkeeper");
