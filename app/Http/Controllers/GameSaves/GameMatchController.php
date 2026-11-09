@@ -199,7 +199,10 @@ class GameMatchController extends Controller
                 ])->values(),
         ];
 
-        return response()->json(['match_stats' => $match->match_stats, 'incidents' => $incidents]);
+        return response()->json([
+            'match_stats' => \App\Services\PlayerStatsService::withCrossAndHeadingStats($match->match_stats),
+            'incidents' => $incidents,
+        ]);
     }
 
     /**

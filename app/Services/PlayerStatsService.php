@@ -32,7 +32,7 @@ class PlayerStatsService
         $stats = [];
 
         foreach ($matches as $match) {
-            $players = $match->match_stats['players'] ?? [];
+            $players = self::withCrossAndHeadingStats($match->match_stats)['players'] ?? [];
 
             foreach ($players as $pid => $playerStats) {
                 $pid = (string) $pid;
@@ -63,6 +63,55 @@ class PlayerStatsService
                 // Duels
                 $stats[$pid]['duelsWon']  += $playerStats['duelsWon']  ?? 0;
                 $stats[$pid]['duelsLost'] += $playerStats['duelsLost'] ?? 0;
+            }
+        }
+
+        return $stats;
+    }
+
+    /**
+     * Récupère les compteurs absents des anciens bilans à partir des duels
+     * conservés dans le déroulé, sans remplacer les compteurs déjà enregistrés.
+     */
+    public static function withCrossAndHeadingStats(?array $stats): ?array
+    {
+        if ($stats === null) {
+            return null;
+        }
+
+        $recovered = [];
+        foreach ($stats['events'] ?? [] as $event) {
+            if (($event['action'] ?? null) !== 'cross' || ($event['def_action'] ?? null) !== 'heading') {
+                continue;
+            }
+
+            $winner = $event['meta']['result']['winner'] ?? $event['result'] ?? null;
+            if (!in_array($winner, ['attack', 'defense', 'tie'], true)) {
+                continue;
+            }
+
+            foreach ([
+                ['attacker', 'offense', 'cross', 'attack'],
+                ['defender', 'defense', 'heading', 'defense'],
+            ] as [$actor, $side, $action, $success]) {
+                $id = $event[$actor]['id'] ?? null;
+                if ($id === null || isset($stats['players'][$id][$side][$action])) {
+                    continue;
+                }
+
+                $recovered[$id][$side][$action] ??= ['attempts' => 0, 'success' => 0];
+                $recovered[$id][$side][$action]['attempts']++;
+                if ($winner === $success) {
+                    $recovered[$id][$side][$action]['success']++;
+                }
+            }
+        }
+
+        foreach ($recovered as $id => $sides) {
+            foreach ($sides as $side => $actions) {
+                foreach ($actions as $action => $counts) {
+                    $stats['players'][$id][$side][$action] = $counts;
+                }
             }
         }
 
