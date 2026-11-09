@@ -87,7 +87,7 @@ const teamComparative = computed(() => {
             .map(c => c.game_player?.id ?? c.gamePlayer?.id ?? c.player?.id)
             .filter(Boolean);
 
-        const totals = { shots: 0, shotSuccess: 0, passes: 0, dribbles: 0, intercepts: 0, tackles: 0, blocks: 0, saves: 0, duelsWon: 0, duelsLost: 0 };
+        const totals = { shots: 0, shotSuccess: 0, passes: 0, crosses: 0, dribbles: 0, intercepts: 0, tackles: 0, blocks: 0, headings: 0, saves: 0, duelsWon: 0, duelsLost: 0 };
 
         for (const pid of playerIds) {
             const s = props.playerSeasonStats?.[pid];
@@ -95,10 +95,12 @@ const teamComparative = computed(() => {
             totals.shots      += s.offense?.shot?.attempts      ?? 0;
             totals.shotSuccess += s.offense?.shot?.success      ?? 0;
             totals.passes     += s.offense?.pass?.attempts      ?? 0;
+            totals.crosses    += s.offense?.cross?.attempts     ?? 0;
             totals.dribbles   += s.offense?.dribble?.attempts   ?? 0;
             totals.intercepts += s.defense?.intercept?.attempts ?? 0;
             totals.tackles    += s.defense?.tackle?.attempts    ?? 0;
             totals.blocks     += s.defense?.block?.attempts     ?? 0;
+            totals.headings   += s.defense?.heading?.attempts   ?? 0;
             totals.saves += (s.defense?.hands?.attempts ?? 0) + (s.defense?.punch?.attempts ?? 0);
             totals.duelsWon   += s.duelsWon  ?? 0;
             totals.duelsLost  += s.duelsLost ?? 0;
@@ -234,11 +236,13 @@ const sortIcon = (key) => {
                                     { key: 'shots',     label: 'Tirs'    },
                                     { key: 'shotSuccess',label: 'Buts' },
                                     { key: 'passes',    label: 'Passes'  },
+                                    { key: 'crosses',   label: 'Centres' },
                                     { key: 'dribbles',  label: 'Dribbles'},
                                     { key: 'saves', label: 'Arrêts' },
                                     { key: 'intercepts',label: 'Interc.', title: 'Interceptions' },
                                     { key: 'tackles',   label: 'Tacles'  },
                                     { key: 'blocks',    label: 'Contres', title: 'Tirs contrés' },
+                                    { key: 'headings',  label: 'Têtes', title: 'Têtes défensives' },
                                     { key: 'duelsWon',  label: 'Duels G.', title: 'Duels gagnés' },
                                     { key: 'duelsLost', label: 'Duels P.', title: 'Duels perdus' },
                                 ]" :key="col.key"
@@ -272,7 +276,7 @@ const sortIcon = (key) => {
                                 </div>
                             </td>
 
-                            <td v-for="col in ['shots','shotSuccess','passes','dribbles','saves','intercepts','tackles','blocks','duelsWon','duelsLost']"
+                            <td v-for="col in ['shots','shotSuccess','passes','crosses','dribbles','saves','intercepts','tackles','blocks','headings','duelsWon','duelsLost']"
                                 :key="col"
                                 class="py-2 px-2 text-right font-semibold"
                                 :class="[

@@ -213,6 +213,7 @@ const compareStatRows = [
     { key: 'tackle', label: 'Tacle' },
     { key: 'intercept', label: 'Interception' },
     { key: 'block', label: 'Blocage' },
+    { key: 'heading', label: 'Tête' },
     { key: 'hand_save', label: 'Main' },
     { key: 'punch_save', label: 'Poing' },
     { key: 'cost', label: 'Coût (billets/match)', lowerBetter: true },

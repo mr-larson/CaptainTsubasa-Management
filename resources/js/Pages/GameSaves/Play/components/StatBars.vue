@@ -19,6 +19,7 @@ const GK_STATS = [
     { label: 'Arrêt 👊', key: 'punch_save', color: 'bg-fuchsia-400' },
     { label: 'Attaque',  key: 'attack',     color: 'bg-orange-400' },
     { label: 'Contre',   key: 'block',      color: 'bg-indigo-400' },
+    { label: 'Tête',     key: 'heading',    color: 'bg-cyan-400' },
 ];
 
 const FIELD_STATS = [

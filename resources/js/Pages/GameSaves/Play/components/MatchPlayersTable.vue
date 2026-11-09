@@ -35,8 +35,10 @@ const rows = computed(() => props.players.map(p => {
     const lost = stat(pid, 'duelsLost');
     const minutes = minutesOf(pid);
     const starter = props.starters ? starterSet.value.has(String(pid)) : null;
+    const cross = pair(pid, 'offense.cross');
+    const heading = pair(pid, 'defense.heading');
     const anyAction = won + lost + stat(pid, 'offense.pass.attempts') + stat(pid, 'offense.shot.attempts')
-        + stat(pid, 'defense.hands.attempts') + stat(pid, 'defense.punch.attempts') > 0;
+        + stat(pid, 'defense.hands.attempts') + stat(pid, 'defense.punch.attempts') + cross.tot + heading.tot > 0;
     return {
         p, pid, starter, minutes,
         used:     starter === true || (minutes ?? 0) > 0 || anyAction,
@@ -44,6 +46,7 @@ const rows = computed(() => props.players.map(p => {
         goals:    stat(pid, 'offense.goals'),
         shot:     pair(pid, 'offense.shot'),
         pass:     pair(pid, 'offense.pass'),
+        cross, heading,
         dribble:  pair(pid, 'offense.dribble'),
         saves:    stat(pid, 'defense.hands.success') + stat(pid, 'defense.punch.success') + stat(pid, 'defense.gkSpecial.success'),
         defense:  { ok: def.reduce((a, d) => a + d.ok, 0), tot: def.reduce((a, d) => a + d.tot, 0) },
@@ -59,9 +62,11 @@ const SORTS = {
     goals:   (r) => r.goals,
     shot:    (r) => r.shot.tot,
     pass:    (r) => r.pass.ok,
+    cross: (r) => r.cross.ok,
     dribble: (r) => r.dribble.ok,
     saves:   (r) => r.saves,
     defense: (r) => r.defense.ok,
+    heading: (r) => r.heading.ok,
     duels:   (r) => r.won,
 };
 const sortKey = ref('order');
@@ -85,9 +90,11 @@ const COLUMNS = [
     { key: 'goals',   label: 'Buts',    title: 'Buts marqués' },
     { key: 'shot',    label: 'Tirs',    title: 'Tirs réussis / tentés' },
     { key: 'pass',    label: 'Passes',  title: 'Passes réussies / tentées' },
+    { key: 'cross', label: 'Centres', title: 'Centres réussis / tentés' },
     { key: 'dribble', label: 'Drib.',   title: 'Dribbles réussis / tentés' },
     { key: 'saves',   label: 'Arrêts',  title: 'Arrêts réussis (mains, poings, spécial)' },
     { key: 'defense', label: 'Déf.',    title: 'Interceptions, tacles et contres réussis / tentés' },
+    { key: 'heading', label: 'Têtes', title: 'Têtes défensives réussies / tentées' },
     { key: 'duels',   label: 'Duels',   title: 'Duels gagnés (% de réussite)' },
 ];
 </script>
@@ -134,6 +141,7 @@ const COLUMNS = [
                         <template v-if="r.gk">—</template><template v-else>{{ r.shot.ok }}/{{ r.shot.tot }}</template>
                     </td>
                     <td class="py-1.5 px-2 text-right text-slate-600">{{ r.pass.ok }}/{{ r.pass.tot }}</td>
+                    <td class="py-1.5 px-2 text-right text-slate-600">{{ r.cross.ok }}/{{ r.cross.tot }}</td>
                     <td class="py-1.5 px-2 text-right" :class="r.gk ? 'text-slate-300' : 'text-slate-600'">
                         <template v-if="r.gk">—</template><template v-else>{{ r.dribble.ok }}/{{ r.dribble.tot }}</template>
                     </td>
@@ -141,6 +149,7 @@ const COLUMNS = [
                         {{ r.gk ? r.saves : '—' }}
                     </td>
                     <td class="py-1.5 px-2 text-right text-slate-600">{{ r.defense.ok }}/{{ r.defense.tot }}</td>
+                    <td class="py-1.5 px-2 text-right text-slate-600">{{ r.heading.ok }}/{{ r.heading.tot }}</td>
                     <td class="py-1.5 px-2 text-right">
                         <span class="font-bold text-emerald-600">{{ r.won }}</span>
                         <span v-if="r.duelsPct !== null" class="text-2xs text-slate-400"> ({{ r.duelsPct }} %)</span>

@@ -42,7 +42,7 @@ class PlayerStatsService
                 }
 
                 // Offense
-                foreach (['pass', 'shot', 'dribble', 'special'] as $action) {
+                foreach (['pass', 'shot', 'dribble', 'special', 'cross'] as $action) {
                     $stats[$pid]['offense'][$action]['attempts'] +=
                         $playerStats['offense'][$action]['attempts'] ?? 0;
                     $stats[$pid]['offense'][$action]['success']  +=
@@ -53,7 +53,7 @@ class PlayerStatsService
                     ($stats[$pid]['offense']['goals'] ?? 0) + ($playerStats['offense']['goals'] ?? 0);
 
                 // Defense
-                foreach (['intercept', 'tackle', 'block', 'hands', 'punch', 'gkSpecial'] as $action) {
+                foreach (['intercept', 'tackle', 'block', 'heading', 'hands', 'punch', 'gkSpecial'] as $action) {
                     $stats[$pid]['defense'][$action]['attempts'] +=
                         $playerStats['defense'][$action]['attempts'] ?? 0;
                     $stats[$pid]['defense'][$action]['success']  +=
@@ -91,12 +91,14 @@ class PlayerStatsService
                 'shot'    => ['attempts' => 0, 'success' => 0],
                 'dribble' => ['attempts' => 0, 'success' => 0],
                 'special' => ['attempts' => 0, 'success' => 0],
+                'cross'   => ['attempts' => 0, 'success' => 0],
                 'goals'   => 0,
             ],
             'defense' => [
                 'intercept' => ['attempts' => 0, 'success' => 0],
                 'tackle'    => ['attempts' => 0, 'success' => 0],
                 'block'     => ['attempts' => 0, 'success' => 0],
+                'heading'   => ['attempts' => 0, 'success' => 0],
                 'hands'     => ['attempts' => 0, 'success' => 0],
                 'punch'     => ['attempts' => 0, 'success' => 0],
                 'gkSpecial' => ['attempts' => 0, 'success' => 0],

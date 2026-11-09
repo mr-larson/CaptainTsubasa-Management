@@ -59,6 +59,7 @@ const props = defineProps({
     averageAttack:        { type: Number,  default: 0 },
     averageDefense:       { type: Number,  default: 0 },
     averageStamina:       { type: Number,  default: 0 },
+    averageSpeed:         { type: Number,  default: 0 },
     moraleLogs:           { type: Object,  default: () => ({}) },
     playerPromises:       { type: Object,  default: () => ({}) },
     playerDeclarations:   { type: Object,  default: () => ({}) },
@@ -299,6 +300,7 @@ const slotCandidates = (slot, slotDef) => substitutes.value
                         <span class="font-bold" :class="suspensionsCount > 0 ? 'text-amber-500' : 'text-slate-700'">{{ suspensionsCount }}</span>
                     </div>
                     <div class="flex justify-between"><span>Stamina moy.</span><span class="font-bold text-slate-700">{{ averageStamina }}</span></div>
+                    <div class="flex justify-between"><span>Vitesse moy.</span><span class="font-bold text-slate-700">{{ averageSpeed }}</span></div>
                     <div class="flex justify-between"><span>Moral moy.</span>
                         <span class="font-bold" :class="moraleState(averageMorale).text">{{ moraleState(averageMorale).emoji }} {{ averageMorale }}</span>
                     </div>

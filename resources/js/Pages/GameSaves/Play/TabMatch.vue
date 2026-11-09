@@ -296,7 +296,9 @@ const statBars = computed(() => {
         row('Buts',          m.home_score,      m.away_score),
         row('Tirs',          t.home.shots,      t.away.shots),
         row('Passes',        t.home.passes,     t.away.passes),
+        row('Centres', teamActionAttempts('home', 'offense.cross'), teamActionAttempts('away', 'offense.cross')),
         row('Dribbles',      t.home.dribbles,   t.away.dribbles),
+        row('Têtes défensives', teamActionAttempts('home', 'defense.heading'), teamActionAttempts('away', 'defense.heading')),
         row('Duels gagnés',  t.home.duelsWon,   t.away.duelsWon),
         row('Arrêts',        teamSaves('home'), teamSaves('away')),
     ];
@@ -325,6 +327,8 @@ const playerSaves = (playerId) =>
 
 // Arrêts d'une équipe : match_stats.teams n'a pas de clé `saves`, on somme ses joueurs.
 const teamSaves = (side) => matchRoster(side).reduce((sum, p) => sum + playerSaves(p.id), 0);
+const teamActionAttempts = (side, action) =>
+    matchRoster(side).reduce((sum, p) => sum + playerMatchStat(p.id, `${action}.attempts`), 0);
 // ==========================
 //   REPLAY
 // ==========================

@@ -9,12 +9,14 @@ export function emptyPlayerMatchStats() {
             shot:    { attempts: 0, success: 0 },
             dribble: { attempts: 0, success: 0 },
             special: { attempts: 0, success: 0 },
+            cross:   { attempts: 0, success: 0 },
             goals:   0,
         },
         defense: {
             intercept: { attempts: 0, success: 0 },
             tackle:    { attempts: 0, success: 0 },
             block:     { attempts: 0, success: 0 },
+            heading:   { attempts: 0, success: 0 },
             hands:     { attempts: 0, success: 0 },
             punch:     { attempts: 0, success: 0 },
             gkSpecial: { attempts: 0, success: 0 },
@@ -106,6 +108,7 @@ export function buildMatchStats(events, goalEvents = []) {
             if (act === "pass")    out.players[pid].offense.pass.attempts++;
             if (act === "shot")    out.players[pid].offense.shot.attempts++;
             if (act === "dribble") out.players[pid].offense.dribble.attempts++;
+            if (act === "cross") out.players[pid].offense.cross.attempts++;
             if (act === "special") out.players[pid].offense.special.attempts++;
 
             const t = ev.attack.team === "internal" ? "home" : "away";
@@ -116,6 +119,7 @@ export function buildMatchStats(events, goalEvents = []) {
             if (ev.result === "attack") {
                 if (act === "pass")    out.players[pid].offense.pass.success++;
                 if (act === "dribble") out.players[pid].offense.dribble.success++;
+                if (act === "cross") out.players[pid].offense.cross.success++;
 
                 if (act === "shot" || act === "special") {
                     out.players[pid].offense.shot.success++;
@@ -140,6 +144,7 @@ export function buildMatchStats(events, goalEvents = []) {
             if (def === "intercept")  out.players[pid].defense.intercept.attempts++;
             if (def === "tackle")     out.players[pid].defense.tackle.attempts++;
             if (def === "block")      out.players[pid].defense.block.attempts++;
+            if (def === "heading")      out.players[pid].defense.heading.attempts++;
             if (def === "hands")      out.players[pid].defense.hands.attempts++;
             if (def === "punch")      out.players[pid].defense.punch.attempts++;
             if (def === "gk-special") out.players[pid].defense.gkSpecial.attempts++;
@@ -148,6 +153,7 @@ export function buildMatchStats(events, goalEvents = []) {
                 if (def === "intercept")  out.players[pid].defense.intercept.success++;
                 if (def === "tackle")     out.players[pid].defense.tackle.success++;
                 if (def === "block")      out.players[pid].defense.block.success++;
+                if (def === "heading")      out.players[pid].defense.heading.success++;
                 if (def === "hands")      out.players[pid].defense.hands.success++;
                 if (def === "punch")      out.players[pid].defense.punch.success++;
                 if (def === "gk-special") out.players[pid].defense.gkSpecial.success++;

@@ -679,6 +679,7 @@ const saveGame = () => {
                                :averageAttack="averageAttack"
                                :averageDefense="averageDefense"
                                :averageStamina="averageStamina"
+                               :averageSpeed="averageSpeed"
                                :moraleLogs="moraleLogs"
                                :playerPromises="playerPromises"
                                :playerDeclarations="playerDeclarations"
