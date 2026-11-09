@@ -4,7 +4,7 @@ import { fieldClass } from '@/Components/fieldStyles';
 import ButtonSecondary from '@/Components/ButtonSecondary.vue';
 import ButtonPrimary from '@/Components/ButtonPrimary.vue';
 import { computed, ref, watch } from 'vue';
-import { usePlayerUtils } from './usePlayerUtils.js';
+import { STAT_COLORS, usePlayerUtils } from './usePlayerUtils.js';
 import PlayerPhoto from '@/Components/PlayerPhoto.vue';
 import RadarChart from '@/Pages/GameSaves/Play/components/RadarChart.vue';
 import StatBars from '@/Pages/GameSaves/Play/components/StatBars.vue';
@@ -205,6 +205,7 @@ const compareStatRows = [
     { key: 'overall', label: 'OVR' },
     { key: 'speed', label: 'Vitesse' },
     { key: 'stamina', label: 'Endurance' },
+    { key: 'luck', label: 'Chance', color: STAT_COLORS.luck },
     { key: 'shot', label: 'Tir' },
     { key: 'pass', label: 'Passe' },
     { key: 'dribble', label: 'Dribble' },
@@ -659,7 +660,10 @@ const filteredHistory = computed(() =>
                         </thead>
                         <tbody>
                         <tr v-for="row in compareStatRows" :key="row.key" class="border-t border-slate-50">
-                            <td class="py-1 px-2 text-slate-500">{{ row.label }}</td>
+                            <td class="py-1 px-2 text-slate-500">
+                                <span v-if="row.color" class="mr-1 inline-block h-2 w-2 rounded-full" :class="row.color"></span>
+                                {{ row.label }}
+                            </td>
                             <td v-for="(p, i) in compareList" :key="p.id"
                                 class="py-1 px-2 text-center font-semibold"
                                 :class="compareWins(p, compareList[1 - i], row) ? 'text-emerald-600' : 'text-slate-600'">

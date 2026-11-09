@@ -1,7 +1,7 @@
 <script setup>
 import ButtonSecondary from '@/Components/ButtonSecondary.vue';
 import { computed } from 'vue';
-import { usePlayerUtils } from './usePlayerUtils.js';
+import { STAT_COLORS, usePlayerUtils } from './usePlayerUtils.js';
 import TeamStyleBadges from "@/Pages/GameSaves/Play/components/TeamStyleBadges.vue";
 import DashboardSquadCards from "@/Pages/GameSaves/Play/components/DashboardSquadCards.vue";
 import DashboardSeasonCards from "@/Pages/GameSaves/Play/components/DashboardSeasonCards.vue";
@@ -22,6 +22,7 @@ const props = defineProps({
     averageAttack:  { type: Number, required: true },
     averageDefense: { type: Number, required: true },
     averageStamina: { type: Number, required: true },
+    averageLuck:    { type: Number, required: true },
     nextMatch:      { type: Object, default: null },
     nextMatchInfo:  { type: Object, default: null },
     isByeWeek:      { type: Boolean, required: true },
@@ -108,6 +109,12 @@ const opponentAvgStamina = computed(() => {
     return Math.round(players.reduce((s, p) => s + Number(p.stamina ?? 0), 0) / players.length);
 });
 
+const opponentAvgLuck = computed(() => {
+    const players = opponentContracts.value.map(c => c.game_player ?? c.gamePlayer).filter(Boolean);
+    if (!players.length) return 0;
+    return Math.round(players.reduce((s, p) => s + Number(p.luck ?? p.stats?.luck ?? 0), 0) / players.length);
+});
+
 // ==========================
 //   SAISON PROGRESSION
 // ==========================
@@ -164,9 +171,10 @@ const lastHeadToHead = computed(() => {
 
 // Forces face à face : écart en faveur de qui ?
 const faceToFace = computed(() => [
+    { label: 'Stamina', me: props.averageStamina, opp: opponentAvgStamina.value, color: 'bg-emerald-400' },
+    { label: 'Chance',  me: props.averageLuck,    opp: opponentAvgLuck.value,    color: STAT_COLORS.luck },
     { label: 'Attaque', me: props.averageAttack,  opp: opponentAvgAttack.value,  color: 'bg-orange-400' },
     { label: 'Défense', me: props.averageDefense, opp: opponentAvgDefense.value, color: 'bg-blue-400' },
-    { label: 'Stamina', me: props.averageStamina, opp: opponentAvgStamina.value, color: 'bg-emerald-400' },
 ]);
 // Joueurs adverses à surveiller : meilleur buteur et meilleur duelliste.
 const opponentThreats = computed(() => {

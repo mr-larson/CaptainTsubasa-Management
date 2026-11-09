@@ -169,7 +169,7 @@ const {
     injuriesCount, suspensionsCount, cardsCount,
     injuriesCountForTeam, suspensionsCountForTeam, cardsCountForTeam,
     isPlayerInjured, isPlayerSuspended, playerYellowCards, playerInjury, playerSuspension,
-    averageAttack, averageDefense, averageStamina, averageSpeed,
+    averageAttack, averageDefense, averageStamina, averageLuck, averageSpeed,
 } = useDashboard({
     teams: teamsRef, gameSave: gameSaveRef, team: teamRef, roster,
     activeInjuries: activeInjuriesRef,
@@ -632,6 +632,7 @@ const saveGame = () => {
                                   :averageAttack="averageAttack"
                                   :averageDefense="averageDefense"
                                   :averageStamina="averageStamina"
+                                  :averageLuck="averageLuck"
                                   :nextMatch="nextMatch"
                                   :nextMatchInfo="nextMatchInfo"
                                   :isByeWeek="isByeWeek"

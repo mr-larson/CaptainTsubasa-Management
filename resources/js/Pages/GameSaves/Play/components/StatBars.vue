@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import { STAT_COLORS } from '../usePlayerUtils.js';
 
 /**
  * Carte "Statistiques" : barres horizontales, liste adaptée GK / joueur de champ.
@@ -11,13 +12,16 @@ const props = defineProps({
     compareLabel:  { type: String, default: null },
 });
 
+const LUCK_STAT = { label: 'Chance', key: 'luck', color: STAT_COLORS.luck };
+
 const GK_STATS = [
     { label: 'Vitesse',  key: 'speed',      color: 'bg-sky-400' },
     { label: 'Stamina',  key: 'stamina',    color: 'bg-emerald-400' },
+    LUCK_STAT,
+    { label: 'Attaque',  key: 'attack',     color: 'bg-orange-400' },
     { label: 'Défense',  key: 'defense',    color: 'bg-blue-400' },
     { label: 'Arrêt ✋', key: 'hand_save',  color: 'bg-violet-400' },
     { label: 'Arrêt 👊', key: 'punch_save', color: 'bg-fuchsia-400' },
-    { label: 'Attaque',  key: 'attack',     color: 'bg-orange-400' },
     { label: 'Contre',   key: 'block',      color: 'bg-indigo-400' },
     { label: 'Tête',     key: 'heading',    color: 'bg-cyan-400' },
 ];
@@ -25,6 +29,7 @@ const GK_STATS = [
 const FIELD_STATS = [
     { label: 'Vitesse', key: 'speed',     color: 'bg-sky-400' },
     { label: 'Stamina', key: 'stamina',   color: 'bg-emerald-400' },
+    LUCK_STAT,
     { label: 'Attaque', key: 'attack',    color: 'bg-orange-400' },
     { label: 'Défense', key: 'defense',   color: 'bg-blue-400' },
     { label: 'Tir',     key: 'shot',      color: 'bg-red-400' },
@@ -36,19 +41,19 @@ const FIELD_STATS = [
     { label: 'Tête',    key: 'heading',   color: 'bg-cyan-400' },
 ];
 
-const stats = computed(() =>
-    props.player?.position?.toLowerCase().includes('goalkeeper') ? GK_STATS : FIELD_STATS
-);
+const valueOf = (key, player = props.player) => player?.[key] ?? player?.stats?.[key] ?? null;
 
-const valueOf = (key) => props.player?.[key] ?? props.player?.stats?.[key] ?? null;
+const stats = computed(() => {
+    const rows = props.player?.position?.toLowerCase().includes('goalkeeper') ? GK_STATS : FIELD_STATS;
+    return rows.filter(({ key }) =>
+        key !== 'luck' || valueOf(key) != null || valueOf(key, props.comparePlayer) != null
+    );
+});
 </script>
 
 <template>
     <div class="border border-slate-200 rounded-xl bg-slate-50 p-3">
         <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">Statistiques</h4>
-        <div v-if="player?.luck != null" class="mb-2 flex justify-between text-xs text-slate-500">
-            <span>Chance</span><strong class="text-slate-700">{{ player.luck }}/100</strong>
-        </div>
         <div class="space-y-1.5">
             <div v-for="stat in stats" :key="stat.key" class="flex items-center gap-2 text-xs">
                 <span class="w-16 text-slate-500 shrink-0 text-[11px]">{{ stat.label }}</span>

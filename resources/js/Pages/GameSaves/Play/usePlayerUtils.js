@@ -11,14 +11,14 @@ const STAT_KEYS = [
 const STAT_LABELS = {
     shot: 'Tir', pass: 'Passe', dribble: 'Dribble', attack: 'Att',
     defense: 'Def', speed: 'Vit', block: 'Contre', intercept: 'Interc',
-    tackle: 'Tacle', stamina: 'End', hand_save: 'Main', punch_save: 'Poings',
+    tackle: 'Tacle', stamina: 'End', luck: 'Chance', hand_save: 'Main', punch_save: 'Poings',
 };
 
-const STAT_COLORS = {
+export const STAT_COLORS = {
     shot: 'bg-red-400', pass: 'bg-teal-400', dribble: 'bg-yellow-400',
     attack: 'bg-orange-400', defense: 'bg-blue-400', speed: 'bg-sky-400',
     block: 'bg-indigo-400', intercept: 'bg-purple-400', tackle: 'bg-pink-400',
-    stamina: 'bg-emerald-400', hand_save: 'bg-violet-400', punch_save: 'bg-fuchsia-400',
+    stamina: 'bg-emerald-400', luck: 'bg-lime-400', hand_save: 'bg-violet-400', punch_save: 'bg-fuchsia-400',
 };
 
 const KEY_STATS_BY_POSITION = {
