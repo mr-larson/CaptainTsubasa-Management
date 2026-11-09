@@ -136,7 +136,7 @@ class PlayerChemistryService
         return $partners;
     }
 
-    public function summary(GameSave $save, Collection $players): array
+    public function summary(GameSave $save, Collection $players, ?Collection $teamByPlayer = null): array
     {
         $players = $players->keyBy('id');
         $rows = $this->forPlayers($save, $players->keys()->all())->sortByDesc('score')->sortByDesc('confirmed');
@@ -144,6 +144,10 @@ class PlayerChemistryService
         $historical = PlayerLink::partnerMapFor($players->pluck('base_player_id')->filter()->unique()->all());
         $summary = [];
         foreach ($rows as $row) {
+            if ($teamByPlayer !== null && $teamByPlayer[$row->player_a_id] !== $teamByPlayer[$row->player_b_id]) {
+                continue;
+            }
+
             $a = $players[$row->player_a_id];
             $b = $players[$row->player_b_id];
             if ($this->isHistorical($historical, $a->base_player_id, $b->base_player_id)) continue;

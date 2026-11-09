@@ -6,6 +6,7 @@ const props = defineProps({
     gameSaveId: { type: Number, required: true },
     playerId: { type: Number, required: true },
     relations: { type: Array, default: () => [] },
+    editable: { type: Boolean, default: true },
 });
 
 const form = useForm({ player_id: null, partner_id: null });
@@ -42,7 +43,7 @@ function propose(partnerId) {
                         {{ relation.shared_matches }} {{ relation.shared_matches === 1 ? 'match' : 'matchs' }} ensemble
                     </span>
                     <span v-if="relation.confirmed" class="rounded-full bg-teal-100 px-2 py-0.5 text-2xs font-bold text-teal-700">🤝 Duo confirmé</span>
-                    <ButtonSecondary v-else-if="relation.can_attempt" size="sm" :disabled="form.processing"
+                    <ButtonSecondary v-else-if="editable && relation.can_attempt" size="sm" :disabled="form.processing"
                                      @click="propose(relation.partner_id)">
                         Proposer un duo · {{ relation.chance }} %
                     </ButtonSecondary>

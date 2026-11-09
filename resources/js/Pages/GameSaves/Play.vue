@@ -728,6 +728,7 @@ const saveGame = () => {
                                    :playerSuspension="playerSuspension"
                                    :averageTeamStat="averageTeamStat"
                                    :playerSeasonStats="props.playerSeasonStats"
+                                   :playerChemistry="props.playerChemistry"
                                    :isPlayerInjured="isPlayerInjured"
                                    :isPlayerSuspended="isPlayerSuspended"
                                    :playerYellowCards="playerYellowCards"

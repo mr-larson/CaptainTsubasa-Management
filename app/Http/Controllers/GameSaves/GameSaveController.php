@@ -959,8 +959,10 @@ class GameSaveController extends Controller
         );
 
         $chemistry = app(PlayerChemistryService::class);
-        $clubPlayers = $controlledTeam?->contracts->pluck('gamePlayer')->filter() ?? collect();
-        $rosterIds = $gameTeams->flatMap(fn ($team) => $team->contracts->pluck('game_player_id'))->unique()->all();
+        $activeContracts = $gameTeams->flatMap(fn ($team) => $team->contracts);
+        $activePlayers = $activeContracts->pluck('gamePlayer')->filter();
+        $teamByPlayer = $activeContracts->pluck('game_team_id', 'game_player_id');
+        $rosterIds = $teamByPlayer->keys()->all();
 
         return Inertia::render('GameSaves/Play', [
             'midseasonBreakRecovery' => $gameSave->hasPendingMidseasonBreak() ? SeasonService::MIDSEASON_RECOVERY : null,
@@ -968,7 +970,7 @@ class GameSaveController extends Controller
             'gameSave'            => $gameSave,
             'managementStats'     => $managementStats,
             'duoLinks'            => $duoLinks,
-            'playerChemistry'      => $chemistry->summary($gameSave, $clubPlayers),
+            'playerChemistry'      => $chemistry->summary($gameSave, $activePlayers, $teamByPlayer),
             'learnedDuos'          => $chemistry->confirmedPartners($gameSave, $rosterIds),
             'teams'               => $gameTeams,
             'matches'             => $matches,

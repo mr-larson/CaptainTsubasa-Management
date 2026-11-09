@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import PlayerMoraleCard from '@/Pages/GameSaves/Play/components/PlayerMoraleCard.vue';
+import PlayerChemistryCard from '@/Pages/GameSaves/Play/components/PlayerChemistryCard.vue';
 import { fieldClass } from '@/Components/fieldStyles';
 import ButtonSecondary from '@/Components/ButtonSecondary.vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
@@ -43,6 +44,7 @@ const props = defineProps({
     cardsCountForTeam:      { type: Function, required: true },
     averageTeamStat:        { type: Function, required: true },
     playerSeasonStats:      { type: Object,   default: () => ({}) },
+    playerChemistry:        { type: Object,   default: () => ({}) },
     isPlayerInjured:        { type: Function, default: () => () => false },
     isPlayerSuspended:      { type: Function, default: () => () => false },
     playerYellowCards:      { type: Function, default: () => () => 0 },
@@ -245,6 +247,10 @@ const selectedPlayerPerf = computed(() => {
                         <span class="font-bold text-slate-700">{{ averageTeamStat(otherRosterWithStatus, 'stamina') }}</span>
                     </div>
                     <div class="flex justify-between">
+                        <span>Vitesse moy.</span>
+                        <span class="font-bold text-slate-700">{{ averageTeamStat(otherRosterWithStatus, 'speed') }}</span>
+                    </div>
+                    <div class="flex justify-between">
                         <span>Joueurs avertis</span>
                         <span class="font-bold" :class="cardsCountForTeam(selectedOtherTeam.id) > 0 ? 'text-yellow-500' : 'text-slate-700'">
                             {{ cardsCountForTeam(selectedOtherTeam.id) }}
@@ -327,6 +333,12 @@ const selectedPlayerPerf = computed(() => {
                                       :editable="editable"
                                       @make-promise="(p, t) => emit('make-promise', p, t)"
                                       @make-declaration="(p, t) => emit('make-declaration', p, t)" />
+
+                    <PlayerChemistryCard :key="selectedOtherPlayer.id"
+                                         :gameSaveId="gameSaveId"
+                                         :playerId="selectedOtherPlayer.id"
+                                         :relations="playerChemistry[selectedOtherPlayer.id] ?? []"
+                                         :editable="false" />
 
                     <!-- Radar + Barres -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
