@@ -130,7 +130,7 @@ export function resolveCross(attackTeam, defenseTeam, defenderPick = null, isSpe
 
         if (result.isTie) {
             givePossessionOnTie(defenseTeam, result.defenderId);
-            pushLogEntry("Duel équilibré (centre)", [defenseTag("heading"), getCounterTag("cross", "heading")], result.diceTag, shared.state, result.breakdown ?? null);
+            pushLogEntry("Duel équilibré (centre)", [defenseTag("heading")], result.diceTag, shared.state, result.breakdown ?? null);
             shared.state.phase = "attack"; shared.state.pendingAttack = null;
             shared.animateAndThen(() => { shared.advanceTurn(defenseTeam); });
             return;
@@ -148,7 +148,7 @@ export function resolveCross(attackTeam, defenseTeam, defenderPick = null, isSpe
 
             _moveBall(attackTeam, receiver);
             setMessage("Centre réussi !", shared.TEAMS[attackTeam].label + " trouve le n°" + receiver + " dans la surface");
-            pushLogEntry(`${title} réussi`, ["Vers le n°" + receiver, defenseTag("heading"), getCounterTag("cross", "heading")], result.diceTag, shared.state, result.breakdown ?? null);
+            pushLogEntry(`${title} réussi`, ["Vers le n°" + receiver, defenseTag("heading")], result.diceTag, shared.state, result.breakdown ?? null);
             shared.animateAndThen(() => { shared.advanceTurn(attackTeam); });
             return;
         }
@@ -164,7 +164,7 @@ export function resolveCross(attackTeam, defenseTeam, defenderPick = null, isSpe
         syncRecovererCard(defenseTeam, receiver);
 
         setMessage("Centre repoussé !", shared.TEAMS[defenseTeam].label + " dégage avec le n°" + receiver);
-        pushLogEntry(`${title} repoussé (tête)`, [defenseTag("heading"), getCounterTag("cross", "heading")], result.diceTag, shared.state, result.breakdown ?? null);
+        pushLogEntry(`${title} repoussé (tête)`, [defenseTag("heading")], result.diceTag, shared.state, result.breakdown ?? null);
         shared.animateAndThen(() => { shared.advanceTurn(defenseTeam); });
     });
 }

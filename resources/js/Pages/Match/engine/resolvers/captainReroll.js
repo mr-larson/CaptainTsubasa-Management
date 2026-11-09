@@ -121,8 +121,8 @@ export function doReroll(ctx, heroic = false) {
     newDefenseScore += newDroll.bonus;
 
     const isGood = isGoodDefenseChoice(attackType, defenseAction);
-    if (isGood) newDefenseScore += DUEL_RULES.GOOD_COUNTER_BONUS;
-    else        newAttackScore  += DUEL_RULES.GENERIC_ATTACK_BONUS;
+    if (isGood === true) newDefenseScore += DUEL_RULES.GOOD_COUNTER_BONUS;
+    if (isGood === false) newAttackScore += DUEL_RULES.GENERIC_ATTACK_BONUS;
 
     // Même bonus domicile que le duel initial (runFieldDuel).
     const HOME_BONUS = 0.5;

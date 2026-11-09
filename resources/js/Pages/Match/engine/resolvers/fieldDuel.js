@@ -99,8 +99,8 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
     defenseScore += dRoll.bonus;
 
     const isGood = isGoodDefenseChoice(attackType, defenseAction);
-    if (isGood) defenseScore += DUEL_RULES.GOOD_COUNTER_BONUS;
-    else        attackScore  += DUEL_RULES.GENERIC_ATTACK_BONUS;
+    if (isGood === true) defenseScore += DUEL_RULES.GOOD_COUNTER_BONUS;
+    if (isGood === false) attackScore += DUEL_RULES.GENERIC_ATTACK_BONUS;
 
     if (aRoll.critSuccess) applyCritBoost(attackerId);
     if (dRoll.critSuccess) applyCritBoost(defenderId);

@@ -113,7 +113,7 @@ export function buildFieldDuelBreakdown({
             staminaFactor: attackStamF,
             additions: [
                 { label: "🎲 Bonus dé", value: `+ ${aRoll.bonus.toFixed(1)}` },
-                ...(!isGood ? [{ label: "⚔️ Bonus attaque", value: `+ ${genBonus.toFixed(1)}` }] : []),
+                ...(isGood === false ? [{ label: "⚔️ Bonus attaque", value: `+ ${genBonus.toFixed(1)}` }] : []),
                 ...(clearanceBonus ? [{ label: "💨 Dégagement", value: `+ ${Number(clearanceBonus).toFixed(1)}` }] : []),
                 ...(captainReroll  ? [{ label: "👑 Reroll capitaine", value: "2d20 avantage" }] : []),
                 ...(heroic         ? [{ label: "🔥 Dépassement de soi", value: "2d20 avantage" }] : []),
@@ -126,18 +126,15 @@ export function buildFieldDuelBreakdown({
             staminaFactor: defenseStamF,
             additions: [
                 { label: "🎲 Bonus dé", value: `+ ${dRoll.bonus.toFixed(1)}` },
-                ...(isGood
-                        ? [{ label: "✅ Bon contre", value: `+ ${goodBonus.toFixed(1)}` }]
-                        : [{ label: "❌ Mauvais contre", value: "—" }]
-                ),
+                ...(isGood === true ? [{ label: "✅ Bon contre", value: `+ ${goodBonus.toFixed(1)}` }] : []),
+                ...(isGood === false ? [{ label: "❌ Mauvais contre", value: "—" }] : []),
                 ...(homeSide === 'defense' && homeBonus ? [{ label: "🏠 Avantage domicile", value: `+ ${Number(homeBonus).toFixed(1)}` }] : []),
             ],
             total: defenseScore,
         },
         result: {
-            bonusRuleLabel: isGood
-                ? `Bon contre (+${goodBonus} défense)`
-                : `Mauvais contre (+${genBonus} attaque)`,
+            bonusRuleLabel: isGood === null ? "Duel automatique, sans bonus de choix"
+                : isGood ? `Bon contre (+${goodBonus} défense)` : `Mauvais contre (+${genBonus} attaque)`,
             critWinner,
             diff,
             winner: critWinner ?? (diff > 0 ? "attack" : diff < 0 ? "defense" : "tie"),

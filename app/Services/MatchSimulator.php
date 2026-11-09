@@ -1121,7 +1121,7 @@ class MatchSimulator
             $interceptDef = $this->fieldPlayers($defPlayers)->sortByDesc(fn($p) => $p->intercept ?? 0)->first();
             $defenderForLog = $interceptDef;
             $attackScore  = $crosserScore * $factorOf($crosser) + $homeBonus + $this->d20();
-            $defenseScore = ($interceptDef->intercept ?? 0) * $this->positionMultiplier($interceptDef, 'defend') * $this->defenseContextMultiplier($interceptDef, 'intercept', 'defenseField', $zone) * $factorOf($interceptDef) + self::GOOD_COUNTER_BONUS + $awayBonus + $this->d20();
+            $defenseScore = ($interceptDef->intercept ?? 0) * $this->positionMultiplier($interceptDef, 'defend') * $this->defenseContextMultiplier($interceptDef, 'intercept', 'defenseField', $zone) * $factorOf($interceptDef) + $awayBonus + $this->d20();
             $success = $attackScore > $defenseScore;
 
             if ($interceptDef) {
@@ -1143,7 +1143,7 @@ class MatchSimulator
                 * $this->defenseContextMultiplier($headingDef, 'heading', 'defenseField', $zone);
 
             $attackScore  = $crosserScore * $factorOf($crosser) + $homeBonus + $this->d20();
-            $defenseScore = $headingScore * $factorOf($headingDef) + self::GOOD_COUNTER_BONUS + $awayBonus + $this->d20();
+            $defenseScore = $headingScore * $factorOf($headingDef) + $awayBonus + $this->d20();
             $success = $attackScore > $defenseScore;
 
             if ($headingDef) {

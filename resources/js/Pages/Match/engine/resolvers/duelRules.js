@@ -5,8 +5,10 @@ import { DUEL_RULES, TEXTS } from '../constants.js';
 // -----------------------------------------------------------
 //   RPS
 // -----------------------------------------------------------
+// null indique un duel automatique, sans bonus de choix défensif.
 export function isGoodDefenseChoice(attackAction, defenseAction) {
     const a = String(attackAction).toLowerCase();
+    if (a === "cross" || a === "special-cross") return null;
     const [kind, base] = String(defenseAction).toLowerCase().split(":");
     const d = a === "special" || !base ? kind : base;
     if (["hands", "punch", "gk-special"].includes(d)) return true;
@@ -15,13 +17,14 @@ export function isGoodDefenseChoice(attackAction, defenseAction) {
         (a === "dribble" && d === "tackle")    ||
         (a === "one_two" && d === "intercept") ||
         (a === "shot"    && d === "block")     ||
-        (a === "cross"   && d === "heading")   ||
         (a === "special" && (d === "field-special" || d === "block"))
     );
 }
 
 export function getCounterTag(attackAction, defenseAction) {
-    return isGoodDefenseChoice(attackAction, defenseAction) ? "✓ Bon choix défensif" : "✗ Mauvais choix défensif";
+    const good = isGoodDefenseChoice(attackAction, defenseAction);
+    if (good === null) return null;
+    return good ? "✓ Bon choix défensif" : "✗ Mauvais choix défensif";
 }
 
 export function getLogTitleForDuel(attackAction, defenseAction, duelWinner) {
@@ -45,9 +48,9 @@ export function applyDuelBonuses({ attackAction, defenseAction, attackScore, def
     const good = context.isKeeperDuel
         ? ["hands", "punch", "gk-special"].includes(defenseAction)
         : isGoodDefenseChoice(attackAction, defenseAction);
-    return good
-        ? { attackScore, defenseScore: defenseScore + DUEL_RULES.GOOD_COUNTER_BONUS }
-        : { attackScore: attackScore + DUEL_RULES.GENERIC_ATTACK_BONUS, defenseScore };
+    if (good === true) defenseScore += DUEL_RULES.GOOD_COUNTER_BONUS;
+    if (good === false) attackScore += DUEL_RULES.GENERIC_ATTACK_BONUS;
+    return { attackScore, defenseScore };
 }
 
 // Libellé « Défense : Interception » pour le journal (mêmes noms que les cartes).
