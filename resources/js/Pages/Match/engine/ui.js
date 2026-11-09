@@ -713,7 +713,7 @@ export function updateCardsPower(ball) {
         el.textContent = String(Number(carrierStats[map[a]] ?? 0));
     });
 
-    const specialMap = { special: "shot", "special-pass": "pass", "special-dribble": "dribble" };
+    const specialMap = { special: "shot", "special-pass": "pass", "special-dribble": "dribble", "special-cross": "cross" };
     _ui.actionBarEl.querySelectorAll(".skill-card-special").forEach((btn) => {
         const el = btn.querySelector(".skill-special-power");
         const move = _roster.getSpecialMove(ball.team, ball.number, "attack", specialMap[btn.dataset.action]);
@@ -721,9 +721,8 @@ export function updateCardsPower(ball) {
     });
 
     // Cartes d'attaque : stat de contre du défenseur annoncé (fiche adverse), et
-    // arrêt du gardien pour un tir face à lui. Centre et passe longue opposent un
-    // autre joueur (duel aérien, relais) : rien d'affiché.
-    const ATTACK_VS = { pass: ["intercept", "Interc."], one_two: ["intercept", "Interc."], dribble: ["tackle", "Tacle"], shot: ["block", "Contre"] };
+    // arrêt du gardien pour un tir face à lui. La passe longue a son propre duel.
+    const ATTACK_VS = { pass: ["intercept", "Interc."], one_two: ["intercept", "Interc."], dribble: ["tackle", "Tacle"], shot: ["block", "Contre"], cross: ["heading", "Tête"] };
     const attackDefTeam = ball.team === "internal" ? "external" : "internal";
     const previewSlot   = _state?.defensePreview?.picked?.defenderSlot ?? null;
     _ui.actionBarEl.querySelectorAll(".skill-card-main").forEach((btn) => {
@@ -777,7 +776,7 @@ export function updateCardsPower(ball) {
         });
         _ui.actionBarEl.querySelectorAll(".def-card-special").forEach((btn) => {
             const el = btn.querySelector(".def-special-power");
-            const move = _roster.getSpecialMove(defenseTeam, 1, "defense");
+            const move = _roster.getSpecialMove(defenseTeam, 1, "defense", btn.dataset.defense.split(":")[1]);
             if (el && move) el.textContent = String(specialActionStat(move, defenseTeam, 1, _roster));
         });
         return;
@@ -795,7 +794,7 @@ export function updateCardsPower(ball) {
     });
     _ui.actionBarEl.querySelectorAll(".def-card-special").forEach((btn) => {
         const el = btn.querySelector(".def-special-power");
-        const move = _roster.getSpecialMove(defenseTeam, slot, "defense");
+        const move = _roster.getSpecialMove(defenseTeam, slot, "defense", btn.dataset.defense.split(":")[1]);
         if (el && move) el.textContent = String(specialActionStat(move, defenseTeam, slot, _roster));
     });
 }
@@ -827,7 +826,8 @@ export function initUIFromStats() {
             if (cfg && costEl) costEl.textContent = cfg.cost;
         });
         defenseStrip.querySelectorAll(".def-card-special").forEach(btn => {
-            const cfg   = STATS.defenseField[btn.dataset.defense] || STATS.defenseGK[btn.dataset.defense];
+            const [kind] = btn.dataset.defense.split(":");
+            const cfg   = STATS.defenseField[kind] || STATS.defenseGK[kind];
             const costEl= btn.querySelector(".def-special-cost span");
             if (cfg && costEl) costEl.textContent = cfg.cost;
         });

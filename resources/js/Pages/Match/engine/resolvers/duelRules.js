@@ -7,13 +7,15 @@ import { DUEL_RULES, TEXTS } from '../constants.js';
 // -----------------------------------------------------------
 export function isGoodDefenseChoice(attackAction, defenseAction) {
     const a = String(attackAction).toLowerCase();
-    const d = String(defenseAction).toLowerCase();
+    const [kind, base] = String(defenseAction).toLowerCase().split(":");
+    const d = a === "special" || !base ? kind : base;
     if (["hands", "punch", "gk-special"].includes(d)) return true;
     return (
         (a === "pass"    && d === "intercept") ||
         (a === "dribble" && d === "tackle")    ||
         (a === "one_two" && d === "intercept") ||
         (a === "shot"    && d === "block")     ||
+        (a === "cross"   && d === "heading")   ||
         (a === "special" && (d === "field-special" || d === "block"))
     );
 }
@@ -23,6 +25,7 @@ export function getCounterTag(attackAction, defenseAction) {
 }
 
 export function getLogTitleForDuel(attackAction, defenseAction, duelWinner) {
+    defenseAction = defenseAction.split(":").at(-1);
     if (duelWinner === "tie")    return "Duel équilibré";
     if (duelWinner === "attack") {
         if (attackAction === "pass")    return TEXTS.logs.passSuccessTitle;
@@ -54,5 +57,6 @@ const DEFENSE_LABELS = {
     heading: "Tête",
 };
 export function defenseTag(defenseAction) {
-    return "Défense : " + (DEFENSE_LABELS[defenseAction] ?? defenseAction);
+    const [kind, base] = defenseAction.split(":");
+    return "Défense : " + (base ? `${DEFENSE_LABELS[base] ?? base} (spécial)` : (DEFENSE_LABELS[kind] ?? kind));
 }

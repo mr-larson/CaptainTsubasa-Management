@@ -121,9 +121,10 @@ export function continuePass(attackTeam, defenseTeam, attackType, defenseAction,
 // -----------------------------------------------------------
 //   resolveCross / resolveLongPass
 // -----------------------------------------------------------
-export function resolveCross(attackTeam, defenseTeam) {
+export function resolveCross(attackTeam, defenseTeam, defenderPick = null, isSpecial = false) {
     const b = ball();
-    const duel = runFieldDuel({ attackTeam, defenseTeam, attackType: "cross", defenseAction: "heading" });
+    const duel = runFieldDuel({ attackTeam, defenseTeam, attackType: "cross", defenseAction: "heading", defenderPick, specialAction: isSpecial ? "cross" : null });
+    const title = isSpecial ? "Centre spécial" : "Centre";
     afterFieldDuel(duel, result => {
         if (shared.state.pendingFreeKick) { startFreeKick(); return; }
 
@@ -147,7 +148,7 @@ export function resolveCross(attackTeam, defenseTeam) {
 
             _moveBall(attackTeam, receiver);
             setMessage("Centre réussi !", shared.TEAMS[attackTeam].label + " trouve le n°" + receiver + " dans la surface");
-            pushLogEntry("Centre réussi", ["Vers le n°" + receiver, defenseTag("heading"), getCounterTag("cross", "heading")], result.diceTag, shared.state, result.breakdown ?? null);
+            pushLogEntry(`${title} réussi`, ["Vers le n°" + receiver, defenseTag("heading"), getCounterTag("cross", "heading")], result.diceTag, shared.state, result.breakdown ?? null);
             shared.animateAndThen(() => { shared.advanceTurn(attackTeam); });
             return;
         }
@@ -163,7 +164,7 @@ export function resolveCross(attackTeam, defenseTeam) {
         syncRecovererCard(defenseTeam, receiver);
 
         setMessage("Centre repoussé !", shared.TEAMS[defenseTeam].label + " dégage avec le n°" + receiver);
-        pushLogEntry("Centre repoussé (tête)", [defenseTag("heading"), getCounterTag("cross", "heading")], result.diceTag, shared.state, result.breakdown ?? null);
+        pushLogEntry(`${title} repoussé (tête)`, [defenseTag("heading"), getCounterTag("cross", "heading")], result.diceTag, shared.state, result.breakdown ?? null);
         shared.animateAndThen(() => { shared.advanceTurn(defenseTeam); });
     });
 }

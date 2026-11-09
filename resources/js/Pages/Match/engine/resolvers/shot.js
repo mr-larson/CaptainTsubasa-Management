@@ -64,7 +64,7 @@ export function continueShot(attackTeam, defenseTeam, defenseAction, isSpecial, 
         _moveBall(defenseTeam, number);
         syncRecovererCard(defenseTeam, number);
 
-        const isBlock = defenseAction === "block";
+        const isBlock = defenseAction.split(":").at(-1) === "block";
         setMessage(
             isBlock ? TEXTS.ui.shotBlockedMain : TEXTS.ui.shotRecoveredMain,
             (isBlock ? TEXTS.ui.shotBlockedSub : TEXTS.ui.shotRecoveredSub)
@@ -269,7 +269,8 @@ function _continueKeeperDuelResult(duelResult, attackTeam, defenseTeam, isSpecia
 // -----------------------------------------------------------
 //   resolveShotKeeperDuel
 // -----------------------------------------------------------
-export function resolveShotKeeperDuel(ctx, defenseAction) {
+export function resolveShotKeeperDuel(ctx, defenseChoice) {
+    const [defenseAction, defenseBaseAction] = defenseChoice.split(":");
     const { attackTeam, defenseTeam, originZone, isSpecial, gkAttackBase, logParts, directShot } = ctx;
     const b          = ball();
     const attackerId = getPlayerId(attackTeam, b.number);
@@ -285,7 +286,7 @@ export function resolveShotKeeperDuel(ctx, defenseAction) {
 
     let defenseBase;
     if (defenseAction === "gk-special") {
-        const move = shared.roster.getSpecialMove(defenseTeam, 1, "defense");
+        const move = shared.roster.getSpecialMove(defenseTeam, 1, "defense", defenseBaseAction);
         defenseBase = move
             ? specialBaseFor(move, defenseTeam, 1, shared.roster)
             : shared.roster.defenseBaseFor("gk-special", defenseTeam, 1, true);
@@ -381,7 +382,7 @@ export function resolveShotKeeperDuel(ctx, defenseAction) {
     checkInjury(keeperId);
     if (keeperId) applyStaminaCost(keeperId, "defenseGK", defenseAction);
     if (isSpecial) shared.markSpecialUsed(attackerId, "attack", "shot");
-    if (defenseAction === "gk-special" && keeperId) shared.markSpecialUsed(keeperId, "defense");
+    if (defenseAction === "gk-special" && keeperId) shared.markSpecialUsed(keeperId, "defense", defenseBaseAction);
 
     if (!critWinner && attackScore === defenseScore) {
         afterReveals(() => {

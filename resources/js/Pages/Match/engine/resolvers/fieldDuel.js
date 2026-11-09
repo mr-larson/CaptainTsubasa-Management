@@ -30,13 +30,15 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
     syncRecovererCard(defenseTeam, defenderSlot);
     updateTeamCard(b);
 
+    const [defenseKind, defenseBase] = defenseAction.split(":");
+    const isSpecialCross = attackType === "cross" && specialAction === "cross";
     // Bases attaque
     let attackBaseRaw;
-    if (attackType === "special") {
+    if (attackType === "special" || isSpecialCross) {
         const move = shared.roster.getSpecialMove(attackTeam, b.number, "attack", specialAction);
         attackBaseRaw = move
             ? specialBaseFor(move, attackTeam, b.number, shared.roster)
-            : shared.roster.attackBaseFor("special", attackTeam, b.number);
+            : shared.roster.attackBaseFor(attackType, attackTeam, b.number);
     } else if (attackType === "one_two") {
         // Une-deux : moyenne des passes du duo (repli passe simple si le
         // partenaire a disparu entre le clic et la résolution).
@@ -50,8 +52,8 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
 
     // Bases defense
     let defenseBaseRaw;
-    if (defenseAction === "field-special") {
-        const move = shared.roster.getSpecialMove(defenseTeam, defenderSlot, "defense");
+    if (defenseKind === "field-special") {
+        const move = shared.roster.getSpecialMove(defenseTeam, defenderSlot, "defense", defenseBase);
         defenseBaseRaw = move
             ? specialBaseFor(move, defenseTeam, defenderSlot, shared.roster)
             : shared.roster.defenseBaseFor("field-special", defenseTeam, defenderSlot, false);
@@ -68,9 +70,10 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
     // Défense : `defense` boost en zone basse ; `speed` aide tackle/intercept ;
     // `block` = dernier rempart anti-tir (scalé par la profondeur, sans speed).
     defenseBaseRaw *= shared.roster.defenseZoneMultiplier(defenseTeam, defenderSlot, zoneIdx);
-    if (defenseAction === "tackle" || defenseAction === "intercept") {
+    const counter = defenseBase ?? defenseAction;
+    if (counter === "tackle" || counter === "intercept") {
         defenseBaseRaw *= shared.roster.speedDuelMultiplier(defenseTeam, defenderSlot);
-    } else if (defenseAction === "block") {
+    } else if (counter === "block") {
         defenseBaseRaw *= shared.roster.blockEdgeMultiplier(defenseTeam, defenderSlot, zoneIdx);
     }
 
@@ -134,8 +137,8 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
         shared.resolveFoulOutcome({ attackerId, defenderId, duelResult: finalResult, aRoll, dRoll });
     }
 
-    applyStaminaCost(attackerId, "attack", attackType);
-    applyStaminaCost(defenderId, "defenseField", defenseAction);
+    applyStaminaCost(attackerId, "attack", isSpecialCross ? "special-cross" : attackType);
+    applyStaminaCost(defenderId, "defenseField", defenseKind);
 
     const checkInjury = (pid) => {
         if (!pid) return;
@@ -155,8 +158,8 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
     checkInjury(attackerId);
     checkInjury(defenderId);
 
-    if (attackType    === "special")       shared.markSpecialUsed(attackerId, "attack", specialAction);
-    if (defenseAction === "field-special") shared.markSpecialUsed(defenderId, "defense");
+    if (attackType === "special" || isSpecialCross) shared.markSpecialUsed(attackerId, "attack", specialAction);
+    if (defenseKind === "field-special") shared.markSpecialUsed(defenderId, "defense", defenseBase);
 
     const diceTag    = attackScore.toFixed(1) + "-" + defenseScore.toFixed(1);
     if (critWinner) {

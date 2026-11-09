@@ -115,6 +115,37 @@ class PositionTrainingTest extends TestCase
         ]);
     }
 
+    public function test_special_training_charges_once_and_unlocks_the_move_after_one_week(): void
+    {
+        $pass = ['key' => 'existing_pass', 'mode' => 'attack', 'base_action' => 'pass', 'label' => 'Passe'];
+        [$save, $team, $player] = $this->world(['position' => 'Midfielder', 'special_moves' => [$pass]], budget: 1000);
+        $request = [
+            'player_id' => $player->id,
+            'move_key' => 'training_curled_cross',
+            'season' => 1,
+            'week' => 1,
+        ];
+        $url = route('game-saves.special-training.store', $save);
+
+        $this->actingAs($save->user)->post($url, $request)->assertSessionHasNoErrors();
+        $this->post($url, $request)->assertSessionHasErrors('special_training');
+
+        $this->assertSame(700, (int) $team->fresh()->budget);
+        $this->assertSame([$player->id], GamePositionTraining::unavailablePlayerIds($save->id, 1));
+        $this->assertSame([$pass], $player->fresh()->special_moves);
+        $this->assertSame('special_move', $save->fresh()->state['training']['entries'][0]['stat']);
+        $this->assertDatabaseHas('game_position_trainings', ['game_player_id' => $player->id, 'cost' => 300]);
+
+        $this->service->completeDue($save, 2);
+        $this->service->completeDue($save, 2);
+        $this->assertSame([], GamePositionTraining::unavailablePlayerIds($save->id, 2));
+        $this->assertSame(['existing_pass', 'training_curled_cross'], array_column($player->fresh()->special_moves, 'key'));
+
+        $save->update(['week' => 2]);
+        $this->post($url, array_replace($request, ['week' => 2]))->assertSessionHasErrors('special_training');
+        $this->assertSame(700, (int) $team->fresh()->budget);
+    }
+
     /** Save en semaine 1 avec une équipe contrôlée et un joueur sous contrat. */
     private function world(array $playerAttrs, int $budget = 5000): array
     {

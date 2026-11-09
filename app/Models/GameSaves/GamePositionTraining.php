@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Formation à un nouveau poste : le joueur est indisponible tant que
+ * Formation à un poste ou à une technique : le joueur est indisponible tant que
  * week_return n'est pas atteinte (cf. PositionTrainingService).
  */
 class GamePositionTraining extends Model
@@ -20,6 +20,8 @@ class GamePositionTraining extends Model
         'game_team_id',
         'from_position',
         'target_position',
+        'special_move',
+        'cost',
         'week_start',
         'week_return',
         'completed_at',
@@ -27,6 +29,8 @@ class GamePositionTraining extends Model
 
     protected $casts = [
         'completed_at' => 'datetime',
+        'special_move' => 'array',
+        'cost' => 'integer',
     ];
 
     public function gamePlayer(): BelongsTo

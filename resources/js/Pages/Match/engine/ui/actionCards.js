@@ -3,7 +3,7 @@
 import { TEXTS } from '../constants.js';
 
 const SPECIAL_ICONS = {
-    shot: "🔥", pass: "🎯", dribble: "💨",
+    shot: "🔥", pass: "🎯", cross: "🎯", dribble: "💨",
     block: "🛡️", tackle: "🛡️", intercept: "🛡️",
     hand_save: "🧤", punch_save: "🧤",
 };
@@ -115,18 +115,10 @@ export function buildAttackActionsHTML(ball, roster) {
         if (p?.isStarter && (p.position || "").toLowerCase().includes("forward")) forwardCount++;
     }
 
-    let extraHTML = "";
-    if (zone === 1) {
-        extraHTML = buildSkillCard("long_pass", cfg.long_pass);
-    } else if (zone === 2) {
-        extraHTML = buildSkillCard("cross", cfg.cross);
-    } else if (zone === 3) {
-        extraHTML = buildSkillCard("cross", cfg.cross);
-    } else {
-        if (forwardCount >= 2) {
-            extraHTML = buildSkillCard("cross", cfg.cross);
-        }
-    }
+    const canCross = !ball.frontOfKeeper && (zone === 2 || zone === 3 || (zone === 4 && forwardCount >= 2));
+    const crossSpecial = specialByBase.cross ? { action: "special-cross", move: specialByBase.cross } : null;
+    const extraHTML = zone === 1 ? buildSkillCard("long_pass", cfg.long_pass)
+        : canCross ? buildSkillCard("cross", cfg.cross, crossSpecial) : "";
 
     const showShot = zone >= 3;
     // Le spécial tir perd sa carte hôte hors zone de tir (Shot non proposé) :
@@ -145,28 +137,25 @@ export function buildAttackActionsHTML(ball, roster) {
     </div>`;
 }
 
-const FIELD_DEFENSE_KEYS = ["block", "intercept", "tackle"];
-const GK_DEFENSE_KEYS    = { hand_save: "hands", hands: "hands", punch_save: "punch", punch: "punch" };
+function buildDefenseCardWithSpecial(key, cfg, team, slot, roster, kind) {
+    const move = roster.getSpecialMove(team, slot, "defense", key);
+    return buildDefCard(key, cfg[key], move ? { action: `${kind}:${key}`, move } : null);
+}
 
 export function buildDefenseFieldHTML(defenderTeam, defenderSlot, roster) {
-    const cfg  = TEXTS.cards.defenseField;
-    const move = roster.getSpecialMoves(defenderTeam, defenderSlot).filter(m => m?.mode === "defense")[0] ?? null;
-    // Le moteur ne résout qu'un seul spécial défensif par joueur (cf. defenseBaseFor) ;
-    // on l'accroche à sa carte de base si reconnue, sinon à Tackle par défaut.
-    const base = move ? (FIELD_DEFENSE_KEYS.includes(move.base_action) ? move.base_action : "tackle") : null;
+    const cfg = TEXTS.cards.defenseField;
     return `<div id="defense-strip">
-        ${buildDefCard("block",     cfg.block,     base === "block"     ? { action: "field-special", move } : null)}
-        ${buildDefCard("intercept", cfg.intercept, base === "intercept" ? { action: "field-special", move } : null)}
-        ${buildDefCard("tackle",    cfg.tackle,    base === "tackle"    ? { action: "field-special", move } : null)}
+        ${["block", "intercept", "tackle"].map(key =>
+            buildDefenseCardWithSpecial(key, cfg, defenderTeam, defenderSlot, roster, "field-special")
+        ).join("")}
     </div>`;
 }
 
 export function buildDefenseGKHTML(defenderTeam, roster) {
-    const cfg  = TEXTS.cards.defenseGK;
-    const move = roster.getSpecialMoves(defenderTeam, 1).filter(m => m?.mode === "defense")[0] ?? null;
-    const base = move ? (GK_DEFENSE_KEYS[move.base_action] ?? "hands") : null;
+    const cfg = TEXTS.cards.defenseGK;
     return `<div id="defense-strip">
-        ${buildDefCard("hands", cfg.hands, base === "hands" ? { action: "gk-special", move } : null)}
-        ${buildDefCard("punch", cfg.punch, base === "punch" ? { action: "gk-special", move } : null)}
+        ${["hands", "punch"].map(key =>
+            buildDefenseCardWithSpecial(key, cfg, defenderTeam, 1, roster, "gk-special")
+        ).join("")}
     </div>`;
 }

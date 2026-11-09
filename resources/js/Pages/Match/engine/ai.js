@@ -23,11 +23,6 @@ function moveIsReady(playerId, specialCooldown, turns, move) {
     return !readyAt || turns >= readyAt;
 }
 
-// Vrai si AU MOINS UNE des techniques fournies est disponible (hors cooldown)
-function canUseSpecial(playerId, specialCooldown, turns, moves = []) {
-    return moves.some(move => moveIsReady(playerId, specialCooldown, turns, move));
-}
-
 const ATTACK_STYLE = {
     offensive: { pass: 0.85, dribble: 1.15, shot: 1.35 },
     defensive: { pass: 1.30, dribble: 0.85, shot: 0.85 },
@@ -73,6 +68,7 @@ export function computeAIAttackChoice(ball, specialCooldown) {
     const passSp = specials.find(m => m.base_action === "pass");
     const dribSp = specials.find(m => m.base_action === "dribble");
     const shotSp = specials.find(m => m.base_action === "shot");
+    const crossSp = specials.find(m => m.base_action === "cross");
 
     // Disponibilité PAR TECHNIQUE (cooldown indépendant pour chaque move)
     const canUse = (move) => moveIsReady(playerId, specialCooldown, turns, move) && canSpendOnSpecial(team, playerId);
@@ -98,7 +94,7 @@ export function computeAIAttackChoice(ball, specialCooldown) {
     if (getStamina(playerId) >= 30 && getStaminaRatio(playerId) >= 0.5) {
         if (style === "counter" && z === 0 && Math.random() < 0.18) return "long_pass";
         if ((style === "counter" || style === "offensive") && (z === 1 || z === 2)
-            && Math.random() < 0.14) return "cross";
+            && Math.random() < 0.14) return canUse(crossSp) ? "special-cross" : "cross";
     }
 
     if (z <= 1) {
@@ -137,23 +133,21 @@ export function computeAIDefenseChoice(defendingTeam, opts, specialCooldown, tur
         ? getKeeperId(defendingTeam)
         : getPlayerId(defendingTeam, slot);
 
-    const specials   = _roster.getSpecialMoves(defendingTeam, slot).filter(m => m.mode === "defense");
-    const canSpecial = canUseSpecial(defenderId, specialCooldown, turns, specials)
-        && canSpendOnSpecial(defendingTeam, defenderId);
+    const actions = isKeeperDuel ? ["hands", "punch"] : ["block", "intercept", "tackle"];
+    const ready = canSpendOnSpecial(defendingTeam, defenderId)
+        ? actions.filter(action => moveIsReady(defenderId, specialCooldown, turns,
+            _roster.getSpecialMove(defendingTeam, slot, "defense", action)))
+        : [];
 
     if (isKeeperDuel) {
-        if (canSpecial && Math.random() < 0.35) return "gk-special";
+        if (ready.length && Math.random() < 0.35) return `gk-special:${ready[0]}`;
         return Math.random() < 0.60 ? "hands" : "punch";
     }
 
-    // L'IA ne voit pas l'action choisie par l'attaquant : elle la devine,
-    // comme le joueur humain, puis joue le contre de sa supposition.
+    // L'IA devine le contre à partir de la situation visible.
     const counter = COUNTER_OF[guessAttack(ball)];
-
-    if (canSpecial) {
-        if (specials.some(m => m.base_action === counter) && Math.random() < 0.40) return "field-special";
-        if (Math.random() < 0.25) return "field-special";
-    }
+    if (ready.includes(counter) && Math.random() < 0.40) return `field-special:${counter}`;
+    if (ready.length && Math.random() < 0.25) return `field-special:${ready[0]}`;
 
     return counter;
 }

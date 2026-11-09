@@ -150,6 +150,14 @@ export class RosterService {
         return this.clampStat(stats[key]);
     }
 
+    crossStat(team, slot) {
+        return 0.7 * this.getStat(team, slot, "pass") + 0.3 * this.getStat(team, slot, "attack");
+    }
+
+    headingDuelStat(team, slot) {
+        return 0.8 * this.getStat(team, slot, "heading") + 0.2 * this.getStat(team, slot, "speed");
+    }
+
     getRoleFromPositionString(pos) {
         const p = String(pos || "").toLowerCase();
         if (p.includes("goalkeeper") || p === "gk") return "GK";
@@ -166,8 +174,9 @@ export class RosterService {
     }
 
     getSpecialMove(team, slotNumber, mode, baseAction = null) {
+        const normalize = action => ({ hands: "hand_save", punch: "punch_save" })[action] ?? action;
         return this.getSpecialMoves(team, slotNumber)
-            .find(move => move?.mode === mode && (baseAction === null || move.base_action === baseAction));
+            .find(move => move?.mode === mode && (baseAction === null || normalize(move.base_action) === normalize(baseAction)));
     }
 
     /**
@@ -323,7 +332,8 @@ export class RosterService {
     //   Bases de calcul duel
     // -----------------------------------------------------------
     attackBaseFor(actionKey, team, slotNumber, statBonus = 0) {
-        const base = STATS.attack[actionKey]?.power ?? 10;
+        const powerKey = actionKey === "cross" && statBonus > 0 ? "special-cross" : actionKey;
+        const base = STATS.attack[powerKey]?.power ?? 10;
         const map  = {
             pass:    { stat: "pass",    bonus: "pass"    },
             dribble: { stat: "dribble", bonus: "dribble" },
@@ -331,9 +341,7 @@ export class RosterService {
             special: { stat: "attack",  bonus: "attack"  },
         };
         if (actionKey === "cross" || actionKey === "long_pass") {
-            const passStat   = this.getStat(team, slotNumber, "pass");
-            const attackStat = this.getStat(team, slotNumber, "attack");
-            const combined   = passStat * 0.7 + attackStat * 0.3;
+            const combined = this.crossStat(team, slotNumber) + statBonus;
             let raw = base + combined * this.STAT_COEF;
             raw *= this.positionBonusMultiplier(team, slotNumber, "pass");
             raw *= this.moraleFactor(team, slotNumber);
@@ -396,7 +404,11 @@ function specialStatBonus(move, team, slotNumber, roster) {
 export function specialActionStat(move, team, slotNumber, roster) {
     const baseAction = String(move.base_action || "").trim();
     const aliases = { hands: "hand_save", punch: "punch_save" };
-    return roster.getStat(team, slotNumber, aliases[baseAction] ?? baseAction) + specialStatBonus(move, team, slotNumber, roster);
+    const bonus = specialStatBonus(move, team, slotNumber, roster);
+    if (baseAction === "cross") {
+        return Math.round(roster.crossStat(team, slotNumber) + bonus);
+    }
+    return roster.getStat(team, slotNumber, aliases[baseAction] ?? baseAction) + bonus;
 }
 
 export function specialBaseFor(move, team, slotNumber, roster) {

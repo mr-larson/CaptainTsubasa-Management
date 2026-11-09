@@ -80,10 +80,10 @@ const trainings = computed(() => {
         ...props.positionTrainings.map(entry => ({
             player: roster.get(Number(entry.game_player_id)),
             type: 'position',
-            detail: `Formation · ${positionLabel(entry.target_position)}`,
+            detail: `Formation · ${entry.special_label ?? positionLabel(entry.target_position)}`,
             badge: `Retour S${entry.week_return}`,
         })),
-        ...props.trainingEntries.filter(entry => entry.stat !== 'position').map(entry => ({
+        ...props.trainingEntries.filter(entry => !['position', 'special_move'].includes(entry.stat)).map(entry => ({
             player: roster.get(Number(entry.player_id)),
             type: 'stat',
             detail: `Séance effectuée · ${statLabel(entry.stat)}`,

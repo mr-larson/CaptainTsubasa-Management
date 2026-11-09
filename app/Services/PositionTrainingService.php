@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Formation d'un joueur à un nouveau poste, ajouté à ses postes secondaires.
+ * Formation d'un joueur à un nouveau poste ou à une technique spéciale.
  *
  * Durée d'indisponibilité (en semaines, donc en matchs) :
  *  - joueur de champ, ligne voisine (DEF ↔ MIL, MIL ↔ ATT)   : 1
@@ -56,14 +56,15 @@ class PositionTrainingService
      *
      * @throws ValidationException
      */
-    public function start(GameSave $gameSave, int $playerId, string $target): GamePositionTraining
+    public function start(GameSave $gameSave, int $playerId, string $target, ?array $move = null): GamePositionTraining
     {
         $season  = (int) ($gameSave->season ?? 1);
         $week    = (int) ($gameSave->week ?? 1);
         $teamId  = (int) $gameSave->controlled_game_team_id;
         $team    = $gameSave->controlledGameTeam;
 
-        $fail = fn (string $message) => throw ValidationException::withMessages(['position_training' => $message]);
+        $errorKey = $move ? 'special_training' : 'position_training';
+        $fail = fn (string $message) => throw ValidationException::withMessages([$errorKey => $message]);
 
         if (!$team) {
             $fail('Aucune équipe contrôlée définie pour cette sauvegarde.');
@@ -84,7 +85,18 @@ class PositionTrainingService
             [$player->position],
             (array) ($player->secondary_positions ?? []),
         ))));
-        if (in_array($target, $known, true)) {
+        if ($move) {
+            $action = TrainableSpecialMoves::actionOf($move);
+            $keeperMove = in_array($action, ['hand_save', 'punch_save'], true);
+            if ($keeperMove !== ($player->position === PlayerPosition::Goalkeeper->value)) {
+                $fail('Cette technique est incompatible avec le poste principal du joueur.');
+            }
+            foreach ($player->special_moves ?? [] as $knownMove) {
+                if (TrainableSpecialMoves::actionOf($knownMove) === $action) {
+                    $fail('Ce joueur maîtrise déjà une technique spéciale pour cette action.');
+                }
+            }
+        } elseif (in_array($target, $known, true)) {
             $fail("{$player->lastname} sait déjà jouer à ce poste.");
         }
 
@@ -111,7 +123,7 @@ class PositionTrainingService
 
         // Quota et coût partagés avec les séances d'entraînement de la semaine.
         $maxPerWeek = (int) $gameSave->getConfig('training_max_per_week', config('training.max_trainings_per_week', 3));
-        $cost       = (int) $gameSave->getConfig('position_training_cost');
+        $cost       = $move ? TrainableSpecialMoves::COST : (int) $gameSave->getConfig('position_training_cost');
 
         $state    = $gameSave->state ?? [];
         $training = $state['training'] ?? null;
@@ -130,9 +142,9 @@ class PositionTrainingService
             $fail("Budget insuffisant : {$cost} GL nécessaires.");
         }
 
-        $duration = self::durationFor($known, $target);
+        $duration = $move ? 1 : self::durationFor($known, $target);
 
-        return DB::transaction(function () use ($gameSave, $team, $player, $target, $week, $season, $duration, $cost, $state, $weekEntries) {
+        return DB::transaction(function () use ($gameSave, $team, $player, $target, $week, $season, $duration, $cost, $state, $weekEntries, $move) {
             if ($cost > 0) {
                 $team->budget = max(0, (int) $team->budget - $cost);
                 $team->save();
@@ -144,8 +156,8 @@ class PositionTrainingService
                 'entries' => array_merge($weekEntries, [[
                     'team_id'      => $team->id,
                     'player_id'    => $player->id,
-                    'stat'         => 'position',
-                    'position'     => $target,
+                    'stat'         => $move ? 'special_move' : 'position',
+                    ...($move ? ['special_label' => $move['label']] : ['position' => $target]),
                     'gain'         => 0,
                     'stamina_cost' => 0,
                     'cost'         => $cost,
@@ -160,7 +172,9 @@ class PositionTrainingService
                 'game_player_id'  => $player->id,
                 'game_team_id'    => $team->id,
                 'from_position'   => $player->position,
-                'target_position' => $target,
+                'target_position' => $move ? null : $target,
+                'special_move'     => $move,
+                'cost'             => $cost,
                 'week_start'      => $week,
                 'week_return'     => $week + $duration,
             ]);
@@ -180,7 +194,15 @@ class PositionTrainingService
             ->get()
             ->each(function (GamePositionTraining $training) {
                 $player = $training->gamePlayer;
-                if ($player) {
+                if ($player && $training->special_move) {
+                    $moves = $player->special_moves ?? [];
+                    $move = $training->special_move;
+                    $action = TrainableSpecialMoves::actionOf($move);
+                    if (!in_array($action, array_map(TrainableSpecialMoves::actionOf(...), $moves), true)) {
+                        $player->special_moves = [...$moves, $move];
+                        $player->save();
+                    }
+                } elseif ($player) {
                     $secondary = (array) ($player->secondary_positions ?? []);
                     if ($training->target_position !== $player->position && !in_array($training->target_position, $secondary, true)) {
                         $secondary[] = $training->target_position;

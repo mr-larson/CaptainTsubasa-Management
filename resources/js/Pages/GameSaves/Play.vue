@@ -45,6 +45,8 @@ import CareerMandateCard from '@/Pages/GameSaves/Play/CareerMandateCard.vue';
 // ==========================
 const props = defineProps({
     gameSave:          { type: Object, required: true },
+    trainableSpecialMoves: { type: Array, default: () => [] },
+    specialTrainingCost: { type: Number, default: 300 },
     playerChemistry:  { type: Object, default: () => ({}) },
     contractSeasonEndWeek: { type: Number, default: null },
     midseasonBreakRecovery: { type: Number, default: null },
@@ -189,6 +191,12 @@ const playerPositionTraining = (playerId) =>
 const trainPosition = ({ playerId, position }) => router.post(
     route('game-saves.position-training.store', { gameSave: props.gameSave.id }),
     { player_id: playerId, position },
+    { preserveScroll: true },
+);
+
+const trainSpecial = ({ playerId, moveKey }) => router.post(
+    route('game-saves.special-training.store', { gameSave: props.gameSave.id }),
+    { player_id: playerId, move_key: moveKey, season: season.value, week: week.value },
     { preserveScroll: true },
 );
 
@@ -825,6 +833,9 @@ const saveGame = () => {
                                  :positionTrainingCost="props.gameConfig?.position_training_cost ?? 200"
                                  :staminaCost="props.gameConfig?.training_stamina_cost ?? 2"
                                  :playerPositionTraining="playerPositionTraining"
+                                 :trainableSpecialMoves="props.trainableSpecialMoves"
+                                 :specialTrainingCost="props.specialTrainingCost"
+                                 :specialTrainingError="$page.props.errors?.special_training"
                                  :maxPerWeek="props.gameConfig?.training_max_per_week ?? 3"
                                  :minStamina="props.gameConfig?.training_min_stamina ?? 10"
                                  :trainingState="trainingState"
@@ -846,6 +857,7 @@ const saveGame = () => {
                                  @remove-slot="removeTrainingSlot"
                                  @submit-training="submitTraining"
                                  @train-position="trainPosition"
+                                 @train-special="trainSpecial"
                                  @prev-ai-week="prevAiWeek"
                                  @next-ai-week="nextAiWeek"
                     />

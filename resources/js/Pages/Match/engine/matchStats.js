@@ -140,7 +140,7 @@ export function buildMatchStats(events, goalEvents = []) {
             if (!out.players[pid]) out.players[pid] = emptyPlayerMatchStats();
             if (!playerTeamCache[pid]) playerTeamCache[pid] = ev.defense.team;
 
-            const def = ev.defense.action;
+            const def = ev.defense.action?.startsWith("field-special:") ? ev.defense.action.split(":")[1] : ev.defense.action;
             if (def === "intercept")  out.players[pid].defense.intercept.attempts++;
             if (def === "tackle")     out.players[pid].defense.tackle.attempts++;
             if (def === "block")      out.players[pid].defense.block.attempts++;

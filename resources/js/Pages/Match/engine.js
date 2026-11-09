@@ -540,10 +540,24 @@ export function initMatchEngine(rootEl, config = {}) {
     // ==========================
     //   HANDLERS CLICKS
     // ==========================
+    function getAnnouncedDefender(defenseTeam) {
+        const snap = state.defensePreview;
+        const snapshot = snap?.ballSnapshot;
+        if (snap?.defenseTeam === defenseTeam &&
+            snapshot?.team === ball.team &&
+            snapshot.number === ball.number &&
+            snapshot.zoneIndex === ball.zoneIndex &&
+            snapshot.laneIndex === ball.laneIndex &&
+            snapshot.frontOfKeeper === ball.frontOfKeeper) {
+            return snap.picked;
+        }
+        return null;
+    }
+
     function handleAttackClick(action) {
         if (state.isGameOver || state.isAnimating) return;
         if (state.turns >= MAX_TURNS || state.phase !== "attack") return;
-        if (!["shot","pass","dribble","one_two","special","special-pass","special-dribble","cross","long_pass"].includes(action)) return;
+        if (!["shot","pass","dribble","one_two","special","special-pass","special-dribble","special-cross","cross","long_pass"].includes(action)) return;
 
         if (state.isKickoff) {
             if (action !== "pass") return;
@@ -561,11 +575,16 @@ export function initMatchEngine(rootEl, config = {}) {
         // Une-deux : exige un partenaire de duo sur le terrain
         if (action === "one_two" && !roster.getDuoPartnerOnField(state.currentTeam, ball.number)) return;
 
-        if (action === "cross" || action === "long_pass") {
+        if (action === "cross" || action === "special-cross" || action === "long_pass") {
+            const isSpecialCross = action === "special-cross";
+            if (isSpecialCross && !canUseSpecial(getPlayerId(state.currentTeam, ball.number), "attack", "cross")) {
+                setMessage(TEXTS.ui.specialCooldownMain, TEXTS.ui.specialCooldownSub);
+                return;
+            }
             const defTeam = otherTeam(state.currentTeam);
             state.phase = "defense";
             state.pendingAttack = action;
-            if (action === "cross") resolveCross(state.currentTeam, defTeam);
+            if (action !== "long_pass") resolveCross(state.currentTeam, defTeam, getAnnouncedDefender(defTeam), isSpecialCross);
             else resolveLongPass(state.currentTeam, defTeam);
             return;
         }
@@ -587,18 +606,9 @@ export function initMatchEngine(rootEl, config = {}) {
         const isKeeperChoiceUI = (action === "shot" || action === "special" || action === "special-pass" || action === "special-dribble") && ball.frontOfKeeper;
 
         if (!isKeeperChoiceUI) {
-            const snap = state.defensePreview;
             // Le défenseur annoncé (fiche latérale, stats sur les cartes) défend
             // quelle que soit l'action choisie : on ne retire plus au sort.
-            const snapOk = snap &&
-                snap.defenseTeam  === defTeam &&
-                snap.ballSnapshot?.team         === ball.team &&
-                snap.ballSnapshot?.number       === ball.number &&
-                snap.ballSnapshot?.zoneIndex    === ball.zoneIndex &&
-                snap.ballSnapshot?.laneIndex    === ball.laneIndex &&
-                snap.ballSnapshot?.frontOfKeeper=== ball.frontOfKeeper;
-
-            const picked = snapOk ? snap.picked : pickFieldDefender(defTeam, ball.zoneIndex, ball.laneIndex);
+            const picked = getAnnouncedDefender(defTeam) ?? pickFieldDefender(defTeam, ball.zoneIndex, ball.laneIndex);
             state.pendingDefenseContext = { defenseTeam: defTeam, ...picked };
             state.defensePreview = null;
         } else {
@@ -671,19 +681,20 @@ export function initMatchEngine(rootEl, config = {}) {
             (state.pendingShotContext && state.pendingShotContext.stage === "keeper") ||
             ball.frontOfKeeper;
 
-        if (isKeeperDuel && !["hands","punch","gk-special"].includes(defense)) defense = "hands";
+        const [defenseKind, defenseBase] = defense.split(":");
+        if (isKeeperDuel && !["hands","punch","gk-special"].includes(defenseKind)) defense = "hands";
 
         const attackTeam  = state.currentTeam;
         const defenseTeam = otherTeam(state.currentTeam);
         const attack      = state.pendingAttack;
 
-        if (defense === "field-special") {
+        if (!isKeeperDuel && defenseKind === "field-special") {
             const defenderId = state.pendingDefenseContext?.defenderId ?? null;
-            if (defenderId && !canUseSpecial(defenderId, "defense")) defense = "block";
+            if (!canUseSpecial(defenderId, "defense", defenseBase)) defense = defenseBase ?? "block";
         }
-        if (defense === "gk-special") {
+        if (isKeeperDuel && defenseKind === "gk-special") {
             const keeperId = getKeeperId(defenseTeam);
-            if (keeperId && !canUseSpecial(keeperId, "defense")) defense = "hands";
+            if (!canUseSpecial(keeperId, "defense", defenseBase)) defense = defenseBase ?? "hands";
         }
 
         if ((attack === "shot" || attack === "special" || attack === "special-pass" || attack === "special-dribble") &&

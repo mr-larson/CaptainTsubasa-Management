@@ -10,6 +10,7 @@ use App\Models\GameSaves\GameSave;
 use App\Enums\PlayerPosition;
 use App\Services\PositionTrainingService;
 use App\Services\TrainingService;
+use App\Services\TrainableSpecialMoves;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules\Enum;
 use Illuminate\Http\RedirectResponse;
@@ -49,6 +50,32 @@ class TrainingController extends Controller
             $trainingService->applyTrainings($gameSave, $season, $week, $data['trainings']);
 
             return back()->with('success', 'Entraînement effectué avec succès.');
+        });
+    }
+
+    public function storeSpecial(Request $request, GameSave $gameSave, PositionTrainingService $service): RedirectResponse
+    {
+        $this->authorizeGameSave('update', $gameSave);
+        $data = $request->validate([
+            'player_id' => ['required', 'integer', 'min:1'],
+            'move_key' => ['required', 'string', 'max:255'],
+            'season' => ['required', 'integer'],
+            'week' => ['required', 'integer'],
+        ]);
+
+        return $this->withSaveLock($gameSave, function (GameSave $save) use ($data, $service) {
+            if (!$save->isInMatchPhase() || (int) $data['season'] !== (int) $save->season || (int) $data['week'] !== (int) $save->week) {
+                throw ValidationException::withMessages(['special_training' => 'La semaine ou la phase a changé. Recharge la page.']);
+            }
+
+            $move = collect(TrainableSpecialMoves::catalog())->firstWhere('key', $data['move_key']);
+            if (!$move) {
+                throw ValidationException::withMessages(['special_training' => 'Cette technique ne peut pas être apprise.']);
+            }
+
+            $training = $service->start($save, (int) $data['player_id'], $move['key'], $move);
+
+            return back()->with('success', "Formation « {$move['label']} » lancée. Retour en semaine {$training->week_return}.");
         });
     }
 

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\GameSaves\GamePlayer;
+use App\Models\GameSaves\GamePositionTraining;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
 use Illuminate\Support\Facades\DB;
@@ -70,6 +71,9 @@ class TrainingService
 
         // 2️⃣ Joueurs distincts dans la requête
         $playerIds = array_column($trainings, 'player_id');
+        if (array_intersect($playerIds, GamePositionTraining::unavailablePlayerIds($gameSave->id, $week))) {
+            throw ValidationException::withMessages(['trainings' => 'Un joueur en formation ne peut pas suivre une autre séance.']);
+        }
         if (count($playerIds) !== count(array_unique($playerIds))) {
             throw ValidationException::withMessages([
                 'trainings' => 'Chaque joueur ne peut être entraîné qu\'une fois par semaine.',

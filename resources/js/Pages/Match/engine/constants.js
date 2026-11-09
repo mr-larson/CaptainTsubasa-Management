@@ -254,6 +254,7 @@ export const STATS = {
         special: { power: 12, cost: 15 },
         // Spéciaux passe/dribble : même coût/puissance que le spécial générique
         // (repris tel quel lors du passage à un slot dédié par carte).
+        "special-cross":   { power: 12, cost: 15 },
         "special-pass":    { power: 12, cost: 15 },
         "special-dribble": { power: 12, cost: 15 },
         cross:     { power: 10, cost: 8 },

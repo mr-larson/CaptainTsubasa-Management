@@ -21,6 +21,9 @@ const props = defineProps({
     maxPerWeek:                  { type: Number,   default: 3 },
     minStamina:                  { type: Number,   default: 10 },
     trainingCost:                { type: Number,   default: 0 },
+    trainableSpecialMoves:        { type: Array,    default: () => [] },
+    specialTrainingCost:          { type: Number,   default: 300 },
+    specialTrainingError:         { type: String,   default: '' },
     positionTrainingCost:        { type: Number,   default: 200 },
     staminaCost:                 { type: Number,   default: 0 },
     playerPositionTraining:      { type: Function, default: () => null },
@@ -42,7 +45,7 @@ const props = defineProps({
     playerSuspension:            { type: Function, default: () => () => null },
 });
 
-const emit = defineEmits(['add-slot', 'remove-slot', 'submit-training', 'prev-ai-week', 'next-ai-week', 'train-position']);
+const emit = defineEmits(['add-slot', 'remove-slot', 'submit-training', 'prev-ai-week', 'next-ai-week', 'train-position', 'train-special']);
 
 const { playerPhotoUrl, statColor } = usePlayerUtils();
 
@@ -60,6 +63,8 @@ const canAffordOneMore = computed(() => (selectedCount.value + 1) * props.traini
 const trainingButtonState = computed(() => {
     const p = selectedPlayer.value;
     if (!p) return { disabled: true, label: '', reason: '' };
+
+    if (props.playerPositionTraining(p.id)) return { disabled: true, label: 'En formation' };
 
     if (props.remainingTrainingsThisWeek <= 0) {
         return { disabled: true, label: 'Plus de séances cette semaine', reason: 'limit_week' };
@@ -111,15 +116,35 @@ const positionOptions = computed(() => {
 });
 watch(selectedPlayer, () => { positionTarget.value = positionOptions.value[0]?.value ?? null; }, { immediate: true });
 const currentPositionTraining = computed(() => selectedPlayer.value ? props.playerPositionTraining(selectedPlayer.value.id) : null);
-const positionTrainingState = computed(() => {
+const formationState = (target, cost) => {
     const p = selectedPlayer.value;
-    if (!p || !positionTarget.value) return { disabled: true, reason: '' };
+    if (!p || !target) return { disabled: true, reason: '' };
+    if (currentPositionTraining.value) return { disabled: true, reason: 'Déjà en formation.' };
+    if (props.selectedTrainings.some(s => Number(s.player_id) === Number(p.id))) return { disabled: true, reason: 'Retire ce joueur de la séance prévue pour lancer une formation.' };
     if (props.remainingTrainingsThisWeek - selectedCount.value <= 0) return { disabled: true, reason: 'Plus de séance disponible cette semaine.' };
     if (props.hasPlayerBeenTrainedThisWeek(p.id)) return { disabled: true, reason: 'Déjà entraîné cette semaine.' };
     if (props.isPlayerInjured(p.id) || props.isPlayerSuspended(p.id)) return { disabled: true, reason: 'Indisponible : il pourra se former à son retour.' };
-    if (props.positionTrainingCost > props.teamBudget - totalTrainingCost.value) return { disabled: true, reason: 'Budget insuffisant.' };
+    if (cost > props.teamBudget - totalTrainingCost.value) return { disabled: true, reason: 'Budget insuffisant.' };
     return { disabled: false, reason: '' };
+};
+const positionTrainingState = computed(() => formationState(positionTarget.value, props.positionTrainingCost));
+
+const moveAction = (move) => ({ hands: 'hand_save', punch: 'punch_save' })[move.base_action] ?? move.base_action;
+const moveActionLabels = { shot: 'Tir', pass: 'Passe', cross: 'Centre', dribble: 'Dribble', block: 'Contre', intercept: 'Interception', tackle: 'Tacle', hand_save: 'Arrêt main', punch_save: 'Arrêt poings' };
+const specialTarget = ref(null);
+const specialOptions = computed(() => {
+    const p = selectedPlayer.value;
+    if (!p) return [];
+    const known = new Set((p.special_moves ?? []).map(moveAction));
+    return props.trainableSpecialMoves.filter(move => {
+        const action = moveAction(move);
+        const keeperMove = ['hand_save', 'punch_save'].includes(action);
+        return !known.has(action) && keeperMove === (p.position === 'Goalkeeper');
+    });
 });
+watch(specialOptions, (options) => { specialTarget.value = options[0]?.key ?? null; }, { immediate: true });
+const specialTrainingState = computed(() => formationState(specialTarget.value, props.specialTrainingCost));
+const selectedSpecial = computed(() => specialOptions.value.find(move => move.key === specialTarget.value));
 const selectedPositionWeeks = computed(() => positionOptions.value.find(o => o.value === positionTarget.value)?.weeks ?? 0);
 
 // ── Filtre IA ──────────────────────────────────────────────
@@ -309,7 +334,8 @@ const selectedPlayerPerf = computed(() => {
 
                         <div v-if="currentPositionTraining"
                              class="rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-xs text-violet-700">
-                            🎓 En formation au poste de <span class="font-bold">{{ positionLabel(currentPositionTraining.target_position) }}</span>
+                            🎓 <span v-if="currentPositionTraining.special_label">Technique spéciale · <strong>{{ currentPositionTraining.special_label }}</strong></span>
+                            <span v-else>En formation au poste de <strong>{{ positionLabel(currentPositionTraining.target_position) }}</strong></span>
                             — de retour en semaine {{ currentPositionTraining.week_return }}.
                         </div>
                         <p v-else-if="!positionOptions.length" class="text-xs text-slate-400 italic">Il maîtrise déjà tous les postes.</p>
@@ -330,6 +356,39 @@ const selectedPlayerPerf = computed(() => {
                                     || `Compte comme une séance de la semaine. ${selectedPlayer.lastname} manquera ${selectedPositionWeeks} match${selectedPositionWeeks > 1 ? 's' : ''}.` }}
                             </p>
                         </template>
+                    </div>
+
+                    <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+                        <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">✨ Technique spéciale</h4>
+                        <p class="text-xs text-slate-500 mb-3">
+                            Une technique spéciale par action. Le joueur apprend la technique en une semaine et reste indisponible pendant la formation.
+                        </p>
+                        <p v-if="selectedPlayer.special_moves?.length" class="mb-3 text-xs text-slate-500">
+                            Techniques maîtrisées : <span class="font-semibold text-slate-700">{{ selectedPlayer.special_moves.map(move => move.label).join(', ') }}</span>
+                        </p>
+                        <div v-if="currentPositionTraining" class="rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-xs text-violet-700">
+                            {{ currentPositionTraining.special_label ?? 'Déjà en formation à un poste' }} · retour en semaine {{ currentPositionTraining.week_return }}.
+                        </div>
+                        <p v-else-if="!specialOptions.length" class="text-xs text-slate-400 italic">Aucune technique compatible disponible.</p>
+                        <template v-else>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <select v-model="specialTarget" aria-label="Technique spéciale à apprendre"
+                                        class="flex-1 min-w-[160px] px-2 py-1.5" :class="fieldClass({ shape: 'rect', size: 'sm' })">
+                                    <option v-for="move in specialOptions" :key="move.key" :value="move.key">
+                                        {{ moveActionLabels[moveAction(move)] }} · {{ move.label }}
+                                    </option>
+                                </select>
+                                <ButtonPrimary type="button" size="sm" :disabled="specialTrainingState.disabled"
+                                               @click="emit('train-special', { playerId: selectedPlayer.id, moveKey: specialTarget })">
+                                    Lancer la formation — {{ specialTrainingCost }} <GameBanknote />
+                                </ButtonPrimary>
+                            </div>
+                            <p v-if="selectedSpecial?.description" class="mt-2 text-xs text-slate-500">{{ selectedSpecial.description }}</p>
+                            <p class="mt-2 text-2xs" :class="specialTrainingState.reason ? 'text-rose-500' : 'text-slate-400'">
+                                {{ specialTrainingState.reason || 'Compte comme une séance de la semaine.' }}
+                            </p>
+                        </template>
+                        <p v-if="specialTrainingError" role="alert" class="mt-2 text-xs text-rose-600">{{ specialTrainingError }}</p>
                     </div>
 
                     <!-- Radar + Barres stats -->
@@ -523,15 +582,15 @@ const selectedPlayerPerf = computed(() => {
                                 <div class="text-xs font-semibold text-slate-700 truncate">
                                     {{ playerForManualEntry(entry)?.lastname ?? `Joueur #${entry.player_id}` }}
                                 </div>
-                                <div class="text-2xs text-slate-400">Stamina -{{ entry.stamina_cost }}</div>
+                                <div class="text-2xs text-slate-400">{{ entry.special_label ? `Formation · ${entry.cost} GL` : `Stamina -${entry.stamina_cost}` }}</div>
                             </div>
 
                             <div class="flex items-center gap-1.5">
                                 <div class="w-2 h-2 rounded-full" :class="statColor(entry.stat)"></div>
-                                <span class="text-xs text-slate-600 font-medium">{{ statLabel(entry.stat) }}</span>
+                                <span class="text-xs text-slate-600 font-medium">{{ entry.special_label ?? statLabel(entry.stat) }}</span>
                             </div>
 
-                            <div class="px-2 py-0.5 rounded-full text-xs font-black bg-teal-200 text-teal-700">
+                            <div v-if="!entry.special_label" class="px-2 py-0.5 rounded-full text-xs font-black bg-teal-200 text-teal-700">
                                 +{{ entry.gain }}
                             </div>
                         </div>

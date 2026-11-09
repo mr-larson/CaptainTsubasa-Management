@@ -831,7 +831,8 @@ class GameSaveController extends Controller
             ->get()
             ->map(fn ($t) => [
                 'game_player_id'  => $t->game_player_id,
-                'target_position' => $t->target_position,
+                'target_position' => $t->special_move ? null : $t->target_position,
+                'special_label'    => $t->special_move['label'] ?? null,
                 'week_start'      => $t->week_start,
                 'week_return'     => $t->week_return,
             ]);
@@ -981,6 +982,8 @@ class GameSaveController extends Controller
             'activeInjuries'      => $activeInjuries,
             'activeSuspensions'   => $activeSuspensions,
             'activePositionTrainings' => $activePositionTrainings,
+            'trainableSpecialMoves' => fn () => \App\Services\TrainableSpecialMoves::catalog(),
+            'specialTrainingCost' => \App\Services\TrainableSpecialMoves::COST,
             'activeYellowCards'   => $activeYellowCards,
             'moraleLogs'          => $moraleLogs,
             'playerPromises'      => $playerPromises,
