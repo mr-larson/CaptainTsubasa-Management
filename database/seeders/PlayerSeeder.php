@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Helpers\HeadingRating;
+use App\Helpers\ReferenceRosterBalance;
 use App\Enums\Nationality;
 use App\Models\Traits\CalculatesWeeklyCost;
 use Database\Seeders\Concerns\GuardsReferenceReseed;
@@ -148,7 +149,9 @@ class PlayerSeeder extends Seeder
                     break;
                 }
             }
-            $specialMoves = $specialMovesByPlayerSlug[$slug] ?? null;
+            [$fullStats, $specialMoves] = ReferenceRosterBalance::apply(
+                $origin, trim($firstname . ' ' . $lastname), $position, $fullStats, $specialMovesByPlayerSlug[$slug] ?? [],
+            );
 
             DB::table('players')->insert([
                 'firstname' => $firstname,
