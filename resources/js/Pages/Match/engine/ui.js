@@ -8,6 +8,7 @@ import {
     enqueueRevealStep, revealDwellMs, resetEventQueue,
 } from './dice.js';
 import { LogEntry } from './ui/logEntry.js';
+import { overallOf } from '@/Pages/GameSaves/Play/usePlayerUtils.js';
 
 // Libellés FR des postes (miroir de PlayerPosition::labels()).
 const POSITION_FR = { Goalkeeper: 'Gardien', Defender: 'Défenseur', Midfielder: 'Milieu', Forward: 'Attaquant' };
@@ -547,17 +548,33 @@ export function updateSideCard(prefix, team, slotNumber) {
         }
         if (!subs.length) return;
 
-        // Remplaçants du même poste d'abord (gardien pour un gardien…), puis
-        // les plus frais : l'endurance du sortant est rappelée dans l'en-tête.
+        // Le poste à couvrir est celui du slot dans la formation de l'équipe.
         const outInfo = _roster.getPlayerInfo(team, slotNumber);
-        const outPos  = outInfo?.position ?? '';
+        const targetRole = _roster.getSlotRole(team, slotNumber);
         const staminaPct = (s) => {
             const pid = getPlayerId(team, s);
             const max = _state.staminaMax[pid] ?? 100;
             const cur = _state.stamina[pid] ?? max;
             return max > 0 ? Math.round(cur / max * 100) : 100;
         };
-        const fitRank = (info) => info.position === outPos ? 0 : (info.secondaryPositions ?? []).includes(outPos) ? 1 : 2;
+        const playerMetrics = (s, info) => {
+            const pct = staminaPct(s);
+            const max = _state.staminaMax[getPlayerId(team, s)] ?? Number(info?.stats?.stamina);
+            const capacity = max > 0 ? ` · ${max} pts max` : '';
+            return {
+                rating: `Note moyenne ${overallOf(info) || '—'}`,
+                endurance: `Endurance ${pct} %${capacity}`,
+                pct,
+            };
+        };
+        const fitRank = (info) => {
+            if (!targetRole) return 2;
+            if (_roster.getRoleFromPositionString(info.position) === targetRole) return 0;
+            const coversRole = (info.secondaryPositions ?? []).some(
+                position => _roster.getRoleFromPositionString(position) === targetRole
+            );
+            return coversRole ? 1 : 2;
+        };
         subs.sort((a, b) => fitRank(a.info) - fitRank(b.info) || staminaPct(b.slot) - staminaPct(a.slot));
 
         const subBtn = document.createElement('button');
@@ -569,21 +586,25 @@ export function updateSideCard(prefix, team, slotNumber) {
 
         const panel = document.createElement('div');
         panel.id = `${prefix}-sub-panel`;
-        panel.className = 'sub-panel hidden absolute right-1 top-8 z-[80] min-w-[180px] overflow-hidden rounded-[10px] border border-slate-200 bg-white shadow-lg';
+        panel.className = 'sub-panel hidden absolute right-1 top-8 z-[80] min-w-[180px] flex-col overflow-hidden rounded-[10px] border border-slate-200 bg-white shadow-lg max-h-[calc(100%-2.25rem)] [&:not(.hidden)]:flex';
 
         const header = document.createElement('div');
-        header.className = 'bg-sky-500 px-2.5 py-1.5 text-2xs font-bold text-white';
-        header.textContent = `🔄 Remplacer ${outInfo?.lastname ?? ''} (${staminaPct(slotNumber)} %⚡)`;
+        header.className = 'shrink-0 bg-sky-500 px-2.5 py-1.5 text-2xs font-bold text-white';
+        header.textContent = `🔄 Remplacer ${outInfo?.lastname ?? ''}`;
+        const outMetrics = playerMetrics(slotNumber, outInfo);
+        const headerMetrics = document.createElement('div');
+        headerMetrics.className = 'font-normal';
+        headerMetrics.textContent = `${outMetrics.rating} · ${outMetrics.endurance}`;
+        header.appendChild(headerMetrics);
         panel.appendChild(header);
 
-        // Liste défilable : si beaucoup de remplaçants, on peut scroller
-        // au lieu de voir la liste déborder hors de l'écran.
+        // La liste défile dans l'espace laissé par l'en-tête, à l'intérieur de la carte.
         const listEl = document.createElement('div');
-        listEl.className = 'max-h-[min(220px,40vh)] overflow-y-auto overscroll-contain';
+        listEl.className = 'min-h-0 max-h-[min(220px,40vh)] overflow-y-auto overscroll-contain';
         panel.appendChild(listEl);
 
         subs.forEach(({ slot, info: subInfo }) => {
-            const pct    = staminaPct(slot);
+            const { rating, endurance, pct } = playerMetrics(slot, subInfo);
             const color  = pct >= 75 ? 'text-emerald-500' : pct >= 50 ? 'text-amber-500' : 'text-rose-500';
             const rank   = fitRank(subInfo);
             const fitTag = rank === 0 ? '<span class="text-emerald-600">même poste</span>'
@@ -592,13 +613,16 @@ export function updateSideCard(prefix, team, slotNumber) {
 
             const item = document.createElement('button');
             item.type = 'button';
-            item.className = 'flex w-full cursor-pointer items-center justify-between border-0 border-b border-slate-100 bg-transparent px-2.5 py-1.5 text-left text-[11px] hover:bg-sky-50';
+            item.className = 'w-full cursor-pointer border-0 border-b border-slate-100 bg-transparent px-2.5 py-1.5 text-left text-[11px] hover:bg-sky-50';
             item.innerHTML = `
-            <div>
-                <div class="font-bold">${subInfo.lastname}</div>
-                <div class="text-3xs text-slate-400">${POSITION_FR[subInfo.position] ?? subInfo.position ?? '—'} · ${fitTag}</div>
-            </div>
-            <span class="${color} text-2xs font-bold">${pct}%⚡</span>`;
+            <div class="font-bold" data-sub-name></div>
+            <div class="text-3xs text-slate-500"><span data-sub-position></span> · ${fitTag}</div>
+            <div class="mt-0.5 flex flex-wrap gap-x-2 text-3xs font-semibold">
+                <span class="text-slate-600">${rating}</span>
+                <span class="${color}">${endurance}</span>
+            </div>`;
+            item.querySelector('[data-sub-name]').textContent = subInfo.lastname;
+            item.querySelector('[data-sub-position]').textContent = POSITION_FR[subInfo.position] ?? subInfo.position ?? '—';
             item.onclick = () => {
                 if (_state._performSubstitution) {
                     const ok = _state._performSubstitution(team, slotNumber, slot);
