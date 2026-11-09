@@ -167,12 +167,12 @@
                 <div id="main-row" class="grid min-h-0 grid-cols-1 lg:grid-cols-10 gap-6 items-stretch">
 
                     <!-- LEFT COLUMN : Stats cards -->
-                    <div id="left-column" class="lg:col-span-2 min-w-0 min-h-0 flex flex-col justify-around gap-4 lg:max-h-[55vh]">
+                    <div id="left-column" class="lg:col-span-2 min-w-0 min-h-0 flex flex-col justify-around gap-4">
 
                         <!-- HOME CARD -->
                         <div
                             id="home-card"
-                            class="min-w-0 rounded-2xl bg-white p-4 shadow-lg ring-1 ring-white/80 flex flex-col gap-3 relative"
+                            class="min-w-0 rounded-2xl bg-white px-4 py-3 shadow-lg ring-1 ring-white/80 flex flex-col gap-2 relative"
                         >
                             <div id="home-status-bar" class="absolute top-2 right-2 flex items-center gap-1">
                                 <div id="home-ball-icon" class="hidden h-5 w-5 flex items-center justify-center text-sm" title="Porte le ballon">⚽</div>
@@ -181,7 +181,7 @@
                             <div class="flex items-center gap-3 min-w-0">
                                 <div
                                     id="home-portrait"
-                                    class="shrink-0 h-16 w-16 rounded shadow-md bg-gradient-to-br from-slate-100 via-slate-200 to-slate-400 relative overflow-hidden"
+                                    class="shrink-0 h-12 w-12 rounded shadow-md bg-gradient-to-br from-slate-100 via-slate-200 to-slate-400 relative overflow-hidden"
                                 ></div>
                                 <div class="min-w-0 flex-1 text-xs space-y-0.5">
                                     <div id="home-name" class="text-sm font-bold leading-tight line-clamp-2 break-words">—</div>
@@ -205,16 +205,18 @@
                                 <div class="flex justify-between"><span>Chance :</span> <strong id="home-stat-luck">—</strong></div>
                             </div>
 
-                            <div class="-mb-2 flex justify-between text-[11px] text-slate-500"><span>Endurance</span><strong id="home-energy-value" class="text-slate-700">—</strong></div>
-                            <div class="h-2.5 w-full overflow-hidden rounded-full bg-gradient-to-r from-blue-200 to-white shadow-inner ring-1 ring-black/5">
-                                <div id="home-energy-fill" class="h-full w-full e-high"></div>
+                            <div class="space-y-1">
+                                <div class="flex justify-between text-[11px] text-slate-500"><span>Endurance</span><strong id="home-energy-value" class="text-slate-700">—</strong></div>
+                                <div class="h-2.5 w-full overflow-hidden rounded-full bg-gradient-to-r from-blue-200 to-white shadow-inner ring-1 ring-black/5">
+                                    <div id="home-energy-fill" class="h-full w-full e-high"></div>
+                                </div>
                             </div>
                         </div>
 
                         <!-- AWAY CARD -->
                         <div
                             id="away-card"
-                            class="min-w-0 rounded-2xl bg-white p-4 shadow-lg ring-1 ring-white/80 flex flex-col gap-3 relative"
+                            class="min-w-0 rounded-2xl bg-white px-4 py-3 shadow-lg ring-1 ring-white/80 flex flex-col gap-2 relative"
                         >
                             <div id="away-status-bar" class="absolute top-2 right-2 flex items-center gap-1">
                                 <div id="away-ball-icon" class="hidden h-5 w-5 flex items-center justify-center text-sm" title="Porte le ballon">⚽</div>
@@ -223,7 +225,7 @@
                             <div class="flex items-center gap-3 min-w-0">
                                 <div
                                     id="away-portrait"
-                                    class="shrink-0 h-16 w-16 rounded shadow-md bg-gradient-to-br from-slate-100 via-slate-200 to-slate-400 relative overflow-hidden"
+                                    class="shrink-0 h-12 w-12 rounded shadow-md bg-gradient-to-br from-slate-100 via-slate-200 to-slate-400 relative overflow-hidden"
                                 ></div>
                                 <div class="min-w-0 flex-1 text-xs space-y-0.5">
                                     <div id="away-name" class="text-sm font-bold leading-tight line-clamp-2 break-words">—</div>
@@ -247,9 +249,11 @@
                                 <div class="flex justify-between"><span>Chance :</span> <strong id="away-stat-luck">—</strong></div>
                             </div>
 
-                            <div class="-mb-2 flex justify-between text-[11px] text-slate-500"><span>Endurance</span><strong id="away-energy-value" class="text-slate-700">—</strong></div>
-                            <div class="h-2.5 w-full overflow-hidden rounded-full bg-gradient-to-r from-rose-100 to-white shadow-inner ring-1 ring-black/5">
-                                <div id="away-energy-fill" class="h-full w-full e-high"></div>
+                            <div class="space-y-1">
+                                <div class="flex justify-between text-[11px] text-slate-500"><span>Endurance</span><strong id="away-energy-value" class="text-slate-700">—</strong></div>
+                                <div class="h-2.5 w-full overflow-hidden rounded-full bg-gradient-to-r from-rose-100 to-white shadow-inner ring-1 ring-black/5">
+                                    <div id="away-energy-fill" class="h-full w-full e-high"></div>
+                                </div>
                             </div>
                         </div>
 
