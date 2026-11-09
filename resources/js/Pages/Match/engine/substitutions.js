@@ -109,8 +109,8 @@ export function performSubstitution(team, outSlot, inSlot) {
     _state.substitutionCount[team]++;
 
     _pushLogEntry('substitutionTitle', [
-        `🔄 ${outInfo?.lastname ?? '#' + outSlot} → ${inInfo?.lastname ?? '#' + inSlot}`,
-    ], null, _state);
+        `${outInfo?.lastname ?? '#' + outSlot} → ${inInfo?.lastname ?? '#' + inSlot}`,
+    ], null, _state, null, { team, playerSlot: inEl ? inSlot : outSlot });
 
     _refreshUI();
     return true;

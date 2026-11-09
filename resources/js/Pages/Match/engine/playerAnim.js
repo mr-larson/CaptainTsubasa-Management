@@ -8,6 +8,7 @@ const ANIM_DURATIONS = {
     receiver: 380,
     shoot:    450,
     save:     480,
+    substitution: 620,
 };
 
 // Mémorise les animations en cours par élément pour pouvoir les annuler
@@ -26,7 +27,7 @@ export function getAttackDirection(team) {
  *
  * @param {string} team       'internal' | 'external'
  * @param {number} number     Numéro du joueur (1-11)
- * @param {string} kind       'dribble' | 'tackle' | 'passer' | 'receiver' | 'shoot' | 'save'
+ * @param {string} kind       'dribble' | 'tackle' | 'passer' | 'receiver' | 'shoot' | 'save' | 'substitution'
  * @param {object} [opts]
  * @param {number} [opts.direction]  +1 ou -1 (sinon dérivé de l'équipe)
  */

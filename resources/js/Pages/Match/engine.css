@@ -167,6 +167,14 @@
     animation: player-anim-receiver 380ms ease-out;
 }
 
+@keyframes player-anim-substitution {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    40% { transform: translate(-50%, -50%) scale(1.2); filter: brightness(1.3); }
+}
+.player.player-anim-substitution {
+    animation: player-anim-substitution 620ms ease-out;
+}
+
 /* — Tir : recul (armer) puis frappe en avant + flash brightness — */
 @keyframes player-anim-shoot {
     0%   { transform: translate(-50%, -50%) scale(1);    filter: brightness(1); }
@@ -507,6 +515,20 @@
 .event-toast--goal   { background: linear-gradient(135deg, theme('colors.emerald.600'), theme('colors.emerald.500')); }
 .event-toast--foul   { background: linear-gradient(135deg, #92400e, #f59e0b); }
 .event-toast--yellow { background: linear-gradient(135deg, #92400e, #eab308); }
+.event-toast--substitution {
+    width: max-content;
+    max-width: calc(100% - 24px);
+    background: linear-gradient(135deg, #1e40af, #0369a1);
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-align: center;
+}
+.event-toast--static, .event-toast--static.hiding { transition: none; }
+
+@media (prefers-reduced-motion: reduce) {
+    .player.player-anim-substitution { animation: none; }
+    .event-toast--substitution, .event-toast--substitution.hiding { transition: none; }
+}
 
 /* Overlay plein terrain — carton rouge, blessure et coup franc */
 .event-overlay {

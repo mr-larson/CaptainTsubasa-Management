@@ -5,8 +5,9 @@ import { getPlayerId } from './field.js';
 import { specialActionStat } from './RosterService.js';
 import {
     isDiceAnimating, runAfterDiceAnimation, showBreakdownTooltip, hideBreakdownTooltip, isBreakdownTooltipVisible,
-    enqueueRevealStep, revealDwellMs, resetEventQueue,
+    enqueueRevealStep, getDiceAnimMode, revealDwellMs, resetEventQueue,
 } from './dice.js';
+import { playPlayerAnimation } from './playerAnim.js';
 import { LogEntry } from './ui/logEntry.js';
 import { overallOf } from '@/Pages/GameSaves/Play/usePlayerUtils.js';
 
@@ -125,12 +126,17 @@ function _hideToastNow() {
  * (ou null), pour permettre un clic dessus qui saute la pause d'affichage.
  */
 function _renderEventNotification(type, text, subText = null) {
-    if (type === 'goal' || type === 'foul' || type === 'yellow') {
+    if (type === 'goal' || type === 'foul' || type === 'yellow' || type === 'substitution') {
         const toast = _ensureToastEl();
         if (!toast) return null;
         if (_toastTimer) { clearTimeout(_toastTimer); _toastTimer = null; }
         toast.className = `event-toast event-toast--${type}`;
-        toast.innerHTML = text;
+        if (type === 'substitution') {
+            toast.textContent = text;
+            if (getDiceAnimMode() === 'off') toast.classList.add('event-toast--static');
+        } else {
+            toast.innerHTML = text;
+        }
         toast.getBoundingClientRect(); // force reflow
         toast.classList.add('visible');
         _toastTimer = setTimeout(() => {
@@ -189,8 +195,16 @@ function _awaitDwell(done, dwellMs, skipEl = null) {
 }
 
 /** Renvoie l'élément toast/overlay affiché (ou null si le type n'en a pas). */
-function _triggerEventNotification(actionType, main, details) {
+function _triggerEventNotification(actionType, main, details, team, playerSlot) {
     const firstDetail = (details || [])[0] ?? '';
+
+    if (actionType === 'substitution') {
+        const teamLabel = _TEAMS?.[team]?.label;
+        if (playerSlot != null && getDiceAnimMode() !== 'off') {
+            playPlayerAnimation(team, playerSlot, 'substitution');
+        }
+        return _renderEventNotification('substitution', `🔄 ${teamLabel ?? main} · ${firstDetail}`);
+    }
 
     // Nettoyer les emojis et caractères parasites pour extraire le nom
     const extractName = (str) => str
@@ -344,7 +358,9 @@ function _detectType(key, details) {
     return ['unknown', 'neutral'];
 }
 
-export function pushLogEntry(logKeyOrText, details = [], diceTag = null, state, meta = null) {
+export function pushLogEntry(logKeyOrText, details = [], diceTag = null, state, meta = null, {
+    team = state?.currentTeam ?? null, playerSlot = null,
+} = {}) {
     const main = TEXTS.logs[logKeyOrText] ?? logKeyOrText;
 
     const TECHNICAL_PATTERNS = [/^zone \d/i, /^defense:/i, /^ok bon/i, /^x mauvais/i, /^\(special/i];
@@ -353,7 +369,6 @@ export function pushLogEntry(logKeyOrText, details = [], diceTag = null, state, 
         .filter(x => x && !TECHNICAL_PATTERNS.some(p => p.test(String(x))));
 
     const turns = state?.turns ?? 0;
-    const team  = state?.currentTeam ?? null;
 
     const [actionType, result] = _detectType(logKeyOrText, d);
 
@@ -396,7 +411,7 @@ export function pushLogEntry(logKeyOrText, details = [], diceTag = null, state, 
         if (_ui?.currentActionTitleEl)  _ui.currentActionTitleEl.textContent  = main || '–';
         if (_ui?.currentActionDetailEl) _ui.currentActionDetailEl.textContent = '';
         _pushLog(entry);
-        const el = _triggerEventNotification(actionType, main, d);
+        const el = _triggerEventNotification(actionType, main, d, team, playerSlot);
         _awaitDwell(done, revealDwellMs(actionType), el);
     });
 }

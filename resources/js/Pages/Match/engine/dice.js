@@ -238,13 +238,14 @@ const REVEAL_DWELL = {
     off:    { notable: 0,    routine: 0 },
 };
 
-// Types "notables" (faute, carton, coup franc, blessure, but) — ceux pour
+// Types "notables" (faute, carton, coup franc, blessure, but, remplacement) — ceux pour
 // lesquels on marque une vraie pause ; le reste (passe, dribble réussi...)
 // n'a droit qu'à un délai minimal, pour ne pas ralentir le jeu courant.
 const NOTABLE_REVEAL_KINDS = new Set([
     'foul', 'card-yellow', 'card-red', 'yellow', 'red',
     'freekick', 'free-kick', 'injury',
     'shot-goal', 'special-goal', 'goal',
+    'substitution',
 ]);
 
 /** Durée (ms) pendant laquelle une révélation reste affichée avant la suivante. */
