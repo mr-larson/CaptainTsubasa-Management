@@ -198,7 +198,7 @@ class GameSaveController extends Controller
                                 'block'               => $p['block']      ?? 50,
                                 'intercept'           => $p['intercept']  ?? 50,
                                 'tackle'              => $p['tackle']     ?? 50,
-                                'heading'             => $p['heading'] ?? HeadingRating::estimate($p['position'], $p),
+                                'heading'             => $p['heading'] ?? HeadingRating::forProfile($p['position'], $p),
                             ],
                         ];
                     })
@@ -467,7 +467,7 @@ class GameSaveController extends Controller
                     'block'          => $p['block']      ?? 50,
                     'intercept'      => $p['intercept']  ?? 50,
                     'tackle'         => $p['tackle']     ?? 50,
-                    'heading'        => $p['heading'] ?? HeadingRating::estimate($p['position'], $p),
+                    'heading'        => $p['heading'] ?? HeadingRating::forProfile($p['position'], $p),
                     'hand_save'      => $p['hand_save']  ?? 0,
                     'punch_save'     => $p['punch_save'] ?? 0,
                     'special_moves'  => $p['special_moves'] ?? [],

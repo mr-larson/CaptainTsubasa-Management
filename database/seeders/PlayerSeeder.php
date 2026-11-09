@@ -152,6 +152,10 @@ class PlayerSeeder extends Seeder
             [$fullStats, $specialMoves] = ReferenceRosterBalance::apply(
                 $origin, trim($firstname . ' ' . $lastname), $position, $fullStats, $specialMovesByPlayerSlug[$slug] ?? [],
             );
+            if ($headingOverride === null && !isset($baseStats['heading'])
+                && $fullStats['heading'] === HeadingRating::estimate($position, $fullStats)) {
+                $fullStats['heading'] = HeadingRating::forProfile($position, $fullStats);
+            }
 
             DB::table('players')->insert([
                 'firstname' => $firstname,

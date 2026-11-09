@@ -40,7 +40,7 @@ class Player extends Model
         'block'      => 50,
         'intercept'  => 50,
         'tackle'     => 50,
-        'heading'    => 25,
+        'heading'    => HeadingRating::DEFAULT_FIELD_RATING,
 
         'hand_save'  => 0,
         'punch_save' => 0,
@@ -101,7 +101,7 @@ class Player extends Model
             $column = $this->attributes['heading'] ?? null;
             $stats['heading'] = $stored['heading'] ?? ($column !== null && (int) $column !== 15
                 ? (int) $column
-                : HeadingRating::estimate($this->attributes['position'] ?? null, $stats));
+                : HeadingRating::forProfile($this->attributes['position'] ?? null, $stats));
 
             return $stats;
         };

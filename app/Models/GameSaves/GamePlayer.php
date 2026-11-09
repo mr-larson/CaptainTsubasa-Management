@@ -2,6 +2,7 @@
 
 namespace App\Models\GameSaves;
 
+use App\Helpers\HeadingRating;
 use App\Models\GameSaves\Concerns\BelongsToGameSave;
 use App\Models\Player;
 use App\Models\Traits\CalculatesWeeklyCost;
@@ -56,6 +57,13 @@ class GamePlayer extends Model
         'special_moves' => 'array',
         'secondary_positions' => 'array',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (GamePlayer $player) {
+            $player->heading ??= HeadingRating::forProfile($player->position, $player->getAttributes());
+        });
+    }
 
     /** Origine des joueurs fictifs (générés pour compléter les sélections en Coupe du Monde). */
     public const ORIGIN_FICTIONAL = 'fictional';
