@@ -709,7 +709,12 @@ export function updateCardsPower(ball) {
             el.textContent = String(Math.round((Number(carrierStats.pass ?? 0) + partnerPass) / 2));
             return;
         }
-        const map = { pass: "pass", dribble: "dribble", shot: "shot", special: "shot", cross: "pass", long_pass: "pass" };
+        if (a === "cross") {
+            el.textContent = String(Math.round(_roster.crossStat(ball.team, ball.number)));
+            el.title = "70 % Passe + 30 % Attaque";
+            return;
+        }
+        const map = { pass: "pass", dribble: "dribble", shot: "shot", special: "shot", long_pass: "pass" };
         el.textContent = String(Number(carrierStats[map[a]] ?? 0));
     });
 
@@ -733,9 +738,11 @@ export function updateCardsPower(ball) {
         let slot = previewSlot;
         if (a === "shot" && ball.frontOfKeeper) { vs = ["hand_save", "Arrêt du gardien"]; slot = 1; }
         if (!vs || !slot || _state?.isKickoff) { el.textContent = ""; return; }   // coup d'envoi : passe sans duel
-        const value = Number(_roster.getPlayerInfo(attackDefTeam, slot)?.stats?.[vs[0]] ?? 0);
+        const value = a === "cross"
+            ? Math.round(_roster.headingDuelStat(attackDefTeam, slot))
+            : Number(_roster.getPlayerInfo(attackDefTeam, slot)?.stats?.[vs[0]] ?? 0);
         el.innerHTML = `vs ${vs[1]} <b>${value}</b>`;
-        el.title     = `Face à : ${vs[1]} de l'adversaire (${value})`;
+        el.title     = a === "cross" ? "Duel aérien : 80 % Tête + 20 % Vitesse" : `Face à : ${vs[1]} de l'adversaire (${value})`;
     });
 
     const mode = [..._ui.actionBarEl.classList].find(c => c.startsWith("mode-defense-"));

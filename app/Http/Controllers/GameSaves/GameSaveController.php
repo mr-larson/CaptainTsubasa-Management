@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\GameSaves;
 
+use App\Helpers\HeadingRating;
 use App\Http\Controllers\Controller;
 use App\Models\BonusCard;
 use App\Http\Controllers\Concerns\AuthorizesGameSave;
@@ -197,7 +198,7 @@ class GameSaveController extends Controller
                                 'block'               => $p['block']      ?? 50,
                                 'intercept'           => $p['intercept']  ?? 50,
                                 'tackle'              => $p['tackle']     ?? 50,
-                                'heading'             => $p['heading']    ?? 15,
+                                'heading'             => $p['heading'] ?? HeadingRating::estimate($p['position'], $p),
                             ],
                         ];
                     })
@@ -466,7 +467,7 @@ class GameSaveController extends Controller
                     'block'          => $p['block']      ?? 50,
                     'intercept'      => $p['intercept']  ?? 50,
                     'tackle'         => $p['tackle']     ?? 50,
-                    'heading'        => $p['heading']    ?? 15,
+                    'heading'        => $p['heading'] ?? HeadingRating::estimate($p['position'], $p),
                     'hand_save'      => $p['hand_save']  ?? 0,
                     'punch_save'     => $p['punch_save'] ?? 0,
                     'special_moves'  => $p['special_moves'] ?? [],
@@ -505,7 +506,7 @@ class GameSaveController extends Controller
                     'block'          => $player->block      ?? $s['block']      ?? 50,
                     'intercept'      => $player->intercept  ?? $s['intercept']  ?? 50,
                     'tackle'         => $player->tackle     ?? $s['tackle']     ?? 50,
-                    'heading'        => $player->heading    ?? $s['heading']    ?? 15,
+                    'heading'        => $player->headingStat(),
                     'hand_save'      => $player->hand_save  ?? $s['hand_save']  ?? 0,
                     'punch_save'     => $player->punch_save ?? $s['punch_save'] ?? 0,
                     'special_moves'  => $player->special_moves ?? [],

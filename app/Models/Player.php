@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\PlayerPosition;
+use App\Helpers\HeadingRating;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -39,7 +40,7 @@ class Player extends Model
         'block'      => 50,
         'intercept'  => 50,
         'tackle'     => 50,
-        'heading'    => 15,
+        'heading'    => 25,
 
         'hand_save'  => 0,
         'punch_save' => 0,
@@ -94,10 +95,16 @@ class Player extends Model
      */
     protected function stats(): Attribute
     {
-        $normalize = static fn ($value): array => array_merge(
-            self::DEFAULT_STATS,
-            is_array($value) ? $value : (json_decode((string) $value, true) ?: [])
-        );
+        $normalize = function ($value): array {
+            $stored = is_array($value) ? $value : (json_decode((string) $value, true) ?: []);
+            $stats = array_merge(self::DEFAULT_STATS, $stored);
+            $column = $this->attributes['heading'] ?? null;
+            $stats['heading'] = $stored['heading'] ?? ($column !== null && (int) $column !== 15
+                ? (int) $column
+                : HeadingRating::estimate($this->attributes['position'] ?? null, $stats));
+
+            return $stats;
+        };
 
         return Attribute::make(
             get: fn ($value) => $normalize($value),

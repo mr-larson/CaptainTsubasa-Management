@@ -371,9 +371,7 @@ export class RosterService {
         }
 
         if (defenseAction === "heading") {
-            const headingStat = this.getStat(defenseTeam, defenseSlotNumber, "heading");
-            const speedStat   = this.getStat(defenseTeam, defenseSlotNumber, "speed");
-            const combined    = headingStat * 0.8 + speedStat * 0.2;
+            const combined = this.headingDuelStat(defenseTeam, defenseSlotNumber);
             let raw = base + combined * this.STAT_COEF;
             raw *= this.positionBonusMultiplier(defenseTeam, defenseSlotNumber, "defend");
             raw *= this.moraleFactor(defenseTeam, defenseSlotNumber);

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Helpers\HeadingRating;
 use App\Enums\Nationality;
 use App\Enums\PlayerPosition;
 use App\Enums\TeamStyle;
@@ -495,7 +496,7 @@ class PeriodPackageService
                 'block'               => $p['block'] ?? 50,
                 'intercept'           => $p['intercept'] ?? 50,
                 'tackle'              => $p['tackle'] ?? 50,
-                'heading'             => $p['heading'] ?? 15,
+                'heading'             => $p['heading'] ?? HeadingRating::estimate($p['position'], $p),
                 'hand_save'           => $p['hand_save'] ?? 0,
                 'punch_save'          => $p['punch_save'] ?? 0,
                 'special_moves'       => $p['special_moves'] ?? [],

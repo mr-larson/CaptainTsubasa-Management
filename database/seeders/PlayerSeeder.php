@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Helpers\HeadingRating;
 use App\Enums\Nationality;
 use App\Models\Traits\CalculatesWeeklyCost;
 use Database\Seeders\Concerns\GuardsReferenceReseed;
@@ -159,6 +160,7 @@ class PlayerSeeder extends Seeder
                 'secondary_positions' => json_encode($secondaryPositions, JSON_UNESCAPED_UNICODE),
                 'cost' => $cost,
                 'stats' => json_encode($fullStats, JSON_UNESCAPED_UNICODE),
+                'heading' => $fullStats['heading'],
                 'special_moves' => $specialMoves ? json_encode($specialMoves, JSON_UNESCAPED_UNICODE)
                     : null,
                 'description' => $desc,
@@ -189,32 +191,22 @@ class PlayerSeeder extends Seeder
         $handSave = max(5, (int)round($defense * 0.2));
         $punchSave = max(5, (int)round($defense * 0.15));
 
-        // Tête : échelle 8-30, hiérarchie DEF > FW > MF > GK (les défenseurs
-        // dominent le jeu aérien, les avants pèsent sur les centres, les milieux
-        // génériques sont moyens et les gardiens très faibles de la tête).
-        // La valeur dépend du physique du joueur (defense/attack/stamina) pour
-        // étaler les notes au sein d'un même poste plutôt que de tout aplatir.
-        $heading = 13;
-
         switch ($position) {
             case 'Forward':
                 $shot = (int)round(min(100, $attack * 1.05));
                 $dribble = (int)round(min(100, ($attack * 0.8 + $speed * 0.4) / 1.1));
                 $pass = (int)round(($attack * 0.75 + $speed * 0.35) / 1.1);
-                $heading = (int)round($attack * 0.18 + $stamina * 0.06 + 7);
                 break;
 
             case 'Midfielder':
                 $pass = (int)round(min(100, ($attack * 0.9 + $speed * 0.4) / 1.1));
                 $dribble = (int)round(min(100, ($attack * 0.85 + $speed * 0.4) / 1.1));
-                $heading = (int)round($defense * 0.18 + $attack * 0.08 + $stamina * 0.05 + 6);
                 break;
 
             case 'Defender':
                 $block = (int)round(min(100, $block * 1.05));
                 $tackle = (int)round(min(100, $tackle * 1.05));
                 $intercept = (int)round(($defense * 0.8 + $speed * 0.3) / 1.1);
-                $heading = (int)round($defense * 0.30 + $block * 0.10 + $stamina * 0.06 + 5);
                 break;
 
             case 'Goalkeeper':
@@ -229,21 +221,21 @@ class PlayerSeeder extends Seeder
 
                 $handSave = (int)round(min(100, ($defense * 1.3 + $stamina * 0.5) / 1.5));
                 $punchSave = (int)round(min(100, ($defense * 1.1 + $stamina * 0.7) / 1.5));
-                $heading = (int)round($defense * 0.08 + 6);
                 break;
         }
 
-        return $baseStats + [
+        $stats = $baseStats + [
                 'shot' => $shot,
                 'pass' => $pass,
                 'dribble' => $dribble,
                 'block' => $block,
                 'intercept' => $intercept,
                 'tackle' => $tackle,
-                'heading' => max(8, min(30, $heading)),
                 'hand_save' => $handSave,
                 'punch_save' => $punchSave,
             ];
+
+        return $stats + ['heading' => HeadingRating::estimate($position, $stats)];
     }
 
     /**
@@ -252,7 +244,7 @@ class PlayerSeeder extends Seeder
      *
      * On utilise une correspondance EXACTE (et non str_contains) pour éviter
      * qu'une clé courte ne touche plusieurs joueurs par accident (ex. « soda »
-     * matchait Makoto ET Kazuaki Soda). Échelle de tête : 8-30.
+     * matchait Makoto ET Kazuaki Soda). Notes spécifiques au jeu aérien du joueur.
      */
     private function getHeadingOverride(string $slug): ?int
     {

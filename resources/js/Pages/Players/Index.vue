@@ -183,7 +183,7 @@ const BLANK = {
     cost: '',
     description: '',
     photo: null,
-    stats: defaultPlayerStats({ heading: 15 }), // défaut du modèle Player
+    stats: defaultPlayerStats({ heading: 25 }), // défaut du modèle Player
     special_moves: [],
 };
 
@@ -214,8 +214,7 @@ const editor = useEntityEditor({
             cost: player.cost ?? '',
             description: player.description ?? '',
             photo: null, // efface aussi l'aperçu du fichier choisi
-            // heading absent = 15, défaut du modèle Player
-            stats: Object.fromEntries(PLAYER_STATS.map(({ key }) => [key, Number(stats[key] ?? (key === 'heading' ? 15 : 0))])),
+            stats: Object.fromEntries(PLAYER_STATS.map(({ key }) => [key, Number(stats[key] ?? (key === 'heading' ? 25 : 0))])),
             special_moves: clone(player.special_moves ?? []),
         });
         photoPath.value = player.photo_path ?? null;
