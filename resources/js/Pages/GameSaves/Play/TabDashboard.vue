@@ -204,7 +204,7 @@ const hasPlayed = computed(() => matchesPlayed.value > 0);
             <div class="flex flex-wrap items-center justify-between gap-4 mb-3">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl overflow-hidden shrink-0">
-                        <img v-if="teamLogoUrl(team)" :src="teamLogoUrl(team)" class="w-full h-full object-contain" alt=""/>
+                        <TeamLogoImage v-if="teamLogoUrl(team)" :src="teamLogoUrl(team)" class="w-full h-full" alt=""/>
                         <span v-else class="w-full h-full flex items-center justify-center text-lg">🏟️</span>
                     </div>
                     <div>
@@ -384,7 +384,7 @@ const hasPlayed = computed(() => matchesPlayed.value > 0);
                     <!-- Mon équipe -->
                     <div class="flex flex-col items-center gap-2 flex-1">
                         <div class="w-14 h-14 rounded-2xl overflow-hidden flex items-center justify-center">
-                            <img v-if="teamLogoUrl(team)" :src="teamLogoUrl(team)" class="w-full h-full object-contain" alt=""/>
+                            <TeamLogoImage v-if="teamLogoUrl(team)" :src="teamLogoUrl(team)" class="w-full h-full" alt=""/>
                             <span v-else class="text-2xl">🏟️</span>
                         </div>
                         <div class="text-sm font-bold text-slate-700 text-center">{{ team?.name ?? '—' }}</div>
@@ -425,7 +425,7 @@ const hasPlayed = computed(() => matchesPlayed.value > 0);
                     <!-- Adversaire -->
                     <div class="flex flex-col items-center gap-2 flex-1">
                         <div class="w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center">
-                            <img v-if="teamLogoUrl(opponentTeam)" :src="teamLogoUrl(opponentTeam)" class="w-full h-full object-contain" alt=""/>
+                            <TeamLogoImage v-if="teamLogoUrl(opponentTeam)" :src="teamLogoUrl(opponentTeam)" class="w-full h-full" alt=""/>
                             <span v-else class="text-2xl">⚽</span>
                         </div>
                         <div class="text-sm font-bold text-slate-700 text-center">{{ nextMatchInfo.opponentName }}</div>

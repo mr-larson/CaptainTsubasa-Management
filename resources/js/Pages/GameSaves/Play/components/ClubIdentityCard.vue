@@ -18,7 +18,7 @@ const { teamLogoUrl } = usePlayerUtils();
     <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 flex items-center gap-4">
         <!-- Logo -->
         <div class="w-20 h-20 rounded-xl overflow-hidden bg-white border border-slate-200 shrink-0 flex items-center justify-center">
-            <img v-if="teamLogoUrl(team)" :src="teamLogoUrl(team)" class="w-full h-full object-contain" alt="Logo équipe"/>
+            <TeamLogoImage v-if="teamLogoUrl(team)" :src="teamLogoUrl(team)" class="w-full h-full" alt="Logo équipe"/>
             <span v-else class="text-3xl">🏟️</span>
         </div>
         <!-- Texte -->

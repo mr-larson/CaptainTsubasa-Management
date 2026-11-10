@@ -545,7 +545,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
         <!-- Navigation : équipe suivie, match précédent / suivant, accès direct -->
         <div v-if="calendarTeam" class="border border-slate-200 rounded-xl bg-slate-50 p-3 flex flex-wrap items-center gap-2">
             <div class="w-8 h-8 rounded-lg overflow-hidden bg-white border border-slate-200 shrink-0">
-                <img v-if="teamLogoUrl(calendarTeam)" :src="teamLogoUrl(calendarTeam)" class="w-full h-full object-contain" alt=""/>
+                <TeamLogoImage v-if="teamLogoUrl(calendarTeam)" :src="teamLogoUrl(calendarTeam)" class="w-full h-full" alt=""/>
             </div>
             <select :value="calendarTeam.id" @change="onTeamChange($event.target.value)"
                     aria-label="Équipe suivie"
@@ -579,9 +579,9 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                     <!-- Équipe domicile -->
                     <div class="flex flex-col items-center gap-1 flex-1">
                         <div class="w-12 h-12 rounded-xl overflow-hidden bg-white border border-slate-200">
-                            <img loading="lazy" decoding="async" v-if="teamLogoUrl(teamById[selectedCalendarMatch.home_team_id])"
+                            <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(teamById[selectedCalendarMatch.home_team_id])"
                                  :src="teamLogoUrl(teamById[selectedCalendarMatch.home_team_id])"
-                                 class="w-full h-full object-contain" alt=""/>
+                                 class="w-full h-full" alt=""/>
                         </div>
                         <div class="text-xs font-semibold text-slate-700 text-center truncate max-w-[80px]">
                             {{ teamById[selectedCalendarMatch?.home_team_id]?.name }}
@@ -601,9 +601,9 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                     <!-- Équipe extérieure -->
                     <div class="flex flex-col items-center gap-1 flex-1">
                         <div class="w-12 h-12 rounded-xl overflow-hidden bg-white border border-slate-200">
-                            <img loading="lazy" decoding="async" v-if="teamLogoUrl(teamById[selectedCalendarMatch.away_team_id])"
+                            <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(teamById[selectedCalendarMatch.away_team_id])"
                                  :src="teamLogoUrl(teamById[selectedCalendarMatch.away_team_id])"
-                                 class="w-full h-full object-contain" alt=""/>
+                                 class="w-full h-full" alt=""/>
                         </div>
                         <div class="text-xs font-semibold text-slate-700 text-center truncate max-w-[80px]">
                             {{ teamById[selectedCalendarMatch?.away_team_id]?.name }}
@@ -902,9 +902,9 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                         <div>
                             <div class="flex items-center gap-2 mb-3">
                                 <div class="w-6 h-6 rounded overflow-hidden bg-slate-100 shrink-0">
-                                    <img loading="lazy" decoding="async" v-if="teamLogoUrl(teamById[selectedCalendarMatch.home_team_id])"
+                                    <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(teamById[selectedCalendarMatch.home_team_id])"
                                          :src="teamLogoUrl(teamById[selectedCalendarMatch.home_team_id])"
-                                         class="w-full h-full object-contain" alt=""/>
+                                         class="w-full h-full" alt=""/>
                                 </div>
                                 <span class="text-xs font-black text-slate-700">
                                         {{ teamById[selectedCalendarMatch.home_team_id]?.name }}
@@ -934,9 +934,9 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                         <div>
                             <div class="flex items-center gap-2 mb-3">
                                 <div class="w-6 h-6 rounded overflow-hidden bg-slate-100 shrink-0">
-                                    <img loading="lazy" decoding="async" v-if="teamLogoUrl(teamById[selectedCalendarMatch.away_team_id])"
+                                    <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(teamById[selectedCalendarMatch.away_team_id])"
                                          :src="teamLogoUrl(teamById[selectedCalendarMatch.away_team_id])"
-                                         class="w-full h-full object-contain" alt=""/>
+                                         class="w-full h-full" alt=""/>
                                 </div>
                                 <span class="text-xs font-black text-slate-700">
                                         {{ teamById[selectedCalendarMatch.away_team_id]?.name }}

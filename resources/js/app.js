@@ -6,6 +6,7 @@ import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy/dist/vue.m';
 import GameBanknote from './Components/GameBanknote.vue';
+import TeamLogoImage from './Components/TeamLogoImage.vue';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Golden Eleven';
 
@@ -17,6 +18,7 @@ createInertiaApp({
             .use(plugin)
             .use(ZiggyVue, Ziggy)
             .component('GameBanknote', GameBanknote)
+            .component('TeamLogoImage', TeamLogoImage)
             .mount(el);
     },
     progress: {

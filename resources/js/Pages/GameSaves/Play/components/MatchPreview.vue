@@ -83,7 +83,7 @@ const canPrepare = computed(() => props.myTeamId && Number(props.myTeamId) === N
             <div v-for="(s, i) in sides" :key="i" class="flex flex-col items-center gap-2 text-center">
                 <template v-if="s">
                     <div class="w-12 h-12 rounded-xl overflow-hidden bg-white border border-slate-200">
-                        <img v-if="teamLogoUrl(s.team)" :src="teamLogoUrl(s.team)" class="w-full h-full object-contain" alt=""/>
+                        <TeamLogoImage v-if="teamLogoUrl(s.team)" :src="teamLogoUrl(s.team)" class="w-full h-full" alt=""/>
                     </div>
                     <div class="text-sm font-bold text-slate-700">{{ s.team.name }}</div>
                     <div class="text-xs text-slate-500">

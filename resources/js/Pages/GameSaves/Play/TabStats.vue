@@ -159,7 +159,7 @@ const sortIcon = (key) => {
             ? 'bg-teal-500 text-white border-teal-600'
             : 'bg-white text-slate-600 border-slate-200 hover:border-teal-300 hover:text-teal-600'">
                         <div class="w-4 h-4 rounded-full overflow-hidden shrink-0 bg-slate-100">
-                            <img loading="lazy" decoding="async" v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" class="w-full h-full object-contain" alt=""/>
+                            <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" class="w-full h-full" alt=""/>
                         </div>
                         {{ t.name }}
                     </button>
@@ -264,7 +264,7 @@ const sortIcon = (key) => {
                             <td class="py-2 pr-4">
                                 <div class="flex items-center gap-2">
                                     <div class="w-6 h-6 rounded overflow-hidden bg-white border border-slate-100 shrink-0">
-                                        <img loading="lazy" decoding="async" v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" class="w-full h-full object-contain" alt=""/>
+                                        <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" class="w-full h-full" alt=""/>
                                     </div>
                                     <span class="font-semibold truncate max-w-[120px]"
                                           :class="isMyTeam(t.id) ? 'text-teal-700' : 'text-slate-700'">

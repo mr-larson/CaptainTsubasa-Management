@@ -191,7 +191,7 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
                 <!-- Équipe affichée : liste déroulante (remplace les 15 puces) -->
                 <div class="flex items-center gap-2 mb-3">
                     <div class="w-8 h-8 rounded-lg overflow-hidden bg-white border border-slate-200 shrink-0">
-                        <img loading="lazy" decoding="async" v-if="teamLogoUrl(calendarTeam)" :src="teamLogoUrl(calendarTeam)" class="w-full h-full object-contain" alt=""/>
+                        <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(calendarTeam)" :src="teamLogoUrl(calendarTeam)" class="w-full h-full" alt=""/>
                     </div>
                     <select :value="calendarTeam.id" @change="onTeamChange($event.target.value)"
                             aria-label="Équipe affichée"
@@ -241,9 +241,9 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
                         <!-- Adversaire -->
                         <div class="flex items-center gap-2 flex-1 min-w-0">
                             <div v-if="!isByeMatch(match)" class="w-5 h-5 rounded-full overflow-hidden bg-slate-100 shrink-0">
-                                <img loading="lazy" decoding="async" v-if="teamLogoUrl(opponentTeam(match, calendarTeam.id))"
+                                <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(opponentTeam(match, calendarTeam.id))"
                                      :src="teamLogoUrl(opponentTeam(match, calendarTeam.id))"
-                                     class="w-full h-full object-contain" alt=""/>
+                                     class="w-full h-full" alt=""/>
                             </div>
                             <span class="text-xs font-medium text-slate-700 truncate">
                                 {{ isByeMatch(match) ? 'Repos' : opponentNameForTeam(match, calendarTeam.id) }}
@@ -327,7 +327,7 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
                             <div class="flex items-center justify-end gap-2 min-w-0">
                                 <span class="text-xs font-semibold text-slate-700 truncate"
                                       :class="m.status === 'played' && m.home_score > m.away_score ? 'font-black' : ''">{{ teamById[m.home_team_id]?.name }}</span>
-                                <img v-if="teamLogoUrl(teamById[m.home_team_id])" :src="teamLogoUrl(teamById[m.home_team_id])" class="w-5 h-5 object-contain shrink-0" alt=""/>
+                                <TeamLogoImage v-if="teamLogoUrl(teamById[m.home_team_id])" :src="teamLogoUrl(teamById[m.home_team_id])" class="w-5 h-5 shrink-0" alt=""/>
                             </div>
                             <div class="text-center min-w-[64px]">
                                 <span v-if="m.status === 'played'" class="px-2 py-0.5 rounded bg-slate-700 text-white text-xs font-black tabular-nums">
@@ -338,7 +338,7 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
                                 <div v-if="loadingMatchId === m.id" class="mx-auto mt-0.5 w-3 h-3 rounded-full border-2 border-teal-400 border-t-transparent animate-spin"></div>
                             </div>
                             <div class="flex items-center gap-2 min-w-0">
-                                <img v-if="teamLogoUrl(teamById[m.away_team_id])" :src="teamLogoUrl(teamById[m.away_team_id])" class="w-5 h-5 object-contain shrink-0" alt=""/>
+                                <TeamLogoImage v-if="teamLogoUrl(teamById[m.away_team_id])" :src="teamLogoUrl(teamById[m.away_team_id])" class="w-5 h-5 shrink-0" alt=""/>
                                 <span class="text-xs font-semibold text-slate-700 truncate"
                                       :class="m.status === 'played' && m.away_score > m.home_score ? 'font-black' : ''">{{ teamById[m.away_team_id]?.name }}</span>
                             </div>
@@ -378,7 +378,7 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
                             <span class="min-w-0 flex-1">
                                 <span class="block text-xs font-bold text-slate-700 truncate">{{ r.firstname }} {{ r.lastname }}</span>
                                 <span class="flex items-center gap-1 text-2xs text-slate-400 truncate">
-                                    <img v-if="teamLogoUrl(teamById[r.team_id])" :src="teamLogoUrl(teamById[r.team_id])" class="w-3.5 h-3.5 object-contain" alt=""/>
+                                    <TeamLogoImage v-if="teamLogoUrl(teamById[r.team_id])" :src="teamLogoUrl(teamById[r.team_id])" class="w-3.5 h-3.5" alt=""/>
                                     {{ teamById[r.team_id]?.name ?? '—' }}
                                     <template v-if="(leaderTab === 'motm' || leaderTab === 'fouls') && r.detail"> · {{ r.detail }}</template>
                                 </span>

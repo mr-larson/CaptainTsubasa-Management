@@ -78,7 +78,7 @@ const rankIcon = (rank) => {
                 <!-- Logo + nom -->
                 <div class="flex items-center gap-3 shrink-0">
                     <div class="w-12 h-12 rounded-xl overflow-hidden bg-white border border-slate-200 flex items-center justify-center">
-                        <img loading="lazy" decoding="async" v-if="teamLogoUrl(team)" :src="teamLogoUrl(team)" class="w-full h-full object-contain" alt=""/>
+                        <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(team)" :src="teamLogoUrl(team)" class="w-full h-full" alt=""/>
                         <span v-else class="text-xl">🏟️</span>
                     </div>
                     <div>
@@ -169,7 +169,7 @@ const rankIcon = (rank) => {
                         <td class="py-2 pr-4">
                             <div class="flex items-center gap-2">
                                 <div class="w-6 h-6 rounded overflow-hidden bg-white border border-slate-100 shrink-0">
-                                    <img loading="lazy" decoding="async" v-if="teamLogoUrl(row)" :src="teamLogoUrl(row)" class="w-full h-full object-contain" alt=""/>
+                                    <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(row)" :src="teamLogoUrl(row)" class="w-full h-full" alt=""/>
                                 </div>
                                 <span class="font-semibold truncate max-w-[110px]"
                                       :class="team?.id === row.id ? 'text-teal-700' : 'text-slate-700'">

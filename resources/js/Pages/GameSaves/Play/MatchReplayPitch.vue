@@ -381,7 +381,7 @@ onUnmounted(() => clearTimer());
         <!-- Marque-page / score live -->
         <div class="flex items-center justify-between px-1">
             <div class="flex items-center gap-2 min-w-0">
-                <img v-if="homeLogo" :src="homeLogo" class="w-5 h-5 object-contain shrink-0" alt=""/>
+                <TeamLogoImage v-if="homeLogo" :src="homeLogo" class="w-5 h-5 shrink-0" alt=""/>
                 <span class="text-xs font-black text-slate-700 truncate">{{ homeName }}</span>
             </div>
             <div class="px-3 py-1 rounded-lg bg-slate-700 text-white font-black text-sm tabular-nums shrink-0">
@@ -389,7 +389,7 @@ onUnmounted(() => clearTimer());
                 <span v-if="isFinished" class="ml-1 text-3xs font-normal text-slate-400">(final {{ finalHomeScore }}-{{ finalAwayScore }})</span>
             </div>
             <div class="flex items-center gap-2 min-w-0 flex-row-reverse">
-                <img v-if="awayLogo" :src="awayLogo" class="w-5 h-5 object-contain shrink-0" alt=""/>
+                <TeamLogoImage v-if="awayLogo" :src="awayLogo" class="w-5 h-5 shrink-0" alt=""/>
                 <span class="text-xs font-black text-slate-700 truncate">{{ awayName }}</span>
             </div>
         </div>

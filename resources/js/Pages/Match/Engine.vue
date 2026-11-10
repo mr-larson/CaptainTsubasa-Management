@@ -51,11 +51,11 @@
                             <div class="flex items-center gap-2 min-w-0 sm:min-w-[160px]"
                                  :class="internalIsHome ? 'order-1 justify-end' : 'order-3 justify-start flex-row-reverse'">
                                 <div class="h-12 w-12 rounded-md overflow-hidden flex items-center justify-center">
-                                    <img
+                                    <TeamLogoImage
                                         v-if="homeLogoUrl"
                                         :src="homeLogoUrl"
                                         :alt="internalIsHome ? 'Logo domicile' : 'Logo extérieur'"
-                                        class="h-full w-full object-contain"
+                                        class="h-full w-full"
                                     />
                                     <span v-else class="text-2xs opacity-60">—</span>
                                 </div>
@@ -84,11 +84,11 @@
                 </span>
 
                                 <div class="h-12 w-12 rounded-md overflow-hidden flex items-center justify-center">
-                                    <img
+                                    <TeamLogoImage
                                         v-if="awayLogoUrl"
                                         :src="awayLogoUrl"
                                         :alt="internalIsHome ? 'Logo extérieur' : 'Logo domicile'"
-                                        class="h-full w-full object-contain"
+                                        class="h-full w-full"
                                     />
                                     <span v-else class="text-2xs opacity-60">—</span>
                                 </div>

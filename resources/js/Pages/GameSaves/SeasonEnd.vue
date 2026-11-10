@@ -88,7 +88,7 @@ function startNewSeason() {
                 <div v-if="recap?.champion" class="bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl shadow-xl p-6 text-center text-white">
                     <p class="text-sm uppercase tracking-widest opacity-80">Champion</p>
                     <div class="flex items-center justify-center gap-3 mt-2">
-                        <img v-if="recap.champion.logo_path" :src="`/storage/${recap.champion.logo_path}`" class="w-12 h-12 rounded-full bg-white/20 object-contain" />
+                        <TeamLogoImage v-if="recap.champion.logo_path" :src="`/storage/${recap.champion.logo_path}`" class="w-12 h-12 rounded-full bg-white/20" />
                         <h2 class="text-2xl font-bold">{{ recap.champion.name }}</h2>
                     </div>
                 </div>
@@ -131,7 +131,7 @@ function startNewSeason() {
                                 :class="{ 'bg-amber-50': row.rank === 1 }">
                                 <td class="px-6 py-2 font-semibold text-slate-600">{{ row.rank }}</td>
                                 <td class="px-2 py-2 flex items-center gap-2">
-                                    <img v-if="row.logo_path" :src="`/storage/${row.logo_path}`" class="w-6 h-6 rounded-full object-contain bg-slate-100" />
+                                    <TeamLogoImage v-if="row.logo_path" :src="`/storage/${row.logo_path}`" class="w-6 h-6 rounded-full bg-slate-100" />
                                     {{ row.name }}
                                 </td>
                                 <td class="text-center px-2 py-2">{{ row.wins }}</td>
@@ -173,7 +173,7 @@ function startNewSeason() {
                                 :class="{ 'bg-amber-50': row.rank === 1, 'font-semibold': row.is_controlled }">
                                 <td class="px-6 py-2 font-semibold text-slate-600">{{ row.rank }}</td>
                                 <td class="px-2 py-2 flex items-center gap-2">
-                                    <img v-if="row.logo_path" :src="`/storage/${row.logo_path}`" class="w-6 h-6 rounded-full object-contain bg-slate-100" />
+                                    <TeamLogoImage v-if="row.logo_path" :src="`/storage/${row.logo_path}`" class="w-6 h-6 rounded-full bg-slate-100" />
                                     {{ row.name }}
                                     <span v-if="row.is_controlled" class="text-2xs text-teal-600">• toi</span>
                                 </td>
