@@ -67,10 +67,7 @@ class GameSaveRequest extends FormRequest
 
             'game_config'      => ['nullable', 'array'],
             ...GameSave::configRules('game_config.'),
-
-            // Graine du moral initial, générée à l'écran de sélection d'équipe
-            // pour que le moral prévisualisé soit celui réellement appliqué.
-            'morale_seed'      => ['nullable', 'integer', 'min:1'],
+            'setup_token'      => ['nullable', 'string', 'size:64'],
         ];
 
         // Différence création / mise à jour :

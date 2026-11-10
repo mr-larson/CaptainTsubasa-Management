@@ -80,7 +80,7 @@ class AmateurMarketService
             'nationality'         => \App\Enums\Nationality::JAPON,
             'secondary_positions' => [],
             'description'         => 'Joueur amateur du coin : peu coûteux, de quoi compléter un effectif.',
-            'speed'               => random_int(25, 40),
+            'speed'               => $gameSave->initialSpeed(random_int(25, 40)),
             'stamina'             => $gameSave->getConfig('initial_stamina_random') ? random_int(55, 75) : 100,
             'luck'                => $gameSave->rollPlayerLuck(),
             'attack'              => ($isAtt || $isMid) ? $main() : $low(),

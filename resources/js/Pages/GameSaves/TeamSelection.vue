@@ -11,6 +11,9 @@
 
             <!-- Header -->
             <div class="max-w-7xl mx-auto mb-6">
+                <p v-if="startForm.errors.setup_token" role="alert" class="mb-3 text-sm text-rose-600">
+                    {{ startForm.errors.setup_token }}
+                </p>
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                         <p class="text-sm text-slate-400">
@@ -63,7 +66,7 @@
                                     ? 'bg-teal-50 text-slate-700 border-teal-300 ring-1 ring-teal-200'
                                     : 'bg-white text-slate-600 border-slate-100 hover:border-teal-200 hover:bg-teal-50')">
                                 <div class="w-7 h-7 rounded-lg overflow-hidden shrink-0 bg-slate-100 border border-slate-200 flex items-center justify-center">
-                                    <img loading="lazy" decoding="async" v-if="teamLogoUrl(team)" :src="teamLogoUrl(team)" class="w-full h-full object-contain" alt=""/>
+                                    <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(team)" :src="teamLogoUrl(team)" class="w-full h-full" alt=""/>
                                     <span v-else class="text-[8px] text-slate-400">—</span>
                                 </div>
                                 <span class="truncate">{{ team.name }}</span>
@@ -93,7 +96,7 @@
                             <div class="border border-slate-200 rounded-xl bg-white p-5">
                                 <div class="flex flex-col items-center gap-3 mb-4">
                                     <div class="w-24 h-24 rounded-2xl overflow-hidden bg-slate-50 border border-slate-200 flex items-center justify-center">
-                                        <img loading="lazy" decoding="async" v-if="teamLogoUrl(selectedTeam)" :src="teamLogoUrl(selectedTeam)" class="w-full h-full object-contain" alt=""/>
+                                        <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(selectedTeam)" :src="teamLogoUrl(selectedTeam)" class="w-full h-full" alt=""/>
                                         <span v-else class="text-4xl">🏟️</span>
                                     </div>
                                     <div class="text-center">
@@ -142,7 +145,7 @@
                                     </div>
                                     <p v-if="roster.length" class="mt-3 text-2xs text-slate-500">
                                         Arrêt main et Poings sont calculés sur les gardiens.
-                                        <template v-if="gameConfig?.initial_stamina_random !== false">L’endurance affichée est la note de référence avant le tirage de départ.</template>
+                                        La vitesse, le moral, l’endurance et la chance affichés sont ceux du début de partie.
                                     </p>
                                 </div>
                                 <div v-if="teamRating" class="mt-3 flex items-center justify-between gap-2 border-t border-slate-200 pt-3"
@@ -231,7 +234,7 @@
                                              class="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-slate-50 border border-slate-100">
                                             <span class="w-5 h-5 rounded-full bg-teal-500 text-white text-2xs font-black flex items-center justify-center shrink-0">{{ i + 1 }}</span>
                                             <div class="w-6 h-6 rounded-md overflow-hidden bg-white border border-slate-200 shrink-0 flex items-center justify-center">
-                                                <img loading="lazy" decoding="async" v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" class="w-full h-full object-contain" alt=""/>
+                                                <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" class="w-full h-full" alt=""/>
                                                 <span v-else class="text-[8px] text-slate-400">—</span>
                                             </div>
                                             <span class="flex-1 truncate text-xs font-semibold text-slate-700">{{ t.name }}</span>
@@ -480,26 +483,7 @@
                     <StatBars :player="detailPlayer" />
                 </div>
 
-                <section v-if="detailPlayer.special_moves?.length" class="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                    <h4 class="mb-2 text-2xs font-bold uppercase tracking-wider text-slate-400">✨ Techniques spéciales</h4>
-                    <ul class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                        <li v-for="(move, index) in detailPlayer.special_moves" :key="move.key || index"
-                            class="min-w-0 rounded-lg border border-slate-200 bg-white p-2.5">
-                            <div class="flex flex-wrap items-center gap-2">
-                                <span class="text-xs font-bold text-slate-700">{{ move.label || move.short_label || move.key }}</span>
-                                <span v-if="move.mode === 'attack' || move.mode === 'defense'"
-                                      class="rounded-full px-2 py-0.5 text-2xs font-semibold"
-                                      :class="move.mode === 'defense' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'">
-                                    {{ move.mode === 'defense' ? 'Défense' : 'Attaque' }}
-                                </span>
-                            </div>
-                            <p v-if="move.description" class="mt-1 text-xs text-slate-500">{{ move.description }}</p>
-                            <p v-if="move.cooldown != null" class="mt-1 text-2xs text-slate-500">
-                                Recharge · {{ move.cooldown }} tour{{ move.cooldown > 1 ? 's' : '' }}
-                            </p>
-                        </li>
-                    </ul>
-                </section>
+                <PlayerSpecialMoves :moves="detailPlayer.special_moves ?? []" />
             </div>
         </Modal>
     </AuthenticatedLayout>
@@ -517,6 +501,7 @@ import H2 from '@/Components/H2.vue';
 import PlayerPhoto from '@/Components/PlayerPhoto.vue';
 import Modal from '@/Components/Modal.vue';
 import RadarChart from '@/Pages/GameSaves/Play/components/RadarChart.vue';
+import PlayerSpecialMoves from './Play/components/PlayerSpecialMoves.vue';
 import StatBars from '@/Pages/GameSaves/Play/components/StatBars.vue';
 import SecondaryPositions from '@/Pages/GameSaves/Play/components/SecondaryPositions.vue';
 import TeamStyleBadges from '@/Pages/GameSaves/Play/components/TeamStyleBadges.vue';
@@ -534,11 +519,10 @@ const props = defineProps({
     gameMode: { type: String, default: 'prebuilt' },
     competitionType: { type: String, default: 'college_league' },
     gameConfig:      { type: Object, default: null },
+    draftBudget:     { type: Number, required: true },
+    setupToken:      { type: String, default: null },
     // Budget de départ réel d'une équipe pilotée (selon la difficulté) ; null = budget du club.
     humanStartBudget: { type: Number, default: null },
-    // Graine du moral initial : null si l'option "moral aléatoire" est désactivée
-    // (également null en mode package, cf. store()).
-    moraleSeed:      { type: Number, default: null },
     // Package de période choisi à la création (ou null pour l'effectif standard) :
     // remplace entièrement le roster, figé pour cet écran (pas de bascule ici).
     periodPackage:   { type: Object, default: null },
@@ -567,7 +551,6 @@ const startForm = useForm({
     game_mode: props.gameMode,
     competition_type: props.competitionType,
     game_config: props.gameConfig,
-    morale_seed: props.moraleSeed,
     period_package_id: props.periodPackage?.id ?? null,
 });
 
@@ -664,7 +647,7 @@ function startWithTeam() {
     if (!isMultiMode.value) {
         if (!startForm.team_id) return;
         startForm
-            .transform(d => ({ label: d.label, period: d.period, game_mode: d.game_mode, competition_type: d.competition_type, team_id: d.team_id, game_config: d.game_config, morale_seed: d.morale_seed }))
+            .transform(d => ({ label: d.label, period: d.period, game_mode: d.game_mode, competition_type: d.competition_type, team_id: d.team_id, game_config: d.game_config, setup_token: props.setupToken }))
             .post(route('game-saves.start'), { preserveScroll: true });
         return;
     }
@@ -676,8 +659,9 @@ function startWithTeam() {
     startForm
         .transform(d => ({
             label: d.label, period: d.period, game_mode: d.game_mode, competition_type: d.competition_type,
-            team_ids: d.team_ids, game_config: d.game_config, morale_seed: d.morale_seed,
+            team_ids: d.team_ids, game_config: d.game_config,
             period_package_id: d.period_package_id,
+            setup_token: props.setupToken,
         }))
         .post(route('game-saves.start'), { preserveScroll: true });
 }
@@ -685,15 +669,7 @@ function startWithTeam() {
 // ==========================
 //   STATS
 // ==========================
-const draftBudget = computed(() => props.gameConfig?.draft_budget ?? 5000);
 const avgStat = (key) => averageTeamStat(roster.value, key);
-const previewStat = (key) => {
-    if (!roster.value.length) return null;
-    if (key === 'luck' && props.gameConfig?.luck_random === false) return 50;
-    if (key === 'stamina' && props.gameConfig?.initial_stamina_random === false) return 100;
-    return avgStat(key);
-};
-// Moral moyen prévisualisé (null si l'option "moral aléatoire" est désactivée).
 const avgMorale = computed(() => {
     const values = roster.value.map(p => p.morale_preview).filter(v => v != null);
     if (!values.length) return null;
@@ -704,7 +680,7 @@ const teamStats = computed(() => {
     const rows = TEAM_STATS.map(({ key, label, color }) => ({
         key, label,
         color: color ?? STAT_COLORS[key],
-        value: previewStat(key),
+        value: avgStat(key),
     }));
     if (avgMorale.value != null) {
         const morale = moraleState(avgMorale.value);

@@ -9,6 +9,7 @@ import GameRules from '@/Components/GameRules.vue';
 import Modal from '@/Components/Modal.vue';
 
 const props = defineProps({
+    draftBudgets: { type: Object, required: true },
     periodPackages: { type: Array, default: () => [] },
 });
 
@@ -98,8 +99,8 @@ const config = reactive({
     training_cost: 150, position_training_cost: 200, special_training_cost: 300,
     ai_transfers_enabled: true,
     ai_training_enabled: true,
-    initial_morale_random: true, initial_stamina_random: true, luck_random: true,
-    ai_start_budget: 2500, draft_budget: 5000,
+    initial_morale_random: true, initial_stamina_random: true, initial_speed_random: true, luck_random: true,
+    ai_start_budget: 2500, draft_budget: props.draftBudgets.standard,
     visible_origins: {
         captain_tsubasa: true,
         ecole_des_champions: false,
@@ -111,6 +112,13 @@ const config = reactive({
     internationals_visible: false,
 });
 
+function selectDifficulty(difficulty) {
+    if (config.draft_budget === props.draftBudgets[config.career_difficulty]) {
+        config.draft_budget = props.draftBudgets[difficulty];
+    }
+    config.career_difficulty = difficulty;
+}
+
 function resetDefaults() {
     Object.assign(config, {
         career_difficulty: 'standard',
@@ -121,8 +129,8 @@ function resetDefaults() {
         training_max_per_week: 3, training_gain_min: 1, training_gain_max: 5,
         training_stamina_cost: 2, training_min_stamina: 10, training_cost: 150, position_training_cost: 200, special_training_cost: 300,
         ai_transfers_enabled: true, ai_training_enabled: true,
-        initial_morale_random: true, initial_stamina_random: true, luck_random: true,
-        ai_start_budget: 2500, draft_budget: 5000,
+        initial_morale_random: true, initial_stamina_random: true, initial_speed_random: true, luck_random: true,
+        ai_start_budget: 2500, draft_budget: props.draftBudgets.standard,
         visible_origins: { captain_tsubasa: true, ecole_des_champions: false, hungry_heart: false, blue_lock: false, ao_ashi: false, original: true },
         internationals_visible: false,
     });
@@ -387,7 +395,7 @@ function submit() {
                             </p>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 <button v-for="lvl in careerLevels" :key="lvl.key" type="button"
-                                        @click="config.career_difficulty = lvl.key"
+                                        @click="selectDifficulty(lvl.key)"
                                         class="relative flex flex-col gap-1 p-2.5 rounded-lg border-2 transition-all text-left"
                                         :class="config.career_difficulty === lvl.key
                                             ? 'border-teal-500 bg-teal-50'
@@ -438,30 +446,44 @@ function submit() {
                             <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                                 <span>🎲</span> Données aléatoires
                             </h4>
-                            <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
-                                <input type="checkbox" v-model="config.initial_morale_random"
-                                       class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
-                                Moral initial aléatoire (45–75 par joueur)
-                            </label>
-                            <p class="text-2xs text-slate-400">
-                                Désactivé, le moral de départ est fixé à 60.
-                            </p>
-                            <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
-                                <input type="checkbox" v-model="config.initial_stamina_random"
-                                       class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
-                                Endurance initiale aléatoire (60–100)
-                            </label>
-                            <p class="text-2xs text-slate-400">
-                                Les amateurs générés tirent entre 55 et 75. Désactivée, l’endurance de départ est fixée à 100.
-                            </p>
-                            <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
-                                <input type="checkbox" v-model="config.luck_random"
-                                       class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
-                                Chance aléatoire (20–80 par joueur)
-                            </label>
-                            <p class="text-2xs text-slate-400">
-                                Tirée à la création de la partie et au début de chaque saison. Désactivée, la chance est fixée à 50.
-                            </p>
+                            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                <div class="flex flex-col gap-2">
+                                    <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                                        <input type="checkbox" v-model="config.initial_morale_random"
+                                               class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
+                                        Moral initial aléatoire (45–75 par joueur)
+                                    </label>
+                                    <p class="text-2xs text-slate-400">
+                                        Désactivé, le moral de départ est fixé à 60.
+                                    </p>
+                                    <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                                        <input type="checkbox" v-model="config.initial_stamina_random"
+                                               class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
+                                        Endurance initiale aléatoire (60–100)
+                                    </label>
+                                    <p class="text-2xs text-slate-400">
+                                        Les amateurs générés tirent entre 55 et 75. Désactivée, l’endurance de départ est fixée à 100.
+                                    </p>
+                                </div>
+                                <div class="flex flex-col gap-2">
+                                    <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                                        <input type="checkbox" v-model="config.initial_speed_random"
+                                               class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
+                                        Vitesse variable (−10 à +10)
+                                    </label>
+                                    <p class="text-2xs text-slate-400">
+                                        Le tirage varie la note de base dans la limite de 0 à 100. La vitesse obtenue est conservée d’une saison à l’autre.
+                                    </p>
+                                    <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                                        <input type="checkbox" v-model="config.luck_random"
+                                               class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
+                                        Chance aléatoire (20–80 par joueur)
+                                    </label>
+                                    <p class="text-2xs text-slate-400">
+                                        Tirée à la création de la partie et au début de chaque saison. Désactivée, la chance est fixée à 50.
+                                    </p>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Fatigue -->
@@ -492,24 +514,26 @@ function submit() {
                             <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                                 <span>⚽</span> Match
                             </h4>
-                            <div class="flex flex-col gap-1 max-w-xs">
-                                <label class="text-2xs text-slate-500">Tours par match</label>
-                                <div class="flex items-center gap-2">
-                                    <input type="range" v-model.number="config.match_max_turns" min="10" max="80" step="5" class="flex-1 h-1 accent-teal-500" />
-                                    <span class="text-xs font-bold text-slate-700 w-5 text-right">{{ config.match_max_turns }}</span>
+                            <div class="grid grid-cols-1 items-start gap-3 sm:grid-cols-2">
+                                <div class="flex flex-col gap-1 max-w-xs">
+                                    <label class="text-2xs text-slate-500">Tours par match</label>
+                                    <div class="flex items-center gap-2">
+                                        <input type="range" v-model.number="config.match_max_turns" min="10" max="80" step="5" class="flex-1 h-1 accent-teal-500" />
+                                        <span class="text-xs font-bold text-slate-700 w-5 text-right">{{ config.match_max_turns }}</span>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
-                                    <input type="checkbox" v-model="config.injury_on_foul"
-                                           class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
-                                    Blessures sur faute
-                                </label>
-                                <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
-                                    <input type="checkbox" v-model="config.suspension_on_3_yellows"
-                                           class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
-                                    Suspension 3 jaunes
-                                </label>
+                                <div class="flex flex-col gap-2">
+                                    <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                                        <input type="checkbox" v-model="config.injury_on_foul"
+                                               class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
+                                        Blessures sur faute
+                                    </label>
+                                    <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                                        <input type="checkbox" v-model="config.suspension_on_3_yellows"
+                                               class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
+                                        Suspension 3 jaunes
+                                    </label>
+                                </div>
                             </div>
                         </div>
 
@@ -518,20 +542,22 @@ function submit() {
                             <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                                 <span>💰</span> Économie
                             </h4>
-                            <div class="flex flex-col gap-1 max-w-xs">
-                                <label class="text-2xs text-slate-500">Budget de départ des clubs IA</label>
-                                <div class="flex items-center gap-2">
-                                    <input type="range" v-model.number="config.ai_start_budget" min="0" max="10000" step="250" class="flex-1 h-1 accent-teal-500" />
-                                    <span class="text-xs font-bold text-slate-700 w-14 text-right">{{ config.ai_start_budget }} <GameBanknote /></span>
+                            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                <div class="flex flex-col gap-1 min-w-0">
+                                    <label class="text-2xs text-slate-500">Budget de départ des clubs IA</label>
+                                    <div class="flex items-center gap-2">
+                                        <input type="range" v-model.number="config.ai_start_budget" min="0" max="10000" step="250" class="flex-1 h-1 accent-teal-500" />
+                                        <span class="text-xs font-bold text-slate-700 w-14 text-right">{{ config.ai_start_budget }} <GameBanknote /></span>
+                                    </div>
                                 </div>
-                            </div>
-                            <div v-if="form.competition_type !== 'world_cup'" class="flex flex-col gap-1 max-w-xs">
-                                <label for="draft-budget" class="text-2xs text-slate-500">Budget par équipe pour la draft</label>
-                                <div class="flex items-center gap-2">
-                                    <input id="draft-budget" type="range" v-model.number="config.draft_budget" min="3000" max="20000" step="250" class="flex-1 h-1 accent-teal-500" />
-                                    <span class="text-xs font-bold text-slate-700 w-14 text-right">{{ config.draft_budget }} <GameBanknote /></span>
+                                <div v-if="form.competition_type !== 'world_cup'" class="flex flex-col gap-1 min-w-0">
+                                    <label for="draft-budget" class="text-2xs text-slate-500">Budget par équipe pour la draft</label>
+                                    <div class="flex items-center gap-2">
+                                        <input id="draft-budget" type="range" v-model.number="config.draft_budget" min="3000" max="20000" step="250" class="flex-1 h-1 accent-teal-500" />
+                                        <span class="text-xs font-bold text-slate-700 w-14 text-right">{{ config.draft_budget }} <GameBanknote /></span>
+                                    </div>
+                                    <p class="text-2xs text-slate-400">Disponible à chaque draft. Le solde expire à la fin de la draft.</p>
                                 </div>
-                                <p class="text-2xs text-slate-400">Disponible à chaque draft. Le solde expire à la fin de la draft.</p>
                             </div>
                         </div>
 

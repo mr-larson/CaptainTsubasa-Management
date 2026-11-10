@@ -34,6 +34,7 @@ class GamePlayer extends Model
         'secondary_positions',
         'speed',
         'stamina',
+        'luck',
         'attack',
         'defense',
         'shot',

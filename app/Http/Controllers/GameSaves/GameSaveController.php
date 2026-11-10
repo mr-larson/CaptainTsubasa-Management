@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\GameSaves;
 
 use App\Helpers\HeadingRating;
+use App\Helpers\InitialPlayerStats;
 use App\Http\Controllers\Controller;
 use App\Models\BonusCard;
 use App\Http\Controllers\Concerns\AuthorizesGameSave;
@@ -68,6 +69,7 @@ class GameSaveController extends Controller
     {
         return Inertia::render('GameSaves/Create', [
             'periodPackages' => $this->periodPackagesSummary($request->user()),
+            'draftBudgets' => GameSave::DRAFT_BUDGETS,
         ]);
     }
 
@@ -117,6 +119,7 @@ class GameSaveController extends Controller
         // L'étape 1 est gardée en session et l'écran de choix d'équipe servi
         // en GET : un F5, ou une erreur de validation au lancement (back()),
         // y ramène au lieu de renvoyer sur la liste des parties.
+        $data['player_stats_seed'] = random_int(1, 2_000_000_000);
         $request->session()->put('game_save_setup', $data);
 
         return redirect()->route('game-saves.setup');
@@ -159,7 +162,17 @@ class GameSaveController extends Controller
                 ->findOrFail($data['period_package_id']);
         }
 
-        $moraleSeed    = null;
+        $seed = $data['player_stats_seed'] ?? random_int(1, 2_000_000_000);
+        $request->session()->put('game_save_setup.player_stats_seed', $seed);
+        $previewSave = new GameSave(['state' => ['config' => $gameConfig ?? []]]);
+        $previewStats = static function (int|string $id, int $baseSpeed) use ($previewSave, $seed): array {
+            $stats = InitialPlayerStats::forPlayer($previewSave, $seed, $id, $baseSpeed);
+
+            $stats['morale_preview'] = $stats['morale'];
+            unset($stats['morale']);
+
+            return $stats;
+        };
         $periodPackage = null;
 
         if ($package) {
@@ -170,9 +183,9 @@ class GameSaveController extends Controller
             $playersByKey    = collect($package->players_json)->keyBy('player_key');
             $contractsByTeam = collect($package->contracts_json)->groupBy('team_key');
 
-            $teams = collect($package->teams_json)->map(function ($t) use ($contractsByTeam, $playersByKey) {
+            $teams = collect($package->teams_json)->map(function ($t) use ($contractsByTeam, $playersByKey, $previewStats) {
                 $contracts = ($contractsByTeam->get($t['team_key']) ?? collect())
-                    ->map(function ($c) use ($playersByKey) {
+                    ->map(function ($c) use ($playersByKey, $previewStats) {
                         $p = $playersByKey->get($c['player_key']);
                         if (!$p) return null;
 
@@ -188,8 +201,7 @@ class GameSaveController extends Controller
                                 'nationality'         => $p['nationality'] ?? null,
                                 'origin'              => $p['origin'] ?? null,
                                 'photo_path'          => $p['photo_path'] ?? null,
-                                'speed'               => $p['speed']      ?? 50,
-                                'stamina'             => $p['stamina']    ?? 50,
+                                ...$previewStats($p['player_key'], (int) ($p['speed'] ?? 50)),
                                 'attack'              => $p['attack']     ?? 50,
                                 'defense'             => $p['defense']    ?? 50,
                                 'shot'                => $p['shot']       ?? 50,
@@ -230,17 +242,11 @@ class GameSaveController extends Controller
         } else {
             $teams = Team::with(['contracts.player'])->orderBy('name')->get();
 
-            // Moral initial aléatoire : tiré via une graine déterministe pour que
-            // le moral affiché à la sélection soit exactement celui de la partie
-            // créée.
-            if ((bool) ($gameConfig['initial_morale_random'] ?? true)) {
-                $moraleSeed = random_int(1, 2_000_000_000);
-                foreach ($teams as $team) {
-                    foreach ($team->contracts as $contract) {
-                        $contract->player?->setAttribute(
-                            'morale_preview',
-                            MoraleService::initialMoraleFromSeed($moraleSeed, $contract->player->id)
-                        );
+            foreach ($teams as $team) {
+                foreach ($team->contracts as $contract) {
+                    $player = $contract->player;
+                    if ($player) {
+                        $player->forceFill($previewStats($player->id, (int) ($player->speed ?? $player->stats['speed'] ?? 50)));
                     }
                 }
             }
@@ -260,7 +266,8 @@ class GameSaveController extends Controller
             'gameMode'        => $gameMode,
             'competitionType' => $competitionType,
             'gameConfig'      => $gameConfig,
-            'moraleSeed'      => $moraleSeed,
+            'draftBudget'     => (int) $previewSave->getConfig('draft_budget'),
+            'setupToken'      => hash('sha256', (string) $seed),
             'periodPackage'   => $periodPackage,
         ]);
     }
@@ -307,6 +314,14 @@ class GameSaveController extends Controller
     {
         $data = $request->validated();
         $data['game_config'] = GameSave::sanitizeConfig($data['game_config'] ?? null) ?: null;
+        $setupSeed = $request->session()->get('game_save_setup.player_stats_seed');
+        if (isset($data['setup_token']) && (
+            $setupSeed === null || !hash_equals(hash('sha256', (string) $setupSeed), $data['setup_token'])
+        )) {
+            return redirect()->route('game-saves.setup')
+                ->withErrors(['setup_token' => 'La configuration a changé. Vérifie les nouvelles valeurs avant de confirmer.']);
+        }
+        $seed = $setupSeed ?? random_int(1, 2_000_000_000);
         $gameMode = $data['game_mode'] ?? 'prebuilt';
         $isDraft  = $gameMode === 'draft';
 
@@ -438,17 +453,8 @@ class GameSaveController extends Controller
 
         // 2. Dupliquer les joueurs (ou hydrater depuis le package de période)
         $gamePlayersByBaseId = [];
-        $randomMorale        = (bool) $gameSave->getConfig('initial_morale_random');
-        // Graine transmise depuis l'écran de sélection : le moral prévisualisé
-        // y est reproduit à l'identique. Sans graine (tests, appels directs) : rand.
-        $moraleSeed          = isset($data['morale_seed']) ? (int) $data['morale_seed'] : null;
-
         if ($package) {
             foreach ($package->players_json as $p) {
-                // Pas d'id entier stable pour un joueur de package : crc32(player_key)
-                // sert de substitut déterministe à l'id attendu par initialMoraleFromSeed.
-                $moraleSeedInput = crc32($p['player_key']);
-
                 $gamePlayer = GamePlayer::create([
                     'game_save_id'   => $gameSave->id,
                     'base_player_id' => null,
@@ -460,9 +466,7 @@ class GameSaveController extends Controller
                     'secondary_positions' => $p['secondary_positions'] ?? [],
                     'description'    => $p['description'] ?? null,
                     'photo_path'     => $p['photo_path'] ?? null,
-                    'speed'          => $p['speed']      ?? 50,
-                    'stamina'        => $gameSave->initialStamina(),
-                    'luck'           => $gameSave->rollPlayerLuck(),
+                    ...InitialPlayerStats::forPlayer($gameSave, $seed, $p['player_key'], (int) ($p['speed'] ?? 50)),
                     'attack'         => $p['attack']     ?? 50,
                     'defense'        => $p['defense']    ?? 50,
                     'shot'           => $p['shot']       ?? 50,
@@ -476,11 +480,6 @@ class GameSaveController extends Controller
                     'punch_save'     => $p['punch_save'] ?? 0,
                     'special_moves'  => $p['special_moves'] ?? [],
                     'cost'           => $p['cost'] ?? 0,
-                    'morale'         => !$randomMorale
-                        ? MoraleService::NEUTRAL_MORALE
-                        : ($moraleSeed !== null
-                            ? MoraleService::initialMoraleFromSeed($moraleSeed, $moraleSeedInput)
-                            : rand(GameSave::INITIAL_MORALE_MIN, GameSave::INITIAL_MORALE_MAX)),
                 ]);
                 $gamePlayersByBaseId[$p['player_key']] = $gamePlayer;
             }
@@ -500,9 +499,7 @@ class GameSaveController extends Controller
                     'secondary_positions' => $player->secondary_positions ?? [],
                     'description'    => $player->description,
                     'photo_path'     => $player->photo_path,
-                    'speed'          => $player->speed      ?? $s['speed']      ?? 50,
-                    'stamina'        => $gameSave->initialStamina(),
-                    'luck'           => $gameSave->rollPlayerLuck(),
+                    ...InitialPlayerStats::forPlayer($gameSave, $seed, $player->id, (int) ($player->speed ?? $s['speed'] ?? 50)),
                     'attack'         => $player->attack     ?? $s['attack']     ?? 50,
                     'defense'        => $player->defense    ?? $s['defense']    ?? 50,
                     'shot'           => $player->shot       ?? $s['shot']       ?? 50,
@@ -516,11 +513,6 @@ class GameSaveController extends Controller
                     'punch_save'     => $player->punch_save ?? $s['punch_save'] ?? 0,
                     'special_moves'  => $player->special_moves ?? [],
                     'cost'           => $player->cost ?? 0,
-                    'morale'         => !$randomMorale
-                        ? MoraleService::NEUTRAL_MORALE
-                        : ($moraleSeed !== null
-                            ? MoraleService::initialMoraleFromSeed($moraleSeed, $player->id)
-                            : rand(GameSave::INITIAL_MORALE_MIN, GameSave::INITIAL_MORALE_MAX)),
                 ]);
                 $gamePlayersByBaseId[$player->id] = $gamePlayer;
             }
@@ -1233,7 +1225,7 @@ class GameSaveController extends Controller
         $this->authorizeGameSave('update', $gameSave);
 
         // Les options de départ sont définies lors de la création de la sauvegarde.
-        $rules = Arr::except(GameSave::configRules(), ['initial_morale_random', 'initial_stamina_random', 'luck_random', 'ai_start_budget', 'draft_budget']);
+        $rules = Arr::except(GameSave::configRules(), ['initial_morale_random', 'initial_stamina_random', 'initial_speed_random', 'luck_random', 'ai_start_budget', 'draft_budget']);
         $data  = GameSave::sanitizeConfig($request->validate($rules));
 
         if (! $gameSave->hasValidTrainingGains($data)) {

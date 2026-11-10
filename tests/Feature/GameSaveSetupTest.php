@@ -2,6 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\GameSaves\GamePlayer;
+use App\Models\Player;
+use App\Models\Team;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia;
@@ -38,6 +41,41 @@ class GameSaveSetupTest extends TestCase
         $this->actingAs(User::factory()->create())
             ->get(route('game-saves.setup'))
             ->assertRedirect(route('game-saves.create'));
+    }
+
+    public function test_team_selection_keeps_the_same_initial_stats_after_reload_and_start(): void
+    {
+        $user = User::factory()->create();
+        $team = Team::factory()->create();
+        $player = Player::factory()->create(['cost' => 30, 'stats' => ['speed' => 60]]);
+        $team->contracts()->create(['player_id' => $player->id, 'salary' => 30]);
+
+        $this->actingAs($user)
+            ->post(route('game-saves.store'), ['period' => 'college'])
+            ->assertRedirect(route('game-saves.setup'));
+
+        $props = $this->get(route('game-saves.setup'))->viewData('page')['props'];
+        $preview = $props['teams'][0]['contracts'][0]['player'];
+        $this->assertGreaterThanOrEqual(50, $preview['speed']);
+        $this->assertLessThanOrEqual(70, $preview['speed']);
+        $this->get(route('game-saves.setup'))->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('teams.0.contracts.0.player.speed', $preview['speed'])
+            ->where('teams.0.contracts.0.player.stamina', $preview['stamina'])
+            ->where('teams.0.contracts.0.player.morale_preview', $preview['morale_preview'])
+            ->where('teams.0.contracts.0.player.luck', $preview['luck']));
+
+        $this->post(route('game-saves.start'), [
+            'period' => 'college',
+            'team_id' => $team->id,
+            'setup_token' => $props['setupToken'],
+        ])
+            ->assertRedirect();
+
+        $saved = GamePlayer::where('base_player_id', $player->id)->sole();
+        $this->assertSame((int) $preview['speed'], (int) $saved->speed);
+        $this->assertSame((int) $preview['stamina'], (int) $saved->stamina);
+        $this->assertSame((int) $preview['morale_preview'], (int) $saved->morale);
+        $this->assertSame((int) $preview['luck'], $saved->luck);
     }
 
     public function test_play_resumes_an_unfinished_draft(): void

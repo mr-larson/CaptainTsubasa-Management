@@ -5,7 +5,6 @@ namespace App\Models\GameSaves;
 use App\Helpers\PlayerLuck;
 use App\Models\Team;
 use App\Models\User;
-use App\Services\DraftService;
 use App\Services\TrainableSpecialMoves;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -154,6 +153,8 @@ class GameSave extends Model
             && !($break['completed'] ?? true);
     }
 
+    public const DRAFT_BUDGETS = ['conquest' => 6000, 'standard' => 8000, 'survival' => 10000, 'none' => 8000];
+
     public const DEFAULT_CONFIG = [
         'bonus_cards_enabled'       => true,
         'malus_cards_enabled'       => true,
@@ -186,11 +187,12 @@ class GameSave extends Model
         // Appliqué uniquement à la création du monde (sans effet en cours de partie)
         'initial_morale_random'     => true,
         'initial_stamina_random'    => true,
+        'initial_speed_random'      => true,
         // Tirée à la création et au passage à une nouvelle saison.
         'luck_random'               => true,
         // Budget de départ des clubs IA (création du monde uniquement)
         'ai_start_budget'           => 2500,
-        'draft_budget'              => DraftService::DEFAULT_BUDGET,
+        'draft_budget'              => self::DRAFT_BUDGETS['standard'],
         // Accès aux autres clubs : composition des équipes IA modifiable depuis « Autres équipes »
         'other_teams_editable'      => false,
     ];
@@ -233,6 +235,7 @@ class GameSave extends Model
             'season_challenges_enabled' => ['boolean'],
             'initial_morale_random'   => ['boolean'],
             'initial_stamina_random'  => ['boolean'],
+            'initial_speed_random'    => ['boolean'],
             'luck_random'             => ['boolean'],
             'ai_start_budget'         => ['integer', 'min:0', 'max:20000'],
             'draft_budget'            => ['integer', 'min:3000', 'max:20000'],
@@ -280,6 +283,19 @@ class GameSave extends Model
         return (int) $min <= (int) $max;
     }
 
+    public const INITIAL_SPEED_VARIATION = 10;
+
+    public function initialSpeed(int $baseSpeed, ?int $variation = null): int
+    {
+        if (!$this->getConfig('initial_speed_random')) {
+            return $baseSpeed;
+        }
+
+        $variation ??= random_int(-self::INITIAL_SPEED_VARIATION, self::INITIAL_SPEED_VARIATION);
+
+        return max(0, min(100, $baseSpeed + $variation));
+    }
+
     public function initialStamina(): int
     {
         return $this->getConfig('initial_stamina_random') ? random_int(60, 100) : 100;
@@ -292,7 +308,9 @@ class GameSave extends Model
 
     public function getConfig(?string $key = null, $default = null)
     {
-        $config = array_merge(self::DEFAULT_CONFIG, $this->state['config'] ?? []);
+        $saved = $this->state['config'] ?? [];
+        $config = array_merge(self::DEFAULT_CONFIG, $saved);
+        $config['draft_budget'] = $saved['draft_budget'] ?? self::DRAFT_BUDGETS[$config['career_difficulty']] ?? self::DEFAULT_CONFIG['draft_budget'];
         if ($key === null) {
             return $config;
         }

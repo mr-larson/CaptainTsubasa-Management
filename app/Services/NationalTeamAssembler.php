@@ -151,7 +151,7 @@ class NationalTeamAssembler
             'secondary_positions' => $player->secondary_positions ?? [],
             'description'         => $player->description,
             'photo_path'          => $player->photo_path,
-            'speed'               => $player->speed      ?? $s['speed']      ?? 50,
+            'speed'               => $gameSave->initialSpeed((int) ($player->speed ?? $s['speed'] ?? 50)),
             'stamina'             => $gameSave->initialStamina(),
             'luck'                => $gameSave->rollPlayerLuck(),
             'attack'              => $player->attack     ?? $s['attack']     ?? 50,
