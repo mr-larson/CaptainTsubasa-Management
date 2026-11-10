@@ -4,9 +4,11 @@ import { fieldClass } from '@/Components/fieldStyles';
 import ButtonSecondary from '@/Components/ButtonSecondary.vue';
 import ButtonPrimary from '@/Components/ButtonPrimary.vue';
 import { computed, ref, watch } from 'vue';
-import { STAT_COLORS, usePlayerUtils } from './usePlayerUtils.js';
+import { usePlayerUtils } from './usePlayerUtils.js';
 import PlayerPhoto from '@/Components/PlayerPhoto.vue';
 import RadarChart from '@/Pages/GameSaves/Play/components/RadarChart.vue';
+import PlayerComparison from './components/PlayerComparison.vue';
+import { compareRecruits, recruitmentSorts } from './recruitment.js';
 import StatBars from '@/Pages/GameSaves/Play/components/StatBars.vue';
 import SecondaryPositions from '@/Pages/GameSaves/Play/components/SecondaryPositions.vue';
 
@@ -86,6 +88,7 @@ const originScoped = computed(() =>
 //   FILTRE POSTE
 // ==========================
 const posFilter = ref('ALL');
+const maxPrice = ref('');
 const filters = [
     { key: 'ALL', label: 'Tous' },
     { key: 'GK',  label: 'Gardiens' },
@@ -114,8 +117,8 @@ const filteredPlayers = computed(() => {
         );
     }
 
-    const sorter = sortOptions.find(o => o.key === sortKey.value);
-    return sorter?.compare ? [...list].sort(sorter.compare) : list;
+    if (maxPrice.value !== '') list = list.filter(p => costOf(p) <= Number(maxPrice.value));
+    return [...list].sort((a, b) => compareRecruits(a, b, sortKey.value, costOf, ovr));
 });
 
 // ==========================
@@ -123,15 +126,7 @@ const filteredPlayers = computed(() => {
 // ==========================
 const staminaOf = (p) => p.stamina ?? p.stats?.stamina ?? 0;
 const costOf = (p) => p.adjusted_cost ?? p.cost ?? 0;
-const byName = (a, b) => `${a.lastname ?? ''} ${a.firstname ?? ''}`.localeCompare(`${b.lastname ?? ''} ${b.firstname ?? ''}`, 'fr');
 const sortKey = ref('name');
-const sortOptions = [
-    { key: 'name',    label: 'Nom (A → Z)',          compare: byName },
-    { key: 'overall', label: 'Note (meilleure)',     compare: (a, b) => ovr(b) - ovr(a) || byName(a, b) },
-    { key: 'stamina', label: 'Endurance (haute)',    compare: (a, b) => staminaOf(b) - staminaOf(a) || byName(a, b) },
-    { key: 'morale',  label: 'Moral (haut)',         compare: (a, b) => (b.morale ?? 60) - (a.morale ?? 60) || byName(a, b) },
-    { key: 'cost',    label: 'Coût (moins cher)',    compare: (a, b) => costOf(a) - costOf(b) || byName(a, b) },
-];
 
 // Note globale calculée une fois par joueur et par liste (au lieu de 3-4 fois
 // par ligne à chaque re-rendu, ex. à chaque frappe dans la recherche).
@@ -197,41 +192,6 @@ const toggleCompare = (player) => {
     }
     if (compareList.value.length >= 2) compareList.value.shift();
     compareList.value.push(player);
-};
-
-const clearCompare = () => { compareList.value = []; };
-
-const compareStatRows = [
-    { key: 'overall', label: 'OVR' },
-    { key: 'speed', label: 'Vitesse' },
-    { key: 'stamina', label: 'Endurance' },
-    { key: 'luck', label: 'Chance', color: STAT_COLORS.luck },
-    { key: 'shot', label: 'Tir' },
-    { key: 'pass', label: 'Passe' },
-    { key: 'dribble', label: 'Dribble' },
-    { key: 'attack', label: 'Attaque' },
-    { key: 'defense', label: 'Défense' },
-    { key: 'tackle', label: 'Tacle' },
-    { key: 'intercept', label: 'Interception' },
-    { key: 'block', label: 'Blocage' },
-    { key: 'heading', label: 'Tête' },
-    { key: 'hand_save', label: 'Main' },
-    { key: 'punch_save', label: 'Poing' },
-    { key: 'cost', label: 'Coût (billets/match)', lowerBetter: true },
-];
-
-const compareStatValue = (player, key) => {
-    if (key === 'overall') return overallOf(player);
-    const src = player?.stats ?? player;
-    return Number(src?.[key] ?? player?.[key] ?? 0);
-};
-
-// Vrai si `player` est meilleur que `other` sur cette stat (coût : plus bas = mieux)
-const compareWins = (player, other, row) => {
-    const v = compareStatValue(player, row.key);
-    const o = compareStatValue(other, row.key);
-    if (v === o) return false;
-    return row.lowerBetter ? v < o : v > o;
 };
 
 // ==========================
@@ -324,6 +284,14 @@ const filteredHistory = computed(() =>
             </div>
         </div>
 
+        <div class="flex flex-wrap items-end justify-between gap-3">
+            <label class="text-xs text-slate-500">
+                Prix max. par match (GL)
+                <input v-model.number="maxPrice" type="number" min="0" class="mt-1 block w-28" :class="fieldClass({ size: 'sm' })" placeholder="Tous" />
+            </label>
+            <PlayerComparison v-model="compareList" :cost="costOf" cost-label="Coût par match" />
+        </div>
+
         <!-- Contenu principal -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
 
@@ -339,7 +307,7 @@ const filteredHistory = computed(() =>
                         Trier par
                         <select v-model="sortKey"
                                 class="py-1 pl-2 pr-7" :class="fieldClass({ shape: 'rect', size: 'sm' })">
-                            <option v-for="o in sortOptions" :key="o.key" :value="o.key">{{ o.label }}</option>
+                            <option v-for="o in recruitmentSorts" :key="o.key" :value="o.key">{{ o.label }}</option>
                         </select>
                     </label>
                 </div>
@@ -435,10 +403,10 @@ const filteredHistory = computed(() =>
                                 @click.stop="toggleCompare(p)"
                                 class="w-7 h-7 rounded-full flex items-center justify-center text-xs shrink-0 border transition-all"
                                 :class="isComparing(p)
-                                    ? 'bg-amber-400 border-amber-500 text-white shadow-sm'
+                                    ? 'bg-teal-500 border-teal-600 text-white shadow-sm'
                                     : selectedPlayer?.id === p.id
                                         ? 'border-white/40 text-white/80 hover:bg-white/10'
-                                        : 'border-slate-200 text-slate-400 hover:border-amber-300 hover:text-amber-500'"
+                                        : 'border-slate-200 text-slate-400 hover:border-teal-300 hover:text-teal-600'"
                                 :title="isComparing(p) ? 'Retirer de la comparaison' : 'Ajouter à la comparaison'">
                             ⚖️
                         </button>
@@ -618,63 +586,5 @@ const filteredHistory = computed(() =>
             </div>
         </div>
 
-        <!-- ============================================ -->
-        <!-- PANNEAU DE COMPARAISON (2 joueurs)           -->
-        <!-- ============================================ -->
-        <Teleport to="body">
-            <div v-if="compareList.length > 0"
-                 class="fixed bottom-4 inset-x-0 z-50 flex justify-center px-4 pointer-events-none">
-                <div class="bg-white border border-slate-200 shadow-2xl rounded-2xl p-4 w-full max-w-2xl pointer-events-auto">
-                    <div class="flex items-center justify-between mb-3">
-                        <h3 class="text-sm font-bold text-slate-700">⚖️ Comparaison de joueurs</h3>
-                        <button type="button" @click="clearCompare"
-                                class="text-xs text-slate-400 hover:text-slate-600 font-semibold">
-                            ✕ Fermer
-                        </button>
-                    </div>
-
-                    <div v-if="compareList.length < 2" class="text-xs text-slate-400 text-center py-4">
-                        Sélectionne un second joueur (⚖️) pour comparer.
-                    </div>
-
-                    <div v-else class="overflow-x-auto">
-                    <table class="w-full text-xs min-w-[360px]">
-                        <thead>
-                        <tr class="text-slate-500">
-                            <th class="text-left py-1 px-2 font-semibold">Stat</th>
-                            <th v-for="p in compareList" :key="p.id" class="py-1 px-2 font-bold">
-                                <div class="flex items-center justify-center gap-2">
-                                    <div class="w-7 h-7 rounded-full overflow-hidden bg-slate-200 shrink-0">
-                                        <PlayerPhoto :src="playerPhotoUrl(p)" class="w-full h-full object-cover" alt="" />
-                                        <div v-if="!playerPhotoUrl(p)" class="w-full h-full flex items-center justify-center text-3xs text-slate-400">?</div>
-                                    </div>
-                                    <div class="text-left leading-tight">
-                                        <div class="text-slate-700">{{ p.lastname }}</div>
-                                        <div class="text-3xs text-slate-400 font-normal">{{ positionLabel(p.position) }}</div>
-                                    </div>
-                                    <button type="button" @click="toggleCompare(p)"
-                                            class="text-slate-300 hover:text-rose-500" title="Retirer" aria-label="Retirer">✕</button>
-                                </div>
-                            </th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr v-for="row in compareStatRows" :key="row.key" class="border-t border-slate-50">
-                            <td class="py-1 px-2 text-slate-500">
-                                <span v-if="row.color" class="mr-1 inline-block h-2 w-2 rounded-full" :class="row.color"></span>
-                                {{ row.label }}
-                            </td>
-                            <td v-for="(p, i) in compareList" :key="p.id"
-                                class="py-1 px-2 text-center font-semibold"
-                                :class="compareWins(p, compareList[1 - i], row) ? 'text-emerald-600' : 'text-slate-600'">
-                                {{ compareStatValue(p, row.key) }}
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                    </div>
-                </div>
-            </div>
-        </Teleport>
     </div>
 </template>

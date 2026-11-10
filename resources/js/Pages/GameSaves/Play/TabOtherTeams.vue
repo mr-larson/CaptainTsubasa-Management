@@ -7,6 +7,7 @@ import ButtonSecondary from '@/Components/ButtonSecondary.vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
 import RosterList from '@/Pages/GameSaves/Play/components/RosterList.vue';
 import PlayerStatusAlert from '@/Pages/GameSaves/Play/components/PlayerStatusAlert.vue';
+import PlayerComparison from './components/PlayerComparison.vue';
 import PlayerIdentityCard from '@/Pages/GameSaves/Play/components/PlayerIdentityCard.vue';
 import RadarChart from '@/Pages/GameSaves/Play/components/RadarChart.vue';
 import StatBars from '@/Pages/GameSaves/Play/components/StatBars.vue';
@@ -130,6 +131,12 @@ const selectedPlayerPerf = computed(() => {
     if (!p) return null;
     return props.playerSeasonStats?.[p.id] ?? props.playerSeasonStats?.[String(p.id)] ?? {};
 });
+const comparison = ref([]);
+const comparisonAvailability = p => {
+    if (props.isPlayerInjured(p.id)) return "Blessé";
+    if (props.isPlayerSuspended(p.id)) return "Suspendu";
+    return "Disponible";
+};
 </script>
 
 <template>
@@ -149,7 +156,7 @@ const selectedPlayerPerf = computed(() => {
                         : 'bg-white text-slate-600 border-slate-200 hover:border-teal-300 hover:text-teal-600'"
                 >
                     <div class="w-4 h-4 rounded-full overflow-hidden shrink-0 bg-slate-100">
-                        <img v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" class="w-full h-full object-contain" alt=""/>
+                        <TeamLogoImage v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" class="w-full h-full" alt=""/>
                     </div>
                     {{ t.name }}
                     <span class="tabular-nums opacity-80" title="Moyenne des notes de l’effectif">
@@ -324,6 +331,8 @@ const selectedPlayerPerf = computed(() => {
                             <p v-if="selectedOtherPlayer.description" class="mt-2 text-xs text-slate-400 italic">{{ selectedOtherPlayer.description }}</p>
                         </template>
                     </PlayerIdentityCard>
+
+                    <PlayerComparison v-model="comparison" :player="{ ...selectedOtherPlayer, comparisonTeamName: selectedOtherTeam?.name }" :availability="comparisonAvailability" />
 
                     <!-- Moral (lecture seule, ou éditable avec l'option « Accès aux autres clubs ») -->
                     <PlayerMoraleCard :player="selectedOtherPlayer"

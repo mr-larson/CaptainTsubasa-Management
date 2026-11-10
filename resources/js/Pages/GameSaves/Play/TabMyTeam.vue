@@ -11,6 +11,7 @@ import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
 import RosterList from '@/Pages/GameSaves/Play/components/RosterList.vue';
 import PlayerStatusAlert from '@/Pages/GameSaves/Play/components/PlayerStatusAlert.vue';
+import PlayerComparison from './components/PlayerComparison.vue';
 import PlayerIdentityCard from '@/Pages/GameSaves/Play/components/PlayerIdentityCard.vue';
 import RadarChart from '@/Pages/GameSaves/Play/components/RadarChart.vue';
 import StatBars from '@/Pages/GameSaves/Play/components/StatBars.vue';
@@ -189,6 +190,8 @@ const slotCandidates = (slot, slotDef) => substitutes.value
         || (MASTERY_RANK[a.mastery] ?? 3) - (MASTERY_RANK[b.mastery] ?? 3)
         || Number(b.player.stamina ?? b.player.stats?.stamina ?? 0) - Number(a.player.stamina ?? a.player.stats?.stamina ?? 0)
     );
+const comparison = ref([]);
+const comparisonAvailability = p => unavailability(p)?.label ?? "Disponible";
 </script>
 
 <template>
@@ -419,6 +422,8 @@ const slotCandidates = (slot, slotDef) => substitutes.value
                             <p v-if="selectedMyPlayer.description" class="mt-2 text-xs text-slate-400 italic">{{ selectedMyPlayer.description }}</p>
                         </template>
                     </PlayerIdentityCard>
+
+                    <PlayerComparison v-model="comparison" :player="selectedMyPlayer" :availability="comparisonAvailability" />
 
                     <!-- Moral -->
                     <PlayerMoraleCard :player="selectedMyPlayer"
