@@ -479,6 +479,27 @@
                     <RadarChart :player="detailPlayer" accent="teal" />
                     <StatBars :player="detailPlayer" />
                 </div>
+
+                <section v-if="detailPlayer.special_moves?.length" class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <h4 class="mb-2 text-2xs font-bold uppercase tracking-wider text-slate-400">✨ Techniques spéciales</h4>
+                    <ul class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                        <li v-for="(move, index) in detailPlayer.special_moves" :key="move.key || index"
+                            class="min-w-0 rounded-lg border border-slate-200 bg-white p-2.5">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="text-xs font-bold text-slate-700">{{ move.label || move.short_label || move.key }}</span>
+                                <span v-if="move.mode === 'attack' || move.mode === 'defense'"
+                                      class="rounded-full px-2 py-0.5 text-2xs font-semibold"
+                                      :class="move.mode === 'defense' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'">
+                                    {{ move.mode === 'defense' ? 'Défense' : 'Attaque' }}
+                                </span>
+                            </div>
+                            <p v-if="move.description" class="mt-1 text-xs text-slate-500">{{ move.description }}</p>
+                            <p v-if="move.cooldown != null" class="mt-1 text-2xs text-slate-500">
+                                Recharge · {{ move.cooldown }} tour{{ move.cooldown > 1 ? 's' : '' }}
+                            </p>
+                        </li>
+                    </ul>
+                </section>
             </div>
         </Modal>
     </AuthenticatedLayout>
