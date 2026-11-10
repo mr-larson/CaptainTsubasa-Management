@@ -911,6 +911,7 @@ class CaptainTsubasaInternationalPlayers
             // Argentine
             'juan-diaz'            => 'Argentine',
             'ramon-galvan'         => 'Argentine',
+            'juan-babington'       => 'Argentine',
             'alan-pascal'       => 'Argentine',
             // Uruguay
             'conzales'             => 'Uruguay',
@@ -928,6 +929,7 @@ class CaptainTsubasaInternationalPlayers
             'hans-dolman'          => 'Pays-Bas',
             'leon-dick'            => 'Pays-Bas',
             'ruud-klisman'         => 'Pays-Bas',
+            'haan'                 => 'Pays-Bas',
             'brian-cruyfford'      => 'Pays-Bas',
             'johan-rensenbrink'    => 'Pays-Bas',
             'gert-keizer'          => 'Pays-Bas',
