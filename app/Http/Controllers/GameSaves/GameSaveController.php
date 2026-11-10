@@ -458,7 +458,8 @@ class GameSaveController extends Controller
                     'description'    => $p['description'] ?? null,
                     'photo_path'     => $p['photo_path'] ?? null,
                     'speed'          => $p['speed']      ?? 50,
-                    'stamina'        => rand(60, 100),
+                    'stamina'        => $gameSave->initialStamina(),
+                    'luck'           => $gameSave->rollPlayerLuck(),
                     'attack'         => $p['attack']     ?? 50,
                     'defense'        => $p['defense']    ?? 50,
                     'shot'           => $p['shot']       ?? 50,
@@ -497,7 +498,8 @@ class GameSaveController extends Controller
                     'description'    => $player->description,
                     'photo_path'     => $player->photo_path,
                     'speed'          => $player->speed      ?? $s['speed']      ?? 50,
-                    'stamina'        => rand(60, 100),
+                    'stamina'        => $gameSave->initialStamina(),
+                    'luck'           => $gameSave->rollPlayerLuck(),
                     'attack'         => $player->attack     ?? $s['attack']     ?? 50,
                     'defense'        => $player->defense    ?? $s['defense']    ?? 50,
                     'shot'           => $player->shot       ?? $s['shot']       ?? 50,
@@ -984,7 +986,7 @@ class GameSaveController extends Controller
             'activeSuspensions'   => $activeSuspensions,
             'activePositionTrainings' => $activePositionTrainings,
             'trainableSpecialMoves' => fn () => \App\Services\TrainableSpecialMoves::catalog(),
-            'specialTrainingCost' => \App\Services\TrainableSpecialMoves::COST,
+            'specialTrainingCost' => (int) $gameSave->getConfig('special_training_cost'),
             'activeYellowCards'   => $activeYellowCards,
             'moraleLogs'          => $moraleLogs,
             'playerPromises'      => $playerPromises,
@@ -1243,8 +1245,8 @@ class GameSaveController extends Controller
     {
         $this->authorizeGameSave('update', $gameSave);
 
-        // initial_morale_random n'a d'effet qu'à la création du monde.
-        $rules = Arr::except(GameSave::configRules(), ['initial_morale_random', 'ai_start_budget']);
+        // Les options de départ sont définies lors de la création de la sauvegarde.
+        $rules = Arr::except(GameSave::configRules(), ['initial_morale_random', 'initial_stamina_random', 'luck_random', 'ai_start_budget']);
         $data  = GameSave::sanitizeConfig($request->validate($rules));
 
         if (! $gameSave->hasValidTrainingGains($data)) {

@@ -132,7 +132,7 @@ class PositionTrainingTest extends TestCase
 
         $this->assertSame(700, (int) $team->fresh()->budget);
         $this->assertSame([$player->id], GamePositionTraining::unavailablePlayerIds($save->id, 1));
-        $this->assertSame([$pass], $player->fresh()->special_moves);
+        $this->assertEquals([$pass], $player->fresh()->special_moves);
         $this->assertSame('special_move', $save->fresh()->state['training']['entries'][0]['stat']);
         $this->assertDatabaseHas('game_position_trainings', ['game_player_id' => $player->id, 'cost' => 300]);
 
@@ -144,6 +144,22 @@ class PositionTrainingTest extends TestCase
         $save->update(['week' => 2]);
         $this->post($url, array_replace($request, ['week' => 2]))->assertSessionHasErrors('special_training');
         $this->assertSame(700, (int) $team->fresh()->budget);
+    }
+
+    public function test_special_training_uses_the_configured_cost(): void
+    {
+        [$save, $team, $player] = $this->world(['position' => 'Midfielder'], budget: 500);
+        $save->setConfig(['special_training_cost' => 450]);
+
+        $this->actingAs($save->user)->post(route('game-saves.special-training.store', $save), [
+            'player_id' => $player->id,
+            'move_key' => 'training_curled_cross',
+            'season' => 1,
+            'week' => 1,
+        ])->assertSessionHasNoErrors();
+
+        $this->assertSame(50, (int) $team->fresh()->budget);
+        $this->assertDatabaseHas('game_position_trainings', ['game_player_id' => $player->id, 'cost' => 450]);
     }
 
     /** Save en semaine 1 avec une équipe contrôlée et un joueur sous contrat. */

@@ -80,12 +80,13 @@ class AiFormationTrainingService
             $reserve = $team->management_philosophy === TeamStyle::PHILOSOPHY_ECONOMIST ? 750 : 500;
             $spendable = (int) $team->budget - $reserve - (int) $save->getConfig('training_cost');
             $positionCost = (int) $save->getConfig('position_training_cost');
-            if ($spendable < min($positionCost, TrainableSpecialMoves::COST)) continue;
+            $specialCost = (int) $save->getConfig('special_training_cost');
+            if ($spendable < min($positionCost, $specialCost)) continue;
 
             $choice = $this->chooseFormation(
                 $team, $available, $week, $remaining, $spendable >= $positionCost,
                 $humanWeek,
-                $humanWeek && $spendable >= TrainableSpecialMoves::COST ? ($moves ??= TrainableSpecialMoves::catalog()) : [],
+                $humanWeek && $spendable >= $specialCost ? ($moves ??= TrainableSpecialMoves::catalog()) : [],
             );
             if (!$choice) continue;
 

@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Helpers\PlayerLuck;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameInjury;
 use App\Models\GameSaves\GameMatch;
@@ -226,9 +225,9 @@ class SeasonService
 
         // Tous les contrats expirent : les joueurs redeviennent libres pour la draft
         GameContract::where('game_save_id', $gameSave->id)->delete();
-        GamePlayer::where('game_save_id', $gameSave->id)->select('id')->chunkById(250, function ($players) {
+        GamePlayer::where('game_save_id', $gameSave->id)->select('id')->chunkById(250, function ($players) use ($gameSave) {
             foreach ($players as $player) {
-                GamePlayer::whereKey($player->id)->update(['number' => null, 'luck' => PlayerLuck::roll()]);
+                GamePlayer::whereKey($player->id)->update(['number' => null, 'luck' => $gameSave->rollPlayerLuck()]);
             }
         });
 

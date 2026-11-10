@@ -2,8 +2,10 @@
 
 namespace App\Models\GameSaves;
 
+use App\Helpers\PlayerLuck;
 use App\Models\Team;
 use App\Models\User;
+use App\Services\TrainableSpecialMoves;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
@@ -166,6 +168,7 @@ class GameSave extends Model
         'training_min_stamina'      => 10,
         'training_cost'             => 150,
         'position_training_cost'    => 200,
+        'special_training_cost'     => TrainableSpecialMoves::COST,
         'ai_transfers_enabled'      => true,
         'ai_training_enabled'       => true,
         'visible_origins'           => [
@@ -181,6 +184,9 @@ class GameSave extends Model
         'season_challenges_enabled' => true,
         // Appliqué uniquement à la création du monde (sans effet en cours de partie)
         'initial_morale_random'     => true,
+        'initial_stamina_random'    => true,
+        // Tirée à la création et au passage à une nouvelle saison.
+        'luck_random'               => true,
         // Budget de départ des clubs IA (création du monde uniquement)
         'ai_start_budget'           => 2500,
         // Accès aux autres clubs : composition des équipes IA modifiable depuis « Autres équipes »
@@ -215,6 +221,7 @@ class GameSave extends Model
             'training_min_stamina'    => ['integer', 'min:0', 'max:50'],
             'training_cost'           => ['integer', 'min:0', 'max:5000'],
             'position_training_cost'  => ['integer', 'min:0', 'max:5000'],
+            'special_training_cost'   => ['integer', 'min:0', 'max:2000'],
             'ai_transfers_enabled'    => ['boolean'],
             'ai_training_enabled'     => ['boolean'],
             'visible_origins'         => ['array'],
@@ -223,6 +230,8 @@ class GameSave extends Model
             'career_difficulty'       => ['string', 'in:none,survival,standard,conquest'],
             'season_challenges_enabled' => ['boolean'],
             'initial_morale_random'   => ['boolean'],
+            'initial_stamina_random'  => ['boolean'],
+            'luck_random'             => ['boolean'],
             'ai_start_budget'         => ['integer', 'min:0', 'max:20000'],
             'other_teams_editable'    => ['boolean'],
         ];
@@ -266,6 +275,16 @@ class GameSave extends Model
         $max = $values['training_gain_max'] ?? (int) $this->getConfig('training_gain_max', config('training.gain_max', 5));
 
         return (int) $min <= (int) $max;
+    }
+
+    public function initialStamina(): int
+    {
+        return $this->getConfig('initial_stamina_random') ? random_int(60, 100) : 100;
+    }
+
+    public function rollPlayerLuck(): int
+    {
+        return $this->getConfig('luck_random') ? PlayerLuck::roll() : PlayerLuck::NEUTRAL;
     }
 
     public function getConfig(?string $key = null, $default = null)

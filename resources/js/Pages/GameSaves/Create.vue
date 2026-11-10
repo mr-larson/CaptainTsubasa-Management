@@ -94,10 +94,10 @@ const config = reactive({
     training_gain_max: 5,
     training_stamina_cost: 2,
     training_min_stamina: 10,
-    training_cost: 150, position_training_cost: 200,
+    training_cost: 150, position_training_cost: 200, special_training_cost: 300,
     ai_transfers_enabled: true,
     ai_training_enabled: true,
-    initial_morale_random: true,
+    initial_morale_random: true, initial_stamina_random: true, luck_random: true,
     ai_start_budget: 2500,
     visible_origins: {
         captain_tsubasa: true,
@@ -118,9 +118,9 @@ function resetDefaults() {
         match_stamina_cost: 5, rest_stamina_recovery: 10, match_max_turns: 30,
         injury_on_foul: true, suspension_on_3_yellows: true,
         training_max_per_week: 3, training_gain_min: 1, training_gain_max: 5,
-        training_stamina_cost: 2, training_min_stamina: 10, training_cost: 150, position_training_cost: 200,
+        training_stamina_cost: 2, training_min_stamina: 10, training_cost: 150, position_training_cost: 200, special_training_cost: 300,
         ai_transfers_enabled: true, ai_training_enabled: true,
-        initial_morale_random: true,
+        initial_morale_random: true, initial_stamina_random: true, luck_random: true,
         ai_start_budget: 2500,
         visible_origins: { captain_tsubasa: true, ecole_des_champions: false, hungry_heart: false, blue_lock: false, ao_ashi: false, original: true },
         internationals_visible: false,
@@ -428,10 +428,10 @@ function submit() {
                             </div>
                         </div>
 
-                        <!-- Moral -->
+                        <!-- Données aléatoires -->
                         <div class="border border-slate-200 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
                             <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                                <span>😊</span> Moral
+                                <span>🎲</span> Données aléatoires
                             </h4>
                             <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
                                 <input type="checkbox" v-model="config.initial_morale_random"
@@ -439,7 +439,23 @@ function submit() {
                                 Moral initial aléatoire (45–75 par joueur)
                             </label>
                             <p class="text-2xs text-slate-400">
-                                Décoché : tous les joueurs démarrent à 60 (neutre). Appliqué uniquement à la création de la partie.
+                                Désactivé, le moral de départ est fixé à 60.
+                            </p>
+                            <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                                <input type="checkbox" v-model="config.initial_stamina_random"
+                                       class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
+                                Endurance initiale aléatoire (60–100)
+                            </label>
+                            <p class="text-2xs text-slate-400">
+                                Les amateurs générés tirent entre 55 et 75. Désactivée, l’endurance de départ est fixée à 100.
+                            </p>
+                            <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                                <input type="checkbox" v-model="config.luck_random"
+                                       class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
+                                Chance aléatoire (20–80 par joueur)
+                            </label>
+                            <p class="text-2xs text-slate-400">
+                                Tirée à la création de la partie et au début de chaque saison. Désactivée, la chance est fixée à 50.
                             </p>
                         </div>
 
@@ -549,7 +565,7 @@ function submit() {
                                         <span class="text-xs font-bold text-slate-700 w-5 text-right">{{ config.training_min_stamina }}</span>
                                     </div>
                                 </div>
-                                <div v-for="(label, key) in { training_cost: 'Coût par séance simple', position_training_cost: 'Coût par formation de poste' }"
+                                <div v-for="(label, key) in { training_cost: 'Coût par séance simple', position_training_cost: 'Coût par formation de poste', special_training_cost: 'Coût par technique spéciale' }"
                                      :key="key" class="flex flex-col gap-1">
                                     <label class="text-2xs text-slate-500">{{ label }} (<GameBanknote />)</label>
                                     <div class="flex items-center gap-2">
