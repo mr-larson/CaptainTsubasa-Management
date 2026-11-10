@@ -62,6 +62,7 @@ function submitImport() {
 
 const showConfig = ref(false);
 const showRules = ref(false);
+const showConfigHint = ref(true);
 
 const originLabels = {
     captain_tsubasa:     'Captain Tsubasa',
@@ -170,11 +171,13 @@ function submit() {
                                         : 'border-slate-300 bg-white text-slate-600 hover:bg-slate-50'">
                                 <span>{{ showRules ? '← Retour' : '📖 Règles' }}</span>
                             </button>
-                            <button type="button" @click="showConfig = !showConfig; showRules = false"
+                            <button type="button" @click="showConfig = !showConfig; showRules = false; showConfigHint = false"
+                                    @animationend.self="showConfigHint = false"
                                     class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full border transition-all"
-                                    :class="showConfig
+                                    :class="[showConfig
                                         ? 'border-teal-300 bg-teal-50 text-teal-700 hover:bg-teal-100'
-                                        : 'border-slate-300 bg-white text-slate-600 hover:bg-slate-50'">
+                                        : 'border-slate-300 bg-white text-slate-600 hover:bg-slate-50',
+                                        { 'configuration-wizz': showConfigHint && !showConfig && !showRules }]">
                                 <span>{{ showConfig ? '← Retour' : '⚙ Configuration' }}</span>
                             </button>
                         </div>
@@ -188,166 +191,168 @@ function submit() {
                     <!-- ====== FORMULAIRE CREATION ====== -->
                     <form v-show="!showConfig && !showRules" @submit.prevent="submit" class="flex flex-col flex-1 gap-6 overflow-y-auto">
 
-                        <!-- Nom de la partie -->
-                        <div class="flex flex-col gap-1.5">
-                            <label for="label" class="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                                Nom de la partie
-                            </label>
-                            <input
-                                id="label"
-                                type="text"
-                                v-model="form.label"
-                                placeholder="ex: Saison Nankatsu 1"
-                                class="w-full px-4 py-2.5" :class="fieldClass()"
-                            />
-                            <p v-if="form.errors.label" class="text-xs text-rose-500">{{ form.errors.label }}</p>
-                        </div>
-
-                        <!-- Format de compétition -->
-                        <div class="flex flex-col gap-2">
-                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                                Format de compétition
-                            </label>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <button type="button"
-                                        @click="form.competition_type = 'college_league'"
-                                        class="relative flex flex-col gap-2 p-4 rounded-xl border-2 transition-all text-left"
-                                        :class="form.competition_type === 'college_league'
-                                            ? 'border-teal-500 bg-teal-50 shadow-sm'
-                                            : 'border-slate-200 bg-white hover:border-slate-300'">
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-xl">🏫</span>
-                                        <span class="text-sm font-bold"
-                                              :class="form.competition_type === 'college_league' ? 'text-teal-700' : 'text-slate-700'">
-                                            Ligue
-                                        </span>
-                                    </div>
-                                    <p class="text-[11px] leading-relaxed"
-                                       :class="form.competition_type === 'college_league' ? 'text-teal-600' : 'text-slate-400'">
-                                        Championnat des collèges en matchs aller-retour. Le mode classique de Captain Tsubasa.
-                                    </p>
-                                    <div v-if="form.competition_type === 'college_league'"
-                                         class="absolute top-2 right-2 w-5 h-5 rounded-full bg-teal-500 flex items-center justify-center">
-                                        <span class="text-white text-2xs font-bold">✓</span>
-                                    </div>
-                                </button>
-
-                                <button type="button"
-                                        @click="form.competition_type = 'world_cup'"
-                                        class="relative flex flex-col gap-2 p-4 rounded-xl border-2 transition-all text-left"
-                                        :class="form.competition_type === 'world_cup'
-                                            ? 'border-indigo-500 bg-indigo-50 shadow-sm'
-                                            : 'border-slate-200 bg-white hover:border-slate-300'">
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-xl">🌍</span>
-                                        <span class="text-sm font-bold"
-                                              :class="form.competition_type === 'world_cup' ? 'text-indigo-700' : 'text-slate-700'">
-                                            Coupe du Monde
-                                        </span>
-                                    </div>
-                                    <p class="text-[11px] leading-relaxed"
-                                       :class="form.competition_type === 'world_cup' ? 'text-indigo-600' : 'text-slate-400'">
-                                        Tournoi des sélections nationales : poules puis élimination directe. Mène ta nation au titre.
-                                    </p>
-                                    <div v-if="form.competition_type === 'world_cup'"
-                                         class="absolute top-2 right-2 w-5 h-5 rounded-full bg-indigo-500 flex items-center justify-center">
-                                        <span class="text-white text-2xs font-bold">✓</span>
-                                    </div>
-                                </button>
-                            </div>
-                            <p v-if="form.errors.competition_type" class="text-xs text-rose-500">{{ form.errors.competition_type }}</p>
-                        </div>
-
-                        <!-- Période : effectif standard, ou une période importée qui le remplace entièrement -->
-                        <div v-if="form.competition_type === 'college_league'" class="flex flex-col gap-1.5">
-                            <div class="flex items-center justify-between flex-wrap gap-1">
-                                <label for="period_package" class="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                                    Période
+                        <div class="flex flex-col gap-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                            <!-- Nom de la partie -->
+                            <div class="flex flex-col gap-1.5">
+                                <label for="label" class="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                    Nom de la partie
                                 </label>
-                                <div class="flex items-center gap-2 text-[11px] font-semibold">
-                                    <a :href="exportHref" download
-                                       class="text-teal-600 hover:text-teal-700 hover:underline">
-                                        📤 Exporter{{ form.period_package_id ? ' cette période' : ' un modèle' }}
-                                    </a>
-                                    <span class="text-slate-300">·</span>
-                                    <button type="button" @click="showImportModal = true"
-                                            class="text-teal-600 hover:text-teal-700 hover:underline">
-                                        📥 Importer une période
+                                <input
+                                    id="label"
+                                    type="text"
+                                    v-model="form.label"
+                                    placeholder="ex: Saison Nankatsu 1"
+                                    class="w-full px-4 py-2.5" :class="fieldClass()"
+                                />
+                                <p v-if="form.errors.label" class="text-xs text-rose-500">{{ form.errors.label }}</p>
+                            </div>
+
+                            <!-- Format de compétition -->
+                            <div class="flex flex-col gap-2">
+                                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                    Format de compétition
+                                </label>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <button type="button"
+                                            @click="form.competition_type = 'college_league'"
+                                            class="relative flex flex-col gap-2 p-4 rounded-xl border-2 transition-all text-left"
+                                            :class="form.competition_type === 'college_league'
+                                                ? 'border-teal-500 bg-teal-50 shadow-sm'
+                                                : 'border-slate-200 bg-white hover:border-slate-300'">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-xl">🏫</span>
+                                            <span class="text-sm font-bold"
+                                                  :class="form.competition_type === 'college_league' ? 'text-teal-700' : 'text-slate-700'">
+                                                Ligue
+                                            </span>
+                                        </div>
+                                        <p class="text-[11px] leading-relaxed"
+                                           :class="form.competition_type === 'college_league' ? 'text-teal-600' : 'text-slate-400'">
+                                            Championnat des collèges en matchs aller-retour. Le mode classique de Captain Tsubasa.
+                                        </p>
+                                        <div v-if="form.competition_type === 'college_league'"
+                                             class="absolute top-2 right-2 w-5 h-5 rounded-full bg-teal-500 flex items-center justify-center">
+                                            <span class="text-white text-2xs font-bold">✓</span>
+                                        </div>
+                                    </button>
+
+                                    <button type="button"
+                                            @click="form.competition_type = 'world_cup'"
+                                            class="relative flex flex-col gap-2 p-4 rounded-xl border-2 transition-all text-left"
+                                            :class="form.competition_type === 'world_cup'
+                                                ? 'border-indigo-500 bg-indigo-50 shadow-sm'
+                                                : 'border-slate-200 bg-white hover:border-slate-300'">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-xl">🌍</span>
+                                            <span class="text-sm font-bold"
+                                                  :class="form.competition_type === 'world_cup' ? 'text-indigo-700' : 'text-slate-700'">
+                                                Coupe du Monde
+                                            </span>
+                                        </div>
+                                        <p class="text-[11px] leading-relaxed"
+                                           :class="form.competition_type === 'world_cup' ? 'text-indigo-600' : 'text-slate-400'">
+                                            Tournoi des sélections nationales : poules puis élimination directe. Mène ta nation au titre.
+                                        </p>
+                                        <div v-if="form.competition_type === 'world_cup'"
+                                             class="absolute top-2 right-2 w-5 h-5 rounded-full bg-indigo-500 flex items-center justify-center">
+                                            <span class="text-white text-2xs font-bold">✓</span>
+                                        </div>
                                     </button>
                                 </div>
+                                <p v-if="form.errors.competition_type" class="text-xs text-rose-500">{{ form.errors.competition_type }}</p>
                             </div>
-                            <select
-                                id="period_package"
-                                v-model="form.period_package_id"
-                                class="w-full px-4 py-2.5" :class="fieldClass()"
-                            >
-                                <option :value="null">Collège (effectif standard)</option>
-                                <option v-for="pkg in availablePackages" :key="pkg.id" :value="pkg.id">
-                                    📦 {{ pkg.name }} ({{ pkg.teamCount }} équipes, {{ pkg.playerCount }} joueurs)
-                                </option>
-                            </select>
-                            <p v-if="form.period_package_id" class="text-xs text-slate-400">
-                                Remplace entièrement l'effectif standard pour cette partie.
-                            </p>
-                            <p v-else-if="form.game_mode === 'draft' && periodPackages.length" class="text-xs text-slate-400">
-                                Les périodes importées ne sont pas disponibles en mode Draft.
-                            </p>
-                            <p v-if="form.errors.period_package_id" class="text-xs text-rose-500">{{ form.errors.period_package_id }}</p>
-                        </div>
 
-                        <!-- Mode de jeu (Ligue collège uniquement) -->
-                        <div v-if="form.competition_type === 'college_league'" class="flex flex-col gap-2">
-                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                                Mode de démarrage
-                            </label>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <button type="button"
-                                        @click="form.game_mode = 'prebuilt'"
-                                        class="relative flex flex-col gap-2 p-4 rounded-xl border-2 transition-all text-left"
-                                        :class="form.game_mode === 'prebuilt'
-                                            ? 'border-teal-500 bg-teal-50 shadow-sm'
-                                            : 'border-slate-200 bg-white hover:border-slate-300'">
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-xl">🏟️</span>
-                                        <span class="text-sm font-bold"
-                                              :class="form.game_mode === 'prebuilt' ? 'text-teal-700' : 'text-slate-700'">
-                                            Effectifs pré-faits
-                                        </span>
+                            <!-- Période : effectif standard, ou une période importée qui le remplace entièrement -->
+                            <div v-if="form.competition_type === 'college_league'" class="flex flex-col gap-1.5">
+                                <div class="flex items-center justify-between flex-wrap gap-1">
+                                    <label for="period_package" class="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                        Période
+                                    </label>
+                                    <div class="flex items-center gap-2 text-[11px] font-semibold">
+                                        <a :href="exportHref" download
+                                           class="text-teal-600 hover:text-teal-700 hover:underline">
+                                            📤 Exporter{{ form.period_package_id ? ' cette période' : ' un modèle' }}
+                                        </a>
+                                        <span class="text-slate-300">·</span>
+                                        <button type="button" @click="showImportModal = true"
+                                                class="text-teal-600 hover:text-teal-700 hover:underline">
+                                            📥 Importer une période
+                                        </button>
                                     </div>
-                                    <p class="text-[11px] leading-relaxed"
-                                       :class="form.game_mode === 'prebuilt' ? 'text-teal-600' : 'text-slate-400'">
-                                        Chaque équipe démarre avec son effectif Captain Tsubasa classique. Idéal pour jouer directement.
-                                    </p>
-                                    <div v-if="form.game_mode === 'prebuilt'"
-                                         class="absolute top-2 right-2 w-5 h-5 rounded-full bg-teal-500 flex items-center justify-center">
-                                        <span class="text-white text-2xs font-bold">✓</span>
-                                    </div>
-                                </button>
-
-                                <button type="button"
-                                        @click="form.game_mode = 'draft'; form.period_package_id = null"
-                                        class="relative flex flex-col gap-2 p-4 rounded-xl border-2 transition-all text-left"
-                                        :class="form.game_mode === 'draft'
-                                            ? 'border-amber-500 bg-amber-50 shadow-sm'
-                                            : 'border-slate-200 bg-white hover:border-slate-300'">
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-xl">🎯</span>
-                                        <span class="text-sm font-bold"
-                                              :class="form.game_mode === 'draft' ? 'text-amber-700' : 'text-slate-700'">
-                                            Draft initial
-                                        </span>
-                                    </div>
-                                    <p class="text-[11px] leading-relaxed"
-                                       :class="form.game_mode === 'draft' ? 'text-amber-600' : 'text-slate-400'">
-                                        Toutes les équipes partent à zéro. Chaque manager pioche ses joueurs tour par tour. Mode gestionnaire pur.
-                                    </p>
-                                    <div v-if="form.game_mode === 'draft'"
-                                         class="absolute top-2 right-2 w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center">
-                                        <span class="text-white text-2xs font-bold">✓</span>
-                                    </div>
-                                </button>
+                                </div>
+                                <select
+                                    id="period_package"
+                                    v-model="form.period_package_id"
+                                    class="w-full px-4 py-2.5" :class="fieldClass()"
+                                >
+                                    <option :value="null">Collège (effectif standard)</option>
+                                    <option v-for="pkg in availablePackages" :key="pkg.id" :value="pkg.id">
+                                        📦 {{ pkg.name }} ({{ pkg.teamCount }} équipes, {{ pkg.playerCount }} joueurs)
+                                    </option>
+                                </select>
+                                <p v-if="form.period_package_id" class="text-xs text-slate-400">
+                                    Remplace entièrement l'effectif standard pour cette partie.
+                                </p>
+                                <p v-else-if="form.game_mode === 'draft' && periodPackages.length" class="text-xs text-slate-400">
+                                    Les périodes importées ne sont pas disponibles en mode Draft.
+                                </p>
+                                <p v-if="form.errors.period_package_id" class="text-xs text-rose-500">{{ form.errors.period_package_id }}</p>
                             </div>
-                            <p v-if="form.errors.game_mode" class="text-xs text-rose-500">{{ form.errors.game_mode }}</p>
+
+                            <!-- Mode de jeu (Ligue collège uniquement) -->
+                            <div v-if="form.competition_type === 'college_league'" class="flex flex-col gap-2">
+                                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                    Mode de démarrage
+                                </label>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <button type="button"
+                                            @click="form.game_mode = 'prebuilt'"
+                                            class="relative flex flex-col gap-2 p-4 rounded-xl border-2 transition-all text-left"
+                                            :class="form.game_mode === 'prebuilt'
+                                                ? 'border-teal-500 bg-teal-50 shadow-sm'
+                                                : 'border-slate-200 bg-white hover:border-slate-300'">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-xl">🏟️</span>
+                                            <span class="text-sm font-bold"
+                                                  :class="form.game_mode === 'prebuilt' ? 'text-teal-700' : 'text-slate-700'">
+                                                Effectifs pré-faits
+                                            </span>
+                                        </div>
+                                        <p class="text-[11px] leading-relaxed"
+                                           :class="form.game_mode === 'prebuilt' ? 'text-teal-600' : 'text-slate-400'">
+                                            Chaque équipe démarre avec son effectif Captain Tsubasa classique. Idéal pour jouer directement.
+                                        </p>
+                                        <div v-if="form.game_mode === 'prebuilt'"
+                                             class="absolute top-2 right-2 w-5 h-5 rounded-full bg-teal-500 flex items-center justify-center">
+                                            <span class="text-white text-2xs font-bold">✓</span>
+                                        </div>
+                                    </button>
+
+                                    <button type="button"
+                                            @click="form.game_mode = 'draft'; form.period_package_id = null"
+                                            class="relative flex flex-col gap-2 p-4 rounded-xl border-2 transition-all text-left"
+                                            :class="form.game_mode === 'draft'
+                                                ? 'border-amber-500 bg-amber-50 shadow-sm'
+                                                : 'border-slate-200 bg-white hover:border-slate-300'">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-xl">🎯</span>
+                                            <span class="text-sm font-bold"
+                                                  :class="form.game_mode === 'draft' ? 'text-amber-700' : 'text-slate-700'">
+                                                Draft initial
+                                            </span>
+                                        </div>
+                                        <p class="text-[11px] leading-relaxed"
+                                           :class="form.game_mode === 'draft' ? 'text-amber-600' : 'text-slate-400'">
+                                            Toutes les équipes partent à zéro. Chaque manager pioche ses joueurs tour par tour. Mode gestionnaire pur.
+                                        </p>
+                                        <div v-if="form.game_mode === 'draft'"
+                                             class="absolute top-2 right-2 w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center">
+                                            <span class="text-white text-2xs font-bold">✓</span>
+                                        </div>
+                                    </button>
+                                </div>
+                                <p v-if="form.errors.game_mode" class="text-xs text-rose-500">{{ form.errors.game_mode }}</p>
+                            </div>
                         </div>
 
                         <!-- Spacer -->
@@ -692,3 +697,17 @@ function submit() {
         </Modal>
     </AuthenticatedLayout>
 </template>
+
+<style scoped>
+@media (prefers-reduced-motion: no-preference) {
+    .configuration-wizz {
+        animation: configuration-wizz 10s ease-in-out;
+    }
+}
+
+@keyframes configuration-wizz {
+    0%, 6%, 12%, 46%, 52%, 86%, 92%, 100% { transform: none; }
+    7%, 9%, 47%, 49%, 87%, 89% { transform: translateX(-3px) rotate(-4deg); }
+    8%, 10%, 48%, 50%, 88%, 90% { transform: translateX(3px) rotate(4deg); }
+}
+</style>
