@@ -2,6 +2,7 @@
 import ButtonSecondary from '@/Components/ButtonSecondary.vue';
 import { computed } from 'vue';
 import { STAT_COLORS, usePlayerUtils } from './usePlayerUtils.js';
+import { averageTeamStat, TEAM_STATS } from './teamStats.js';
 import TeamStyleBadges from "@/Pages/GameSaves/Play/components/TeamStyleBadges.vue";
 import DashboardSquadCards from "@/Pages/GameSaves/Play/components/DashboardSquadCards.vue";
 import DashboardSeasonCards from "@/Pages/GameSaves/Play/components/DashboardSeasonCards.vue";
@@ -19,10 +20,6 @@ const props = defineProps({
     standings:     { type: Array,  required: true },
     teamRecord:    { type: Object, required: true },
     teamBudget:    { type: Number, required: true },
-    averageAttack:  { type: Number, required: true },
-    averageDefense: { type: Number, required: true },
-    averageStamina: { type: Number, required: true },
-    averageLuck:    { type: Number, required: true },
     nextMatch:      { type: Object, default: null },
     nextMatchInfo:  { type: Object, default: null },
     isByeWeek:      { type: Boolean, required: true },
@@ -86,34 +83,9 @@ const opponentTeam = computed(() => {
     return oppId ? props.teamById[oppId] ?? null : null;
 });
 
-const opponentContracts = computed(() => {
-    if (!opponentTeam.value) return [];
-    return opponentTeam.value.contracts ?? [];
-});
-
-const opponentAvgAttack = computed(() => {
-    const players = opponentContracts.value.map(c => c.game_player ?? c.gamePlayer).filter(Boolean);
-    if (!players.length) return 0;
-    return Math.round(players.reduce((s, p) => s + Number(p.attack ?? 0), 0) / players.length);
-});
-
-const opponentAvgDefense = computed(() => {
-    const players = opponentContracts.value.map(c => c.game_player ?? c.gamePlayer).filter(Boolean);
-    if (!players.length) return 0;
-    return Math.round(players.reduce((s, p) => s + Number(p.defense ?? 0), 0) / players.length);
-});
-
-const opponentAvgStamina = computed(() => {
-    const players = opponentContracts.value.map(c => c.game_player ?? c.gamePlayer).filter(Boolean);
-    if (!players.length) return 0;
-    return Math.round(players.reduce((s, p) => s + Number(p.stamina ?? 0), 0) / players.length);
-});
-
-const opponentAvgLuck = computed(() => {
-    const players = opponentContracts.value.map(c => c.game_player ?? c.gamePlayer).filter(Boolean);
-    if (!players.length) return 0;
-    return Math.round(players.reduce((s, p) => s + Number(p.luck ?? p.stats?.luck ?? 0), 0) / players.length);
-});
+const opponentPlayers = computed(() => (opponentTeam.value?.contracts ?? [])
+    .map(c => c.game_player ?? c.gamePlayer ?? c.player)
+    .filter(Boolean));
 
 // ==========================
 //   SAISON PROGRESSION
@@ -169,16 +141,16 @@ const lastHeadToHead = computed(() => {
     return m ? { ...resultFor(m, me), week: m.week } : null;
 });
 
-// Forces face à face : écart en faveur de qui ?
-const faceToFace = computed(() => [
-    { label: 'Stamina', me: props.averageStamina, opp: opponentAvgStamina.value, color: 'bg-emerald-400' },
-    { label: 'Chance',  me: props.averageLuck,    opp: opponentAvgLuck.value,    color: STAT_COLORS.luck },
-    { label: 'Attaque', me: props.averageAttack,  opp: opponentAvgAttack.value,  color: 'bg-orange-400' },
-    { label: 'Défense', me: props.averageDefense, opp: opponentAvgDefense.value, color: 'bg-blue-400' },
-]);
+const faceToFace = computed(() => TEAM_STATS.map(({ key, label, color }) => ({
+    key, label,
+    color: color ?? STAT_COLORS[key],
+    me: averageTeamStat(props.roster, key),
+    opp: props.isByeWeek ? null : averageTeamStat(opponentPlayers.value, key),
+})));
+
 // Joueurs adverses à surveiller : meilleur buteur et meilleur duelliste.
 const opponentThreats = computed(() => {
-    const players = opponentContracts.value.map(c => c.game_player ?? c.gamePlayer).filter(Boolean);
+    const players = opponentPlayers.value;
     const statOf  = (p) => props.playerSeasonStats?.[p.id] ?? props.playerSeasonStats?.[String(p.id)] ?? null;
     const best = (pick) => players
         .map(p => ({ player: p, value: Number(pick(statOf(p)) ?? 0) }))
@@ -192,7 +164,6 @@ const opponentThreats = computed(() => {
     ].filter(Boolean);
 });
 
-const statMax = computed(() => Math.max(1, ...faceToFace.value.flatMap(s => [s.me, s.opp])));
 
 // ==========================
 //   RANK STYLE
@@ -501,25 +472,26 @@ const hasPlayed = computed(() => matchesPlayed.value > 0);
                 </h4>
             </div>
             <div class="space-y-2">
-                <div v-for="stat in faceToFace" :key="stat.label" class="grid grid-cols-[2rem_1fr_4.5rem_1fr_2rem] items-center gap-2">
+                <div v-for="stat in faceToFace" :key="stat.key" class="grid grid-cols-[1.75rem_minmax(0,1fr)_4.5rem_minmax(0,1fr)_1.75rem] items-center gap-2">
                     <span class="text-xs font-black text-right"
-                          :class="opponentTeam && !isByeWeek && stat.me > stat.opp ? 'text-emerald-600' : 'text-slate-700'">{{ stat.me }}</span>
+                          :class="stat.me != null && stat.opp != null && stat.me > stat.opp ? 'text-emerald-600' : 'text-slate-700'">{{ stat.me ?? '—' }}</span>
                     <!-- Ma barre (croît vers la gauche) -->
                     <div class="h-2 bg-slate-200 rounded-full overflow-hidden flex justify-end">
-                        <div class="h-full rounded-full" :class="stat.color" :style="{ width: (stat.me / statMax * 100) + '%' }"></div>
+                        <div class="h-full rounded-full" :class="stat.color" :style="{ width: (stat.me ?? 0) + '%' }"></div>
                     </div>
                     <span class="text-[11px] text-slate-500 text-center">{{ stat.label }}</span>
                     <!-- Barre adverse (croît vers la droite) -->
                     <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
-                        <div v-if="opponentTeam && !isByeWeek" class="h-full rounded-full opacity-60" :class="stat.color"
-                             :style="{ width: (stat.opp / statMax * 100) + '%' }"></div>
+                        <div v-if="stat.opp != null" class="h-full rounded-full opacity-60" :class="stat.color"
+                             :style="{ width: stat.opp + '%' }"></div>
                     </div>
                     <span class="text-xs font-black"
-                          :class="opponentTeam && !isByeWeek && stat.opp > stat.me ? 'text-rose-500' : 'text-slate-700'">
-                        {{ opponentTeam && !isByeWeek ? stat.opp : '—' }}
+                          :class="stat.me != null && stat.opp != null && stat.opp > stat.me ? 'text-rose-500' : 'text-slate-700'">
+                        {{ stat.opp ?? '—' }}
                     </span>
                 </div>
             </div>
+            <p class="mt-2 text-2xs text-slate-500">Moyennes des effectifs sur 100 · Arrêt main et Poings calculés sur les gardiens.</p>
             <div v-if="opponentTeam && !isByeWeek && opponentThreats.length"
                  class="mt-3 pt-3 border-t border-slate-200 flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-xs">
                 <span class="text-2xs font-bold text-slate-400 uppercase tracking-wider">À surveiller</span>

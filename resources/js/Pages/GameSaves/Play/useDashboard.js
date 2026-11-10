@@ -105,7 +105,6 @@ export function useDashboard({ teams, gameSave, team, roster, activeInjuries, ac
     const averageAttack  = computed(() => averageStat('attack'));
     const averageDefense = computed(() => averageStat('defense'));
     const averageStamina = computed(() => averageStat('stamina'));
-    const averageLuck    = computed(() => averageStat('luck'));
     const averageSpeed   = computed(() => averageStat('speed'));
 
     return {
@@ -116,6 +115,6 @@ export function useDashboard({ teams, gameSave, team, roster, activeInjuries, ac
         injuriesCountForTeam, suspensionsCountForTeam, cardsCountForTeam,
         isPlayerInjured, isPlayerSuspended,
         playerYellowCards, playerInjury, playerSuspension,
-        averageAttack, averageDefense, averageStamina, averageLuck, averageSpeed,
+        averageAttack, averageDefense, averageStamina, averageSpeed,
     };
 }

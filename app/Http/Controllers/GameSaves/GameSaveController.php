@@ -199,6 +199,8 @@ class GameSaveController extends Controller
                                 'intercept'           => $p['intercept']  ?? 50,
                                 'tackle'              => $p['tackle']     ?? 50,
                                 'heading'             => $p['heading'] ?? HeadingRating::forProfile($p['position'], $p),
+                                'hand_save'           => $p['hand_save'] ?? 0,
+                                'punch_save'          => $p['punch_save'] ?? 0,
                             ],
                         ];
                     })

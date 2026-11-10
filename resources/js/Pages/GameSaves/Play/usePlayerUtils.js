@@ -18,7 +18,7 @@ export const STAT_COLORS = {
     shot: 'bg-red-400', pass: 'bg-teal-400', dribble: 'bg-yellow-400',
     attack: 'bg-orange-400', defense: 'bg-blue-400', speed: 'bg-sky-400',
     block: 'bg-indigo-400', intercept: 'bg-purple-400', tackle: 'bg-pink-400',
-    stamina: 'bg-emerald-400', luck: 'bg-lime-400', hand_save: 'bg-violet-400', punch_save: 'bg-fuchsia-400',
+    heading: 'bg-cyan-400', stamina: 'bg-emerald-400', luck: 'bg-lime-400', hand_save: 'bg-violet-400', punch_save: 'bg-fuchsia-400',
 };
 
 const KEY_STATS_BY_POSITION = {
@@ -73,6 +73,22 @@ export function averageOverall(players) {
     return Math.round(players.reduce((sum, player) => sum + overallOf(player), 0) / players.length);
 }
 
+export const positionGroup = (pos) => {
+    const p = (pos ?? '').toUpperCase();
+    if (p.includes('GK')  || p.includes('GOAL')) return 'GK';
+    if (p.includes('DEF') || p.includes('BACK')) return 'DEF';
+    if (p.includes('MDF') || p.includes('MID') || p.includes('MOF')) return 'MID';
+    if (p.includes('ATT') || p.includes('FOR') || p.includes('FORWARD')) return 'ATT';
+    return 'OTHER';
+};
+
+const keyStatsFor = (pos) => {
+    const g = positionGroup(pos);
+    return KEY_STATS_BY_POSITION[g] ?? ['attack', 'defense', 'pass', 'shot'];
+};
+
+const positionLabel = (pos) => POSITION_LABELS[pos] ?? pos ?? '';
+
 export function usePlayerUtils() {
     // Mode Pixel : les photos pointent vers leur variante pixel art si activé.
     const { photoSrc } = usePixelArt();
@@ -97,21 +113,6 @@ export function usePlayerUtils() {
         return '/storage/' + path;
     };
 
-    const positionGroup = (pos) => {
-        const p = (pos ?? '').toUpperCase();
-        if (p.includes('GK')  || p.includes('GOAL')) return 'GK';
-        if (p.includes('DEF') || p.includes('BACK')) return 'DEF';
-        if (p.includes('MDF') || p.includes('MID') || p.includes('MOF')) return 'MID';
-        if (p.includes('ATT') || p.includes('FOR') || p.includes('FORWARD')) return 'ATT';
-        return 'OTHER';
-    };
-
-    const keyStatsFor = (pos) => {
-        const g = positionGroup(pos);
-        return KEY_STATS_BY_POSITION[g] ?? ['attack', 'defense', 'pass', 'shot'];
-    };
-
-    const positionLabel = (pos) => POSITION_LABELS[pos] ?? pos ?? '';
     const positionGroupColor = (pos) => positionGroupClass(positionGroup(pos));
 
     const statLabel = (k) => STAT_LABELS[k] ?? k;

@@ -105,50 +105,55 @@
                                     </div>
                                 </div>
 
-                                <div class="grid gap-2 text-xs" :class="teamRating ? 'grid-cols-2' : 'grid-cols-1'">
-                                    <div v-if="teamRating" class="bg-slate-50 rounded-lg p-2.5 text-center"
-                                         :title="`Niveau du onze probable ${teamRating.level} · moral ${signedPct(teamRating.morale)} · endurance ${signedPct(teamRating.stamina)}`">
-                                        <div class="text-lg font-black text-violet-600">{{ teamRating.note }}</div>
-                                        <div class="text-slate-400 font-semibold">Note d'équipe</div>
-                                        <div class="mt-0.5 text-[10px] leading-snug text-slate-400">
-                                            <div>niveau {{ teamRating.level }}</div>
-                                            <div>moral {{ signedPct(teamRating.morale) }} · endur. {{ signedPct(teamRating.stamina) }}</div>
-                                        </div>
-                                    </div>
-                                    <!-- Budget et effectif regroupés -->
-                                    <div class="bg-slate-50 rounded-lg p-2.5 text-center">
-                                        <div class="text-lg font-black text-teal-600">{{ startBudget.toLocaleString('fr-FR') }} <GameBanknote /></div>
-                                        <div class="text-slate-400 font-semibold">Budget de départ</div>
-                                        <div class="mt-0.5 text-[10px] leading-snug text-slate-400">{{ roster.length }} joueur{{ roster.length > 1 ? 's' : '' }} sous contrat</div>
-                                    </div>
+                                <div class="rounded-lg bg-slate-50 p-2.5 text-center text-xs">
+                                    <div class="text-lg font-black text-teal-600">{{ startBudget.toLocaleString('fr-FR') }} <GameBanknote /></div>
+                                    <div class="font-semibold text-slate-400">Budget de départ</div>
+                                    <div class="mt-0.5 text-[10px] leading-snug text-slate-400">{{ roster.length }} joueur{{ roster.length > 1 ? 's' : '' }} sous contrat</div>
                                 </div>
                             </div>
 
                             <!-- Stats moyennes (prebuilt uniquement) -->
                             <div v-if="gameMode !== 'draft'" class="border border-slate-200 rounded-xl bg-white p-4">
-                                <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-3">Forces</h4>
-                                <div class="space-y-2">
-                                    <div v-for="stat in [
-                    { label: 'Attaque',  val: avgAttack,  color: 'bg-orange-400' },
-                    { label: 'Défense',  val: avgDefense, color: 'bg-blue-400'   },
-                    { label: 'Stamina',  val: avgStamina, color: 'bg-emerald-400'},
-                    { label: 'Vitesse',  val: avgSpeed,   color: 'bg-sky-400'    },
-                ]" :key="stat.label" class="flex items-center gap-2 text-xs">
-                                        <span class="w-14 text-slate-500 shrink-0">{{ stat.label }}</span>
-                                        <div class="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                            <div class="h-full rounded-full" :class="stat.color"
-                                                 :style="{ width: Math.min(stat.val, 100) + '%' }"></div>
+                                <div class="flex items-center justify-between gap-2">
+                                    <h4 class="text-2xs font-bold uppercase tracking-wider text-slate-400">Forces</h4>
+                                    <button type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-teal-500"
+                                            :aria-expanded="showTeamStats" aria-controls="team-selection-stats"
+                                            :aria-label="showTeamStats ? 'Masquer les statistiques' : 'Afficher les statistiques'"
+                                            :title="showTeamStats ? 'Masquer les statistiques' : 'Afficher les statistiques'"
+                                            @click="showTeamStats = !showTeamStats">
+                                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                             class="h-4 w-4" :class="{ 'rotate-180': showTeamStats }">
+                                            <path d="m6 9 6 6 6-6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div v-show="showTeamStats" id="team-selection-stats" class="mt-2">
+                                    <div class="space-y-2">
+                                        <div v-for="stat in teamStats" :key="stat.key" class="flex items-center gap-2 text-xs">
+                                            <span class="w-16 text-slate-500 shrink-0">{{ stat.label }}</span>
+                                            <div class="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                                <div class="h-full rounded-full" :class="stat.color"
+                                                     :style="{ width: Math.min(stat.value ?? 0, 100) + '%' }"></div>
+                                            </div>
+                                            <span class="w-9 shrink-0 whitespace-nowrap text-right font-black" :class="stat.text ?? 'text-slate-600'">
+                                                {{ stat.value ?? (stat.key === 'luck' && roster.length ? 'À tirer' : '—') }}
+                                            </span>
                                         </div>
-                                        <span class="w-6 text-right font-black text-slate-600">{{ stat.val }}</span>
                                     </div>
-                                    <div v-if="avgMorale != null" class="flex items-center gap-2 text-xs pt-1 border-t border-slate-100">
-                                        <span class="w-14 text-slate-500 shrink-0">Moral</span>
-                                        <div class="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                            <div class="h-full rounded-full" :class="moraleState(avgMorale).bar"
-                                                 :style="{ width: Math.min(avgMorale, 100) + '%' }"></div>
+                                    <p v-if="roster.length" class="mt-3 text-2xs text-slate-500">
+                                        Arrêt main et Poings sont calculés sur les gardiens.
+                                        <template v-if="gameConfig?.initial_stamina_random !== false">L’endurance affichée est la note de référence avant le tirage de départ.</template>
+                                    </p>
+                                </div>
+                                <div v-if="teamRating" class="mt-3 flex items-center justify-between gap-2 border-t border-slate-200 pt-3"
+                                     :title="`Niveau du onze probable ${teamRating.level} · moral ${signedPct(teamRating.morale)} · endurance ${signedPct(teamRating.stamina)}`">
+                                    <div>
+                                        <div class="text-xs font-semibold text-slate-700">Note globale</div>
+                                        <div class="mt-0.5 text-2xs text-slate-500">
+                                            Niveau {{ teamRating.level }} · moral {{ signedPct(teamRating.morale) }} · endur. {{ signedPct(teamRating.stamina) }}
                                         </div>
-                                        <span class="w-6 text-right font-black" :class="moraleState(avgMorale).text">{{ avgMorale }}</span>
                                     </div>
+                                    <strong class="text-lg text-violet-600">{{ teamRating.note }}</strong>
                                 </div>
                             </div>
 
@@ -157,7 +162,7 @@
                                 <h4 class="text-2xs font-bold text-amber-600 uppercase tracking-wider mb-2">🎯 Mode Draft</h4>
                                 <div class="space-y-2 text-xs text-amber-700">
                                     <p>L'équipe démarre <span class="font-bold">sans joueur</span>. Tu construiras ton effectif lors du draft.</p>
-                                    <p>Chaque équipe reçoit un <span class="font-bold">bonus de 5 000 <GameBanknote /></span> pour recruter.</p>
+                                    <p>Chaque équipe reçoit une <span class="font-bold">enveloppe de {{ draftBudget }} <GameBanknote /></span> réservée au recrutement pendant la draft.</p>
                                     <p>Ordre de pioche : <span class="font-bold">aléatoire</span> (tirage au sort).</p>
                                     <p>Objectif : constituer un effectif de <span class="font-bold">14 à 18 joueurs</span>.</p>
                                 </div>
@@ -389,7 +394,7 @@
                                             </div>
                                             <div class="flex items-start gap-2">
                                                 <span class="text-amber-500 font-bold shrink-0">4.</span>
-                                                <p>Ton budget total : <span class="font-bold">{{ startBudget + 5000 }} <GameBanknote /></span> (budget de départ + bonus draft).</p>
+                                                <p>Budget de draft : <span class="font-bold">{{ draftBudget }} <GameBanknote /></span>. Budget de départ en saison : <span class="font-bold">{{ startBudget }} <GameBanknote /></span>.</p>
                                             </div>
                                         </div>
                                     </div>
@@ -494,7 +499,8 @@ import RadarChart from '@/Pages/GameSaves/Play/components/RadarChart.vue';
 import StatBars from '@/Pages/GameSaves/Play/components/StatBars.vue';
 import SecondaryPositions from '@/Pages/GameSaves/Play/components/SecondaryPositions.vue';
 import TeamStyleBadges from '@/Pages/GameSaves/Play/components/TeamStyleBadges.vue';
-import { usePlayerUtils } from '@/Pages/GameSaves/Play/usePlayerUtils.js';
+import { STAT_COLORS, usePlayerUtils } from '@/Pages/GameSaves/Play/usePlayerUtils.js';
+import { averageTeamStat, TEAM_STATS } from '@/Pages/GameSaves/Play/teamStats.js';
 
 const props = defineProps({
     label:    { type: String, default: null },
@@ -519,6 +525,7 @@ const props = defineProps({
 
 const searchQuery  = ref('');
 const selectedTeam = ref(null);
+const showTeamStats = ref(true);
 
 // Helpers d'affichage partagés (cohérence avec le reste de l'app, cf. dashboard / effectif).
 const {
@@ -657,22 +664,33 @@ function startWithTeam() {
 // ==========================
 //   STATS
 // ==========================
-const avgStat = (key) => {
-    if (!roster.value.length) return 0;
-    const sum = roster.value.reduce((acc, p) => acc + Number(p[key] ?? p.stats?.[key] ?? 0), 0);
-    return Math.round(sum / roster.value.length);
+const draftBudget = computed(() => props.gameConfig?.draft_budget ?? 5000);
+const avgStat = (key) => averageTeamStat(roster.value, key);
+const previewStat = (key) => {
+    if (!roster.value.length) return null;
+    if (key === 'luck' && props.gameConfig?.luck_random === false) return 50;
+    if (key === 'stamina' && props.gameConfig?.initial_stamina_random === false) return 100;
+    return avgStat(key);
 };
-
-const avgAttack  = computed(() => avgStat('attack'));
-const avgDefense = computed(() => avgStat('defense'));
-const avgStamina = computed(() => avgStat('stamina'));
-const avgSpeed   = computed(() => avgStat('speed'));
-
 // Moral moyen prévisualisé (null si l'option "moral aléatoire" est désactivée).
 const avgMorale = computed(() => {
     const values = roster.value.map(p => p.morale_preview).filter(v => v != null);
     if (!values.length) return null;
     return Math.round(values.reduce((a, v) => a + Number(v), 0) / values.length);
+});
+
+const teamStats = computed(() => {
+    const rows = TEAM_STATS.map(({ key, label, color }) => ({
+        key, label,
+        color: color ?? STAT_COLORS[key],
+        value: previewStat(key),
+    }));
+    if (avgMorale.value != null) {
+        const morale = moraleState(avgMorale.value);
+        const afterStamina = rows.findIndex(stat => stat.key === 'stamina') + 1;
+        rows.splice(afterStamina, 0, { key: 'morale', label: 'Moral', value: avgMorale.value, color: morale.bar, text: morale.text });
+    }
+    return rows;
 });
 
 // ==========================
@@ -738,7 +756,7 @@ const RADAR_STATS = [
     { key: 'dribble', label: 'Dribble' },
     { key: 'defense', label: 'Défense' },
     { key: 'speed',   label: 'Vitesse' },
-    { key: 'stamina', label: 'Stamina' },
+    { key: 'stamina', label: 'Endurance' },
 ];
 
 const radarPoints = computed(() => {
