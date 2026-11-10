@@ -69,4 +69,11 @@ trait EvaluatesPlayers
 
         return (int) round($score);
     }
+    protected function recruitmentReadiness($player, float $staminaWeight): float
+    {
+        return (($player->stamina ?? 100) - 80) * $staminaWeight
+            + (($player->morale ?? 60) - 60) * 0.07
+            + (($player->luck ?? 50) - 50) * 0.02;
+    }
+
 }

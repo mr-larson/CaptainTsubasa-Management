@@ -169,7 +169,7 @@ const verdictOutcomeLabel = (o) => ({
             </p>
             <ul class="text-xs text-slate-600 space-y-1 list-disc pl-4">
                 <li><strong>Ordre « serpent »</strong> : l'ordre des équipes s'inverse à chaque tour, pour équilibrer les choix.</li>
-                <li><strong>Budget</strong> : chaque équipe reçoit un bonus de draft. Le coût d'un joueur = salaire hebdo × semaines de la saison × <strong>réduction de 50 %</strong>.</li>
+                <li><strong>Budget</strong> : chaque équipe dispose d’une enveloppe réservée à la draft. Le prix total est affiché avant chaque choix. Les joueurs aux salaires modestes bénéficient d’une réduction plus importante.</li>
                 <li><strong>Effectif</strong> : entre 14 (minimum pour terminer) et 18 joueurs. Tu peux clôturer ta draft dès 14.</li>
                 <li><strong>Relation coach</strong> : un joueur en rupture avec toi peut refuser d'être drafté par ton équipe.</li>
                 <li>Clique sur le nom d'un joueur pour voir sa fiche complète (stats, radar). Les stats clés de son poste sont surlignées.</li>

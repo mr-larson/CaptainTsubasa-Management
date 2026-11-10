@@ -7,12 +7,14 @@ import H2 from '@/Components/H2.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { alertDialog } from '@/Composables/useDialog.js';
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue';
-import TeamStyleBadges from '@/Pages/GameSaves/Play/components/TeamStyleBadges.vue';
 import Modal from '@/Components/Modal.vue';
+import TeamStyleBadges from '@/Pages/GameSaves/Play/components/TeamStyleBadges.vue';
 import PlayerPhoto from '@/Components/PlayerPhoto.vue';
 import { usePixelArt } from '@/utils/pixelArt.js';
 import PlayerIdentityCard from '@/Pages/GameSaves/Play/components/PlayerIdentityCard.vue';
-import RadarChart from '@/Pages/GameSaves/Play/components/RadarChart.vue';
+import PlayerComparison from '@/Pages/GameSaves/Play/components/PlayerComparison.vue';
+import { compareRecruits, positionRating, recruitmentSorts } from '@/Pages/GameSaves/Play/recruitment.js';
+import PlayerSpecialMoves from './Play/components/PlayerSpecialMoves.vue';
 import StatBars from '@/Pages/GameSaves/Play/components/StatBars.vue';
 import { usePlayerUtils } from '@/Pages/GameSaves/Play/usePlayerUtils.js';
 import DraftPickAnimation from '@/Pages/GameSaves/Draft/DraftPickAnimation.vue';
@@ -22,15 +24,7 @@ import { positionColor, positionGroup } from '@/Pages/GameSaves/Draft/draftPosit
 
 const { photoSrc } = usePixelArt();
 
-const { keyStatsFor, moraleState } = usePlayerUtils();
-
-// Classe d'une cellule de stat : surlignée si c'est une stat clé du poste du
-// joueur, sinon en gris-noir comme les stats secondaires.
-function statClass(player, key) {
-    return keyStatsFor(player.position).includes(key)
-        ? 'text-amber-600 font-black'
-        : 'text-slate-600 font-semibold';
-}
+const { moraleState, overallOf } = usePlayerUtils();
 
 const props = defineProps({
     gameSave:          { type: Object, required: true },
@@ -67,40 +61,51 @@ const lastPick       = ref(null);
 const showPickAnim   = ref(false);
 const draftCompleted = ref(props.draftState?.completed ?? false);
 const filterPosition = ref('ALL');
-const sortBy         = ref('overall');
-const sortDir        = ref('desc'); // desc = meilleur en premier
-const searchQuery    = ref('');
-
-// Colonnes de stats du tableau (ordre = ordre des <td> du corps).
-const STAT_COLUMNS = [
-    { key: 'speed',      label: 'Vit'   },
-    { key: 'stamina',    label: 'End'   },
-    { key: 'shot',       label: 'Tir'   },
-    { key: 'pass',       label: 'Pass'  },
-    { key: 'dribble',    label: 'Drib'  },
-    { key: 'attack',     label: 'Att'   },
-    { key: 'defense',    label: 'Déf'   },
-    { key: 'tackle',     label: 'Tac'   },
-    { key: 'intercept',  label: 'Int'   },
-    { key: 'block',      label: 'Blk'   },
-    { key: 'heading',    label: 'Hdg'   },
-    { key: 'hand_save',  label: 'Main'  },
-    { key: 'punch_save', label: 'Poing' },
-];
-
-// Clic sur un en-tête : trie sur cette colonne (meilleur d'abord),
-// re-clic sur la même colonne : inverse le sens.
-function setSort(key) {
-    if (sortBy.value === key) {
-        sortDir.value = sortDir.value === 'desc' ? 'asc' : 'desc';
-    } else {
-        sortBy.value  = key;
-        sortDir.value = key === 'name' ? 'asc' : 'desc';
+const sortBy = ref('profile');
+const searchQuery = ref('');
+const maxPrice = ref('');
+const inspectedPlayerId = ref(null);
+const comparison = ref([]);
+const playerDetail = ref(null);
+const rosterModalTeamId = ref(null);
+const rosterModalPlayerId = ref(null);
+const rosterModalTeam = computed(() => props.teams.find(team => team.id === rosterModalTeamId.value));
+const rosterModalPicks = computed(() => pickLog.value.filter(pick => pick.team_id === rosterModalTeamId.value));
+const rosterModalPick = computed(() => rosterModalPicks.value.find(pick => pick.player_id === rosterModalPlayerId.value)
+    ?? rosterModalPicks.value[0]);
+const draftPlayersById = computed(() => {
+    // À l’ouverture de la page, les joueurs déjà piochés sont dans les contrats.
+    // Les picks faits depuis sont encore présents dans le pool initial.
+    const players = new Map(props.freePlayers.map(player => [player.id, player]));
+    for (const team of props.teams) {
+        for (const contract of team.contracts ?? []) {
+            const player = contract.game_player ?? contract.gamePlayer;
+            if (player) players.set(player.id, player);
+        }
     }
+    return players;
+});
+const rosterModalPlayer = computed(() => draftPlayersById.value.get(rosterModalPick.value?.player_id));
+
+function openRosterModal(teamId) {
+    rosterModalPlayerId.value = null;
+    rosterModalTeamId.value = teamId;
 }
 
-const sortIndicator = (key) =>
-    sortBy.value === key ? (sortDir.value === 'desc' ? '▼' : '▲') : '';
+const isComparing = player => comparison.value.some(p => p.id === player.id);
+
+function toggleComparison(player) {
+    comparison.value = isComparing(player)
+        ? comparison.value.filter(p => p.id !== player.id)
+        : [...comparison.value.slice(-1), player];
+}
+
+function inspectPlayer(player) {
+    inspectedPlayerId.value = player.id;
+    if (!window.matchMedia('(min-width: 1280px)').matches) {
+        nextTick(() => playerDetail.value?.scrollIntoView({ block: 'nearest' }));
+    }
+}
 const inspectedTeamId = ref(props.controlledTeamId);
 
 // Rosters locaux par équipe (reconstruits depuis les picks)
@@ -165,11 +170,6 @@ const myBudget = computed(() =>
     teamRosters.value[activeHumanTeamId.value]?.budget ?? 0
 );
 
-const seasonLength = computed(() => {
-    const count = props.teams.length;
-    return count % 2 === 1 ? count * 2 : (count - 1) * 2;
-});
-
 // Joueurs filtrés et triés
 const filteredPlayers = computed(() => {
     let list = availablePlayers.value;
@@ -186,20 +186,11 @@ const filteredPlayers = computed(() => {
         list = list.filter(p => positionGroup(p.position) === filterPosition.value);
     }
 
-    const dir = sortDir.value === 'desc' ? -1 : 1;
-    list = [...list].sort((a, b) => {
-        if (sortBy.value === 'name') {
-            return dir * (a.lastname ?? '').localeCompare(b.lastname ?? '');
-        }
-        const valueOf = (p) => sortBy.value === 'overall' ? overallOf(p)
-            : sortBy.value === 'cost' ? weeklyCost(p)
-            : Number(p[sortBy.value] ?? 0);
-        const va = valueOf(a);
-        const vb = valueOf(b);
-        return dir * (va - vb);
-    });
+    if (maxPrice.value !== '') {
+        list = list.filter(player => draftCost(player) <= Number(maxPrice.value));
+    }
 
-    return list;
+    return [...list].sort((a, b) => compareRecruits(a, b, sortBy.value, draftCost, overallOf));
 });
 
 // Ordre de draft visuel (toutes les équipes dans l'ordre du round courant)
@@ -237,75 +228,19 @@ const inspectedPosCounts = computed(() => {
 // ══════════════════════════════════════
 //  HELPERS
 // ══════════════════════════════════════
-function overallOf(p) {
-    if (!p) return 0;
-    const keys = ['speed','stamina','attack','defense','shot','pass','dribble','block','intercept','tackle'];
-    const vals = keys.map(k => Number(p[k] ?? 0)).filter(v => v > 0);
-    return vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : 0;
-}
-
-// ── Modal détail joueur ──────────────────────────────
-const inspectedPlayer = ref(null);
-
-function openPlayerModal(player) {
-    inspectedPlayer.value = player;
-}
-
-function closePlayerModal() {
-    inspectedPlayer.value = null;
-}
-
-async function pickFromModal(player) {
-    closePlayerModal();
-    await pickPlayer(player);
-}
-
-const compareList = ref([]);
-
-function isComparing(player) {
-    return compareList.value.some(p => p.id === player.id);
-}
-
-function toggleCompare(player) {
-    const idx = compareList.value.findIndex(p => p.id === player.id);
-    if (idx !== -1) {
-        compareList.value.splice(idx, 1);
-        return;
-    }
-    if (compareList.value.length >= 2) compareList.value.shift();
-    compareList.value.push(player);
-}
-
-function clearCompare() {
-    compareList.value = [];
-}
-
-const compareStatRows = [
-    { key: 'overall', label: 'OVR', overall: true },
-    { key: 'speed', label: 'Vitesse' },
-    { key: 'stamina', label: 'Endurance' },
-    { key: 'shot', label: 'Tir' },
-    { key: 'pass', label: 'Passe' },
-    { key: 'dribble', label: 'Dribble' },
-    { key: 'attack', label: 'Attaque' },
-    { key: 'defense', label: 'Défense' },
-    { key: 'tackle', label: 'Tacle' },
-    { key: 'intercept', label: 'Interception' },
-    { key: 'block', label: 'Blocage' },
-    { key: 'heading', label: 'Heading' },
-    { key: 'hand_save', label: 'Main' },
-    { key: 'punch_save', label: 'Poing' },
-];
-
-function compareStatValue(player, key) {
-    if (key === 'overall') return overallOf(player);
-    return Number(player?.[key] ?? 0);
-}
+const inspectedPlayer = computed(() => filteredPlayers.value.find(p => p.id === inspectedPlayerId.value)
+    ?? filteredPlayers.value[0] ?? null);
 
 // Le serveur facture le coût majoré de la polyvalence (adjusted_cost) :
 // prix affiché, tri et « abordable » doivent suivre la même base.
 const weeklyCost = (player) => player?.adjusted_cost ?? player?.cost ?? 0;
-const draftCost  = (player) => Math.floor(weeklyCost(player) * seasonLength.value * 0.5);
+const draftCost = (player) => {
+    if (player.draft_cost != null) return player.draft_cost;
+    // Une page de draft ouverte avant la mise à jour peut encore avoir les anciennes données.
+    const teams = props.teams.length;
+    const weeks = teams < 2 ? 28 : teams % 2 === 1 ? teams * 2 : (teams - 1) * 2;
+    return Math.floor(weeklyCost(player) * weeks / 2);
+};
 
 function canAfford(player) {
     return draftCost(player) <= myBudget.value;
@@ -519,19 +454,6 @@ onMounted(() => {
         <div class="min-h-full bg-slate-50 p-2 sm:p-4">
             <div class="max-w-7xl mx-auto">
 
-                <!-- ══════ HEADER ══════ -->
-                <div class="text-center mb-6">
-                    <div class="text-xs font-bold text-amber-500 uppercase tracking-widest mb-1">
-                        🎯 Draft — Saison {{ gameSave.season }}
-                    </div>
-                    <h1 class="text-2xl font-black text-slate-700">
-                        Tour {{ draft?.round ?? 1 }} — Pick {{ (draft?.current_pick_index ?? 0) + 1 }} / {{ draft?.order?.length ?? 0 }}
-                    </h1>
-                    <p class="text-sm text-slate-400 mt-1">
-                        {{ availablePlayers.length }} joueurs disponibles
-                    </p>
-                </div>
-
                 <!-- ══════ PICK ANIMATION OVERLAY ══════ -->
                 <DraftPickAnimation :show="showPickAnim" :pick="lastPick" :highlight="!!lastPick && isHumanTeam(lastPick.team_id)" />
 
@@ -556,14 +478,14 @@ onMounted(() => {
                         <div class="col-span-1 lg:col-span-3 flex flex-col gap-4">
 
                             <!-- Mon équipe -->
-                            <div class="border border-amber-200 rounded-xl bg-amber-50 p-3">
+                            <div class="rounded-xl border border-slate-200 bg-white p-3">
                                 <div class="flex items-center gap-2 mb-2">
                                     <div class="w-8 h-8 rounded-lg overflow-hidden bg-white border border-slate-200 shrink-0">
-                                        <img loading="lazy" decoding="async" v-if="teamLogoUrl(myTeam)" :src="teamLogoUrl(myTeam)" class="w-full h-full object-contain" alt=""/>
+                                        <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(myTeam)" :src="teamLogoUrl(myTeam)" class="w-full h-full" alt=""/>
                                     </div>
                                     <div>
-                                        <div class="text-xs font-bold text-amber-700">{{ myTeam?.name }}</div>
-                                        <div class="text-2xs text-amber-500">{{ myRosterCount }}/18 joueurs • Budget draft {{ myBudget }} <GameBanknote /></div>
+                                        <div class="text-xs font-bold text-teal-700">{{ myTeam?.name }}</div>
+                                        <div class="text-2xs text-teal-500">{{ myRosterCount }}/18 joueurs • Budget draft {{ myBudget }} <GameBanknote /></div>
                                     </div>
                                 </div>
                                 <TeamStyleBadges :team="myTeam" size="sm" />
@@ -594,7 +516,7 @@ onMounted(() => {
 
                                 <!-- Sélecteur équipe -->
                                 <select v-model="inspectedTeamId"
-                                        class="w-full px-2 py-1 mb-2" :class="fieldClass({ shape: 'rect', size: 'sm' })">
+                                        class="w-full px-2 py-1 mb-2" :class="fieldClass({ shape: 'rect', size: 'sm', border: 'border-slate-200' })">
                                     <option v-for="t in draftOrderTeams" :key="t.id" :value="t.id">
                                         {{ t.name }} ({{ t.rosterCount }})
                                     </option>
@@ -624,47 +546,52 @@ onMounted(() => {
 
                             <!-- Ordre de draft -->
                             <DraftOrderList :teams="draftOrderTeams" :round="draft?.round ?? 1"
-                                            :is-human-team="isHumanTeam" :team-logo-url="teamLogoUrl" />
+                                            :is-human-team="isHumanTeam" :team-logo-url="teamLogoUrl"
+                                            @inspect-team="openRosterModal" />
 
                             <!-- Log des derniers picks -->
                             <DraftPickLog :picks="pickLog" :is-human-team="isHumanTeam" />
                         </div>
 
                         <!-- ══════ COL CENTRALE + DROITE : Joueurs ══════ -->
-                        <div class="col-span-1 lg:col-span-9">
+                        <div class="col-span-1 flex min-w-0 flex-col lg:col-span-9">
 
-                            <!-- Qui pioche ? -->
-                            <div class="border rounded-xl p-4 mb-4 text-center"
-                                 :class="isMyTurn
-                                     ? 'border-amber-300 bg-amber-50'
-                                     : 'border-slate-200 bg-white'">
-                                <div v-if="isProcessing && !isMyTurn" class="flex items-center justify-center gap-3">
-                                    <div class="relative w-8 h-8 rounded-full bg-slate-50 border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
-                                        <img loading="lazy" decoding="async" v-if="teamLogoUrl(currentTeam)" :src="teamLogoUrl(currentTeam)" class="w-full h-full object-contain" alt=""/>
-                                        <span v-else class="text-xs text-slate-400">{{ (currentTeam?.name || '?').charAt(0) }}</span>
-                                        <div class="absolute inset-0 rounded-full border-2 border-slate-300 border-t-slate-600 animate-spin"></div>
+                            <div class="mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-xl border border-slate-200 bg-white px-4 py-3">
+                                <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                                    <h1 class="text-sm font-bold text-slate-700">
+                                        Tour {{ draft?.round ?? 1 }} — Pick {{ (draft?.current_pick_index ?? 0) + 1 }} / {{ draft?.order?.length ?? 0 }}
+                                    </h1>
+                                    <p class="text-xs text-slate-500">{{ availablePlayers.length }} joueurs disponibles</p>
+                                </div>
+                                <div role="status">
+                                    <div v-if="isProcessing && !isMyTurn" class="flex items-center gap-2">
+                                        <div class="relative w-8 h-8 rounded-full bg-slate-50 border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
+                                            <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(currentTeam)" :src="teamLogoUrl(currentTeam)" class="w-full h-full" alt=""/>
+                                            <span v-else class="text-xs text-slate-400">{{ (currentTeam?.name || '?').charAt(0) }}</span>
+                                            <div class="absolute inset-0 rounded-full border-2 border-slate-200 border-t-slate-600 animate-spin"></div>
+                                        </div>
+                                        <span class="text-sm font-bold text-slate-600">
+                                            {{ currentTeam?.name ?? '—' }} est en train de choisir...
+                                        </span>
                                     </div>
-                                    <span class="text-sm font-bold text-slate-600">
-                                        {{ currentTeam?.name ?? '—' }} est en train de choisir...
-                                    </span>
-                                </div>
-                                <div v-else-if="aiStalled && !isMyTurn" class="flex flex-col items-center gap-2">
-                                    <span class="text-sm font-bold text-rose-600">
-                                        Le draft de {{ currentTeam?.name ?? 'l\'IA' }} ne progresse plus.
-                                    </span>
-                                    <button type="button" @click="retryAiPicks"
-                                            class="px-4 py-1.5 rounded-full text-xs font-bold bg-slate-700 text-white hover:bg-slate-600">
-                                        Réessayer
-                                    </button>
-                                </div>
-                                <div v-else-if="isMyTurn" class="text-lg font-black text-amber-700">
-                                    🎯 <span v-if="humanTeamIds.length > 1">{{ myTeam?.name }} — à toi de piocher !</span>
-                                    <span v-else>C'est ton tour ! Choisis un joueur.</span>
+                                    <div v-else-if="aiStalled && !isMyTurn" class="flex flex-wrap items-center gap-2">
+                                        <span class="text-sm font-bold text-rose-600">
+                                            Le draft de {{ currentTeam?.name ?? 'l\'IA' }} ne progresse plus.
+                                        </span>
+                                        <button type="button" @click="retryAiPicks"
+                                                class="px-4 py-1.5 rounded-full text-xs font-bold bg-slate-700 text-white hover:bg-slate-600">
+                                            Réessayer
+                                        </button>
+                                    </div>
+                                    <div v-else-if="isMyTurn" class="text-sm font-bold text-teal-700">
+                                        🎯 <span v-if="humanTeamIds.length > 1">{{ myTeam?.name }} — à toi de piocher !</span>
+                                        <span v-else>C'est ton tour ! Choisis un joueur.</span>
+                                    </div>
                                 </div>
                             </div>
                             <!-- Bouton terminer le draft (à partir de 14 joueurs, ou plus rien d'abordable) -->
                             <div v-if="isMyTurn && canFinishDraft" class="mb-4 text-center">
-                                <p v-if="myRosterCount < MIN_SQUAD" class="mb-2 text-sm text-amber-700">
+                                <p v-if="myRosterCount < MIN_SQUAD" class="mb-2 text-sm text-teal-700">
                                     Plus aucun joueur n'est dans ton budget : tu peux terminer ton draft avec {{ myRosterCount }} joueurs.
                                 </p>
                                 <button @click="finishMyDraft"
@@ -674,164 +601,93 @@ onMounted(() => {
                                 </button>
                             </div>
 
-                            <!-- Filtres -->
-                            <div v-if="isMyTurn" class="flex flex-wrap items-center gap-3 mb-4">
-                                <!-- Recherche -->
-                                <div class="relative flex-1 min-w-[160px]">
-                                    <input type="search" v-model="searchQuery"
-                                           class="w-full pl-14 pr-3 py-2" :class="fieldClass({ size: 'sm' })"
-                                           placeholder="Rechercher un joueur..."/>
-                                </div>
-
-                                <!-- Position -->
-                                <div class="flex rounded-lg overflow-hidden border border-slate-200 text-[11px] font-semibold">
-                                    <button v-for="pos in ['ALL','GK','DEF','MID','ATT']" :key="pos"
-                                            @click="filterPosition = pos"
-                                            class="px-3 py-1.5 transition-all"
-                                            :class="filterPosition === pos
-                                                ? 'bg-amber-500 text-white'
-                                                : 'bg-white text-slate-500 hover:bg-slate-50'">
-                                        {{ pos }}
-                                    </button>
-                                </div>
-
-                                <!-- Tri : clic sur les en-têtes de colonnes du tableau -->
-                                <span class="text-2xs text-slate-400 italic self-center">💡 Clique un en-tête de colonne pour trier</span>
+                            <div v-if="isMyTurn" class="mb-4 flex flex-wrap items-end gap-2">
+                                <label class="min-w-[160px] flex-1 text-xs text-slate-500">
+                                    Rechercher un joueur
+                                    <input v-model="searchQuery" type="search" class="mt-1 w-full" :class="fieldClass({ size: 'sm', border: 'border-slate-200' })" placeholder="Nom ou prénom" />
+                                </label>
+                                <label class="text-xs text-slate-500">
+                                    Poste
+                                    <select v-model="filterPosition" class="mt-1 block" :class="fieldClass({ size: 'sm', border: 'border-slate-200' })">
+                                        <option value="ALL">Tous</option><option value="GK">Gardiens</option>
+                                        <option value="DEF">Défenseurs</option><option value="MID">Milieux</option><option value="ATT">Attaquants</option>
+                                    </select>
+                                </label>
+                                <label class="text-xs text-slate-500">
+                                    Trier par
+                                    <select v-model="sortBy" class="mt-1 block" :class="fieldClass({ size: 'sm', border: 'border-slate-200' })">
+                                        <option v-for="sort in recruitmentSorts" :key="sort.key" :value="sort.key">{{ sort.label }}</option>
+                                    </select>
+                                </label>
+                                <label class="text-xs text-slate-500">
+                                    Prix max. (GL)
+                                    <input v-model.number="maxPrice" type="number" min="0" class="mt-1 block w-24" :class="fieldClass({ size: 'sm', border: 'border-slate-200' })" placeholder="Tous" />
+                                </label>
                             </div>
 
-                            <!-- Grille joueurs -->
-                            <!-- Liste joueurs compacte -->
-                            <div v-if="isMyTurn" class="border border-slate-200 rounded-xl bg-white overflow-hidden">
-                                <div class="max-h-[60vh] overflow-auto">
-                                    <table class="w-full text-xs min-w-[900px]">
-                                        <thead class="sticky top-0 bg-slate-50 border-b border-slate-200 z-10">
-                                        <tr class="text-2xs font-bold text-slate-400 uppercase tracking-wider">
-                                            <th class="py-2 pl-3 pr-1 w-8 text-center" title="Comparer">⚖️</th>
-                                            <th class="text-left py-2 pl-1 pr-2 cursor-pointer select-none hover:text-amber-600 transition-colors"
-                                                :class="sortBy === 'name' ? 'text-amber-600' : ''"
-                                                @click="setSort('name')" tabindex="0" @keydown.enter.prevent="setSort('name')" title="Trier par nom">
-                                                Joueur {{ sortIndicator('name') }}
-                                            </th>
-                                            <th class="text-center py-2 px-1 w-12">Poste</th>
-                                            <th class="text-center py-2 px-1 w-10 cursor-pointer select-none hover:text-amber-600 transition-colors"
-                                                :class="sortBy === 'overall' ? 'text-amber-600' : ''"
-                                                @click="setSort('overall')" tabindex="0" @keydown.enter.prevent="setSort('overall')" title="Trier par note globale">
-                                                OVR {{ sortIndicator('overall') }}
-                                            </th>
-                                            <th class="text-center py-2 px-1 w-12 cursor-pointer select-none hover:text-amber-600 transition-colors"
-                                                :class="sortBy === 'morale' ? 'text-amber-600' : ''"
-                                                @click="setSort('morale')" tabindex="0" @keydown.enter.prevent="setSort('morale')" title="Trier par moral de départ">
-                                                Moral {{ sortIndicator('morale') }}
-                                            </th>
-                                            <th v-for="col in STAT_COLUMNS" :key="col.key"
-                                                class="text-center py-2 px-1 w-10 cursor-pointer select-none hover:text-amber-600 transition-colors"
-                                                :class="sortBy === col.key ? 'text-amber-600' : ''"
-                                                @click="setSort(col.key)" tabindex="0" @keydown.enter.prevent="setSort(col.key)" :title="`Trier par ${col.label}`">
-                                                {{ col.label }} {{ sortIndicator(col.key) }}
-                                            </th>
-                                            <th class="text-right py-2 px-2 w-16 cursor-pointer select-none hover:text-amber-600 transition-colors"
-                                                :class="sortBy === 'cost' ? 'text-amber-600' : ''"
-                                                @click="setSort('cost')" tabindex="0" @keydown.enter.prevent="setSort('cost')" title="Trier par coût">
-                                                Coût {{ sortIndicator('cost') }}
-                                            </th>
-                                            <th class="py-2 px-2 w-20"></th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        <tr v-for="player in filteredPlayers" :key="player.id"
-                                            class="border-b border-slate-50 transition-colors"
-                                            :class="canAfford(player)
-                        ? 'hover:bg-amber-50 cursor-pointer'
-                        : 'opacity-40'">
-
-                                            <!-- Comparer -->
-                                            <td class="py-1.5 pl-3 pr-1 text-center" @click.stop>
-                                                <input type="checkbox"
-                                                       :checked="isComparing(player)"
-                                                       @change="toggleCompare(player)"
-                                                       class="w-3.5 h-3.5 rounded border-slate-300 text-amber-500 focus:ring-amber-400 cursor-pointer"/>
-                                            </td>
-
-                                            <!-- Joueur -->
-                                            <td class="py-1.5 pl-1 pr-2">
-                                                <button type="button" @click.stop="openPlayerModal(player)"
-                                                        class="flex items-center gap-2 text-left group/name"
-                                                        title="Voir la fiche du joueur">
-                                                    <div class="w-7 h-7 rounded-full overflow-hidden bg-slate-200 shrink-0">
-                                                        <img loading="lazy" decoding="async" v-if="player.photo_path" :src="photoSrc(`/storage/${player.photo_path}`)"
-                                                             class="w-full h-full object-cover" alt=""/>
-                                                        <div v-else class="w-full h-full flex items-center justify-center text-3xs text-slate-400">?</div>
-                                                    </div>
-                                                    <div class="min-w-0">
-                                                        <div class="font-semibold text-slate-700 truncate max-w-[120px] group-hover/name:text-amber-600 group-hover/name:underline">
-                                                            {{ player.lastname }}<span v-if="duoOf(player)" :title="duoTitle(player)" class="ml-1">🤝</span>
-                                                        </div>
-                                                        <div class="text-3xs text-slate-400 truncate max-w-[120px]">{{ player.firstname }}</div>
-                                                    </div>
+                            <div v-if="isMyTurn" class="grid min-w-0 gap-4 xl:flex-1 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                                <div class="flex min-w-0 flex-col rounded-xl border border-slate-200 bg-white p-3">
+                                    <h3 class="mb-2 text-xs font-bold text-slate-600">Joueurs disponibles · {{ filteredPlayers.length }}</h3>
+                                    <div class="relative flex-1">
+                                        <div class="max-h-[55vh] space-y-1 overflow-y-auto xl:absolute xl:inset-0 xl:max-h-none">
+                                            <div v-for="player in filteredPlayers" :key="player.id"
+                                                 class="flex items-center gap-2 rounded-lg border pr-2 text-xs"
+                                                 :class="inspectedPlayer?.id === player.id ? 'border-teal-300 bg-teal-50' : 'border-slate-200 hover:bg-slate-50'">
+                                                <button type="button" class="flex min-w-0 flex-1 items-center gap-2 py-2 pl-2 text-left"
+                                                        :aria-pressed="inspectedPlayer?.id === player.id" @click="inspectPlayer(player)">
+                                                    <span class="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-100 text-slate-400 shadow-sm">
+                                                        <PlayerPhoto v-if="player.photo_path" :src="photoSrc(`/storage/${player.photo_path}`)"
+                                                                     class="h-full w-full object-cover" alt="" />
+                                                        <svg v-else aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" class="h-4 w-4">
+                                                            <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 2c-4.4 0-8 2.2-8 5v1h16v-1c0-2.8-3.6-5-8-5Z" />
+                                                        </svg>
+                                                    </span>
+                                                    <span class="min-w-0 flex-1">
+                                                        <span class="block truncate font-bold text-slate-700">
+                                                            {{ player.firstname }} {{ player.lastname }}
+                                                            <span v-if="duoOf(player)" :title="duoTitle(player)">🤝</span>
+                                                        </span>
+                                                        <span class="block text-2xs text-slate-500">{{ positionLabel(player.position) }} · Note {{ overallOf(player) }} · End. {{ player.stamina ?? '—' }} · Moral {{ player.morale ?? 60 }}</span>
+                                                    </span>
+                                                    <span class="shrink-0 text-right" :class="canAfford(player) ? 'text-teal-700' : 'text-rose-600'">
+                                                        <strong>{{ draftCost(player) }} <GameBanknote /></strong>
+                                                        <span class="block text-2xs text-slate-500">{{ weeklyCost(player) }} / sem.</span>
+                                                    </span>
                                                 </button>
-                                            </td>
-
-                                            <!-- Poste -->
-                                            <td class="py-1.5 px-1 text-center">
-                        <span :class="positionColor(player.position)"
-                              class="px-1.5 py-0.5 rounded text-3xs font-bold">
-                            {{ positionGroup(player.position) }}
-                        </span>
-                                            </td>
-
-                                            <!-- OVR -->
-                                            <td class="py-1.5 px-1 text-center">
-                        <span class="font-black text-[11px]"
-                              :class="overallOf(player) >= 70 ? 'text-emerald-600'
-                                  : overallOf(player) >= 50 ? 'text-amber-600'
-                                  : 'text-slate-500'">
-                            {{ overallOf(player) }}
-                        </span>
-                                            </td>
-
-                                            <!-- Moral de départ -->
-                                            <td class="py-1.5 px-1 text-center">
-                        <span class="font-black text-2xs tabular-nums"
-                              :class="moraleState(player.morale).text"
-                              :title="`Moral : ${moraleState(player.morale).label}`">
-                            {{ moraleState(player.morale).emoji }} {{ player.morale ?? 60 }}
-                        </span>
-                                            </td>
-
-                                            <!-- Stats — les stats clés du poste sont surlignées -->
-                                            <td class="py-1.5 px-1 text-center" :class="statClass(player, 'speed')">{{ player.speed ?? 0 }}</td>
-                                            <td class="py-1.5 px-1 text-center" :class="statClass(player, 'stamina')">{{ player.stamina ?? 0 }}</td>
-                                            <td class="py-1.5 px-1 text-center" :class="statClass(player, 'shot')">{{ player.shot ?? 0 }}</td>
-                                            <td class="py-1.5 px-1 text-center" :class="statClass(player, 'pass')">{{ player.pass ?? 0 }}</td>
-                                            <td class="py-1.5 px-1 text-center" :class="statClass(player, 'dribble')">{{ player.dribble ?? 0 }}</td>
-                                            <td class="py-1.5 px-1 text-center" :class="statClass(player, 'attack')">{{ player.attack ?? 0 }}</td>
-                                            <td class="py-1.5 px-1 text-center" :class="statClass(player, 'defense')">{{ player.defense ?? 0 }}</td>
-                                            <td class="py-1.5 px-1 text-center" :class="statClass(player, 'tackle')">{{ player.tackle ?? 0 }}</td>
-                                            <td class="py-1.5 px-1 text-center" :class="statClass(player, 'intercept')">{{ player.intercept ?? 0 }}</td>
-                                            <td class="py-1.5 px-1 text-center" :class="statClass(player, 'block')">{{ player.block ?? 0 }}</td>
-                                            <td class="py-1.5 px-1 text-center" :class="statClass(player, 'heading')">{{ player.heading ?? 0 }}</td>
-                                            <td class="py-1.5 px-1 text-center" :class="statClass(player, 'hand_save')">{{ player.hand_save ?? 0 }}</td>
-                                            <td class="py-1.5 px-1 text-center" :class="statClass(player, 'punch_save')">{{ player.punch_save ?? 0 }}</td>
-
-                                            <!-- Coût -->
-                                            <td class="py-1.5 px-2 text-right">
-                                                <span class="font-semibold text-amber-600">{{ draftCost(player) }} <GameBanknote /></span>
-                                                <span class="text-3xs text-slate-400 ml-1">{{ weeklyCost(player) }} <GameBanknote />/sem</span>
-                                            </td>
-
-                                            <!-- Bouton -->
-                                            <td class="py-1.5 px-2">
-                                                <button v-if="canAfford(player)"
-                                                        @click.stop="pickPlayer(player)"
-                                                        :disabled="isProcessing"
-                                                        class="px-2.5 py-1 rounded-lg text-2xs font-bold bg-amber-500 text-white hover:bg-amber-400 transition-all active:scale-95 disabled:opacity-50">
-                                                    Piocher
+                                                <button type="button"
+                                                        class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border bg-white hover:border-teal-500 focus-visible:ring-2 focus-visible:ring-teal-500"
+                                                        :class="isComparing(player) ? 'border-teal-500 text-teal-700 ring-1 ring-teal-500' : 'border-slate-200 text-slate-500'"
+                                                        :aria-pressed="isComparing(player)"
+                                                        :aria-label="`${isComparing(player) ? 'Retirer du comparatif' : 'Ajouter au comparatif'} : ${player.firstname} ${player.lastname}`"
+                                                        :title="isComparing(player) ? 'Retirer du comparatif' : 'Ajouter au comparatif'"
+                                                        @click="toggleComparison(player)">
+                                                    <span aria-hidden="true">⚖️</span>
                                                 </button>
-                                                <span v-else class="text-3xs text-rose-400 font-semibold">Trop cher</span>
-                                            </td>
-                                        </tr>
-                                        </tbody>
-                                    </table>
+                                            </div>
+                                            <p v-if="!filteredPlayers.length" class="p-3 text-xs text-slate-500">Aucun joueur ne correspond aux filtres.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div ref="playerDetail" class="flex min-w-0 flex-col gap-3">
+                                    <template v-if="inspectedPlayer">
+                                        <PlayerIdentityCard :player="inspectedPlayer" :show-captain-badge="false"
+                                                            :subtitle="`${positionLabel(inspectedPlayer.position)} · Note au poste ${positionRating(inspectedPlayer)}`">
+                                            <template #footer>
+                                                <p v-if="inspectedPlayer.description" class="mt-2 text-xs italic text-slate-500">{{ inspectedPlayer.description }}</p>
+                                            </template>
+                                        </PlayerIdentityCard>
+                                        <div class="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white p-3 text-xs">
+                                            <span>Moral <strong :class="moraleState(inspectedPlayer.morale).text">{{ inspectedPlayer.morale ?? 60 }}/100</strong></span>
+                                            <span>Coût draft <strong class="text-teal-700">{{ draftCost(inspectedPlayer) }} <GameBanknote /></strong></span>
+                                            <ButtonPrimary type="button" size="sm" :disabled="isProcessing || !canAfford(inspectedPlayer)" @click="pickPlayer(inspectedPlayer)">
+                                                {{ canAfford(inspectedPlayer) ? 'Piocher' : 'Budget insuffisant' }}
+                                            </ButtonPrimary>
+                                        </div>
+                                        <StatBars :player="inspectedPlayer" highlight-position />
+                                        <PlayerSpecialMoves :moves="inspectedPlayer.special_moves ?? []" names-only show-empty class="flex-1" />
+                                    </template>
+                                    <PlayerComparison v-model="comparison" :cost="draftCost" cost-label="Coût draft" open-on-second />
                                 </div>
                             </div>
 
@@ -844,7 +700,7 @@ onMounted(() => {
                                     <div v-for="(pick, idx) in [...pickLog].reverse().slice(0, 6)" :key="idx"
                                          class="flex items-center gap-3 bg-white border border-slate-200 rounded-lg px-3 py-2">
                                         <div class="h-8 w-8 rounded-full bg-slate-50 border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
-                                            <img loading="lazy" decoding="async" v-if="teamLogoUrl(teams.find(t => t.id === pick.team_id))" :src="teamLogoUrl(teams.find(t => t.id === pick.team_id))" class="w-full h-full object-contain" alt=""/>
+                                            <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(teams.find(t => t.id === pick.team_id))" :src="teamLogoUrl(teams.find(t => t.id === pick.team_id))" class="w-full h-full" alt=""/>
                                             <span v-else class="text-xs text-slate-400">{{ (pick.team_name || '?').charAt(0) }}</span>
                                         </div>
                                         <div class="flex-1 text-left">
@@ -864,86 +720,35 @@ onMounted(() => {
             </div>
         </div>
 
-        <!-- Modal fiche joueur -->
-        <Modal :show="!!inspectedPlayer" maxWidth="2xl" @close="closePlayerModal">
-            <div v-if="inspectedPlayer" class="p-5">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-sm font-bold text-slate-700">Fiche joueur</h3>
-                    <button type="button" @click="closePlayerModal" aria-label="Fermer" class="text-slate-400 hover:text-slate-600 text-lg leading-none">✕</button>
-                </div>
-
-                <div class="flex flex-col gap-3">
-                    <!-- Identité -->
-                    <PlayerIdentityCard :player="inspectedPlayer"
-                                        :showCaptainBadge="false"
-                                        :subtitle="`${positionLabel(inspectedPlayer.position)} • ${draftCost(inspectedPlayer)} billets (${weeklyCost(inspectedPlayer)} billets/sem)`" />
-
-                    <!-- Radar + Barres -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <RadarChart :player="inspectedPlayer" accent="teal" />
-                        <StatBars :player="inspectedPlayer" />
-                    </div>
-
-                    <p v-if="inspectedPlayer.description" class="text-xs text-slate-400 italic">
-                        {{ inspectedPlayer.description }}
-                    </p>
-
-                    <!-- Action : piocher -->
-                    <div v-if="isMyTurn" class="flex justify-end pt-1">
-                        <button v-if="canAfford(inspectedPlayer)"
-                                @click="pickFromModal(inspectedPlayer)"
-                                :disabled="isProcessing"
-                                class="px-4 py-2 rounded-xl text-xs font-bold bg-amber-500 text-white hover:bg-amber-400 transition-all active:scale-95 disabled:opacity-50">
-                            🎯 Piocher ce joueur
+        <Modal :show="!!rosterModalTeam" max-width="2xl" @close="rosterModalTeamId = null">
+            <div class="space-y-4 p-4 sm:p-5">
+                <header class="flex items-center justify-between gap-2">
+                    <h3 class="text-sm font-bold text-slate-700">
+                        {{ rosterModalTeam?.name }} · {{ rosterModalPicks.length }} joueur{{ rosterModalPicks.length > 1 ? 's' : '' }} pioché{{ rosterModalPicks.length > 1 ? 's' : '' }}
+                    </h3>
+                    <button type="button" class="rounded-full px-3 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-100"
+                            @click="rosterModalTeamId = null">Fermer</button>
+                </header>
+                <div v-if="rosterModalPicks.length" class="grid gap-3 sm:grid-cols-2">
+                    <div class="max-h-[55vh] space-y-1 overflow-y-auto rounded-xl border border-slate-200 bg-slate-50 p-2">
+                        <button v-for="pick in rosterModalPicks" :key="pick.player_id" type="button"
+                                class="block w-full rounded-lg border px-2 py-2 text-left text-xs"
+                                :class="rosterModalPick?.player_id === pick.player_id ? 'border-teal-300 bg-teal-50' : 'border-slate-200 bg-white hover:border-slate-200'"
+                                :aria-pressed="rosterModalPick?.player_id === pick.player_id"
+                                @click="rosterModalPlayerId = pick.player_id">
+                            <span class="block font-semibold text-slate-700">{{ pick.player_name }}</span>
+                            <span class="text-2xs text-slate-500">{{ positionLabel(pick.position) }} · Tour {{ pick.round }} · {{ pick.total_cost ?? pick.cost }} <GameBanknote /></span>
                         </button>
-                        <span v-else class="text-xs text-rose-400 font-semibold self-center">Budget insuffisant</span>
                     </div>
+                    <div v-if="rosterModalPlayer" class="min-w-0 space-y-2">
+                        <PlayerIdentityCard :player="rosterModalPlayer" :show-captain-badge="false"
+                                            :subtitle="`${positionLabel(rosterModalPlayer.position)} · Moral ${rosterModalPlayer.morale ?? 60}/100`" />
+                        <StatBars :player="rosterModalPlayer" highlight-position />
+                    </div>
+                    <p v-else class="text-xs text-slate-500">La fiche détaillée de ce joueur est indisponible.</p>
                 </div>
+                <p v-else class="rounded-xl bg-slate-50 p-4 text-sm text-slate-500">Cette équipe n’a encore pioché aucun joueur.</p>
             </div>
         </Modal>
-
-        <!-- Panneau de comparaison -->
-        <div v-if="compareList.length > 0"
-             class="fixed bottom-4 inset-x-0 z-50 flex justify-center px-4">
-            <div class="bg-white border border-slate-200 shadow-2xl rounded-2xl p-4 w-full max-w-2xl">
-                <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-sm font-bold text-slate-700">Comparaison de joueurs</h3>
-                    <button @click="clearCompare" class="text-xs text-slate-400 hover:text-slate-600 font-semibold">
-                        ✕ Fermer
-                    </button>
-                </div>
-
-                <div v-if="compareList.length < 2" class="text-xs text-slate-400 text-center py-4">
-                    Sélectionne un second joueur (⚖️) pour comparer.
-                </div>
-
-                <div v-else class="overflow-x-auto">
-                <table class="w-full text-xs min-w-[360px]">
-                    <thead>
-                    <tr class="text-slate-500">
-                        <th class="text-left py-1 px-2 font-semibold">Stat</th>
-                        <th class="text-center py-1 px-2 font-bold">{{ compareList[0].lastname }}</th>
-                        <th class="text-center py-1 px-2 font-bold">{{ compareList[1].lastname }}</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr v-for="row in compareStatRows" :key="row.key" class="border-t border-slate-50">
-                        <td class="py-1 px-2 text-slate-500">{{ row.label }}</td>
-                        <td class="py-1 px-2 text-center font-semibold"
-                            :class="compareStatValue(compareList[0], row.key) > compareStatValue(compareList[1], row.key)
-                                ? 'text-emerald-600' : 'text-slate-600'">
-                            {{ compareStatValue(compareList[0], row.key) }}
-                        </td>
-                        <td class="py-1 px-2 text-center font-semibold"
-                            :class="compareStatValue(compareList[1], row.key) > compareStatValue(compareList[0], row.key)
-                                ? 'text-emerald-600' : 'text-slate-600'">
-                            {{ compareStatValue(compareList[1], row.key) }}
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-                </div>
-            </div>
-        </div>
     </AuthenticatedLayout>
 </template>

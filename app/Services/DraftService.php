@@ -15,9 +15,8 @@ class DraftService
 
     public const MIN_SQUAD   = 14;
     public const MAX_SQUAD   = 18;
-    public const DEFAULT_BUDGET = 5000;
 
-    public const DRAFT_DISCOUNT = 0.5; // Les joueurs coûtent moitié prix au draft
+    private const STANDARD_WAGE = 40;
 
     /**
      * Ouvre une enveloppe de recrutement indépendante pour chaque équipe.
@@ -29,6 +28,7 @@ class DraftService
         $state['draft'] = [
             'order'              => array_values($teamIdsOrder),
             'budgets'            => array_fill_keys($teamIdsOrder, $draftBudget),
+            'pricing'            => 'progressive',
             'current_pick_index' => 0,
             'round'              => 1,
             'picks'              => [],
@@ -45,6 +45,19 @@ class DraftService
 
         // Les drafts déjà entamées avec une caisse commune gardent leur solde.
         return (int) ($budgets === null ? $team->budget : ($budgets[$team->id] ?? 0));
+    }
+
+    public function pickCost(GameSave $gameSave, int $salary, int $weeks): int
+    {
+        if (($gameSave->state['draft']['pricing'] ?? null) !== 'progressive') {
+            return intdiv($salary * $weeks, 2);
+        }
+
+        // Allège surtout les recrues abordables ; les plus gros salaires gardent
+        // l’ancien tarif. Le salaire du contrat reste celui du joueur.
+        $quarterUnits = min(2 * $salary, $salary + 2 * max(0, $salary - self::STANDARD_WAGE));
+
+        return intdiv($quarterUnits * $weeks, 4);
     }
 
     /**
@@ -101,7 +114,7 @@ class DraftService
         // Coût = salaire hebdo (majoration polyvalence incluse) × semaines restantes × réduction draft
         $seasonLength = $this->getSeasonLength($gameSave);
         $salary       = $player->adjusted_cost;
-        $totalCost    = (int) floor($salary * $seasonLength * self::DRAFT_DISCOUNT);
+        $totalCost    = $this->pickCost($gameSave, $salary, $seasonLength);
 
         $budget = self::budgetFor($gameSave, $team);
         if ($totalCost > $budget) return null;
@@ -359,7 +372,7 @@ class DraftService
             ->excludingFictional()
             ->visibleForConfig($gameSave)
             ->get()
-            ->contains(fn ($p) => (int) floor($p->adjusted_cost * $seasonLength * self::DRAFT_DISCOUNT) <= $budget
+            ->contains(fn ($p) => $this->pickCost($gameSave, $p->adjusted_cost, $seasonLength) <= $budget
                 && !$this->playerRefusesTeam($gameSave, $p, (int) $team->id));
     }
 

@@ -323,27 +323,17 @@ class AITransferService
         // aligné à ce poste), ou son poste naturel en repli "ANY".
         $evalPos = $positionGroup !== 'ANY' ? $positionGroup : null;
 
-        return match ($philosophy) {
-            // Stars : le meilleur joueur absolu, peu importe le prix
-            TeamStyle::PHILOSOPHY_STARS => $candidates
-                ->sortByDesc(fn($p) => $this->playerOverall($p, $evalPos))
-                ->first(),
+        return $candidates->sortByDesc(function (GamePlayer $player) use ($philosophy, $evalPos, $teamAvgOverall) {
+            $overall = $this->playerOverall($player, $evalPos);
+            $score = match ($philosophy) {
+                TeamStyle::PHILOSOPHY_STARS => $overall,
+                TeamStyle::PHILOSOPHY_COLLECTIVE => -abs($overall - $teamAvgOverall),
+                TeamStyle::PHILOSOPHY_ECONOMIST => $overall * 0.5 + min(25, 8 * $overall / max(10, $player->adjusted_cost)),
+                default => $this->scoreBalanced($player, $teamAvgOverall, $evalPos),
+            };
 
-            // Collectif : le plus proche de la moyenne équipe (homogénéité)
-            TeamStyle::PHILOSOPHY_COLLECTIVE => $candidates
-                ->sortBy(fn($p) => abs($this->playerOverall($p, $evalPos) - $teamAvgOverall))
-                ->first(),
-
-            // Économe : meilleur ratio overall / coût (bonnes affaires)
-            TeamStyle::PHILOSOPHY_ECONOMIST => $candidates
-                ->sortByDesc(fn($p) => $this->playerOverall($p, $evalPos) / max(1, $p->cost ?? 1))
-                ->first(),
-
-            // Équilibré : préfère légèrement au-dessus de la moyenne, sans excès
-            default => $candidates
-                ->sortByDesc(fn($p) => $this->scoreBalanced($p, $teamAvgOverall, $evalPos))
-                ->first(),
-        };
+            return $score + $this->recruitmentReadiness($player, staminaWeight: 0.18);
+        })->first();
     }
 
     // ==========================

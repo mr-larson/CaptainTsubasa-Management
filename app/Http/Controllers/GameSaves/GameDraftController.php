@@ -12,6 +12,7 @@ use App\Models\GameSaves\GameTeam;
 use App\Models\PlayerLink;
 use App\Services\DraftAIService;
 use App\Services\DraftService;
+use App\Services\SeasonService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -44,6 +45,12 @@ class GameDraftController extends Controller
             ->visibleForConfig($gameSave)
             ->orderBy('lastname')
             ->get();
+
+        $draftService = app(DraftService::class);
+        $weeks = SeasonService::lengthForTeamCount($gameTeams->count());
+        foreach ($freePlayers as $player) {
+            $player->draft_cost = $draftService->pickCost($gameSave, $player->adjusted_cost, $weeks);
+        }
 
         return Inertia::render('GameSaves/Draft', [
             'gameSave'         => $gameSave,

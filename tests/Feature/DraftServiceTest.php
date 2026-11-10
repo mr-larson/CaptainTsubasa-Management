@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\GameSaves\GameContract;
+use App\Models\GameSaves\GamePlayer;
 use App\Services\DraftService;
 use App\Services\MoraleService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -21,6 +22,30 @@ class DraftServiceTest extends TestCase
     use BuildsGameWorld;
 
     private DraftService $service;
+
+    public function test_corrected_internationals_respect_draft_visibility_in_existing_saves(): void
+    {
+        $save = $this->makeSave();
+        $babington = $this->makePlayer($save, [
+            'firstname' => 'Juan', 'lastname' => 'Babington', 'origin' => 'captain_tsubasa', 'nationality' => 'Japon',
+        ]);
+        $haan = $this->makePlayer($save, [
+            'firstname' => '', 'lastname' => 'Haan', 'origin' => 'captain_tsubasa', 'nationality' => 'Japon',
+        ]);
+        $japanese = $this->makePlayer($save, ['origin' => 'captain_tsubasa', 'nationality' => 'Japon']);
+
+        $migration = require database_path('migrations/2026_11_10_145000_correct_babington_and_haan_nationalities.php');
+        $migration->up();
+
+        $this->assertSame('Argentine', $babington->fresh()->nationality);
+        $this->assertSame('Pays-Bas', $haan->fresh()->nationality);
+
+        $pool = fn () => GamePlayer::where('game_save_id', $save->id)->visibleForConfig($save)->orderBy('id')->pluck('id')->all();
+        $save->setConfig(['internationals_visible' => false]);
+        $this->assertSame([$japanese->id], $pool());
+        $save->setConfig(['internationals_visible' => true]);
+        $this->assertSame([$babington->id, $haan->id, $japanese->id], $pool());
+    }
 
     protected function setUp(): void
     {
@@ -71,10 +96,39 @@ class DraftServiceTest extends TestCase
 
         // Coût = adjusted_cost × longueur de saison × réduction (1000 × 2 × 0.5 = 1000).
         $this->assertSame(500, (int) $a->fresh()->budget);
-        $this->assertSame(4000, DraftService::budgetFor($save->fresh(), $a->fresh()));
+        $this->assertSame(7000, DraftService::budgetFor($save->fresh(), $a->fresh()));
 
         // La main passe à l'équipe suivante.
         $this->assertSame($b->id, $this->service->getCurrentTeamId($save->fresh()));
+    }
+
+    public function test_draft_budget_defaults_to_the_difficulty_and_accepts_an_override(): void
+    {
+        $save = $this->makeSave();
+        $team = $this->makeTeam($save);
+
+        foreach (['conquest' => 6000, 'standard' => 8000, 'survival' => 10000] as $difficulty => $budget) {
+            $save->setConfig(['career_difficulty' => $difficulty]);
+            $this->service->initDraft($save, [$team->id]);
+            $this->assertSame($budget, DraftService::budgetFor($save, $team));
+        }
+
+        $save->setConfig(['draft_budget' => 6500]);
+        $this->service->initDraft($save, [$team->id]);
+        $this->assertSame(6500, DraftService::budgetFor($save, $team));
+    }
+
+    public function test_new_drafts_discount_modest_salaries_and_older_drafts_keep_their_prices(): void
+    {
+        $save = $this->makeSave();
+        $team = $this->makeTeam($save);
+
+        $this->assertSame(600, $this->service->pickCost($save, 40, 30));
+
+        $this->service->initDraft($save, [$team->id]);
+        $this->assertSame(300, $this->service->pickCost($save, 40, 30));
+        $this->assertSame(525, $this->service->pickCost($save, 50, 30));
+        $this->assertSame(1200, $this->service->pickCost($save, 80, 30));
     }
 
     public function test_pick_order_snakes_between_rounds(): void
@@ -114,7 +168,7 @@ class DraftServiceTest extends TestCase
         $b = $this->makeTeam($save, ['budget' => 100000]);
         $this->service->initDraft($save, [$a->id, $b->id]);
 
-        $expensive = $this->makePlayer($save, ['cost' => 6000]);
+        $expensive = $this->makePlayer($save, ['cost' => 9000]);
 
         $this->assertNull($this->service->executePick($save->fresh(), $expensive->id));
         $this->assertFalse(GameContract::where('game_player_id', $expensive->id)->exists());
@@ -173,7 +227,7 @@ class DraftServiceTest extends TestCase
         [$human] = $this->makeTeamWithSquad($save, ['is_controlled' => true, 'human_seat' => 1, 'budget' => 0], DraftService::MIN_SQUAD - 2);
         $save->update(['controlled_game_team_id' => $human->id]);
         $this->service->initDraft($save, [$human->id]);
-        $this->makePlayer($save, ['cost' => 6000]); // joueur libre, trop cher pour l'enveloppe
+        $this->makePlayer($save, ['cost' => 9000]); // joueur libre, trop cher pour l'enveloppe
 
         $this->assertFalse($this->service->hasAffordablePlayer($save->fresh(), $human->fresh()));
 

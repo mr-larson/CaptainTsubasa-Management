@@ -74,22 +74,40 @@ class DraftAIService
         // Filtrer les joueurs abordables
         // Même base que DraftService::executePick (coût majoré de la polyvalence) :
         // sinon l'IA choisit un joueur que le pick refusera.
-        $discountedCost = fn($p) => (int) floor(($p->adjusted_cost ?? 0) * $seasonLength * DraftService::DRAFT_DISCOUNT);
+        $draftService = app(DraftService::class);
+        $costs = $freePlayers->mapWithKeys(fn ($p) => [$p->id => $draftService->pickCost($gameSave, $p->adjusted_cost, $seasonLength)]);
+        $discountedCost = fn ($p) => $costs[$p->id];
 
         $affordable = $freePlayers->filter(fn($p) =>
             $discountedCost($p) <= $budget
         );
 
-        if ($affordable->isEmpty()) {
-            // Prendre le joueur gratuit le plus fort
-            $freeAgents = $freePlayers->filter(fn($p) => ($p->adjusted_cost ?? 0) === 0);
-            if ($freeAgents->isEmpty()) return null;
-            return $freeAgents->sortByDesc(fn($p) => $this->playerOverall($p))->first()->id;
+        if ($affordable->isEmpty()) return null;
+
+        // Après le prochain choix, garder de quoi atteindre le minimum si le pool le permet.
+        $cheapest = $affordable->sortBy($discountedCost)->take($remaining)->values();
+        if ($cheapest->count() === $remaining) {
+            $reservePlayers = $cheapest->take($remaining - 1)->keyBy('id');
+            $reserve = $reservePlayers->sum($discountedCost);
+            $replacementCost = $discountedCost($cheapest->last());
+            $withinReserve = $affordable->filter(function ($player) use ($budget, $discountedCost, $reservePlayers, $reserve, $replacementCost) {
+                $cost = $discountedCost($player);
+                return $cost + $reserve + ($reservePlayers->has($player->id) ? $replacementCost - $cost : 0) <= $budget;
+            });
+            $affordable = $withinReserve->isNotEmpty() ? $withinReserve : $cheapest;
         }
 
-        // Scorer chaque joueur
         $philosophy    = $team->management_philosophy ?? 'balanced';
         $tacticalStyle = $team->tactical_style        ?? 'balanced';
+        $byPosition = $affordable->groupBy(fn ($p) => $this->positionGroup($p->position ?? ''));
+        $ratings = $affordable->mapWithKeys(fn ($p) => [$p->id => $this->playerOverall($p)]);
+        $bestByPosition = $byPosition->map(fn ($players) => $players->max(fn ($p) => $ratings[$p->id]));
+        $comparableByPosition = $byPosition->map(fn ($players, $pos) =>
+            $players->filter(fn ($p) => $ratings[$p->id] >= $bestByPosition[$pos] - 4)->count()
+        );
+        $needKeeper = $countByPos['GK'] === 0;
+        $keeperOptions = $comparableByPosition['GK'] ?? 0;
+        $starOpening = $needKeeper && $squadSize < 2 && $keeperOptions >= 3 && $philosophy === TeamStyle::PHILOSOPHY_STARS;
         $teamAvg       = $this->avgOverall($currentContracts);
 
         // Duos d'alchimie : partenaires connus des candidats, pour valoriser
@@ -103,15 +121,17 @@ class DraftAIService
             withinSetOnly: false
         );
 
-        $scored = $affordable->map(function ($player) use ($priorityPosition, $philosophy, $tacticalStyle, $teamAvg, $maxCostPerPlayer, $countByPos, $discountedCost, $partnerMap, $squadBaseIds, $poolBaseIds) {
+        $scored = $affordable->map(function ($player) use ($priorityPosition, $philosophy, $tacticalStyle, $teamAvg, $maxCostPerPlayer, $countByPos, $discountedCost, $partnerMap, $squadBaseIds, $poolBaseIds, $ratings, $bestByPosition, $comparableByPosition, $needKeeper, $keeperOptions, $starOpening, $squadSize) {
             $posGroup = $this->positionGroup($player->position ?? '');
-            $overall  = $this->playerOverall($player, $posGroup);
-            $cost     = $player->adjusted_cost ?? 0;
+            $overall  = $ratings[$player->id];
+            $cost     = $discountedCost($player);
             $score    = 0.0;
 
-            // 1. Bonus poste prioritaire (+30)
             if ($posGroup === $priorityPosition) {
-                $score += 30;
+                $score += $starOpening ? 8 : 30;
+            }
+            if ($needKeeper && $posGroup === 'GK' && ($keeperOptions <= 2 || $squadSize >= 3)) {
+                $score += 18;
             }
 
             // 2. Bonus poste en déficit (+15)
@@ -119,13 +139,21 @@ class DraftAIService
             $current = $countByPos[$posGroup] ?? 0;
             if ($current < $target) {
                 $score += 15;
+                if ($overall >= $bestByPosition[$posGroup] - 4) {
+                    $score += max(0, 4 - $comparableByPosition[$posGroup]) * 2;
+                }
+            }
+
+            $score += $this->recruitmentReadiness($player, staminaWeight: 0.08);
+            if ($starOpening && $posGroup !== 'GK') {
+                $score += max(0, $overall - ($bestByPosition['GK'] ?? 0)) * 2;
             }
 
             // 3. Score selon philosophie de gestion
             $score += match ($philosophy) {
                 TeamStyle::PHILOSOPHY_STARS      => $overall * 1.5,
                 TeamStyle::PHILOSOPHY_COLLECTIVE => -abs($overall - $teamAvg) * 2 + $overall,
-                TeamStyle::PHILOSOPHY_ECONOMIST  => ($overall / max(1, $discountedCost($player))) * 50,
+                TeamStyle::PHILOSOPHY_ECONOMIST  => $overall * 0.5 + min(25, 75 * $overall / max(100, $cost)),
                 default                          => $overall + min(15, max(0, $overall - $teamAvg)) * 2,
             };
 
@@ -166,6 +194,9 @@ class DraftAIService
         // Un peu de variété : 70% le meilleur, 25% le 2e, 5% le 3e
         $top = $sorted->values()->take(3);
         $roll = random_int(1, 100);
+
+        // La variété ne doit pas faire choisir un profil très loin derrière.
+        $top = $top->filter(fn ($entry) => $entry['score'] >= $top[0]['score'] - 12)->values();
 
         if ($roll <= 70 || $top->count() < 2) {
             return $top[0]['player']->id;
@@ -221,11 +252,11 @@ class DraftAIService
         $philosophy = $team->management_philosophy ?? 'balanced';
 
         return match ($philosophy) {
-            // Stars : s'arrête tôt, garde du budget pour la saison
+            // Stars : concentre l’enveloppe sur un effectif resserré
             TeamStyle::PHILOSOPHY_STARS      => $squadSize >= 15 || $budget < 500,
             // Collectif : veut un effectif large
             TeamStyle::PHILOSOPHY_COLLECTIVE => $squadSize >= 17,
-            // Économe : s'arrête dès le minimum, préserve le budget
+            // Économe : s’arrête dès le minimum
             TeamStyle::PHILOSOPHY_ECONOMIST  => $squadSize >= 14,
             // Équilibré : effectif raisonnable
             default                          => $squadSize >= 16 || $budget < 300,

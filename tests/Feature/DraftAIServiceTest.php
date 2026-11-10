@@ -73,6 +73,23 @@ class DraftAIServiceTest extends TestCase
         $this->assertTrue($this->service->shouldFinishDraft($team, DraftService::MAX_SQUAD, 100000));
     }
 
+    public function test_draft_ai_reserves_enough_budget_to_finish_its_squad(): void
+    {
+        $save = $this->makeSave();
+        $save->setConfig(['draft_budget' => 3000]);
+        [$team] = $this->makeTeamWithSquad($save, ['management_philosophy' => TeamStyle::PHILOSOPHY_STARS], 12);
+        $opponent = $this->makeTeam($save);
+        app(DraftService::class)->initDraft($save, [$team->id, $opponent->id]);
+
+        $this->makePlayer($save, ['position' => 'Goalkeeper', 'cost' => 2950, 'hand_save' => 90]);
+        $cheap = [
+            $this->makePlayer($save, ['position' => 'Goalkeeper', 'cost' => 100])->id,
+            $this->makePlayer($save, ['position' => 'Forward', 'cost' => 100])->id,
+        ];
+
+        $this->assertContains($this->service->chooseBestPlayer($save, $team), $cheap);
+    }
+
     public function test_should_finish_draft_varies_with_philosophy(): void
     {
         $economist = new GameTeam(['management_philosophy' => TeamStyle::PHILOSOPHY_ECONOMIST]);
