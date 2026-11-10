@@ -15,29 +15,20 @@ class DraftService
 
     public const MIN_SQUAD   = 14;
     public const MAX_SQUAD   = 18;
-    public const DRAFT_BONUS = 5000;
+    public const DEFAULT_BUDGET = 5000;
 
     public const DRAFT_DISCOUNT = 0.5; // Les joueurs coûtent moitié prix au draft
 
     /**
-     * Initialise un état de draft pour l'ordre d'équipes donné :
-     * applique le bonus budget de draft et crée draft state dans le state.
-     * Utilisé pour la draft initiale et les drafts d'intersaison.
+     * Ouvre une enveloppe de recrutement indépendante pour chaque équipe.
      */
     public function initDraft(GameSave $gameSave, array $teamIdsOrder): void
     {
-        $teams = GameTeam::where('game_save_id', $gameSave->id)
-            ->whereIn('id', $teamIdsOrder)
-            ->get();
-
-        foreach ($teams as $gameTeam) {
-            $gameTeam->budget = ($gameTeam->budget ?? 0) + self::DRAFT_BONUS;
-            $gameTeam->save();
-        }
-
+        $draftBudget = (int) $gameSave->getConfig('draft_budget');
         $state = $gameSave->state ?? [];
         $state['draft'] = [
             'order'              => array_values($teamIdsOrder),
+            'budgets'            => array_fill_keys($teamIdsOrder, $draftBudget),
             'current_pick_index' => 0,
             'round'              => 1,
             'picks'              => [],
@@ -46,6 +37,14 @@ class DraftService
         ];
         $gameSave->state = $state;
         $gameSave->save();
+    }
+
+    public static function budgetFor(GameSave $gameSave, GameTeam $team): int
+    {
+        $budgets = $gameSave->state['draft']['budgets'] ?? null;
+
+        // Les drafts déjà entamées avec une caisse commune gardent leur solde.
+        return (int) ($budgets === null ? $team->budget : ($budgets[$team->id] ?? 0));
     }
 
     /**
@@ -104,11 +103,12 @@ class DraftService
         $salary       = $player->adjusted_cost;
         $totalCost    = (int) floor($salary * $seasonLength * self::DRAFT_DISCOUNT);
 
-        if ($totalCost > ($team->budget ?? 0)) return null;
+        $budget = self::budgetFor($gameSave, $team);
+        if ($totalCost > $budget) return null;
 
         // Exécuter le pick
-        $pick = null;
-        DB::transaction(function () use ($gameSave, $team, $player, $salary, $seasonLength, $squadSize, $totalCost, &$pick) {            $isStarter = $squadSize < 11;
+        return DB::transaction(function () use ($gameSave, $team, $player, $salary, $seasonLength, $squadSize, $totalCost, $budget, $state, $draft) {
+            $isStarter = $squadSize < 11;
 
             // Numéro de maillot
             $usedNumbers = GamePlayer::where('game_save_id', $gameSave->id)
@@ -145,8 +145,12 @@ class DraftService
                 'captain_reroll_used_this_action' => false,
             ]);
 
-            $team->budget = max(0, ($team->budget ?? 0) - $totalCost);
-            $team->save();
+            if (isset($draft['budgets'])) {
+                $draft['budgets'][$team->id] = $budget - $totalCost;
+            } else {
+                $team->budget = $budget - $totalCost;
+                $team->save();
+            }
 
             $pick = [
                 'team_id'    => $team->id,
@@ -159,19 +163,15 @@ class DraftService
                 'round'      => $this->getCurrentRound($gameSave),
                 'photo_path' => $player->photo_path,
             ];
+
+            $draft['picks'][] = $pick;
+            $state['draft'] = $draft;
+            $gameSave->state = $state;
+            $gameSave->save();
+            $this->advancePick($gameSave);
+
+            return $pick;
         });
-
-        if (!$pick) return null;
-
-        // Enregistrer le pick et avancer
-        $draft['picks'][] = $pick;
-        $state['draft']   = $draft;
-        $gameSave->state  = $state;
-        $gameSave->save();
-
-        $this->advancePick($gameSave);
-
-        return $pick;
     }
 
     /**
@@ -352,7 +352,7 @@ class DraftService
     public function hasAffordablePlayer(GameSave $gameSave, GameTeam $team): bool
     {
         $seasonLength = $this->getSeasonLength($gameSave);
-        $budget       = (int) ($team->budget ?? 0);
+        $budget       = self::budgetFor($gameSave, $team);
 
         return GamePlayer::where('game_save_id', $gameSave->id)
             ->whereDoesntHave('contracts')
@@ -429,6 +429,7 @@ class DraftService
             $this->organizeTeamLineup($team, $gameSave, $state);
         }
 
+        unset($state['draft']['budgets']);
         $gameSave->phase = 'season';
         $gameSave->state = $state;
         $gameSave->save();

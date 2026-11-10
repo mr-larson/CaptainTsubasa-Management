@@ -112,7 +112,7 @@ function initRosters() {
     props.teams.forEach(t => {
         rosters[t.id] = {
             count:  t.contracts?.length ?? 0,
-            budget: t.budget ?? 0,
+            budget: props.draftState?.budgets?.[t.id] ?? t.budget ?? 0,
             name:   t.name,
         };
     });
@@ -563,7 +563,7 @@ onMounted(() => {
                                     </div>
                                     <div>
                                         <div class="text-xs font-bold text-amber-700">{{ myTeam?.name }}</div>
-                                        <div class="text-2xs text-amber-500">{{ myRosterCount }}/18 joueurs • {{ myBudget }} <GameBanknote /></div>
+                                        <div class="text-2xs text-amber-500">{{ myRosterCount }}/18 joueurs • Budget draft {{ myBudget }} <GameBanknote /></div>
                                     </div>
                                 </div>
                                 <TeamStyleBadges :team="myTeam" size="sm" />

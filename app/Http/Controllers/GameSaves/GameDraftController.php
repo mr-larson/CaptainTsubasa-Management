@@ -102,7 +102,7 @@ class GameDraftController extends Controller
                 ->where('game_team_id', $team->id)
                 ->count();
 
-            if ($aiService->shouldFinishDraft($team, $squadSize, $team->budget ?? 0)) {
+            if ($aiService->shouldFinishDraft($team, $squadSize, DraftService::budgetFor($gameSave, $team))) {
                 $draftService->finishTeamDraft($gameSave, $team->id);
                 $gameSave->refresh();
                 $draftState = $gameSave->state['draft'] ?? [];
@@ -217,6 +217,10 @@ class GameDraftController extends Controller
         // Verrou par save : deux picks concurrents ne peuvent pas signer le même
         // joueur ni consommer deux fois le même tour.
         return $this->withSaveLock($gameSave, function (GameSave $gameSave) {
+            if (!in_array($gameSave->phase, ['draft', 'intersaison_draft'], true)) {
+                return response()->json(['error' => 'Not in draft phase'], 400);
+            }
+
             $draftService = app(DraftService::class);
 
             // Clôturer l'équipe humaine actuellement sur l'horloge (hot-seat), avec

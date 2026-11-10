@@ -5,6 +5,7 @@ namespace App\Models\GameSaves;
 use App\Helpers\PlayerLuck;
 use App\Models\Team;
 use App\Models\User;
+use App\Services\DraftService;
 use App\Services\TrainableSpecialMoves;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -189,6 +190,7 @@ class GameSave extends Model
         'luck_random'               => true,
         // Budget de départ des clubs IA (création du monde uniquement)
         'ai_start_budget'           => 2500,
+        'draft_budget'              => DraftService::DEFAULT_BUDGET,
         // Accès aux autres clubs : composition des équipes IA modifiable depuis « Autres équipes »
         'other_teams_editable'      => false,
     ];
@@ -233,6 +235,7 @@ class GameSave extends Model
             'initial_stamina_random'  => ['boolean'],
             'luck_random'             => ['boolean'],
             'ai_start_budget'         => ['integer', 'min:0', 'max:20000'],
+            'draft_budget'            => ['integer', 'min:3000', 'max:20000'],
             'other_teams_editable'    => ['boolean'],
         ];
 

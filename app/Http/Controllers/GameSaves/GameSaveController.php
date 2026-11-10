@@ -614,27 +614,11 @@ class GameSaveController extends Controller
         // Marché : quelques amateurs libres dès la semaine 1 (filet de sécurité).
         app(\App\Services\AmateurMarketService::class)->ensureFloor($gameSave);
 
-        // 4. Mode draft : bonus budget + init draft state
+        // 4. Mode draft : ordre des équipes et enveloppes de recrutement.
         if ($isDraft) {
-            $draftBonus = 5000;
-            foreach ($gameTeamsByBaseId as $gameTeam) {
-                $gameTeam->budget = ($gameTeam->budget ?? 0) + $draftBonus;
-                $gameTeam->save();
-            }
-
             $teamIds = array_values(array_map(fn($t) => $t->id, $gameTeamsByBaseId));
             shuffle($teamIds);
-
-            $state = $gameSave->state ?? [];
-            $state['draft'] = [
-                'order'              => $teamIds,
-                'current_pick_index' => 0,
-                'round'              => 1,
-                'picks'              => [],
-                'completed'          => false,
-            ];
-            $gameSave->state = $state;
-            $gameSave->save();
+            app(DraftService::class)->initDraft($gameSave, $teamIds);
 
             return redirect()->route('game-saves.draft', $gameSave)
                 ->with('success', 'Partie créée — le draft commence !');
@@ -1246,7 +1230,7 @@ class GameSaveController extends Controller
         $this->authorizeGameSave('update', $gameSave);
 
         // Les options de départ sont définies lors de la création de la sauvegarde.
-        $rules = Arr::except(GameSave::configRules(), ['initial_morale_random', 'initial_stamina_random', 'luck_random', 'ai_start_budget']);
+        $rules = Arr::except(GameSave::configRules(), ['initial_morale_random', 'initial_stamina_random', 'luck_random', 'ai_start_budget', 'draft_budget']);
         $data  = GameSave::sanitizeConfig($request->validate($rules));
 
         if (! $gameSave->hasValidTrainingGains($data)) {

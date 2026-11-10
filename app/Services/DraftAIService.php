@@ -53,7 +53,7 @@ class DraftAIService
             ->get();
 
         $squadSize = $currentContracts->count();
-        $budget    = $team->budget ?? 0;
+        $budget    = DraftService::budgetFor($gameSave, $team);
 
         // Compter par poste
         $countByPos = ['GK' => 0, 'DEF' => 0, 'MID' => 0, 'ATT' => 0];

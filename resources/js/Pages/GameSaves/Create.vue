@@ -98,7 +98,7 @@ const config = reactive({
     ai_transfers_enabled: true,
     ai_training_enabled: true,
     initial_morale_random: true, initial_stamina_random: true, luck_random: true,
-    ai_start_budget: 2500,
+    ai_start_budget: 2500, draft_budget: 5000,
     visible_origins: {
         captain_tsubasa: true,
         ecole_des_champions: false,
@@ -121,7 +121,7 @@ function resetDefaults() {
         training_stamina_cost: 2, training_min_stamina: 10, training_cost: 150, position_training_cost: 200, special_training_cost: 300,
         ai_transfers_enabled: true, ai_training_enabled: true,
         initial_morale_random: true, initial_stamina_random: true, luck_random: true,
-        ai_start_budget: 2500,
+        ai_start_budget: 2500, draft_budget: 5000,
         visible_origins: { captain_tsubasa: true, ecole_des_champions: false, hungry_heart: false, blue_lock: false, ao_ashi: false, original: true },
         internationals_visible: false,
     });
@@ -519,6 +519,14 @@ function submit() {
                                     <input type="range" v-model.number="config.ai_start_budget" min="0" max="10000" step="250" class="flex-1 h-1 accent-teal-500" />
                                     <span class="text-xs font-bold text-slate-700 w-14 text-right">{{ config.ai_start_budget }} <GameBanknote /></span>
                                 </div>
+                            </div>
+                            <div v-if="form.competition_type !== 'world_cup'" class="flex flex-col gap-1 max-w-xs">
+                                <label for="draft-budget" class="text-2xs text-slate-500">Budget par équipe pour la draft</label>
+                                <div class="flex items-center gap-2">
+                                    <input id="draft-budget" type="range" v-model.number="config.draft_budget" min="3000" max="20000" step="250" class="flex-1 h-1 accent-teal-500" />
+                                    <span class="text-xs font-bold text-slate-700 w-14 text-right">{{ config.draft_budget }} <GameBanknote /></span>
+                                </div>
+                                <p class="text-2xs text-slate-400">Disponible à chaque draft. Le solde expire à la fin de la draft.</p>
                             </div>
                         </div>
 

@@ -28,17 +28,20 @@ class DraftServiceTest extends TestCase
         $this->service = app(DraftService::class);
     }
 
-    public function test_init_draft_grants_budget_bonus_and_sets_state(): void
+    public function test_init_draft_opens_a_separate_budget_for_each_team(): void
     {
         $save = $this->makeSave(['phase' => 'intersaison_draft']);
-        $a = $this->makeTeam($save, ['budget' => 100000]);
+        $a = $this->makeTeam($save, ['budget' => 500]);
         $b = $this->makeTeam($save, ['budget' => 100000]);
+        $save->setConfig(['draft_budget' => 6000]);
 
         $this->service->initDraft($save, [$a->id, $b->id]);
 
-        $this->assertSame(100000 + DraftService::DRAFT_BONUS, (int) $a->fresh()->budget);
+        $this->assertSame(500, (int) $a->fresh()->budget);
+        $this->assertSame(100000, (int) $b->fresh()->budget);
 
         $draft = $save->fresh()->state['draft'];
+        $this->assertSame([$a->id => 6000, $b->id => 6000], $draft['budgets']);
         $this->assertSame([$a->id, $b->id], $draft['order']);
         $this->assertSame(0, $draft['current_pick_index']);
         $this->assertSame(1, $draft['round']);
@@ -48,7 +51,7 @@ class DraftServiceTest extends TestCase
     public function test_execute_pick_signs_player_and_advances_turn(): void
     {
         $save = $this->makeSave();
-        $a = $this->makeTeam($save, ['budget' => 100000]);
+        $a = $this->makeTeam($save, ['budget' => 500]);
         $b = $this->makeTeam($save, ['budget' => 100000]);
         $this->service->initDraft($save, [$a->id, $b->id]);
 
@@ -67,7 +70,8 @@ class DraftServiceTest extends TestCase
         $this->assertSame(1, (int) $player->fresh()->number);
 
         // Coût = adjusted_cost × longueur de saison × réduction (1000 × 2 × 0.5 = 1000).
-        $this->assertSame(100000 + DraftService::DRAFT_BONUS - 1000, (int) $a->fresh()->budget);
+        $this->assertSame(500, (int) $a->fresh()->budget);
+        $this->assertSame(4000, DraftService::budgetFor($save->fresh(), $a->fresh()));
 
         // La main passe à l'équipe suivante.
         $this->assertSame($b->id, $this->service->getCurrentTeamId($save->fresh()));
@@ -110,8 +114,7 @@ class DraftServiceTest extends TestCase
         $b = $this->makeTeam($save, ['budget' => 100000]);
         $this->service->initDraft($save, [$a->id, $b->id]);
 
-        $a->update(['budget' => 10]); // budget dérisoire
-        $expensive = $this->makePlayer($save, ['cost' => 5000]);
+        $expensive = $this->makePlayer($save, ['cost' => 6000]);
 
         $this->assertNull($this->service->executePick($save->fresh(), $expensive->id));
         $this->assertFalse(GameContract::where('game_player_id', $expensive->id)->exists());
@@ -170,7 +173,7 @@ class DraftServiceTest extends TestCase
         [$human] = $this->makeTeamWithSquad($save, ['is_controlled' => true, 'human_seat' => 1, 'budget' => 0], DraftService::MIN_SQUAD - 2);
         $save->update(['controlled_game_team_id' => $human->id]);
         $this->service->initDraft($save, [$human->id]);
-        $this->makePlayer($save, ['cost' => 1000]); // joueur libre, trop cher pour un budget nul
+        $this->makePlayer($save, ['cost' => 6000]); // joueur libre, trop cher pour l'enveloppe
 
         $this->assertFalse($this->service->hasAffordablePlayer($save->fresh(), $human->fresh()));
 
@@ -185,12 +188,15 @@ class DraftServiceTest extends TestCase
     public function test_finalize_draft_builds_lineups_and_starts_season(): void
     {
         $save = $this->makeSave(['phase' => 'intersaison_draft']);
-        [$team] = $this->makeTeamWithSquad($save, [], 14);
+        [$team] = $this->makeTeamWithSquad($save, ['budget' => 500], 14);
+        $this->service->initDraft($save, [$team->id]);
 
         $this->service->finalizeDraft($save);
         $save->refresh();
 
         $this->assertSame('season', $save->phase);
+        $this->assertSame(500, (int) $team->fresh()->budget);
+        $this->assertArrayNotHasKey('budgets', $save->state['draft']);
 
         // Lineup persisté avec une formation et 11 titulaires.
         $lineup = $save->state['lineup'][$team->id];
