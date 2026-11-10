@@ -368,7 +368,16 @@ export function initMatchEngine(rootEl, config = {}) {
                 const so = runShootout(roster, rootEl);
                 state.shootout = so;
                 so.kicks.forEach((k, i) => {
-                    pushLogEntry(`🥅 Tir au but ${i + 1} — ${TEAMS[k.team].label}`, [`${k.name} : ${k.scored ? '✓ But' : '✗ Raté'}`], null, state);
+                    pushLogEntry(`🥅 Tir au but ${i + 1} — ${TEAMS[k.team].label}`, [`${k.name} : ${k.scored ? '✓ But' : '✗ Raté'}`], null, state, {
+                        sections: [{ title: "🥅 Tir au but", rows: [
+                            ["Tireur", k.name],
+                            ["Stat de tir", k.shot],
+                            ["Arrêt main du gardien", k.handSave],
+                            ["Probabilité de marquer", `75 % + (Tir − Arrêt main) / 2, entre 50 et 92 % → ${(k.chance * 100).toFixed(1)} %`],
+                            ["Tirage", `${(k.roll * 100).toFixed(2)} %`],
+                            ["Résultat", k.scored ? "But" : "Raté"],
+                        ] }],
+                    }, { team: k.team });
                 });
                 pushLogEntry("🏆 Tirs au but", [`${TEAMS[so.winner].label} l'emporte ${so.score[so.winner]} - ${so.score[so.winner === 'internal' ? 'external' : 'internal']}`], null, state);
                 setMessage(
@@ -696,18 +705,35 @@ export function initMatchEngine(rootEl, config = {}) {
         const defenderId = getPlayerId(team, slot);
         const player = roster.getPlayerInfo(team, slot);
         const roll = rollDie();
-        const { threshold, success, card } = resolveSimulationRoll(player.stats?.luck, roll);
+        const { effectiveLuck, threshold, success, card, sanctionRoll } = resolveSimulationRoll(player.stats?.luck, roll);
+        const breakdown = {
+            sections: [
+                { title: "🎭 Simulation", rows: [
+                    ["Joueur", player.lastname],
+                    ["Chance utilisée", `${effectiveLuck}/100`],
+                    ["Seuil", `arrondi(15 − (${effectiveLuck} − 20) / 6) = ${threshold}`],
+                    ["Jet (d20)", `${roll} ${success ? ">" : "≤"} ${threshold}`],
+                    ["Probabilité de réussite", `(20 − ${threshold}) / 20 = ${(20 - threshold) * 5} %`],
+                    ["Endurance dépensée", SIMULATION_COST],
+                    ["Résultat", success ? "Coup franc et récupération du ballon" : "L’attaque se poursuit"],
+                ] },
+                { title: "Sanction", rows: [
+                    ...(sanctionRoll !== null ? [["Tirage pour le jaune", `${(sanctionRoll * 100).toFixed(2)} % (seuil : < 50 %)`]] : []),
+                    ["Carton", card === "red" ? "Rouge direct (1 naturel)" : card === "yellow" ? "Jaune" : "Aucun"],
+                ] },
+            ],
+        };
 
         state.simulationUsed[team] = true;
         state.isAnimating = true;
         state.stamina[defenderId] -= SIMULATION_COST;
         updateStaminaUI(defenderId);
-        showSimulationRoll(roll, threshold, success);
+        showSimulationRoll(roll, threshold, success, breakdown);
         pushLogEntry(success ? "Simulation réussie" : "Simulation ratée", [
             player.lastname,
             success ? "Coup franc · récupération du ballon" : "L’attaque se poursuit",
-        ], `${roll} > ${threshold}`, state, null, { team });
-        if (card) giveMatchCard(defenderId, card);
+        ], `${roll} ${success ? ">" : "≤"} ${threshold}`, state, breakdown, { team });
+        if (card) giveMatchCard(defenderId, card, breakdown);
 
         runAfterDiceAnimation(() => {
             if (state.disposed) return;

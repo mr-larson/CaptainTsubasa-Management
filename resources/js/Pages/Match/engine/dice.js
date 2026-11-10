@@ -49,7 +49,7 @@ export function resolveCritOutcome(attackRoll, defenseRoll) {
 // -----------------------------------------------------------
 //   Duel meta (contexte joueurs pour tooltip)
 // -----------------------------------------------------------
-export function buildDuelMeta({ attackTeam, attackSlot, attackAction, defenseTeam, defenseSlot, defenseAction }, roster, TEXTS) {
+export function buildDuelMeta({ attackTeam, attackSlot, attackAction, defenseTeam, defenseSlot, defenseAction, specialAction }, roster, TEXTS) {
     const aInfo = roster.getPlayerInfo(attackTeam, attackSlot);
     const dInfo = defenseSlot ? roster.getPlayerInfo(defenseTeam, defenseSlot) : null;
 
@@ -61,18 +61,36 @@ export function buildDuelMeta({ attackTeam, attackSlot, attackAction, defenseTea
     const getAttackLabel  = (key) => TEXTS.cards?.attack?.[key]?.title       || key;
     const getDefenseLabel = (key) => TEXTS.cards?.defenseField?.[key]?.title  || TEXTS.cards?.defenseGK?.[key]?.title || key;
 
+    const statsFor = (team, slot, action) => {
+        const labels = {
+            shot: "Tir", pass: "Passe", attack: "Attaque", dribble: "Dribble",
+            block: "Contre", intercept: "Interception", tackle: "Tacle", defense: "Défense",
+            heading: "Tête", speed: "Vitesse", hand_save: "Arrêt main", punch_save: "Dégagement poing",
+        };
+        const keys = {
+            shot: ["shot"], pass: ["pass"], dribble: ["dribble"], one_two: ["pass"],
+            cross: ["pass", "attack"], long_pass: ["pass", "attack"], heading: ["heading", "speed"],
+            block: ["block"], intercept: ["intercept"], tackle: ["tackle"],
+            hands: ["hand_save"], punch: ["punch_save"], hand_save: ["hand_save"], punch_save: ["punch_save"],
+            special: ["attack"], "field-special": ["defense"], "gk-special": ["defense"],
+        };
+        return (keys[action] ?? []).map(key => [labels[key], roster.getStat(team, slot, key)]);
+    };
+
     return {
         attacker: {
             team: attackTeam, slot: attackSlot,
             id: aInfo?.id ?? null,
             number: aInfo?.number ?? null, name: fullName(aInfo),
             actionKey: attackAction, actionLabel: getAttackLabel(attackAction),
+            stats: statsFor(attackTeam, attackSlot, specialAction ?? attackAction),
         },
         defender: defenseSlot ? {
             team: defenseTeam, slot: defenseSlot,
             id: dInfo?.id ?? null,
             number: dInfo?.number ?? null, name: fullName(dInfo),
             actionKey: defenseAction, actionLabel: getDefenseLabel(defenseAction),
+            stats: statsFor(defenseTeam, defenseSlot, defenseAction.split(":").at(-1)),
         } : null,
     };
 }
@@ -83,6 +101,7 @@ export function buildDuelMeta({ attackTeam, attackSlot, attackAction, defenseTea
 export function buildFieldDuelBreakdown({
                                             attackBaseRaw, defenseBaseRaw,
                                             attackStamF, defenseStamF,
+                                            attackFactors = [], defenseFactors = [],
                                             aRoll, dRoll, isGood,
                                             attackScore, defenseScore,
                                             clearanceBonus = 0, meta = null,
@@ -91,10 +110,12 @@ export function buildFieldDuelBreakdown({
                                             homeBonus = 0,
                                             homeSide = null,       // 'attack' | 'defense' | null
                                             critWinner = null,
+                                            tieWinner = "tie",
                                         }) {
     const goodBonus = DUEL_RULES.GOOD_COUNTER_BONUS   ?? 0;
     const genBonus  = DUEL_RULES.GENERIC_ATTACK_BONUS ?? 0;
     const diff      = attackScore - defenseScore;
+    const adjustedBase = (base, factors) => factors.reduce((value, [, factor]) => value * factor, base);
 
     // Tag dé — affiche les deux dés si advantage (2d20)
     const aTag = aRoll.isAdvantage
@@ -109,23 +130,28 @@ export function buildFieldDuelBreakdown({
         captainReroll,
         rolls: { aTag, dTag, aBonus: aRoll.bonus, dBonus: dRoll.bonus },
         attack: {
-            base: attackBaseRaw,
+            base: adjustedBase(attackBaseRaw, attackFactors),
+            unadjustedBase: attackBaseRaw,
+            factors: attackFactors,
             staminaFactor: attackStamF,
             additions: [
                 { label: "🎲 Bonus dé", value: `+ ${aRoll.bonus.toFixed(1)}` },
                 ...(isGood === false ? [{ label: "⚔️ Bonus attaque", value: `+ ${genBonus.toFixed(1)}` }] : []),
                 ...(clearanceBonus ? [{ label: "💨 Dégagement", value: `+ ${Number(clearanceBonus).toFixed(1)}` }] : []),
-                ...(captainReroll  ? [{ label: "👑 Reroll capitaine", value: "2d20 avantage" }] : []),
+                ...(captainReroll && aRoll.isAdvantage ? [{ label: "👑 Relance capitaine", value: "2d20 avantage" }] : []),
                 ...(heroic         ? [{ label: "🔥 Dépassement de soi", value: "2d20 avantage" }] : []),
                 ...(homeSide === 'attack' && homeBonus ? [{ label: "🏠 Avantage domicile", value: `+ ${Number(homeBonus).toFixed(1)}` }] : []),
             ],
             total: attackScore,
         },
         defense: {
-            base: defenseBaseRaw,
+            base: adjustedBase(defenseBaseRaw, defenseFactors),
+            unadjustedBase: defenseBaseRaw,
+            factors: defenseFactors,
             staminaFactor: defenseStamF,
             additions: [
                 { label: "🎲 Bonus dé", value: `+ ${dRoll.bonus.toFixed(1)}` },
+                ...(captainReroll && dRoll.isAdvantage ? [{ label: "👑 Relance capitaine", value: "2d20 avantage" }] : []),
                 ...(isGood === true ? [{ label: "✅ Bon contre", value: `+ ${goodBonus.toFixed(1)}` }] : []),
                 ...(isGood === false ? [{ label: "❌ Mauvais contre", value: "—" }] : []),
                 ...(homeSide === 'defense' && homeBonus ? [{ label: "🏠 Avantage domicile", value: `+ ${Number(homeBonus).toFixed(1)}` }] : []),
@@ -137,7 +163,7 @@ export function buildFieldDuelBreakdown({
                 : isGood ? `Bon contre (+${goodBonus} défense)` : `Mauvais contre (+${genBonus} attaque)`,
             critWinner,
             diff,
-            winner: critWinner ?? (diff > 0 ? "attack" : diff < 0 ? "defense" : "tie"),
+            winner: critWinner ?? (diff > 0 ? "attack" : diff < 0 ? "defense" : tieWinner),
         },
     };
 }
@@ -146,6 +172,7 @@ export function buildFieldDuelBreakdown({
 //   Tooltip DOM
 // -----------------------------------------------------------
 let _duelTooltipEl  = null;
+let _historyAnchor = null;
 let _duelDiceEl     = null;
 let _lastBreakdown  = null;
 
@@ -474,6 +501,11 @@ function formatBreakdownHTML(b) {
     const row     = (label, value) => `<div class="dt-row"><div class="dt-label">${label}</div><div class="dt-value">${value}</div></div>`;
     const section = (title, inner) => `<div class="dt-section"><div class="dt-title">${title}</div>${inner}</div>`;
 
+    if (b.sections) {
+        return b.sections.map(({ title, rows }) => section(escapeHTML(title), rows
+            .map(([label, value]) => row(escapeHTML(label), escapeHTML(value))).join(""))).join("");
+    }
+
     // Résultat avec couleur
     const winner      = b.result?.critWinner ?? b.result?.winner ?? "tie";
     const winnerLabel = winner === "attack"  ? "✓ Attaque gagne"
@@ -500,8 +532,8 @@ function formatBreakdownHTML(b) {
         const d   = b.meta.defender;
         const fmt = (x) => [
             x?.number != null ? `<span class="text-slate-400">#${x.number}</span>` : null,
-            x?.name ? `<b>${x.name}</b>` : null,
-            x?.actionLabel ? `<span class="text-slate-500"> — ${x.actionLabel}</span>` : null,
+            x?.name ? `<b>${escapeHTML(x.name)}</b>` : null,
+            x?.actionLabel ? `<span class="text-slate-500"> — ${escapeHTML(x.actionLabel)}</span>` : null,
         ].filter(Boolean).join(" ");
         contextHTML = section("👤 Joueurs", [
             row("Attaquant", fmt(a)),
@@ -515,6 +547,13 @@ function formatBreakdownHTML(b) {
     const dBase    = Number(b.defense?.base ?? 0);
     const dStam    = Number(b.defense?.staminaFactor ?? 1);
 
+    const baseRows = (side, player) => [
+        ...(player?.stats ?? []).map(([label, value]) => row(escapeHTML(label), escapeHTML(value))),
+        row("Base calculée", Number(side?.unadjustedBase ?? side?.base ?? 0).toFixed(1)),
+        ...(side?.factors ?? []).filter(([, factor]) => factor !== 1)
+            .map(([label, factor]) => row(label, `× ${factor.toFixed(3)}`)),
+    ];
+
     return `<div class="dt-wrap">
         ${rerollBadge}
         ${contextHTML}
@@ -523,13 +562,13 @@ function formatBreakdownHTML(b) {
         row("Défense", `<b class="text-xs">${b.rolls?.dTag ?? "?"}</b> → +${Number(b.rolls?.dBonus ?? 0).toFixed(1)}`),
     ].join(""))}
         ${section("⚔️ Attaque", [
-        row("Base", `${aBase.toFixed(1)}`),
+        ...baseRows(b.attack, b.meta?.attacker),
         row("× Stamina", `${aStam.toFixed(2)} = <b>${(aBase * aStam).toFixed(1)}</b>`),
         ...(b.attack?.additions || []).map(x => row(x.label, `<span class="text-sky-500">${x.value}</span>`)),
         row("Total", `<b class="text-xs text-white">${Number(b.attack?.total ?? 0).toFixed(1)}</b>`),
     ].join(""))}
         ${section("🛡️ Défense", [
-        row("Base", `${dBase.toFixed(1)}`),
+        ...baseRows(b.defense, b.meta?.defender),
         row("× Stamina", `${dStam.toFixed(2)} = <b>${(dBase * dStam).toFixed(1)}</b>`),
         ...(b.defense?.additions || []).map(x => row(x.label, `<span class="text-violet-500">${x.value}</span>`)),
         row("Total", `<b class="text-xs text-white">${Number(b.defense?.total ?? 0).toFixed(1)}</b>`),
@@ -571,9 +610,6 @@ export function showDuelDice(attackScore, defenseScore, aRoll, dRoll, breakdown)
         duelDiceEl.classList.add("visible", "pop");
         setTimeout(() => duelDiceEl.classList.remove("pop"), 500);
 
-        // Tooltip détaillé mis à jour pour le hover
-        const tip = ensureTooltip();
-        if (tip) tip.innerHTML = formatBreakdownHTML(breakdown);
     };
 
     const mode = getDiceAnimMode();
@@ -591,13 +627,13 @@ export function showDuelDice(attackScore, defenseScore, aRoll, dRoll, breakdown)
     });
 }
 
-export function showSimulationRoll(roll, threshold, success) {
+export function showSimulationRoll(roll, threshold, success, breakdown) {
     const el = document.getElementById("duel-dice-display");
     if (!el) return;
 
     const token = ++_chipToken;
-    _lastBreakdown = null;
-    hideBreakdownTooltip();
+    _lastBreakdown = breakdown;
+    if (!_historyAnchor) hideBreakdownTooltip();
     enqueueRevealStep(done => {
         const mode = getDiceAnimMode();
         const reveal = () => {
@@ -619,6 +655,8 @@ export function showSimulationRoll(roll, threshold, success) {
 export function showBreakdownTooltip(breakdown, anchorEl) {
     if (!breakdown || !anchorEl) return;
     const tip = ensureTooltip();
+    _historyAnchor = anchorEl;
+    tip.classList.add("history-detail");
     tip.innerHTML = formatBreakdownHTML(breakdown);
     positionTooltip(anchorEl);
     tip.classList.remove("hidden");
@@ -639,6 +677,7 @@ function formatSpecialHTML(move) {
 /** Affiche le détail (nom complet, description, recharge) d'un spécial ancré sur son slot de carte. */
 export function showSpecialTooltip(move, anchorEl) {
     if (!move || !anchorEl) return;
+    hideBreakdownTooltip();
     const tip = ensureTooltip();
     tip.innerHTML = formatSpecialHTML(move);
     positionTooltip(anchorEl);
@@ -646,7 +685,9 @@ export function showSpecialTooltip(move, anchorEl) {
 }
 
 export function hideBreakdownTooltip() {
+    _historyAnchor = null;
     _duelTooltipEl?.classList.add("hidden");
+    _duelTooltipEl?.classList.remove("history-detail");
 }
 
 export function isBreakdownTooltipVisible() {
@@ -657,8 +698,13 @@ export function bindDuelTooltipEvents() {
     if (!_duelDiceEl) return;
     ensureTooltip();
 
-    const show = () => { if (_lastBreakdown) { positionTooltip(); _duelTooltipEl?.classList.remove("hidden"); } };
-    const hide = () => _duelTooltipEl?.classList.add("hidden");
+    const show = () => {
+        if (!_lastBreakdown || _historyAnchor) return;
+        _duelTooltipEl.innerHTML = formatBreakdownHTML(_lastBreakdown);
+        positionTooltip();
+        _duelTooltipEl.classList.remove("hidden");
+    };
+    const hide = () => { if (!_historyAnchor) hideBreakdownTooltip(); };
 
     _duelDiceEl.addEventListener("mouseenter", show);
     _duelDiceEl.addEventListener("mouseleave", hide);
@@ -666,7 +712,7 @@ export function bindDuelTooltipEvents() {
     _duelDiceEl.addEventListener("focus", show);
     _duelDiceEl.addEventListener("blur",  hide);
 
-    const reposition = () => { if (!_duelTooltipEl?.classList.contains("hidden")) positionTooltip(); };
+    const reposition = () => { if (!_duelTooltipEl?.classList.contains("hidden")) positionTooltip(_historyAnchor ?? _duelDiceEl); };
     _winAbort?.abort();
     _winAbort = new AbortController();
     window.addEventListener("scroll", reposition, { passive: true, signal: _winAbort.signal });

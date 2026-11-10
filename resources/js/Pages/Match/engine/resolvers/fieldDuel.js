@@ -23,7 +23,13 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
         applyStaminaCost(attackerId, "attack", attackType);
         if (attackType === "special") shared.markSpecialUsed(attackerId, "attack", specialAction);
         recordDuelEvent({ attackTeam, defenseTeam, attackSlot: b.number, attackAction: attackType, duelResult: "attack" });
-        return { isTie: false, duelResult: "attack", attackerId };
+        return {
+            isTie: false, duelResult: "attack", attackerId,
+            breakdown: { sections: [{ title: "Action après une simulation", rows: [
+                ["Défense", "La simulation ratée remplace le contre de champ."],
+                ["Résolution", "L’action de champ se poursuit sans jet de duel."],
+            ] }] },
+        };
     }
 
     const picked = defenderPick ?? pickFieldDefender(defenseTeam, b.zoneIndex, b.laneIndex);
@@ -70,27 +76,24 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
         defenseBaseRaw = shared.roster.defenseBaseFor(defenseAction, defenseTeam, defenderSlot, false);
     }
 
-    // ── Multiplicateurs contextuels (rôle distinct par stat) ──────────────
-    // Repliés dans les bases brutes pour que le breakdown affiché reste exact.
     const zoneIdx = b.zoneIndex;
-    // Attaque : `attack` boost en zone offensive ; `speed` aide le dribble.
-    attackBaseRaw *= shared.roster.attackZoneMultiplier(attackTeam, b.number, zoneIdx);
-    if (attackType === "dribble") attackBaseRaw *= shared.roster.speedDuelMultiplier(attackTeam, b.number);
-    // Défense : `defense` boost en zone basse ; `speed` aide tackle/intercept ;
-    // `block` = dernier rempart anti-tir (scalé par la profondeur, sans speed).
-    defenseBaseRaw *= shared.roster.defenseZoneMultiplier(defenseTeam, defenderSlot, zoneIdx);
+    const attackFactors = [["Zone (Attaque)", shared.roster.attackZoneMultiplier(attackTeam, b.number, zoneIdx)]];
+    const defenseFactors = [["Zone (Défense)", shared.roster.defenseZoneMultiplier(defenseTeam, defenderSlot, zoneIdx)]];
+    if (attackType === "dribble") {
+        attackFactors.push(["Vitesse", shared.roster.speedDuelMultiplier(attackTeam, b.number)]);
+    }
     const counter = defenseBase ?? defenseAction;
     if (counter === "tackle" || counter === "intercept") {
-        defenseBaseRaw *= shared.roster.speedDuelMultiplier(defenseTeam, defenderSlot);
+        defenseFactors.push(["Vitesse", shared.roster.speedDuelMultiplier(defenseTeam, defenderSlot)]);
     } else if (counter === "block") {
-        defenseBaseRaw *= shared.roster.blockEdgeMultiplier(defenseTeam, defenderSlot, zoneIdx);
+        defenseFactors.push(["Profondeur (Contre)", shared.roster.blockEdgeMultiplier(defenseTeam, defenderSlot, zoneIdx)]);
     }
 
     const attackStamF  = staminaFactor(attackerId);
     const defenseStamF = staminaFactor(defenderId);
 
-    let attackScore  = attackBaseRaw  * attackStamF;
-    let defenseScore = defenseBaseRaw * defenseStamF;
+    let attackScore  = attackFactors.reduce((score, [, factor]) => score * factor, attackBaseRaw) * attackStamF;
+    let defenseScore = defenseFactors.reduce((score, [, factor]) => score * factor, defenseBaseRaw) * defenseStamF;
 
     const clearanceBonus = shared.state.pendingClearanceBonus > 0 ? shared.state.pendingClearanceBonus : 0;
     if (shared.state.pendingClearanceBonus > 0) { attackScore += shared.state.pendingClearanceBonus; shared.state.pendingClearanceBonus = 0; }
@@ -122,7 +125,7 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
     const HOME_BONUS_VALUE = 0.5;
     const breakdown = buildFieldDuelBreakdown({
         attackBaseRaw, defenseBaseRaw,
-        attackStamF, defenseStamF,
+        attackStamF, defenseStamF, attackFactors, defenseFactors,
         aRoll, dRoll, isGood,
         attackScore, defenseScore,
         clearanceBonus, meta,
@@ -152,7 +155,10 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
     const checkInjury = (pid) => {
         if (!pid) return;
         const stamina = shared.state.stamina[pid] ?? 0;
-        if (stamina <= 0 && Math.random() < 0.30) {
+        if (stamina > 0) return;
+        const roll = Math.random();
+        const injuryThreshold = 0.30;
+        if (roll < injuryThreshold) {
             const team  = pid.startsWith('I') ? 'internal' : 'external';
             const slot  = parseInt(pid.slice(1), 10);
             const dbId  = shared.roster.getPlayerInfo(team, slot)?.id ?? null;
@@ -161,7 +167,13 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
             shared.state.exitTurns[dbId] ??= shared.state.turns;
             const el = shared.rootEl.querySelector(`[data-player="${pid}"]`);
             if (el) el.classList.add('unavailable');
-            pushLogEntry('foulInjuryTitle', [`🤕 ${name} — Blessure (épuisement)`], null, shared.state);
+            pushLogEntry('foulInjuryTitle', [`🤕 ${name} — Blessure (épuisement)`], null, shared.state, {
+                sections: [{ title: "🤕 Blessure par épuisement", rows: [
+                    ["Endurance restante", stamina],
+                    ["Tirage", `${(roll * 100).toFixed(2)} %`],
+                    ["Blessure si <", `${injuryThreshold * 100} %`],
+                ] }],
+            });
         }
     };
     checkInjury(attackerId);
@@ -176,8 +188,8 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
         if (critWinner === "defense" && tryHeroicMoment(attackTeam, b.number)) {
             return doReroll({
                 attackTeam, defenseTeam, attackType, defenseAction,
-                attackBaseRaw, defenseBaseRaw, attackStamF, defenseStamF,
-                defenderId, defenderSlot, clearanceBonus,
+                attackBaseRaw, defenseBaseRaw, attackStamF, defenseStamF, attackFactors, defenseFactors,
+                defenderId, defenderSlot, clearanceBonus, specialAction,
             }, true);
         }
         // Si crit defense ET capitaine peut reroller
@@ -186,16 +198,16 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
                 if (aiShouldReroll(attackTeam)) {
                     return doReroll({
                         attackTeam, defenseTeam, attackType, defenseAction,
-                        attackBaseRaw, defenseBaseRaw, attackStamF, defenseStamF,
-                        defenderId, defenderSlot, clearanceBonus,
+                        attackBaseRaw, defenseBaseRaw, attackStamF, defenseStamF, attackFactors, defenseFactors,
+                        defenderId, defenderSlot, clearanceBonus, specialAction,
                     });
                 }
                 shared.state.captainReroll[attackTeam].usedOnCurrentAction = true;
             } else {
                 shared.state.pendingCaptainReroll = {
                     attackTeam, defenseTeam, attackType, defenseAction,
-                    attackBaseRaw, defenseBaseRaw, attackStamF, defenseStamF,
-                    defenderId, defenderSlot, diceTag, clearanceBonus, breakdown,
+                    attackBaseRaw, defenseBaseRaw, attackStamF, defenseStamF, attackFactors, defenseFactors,
+                    defenderId, defenderSlot, diceTag, clearanceBonus, breakdown, specialAction,
                 };
                 afterReveals(() => showCaptainRerollPrompt(attackTeam));
                 return { isTie: false, duelResult: "pending_reroll", defenderId, defenderSlot, diceTag, attackerId, breakdown };
@@ -215,8 +227,8 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
     if (rawResult === "defense" && tryHeroicMoment(attackTeam, b.number)) {
         return doReroll({
             attackTeam, defenseTeam, attackType, defenseAction,
-            attackBaseRaw, defenseBaseRaw, attackStamF, defenseStamF,
-            defenderId, defenderSlot, clearanceBonus,
+            attackBaseRaw, defenseBaseRaw, attackStamF, defenseStamF, attackFactors, defenseFactors,
+            defenderId, defenderSlot, clearanceBonus, specialAction,
         }, true);
     }
 
@@ -226,8 +238,8 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
             if (aiShouldReroll(attackTeam)) {
                 return doReroll({
                     attackTeam, defenseTeam, attackType, defenseAction,
-                    attackBaseRaw, defenseBaseRaw, attackStamF, defenseStamF,
-                    defenderId, defenderSlot, clearanceBonus,
+                    attackBaseRaw, defenseBaseRaw, attackStamF, defenseStamF, attackFactors, defenseFactors,
+                    defenderId, defenderSlot, clearanceBonus, specialAction,
                 });
             }
             // IA décline → marquer quand même pour ne pas re-proposer
@@ -236,8 +248,8 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
             // Joueur humain : stocker le contexte et afficher le prompt
             shared.state.pendingCaptainReroll = {
                 attackTeam, defenseTeam, attackType, defenseAction,
-                attackBaseRaw, defenseBaseRaw, attackStamF, defenseStamF,
-                defenderId, defenderSlot, diceTag, clearanceBonus, breakdown,
+                attackBaseRaw, defenseBaseRaw, attackStamF, defenseStamF, attackFactors, defenseFactors,
+                defenderId, defenderSlot, diceTag, clearanceBonus, breakdown, specialAction,
             };
             afterReveals(() => showCaptainRerollPrompt(attackTeam));
             return { isTie: false, duelResult: "pending_reroll", defenderId, defenderSlot, diceTag, attackerId, breakdown };
@@ -300,7 +312,8 @@ export function performKeeperClearance(defenseTeam, defenseAction, afterClearanc
     }
     if (defenseAction === "gk-special") laneOptions = [0, 1, 2];
 
-    const targetLane = laneOptions[Math.floor(Math.random() * laneOptions.length)];
+    const laneRoll = Math.random();
+    const targetLane = laneOptions[Math.floor(laneRoll * laneOptions.length)];
     const receiver   = pickReceiverInCell(defenseTeam, targetZone, targetLane, 6, null);
 
     setMessage(TEXTS.ui.keeperRestartMain, TEXTS.ui.keeperRestartSub + " (#" + receiver + ")");
@@ -309,7 +322,16 @@ export function performKeeperClearance(defenseTeam, defenseAction, afterClearanc
         "Bonus +" + shared.state.pendingClearanceBonus,
         "Vers zone " + (targetZone + 1) + ", ligne " + (targetLane + 1),
         "Receveur : n°" + receiver,
-    ], null, shared.state);
+    ], null, shared.state, {
+        sections: [{ title: "Relance du gardien", rows: [
+            ["Technique", defenseTag(defenseAction).replace("Défense : ", "")],
+            ...(defenseAction === "punch" ? [] : [["Tirage de distance", `${(r * 100).toFixed(2)} %`]]),
+            ...(laneOptions.length > 1 ? [["Tirage de ligne", `${(laneRoll * 100).toFixed(2)} %`]] : []),
+            ["Destination", `Zone ${targetZone + 1}, ligne ${targetLane + 1}`],
+            ["Receveur", `n°${receiver}`],
+            ["Bonus pour la prochaine action", `+${shared.state.pendingClearanceBonus}`],
+        ] }],
+    }, { team: defenseTeam });
 
     setBallToKeeperVisual(defenseTeam);
 

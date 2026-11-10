@@ -279,9 +279,9 @@ export function resolveShotKeeperDuel(ctx, defenseChoice) {
 
     // `attack` : boost offensif selon la zone du tir (réutilisé par tir en jeu,
     // tir face au gardien et coup franc — point unique pour les 3 chemins).
-    let attackScore = gkAttackBase
-        * shared.roster.attackZoneMultiplier(attackTeam, b.number, originZone)
-        * staminaFactor(attackerId);
+    const attackZoneFactor = shared.roster.attackZoneMultiplier(attackTeam, b.number, originZone);
+    const attackStamF = staminaFactor(attackerId);
+    let attackScore = gkAttackBase * attackZoneFactor * attackStamF;
     const gkFactor  = keeperId ? staminaFactor(keeperId) : 1.0;
 
     let defenseBase;
@@ -329,28 +329,32 @@ export function resolveShotKeeperDuel(ctx, defenseChoice) {
     if (aRoll.critSuccess) applyCritBoost(attackerId);
     if (dRoll.critSuccess && keeperId) applyCritBoost(keeperId);
 
-    const diceTag = attackScore.toFixed(1) + "-" + defenseScore.toFixed(1);
+    let diceTag = attackScore.toFixed(1) + "-" + defenseScore.toFixed(1);
 
     const meta = buildDuelMeta(
-        { attackTeam, attackSlot: b.number, attackAction: isSpecial ? "special" : "shot", defenseTeam, defenseSlot: 1, defenseAction },
+        { attackTeam, attackSlot: b.number, attackAction: isSpecial ? "special" : "shot", specialAction: isSpecial ? "shot" : undefined, defenseTeam, defenseSlot: 1, defenseAction: defenseChoice },
         shared.roster, TEXTS
     );
 
     const isGoodGK = ["hands", "punch", "gk-special"].includes(defenseAction);
     const HOME_BONUS_VALUE = 0.5;
-    const breakdown = buildFieldDuelBreakdown({
+    const keeperBreakdown = (dRoll, attackScore, defenseScore, critWinner, captainReroll = false) => buildFieldDuelBreakdown({
         attackBaseRaw:  gkAttackBase,
         defenseBaseRaw: defenseBase,
-        attackStamF:    staminaFactor(attackerId),
+        attackStamF,
+        attackFactors: [["Zone (Attaque)", attackZoneFactor]],
         defenseStamF:   gkFactor,
         aRoll, dRoll,
         isGood: isGoodGK,
         attackScore, defenseScore,
         meta,
-        critWinner,
+        critWinner, captainReroll,
+        tieWinner: captainReroll ? "defense" : "tie",
         homeBonus:  HOME_BONUS_VALUE,
         homeSide:   attackTeam === shared.homeTeam ? 'attack' : defenseTeam === shared.homeTeam ? 'defense' : null,
     });
+
+    let breakdown = keeperBreakdown(dRoll, attackScore, defenseScore, critWinner);
 
     recordDuelEvent({
         attackTeam, defenseTeam,
@@ -366,7 +370,10 @@ export function resolveShotKeeperDuel(ctx, defenseChoice) {
     const checkInjury = (pid) => {
         if (!pid) return;
         const stamina = shared.state.stamina[pid] ?? 0;
-        if (stamina <= 0 && Math.random() < 0.40) {
+        if (stamina > 0) return;
+        const roll = Math.random();
+        const injuryThreshold = 0.40;
+        if (roll < injuryThreshold) {
             const team  = pid.startsWith('I') ? 'internal' : 'external';
             const slot  = parseInt(pid.slice(1), 10);
             const dbId  = shared.roster.getPlayerInfo(team, slot)?.id ?? null;
@@ -375,7 +382,13 @@ export function resolveShotKeeperDuel(ctx, defenseChoice) {
             shared.state.exitTurns[dbId] ??= shared.state.turns;
             const el = shared.rootEl.querySelector(`[data-player="${pid}"]`);
             if (el) el.classList.add('unavailable');
-            pushLogEntry('foulInjuryTitle', [`🤕 ${name} — Blessure (épuisement)`], null, shared.state);
+            pushLogEntry('foulInjuryTitle', [`🤕 ${name} — Blessure (épuisement)`], null, shared.state, {
+                sections: [{ title: "🤕 Blessure par épuisement", rows: [
+                    ["Endurance restante", stamina],
+                    ["Tirage", `${(roll * 100).toFixed(2)} %`],
+                    ["Blessure si <", `${injuryThreshold * 100} %`],
+                ] }],
+            });
         }
     };
     checkInjury(attackerId);
@@ -415,19 +428,17 @@ export function resolveShotKeeperDuel(ctx, defenseChoice) {
                         // Reroll GK : 2d20 advantage pour la défense
                         consumeReroll(defenseTeam);
                         const newDroll       = rollD20Advantage();
-                        let newDefenseScore  = defenseBase * gkFactor + newDroll.bonus;
-                        let newAttackScore   = attackScore - dRoll.bonus + aRoll.bonus; // recalcul sans le vieux dRoll
-                        // Réappliquer les bonus
-                        ({ attackScore: newAttackScore, defenseScore: newDefenseScore } = rescoreKeeperDuel(newDroll));
+                        const { attackScore: newAttackScore, defenseScore: newDefenseScore } = rescoreKeeperDuel(newDroll);
                         const newCrit = resolveCritOutcome(aRoll, newDroll);
                         duelResult = newCrit ?? (newAttackScore > newDefenseScore ? "attack" : "defense");
-                        const rerollBreakdown = { ...breakdown, captainReroll: true };
+                        breakdown = keeperBreakdown(newDroll, newAttackScore, newDefenseScore, newCrit, true);
+                        diceTag = newAttackScore.toFixed(1) + "-" + newDefenseScore.toFixed(1);
                         amendLastDuelEvent(duelResult, { result: { winner: duelResult, diff: newAttackScore - newDefenseScore } });
-                        showDuelDice(newAttackScore, newDefenseScore, aRoll, newDroll, rerollBreakdown);
+                        showDuelDice(newAttackScore, newDefenseScore, aRoll, newDroll, breakdown);
                         pushLogEntry(`👑 Captain Reroll GK — ${gkInfo.lastname}`, [
                             `2d20 (${newDroll.roll1}, ${newDroll.roll2}) → ${newDroll.roll}`,
                             duelResult === "defense" ? "✓ Arrêt !" : "✗ But quand même",
-                        ], null, shared.state, rerollBreakdown);
+                        ], diceTag, shared.state, breakdown);
                     }
                 } else {
                     // Joueur humain : stocker le contexte GK et afficher le prompt
@@ -453,7 +464,7 @@ export function resolveShotKeeperDuel(ctx, defenseChoice) {
                         const newCrit2  = resolveCritOutcome(aRoll, newDroll2);
                         const newResult = newCrit2 ?? (newAScore > newDScore ? "attack" : "defense");
                         amendLastDuelEvent(newResult, { result: { winner: newResult, diff: newAScore - newDScore } });
-                        const rerollBreakdown = { ...breakdown, captainReroll: true };
+                        const rerollBreakdown = keeperBreakdown(newDroll2, newAScore, newDScore, newCrit2, true);
                         showDuelDice(newAScore, newDScore, aRoll, newDroll2, rerollBreakdown);
                         pushLogEntry(`👑 Captain Reroll GK — ${gkInfo.lastname}`, [
                             `2d20 (${newDroll2.roll1}, ${newDroll2.roll2}) → ${newDroll2.roll}`,

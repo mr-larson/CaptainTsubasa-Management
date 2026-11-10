@@ -16,10 +16,10 @@ export function simulationThreshold(luck) {
 }
 
 export function resolveSimulationRoll(luck, roll, yellowRoll = Math.random) {
-    const threshold = simulationThreshold(luck);
+    const effectiveLuck = normalizedLuck(luck);
+    const threshold = simulationThreshold(effectiveLuck);
     const success = roll > threshold;
-    const card = roll === 1 ? "red"
-        : !success && roll < 10 && yellowRoll() < 0.5 ? "yellow"
-        : null;
-    return { threshold, success, card };
+    const sanctionRoll = roll !== 1 && !success && roll < 10 ? yellowRoll() : null;
+    const card = roll === 1 ? "red" : sanctionRoll !== null && sanctionRoll < 0.5 ? "yellow" : null;
+    return { effectiveLuck, roll, threshold, success, card, sanctionRoll };
 }

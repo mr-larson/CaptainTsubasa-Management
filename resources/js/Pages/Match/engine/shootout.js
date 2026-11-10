@@ -24,8 +24,8 @@ function shootersFor(team, roster, rootEl) {
     return shooters.sort((a, b) => (b.stats?.shot ?? 0) - (a.stats?.shot ?? 0));
 }
 
-function scoreChance(shooter, keeper) {
-    const diff = (shooter?.stats?.shot ?? 50) - (keeper?.stats?.hand_save ?? 50);
+function scoreChance(shot, handSave) {
+    const diff = shot - handSave;
     return Math.min(MAX_CHANCE, Math.max(MIN_CHANCE, BASE_CHANCE + diff / 200));
 }
 
@@ -57,11 +57,15 @@ export function runShootout(roster, rootEl, firstTeam = 'internal') {
             const pool    = shooters[team];
             const shooter = pool.length ? pool[taken[team] % pool.length] : null;
             const keeper  = keepers[team === 'internal' ? 'external' : 'internal'];
-            const scored  = Math.random() < scoreChance(shooter, keeper);
+            const shot = shooter?.stats?.shot ?? 50;
+            const handSave = keeper?.stats?.hand_save ?? 50;
+            const chance = scoreChance(shot, handSave);
+            const roll = Math.random();
+            const scored = roll < chance;
 
             taken[team]++;
             if (scored) score[team]++;
-            kicks.push({ team, player_id: shooter?.id ?? null, name: shooter?.lastname ?? '?', scored });
+            kicks.push({ team, player_id: shooter?.id ?? null, name: shooter?.lastname ?? '?', scored, shot, handSave, chance, roll });
 
             if (decided()) break;
         }

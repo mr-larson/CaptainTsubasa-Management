@@ -364,6 +364,7 @@
     padding: 10px 12px; box-shadow: 0 18px 34px rgba(0,0,0,0.42), 0 0 0 1px rgba(255,255,255,0.04) inset;
     font-size: 12px; line-height: 1.35; pointer-events: none;
 }
+#duel-dice-tooltip.history-detail { max-height: calc(100dvh - 24px); overflow-y: auto; pointer-events: auto; }
 #duel-dice-tooltip.hidden { display: none !important; }
 #duel-dice-tooltip .dt-title { font-weight: 900; color: #fff; margin: 6px 0; letter-spacing: 0.2px; }
 #duel-dice-tooltip .dt-section + .dt-section { margin-top: 10px; }

@@ -101,8 +101,8 @@ export function consumeReroll(attackTeam) {
 export function doReroll(ctx, heroic = false) {
     const {
         attackTeam, defenseTeam, attackType, defenseAction,
-        attackBaseRaw, defenseBaseRaw, attackStamF, defenseStamF,
-        defenderId, defenderSlot, clearanceBonus,
+        attackBaseRaw, defenseBaseRaw, attackStamF, defenseStamF, attackFactors, defenseFactors,
+        defenderId, defenderSlot, clearanceBonus, specialAction,
     } = ctx;
 
     if (!heroic) consumeReroll(attackTeam);
@@ -112,8 +112,8 @@ export function doReroll(ctx, heroic = false) {
     const newAroll = rollD20Advantage();  // 2d20 — prend le meilleur
     const newDroll = rollD20WithCrit();   // 1d20 normal
 
-    let newAttackScore  = attackBaseRaw * attackStamF;
-    let newDefenseScore = defenseBaseRaw * defenseStamF;
+    let newAttackScore  = attackFactors.reduce((score, [, factor]) => score * factor, attackBaseRaw) * attackStamF;
+    let newDefenseScore = defenseFactors.reduce((score, [, factor]) => score * factor, defenseBaseRaw) * defenseStamF;
 
     if (clearanceBonus) newAttackScore += clearanceBonus;
 
@@ -138,7 +138,7 @@ export function doReroll(ctx, heroic = false) {
 
     const breakdown = buildFieldDuelBreakdown({
         attackBaseRaw, defenseBaseRaw,
-        attackStamF, defenseStamF,
+        attackStamF, defenseStamF, attackFactors, defenseFactors,
         aRoll: newAroll,
         dRoll: newDroll,
         isGood,
