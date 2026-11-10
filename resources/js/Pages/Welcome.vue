@@ -122,7 +122,7 @@ const faq = [
         </a>
 
         <!-- NAV : marque et action principale sur une seule ligne, même sur mobile -->
-        <nav class="sticky top-0 z-50 flex items-center justify-between gap-3 border-b border-white/5 bg-slate-900/90 px-4 py-3 backdrop-blur md:px-10 md:py-4">
+        <nav class="welcome-nav sticky top-0 z-50 flex items-center justify-between gap-3 bg-slate-900/90 px-4 py-3 backdrop-blur md:px-10 md:py-4">
             <Link :href="route('welcome')" class="flex items-baseline gap-1.5 text-[17px]">
                 <span class="font-bold text-slate-100">Golden</span>
                 <span class="neon-text text-teal-300">Eleven</span>
@@ -339,7 +339,7 @@ const faq = [
             <ul v-if="featuredTeams.length" v-parallax="{ x: -0.06, max: 26 }" class="mb-8 grid grid-cols-4 gap-3 sm:grid-cols-8" aria-label="Équipes">
                 <li v-for="t in featuredTeams" :key="t.id" v-pixel-reveal class="flex flex-col items-center gap-1.5 text-center">
                     <div class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-lg bg-white">
-                        <img v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" alt="" loading="lazy" class="h-full w-full object-contain" />
+                        <TeamLogoImage v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" alt="" loading="lazy" class="h-full w-full" />
                         <span v-else class="text-xl font-bold text-slate-700" aria-hidden="true">{{ t.name[0] }}</span>
                     </div>
                     <span class="text-xs font-medium text-slate-200">{{ t.name }}</span>
@@ -600,7 +600,9 @@ const faq = [
     position: relative;
 }
 .led-divider::before,
-.led-divider::after {
+.led-divider::after,
+.welcome-nav::before,
+.welcome-nav::after {
     content: '';
     position: absolute;
     top: 0;
@@ -612,6 +614,21 @@ const faq = [
     right: 0;
     background: linear-gradient(90deg, transparent, rgb(94 234 212 / 0.28) 30%, rgb(94 234 212 / 0.28) 70%, transparent);
     box-shadow: 0 0 8px rgb(45 212 191 / 0.25);
+}
+.welcome-nav::before {
+    inset: auto 0 0;
+    background: linear-gradient(90deg, transparent, rgb(94 234 212 / 0.24), transparent);
+    box-shadow: 0 0 6px rgb(45 212 191 / 0.15);
+}
+.welcome-nav::after {
+    inset: auto 0 0;
+    background: linear-gradient(90deg, transparent, rgb(204 251 241 / 0.65), transparent) no-repeat;
+    background-size: 90px 100%;
+    animation: welcome-nav-sweep 2.8s ease-in-out 0.4s both;
+}
+@keyframes welcome-nav-sweep {
+    from { background-position: left -90px center; }
+    to { background-position: right -90px center; }
 }
 .led-divider::after {
     left: 0;
@@ -643,7 +660,8 @@ const faq = [
     .hero-sprite-idle {
         animation: none;
     }
-    .led-divider::after {
+    .led-divider::after,
+    .welcome-nav::after {
         display: none;
     }
 }
