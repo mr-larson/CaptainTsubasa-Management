@@ -190,7 +190,7 @@
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-2 gap-x-3 gap-y-1 rounded-xl bg-slate-100 p-2 text-[11px] ring-1 ring-black/5">
+                            <div class="grid grid-cols-2 grid-rows-5 gap-x-3 gap-y-1 rounded-xl bg-slate-100 p-2 text-[11px] ring-1 ring-black/5">
                                 <div class="flex justify-between"><span>Tir :</span> <strong id="home-stat-shot">—</strong></div>
                                 <div class="flex justify-between"><span>Contre :</span> <strong id="home-stat-block">—</strong></div>
                                 <div class="flex justify-between"><span>Passe :</span> <strong id="home-stat-pass">—</strong></div>
@@ -199,8 +199,8 @@
                                 <div class="flex justify-between"><span>Tacle :</span> <strong id="home-stat-tackle">—</strong></div>
                                 <div class="flex justify-between"><span>Attaque :</span> <strong id="home-stat-attack">—</strong></div>
                                 <div class="flex justify-between"><span>Défense :</span> <strong id="home-stat-defense">—</strong></div>
-                                <div class="flex justify-between"><span>Arrêt :</span> <strong id="home-stat-hand_save">—</strong></div>
-                                <div class="flex justify-between"><span>Poings :</span> <strong id="home-stat-punch_save">—</strong></div>
+                                <div class="hidden flex justify-between"><span>Arrêt :</span> <strong id="home-stat-hand_save">—</strong></div>
+                                <div class="hidden flex justify-between"><span>Poings :</span> <strong id="home-stat-punch_save">—</strong></div>
                                 <div class="flex justify-between"><span>Tête :</span> <strong id="home-stat-heading">—</strong></div>
                                 <div class="flex justify-between"><span>Chance :</span> <strong id="home-stat-luck">—</strong></div>
                             </div>
@@ -234,7 +234,7 @@
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-2 gap-x-3 gap-y-1 rounded-xl bg-slate-100 p-2 text-[11px] ring-1 ring-black/5">
+                            <div class="grid grid-cols-2 grid-rows-5 gap-x-3 gap-y-1 rounded-xl bg-slate-100 p-2 text-[11px] ring-1 ring-black/5">
                                 <div class="flex justify-between"><span>Tir :</span> <strong id="away-stat-shot">—</strong></div>
                                 <div class="flex justify-between"><span>Contre :</span> <strong id="away-stat-block">—</strong></div>
                                 <div class="flex justify-between"><span>Passe :</span> <strong id="away-stat-pass">—</strong></div>
@@ -243,8 +243,8 @@
                                 <div class="flex justify-between"><span>Tacle :</span> <strong id="away-stat-tackle">—</strong></div>
                                 <div class="flex justify-between"><span>Attaque :</span> <strong id="away-stat-attack">—</strong></div>
                                 <div class="flex justify-between"><span>Défense :</span> <strong id="away-stat-defense">—</strong></div>
-                                <div class="flex justify-between"><span>Arrêt :</span> <strong id="away-stat-hand_save">—</strong></div>
-                                <div class="flex justify-between"><span>Poings :</span> <strong id="away-stat-punch_save">—</strong></div>
+                                <div class="hidden flex justify-between"><span>Arrêt :</span> <strong id="away-stat-hand_save">—</strong></div>
+                                <div class="hidden flex justify-between"><span>Poings :</span> <strong id="away-stat-punch_save">—</strong></div>
                                 <div class="flex justify-between"><span>Tête :</span> <strong id="away-stat-heading">—</strong></div>
                                 <div class="flex justify-between"><span>Chance :</span> <strong id="away-stat-luck">—</strong></div>
                             </div>
