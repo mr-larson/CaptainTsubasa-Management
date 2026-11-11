@@ -19,6 +19,7 @@ const emit = defineEmits(['update:modelValue']);
 const BASE_ACTIONS = [
     { value: 'shot',       label: 'Tir' },
     { value: 'pass',       label: 'Passe' },
+    { value: 'cross',      label: 'Centre' },
     { value: 'dribble',    label: 'Dribble' },
     { value: 'block',      label: 'Contre' },
     { value: 'intercept',  label: 'Interception' },
