@@ -32,7 +32,7 @@ const teams = computed(() => {
         :show="show"
         :closeable="false"
         max-width="none"
-        panel-class="max-w-[1440px]"
+        panel-class="max-w-[1240px]"
         backdrop-class="bg-slate-900/20 backdrop-blur-[1px]"
         title="Avant-match"
         :subtitle="`Semaine ${config.week} · Présentation des équipes`"
