@@ -20,11 +20,11 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
     if (defenseAction === "simulation-failed") {
         // La simulation a remplacé le contre de champ. Le tir passe néanmoins
         // par son duel habituel contre le gardien.
-        applyStaminaCost(attackerId, "attack", attackType);
+        const discountAttack = applyStaminaCost(attackerId, "attack", attackType);
         if (attackType === "special") shared.markSpecialUsed(attackerId, "attack", specialAction);
         recordDuelEvent({ attackTeam, defenseTeam, attackSlot: b.number, attackAction: attackType, duelResult: "attack" });
         return {
-            isTie: false, duelResult: "attack", attackerId,
+            isTie: false, duelResult: "attack", attackerId, discountAttack,
             breakdown: { sections: [{ title: "Action après une simulation", rows: [
                 ["Défense", "La simulation ratée remplace le contre de champ."],
                 ["Résolution", "L’action de champ se poursuit sans jet de duel."],
@@ -208,15 +208,15 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
                     defenderId, defenderSlot, diceTag, clearanceBonus, breakdown, specialAction, discountAttack, discountDefense,
                 };
                 afterReveals(() => showCaptainRerollPrompt(attackTeam));
-                return { isTie: false, duelResult: "pending_reroll", defenderId, defenderSlot, diceTag, attackerId, breakdown };
+                return { isTie: false, duelResult: "pending_reroll", defenderId, defenderSlot, diceTag, attackerId, breakdown, discountAttack };
             }
         }
-        return { isTie: false, duelResult: critWinner, defenderId, defenderSlot, diceTag, attackerId, breakdown };
+        return { isTie: false, duelResult: critWinner, defenderId, defenderSlot, diceTag, attackerId, breakdown, discountAttack };
     }
 
     const diff = attackScore - defenseScore;
     if (diff === 0) {
-        return { isTie: true, duelResult: "tie", defenderId, defenderSlot, diceTag, attackerId, breakdown };
+        return { isTie: true, duelResult: "tie", defenderId, defenderSlot, diceTag, attackerId, breakdown, discountAttack };
     }
 
     const rawResult = diff > 0 ? "attack" : "defense";
@@ -250,12 +250,12 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
                 defenderId, defenderSlot, diceTag, clearanceBonus, breakdown, specialAction, discountAttack, discountDefense,
             };
             afterReveals(() => showCaptainRerollPrompt(attackTeam));
-            return { isTie: false, duelResult: "pending_reroll", defenderId, defenderSlot, diceTag, attackerId, breakdown };
+            return { isTie: false, duelResult: "pending_reroll", defenderId, defenderSlot, diceTag, attackerId, breakdown, discountAttack };
         }
     }
     // ── FIN CAPTAIN REROLL ──────────────────────────────────────
 
-    return { isTie: false, duelResult: rawResult, defenderId, defenderSlot, diceTag, attackerId, breakdown };
+    return { isTie: false, duelResult: rawResult, defenderId, defenderSlot, diceTag, attackerId, breakdown, discountAttack };
 }
 
 // -----------------------------------------------------------

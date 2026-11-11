@@ -96,7 +96,7 @@ export function continueShot(attackTeam, defenseTeam, defenseAction, isSpecial, 
 
     b.zoneIndex = MAX_ZONE_INDEX; b.laneIndex = originLane;
 
-    shared.state.pendingShotContext = { stage: "keeper", attackTeam, defenseTeam, originZone, originLane, isSpecial, gkAttackBase, distancePenalty, logParts: ["Zone " + (originZone + 1)] };
+    shared.state.pendingShotContext = { stage: "keeper", attackTeam, defenseTeam, originZone, originLane, isSpecial, gkAttackBase, distancePenalty, attackCostPaid: true, discountAttack: duel.discountAttack, logParts: ["Zone " + (originZone + 1)] };
 
     animateShotToKeeper(defenseTeam, () => {
         const defPrefix = defenseTeam === "internal" ? "home" : "away";
@@ -363,7 +363,12 @@ export function resolveShotKeeperDuel(ctx, defenseChoice) {
     });
 
     showDuelDice(attackScore, defenseScore, aRoll, dRoll, breakdown);
-    applyStaminaCost(attackerId, "attack", isSpecial ? "special" : "shot", aRoll.critSuccess);
+    // Le même tir a déjà été payé lors du duel contre le joueur de champ.
+    if (ctx.attackCostPaid) {
+        if (aRoll.critSuccess) ctx.discountAttack?.();
+    } else {
+        applyStaminaCost(attackerId, "attack", isSpecial ? "special" : "shot", aRoll.critSuccess);
+    }
 
     const checkInjury = (pid) => {
         if (!pid) return;

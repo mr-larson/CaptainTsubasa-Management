@@ -193,9 +193,9 @@ export function doReroll(ctx, heroic = false) {
     }
 
     if (newRawResult === "tie") {
-        return { isTie: true, duelResult: "tie", defenderId, defenderSlot, diceTag: newDiceTag, attackerId: getPlayerId(attackTeam, b.number), breakdown };
+        return { isTie: true, duelResult: "tie", defenderId, defenderSlot, diceTag: newDiceTag, attackerId: getPlayerId(attackTeam, b.number), breakdown, discountAttack: ctx.discountAttack };
     }
-    return { isTie: false, duelResult: newRawResult, defenderId, defenderSlot, diceTag: newDiceTag, attackerId: getPlayerId(attackTeam, b.number), breakdown };
+    return { isTie: false, duelResult: newRawResult, defenderId, defenderSlot, diceTag: newDiceTag, attackerId: getPlayerId(attackTeam, b.number), breakdown, discountAttack: ctx.discountAttack };
 }
 
 /**
