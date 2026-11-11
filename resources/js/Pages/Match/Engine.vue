@@ -2,10 +2,11 @@
     <Head title="Match" />
 
     <AuthenticatedLayout hide-nav>
+        <PreMatchModal :show="showPreMatch" :config="engineConfig" @start="startMatch" />
         <LoadingOverlay :show="submittingResult" message="Enregistrement du match et fin de semaine…" />
 
         <div class="w-full px-4 lg:px-8 mt-4">
-            <div id="game-wrapper" ref="gameRoot" class="mx-auto w-full max-w-[1500px]">
+            <div id="game-wrapper" ref="gameRoot" :inert="showPreMatch ? '' : undefined" class="mx-auto w-full max-w-[1500px]">
 
                 <!-- =======================================================
                      TOP BAR : score (2/3) + control panel (1/3)
@@ -373,6 +374,7 @@ import { fieldClass } from '@/Components/fieldStyles';
 // ==========================
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import LoadingOverlay from '@/Components/LoadingOverlay.vue';
+import PreMatchModal from './PreMatchModal.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { confirmDialog } from '@/Composables/useDialog.js';
 import { onMounted, onBeforeUnmount, ref, computed } from 'vue';
@@ -401,6 +403,11 @@ const gameRoot = ref(/** @type {HTMLElement|null} */ (null));
 let cleanup = null;
 // Voile « enregistrement » pendant l'envoi du résultat (la fin de semaine côté serveur peut prendre du temps).
 const submittingResult = ref(false);
+const showPreMatch = ref(false);
+onMounted(() => {
+    showPreMatch.value = true;
+    initializeMatch();
+});
 
 // ...
 
@@ -462,11 +469,17 @@ function neutralizeMarkup(value) {
     return value;
 }
 
-onMounted(() => {
-    if (!gameRoot.value) return;
+function startMatch() {
+    showPreMatch.value = false;
+    cleanup?.resume?.();
+}
+
+function initializeMatch() {
+    if (!gameRoot.value || cleanup) return;
 
     cleanup = initMatchEngine(gameRoot.value, {
         ...neutralizeMarkup(props.engineConfig),
+        startPaused: true,
         onMatchEnd: ({ matchId, gameSaveId, scoresByTeamId, playerActions, match_stats, foulEvents, onFailed }) => {
             // Pas de `router.visit` en onSuccess : le serveur choisit la suite
             // (Play, fin de saison, game over) via sa redirection.
@@ -487,7 +500,7 @@ onMounted(() => {
             );
         },
     });
-});
+}
 
 // ── Quitter un match commencé ────────────────────────────────
 // Sans garde, « Retour » laissait le match programmé : on pouvait le rejouer

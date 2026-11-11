@@ -69,6 +69,7 @@ export function initMatchEngine(rootEl, config = {}) {
     if (!rootEl) return;
 
     const matchConfig = config || {};
+    let paused = Boolean(matchConfig.startPaused);
     const MAX_TURNS = matchConfig.maxTurns ?? GAME_RULES.MAX_TURNS; // réglable 10-80 par save
 
     const TEAMS = {
@@ -420,7 +421,7 @@ export function initMatchEngine(rootEl, config = {}) {
     //   IA — SCHEDULE
     // ==========================
     function scheduleAIAttack() {
-        if (!isAITeam(state.currentTeam) || state.phase !== "attack" || state.isGameOver) return;
+        if (paused || !isAITeam(state.currentTeam) || state.phase !== "attack" || state.isGameOver) return;
         const AI_THINK_MS = 150;
         setAIOverlay(true, TEXTS.ui.aiAttackTurn);
         const action = computeAIAttackChoice(ball, state.specialCooldown);
@@ -428,7 +429,7 @@ export function initMatchEngine(rootEl, config = {}) {
     }
 
     function scheduleAIDefense(attackAction, defendingTeam) {
-        if (!isAITeam(defendingTeam) || state.phase !== "defense" || !state.pendingAttack || state.isGameOver) return;
+        if (paused || !isAITeam(defendingTeam) || state.phase !== "defense" || !state.pendingAttack || state.isGameOver) return;
         const AI_THINK_MS = 150;
         setAIOverlay(true, TEXTS.ui.aiDefenseTurn);
 
@@ -572,6 +573,7 @@ export function initMatchEngine(rootEl, config = {}) {
     }
 
     function handleAttackClick(action) {
+        if (paused) return;
         if (state.isGameOver || state.isAnimating) return;
         if (state.turns >= MAX_TURNS || state.phase !== "attack") return;
         if (!["shot","pass","dribble","one_two","special","special-pass","special-dribble","special-cross","cross","long_pass"].includes(action)) return;
@@ -757,6 +759,7 @@ export function initMatchEngine(rootEl, config = {}) {
     }
 
     function handleDefenseClick(defense) {
+        if (paused) return;
         if (state.turns >= MAX_TURNS || state.isAnimating || state.phase !== "defense" || !state.pendingAttack) return;
 
         const isKeeperDuel =
@@ -992,6 +995,12 @@ export function initMatchEngine(rootEl, config = {}) {
         if (window.__matchRoster === roster) delete window.__matchRoster;
     }
     // Match commencé et résultat pas encore envoyé : quitter doit valider le score.
+    // Prépare le terrain et les commandes sans laisser l’IA jouer sous l’avant-match.
+    destroy.resume = () => {
+        if (!paused || state.disposed) return;
+        paused = false;
+        scheduleAIAttack();
+    };
     destroy.isInProgress = () => !state.disposed && !state.resultSubmitted && state.turns > 0;
     destroy.finishNow    = () => { state.isGameOver = true; submitResult(); };
     destroy.scoreLabel   = () => `${state.score.internal} - ${state.score.external}`;

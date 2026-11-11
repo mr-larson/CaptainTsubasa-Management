@@ -30,6 +30,10 @@ const props = defineProps({
         type: String,
         default: null,
     },
+    backdropClass: {
+        type: String,
+        default: 'bg-slate-900/50 backdrop-blur-sm',
+    },
     closeLabel: {
         type: String,
         default: 'Fermer',
@@ -116,7 +120,7 @@ const maxWidthClass = computed(() => {
                     leave-to-class="opacity-0"
                 >
                     <div v-show="show" class="fixed inset-0 transform transition-all" @click="close">
-                        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" />
+                        <div class="absolute inset-0" :class="backdropClass" />
                     </div>
                 </Transition>
 

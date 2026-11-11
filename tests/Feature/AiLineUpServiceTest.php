@@ -29,6 +29,77 @@ class AiLineUpServiceTest extends TestCase
         $this->service = app(AiLineUpService::class);
     }
 
+    public function test_ai_assigns_a_captain_and_keeps_the_choice_on_repeated_preparation(): void
+    {
+        $save = $this->makeSave();
+        $team = $this->makeTeam($save);
+        $ordinary = $this->makeContract($save, $team, $this->makePlayer($save));
+        $best = $this->makeContract($save, $team, $this->makePlayer($save, ['pass' => 90]));
+
+        $this->service->adjustLineupsForWeek($save);
+        $this->service->adjustLineupsForWeek($save->fresh());
+
+        $this->assertTrue($best->fresh()->is_captain);
+        $this->assertFalse($ordinary->fresh()->is_captain);
+        $this->assertSame(1, $team->contracts()->where('is_captain', true)->count());
+    }
+
+    public function test_ai_preserves_an_available_starting_captain_even_with_a_stronger_teammate(): void
+    {
+        $save = $this->makeSave();
+        $team = $this->makeTeam($save);
+        $captain = $this->makeContract($save, $team, $this->makePlayer($save), ['is_captain' => true]);
+        $stronger = $this->makeContract($save, $team, $this->makePlayer($save, ['pass' => 95]));
+
+        $this->service->adjustLineupsForWeek($save);
+
+        $this->assertTrue($captain->fresh()->is_captain);
+        $this->assertFalse($stronger->fresh()->is_captain);
+    }
+
+    public function test_ai_reassigns_captain_after_fatigue_rotation(): void
+    {
+        $save = $this->makeSave();
+        $team = $this->makeTeam($save, ['management_philosophy' => TeamStyle::PHILOSOPHY_ECONOMIST]);
+        $captain = $this->makeContract($save, $team, $this->makePlayer($save, ['stamina' => 30]), ['is_captain' => true]);
+        $replacement = $this->makeContract($save, $team, $this->makePlayer($save), ['is_starter' => false]);
+
+        $this->service->adjustLineupsForWeek($save);
+
+        $this->assertFalse($captain->fresh()->is_starter);
+        $this->assertFalse($captain->fresh()->is_captain);
+        $this->assertTrue($replacement->fresh()->is_captain);
+    }
+
+    public function test_ai_does_not_keep_an_injured_captain_even_without_a_replacement_for_his_position(): void
+    {
+        $save = $this->makeSave();
+        $team = $this->makeTeam($save);
+        $injured = $this->makePlayer($save);
+        $captain = $this->makeContract($save, $team, $injured, ['is_captain' => true]);
+        $available = $this->makeContract($save, $team, $this->makePlayer($save));
+        GameInjury::create([
+            'game_save_id' => $save->id, 'game_player_id' => $injured->id,
+            'severity' => 'moderate', 'weeks_out' => 2, 'week_injured' => 1, 'week_return' => 3,
+        ]);
+
+        $this->service->adjustLineupsForWeek($save);
+
+        $this->assertFalse($captain->fresh()->is_captain);
+        $this->assertTrue($available->fresh()->is_captain);
+    }
+
+    public function test_ai_captain_assignment_does_not_touch_human_teams(): void
+    {
+        $save = $this->makeSave();
+        $team = $this->makeTeam($save, ['is_controlled' => true, 'human_seat' => 1]);
+        $contract = $this->makeContract($save, $team, $this->makePlayer($save));
+
+        $this->service->adjustLineupsForWeek($save);
+
+        $this->assertFalse($contract->fresh()->is_captain);
+    }
+
     public function test_injured_starter_is_replaced_by_available_sub(): void
     {
         $save = $this->makeSave(['week' => 1]);

@@ -121,6 +121,10 @@ class GameMatchController extends Controller
         $homeLogoUrl = $homeTeam->logo_path ? '/' . ltrim($homeTeam->logo_path, '/') : null;
         $awayLogoUrl = $awayTeam->logo_path ? '/' . ltrim($awayTeam->logo_path, '/') : null;
 
+        $ranks = app(SeasonService::class)->sortStandings(
+            GameTeam::where('game_save_id', $gameSave->id)->get()
+        )->pluck('id')->flip()->map(fn ($index) => $index + 1);
+
         return Inertia::render('Match/Engine', [
             'engineConfig' => [
                 'gameSaveId'     => $gameSave->id,
@@ -153,6 +157,8 @@ class GameMatchController extends Controller
                     'internal' => [
                         'id'        => $internalTeam->id,
                         'name'      => $internalTeam->name,
+                        'description' => $internalTeam->description,
+                        'rank' => $ranks->get($internalTeam->id),
                         'logo_path' => $internalTeam->logo_path,
                         'formation' => $internalFormation,
                         'tacticalStyle' => $internalTeam->tactical_style,
@@ -162,6 +168,8 @@ class GameMatchController extends Controller
                     'external' => [
                         'id'        => $externalTeam->id,
                         'name'      => $externalTeam->name,
+                        'description' => $externalTeam->description,
+                        'rank' => $ranks->get($externalTeam->id),
                         'logo_path' => $externalTeam->logo_path,
                         'formation' => $externalFormation,
                         'tacticalStyle' => $externalTeam->tactical_style,

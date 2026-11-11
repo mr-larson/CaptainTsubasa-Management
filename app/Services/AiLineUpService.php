@@ -110,10 +110,35 @@ class AiLineUpService
                 ];
             }
             if (!$adapted) $this->adjustTeamLineup($team, $unavailableIds, $state);
+            $this->assignCaptain($team, $unavailableForMatch);
         }
 
         $gameSave->state = $state;
         $gameSave->save();
+    }
+
+    /** Conserve un capitaine éligible, sinon choisit le meilleur titulaire disponible. */
+    private function assignCaptain(GameTeam $team, array $unavailableIds): void
+    {
+        $eligible = $team->contracts->filter(fn ($contract) => $contract->is_starter
+            && $contract->gamePlayer
+            && !in_array($contract->game_player_id, $unavailableIds))
+            ->sortBy('id');
+
+        $captain = $eligible->firstWhere('is_captain', true)
+            ?? $eligible->sortByDesc(fn ($contract) => $this->playerOverall($contract->gamePlayer))->first();
+
+        foreach ($team->contracts as $contract) {
+            $isCaptain = $captain !== null && $contract->id === $captain->id;
+            if ((bool) $contract->is_captain === $isCaptain) continue;
+
+            $contract->is_captain = $isCaptain;
+            if ($isCaptain) {
+                $contract->captain_rerolls_remaining = 3;
+                $contract->captain_reroll_used_this_action = false;
+            }
+            $contract->save();
+        }
     }
 
     private function adaptFormation(GameTeam $team, array $unavailableIds, array &$state): bool
