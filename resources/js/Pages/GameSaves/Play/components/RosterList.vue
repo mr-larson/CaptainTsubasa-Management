@@ -138,7 +138,7 @@ const benchTitle = (p) => {
                                 </span>
                             </div>
 
-                            <!-- Stamina bar + valeur -->
+                            <!-- Endurance bar + valeur -->
                             <div class="w-12 flex flex-col items-end gap-0.5 shrink-0">
                                 <div class="text-2xs font-bold"
                                      :class="selectedId === p.id ? 'text-white/80' : 'text-slate-500'">

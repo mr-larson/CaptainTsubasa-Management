@@ -45,7 +45,7 @@ const staminaBar = (v) => v >= 60 ? 'bg-emerald-400' : v >= 30 ? 'bg-amber-400' 
                     role="button"
                     tabindex="0"
                     :aria-label="`${p.lastname ?? 'Joueur'}, remplaçant`"
-                    :title="[p.lastname, p.position, `stamina ${staminaOf(p)}`, statusOf(p)?.label].filter(Boolean).join(' · ')"
+                    :title="[p.lastname, p.position, `Endurance ${staminaOf(p)}`, statusOf(p)?.label].filter(Boolean).join(' · ')"
                     @keydown.enter.prevent.stop="emit('player-click', p)"
                     @keydown.space.prevent.stop="emit('player-click', p)"
                     @click.stop="emit('player-click', p)"

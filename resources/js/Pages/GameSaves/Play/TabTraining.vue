@@ -79,7 +79,7 @@ const trainingButtonState = computed(() => {
         return { disabled: true, label: 'Déjà entraîné cette semaine', reason: 'trained' };
     }
     if ((p.stamina ?? 0) < props.minStamina) {
-        return { disabled: true, label: `Trop fatigué (< ${props.minStamina} stamina)`, reason: 'tired' };
+        return { disabled: true, label: `Trop fatigué (< ${props.minStamina} endurance)`, reason: 'tired' };
     }
     if (props.trainingCost > 0 && !canAffordOneMore.value) {
         return { disabled: true, label: 'Budget insuffisant', reason: 'budget' };
@@ -168,7 +168,7 @@ const filteredAiEntries = computed(() =>
 const statLabel = (key) => ({
     shot: 'Tir', pass: 'Passe', dribble: 'Dribble', attack: 'Attaque',
     defense: 'Défense', speed: 'Vitesse', block: 'Contre',
-    intercept: 'Interc.', tackle: 'Tacle', stamina: 'Stamina',
+    intercept: 'Interc.', tackle: 'Tacle', stamina: 'Endurance',
     hand_save: 'Main', punch_save: 'Poings',
 }[key] ?? key);
 
@@ -311,7 +311,7 @@ const selectedPlayerPerf = computed(() => {
 
                     <!-- Identité -->
                     <PlayerIdentityCard :player="selectedPlayer"
-                                        :subtitle="`${positionLabel(selectedPlayer.position)} • Stamina ${selectedPlayer.stamina ?? '—'}`">
+                                        :subtitle="`${positionLabel(selectedPlayer.position)} • Endurance ${selectedPlayer.stamina ?? '—'}`">
                         <template #actions>
                             <ButtonPrimary type="button" size="sm" @click="emit('add-slot', selectedPlayer.id)" :disabled="trainingButtonState.disabled">
                                 {{ trainingButtonState.label }}
@@ -420,7 +420,7 @@ const selectedPlayerPerf = computed(() => {
                         🏋️ Entraînement manuel
                     </h4>
                     <p class="text-xs text-slate-400 mb-3">
-                        Choisis jusqu'à {{ maxPerWeek }} joueurs différents et la stat à améliorer (+1 à +5, coûte de la stamina<span v-if="trainingCost > 0"> et {{ trainingCost }} <GameBanknote /> par séance</span>).
+                        Choisis jusqu'à {{ maxPerWeek }} joueurs différents et la stat à améliorer (+1 à +5, coûte de l’endurance<span v-if="trainingCost > 0"> et {{ trainingCost }} <GameBanknote /> par séance</span>).
                     </p>
 
                     <div class="space-y-2 mb-3">
@@ -586,7 +586,7 @@ const selectedPlayerPerf = computed(() => {
                                 <div class="text-xs font-semibold text-slate-700 truncate">
                                     {{ playerForManualEntry(entry)?.lastname ?? `Joueur #${entry.player_id}` }}
                                 </div>
-                                <div class="text-2xs text-slate-400">{{ entry.special_label ? `Formation · ${entry.cost} GL` : `Stamina -${entry.stamina_cost}` }}</div>
+                                <div class="text-2xs text-slate-400">{{ entry.special_label ? `Formation · ${entry.cost} GL` : `Endurance -${entry.stamina_cost}` }}</div>
                             </div>
 
                             <div class="flex items-center gap-1.5">

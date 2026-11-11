@@ -26,7 +26,7 @@ const PAGES = [
     { icon: '📅', title: 'Calendrier',    text: 'Le calendrier de la saison et le détail de chaque match joué (score, stats, événements).' },
     { icon: '🏆', title: 'Classement',    text: 'Le classement du championnat (ou le bracket en Coupe du Monde).' },
     { icon: '📈', title: 'Stats',         text: 'Statistiques agrégées des joueurs sur la saison (buts, passes, etc.).' },
-    { icon: '🏃', title: 'Entraînement',  text: 'Entraîne tes joueurs pour faire progresser leurs stats. Limité par semaine, coûte de la stamina et de l\'argent par séance (selon la config).' },
+    { icon: '🏃', title: 'Entraînement',  text: 'Entraîne tes joueurs pour faire progresser leurs stats. Limité par semaine, coûte de l’endurance et de l\'argent par séance (selon la config).' },
     { icon: '🔁', title: 'Transferts',    text: 'Recrute des joueurs libres en cours de saison : tu fixes durée de contrat et salaire. L\'IA recrute aussi.' },
     { icon: '🃏', title: 'Cartes bonus',  text: 'Achète des cartes (bonus pour toi, malus pour l\'adversaire, défis sponsors) à activer avant un match.' },
     { icon: '⚙️', title: 'Gestion',       text: 'Base de données (joueurs/équipes), profil, configuration de la partie, et ces règles.' },
@@ -184,7 +184,7 @@ const verdictOutcomeLabel = (o) => ({
                 Les matchs se jouent en <strong>tours</strong> : à chaque action (duel, tir, arrêt…), les stats des joueurs concernés s'affrontent, modulées par le hasard, le moral et les cartes.
             </p>
             <ul class="text-xs text-slate-600 space-y-1 list-disc pl-4">
-                <li><strong>Stamina</strong> : chaque match en consomme ; le repos en récupère. Un joueur fatigué est moins performant.</li>
+                <li><strong>Endurance</strong> : chaque match en consomme ; le repos en récupère. Un joueur fatigué est moins performant.</li>
                 <li><strong>Moral</strong> : influe sur toutes les actions en match (de −10 % à +5 %), avec un possible « dépassement de soi » au-delà d'un certain seuil.</li>
                 <li><strong>Fautes & cartons</strong> : une faute peut blesser (selon la config) ; cumuler des cartons jaunes entraîne une suspension.</li>
                 <li><strong>Cartes bonus/malus</strong> : activées avant le match, elles avantagent ton équipe ou pénalisent l'adversaire.</li>

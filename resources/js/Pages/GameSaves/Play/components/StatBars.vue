@@ -22,7 +22,7 @@ const LUCK_STAT = { label: 'Chance', key: 'luck', color: STAT_COLORS.luck };
 
 const GK_STATS = [
     { label: 'Vitesse',  key: 'speed',      color: 'bg-sky-400' },
-    { label: 'Stamina',  key: 'stamina',    color: 'bg-emerald-400' },
+    { label: 'Endurance',  key: 'stamina',    color: 'bg-emerald-400' },
     LUCK_STAT,
     { label: 'Attaque',  key: 'attack',     color: 'bg-orange-400' },
     { label: 'Défense',  key: 'defense',    color: 'bg-blue-400' },
@@ -34,7 +34,7 @@ const GK_STATS = [
 
 const FIELD_STATS = [
     { label: 'Vitesse', key: 'speed',     color: 'bg-sky-400' },
-    { label: 'Stamina', key: 'stamina',   color: 'bg-emerald-400' },
+    { label: 'Endurance', key: 'stamina',   color: 'bg-emerald-400' },
     LUCK_STAT,
     { label: 'Attaque', key: 'attack',    color: 'bg-orange-400' },
     { label: 'Défense', key: 'defense',   color: 'bg-blue-400' },

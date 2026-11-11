@@ -190,7 +190,7 @@ const EMPTY = 'text-xs text-emerald-600';
             <section :class="SECTION">
                 <h4 class="text-sm font-semibold text-slate-700">
                     💪 Forme et moral
-                    <span class="text-slate-400 font-normal">· stamina moy. {{ averageStamina }} · moral moy.
+                    <span class="text-slate-400 font-normal">· endurance moy. {{ averageStamina }} · moral moy.
                         <span :class="moraleState(averageMorale).text">{{ moraleState(averageMorale).emoji }} {{ averageMorale }}</span></span>
                 </h4>
                 <button v-for="p in tired" :key="'t' + p.id" type="button" :class="ROW" @click="emit('open-player', p)">

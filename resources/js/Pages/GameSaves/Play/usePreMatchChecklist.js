@@ -112,7 +112,7 @@ export function usePreMatchChecklist({
             const stamina = Number(p.stamina ?? p.stats?.stamina ?? 0);
             if (stamina < LOW_STAMINA) {
                 items.push({ key: `st${p.id}`, level: 'warn', tab: 'my-team', player: p,
-                    text: `🔋 ${p.lastname} épuisé (stamina ${stamina})` });
+                    text: `🔋 ${p.lastname} épuisé (endurance ${stamina})` });
             }
         });
 

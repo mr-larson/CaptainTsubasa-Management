@@ -26,7 +26,7 @@ const RADAR_STATS = [
     { key: 'dribble', label: 'Dribble' },
     { key: 'defense', label: 'Défense' },
     { key: 'speed',   label: 'Vitesse' },
-    { key: 'stamina', label: 'Stamina' },
+    { key: 'stamina', label: 'Endurance' },
 ];
 
 const CX = 90, CY = 90, R = 68;

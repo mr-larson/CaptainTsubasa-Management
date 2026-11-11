@@ -198,9 +198,9 @@ const MASTERY_CHIP = {
                         <div v-if="playerForSlot(slot)?.is_captain"
                              class="absolute top-5 -right-1.5 w-3.5 h-3.5 rounded-sm bg-amber-400 border border-white text-[8px] leading-[11px] text-slate-700 text-center font-black pointer-events-none"
                              title="Capitaine">C</div>
-                        <!-- Stamina -->
+                        <!-- Endurance -->
                         <div v-if="playerForSlot(slot)" class="mt-0.5 w-8 h-[3px] rounded-full bg-black/40 overflow-hidden pointer-events-none"
-                             :title="`Stamina ${staminaOf(playerForSlot(slot))}`">
+                             :title="`Endurance ${staminaOf(playerForSlot(slot))}`">
                             <div class="h-full rounded-full" :class="staminaBar(staminaOf(playerForSlot(slot)))"
                                  :style="{ width: Math.min(staminaOf(playerForSlot(slot)), 100) + '%' }"></div>
                         </div>
@@ -258,7 +258,7 @@ const MASTERY_CHIP = {
                             <span v-if="c.mastery" class="px-1.5 py-0.5 rounded-full text-3xs font-bold" :class="MASTERY_CHIP[c.mastery].class">
                                 {{ MASTERY_CHIP[c.mastery].label }}
                             </span>
-                            <span class="w-8 text-right text-2xs font-bold text-slate-400" title="Stamina">{{ c.player.stamina ?? c.player.stats?.stamina ?? '—' }}</span>
+                            <span class="w-8 text-right text-2xs font-bold text-slate-400" title="Endurance">{{ c.player.stamina ?? c.player.stats?.stamina ?? '—' }}</span>
                         </button>
                         <p v-if="!openSlotCandidates.length" class="text-xs text-slate-400 italic text-center py-4">
                             Aucun remplaçant disponible.

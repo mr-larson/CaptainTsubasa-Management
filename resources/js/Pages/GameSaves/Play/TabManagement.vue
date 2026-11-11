@@ -270,26 +270,26 @@ function resetDefaults() {
                         <label class="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
                             <input type="checkbox" v-model="config.bonus_cards_enabled"
                                    class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
-                            Bonus cards
+                            Cartes bonus
                         </label>
                         <label class="flex items-center gap-2 text-sm cursor-pointer"
                                :class="config.bonus_cards_enabled ? 'text-slate-700' : 'text-slate-400'">
                             <input type="checkbox" v-model="config.malus_cards_enabled"
                                    :disabled="!config.bonus_cards_enabled"
                                    class="rounded border-slate-300 text-teal-500 focus:ring-teal-400 disabled:opacity-40" />
-                            Malus cards
+                            Cartes malus
                         </label>
                     </div>
                 </div>
 
-                <!-- Fatigue / Stamina -->
+                <!-- Fatigue / Endurance -->
                 <div class="border border-slate-200 rounded-lg bg-white p-4 flex flex-col gap-3">
                     <h4 class="text-sm font-bold text-slate-700 flex items-center gap-1.5">
-                        <span class="text-base">⚡</span> Fatigue & Stamina
+                        <span class="text-base">⚡</span> Fatigue & Endurance
                     </h4>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="flex flex-col gap-1">
-                            <label class="text-xs text-slate-600">Coût stamina par match (joueurs titulaires)</label>
+                            <label class="text-xs text-slate-600">Coût en endurance par match (joueurs titulaires)</label>
                             <div class="flex items-center gap-2">
                                 <input type="range" v-model.number="config.match_stamina_cost"
                                        min="0" max="20" step="1"
@@ -389,7 +389,7 @@ function resetDefaults() {
                             </div>
                         </div>
                         <div class="flex flex-col gap-1">
-                            <label class="text-xs text-slate-600">Coût stamina</label>
+                            <label class="text-xs text-slate-600">Coût en endurance</label>
                             <div class="flex items-center gap-2">
                                 <input type="range" v-model.number="config.training_stamina_cost"
                                        min="0" max="15" step="1"
@@ -400,7 +400,7 @@ function resetDefaults() {
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div class="flex flex-col gap-1">
-                            <label class="text-xs text-slate-600">Stamina minimum requise pour s'entraîner</label>
+                            <label class="text-xs text-slate-600">Endurance minimum requise pour s'entraîner</label>
                             <div class="flex items-center gap-2">
                                 <input type="range" v-model.number="config.training_min_stamina"
                                        min="0" max="50" step="5"

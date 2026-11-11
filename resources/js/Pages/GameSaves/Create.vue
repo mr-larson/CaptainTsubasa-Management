@@ -447,14 +447,14 @@ function submit() {
                                 <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
                                     <input type="checkbox" v-model="config.bonus_cards_enabled"
                                            class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
-                                    Bonus cards
+                                    Cartes bonus
                                 </label>
                                 <label class="flex items-center gap-2 text-xs cursor-pointer"
                                        :class="config.bonus_cards_enabled ? 'text-slate-700' : 'text-slate-400'">
                                     <input type="checkbox" v-model="config.malus_cards_enabled"
                                            :disabled="!config.bonus_cards_enabled"
                                            class="rounded border-slate-300 text-teal-500 focus:ring-teal-400 disabled:opacity-40" />
-                                    Malus cards
+                                    Cartes malus
                                 </label>
                             </div>
                         </div>
@@ -507,11 +507,11 @@ function submit() {
                         <!-- Fatigue -->
                         <div class="border border-slate-200 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
                             <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                                <span>⚡</span> Fatigue & Stamina
+                                <span>⚡</span> Fatigue & Endurance
                             </h4>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div class="flex flex-col gap-1">
-                                    <label class="text-2xs text-slate-500">Coût stamina / match</label>
+                                    <label class="text-2xs text-slate-500">Coût en endurance / match</label>
                                     <div class="flex items-center gap-2">
                                         <input type="range" v-model.number="config.match_stamina_cost" min="0" max="20" class="flex-1 h-1 accent-teal-500" />
                                         <span class="text-xs font-bold text-slate-700 w-5 text-right">{{ config.match_stamina_cost }}</span>
@@ -614,7 +614,7 @@ function submit() {
                                     </div>
                                 </div>
                                 <div class="flex flex-col gap-1">
-                                    <label class="text-2xs text-slate-500">Coût stamina</label>
+                                    <label class="text-2xs text-slate-500">Coût en endurance</label>
                                     <div class="flex items-center gap-1">
                                         <input type="range" v-model.number="config.training_stamina_cost" min="0" max="15" class="flex-1 h-1 accent-teal-500" />
                                         <span class="text-2xs font-bold text-slate-700 w-3 text-right">{{ config.training_stamina_cost }}</span>
@@ -623,7 +623,7 @@ function submit() {
                             </div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div class="flex flex-col gap-1">
-                                    <label class="text-2xs text-slate-500">Stamina min. requise</label>
+                                    <label class="text-2xs text-slate-500">Endurance min. requise</label>
                                     <div class="flex items-center gap-2">
                                         <input type="range" v-model.number="config.training_min_stamina" min="0" max="50" step="5" class="flex-1 h-1 accent-teal-500" />
                                         <span class="text-xs font-bold text-slate-700 w-5 text-right">{{ config.training_min_stamina }}</span>

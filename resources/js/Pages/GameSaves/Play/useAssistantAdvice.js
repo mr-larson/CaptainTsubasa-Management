@@ -71,8 +71,8 @@ export function useAssistantAdvice({
                 severity: status ? 0 : 1,
                 icon: status ? status.icon : '🔋',
                 title: `${best.sub.lastname} à la place de ${starter.lastname}`,
-                detail: (status ? `${starter.lastname} : ${status.label.toLowerCase()}` : `${starter.lastname} épuisé (stamina ${staminaOf(starter)})`)
-                    + ` · ${best.sub.lastname} : stamina ${staminaOf(best.sub)}${best.mastery === 'secondary' ? ', poste secondaire' : best.mastery in MASTERY_RANK ? '' : ', hors poste (malus)'}`,
+                detail: (status ? `${starter.lastname} : ${status.label.toLowerCase()}` : `${starter.lastname} épuisé (endurance ${staminaOf(starter)})`)
+                    + ` · ${best.sub.lastname} : endurance ${staminaOf(best.sub)}${best.mastery === 'secondary' ? ', poste secondaire' : best.mastery in MASTERY_RANK ? '' : ', hors poste (malus)'}`,
                 actionLabel: 'Faire le changement',
                 starter, sub: best.sub,
             });

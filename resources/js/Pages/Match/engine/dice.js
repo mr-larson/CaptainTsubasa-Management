@@ -563,13 +563,13 @@ function formatBreakdownHTML(b) {
     ].join(""))}
         ${section("⚔️ Attaque", [
         ...baseRows(b.attack, b.meta?.attacker),
-        row("× Stamina", `${aStam.toFixed(2)} = <b>${(aBase * aStam).toFixed(1)}</b>`),
+        row("× Endurance", `${aStam.toFixed(2)} = <b>${(aBase * aStam).toFixed(1)}</b>`),
         ...(b.attack?.additions || []).map(x => row(x.label, `<span class="text-sky-500">${x.value}</span>`)),
         row("Total", `<b class="text-xs text-white">${Number(b.attack?.total ?? 0).toFixed(1)}</b>`),
     ].join(""))}
         ${section("🛡️ Défense", [
         ...baseRows(b.defense, b.meta?.defender),
-        row("× Stamina", `${dStam.toFixed(2)} = <b>${(dBase * dStam).toFixed(1)}</b>`),
+        row("× Endurance", `${dStam.toFixed(2)} = <b>${(dBase * dStam).toFixed(1)}</b>`),
         ...(b.defense?.additions || []).map(x => row(x.label, `<span class="text-violet-500">${x.value}</span>`)),
         row("Total", `<b class="text-xs text-white">${Number(b.defense?.total ?? 0).toFixed(1)}</b>`),
     ].join(""))}
