@@ -11,7 +11,7 @@ import { RosterService } from './engine/RosterService.js';
 
 import {
     initStaminaModule, initStamina,
-    getStaminaRatio, staminaFactor, applyStaminaCost, updateStaminaUI,
+    getStaminaRatio, staminaFactor, updateStaminaUI,
 } from './engine/stamina.js';
 
 import {
@@ -156,7 +156,7 @@ export function initMatchEngine(rootEl, config = {}) {
         exitTurns:      {},   // game_player_id → tour de sortie forcée (expulsion, blessure)
         substitutions:      [],
         substitutionCount:  { internal: 0, external: 0 },
-        MAX_SUBSTITUTIONS:  matchConfig.maxSubstitutions ?? 3,
+        MAX_SUBSTITUTIONS:  matchConfig.maxSubstitutions ?? 5,
         defensePreview: null,
         _matchConfig:    matchConfig,
         _GK_HOLD_MS:     GK_HOLD_MS,
@@ -480,8 +480,7 @@ export function initMatchEngine(rootEl, config = {}) {
         state.isKickoff = false;
 
         const number     = [5, 6][Math.floor(Math.random() * 2)];
-        const attackerId = getPlayerId(attackTeam, ball.number);
-        applyStaminaCost(attackerId, "attack", "pass");
+        // La remise en jeu obligatoire ne consomme pas d’énergie d’action.
 
         setMessage(TEXTS.logs.kickoffTitle, `${TEAMS[attackTeam].label} joue court vers le n°${number}.`);
         pushLogEntry("kickoffTitle", [`Vers n°${number}`, "Auto"], null, state);

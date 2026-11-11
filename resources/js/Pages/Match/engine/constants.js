@@ -63,7 +63,7 @@ export const STAMINA_FACTORS = {
     EXHAUSTED: 0.35,  // = 0
 };
 
-export const STAMINA_COST_CROSS     = 18;
+export const STAMINA_COST_CROSS     = 10;
 export const STAMINA_COST_LONG_PASS = 15;
 export const STAMINA_COST_GLOBAL_SCALE = 1.0;
 // Usure passive appliquée à chaque titulaire sur le terrain à chaque tour, en
@@ -248,7 +248,7 @@ export const MAX_ZONE_INDEX       = ZONE_BOUNDS_INTERNAL.length - 2; // = 4
 export const STATS = {
     attack: {
         shot:    { power: 10, cost: 10 },
-        pass:    { power: 10, cost: 6 },
+        pass:    { power: 10, cost: 8 },
         dribble: { power: 10, cost: 4  },
         // Une-deux (duo d'alchimie) : progresse comme un dribble et se résout sur la passe.
         one_two: { power: 10, cost: 5  },
@@ -258,7 +258,7 @@ export const STATS = {
         "special-cross":   { power: 12, cost: 15 },
         "special-pass":    { power: 12, cost: 15 },
         "special-dribble": { power: 12, cost: 15 },
-        cross:     { power: 10, cost: 8 },
+        cross:     { power: 10, cost: 10 },
         long_pass: { power: 10, cost: 15 },
     },
     defenseField: {
@@ -270,8 +270,8 @@ export const STATS = {
         "field-special": { power: 12, cost: 10 },
     },
     defenseGK: {
-        hands:       { power: 10, cost: 5 },
-        punch:       { power: 10, cost: 3 },
+        hands:       { power: 10, cost: 8 },
+        punch:       { power: 10, cost: 4 },
         "gk-special":{ power: 12, cost: 10 },
     },
 };
