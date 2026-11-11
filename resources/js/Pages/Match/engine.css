@@ -583,3 +583,45 @@
 
 /* Stats utiles au duel en cours (fiches latérales) */
 .duel-stat { background: linear-gradient(90deg, rgb(153 246 228 / 0.42), rgb(153 246 228 / 0.18)); color: #0f766e; border-radius: 4px; margin: 0 -4px; padding: 0 4px; font-weight: 700; }
+
+/* Sifflet de début / fin : signal bref au centre du terrain. */
+.match-whistle {
+    position: absolute;
+    inset: 0;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+.match-whistle-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 14px 24px;
+    border: 1px solid rgb(255 255 255 / 85%);
+    border-radius: 20px;
+    background: rgb(255 255 255 / 94%);
+    color: theme('colors.teal.600');
+    box-shadow: 0 8px 30px rgb(15 23 42 / 20%);
+    font-size: 14px;
+    font-weight: 800;
+    animation: match-whistle-cue 700ms ease both;
+}
+.match-whistle-icon { width: 64px; height: 52px; }
+.match-whistle-end .match-whistle-badge {
+    color: theme('colors.slate.700');
+    animation-duration: 1000ms;
+}
+.match-whistle-rays { animation: match-whistle-rays 180ms ease-in-out 3 alternate; }
+@keyframes match-whistle-cue {
+    0% { opacity: 0; transform: scale(0.8) rotate(-5deg); }
+    25% { opacity: 1; transform: scale(1.05) rotate(0); }
+    40%, 75% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(0.96); }
+}
+@keyframes match-whistle-rays { from { opacity: 0.3; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+    .match-whistle-badge, .match-whistle-rays { animation: none; }
+}

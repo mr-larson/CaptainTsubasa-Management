@@ -407,6 +407,24 @@ export function initBasePositions(basePositions) {
     });
 }
 
+// Présentation : conserve les lignes de formation, resserrées dans chaque moitié.
+export function applyPreMatchPositions(basePositions) {
+    _rootEl.querySelectorAll(".player").forEach((el) => {
+        const base = basePositions[el.dataset.player];
+        if (!base) return;
+        const internal = el.classList.contains("internal");
+        const x = el.classList.contains("goalkeeper") ? base.x
+            : internal ? 3 + base.x * 0.55 : 97 - (100 - base.x) * 0.55;
+        el.style.left = x + "%";
+        el.style.top = base.y + "%";
+    });
+    if (_ui.ballEl) {
+        _ui.ballEl.style.left = "50%";
+        _ui.ballEl.style.top = "50%";
+        _ui.ballEl.textContent = "";
+    }
+}
+
 export function applyKickoffPositions(basePositions) {
     _rootEl.querySelectorAll(".player").forEach((el) => {
         const base = basePositions[el.dataset.player];

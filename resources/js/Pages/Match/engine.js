@@ -8,6 +8,7 @@ import {
 
 import { SIMULATION_COST, simulationThreshold, resolveSimulationRoll } from "./engine/luck.js";
 import { RosterService } from './engine/RosterService.js';
+import { createWhistleCue } from './engine/whistle.js';
 
 import {
     initStaminaModule, initStamina,
@@ -24,7 +25,7 @@ import {
     otherTeam, getPlayerId, getKeeperId, isGoalkeeperId,
     moveBallToPlayer, getCarrierElement, getPlayerXInternal,
     pickFieldDefender, pickWeightedPlayerInZone,
-    initBasePositions, applyKickoffPositions, restoreBasePositions,
+    initBasePositions, applyPreMatchPositions, applyKickoffPositions, restoreBasePositions,
     decayHeat, markTouch,
 } from './engine/field.js';
 
@@ -68,8 +69,10 @@ import {
 export function initMatchEngine(rootEl, config = {}) {
     if (!rootEl) return;
 
+    const whistle = createWhistleCue(rootEl);
     const matchConfig = config || {};
     let paused = Boolean(matchConfig.startPaused);
+    let enteringKickoff = false;
     const MAX_TURNS = matchConfig.maxTurns ?? GAME_RULES.MAX_TURNS; // réglable 10-80 par save
 
     const TEAMS = {
@@ -395,7 +398,10 @@ export function initMatchEngine(rootEl, config = {}) {
             }
 
             refreshUI();
-            if (ui.matchEndActionsEl) ui.matchEndActionsEl.classList.remove("hidden");
+            whistle.show("end", () => {
+                if (state.disposed) return;
+                ui.matchEndActionsEl?.classList.remove("hidden");
+            });
             // « Suite » remplace « Retour » : un seul bouton, qui ne déborde plus sur le logo.
             rootEl.ownerDocument.getElementById("btn-back-to-game")?.classList.add("hidden");
 
@@ -978,6 +984,8 @@ export function initMatchEngine(rootEl, config = {}) {
         const awayCard = rootEl.querySelector("#away-card");
         homeCard?.classList.replace("team-external", "team-internal") || homeCard?.classList.add("team-internal");
         awayCard?.classList.replace("team-internal", "team-external") || awayCard?.classList.add("team-external");
+
+        if (paused) applyPreMatchPositions(basePositions);
     }
 
     init();
@@ -987,6 +995,7 @@ export function initMatchEngine(rootEl, config = {}) {
     // (toast, file de révélation) ne fuit pas dans le match suivant.
     function destroy() {
         state.disposed = true;
+        whistle.dispose();
         disposeUIModule();
         disposeDiceUI();
         hideBreakdownTooltip();
@@ -996,9 +1005,25 @@ export function initMatchEngine(rootEl, config = {}) {
     // Match commencé et résultat pas encore envoyé : quitter doit valider le score.
     // Prépare le terrain et les commandes sans laisser l’IA jouer sous l’avant-match.
     destroy.resume = () => {
-        if (!paused || state.disposed) return;
-        paused = false;
-        scheduleAIAttack();
+        if (!paused || enteringKickoff || state.disposed) return;
+        enteringKickoff = true;
+        // Attend la disparition de la modale, puis laisse les joueurs se placer
+        // avant de rendre la main au manager ou à l’IA.
+        setTimeout(() => {
+            if (state.disposed) return;
+            applyKickoffPositions(basePositions);
+            state._moveBallFn(state.currentTeam, ball.number);
+            const duration = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? 0 : 700;
+            setTimeout(() => {
+                if (state.disposed) return;
+                whistle.show("start", () => {
+                    if (state.disposed) return;
+                    paused = false;
+                    enteringKickoff = false;
+                    scheduleAIAttack();
+                });
+            }, duration);
+        }, 200);
     };
     destroy.isInProgress = () => !state.disposed && !state.resultSubmitted && state.turns > 0;
     destroy.finishNow    = () => { state.isGameOver = true; submitResult(); };

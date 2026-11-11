@@ -93,8 +93,7 @@ const teams = computed(() => {
                                                 ? `${team.rank}${team.rank === 1 ? 'er' : 'e'} au classement`
                                                 : 'Classement indisponible'
                                         }}
-                                        · Note du onze : <strong>{{ team.overall ?? '—' }}</strong
-                                        ><span v-if="team.overall != null"> / 100</span>
+                                        · Note du onze : <strong>{{ team.overall ?? '—' }}</strong>
                                     </p>
                                 </div>
                             </div>
