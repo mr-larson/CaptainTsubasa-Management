@@ -124,6 +124,7 @@ export function initMatchEngine(rootEl, config = {}) {
     const basePositions = {};
 
     const state = {
+        criticalsEnabled: matchConfig.criticalsEnabled ?? true,
         maxTurns: MAX_TURNS, // lu par ui.js (horloge) et resolvers.js (fin de match de l'IA)
         ball: { team: "internal", zoneIndex: 1, laneIndex: 1, number: 8, frontOfKeeper: false },
         currentTeam:   "internal",
@@ -154,7 +155,7 @@ export function initMatchEngine(rootEl, config = {}) {
         exitTurns:      {},   // game_player_id → tour de sortie forcée (expulsion, blessure)
         substitutions:      [],
         substitutionCount:  { internal: 0, external: 0 },
-        MAX_SUBSTITUTIONS:  3,
+        MAX_SUBSTITUTIONS:  matchConfig.maxSubstitutions ?? 3,
         defensePreview: null,
         _matchConfig:    matchConfig,
         _GK_HOLD_MS:     GK_HOLD_MS,
@@ -705,7 +706,7 @@ export function initMatchEngine(rootEl, config = {}) {
         const defenderId = getPlayerId(team, slot);
         const player = roster.getPlayerInfo(team, slot);
         const roll = rollDie();
-        const { effectiveLuck, threshold, success, card, sanctionRoll } = resolveSimulationRoll(player.stats?.luck, roll);
+        const { effectiveLuck, threshold, success, card, sanctionRoll } = resolveSimulationRoll(player.stats?.luck, roll, Math.random, state.criticalsEnabled);
         const breakdown = {
             sections: [
                 { title: "🎭 Simulation", rows: [

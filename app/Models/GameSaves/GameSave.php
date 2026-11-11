@@ -5,6 +5,7 @@ namespace App\Models\GameSaves;
 use App\Helpers\PlayerLuck;
 use App\Models\Team;
 use App\Models\User;
+use App\Services\CareerObjectiveService;
 use App\Services\TrainableSpecialMoves;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -153,7 +154,7 @@ class GameSave extends Model
             && !($break['completed'] ?? true);
     }
 
-    public const DRAFT_BUDGETS = ['conquest' => 6000, 'standard' => 8000, 'survival' => 10000, 'none' => 8000];
+    public const DRAFT_BUDGETS = ['conquest' => 7000, 'standard' => 8500, 'survival' => 10000, 'none' => 8000];
 
     public const DEFAULT_CONFIG = [
         'bonus_cards_enabled'       => true,
@@ -161,6 +162,8 @@ class GameSave extends Model
         'match_stamina_cost'        => 5,
         'rest_stamina_recovery'     => 10,
         'match_max_turns'           => 30,
+        'match_max_substitutions'   => 3,
+        'match_criticals_enabled'   => true,
         'injury_on_foul'            => true,
         'suspension_on_3_yellows'   => true,
         'training_max_per_week'     => 3,
@@ -191,7 +194,9 @@ class GameSave extends Model
         // Tirée à la création et au passage à une nouvelle saison.
         'luck_random'               => true,
         // Budget de départ des clubs IA (création du monde uniquement)
+        'human_start_budget'        => null, // Par défaut, budget du mandat.
         'ai_start_budget'           => 2500,
+        'ai_draft_budget'           => 10000,
         'draft_budget'              => self::DRAFT_BUDGETS['standard'],
         // Accès aux autres clubs : composition des équipes IA modifiable depuis « Autres équipes »
         'other_teams_editable'      => false,
@@ -216,6 +221,8 @@ class GameSave extends Model
             'match_stamina_cost'      => ['integer', 'min:0', 'max:20'],
             'rest_stamina_recovery'   => ['integer', 'min:0', 'max:30'],
             'match_max_turns'         => ['integer', 'min:10', 'max:80'],
+            'match_max_substitutions' => ['integer', 'min:0', 'max:11'],
+            'match_criticals_enabled' => ['boolean'],
             'injury_on_foul'          => ['boolean'],
             'suspension_on_3_yellows' => ['boolean'],
             'training_max_per_week'   => ['integer', 'min:1', 'max:10'],
@@ -238,6 +245,8 @@ class GameSave extends Model
             'initial_speed_random'    => ['boolean'],
             'luck_random'             => ['boolean'],
             'ai_start_budget'         => ['integer', 'min:0', 'max:20000'],
+            'human_start_budget'      => ['integer', 'min:0', 'max:20000'],
+            'ai_draft_budget'         => ['integer', 'min:3000', 'max:20000'],
             'draft_budget'            => ['integer', 'min:3000', 'max:20000'],
             'other_teams_editable'    => ['boolean'],
         ];
@@ -311,6 +320,9 @@ class GameSave extends Model
         $saved = $this->state['config'] ?? [];
         $config = array_merge(self::DEFAULT_CONFIG, $saved);
         $config['draft_budget'] = $saved['draft_budget'] ?? self::DRAFT_BUDGETS[$config['career_difficulty']] ?? self::DEFAULT_CONFIG['draft_budget'];
+        $config['human_start_budget'] = $saved['human_start_budget']
+            ?? CareerObjectiveService::PRESETS[$config['career_difficulty']]['start_budget']
+            ?? CareerObjectiveService::SANDBOX_START_BUDGET;
         if ($key === null) {
             return $config;
         }

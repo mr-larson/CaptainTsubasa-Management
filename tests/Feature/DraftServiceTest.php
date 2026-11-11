@@ -56,7 +56,7 @@ class DraftServiceTest extends TestCase
     public function test_init_draft_opens_a_separate_budget_for_each_team(): void
     {
         $save = $this->makeSave(['phase' => 'intersaison_draft']);
-        $a = $this->makeTeam($save, ['budget' => 500]);
+        $a = $this->makeTeam($save, ['budget' => 500, 'is_controlled' => true, 'human_seat' => 1]);
         $b = $this->makeTeam($save, ['budget' => 100000]);
         $save->setConfig(['draft_budget' => 6000]);
 
@@ -66,7 +66,7 @@ class DraftServiceTest extends TestCase
         $this->assertSame(100000, (int) $b->fresh()->budget);
 
         $draft = $save->fresh()->state['draft'];
-        $this->assertSame([$a->id => 6000, $b->id => 6000], $draft['budgets']);
+        $this->assertSame([$a->id => 6000, $b->id => 10000], $draft['budgets']);
         $this->assertSame([$a->id, $b->id], $draft['order']);
         $this->assertSame(0, $draft['current_pick_index']);
         $this->assertSame(1, $draft['round']);
@@ -96,7 +96,7 @@ class DraftServiceTest extends TestCase
 
         // Coût = adjusted_cost × longueur de saison × réduction (1000 × 2 × 0.5 = 1000).
         $this->assertSame(500, (int) $a->fresh()->budget);
-        $this->assertSame(7000, DraftService::budgetFor($save->fresh(), $a->fresh()));
+        $this->assertSame(9000, DraftService::budgetFor($save->fresh(), $a->fresh()));
 
         // La main passe à l'équipe suivante.
         $this->assertSame($b->id, $this->service->getCurrentTeamId($save->fresh()));
@@ -105,17 +105,22 @@ class DraftServiceTest extends TestCase
     public function test_draft_budget_defaults_to_the_difficulty_and_accepts_an_override(): void
     {
         $save = $this->makeSave();
-        $team = $this->makeTeam($save);
+        $team = $this->makeTeam($save, ['is_controlled' => true, 'human_seat' => 1]);
+        $secondHuman = $this->makeTeam($save, ['is_controlled' => true, 'human_seat' => 2]);
+        $aiTeam = $this->makeTeam($save);
 
-        foreach (['conquest' => 6000, 'standard' => 8000, 'survival' => 10000] as $difficulty => $budget) {
+        foreach (['conquest' => 7000, 'standard' => 8500, 'survival' => 10000] as $difficulty => $budget) {
             $save->setConfig(['career_difficulty' => $difficulty]);
-            $this->service->initDraft($save, [$team->id]);
+            $this->service->initDraft($save, [$team->id, $secondHuman->id, $aiTeam->id]);
             $this->assertSame($budget, DraftService::budgetFor($save, $team));
+            $this->assertSame($budget, DraftService::budgetFor($save, $secondHuman));
+            $this->assertSame(10000, DraftService::budgetFor($save, $aiTeam));
         }
 
-        $save->setConfig(['draft_budget' => 6500]);
-        $this->service->initDraft($save, [$team->id]);
+        $save->setConfig(['draft_budget' => 6500, 'ai_draft_budget' => 12000]);
+        $this->service->initDraft($save, [$team->id, $aiTeam->id]);
         $this->assertSame(6500, DraftService::budgetFor($save, $team));
+        $this->assertSame(12000, DraftService::budgetFor($save, $aiTeam));
     }
 
     public function test_new_drafts_discount_modest_salaries_and_older_drafts_keep_their_prices(): void
@@ -168,7 +173,7 @@ class DraftServiceTest extends TestCase
         $b = $this->makeTeam($save, ['budget' => 100000]);
         $this->service->initDraft($save, [$a->id, $b->id]);
 
-        $expensive = $this->makePlayer($save, ['cost' => 9000]);
+        $expensive = $this->makePlayer($save, ['cost' => 11000]);
 
         $this->assertNull($this->service->executePick($save->fresh(), $expensive->id));
         $this->assertFalse(GameContract::where('game_player_id', $expensive->id)->exists());
@@ -227,7 +232,7 @@ class DraftServiceTest extends TestCase
         [$human] = $this->makeTeamWithSquad($save, ['is_controlled' => true, 'human_seat' => 1, 'budget' => 0], DraftService::MIN_SQUAD - 2);
         $save->update(['controlled_game_team_id' => $human->id]);
         $this->service->initDraft($save, [$human->id]);
-        $this->makePlayer($save, ['cost' => 9000]); // joueur libre, trop cher pour l'enveloppe
+        $this->makePlayer($save, ['cost' => 11000]); // joueur libre, trop cher pour l'enveloppe
 
         $this->assertFalse($this->service->hasAffordablePlayer($save->fresh(), $human->fresh()));
 

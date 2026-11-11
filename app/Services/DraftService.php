@@ -23,11 +23,17 @@ class DraftService
      */
     public function initDraft(GameSave $gameSave, array $teamIdsOrder): void
     {
-        $draftBudget = (int) $gameSave->getConfig('draft_budget');
+        $humanBudget = (int) $gameSave->getConfig('draft_budget');
+        $aiBudget = (int) $gameSave->getConfig('ai_draft_budget');
+        $humanTeamIds = $gameSave->controlledGameTeamIds();
+        $budgets = [];
+        foreach ($teamIdsOrder as $teamId) {
+            $budgets[$teamId] = in_array((int) $teamId, $humanTeamIds, true) ? $humanBudget : $aiBudget;
+        }
         $state = $gameSave->state ?? [];
         $state['draft'] = [
             'order'              => array_values($teamIdsOrder),
-            'budgets'            => array_fill_keys($teamIdsOrder, $draftBudget),
+            'budgets'            => $budgets,
             'pricing'            => 'progressive',
             'current_pick_index' => 0,
             'round'              => 1,

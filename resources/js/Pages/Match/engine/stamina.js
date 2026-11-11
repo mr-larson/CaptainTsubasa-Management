@@ -73,7 +73,7 @@ function getSpeedStaminaReduction(playerId) {
 // -----------------------------------------------------------
 //   Application coût
 // -----------------------------------------------------------
-export function applyStaminaCost(playerId, category, actionKey) {
+export function applyStaminaCost(playerId, category, actionKey, critical = false) {
     if (!playerId) return;
     const cfg      = STATS?.[category]?.[actionKey];
     const baseCost = cfg ? cfg.cost : 0;
@@ -81,8 +81,18 @@ export function applyStaminaCost(playerId, category, actionKey) {
     const cost     = Math.max(0, Math.round(
         baseCost * staminaCostMultiplierFor(category) * STAMINA_COST_GLOBAL_SCALE * speedReduction
     ));
-    _state.stamina[playerId] = Math.max(0, getStamina(playerId) - cost);
+    const before = getStamina(playerId);
+    const criticalCost = Math.ceil(cost / 2);
+    _state.stamina[playerId] = Math.max(0, before - (critical ? criticalCost : cost));
     updateStaminaUI(playerId);
+
+    return () => {
+        if (critical) return;
+        const refund = Math.min(before, cost) - Math.min(before, criticalCost);
+        _state.stamina[playerId] += refund;
+        updateStaminaUI(playerId);
+        critical = true;
+    };
 }
 
 // -----------------------------------------------------------

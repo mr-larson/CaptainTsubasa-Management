@@ -8,7 +8,7 @@ import { getKeeperId, getPlayerId, otherTeam } from '../field.js';
 import { buildDefenseGKHTML, highlightDuelPlayers, highlightDuelStats, pushLogEntry, setActionBar, setMessage, syncRecovererCard, updateSideCard } from '../ui.js';
 import { playPlayerAnimation } from '../playerAnim.js';
 import { defensePrompt } from '../turnPrompt.js';
-import { afterFieldDuel, afterReveals, givePossessionOnTie, _moveBall, amendLastDuelEvent, animateGoalThenReset, animateShotToKeeper, applyCritBoost, ball, shared, recordDuelEvent, resetLastDribbler } from './context.js';
+import { afterFieldDuel, afterReveals, givePossessionOnTie, _moveBall, amendLastDuelEvent, animateGoalThenReset, animateShotToKeeper, ball, shared, recordDuelEvent, resetLastDribbler } from './context.js';
 import { applyDuelBonuses, defenseTag, getCounterTag, getLogTitleForDuel } from './duelRules.js';
 import { aiShouldReroll, consumeReroll } from './captainReroll.js';
 import { performKeeperClearance, runFieldDuel } from './fieldDuel.js';
@@ -296,8 +296,8 @@ export function resolveShotKeeperDuel(ctx, defenseChoice) {
 
     let defenseScore = defenseBase * gkFactor;
 
-    const aRoll      = rollD20WithCrit();
-    const dRoll      = rollD20WithCrit();
+    const aRoll      = rollD20WithCrit(shared.state.criticalsEnabled);
+    const dRoll      = rollD20WithCrit(shared.state.criticalsEnabled);
     const critWinner = resolveCritOutcome(aRoll, dRoll);
 
     attackScore  += aRoll.bonus;
@@ -326,8 +326,6 @@ export function resolveShotKeeperDuel(ctx, defenseChoice) {
         context: { isKeeperDuel: true },
     }));
 
-    if (aRoll.critSuccess) applyCritBoost(attackerId);
-    if (dRoll.critSuccess && keeperId) applyCritBoost(keeperId);
 
     let diceTag = attackScore.toFixed(1) + "-" + defenseScore.toFixed(1);
 
@@ -365,7 +363,7 @@ export function resolveShotKeeperDuel(ctx, defenseChoice) {
     });
 
     showDuelDice(attackScore, defenseScore, aRoll, dRoll, breakdown);
-    applyStaminaCost(attackerId, "attack", isSpecial ? "special" : "shot");
+    applyStaminaCost(attackerId, "attack", isSpecial ? "special" : "shot", aRoll.critSuccess);
 
     const checkInjury = (pid) => {
         if (!pid) return;
@@ -391,9 +389,9 @@ export function resolveShotKeeperDuel(ctx, defenseChoice) {
             });
         }
     };
+    const discountKeeper = applyStaminaCost(keeperId, "defenseGK", defenseAction, dRoll.critSuccess);
     checkInjury(attackerId);
     checkInjury(keeperId);
-    if (keeperId) applyStaminaCost(keeperId, "defenseGK", defenseAction);
     if (isSpecial) shared.markSpecialUsed(attackerId, "attack", "shot");
     if (defenseAction === "gk-special" && keeperId) shared.markSpecialUsed(keeperId, "defense", defenseBaseAction);
 
@@ -427,7 +425,8 @@ export function resolveShotKeeperDuel(ctx, defenseChoice) {
                     if (aiShouldReroll(defenseTeam)) {
                         // Reroll GK : 2d20 advantage pour la défense
                         consumeReroll(defenseTeam);
-                        const newDroll       = rollD20Advantage();
+                        const newDroll       = rollD20Advantage(shared.state.criticalsEnabled);
+                        if (newDroll.critSuccess) discountKeeper?.();
                         const { attackScore: newAttackScore, defenseScore: newDefenseScore } = rescoreKeeperDuel(newDroll);
                         const newCrit = resolveCritOutcome(aRoll, newDroll);
                         duelResult = newCrit ?? (newAttackScore > newDefenseScore ? "attack" : "defense");
@@ -458,7 +457,8 @@ export function resolveShotKeeperDuel(ctx, defenseChoice) {
                         if (!shared.state.pendingCaptainReroll) return;
                         shared.state.pendingCaptainReroll = null;
                         consumeReroll(defenseTeam);
-                        const newDroll2      = rollD20Advantage();
+                        const newDroll2      = rollD20Advantage(shared.state.criticalsEnabled);
+                        if (newDroll2.critSuccess) discountKeeper?.();
                         let newAScore, newDScore;
                         ({ attackScore: newAScore, defenseScore: newDScore } = rescoreKeeperDuel(newDroll2));
                         const newCrit2  = resolveCritOutcome(aRoll, newDroll2);

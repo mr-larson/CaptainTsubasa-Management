@@ -76,10 +76,13 @@ class DraftAIServiceTest extends TestCase
     public function test_draft_ai_reserves_enough_budget_to_finish_its_squad(): void
     {
         $save = $this->makeSave();
-        $save->setConfig(['draft_budget' => 3000]);
         [$team] = $this->makeTeamWithSquad($save, ['management_philosophy' => TeamStyle::PHILOSOPHY_STARS], 12);
         $opponent = $this->makeTeam($save);
         app(DraftService::class)->initDraft($save, [$team->id, $opponent->id]);
+
+        $state = $save->state;
+        $state['draft']['budgets'][$team->id] = 3000;
+        $save->update(['state' => $state]);
 
         $this->makePlayer($save, ['position' => 'Goalkeeper', 'cost' => 2950, 'hand_save' => 90]);
         $cheap = [

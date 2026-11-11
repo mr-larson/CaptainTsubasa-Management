@@ -47,29 +47,39 @@ class GameSaveSetupTest extends TestCase
     {
         $user = User::factory()->create();
         $team = Team::factory()->create();
+        $aiTeam = Team::factory()->create();
+        $budgets = ['human_start_budget' => 1750, 'ai_start_budget' => 3250, 'ai_draft_budget' => 11500];
         $player = Player::factory()->create(['cost' => 30, 'stats' => ['speed' => 60]]);
         $team->contracts()->create(['player_id' => $player->id, 'salary' => 30]);
 
         $this->actingAs($user)
-            ->post(route('game-saves.store'), ['period' => 'college'])
+            ->post(route('game-saves.store'), ['period' => 'college', 'game_config' => $budgets])
             ->assertRedirect(route('game-saves.setup'));
 
         $props = $this->get(route('game-saves.setup'))->viewData('page')['props'];
-        $preview = $props['teams'][0]['contracts'][0]['player'];
+        $selected = collect($props['teams'])->firstWhere('id', $team->id);
+        $preview = $selected['contracts'][0]['player'];
+        $selectedIndex = array_search($selected, $props['teams'], true);
+        $this->assertSame(1750, $props['humanStartBudget']);
+        $this->assertSame(11500, $props['aiDraftBudget']);
         $this->assertGreaterThanOrEqual(50, $preview['speed']);
         $this->assertLessThanOrEqual(70, $preview['speed']);
         $this->get(route('game-saves.setup'))->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('teams.0.contracts.0.player.speed', $preview['speed'])
-            ->where('teams.0.contracts.0.player.stamina', $preview['stamina'])
-            ->where('teams.0.contracts.0.player.morale_preview', $preview['morale_preview'])
-            ->where('teams.0.contracts.0.player.luck', $preview['luck']));
+            ->where("teams.{$selectedIndex}.contracts.0.player.speed", $preview['speed'])
+            ->where("teams.{$selectedIndex}.contracts.0.player.stamina", $preview['stamina'])
+            ->where("teams.{$selectedIndex}.contracts.0.player.morale_preview", $preview['morale_preview'])
+            ->where("teams.{$selectedIndex}.contracts.0.player.luck", $preview['luck']));
 
         $this->post(route('game-saves.start'), [
             'period' => 'college',
             'team_id' => $team->id,
             'setup_token' => $props['setupToken'],
+            'game_config' => $props['gameConfig'],
         ])
             ->assertRedirect();
+
+        $this->assertDatabaseHas('game_teams', ['base_team_id' => $team->id, 'budget' => 1750]);
+        $this->assertDatabaseHas('game_teams', ['base_team_id' => $aiTeam->id, 'budget' => 3250]);
 
         $saved = GamePlayer::where('base_player_id', $player->id)->sole();
         $this->assertSame((int) $preview['speed'], (int) $saved->speed);

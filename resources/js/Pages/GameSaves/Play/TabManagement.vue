@@ -94,6 +94,8 @@ function resetDefaults() {
         match_stamina_cost: 5,
         rest_stamina_recovery: 10,
         match_max_turns: 30,
+        match_max_substitutions: 3,
+        match_criticals_enabled: true,
         injury_on_foul: true,
         suspension_on_3_yellows: true,
         training_max_per_week: 3,
@@ -312,26 +314,44 @@ function resetDefaults() {
                     <h4 class="text-sm font-bold text-slate-700 flex items-center gap-1.5">
                         <span class="text-base">⚽</span> Match
                     </h4>
-                    <div class="flex flex-col gap-1 max-w-xs">
-                        <label class="text-xs text-slate-600">Nombre de tours par match</label>
-                        <div class="flex items-center gap-2">
-                            <input type="range" v-model.number="config.match_max_turns"
-                                   min="10" max="80" step="5"
-                                   class="flex-1 h-1.5 accent-teal-500" />
-                            <span class="text-xs font-bold text-slate-700 w-6 text-right">{{ config.match_max_turns }}</span>
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div class="flex flex-col gap-3">
+                            <div class="flex flex-col gap-1 max-w-xs">
+                                <label class="text-xs text-slate-600">Nombre de tours par match</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="range" v-model.number="config.match_max_turns"
+                                           min="10" max="80" step="5"
+                                           class="flex-1 h-1.5 accent-teal-500" />
+                                    <span class="text-xs font-bold text-slate-700 w-6 text-right">{{ config.match_max_turns }}</span>
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-1 max-w-xs">
+                                <label for="management-match-substitutions" class="text-xs text-slate-600">Remplacements par équipe</label>
+                                <div class="flex items-center gap-2">
+                                    <input id="management-match-substitutions" type="range" v-model.number="config.match_max_substitutions"
+                                           min="0" max="11" step="1"
+                                           class="flex-1 h-1.5 accent-teal-500" />
+                                    <span class="text-xs font-bold text-slate-700 w-6 text-right">{{ config.match_max_substitutions }}</span>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <label class="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
-                            <input type="checkbox" v-model="config.injury_on_foul"
-                                   class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
-                            Risque de blessure sur faute
-                        </label>
-                        <label class="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
-                            <input type="checkbox" v-model="config.suspension_on_3_yellows"
-                                   class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
-                            Suspension après 3 cartons jaunes
-                        </label>
+                        <div class="flex flex-col gap-2">
+                            <label class="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                                <input type="checkbox" v-model="config.match_criticals_enabled"
+                                       class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
+                                Activer les critiques
+                            </label>
+                            <label class="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                                <input type="checkbox" v-model="config.injury_on_foul"
+                                       class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
+                                Risque de blessure sur faute
+                            </label>
+                            <label class="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                                <input type="checkbox" v-model="config.suspension_on_3_yellows"
+                                       class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
+                                Suspension après 3 cartons jaunes
+                            </label>
+                        </div>
                     </div>
                 </div>
 

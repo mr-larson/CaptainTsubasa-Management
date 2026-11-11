@@ -9,6 +9,9 @@ import GameRules from '@/Components/GameRules.vue';
 import Modal from '@/Components/Modal.vue';
 
 const props = defineProps({
+    aiDraftBudget: { type: Number, required: true },
+    aiStartBudget: { type: Number, required: true },
+    humanStartBudgets: { type: Object, required: true },
     draftBudgets: { type: Object, required: true },
     periodPackages: { type: Array, default: () => [] },
 });
@@ -89,6 +92,8 @@ const config = reactive({
     match_stamina_cost: 5,
     rest_stamina_recovery: 10,
     match_max_turns: 30,
+    match_max_substitutions: 3,
+    match_criticals_enabled: true,
     injury_on_foul: true,
     suspension_on_3_yellows: true,
     training_max_per_week: 3,
@@ -100,7 +105,8 @@ const config = reactive({
     ai_transfers_enabled: true,
     ai_training_enabled: true,
     initial_morale_random: true, initial_stamina_random: true, initial_speed_random: true, luck_random: true,
-    ai_start_budget: 2500, draft_budget: props.draftBudgets.standard,
+    human_start_budget: props.humanStartBudgets.standard, ai_start_budget: props.aiStartBudget,
+    draft_budget: props.draftBudgets.standard, ai_draft_budget: props.aiDraftBudget,
     visible_origins: {
         captain_tsubasa: true,
         ecole_des_champions: false,
@@ -112,9 +118,19 @@ const config = reactive({
     internationals_visible: false,
 });
 
+const budgetFields = [
+    { key: 'human_start_budget', label: 'Budget de départ par équipe humaine', min: 0 },
+    { key: 'ai_start_budget', label: 'Budget de départ par équipe IA', min: 0 },
+    { key: 'draft_budget', label: 'Budget de draft par équipe humaine', min: 3000 },
+    { key: 'ai_draft_budget', label: 'Budget de draft par équipe IA', min: 3000 },
+];
+
 function selectDifficulty(difficulty) {
     if (config.draft_budget === props.draftBudgets[config.career_difficulty]) {
         config.draft_budget = props.draftBudgets[difficulty];
+    }
+    if (config.human_start_budget === props.humanStartBudgets[config.career_difficulty]) {
+        config.human_start_budget = props.humanStartBudgets[difficulty];
     }
     config.career_difficulty = difficulty;
 }
@@ -124,13 +140,15 @@ function resetDefaults() {
         career_difficulty: 'standard',
         season_challenges_enabled: true,
         bonus_cards_enabled: true, malus_cards_enabled: true,
-        match_stamina_cost: 5, rest_stamina_recovery: 10, match_max_turns: 30,
+        match_stamina_cost: 5, rest_stamina_recovery: 10, match_max_turns: 30, match_max_substitutions: 3,
+        match_criticals_enabled: true,
         injury_on_foul: true, suspension_on_3_yellows: true,
         training_max_per_week: 3, training_gain_min: 1, training_gain_max: 5,
         training_stamina_cost: 2, training_min_stamina: 10, training_cost: 150, position_training_cost: 200, special_training_cost: 300,
         ai_transfers_enabled: true, ai_training_enabled: true,
         initial_morale_random: true, initial_stamina_random: true, initial_speed_random: true, luck_random: true,
-        ai_start_budget: 2500, draft_budget: props.draftBudgets.standard,
+        human_start_budget: props.humanStartBudgets.standard, ai_start_budget: props.aiStartBudget,
+        draft_budget: props.draftBudgets.standard, ai_draft_budget: props.aiDraftBudget,
         visible_origins: { captain_tsubasa: true, ecole_des_champions: false, hungry_heart: false, blue_lock: false, ao_ashi: false, original: true },
         internationals_visible: false,
     });
@@ -515,14 +533,28 @@ function submit() {
                                 <span>⚽</span> Match
                             </h4>
                             <div class="grid grid-cols-1 items-start gap-3 sm:grid-cols-2">
-                                <div class="flex flex-col gap-1 max-w-xs">
-                                    <label class="text-2xs text-slate-500">Tours par match</label>
-                                    <div class="flex items-center gap-2">
-                                        <input type="range" v-model.number="config.match_max_turns" min="10" max="80" step="5" class="flex-1 h-1 accent-teal-500" />
-                                        <span class="text-xs font-bold text-slate-700 w-5 text-right">{{ config.match_max_turns }}</span>
+                                <div class="flex flex-col gap-3">
+                                    <div class="flex flex-col gap-1 max-w-xs">
+                                        <label class="text-2xs text-slate-500">Tours par match</label>
+                                        <div class="flex items-center gap-2">
+                                            <input type="range" v-model.number="config.match_max_turns" min="10" max="80" step="5" class="flex-1 h-1 accent-teal-500" />
+                                            <span class="text-xs font-bold text-slate-700 w-5 text-right">{{ config.match_max_turns }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-col gap-1 max-w-xs">
+                                        <label for="setup-match-substitutions" class="text-2xs text-slate-500">Remplacements par équipe</label>
+                                        <div class="flex items-center gap-2">
+                                            <input id="setup-match-substitutions" type="range" v-model.number="config.match_max_substitutions" min="0" max="11" step="1" class="flex-1 h-1 accent-teal-500" />
+                                            <span class="text-xs font-bold text-slate-700 w-5 text-right">{{ config.match_max_substitutions }}</span>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="flex flex-col gap-2">
+                                    <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                                        <input type="checkbox" v-model="config.match_criticals_enabled"
+                                               class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
+                                        Activer les critiques
+                                    </label>
                                     <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
                                         <input type="checkbox" v-model="config.injury_on_foul"
                                                class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
@@ -538,27 +570,20 @@ function submit() {
                         </div>
 
                         <!-- Économie -->
-                        <div class="border border-slate-200 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
+                        <div v-if="form.competition_type !== 'world_cup'" class="border border-slate-200 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
                             <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                                 <span>💰</span> Économie
                             </h4>
                             <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                <div class="flex flex-col gap-1 min-w-0">
-                                    <label class="text-2xs text-slate-500">Budget de départ des clubs IA</label>
+                                <div v-for="field in budgetFields" :key="field.key" class="flex flex-col gap-1 min-w-0">
+                                    <label :for="field.key" class="text-2xs text-slate-500">{{ field.label }}</label>
                                     <div class="flex items-center gap-2">
-                                        <input type="range" v-model.number="config.ai_start_budget" min="0" max="10000" step="250" class="flex-1 h-1 accent-teal-500" />
-                                        <span class="text-xs font-bold text-slate-700 w-14 text-right">{{ config.ai_start_budget }} <GameBanknote /></span>
+                                        <input :id="field.key" v-model.number="config[field.key]" type="range" :min="field.min" max="20000" step="250" class="flex-1 h-1 accent-teal-500" />
+                                        <span class="text-xs font-bold text-slate-700 w-14 text-right">{{ config[field.key] }} <GameBanknote /></span>
                                     </div>
-                                </div>
-                                <div v-if="form.competition_type !== 'world_cup'" class="flex flex-col gap-1 min-w-0">
-                                    <label for="draft-budget" class="text-2xs text-slate-500">Budget par équipe pour la draft</label>
-                                    <div class="flex items-center gap-2">
-                                        <input id="draft-budget" type="range" v-model.number="config.draft_budget" min="3000" max="20000" step="250" class="flex-1 h-1 accent-teal-500" />
-                                        <span class="text-xs font-bold text-slate-700 w-14 text-right">{{ config.draft_budget }} <GameBanknote /></span>
-                                    </div>
-                                    <p class="text-2xs text-slate-400">Disponible à chaque draft. Le solde expire à la fin de la draft.</p>
                                 </div>
                             </div>
+                            <p class="text-2xs text-slate-400">Les budgets de draft sont réservés au recrutement. Les soldes expirent à la fin de chaque draft.</p>
                         </div>
 
                         <!-- Entraînement -->

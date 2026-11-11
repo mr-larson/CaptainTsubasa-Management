@@ -109,8 +109,11 @@ export function doReroll(ctx, heroic = false) {
 
     const b = ball();
 
-    const newAroll = rollD20Advantage();  // 2d20 — prend le meilleur
-    const newDroll = rollD20WithCrit();   // 1d20 normal
+    const newAroll = rollD20Advantage(shared.state.criticalsEnabled);  // 2d20 — prend le meilleur
+    const newDroll = rollD20WithCrit(shared.state.criticalsEnabled);   // 1d20 normal
+
+    if (newAroll.critSuccess) ctx.discountAttack?.();
+    if (newDroll.critSuccess) ctx.discountDefense?.();
 
     let newAttackScore  = attackFactors.reduce((score, [, factor]) => score * factor, attackBaseRaw) * attackStamF;
     let newDefenseScore = defenseFactors.reduce((score, [, factor]) => score * factor, defenseBaseRaw) * defenseStamF;

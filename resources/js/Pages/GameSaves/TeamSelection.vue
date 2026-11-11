@@ -165,7 +165,7 @@
                                 <h4 class="text-2xs font-bold text-amber-600 uppercase tracking-wider mb-2">🎯 Mode Draft</h4>
                                 <div class="space-y-2 text-xs text-amber-700">
                                     <p>L'équipe démarre <span class="font-bold">sans joueur</span>. Tu construiras ton effectif lors du draft.</p>
-                                    <p>Chaque équipe reçoit une <span class="font-bold">enveloppe de {{ draftBudget }} <GameBanknote /></span> réservée au recrutement pendant la draft.</p>
+                                    <p>Chaque équipe humaine reçoit <span class="font-bold">{{ draftBudget }} <GameBanknote /></span> pour la draft. Chaque équipe IA reçoit <span class="font-bold">{{ aiDraftBudget }} <GameBanknote /></span>.</p>
                                     <p>Ordre de pioche : <span class="font-bold">aléatoire</span> (tirage au sort).</p>
                                     <p>Objectif : constituer un effectif de <span class="font-bold">14 à 18 joueurs</span>.</p>
                                 </div>
@@ -397,7 +397,7 @@
                                             </div>
                                             <div class="flex items-start gap-2">
                                                 <span class="text-amber-500 font-bold shrink-0">4.</span>
-                                                <p>Budget de draft : <span class="font-bold">{{ draftBudget }} <GameBanknote /></span>. Budget de départ en saison : <span class="font-bold">{{ startBudget }} <GameBanknote /></span>.</p>
+                                                <p>Budget de draft par équipe humaine : <span class="font-bold">{{ draftBudget }} <GameBanknote /></span>. Budget de départ en saison : <span class="font-bold">{{ startBudget }} <GameBanknote /></span>.</p>
                                             </div>
                                         </div>
                                     </div>
@@ -520,6 +520,7 @@ const props = defineProps({
     competitionType: { type: String, default: 'college_league' },
     gameConfig:      { type: Object, default: null },
     draftBudget:     { type: Number, required: true },
+    aiDraftBudget:   { type: Number, required: true },
     setupToken:      { type: String, default: null },
     // Budget de départ réel d'une équipe pilotée (selon la difficulté) ; null = budget du club.
     humanStartBudget: { type: Number, default: null },

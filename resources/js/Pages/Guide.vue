@@ -70,7 +70,7 @@ const counters = [
                 <li>Face au but, ton gardien arrête avec les mains, les poings ou sa technique spéciale.</li>
                 <li>Les techniques spéciales sont plus fortes mais demandent quelques tours de recharge.</li>
                 <li>Ton capitaine peut relancer les dés 3 fois par match.</li>
-                <li>L'endurance baisse au fil du match : tu peux faire jusqu'à 3 remplacements.</li>
+                <li>L'endurance baisse au fil du match : tu peux faire jusqu’à 3 remplacements par défaut. La limite par équipe se règle dans la configuration du match.</li>
                 <li>Les fautes peuvent donner des cartons (deux jaunes = expulsion) et des blessures.</li>
                 <li>En phase finale de Coupe du Monde, une égalité se départage aux tirs au but.</li>
             </ul>

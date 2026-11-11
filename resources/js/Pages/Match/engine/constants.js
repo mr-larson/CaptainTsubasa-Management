@@ -66,7 +66,6 @@ export const STAMINA_FACTORS = {
 export const STAMINA_COST_CROSS     = 18;
 export const STAMINA_COST_LONG_PASS = 15;
 export const STAMINA_COST_GLOBAL_SCALE = 1.0;
-export const CRIT_STAMINA_BOOST        = 10; // points récupérés sur un 20 naturel
 // Usure passive appliquée à chaque titulaire sur le terrain à chaque tour, en
 // plus des coûts d'action : rend la dégradation de fin de match visible et
 // récompense la stat `stamina` (qui fixe l'endurance max de départ).

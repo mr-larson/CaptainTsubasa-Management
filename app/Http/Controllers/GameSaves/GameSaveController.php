@@ -70,6 +70,10 @@ class GameSaveController extends Controller
         return Inertia::render('GameSaves/Create', [
             'periodPackages' => $this->periodPackagesSummary($request->user()),
             'draftBudgets' => GameSave::DRAFT_BUDGETS,
+            'aiDraftBudget' => GameSave::DEFAULT_CONFIG['ai_draft_budget'],
+            'aiStartBudget' => GameSave::DEFAULT_CONFIG['ai_start_budget'],
+            'humanStartBudgets' => ['none' => CareerObjectiveService::SANDBOX_START_BUDGET]
+                + array_map(fn (array $preset) => $preset['start_budget'], CareerObjectiveService::PRESETS),
         ]);
     }
 
@@ -252,14 +256,8 @@ class GameSaveController extends Controller
             }
         }
 
-        // Budget de départ réel d'une équipe humaine (cf. start()) : fixé par la
-        // difficulté du mandat, pas par le budget de référence du club.
-        $difficulty       = $gameConfig['career_difficulty'] ?? 'standard';
-        $humanStartBudget = CareerObjectiveService::PRESETS[$difficulty]['start_budget']
-            ?? ($difficulty === 'none' ? CareerObjectiveService::SANDBOX_START_BUDGET : null);
-
         return Inertia::render('GameSaves/TeamSelection', [
-            'humanStartBudget' => $humanStartBudget,
+            'humanStartBudget' => (int) $previewSave->getConfig('human_start_budget'),
             'label'           => $data['label'] ?? null,
             'period'          => $data['period'],
             'teams'           => $teams,
@@ -267,6 +265,7 @@ class GameSaveController extends Controller
             'competitionType' => $competitionType,
             'gameConfig'      => $gameConfig,
             'draftBudget'     => (int) $previewSave->getConfig('draft_budget'),
+            'aiDraftBudget'   => (int) $previewSave->getConfig('ai_draft_budget'),
             'setupToken'      => hash('sha256', (string) $seed),
             'periodPackage'   => $periodPackage,
         ]);
@@ -423,9 +422,7 @@ class GameSaveController extends Controller
         }
 
         // Marquer chaque équipe humaine (is_controlled + siège dans l'ordre choisi).
-        // La difficulté du mandat ajuste aussi leur budget de départ (l'IA garde le sien).
-        $difficulty       = $gameSave->getConfig('career_difficulty', 'standard');
-        $difficultyPreset = CareerObjectiveService::PRESETS[$difficulty] ?? null;
+        $humanStartBudget = (int) $gameSave->getConfig('human_start_budget');
 
         $seat = 1;
         $firstControlled = null;
@@ -436,11 +433,7 @@ class GameSaveController extends Controller
             }
             $gameTeam->is_controlled = true;
             $gameTeam->human_seat    = $seat++;
-            if ($difficultyPreset !== null) {
-                $gameTeam->budget = $difficultyPreset['start_budget'];
-            } elseif ($difficulty === 'none') {
-                $gameTeam->budget = CareerObjectiveService::SANDBOX_START_BUDGET;
-            }
+            $gameTeam->budget        = $humanStartBudget;
             $gameTeam->save();
             $firstControlled ??= $gameTeam;
         }
@@ -1225,7 +1218,7 @@ class GameSaveController extends Controller
         $this->authorizeGameSave('update', $gameSave);
 
         // Les options de départ sont définies lors de la création de la sauvegarde.
-        $rules = Arr::except(GameSave::configRules(), ['initial_morale_random', 'initial_stamina_random', 'initial_speed_random', 'luck_random', 'ai_start_budget', 'draft_budget']);
+        $rules = Arr::except(GameSave::configRules(), ['initial_morale_random', 'initial_stamina_random', 'initial_speed_random', 'luck_random', 'ai_start_budget', 'human_start_budget', 'ai_draft_budget', 'draft_budget']);
         $data  = GameSave::sanitizeConfig($request->validate($rules));
 
         if (! $gameSave->hasValidTrainingGains($data)) {

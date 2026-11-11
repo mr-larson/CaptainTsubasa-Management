@@ -6,7 +6,7 @@ import { applyStaminaCost, staminaFactor } from '../stamina.js';
 import { specialBaseFor } from '../RosterService.js';
 import { getCarrierElement, getPlayerId, pickFieldDefender, pickReceiverInCell, setBallToKeeperVisual } from '../field.js';
 import { highlightDuelPlayers, pushLogEntry, setMessage, syncRecovererCard, updateSideCard, updateTeamCard } from '../ui.js';
-import { afterReveals, _moveBall, animateBallToXY, applyCritBoost, ball, shared, recordDuelEvent, resetLastDribbler } from './context.js';
+import { afterReveals, _moveBall, animateBallToXY, ball, shared, recordDuelEvent, resetLastDribbler } from './context.js';
 import { defenseTag, isGoodDefenseChoice } from './duelRules.js';
 import { aiShouldReroll, canAttackerReroll, doReroll, showCaptainRerollPrompt, tryHeroicMoment } from './captainReroll.js';
 
@@ -99,8 +99,8 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
     if (shared.state.pendingClearanceBonus > 0) { attackScore += shared.state.pendingClearanceBonus; shared.state.pendingClearanceBonus = 0; }
 
     const HOME_BONUS = 0.5; // Léger avantage domicile
-    const aRoll      = rollD20WithCrit();
-    const dRoll      = rollD20WithCrit();
+    const aRoll      = rollD20WithCrit(shared.state.criticalsEnabled);
+    const dRoll      = rollD20WithCrit(shared.state.criticalsEnabled);
 
     // Bonus domicile : +1 sur le score final de l'équipe qui joue à domicile
     if (attackTeam  === shared.homeTeam) attackScore  += HOME_BONUS;
@@ -114,8 +114,6 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
     if (isGood === true) defenseScore += DUEL_RULES.GOOD_COUNTER_BONUS;
     if (isGood === false) attackScore += DUEL_RULES.GENERIC_ATTACK_BONUS;
 
-    if (aRoll.critSuccess) applyCritBoost(attackerId);
-    if (dRoll.critSuccess) applyCritBoost(defenderId);
 
     const meta = buildDuelMeta(
         { attackTeam, attackSlot: b.number, attackAction: attackType, defenseTeam, defenseSlot: defenderSlot, defenseAction },
@@ -149,8 +147,8 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
         shared.resolveFoulOutcome({ attackerId, defenderId, duelResult: finalResult, aRoll, dRoll });
     }
 
-    applyStaminaCost(attackerId, "attack", isSpecialCross ? "special-cross" : attackType);
-    applyStaminaCost(defenderId, "defenseField", defenseKind);
+    const discountAttack = applyStaminaCost(attackerId, "attack", isSpecialCross ? "special-cross" : attackType, aRoll.critSuccess);
+    const discountDefense = applyStaminaCost(defenderId, "defenseField", defenseKind, dRoll.critSuccess);
 
     const checkInjury = (pid) => {
         if (!pid) return;
@@ -189,7 +187,7 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
             return doReroll({
                 attackTeam, defenseTeam, attackType, defenseAction,
                 attackBaseRaw, defenseBaseRaw, attackStamF, defenseStamF, attackFactors, defenseFactors,
-                defenderId, defenderSlot, clearanceBonus, specialAction,
+                defenderId, defenderSlot, clearanceBonus, specialAction, discountAttack, discountDefense,
             }, true);
         }
         // Si crit defense ET capitaine peut reroller
@@ -199,7 +197,7 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
                     return doReroll({
                         attackTeam, defenseTeam, attackType, defenseAction,
                         attackBaseRaw, defenseBaseRaw, attackStamF, defenseStamF, attackFactors, defenseFactors,
-                        defenderId, defenderSlot, clearanceBonus, specialAction,
+                        defenderId, defenderSlot, clearanceBonus, specialAction, discountAttack, discountDefense,
                     });
                 }
                 shared.state.captainReroll[attackTeam].usedOnCurrentAction = true;
@@ -207,7 +205,7 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
                 shared.state.pendingCaptainReroll = {
                     attackTeam, defenseTeam, attackType, defenseAction,
                     attackBaseRaw, defenseBaseRaw, attackStamF, defenseStamF, attackFactors, defenseFactors,
-                    defenderId, defenderSlot, diceTag, clearanceBonus, breakdown, specialAction,
+                    defenderId, defenderSlot, diceTag, clearanceBonus, breakdown, specialAction, discountAttack, discountDefense,
                 };
                 afterReveals(() => showCaptainRerollPrompt(attackTeam));
                 return { isTie: false, duelResult: "pending_reroll", defenderId, defenderSlot, diceTag, attackerId, breakdown };
@@ -228,7 +226,7 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
         return doReroll({
             attackTeam, defenseTeam, attackType, defenseAction,
             attackBaseRaw, defenseBaseRaw, attackStamF, defenseStamF, attackFactors, defenseFactors,
-            defenderId, defenderSlot, clearanceBonus, specialAction,
+            defenderId, defenderSlot, clearanceBonus, specialAction, discountAttack, discountDefense,
         }, true);
     }
 
@@ -239,7 +237,7 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
                 return doReroll({
                     attackTeam, defenseTeam, attackType, defenseAction,
                     attackBaseRaw, defenseBaseRaw, attackStamF, defenseStamF, attackFactors, defenseFactors,
-                    defenderId, defenderSlot, clearanceBonus, specialAction,
+                    defenderId, defenderSlot, clearanceBonus, specialAction, discountAttack, discountDefense,
                 });
             }
             // IA décline → marquer quand même pour ne pas re-proposer
@@ -249,7 +247,7 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
             shared.state.pendingCaptainReroll = {
                 attackTeam, defenseTeam, attackType, defenseAction,
                 attackBaseRaw, defenseBaseRaw, attackStamF, defenseStamF, attackFactors, defenseFactors,
-                defenderId, defenderSlot, diceTag, clearanceBonus, breakdown, specialAction,
+                defenderId, defenderSlot, diceTag, clearanceBonus, breakdown, specialAction, discountAttack, discountDefense,
             };
             afterReveals(() => showCaptainRerollPrompt(attackTeam));
             return { isTie: false, duelResult: "pending_reroll", defenderId, defenderSlot, diceTag, attackerId, breakdown };

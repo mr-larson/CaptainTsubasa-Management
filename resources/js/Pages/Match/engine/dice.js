@@ -8,13 +8,13 @@ export function rollDie() {
     return 1 + Math.floor(Math.random() * DIE_SIDES);
 }
 
-export function rollD20WithCrit() {
+export function rollD20WithCrit(criticalsEnabled = true) {
     const roll = rollDie();
     return {
         roll,
         bonus:       roll / 2,
-        critSuccess: roll === 20,
-        critFail:    roll === 1,
+        critSuccess: criticalsEnabled && roll === 20,
+        critFail:    criticalsEnabled && roll === 1,
         isAdvantage: false,
     };
 }
@@ -23,7 +23,7 @@ export function rollD20WithCrit() {
  * Lancer 2d20 et prendre le meilleur (Advantage — D&D style).
  * Utilisé lors de la relance capitaine.
  */
-export function rollD20Advantage() {
+export function rollD20Advantage(criticalsEnabled = true) {
     const roll1 = rollDie();
     const roll2 = rollDie();
     const roll  = Math.max(roll1, roll2);
@@ -32,8 +32,8 @@ export function rollD20Advantage() {
         roll1,
         roll2,
         bonus:       roll / 2,
-        critSuccess: roll === 20,
-        critFail:    roll === 1,
+        critSuccess: criticalsEnabled && roll === 20,
+        critFail:    criticalsEnabled && roll === 1,
         isAdvantage: true,
     };
 }

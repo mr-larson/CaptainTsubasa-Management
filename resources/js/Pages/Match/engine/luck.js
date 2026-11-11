@@ -15,11 +15,12 @@ export function simulationThreshold(luck) {
     return Math.round(15 - (normalizedLuck(luck) - 20) / 6);
 }
 
-export function resolveSimulationRoll(luck, roll, yellowRoll = Math.random) {
+export function resolveSimulationRoll(luck, roll, yellowRoll = Math.random, criticalsEnabled = true) {
     const effectiveLuck = normalizedLuck(luck);
     const threshold = simulationThreshold(effectiveLuck);
     const success = roll > threshold;
-    const sanctionRoll = roll !== 1 && !success && roll < 10 ? yellowRoll() : null;
-    const card = roll === 1 ? "red" : sanctionRoll !== null && sanctionRoll < 0.5 ? "yellow" : null;
+    const criticalFailure = criticalsEnabled && roll === 1;
+    const sanctionRoll = !criticalFailure && !success && roll < 10 ? yellowRoll() : null;
+    const card = criticalFailure ? "red" : sanctionRoll !== null && sanctionRoll < 0.5 ? "yellow" : null;
     return { effectiveLuck, roll, threshold, success, card, sanctionRoll };
 }

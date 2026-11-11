@@ -22,7 +22,6 @@ class MatchSimulator
     private const MAX_TURNS                       = 30;
     private const MAX_ZONE_INDEX                  = 4;   // 5 zones, index 0..4
     private const ENDURANCE_DEFAULT               = 100;
-    private const CRIT_STAMINA_BOOST              = 10;
     private const GOOD_COUNTER_BONUS              = 2;
     private const HOME_BONUS                      = 0.5;
     private const SHOT_DISTANCE_PENALTY_PER_ZONE  = 1;
@@ -151,7 +150,8 @@ class MatchSimulator
             $lineups,
             $benchedByTeam,
             $modsByTeam,
-            $maxTurns
+            $maxTurns,
+            (bool) ($gameSave?->getConfig('match_criticals_enabled') ?? true),
         );
 
         // Les fautes ne sont pas stockées dans match_stats : elles deviennent
@@ -193,7 +193,7 @@ class MatchSimulator
      * compatible avec celui généré par `buildMatchStats` côté client
      * (mêmes clés consommées par PlayerStatsService / PostMatchProgressionService / TabCalendar).
      */
-    private function simulateMatch(GameTeam $home, GameTeam $away, array $lineups = [], array $benchedByTeam = [], array $modsByTeam = [], int $maxTurns = self::MAX_TURNS): array
+    private function simulateMatch(GameTeam $home, GameTeam $away, array $lineups = [], array $benchedByTeam = [], array $modsByTeam = [], int $maxTurns = self::MAX_TURNS, bool $criticalsEnabled = true): array
     {
         $homePlayers = $this->getStarters($home, $benchedByTeam[(int) $home->id] ?? []);
         $awayPlayers = $this->getStarters($away, $benchedByTeam[(int) $away->id] ?? []);
@@ -326,26 +326,16 @@ class MatchSimulator
             $attackScore  = $attackBase  + $attackRoll;
             $defenseScore = $defenseBase + $defenseRoll;
 
-            // Critique naturel : un 20 force la victoire de ce côté et restaure de la stamina
-            $attackCrit  = $attackRoll  === 20;
-            $defenseCrit = $defenseRoll === 20;
+            // Critique naturel : un 20 force la victoire de ce côté
+            $attackCrit  = $criticalsEnabled && $attackRoll === 20;
+            $defenseCrit = $criticalsEnabled && $defenseRoll === 20;
 
             if ($attackCrit && !$defenseCrit)      $success = true;
             elseif ($defenseCrit && !$attackCrit)  $success = false;
             else                                   $success = $attackScore > $defenseScore;
 
-            // La récupération est plafonnée à l'endurance MAX du joueur (stat stamina),
-            // pas à 100 : sinon un joueur peu endurant — typiquement le gardien, seul
-            // défenseur sur chaque tir — se constituerait une réserve au-dessus de son
-            // plafond. Miroir du client (resolvers.js applyCritBoost).
-            if ($attackCrit) {
-                $aid = (string) ($attacker->id ?? 0);
-                $stamina[$aid] = min($staminaMax[$aid] ?? self::ENDURANCE_DEFAULT, ($stamina[$aid] ?? self::ENDURANCE_DEFAULT) + self::CRIT_STAMINA_BOOST);
-            }
-            if ($defenseCrit) {
-                $did = (string) ($defender->id ?? 0);
-                $stamina[$did] = min($staminaMax[$did] ?? self::ENDURANCE_DEFAULT, ($stamina[$did] ?? self::ENDURANCE_DEFAULT) + self::CRIT_STAMINA_BOOST);
-            }
+            $discountAttack = $attackCrit;
+            $discountDefense = $defenseCrit;
 
             // ----- Moment héroïque : un joueur très satisfait peut relancer un duel perdu -----
             if (
@@ -360,8 +350,11 @@ class MatchSimulator
                 $defenseRoll = $this->d20();
                 $attackScore  = $attackBase  + $attackRoll;
                 $defenseScore = $defenseBase + $defenseRoll;
-                $attackCrit  = $attackRoll  === 20;
-                $defenseCrit = $defenseRoll === 20;
+                $attackCrit  = $criticalsEnabled && $attackRoll === 20;
+                $defenseCrit = $criticalsEnabled && $defenseRoll === 20;
+
+                $discountAttack = $discountAttack || $attackCrit;
+                $discountDefense = $discountDefense || $defenseCrit;
 
                 if ($attackCrit && !$defenseCrit)      $success = true;
                 elseif ($defenseCrit && !$attackCrit)  $success = false;
@@ -387,7 +380,7 @@ class MatchSimulator
 
             // ----- Fautes / cartons (duel de champ uniquement, comme le moteur) -----
             if ($defCategory === 'defenseField' && $defender && $attacker) {
-                $this->rollFoul($foulEvents, $attacker, $defender, $defenseRoll === 1, $attackScore == $defenseScore);
+                $this->rollFoul($foulEvents, $attacker, $defender, $criticalsEnabled && $defenseRoll === 1, $attackScore == $defenseScore);
             }
 
             $isGoal = $success && $action === 'shot';
@@ -432,8 +425,8 @@ class MatchSimulator
             }
 
             // ----- Coût de stamina (action + déplacement de balle) -----
-            $this->applyStaminaCost($stamina, $attacker, $action, 'attack');
-            $this->applyStaminaCost($stamina, $defender, $defAction, $defCategory);
+            $this->applyStaminaCost($stamina, $attacker, $action, 'attack', $discountAttack);
+            $this->applyStaminaCost($stamina, $defender, $defAction, $defCategory, $discountDefense);
 
             // ----- Blessure d'épuisement (stamina à 0), comme le moteur client -----
             $exhaustionChance = $action === 'shot' ? self::EXHAUSTION_INJURY_CHANCE_SHOT : self::EXHAUSTION_INJURY_CHANCE_FIELD;
@@ -758,7 +751,7 @@ class MatchSimulator
     }
 
     /** Coût en stamina d'une action, pondéré par la vitesse du joueur (miroir de `applyStaminaCost`). */
-    private function applyStaminaCost(array &$stamina, $player, string $action, string $category): void
+    private function applyStaminaCost(array &$stamina, $player, string $action, string $category, bool $critical = false): void
     {
         if (!$player) return;
 
@@ -774,7 +767,7 @@ class MatchSimulator
         $speedReduction     = 1 - (((float) ($player->speed ?? 0)) / 100) * 0.1;
 
         $pid = (string) $player->id;
-        $stamina[$pid] = max(0.0, ($stamina[$pid] ?? self::ENDURANCE_DEFAULT) - $baseCost * $categoryMultiplier * $speedReduction);
+        $stamina[$pid] = max(0.0, ($stamina[$pid] ?? self::ENDURANCE_DEFAULT) - $baseCost * $categoryMultiplier * $speedReduction * ($critical ? 0.5 : 1.0));
     }
 
     /** Le joueur est-il un gardien d'après son poste ? */

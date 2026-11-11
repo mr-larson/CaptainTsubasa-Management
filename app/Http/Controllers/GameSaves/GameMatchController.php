@@ -127,6 +127,8 @@ class GameMatchController extends Controller
                 'matchId'        => $match->id,
                 'week'           => $match->week,
                 'maxTurns'       => (int) $gameSave->getConfig('match_max_turns', 30),
+                'criticalsEnabled' => (bool) $gameSave->getConfig('match_criticals_enabled'),
+                'maxSubstitutions' => (int) $gameSave->getConfig('match_max_substitutions'),
                 // Coupe du Monde, phase finale : égalité → tirs au but dans le moteur.
                 'isKnockout'     => in_array($match->round, ['semi', 'final'], true),
                 'controlMode'    => $controlMode,

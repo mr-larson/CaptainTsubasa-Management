@@ -1,6 +1,6 @@
 // resources/js/Pages/Match/engine/resolvers/context.js
 // Contexte partagé et helpers communs (positions, animations, enregistrement des duels).
-import { CRIT_STAMINA_BOOST, FIELD_RULES, TEXTS } from '../constants.js';
+import { FIELD_RULES, TEXTS } from '../constants.js';
 import { runAfterDiceAnimation } from '../dice.js';
 import { applyBallMotion, isGoalkeeperId, pickWeightedPlayerInZone, setBallToKeeperVisual } from '../field.js';
 import { setMessage } from '../ui.js';
@@ -55,13 +55,6 @@ export function restoreBasePositions() {
         el.style.left = base.x + "%";
         el.style.top  = base.y + "%";
     });
-}
-
-export function applyCritBoost(playerId) {
-    if (!playerId) return;
-    const current = shared.state.stamina[playerId] ?? 0;
-    const max     = shared.state.staminaMax[playerId] ?? 100;
-    shared.state.stamina[playerId] = Math.min(max, current + CRIT_STAMINA_BOOST);
 }
 
 // -----------------------------------------------------------
