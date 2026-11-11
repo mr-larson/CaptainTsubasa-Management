@@ -145,13 +145,13 @@ class GamePlayer extends Model
 
     /**
      * Facteur de polyvalence : majoration salariale
-     * (+5 % par poste secondaire, plafonnée à +15 %).
+     * (+3 % par poste secondaire, plafonnée à +10 %).
      */
     public function versatilityFactor(): float
     {
         $count = count((array) ($this->secondary_positions ?? []));
 
-        return 1.0 + min($count * 0.05, 0.15);
+        return 1.0 + min($count * 0.03, 0.10);
     }
 
     /** Coût hebdomadaire incluant la majoration de polyvalence. */
