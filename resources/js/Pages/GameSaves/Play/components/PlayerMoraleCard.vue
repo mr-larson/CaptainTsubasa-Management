@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import Panel from '@/Components/Panel.vue';
 import { usePlayerUtils } from '../usePlayerUtils.js';
 
 // Carte « Moral » d'un joueur : moral et effet en match, relation coach,
@@ -95,15 +96,14 @@ const lastDeclarationSummary = computed(() => {
 </script>
 
 <template>
-    <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
-        <div class="flex items-center justify-between mb-2">
-            <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Moral</h4>
+    <Panel title="Moral">
+        <template #header-actions>
             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold"
                   :class="selectedPlayerMorale.chip">
                 {{ selectedPlayerMorale.emoji }} {{ selectedPlayerMorale.label }}
                 <span class="opacity-60">{{ player.morale ?? 60 }}/100</span>
             </span>
-        </div>
+        </template>
 
         <div class="h-2 bg-slate-200 rounded-full overflow-hidden mb-2">
             <div class="h-full rounded-full transition-all"
@@ -231,5 +231,5 @@ const lastDeclarationSummary = computed(() => {
             </div>
         </div>
         <p v-else class="text-xs text-slate-400 italic">Aucun changement de moral pour l'instant.</p>
-    </div>
+    </Panel>
 </template>

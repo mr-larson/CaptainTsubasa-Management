@@ -1,5 +1,6 @@
 <script setup>
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, useId, watch } from 'vue';
+import ButtonSecondary from './ButtonSecondary.vue';
 
 const props = defineProps({
     show: {
@@ -19,7 +20,23 @@ const props = defineProps({
         type: [String, Array, Object],
         default: '',
     },
+    // Avec un titre, la modale affiche l'en-tête standard (titre + Fermer),
+    // la marge interne et le pied de boutons (slot `footer`).
+    title: {
+        type: String,
+        default: null,
+    },
+    subtitle: {
+        type: String,
+        default: null,
+    },
+    closeLabel: {
+        type: String,
+        default: 'Fermer',
+    },
 });
+
+const titleId = useId();
 
 const emit = defineEmits(['close']);
 
@@ -118,11 +135,25 @@ const maxWidthClass = computed(() => {
                         ref="panel"
                         role="dialog"
                         aria-modal="true"
+                        :aria-labelledby="title ? titleId : undefined"
                         tabindex="-1"
                         class="w-full bg-white rounded-2xl overflow-hidden shadow-2xl transform transition-all focus:outline-none"
                         :class="[maxWidthClass, panelClass]"
                     >
-                        <slot v-if="show" />
+                        <div v-if="show && title" class="space-y-3 p-4 sm:p-5">
+                            <header class="flex items-start justify-between gap-3">
+                                <div class="min-w-0">
+                                    <h3 :id="titleId" class="text-sm font-bold text-slate-700">{{ title }}</h3>
+                                    <p v-if="subtitle" class="mt-0.5 text-xs text-slate-500">{{ subtitle }}</p>
+                                </div>
+                                <ButtonSecondary v-if="closeable" size="sm" class="shrink-0" @click="close">{{ closeLabel }}</ButtonSecondary>
+                            </header>
+                            <slot />
+                            <footer v-if="$slots.footer" class="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:justify-end">
+                                <slot name="footer" />
+                            </footer>
+                        </div>
+                        <slot v-else-if="show" />
                     </div>
                 </Transition>
                 </div>

@@ -1,4 +1,6 @@
 <script setup>
+import Panel from '@/Components/Panel.vue';
+
 /** Carte "Bilan" : victoires / nuls / défaites. */
 const props = defineProps({
     wins:   { type: Number, default: 0 },
@@ -8,8 +10,7 @@ const props = defineProps({
 </script>
 
 <template>
-    <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 flex flex-col justify-center gap-1.5">
-        <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-1">Bilan</h4>
+    <Panel title="Bilan" class="flex flex-col justify-center">
         <div class="flex gap-2">
             <div class="flex-1 text-center bg-emerald-50 rounded-lg py-2">
                 <div class="text-lg font-black text-emerald-600">{{ wins }}</div>
@@ -24,5 +25,5 @@ const props = defineProps({
                 <div class="text-2xs text-rose-400 font-semibold">Défaites</div>
             </div>
         </div>
-    </div>
+    </Panel>
 </template>

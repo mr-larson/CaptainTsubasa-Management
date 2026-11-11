@@ -2,7 +2,8 @@
 import { positionLabel } from '@/Enums/positionBadges.js';
 import { usePlayerUtils } from '../usePlayerUtils.js';
 import SecondaryPositions from './SecondaryPositions.vue';
-import PlayerPhoto from '@/Components/PlayerPhoto.vue';
+import Panel from '@/Components/Panel.vue';
+import PlayerAvatar from '@/Components/PlayerAvatar.vue';
 
 /**
  * Carte identité du joueur sélectionné : photo + badge overall + nom +
@@ -16,28 +17,19 @@ const props = defineProps({
     showCaptainBadge: { type: Boolean, default: true },
 });
 
-const { overallOf, playerPhotoUrl, nationalityFlag } = usePlayerUtils();
+const { overallOf } = usePlayerUtils();
 </script>
 
 <template>
-    <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+    <Panel>
         <div class="flex items-start gap-4">
             <!-- Photo + overall -->
-            <div class="relative shrink-0">
-                <div class="w-20 h-20 rounded-xl border-2 border-slate-200 bg-white overflow-hidden">
-                    <PlayerPhoto :src="playerPhotoUrl(player)" class="w-full h-full object-cover" alt="" />
-                    <div v-if="!playerPhotoUrl(player)" class="w-full h-full flex items-center justify-center text-3xl text-slate-200">👤</div>
-                </div>
+            <PlayerAvatar :player="player" size="lg" shape="rounded" show-flag>
                 <div class="absolute -top-2 -right-2 w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-[11px] font-black shadow"
                      :class="overallOf(player)>=80?'bg-emerald-500 text-white':overallOf(player)>=65?'bg-teal-500 text-white':overallOf(player)>=50?'bg-amber-400 text-slate-700':'bg-slate-400 text-white'">
                     {{ overallOf(player) }}
                 </div>
-                <span v-if="nationalityFlag(player)"
-                      class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center text-[13px] leading-none shadow-sm"
-                      :title="player.nationality">
-                    {{ nationalityFlag(player) }}
-                </span>
-            </div>
+            </PlayerAvatar>
 
             <div class="flex-1 min-w-0">
                 <h3 class="text-base font-bold text-slate-700">{{ player.firstname }} {{ player.lastname }}</h3>
@@ -65,5 +57,5 @@ const { overallOf, playerPhotoUrl, nationalityFlag } = usePlayerUtils();
                 <slot name="footer" />
             </div>
         </div>
-    </div>
+    </Panel>
 </template>

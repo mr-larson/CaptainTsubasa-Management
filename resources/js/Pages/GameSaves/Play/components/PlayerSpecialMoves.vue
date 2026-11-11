@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import Modal from '@/Components/Modal.vue';
+import Panel from '@/Components/Panel.vue';
 import { PLAYER_STATS } from '@/Enums/playerStats';
 
 defineProps({
@@ -19,8 +20,7 @@ const actionLabels = {
 </script>
 
 <template>
-    <section v-if="moves.length || showEmpty" class="rounded-xl border border-slate-200 bg-slate-50 p-3">
-        <h4 class="mb-2 text-2xs font-bold uppercase tracking-wider text-slate-700">✨ Techniques spéciales</h4>
+    <Panel v-if="moves.length || showEmpty" padding="sm" title="✨ Techniques spéciales">
         <ul v-if="moves.length" class="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <li v-for="(move, index) in moves" :key="move.key || index" class="min-w-0">
                 <button v-if="namesOnly" type="button" aria-haspopup="dialog"
@@ -45,22 +45,17 @@ const actionLabels = {
             </li>
         </ul>
         <p v-else class="text-xs text-slate-400">Aucune technique spéciale.</p>
-        <Modal v-if="namesOnly" :show="!!selectedMove" max-width="sm" @close="selectedMove = null">
-            <div v-if="selectedMove" class="space-y-3 p-5">
-                <div class="flex items-start justify-between gap-3">
-                    <h3 class="text-base font-bold text-slate-700">
-                        {{ selectedMove.label || selectedMove.short_label || selectedMove.key }}
-                    </h3>
-                    <button type="button" class="text-sm font-semibold text-slate-500 hover:text-slate-700"
-                            @click="selectedMove = null">Fermer</button>
-                </div>
+        <Modal v-if="namesOnly" :show="!!selectedMove" max-width="sm"
+               :title="selectedMove ? (selectedMove.label || selectedMove.short_label || selectedMove.key) : ''"
+               @close="selectedMove = null">
+            <template v-if="selectedMove">
                 <p class="text-sm font-semibold text-teal-700">
                     {{ selectedMove.mode === 'defense' ? 'Défense' : 'Attaque' }}<template v-if="selectedMove.base_action">
                         · {{ actionLabels[selectedMove.base_action] ?? selectedMove.base_action }}
                     </template>
                 </p>
                 <p v-if="selectedMove.description" class="text-sm text-slate-600">{{ selectedMove.description }}</p>
-            </div>
+            </template>
         </Modal>
-    </section>
+    </Panel>
 </template>

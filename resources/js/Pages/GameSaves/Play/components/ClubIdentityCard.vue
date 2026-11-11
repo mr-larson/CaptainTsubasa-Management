@@ -1,5 +1,6 @@
 <script setup>
-import { usePlayerUtils } from '../usePlayerUtils.js';
+import Panel from '@/Components/Panel.vue';
+import TeamLogo from '@/Components/TeamLogo.vue';
 import TeamStyleBadges from '@/Pages/GameSaves/Play/components/TeamStyleBadges.vue';
 
 /** Carte club : logo, nom, classement, budget, description et styles. */
@@ -10,17 +11,11 @@ const props = defineProps({
     budget: { type: Number, default: null },
     averageOverall: { type: Number, default: null },
 });
-
-const { teamLogoUrl } = usePlayerUtils();
 </script>
 
 <template>
-    <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 flex items-center gap-4">
-        <!-- Logo -->
-        <div class="w-20 h-20 rounded-xl overflow-hidden bg-white border border-slate-200 shrink-0 flex items-center justify-center">
-            <TeamLogoImage v-if="teamLogoUrl(team)" :src="teamLogoUrl(team)" class="w-full h-full" alt="Logo équipe"/>
-            <span v-else class="text-3xl">🏟️</span>
-        </div>
+    <Panel class="flex items-center gap-4">
+        <TeamLogo :team="team" size="2xl" shape="rounded" fallback="stadium" />
         <!-- Texte -->
         <div class="min-w-0 flex flex-col gap-1">
             <h3 class="text-base font-bold text-slate-700 truncate">{{ team?.name ?? '—' }}</h3>
@@ -35,5 +30,5 @@ const { teamLogoUrl } = usePlayerUtils();
             </p>
             <TeamStyleBadges :team="team" size="sm" />
         </div>
-    </div>
+    </Panel>
 </template>

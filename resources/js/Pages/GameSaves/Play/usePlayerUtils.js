@@ -1,4 +1,4 @@
-import { positionGroupClass } from '@/Enums/positionBadges.js';
+import { positionGroup, positionGroupClass } from '@/Enums/positionBadges.js';
 // resources/js/Pages/GameSaves/Play/usePlayerUtils.js
 import { usePixelArt } from '@/utils/pixelArt.js';
 
@@ -73,14 +73,8 @@ export function averageOverall(players) {
     return Math.round(players.reduce((sum, player) => sum + overallOf(player), 0) / players.length);
 }
 
-export const positionGroup = (pos) => {
-    const p = (pos ?? '').toUpperCase();
-    if (p.includes('GK')  || p.includes('GOAL')) return 'GK';
-    if (p.includes('DEF') || p.includes('BACK')) return 'DEF';
-    if (p.includes('MDF') || p.includes('MID') || p.includes('MOF')) return 'MID';
-    if (p.includes('ATT') || p.includes('FOR') || p.includes('FORWARD')) return 'ATT';
-    return 'OTHER';
-};
+// Source unique : Enums/positionBadges.js.
+export { positionGroup };
 
 const keyStatsFor = (pos) => {
     const g = positionGroup(pos);

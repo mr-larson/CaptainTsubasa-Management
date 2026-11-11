@@ -91,72 +91,79 @@ const benchTitle = (p) => {
                 <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider px-1">
                     {{ group.label }} <span class="opacity-60">({{ group.players.length }})</span>
                 </h4>
-                <button v-for="p in group.players" :key="p.id" type="button"
-                    @click="emit('select', p)"
-                    class="w-full text-left rounded-lg px-2 py-1.5 transition-all border"
-                    :class="selectedId === p.id
-                        ? 'bg-teal-500 text-white border-teal-600 shadow-sm'
-                        : rowHighlight(p)
-                            ? 'bg-teal-50 border-teal-200 text-slate-700'
-                            : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-100'">
-                <div class="flex items-center gap-2">
-                    <!-- Photo -->
-                    <div class="w-7 h-7 rounded-full overflow-hidden bg-slate-200 shrink-0">
-                        <PlayerPhoto :src="playerPhotoUrl(p)" class="w-full h-full object-cover" alt="" />
-                        <div v-if="!playerPhotoUrl(p)" class="w-full h-full flex items-center justify-center text-3xs text-slate-400">?</div>
-                    </div>
-
-                    <!-- Nom + poste -->
-                    <div class="flex-1 min-w-0">
-                        <div class="text-xs font-semibold truncate">{{ p.lastname }}</div>
-                        <div class="text-2xs opacity-60 truncate">{{ positionLabel(p.position) }}</div>
-                    </div>
-
-                    <span class="shrink-0 rounded border border-current/20 px-1 text-2xs font-bold tabular-nums" title="Note globale">
-                        {{ overallOf(p) }}
-                    </span>
-
-                    <!-- Icônes statut -->
-                    <div class="flex items-center gap-0.5 shrink-0">
-                        <span v-if="showMorale"
-                              :title="`Moral : ${p.morale ?? 60} (${moraleState(p.morale).label})`"
-                              class="text-[11px]">{{ moraleState(p.morale).emoji }}</span>
-                        <span v-if="p.is_captain" title="Capitaine" class="text-[11px]">👑</span>
-                        <span v-if="duoInfo(p)" :title="duoTitle(p)" class="text-[11px]">🤝</span>
-                        <span v-if="isPlayerInjured(p.id)" :title="injuryTitle(p)" class="text-[11px]">🤕</span>
-                        <span v-else-if="isPlayerSuspended(p.id)" :title="suspensionTitle(p)" class="text-[11px]">🚫</span>
-                        <span v-else-if="isPlayerBenched(p.id)" :title="benchTitle(p)" class="text-[11px]">⛔</span>
-                        <span v-else-if="playerYellowCards(p.id) > 0"
-                              :title="`${playerYellowCards(p.id)} carton(s) jaune`"
-                              class="text-3xs font-black bg-yellow-400 text-yellow-900 px-1 rounded">
-                            {{ playerYellowCards(p.id) }}🟨
-                        </span>
-                    </div>
-
-                    <!-- Stamina bar + valeur -->
-                    <div class="w-12 flex flex-col items-end gap-0.5 shrink-0">
-                        <div class="text-2xs font-bold"
-                             :class="selectedId === p.id ? 'text-white/80' : 'text-slate-500'">
-                            {{ p.stamina ?? p.stats?.stamina ?? '—' }}
-                        </div>
-                        <div class="w-full h-1 rounded-full overflow-hidden"
-                             :class="selectedId === p.id ? 'bg-white/30' : 'bg-slate-200'">
-                            <div class="h-full rounded-full transition-all"
-                                 :class="staminaOf(p) >= 60 ? 'bg-emerald-400'
-                                     : staminaOf(p) >= 30 ? 'bg-amber-400' : 'bg-rose-400'"
-                                 :style="{ width: Math.min(staminaOf(p), 100) + '%' }">
+                <div v-for="p in group.players" :key="p.id"
+                     class="flex items-center rounded-lg border transition-all"
+                     :class="[
+                         $slots['row-action'] ? 'pr-2' : '',
+                         selectedId === p.id
+                             ? 'bg-teal-500 text-white border-teal-600 shadow-sm'
+                             : rowHighlight(p)
+                                 ? 'bg-teal-50 border-teal-200 text-slate-700'
+                                 : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-100',
+                     ]">
+                    <button type="button"
+                            class="min-w-0 flex-1 rounded-lg px-2 py-1.5 text-left"
+                            @click="emit('select', p)">
+                        <div class="flex items-center gap-2">
+                            <!-- Photo -->
+                            <div class="w-7 h-7 rounded-full overflow-hidden bg-slate-200 shrink-0">
+                                <PlayerPhoto :src="playerPhotoUrl(p)" class="w-full h-full object-cover" alt="" />
+                                <div v-if="!playerPhotoUrl(p)" class="w-full h-full flex items-center justify-center text-3xs text-slate-400">?</div>
                             </div>
+
+                            <!-- Nom + poste -->
+                            <div class="flex-1 min-w-0">
+                                <div class="text-xs font-semibold truncate">{{ p.lastname }}</div>
+                                <div class="text-2xs opacity-60 truncate">{{ positionLabel(p.position) }}</div>
+                            </div>
+
+                            <span class="shrink-0 rounded border border-current/20 px-1 text-2xs font-bold tabular-nums" title="Note globale">
+                                {{ overallOf(p) }}
+                            </span>
+
+                            <!-- Icônes statut -->
+                            <div class="flex items-center gap-0.5 shrink-0">
+                                <span v-if="showMorale"
+                                      :title="`Moral : ${p.morale ?? 60} (${moraleState(p.morale).label})`"
+                                      class="text-[11px]">{{ moraleState(p.morale).emoji }}</span>
+                                <span v-if="p.is_captain" title="Capitaine" class="text-[11px]">👑</span>
+                                <span v-if="duoInfo(p)" :title="duoTitle(p)" class="text-[11px]">🤝</span>
+                                <span v-if="isPlayerInjured(p.id)" :title="injuryTitle(p)" class="text-[11px]">🤕</span>
+                                <span v-else-if="isPlayerSuspended(p.id)" :title="suspensionTitle(p)" class="text-[11px]">🚫</span>
+                                <span v-else-if="isPlayerBenched(p.id)" :title="benchTitle(p)" class="text-[11px]">⛔</span>
+                                <span v-else-if="playerYellowCards(p.id) > 0"
+                                      :title="`${playerYellowCards(p.id)} carton(s) jaune`"
+                                      class="text-3xs font-black bg-yellow-400 text-yellow-900 px-1 rounded">
+                                    {{ playerYellowCards(p.id) }}🟨
+                                </span>
+                            </div>
+
+                            <!-- Stamina bar + valeur -->
+                            <div class="w-12 flex flex-col items-end gap-0.5 shrink-0">
+                                <div class="text-2xs font-bold"
+                                     :class="selectedId === p.id ? 'text-white/80' : 'text-slate-500'">
+                                    {{ p.stamina ?? p.stats?.stamina ?? '—' }}
+                                </div>
+                                <div class="w-full h-1 rounded-full overflow-hidden"
+                                     :class="selectedId === p.id ? 'bg-white/30' : 'bg-slate-200'">
+                                    <div class="h-full rounded-full transition-all"
+                                         :class="staminaOf(p) >= 60 ? 'bg-emerald-400'
+                                             : staminaOf(p) >= 30 ? 'bg-amber-400' : 'bg-rose-400'"
+                                         :style="{ width: Math.min(staminaOf(p), 100) + '%' }">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Badge spécifique à l'onglet (ex : ✓ entraîné) -->
+                            <slot name="badge" :player="p" :selected="selectedId === p.id" />
+
+                            <!-- Titulaire dot -->
+                            <div v-if="showStarterDot" class="w-2 h-2 rounded-full shrink-0"
+                                 :class="p.is_starter ? 'bg-emerald-400' : 'bg-slate-300'"></div>
                         </div>
-                    </div>
-
-                    <!-- Badge spécifique à l'onglet (ex : ✓ entraîné) -->
-                    <slot name="badge" :player="p" :selected="selectedId === p.id" />
-
-                    <!-- Titulaire dot -->
-                    <div v-if="showStarterDot" class="w-2 h-2 rounded-full shrink-0"
-                         :class="p.is_starter ? 'bg-emerald-400' : 'bg-slate-300'"></div>
+                    </button>
+                    <slot name="row-action" :player="p" />
                 </div>
-                </button>
             </div>
         </div>
         <p v-else class="text-xs text-slate-400">Aucun joueur.</p>

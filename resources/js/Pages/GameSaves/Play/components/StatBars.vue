@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import Panel from '@/Components/Panel.vue';
 import { playerStat } from '../recruitment.js';
 import { STAT_COLORS, usePlayerUtils } from '../usePlayerUtils.js';
 
@@ -60,8 +61,7 @@ const stats = computed(() => {
 </script>
 
 <template>
-    <div class="border border-slate-200 rounded-xl bg-slate-50 p-3">
-        <h4 class="text-2xs font-bold text-slate-700 uppercase tracking-wider mb-2">Statistiques</h4>
+    <Panel padding="sm" title="Statistiques">
         <div class="space-y-1.5">
             <div v-for="stat in stats" :key="stat.key" class="flex items-center gap-2 text-xs">
                 <span class="w-16 shrink-0 text-[11px]" :class="keyStats.includes(stat.key) ? 'font-bold text-teal-700' : 'text-slate-500'">{{ stat.label }}</span>
@@ -85,5 +85,5 @@ const stats = computed(() => {
         <p v-if="comparePlayer && compareLabel" class="text-3xs text-slate-400 mt-2">
             Comparé à {{ compareLabel }}
         </p>
-    </div>
+    </Panel>
 </template>

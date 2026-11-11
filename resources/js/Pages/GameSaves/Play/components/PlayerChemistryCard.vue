@@ -1,6 +1,7 @@
 <script setup>
 import { useForm } from '@inertiajs/vue3';
 import ButtonSecondary from '@/Components/ButtonSecondary.vue';
+import Panel from '@/Components/Panel.vue';
 
 const props = defineProps({
     gameSaveId: { type: Number, required: true },
@@ -18,8 +19,7 @@ function propose(partnerId) {
 </script>
 
 <template>
-    <section class="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
-        <h3 class="text-2xs font-bold uppercase tracking-wider text-slate-400">Alchimie</h3>
+    <Panel title="Alchimie" class="space-y-3">
         <p v-if="!relations.length" class="text-xs text-slate-500">
             Joue plusieurs matchs avec un coéquipier sur la même ligne ou une ligne voisine pour développer leurs automatismes.
         </p>
@@ -54,5 +54,5 @@ function propose(partnerId) {
             </li>
         </ul>
         <p v-if="form.errors.chemistry" role="alert" class="text-xs text-rose-600">{{ form.errors.chemistry }}</p>
-    </section>
+    </Panel>
 </template>
