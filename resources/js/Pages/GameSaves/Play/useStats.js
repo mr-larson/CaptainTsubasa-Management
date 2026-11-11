@@ -67,21 +67,10 @@ export function useStats({ gameSave, teams, team, roster, playerSeasonStats: pla
         return totals;
     });
 
-    // ==========================
-    //   HELPERS AUTRES ÉQUIPES
-    // ==========================
-    const statValueFor = (p, key) => Number(p?.[key] ?? p?.stats?.[key] ?? 0) || 0;
-
-    const averageTeamStat = (players, key) => {
-        if (!Array.isArray(players) || !players.length) return 0;
-        return Math.round(players.reduce((sum, p) => sum + statValueFor(p, key), 0) / players.length);
-    };
-
     return {
         playerSeasonStats,
         selectedMyPlayerPerf,
         selectedStatsTeamId, selectedStatsTeam,
         selectedTeamPlayerStats, teamStats,
-        statValueFor, averageTeamStat,
     };
 }

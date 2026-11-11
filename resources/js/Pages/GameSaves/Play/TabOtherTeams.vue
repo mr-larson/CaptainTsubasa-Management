@@ -1,22 +1,18 @@
 <script setup>
 import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue';
-import PlayerMoraleCard from '@/Pages/GameSaves/Play/components/PlayerMoraleCard.vue';
-import PlayerChemistryCard from '@/Pages/GameSaves/Play/components/PlayerChemistryCard.vue';
-import { fieldClass } from '@/Components/fieldStyles';
 import ButtonSecondary from '@/Components/ButtonSecondary.vue';
-import { usePlayerUtils } from './usePlayerUtils.js';
+import Panel from '@/Components/Panel.vue';
+import TeamLogo from '@/Components/TeamLogo.vue';
 import RosterList from '@/Pages/GameSaves/Play/components/RosterList.vue';
-import PlayerStatusAlert from '@/Pages/GameSaves/Play/components/PlayerStatusAlert.vue';
+import PlayerCompareButton from './components/PlayerCompareButton.vue';
 import PlayerComparison from './components/PlayerComparison.vue';
-import PlayerIdentityCard from '@/Pages/GameSaves/Play/components/PlayerIdentityCard.vue';
-import RadarChart from '@/Pages/GameSaves/Play/components/RadarChart.vue';
-import StatBars from '@/Pages/GameSaves/Play/components/StatBars.vue';
-import PerfChips from '@/Pages/GameSaves/Play/components/PerfChips.vue';
 import FormationCard from '@/Pages/GameSaves/Play/components/FormationCard.vue';
 import PitchView from '@/Pages/GameSaves/Play/components/PitchView.vue';
 import BenchCard from '@/Pages/GameSaves/Play/components/BenchCard.vue';
-import ClubIdentityCard from '@/Pages/GameSaves/Play/components/ClubIdentityCard.vue';
-import TeamRecordCard from '@/Pages/GameSaves/Play/components/TeamRecordCard.vue';
+import CaptainToggle from './components/CaptainToggle.vue';
+import ClubOverview from './components/ClubOverview.vue';
+import PlayerProfilePanel from './components/PlayerProfilePanel.vue';
+import ShirtNumberInput from './components/ShirtNumberInput.vue';
 
 const props = defineProps({
     // Équipes
@@ -43,7 +39,6 @@ const props = defineProps({
     injuriesCountForTeam:   { type: Function, required: true },
     suspensionsCountForTeam:{ type: Function, required: true },
     cardsCountForTeam:      { type: Function, required: true },
-    averageTeamStat:        { type: Function, required: true },
     playerSeasonStats:      { type: Object,   default: () => ({}) },
     playerChemistry:        { type: Object,   default: () => ({}) },
     isPlayerInjured:        { type: Function, default: () => () => false },
@@ -101,16 +96,8 @@ onBeforeUnmount(() => {
     emit('cancel-pickup');
 });
 
-// Numéro refusé par le serveur (déjà pris) : l'input revient à l'ancien numéro.
-function onNumberChange(event) {
-    const input    = event.target;
-    const previous = props.selectedOtherPlayer?.number ?? '';
-    emit('update-number', props.selectedOtherPlayer.id, input.value, () => { input.value = previous; });
-}
-
 const otherSubstitutes = computed(() => props.otherRosterWithStatus.filter(p => !p.is_starter));
 
-const { teamLogoUrl } = usePlayerUtils();
 const overallByTeamId = computed(() => new Map(props.standings.map(row => [row.id, row.average_overall])));
 
 // Indisponibilité (icône + contour rouge sur le terrain et le banc), comme dans Mon équipe.
@@ -132,19 +119,18 @@ const selectedPlayerPerf = computed(() => {
     return props.playerSeasonStats?.[p.id] ?? props.playerSeasonStats?.[String(p.id)] ?? {};
 });
 const comparison = ref([]);
-const comparisonAvailability = p => {
-    if (props.isPlayerInjured(p.id)) return "Blessé";
-    if (props.isPlayerSuspended(p.id)) return "Suspendu";
-    return "Disponible";
-};
+const comparisonAvailability = p => otherUnavailability(p)?.label ?? 'Disponible';
+const otherStatus = computed(() => ({
+    isPlayerInjured: props.isPlayerInjured, isPlayerSuspended: props.isPlayerSuspended,
+    playerInjury: props.playerInjury, playerSuspension: props.playerSuspension,
+}));
 </script>
 
 <template>
     <div class="flex-1 flex flex-col gap-4 overflow-y-auto min-h-0 pr-1 [&>*]:shrink-0">
 
         <!-- LIGNE 1 : Sélecteur équipe (chips horizontales) -->
-        <div class="border border-slate-200 rounded-xl bg-slate-50 p-3">
-            <h3 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">Équipes de la ligue</h3>
+        <Panel padding="sm" title="Équipes de la ligue">
             <div class="flex flex-wrap gap-1.5">
                 <button
                     v-for="t in sortedTeams" :key="t.id"
@@ -155,9 +141,7 @@ const comparisonAvailability = p => {
                         ? 'bg-teal-500 text-white border-teal-600 shadow-sm'
                         : 'bg-white text-slate-600 border-slate-200 hover:border-teal-300 hover:text-teal-600'"
                 >
-                    <div class="w-4 h-4 rounded-full overflow-hidden shrink-0 bg-slate-100">
-                        <TeamLogoImage v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" class="w-full h-full" alt=""/>
-                    </div>
+                    <TeamLogo :team="t" size="xs" fallback="none" :bordered="false" />
                     {{ t.name }}
                     <span class="tabular-nums opacity-80" title="Moyenne des notes de l’effectif">
                         · {{ overallByTeamId.get(t.id) ?? '—' }}
@@ -167,7 +151,7 @@ const comparisonAvailability = p => {
                           :class="selectedOtherTeam?.id === t.id ? 'bg-white/25 text-white' : 'bg-orange-100 text-orange-600'">🎯 Prochain adversaire</span>
                 </button>
             </div>
-        </div>
+        </Panel>
 
         <!-- LIGNE 2 : Formation + Terrain + Banc -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4" v-if="selectedOtherTeam">
@@ -212,66 +196,23 @@ const comparisonAvailability = p => {
         </p>
 
         <!-- LIGNE 3 : Infos club -->
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-4" v-if="selectedOtherTeam">
-            <ClubIdentityCard class="md:col-span-5"
-                              :team="selectedOtherTeam"
-                              :rank="selectedTeamRank"
-                              :total="standings.length"
-                              :averageOverall="overallByTeamId.get(selectedOtherTeam.id) ?? null"
-                              :budget="selectedOtherTeam.budget ?? 0" />
-
-            <TeamRecordCard class="md:col-span-3"
-                            :wins="selectedOtherTeam.wins ?? 0"
-                            :draws="selectedOtherTeam.draws ?? 0"
-                            :losses="selectedOtherTeam.losses ?? 0" />
-
-            <!-- Stats + Effectif -->
-            <div class="md:col-span-4 border border-slate-200 rounded-xl bg-slate-50 p-4">
-                <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">Club</h4>
-                <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-slate-600">
-                    <div class="flex justify-between">
-                        <span>Attaque moy.</span>
-                        <span class="font-bold text-slate-700">{{ averageTeamStat(otherRosterWithStatus, 'attack') }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span>Blessés</span>
-                        <span class="font-bold" :class="injuriesCountForTeam(selectedOtherTeam.id) > 0 ? 'text-rose-500' : 'text-slate-700'">
-                            {{ injuriesCountForTeam(selectedOtherTeam.id) }}
-                        </span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span>Défense moy.</span>
-                        <span class="font-bold text-slate-700">{{ averageTeamStat(otherRosterWithStatus, 'defense') }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span>Suspensions</span>
-                        <span class="font-bold" :class="suspensionsCountForTeam(selectedOtherTeam.id) > 0 ? 'text-amber-500' : 'text-slate-700'">
-                            {{ suspensionsCountForTeam(selectedOtherTeam.id) }}
-                        </span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span>Stamina moy.</span>
-                        <span class="font-bold text-slate-700">{{ averageTeamStat(otherRosterWithStatus, 'stamina') }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span>Vitesse moy.</span>
-                        <span class="font-bold text-slate-700">{{ averageTeamStat(otherRosterWithStatus, 'speed') }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span>Joueurs avertis</span>
-                        <span class="font-bold" :class="cardsCountForTeam(selectedOtherTeam.id) > 0 ? 'text-yellow-500' : 'text-slate-700'">
-                            {{ cardsCountForTeam(selectedOtherTeam.id) }}
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <ClubOverview v-if="selectedOtherTeam"
+                      :team="selectedOtherTeam"
+                      :rank="selectedTeamRank"
+                      :total="standings.length"
+                      :average-overall="overallByTeamId.get(selectedOtherTeam.id) ?? null"
+                      :budget="selectedOtherTeam.budget ?? 0"
+                      :record="selectedOtherTeam"
+                      :players="otherRosterWithStatus"
+                      :injuries="injuriesCountForTeam(selectedOtherTeam.id)"
+                      :suspensions="suspensionsCountForTeam(selectedOtherTeam.id)"
+                      :cards="cardsCountForTeam(selectedOtherTeam.id)" />
 
         <!-- LIGNE 4 : Liste joueurs + Profil -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4" v-if="selectedOtherTeam">
 
             <!-- Liste joueurs — hauteur calée sur la colonne profil (scroll interne) -->
-            <div class="lg:col-span-3 relative min-h-[320px]">
+            <div class="lg:col-span-4 relative min-h-[320px]">
                 <RosterList class="absolute inset-0"
                             :players="otherRosterWithStatus"
                             :selectedId="selectedOtherPlayer?.id"
@@ -280,95 +221,59 @@ const comparisonAvailability = p => {
                             :playerYellowCards="playerYellowCards"
                             :playerInjury="playerInjury"
                             :playerSuspension="playerSuspension"
-                            @select="p => emit('select-player', p)" />
+                            @select="p => emit('select-player', p)" >
+                    <template #row-action="{ player }">
+                        <PlayerCompareButton v-model="comparison" :player="{ ...player, comparisonTeamName: selectedOtherTeam?.name }" />
+                    </template>
+                </RosterList>
             </div>
 
             <!-- Profil joueur -->
-            <div class="lg:col-span-9 flex flex-col gap-3">
-                <template v-if="selectedOtherPlayer">
-
-                    <PlayerStatusAlert :player="selectedOtherPlayer"
-                                       :isPlayerInjured="isPlayerInjured"
-                                       :isPlayerSuspended="isPlayerSuspended"
-                                       :playerInjury="playerInjury"
-                                       :playerSuspension="playerSuspension" />
-
-                    <!-- Identité + actions -->
-                    <PlayerIdentityCard :player="selectedOtherPlayer">
-                        <template v-if="editable" #actions>
-                            <ButtonSecondary size="sm" @click="emit('toggle-starter', selectedOtherPlayer.contract_id)">
-                                {{ selectedOtherPlayer.is_starter ? '↓ Sortir du onze' : '+ Titulariser' }}
-                            </ButtonSecondary>
-                            <ButtonSecondary size="sm"
-                                             :class="selectedOtherPlayer.is_captain ? '!bg-amber-400 !text-white !border-amber-500' : ''"
-                                             @click="emit('toggle-captain', selectedOtherPlayer.contract_id)">
-                                {{ selectedOtherPlayer.is_captain ? '👑 Capitaine' : '👑 Nommer capitaine' }}
-                            </ButtonSecondary>
-                            <div class="flex items-center gap-1.5">
-                                <span class="text-xs text-slate-500 font-semibold">N°</span>
-                                <input type="number" min="1" max="99"
-                                       :value="selectedOtherPlayer.number"
-                                       @change="onNumberChange($event)"
-                                       class="w-14 px-2 py-1" :class="fieldClass({ shape: 'rect', size: 'sm' })" />
-                            </div>
-                        </template>
-                        <template v-else #actions>
-                            <span class="px-3 py-1.5 rounded-full text-xs font-semibold border"
-                                  :class="selectedOtherPlayer.is_starter
-                                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                      : 'bg-white text-slate-500 border-slate-200'">
-                                {{ selectedOtherPlayer.is_starter ? '✓ Titulaire' : 'Remplaçant' }}
-                            </span>
-                            <span v-if="selectedOtherPlayer.is_captain"
-                                  class="px-3 py-1.5 rounded-full text-xs font-semibold border bg-amber-50 text-amber-700 border-amber-200">
-                                👑 Capitaine
-                            </span>
-                            <span v-if="selectedOtherPlayer.number" class="text-xs text-slate-500 font-semibold">
-                                N° {{ selectedOtherPlayer.number }}
-                            </span>
-                        </template>
-                        <template #footer>
-                            <p v-if="selectedOtherPlayer.description" class="mt-2 text-xs text-slate-400 italic">{{ selectedOtherPlayer.description }}</p>
-                        </template>
-                    </PlayerIdentityCard>
-
-                    <PlayerComparison v-model="comparison" :player="{ ...selectedOtherPlayer, comparisonTeamName: selectedOtherTeam?.name }" :availability="comparisonAvailability" />
-
-                    <!-- Moral (lecture seule, ou éditable avec l'option « Accès aux autres clubs ») -->
-                    <PlayerMoraleCard :player="selectedOtherPlayer"
-                                      :class="moraleFor === selectedOtherPlayer.id ? '' : 'opacity-60'"
-                                      :logs="morale.logs" :promises="morale.promises" :declarations="morale.declarations"
-                                      :currentWeek="currentWeek" :currentSeason="currentSeason"
-                                      :editable="editable"
-                                      @make-promise="(p, t) => emit('make-promise', p, t)"
-                                      @make-declaration="(p, t) => emit('make-declaration', p, t)" />
-
-                    <PlayerChemistryCard :key="selectedOtherPlayer.id"
-                                         :gameSaveId="gameSaveId"
-                                         :playerId="selectedOtherPlayer.id"
-                                         :relations="playerChemistry[selectedOtherPlayer.id] ?? []"
-                                         :editable="false" />
-
-                    <!-- Radar + Barres -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <RadarChart :player="selectedOtherPlayer" accent="red" />
-                        <StatBars :player="selectedOtherPlayer" />
-                    </div>
-
-                    <!-- Perf chips -->
-                    <PerfChips :player="selectedOtherPlayer" :perf="selectedPlayerPerf" />
-
+            <PlayerProfilePanel class="lg:col-span-8"
+                                :player="selectedOtherPlayer"
+                                :status="otherStatus"
+                                :morale="morale"
+                                :morale-loading="moraleFor !== selectedOtherPlayer?.id"
+                                :morale-editable="editable"
+                                :chemistry="playerChemistry[selectedOtherPlayer?.id] ?? []"
+                                :chemistry-editable="false"
+                                :game-save-id="gameSaveId"
+                                :current-week="currentWeek" :current-season="currentSeason"
+                                :perf="selectedPlayerPerf"
+                                accent="red"
+                                @make-promise="(p, t) => emit('make-promise', p, t)"
+                                @make-declaration="(p, t) => emit('make-declaration', p, t)">
+                <template v-if="editable" #actions>
+                    <ButtonSecondary size="sm" @click="emit('toggle-starter', selectedOtherPlayer.contract_id)">
+                        {{ selectedOtherPlayer.is_starter ? '↓ Sortir du onze' : '+ Titulariser' }}
+                    </ButtonSecondary>
+                    <CaptainToggle :captain="!!selectedOtherPlayer.is_captain"
+                                   @toggle="emit('toggle-captain', selectedOtherPlayer.contract_id)" />
+                    <ShirtNumberInput :number="selectedOtherPlayer.number"
+                                      @change="(value, revert) => emit('update-number', selectedOtherPlayer.id, value, revert)" />
                 </template>
-
-                <div v-else class="flex items-center justify-center rounded-xl border border-dashed border-slate-300 p-10 text-slate-400 text-sm">
-                    Sélectionne un joueur dans la liste ou sur le terrain
-                </div>
-            </div>
+                <template v-else #actions>
+                    <span class="px-3 py-1.5 rounded-full text-xs font-semibold border"
+                          :class="selectedOtherPlayer.is_starter
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              : 'bg-white text-slate-500 border-slate-200'">
+                        {{ selectedOtherPlayer.is_starter ? '✓ Titulaire' : 'Remplaçant' }}
+                    </span>
+                    <span v-if="selectedOtherPlayer.is_captain"
+                          class="px-3 py-1.5 rounded-full text-xs font-semibold border bg-amber-50 text-amber-700 border-amber-200">
+                        👑 Capitaine
+                    </span>
+                    <span v-if="selectedOtherPlayer.number" class="text-xs text-slate-500 font-semibold">
+                        N° {{ selectedOtherPlayer.number }}
+                    </span>
+                </template>
+            </PlayerProfilePanel>
         </div>
 
         <!-- Aucune équipe sélectionnée -->
         <div v-if="!selectedOtherTeam" class="flex items-center justify-center rounded-xl border border-dashed border-slate-300 p-10 text-slate-400 text-sm">
             Sélectionne une équipe ci-dessus
         </div>
+        <PlayerComparison v-model="comparison" :availability="comparisonAvailability" />
     </div>
 </template>

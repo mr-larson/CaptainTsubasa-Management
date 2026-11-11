@@ -88,24 +88,6 @@ export function useDashboard({ teams, gameSave, team, roster, activeInjuries, ac
     const suspensionsCountForTeam = (teamId) => countPlayers(playerIdsForTeam(teamId), isPlayerSuspended);
     const cardsCountForTeam = (teamId) => countPlayers(playerIdsForTeam(teamId), isPlayerBooked);
 
-    // ==========================
-    //   STATS MOYENNES
-    // ==========================
-    const statValue = (p, key) => {
-        const stats = p?.stats ?? {};
-        return Number(p?.[key] ?? stats[key] ?? 0) || 0;
-    };
-
-    const averageStat = (key) => {
-        if (!roster.value.length) return 0;
-        const total = roster.value.reduce((sum, p) => sum + statValue(p, key), 0);
-        return Math.round(total / roster.value.length);
-    };
-
-    const averageAttack  = computed(() => averageStat('attack'));
-    const averageDefense = computed(() => averageStat('defense'));
-    const averageStamina = computed(() => averageStat('stamina'));
-    const averageSpeed   = computed(() => averageStat('speed'));
 
     return {
         standings, clubStanding,
@@ -115,6 +97,5 @@ export function useDashboard({ teams, gameSave, team, roster, activeInjuries, ac
         injuriesCountForTeam, suspensionsCountForTeam, cardsCountForTeam,
         isPlayerInjured, isPlayerSuspended,
         playerYellowCards, playerInjury, playerSuspension,
-        averageAttack, averageDefense, averageStamina, averageSpeed,
     };
 }

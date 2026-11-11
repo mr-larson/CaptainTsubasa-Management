@@ -1,5 +1,5 @@
 <script setup>
-import { positionLabel } from '@/Enums/positionBadges.js';
+import { countByPositionGroup, positionLabel } from '@/Enums/positionBadges.js';
 import { fieldClass } from '@/Components/fieldStyles';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ButtonPrimary from '@/Components/ButtonPrimary.vue';
@@ -9,20 +9,25 @@ import { alertDialog } from '@/Composables/useDialog.js';
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import Modal from '@/Components/Modal.vue';
 import TeamStyleBadges from '@/Pages/GameSaves/Play/components/TeamStyleBadges.vue';
-import PlayerPhoto from '@/Components/PlayerPhoto.vue';
-import { usePixelArt } from '@/utils/pixelArt.js';
+import Panel from '@/Components/Panel.vue';
+import PlayerAvatar from '@/Components/PlayerAvatar.vue';
+import PositionBadge from '@/Components/PositionBadge.vue';
+import PositionCounts from '@/Components/PositionCounts.vue';
+import TeamLogo from '@/Components/TeamLogo.vue';
 import PlayerIdentityCard from '@/Pages/GameSaves/Play/components/PlayerIdentityCard.vue';
+import PlayerCompareButton from './Play/components/PlayerCompareButton.vue';
 import PlayerComparison from '@/Pages/GameSaves/Play/components/PlayerComparison.vue';
-import { compareRecruits, positionRating, recruitmentSorts } from '@/Pages/GameSaves/Play/recruitment.js';
+import { positionRating } from '@/Pages/GameSaves/Play/recruitment.js';
+import { useRecruitFilters } from '@/Pages/GameSaves/Play/useRecruitFilters.js';
+import RecruitFilterBar from '@/Pages/GameSaves/Play/components/RecruitFilterBar.vue';
+import RecruitRow from '@/Pages/GameSaves/Play/components/RecruitRow.vue';
 import PlayerSpecialMoves from './Play/components/PlayerSpecialMoves.vue';
 import StatBars from '@/Pages/GameSaves/Play/components/StatBars.vue';
 import { usePlayerUtils } from '@/Pages/GameSaves/Play/usePlayerUtils.js';
 import DraftPickAnimation from '@/Pages/GameSaves/Draft/DraftPickAnimation.vue';
 import DraftOrderList from '@/Pages/GameSaves/Draft/DraftOrderList.vue';
 import DraftPickLog from '@/Pages/GameSaves/Draft/DraftPickLog.vue';
-import { positionColor, positionGroup } from '@/Pages/GameSaves/Draft/draftPositions.js';
 
-const { photoSrc } = usePixelArt();
 
 const { moraleState, overallOf } = usePlayerUtils();
 
@@ -60,10 +65,6 @@ const isProcessing   = ref(false);
 const lastPick       = ref(null);
 const showPickAnim   = ref(false);
 const draftCompleted = ref(props.draftState?.completed ?? false);
-const filterPosition = ref('ALL');
-const sortBy = ref('profile');
-const searchQuery = ref('');
-const maxPrice = ref('');
 const inspectedPlayerId = ref(null);
 const comparison = ref([]);
 const playerDetail = ref(null);
@@ -90,14 +91,6 @@ const rosterModalPlayer = computed(() => draftPlayersById.value.get(rosterModalP
 function openRosterModal(teamId) {
     rosterModalPlayerId.value = null;
     rosterModalTeamId.value = teamId;
-}
-
-const isComparing = player => comparison.value.some(p => p.id === player.id);
-
-function toggleComparison(player) {
-    comparison.value = isComparing(player)
-        ? comparison.value.filter(p => p.id !== player.id)
-        : [...comparison.value.slice(-1), player];
 }
 
 function inspectPlayer(player) {
@@ -170,28 +163,11 @@ const myBudget = computed(() =>
     teamRosters.value[activeHumanTeamId.value]?.budget ?? 0
 );
 
-// Joueurs filtrés et triés
-const filteredPlayers = computed(() => {
-    let list = availablePlayers.value;
-
-    if (searchQuery.value) {
-        const q = searchQuery.value.toLowerCase();
-        list = list.filter(p =>
-            (p.lastname?.toLowerCase().includes(q)) ||
-            (p.firstname?.toLowerCase().includes(q))
-        );
-    }
-
-    if (filterPosition.value !== 'ALL') {
-        list = list.filter(p => positionGroup(p.position) === filterPosition.value);
-    }
-
-    if (maxPrice.value !== '') {
-        list = list.filter(player => draftCost(player) <= Number(maxPrice.value));
-    }
-
-    return [...list].sort((a, b) => compareRecruits(a, b, sortBy.value, draftCost, overallOf));
-});
+// Joueurs filtrés et triés (mêmes filtres que l'onglet Transferts)
+const {
+    search: searchQuery, position: filterPosition, sort: sortBy, maxPrice,
+    filtered: filteredPlayers, positionOptions,
+} = useRecruitFilters(availablePlayers, { cost: (player) => draftCost(player), overall: overallOf, defaultSort: 'profile' });
 
 // Ordre de draft visuel (toutes les équipes dans l'ordre du round courant)
 const draftOrderTeams = computed(() => {
@@ -216,14 +192,7 @@ const inspectedRoster = computed(() => {
         .reverse();
 });
 
-const inspectedPosCounts = computed(() => {
-    const counts = { GK: 0, DEF: 0, MID: 0, ATT: 0 };
-    inspectedRoster.value.forEach(p => {
-        const g = positionGroup(p.position);
-        if (counts[g] !== undefined) counts[g]++;
-    });
-    return counts;
-});
+const inspectedPosCounts = computed(() => countByPositionGroup(inspectedRoster.value));
 
 // ══════════════════════════════════════
 //  HELPERS
@@ -244,14 +213,6 @@ const draftCost = (player) => {
 
 function canAfford(player) {
     return draftCost(player) <= myBudget.value;
-}
-
-function teamLogoUrl(team) {
-    const path = team?.logo_path;
-    if (!path) return null;
-    if (path.startsWith('http') || path.startsWith('/')) return path;
-    // Tous les logos (canon « teams/… », packages, uploads) sont servis par le disque public sous /storage.
-    return '/storage/' + path;
 }
 
 async function finishMyDraft() {
@@ -478,41 +439,23 @@ onMounted(() => {
                         <div class="col-span-1 lg:col-span-3 flex flex-col gap-4">
 
                             <!-- Mon équipe -->
-                            <div class="rounded-xl border border-slate-200 bg-white p-3">
+                            <Panel tone="white" padding="sm">
                                 <div class="flex items-center gap-2 mb-2">
-                                    <div class="w-8 h-8 rounded-lg overflow-hidden bg-white border border-slate-200 shrink-0">
-                                        <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(myTeam)" :src="teamLogoUrl(myTeam)" class="w-full h-full" alt=""/>
-                                    </div>
+                                    <TeamLogo :team="myTeam" size="md" shape="rounded" fallback="none" />
                                     <div>
                                         <div class="text-xs font-bold text-teal-700">{{ myTeam?.name }}</div>
                                         <div class="text-2xs text-teal-500">{{ myRosterCount }}/18 joueurs • Budget draft {{ myBudget }} <GameBanknote /></div>
                                     </div>
                                 </div>
                                 <TeamStyleBadges :team="myTeam" size="sm" />
-                            </div>
+                            </Panel>
 
                             <!-- Effectif d'une équipe -->
-                            <div class="border border-slate-200 rounded-xl bg-white p-3">
-                                <div class="mb-2">
-                                    <div class="flex items-center justify-between mb-1.5">
-                                        <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Effectif</h4>
-                                        <span class="text-2xs font-bold text-slate-400">{{ inspectedRoster.length }}</span>
-                                    </div>
-                                    <div class="flex gap-1">
-        <span class="px-1.5 py-0.5 rounded text-3xs font-bold bg-yellow-100 text-yellow-700">
-            GK {{ inspectedPosCounts.GK }}
-        </span>
-                                        <span class="px-1.5 py-0.5 rounded text-3xs font-bold bg-blue-100 text-blue-700">
-            DEF {{ inspectedPosCounts.DEF }}
-        </span>
-                                        <span class="px-1.5 py-0.5 rounded text-3xs font-bold bg-green-100 text-green-700">
-            MID {{ inspectedPosCounts.MID }}
-        </span>
-                                        <span class="px-1.5 py-0.5 rounded text-3xs font-bold bg-red-100 text-red-700">
-            ATT {{ inspectedPosCounts.ATT }}
-        </span>
-                                    </div>
-                                </div>
+                            <Panel tone="white" padding="sm" title="Effectif">
+                                <template #header-actions>
+                                    <span class="font-bold">{{ inspectedRoster.length }}</span>
+                                </template>
+                                <PositionCounts :counts="inspectedPosCounts" class="mb-2" />
 
                                 <!-- Sélecteur équipe -->
                                 <select v-model="inspectedTeamId"
@@ -526,27 +469,20 @@ onMounted(() => {
                                 <div class="max-h-[200px] overflow-y-auto space-y-1">
                                     <div v-for="pick in inspectedRoster" :key="pick.player_id"
                                          class="flex items-center gap-2 px-2 py-1 rounded-lg bg-slate-50 text-[11px]">
-                                        <div class="w-5 h-5 rounded-full overflow-hidden bg-slate-200 shrink-0">
-                                            <PlayerPhoto :src="pick.photo_path ? `/storage/${pick.photo_path}` : null"
-                                                 class="w-full h-full object-cover" alt="" />
-                                            <div v-if="!pick.photo_path" class="w-full h-full flex items-center justify-center text-[8px] text-slate-400">?</div>
-                                        </div>
+                                        <PlayerAvatar :player="pick" size="xs" />
                                         <span class="flex-1 font-semibold text-slate-700 truncate">{{ pick.player_name }}</span>
-                                        <span :class="positionColor(pick.position)"
-                                              class="px-1 py-0.5 rounded text-3xs font-bold">
-                {{ positionGroup(pick.position) }}
-            </span>
+                                        <PositionBadge :position="pick.position" />
                                         <span class="text-3xs text-slate-400">{{ pick.cost }} <GameBanknote /></span>
                                     </div>
                                     <p v-if="!inspectedRoster.length" class="text-2xs text-slate-400 italic text-center py-2">
                                         Aucun joueur pioché
                                     </p>
                                 </div>
-                            </div>
+                            </Panel>
 
                             <!-- Ordre de draft -->
                             <DraftOrderList :teams="draftOrderTeams" :round="draft?.round ?? 1"
-                                            :is-human-team="isHumanTeam" :team-logo-url="teamLogoUrl"
+                                            :is-human-team="isHumanTeam"
                                             @inspect-team="openRosterModal" />
 
                             <!-- Log des derniers picks -->
@@ -565,9 +501,8 @@ onMounted(() => {
                                 </div>
                                 <div role="status">
                                     <div v-if="isProcessing && !isMyTurn" class="flex items-center gap-2">
-                                        <div class="relative w-8 h-8 rounded-full bg-slate-50 border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
-                                            <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(currentTeam)" :src="teamLogoUrl(currentTeam)" class="w-full h-full" alt=""/>
-                                            <span v-else class="text-xs text-slate-400">{{ (currentTeam?.name || '?').charAt(0) }}</span>
+                                        <div class="relative shrink-0">
+                                            <TeamLogo :team="currentTeam" size="md" />
                                             <div class="absolute inset-0 rounded-full border-2 border-slate-200 border-t-slate-600 animate-spin"></div>
                                         </div>
                                         <span class="text-sm font-bold text-slate-600">
@@ -601,73 +536,30 @@ onMounted(() => {
                                 </button>
                             </div>
 
-                            <div v-if="isMyTurn" class="mb-4 flex flex-wrap items-end gap-2">
-                                <label class="min-w-[160px] flex-1 text-xs text-slate-500">
-                                    Rechercher un joueur
-                                    <input v-model="searchQuery" type="search" class="mt-1 w-full" :class="fieldClass({ size: 'sm', border: 'border-slate-200' })" placeholder="Nom ou prénom" />
-                                </label>
-                                <label class="text-xs text-slate-500">
-                                    Poste
-                                    <select v-model="filterPosition" class="mt-1 block" :class="fieldClass({ size: 'sm', border: 'border-slate-200' })">
-                                        <option value="ALL">Tous</option><option value="GK">Gardiens</option>
-                                        <option value="DEF">Défenseurs</option><option value="MID">Milieux</option><option value="ATT">Attaquants</option>
-                                    </select>
-                                </label>
-                                <label class="text-xs text-slate-500">
-                                    Trier par
-                                    <select v-model="sortBy" class="mt-1 block" :class="fieldClass({ size: 'sm', border: 'border-slate-200' })">
-                                        <option v-for="sort in recruitmentSorts" :key="sort.key" :value="sort.key">{{ sort.label }}</option>
-                                    </select>
-                                </label>
-                                <label class="text-xs text-slate-500">
-                                    Prix max. (GL)
-                                    <input v-model.number="maxPrice" type="number" min="0" class="mt-1 block w-24" :class="fieldClass({ size: 'sm', border: 'border-slate-200' })" placeholder="Tous" />
-                                </label>
-                            </div>
+                            <RecruitFilterBar v-if="isMyTurn" class="mb-4"
+                                              v-model:search="searchQuery" v-model:position="filterPosition"
+                                              v-model:sort="sortBy" v-model:max-price="maxPrice"
+                                              :positions="positionOptions" price-label="Coût draft max. (GL)" />
 
                             <div v-if="isMyTurn" class="grid min-w-0 gap-4 xl:flex-1 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-                                <div class="flex min-w-0 flex-col rounded-xl border border-slate-200 bg-white p-3">
-                                    <h3 class="mb-2 text-xs font-bold text-slate-600">Joueurs disponibles · {{ filteredPlayers.length }}</h3>
+                                <Panel tone="white" padding="sm" class="flex min-w-0 flex-col" :title="`Joueurs disponibles · ${filteredPlayers.length}`">
                                     <div class="relative flex-1">
                                         <div class="max-h-[55vh] space-y-1 overflow-y-auto xl:absolute xl:inset-0 xl:max-h-none">
-                                            <div v-for="player in filteredPlayers" :key="player.id"
-                                                 class="flex items-center gap-2 rounded-lg border pr-2 text-xs"
-                                                 :class="inspectedPlayer?.id === player.id ? 'border-teal-300 bg-teal-50' : 'border-slate-200 hover:bg-slate-50'">
-                                                <button type="button" class="flex min-w-0 flex-1 items-center gap-2 py-2 pl-2 text-left"
-                                                        :aria-pressed="inspectedPlayer?.id === player.id" @click="inspectPlayer(player)">
-                                                    <span class="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-100 text-slate-400 shadow-sm">
-                                                        <PlayerPhoto v-if="player.photo_path" :src="photoSrc(`/storage/${player.photo_path}`)"
-                                                                     class="h-full w-full object-cover" alt="" />
-                                                        <svg v-else aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" class="h-4 w-4">
-                                                            <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 2c-4.4 0-8 2.2-8 5v1h16v-1c0-2.8-3.6-5-8-5Z" />
-                                                        </svg>
-                                                    </span>
-                                                    <span class="min-w-0 flex-1">
-                                                        <span class="block truncate font-bold text-slate-700">
-                                                            {{ player.firstname }} {{ player.lastname }}
-                                                            <span v-if="duoOf(player)" :title="duoTitle(player)">🤝</span>
-                                                        </span>
-                                                        <span class="block text-2xs text-slate-500">{{ positionLabel(player.position) }} · Note {{ overallOf(player) }} · End. {{ player.stamina ?? '—' }} · Moral {{ player.morale ?? 60 }}</span>
-                                                    </span>
-                                                    <span class="shrink-0 text-right" :class="canAfford(player) ? 'text-teal-700' : 'text-rose-600'">
-                                                        <strong>{{ draftCost(player) }} <GameBanknote /></strong>
-                                                        <span class="block text-2xs text-slate-500">{{ weeklyCost(player) }} / sem.</span>
-                                                    </span>
-                                                </button>
-                                                <button type="button"
-                                                        class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border bg-white hover:border-teal-500 focus-visible:ring-2 focus-visible:ring-teal-500"
-                                                        :class="isComparing(player) ? 'border-teal-500 text-teal-700 ring-1 ring-teal-500' : 'border-slate-200 text-slate-500'"
-                                                        :aria-pressed="isComparing(player)"
-                                                        :aria-label="`${isComparing(player) ? 'Retirer du comparatif' : 'Ajouter au comparatif'} : ${player.firstname} ${player.lastname}`"
-                                                        :title="isComparing(player) ? 'Retirer du comparatif' : 'Ajouter au comparatif'"
-                                                        @click="toggleComparison(player)">
-                                                    <span aria-hidden="true">⚖️</span>
-                                                </button>
-                                            </div>
+                                            <RecruitRow v-for="player in filteredPlayers" :key="player.id" :player="player"
+                                                        :selected="inspectedPlayer?.id === player.id" :overall="overallOf(player)"
+                                                        :price="draftCost(player)" :price-sub="`${weeklyCost(player)} / sem.`"
+                                                        :affordable="canAfford(player)" @select="inspectPlayer">
+                                                <template #name-suffix>
+                                                    <span v-if="duoOf(player)" :title="duoTitle(player)">🤝</span>
+                                                </template>
+                                                <template #action>
+                                                    <PlayerCompareButton v-model="comparison" :player="player" />
+                                                </template>
+                                            </RecruitRow>
                                             <p v-if="!filteredPlayers.length" class="p-3 text-xs text-slate-500">Aucun joueur ne correspond aux filtres.</p>
                                         </div>
                                     </div>
-                                </div>
+                                </Panel>
 
                                 <div ref="playerDetail" class="flex min-w-0 flex-col gap-3">
                                     <template v-if="inspectedPlayer">
@@ -687,7 +579,7 @@ onMounted(() => {
                                         <StatBars :player="inspectedPlayer" highlight-position />
                                         <PlayerSpecialMoves :moves="inspectedPlayer.special_moves ?? []" names-only show-empty class="flex-1" />
                                     </template>
-                                    <PlayerComparison v-model="comparison" :cost="draftCost" cost-label="Coût draft" open-on-second />
+                                    <PlayerComparison v-model="comparison" :cost="draftCost" cost-label="Coût draft" />
                                 </div>
                             </div>
 
@@ -699,17 +591,12 @@ onMounted(() => {
                                 <div v-if="pickLog.length" class="flex flex-col gap-2 max-w-md mx-auto">
                                     <div v-for="(pick, idx) in [...pickLog].reverse().slice(0, 6)" :key="idx"
                                          class="flex items-center gap-3 bg-white border border-slate-200 rounded-lg px-3 py-2">
-                                        <div class="h-8 w-8 rounded-full bg-slate-50 border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
-                                            <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(teams.find(t => t.id === pick.team_id))" :src="teamLogoUrl(teams.find(t => t.id === pick.team_id))" class="w-full h-full" alt=""/>
-                                            <span v-else class="text-xs text-slate-400">{{ (pick.team_name || '?').charAt(0) }}</span>
-                                        </div>
+                                        <TeamLogo :team="teams.find(t => t.id === pick.team_id) ?? { name: pick.team_name }" size="md" />
                                         <div class="flex-1 text-left">
                                             <p class="text-sm font-semibold text-slate-700">{{ pick.player_name }}</p>
                                             <p class="text-2xs text-slate-400">{{ pick.team_name }}</p>
                                         </div>
-                                        <span class="text-2xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
-                                            {{ positionGroup(pick.position) }}
-                                        </span>
+                                        <PositionBadge :position="pick.position" size="sm" />
                                     </div>
                                 </div>
                                 <div v-else class="text-center text-3xl">⏳</div>
@@ -720,15 +607,8 @@ onMounted(() => {
             </div>
         </div>
 
-        <Modal :show="!!rosterModalTeam" max-width="2xl" @close="rosterModalTeamId = null">
-            <div class="space-y-4 p-4 sm:p-5">
-                <header class="flex items-center justify-between gap-2">
-                    <h3 class="text-sm font-bold text-slate-700">
-                        {{ rosterModalTeam?.name }} · {{ rosterModalPicks.length }} joueur{{ rosterModalPicks.length > 1 ? 's' : '' }} pioché{{ rosterModalPicks.length > 1 ? 's' : '' }}
-                    </h3>
-                    <button type="button" class="rounded-full px-3 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-100"
-                            @click="rosterModalTeamId = null">Fermer</button>
-                </header>
+        <Modal :show="!!rosterModalTeam" max-width="2xl" @close="rosterModalTeamId = null"
+               :title="`${rosterModalTeam?.name ?? ''} · ${rosterModalPicks.length} joueur${rosterModalPicks.length > 1 ? 's' : ''} pioché${rosterModalPicks.length > 1 ? 's' : ''}`">
                 <div v-if="rosterModalPicks.length" class="grid gap-3 sm:grid-cols-2">
                     <div class="max-h-[55vh] space-y-1 overflow-y-auto rounded-xl border border-slate-200 bg-slate-50 p-2">
                         <button v-for="pick in rosterModalPicks" :key="pick.player_id" type="button"
@@ -748,7 +628,6 @@ onMounted(() => {
                     <p v-else class="text-xs text-slate-500">La fiche détaillée de ce joueur est indisponible.</p>
                 </div>
                 <p v-else class="rounded-xl bg-slate-50 p-4 text-sm text-slate-500">Cette équipe n’a encore pioché aucun joueur.</p>
-            </div>
         </Modal>
     </AuthenticatedLayout>
 </template>

@@ -1,6 +1,4 @@
 <script setup>
-import PlayerChemistryCard from '@/Pages/GameSaves/Play/components/PlayerChemistryCard.vue';
-import PlayerMoraleCard from '@/Pages/GameSaves/Play/components/PlayerMoraleCard.vue';
 import { fieldClass } from '@/Components/fieldStyles';
 import ButtonSecondary from '@/Components/ButtonSecondary.vue';
 import ButtonDanger from '@/Components/ButtonDanger.vue';
@@ -8,19 +6,16 @@ import ButtonPrimary from '@/Components/ButtonPrimary.vue';
 import Modal from '@/Components/Modal.vue';
 import { useForm } from '@inertiajs/vue3';
 import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
-import { usePlayerUtils } from './usePlayerUtils.js';
 import RosterList from '@/Pages/GameSaves/Play/components/RosterList.vue';
-import PlayerStatusAlert from '@/Pages/GameSaves/Play/components/PlayerStatusAlert.vue';
+import PlayerCompareButton from './components/PlayerCompareButton.vue';
 import PlayerComparison from './components/PlayerComparison.vue';
-import PlayerIdentityCard from '@/Pages/GameSaves/Play/components/PlayerIdentityCard.vue';
-import RadarChart from '@/Pages/GameSaves/Play/components/RadarChart.vue';
-import StatBars from '@/Pages/GameSaves/Play/components/StatBars.vue';
-import PerfChips from '@/Pages/GameSaves/Play/components/PerfChips.vue';
 import FormationCard from '@/Pages/GameSaves/Play/components/FormationCard.vue';
 import PitchView from '@/Pages/GameSaves/Play/components/PitchView.vue';
 import BenchCard from '@/Pages/GameSaves/Play/components/BenchCard.vue';
-import ClubIdentityCard from '@/Pages/GameSaves/Play/components/ClubIdentityCard.vue';
-import TeamRecordCard from '@/Pages/GameSaves/Play/components/TeamRecordCard.vue';
+import CaptainToggle from './components/CaptainToggle.vue';
+import ClubOverview from './components/ClubOverview.vue';
+import PlayerProfilePanel from './components/PlayerProfilePanel.vue';
+import ShirtNumberInput from './components/ShirtNumberInput.vue';
 import { masteryFor } from './lineupMastery.js';
 import { useLineupIssues, ISSUE_CHIP } from './useLineupIssues.js';
 
@@ -57,10 +52,6 @@ const props = defineProps({
     injuriesCount:        { type: Number,  default: 0 },
     suspensionsCount:     { type: Number,  default: 0 },
     cardsCount:           { type: Number,  default: 0 },
-    averageAttack:        { type: Number,  default: 0 },
-    averageDefense:       { type: Number,  default: 0 },
-    averageStamina:       { type: Number,  default: 0 },
-    averageSpeed:         { type: Number,  default: 0 },
     moraleLogs:           { type: Object,  default: () => ({}) },
     playerPromises:       { type: Object,  default: () => ({}) },
     playerDeclarations:   { type: Object,  default: () => ({}) },
@@ -93,14 +84,18 @@ onBeforeUnmount(() => {
     emit('cancel-pickup'); // changement d'onglet : rien ne reste soulevé
 });
 
-// Numéro refusé par le serveur (déjà pris) : l'input revient à l'ancien numéro.
-function onNumberChange(event) {
-    const input    = event.target;
-    const previous = props.selectedMyPlayer?.number ?? '';
-    emit('update-number', props.selectedMyPlayer.id, input.value, () => { input.value = previous; });
-}
-
-const { moraleState } = usePlayerUtils();
+const myStatus = computed(() => ({
+    isPlayerInjured: props.isPlayerInjured, isPlayerSuspended: props.isPlayerSuspended, isPlayerBenched: props.isPlayerBenched,
+    playerInjury: props.playerInjury, playerSuspension: props.playerSuspension, playerBench: props.playerBench,
+}));
+const myMorale = computed(() => {
+    const id = props.selectedMyPlayer?.id;
+    return {
+        logs: props.moraleLogs?.[id] ?? [],
+        promises: props.playerPromises?.[id] ?? [],
+        declarations: props.playerDeclarations?.[id] ?? [],
+    };
+});
 
 const renewalPlayer = ref(null);
 const renewalForm = useForm({ weeks: 1, end_week: null });
@@ -137,13 +132,6 @@ function submitRenewal() {
         contract: renewalPlayer.value.contract_id,
     }), { preserveScroll: true, onSuccess: () => { renewalPlayer.value = null; } });
 }
-
-// ── Moral moyen (carte Club) ─────────────────────────────────
-const averageMorale = computed(() => {
-    if (!props.rosterWithStatus.length) return 0;
-    const sum = props.rosterWithStatus.reduce((a, p) => a + Number(p.morale ?? 60), 0);
-    return Math.round(sum / props.rosterWithStatus.length);
-});
 
 // ── Maîtrise du poste occupé (miroir de RosterService.positionMastery) ──
 // Titulaire soulevé : adéquation de chaque remplaçant à son poste (halos du banc).
@@ -277,48 +265,22 @@ const comparisonAvailability = p => unavailability(p)?.label ?? "Disponible";
         </div>
 
         <!-- LIGNE 2 : Infos club -->
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-            <ClubIdentityCard class="md:col-span-5"
-                              :team="team"
-                              :rank="clubStanding?.position ?? null"
-                              :total="standings.length"
-                              :averageOverall="clubStanding?.average_overall ?? null"
-                              :budget="teamBudget" />
-
-            <TeamRecordCard class="md:col-span-3"
-                            :wins="teamRecord.wins"
-                            :draws="teamRecord.draws"
-                            :losses="teamRecord.losses" />
-
-            <!-- Stats + Effectif -->
-            <div class="md:col-span-4 border border-slate-200 rounded-xl bg-slate-50 p-4">
-                <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">Club</h4>
-                <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-slate-600">
-                    <div class="flex justify-between"><span>Attaque moy.</span><span class="font-bold text-slate-700">{{ averageAttack }}</span></div>
-                    <div class="flex justify-between"><span>Blessés</span>
-                        <span class="font-bold" :class="injuriesCount > 0 ? 'text-rose-500' : 'text-slate-700'">{{ injuriesCount }}</span>
-                    </div>
-                    <div class="flex justify-between"><span>Défense moy.</span><span class="font-bold text-slate-700">{{ averageDefense }}</span></div>
-                    <div class="flex justify-between"><span>Suspensions</span>
-                        <span class="font-bold" :class="suspensionsCount > 0 ? 'text-amber-500' : 'text-slate-700'">{{ suspensionsCount }}</span>
-                    </div>
-                    <div class="flex justify-between"><span>Stamina moy.</span><span class="font-bold text-slate-700">{{ averageStamina }}</span></div>
-                    <div class="flex justify-between"><span>Vitesse moy.</span><span class="font-bold text-slate-700">{{ averageSpeed }}</span></div>
-                    <div class="flex justify-between"><span>Moral moy.</span>
-                        <span class="font-bold" :class="moraleState(averageMorale).text">{{ moraleState(averageMorale).emoji }} {{ averageMorale }}</span>
-                    </div>
-                    <div class="flex justify-between"><span>Joueurs avertis</span>
-                        <span class="font-bold" :class="cardsCount > 0 ? 'text-yellow-500' : 'text-slate-700'">{{ cardsCount }}</span>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <ClubOverview :team="team"
+                      :rank="clubStanding?.position ?? null"
+                      :total="standings.length"
+                      :average-overall="clubStanding?.average_overall ?? null"
+                      :budget="teamBudget"
+                      :record="teamRecord"
+                      :players="rosterWithStatus"
+                      :injuries="injuriesCount"
+                      :suspensions="suspensionsCount"
+                      :cards="cardsCount" />
 
         <!-- LIGNE 3 : Liste joueurs + Profil -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
 
             <!-- Liste joueurs — hauteur calée sur la colonne profil (scroll interne) -->
-            <div class="lg:col-span-3 relative min-h-[320px]">
+            <div class="lg:col-span-4 relative min-h-[320px]">
                 <RosterList class="absolute inset-0"
                             :players="rosterWithStatus"
                             :selectedId="selectedMyPlayer?.id"
@@ -329,135 +291,84 @@ const comparisonAvailability = p => unavailability(p)?.label ?? "Disponible";
                             :playerInjury="playerInjury"
                             :playerSuspension="playerSuspension"
                             :playerBench="playerBench"
-                            @select="p => emit('select-player', p)" />
+                            @select="p => emit('select-player', p)" >
+                    <template #row-action="{ player }">
+                        <PlayerCompareButton v-model="comparison" :player="player" />
+                    </template>
+                </RosterList>
             </div>
 
             <!-- Profil joueur -->
-            <div class="lg:col-span-9 flex flex-col gap-3">
-                <template v-if="selectedMyPlayer">
-
-                    <PlayerStatusAlert :player="selectedMyPlayer"
-                                       :isPlayerInjured="isPlayerInjured"
-                                       :isPlayerSuspended="isPlayerSuspended"
-                                       :isPlayerBenched="isPlayerBenched"
-                                       :playerInjury="playerInjury"
-                                       :playerSuspension="playerSuspension"
-                                       :playerBench="playerBench" />
-
-                    <!-- Identité + actions -->
-                    <PlayerIdentityCard :player="selectedMyPlayer">
-                        <template #actions>
-                            <!-- Entrée / sortie du onze -->
-                            <template v-if="selectedMyPlayer.contract_id">
-                                <!-- Prise en cours : un seul bouton pour annuler -->
-                                <button v-if="selectedIsPickedUp" type="button"
-                                        @click.stop="emit('cancel-pickup')"
-                                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all bg-amber-400 text-slate-700 border-amber-500 hover:bg-amber-500"
-                                        title="Annuler (Échap)">
-                                    ✕ Annuler le remplacement
-                                </button>
-                                <template v-else-if="selectedMyPlayer.is_starter">
-                                    <button type="button"
-                                            @click.stop="emit('pick-up', selectedMyPlayer)"
-                                            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all bg-emerald-500 text-white border-emerald-600 hover:bg-emerald-600"
-                                            title="Puis clique un coéquipier (échange de poste), un remplaçant (il sort) ou un poste vide">
-                                        ⇄ Déplacer / remplacer…
-                                    </button>
-                                    <ButtonSecondary size="sm" @click="emit('toggle-starter', selectedMyPlayer.contract_id)" title="Le joueur passe sur le banc et son poste reste vide">
-                                        ↓ Sortir du onze
-                                    </ButtonSecondary>
-                                </template>
-                                <!-- Remplaçant, onze complet : choisir qui il remplace -->
-                                <button v-else-if="onzeComplet" type="button"
-                                        @click.stop="emit('pick-up', selectedMyPlayer)"
-                                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all bg-white text-emerald-600 border-emerald-400 hover:bg-emerald-50"
-                                        title="Puis clique sur le terrain le titulaire qu'il remplace">
-                                    ⇄ Faire entrer…
-                                </button>
-                                <!-- Remplaçant, poste(s) vide(s) : titularisation directe -->
-                                <button v-else type="button"
-                                        @click="emit('toggle-starter', selectedMyPlayer.contract_id)"
-                                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all bg-white text-emerald-600 border-emerald-400 hover:bg-emerald-50"
-                                        :title="`Il prend le premier poste vide (${11 - startersCount} libre(s)) — ou clique un poste vide sur le terrain pour choisir`">
-                                    + Titulariser ({{ startersCount }}/11)
-                                </button>
-                            </template>
-                            <button
-                                v-if="selectedMyPlayer.contract_id"
-                                type="button"
-                                @click="emit('toggle-captain', selectedMyPlayer.contract_id)"
-                                class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all"
-                                :class="selectedMyPlayer.is_captain
-                                    ? 'bg-amber-400 text-white border-amber-500 hover:bg-amber-500'
-                                    : 'bg-white text-slate-500 border-slate-300 hover:bg-slate-50'"
-                                :title="selectedMyPlayer.is_captain ? 'Retirer le brassard' : 'Nommer capitaine'"
-                            >
-                                {{ selectedMyPlayer.is_captain ? '👑 Capitaine' : '👑 Nommer capitaine' }}
+            <PlayerProfilePanel class="lg:col-span-8"
+                                :player="selectedMyPlayer"
+                                :status="myStatus"
+                                :morale="myMorale"
+                                :chemistry="playerChemistry[selectedMyPlayer?.id] ?? []"
+                                :game-save-id="gameSaveId"
+                                :current-week="currentWeek" :current-season="currentSeason"
+                                :perf="selectedMyPlayerPerf"
+                                @make-promise="(p, t) => emit('make-promise', p, t)"
+                                @make-declaration="(p, t) => emit('make-declaration', p, t)">
+                <template #actions>
+                    <!-- Entrée / sortie du onze -->
+                    <template v-if="selectedMyPlayer.contract_id">
+                        <!-- Prise en cours : un seul bouton pour annuler -->
+                        <button v-if="selectedIsPickedUp" type="button"
+                                @click.stop="emit('cancel-pickup')"
+                                class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all bg-amber-400 text-slate-700 border-amber-500 hover:bg-amber-500"
+                                title="Annuler (Échap)">
+                            ✕ Annuler le remplacement
+                        </button>
+                        <template v-else-if="selectedMyPlayer.is_starter">
+                            <button type="button"
+                                    @click.stop="emit('pick-up', selectedMyPlayer)"
+                                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all bg-emerald-500 text-white border-emerald-600 hover:bg-emerald-600"
+                                    title="Puis clique un coéquipier (échange de poste), un remplaçant (il sort) ou un poste vide">
+                                ⇄ Déplacer / remplacer…
                             </button>
-                            <div class="flex items-center gap-1.5">
-                                <span class="text-xs text-slate-500 font-semibold">N°</span>
-                                <input
-                                    type="number"
-                                    min="1"
-                                    max="99"
-                                    :value="selectedMyPlayer.number"
-                                    @change="onNumberChange($event)"
-                                    class="w-14 px-2 py-1" :class="fieldClass({ shape: 'rect', size: 'sm' })"
-                                />
-                            </div>
-                            <!-- Résiliation -->
-                            <ButtonDanger size="sm" v-if="selectedMyPlayer.contract_id" @click="emit('release-player', selectedMyPlayer)" title="Résilier le contrat : salaire déjà versé non remboursé, relation avec le coach rompue (-100)">
-                                ✖ Résilier
-                            </ButtonDanger>
-                            <ButtonSecondary v-if="selectedMyPlayer.contract_id && renewalLimit(selectedMyPlayer)"
-                                             type="button" size="sm" @click="openRenewal(selectedMyPlayer)">
-                                Prolonger
+                            <ButtonSecondary size="sm" @click="emit('toggle-starter', selectedMyPlayer.contract_id)" title="Le joueur passe sur le banc et son poste reste vide">
+                                ↓ Sortir du onze
                             </ButtonSecondary>
                         </template>
-                        <template #footer>
-                            <p class="mt-3 text-2xs text-slate-400 italic">
-                                💡 Sur le terrain : clique un joueur pour voir sa fiche, re-clique-le (ou glisse-le) pour le déplacer,
-                                puis clique sa cible. Les postes vides « + » se remplissent d'un clic. Échap pour annuler.
-                            </p>
-                            <p v-if="selectedMyPlayer.description" class="mt-2 text-xs text-slate-400 italic">{{ selectedMyPlayer.description }}</p>
-                        </template>
-                    </PlayerIdentityCard>
-
-                    <PlayerComparison v-model="comparison" :player="selectedMyPlayer" :availability="comparisonAvailability" />
-
-                    <!-- Moral -->
-                    <PlayerMoraleCard :player="selectedMyPlayer"
-                                      :logs="moraleLogs?.[selectedMyPlayer.id] ?? []"
-                                      :promises="playerPromises?.[selectedMyPlayer.id] ?? []"
-                                      :declarations="playerDeclarations?.[selectedMyPlayer.id] ?? []"
-                                      :currentWeek="currentWeek" :currentSeason="currentSeason"
-                                      @make-promise="(p, t) => emit('make-promise', p, t)"
-                                      @make-declaration="(p, t) => emit('make-declaration', p, t)" />
-
-                    <PlayerChemistryCard :key="selectedMyPlayer.id"
-                                         :gameSaveId="gameSaveId"
-                                         :playerId="selectedMyPlayer.id"
-                                         :relations="playerChemistry[selectedMyPlayer.id] ?? []" />
-
-                    <!-- Radar + Barres -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <RadarChart :player="selectedMyPlayer" accent="teal" />
-                        <StatBars :player="selectedMyPlayer" />
-                    </div>
-
-                    <!-- Perf chips -->
-                    <PerfChips :player="selectedMyPlayer" :perf="selectedMyPlayerPerf" />
-
+                        <!-- Remplaçant, onze complet : choisir qui il remplace -->
+                        <button v-else-if="onzeComplet" type="button"
+                                @click.stop="emit('pick-up', selectedMyPlayer)"
+                                class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all bg-white text-emerald-600 border-emerald-400 hover:bg-emerald-50"
+                                title="Puis clique sur le terrain le titulaire qu'il remplace">
+                            ⇄ Faire entrer…
+                        </button>
+                        <!-- Remplaçant, poste(s) vide(s) : titularisation directe -->
+                        <button v-else type="button"
+                                @click="emit('toggle-starter', selectedMyPlayer.contract_id)"
+                                class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all bg-white text-emerald-600 border-emerald-400 hover:bg-emerald-50"
+                                :title="`Il prend le premier poste vide (${11 - startersCount} libre(s)) — ou clique un poste vide sur le terrain pour choisir`">
+                            + Titulariser ({{ startersCount }}/11)
+                        </button>
+                    </template>
+                    <CaptainToggle v-if="selectedMyPlayer.contract_id" :captain="!!selectedMyPlayer.is_captain"
+                                   @toggle="emit('toggle-captain', selectedMyPlayer.contract_id)" />
+                    <ShirtNumberInput :number="selectedMyPlayer.number"
+                                      @change="(value, revert) => emit('update-number', selectedMyPlayer.id, value, revert)" />
+                    <!-- Résiliation -->
+                    <ButtonDanger size="sm" v-if="selectedMyPlayer.contract_id" @click="emit('release-player', selectedMyPlayer)" title="Résilier le contrat : salaire déjà versé non remboursé, relation avec le coach rompue (-100)">
+                        ✖ Résilier
+                    </ButtonDanger>
+                    <ButtonSecondary v-if="selectedMyPlayer.contract_id && renewalLimit(selectedMyPlayer)"
+                                     type="button" size="sm" @click="openRenewal(selectedMyPlayer)">
+                        Prolonger
+                    </ButtonSecondary>
                 </template>
-
-                <div v-else class="flex items-center justify-center rounded-xl border border-dashed border-slate-300 p-10 text-slate-400 text-sm">
-                    Sélectionne un joueur dans la liste ou sur le terrain
-                </div>
-            </div>
+                <template #footer>
+                    <p class="mt-3 text-2xs text-slate-400 italic">
+                        💡 Sur le terrain : clique un joueur pour voir sa fiche, re-clique-le (ou glisse-le) pour le déplacer,
+                        puis clique sa cible. Les postes vides « + » se remplissent d'un clic. Échap pour annuler.
+                    </p>
+                </template>
+            </PlayerProfilePanel>
         </div>
-        <Modal :show="!!renewalPlayer" max-width="md" @close="closeRenewal">
-            <form v-if="renewalPlayer" class="space-y-4 p-5" @submit.prevent="submitRenewal">
-                <h3 class="text-lg font-bold text-slate-800">Prolonger {{ renewalPlayer.firstname }} {{ renewalPlayer.lastname }}</h3>
+        <Modal :show="!!renewalPlayer" max-width="md" @close="closeRenewal"
+               :title="renewalPlayer ? `Prolonger ${renewalPlayer.firstname} ${renewalPlayer.lastname}` : ''">
+            <form v-if="renewalPlayer" class="space-y-4" @submit.prevent="submitRenewal">
                 <dl class="grid grid-cols-[1fr_auto] gap-2 rounded-lg bg-slate-50 p-3 text-sm text-slate-700">
                     <dt>Fin du contrat actuel</dt><dd class="text-right font-semibold">Semaine {{ renewalForm.end_week }}</dd>
                     <dt>Semaines à venir déjà couvertes</dt><dd class="text-right font-semibold">{{ renewalCoveredWeeks }}</dd>
@@ -478,7 +389,7 @@ const comparisonAvailability = p => unavailability(p)?.label ?? "Disponible";
                 <p v-if="renewalForm.errors.weeks || renewalForm.errors.end_week" role="alert" class="text-sm text-rose-600">
                     {{ renewalForm.errors.weeks || renewalForm.errors.end_week }}
                 </p>
-                <div class="flex justify-end gap-2">
+                <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                     <ButtonSecondary type="button" :disabled="renewalForm.processing" @click="closeRenewal">Annuler</ButtonSecondary>
                     <ButtonPrimary :disabled="!canSubmitRenewal">Confirmer la prolongation</ButtonPrimary>
                 </div>
@@ -498,5 +409,6 @@ const comparisonAvailability = p => unavailability(p)?.label ?? "Disponible";
                 </button>
             </div>
         </Transition>
+        <PlayerComparison v-model="comparison" :availability="comparisonAvailability" />
     </div>
 </template>

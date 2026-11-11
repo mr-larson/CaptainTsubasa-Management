@@ -5,12 +5,16 @@ import ButtonSecondary from '@/Components/ButtonSecondary.vue';
 import ButtonPrimary from '@/Components/ButtonPrimary.vue';
 import { computed, ref, watch } from 'vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
-import PlayerPhoto from '@/Components/PlayerPhoto.vue';
-import RadarChart from '@/Pages/GameSaves/Play/components/RadarChart.vue';
+import Panel from '@/Components/Panel.vue';
+import PlayerAvatar from '@/Components/PlayerAvatar.vue';
+import RecruitFilterBar from './components/RecruitFilterBar.vue';
+import RecruitRow from './components/RecruitRow.vue';
+import { ORIGIN_OPTIONS, useRecruitFilters } from './useRecruitFilters.js';
+import PlayerIdentityCard from './components/PlayerIdentityCard.vue';
+import PlayerSpecialMoves from './components/PlayerSpecialMoves.vue';
+import PlayerCompareButton from './components/PlayerCompareButton.vue';
 import PlayerComparison from './components/PlayerComparison.vue';
-import { compareRecruits, recruitmentSorts } from './recruitment.js';
 import StatBars from '@/Pages/GameSaves/Play/components/StatBars.vue';
-import SecondaryPositions from '@/Pages/GameSaves/Play/components/SecondaryPositions.vue';
 
 const props = defineProps({
     availableFreePlayers: { type: Array,   required: true },
@@ -39,99 +43,29 @@ const emit = defineEmits([
 // ==========================
 //   HELPERS
 // ==========================
-const { overallOf, playerPhotoUrl, nationalityFlag, positionGroup, keyStatsFor, statLabel, moraleState } = usePlayerUtils();
+const { overallOf, positionGroup, moraleState } = usePlayerUtils();
 
 
 // ==========================
-//   RECHERCHE NOM (comme le draft)
+//   FILTRES ET TRI
 // ==========================
-const searchQuery = ref('');
-
-// ==========================
-//   FILTRE ORIGINE (œuvre de provenance)
-// ==========================
-const originFilter = ref('ALL');
-const originOptions = [
-    { key: 'ALL',                 label: 'Toutes' },
-    { key: 'captain_tsubasa',     label: 'Captain Tsubasa' },
-    { key: 'blue_lock',           label: 'Blue Lock' },
-    { key: 'hungry_heart',        label: 'Hungry Heart' },
-    { key: 'ecole_des_champions', label: "L'École des Champions" },
-    { key: 'ao_ashi',             label: 'Ao Ashi' },
-    { key: 'original',            label: 'Originaux' },
-    { key: 'amateur',             label: 'Amateurs' },
-];
-
-const originFilters = computed(() => originOptions.filter(({ key }) => {
-    // Comme le filtre serveur, une origine absente des réglages reste visible.
-    const enabled = props.visibleOrigins?.[key];
-    return enabled === undefined || enabled === true || enabled === 1 || enabled === '1';
-}));
-
-watch(originFilters, (options) => {
-    if (!options.some(({ key }) => key === originFilter.value)) originFilter.value = 'ALL';
-});
-
-const originCount = (key) =>
-    key === 'ALL'
-        ? props.availableFreePlayers.length
-        : props.availableFreePlayers.filter(p => p.origin === key).length;
-
-// Liste réduite à l'origine choisie (sert aux compteurs de poste + à la liste).
-const originScoped = computed(() =>
-    originFilter.value === 'ALL'
-        ? props.availableFreePlayers
-        : props.availableFreePlayers.filter(p => p.origin === originFilter.value)
-);
-
-// ==========================
-//   FILTRE POSTE
-// ==========================
-const posFilter = ref('ALL');
-const maxPrice = ref('');
-const filters = [
-    { key: 'ALL', label: 'Tous' },
-    { key: 'GK',  label: 'Gardiens' },
-    { key: 'DEF', label: 'Défenseurs' },
-    { key: 'MID', label: 'Milieux' },
-    { key: 'ATT', label: 'Attaquants' },
-];
-
-const posCount = (key) =>
-    key === 'ALL'
-        ? originScoped.value.length
-        : originScoped.value.filter(p => positionGroup(p.position) === key).length;
-
-const filteredPlayers = computed(() => {
-    let list = originScoped.value;
-
-    if (posFilter.value !== 'ALL') {
-        list = list.filter(p => positionGroup(p.position) === posFilter.value);
-    }
-
-    const q = searchQuery.value.trim().toLowerCase();
-    if (q) {
-        list = list.filter(p =>
-            (p.lastname?.toLowerCase().includes(q)) ||
-            (p.firstname?.toLowerCase().includes(q))
-        );
-    }
-
-    if (maxPrice.value !== '') list = list.filter(p => costOf(p) <= Number(maxPrice.value));
-    return [...list].sort((a, b) => compareRecruits(a, b, sortKey.value, costOf, ovr));
-});
-
-// ==========================
-//   TRI DE LA LISTE
-// ==========================
-const staminaOf = (p) => p.stamina ?? p.stats?.stamina ?? 0;
 const costOf = (p) => p.adjusted_cost ?? p.cost ?? 0;
-const sortKey = ref('name');
 
 // Note globale calculée une fois par joueur et par liste (au lieu de 3-4 fois
 // par ligne à chaque re-rendu, ex. à chaque frappe dans la recherche).
 const overallById = computed(() => new Map(props.availableFreePlayers.map(p => [p.id, overallOf(p)])));
 const ovr = (p) => overallById.value.get(p.id) ?? overallOf(p);
+
+// Comme le filtre serveur, une origine absente des réglages reste visible.
+const visibleOriginOptions = computed(() => ORIGIN_OPTIONS.filter(({ key }) => {
+    const enabled = props.visibleOrigins?.[key];
+    return enabled === undefined || enabled === true || enabled === 1 || enabled === '1';
+}));
+
+const {
+    search, position, origin, sort, maxPrice,
+    filtered: filteredPlayers, hasActiveFilters, positionOptions, originOptions,
+} = useRecruitFilters(() => props.availableFreePlayers, { cost: costOf, overall: ovr, origins: visibleOriginOptions });
 
 // ==========================
 //   JOUEUR SÉLECTIONNÉ
@@ -182,18 +116,6 @@ const bestTeamPlayerSamePos = computed(() => {
 // ==========================
 const compareList = ref([]);
 
-const isComparing = (player) => compareList.value.some(p => p.id === player.id);
-
-const toggleCompare = (player) => {
-    const idx = compareList.value.findIndex(p => p.id === player.id);
-    if (idx !== -1) {
-        compareList.value.splice(idx, 1);
-        return;
-    }
-    if (compareList.value.length >= 2) compareList.value.shift();
-    compareList.value.push(player);
-};
-
 // ==========================
 //   BUDGET
 // ==========================
@@ -223,74 +145,12 @@ const filteredHistory = computed(() =>
 <template>
     <div class="flex-1 flex flex-col gap-4 overflow-y-auto min-h-0 pr-1 [&>*]:shrink-0">
 
-        <!-- Header : Marché (1/4) + recherche & filtres (3/4) -->
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch">
+        <RecruitFilterBar v-model:search="search" v-model:position="position" v-model:origin="origin"
+                          v-model:sort="sort" v-model:max-price="maxPrice"
+                          :positions="positionOptions" :origins="originOptions"
+                          price-label="Salaire max. / sem. (GL)" />
 
-            <!-- Marché des transferts (1/4) -->
-            <div class="md:col-span-3 border border-slate-200 rounded-xl bg-slate-50 p-4 flex flex-col gap-3">
-                <div>
-                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Marché des transferts</h3>
-                    <p class="text-sm text-slate-500 mt-1">{{ availableFreePlayers.length }} joueur(s) sans contrat disponible(s)</p>
-                </div>
-                <div class="flex flex-wrap gap-2 mt-auto">
-                    <div class="text-center px-4 py-2 rounded-xl border bg-teal-50 border-teal-200">
-                        <div class="text-xl font-black text-teal-600">{{ teamBudget }} <GameBanknote /></div>
-                        <div class="text-2xs text-teal-400 font-semibold">Budget actuel</div>
-                    </div>
-                    <div v-if="transferTarget" class="text-center px-4 py-2 rounded-xl border"
-                         :class="canAfford ? 'bg-emerald-50 border-emerald-200' : 'bg-rose-50 border-rose-200'">
-                        <div class="text-xl font-black" :class="canAfford ? 'text-emerald-600' : 'text-rose-500'">
-                            {{ budgetAfter }} <GameBanknote />
-                        </div>
-                        <div class="text-2xs font-semibold" :class="canAfford ? 'text-emerald-400' : 'text-rose-400'">
-                            Après transfert
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Recherche + filtres (3/4) -->
-            <div class="md:col-span-9 flex flex-col gap-3">
-                <!-- Barre de recherche (comme le draft) -->
-                <input type="search" v-model="searchQuery"
-                       class="w-full px-4 py-2" :class="fieldClass()"
-                       placeholder="Rechercher un joueur..."/>
-
-                <!-- Filtres origine (œuvre de provenance) -->
-                <div class="flex gap-2 flex-wrap">
-                    <button v-for="o in originFilters" :key="o.key" type="button"
-                            @click="originFilter = o.key"
-                            class="px-3 py-1.5 rounded-full text-xs font-semibold border transition-all"
-                            :class="originFilter === o.key
-                            ? 'bg-slate-700 text-white border-slate-700 shadow-sm'
-                            : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400 hover:text-slate-700'">
-                        {{ o.label }}
-                        <span class="ml-1 opacity-60">({{ originCount(o.key) }})</span>
-                    </button>
-                </div>
-
-                <!-- Filtres poste -->
-                <div class="flex gap-2 flex-wrap">
-                    <button v-for="f in filters" :key="f.key" type="button"
-                            @click="posFilter = f.key"
-                            class="px-3 py-1.5 rounded-full text-xs font-semibold border transition-all"
-                            :class="posFilter === f.key
-                            ? 'bg-teal-500 text-white border-teal-600 shadow-sm'
-                            : 'bg-white text-slate-600 border-slate-200 hover:border-teal-300 hover:text-teal-600'">
-                        {{ f.label }}
-                        <span class="ml-1 opacity-60">({{ posCount(f.key) }})</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div class="flex flex-wrap items-end justify-between gap-3">
-            <label class="text-xs text-slate-500">
-                Prix max. par match (GL)
-                <input v-model.number="maxPrice" type="number" min="0" class="mt-1 block w-28" :class="fieldClass({ size: 'sm' })" placeholder="Tous" />
-            </label>
-            <PlayerComparison v-model="compareList" :cost="costOf" cost-label="Coût par match" />
-        </div>
+        <PlayerComparison v-model="compareList" :cost="costOf" cost-label="Salaire / sem." />
 
         <!-- Contenu principal -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
@@ -300,125 +160,25 @@ const filteredHistory = computed(() =>
             <!-- ============================================ -->
             <!-- Hauteur calée sur la colonne de droite (grand écran), scroll interne -->
             <div class="lg:col-span-5 relative lg:min-h-[520px]">
-            <div class="border border-slate-200 rounded-xl bg-slate-50 p-3 max-h-[690px] lg:max-h-none lg:absolute lg:inset-0 overflow-y-auto">
-                <div class="flex items-center justify-between gap-2 mb-2">
-                    <h3 class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Agents libres</h3>
-                    <label class="flex items-center gap-1.5 text-2xs font-semibold text-slate-400">
-                        Trier par
-                        <select v-model="sortKey"
-                                class="py-1 pl-2 pr-7" :class="fieldClass({ shape: 'rect', size: 'sm' })">
-                            <option v-for="o in recruitmentSorts" :key="o.key" :value="o.key">{{ o.label }}</option>
-                        </select>
-                    </label>
-                </div>
+            <Panel padding="sm" class="max-h-[690px] lg:max-h-none lg:absolute lg:inset-0 overflow-y-auto"
+                   :title="`Agents libres · ${filteredPlayers.length}`">
 
                 <div v-if="filteredPlayers.length" class="space-y-1">
-                    <div v-for="p in filteredPlayers" :key="p.id"
-                         @click="selectPlayer(p)"
-                         class="flex items-center gap-2 px-2 py-2 rounded-lg border cursor-pointer transition-all"
-                         :class="selectedPlayer?.id === p.id
-                            ? 'bg-teal-500 text-white border-teal-600 shadow-sm'
-                            : 'bg-white hover:bg-slate-50 border-slate-100 hover:border-teal-200'">
-
-                        <!-- Photo -->
-                        <div class="relative shrink-0">
-                            <div class="w-10 h-10 rounded-full overflow-hidden bg-slate-200 border-2"
-                                 :class="selectedPlayer?.id === p.id ? 'border-white/50' : 'border-slate-100'">
-                                <PlayerPhoto :src="playerPhotoUrl(p)" class="w-full h-full object-cover" alt="" />
-                                <div v-if="!playerPhotoUrl(p)" class="w-full h-full flex items-center justify-center text-2xs text-slate-400">?</div>
-                            </div>
-                            <span v-if="nationalityFlag(p)"
-                                  class="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-white border border-slate-200 flex items-center justify-center text-2xs leading-none shadow-sm"
-                                  :title="p.nationality">
-                                {{ nationalityFlag(p) }}
-                            </span>
-                        </div>
-
-                        <!-- Infos -->
-                        <div class="flex-1 min-w-0">
-                            <div class="text-xs font-semibold truncate"
-                                 :class="selectedPlayer?.id === p.id ? 'text-white' : 'text-slate-700'">
-                                {{ p.lastname }} {{ p.firstname }}
-                            </div>
-                            <div class="text-2xs truncate"
-                                 :class="selectedPlayer?.id === p.id ? 'text-white/70' : 'text-slate-400'">
-                                {{ positionLabel(p.position) }}
-                            </div>
-                        </div>
-
-                        <!-- Endurance -->
-                        <div class="text-center w-8 shrink-0" :title="`Endurance : ${staminaOf(p)}/100`">
-                            <div class="text-[11px] font-black"
-                                 :class="selectedPlayer?.id === p.id ? 'text-white'
-                                    : staminaOf(p) >= 70 ? 'text-emerald-600'
-                                    : staminaOf(p) >= 40 ? 'text-amber-600' : 'text-rose-500'">
-                                {{ staminaOf(p) }}
-                            </div>
-                            <div class="text-[8px]"
-                                 :class="selectedPlayer?.id === p.id ? 'text-white/60' : 'text-slate-400'">
-                                Endur.
-                            </div>
-                        </div>
-
-                        <!-- Moral -->
-                        <div class="text-center w-8 shrink-0"
-                             :title="`Moral : ${moraleState(p.morale).label} (${p.morale ?? 60}/100)`">
-                            <div class="text-[11px] font-black"
-                                 :class="selectedPlayer?.id === p.id ? 'text-white' : moraleState(p.morale).text">
-                                {{ moraleState(p.morale).emoji }} {{ p.morale ?? 60 }}
-                            </div>
-                            <div class="text-[8px]"
-                                 :class="selectedPlayer?.id === p.id ? 'text-white/60' : 'text-slate-400'">
-                                Moral
-                            </div>
-                        </div>
-
-                        <!-- Stats clés -->
-                        <div class="flex gap-0.5 shrink-0">
-                            <div v-for="k in keyStatsFor(p.position).slice(0,2)" :key="k"
-                                 class="text-center w-8">
-                                <div class="text-[11px] font-black"
-                                     :class="selectedPlayer?.id === p.id ? 'text-white' : 'text-slate-700'">
-                                    {{ p[k] ?? p.stats?.[k] ?? '—' }}
-                                </div>
-                                <div class="text-[8px]"
-                                     :class="selectedPlayer?.id === p.id ? 'text-white/60' : 'text-slate-400'">
-                                    {{ statLabel(k) }}
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Overall -->
-                        <div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-black shrink-0"
-                             :class="selectedPlayer?.id === p.id
-                                ? 'bg-white/20 text-white'
-                                : ovr(p) >= 70 ? 'bg-emerald-100 text-emerald-700'
-                                : ovr(p) >= 50 ? 'bg-amber-100 text-amber-700'
-                                : 'bg-slate-100 text-slate-500'">
-                            {{ ovr(p) }}
-                        </div>
-
-                        <!-- Comparer -->
-                        <button type="button"
-                                @click.stop="toggleCompare(p)"
-                                class="w-7 h-7 rounded-full flex items-center justify-center text-xs shrink-0 border transition-all"
-                                :class="isComparing(p)
-                                    ? 'bg-teal-500 border-teal-600 text-white shadow-sm'
-                                    : selectedPlayer?.id === p.id
-                                        ? 'border-white/40 text-white/80 hover:bg-white/10'
-                                        : 'border-slate-200 text-slate-400 hover:border-teal-300 hover:text-teal-600'"
-                                :title="isComparing(p) ? 'Retirer de la comparaison' : 'Ajouter à la comparaison'">
-                            ⚖️
-                        </button>
-                    </div>
+                    <RecruitRow v-for="p in filteredPlayers" :key="p.id" :player="p"
+                                :selected="selectedPlayer?.id === p.id" :overall="ovr(p)"
+                                :price="costOf(p)" price-sub="/ sem." @select="selectPlayer">
+                        <template #action>
+                            <PlayerCompareButton v-model="compareList" :player="p" />
+                        </template>
+                    </RecruitRow>
                 </div>
 
                 <div v-else class="flex items-center justify-center py-8 text-slate-400 text-xs italic">
-                    {{ (searchQuery || posFilter !== 'ALL' || originFilter !== 'ALL')
+                    {{ hasActiveFilters
                         ? 'Aucun agent libre ne correspond aux filtres'
                         : 'Aucun agent libre disponible' }}
                 </div>
-            </div>
+            </Panel>
             </div>
 
             <!-- ============================================ -->
@@ -426,54 +186,25 @@ const filteredHistory = computed(() =>
             <!-- ============================================ -->
             <div v-if="selectedPlayer" class="lg:col-span-7 flex flex-col gap-3">
 
-                <!-- Identité -->
-                <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
-                    <div class="flex items-start gap-4">
-                        <div class="relative shrink-0">
-                            <div class="w-20 h-20 rounded-xl border-2 border-slate-200 bg-white overflow-hidden">
-                                <PlayerPhoto :src="playerPhotoUrl(selectedPlayer)" class="w-full h-full object-cover" alt="" />
-                                <div v-if="!playerPhotoUrl(selectedPlayer)" class="w-full h-full flex items-center justify-center text-3xl text-slate-200">👤</div>
-                            </div>
-                            <div class="absolute -top-2 -right-2 w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-[11px] font-black shadow"
-                                 :class="overallOf(selectedPlayer)>=70?'bg-emerald-500 text-white':overallOf(selectedPlayer)>=50?'bg-amber-400 text-slate-700':'bg-slate-400 text-white'">
-                                {{ overallOf(selectedPlayer) }}
-                            </div>
-                            <span v-if="nationalityFlag(selectedPlayer)"
-                                  class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center text-[13px] leading-none shadow-sm"
-                                  :title="selectedPlayer.nationality">
-                                {{ nationalityFlag(selectedPlayer) }}
-                            </span>
-                        </div>
-                        <div class="flex-1">
-                            <h3 class="text-base font-bold text-slate-700">{{ selectedPlayer.firstname }} {{ selectedPlayer.lastname }}</h3>
-                            <p class="text-xs text-slate-400 mt-0.5">{{ positionLabel(selectedPlayer.position) }} • Coût de base : {{ selectedPlayer.cost ?? 0 }} <GameBanknote />/match</p>
-                            <span class="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full text-2xs font-semibold"
-                                  :class="moraleState(selectedPlayer.morale).chip"
-                                  title="Le moral d'un joueur libre n'évolue pas tant qu'il est sans club">
-                                {{ moraleState(selectedPlayer.morale).emoji }}
-                                Moral : {{ moraleState(selectedPlayer.morale).label }} ({{ selectedPlayer.morale ?? 60 }}/100)
-                            </span>
-                            <SecondaryPositions :player="selectedPlayer" class="mt-1.5" />
-                            <p v-if="selectedPlayer.description" class="text-xs text-slate-500 mt-2 italic">{{ selectedPlayer.description }}</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Radar + stats comparées -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <RadarChart :player="selectedPlayer"
-                                accent="teal"
-                                :comparePlayer="bestTeamPlayerSamePos"
-                                :compareLabel="bestTeamPlayerSamePos ? `${bestTeamPlayerSamePos.lastname} (ton équipe)` : null" />
-
-                    <StatBars :player="selectedPlayer"
-                              :comparePlayer="bestTeamPlayerSamePos"
-                              :compareLabel="bestTeamPlayerSamePos?.lastname" />
-                </div>
+                <PlayerIdentityCard :player="selectedPlayer" :show-captain-badge="false"
+                                    :subtitle="positionLabel(selectedPlayer.position)">
+                    <template #footer>
+                        <span class="mt-1.5 inline-flex rounded-full px-2 py-0.5 text-2xs font-semibold"
+                              :class="moraleState(selectedPlayer.morale).chip">
+                            {{ moraleState(selectedPlayer.morale).emoji }}
+                            Moral · {{ moraleState(selectedPlayer.morale).label }} · {{ selectedPlayer.morale ?? 60 }}/100
+                        </span>
+                        <p v-if="selectedPlayer.description" class="mt-2 text-xs italic text-slate-500">{{ selectedPlayer.description }}</p>
+                    </template>
+                </PlayerIdentityCard>
 
                 <!-- Formulaire offre -->
-                <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
-                    <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-3">💼 Proposer un contrat</h4>
+                <Panel title="💼 Proposer un contrat">
+                    <template #header-actions>
+                        <span class="text-xs normal-case text-slate-500">
+                            Budget actuel <strong class="text-teal-700">{{ teamBudget }} <GameBanknote /></strong>
+                        </span>
+                    </template>
 
                     <div class="grid grid-cols-2 gap-4 mb-3">
                         <div>
@@ -529,7 +260,12 @@ const filteredHistory = computed(() =>
                             Confirmer l'offre
                         </ButtonPrimary>
                     </div>
-                </div>
+                </Panel>
+
+                <StatBars :player="selectedPlayer" highlight-position
+                          :compare-player="bestTeamPlayerSamePos" :compare-label="bestTeamPlayerSamePos?.lastname" />
+
+                <PlayerSpecialMoves :moves="selectedPlayer.special_moves ?? []" names-only show-empty />
             </div>
 
             <!-- Placeholder si aucun joueur sélectionné -->
@@ -543,26 +279,21 @@ const filteredHistory = computed(() =>
         <!-- ============================================ -->
         <!-- HISTORIQUE TRANSFERTS                         -->
         <!-- ============================================ -->
-        <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 mt-4">
-            <div class="flex items-center justify-between mb-3">
-                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider">📋 Historique des transferts</h4>
-                <!-- Filtre équipe -->
+        <Panel class="mt-4" title="📋 Historique des transferts">
+            <template #header-actions>
                 <select :value="historyTeamFilter ?? 'null'"
                         @change="historyTeamFilter = $event.target.value === 'null' ? null : $event.target.value"
                         class="min-w-[200px] pl-3 pr-9 py-1 cursor-pointer" :class="fieldClass({ shape: 'rect', size: 'sm' })">
                     <option value="null">Toutes les équipes</option>
                     <option v-for="t in historyTeams" :key="t.id" :value="t.id">{{ t.name }}</option>
                 </select>
-            </div>
+            </template>
 
             <div v-if="filteredHistory.length" class="space-y-1.5 max-h-[300px] overflow-y-auto pr-1">
                 <div v-for="entry in filteredHistory" :key="entry.player.id + '-' + entry.start_week"
                      class="flex items-center gap-3 px-3 py-2 rounded-lg bg-white border border-slate-100">
                     <!-- Photo -->
-                    <div class="w-8 h-8 rounded-full overflow-hidden bg-slate-200 shrink-0">
-                        <PlayerPhoto :src="playerPhotoUrl(entry.player)" class="w-full h-full object-cover" alt="" />
-                        <div v-if="!playerPhotoUrl(entry.player)" class="w-full h-full flex items-center justify-center text-3xs text-slate-400">?</div>
-                    </div>
+                    <PlayerAvatar :player="entry.player" />
                     <!-- Nom -->
                     <div class="flex-1 min-w-0">
                         <div class="text-xs font-semibold text-slate-700 truncate">
@@ -584,7 +315,7 @@ const filteredHistory = computed(() =>
             <div v-else class="text-xs text-slate-400 italic py-3 text-center">
                 Aucun transfert enregistré pour le moment.
             </div>
-        </div>
+        </Panel>
 
     </div>
 </template>

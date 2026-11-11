@@ -169,7 +169,6 @@ const {
     injuriesCount, suspensionsCount, cardsCount,
     injuriesCountForTeam, suspensionsCountForTeam, cardsCountForTeam,
     isPlayerInjured, isPlayerSuspended, playerYellowCards, playerInjury, playerSuspension,
-    averageAttack, averageDefense, averageStamina, averageSpeed,
 } = useDashboard({
     teams: teamsRef, gameSave: gameSaveRef, team: teamRef, roster,
     activeInjuries: activeInjuriesRef,
@@ -235,7 +234,6 @@ const {
     selectedMyPlayerPerf: _selectedMyPlayerPerf,
     selectedStatsTeamId, selectedStatsTeam,
     selectedTeamPlayerStats, teamStats,
-    averageTeamStat,
 } = useStats({ gameSave: gameSaveRef, teams: teamsRef, team: teamRef, roster, playerSeasonStats: playerSeasonStatsRef });
 
 // selectedMyPlayerPerf est une fonction qui retourne un computed
@@ -701,10 +699,6 @@ const saveGame = () => {
                                :injuriesCount="injuriesCount"
                                :suspensionsCount="suspensionsCount"
                                :cardsCount="cardsCount"
-                               :averageAttack="averageAttack"
-                               :averageDefense="averageDefense"
-                               :averageStamina="averageStamina"
-                               :averageSpeed="averageSpeed"
                                :moraleLogs="moraleLogs"
                                :playerPromises="playerPromises"
                                :playerDeclarations="playerDeclarations"
@@ -751,7 +745,6 @@ const saveGame = () => {
                                    :cardsCountForTeam="cardsCountForTeam"
                                    :playerInjury="playerInjury"
                                    :playerSuspension="playerSuspension"
-                                   :averageTeamStat="averageTeamStat"
                                    :playerSeasonStats="props.playerSeasonStats"
                                    :playerChemistry="props.playerChemistry"
                                    :isPlayerInjured="isPlayerInjured"
