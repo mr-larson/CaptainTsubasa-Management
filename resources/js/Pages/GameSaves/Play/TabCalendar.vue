@@ -4,9 +4,15 @@ import { fieldClass } from '@/Components/fieldStyles';
 import ButtonSecondary from '@/Components/ButtonSecondary.vue';
 import { computed, ref, watch, nextTick } from 'vue';
 import axios from 'axios';
-import PlayerPhoto from '@/Components/PlayerPhoto.vue';
+import Panel from '@/Components/Panel.vue';
+import PlayerAvatar from '@/Components/PlayerAvatar.vue';
+import TeamLogo from '@/Components/TeamLogo.vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
 import MatchPreview from './components/MatchPreview.vue';
+import Modal from '@/Components/Modal.vue';
+import PlayerIdentityCard from './components/PlayerIdentityCard.vue';
+import PlayerSpecialMoves from './components/PlayerSpecialMoves.vue';
+import StatBars from './components/StatBars.vue';
 
 /**
  * Onglet « Calendrier » : où et quand. Calendrier d'une équipe, journée
@@ -33,7 +39,7 @@ const props = defineProps({
 
 const emit = defineEmits(['select-team', 'open-match', 'change-tab']);
 
-const { teamLogoUrl, playerPhotoUrl } = usePlayerUtils();
+const { teamLogoUrl, moraleState } = usePlayerUtils();
 
 // ==========================
 //   HELPERS
@@ -160,10 +166,16 @@ watch(leadersKey, async (key) => {
 }, { immediate: true });
 
 const MEDALS = ['🥇', '🥈', '🥉'];
-const openLeaderMatch = (row) => {
-    const match = props.allMatches.find(m => m.id === row.match_id);
+const selectedLeader = ref(null);
+const leaderPlayer = computed(() => leaders.value?.players?.[selectedLeader.value?.player_id]);
+const leaderMorale = computed(() => moraleState(leaderPlayer.value?.morale));
+const leaderMatch = computed(() => props.allMatches.find(m => m.id === selectedLeader.value?.match_id));
+
+function openLeaderMatch() {
+    const match = leaderMatch.value;
+    selectedLeader.value = null;
     if (match) openRow(match, props.teamById[match.home_team_id]);
-};
+}
 
 // ==========================
 //   SEMAINE EN COURS DANS LA LISTE
@@ -186,13 +198,11 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
             <!-- ============================================ -->
             <!-- CALENDRIER                                    -->
             <!-- ============================================ -->
-            <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 lg:col-span-5 lg:min-h-0 lg:flex-col"
+            <Panel as="div" class="lg:col-span-5 lg:min-h-0 lg:flex-col"
                  :class="previewMatch ? 'hidden lg:flex' : 'lg:flex'">
                 <!-- Équipe affichée : liste déroulante (remplace les 15 puces) -->
                 <div class="flex items-center gap-2 mb-3">
-                    <div class="w-8 h-8 rounded-lg overflow-hidden bg-white border border-slate-200 shrink-0">
-                        <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(calendarTeam)" :src="teamLogoUrl(calendarTeam)" class="w-full h-full" alt=""/>
-                    </div>
+                    <TeamLogo :team="calendarTeam" size="md" shape="rounded" fallback="none" />
                     <select :value="calendarTeam.id" @change="onTeamChange($event.target.value)"
                             aria-label="Équipe affichée"
                             class="flex-1 min-w-0 px-2 py-1.5 cursor-pointer" :class="fieldClass({ shape: 'rect' })">
@@ -240,11 +250,7 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
 
                         <!-- Adversaire -->
                         <div class="flex items-center gap-2 flex-1 min-w-0">
-                            <div v-if="!isByeMatch(match)" class="w-5 h-5 rounded-full overflow-hidden bg-slate-100 shrink-0">
-                                <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(opponentTeam(match, calendarTeam.id))"
-                                     :src="teamLogoUrl(opponentTeam(match, calendarTeam.id))"
-                                     class="w-full h-full" alt=""/>
-                            </div>
+                            <TeamLogo v-if="!isByeMatch(match)" :team="opponentTeam(match, calendarTeam.id)" size="xs" fallback="none" :bordered="false" />
                             <span class="text-xs font-medium text-slate-700 truncate">
                                 {{ isByeMatch(match) ? 'Repos' : opponentNameForTeam(match, calendarTeam.id) }}
                             </span>
@@ -278,7 +284,7 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
                         </div>
                     </div>
                 </div>
-            </div>
+            </Panel>
 
             <!-- ============================================ -->
             <!-- DROITE : avant-match ou journée               -->
@@ -300,7 +306,7 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
                 </template>
 
                 <!-- Journée -->
-                <div v-else class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+                <Panel v-else>
                     <div class="flex items-center justify-between gap-2 mb-3">
                         <button type="button" :disabled="journeeWeek <= 1" @click="journeeWeek--"
                                 class="px-2.5 py-1 rounded-lg text-xs font-bold border border-slate-300 bg-white text-slate-600 hover:bg-slate-100 disabled:opacity-40">◀</button>
@@ -349,14 +355,11 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
                     <p v-if="journeeMatches.length && journeeRest.length && !journeeMatches.some(m => m.round)" class="mt-3 text-[11px] text-slate-400">
                         Au repos : {{ journeeRest.map(t => t.name).join(', ') }}
                     </p>
-                </div>
+                </Panel>
 
                 <!-- Classements de la journée -->
-                <div v-if="!preview && journeeMatches.some(m => m.status === 'played')"
-                     class="border border-slate-200 rounded-xl bg-slate-50 p-4">
-                    <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-                        Classements de la semaine {{ journeeWeek }}
-                    </h4>
+                <Panel v-if="!preview && journeeMatches.some(m => m.status === 'played')"
+                       :title="`Classements de la semaine ${journeeWeek}`">
                     <div class="border-b border-slate-200 mb-3">
                         <TabBar v-model="leaderTab" :tabs="LEADER_TABS" size="sm" wrap label="Classements de la semaine" />
                     </div>
@@ -366,15 +369,13 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
                     </div>
                     <div v-else-if="leaderRows.length" class="space-y-1">
                         <button v-for="(r, i) in leaderRows" :key="`${r.player_id}-${r.match_id}`" type="button"
-                                @click="openLeaderMatch(r)"
+                                @click="selectedLeader = r" aria-haspopup="dialog"
                                 class="w-full flex items-center gap-3 px-3 py-2 rounded-lg border border-slate-200 bg-white text-left hover:border-teal-300 hover:bg-teal-50 transition-all"
-                                title="Ouvrir le match">
+                                title="Voir la fiche du joueur">
                             <span v-if="leaderTab !== 'fouls'" class="w-6 text-center text-sm shrink-0" :class="i > 2 ? 'text-xs font-bold text-slate-400' : ''">
                                 {{ MEDALS[i] ?? i + 1 }}
                             </span>
-                            <span class="w-8 h-8 rounded-full overflow-hidden bg-slate-200 shrink-0">
-                                <PlayerPhoto :src="playerPhotoUrl(r)" class="w-full h-full object-cover" alt="" />
-                            </span>
+                            <PlayerAvatar :player="r" :zoomable="false" />
                             <span class="min-w-0 flex-1">
                                 <span class="block text-xs font-bold text-slate-700 truncate">{{ r.firstname }} {{ r.lastname }}</span>
                                 <span class="flex items-center gap-1 text-2xs text-slate-400 truncate">
@@ -394,12 +395,35 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
                     <p v-else class="text-xs text-slate-400 italic text-center py-6">
                         {{ leaderTab === 'fouls' ? 'Aucun carton ni blessure cette semaine.' : 'Personne dans cette catégorie cette semaine.' }}
                     </p>
-                </div>
+                </Panel>
             </div>
         </div>
 
         <div v-if="!calendarTeam" class="flex items-center justify-center rounded-xl border border-dashed border-slate-300 p-10 text-slate-400 text-sm">
             Aucune équipe à afficher
         </div>
+        <Modal :show="!!selectedLeader" max-width="lg" title="Fiche du joueur" @close="selectedLeader = null">
+            <template v-if="selectedLeader">
+                <template v-if="leaderPlayer">
+                    <PlayerIdentityCard :player="leaderPlayer">
+                        <template #footer>
+                            <p v-if="leaderPlayer.morale != null" class="mt-1 text-xs" :class="leaderMorale.text">
+                                <span aria-hidden="true">{{ leaderMorale.emoji }}</span>
+                                Moral · {{ leaderMorale.label }} · {{ leaderPlayer.morale }}/100
+                            </p>
+                            <p v-if="leaderPlayer.description" class="mt-2 text-xs italic text-slate-500">{{ leaderPlayer.description }}</p>
+                        </template>
+                    </PlayerIdentityCard>
+                    <StatBars :player="leaderPlayer" highlight-position />
+                    <PlayerSpecialMoves :moves="leaderPlayer.special_moves ?? []" show-empty />
+                </template>
+                <p v-else class="text-sm text-slate-600">
+                    La fiche de {{ selectedLeader.firstname }} {{ selectedLeader.lastname }} est indisponible.
+                </p>
+            </template>
+            <template v-if="leaderMatch" #footer>
+                <ButtonSecondary size="sm" @click="openLeaderMatch">Ouvrir le match</ButtonSecondary>
+            </template>
+        </Modal>
     </div>
 </template>

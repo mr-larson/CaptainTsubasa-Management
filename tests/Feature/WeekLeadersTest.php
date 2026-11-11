@@ -69,6 +69,8 @@ class WeekLeadersTest extends TestCase
             ->getJson(route('game-saves.weeks.leaders', [$save, 3]))
             ->assertOk()
             ->assertJsonPath('matches', 1)
+            ->assertJsonPath("players.{$aPlayers[9]->id}.id", $aPlayers[9]->id)
+            ->assertJsonPath("players.{$bPlayers[0]->id}.id", $bPlayers[0]->id)
             ->json('categories');
 
         $this->assertSame($aPlayers[9]->id, $res['scorers'][0]['player_id']);

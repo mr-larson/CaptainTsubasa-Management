@@ -19,7 +19,7 @@ class WeekLeadersService
     public const LIMIT = 5;
 
     /**
-     * @return array{week:int, matches:int, categories: array<string, array<int, array>>}
+     * @return array{week:int, matches:int, categories: array<string, array<int, array>>, players?: array<int, GamePlayer>}
      */
     public function forWeek(GameSave $gameSave, int $week): array
     {
@@ -95,8 +95,8 @@ class WeekLeadersService
         }
         usort($incidents, fn ($a, $b) => $b['rank'] <=> $a['rank']);
 
-        $players = GamePlayer::whereIn('id', array_unique(array_merge(array_column($rows, 'player_id'), array_column($incidents, 'player_id'))))
-            ->get(['id', 'firstname', 'lastname', 'photo_path', 'number'])
+        $players = GamePlayer::where('game_save_id', $gameSave->id)->whereIn('id', array_unique(array_merge(array_column($rows, 'player_id'), array_column($incidents, 'player_id'))))
+            ->get()
             ->keyBy('id');
 
         $present = function (array $row, string $metric, ?string $detail = null) use ($players) {
@@ -121,34 +121,45 @@ class WeekLeadersService
 
         usort($motm, fn ($a, $b) => $b['rating'] <=> $a['rating']);
 
+        $categories = [
+            'motm'     => array_map(fn ($r) => $present($r, 'rating', $this->motmDetail($r)), $motm),
+            'scorers'  => $top('goals'),
+            'passers'  => $top('passes'),
+            'dribblers'=> $top('dribbles'),
+            'keepers'  => $top('saves'),
+            'defenders'=> $top('defense'),
+            'duels'    => $top('duelsWon', function ($r) {
+                $total = $r['duelsWon'] + $r['duelsLost'];
+                return $total ? round($r['duelsWon'] * 100 / $total) . ' %' : null;
+            }),
+            'fouls'    => array_map(function ($inc) use ($players, $sideBy) {
+                $p = $players[$inc['player_id']] ?? null;
+                return [
+                    'player_id'  => $inc['player_id'],
+                    'lastname'   => $p?->lastname ?? '?',
+                    'firstname'  => $p?->firstname,
+                    'photo_path' => $p?->photo_path,
+                    'team_id'    => $sideBy[$inc['match_id']][$inc['player_id']] ?? null,
+                    'match_id'   => $inc['match_id'],
+                    'value'      => $inc['icon'],
+                    'detail'     => $inc['detail'],
+                ];
+            }, $incidents),
+        ];
+
+        $rankedPlayerIds = array_column(array_merge(...array_values($categories)), 'player_id');
+        $rankedPlayers = $players->only($rankedPlayerIds)->keyBy('id');
+        $rankedPlayers->filter(fn (GamePlayer $player) => blank($player->description))
+            ->load('basePlayer:id,description');
+
         return [
             'week'       => $week,
             'matches'    => $matches->count(),
-            'categories' => [
-                'motm'     => array_map(fn ($r) => $present($r, 'rating', $this->motmDetail($r)), $motm),
-                'scorers'  => $top('goals'),
-                'passers'  => $top('passes'),
-                'dribblers'=> $top('dribbles'),
-                'keepers'  => $top('saves'),
-                'defenders'=> $top('defense'),
-                'duels'    => $top('duelsWon', function ($r) {
-                    $total = $r['duelsWon'] + $r['duelsLost'];
-                    return $total ? round($r['duelsWon'] * 100 / $total) . ' %' : null;
-                }),
-                'fouls'    => array_map(function ($inc) use ($players, $sideBy) {
-                    $p = $players[$inc['player_id']] ?? null;
-                    return [
-                        'player_id'  => $inc['player_id'],
-                        'lastname'   => $p?->lastname ?? '?',
-                        'firstname'  => $p?->firstname,
-                        'photo_path' => $p?->photo_path,
-                        'team_id'    => $sideBy[$inc['match_id']][$inc['player_id']] ?? null,
-                        'match_id'   => $inc['match_id'],
-                        'value'      => $inc['icon'],
-                        'detail'     => $inc['detail'],
-                    ];
-                }, $incidents),
-            ],
+            'categories' => $categories,
+            'players'    => $rankedPlayers->map(fn (GamePlayer $player) => [
+                ...$player->attributesToArray(),
+                'description' => filled($player->description) ? $player->description : $player->basePlayer?->description,
+            ])->all(),
         ];
     }
 
