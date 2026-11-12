@@ -8,6 +8,8 @@ import {
     enqueueRevealStep, getDiceAnimMode, revealDwellMs, resetEventQueue,
 } from './dice.js';
 import { playPlayerAnimation } from './playerAnim.js';
+import { promiseReminders } from './promises.js';
+import { computePlaytime } from './matchStats.js';
 import { LogEntry } from './ui/logEntry.js';
 import { overallOf } from '@/Pages/GameSaves/Play/usePlayerUtils.js';
 
@@ -449,6 +451,32 @@ function setCardPhoto(cardEl, photoUrl) {
     img.classList.remove("hidden");
 }
 
+function appendPromiseReminders(parent, info, live = false, iconsOnly = false) {
+    if (!parent) return;
+    const playedTurns = live ? (computePlaytime(_state.startersByTeam, _state.substitutions,
+        _state.turns, _state.exitTurns)[info?.id] ?? 0) : null;
+    for (const reminder of promiseReminders(info?.promises, { week: _state?._matchConfig?.week, playedTurns })) {
+        const badge = document.createElement(iconsOnly ? 'button' : 'div');
+        if (iconsOnly) {
+            badge.type = 'button';
+            badge.className = 'status-badge group relative inline-flex h-5 w-5 items-center justify-center rounded border-0 bg-amber-50 p-0 text-xs text-amber-800 cursor-help focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-500';
+            badge.setAttribute('aria-label', reminder.text);
+            const icon = document.createElement('span');
+            icon.textContent = reminder.icon;
+            icon.setAttribute('aria-hidden', 'true');
+            const tooltip = document.createElement('span');
+            tooltip.className = 'pointer-events-none invisible absolute right-0 top-full z-[90] mt-1 w-max max-w-[220px] whitespace-normal rounded-lg bg-slate-800 px-2.5 py-2 text-left text-[11px] font-normal leading-snug text-white shadow-lg group-hover:visible group-focus:visible';
+            tooltip.textContent = reminder.text;
+            tooltip.setAttribute('aria-hidden', 'true');
+            badge.append(icon, tooltip);
+        } else {
+            badge.className = 'mt-1 rounded bg-amber-50 px-1.5 py-1 text-[10px] leading-tight text-amber-800';
+            badge.textContent = `${reminder.icon} ${reminder.text}`;
+        }
+        parent.appendChild(badge);
+    }
+}
+
 export function updateSideCard(prefix, team, slotNumber) {
     const info = _roster.getPlayerInfo(team, slotNumber);
     const setText = (id, value) => {
@@ -461,6 +489,8 @@ export function updateSideCard(prefix, team, slotNumber) {
     setText(`#${prefix}-role`,   POSITION_FR[info?.position] ?? info?.position ?? "—");
     setText(`#${prefix}-number`, info ? String(info.number) : String(slotNumber));
     setText(`#${prefix}-team`,   _TEAMS[team].label);
+    _rootEl.querySelector(`#${prefix}-promises`)?.remove();
+
 
     const stat = (k) => Number(info?.stats?.[k] ?? 0) || 0;
     ["shot","pass","dribble","attack","block","intercept","tackle","defense","hand_save","punch_save","heading","luck"]
@@ -505,6 +535,7 @@ export function updateSideCard(prefix, team, slotNumber) {
     statusBar?.querySelectorAll('.status-badge').forEach(b => b.remove());
 
     if (statusBar) {
+        appendPromiseReminders(statusBar, info, true, true);
         // 🤕 Indisponible (inséré en premier = apparaît à gauche)
         if (info?.isAvailable === false) {
             const b = document.createElement('div');
@@ -613,6 +644,7 @@ export function updateSideCard(prefix, team, slotNumber) {
         headerMetrics.className = 'font-normal';
         headerMetrics.textContent = `${outMetrics.rating} · ${outMetrics.endurance}`;
         header.appendChild(headerMetrics);
+        appendPromiseReminders(header, outInfo, true);
         panel.appendChild(header);
 
         // La liste défile dans l'espace laissé par l'en-tête, à l'intérieur de la carte.
@@ -638,6 +670,7 @@ export function updateSideCard(prefix, team, slotNumber) {
                 <span class="text-slate-600">${rating}</span>
                 <span class="${color}">${endurance}</span>
             </div>`;
+            appendPromiseReminders(item, subInfo, true);
             item.querySelector('[data-sub-name]').textContent = subInfo.lastname;
             item.querySelector('[data-sub-position]').textContent = POSITION_FR[subInfo.position] ?? subInfo.position ?? '—';
             item.onclick = () => {

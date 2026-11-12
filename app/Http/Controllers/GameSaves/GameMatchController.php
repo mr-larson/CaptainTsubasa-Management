@@ -8,6 +8,7 @@ use App\Http\Controllers\Concerns\LocksGameSave;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GamePlayer;
+use App\Models\GameSaves\GamePromise;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
 use App\Models\GameSaves\GameInjury;
@@ -508,6 +509,16 @@ class GameMatchController extends Controller
 
         $contracts = $team->contracts->loadMissing('gamePlayer');
         $teamLineup = $state['lineup'][$team->id]['slots'] ?? null;
+        $promises = GamePromise::where('game_save_id', $gameSave->id)
+            ->where('game_team_id', $team->id)
+            ->where('season', $gameSave->season)
+            ->where('status', 'pending')
+            ->where('start_week', '<=', $currentWeek)
+            ->where('due_week', '>=', $currentWeek)
+            ->get(['id', 'game_player_id', 'type', 'status', 'start_week', 'due_week',
+                'target_matches', 'played_matches', 'target_turns'])
+            ->groupBy('game_player_id');
+
 
         // Duos d'alchimie : partenaires « une-deux » présents dans la même équipe
         // (résolus via base_player_id → player_links).
@@ -546,7 +557,7 @@ class GameMatchController extends Controller
             }
         }
 
-        $starters11 = $ordered->map(function (array $row) use ($unavailableIds, $statMods, $duoPartners) {
+        $starters11 = $ordered->map(function (array $row) use ($unavailableIds, $statMods, $duoPartners, $promises) {
             [$slot, $c] = $row;
             if (!$c || !$c->gamePlayer) {
                 return [
@@ -569,6 +580,7 @@ class GameMatchController extends Controller
             return [
                 'id'            => $p->id,
                 'number'        => $slot,
+                'promises'      => $promises->get($p->id, collect())->values()->all(),
                 'firstname'     => $p->firstname,
                 'lastname'      => $p->lastname,
                 'position'      => $p->position,
@@ -595,11 +607,12 @@ class GameMatchController extends Controller
             ->whereNotIn('game_player_id', $startingPlayerIds)
             ->unique('game_player_id')
             ->values();
-        $subs = $subContracts->map(function ($c) use ($unavailableIds, $statMods, $duoPartners) {
+        $subs = $subContracts->map(function ($c) use ($unavailableIds, $statMods, $duoPartners, $promises) {
             $p = $c->gamePlayer;
             return [
                 'id'            => $p->id,
                 'number'        => $p->number ?? $p->id,
+                'promises'      => $promises->get($p->id, collect())->values()->all(),
                 'firstname'     => $p->firstname,
                 'lastname'      => $p->lastname,
                 'position'      => $p->position,

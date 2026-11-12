@@ -16,6 +16,38 @@ class HotSeatMatchAndLineupTest extends TestCase
     use RefreshDatabase;
     use BuildsGameWorld;
 
+    public function test_match_includes_only_current_pending_promises_for_starters_and_substitutes(): void
+    {
+        $save = $this->makeSave();
+        [$mine, $players] = $this->makeTeamWithSquad($save, ['is_controlled' => true], 12);
+        [$opponent] = $this->makeTeamWithSquad($save);
+        $save->update(['controlled_game_team_id' => $mine->id]);
+        $this->makeMatch($save, $mine, $opponent);
+        $base = [
+            'game_save_id' => $save->id, 'game_team_id' => $mine->id,
+            'type' => 'rest', 'status' => 'pending', 'season' => $save->season,
+            'start_week' => 1, 'due_week' => 2, 'target_matches' => 0, 'played_matches' => 0,
+        ];
+        foreach ([$players[0], $players[11]] as $player) {
+            \App\Models\GameSaves\GamePromise::create($base + ['game_player_id' => $player->id]);
+        }
+        \App\Models\GameSaves\GamePromise::create(array_replace($base, [
+            'game_player_id' => $players[1]->id, 'status' => 'kept',
+        ]));
+        \App\Models\GameSaves\GamePromise::create(array_replace($base, [
+            'game_player_id' => $players[2]->id, 'start_week' => 2, 'due_week' => 3,
+        ]));
+        $response = $this->actingAs(User::find($save->user_id))->get(route('game-saves.match', $save));
+        $response->assertOk();
+        $payload = collect($response->viewData('page')['props']['engineConfig']['teams']['internal']['players'])->keyBy('id');
+        foreach ([$players[0], $players[11]] as $player) {
+            $this->assertCount(1, $payload[$player->id]['promises']);
+            $this->assertSame('rest', $payload[$player->id]['promises'][0]['type']);
+        }
+        $this->assertEmpty($payload[$players[1]->id]['promises']);
+        $this->assertEmpty($payload[$players[2]->id]['promises']);
+    }
+
     public function test_derby_between_two_humans_is_played_in_two_player_mode(): void
     {
         $save = $this->makeSave();

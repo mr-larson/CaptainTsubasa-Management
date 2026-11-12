@@ -1,5 +1,6 @@
 <script setup>
 import PlayerAvatar from '@/Components/PlayerAvatar.vue';
+import { promiseReminders } from './engine/promises.js';
 import { overallOf } from '../GameSaves/Play/usePlayerUtils.js';
 import { positionShort, positionBadgeClass } from '@/Enums/positionBadges.js';
 
@@ -35,6 +36,8 @@ defineProps({ players: { type: Array, required: true } });
                             class="truncate font-semibold"
                             :title="`${player.firstname} ${player.lastname}`"
                             >{{ player.id ? `${player.firstname} ${player.lastname}` : 'Poste vacant' }}</span
+                        ><span v-for="reminder in promiseReminders(player.promises)" :key="reminder.text"
+                            class="shrink-0 text-[10px]" :title="`${reminder.icon} ${reminder.text}`" :aria-label="reminder.text">{{ reminder.icon }}</span
                         ><span v-if="player.is_captain" class="shrink-0 text-amber-600" title="Capitaine">©</span
                         ><span
                             v-if="player.is_available === false"
@@ -44,6 +47,7 @@ defineProps({ players: { type: Array, required: true } });
                             >×</span
                         ></span
                     >
+
                 </td>
                 <td class="text-right tabular-nums">{{ player.stats?.stamina ?? '—' }}</td>
                 <td class="text-right font-bold tabular-nums">{{ player.id ? overallOf(player) : '—' }}</td>
