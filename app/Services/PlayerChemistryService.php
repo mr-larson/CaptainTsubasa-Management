@@ -25,7 +25,7 @@ class PlayerChemistryService
             GameSave::whereKey($save->id)->lockForUpdate()->firstOrFail();
             $match->refresh();
             $stats = $match->match_stats ?? [];
-            if ($match->status !== 'played' || ($stats['chemistry_recorded'] ?? false)) return;
+            if ($match->status !== \App\Enums\MatchStatus::Played || ($stats['chemistry_recorded'] ?? false)) return;
 
             $maxTurns = (int) $save->getConfig('match_max_turns', 30);
             $turns = min($maxTurns, max(0, (int) ($simulated ? $maxTurns : ($stats['presence_turns'] ?? 0))));

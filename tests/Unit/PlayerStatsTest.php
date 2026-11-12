@@ -42,7 +42,10 @@ class PlayerStatsTest extends TestCase
         $player = new Player();
         $player->stats = 'not-json';
 
-        $this->assertSame(Player::DEFAULT_STATS, $player->stats);
+        // Sans note de tête enregistrée, elle est estimée d'après le profil.
+        $expected = Player::DEFAULT_STATS;
+        $expected['heading'] = \App\Helpers\HeadingRating::forProfile(null, Player::DEFAULT_STATS);
+        $this->assertSame($expected, $player->stats);
     }
 
     public function test_full_name_concatenates_first_and_last_name(): void

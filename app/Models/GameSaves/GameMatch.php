@@ -42,6 +42,7 @@ class GameMatch extends Model
 
     protected $casts = [
         'match_stats' => 'array',
+        'status'      => \App\Enums\MatchStatus::class,
         // Colonne calculée (select de la page Play) : détail disponible ou non.
         'has_stats'   => 'boolean',
     ];

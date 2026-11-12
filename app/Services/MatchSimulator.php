@@ -94,7 +94,7 @@ class MatchSimulator
         $saves = $gameSave ? [(int) $gameSave->id => $gameSave] : [];
 
         foreach ($matches as $m) {
-            if ($m->status !== 'scheduled') continue;
+            if ($m->status !== \App\Enums\MatchStatus::Scheduled) continue;
 
             $m->loadMissing([
                 'homeTeam' => fn($q) => $q->with(['contracts' => fn($cq) => $cq->activeAt($m->week)->with('gamePlayer')]),
@@ -1297,7 +1297,7 @@ class MatchSimulator
 
     private function applyResultToStandings(GameMatch $m): void
     {
-        if ($m->status !== 'played') return;
+        if ($m->status !== \App\Enums\MatchStatus::Played) return;
         if ($m->home_score === null || $m->away_score === null) return;
 
         $home = $m->relationLoaded('homeTeam') ? $m->homeTeam : $m->homeTeam()->first();

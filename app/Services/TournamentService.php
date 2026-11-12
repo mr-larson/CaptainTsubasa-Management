@@ -316,7 +316,7 @@ class TournamentService
             $bracket[$round] = $matches->map(function ($m, $i) use ($ref, $stored) {
                 $winner   = null;
                 $shootout = $m->match_stats['shootout'] ?? null;
-                if ($m->status === 'played') {
+                if ($m->status === \App\Enums\MatchStatus::Played) {
                     $hs = (int) $m->home_score; $as = (int) $m->away_score;
                     $winner = $hs > $as ? $m->home_team_id
                         : ($as > $hs ? $m->away_team_id : ($shootout['winner_team_id'] ?? $stored[$i] ?? null));
@@ -328,7 +328,7 @@ class TournamentService
                     'away'           => $ref($m->away_team_id),
                     'home_score'     => $m->home_score,
                     'away_score'     => $m->away_score,
-                    'played'         => $m->status === 'played',
+                    'played'         => $m->status === \App\Enums\MatchStatus::Played,
                     'winner_team_id' => $winner,
                     'shootout'       => is_array($soScores) ? [
                         'home' => (int) ($soScores[$m->home_team_id] ?? 0),

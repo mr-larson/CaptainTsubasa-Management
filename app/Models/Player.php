@@ -99,7 +99,10 @@ class Player extends Model
             $stored = is_array($value) ? $value : (json_decode((string) $value, true) ?: []);
             $stats = array_merge(self::DEFAULT_STATS, $stored);
             $column = $this->attributes['heading'] ?? null;
-            $stats['heading'] = $stored['heading'] ?? ($column !== null && (int) $column !== 15
+            // Source : JSON, puis colonne (toutes deux alignées par les migrations
+            // d'équilibrage), puis estimation d'après le profil. Plus de valeur
+            // sentinelle : un 15 légitime n'est pas « non renseigné ».
+            $stats['heading'] = $stored['heading'] ?? ($column !== null
                 ? (int) $column
                 : HeadingRating::forProfile($this->attributes['position'] ?? null, $stats));
 

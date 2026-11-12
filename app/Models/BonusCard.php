@@ -17,6 +17,7 @@ class BonusCard extends Model
 
     protected $casts = [
         'effect_value' => 'array',
+        'target'       => \App\Enums\BonusCardTarget::class,
     ];
 
     public static function teamStaminaDrainAmount(string $tier): int

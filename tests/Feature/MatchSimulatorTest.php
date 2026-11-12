@@ -37,7 +37,7 @@ class MatchSimulatorTest extends TestCase
         $this->simulator->simulateMatchesCollection(GameMatch::where('id', $match->id)->get());
 
         $match->refresh();
-        $this->assertSame('played', $match->status);
+        $this->assertSame(\App\Enums\MatchStatus::Played, $match->status);
         $this->assertNotNull($match->home_score);
         $this->assertNotNull($match->away_score);
         $this->assertGreaterThanOrEqual(0, (int) $match->home_score);
@@ -101,7 +101,7 @@ class MatchSimulatorTest extends TestCase
         $this->simulator->simulateOtherMatchesOfWeek($played);
 
         // L'autre match est simulé...
-        $this->assertSame('played', $other->fresh()->status);
+        $this->assertSame(\App\Enums\MatchStatus::Played, $other->fresh()->status);
         // ...mais le match déjà joué garde son score saisi.
         $this->assertSame(2, (int) $played->fresh()->home_score);
         $this->assertSame(1, (int) $played->fresh()->away_score);

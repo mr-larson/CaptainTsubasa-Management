@@ -785,7 +785,7 @@ class GameSaveController extends Controller
             ->get()
             ->map(fn($i) => [
                 'game_player_id' => $i->game_player_id,
-                'severity'       => $i->severity,
+                'severity'       => $i->severity->value,
                 'weeks_out'      => $i->weeks_out,
                 'week_return'    => $i->week_return,
                 'description'    => $i->description,
@@ -868,7 +868,7 @@ class GameSaveController extends Controller
                         ? BonusCard::teamStaminaDrainDescription($c->tier) : $c->bonusCard->description,
                     'icon'             => $c->bonusCard->icon,
                     'kind'             => $c->bonusCard->kind,
-                    'target'           => $c->bonusCard->target,
+                    'target'           => $c->bonusCard->target->value,
                     'execution_phase'  => $c->bonusCard->execution_phase,
                     'effect_type'      => $c->bonusCard->effect_type,
                     'effect_value'     => $c->bonusCard->effect_type === 'opponent_stamina_drain'

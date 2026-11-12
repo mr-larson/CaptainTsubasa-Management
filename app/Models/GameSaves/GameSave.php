@@ -19,7 +19,6 @@ class GameSave extends Model
         'user_id',
         'team_id',
         'controlled_game_team_id',
-        'control_mode',
         'period',
         'season',
         'week',

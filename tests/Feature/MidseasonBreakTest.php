@@ -62,7 +62,7 @@ class MidseasonBreakTest extends TestCase
         $this->assertEquals($stamina + 20, $player->fresh()->stamina);
         $this->assertEquals($freeStamina + 20, $freePlayer->fresh()->stamina);
         $this->assertEquals(100, $opponent->fresh()->stamina);
-        $this->assertSame('scheduled', $next->fresh()->status);
+        $this->assertSame(\App\Enums\MatchStatus::Scheduled, $next->fresh()->status);
         $this->assertSame(0, GameSanction::currentYellowCardCycle($save)->count());
         $this->assertSame(3, GameSanction::where('game_save_id', $save->id)->count());
         $this->assertTrue(GameSanction::where('type', 'red')->firstOrFail()->isActive(4));

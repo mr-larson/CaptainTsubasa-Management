@@ -147,7 +147,7 @@ class BonusCardShopService
                 'name'            => $card->name,
                 'description'     => $card->description,
                 'icon'            => $card->icon,
-                'target'          => $card->target,
+                'target'          => $card->target->value,
                 'execution_phase' => $card->execution_phase,
                 'effect_type'     => $card->effect_type,
                 'effect_value'    => $card->effect_value,

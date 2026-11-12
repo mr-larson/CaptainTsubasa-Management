@@ -37,7 +37,7 @@ class BonusCardActivationService
         $card = $gameBonusCard->bonusCard;
 
         // Valider le joueur cible si nécessaire
-        if ($card->target === 'player') {
+        if ($card->target === \App\Enums\BonusCardTarget::Player) {
             if (!$targetPlayerId) {
                 throw ValidationException::withMessages(['card' => 'Vous devez sélectionner un joueur cible.']);
             }
@@ -707,7 +707,7 @@ class BonusCardActivationService
         $card         = $gameBonusCard->bonusCard;
         $sourceTeamId = (int) $gameBonusCard->game_team_id;
 
-        if ($card->target !== 'team') {
+        if ($card->target !== \App\Enums\BonusCardTarget::Team) {
             return $this->resolveNextOpponentTeamId($gameSave, $sourceTeamId);
         }
 

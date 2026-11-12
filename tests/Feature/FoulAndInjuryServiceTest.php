@@ -136,7 +136,7 @@ class FoulAndInjuryServiceTest extends TestCase
         ]);
 
         $injury = GameInjury::where('game_player_id', $player->id)->first();
-        $this->assertSame('moderate', $injury->severity);
+        $this->assertSame(\App\Enums\InjurySeverity::Moderate, $injury->severity);
         // moderate = 2..3 semaines.
         $this->assertGreaterThanOrEqual(2, (int) $injury->weeks_out);
         $this->assertLessThanOrEqual(3, (int) $injury->weeks_out);

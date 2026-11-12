@@ -23,6 +23,10 @@ class GameInjury extends Model
         'description',
     ];
 
+    protected $casts = [
+        'severity' => \App\Enums\InjurySeverity::class,
+    ];
+
     public function gamePlayer(): BelongsTo
     {
         return $this->belongsTo(GamePlayer::class);

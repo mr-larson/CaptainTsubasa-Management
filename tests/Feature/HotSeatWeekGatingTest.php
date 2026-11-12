@@ -55,8 +55,8 @@ class HotSeatWeekGatingTest extends TestCase
             ])
             ->assertRedirect();
 
-        $this->assertSame('played',    $matchA->fresh()->status);
-        $this->assertSame('scheduled', $matchB->fresh()->status, 'Le match du 2e humain ne doit pas être simulé.');
+        $this->assertSame(\App\Enums\MatchStatus::Played,    $matchA->fresh()->status);
+        $this->assertSame(\App\Enums\MatchStatus::Scheduled, $matchB->fresh()->status, 'Le match du 2e humain ne doit pas être simulé.');
         $this->assertSame(1, (int) $save->fresh()->week, 'La semaine ne doit pas avancer tant qu\'un humain n\'a pas joué.');
 
         // Handoff : la main passe au joueur 2 (siège suivant non joué).
@@ -71,7 +71,7 @@ class HotSeatWeekGatingTest extends TestCase
             ])
             ->assertRedirect();
 
-        $this->assertSame('played', $matchB->fresh()->status);
+        $this->assertSame(\App\Enums\MatchStatus::Played, $matchB->fresh()->status);
         $this->assertSame(2, (int) $save->fresh()->week, 'La semaine doit avancer une fois tous les matchs humains joués.');
 
         // Nouvelle semaine : la main revient au joueur 1 (siège 1).

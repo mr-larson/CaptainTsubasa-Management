@@ -61,7 +61,7 @@ class SaveLockGuardsTest extends TestCase
             ])
             ->assertStatus(422);
 
-        $this->assertSame('scheduled', $future->fresh()->status);
+        $this->assertSame(\App\Enums\MatchStatus::Scheduled, $future->fresh()->status);
         $this->assertSame(1, (int) $save->fresh()->week);
         $this->assertSame(0, (int) $human->fresh()->wins);
     }
@@ -110,7 +110,7 @@ class SaveLockGuardsTest extends TestCase
             ->post(route('game-saves.simulate-week', $save), ['week' => 1])
             ->assertRedirect(route('game-saves.Play', $save));
 
-        $this->assertSame('scheduled', $match->fresh()->status, 'Le match d\'un humain ne doit pas être simulé.');
+        $this->assertSame(\App\Enums\MatchStatus::Scheduled, $match->fresh()->status, 'Le match d\'un humain ne doit pas être simulé.');
         $this->assertSame(1, (int) $save->fresh()->week);
         $this->assertSame($seat2->id, (int) $save->fresh()->controlled_game_team_id);
     }
@@ -135,11 +135,11 @@ class SaveLockGuardsTest extends TestCase
 
         $match->refresh();
         $seat1->refresh();
-        $this->assertSame('played', $match->status);
+        $this->assertSame(\App\Enums\MatchStatus::Played, $match->status);
         $this->assertNotEmpty($match->eventList());
         $this->assertCount(11, $match->match_stats['starters']['home']);
         $this->assertSame(1, $seat1->wins + $seat1->draws + $seat1->losses);
-        $this->assertSame('scheduled', $pending->fresh()->status);
+        $this->assertSame(\App\Enums\MatchStatus::Scheduled, $pending->fresh()->status);
         $this->assertSame(1, (int) $save->fresh()->week);
         $this->assertSame($seat2->id, (int) $save->fresh()->controlled_game_team_id);
     }
@@ -155,7 +155,7 @@ class SaveLockGuardsTest extends TestCase
         $this->actingAs($save->user)->post(route('game-saves.matches.simulate', [$save, $match]))
             ->assertForbidden();
 
-        $this->assertSame('scheduled', $match->fresh()->status);
+        $this->assertSame(\App\Enums\MatchStatus::Scheduled, $match->fresh()->status);
     }
 
     public function test_replayed_season_continue_starts_only_one_new_season(): void

@@ -83,7 +83,7 @@ class GameMatchController extends Controller
         if ((int) $match->week === $week) {
             $this->withSaveLock($gameSave, function (GameSave $save) use ($match, $week) {
                 if ((int) $save->week !== $week || $save->hasPendingMidseasonBreak()) return;
-                if ($match->fresh()?->status !== 'scheduled') return;
+                if ($match->fresh()?->status !== \App\Enums\MatchStatus::Scheduled) return;
 
                 app(AiLineUpService::class)->adjustLineupsForWeek($save, [$match->home_team_id, $match->away_team_id]);
             });
@@ -262,7 +262,7 @@ class GameMatchController extends Controller
         return $this->withSaveLock($gameSave, function (GameSave $gameSave) use ($match, $data, $homeTeamId, $awayTeamId, $homeScore, $awayScore) {
             $match->refresh();
 
-            if ($match->status === 'played' || ! $gameSave->isInMatchPhase() || $gameSave->hasPendingMidseasonBreak()) {
+            if ($match->status === \App\Enums\MatchStatus::Played || ! $gameSave->isInMatchPhase() || $gameSave->hasPendingMidseasonBreak()) {
                 return redirect()->route('game-saves.Play', $gameSave);
             }
 
@@ -340,7 +340,7 @@ class GameMatchController extends Controller
 
         return $this->withSaveLock($gameSave, function (GameSave $save) use ($match, $simulator) {
             $match->refresh();
-            if ($match->status !== 'scheduled' || (int) $match->week !== (int) $save->week
+            if ($match->status !== \App\Enums\MatchStatus::Scheduled || (int) $match->week !== (int) $save->week
                 || !$save->isInMatchPhase() || $save->hasPendingMidseasonBreak()) {
                 return redirect()->route('game-saves.Play', $save);
             }

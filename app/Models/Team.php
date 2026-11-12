@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\GameSaves\SoccerMatch;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -57,22 +56,6 @@ class Team extends Model
         return $this->hasMany(Contract::class);
     }
 
-
-    /**
-     * Matchs joués à domicile.
-     */
-    public function homeMatches(): HasMany
-    {
-        return $this->hasMany(SoccerMatch::class, 'team_id_home');
-    }
-
-    /**
-     * Matchs joués à l'extérieur.
-     */
-    public function awayMatches(): HasMany
-    {
-        return $this->hasMany(SoccerMatch::class, 'team_id_away');
-    }
 
     public function getLogoUrlAttribute(): ?string
     {
