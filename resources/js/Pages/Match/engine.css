@@ -607,21 +607,31 @@
     box-shadow: 0 8px 30px rgb(15 23 42 / 20%);
     font-size: 14px;
     font-weight: 800;
-    animation: match-whistle-cue 700ms ease both;
+    animation: match-whistle-cue var(--match-whistle-duration, 3700ms) ease both;
 }
-.match-whistle-icon { width: 64px; height: 52px; }
+.match-whistle-icon {
+    width: 64px;
+    height: 52px;
+    animation: match-whistle-wizz 1100ms ease-in-out 300ms 2;
+}
 .match-whistle-end .match-whistle-badge {
     color: theme('colors.slate.700');
-    animation-duration: 1000ms;
 }
 .match-whistle-rays { animation: match-whistle-rays 180ms ease-in-out 3 alternate; }
 @keyframes match-whistle-cue {
     0% { opacity: 0; transform: scale(0.8) rotate(-5deg); }
-    25% { opacity: 1; transform: scale(1.05) rotate(0); }
-    40%, 75% { opacity: 1; transform: scale(1); }
+    6% { opacity: 1; transform: scale(1.05) rotate(0); }
+    10%, 92% { opacity: 1; transform: scale(1); }
     100% { opacity: 0; transform: scale(0.96); }
+}
+@keyframes match-whistle-wizz {
+    0%, 65%, 100% { transform: translateX(0) rotate(0); }
+    10%, 30% { transform: translateX(-4px) rotate(-9deg); }
+    20%, 40% { transform: translateX(4px) rotate(9deg); }
+    50% { transform: translateX(-2px) rotate(-4deg); }
+    60% { transform: translateX(2px) rotate(4deg); }
 }
 @keyframes match-whistle-rays { from { opacity: 0.3; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) {
-    .match-whistle-badge, .match-whistle-rays { animation: none; }
+    .match-whistle-badge, .match-whistle-icon, .match-whistle-rays { animation: none; }
 }

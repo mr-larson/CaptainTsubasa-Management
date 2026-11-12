@@ -15,8 +15,10 @@ export function createWhistleCue(rootEl) {
         const host = rootEl.querySelector('#field-wrapper');
         if (!host) { onComplete(); return; }
         const ending = kind === 'end';
+        const duration = (ending ? 1000 : 700) + 3000;
         element = rootEl.ownerDocument.createElement('div');
         element.className = `match-whistle${ending ? ' match-whistle-end' : ''}`;
+        element.style.setProperty('--match-whistle-duration', `${duration}ms`);
         element.setAttribute('role', 'status');
         element.setAttribute('aria-live', 'polite');
         element.innerHTML = `
@@ -33,7 +35,7 @@ export function createWhistleCue(rootEl) {
         timer = setTimeout(() => {
             dispose();
             onComplete();
-        }, ending ? 1000 : 700);
+        }, duration);
     }
 
     return { show, dispose };
