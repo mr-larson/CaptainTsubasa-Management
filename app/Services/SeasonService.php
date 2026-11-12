@@ -257,10 +257,24 @@ class SeasonService
         $gameSave->state = $state;
         $gameSave->save();
 
+        // Logs de moral et déclarations : on garde la saison qui vient de finir
+        // (l'onglet Moral en affiche les derniers événements) et on purge les plus
+        // anciennes, qui ne sont plus lues et grossissent à chaque semaine.
+        self::pruneOldLogs($gameSave);
+
         // Nouveau mandat de la direction pour la saison à venir.
         app(CareerObjectiveService::class)->resetMandateForNewSeason($gameSave);
 
         app(DraftService::class)->initDraft($gameSave, $draftOrder);
+    }
+
+    /** Supprime logs de moral et déclarations antérieurs à la saison précédente. */
+    public static function pruneOldLogs(GameSave $gameSave): void
+    {
+        $oldest = (int) $gameSave->season - 1;
+
+        \App\Models\GameSaves\GamePlayerMoraleLog::where('game_save_id', $gameSave->id)->where('season', '<', $oldest)->delete();
+        \App\Models\GameSaves\GameDeclaration::where('game_save_id', $gameSave->id)->where('season', '<', $oldest)->delete();
     }
 
     /**

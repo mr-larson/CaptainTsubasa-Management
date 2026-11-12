@@ -175,4 +175,27 @@ class SeasonServiceTest extends TestCase
         $this->assertSame(1, GameMatch::where('game_save_id', $save->id)->count());
         $this->assertSame(2, GameMatch::allSeasons()->where('game_save_id', $save->id)->count());
     }
+
+    public function test_new_season_prunes_logs_older_than_the_previous_season(): void
+    {
+        $save   = $this->makeSave(['season' => 3]);
+        $team   = $this->makeTeam($save);
+        $player = $this->makePlayer($save);
+        $log    = fn (int $season) => \App\Models\GameSaves\GamePlayerMoraleLog::create([
+            'game_save_id' => $save->id, 'game_player_id' => $player->id, 'source' => 'result',
+            'value' => 1, 'week' => 1, 'season' => $season,
+        ]);
+        foreach ([1, 2, 3] as $season) {
+            $log($season);
+            \App\Models\GameSaves\GameDeclaration::create([
+                'game_save_id' => $save->id, 'game_player_id' => $player->id, 'type' => 'praise', 'week' => 1, 'season' => $season,
+            ]);
+        }
+
+        $this->service->startNewSeason($save);
+
+        // Saison 3 terminée, la 4 démarre : on garde 3, on purge 1 et 2.
+        $this->assertSame([3], \App\Models\GameSaves\GamePlayerMoraleLog::where('game_save_id', $save->id)->pluck('season')->all());
+        $this->assertSame([3], \App\Models\GameSaves\GameDeclaration::where('game_save_id', $save->id)->pluck('season')->all());
+    }
 }
