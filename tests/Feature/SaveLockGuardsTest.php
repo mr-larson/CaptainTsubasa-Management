@@ -136,7 +136,7 @@ class SaveLockGuardsTest extends TestCase
         $match->refresh();
         $seat1->refresh();
         $this->assertSame('played', $match->status);
-        $this->assertNotEmpty($match->match_stats['events']);
+        $this->assertNotEmpty($match->eventList());
         $this->assertCount(11, $match->match_stats['starters']['home']);
         $this->assertSame(1, $seat1->wins + $seat1->draws + $seat1->losses);
         $this->assertSame('scheduled', $pending->fresh()->status);

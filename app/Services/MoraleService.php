@@ -101,7 +101,7 @@ class MoraleService
 
     public function applyAfterWeek(GameSave $gameSave, int $week): void
     {
-        $matches = GameMatch::with(['homeTeam', 'awayTeam'])
+        $matches = GameMatch::with(['homeTeam', 'awayTeam', 'playerStats'])
             ->where('game_save_id', $gameSave->id)
             ->where('week', $week)
             ->where('status', 'played')
@@ -258,13 +258,13 @@ class MoraleService
 
     /**
      * IDs (clé = id en string) des joueurs ayant joué un match.
-     * Source primaire : match_stats.players — fallback : titulaires (match simulé).
+     * Source primaire : game_match_player_stats — fallback : titulaires (match simulé).
      * Public static : aussi utilisé par PromiseService pour évaluer le temps de jeu promis.
      */
     public static function resolvePlayedPlayerIds(GameMatch $match): array
     {
-        if (!empty($match->match_stats['players'])) {
-            return array_fill_keys(array_map('strval', array_keys($match->match_stats['players'])), true);
+        if ($players = $match->playerStatsMap()) {
+            return array_fill_keys(array_map('strval', array_keys($players)), true);
         }
 
         $teamIds = array_filter([$match->home_team_id, $match->away_team_id]);

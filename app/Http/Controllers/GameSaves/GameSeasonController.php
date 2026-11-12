@@ -112,7 +112,8 @@ class GameSeasonController extends Controller
         if (! $teamId || $teams->isEmpty()) return null;
 
         $rows = $teams->mapWithKeys(fn ($t) => [$t->id => ['id' => $t->id, 'name' => $t->name, 'pts' => 0, 'w' => 0, 'd' => 0, 'l' => 0, 'gf' => 0, 'ga' => 0]])->all();
-        $played = GameMatch::where('game_save_id', $gameSave->id)->where('status', 'played')->get();
+        $played = GameMatch::where('game_save_id', $gameSave->id)->where('status', 'played')
+            ->get(['id', 'week', 'home_team_id', 'away_team_id', 'home_score', 'away_score']);
         foreach ($played as $m) {
             $h = (int) $m->home_team_id; $a = (int) $m->away_team_id;
             if (! isset($rows[$h], $rows[$a])) continue;

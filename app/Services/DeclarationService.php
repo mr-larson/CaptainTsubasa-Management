@@ -168,7 +168,7 @@ class DeclarationService
             ->orderByDesc('week')
             ->first();
 
-        $stats = $match?->match_stats['players'][$player->id] ?? [];
+        $stats = $match?->playerStats()->where('game_player_id', $player->id)->first()?->toStats() ?? [];
 
         return (int) ($stats['duelsWon'] ?? 0) - (int) ($stats['duelsLost'] ?? 0);
     }

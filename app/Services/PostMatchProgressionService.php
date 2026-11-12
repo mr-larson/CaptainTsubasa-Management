@@ -17,8 +17,8 @@ class PostMatchProgressionService
     public function applyForMatch(GameSave $gameSave, GameMatch $match): array
     {
         $matchStats = $match->match_stats ?? [];
-        $stats = $matchStats['players'] ?? $matchStats;
-        if (empty($stats) || !is_array($stats)) return [];
+        $stats = $match->playerStatsMap();
+        if (empty($stats)) return [];
 
         $season = (int) ($gameSave->season ?? 1);
         $state  = $gameSave->state ?? [];

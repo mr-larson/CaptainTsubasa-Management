@@ -43,10 +43,12 @@ class MatchSimulatorTest extends TestCase
         $this->assertGreaterThanOrEqual(0, (int) $match->home_score);
         $this->assertGreaterThanOrEqual(0, (int) $match->away_score);
 
-        // match_stats produit avec une entrée par joueur.
+        // Bilan produit avec une ligne par joueur, hors de la colonne match_stats.
         $this->assertIsArray($match->match_stats);
-        $this->assertArrayHasKey('players', $match->match_stats);
-        $this->assertNotEmpty($match->match_stats['players']);
+        $this->assertArrayNotHasKey('players', $match->match_stats);
+        $this->assertArrayNotHasKey('events', $match->match_stats);
+        $this->assertNotEmpty($match->playerStatsMap());
+        $this->assertNotEmpty($match->eventList());
     }
 
     public function test_simulation_updates_standings_to_exact_goal_totals(): void

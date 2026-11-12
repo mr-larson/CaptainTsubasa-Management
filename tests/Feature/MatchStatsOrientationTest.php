@@ -44,7 +44,7 @@ class MatchStatsOrientationTest extends TestCase
         $service = app(MatchStatsOrientation::class);
         $this->assertTrue($service->repair($match));
 
-        $stats = $match->fresh()->match_stats;
+        $stats = $match->fresh()->fullStats();
         $this->assertSame(0, $stats['teams']['home']['goals']);
         $this->assertSame(2, $stats['teams']['away']['goals']);
         $this->assertSame($aiPlayers->pluck('id')->all(), $stats['starters']['home']);

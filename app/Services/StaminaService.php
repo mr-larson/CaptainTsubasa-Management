@@ -37,6 +37,7 @@ class StaminaService
         $matches = GameMatch::where('game_save_id', $gameSave->id)
             ->where('week', $week)
             ->where('status', 'played')
+            ->with('playerStats')
             ->get();
 
         $playedPlayerIds = [];
@@ -71,8 +72,8 @@ class StaminaService
             return array_map('strval', array_keys(array_filter($match->match_stats['playtime'])));
         }
 
-        if (!empty($match->match_stats['players'])) {
-            return array_map('strval', array_keys($match->match_stats['players']));
+        if ($players = $match->playerStatsMap()) {
+            return array_map('strval', array_keys($players));
         }
 
         // Fallback : titulaires des deux équipes

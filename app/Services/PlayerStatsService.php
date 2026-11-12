@@ -3,13 +3,14 @@
 namespace App\Services;
 
 use App\Models\GameSaves\GameMatch;
+use App\Models\GameSaves\GameMatchPlayerStat;
 use App\Models\GameSaves\GameSave;
 
 class PlayerStatsService
 {
     /**
-     * Agrège les stats de tous les matchs joués d'une save
-     * depuis game_matches.match_stats (source de vérité DB).
+     * Agrège en SQL les stats de tous les matchs joués d'une save
+     * depuis game_match_player_stats (une ligne par joueur et par match).
      *
      * Retourne un tableau indexé par game_player_id :
      * [
@@ -24,46 +25,43 @@ class PlayerStatsService
      */
     public static function aggregateForSave(GameSave $gameSave): array
     {
-        $matches = GameMatch::where('game_save_id', $gameSave->id)
-            ->where('status', 'played')
-            ->whereNotNull('match_stats')
-            ->get(['match_stats']);
+        $offense = ['pass', 'shot', 'dribble', 'special', 'cross'];
+        $defense = GameMatchPlayerStat::DEFENSE;
+
+        $sums = ['SUM(goals) AS goals', 'SUM(duels_won) AS duels_won', 'SUM(duels_lost) AS duels_lost'];
+        foreach ([...$offense, ...array_values($defense)] as $prefix) {
+            $sums[] = "SUM({$prefix}_attempts) AS {$prefix}_attempts";
+            $sums[] = "SUM({$prefix}_success) AS {$prefix}_success";
+        }
+
+        $rows = GameMatchPlayerStat::query()
+            ->where('game_save_id', $gameSave->id)
+            ->whereIn('game_match_id', GameMatch::where('game_save_id', $gameSave->id)->where('status', 'played')->select('id'))
+            ->groupBy('game_player_id')
+            ->selectRaw('game_player_id, ' . implode(', ', $sums))
+            ->toBase()
+            ->get();
 
         $stats = [];
-
-        foreach ($matches as $match) {
-            $players = self::withCrossAndHeadingStats($match->match_stats)['players'] ?? [];
-
-            foreach ($players as $pid => $playerStats) {
-                $pid = (string) $pid;
-
-                if (!isset($stats[$pid])) {
-                    $stats[$pid] = self::emptyStats();
-                }
-
-                // Offense
-                foreach (['pass', 'shot', 'dribble', 'special', 'cross'] as $action) {
-                    $stats[$pid]['offense'][$action]['attempts'] +=
-                        $playerStats['offense'][$action]['attempts'] ?? 0;
-                    $stats[$pid]['offense'][$action]['success']  +=
-                        $playerStats['offense'][$action]['success']  ?? 0;
-                }
-                // Buts
-                $stats[$pid]['offense']['goals'] =
-                    ($stats[$pid]['offense']['goals'] ?? 0) + ($playerStats['offense']['goals'] ?? 0);
-
-                // Defense
-                foreach (['intercept', 'tackle', 'block', 'heading', 'hands', 'punch', 'gkSpecial'] as $action) {
-                    $stats[$pid]['defense'][$action]['attempts'] +=
-                        $playerStats['defense'][$action]['attempts'] ?? 0;
-                    $stats[$pid]['defense'][$action]['success']  +=
-                        $playerStats['defense'][$action]['success']  ?? 0;
-                }
-
-                // Duels
-                $stats[$pid]['duelsWon']  += $playerStats['duelsWon']  ?? 0;
-                $stats[$pid]['duelsLost'] += $playerStats['duelsLost'] ?? 0;
+        foreach ($rows as $row) {
+            $player = self::emptyStats();
+            foreach ($offense as $action) {
+                $player['offense'][$action] = [
+                    'attempts' => (int) $row->{"{$action}_attempts"},
+                    'success'  => (int) $row->{"{$action}_success"},
+                ];
             }
+            foreach ($defense as $action => $prefix) {
+                $player['defense'][$action] = [
+                    'attempts' => (int) $row->{"{$prefix}_attempts"},
+                    'success'  => (int) $row->{"{$prefix}_success"},
+                ];
+            }
+            $player['offense']['goals'] = (int) $row->goals;
+            $player['duelsWon']         = (int) $row->duels_won;
+            $player['duelsLost']        = (int) $row->duels_lost;
+
+            $stats[(string) $row->game_player_id] = $player;
         }
 
         return $stats;
@@ -72,6 +70,8 @@ class PlayerStatsService
     /**
      * Récupère les compteurs absents des anciens bilans à partir des duels
      * conservés dans le déroulé, sans remplacer les compteurs déjà enregistrés.
+     * Ne sert plus qu'à la migration qui range `players` et `events` dans
+     * leurs tables : les bilans stockés ensuite sont complets.
      */
     public static function withCrossAndHeadingStats(?array $stats): ?array
     {

@@ -176,7 +176,7 @@ class SimulateMatchCommand extends Command
         $away  = $scenario['away'];
 
         $stats  = $match->match_stats ?? [];
-        $events = $stats['events'] ?? [];
+        $events = $match->eventList();
         $teams  = $stats['teams'] ?? [];
 
         $this->newLine();

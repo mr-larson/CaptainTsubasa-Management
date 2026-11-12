@@ -306,16 +306,18 @@ class SeasonChallengeService
             ->where('status', 'played')
             ->whereNotNull('match_stats')
             ->where(fn ($q) => $q->where('home_team_id', $teamId)->orWhere('away_team_id', $teamId))
-            ->get(['home_team_id', 'match_stats'])
+            ->with('playerStats:id,game_match_id,game_player_id,goals')
+            ->get(['id', 'home_team_id', 'match_stats'])
             ->each(function (GameMatch $m) use ($teamId, &$goals) {
                 $side   = (int) $m->home_team_id === $teamId ? 'home' : 'away';
                 $squad  = array_map('intval', array_column($m->match_stats['lineups'][$side]['players'] ?? [], 'id'));
                 if (! $squad) {
                     return; // ancien match sans composition : attribution impossible
                 }
-                foreach ($m->match_stats['players'] ?? [] as $pid => $p) {
-                    if (in_array((int) $pid, $squad, true)) {
-                        $goals[(int) $pid] = ($goals[(int) $pid] ?? 0) + (int) ($p['offense']['goals'] ?? 0);
+                foreach ($m->playerStats as $row) {
+                    $pid = (int) $row->game_player_id;
+                    if (in_array($pid, $squad, true)) {
+                        $goals[$pid] = ($goals[$pid] ?? 0) + (int) $row->goals;
                     }
                 }
             });

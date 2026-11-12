@@ -27,6 +27,7 @@ class WeekLeadersService
             ->where('week', $week)
             ->where('status', 'played')
             ->whereNotNull('match_stats')
+            ->with('playerStats')
             ->get();
 
         $rows   = [];   // une ligne par joueur et par match
@@ -35,11 +36,12 @@ class WeekLeadersService
 
         foreach ($matches as $match) {
             $stats   = $match->match_stats ?? [];
-            $sideOf  = $this->sides($match, $stats);
+            $players = $match->playerStatsMap();
+            $sideOf  = $this->sides($match, $stats, array_keys($players));
             $sideBy[$match->id] = $sideOf;
             $best    = null;
 
-            foreach ($stats['players'] ?? [] as $pid => $s) {
+            foreach ($players as $pid => $s) {
                 $pid  = (int) $pid;
                 $o    = $s['offense'] ?? [];
                 $d    = $s['defense'] ?? [];
@@ -189,7 +191,7 @@ class WeekLeadersService
      *
      * @return array<int, int> player_id => team_id
      */
-    private function sides(GameMatch $match, array $stats): array
+    private function sides(GameMatch $match, array $stats, array $playerIds): array
     {
         $map = [];
         foreach (['home' => $match->home_team_id, 'away' => $match->away_team_id] as $side => $teamId) {
@@ -201,7 +203,7 @@ class WeekLeadersService
             }
         }
 
-        $missing = array_diff(array_map('intval', array_keys($stats['players'] ?? [])), array_keys($map));
+        $missing = array_diff(array_map('intval', $playerIds), array_keys($map));
         if ($missing) {
             GameContract::where('game_save_id', $match->game_save_id)
                 ->whereIn('game_team_id', [$match->home_team_id, $match->away_team_id])

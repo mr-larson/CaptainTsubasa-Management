@@ -184,7 +184,8 @@ class GameMatchController extends Controller
 
     /**
      * Détail d'un match joué (stats, déroulé, effectifs), chargé à la demande
-     * par le calendrier : la page Play ne reçoit pas les match_stats.
+     * par le calendrier : la page Play ne reçoit pas les match_stats. Seul
+     * endroit où le déroulé (game_match_events) est lu.
      */
     public function stats(GameSave $gameSave, GameMatch $match): JsonResponse
     {
@@ -212,7 +213,7 @@ class GameMatchController extends Controller
         ];
 
         return response()->json([
-            'match_stats' => \App\Services\PlayerStatsService::withCrossAndHeadingStats($match->match_stats),
+            'match_stats' => $match->fullStats(),
             'incidents' => $incidents,
         ]);
     }

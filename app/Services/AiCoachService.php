@@ -26,9 +26,12 @@ class AiCoachService
         $week = (int) $save->week;
         $season = (int) $save->season;
         $fixtures = GameMatch::where('game_save_id', $save->id)
-            ->where('week', $week)->where('status', 'scheduled')->get();
+            ->where('week', $week)->where('status', 'scheduled')
+            ->get(['id', 'home_team_id', 'away_team_id']);
         $played = GameMatch::where('game_save_id', $save->id)
-            ->where('week', $playedWeek)->where('status', 'played')->orderBy('id')->get();
+            ->where('week', $playedWeek)->where('status', 'played')->orderBy('id')
+            ->with('playerStats')
+            ->get(['id', 'game_save_id', 'home_team_id', 'away_team_id', 'match_stats']);
 
         $aiTeams = GameTeam::where('game_save_id', $save->id)
             ->whereIn('id', $fixtures->pluck('home_team_id')->merge($fixtures->pluck('away_team_id'))->unique())
@@ -51,7 +54,7 @@ class AiCoachService
             $starters = $team->contracts->filter(fn ($contract) =>
                 $contract->is_starter && $contract->gamePlayer && !$blocked->has($contract->game_player_id)
             )->pluck('gamePlayer');
-            $stats = $match->match_stats['players'] ?? [];
+            $stats = $match->playerStatsMap();
 
             $recentDeclaration = GameDeclaration::where('game_save_id', $save->id)->where('season', $season)
                 ->whereIn('game_player_id', $team->contracts->pluck('game_player_id'))

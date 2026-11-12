@@ -58,7 +58,10 @@ class AITrainingService
 
         $controlledTeamIds = [...$gameSave->controlledGameTeamIds(), (int) $gameSave->controlled_game_team_id];
         $playedByTeam = [];
-        foreach (GameMatch::where('game_save_id', $gameSave->id)->where('week', $week)->where('status', 'played')->get() as $match) {
+        $playedMatches = GameMatch::where('game_save_id', $gameSave->id)->where('week', $week)->where('status', 'played')
+            ->with('playerStats')
+            ->get(['id', 'game_save_id', 'home_team_id', 'away_team_id', 'match_stats']);
+        foreach ($playedMatches as $match) {
             $played = array_fill_keys(StaminaService::resolvePlayedPlayerIds($match), true);
             foreach ([$match->home_team_id, $match->away_team_id] as $teamId) {
                 $playedByTeam[$teamId] = ($playedByTeam[$teamId] ?? []) + $played;

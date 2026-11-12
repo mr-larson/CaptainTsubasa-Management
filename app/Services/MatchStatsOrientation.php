@@ -56,7 +56,8 @@ class MatchStatsOrientation
             return false;
         }
 
-        $match->match_stats = self::flip($match->match_stats);
+        // Le camp des événements est inversé lui aussi : on repart du détail complet.
+        $match->match_stats = self::flip($match->fullStats());
         $match->save();
 
         return true;
