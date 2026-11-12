@@ -25,9 +25,11 @@ class GameMatch extends Model
 {
     use HasFactory;
     use BelongsToGameSave;
+    use \App\Models\GameSaves\Concerns\ScopedToSaveSeason;
 
     protected $fillable = [
         'game_save_id',
+        'season',
         'week',
         'home_team_id',
         'away_team_id',

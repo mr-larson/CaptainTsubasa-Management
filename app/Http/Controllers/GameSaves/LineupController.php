@@ -143,27 +143,32 @@ class LineupController extends Controller
         ]);
 
         $teamId = (int) $data['team_id'];
-        if ($refused = $this->refuseUnlessActiveTeam($gameSave, $teamId)) return $refused;
-        $team   = $gameSave->gameTeams()->where('id', $teamId)->firstOrFail();
 
-        $slots = [];
-        foreach ($data['slots'] as $row) {
-            $slots[(int) $row['slot']] = $row['player_id'] ? (int) $row['player_id'] : null;
-        }
+        // Sous verrou : state.lineup est relu et réécrit en entier, une sauvegarde
+        // concurrente (autre onglet, autre siège) ne doit pas l'écraser.
+        return $this->withSaveLock($gameSave, function (GameSave $gameSave) use ($data, $teamId) {
+            if ($refused = $this->refuseUnlessActiveTeam($gameSave, $teamId)) return $refused;
+            $team   = $gameSave->gameTeams()->where('id', $teamId)->firstOrFail();
 
-        $state = $gameSave->state ?? [];
-        $state['lineup']                     = $state['lineup'] ?? [];
-        $state['lineup'][$team->id]          = $state['lineup'][$team->id] ?? [];
-        $state['lineup'][$team->id]['slots'] = $slots;
-        $gameSave->state = $state;
-        $gameSave->save();
+            $slots = [];
+            foreach ($data['slots'] as $row) {
+                $slots[(int) $row['slot']] = $row['player_id'] ? (int) $row['player_id'] : null;
+            }
 
-        if (!empty($data['formation'])) {
-            $team->formation = $data['formation'];
-            $team->save();
-        }
+            $state = $gameSave->state ?? [];
+            $state['lineup']                     = $state['lineup'] ?? [];
+            $state['lineup'][$team->id]          = $state['lineup'][$team->id] ?? [];
+            $state['lineup'][$team->id]['slots'] = $slots;
+            $gameSave->state = $state;
+            $gameSave->save();
 
-        return back()->with('success', 'Composition mise à jour.');
+            if (!empty($data['formation'])) {
+                $team->formation = $data['formation'];
+                $team->save();
+            }
+
+            return back()->with('success', 'Composition mise à jour.');
+        });
     }
 
     /**
@@ -209,11 +214,14 @@ class LineupController extends Controller
         $substituteId = (int) $data['substitute_id'];
 
         if ($starterId === $substituteId) return back();
-        if ($refused = $this->refuseUnlessActiveTeam($gameSave, $teamId)) return $refused;
 
-        $team = $gameSave->gameTeams()->where('id', $teamId)->firstOrFail();
+        // Verrou de save (qui ouvre aussi la transaction) : state.lineup est relu
+        // à jour avant d'être réécrit.
+        return $this->withSaveLock($gameSave, function (GameSave $gameSave) use ($teamId, $starterId, $substituteId) {
+            if ($refused = $this->refuseUnlessActiveTeam($gameSave, $teamId)) return $refused;
 
-        DB::transaction(function () use ($gameSave, $team, $starterId, $substituteId) {
+            $team = $gameSave->gameTeams()->where('id', $teamId)->firstOrFail();
+
             // 1. Swap is_starter (deux UPDATE explicites pour portabilité MySQL/PG)
             GameContract::where('game_team_id', $team->id)
                 ->where('game_player_id', $starterId)
@@ -240,9 +248,9 @@ class LineupController extends Controller
             $state['lineup']     = $lineup;
             $gameSave->state     = $state;
             $gameSave->save();
-        });
 
-        return back()->with('success', 'Substitution effectuée.');
+            return back()->with('success', 'Substitution effectuée.');
+        });
     }
 
     /**

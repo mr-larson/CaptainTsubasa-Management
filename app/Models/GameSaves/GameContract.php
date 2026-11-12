@@ -10,6 +10,7 @@ class GameContract extends Model
 {
     use HasFactory;
     use BelongsToGameSave;
+    use \App\Models\GameSaves\Concerns\ScopedToSaveSeason;
 
     protected static function booted(): void
     {
@@ -23,6 +24,7 @@ class GameContract extends Model
 
     protected $fillable = [
         'game_save_id',
+        'season',
         'game_team_id',
         'game_player_id',
         'salary',

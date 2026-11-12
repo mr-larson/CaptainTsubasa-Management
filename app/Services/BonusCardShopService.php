@@ -60,6 +60,27 @@ class BonusCardShopService
         $gameSave->save();
     }
 
+    /** La boutique n'a pas été tirée pour la semaine / saison courante. */
+    public function isStale(GameSave $gameSave): bool
+    {
+        $shop = $gameSave->state['shop'] ?? null;
+
+        return !$shop
+            || (int) ($shop['season'] ?? 0) !== (int) $gameSave->season
+            || (int) ($shop['week']   ?? 0) !== (int) $gameSave->week;
+    }
+
+    /**
+     * Tire les offres si elles sont périmées. À appeler sous verrou de save
+     * (withSaveLock) : le tirage réécrit state.shop avec tout le state.
+     */
+    public function ensureFresh(GameSave $gameSave): void
+    {
+        if ($this->isStale($gameSave)) {
+            $this->generateWeeklyOffers($gameSave);
+        }
+    }
+
     /**
      * Retourne les offres de la semaine pour une équipe donnée.
      * Régénère si la boutique est périmée (mauvaise semaine/saison).
@@ -68,11 +89,9 @@ class BonusCardShopService
     {
         $shop = $gameSave->state['shop'] ?? null;
 
-        if (
-            !$shop ||
-            (int) ($shop['season'] ?? 0) !== (int) $gameSave->season ||
-            (int) ($shop['week']   ?? 0) !== (int) $gameSave->week
-        ) {
+        if ($this->isStale($gameSave)) {
+            // Régénération : à appeler sous verrou de save (voir ensureFresh) ;
+            // ce repli ne sert qu'aux appelants qui n'ont pas pu le faire.
             $this->generateWeeklyOffers($gameSave);
             $gameSave->refresh();
             $shop = $gameSave->state['shop'] ?? [];

@@ -837,8 +837,14 @@ class GameSaveController extends Controller
         // ─── Bonus cards ───
         $controlledTeamId = $gameSave->controlled_game_team_id;
 
+        // Boutique de la semaine : tirée au premier affichage, donc sous verrou
+        // (seulement quand elle est périmée) ; la lecture, elle, reste libre.
+        $shopService = app(BonusCardShopService::class);
+        if ($controlledTeamId && $shopService->isStale($gameSave)) {
+            $this->withSaveLock($gameSave, fn (GameSave $locked) => $shopService->ensureFresh($locked));
+        }
         $bonusCardOffers = $controlledTeamId
-            ? app(BonusCardShopService::class)->getOffersForTeam($gameSave, $controlledTeamId)
+            ? $shopService->getOffersForTeam($gameSave, $controlledTeamId)
             : [];
 
         $bonusCardInventory = $controlledTeamId
@@ -1233,12 +1239,15 @@ class GameSaveController extends Controller
         $rules = Arr::except(GameSave::configRules(), ['initial_morale_random', 'initial_stamina_random', 'initial_speed_random', 'luck_random', 'ai_start_budget', 'human_start_budget', 'ai_draft_budget', 'draft_budget']);
         $data  = GameSave::sanitizeConfig($request->validate($rules));
 
-        if (! $gameSave->hasValidTrainingGains($data)) {
-            return back()->withErrors(['training_gain_max' => 'Le gain max doit être supérieur ou égal au gain min.']);
-        }
+        // Sous verrou : state.config est relu et réécrit avec tout le state.
+        return $this->withSaveLock($gameSave, function (GameSave $gameSave) use ($data) {
+            if (! $gameSave->hasValidTrainingGains($data)) {
+                return back()->withErrors(['training_gain_max' => 'Le gain max doit être supérieur ou égal au gain min.']);
+            }
 
-        $gameSave->setConfig($data);
+            $gameSave->setConfig($data);
 
-        return back()->with('success', 'Configuration mise à jour.');
+            return back()->with('success', 'Configuration mise à jour.');
+        });
     }
 }

@@ -17,7 +17,8 @@ return new class extends Migration
     {
         $service = app(MatchStatsOrientation::class);
 
-        GameMatch::query()
+        // Sans filtre de saison : la colonne `season` n'existe pas encore à ce stade.
+        GameMatch::withoutGlobalScopes()
             ->where('status', 'played')
             ->whereNotNull('match_stats')
             ->orderBy('id')

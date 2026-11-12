@@ -127,7 +127,7 @@ class SeasonServiceTest extends TestCase
         $this->assertSame(0, (int) $strong->fresh()->wins);
         $this->assertSame(0, (int) $weak->fresh()->goals_against);
 
-        // Contrats et calendrier purgés.
+        // Contrats et calendrier hors saison courante (conservés dans l'historique).
         $this->assertSame(0, GameContract::where('game_save_id', $save->id)->count());
         $this->assertSame(0, GameMatch::where('game_save_id', $save->id)->count());
         $this->assertNull($player->fresh()->number);
@@ -135,5 +135,44 @@ class SeasonServiceTest extends TestCase
         // Draft initialisée, ordre = inverse du classement (le plus faible pioche en premier).
         $this->assertArrayHasKey('draft', $save->state);
         $this->assertSame([$weak->id, $strong->id], $save->state['draft']['order']);
+    }
+
+    public function test_new_season_keeps_history_and_only_current_season_is_visible(): void
+    {
+        $save = $this->makeSave(['season' => 1]);
+        $home = $this->makeTeam($save);
+        $away = $this->makeTeam($save);
+
+        $player   = $this->makePlayer($save);
+        $contract = $this->makeContract($save, $home, $player);
+        $match    = $this->makeMatch($save, $home, $away, ['status' => 'played', 'home_score' => 3, 'away_score' => 0]);
+        \App\Models\GameSaves\GameInjury::create([
+            'game_save_id' => $save->id, 'game_player_id' => $player->id, 'game_match_id' => $match->id,
+            'severity' => 'light', 'weeks_out' => 2, 'week_injured' => 1, 'week_return' => 3, 'description' => 'Entorse',
+        ]);
+        \App\Models\GameSaves\GameSanction::create([
+            'game_save_id' => $save->id, 'game_player_id' => $player->id, 'game_match_id' => $match->id,
+            'type' => 'yellow', 'weeks_suspended' => 0, 'week_match' => 1, 'week_return' => 1, 'yellow_card_count' => 1,
+        ]);
+        $this->assertSame(1, (int) $match->fresh()->season);
+
+        $this->service->startNewSeason($save);
+        $save->refresh();
+
+        // Rien n'est supprimé : la saison 1 reste en base, hors du filtre courant.
+        foreach ([GameContract::class, GameMatch::class, \App\Models\GameSaves\GameInjury::class, \App\Models\GameSaves\GameSanction::class] as $model) {
+            $this->assertSame(0, $model::where('game_save_id', $save->id)->count(), $model);
+            $this->assertSame(1, $model::allSeasons()->where('game_save_id', $save->id)->count(), $model);
+            $this->assertSame(1, $model::forSeason(1)->where('game_save_id', $save->id)->count(), $model);
+        }
+        // Le joueur redevient agent libre malgré son contrat de la saison passée.
+        $this->assertSame(0, $player->contracts()->count());
+        $this->assertSame(1, \App\Models\GameSaves\GamePlayer::where('game_save_id', $save->id)->whereDoesntHave('contracts')->count());
+
+        // Les nouvelles lignes prennent la saison courante.
+        $newMatch = $this->makeMatch($save, $home, $away);
+        $this->assertSame(2, (int) $newMatch->season);
+        $this->assertSame(1, GameMatch::where('game_save_id', $save->id)->count());
+        $this->assertSame(2, GameMatch::allSeasons()->where('game_save_id', $save->id)->count());
     }
 }

@@ -9,9 +9,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class GameSanction extends Model
 {
     use BelongsToGameSave;
+    use \App\Models\GameSaves\Concerns\ScopedToSaveSeason;
 
     protected $fillable = [
         'game_save_id',
+        'season',
         'game_player_id',
         'game_match_id',
         'type',

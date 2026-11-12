@@ -223,15 +223,15 @@ class SeasonService
             $team->save();
         }
 
-        // Tous les contrats expirent : les joueurs redeviennent libres pour la draft
-        GameContract::where('game_save_id', $gameSave->id)->delete();
+        // Tous les contrats expirent : les joueurs redeviennent libres pour la draft.
+        // Les contrats, matchs, blessures et sanctions ne sont plus supprimés : ils
+        // restent rattachés à leur saison (historique) et sortent du filtre de
+        // saison courante dès que `season` est incrémenté plus bas.
         GamePlayer::where('game_save_id', $gameSave->id)->select('id')->chunkById(250, function ($players) use ($gameSave) {
             foreach ($players as $player) {
                 GamePlayer::whereKey($player->id)->update(['number' => null, 'luck' => $gameSave->rollPlayerLuck()]);
             }
         });
-
-        GameMatch::where('game_save_id', $gameSave->id)->delete();
 
         // La semaine repart à 1 : tout ce qui est indexé sur la semaine ne doit
         // pas déborder sur la nouvelle saison (un blessé de fin de saison serait
@@ -241,8 +241,6 @@ class SeasonService
         // (sans effet sur le moral : leur fenêtre a disparu avec le calendrier).
         // Formations de poste en cours : terminées pendant l'intersaison.
         app(PositionTrainingService::class)->completeDue($gameSave, 0, all: true);
-        GameInjury::where('game_save_id', $gameSave->id)->delete();
-        GameSanction::where('game_save_id', $gameSave->id)->delete();
         GamePromise::where('game_save_id', $gameSave->id)
             ->where('status', 'pending')
             ->update(['status' => 'expired']);
