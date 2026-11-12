@@ -207,8 +207,7 @@
                                         class="w-full min-h-11 px-4 rounded-full font-bold text-sm transition-colors flex items-center justify-center gap-2"
                                         :class="isHumanTeam(selectedTeam)
                         ? 'bg-white text-rose-600 border border-rose-300 hover:bg-rose-50'
-                        : humanTeams.length ? 'bg-teal-500 hover:bg-teal-600 text-white shadow-md'
-                        : 'bg-cyan-500 text-white shadow-md hover:bg-cyan-600'"
+                        : 'bg-[oklch(64.5%_0.246_16.439)] hover:bg-[oklch(58.6%_0.253_17.585)] text-white shadow-md'"
                                         @click="toggleHumanTeam(selectedTeam)">
                                     <template v-if="isHumanTeam(selectedTeam)">
                                         <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
