@@ -128,6 +128,13 @@ class AiLineUpService
         $captain = $eligible->firstWhere('is_captain', true)
             ?? $eligible->sortByDesc(fn ($contract) => $this->playerOverall($contract->gamePlayer))->first();
 
+        // Un seul capitaine par équipe et par saison (contrainte unique) : les
+        // contrats expirés qui portent encore le brassard doivent le perdre aussi.
+        GameContract::where('game_team_id', $team->id)
+            ->where('is_captain', true)
+            ->when($captain, fn ($query) => $query->where('id', '!=', $captain->id))
+            ->update(['is_captain' => false]);
+
         foreach ($team->contracts as $contract) {
             $isCaptain = $captain !== null && $contract->id === $captain->id;
             if ((bool) $contract->is_captain === $isCaptain) continue;

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\GameSaves;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\AuthorizesGameSave;
+use App\Http\Controllers\Concerns\LocksGameSave;
 use App\Http\Requests\GameSaves\GamePlayerRequest;
 use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSave;
@@ -19,6 +20,7 @@ use Inertia\Response;
 class GamePlayerController extends Controller
 {
     use AuthorizesGameSave;
+    use LocksGameSave;
 
     /**
      * Liste des joueurs d'une sauvegarde.
@@ -232,25 +234,30 @@ class GamePlayerController extends Controller
             'number' => ['required', 'integer', 'min:1', 'max:99'],
         ]);
 
-        // Vérifier que le numéro n'est pas déjà pris dans cette équipe
-        $teamId = $player->contracts()
-            ->where('game_save_id', $gameSave->id)
-            ->activeAt($gameSave->week ?? 1)
-            ->value('game_team_id');
+        // Sous verrou : vérification puis écriture ne doivent pas s'entrecroiser
+        // (le numéro est porté par le joueur, l'équipe par son contrat : pas de
+        // contrainte unique possible en base).
+        return $this->withSaveLock($gameSave, function (GameSave $gameSave) use ($player, $data) {
+            // Vérifier que le numéro n'est pas déjà pris dans cette équipe
+            $teamId = $player->contracts()
+                ->where('game_save_id', $gameSave->id)
+                ->activeAt($gameSave->week ?? 1)
+                ->value('game_team_id');
 
-        $alreadyTaken = \App\Models\GameSaves\GamePlayer::where('game_save_id', $gameSave->id)
-            ->where('id', '!=', $player->id)
-            ->whereHas('contracts', fn($q) => $q->where('game_team_id', $teamId)->activeAt($gameSave->week ?? 1))
-            ->where('number', $data['number'])
-            ->exists();
+            $alreadyTaken = \App\Models\GameSaves\GamePlayer::where('game_save_id', $gameSave->id)
+                ->where('id', '!=', $player->id)
+                ->whereHas('contracts', fn($q) => $q->where('game_team_id', $teamId)->activeAt($gameSave->week ?? 1))
+                ->where('number', $data['number'])
+                ->exists();
 
-        if ($alreadyTaken) {
-            return back()->withErrors(['number' => 'Ce numéro est déjà utilisé dans cette équipe.']);
-        }
+            if ($alreadyTaken) {
+                return back()->withErrors(['number' => 'Ce numéro est déjà utilisé dans cette équipe.']);
+            }
 
-        $player->number = $data['number'];
-        $player->save();
+            $player->number = $data['number'];
+            $player->save();
 
-        return back()->with('success', 'Numéro mis à jour.');
+            return back()->with('success', 'Numéro mis à jour.');
+        });
     }
 }
