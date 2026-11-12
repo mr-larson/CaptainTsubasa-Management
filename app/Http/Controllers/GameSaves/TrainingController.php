@@ -24,6 +24,23 @@ class TrainingController extends Controller
     /**
      * Lance des entraînements pour une sauvegarde donnée.
      */
+    /**
+     * Séances d'entraînement IA d'une semaine de la saison en cours (onglet
+     * Entraînement) : l'historique complet reste côté serveur.
+     */
+    public function aiWeek(GameSave $gameSave, int $week): \Illuminate\Http\JsonResponse
+    {
+        $this->authorizeGameSave('view', $gameSave);
+
+        $season = (int) ($gameSave->season ?? 1);
+
+        return response()->json([
+            'entries' => collect($gameSave->state['ai_training_history'] ?? [])
+                ->filter(fn ($e) => (int) ($e['season'] ?? 0) === $season && (int) ($e['week'] ?? 0) === $week)
+                ->values()->all(),
+        ]);
+    }
+
     public function store(
         StoreTrainingRequest $request,
         GameSave $gameSave,

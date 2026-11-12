@@ -706,6 +706,8 @@ class GameSaveController extends Controller
         // Fixe l'objectif de la direction pour la saison courante si besoin
         // (couvre le mode draft : l'effectif n'existe qu'après la draft).
         $this->withSaveLock($gameSave, function (GameSave $gameSave) use ($career) {
+            app(\App\Services\DraftService::class)->purgeFinishedDraft($gameSave);
+
             if (!$gameSave->isInMatchPhase()) return;
 
             if (($gameSave->phase ?? 'season') === 'season') {
@@ -970,6 +972,16 @@ class GameSaveController extends Controller
             'incomingMalus'       => $incomingMalus,
             'activeShields'       => $activeShields,
             'gameConfig'          => $gameSave->getConfig(),
+            // Séances IA de la dernière semaine jouée (celle affichée par défaut) ;
+            // les autres semaines se chargent à la demande.
+            'aiTrainingInitial'   => [
+                'season'  => (int) ($gameSave->season ?? 1),
+                'week'    => max(1, (int) ($gameSave->week ?? 1) - 1),
+                'entries' => collect($gameSave->state['ai_training_history'] ?? [])
+                    ->filter(fn ($e) => (int) ($e['season'] ?? 0) === (int) ($gameSave->season ?? 1)
+                        && (int) ($e['week'] ?? 0) === max(1, (int) ($gameSave->week ?? 1) - 1))
+                    ->values()->all(),
+            ],
             'tournament'          => $gameSave->competition_type === 'world_cup'
                 ? app(TournamentService::class)->presentation($gameSave)
                 : null,

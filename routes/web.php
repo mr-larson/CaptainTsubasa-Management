@@ -186,6 +186,8 @@ Route::middleware('auth')->group(function () {
             [GameMatchController::class, 'simulateWeek'])->name('simulate-week');
 
         // Entraînement
+        Route::get('/{gameSave}/training/ai/{week}',
+            [TrainingController::class, 'aiWeek'])->whereNumber('week')->name('training.ai-week');
         Route::post('/{gameSave}/training',
             [TrainingController::class, 'store'])->name('training.store');
         Route::post('/{gameSave}/position-training',

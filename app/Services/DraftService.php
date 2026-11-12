@@ -430,6 +430,23 @@ class DraftService
     }
 
     /**
+     * Retire state.draft (ordre + picks, ~44 Ko) une fois la draft terminée : les
+     * contrats portent le résultat, et initDraft recrée la clé à l'intersaison.
+     * Appelé à l'ouverture de la page Play, après que l'écran de fin de draft a
+     * pu lire l'état. Sans effet pendant une draft.
+     */
+    public function purgeFinishedDraft(GameSave $gameSave): void
+    {
+        if (in_array($gameSave->phase, ['draft', 'intersaison_draft'], true)) return;
+        $state = $gameSave->state ?? [];
+        if (!array_key_exists('draft', $state)) return;
+
+        unset($state['draft']);
+        $gameSave->state = $state;
+        $gameSave->save();
+    }
+
+    /**
      * Finalise le draft : passe en phase season et génère le calendrier.
      */
     /**

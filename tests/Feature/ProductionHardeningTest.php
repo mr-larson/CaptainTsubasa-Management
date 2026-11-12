@@ -61,6 +61,29 @@ class ProductionHardeningTest extends TestCase
         $this->assertSame([2], array_values(array_map('intval', $seasons)));
     }
 
+    public function test_ai_training_history_is_server_only_and_served_per_week(): void
+    {
+        $save = $this->makeSave(['season' => 2, 'week' => 4, 'state' => [
+            'ai_training_history' => [
+                ['season' => 1, 'week' => 2, 'team_id' => 1],
+                ['season' => 2, 'week' => 2, 'team_id' => 1],
+                ['season' => 2, 'week' => 3, 'team_id' => 2],
+            ],
+        ]]);
+
+        $this->assertArrayNotHasKey('ai_training_history', $save->toArray()['state']);
+
+        $this->actingAs(\App\Models\User::find($save->user_id))
+            ->getJson(route('game-saves.training.ai-week', [$save, 2]))
+            ->assertOk()
+            ->assertJsonCount(1, 'entries')
+            ->assertJsonPath('entries.0.season', 2);
+
+        $this->actingAs(\App\Models\User::factory()->create())
+            ->getJson(route('game-saves.training.ai-week', [$save, 2]))
+            ->assertForbidden();
+    }
+
     public function test_season_progression_keeps_only_the_current_season(): void
     {
         $save = $this->makeSave(['season' => 2, 'state' => ['season_progression' => [1 => [5 => 40]]]]);

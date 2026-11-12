@@ -257,6 +257,9 @@ class DraftServiceTest extends TestCase
         $this->assertSame(500, (int) $team->fresh()->budget);
         $this->assertArrayNotHasKey('budgets', $save->state['draft']);
 
+        $this->service->purgeFinishedDraft($save->fresh());
+        $this->assertArrayNotHasKey('draft', $save->fresh()->state);
+
         // Lineup persisté avec une formation et 11 titulaires.
         $lineup = $save->state['lineup'][$team->id];
         $this->assertArrayHasKey('formation', $lineup);

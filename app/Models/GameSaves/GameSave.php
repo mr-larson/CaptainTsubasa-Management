@@ -48,6 +48,9 @@ class GameSave extends Model
         'season_progression',
         'match_progression_history',
         'training_history',
+        // Historique des séances IA (toutes équipes, ~95 Ko en semaine 19) : le
+        // front ne lit que la semaine affichée, via game-saves.training.ai-week.
+        'ai_training_history',
     ];
 
     public function toArray()

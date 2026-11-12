@@ -1,8 +1,9 @@
 // resources/js/Pages/GameSaves/Play/useTraining.js
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
+import axios from 'axios';
 
-export function useTraining({ gameSave, season, week, teamId, maxPerWeek }) {
+export function useTraining({ gameSave, season, week, teamId, maxPerWeek, aiInitial }) {
 
     // Quota de la save (réglable dans Gestion), 3 par défaut.
     const MAX_TRAININGS_PER_WEEK_DEFAULT = 3;
@@ -87,12 +88,27 @@ export function useTraining({ gameSave, season, week, teamId, maxPerWeek }) {
     const aiCurrentDisplayWeek = computed(() => aiDisplayWeek.value ?? Math.max(1, week.value - 1))
     const aiWeekMax = computed(() => week.value)
 
+    // L'historique complet reste côté serveur : la semaine par défaut arrive avec
+    // la page (aiTrainingInitial), les autres se chargent à la demande. Seules les
+    // semaines closes sont mises en cache.
+    const aiWeekCache = ref({})
+    const aiCacheKey = (s, w) => `${s}-${w}`
     const aiTrainingEntries = computed(() => {
-        const history = gameSave.value.state?.ai_training_history ?? []
-        return history.filter(e =>
-            Number(e.season) === Number(season.value) &&
-            Number(e.week)   === Number(aiCurrentDisplayWeek.value)
-        )
+        const key = aiCacheKey(season.value, aiCurrentDisplayWeek.value)
+        const initial = aiInitial?.value
+        if (initial && aiCacheKey(initial.season, initial.week) === key) return initial.entries ?? []
+        return aiWeekCache.value[key] ?? []
+    })
+
+    watch(aiCurrentDisplayWeek, async (w) => {
+        const key = aiCacheKey(season.value, w)
+        const initial = aiInitial?.value
+        if ((w < week.value && aiWeekCache.value[key]) || (initial && aiCacheKey(initial.season, initial.week) === key)) return
+        try {
+            const { data } = await axios.get(route('game-saves.training.ai-week', { gameSave: gameSave.value.id, week: w }))
+            // La semaine en cours n'est pas figée : on la relit à chaque affichage.
+            aiWeekCache.value = { ...aiWeekCache.value, [key]: data.entries }
+        } catch { /* l'onglet reste simplement vide */ }
     })
 
     const prevAiWeek = () => { if (aiCurrentDisplayWeek.value > 1) aiDisplayWeek.value = aiCurrentDisplayWeek.value - 1 }

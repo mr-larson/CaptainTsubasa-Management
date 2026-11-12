@@ -72,6 +72,7 @@ const props = defineProps({
     hotSeat:            { type: Object, required: false, default: null },
     tournament:         { type: Object, required: false, default: null },
     gameConfig:         { type: Object, default: () => ({}) },
+    aiTrainingInitial:  { type: Object, default: null },
     career:             { type: Object, required: false, default: null },
     seasonChallenges:   { type: Object, required: false, default: null },
     incomeModel:        { type: Object, required: false, default: null },
@@ -249,6 +250,7 @@ const {
     gameSave: gameSaveRef, season, week,
     teamId:     computed(() => teamRef.value?.id ?? null),
     maxPerWeek: computed(() => props.gameConfig?.training_max_per_week),
+    aiInitial:  computed(() => props.aiTrainingInitial),
 });
 
 // Rappels « À faire / État du onze » : colonne gauche sur grand écran (tous les
