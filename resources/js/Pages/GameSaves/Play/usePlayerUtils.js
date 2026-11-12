@@ -141,6 +141,9 @@ export function usePlayerUtils() {
             case 'playing_time': return 'Temps de jeu';
             case 'salary':       return 'Salaire';
             case 'bonus_card':   return 'Carte bonus';
+            case 'coach_affinity': return 'Carte';
+            case 'promise':      return 'Promesse';
+            case 'declaration':  return 'Presse';
             default:             return source;
         }
     };

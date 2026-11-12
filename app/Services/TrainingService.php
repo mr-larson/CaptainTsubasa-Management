@@ -210,6 +210,19 @@ class TrainingService
                 $controlledTeam->save();
             }
 
+            if (!isset($state['training_history'])) {
+                $previous = $state['training'] ?? [];
+                $state['training_history'] = array_map(fn ($entry) => $entry + [
+                    'season' => $previous['season'] ?? $season, 'week' => $previous['week'] ?? $week,
+                ], $previous['entries'] ?? []);
+            }
+            $history = array_values(array_filter($state['training_history'] ?? [],
+                fn ($entry) => (int) ($entry['season'] ?? 0) === $season));
+            foreach ($applied as $entry) {
+                $history[] = $entry + ['season' => $season, 'week' => $week];
+            }
+            $state['training_history'] = array_slice($history, -200);
+
             // Mise à jour de state['training']
             $state['training'] = [
                 'season'  => $season,

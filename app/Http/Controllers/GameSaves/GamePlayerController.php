@@ -218,7 +218,7 @@ class GamePlayerController extends Controller
         $ids = [$player->id];
 
         return response()->json([
-            'logs'         => $summary->moraleLogs($gameSave, $ids)->get($player->id, collect())->values(),
+            'logs'         => $summary->recentChanges($gameSave, $ids)->get($player->id, collect())->values(),
             'promises'     => $summary->promises($gameSave, $ids)->get($player->id, collect())->values(),
             'declarations' => $summary->declarations($gameSave, $ids)->get($player->id, collect())->values(),
         ]);

@@ -828,7 +828,7 @@ class GameSaveController extends Controller
 
         // Moral, promesses (en cours + dernières évaluées), dernière déclaration publique.
         $moraleSummary      = app(PlayerMoraleSummary::class);
-        $moraleLogs         = $moraleSummary->moraleLogs($gameSave, $controlledPlayerIds);
+        $moraleLogs         = $moraleSummary->recentChanges($gameSave, $controlledPlayerIds);
         $playerPromises     = $moraleSummary->promises($gameSave, $controlledPlayerIds);
         $playerDeclarations = $moraleSummary->declarations($gameSave, $controlledPlayerIds);
 

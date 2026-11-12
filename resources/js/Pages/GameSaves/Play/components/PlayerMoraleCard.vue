@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import Panel from '@/Components/Panel.vue';
+import { PLAYER_STATS } from '@/Enums/playerStats.js';
 import { usePlayerUtils } from '../usePlayerUtils.js';
 
 // Carte « Moral » d'un joueur : moral et effet en match, relation coach,
@@ -25,9 +26,9 @@ const { moraleState, moraleSourceLabel, moraleMatchEffect, HEROIC_MORALE_THRESHO
 // ── Moral ────────────────────────────────────────────────────
 const selectedPlayerMorale = computed(() => moraleState(props.player?.morale));
 
-const selectedPlayerMoraleLogs = computed(() =>
-    props.logs ?? []
-);
+const selectedPlayerMoraleLogs = computed(() => (props.logs ?? []).filter(log => log.category !== 'stats'));
+const statChanges = computed(() => (props.logs ?? []).filter(log => log.category === 'stats'));
+const statLabel = (key) => PLAYER_STATS.find(stat => stat.key === key)?.label ?? ({ luck: 'Chance' }[key] ?? key);
 
 const selectedPlayerMoraleEffect = computed(() => moraleMatchEffect(props.player?.morale));
 
@@ -215,21 +216,34 @@ const lastDeclarationSummary = computed(() => {
             </div>
         </div>
 
-        <div v-if="selectedPlayerMoraleLogs.length" class="space-y-1">
+        <section class="space-y-2">
             <h5 class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Derniers changements</h5>
-            <div v-for="(log, i) in selectedPlayerMoraleLogs" :key="i"
-                 class="flex items-center gap-2 text-xs">
-                <span class="w-8 text-right font-black shrink-0"
-                      :class="log.value > 0 ? 'text-emerald-600' : 'text-rose-500'">
-                    {{ log.value > 0 ? '+' : '' }}{{ log.value }}
-                </span>
-                <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 text-2xs font-semibold shrink-0">
-                    {{ moraleSourceLabel(log.source) }}
-                </span>
-                <span class="text-slate-600 truncate">{{ log.label }}</span>
-                <span class="ml-auto text-2xs text-slate-400 shrink-0">S{{ log.week }}</span>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                <div class="min-w-0 rounded-xl border border-slate-200 bg-white/60 p-3 space-y-2">
+                    <h6 class="text-xs font-bold text-slate-600">🙂 Moral et relation coach</h6>
+                    <div v-for="(log, i) in selectedPlayerMoraleLogs" :key="i" class="flex items-start gap-2 text-xs">
+                        <span class="w-7 text-right font-black shrink-0" :class="log.value > 0 ? 'text-emerald-600' : 'text-rose-500'">{{ log.value > 0 ? '+' : '' }}{{ log.value }}</span>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-slate-600 break-words">{{ log.label }}</p>
+                            <p class="text-2xs text-slate-400">{{ log.metric ?? 'Moral' }} · {{ log.source_label ?? moraleSourceLabel(log.source) }}</p>
+                        </div>
+                        <span class="text-2xs text-slate-400 shrink-0" :title="`Saison ${log.season}, semaine ${log.week}`">S{{ log.week }}</span>
+                    </div>
+                    <p v-if="!selectedPlayerMoraleLogs.length" class="text-xs text-slate-400 italic">Aucun changement récent de moral ou de relation.</p>
+                </div>
+                <div class="min-w-0 rounded-xl border border-slate-200 bg-white/60 p-3 space-y-2">
+                    <h6 class="text-xs font-bold text-slate-600">📈 Progression des statistiques</h6>
+                    <div v-for="(log, i) in statChanges" :key="i" class="flex items-start gap-2 text-xs">
+                        <span class="w-7 text-right font-black shrink-0" :class="log.value > 0 ? 'text-emerald-600' : 'text-rose-500'">{{ log.value > 0 ? '+' : '' }}{{ log.value }}</span>
+                        <div class="min-w-0 flex-1">
+                            <p class="font-semibold text-slate-600">{{ statLabel(log.stat) }} <span v-if="log.old != null && log.new != null" class="font-normal text-slate-400">{{ log.old }} → {{ log.new }}</span></p>
+                            <p class="text-2xs text-slate-400">{{ log.source === 'training' ? '🏋️' : '⚽' }} {{ log.source_label }}</p>
+                        </div>
+                        <span class="text-2xs text-slate-400 shrink-0" :title="`Saison ${log.season}, semaine ${log.week}`">S{{ log.week }}</span>
+                    </div>
+                    <p v-if="!statChanges.length" class="text-xs text-slate-400 italic">Aucun gain de statistique enregistré récemment.</p>
+                </div>
             </div>
-        </div>
-        <p v-else class="text-xs text-slate-400 italic">Aucun changement de moral pour l'instant.</p>
+        </section>
     </Panel>
 </template>

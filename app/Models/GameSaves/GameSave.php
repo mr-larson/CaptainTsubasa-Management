@@ -47,6 +47,7 @@ class GameSave extends Model
         'ai_training_week',
         'season_progression',
         'match_progression_history',
+        'training_history',
     ];
 
     public function toArray()

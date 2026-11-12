@@ -220,6 +220,16 @@ class BonusCardActivationService
         ];
     }
 
+    private function logCoachAffinity(GameSave $save, GamePlayer $player, int $delta, string $label): void
+    {
+        if ($delta === 0) return;
+        GamePlayerMoraleLog::create([
+            'game_save_id' => $save->id, 'game_player_id' => $player->id,
+            'source' => 'coach_affinity', 'value' => $delta, 'label' => $label,
+            'week' => $save->week, 'season' => $save->season,
+        ]);
+    }
+
     private function applyCoachAffinityBoost(GameSave $gameSave, GameBonusCard $gameBonusCard, ?int $targetPlayerId): array
     {
         $player = $this->resolveTargetPlayer($gameSave, $gameBonusCard, $targetPlayerId);
@@ -230,6 +240,7 @@ class BonusCardActivationService
         $player->save();
 
         $gain = $player->coach_affinity - $before;
+        $this->logCoachAffinity($gameSave, $player, $gain, $gameBonusCard->bonusCard->name);
 
         return [
             'message'            => "+{$gain} de relation avec le coach pour {$player->lastname} (désormais {$player->coach_affinity}).",
@@ -475,8 +486,10 @@ class BonusCardActivationService
 
         $star   = $candidates->sortByDesc(fn ($c) => $this->playerRating($c->gamePlayer))->first();
         $player = $star->gamePlayer;
-        $player->coach_affinity = max(-100, (int) ($player->coach_affinity ?? 0) - $amount);
+        $before = (int) ($player->coach_affinity ?? 0);
+        $player->coach_affinity = max(-100, $before - $amount);
         $player->save();
+        $this->logCoachAffinity($gameSave, $player, $player->coach_affinity - $before, $gameBonusCard->bonusCard->name);
 
         $name     = trim(($player->firstname ?? '') . ' ' . ($player->lastname ?? '')) ?: ($player->lastname ?? 'Joueur');
         $teamName = GameTeam::find($targetId)?->name ?? 'l\'adversaire';

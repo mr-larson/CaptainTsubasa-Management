@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\GameSaves\GameDeclaration;
+use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GamePlayerMoraleLog;
 use App\Models\GameSaves\GamePromise;
 use App\Models\GameSaves\GameSave;
@@ -31,6 +32,72 @@ class PlayerMoraleSummary
                 'week'   => $l->week,
                 'season' => $l->season,
             ])->values());
+    }
+
+    /** Historique compact : moral/relation d’un côté, gains de statistiques de l’autre. */
+    public function recentChanges(GameSave $gameSave, Collection|array $playerIds): Collection
+    {
+        $ids = collect($playerIds)->map(fn ($id) => (int) $id)->all();
+        $rows = collect();
+        foreach ($this->moraleLogs($gameSave, $ids) as $playerId => $logs) {
+            foreach ($logs as $log) {
+                $rows->push($log + ['player_id' => $playerId, 'category' => 'morale',
+                    'metric' => match ($log['source']) {
+                        'promise' => 'Moral / coach', 'coach_affinity' => 'Relation coach', default => 'Moral',
+                    }]);
+            }
+        }
+        foreach (GameDeclaration::where('game_save_id', $gameSave->id)->whereIn('game_player_id', $ids)
+            ->where('affinity_delta', '!=', 0)->orderByDesc('id')->limit(100)->get() as $declaration) {
+            $rows->push([
+                'player_id' => $declaration->game_player_id, 'category' => 'morale', 'metric' => 'Relation coach',
+                'source' => 'declaration', 'source_label' => 'Presse', 'value' => $declaration->affinity_delta,
+                'label' => $declaration->type === 'praise' ? 'Félicitations publiques' : 'Critique publique',
+                'week' => $declaration->week, 'season' => $declaration->season,
+            ]);
+        }
+        $state = $gameSave->state ?? [];
+        $manualHistory = $state['training_history'] ?? [];
+        // Les anciennes sauvegardes conservent au moins les séances de la semaine.
+        if (!$manualHistory) {
+            $training = $state['training'] ?? [];
+            $manualHistory = array_map(fn ($entry) => $entry + [
+                'week' => $training['week'] ?? $gameSave->week,
+                'season' => $training['season'] ?? $gameSave->season,
+            ], $training['entries'] ?? []);
+        }
+        foreach (array_merge($manualHistory, $state['ai_training_history'] ?? []) as $entry) {
+            if (!in_array((int) ($entry['player_id'] ?? 0), $ids, true) || (int) ($entry['gain'] ?? 0) === 0) continue;
+            $rows->push([
+                'player_id' => $entry['player_id'], 'category' => 'stats', 'source' => 'training',
+                'source_label' => 'Entraînement', 'stat' => $entry['stat'], 'value' => $entry['gain'],
+                'old' => $entry['old_stat'] ?? null, 'new' => $entry['new_stat'] ?? null,
+                'week' => $entry['week'], 'season' => $entry['season'],
+            ]);
+        }
+        // Ne charge que le rapport de progression, pas le déroulé complet des matchs.
+        $matches = GameMatch::where('game_save_id', $gameSave->id)->where('status', 'played')
+            ->orderByDesc('week')->orderByDesc('id')->limit(50)
+            ->get(['id', 'week', 'match_stats->progression as progression']);
+        foreach ($matches as $match) {
+            $report = is_array($match->progression) ? $match->progression : json_decode($match->progression ?? '[]', true);
+            foreach ($report ?? [] as $entry) {
+                if (!in_array((int) ($entry['player_id'] ?? 0), $ids, true)) continue;
+                foreach ($entry['gains'] ?? [] as $stat => $gain) {
+                    if ((int) ($gain['gain'] ?? 0) === 0) continue;
+                    $rows->push([
+                        'player_id' => $entry['player_id'], 'category' => 'stats', 'source' => 'match',
+                        'source_label' => 'Performance en match', 'stat' => $stat, 'value' => $gain['gain'],
+                        'old' => $gain['old'] ?? null, 'new' => $gain['new'] ?? null,
+                        'week' => $match->week, 'season' => $gameSave->season,
+                    ]);
+                }
+            }
+        }
+        return $rows->sortByDesc(fn ($row) => (int) $row['season'] * 10000 + (int) $row['week'])
+            ->groupBy('player_id')->map(fn ($logs) => collect(['morale', 'stats'])->flatMap(
+                fn ($category) => $logs->where('category', $category)->take(6)
+            )->values());
     }
 
     public function promises(GameSave $gameSave, Collection|array $playerIds): Collection
