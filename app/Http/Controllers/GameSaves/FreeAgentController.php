@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\GameSaves;
 
+use App\Http\Requests\GameSaves\SignFreeAgentRequest;
 use App\Enums\GamePhase;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\AuthorizesGameSave;
@@ -14,8 +15,6 @@ use App\Services\SeasonChallengeService;
 use App\Services\MoraleService;
 use App\Services\SeasonService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 /**
  * Recrutement d'un agent libre par l'équipe contrôlée.
@@ -25,7 +24,7 @@ class FreeAgentController extends Controller
     use AuthorizesGameSave;
     use LocksGameSave;
 
-    public function signFreeAgent(Request $request, GameSave $gameSave, GamePlayer $player): RedirectResponse
+    public function signFreeAgent(SignFreeAgentRequest $request, GameSave $gameSave, GamePlayer $player): RedirectResponse
     {
         $this->authorizeGameSave('update', $gameSave, $player);
 
@@ -34,11 +33,7 @@ class FreeAgentController extends Controller
             return back()->withErrors(['player' => 'Pas de transferts en Coupe du Monde.']);
         }
 
-        $data = $request->validate([
-            'team_id'       => ['required', 'integer', Rule::exists('game_teams', 'id')->where('game_save_id', $gameSave->id)],
-            'matches_total' => ['required', 'integer', 'min:1'],
-            'reason'        => ['nullable', 'string', 'max:1000'],
-        ]);
+        $data = $request->validated();
 
         // Verrou par save : pas de double contrat ni de double débit sur un
         // double clic (contrat existant et budget relus sous verrou).

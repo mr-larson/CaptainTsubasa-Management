@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\GameSaves;
 
+use App\Http\Requests\GameSaves\FinishMatchRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\AuthorizesGameSave;
 use App\Http\Controllers\Concerns\LocksGameSave;
@@ -228,18 +229,13 @@ class GameMatchController extends Controller
     /**
      * Finalise un match joué manuellement.
      */
-    public function finishMatch(Request $request, GameSave $gameSave, GameMatch $match): RedirectResponse
+    public function finishMatch(FinishMatchRequest $request, GameSave $gameSave, GameMatch $match): RedirectResponse
     {
         $this->authorizeGameSave('update', $gameSave);
 
         abort_unless((int) $match->game_save_id === (int) $gameSave->id, 404);
 
-        $data = $request->validate([
-            'scoresByTeamId'   => ['required', 'array', 'min:2'],
-            'scoresByTeamId.*' => ['integer', 'min:0'],
-            'match_stats'      => ['nullable', 'array'],
-            'foulEvents'       => ['nullable', 'array'],
-        ]);
+        $data = $request->validated();
 
         $scores     = $data['scoresByTeamId'];
         $homeTeamId = (int) $match->home_team_id;

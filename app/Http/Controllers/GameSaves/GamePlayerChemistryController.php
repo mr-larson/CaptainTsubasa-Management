@@ -2,26 +2,23 @@
 
 namespace App\Http\Controllers\GameSaves;
 
+use App\Http\Requests\GameSaves\StoreChemistryRequest;
 use App\Http\Controllers\Concerns\AuthorizesGameSave;
 use App\Http\Controllers\Concerns\LocksGameSave;
 use App\Http\Controllers\Controller;
 use App\Models\GameSaves\GameSave;
 use App\Services\PlayerChemistryService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 
 class GamePlayerChemistryController extends Controller
 {
     use AuthorizesGameSave;
     use LocksGameSave;
 
-    public function store(Request $request, GameSave $gameSave, PlayerChemistryService $chemistry): RedirectResponse
+    public function store(StoreChemistryRequest $request, GameSave $gameSave, PlayerChemistryService $chemistry): RedirectResponse
     {
         $this->authorizeGameSave('update', $gameSave);
-        $data = $request->validate([
-            'player_id' => ['required', 'integer', 'min:1'],
-            'partner_id' => ['required', 'integer', 'min:1', 'different:player_id'],
-        ]);
+        $data = $request->validated();
 
         return $this->withSaveLock($gameSave, function (GameSave $save) use ($data, $chemistry) {
             abort_unless($save->isInMatchPhase() && $save->controlled_game_team_id, 403);

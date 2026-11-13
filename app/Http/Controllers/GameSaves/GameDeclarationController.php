@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\GameSaves;
 
+use App\Http\Requests\GameSaves\StoreDeclarationRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\AuthorizesGameSave;
 use App\Http\Controllers\Concerns\LocksGameSave;
@@ -10,8 +11,6 @@ use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSave;
 use App\Services\DeclarationService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class GameDeclarationController extends Controller
 {
@@ -21,13 +20,11 @@ class GameDeclarationController extends Controller
     /**
      * Déclaration publique (féliciter / critiquer) sur un joueur de l'équipe contrôlée.
      */
-    public function store(Request $request, GameSave $gameSave, GamePlayer $player): RedirectResponse
+    public function store(StoreDeclarationRequest $request, GameSave $gameSave, GamePlayer $player): RedirectResponse
     {
         $this->authorizeGameSave('update', $gameSave, $player);
 
-        $data = $request->validate([
-            'type' => ['required', Rule::in(['praise', 'criticize'])],
-        ]);
+        $data = $request->validated();
 
         return $this->withSaveLock($gameSave, function (GameSave $gameSave) use ($player, $data) {
             $player->refresh();

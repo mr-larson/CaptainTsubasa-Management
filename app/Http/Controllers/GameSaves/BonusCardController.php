@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\GameSaves;
 
+use App\Http\Requests\GameSaves\ActivateBonusCardRequest;
+use App\Http\Requests\GameSaves\BuyBonusCardRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\AuthorizesGameSave;
 use App\Http\Controllers\Concerns\LocksGameSave;
@@ -10,7 +12,6 @@ use App\Models\GameSaves\GameSave;
 use App\Services\BonusCardActivationService;
 use App\Services\BonusCardShopService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 
 class BonusCardController extends Controller
 {
@@ -25,18 +26,13 @@ class BonusCardController extends Controller
     /**
      * Achète une carte depuis la boutique hebdomadaire.
      */
-    public function buy(Request $request, GameSave $gameSave): RedirectResponse
+    public function buy(BuyBonusCardRequest $request, GameSave $gameSave): RedirectResponse
     {
         $this->authorizeGameSave('update', $gameSave);
 
         if (!$gameSave->getConfig('bonus_cards_enabled', true)) {
             return back()->withErrors(['card' => 'Les cartes bonus sont désactivées dans cette sauvegarde.']);
         }
-
-        $request->validate([
-            'bonus_card_id' => 'required|integer|exists:bonus_cards,id',
-            'tier'          => 'required|in:bronze,silver,gold',
-        ]);
 
         // Verrou par save : un double clic n'achète pas deux fois la carte
         // (vérification « déjà achetée » + débit du budget sous verrou).
@@ -95,7 +91,7 @@ class BonusCardController extends Controller
     /**
      * Active une carte depuis l'inventaire.
      */
-    public function activate(Request $request, GameSave $gameSave, GameBonusCard $gameBonusCard): RedirectResponse
+    public function activate(ActivateBonusCardRequest $request, GameSave $gameSave, GameBonusCard $gameBonusCard): RedirectResponse
     {
         $this->authorizeGameSave('update', $gameSave, $gameBonusCard);
 
@@ -103,11 +99,6 @@ class BonusCardController extends Controller
             (int) $gameBonusCard->game_team_id === (int) $gameSave->controlled_game_team_id,
             403
         );
-
-        $request->validate([
-            'target_player_id' => 'nullable|integer|exists:game_players,id',
-            'target_team_id'   => 'nullable|integer|exists:game_teams,id',
-        ]);
 
         try {
             // Verrou par save : un double clic voit la carte déjà « used » et

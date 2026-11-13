@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers\GameSaves;
 
+use App\Http\Requests\GameSaves\StorePromiseRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\AuthorizesGameSave;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GamePlayer;
-use App\Models\GameSaves\GamePromise;
 use App\Models\GameSaves\GameSave;
 use App\Services\PromiseService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 
 class GamePromiseController extends Controller
 {
@@ -19,13 +18,11 @@ class GamePromiseController extends Controller
     /**
      * Promet du temps de jeu à un joueur de l'équipe contrôlée.
      */
-    public function store(Request $request, GameSave $gameSave, GamePlayer $player): RedirectResponse
+    public function store(StorePromiseRequest $request, GameSave $gameSave, GamePlayer $player): RedirectResponse
     {
         $this->authorizeGameSave('update', $gameSave, $player);
 
-        $data = $request->validate([
-            'type' => ['nullable', \Illuminate\Validation\Rule::in(array_keys(PromiseService::TYPES))],
-        ]);
+        $data = $request->validated();
 
         $week = (int) ($gameSave->week ?? 1);
 

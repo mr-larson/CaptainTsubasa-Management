@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\GameSaves;
 
+use App\Http\Requests\GameSaves\StartWorldCupRequest;
+use App\Http\Requests\GameSaves\StoreGameSetupRequest;
 use App\Enums\GamePhase;
 use App\Http\Controllers\Controller;
 use App\Support\GameConfig;
@@ -27,7 +29,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -79,22 +80,9 @@ class GameSaveCreationController extends Controller
      * - college_league : choix des clubs (TeamSelection)
      * - world_cup      : choix de la sélection nationale (NationSelection)
      */
-    public function store(Request $request): RedirectResponse
+    public function store(StoreGameSetupRequest $request): RedirectResponse
     {
-        $data = $request->validate([
-            'label'              => ['nullable', 'string', 'max:255'],
-            'period'             => ['required', 'string', 'in:college'],
-            'game_mode'          => ['nullable', 'string', 'in:prebuilt,draft'],
-            'competition_type'   => ['nullable', 'string', 'in:college_league,world_cup'],
-            'game_config'        => ['nullable', 'array'],
-            'period_package_id'  => ['nullable', 'integer', 'exists:period_packages,id'],
-            ...GameConfig::rules('game_config.'),
-        ]);
-        $data['game_config'] = GameConfig::sanitize($data['game_config'] ?? null) ?: null;
-
-        if ($data['game_config'] && ! (new GameConfig)->hasValidTrainingGains($data['game_config'])) {
-            return back()->withErrors(['game_config' => 'Le gain max doit être supérieur ou égal au gain min.']);
-        }
+        $data = $request->setupData();
 
         // L'étape 1 est gardée en session et l'écran de choix d'équipe servi
         // en GET : un F5, ou une erreur de validation au lancement (back()),
@@ -605,23 +593,11 @@ class GameSaveCreationController extends Controller
      * Le calendrier du tournoi (poules + bracket) sera généré en Phase 4 ;
      * la save démarre donc en phase 'world_cup' (attente).
      */
-    public function startWorldCup(Request $request, NationalTeamAssembler $assembler, TournamentService $tournament): RedirectResponse
+    public function startWorldCup(StartWorldCupRequest $request, NationalTeamAssembler $assembler, TournamentService $tournament): RedirectResponse
     {
         if ($refused = $this->refuseIfSaveLimitReached($request)) return $refused;
 
-        $data = $request->validate([
-            'label'            => ['nullable', 'string', 'max:255'],
-            'period'           => ['required', 'string', 'in:college'],
-            'competition_type' => ['required', 'string', 'in:world_cup'],
-            'nation'           => ['required', 'string', Rule::in(Nationality::ALL)],
-            'game_config'      => ['nullable', 'array'],
-            ...GameConfig::rules('game_config.'),
-        ]);
-        $data['game_config'] = GameConfig::sanitize($data['game_config'] ?? null) ?: null;
-
-        if ($data['game_config'] && ! (new GameConfig)->hasValidTrainingGains($data['game_config'])) {
-            return back()->withErrors(['game_config' => 'Le gain max doit être supérieur ou égal au gain min.']);
-        }
+        $data = $request->setupData();
 
         // Nations réellement alignables (≥ 11 joueurs dont 1 gardien).
         $playable = collect($this->playableNations())

@@ -1,14 +1,16 @@
 <?php
 namespace App\Http\Controllers\GameSaves;
 
+use App\Http\Requests\GameSaves\SubstitutePlayerRequest;
+use App\Http\Requests\GameSaves\UpdateFormationRequest;
+use App\Http\Requests\GameSaves\UpdateLineupRequest;
+use App\Http\Requests\GameSaves\ToggleStarterRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\AuthorizesGameSave;
 use App\Http\Controllers\Concerns\LocksGameSave;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameSave;
-use App\Models\GameSaves\GameTeam;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class LineupController extends Controller
 {
@@ -18,10 +20,10 @@ class LineupController extends Controller
     /**
      * Toggle titulaire / remplaçant sur un contrat.
      */
-    public function toggleStarter(Request $request, GameSave $gameSave, GameContract $contract)
+    public function toggleStarter(ToggleStarterRequest $request, GameSave $gameSave, GameContract $contract)
     {
         $this->authorizeGameSave('update', $gameSave, $contract);
-        $data = $request->validate(['slot' => ['nullable', 'integer', 'between:1,11']]);
+        $data = $request->validated();
 
         return $this->withSaveLock($gameSave, function (GameSave $gameSave) use ($contract, $data) {
             $contract->refresh();
@@ -134,17 +136,11 @@ class LineupController extends Controller
     /**
      * Sauvegarde la composition (slots) ET la formation d'une équipe.
      */
-    public function update(Request $request, GameSave $gameSave)
+    public function update(UpdateLineupRequest $request, GameSave $gameSave)
     {
         $this->authorizeGameSave('update', $gameSave);
 
-        $data = $request->validate([
-            'team_id'           => ['required', 'integer'],
-            'slots'             => ['required', 'array', 'size:11'],
-            'slots.*.slot'      => ['required', 'integer', 'between:1,11'],
-            'slots.*.player_id' => ['nullable', 'integer'],
-            'formation'         => ['nullable', 'string', 'in:3-2-3-2,3-3-2-2,3-2-2-3,3-4-2-1,3-1-3-3,4-2-2-2,4-3-2-1,4-1-3-2,4-3-1-2,4-2-1-3,5-2-2-1,5-3-1-1,5-2-1-2,5-1-2-2,5-2-3-0'],
-        ]);
+        $data = $request->validated();
 
         $teamId = (int) $data['team_id'];
 
@@ -174,14 +170,11 @@ class LineupController extends Controller
     /**
      * Sauvegarde uniquement la formation d'une équipe.
      */
-    public function updateFormation(Request $request, GameSave $gameSave)
+    public function updateFormation(UpdateFormationRequest $request, GameSave $gameSave)
     {
         $this->authorizeGameSave('update', $gameSave);
 
-        $data = $request->validate([
-            'team_id'   => ['required', 'integer'],
-            'formation' => ['required', 'string', 'in:3-2-3-2,3-3-2-2,3-2-2-3,3-4-2-1,3-1-3-3,4-2-2-2,4-3-2-1,4-1-3-2,4-3-1-2,4-2-1-3,5-2-2-1,5-3-1-1,5-2-1-2,5-1-2-2'],
-        ]);
+        $data = $request->validated();
 
         $teamId = (int) $data['team_id'];
         if ($refused = $this->refuseUnlessActiveTeam($gameSave, $teamId)) return $refused;
@@ -199,15 +192,11 @@ class LineupController extends Controller
      * - réassigne le slot du sortant vers le rentrant
      * Atomique en transaction.
      */
-    public function substitute(Request $request, GameSave $gameSave)
+    public function substitute(SubstitutePlayerRequest $request, GameSave $gameSave)
     {
         $this->authorizeGameSave('update', $gameSave);
 
-        $data = $request->validate([
-            'team_id'       => ['required', 'integer'],
-            'starter_id'    => ['required', 'integer'],  // game_player_id qui sort
-            'substitute_id' => ['required', 'integer'],  // game_player_id qui entre
-        ]);
+        $data = $request->validated();
 
         $teamId       = (int) $data['team_id'];
         $starterId    = (int) $data['starter_id'];

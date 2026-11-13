@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\GameSaves;
 
+use App\Http\Requests\GameSaves\RenewContractRequest;
 use App\Enums\GamePhase;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\AuthorizesGameSave;
@@ -16,7 +17,6 @@ use App\Services\MoraleService;
 use App\Services\PromiseService;
 use App\Services\SeasonService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 
 class GameContractController extends Controller
 {
@@ -75,13 +75,10 @@ class GameContractController extends Controller
         return back()->with('success', 'Contrat supprimé.');
     }
 
-    public function renew(Request $request, GameSave $gameSave, GameContract $contract, SeasonService $seasons): RedirectResponse
+    public function renew(RenewContractRequest $request, GameSave $gameSave, GameContract $contract, SeasonService $seasons): RedirectResponse
     {
         $this->authorizeGameSave('update', $gameSave, $contract);
-        $data = $request->validate([
-            'weeks' => ['required', 'integer', 'min:1'],
-            'end_week' => ['required', 'integer', 'min:1'],
-        ]);
+        $data = $request->validated();
 
         return $this->withSaveLock($gameSave, function (GameSave $gameSave) use ($contract, $data, $seasons) {
             $contract = GameContract::whereKey($contract->id)->lockForUpdate()->firstOrFail();

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\GameSaves;
 
+use App\Http\Requests\GameSaves\UpdatePlayerNumberRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\AuthorizesGameSave;
 use App\Http\Controllers\Concerns\LocksGameSave;
@@ -226,13 +227,11 @@ class GamePlayerController extends Controller
         ]);
     }
 
-    public function updateNumber(Request $request, GameSave $gameSave, GamePlayer $player): \Illuminate\Http\RedirectResponse
+    public function updateNumber(UpdatePlayerNumberRequest $request, GameSave $gameSave, GamePlayer $player): \Illuminate\Http\RedirectResponse
     {
         $this->authorizeGameSave('update', $gameSave, $player);
 
-        $data = $request->validate([
-            'number' => ['required', 'integer', 'min:1', 'max:99'],
-        ]);
+        $data = $request->validated();
 
         // Sous verrou : vérification puis écriture ne doivent pas s'entrecroiser
         // (le numéro est porté par le joueur, l'équipe par son contrat : pas de

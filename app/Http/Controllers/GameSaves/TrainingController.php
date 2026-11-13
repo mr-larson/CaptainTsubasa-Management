@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\GameSaves;
 
+use App\Http\Requests\GameSaves\StartPositionTrainingRequest;
+use App\Http\Requests\GameSaves\StoreSpecialTrainingRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\AuthorizesGameSave;
 use App\Http\Controllers\Concerns\LocksGameSave;
@@ -11,8 +13,6 @@ use App\Enums\PlayerPosition;
 use App\Services\PositionTrainingService;
 use App\Services\TrainingService;
 use App\Services\TrainableSpecialMoves;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rules\Enum;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\ValidationException;
 
@@ -70,15 +70,10 @@ class TrainingController extends Controller
         });
     }
 
-    public function storeSpecial(Request $request, GameSave $gameSave, PositionTrainingService $service): RedirectResponse
+    public function storeSpecial(StoreSpecialTrainingRequest $request, GameSave $gameSave, PositionTrainingService $service): RedirectResponse
     {
         $this->authorizeGameSave('update', $gameSave);
-        $data = $request->validate([
-            'player_id' => ['required', 'integer', 'min:1'],
-            'move_key' => ['required', 'string', 'max:255'],
-            'season' => ['required', 'integer'],
-            'week' => ['required', 'integer'],
-        ]);
+        $data = $request->validated();
 
         return $this->withSaveLock($gameSave, function (GameSave $save) use ($data, $service) {
             if (!$save->isInMatchPhase() || (int) $data['season'] !== (int) $save->season || (int) $data['week'] !== (int) $save->week) {
@@ -100,16 +95,13 @@ class TrainingController extends Controller
      * Envoie un joueur en formation à un nouveau poste (indisponible quelques matchs).
      */
     public function storePosition(
-        Request $request,
+        StartPositionTrainingRequest $request,
         GameSave $gameSave,
         PositionTrainingService $service
     ): RedirectResponse {
         $this->authorizeGameSave('update', $gameSave);
 
-        $data = $request->validate([
-            'player_id' => ['required', 'integer'],
-            'position'  => ['required', new Enum(PlayerPosition::class)],
-        ]);
+        $data = $request->validated();
 
         return $this->withSaveLock($gameSave, function (GameSave $gameSave) use ($data, $service) {
             $training = $service->start($gameSave, (int) $data['player_id'], $data['position']);

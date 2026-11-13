@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\GameSaves;
 
+use App\Http\Requests\GameSaves\UpdateGameConfigRequest;
 use App\Enums\GamePhase;
 use App\Http\Controllers\Controller;
-use App\Support\GameConfig;
 use App\Models\BonusCard;
 use App\Http\Controllers\Concerns\AuthorizesGameSave;
 use App\Http\Controllers\Concerns\LocksGameSave;
@@ -31,7 +31,6 @@ use App\Services\TournamentService;
 use App\Services\WeekClosingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -424,20 +423,14 @@ class GameSaveController extends Controller
     //   HELPERS PRIVÉS
     // ==========================
 
-    public function updateConfig(Request $request, GameSave $gameSave): RedirectResponse
+    public function updateConfig(UpdateGameConfigRequest $request, GameSave $gameSave): RedirectResponse
     {
         $this->authorizeGameSave('update', $gameSave);
 
-        // Les options de départ sont définies lors de la création de la sauvegarde.
-        $rules = Arr::except(GameConfig::rules(), ['initial_morale_random', 'initial_stamina_random', 'initial_speed_random', 'luck_random', 'ai_start_budget', 'human_start_budget', 'ai_draft_budget', 'draft_budget']);
-        $data  = GameConfig::sanitize($request->validate($rules));
+        $data = $request->configData();
 
         // Sous verrou : state.config est relu et réécrit avec tout le state.
         return $this->withSaveLock($gameSave, function (GameSave $gameSave) use ($data) {
-            if (! $gameSave->config()->hasValidTrainingGains($data)) {
-                return back()->withErrors(['training_gain_max' => 'Le gain max doit être supérieur ou égal au gain min.']);
-            }
-
             $gameSave->setConfig($data);
 
             return back()->with('success', 'Configuration mise à jour.');

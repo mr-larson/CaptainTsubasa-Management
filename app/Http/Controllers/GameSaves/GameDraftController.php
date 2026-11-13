@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\GameSaves;
 
+use App\Http\Requests\GameSaves\PickDraftPlayerRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\AuthorizesGameSave;
 use App\Http\Controllers\Concerns\LocksGameSave;
@@ -165,13 +166,11 @@ class GameDraftController extends Controller
     /**
      * Le joueur humain pioche un joueur.
      */
-    public function pick(Request $request, GameSave $gameSave)
+    public function pick(PickDraftPlayerRequest $request, GameSave $gameSave)
     {
         $this->authorizeGameSave('update', $gameSave);
 
-        $data = $request->validate([
-            'player_id' => ['required', 'integer'],
-        ]);
+        $data = $request->validated();
 
         // Verrou par save : deux picks concurrents ne peuvent pas signer le même
         // joueur ni consommer deux fois le même tour.
