@@ -18,12 +18,12 @@ class LineupController extends Controller
     /**
      * Toggle titulaire / remplaçant sur un contrat.
      */
-    public function toggleStarter(Request $request, GameContract $contract)
+    public function toggleStarter(Request $request, GameSave $gameSave, GameContract $contract)
     {
-        $this->authorizeGameSave('update', $contract->gameSave);
+        $this->authorizeGameSave('update', $gameSave, $contract);
         $data = $request->validate(['slot' => ['nullable', 'integer', 'between:1,11']]);
 
-        return $this->withSaveLock($contract->gameSave, function (GameSave $gameSave) use ($contract, $data) {
+        return $this->withSaveLock($gameSave, function (GameSave $gameSave) use ($contract, $data) {
             $contract->refresh();
             if ($refused = $this->refuseUnlessActiveTeam($gameSave, (int) $contract->game_team_id)) return $refused;
             $week = (int) $gameSave->week;
@@ -102,13 +102,13 @@ class LineupController extends Controller
      * Toggle capitaine sur un contrat.
      * Un seul capitaine par équipe : désigne le nouveau et retire l'ancien.
      */
-    public function toggleCaptain(Request $request, GameContract $contract)
+    public function toggleCaptain(Request $request, GameSave $gameSave, GameContract $contract)
     {
-        $this->authorizeGameSave('update', $contract->gameSave);
+        $this->authorizeGameSave('update', $gameSave, $contract);
 
         // Sous verrou : retirer l'ancien capitaine puis poser le nouveau est
         // atomique, et deux requêtes simultanées ne laissent pas deux capitaines.
-        return $this->withSaveLock($contract->gameSave, function (GameSave $gameSave) use ($contract) {
+        return $this->withSaveLock($gameSave, function (GameSave $gameSave) use ($contract) {
             $contract->refresh();
             if ($refused = $this->refuseUnlessActiveTeam($gameSave, (int) $contract->game_team_id)) return $refused;
 

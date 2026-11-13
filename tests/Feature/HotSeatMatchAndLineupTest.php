@@ -103,7 +103,7 @@ class HotSeatMatchAndLineupTest extends TestCase
             ->assertSessionHasErrors('team_id');
 
         $this->actingAs($user)
-            ->patch(route('game-contracts.toggle-starter', $contract))
+            ->patch(route('game-saves.contracts.toggle-starter', [$save, $contract]))
             ->assertSessionHasErrors('team_id');
 
         $this->assertTrue((bool) $contract->fresh()->is_starter);
@@ -136,7 +136,7 @@ class HotSeatMatchAndLineupTest extends TestCase
         $this->assertSame('5-2-2-1', $ai->fresh()->formation);
 
         $this->actingAs($user)
-            ->patch(route('game-contracts.toggle-captain', $contract))
+            ->patch(route('game-saves.contracts.toggle-captain', [$save, $contract]))
             ->assertSessionHasNoErrors();
         $this->assertTrue((bool) $contract->fresh()->is_captain);
 
@@ -162,7 +162,7 @@ class HotSeatMatchAndLineupTest extends TestCase
 
         $contract = $players[3]->contracts()->first();
         $this->actingAs(User::find($save->user_id))
-            ->patch(route('game-contracts.toggle-starter', $contract))
+            ->patch(route('game-saves.contracts.toggle-starter', [$save, $contract]))
             ->assertSessionHasNoErrors();
 
         $saved = $save->fresh()->state['lineup'][$mine->id]['slots'];
@@ -182,7 +182,7 @@ class HotSeatMatchAndLineupTest extends TestCase
         }
 
         $this->actingAs(User::find($save->user_id))
-            ->patch(route('game-contracts.toggle-starter', $sub))
+            ->patch(route('game-saves.contracts.toggle-starter', [$save, $sub]))
             ->assertSessionHasErrors('is_starter');
 
         $this->assertFalse((bool) $sub->fresh()->is_starter);
@@ -205,7 +205,7 @@ class HotSeatMatchAndLineupTest extends TestCase
 
         $contract = $players[11]->contracts()->first();
         $this->actingAs(User::find($save->user_id))
-            ->patch(route('game-contracts.toggle-starter', $contract), ['slot' => 9])
+            ->patch(route('game-saves.contracts.toggle-starter', [$save, $contract]), ['slot' => 9])
             ->assertSessionHasNoErrors();
 
         $saved = $save->fresh()->state['lineup'][$mine->id]['slots'];

@@ -67,7 +67,7 @@ export function useOtherTeam({ gameSave, teams, controlledTeamId }) {
     const toggleOtherStarter = (contractId) => {
         if (!contractId) return;
         router.patch(
-            route('game-contracts.toggle-starter', { contract: contractId }),
+            route('game-saves.contracts.toggle-starter', { gameSave: gameSave.value.id, contract: contractId }),
             {},
             { preserveScroll: true }
         );
@@ -75,7 +75,7 @@ export function useOtherTeam({ gameSave, teams, controlledTeamId }) {
 
     const toggleOtherCaptain = (contractId) => {
         if (!contractId) return;
-        router.patch(route('game-contracts.toggle-captain', { contract: contractId }), {}, { preserveScroll: true });
+        router.patch(route('game-saves.contracts.toggle-captain', { gameSave: gameSave.value.id, contract: contractId }), {}, { preserveScroll: true });
     };
 
     // ==========================

@@ -152,7 +152,7 @@ Route::middleware('auth')->group(function () {
     });
 
     // Game saves
-    Route::prefix('game-saves')->name('game-saves.')->middleware(['throttle:game-writes', 'save.lock'])->group(function () {
+    Route::prefix('game-saves')->name('game-saves.')->middleware(['throttle:game-writes', 'save.scope', 'save.lock'])->group(function () {
 
         // CRUD saves
         Route::get('/',        [GameSaveController::class, 'index'])->name('index');
@@ -255,6 +255,13 @@ Route::middleware('auth')->group(function () {
             [GameContractController::class, 'renew'])->name('contracts.renew');
 
         // Routes JSON pour le match engine
+        // Toggle titulaire / capitaine (sous le préfixe de la sauvegarde : mêmes
+        // contrôles d'appartenance et de verrou que le reste).
+        Route::patch('/{gameSave}/contracts/{contract}/toggle-starter',
+            [LineupController::class, 'toggleStarter'])->name('contracts.toggle-starter');
+        Route::patch('/{gameSave}/contracts/{contract}/toggle-captain',
+            [LineupController::class, 'toggleCaptain'])->name('contracts.toggle-captain');
+
         Route::post('/{gameSave}/captain-reroll/{contract}',
             [GameMatchController::class, 'useCaptainReroll'])->name('captain-reroll.use');
 
@@ -270,12 +277,6 @@ Route::middleware('auth')->group(function () {
             [BonusCardController::class, 'activate'])
             ->name('bonus-cards.activate');
     });
-
-    // Toggle titulaire
-    Route::patch('/game-contracts/{contract}/toggle-starter',
-        [LineupController::class, 'toggleStarter'])->name('game-contracts.toggle-starter');
-    Route::patch('/game-contracts/{contract}/toggle-captain',
-        [LineupController::class, 'toggleCaptain'])->name('game-contracts.toggle-captain');
 
     // Match démo (moteur de rendu sans sauvegarde) : outil de dev, réservé aux admins.
     Route::get('/match/demo', fn() => Inertia::render('Match/Engine'))->middleware('admin')->name('match.demo');

@@ -124,7 +124,7 @@ export function useTeam({ gameSave, team }) {
         }
 
         router.patch(
-            route('game-contracts.toggle-starter', { contract: contractId }),
+            route('game-saves.contracts.toggle-starter', { gameSave: gameSave.value.id, contract: contractId }),
             slot ? { slot } : {},
             { preserveScroll: true, onError: rollback }
         );
@@ -132,7 +132,7 @@ export function useTeam({ gameSave, team }) {
 
     const toggleCaptain = (contractId) => {
         if (!contractId) return;
-        router.patch(route('game-contracts.toggle-captain', { contract: contractId }), {}, { preserveScroll: true });
+        router.patch(route('game-saves.contracts.toggle-captain', { gameSave: gameSave.value.id, contract: contractId }), {}, { preserveScroll: true });
     };
 
     // `onError` : l'appelant remet l'input sur l'ancien numéro si le serveur

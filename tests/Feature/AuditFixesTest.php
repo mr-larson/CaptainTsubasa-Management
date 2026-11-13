@@ -117,7 +117,7 @@ class AuditFixesTest extends TestCase
         $otherMatch = $this->makeMatch($other, $this->makeTeam($other), $this->makeTeam($other));
         $this->actingAs($owner)
             ->getJson(route('game-saves.matches.stats', [$save, $otherMatch]))
-            ->assertForbidden();
+            ->assertNotFound();
     }
 
     public function test_progression_ignores_players_from_another_save(): void
