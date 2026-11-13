@@ -21,9 +21,11 @@ use App\Models\GameSaves\GameSave;
 class SeasonBootstrapService
 {
 
+    /** Injecte le générateur aléatoire (mélange des équipes du calendrier). */
     public function __construct(private Randomizer $random)
     {
     }
+    /** Prépare la sauvegarde (idempotent, sous le verrou de la sauvegarde) : mandat de la direction, défis de saison (et primes déjà acquises), calendrier, compositions IA de la semaine. Sans effet hors phase de matchs. */
     public function prepare(GameSave $gameSave): void
     {
         if (! $gameSave->isInMatchPhase()) return;
@@ -71,6 +73,7 @@ class SeasonBootstrapService
         return $gameSave->competition_type !== 'world_cup' && ! $gameSave->matches()->exists();
     }
 
+    /** Génère le calendrier de championnat aller-retour (algorithme du round-robin, équipes mélangées, domicile alterné) s'il n'existe pas encore. Ignoré en Coupe du Monde, gérée par TournamentService. */
     public function ensureCalendar(GameSave $gameSave): void
     {
         // En Coupe du Monde, le calendrier (poules + élimination directe) est

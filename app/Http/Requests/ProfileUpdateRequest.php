@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
+/** Requête de mise à jour du profil de l'utilisateur (nom et e-mail, e-mail unique sauf pour lui-même). */
 class ProfileUpdateRequest extends FormRequest
 {
     /**

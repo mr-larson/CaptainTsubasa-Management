@@ -6,8 +6,10 @@ use App\Models\GameSaves\GameSave;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
+/** Requête d'entraînement hebdomadaire : liste de joueurs avec la statistique à travailler. */
 class StoreTrainingRequest extends FormRequest
 {
+    /** Autorise la requête si l'utilisateur peut modifier la sauvegarde de la route (propriétaire ou admin). */
     public function authorize(): bool
     {
         $gameSave = $this->route('gameSave');
@@ -27,6 +29,9 @@ class StoreTrainingRequest extends FormRequest
             : $default;
     }
 
+    /**
+     * Saison, semaine et liste d'entraînements (de 1 au quota hebdomadaire), chacun avec joueur et statistique autorisée.
+     */
     public function rules(): array
     {
         $allowedStats = config('training.allowed_stats', []);
@@ -42,6 +47,7 @@ class StoreTrainingRequest extends FormRequest
         ];
     }
 
+    /** Message d'erreur personnalisé quand le quota hebdomadaire est dépassé. */
     public function messages(): array
     {
         return [

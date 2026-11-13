@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/** Écran invitant l'utilisateur à vérifier son adresse e-mail. */
 class EmailVerificationPromptController extends Controller
 {
     /**

@@ -4,8 +4,12 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Crée la table `bonus_cards` : catalogue des cartes bonus avec nom, description, rareté (bronze/argent/or), cible, phase d'exécution, type et valeur d'effet (JSON), coût, poids de tirage et icône.
+ */
 return new class extends Migration
 {
+    /** Crée la table du catalogue de cartes bonus. */
     public function up(): void
     {
         Schema::create('bonus_cards', function (Blueprint $table) {

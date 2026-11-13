@@ -4,8 +4,12 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Crée la table `game_declarations` : historique des déclarations publiques du manager sur un joueur (éloge ou critique), avec le caractère mérité, l'issue, les variations d'affinité et de moral, la semaine et la saison.
+ */
 return new class extends Migration
 {
+    /** Crée la table des déclarations. */
     public function up(): void
     {
         Schema::create('game_declarations', function (Blueprint $table) {

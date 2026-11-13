@@ -6,8 +6,10 @@ use App\Models\PeriodPackage;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
+/** Requête de création (import d'un zip) ou de modification d'un package de période. */
 class PeriodPackageRequest extends FormRequest
 {
+    /** Modification ou création autorisée par PeriodPackagePolicy (auteur ou admin). */
     public function authorize(): bool
     {
         $package = $this->route('periodPackage');
@@ -17,6 +19,9 @@ class PeriodPackageRequest extends FormRequest
             : (bool) $this->user()?->can('create', PeriodPackage::class);
     }
 
+    /**
+     * À la création : fichier zip, nom, description, partage et redirection. À la mise à jour : nom, description, partage.
+     */
     public function rules(): array
     {
         if ($this->isMethod('post')) {

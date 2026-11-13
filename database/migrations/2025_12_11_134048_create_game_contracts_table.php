@@ -4,7 +4,11 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Crée la table `game_contracts` : contrats propres à une sauvegarde, reliant une équipe de jeu à un joueur de jeu avec un salaire et une durée exprimée en semaines (`end_week` nul = contrat en cours).
+ */
 return new class extends Migration {
+    /** Crée la table des contrats de sauvegarde. */
     public function up(): void
     {
         Schema::create('game_contracts', function (Blueprint $table) {

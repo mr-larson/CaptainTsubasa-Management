@@ -12,6 +12,7 @@ use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameSave;
 use Illuminate\Http\Request;
 
+/** Composition d'équipe de la sauvegarde : titulaires et remplaçants, capitaine, formation, placement sur le terrain et remplacements. Les actions exigent le droit de modifier la sauvegarde et le verrou de sauvegarde, et ne portent que sur l'équipe gérée par le joueur (ou une équipe IA si l'option « Accès aux autres clubs » est active). */
 class LineupController extends Controller
 {
     use AuthorizesGameSave;

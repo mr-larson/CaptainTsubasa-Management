@@ -7,6 +7,7 @@ use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Event;
 
+/** Associe les événements aux écouteurs (ici : e-mail de vérification après inscription). */
 class EventServiceProvider extends ServiceProvider
 {
     /**

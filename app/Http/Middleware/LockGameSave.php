@@ -22,6 +22,9 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class LockGameSave
 {
+    /**
+     * Pour une écriture autorisée sur une sauvegarde : ouvre une transaction, verrouille la ligne de la sauvegarde et la recharge avant de poursuivre. Les lectures et requêtes non autorisées passent sans verrou.
+     */
     public function handle(Request $request, Closure $next): Response
     {
         $gameSave = $request->route('gameSave');

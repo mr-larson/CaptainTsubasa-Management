@@ -14,6 +14,7 @@ use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/** Inscription d'un nouvel utilisateur (formulaire et création du compte). */
 class RegisteredUserController extends Controller
 {
     /**

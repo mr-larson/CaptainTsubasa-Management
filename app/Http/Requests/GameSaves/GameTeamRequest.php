@@ -7,8 +7,10 @@ use App\Models\GameSaves\GameSave;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
+/** Requête de création ou d'édition d'une équipe au sein d'une sauvegarde. */
 class GameTeamRequest extends FormRequest
 {
+    /** Autorise la requête si l'utilisateur peut modifier la sauvegarde de la route (propriétaire ou admin). */
     public function authorize(): bool
     {
         $gameSave = $this->route('gameSave');
@@ -17,6 +19,7 @@ class GameTeamRequest extends FormRequest
             && (bool) $this->user()?->can('update', $gameSave);
     }
 
+    /** Nom, budget, résultats, logo (upload ou suppression) et styles tactique / philosophie. */
     public function rules(): array
     {
         return [

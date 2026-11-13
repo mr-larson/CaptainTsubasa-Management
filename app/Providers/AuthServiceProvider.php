@@ -15,6 +15,7 @@ use App\Policies\TeamPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
+/** Enregistre les policies de chaque modèle et donne aux administrateurs tous les droits. */
 class AuthServiceProvider extends ServiceProvider
 {
     /**

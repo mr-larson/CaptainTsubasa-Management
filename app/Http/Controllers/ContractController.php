@@ -11,6 +11,7 @@ use Inertia\Response;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
+/** Gestion des contrats de la base de données (lien joueur / équipe, salaire, nombre de matchs) : liste, création, modification, suppression. */
 class ContractController extends Controller
 {
     /**
@@ -52,6 +53,7 @@ class ContractController extends Controller
         return redirect()->route('contracts.index', ['create' => 1]);
     }
 
+    /** Crée un contrat avec 0 match joué. Redirige vers l'écran des contrats sur le contrat créé s'il est demandé depuis cet écran, sinon revient à la page d'origine. */
     public function store(ContractRequest $request): RedirectResponse
     {
         $data = $request->validated();
@@ -78,6 +80,7 @@ class ContractController extends Controller
         return $this->index($request);
     }
 
+    /** Modifie un contrat avec les données validées et revient en arrière avec un message de succès. */
     public function update(ContractRequest $request, Contract $contract): RedirectResponse
     {
         $data = $request->validated();
@@ -88,6 +91,7 @@ class ContractController extends Controller
         return back()->with('success', 'Le contrat a été modifié avec succès.');
     }
 
+    /** Supprime un contrat et revient en arrière avec un message de succès. */
     public function destroy(Contract $contract): RedirectResponse
     {
         $contract->delete();

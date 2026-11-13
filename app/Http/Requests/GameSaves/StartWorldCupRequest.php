@@ -14,11 +14,13 @@ class StartWorldCupRequest extends FormRequest
 {
     use ChecksTrainingGains;
 
+    /** Tout utilisateur connecté qui peut créer une sauvegarde. */
     public function authorize(): bool
     {
         return (bool) $this->user()?->can('create', GameSave::class);
     }
 
+    /** Libellé, période, type de compétition « world_cup », nation choisie et configuration de la partie. */
     public function rules(): array
     {
         return [
@@ -31,6 +33,7 @@ class StartWorldCupRequest extends FormRequest
         ];
     }
 
+    /** Vérifie que le gain d'entraînement minimum n'excède pas le maximum. */
     public function after(): array
     {
         return [
@@ -43,6 +46,7 @@ class StartWorldCupRequest extends FormRequest
         ];
     }
 
+    /** Données validées, configuration réduite aux clés connues (null si vide). */
     public function setupData(): array
     {
         $data = $this->validated();

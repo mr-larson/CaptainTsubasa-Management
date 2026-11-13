@@ -7,8 +7,10 @@ use App\Models\GameSaves\GameSave;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
 
+/** Requête de création ou d'édition d'un joueur au sein d'une sauvegarde. */
 class GamePlayerRequest extends FormRequest
 {
+    /** Autorise la requête si l'utilisateur peut modifier la sauvegarde de la route (propriétaire ou admin). */
     public function authorize(): bool
     {
         $gameSave = $this->route('gameSave');
@@ -17,6 +19,7 @@ class GamePlayerRequest extends FormRequest
             && (bool) $this->user()?->can('update', $gameSave);
     }
 
+    /** Identité, postes, coût, photo, statistiques directes (0 à 100) et techniques spéciales. */
     public function rules(): array
     {
         return [

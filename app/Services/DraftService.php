@@ -11,6 +11,11 @@ use App\Services\Concerns\EvaluatesPlayers;
 use App\Support\GameState;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Règles de la draft (phase de constitution des effectifs) en ordre serpent.
+ * Chaque équipe dispose d'une enveloppe de budget propre, doit atteindre 14 joueurs et ne peut pas dépasser 18. Gère le coût d'un pick, l'exécution d'un pick (contrat, numéro de maillot, budget), l'avancement des tours, la clôture de la draft et la composition initiale des équipes.
+ * Les méthodes qui écrivent dans l'état de la partie doivent être appelées sous le verrou de sauvegarde.
+ */
 class DraftService
 {
     use EvaluatesPlayers;
@@ -36,6 +41,7 @@ class DraftService
         $gameSave->save();
     }
 
+    /** Budget de draft restant d'une équipe : son enveloppe de draft, ou le budget de l'équipe pour les drafts commencées avec une caisse commune. */
     public static function budgetFor(GameSave $gameSave, GameTeam $team): int
     {
         $budgets = $gameSave->gameState()->draftBudgets();
@@ -44,6 +50,7 @@ class DraftService
         return (int) ($budgets === null ? $team->budget : ($budgets[$team->id] ?? 0));
     }
 
+    /** Coût d'un pick : salaire x semaines, divisé par 2 en tarif standard. En tarification progressive, allège surtout les petits salaires (les gros gardent l'ancien tarif). Le salaire du contrat reste celui du joueur. */
     public function pickCost(GameSave $gameSave, int $salary, int $weeks): int
     {
         if ($gameSave->gameState()->draftPricing() !== 'progressive') {
@@ -336,13 +343,6 @@ class DraftService
     }
 
     /**
-     * Retourne l'ID de l'équipe dont c'est le tour.
-     */
-    /**
-     * Un joueur en rupture avec le coach (affinité ≤ seuil) refuse d'être
-     * drafté par l'équipe contrôlée. Les équipes IA ne sont pas concernées.
-     */
-    /**
      * L'équipe peut-elle encore s'offrir au moins un joueur libre du draft ?
      * (même règle de prix que executePick : coût ajusté × semaines × réduction draft)
      */
@@ -360,6 +360,7 @@ class DraftService
                 && !$this->playerRefusesTeam($gameSave, $p, (int) $team->id));
     }
 
+    /** Un joueur en rupture avec le coach (affinité sous le seuil de refus) refuse d'être drafté par une équipe humaine. Les équipes IA ne sont pas concernées. */
     public function playerRefusesTeam(GameSave $gameSave, GamePlayer $player, int $teamId): bool
     {
         // La rancune envers le coach ne concerne que les équipes humaines.
@@ -368,6 +369,7 @@ class DraftService
         return (int) ($player->coach_affinity ?? 0) <= MoraleService::AFFINITY_REFUSAL_THRESHOLD;
     }
 
+    /** Identifiant de l'équipe dont c'est le tour de choisir (null si la draft est finie). */
     public function getCurrentTeamId(GameSave $gameSave): ?int
     {
         return $gameSave->gameState()->currentDraftTeamId();
@@ -383,16 +385,19 @@ class DraftService
             && in_array((int) $currentTeamId, $gameSave->controlledGameTeamIds(), true);
     }
 
+    /** Numéro du tour de draft en cours. */
     protected function getCurrentRound(GameSave $gameSave): int
     {
         return $gameSave->gameState()->draftRound();
     }
 
+    /** Nombre de semaines de la saison, déduit du nombre d'équipes de la partie. */
     protected function getSeasonLength(GameSave $gameSave): int
     {
         return SeasonService::lengthForTeamCount(GameTeam::where('game_save_id', $gameSave->id)->count());
     }
 
+    /** Passe au pick suivant sans choisir (équipe déjà complète) et retourne un marqueur 'skipped'. */
     protected function advanceAndSkip(GameSave $gameSave): ?array
     {
         $this->advancePick($gameSave);

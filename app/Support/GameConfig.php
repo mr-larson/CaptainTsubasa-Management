@@ -82,6 +82,7 @@ final class GameConfig
         $this->saved = $saved;
     }
 
+    /** Réglages de la sauvegarde donnée, lus dans son state['config']. */
     public static function for(GameSave $save): self
     {
         return new self($save->state['config'] ?? []);
@@ -103,21 +104,25 @@ final class GameConfig
         return $config;
     }
 
+    /** Valeur d'un réglage (notation pointée) ; à défaut, la valeur par défaut de DEFAULTS. */
     public function get(string $key, mixed $default = null): mixed
     {
         return data_get($this->all(), $key, $default ?? data_get(self::DEFAULTS, $key));
     }
 
+    /** Réglage lu comme booléen. */
     public function bool(string $key): bool
     {
         return (bool) $this->get($key);
     }
 
+    /** Réglage lu comme entier. */
     public function int(string $key, ?int $default = null): int
     {
         return (int) $this->get($key, $default);
     }
 
+    /** Réglage lu comme chaîne. */
     public function string(string $key): string
     {
         return (string) $this->get($key);
@@ -224,6 +229,9 @@ final class GameConfig
 
     // ── Tirages dépendant des options ─────────────────────────────────
 
+    /**
+     * Vitesse de départ d'un joueur : base inchangée, ou base + variation aléatoire (bornée 0-100) si l'option est active.
+     */
     public function initialSpeed(int $baseSpeed, ?int $variation = null): int
     {
         if (! $this->bool('initial_speed_random')) {
@@ -235,11 +243,13 @@ final class GameConfig
         return max(0, min(100, $baseSpeed + $variation));
     }
 
+    /** Endurance de départ : 100, ou tirage entre 60 et 100 si l'option est active. */
     public function initialStamina(): int
     {
         return $this->bool('initial_stamina_random') ? random_int(60, 100) : 100;
     }
 
+    /** Chance de départ : tirage de PlayerLuck si l'option est active, sinon valeur neutre. */
     public function rollLuck(): int
     {
         return $this->bool('luck_random') ? PlayerLuck::roll() : PlayerLuck::NEUTRAL;

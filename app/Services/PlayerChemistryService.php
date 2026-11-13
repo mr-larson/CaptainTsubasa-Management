@@ -13,12 +13,26 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * Alchimie entre coéquipiers : plus deux joueurs évoluent ensemble (à des postes voisins), plus leur score de duo monte (0-100).
+ * À partir de 60, on peut tenter de « confirmer » le duo (chance de 40 % à 75 % selon le score) ; un duo confirmé est un « duo acquis ».
+ * Un joueur ne peut appartenir qu'à un seul duo confirmé, et les duos déjà historiques (PlayerLink) sont exclus.
+ * Après un échec, il faut jouer 3 nouveaux matchs ensemble avant de réessayer.
+ */
 class PlayerChemistryService
 {
+    /** Score minimum pour pouvoir tenter la confirmation d'un duo. */
     private const MIN_SCORE = 60;
+    /** Nombre de matchs communs à jouer avant de retenter après un échec. */
     private const RETRY_MATCHES = 3;
+    /** Rang de chaque ligne (défense, milieu, attaque) : deux joueurs ne partagent de l'alchimie que si leurs lignes sont identiques ou adjacentes. */
     private const LINE_RANKS = ['DF' => 0, 'MF' => 1, 'FW' => 2];
 
+    /**
+     * Enregistre l'alchimie d'un match joué : pour chaque équipe, calcule la présence de chaque joueur tour par tour puis met à jour les paires.
+     * Pose elle-même un verrou sur la sauvegarde dans une transaction ; idempotent grâce au drapeau match_stats.chemistry_recorded.
+     * $simulated = match simulé par l'IA (les titulaires sont supposés présents toute la durée).
+     */
     public function recordMatch(GameSave $save, GameMatch $match, bool $simulated = false): void
     {
         DB::transaction(function () use ($save, $match, $simulated) {
@@ -47,6 +61,10 @@ class PlayerChemistryService
         });
     }
 
+    /**
+     * Présence d'un match joué par l'humain : à partir des segments (joueur, poste, tour de début/fin), renvoie pour chaque joueur la ligne occupée à chaque tour [id][tour] = rang.
+     * Ignore les joueurs hors effectif et un poste ou un joueur déjà compté sur le même tour.
+     */
     private function playedPresence(mixed $segments, Collection $roster, ?string $formation, int $turns): array
     {
         $presence = [];
@@ -69,6 +87,7 @@ class PlayerChemistryService
         return $presence;
     }
 
+    /** Présence d'un match simulé : chaque titulaire est réputé présent à son poste sur tous les tours. */
     private function simulatedPresence(array $stats, string $side, Collection $roster, ?string $formation, int $turns): array
     {
         $presence = [];
@@ -85,6 +104,10 @@ class PlayerChemistryService
         return $presence;
     }
 
+    /**
+     * Pour chaque paire de joueurs, compte les tours passés dans la même ligne (poids 10) ou une ligne adjacente (poids 7), puis ajoute au score de duo (plafonné à 100) et +1 match commun.
+     * Les paires qui ont partagé moins d'un dixième des tours sont ignorées. Écrit en base par upsert.
+     */
     private function recordPairs(GameSave $save, array $presence, int $turns): void
     {
         $ids = array_keys($presence);
@@ -119,12 +142,14 @@ class PlayerChemistryService
         }
     }
 
+    /** Lignes d'alchimie dont les deux joueurs font partie de la liste d'ids. */
     private function forPlayers(GameSave $save, array $ids): Collection
     {
         return GamePlayerChemistry::where('game_save_id', $save->id)
             ->whereIn('player_a_id', $ids)->whereIn('player_b_id', $ids)->get();
     }
 
+    /** Duos confirmés par joueur ([id joueur] => liste de partenaires, libellé « Duo acquis »), pour les ids donnés. */
     public function confirmedPartners(GameSave $save, array $ids): array
     {
         $partners = [];
@@ -136,6 +161,10 @@ class PlayerChemistryService
         return $partners;
     }
 
+    /**
+     * Résumé des duos pour l'affichage, indexé par joueur : partenaire, score, matchs communs, confirmé ou non, matchs restants avant nouvelle tentative, chance de réussite et possibilité de tenter.
+     * Exclut les duos historiques et, si $teamByPlayer est fourni, les paires de deux équipes différentes.
+     */
     public function summary(GameSave $save, Collection $players, ?Collection $teamByPlayer = null): array
     {
         $players = $players->keyBy('id');
@@ -171,6 +200,7 @@ class PlayerChemistryService
         return $summary;
     }
 
+    /** Décision d'IA : chaque équipe non pilotée par l'humain tente son meilleur duo éligible (score le plus élevé). */
     public function attemptForAiTeams(GameSave $save): void
     {
         $week = (int) $save->week;
@@ -189,6 +219,10 @@ class PlayerChemistryService
         }
     }
 
+    /**
+     * Tente de confirmer le duo $a/$b d'une équipe : vérifie effectif, score minimum, duos déjà liés, délai de réessai et duo historique (sinon ValidationException).
+     * Tire un dé contre la chance, enregistre la tentative et le résultat ; renvoie true si le duo est confirmé.
+     */
     public function attempt(GameSave $save, int $teamId, int $a, int $b): bool
     {
         [$a, $b] = $a < $b ? [$a, $b] : [$b, $a];
@@ -219,6 +253,7 @@ class PlayerChemistryService
         return $row->confirmed;
     }
 
+    /** Ids (en clés) des joueurs déjà engagés dans un duo confirmé parmi ceux fournis. */
     private function linkedIds(GameSave $save, array $ids): array
     {
         return GamePlayerChemistry::where('game_save_id', $save->id)->where('confirmed', true)
@@ -226,21 +261,25 @@ class PlayerChemistryService
             ->get()->flatMap(fn ($row) => [$row->player_a_id, $row->player_b_id])->flip()->all();
     }
 
+    /** Vrai si les deux joueurs de référence forment déjà un duo historique. */
     private function isHistorical(array $map, ?int $a, ?int $b): bool
     {
         return $a && $b && collect($map[$a] ?? [])->contains('partner_id', $b);
     }
 
+    /** Probabilité de réussite en pourcentage : 40 % à 60 de score, jusqu'à 75 % à 100. */
     private function chance(int $score): int
     {
         return (int) round(40 + 35 * (max(self::MIN_SCORE, $score) - self::MIN_SCORE) / (100 - self::MIN_SCORE));
     }
 
+    /** Jet de dé de 1 à 100 (surchargeable dans les tests). */
     protected function roll(): int
     {
         return random_int(1, 100);
     }
 
+    /** Lève une ValidationException sur le champ « chemistry ». */
     private function reject(string $message): never
     {
         throw ValidationException::withMessages(['chemistry' => $message]);

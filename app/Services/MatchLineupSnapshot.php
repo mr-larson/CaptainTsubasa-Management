@@ -26,6 +26,7 @@ class MatchLineupSnapshot
         ];
     }
 
+    /** Effectif d'une équipe à la semaine donnée : formation + contrats actifs avec poste (slot), titulaire et capitaine. */
     private function side(int $teamId, ?string $formation, int $saveId, int $week, ?\App\Support\GameState $gameState = null): array
     {
         // Poste occupé sur le terrain (slot 1..11 de la formation) : composition enregistrée.

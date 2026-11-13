@@ -22,6 +22,7 @@ trait EvaluatesPlayers
         'ATT' => ['shot' => 0.30, 'attack' => 0.25, 'dribble' => 0.20, 'speed' => 0.15, 'heading' => 0.10],
     ];
 
+    /** Ramène un poste (texte libre : GK, DEF, MDF/MOF, ATT...) à l'un des groupes GK, DEF, MID ou ATT. Milieu par défaut si le poste est inconnu. */
     protected function positionGroup(string $position): string
     {
         $p = strtoupper(trim($position));
@@ -69,6 +70,7 @@ trait EvaluatesPlayers
 
         return (int) round($score);
     }
+    /** Bonus ou malus de forme d'un candidat au recrutement : endurance (par rapport à 80), moral (par rapport à 60) et chance (par rapport à 50), pondérés. $staminaWeight règle l'importance de l'endurance. */
     protected function recruitmentReadiness($player, float $staminaWeight): float
     {
         return (($player->stamina ?? 100) - 80) * $staminaWeight

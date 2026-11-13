@@ -20,6 +20,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/** Draft de début de saison d'une sauvegarde : écran de draft, choix des joueurs tour à tour (joueur et IA) et clôture de la draft. */
 class GameDraftController extends Controller
 {
     use AuthorizesGameSave;
@@ -216,6 +217,7 @@ class GameDraftController extends Controller
         });
     }
 
+    /** Clôture la draft de l'équipe humaine actuellement à son tour (ou de l'équipe propriétaire à défaut). Renvoie 400 hors phase de draft. Sous le minimum d'effectif, la clôture n'est forcée que si plus aucun joueur n'est abordable. Renvoie en JSON l'état de la draft et si elle est terminée. */
     public function finish(Request $request, GameSave $gameSave)
     {
         $this->authorizeGameSave('update', $gameSave);

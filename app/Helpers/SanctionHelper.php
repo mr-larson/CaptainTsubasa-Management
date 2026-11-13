@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+/** Utilitaires liés aux sanctions (suspensions, blessures). */
 class SanctionHelper 
 {
     /**

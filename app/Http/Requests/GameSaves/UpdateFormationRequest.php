@@ -5,8 +5,10 @@ namespace App\Http\Requests\GameSaves;
 use App\Helpers\FormationHelper;
 use Illuminate\Validation\Rule;
 
+/** Requête de changement de formation d'une équipe. */
 class UpdateFormationRequest extends GameSaveActionRequest
 {
+    /** Équipe et formation, qui doit faire partie de FormationHelper::SLOT_ZONES. */
     public function rules(): array
     {
         return [

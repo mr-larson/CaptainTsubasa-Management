@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+/** Middleware qui réserve une route aux administrateurs (403 sinon). */
 class EnsureUserIsAdmin
 {
     /**

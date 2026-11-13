@@ -2,6 +2,11 @@
 
 namespace App\Helpers;
 
+/**
+ * Rééquilibrage des joueurs du roster de référence (catalogues Captain Tsubasa et Ao Ashi).
+ *
+ * Retouche quelques statistiques de joueurs précis (uniquement si elles ont encore leur valeur d'origine) et ajoute une technique de centre à certains joueurs. Utilisé par PlayerSeeder et par la migration de rééquilibrage.
+ */
 class ReferenceRosterBalance
 {
     // Seules les valeurs du catalogue d'origine sont retouchées.
@@ -30,6 +35,7 @@ class ReferenceRosterBalance
         ],
     ];
 
+    /** Noms complets des joueurs de cette origine concernés par le rééquilibrage. */
     public static function names(string $origin): array
     {
         return array_unique([
@@ -38,6 +44,10 @@ class ReferenceRosterBalance
         ]);
     }
 
+    /**
+     * Applique le rééquilibrage à un joueur : renvoie [statistiques, techniques spéciales] mis à jour.
+     * Les statistiques ne changent que si elles valent encore leur valeur d'origine ; la technique de centre n'est ajoutée que si le joueur n'en a pas.
+     */
     public static function apply(string $origin, string $name, ?string $position, array $stats, array $moves): array
     {
         if ($origin === 'captain_tsubasa' && isset(self::MINAWI[$name])) {

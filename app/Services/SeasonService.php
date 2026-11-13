@@ -14,9 +14,11 @@ use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
 use Illuminate\Support\Facades\DB;
 
+/** Règles de saison de la ligue : durée du calendrier, pause de mi-saison, classement, clôture de saison (primes, MVP, verdict de la direction, défis) et passage à la saison suivante (remise à zéro, nouvelle draft). */
 class SeasonService
 {
 
+    /** Injecte les services de défis, d'objectifs de carrière, de formation de poste et de draft. */
     public function __construct(
         private SeasonChallengeService $seasonChallengeService,
         private CareerObjectiveService $careerObjectiveService,
@@ -24,8 +26,10 @@ class SeasonService
         private DraftService $draftService,
     ) {
     }
+    /** Prime de fin de saison du 1er (en GL) ; chaque rang en dessous retire RANK_PRIZE_STEP. */
     public const RANK_PRIZE_BASE = 6000;
     public const RANK_PRIZE_STEP = 400;
+    /** Stamina rendue à tous les joueurs lors de la pause de mi-saison. */
     public const MIDSEASON_RECOVERY = 20;
 
     /**
@@ -39,16 +43,19 @@ class SeasonService
         return $teamCount % 2 === 1 ? $teamCount * 2 : ($teamCount - 1) * 2;
     }
 
+    /** Nombre de semaines de la saison de cette sauvegarde, d'après son nombre d'équipes. */
     public function getSeasonLength(GameSave $gameSave): int
     {
         return self::lengthForTeamCount(GameTeam::where('game_save_id', $gameSave->id)->count());
     }
 
+    /** Vrai si la semaine courante dépasse la dernière semaine du calendrier. */
     public function isSeasonOver(GameSave $gameSave): bool
     {
         return ($gameSave->week ?? 1) > $this->getSeasonLength($gameSave);
     }
 
+    /** Programme la pause de mi-saison (dans l'état de la partie, à la semaine suivante) si la semaine close est exactement la moitié de la saison. Sans effet en Coupe du Monde. L'appelant sauvegarde la partie. */
     public function scheduleMidseasonBreak(GameSave $gameSave, int $closedWeek): void
     {
         if ($gameSave->competition_type === 'world_cup' || $closedWeek * 2 !== $this->getSeasonLength($gameSave)) {
@@ -58,6 +65,7 @@ class SeasonService
         $gameSave->gameState()->scheduleMidseasonBreak($closedWeek + 1);
     }
 
+    /** Termine la pause de mi-saison en attente : +20 de stamina à tous les joueurs (plafonné à 100), puis efface la pause de l'état et sauvegarde. Sans effet s'il n'y en a pas. */
     public function completeMidseasonBreak(GameSave $gameSave): void
     {
         if (!$gameSave->hasPendingMidseasonBreak()) return;

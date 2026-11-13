@@ -10,6 +10,7 @@ use App\Models\GameSaves\GameSave;
 /** Journalise une variation d'affinité joueur/coach (partagé par les cartes bonus et malus). */
 trait LogsCoachAffinity
 {
+    /** Écrit une ligne dans le journal de moral pour une variation d'affinité avec le coach (rien si la variation est nulle). */
     protected function logCoachAffinity(GameSave $save, GamePlayer $player, int $delta, string $label): void
     {
         if ($delta === 0) return;

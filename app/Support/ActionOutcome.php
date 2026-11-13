@@ -20,6 +20,7 @@ final class ActionOutcome
     public const INFO    = 'info';
     public const ERROR   = 'error';
 
+    /** Constructeur privé : on passe par les fabriques success(), info() et error(). */
     private function __construct(
         public readonly string $level,
         public readonly string $message,
@@ -49,6 +50,7 @@ final class ActionOutcome
         return new self(self::ERROR, $message, $field);
     }
 
+    /** Vrai si l'action a été refusée. */
     public function isError(): bool
     {
         return $this->level === self::ERROR;

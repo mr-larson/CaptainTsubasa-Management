@@ -7,6 +7,7 @@ use App\Support\GameConfig;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
+/** Requête de création ou de mise à jour d'une sauvegarde (équipes, mode, période, configuration). */
 class GameSaveRequest extends FormRequest
 {
     /**

@@ -12,16 +12,23 @@ use App\Models\GameSaves\GameSanction;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
 
+/** Comportement de "coach" des équipes IA : déclarations publiques et promesses de temps de jeu envers leurs joueurs. */
 class AiCoachService
 {
     private const PROMISE_COOLDOWN_WEEKS = 5;
 
+    /** Reçoit les services de déclarations, de promesses et de cartes bonus. */
     public function __construct(
         private DeclarationService $declarations,
         private PromiseService $promises,
         private BonusCardActivationService $cards,
     ) {}
 
+    /**
+     * Prépare les équipes IA qui ont un match cette semaine, à partir des matchs joués la semaine précédente ($playedWeek).
+     * Si aucune déclaration récente (cooldown), félicite le titulaire en forme (meilleur bilan de duels) ou critique un titulaire en difficulté au moral correct. Puis, sans promesse en cours ni récente, promet du temps de jeu au titulaire fatigué mal utilisé ou au moral bas.
+     * Écrit via DeclarationService et PromiseService (base de données).
+     */
     public function prepareForWeek(GameSave $save, int $playedWeek): void
     {
         $week = (int) $save->week;

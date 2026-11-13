@@ -12,6 +12,7 @@ use App\Models\GameSaves\GameSave;
 use App\Services\DeclarationService;
 use Illuminate\Http\RedirectResponse;
 
+/** Déclarations publiques (féliciter ou critiquer) sur un joueur de l'équipe contrôlée. */
 class GameDeclarationController extends Controller
 {
     use AuthorizesGameSave;

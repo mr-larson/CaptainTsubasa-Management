@@ -5,6 +5,9 @@ namespace App\Exceptions;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
 
+/**
+ * Gestionnaire d'exceptions de l'application : ne mémorise jamais les mots de passe dans les anciennes valeurs de formulaire.
+ */
 class Handler extends ExceptionHandler
 {
     /**

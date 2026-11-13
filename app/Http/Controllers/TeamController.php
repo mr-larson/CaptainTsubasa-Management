@@ -10,6 +10,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Str;
 
+/** Gestion des équipes de la base de données (équipes « canon ») : liste, création, modification, suppression et logo. */
 class TeamController extends Controller
 {
     /**

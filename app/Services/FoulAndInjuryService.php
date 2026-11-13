@@ -12,9 +12,14 @@ use App\Models\GameSaves\GameSanction;
 use App\Models\GameSaves\GameSave;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Conséquences disciplinaires et physiques des événements de match : blessures (durée selon la gravité) et sanctions (cartons jaunes, rouges, suspensions).
+ * Reçoit les événements envoyés par le match, ne retient que les joueurs sous contrat avec l'une des deux équipes et écrit les blessures et sanctions en base. Les réglages de la partie peuvent désactiver blessures sur faute et suspensions au 3e jaune.
+ */
 class FoulAndInjuryService
 {
 
+    /** Reçoit le générateur aléatoire (gravité et durée des blessures, durée des suspensions). */
     public function __construct(private Randomizer $random)
     {
     }
@@ -35,6 +40,10 @@ class FoulAndInjuryService
         'severe'   => ['Fracture', 'Rupture ligamentaire', 'Déchirure grave', 'Blessure sérieuse'],
     ];
 
+    /**
+     * Traite les événements d'un match (fautes, blessures, cartons) et crée les blessures et sanctions correspondantes.
+     * Les événements viennent du client : tout identifiant de joueur qui n'est pas sous contrat avec une des deux équipes est ignoré.
+     */
     public function processMatchEvents(GameSave $gameSave, GameMatch $match, array $actionEvents): void
     {
         if (empty($actionEvents)) return;
@@ -83,6 +92,7 @@ class FoulAndInjuryService
     //   TRAITEMENT FAUTE
     // ==========================
 
+    /** Une faute peut blesser sa victime : 10 % de chance (30 % si faute critique), modulée par la chance du joueur. Gravité aléatoire pour une faute critique, légère sinon. */
     protected function processFoulEvent(GameSave $gameSave, GameMatch $match, array $event, int $week, ?int $victimLuck): void
     {
         $victimId   = isset($event['victim_player_id']) ? (int) $event['victim_player_id'] : null;
@@ -102,6 +112,7 @@ class FoulAndInjuryService
     //   TRAITEMENT BLESSURE DIRECTE
     // ==========================
 
+    /** Enregistre une blessure directe (joueur et gravité fournis par l'événement). */
     protected function processInjuryEvent(GameSave $gameSave, GameMatch $match, array $event, int $week): void
     {
         $playerId = isset($event['player_id']) ? (int) $event['player_id'] : null;
@@ -116,6 +127,7 @@ class FoulAndInjuryService
     //   TRAITEMENT CARTON DIRECT
     // ==========================
 
+    /** Enregistre un carton direct : jaune (avec suspension au 3e si activée) ou rouge (seulement si les suspensions sont activées). */
     protected function processCardEvent(GameSave $gameSave, GameMatch $match, array $event, int $week, bool $suspensionEnabled = true): void
     {
         $playerId = isset($event['player_id']) ? (int) $event['player_id'] : null;
@@ -136,6 +148,7 @@ class FoulAndInjuryService
     //   LOGIQUE CARTONS
     // ==========================
 
+    /** Tirage d'un carton après une faute (rouge ou jaune selon la gravité). Attention : s'appuie sur des constantes (RED_CHANCE_CRIT, etc.) absentes de la classe et n'est appelée nulle part. */
     protected function maybeGiveCard(
         GameSave $gameSave,
         GameMatch $match,
@@ -159,6 +172,7 @@ class FoulAndInjuryService
         }
     }
 
+    /** Inscrit un carton jaune en base. Si les suspensions sont activées, le 3e jaune du cycle devient un 'double_yellow' avec 1 semaine de suspension. */
     protected function giveYellowCard(GameSave $gameSave, GameMatch $match, int $playerId, int $week, bool $suspensionEnabled = true): void
     {
         $playerId = (int) $playerId;
@@ -189,6 +203,7 @@ class FoulAndInjuryService
         });
     }
 
+    /** Inscrit un carton rouge en base avec 2 à 3 semaines de suspension. */
     protected function giveRedCard(GameSave $gameSave, GameMatch $match, int $playerId, int $week): void
     {
         $playerId = (int) $playerId;
@@ -212,6 +227,7 @@ class FoulAndInjuryService
     //   LOGIQUE BLESSURES
     // ==========================
 
+    /** Crée une blessure (si le joueur n'est pas déjà blessé) : durée tirée selon la gravité (légère 1 semaine, modérée 2-3, grave 4-6) et description tirée au hasard. */
     protected function createInjury(
         GameSave $gameSave,
         GameMatch $match,

@@ -7,11 +7,13 @@ use App\Contracts\Randomizer;
 /** Aléatoire cryptographique du moteur PHP : comportement de production. */
 class NativeRandomizer implements Randomizer
 {
+    /** Entier aléatoire entre $min et $max inclus. */
     public function int(int $min, int $max): int
     {
         return random_int($min, $max);
     }
 
+    /** Élément choisi au hasard dans la liste. */
     public function pick(array $items): mixed
     {
         $items = array_values($items);
@@ -19,6 +21,7 @@ class NativeRandomizer implements Randomizer
         return $items[random_int(0, count($items) - 1)];
     }
 
+    /** Liste mélangée (algorithme de Fisher-Yates), indexée de 0 à n-1. */
     public function shuffle(array $items): array
     {
         $items = array_values($items);

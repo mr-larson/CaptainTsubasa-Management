@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
+/** Redirige un utilisateur déjà connecté vers l'accueil (pages de connexion / inscription). */
 class RedirectIfAuthenticated
 {
     /**

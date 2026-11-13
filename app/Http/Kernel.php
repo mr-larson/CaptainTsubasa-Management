@@ -4,6 +4,7 @@ namespace App\Http;
 
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
+/** Noyau HTTP : pile de middleware globale, groupes web/api et alias de middleware de route. */
 class Kernel extends HttpKernel
 {
     /**

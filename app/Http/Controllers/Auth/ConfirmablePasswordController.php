@@ -11,6 +11,7 @@ use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/** Confirmation du mot de passe avant une action sensible (écran de reconfirmation). */
 class ConfirmablePasswordController extends Controller
 {
     /**

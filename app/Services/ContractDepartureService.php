@@ -7,6 +7,10 @@ use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GamePromise;
 use App\Models\GameSaves\GameSave;
 
+/**
+ * Départs de joueurs mécontents : toutes les deux semaines (hors Coupe du Monde), un joueur au moral très bas ou en mauvaise relation avec le coach peut résilier son contrat.
+ * La probabilité va de 5 % à 45 % selon l'ampleur du mal-être. Le joueur quitte l'effectif, perd son numéro, sort de la composition et ses promesses en attente expirent.
+ */
 class ContractDepartureService
 {
     public const MORALE_THRESHOLD = 30;
@@ -15,6 +19,7 @@ class ContractDepartureService
     private const MIN_CHANCE = 5;
     private const MAX_CHANCE = 45;
 
+    /** Probabilité (en %) qu'un joueur parte : le pire des deux risques (moral et affinité). Nulle au-dessus des seuils, puis de 5 % à 45 % selon la distance au seuil. */
     public static function chance(int $morale, int $affinity): int
     {
         $moraleRisk = $morale > self::MORALE_THRESHOLD ? 0
@@ -25,6 +30,7 @@ class ContractDepartureService
         return max($moraleRisk, $affinityRisk);
     }
 
+    /** Convertit la distance au seuil en probabilité linéaire entre le minimum (5 %) et le maximum (45 %), plafonnée à $range. */
     private static function scaledChance(int $distance, int $range): int
     {
         return self::MIN_CHANCE + (int) round((self::MAX_CHANCE - self::MIN_CHANCE) * min($distance, $range) / $range);
@@ -80,6 +86,7 @@ class ContractDepartureService
         $gameSave->save();
     }
 
+    /** Tirage d'un entier de 1 à 100 (isolé pour pouvoir le remplacer en test). */
     protected function roll(): int
     {
         return random_int(1, 100);

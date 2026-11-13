@@ -31,10 +31,12 @@ final class GameSaveResource implements Arrayable
         'label', 'phase', 'game_mode', 'competition_type', 'created_at', 'updated_at',
     ];
 
+    /** Constructeur privé : on passe par make() ou summary(). */
     private function __construct(private GameSave $gameSave, private bool $withState)
     {
     }
 
+    /** Version complète : colonnes utiles et clés du state lues par le front. */
     public static function make(GameSave $gameSave): self
     {
         return new self($gameSave, true);
@@ -46,6 +48,7 @@ final class GameSaveResource implements Arrayable
         return new self($gameSave, false);
     }
 
+    /** Tableau envoyé à Inertia : colonnes de COLUMNS et, si demandé, state filtré par STATE_KEYS. */
     public function toArray(): array
     {
         $array = Arr::only($this->gameSave->toArray(), self::COLUMNS);

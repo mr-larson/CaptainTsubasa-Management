@@ -16,6 +16,7 @@ use App\Models\GameSaves\GameSave;
  */
 class WeekLeadersService
 {
+    /** Nombre de joueurs affichés par classement. */
     public const LIMIT = 5;
 
     /**
@@ -175,6 +176,7 @@ class WeekLeadersService
             + $r['defense'] + $r['saves'] * 1.5 + $r['duelsWon'] - $r['duelsLost'] * 0.5;
     }
 
+    /** Résumé court des faits marquants de l'homme du match (buts, arrêts, dribbles, duels gagnés ; 3 au plus). */
     private function motmDetail(array $r): string
     {
         $bits = [];

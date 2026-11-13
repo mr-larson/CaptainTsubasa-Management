@@ -9,10 +9,14 @@ use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
 use Illuminate\Support\Facades\DB;
 
+/** Stamina des joueurs en fin de semaine : ceux qui ont joué en perdent, les autres en récupèrent ; les agents libres (hors Coupe du Monde) récupèrent un peu aussi. Coût et récupération sont réglables dans la configuration de la partie. */
 class StaminaService
 {
+    /** Stamina perdue par un joueur ayant joué (valeur par défaut). */
     const MATCH_STAMINA_COST    = 5;
+    /** Stamina récupérée par un joueur au repos (valeur par défaut). */
     const REST_STAMINA_RECOVERY = 10;
+    /** Stamina récupérée chaque semaine par un joueur sans contrat. */
     private const FREE_AGENT_RECOVERY = 3;
 
     /**

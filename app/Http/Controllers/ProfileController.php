@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/** Profil de l'utilisateur connecté : informations, préférences d'affichage et suppression du compte. */
 class ProfileController extends Controller
 {
     /**

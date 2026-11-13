@@ -18,6 +18,7 @@ use App\Models\GameSaves\GameSave;
 class AmateurMarketService
 {
 
+    /** Reçoit le générateur aléatoire (noms, statistiques et coût des amateurs). */
     public function __construct(private Randomizer $random)
     {
     }
@@ -66,6 +67,7 @@ class AmateurMarketService
         return $created;
     }
 
+    /** Crée en base un joueur amateur libre au poste donné : nom japonais aléatoire, stats du poste entre 10 et 13, autres stats entre 6 et 10, coût de 8 à 15, moral neutre. */
     public function generate(GameSave $gameSave, string $position): GamePlayer
     {
         $low  = fn() => $this->random->int(6, 10);   // stats hors poste

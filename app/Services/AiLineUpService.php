@@ -15,6 +15,11 @@ use App\Services\Concerns\EvaluatesPlayers;
 use App\Support\GameState;
 use Illuminate\Support\Collection;
 
+/**
+ * Composition d'équipe automatique des équipes IA avant leurs matchs.
+ * Remplace les titulaires indisponibles (blessés, suspendus, en formation, sur le banc par carte), adapte le schéma tactique à l'effectif, fait tourner les joueurs fatigués selon la philosophie de l'équipe et désigne un capitaine.
+ * Écrit dans les contrats, la formation de l'équipe et la composition de l'état de la partie.
+ */
 class AiLineUpService
 {
     use EvaluatesPlayers;
@@ -46,6 +51,7 @@ class AiLineUpService
     ];
     private const ZONE_POSITIONS = ['GK', 'DEF', 'MID', 'MID', 'ATT'];
 
+    /** Prépare les équipes IA qui ont un match programmé cette semaine ($week). Ne fait rien pendant une pause de mi-saison en attente. */
     public function prepareScheduledTeams(GameSave $gameSave, int $week): void
     {
         if ($gameSave->hasPendingMidseasonBreak()) return;
@@ -146,6 +152,10 @@ class AiLineUpService
         }
     }
 
+    /**
+     * Cherche le meilleur schéma tactique pour les joueurs disponibles et compose le onze en conséquence. Retourne true si la composition a été modifiée.
+     * Compare le schéma actuel aux autres (joueurs mal placés d'abord, puis score pondéré par le style tactique) et ne change que si le gain dépasse une marge. Met à jour les titulaires, la formation de l'équipe et la composition enregistrée.
+     */
     private function adaptFormation(GameTeam $team, array $unavailableIds, GameState $state): bool
     {
         $current = $team->formation ?? FormationHelper::DEFAULT_FORMATION;
@@ -220,6 +230,7 @@ class AiLineUpService
         return true;
     }
 
+    /** Note un schéma tactique : place les joueurs dans les postes de chaque zone, en respectant leurs postes possibles quand c'est faisable. Retourne les postes attribués ('slots'), le score total et le nombre de joueurs mal placés ('misplaced'). */
     private function scoreFormation(array $zones, array $candidates, array $styleWeights): array
     {
         $positions = array_map(fn ($zone) => self::ZONE_POSITIONS[$zone], $zones);
@@ -254,6 +265,7 @@ class AiLineUpService
         return ['slots' => $slots, 'score' => $score, 'misplaced' => $misplaced];
     }
 
+    /** Place un joueur compatible sur un poste ; si tous les compatibles sont déjà pris, tente de déplacer l'un d'eux ailleurs (parcours récursif de type affectation). Retourne true si le poste a pu être pourvu. */
     private function assignCompatiblePlayer(int $slot, array $positions, array $candidates, array &$slots, array &$used, array &$visited): bool
     {
         $pool = $candidates[$positions[$slot]];
@@ -331,6 +343,7 @@ class AiLineUpService
         return $restingRoles;
     }
 
+    /** Poste joué par un joueur dans la composition actuelle (GK, DEF, MID, ATT), selon son emplacement dans le schéma ; à défaut, son poste naturel. */
     private function lineupPosition(GameTeam $team, ?string $naturalPosition, int $playerId, array $slots): string
     {
         $slot = array_search($playerId, $slots, true);
@@ -394,6 +407,7 @@ class AiLineUpService
         return $changed;
     }
 
+    /** Valeur de jeu d'un joueur à un poste : son niveau à ce poste pondéré par son endurance, avec une petite pénalité s'il n'est pas à son poste naturel. */
     private function readiness($player, string $position): float
     {
         $stamina = (int) ($player->stamina ?? 100);
@@ -402,6 +416,7 @@ class AiLineUpService
         return $this->playerOverall($player, $position) * (0.55 + 0.45 * $stamina / 100) * $mastery;
     }
 
+    /** Échange un titulaire et un remplaçant (contrats sauvegardés) et met à jour la composition enregistrée dans l'état de la partie. */
     private function swapStarter(GameTeam $team, GameContract $starter, GameContract $replacement, GameState $state): void
     {
         $starter->is_starter = false;

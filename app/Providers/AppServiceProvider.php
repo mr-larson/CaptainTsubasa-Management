@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 
+/** Fournisseur de services principal : branche la source d'aléatoire utilisée par les services de jeu. */
 class AppServiceProvider extends ServiceProvider
 {
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Enums;
 
+/** Poste d'un joueur : gardien, défenseur, milieu ou attaquant. */
 enum PlayerPosition: string
 {
     case Goalkeeper = 'Goalkeeper';

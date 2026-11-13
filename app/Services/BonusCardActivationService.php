@@ -14,10 +14,16 @@ use App\Models\GameSaves\GameTeam;
 use Illuminate\Validation\ValidationException;
 
 
+/**
+ * Applique l'effet d'une carte bonus/malus activée (par le joueur ou par l'IA).
+ * Selon le type d'effet : résultat immédiat (endurance, blessure, argent, moral, relation coach), enregistrement pour plus tard (défi sponsor, carte avant match lue par le simulateur) ou délégation à MalusCardEffects pour les malus.
+ * Gère aussi la lecture des boosts actifs d'un match, leur consommation après match et la résolution des défis sponsor.
+ */
 class BonusCardActivationService
 {
     use Concerns\LogsCoachAffinity;
 
+    /** Reçoit le générateur aléatoire (utilisé par le pari publicitaire). */
     public function __construct(private Randomizer $random)
     {
     }
@@ -88,6 +94,7 @@ class BonusCardActivationService
     //   EFFETS
     // ──────────────────────────────────────────────────────────
 
+    /** Carte d'endurance : ajoute le montant de la carte (plafonné à 100) à tous les joueurs de l'équipe propriétaire, sauvegardés en base. */
     private function applyStaminaBoost(GameSave $gameSave, GameBonusCard $gameBonusCard): array
     {
         $amount  = (int) ($gameBonusCard->bonusCard->effect_value['amount'] ?? 0);
@@ -108,6 +115,7 @@ class BonusCardActivationService
         return ['message' => "+{$amount} stamina appliqué à {$updated} joueurs.", 'updated' => $updated];
     }
 
+    /** Carte blessure : raccourcit de quelques semaines la blessure en cours du joueur cible, ou la guérit immédiatement pour 'injury_cure'. Lève une erreur de validation si le joueur n'est pas blessé. */
     private function applyInjuryReduce(GameSave $gameSave, GameBonusCard $gameBonusCard, ?int $targetPlayerId): array
     {
         if (!$targetPlayerId) {
@@ -197,6 +205,7 @@ class BonusCardActivationService
         return ['message' => "Défi sponsor activé : {$card->name}. Récompense de {$reward} GL au prochain match si l'objectif est atteint."];
     }
 
+    /** Carte de moral individuelle : augmente le moral du joueur cible (borné 0-100), sauvegarde et inscrit une ligne dans le journal de moral. */
     private function applyMoraleBoost(GameSave $gameSave, GameBonusCard $gameBonusCard, ?int $targetPlayerId): array
     {
         $player = $this->resolveTargetPlayer($gameSave, $gameBonusCard, $targetPlayerId);
@@ -224,6 +233,7 @@ class BonusCardActivationService
         ];
     }
 
+    /** Carte de relation avec le coach : augmente l'affinité du joueur cible (bornée -100 à 100), sauvegarde et inscrit l'évolution dans le journal d'affinité. */
     private function applyCoachAffinityBoost(GameSave $gameSave, GameBonusCard $gameBonusCard, ?int $targetPlayerId): array
     {
         $player = $this->resolveTargetPlayer($gameSave, $gameBonusCard, $targetPlayerId);
@@ -566,6 +576,7 @@ class BonusCardActivationService
     //   MALUS (délégués à MalusCardEffects)
     // ──────────────────────────────────────────────────────────
 
+    /** Retourne le service qui porte les effets des cartes malus. */
     private function malus(): MalusCardEffects
     {
         return app(MalusCardEffects::class);
@@ -577,6 +588,7 @@ class BonusCardActivationService
         return $this->malus()->getBenchedPlayerIds($gameSave, $teamId);
     }
 
+    /** Délègue à MalusCardEffects le retrait des malus « titulaire consigné » dont l'équipe cible a joué cette semaine (appelé une fois en fin de semaine). */
     public function consumeMalusForPlayedWeek(GameSave $gameSave, int $week): void
     {
         $this->malus()->consumeMalusForPlayedWeek($gameSave, $week);

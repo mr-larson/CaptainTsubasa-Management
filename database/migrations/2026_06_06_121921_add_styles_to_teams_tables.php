@@ -4,8 +4,12 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Ajoute `tactical_style` (balanced par défaut) et `management_philosophy` (collective par défaut) à `teams` et `game_teams`, pour caractériser le style de jeu et la philosophie de gestion de chaque équipe.
+ */
 return new class extends Migration
 {
+    /** Ajoute les deux colonnes de style aux deux tables. */
     public function up(): void
     {
         Schema::table('teams', function (Blueprint $table) {

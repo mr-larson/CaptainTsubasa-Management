@@ -10,11 +10,13 @@ use App\Models\GameSaves\GameSave;
 use App\Services\PlayerChemistryService;
 use Illuminate\Http\RedirectResponse;
 
+/** Alchimie entre joueurs : tentative de confirmer un duo (une-deux) entre deux joueurs de l'équipe contrôlée. */
 class GamePlayerChemistryController extends Controller
 {
     use AuthorizesGameSave;
     use LocksGameSave;
 
+    /** Tente de confirmer un duo entre deux joueurs de l'équipe contrôlée. Vérifie le droit de modifier la sauvegarde, prend le verrou et refuse (403) hors phase de match ou sans équipe contrôlée. Redirige en arrière avec un message de succès (duo confirmé) ou d'information (pas encore d'automatismes, nouvel essai après trois matchs). */
     public function store(StoreChemistryRequest $request, GameSave $gameSave, PlayerChemistryService $chemistry): RedirectResponse
     {
         $this->authorizeGameSave('update', $gameSave);

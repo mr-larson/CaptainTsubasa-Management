@@ -6,8 +6,10 @@ use App\Models\GameSaves\GameSave;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
+/** Requête de création ou de modification d'un contrat de joueur dans une sauvegarde. */
 class GameContractRequest extends FormRequest
 {
+    /** Autorise la requête si l'utilisateur peut modifier la sauvegarde de la route (propriétaire ou admin). */
     public function authorize(): bool
     {
         $gameSave = $this->route('gameSave');
@@ -16,6 +18,7 @@ class GameContractRequest extends FormRequest
             && (bool) $this->user()?->can('update', $gameSave);
     }
 
+    /** Équipe (de la sauvegarde), salaire, semaines de début et de fin, statut de titulaire. */
     public function rules(): array
     {
         return [

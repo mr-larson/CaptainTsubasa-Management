@@ -130,11 +130,13 @@ class DeclarationService
         return $declaration;
     }
 
+    /** Tirage d'un entier de 1 à 100 (isolé pour pouvoir le remplacer en test). */
     protected function roll(): int
     {
         return random_int(1, 100);
     }
 
+    /** Met en file un bonus ou malus de stats pour le joueur au prochain match programmé de son équipe (écrit dans l'état de la partie et sauvegarde). Retourne false s'il n'y a plus de match à venir. */
     private function queueMatchModifier(GameSave $gameSave, GamePlayer $player, int $teamId, int $week, array $modifier): bool
     {
         $matchId = GameMatch::where('game_save_id', $gameSave->id)
@@ -149,6 +151,7 @@ class DeclarationService
         return true;
     }
 
+    /** Retire les bonus/malus de déclaration liés à un match une fois celui-ci joué, et sauvegarde si quelque chose a été retiré. */
     public function consumeMatchBoosts(GameSave $gameSave, int $matchId): void
     {
         if ($gameSave->gameState()->consumeDeclarationBoosts($matchId)) {
@@ -156,6 +159,7 @@ class DeclarationService
         }
     }
 
+    /** Bilan des duels (gagnés moins perdus) du joueur lors du dernier match joué de son équipe ; sert à savoir s'il est en forme (positif) ou en méforme (négatif). */
     private function lastMatchDuelBalance(GameSave $gameSave, GamePlayer $player, int $teamId): int
     {
         $match = GameMatch::where('game_save_id', $gameSave->id)

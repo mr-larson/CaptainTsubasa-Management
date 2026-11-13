@@ -142,6 +142,7 @@ class PeriodPackageService
         return $entries;
     }
 
+    /** Vrai si le nom d'entrée du zip est autorisé : les 4 JSON attendus ou une image players/teams (jpg, png, webp) ; refuse « .. » et les chemins absolus (zip-slip). */
     private function isAllowedEntryName(string $name): bool
     {
         if (str_contains($name, '..') || str_starts_with($name, '/')) {
@@ -155,6 +156,7 @@ class PeriodPackageService
         return (bool) preg_match('#^images/(players|teams)/[A-Za-z0-9_.-]+\.(jpe?g|png|webp)$#i', $name);
     }
 
+    /** Lit et décode une entrée JSON du zip ; lève une erreur de validation si elle est absente ou si le JSON est invalide. */
     private function decodeJsonEntry(ZipArchive $zip, array $entries, string $name): array
     {
         if (!isset($entries[$name])) {
@@ -171,6 +173,7 @@ class PeriodPackageService
         return $decoded;
     }
 
+    /** Valide le contenu des tableaux équipes, joueurs et contrats avec les règles du validateur Laravel ; lève une ValidationException au premier échec. */
     private function validatePayload(array $teams, array $players, array $contracts): void
     {
         $validator = Validator::make(
@@ -235,6 +238,7 @@ class PeriodPackageService
         }
     }
 
+    /** Vérifie que chaque contrat référence une team_key et une player_key qui existent dans le package. */
     private function validateContractReferences(array $teams, array $players, array $contracts): void
     {
         $teamKeys   = array_column($teams, 'team_key');
@@ -302,6 +306,7 @@ class PeriodPackageService
         return [$bytes, self::ALLOWED_IMAGE_MIMES[$mime]];
     }
 
+    /** Écrit les logos validés sur le disque public (images/period-packages/{id}/teams) et renvoie les équipes avec logo_path renseigné (logo_image retiré). */
     private function storeTeamImages(PeriodPackage $package, array $teams, array $images): array
     {
         $dir = "images/period-packages/{$package->id}/teams";
@@ -321,6 +326,7 @@ class PeriodPackageService
         return $teams;
     }
 
+    /** Écrit les photos validées sur le disque public (images/period-packages/{id}/players) et renvoie les joueurs avec photo_path renseigné (photo_image retiré). */
     private function storePlayerImages(PeriodPackage $package, array $players, array $images): array
     {
         $dir = "images/period-packages/{$package->id}/players";
@@ -518,6 +524,7 @@ class PeriodPackageService
         );
     }
 
+    /** Rend une clé unique parmi celles déjà vues (suffixe -2, -3...) et la marque comme vue ; « x » si la base est vide. */
     private function uniqueKey(array &$seen, string $base): string
     {
         $slug = $base !== '' ? $base : 'x';
@@ -531,6 +538,7 @@ class PeriodPackageService
         return $key;
     }
 
+    /** Extension du fichier image, « png » par défaut. */
     private function extensionOf(string $path): string
     {
         return pathinfo($path, PATHINFO_EXTENSION) ?: 'png';

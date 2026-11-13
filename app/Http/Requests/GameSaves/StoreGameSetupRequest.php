@@ -15,11 +15,13 @@ class StoreGameSetupRequest extends FormRequest
 {
     use ChecksTrainingGains;
 
+    /** Tout utilisateur connecté qui peut créer une sauvegarde. */
     public function authorize(): bool
     {
         return (bool) $this->user()?->can('create', GameSave::class);
     }
 
+    /** Libellé, période, mode de jeu, type de compétition, package de période et configuration. */
     public function rules(): array
     {
         return [
@@ -33,6 +35,7 @@ class StoreGameSetupRequest extends FormRequest
         ];
     }
 
+    /** Vérifie que le gain d'entraînement minimum n'excède pas le maximum. */
     public function after(): array
     {
         return [

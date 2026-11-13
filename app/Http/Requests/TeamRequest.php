@@ -7,8 +7,10 @@ use App\Models\Team;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
+/** Requête de création ou d'édition d'une équipe du roster de référence (hors sauvegarde). */
 class TeamRequest extends FormRequest
 {
+    /** Création ou modification autorisée par TeamPolicy (réservée aux administrateurs). */
     public function authorize(): bool
     {
         $team = $this->route('team');
@@ -18,6 +20,7 @@ class TeamRequest extends FormRequest
             : (bool) $this->user()?->can('create', Team::class);
     }
 
+    /** Remplace les victoires, nuls et défaites absents par 0 avant validation. */
     protected function prepareForValidation(): void
     {
         $this->merge([
@@ -29,6 +32,7 @@ class TeamRequest extends FormRequest
         ]);
     }
 
+    /** Nom unique, budget, résultats, logo (upload ou suppression) et styles tactique / philosophie. */
     public function rules(): array
     {
         $teamId = $this->route('team')?->id;

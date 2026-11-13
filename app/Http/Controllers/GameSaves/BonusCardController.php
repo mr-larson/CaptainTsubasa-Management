@@ -13,11 +13,13 @@ use App\Services\BonusCardActivationService;
 use App\Services\BonusCardShopService;
 use Illuminate\Http\RedirectResponse;
 
+/** Cartes bonus d'une sauvegarde : achat dans la boutique hebdomadaire et activation d'une carte possédée. */
 class BonusCardController extends Controller
 {
     use AuthorizesGameSave;
     use LocksGameSave;
 
+    /** Injecte les services de boutique (achat) et d'activation (effet des cartes). */
     public function __construct(
         private BonusCardShopService     $shopService,
         private BonusCardActivationService $activationService,

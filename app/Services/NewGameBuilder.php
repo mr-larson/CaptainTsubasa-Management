@@ -45,6 +45,7 @@ class NewGameBuilder
     private const PLAYER_CHUNK   = 200;
     private const CONTRACT_CHUNK = 500;
 
+    /** Injecte l'aléatoire, le draft, le marché d'amateurs et l'amorçage de saison. */
     public function __construct(
         private Randomizer $random,
         private DraftService $draftService,

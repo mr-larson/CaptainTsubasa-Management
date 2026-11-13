@@ -4,8 +4,12 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Introduit le capitaine : `is_captain` sur `contracts` et `game_contracts`, plus sur `game_contracts` le nombre de relances de capitaine restantes (3 par défaut) et un indicateur d'utilisation d'une relance sur l'action en cours.
+ */
 return new class extends Migration
 {
+    /** Ajoute les colonnes de capitaine aux deux tables de contrats. */
     public function up(): void
     {
         Schema::table('contracts', function (Blueprint $table) {

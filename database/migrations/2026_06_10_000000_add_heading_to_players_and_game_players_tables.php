@@ -4,8 +4,12 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Ajoute la statistique de jeu de tête `heading` (15 par défaut) à `players` et `game_players`.
+ */
 return new class extends Migration
 {
+    /** Ajoute la statistique de jeu de tête. */
     public function up(): void
     {
         Schema::table('players', function (Blueprint $table) {

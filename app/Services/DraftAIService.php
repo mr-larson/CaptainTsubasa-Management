@@ -11,10 +11,15 @@ use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
 use App\Services\Concerns\EvaluatesPlayers;
 
+/**
+ * Choix des joueurs par les équipes IA pendant la draft.
+ * Chaque pick note les joueurs libres abordables selon le poste prioritaire, les postes en déficit, la philosophie de l'équipe, son style tactique, la forme du joueur et les duos d'alchimie, avec un peu de variété aléatoire. Décide aussi quand l'IA arrête de drafter.
+ */
 class DraftAIService
 {
     use EvaluatesPlayers;
 
+    /** Reçoit le générateur aléatoire (variété du choix parmi les meilleurs scores). */
     public function __construct(private Randomizer $random)
     {
     }
@@ -216,6 +221,7 @@ class DraftAIService
     //   HELPERS
     // ==========================
 
+    /** Poste à pourvoir en priorité : le gardien si l'équipe n'en a aucun, sinon le poste le plus en déficit par rapport à la composition cible (milieu par défaut). */
     protected function getPriorityPosition(array $countByPos, int $squadSize): string
     {
         // GK en priorité absolue si on n'en a aucun
@@ -233,6 +239,7 @@ class DraftAIService
         return $deficits[$topPos] > 0 ? $topPos : 'MID'; // fallback
     }
 
+    /** Niveau global moyen des joueurs sous contrat (40 si aucun). */
     protected function avgOverall($contracts): float
     {
         $players = $contracts->map(fn($c) => $c->gamePlayer)->filter();
@@ -240,6 +247,7 @@ class DraftAIService
         return $players->avg(fn($p) => $this->playerOverall($p));
     }
 
+    /** Nombre de semaines de la saison, déduit du nombre d'équipes de la partie. */
     protected function getSeasonLength(GameSave $gameSave): int
     {
         return SeasonService::lengthForTeamCount(GameTeam::where('game_save_id', $gameSave->id)->count());

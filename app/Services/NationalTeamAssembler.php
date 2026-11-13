@@ -23,6 +23,7 @@ use Illuminate\Support\Collection;
 class NationalTeamAssembler
 {
 
+    /** Injecte le générateur aléatoire (moral initial aléatoire des joueurs). */
     public function __construct(private Randomizer $random)
     {
     }
@@ -193,6 +194,7 @@ class NationalTeamAssembler
         };
     }
 
+    /** Regroupe le poste du joueur en GK / DEF / MID / FW (MID par défaut). */
     private function positionGroup(Player $player): string
     {
         $position = $player->position;

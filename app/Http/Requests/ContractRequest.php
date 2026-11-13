@@ -5,8 +5,10 @@ namespace App\Http\Requests;
 use App\Models\Contract;
 use Illuminate\Foundation\Http\FormRequest;
 
+/** Requête de création ou d'édition d'un contrat du roster de référence (hors sauvegarde). */
 class ContractRequest extends FormRequest
 {
+    /** Création ou modification autorisée par ContractPolicy (réservée aux administrateurs). */
     public function authorize(): bool
     {
         $contract = $this->route('contract');
@@ -16,6 +18,7 @@ class ContractRequest extends FormRequest
             : (bool) $this->user()?->can('create', Contract::class);
     }
 
+    /** Équipe, joueur, salaire par match, nombre de matchs du contrat et dates facultatives. */
     public function rules(): array
     {
         return [

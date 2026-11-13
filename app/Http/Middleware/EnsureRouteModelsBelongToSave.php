@@ -19,6 +19,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class EnsureRouteModelsBelongToSave
 {
+    /** Refuse (404) toute ressource de la route dont le game_save_id diffère de la sauvegarde de l'URL. */
     public function handle(Request $request, Closure $next): Response
     {
         $parameters = $request->route()?->parameters() ?? [];

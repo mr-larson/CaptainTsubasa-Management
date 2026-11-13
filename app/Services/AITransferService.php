@@ -13,6 +13,11 @@ use App\Services\Concerns\EvaluatesPlayers;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Recrutement automatique des équipes IA parmi les joueurs libres (sans contrat actif).
+ * Chaque semaine, une équipe IA complète son effectif jusqu'à 18 joueurs selon ses besoins (postes manquants, titulaires indisponibles, fatigue) et son budget, avec au plus 2 signatures.
+ * Le choix du joueur dépend de la philosophie de l'équipe (stars, collectif, économe, équilibré).
+ */
 class AITransferService
 {
     use EvaluatesPlayers;
@@ -46,6 +51,11 @@ class AITransferService
         'ATT' => 2,
     ];
 
+    /**
+     * Fait recruter toutes les équipes IA (hors équipes humaines) pour la semaine courante.
+     * Charge les joueurs libres (hors fictifs, amateurs visibles selon la config) et exclut les blessés et suspendus. Chaque recrue est retirée de la liste pour les équipes suivantes.
+     * Écrit en base : contrats, numéros de maillot et budgets des équipes.
+     */
     public function recruitForWeek(GameSave $gameSave): void
     {
         $week           = $gameSave->week ?? 1;
@@ -90,6 +100,11 @@ class AITransferService
         }
     }
 
+    /**
+     * Fait signer jusqu'à 2 joueurs pour une équipe IA et retourne les identifiants des joueurs recrutés.
+     * Le budget utilisable dépend de la taille de l'effectif (100 % en urgence sous 11 joueurs, 85 % sous 13, sinon 70 %). Les amateurs ne sont engagés qu'en urgence.
+     * Pour chaque besoin : trouve le meilleur candidat, fixe le salaire (plafonné par le budget réparti sur les semaines restantes), crée le contrat jusqu'à la fin de saison, attribue le premier numéro libre et débite le budget de l'équipe, le tout dans une transaction.
+     */
     protected function recruitForTeam(
         GameTeam $team,
         Collection $freePlayers,
@@ -294,6 +309,10 @@ class AITransferService
     // ==========================
     //   SÉLECTION DU CANDIDAT
     // ==========================
+    /**
+     * Choisit le meilleur joueur libre pour un groupe de poste dans la limite du budget (salaire x semaines restantes).
+     * Si personne ne convient à ce poste, élargit à tous les postes ('ANY'). Le score dépend de la philosophie : stars = meilleur niveau, collectif = proche de la moyenne de l'équipe, économe = rapport niveau/prix, sinon score équilibré. S'y ajoute un bonus de forme physique.
+     */
     protected function findBestCandidate(
         Collection $freePlayers,
         string $positionGroup,
@@ -340,12 +359,14 @@ class AITransferService
     //   HELPERS
     // ==========================
 
+    /** Niveau global moyen d'un groupe de joueurs (0 si vide). */
     protected function avgOverall(Collection $players): float
     {
         if ($players->isEmpty()) return 0;
         return $players->avg(fn($p) => $this->playerOverall($p)) ?? 0;
     }
 
+    /** Nombre de semaines de la saison, déduit du nombre d'équipes de la partie. */
     protected function getSeasonLength(GameSave $gameSave): int
     {
         return SeasonService::lengthForTeamCount(GameTeam::where('game_save_id', $gameSave->id)->count());

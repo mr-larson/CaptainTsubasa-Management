@@ -18,6 +18,7 @@ use Illuminate\Support\Collection;
  */
 class PlayerMoraleSummary
 {
+    /** Les 6 derniers événements de moral (parmi les 200 plus récents) par joueur. */
     public function moraleLogs(GameSave $gameSave, Collection|array $playerIds): Collection
     {
         return GamePlayerMoraleLog::where('game_save_id', $gameSave->id)
@@ -101,6 +102,7 @@ class PlayerMoraleSummary
             )->values());
     }
 
+    /** Les 2 dernières promesses par joueur, avec la progression des titularisations promises recalculée par PromiseService. */
     public function promises(GameSave $gameSave, Collection|array $playerIds): Collection
     {
         $promises = GamePromise::where('game_save_id', $gameSave->id)
@@ -125,6 +127,7 @@ class PlayerMoraleSummary
             ])->values());
     }
 
+    /** La dernière déclaration publique par joueur. */
     public function declarations(GameSave $gameSave, Collection|array $playerIds): Collection
     {
         return GameDeclaration::where('game_save_id', $gameSave->id)

@@ -9,11 +9,16 @@ use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
 
+/**
+ * Achat et activation des cartes bonus par les équipes IA.
+ * Chaque semaine, une équipe IA regarde les offres de sa boutique, achète celles dont le score dépasse un seuil selon le palier (bronze, argent, or) en gardant une réserve pour les transferts, puis active les cartes utiles (immédiates, ou avant match quand un match est prévu).
+ */
 class AiBonusCardService
 {
     // Budget minimum que l'IA garde en réserve pour les transferts
     private const TRANSFER_RESERVE = 500;
 
+    /** Reçoit le service qui applique réellement les effets des cartes. */
     public function __construct(
         private BonusCardActivationService $activationService
     ) {}
@@ -42,6 +47,7 @@ class AiBonusCardService
     //   LOGIQUE PAR ÉQUIPE IA
     // ──────────────────────────────────────────────────────────
 
+    /** Traite une équipe IA : achète les offres rentables (débit du budget, création de la carte en base), active tout de suite les cartes immédiates utiles, puis active les cartes avant match si un match est à venir. */
     private function processTeam(GameSave $gameSave, GameTeam $team, array $offers): void
     {
         if (empty($offers)) return;
@@ -100,6 +106,7 @@ class AiBonusCardService
     //   SCORING D'UNE OFFRE (0-100)
     // ──────────────────────────────────────────────────────────
 
+    /** Note une offre de 0 à 100 selon son effet et la situation de l'équipe (endurance, blessés, budget, moral, relation avec le coach, résultats, match à venir), avec un bonus selon le palier. */
     private function scoreOffer(array $offer, array $context): int
     {
         $effectType = $offer['effect_type'] ?? '';
@@ -212,6 +219,7 @@ class AiBonusCardService
     //   ACTIVATION
     // ──────────────────────────────────────────────────────────
 
+    /** Active la carte seulement si elle sert vraiment (seuil d'endurance, joueur blessé, moral bas, match à venir, etc.) et choisit la cible quand l'effet en demande une. Les erreurs sont avalées : l'IA ne doit jamais faire planter la simulation. */
     private function activateIfUseful(GameSave $gameSave, GameBonusCard $card, array $offer, array $context): void
     {
         $effectType = $offer['effect_type'] ?? '';
@@ -272,6 +280,7 @@ class AiBonusCardService
         }
     }
 
+    /** Active les cartes disponibles en phase avant match de l'équipe, uniquement si elle a un match prévu cette semaine. Erreurs ignorées. */
     private function activatePreMatchCards(GameSave $gameSave, GameTeam $team, array $context): void
     {
         $pendingCards = GameBonusCard::query()
@@ -296,6 +305,7 @@ class AiBonusCardService
     //   CONTEXTE ÉQUIPE
     // ──────────────────────────────────────────────────────────
 
+    /** Résume la situation d'une équipe pour les décisions : endurance moyenne, blessés actifs, joueurs au moral et à la relation coach les plus bas, budget, victoires/défaites et présence d'un match prévu cette semaine. */
     private function buildTeamContext(GameSave $gameSave, GameTeam $team): array
     {
         // Stamina moyenne

@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests\GameSaves;
 
+/** Requête de création d'un lien de complicité entre deux joueurs. */
 class StoreChemistryRequest extends GameSaveActionRequest
 {
+    /** Les deux joueurs à associer ; ils doivent être différents. */
     public function rules(): array
     {
         return [

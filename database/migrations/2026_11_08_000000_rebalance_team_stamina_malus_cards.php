@@ -3,8 +3,12 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Migration de données : rééquilibre à la baisse la perte d'endurance de quatre cartes malus d'équipe (`opponent_stamina_drain`) en mettant à jour `effect_value` et la description. `down()` restaure les anciennes valeurs. Aucun changement de schéma.
+ */
 return new class extends Migration
 {
+    /** Applique les nouveaux montants d'endurance. */
     public function up(): void
     {
         $this->updateCards([

@@ -4,10 +4,13 @@ namespace App\Services;
 
 use App\Models\Player;
 
+/** Catalogue des techniques spéciales qu'un joueur peut apprendre en formation : un petit ensemble de techniques de joueurs existants, plus le centre enroulé propre à l'entraînement. */
 class TrainableSpecialMoves
 {
+    /** Coût indicatif d'une formation à une technique spéciale (en GL). */
     public const COST = 300;
 
+    /** Clés des techniques de joueurs existants qui peuvent être enseignées. */
     private const TEACHABLE = [
         'ohtomo_link_play',
         'motoki_clinical_finish',
@@ -18,6 +21,7 @@ class TrainableSpecialMoves
         'sakai_brave_save',
     ];
 
+    /** Liste triée par nom des techniques apprenables : celles de la liste TEACHABLE trouvées chez les joueurs de référence, plus le centre enroulé ajouté ici. */
     public static function catalog(): array
     {
         $moves = Player::query()->whereNotNull('special_moves')->get(['special_moves'])
@@ -38,6 +42,7 @@ class TrainableSpecialMoves
         return $moves->sortBy('label')->values()->all();
     }
 
+    /** Action de jeu à laquelle une technique se rattache (mains → hand_save, poing → punch_save, sinon son base_action) ; sert à interdire deux techniques pour la même action. */
     public static function actionOf(array $move): ?string
     {
         return match ($move['base_action'] ?? null) {

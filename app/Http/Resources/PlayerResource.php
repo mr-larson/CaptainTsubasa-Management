@@ -16,6 +16,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * @property mixed $description
  */
 
+/** Représentation JSON d'un joueur du roster de référence, avec les URL d'actions (liste, édition, suppression). */
 class PlayerResource extends JsonResource
 {
     /**

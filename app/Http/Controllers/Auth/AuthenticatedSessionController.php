@@ -13,6 +13,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
+/** Connexion et déconnexion de l'utilisateur (écran de login, ouverture et fermeture de session). */
 class AuthenticatedSessionController extends Controller
 {
     /**

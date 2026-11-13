@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 
+/** Charge les fichiers de routes (web et api), définit la page d'accueil après connexion et les limiteurs de débit. */
 class RouteServiceProvider extends ServiceProvider
 {
     /**

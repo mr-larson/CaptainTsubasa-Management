@@ -20,6 +20,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
  */
 class PeriodPackageController extends Controller
 {
+    /** Liste les packages de période visibles par l'utilisateur (les siens et les partagés), du plus récent au plus ancien. Affiche la page PeriodPackages/Index. */
     public function index(Request $request): Response
     {
         $packages = PeriodPackage::query()
@@ -32,11 +33,13 @@ class PeriodPackageController extends Controller
         ]);
     }
 
+    /** Affiche le formulaire d'import d'un nouveau package de période (page PeriodPackages/Create). */
     public function create(): Response
     {
         return Inertia::render('PeriodPackages/Create');
     }
 
+    /** Importe un package depuis le zip envoyé (nom, description, partage) via PeriodPackageService, puis redirige vers l'écran de création de partie ou vers la bibliothèque selon la cible demandée. */
     public function store(PeriodPackageRequest $request, PeriodPackageService $service): RedirectResponse
     {
         $data = $request->validated();
@@ -79,6 +82,7 @@ class PeriodPackageController extends Controller
             ->deleteFileAfterSend(true);
     }
 
+    /** Met à jour les informations d'un package de période (nom, description, partage) et revient à la page précédente. */
     public function update(PeriodPackageRequest $request, PeriodPackage $periodPackage): RedirectResponse
     {
         $periodPackage->update($request->validated());
@@ -86,6 +90,7 @@ class PeriodPackageController extends Controller
         return back()->with('success', 'Période mise à jour.');
     }
 
+    /** Supprime un package de période (si la policy l'autorise) ainsi que ses images stockées, puis revient à la page précédente. */
     public function destroy(Request $request, PeriodPackage $periodPackage): RedirectResponse
     {
         $this->authorize('delete', $periodPackage);

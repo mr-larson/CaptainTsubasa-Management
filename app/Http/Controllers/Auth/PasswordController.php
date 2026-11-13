@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 
+/** Changement du mot de passe de l'utilisateur connecté depuis son profil. */
 class PasswordController extends Controller
 {
     /**

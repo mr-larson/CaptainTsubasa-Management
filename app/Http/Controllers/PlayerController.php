@@ -12,6 +12,7 @@ use Inertia\Response;
 use Illuminate\Http\RedirectResponse;
 
 
+/** Gestion des joueurs de la base de données (hors sauvegardes) : liste, fiche, création, modification, suppression et photo. */
 class PlayerController extends Controller
 {
     /**
@@ -37,6 +38,7 @@ class PlayerController extends Controller
         return redirect()->route('players.index', ['create' => 1]);
     }
 
+    /** Crée un joueur (photo enregistrée sur le disque public si fournie) puis ouvre l'écran des joueurs sur ce nouveau joueur. */
     public function store(PlayerRequest $request): RedirectResponse
     {
         $data = $request->validated();
@@ -58,6 +60,7 @@ class PlayerController extends Controller
         return $this->index($request);
     }
 
+    /** Met à jour un joueur : les listes de postes secondaires et de coups spéciaux absentes de la requête sont vidées, et une nouvelle photo s'ajoute sans supprimer l'ancienne. Revient en arrière avec un message. */
     public function update(PlayerRequest $request, Player $player): RedirectResponse
     {
         $data = $request->validated();
@@ -79,6 +82,7 @@ class PlayerController extends Controller
         return back()->with('success', 'Le joueur a été mis à jour avec succès.');
     }
 
+    /** Supprime le joueur (suppression douce, photo conservée) et revient à la liste des joueurs. */
     public function destroy(Player $player): RedirectResponse
     {
         // Photo conservée (suppression douce, et les saves en copient le chemin).

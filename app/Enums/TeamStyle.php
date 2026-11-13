@@ -2,6 +2,7 @@
 
 namespace App\Enums;
 
+/** Styles d'équipe : styles tactiques et philosophies de management, avec leurs libellés et icônes. */
 class TeamStyle
 {
     // Tactical styles

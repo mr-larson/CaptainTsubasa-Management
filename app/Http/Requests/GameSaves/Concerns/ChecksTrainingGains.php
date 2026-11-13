@@ -11,6 +11,9 @@ use Illuminate\Validation\Validator;
  */
 trait ChecksTrainingGains
 {
+    /**
+     * Ajoute une erreur de validation si le gain max est inférieur au gain min ($existing sert à compléter une valeur absente).
+     */
     protected function checkTrainingGains(Validator $validator, array $config, string $errorKey, ?GameConfig $existing = null): void
     {
         if (! ($existing ?? new GameConfig)->hasValidTrainingGains($config)) {

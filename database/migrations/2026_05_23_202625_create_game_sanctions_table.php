@@ -4,8 +4,12 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Crée la table `game_sanctions` : suspensions des joueurs d'une sauvegarde après un carton (jaune, double jaune, rouge), avec le match concerné, le nombre de semaines de suspension, la semaine de retour et le cumul de jaunes de la saison. Index par sauvegarde/joueur et par sauvegarde/semaine de retour.
+ */
 return new class extends Migration
 {
+    /** Crée la table des sanctions disciplinaires. */
     public function up(): void
     {
         Schema::create('game_sanctions', function (Blueprint $table) {

@@ -4,6 +4,9 @@ namespace App\Http\Middleware;
 
 use Illuminate\Routing\Middleware\ValidateSignature as Middleware;
 
+/**
+ * Vérifie la signature des URL signées ; la liste $except permet d'ignorer certains paramètres de requête (aucun ici).
+ */
 class ValidateSignature extends Middleware
 {
     /**

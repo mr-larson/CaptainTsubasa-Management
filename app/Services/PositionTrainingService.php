@@ -27,12 +27,14 @@ use Illuminate\Validation\ValidationException;
  */
 class PositionTrainingService
 {
+    /** Numéro de ligne de chaque poste de champ (défense 1, milieu 2, attaque 3), pour mesurer l'écart entre deux postes. */
     private const LINE = [
         'Defender'   => 1,
         'Midfielder' => 2,
         'Forward'    => 3,
     ];
 
+    /** Durée d'indisponibilité en semaines pour apprendre le poste $target, depuis les postes déjà connus : 3 pour devenir gardien ; sinon l'écart de lignes avec le poste connu le plus proche ; pour un gardien qui devient joueur de champ, 2 vers défenseur et 3 ailleurs. */
     public static function durationFor(array $knownPositions, string $target): int
     {
         $gk = PlayerPosition::Goalkeeper->value;

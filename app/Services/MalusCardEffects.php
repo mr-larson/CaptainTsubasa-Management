@@ -22,6 +22,7 @@ class MalusCardEffects
 {
     use Concerns\LogsCoachAffinity;
 
+    /** Injecte le générateur aléatoire (tirage du joueur consigné). */
     public function __construct(private Randomizer $random)
     {
     }
@@ -335,6 +336,7 @@ class MalusCardEffects
         return implode(', ', $parts) ?: 'aucun effet';
     }
 
+    /** Ajoute un debuff de stats en attente dans l'état de la partie et sauvegarde. */
     private function storeStatDebuff(GameSave $gameSave, array $entry): void
     {
         $gameSave->gameState()->addPendingStatDebuff($entry);
@@ -360,6 +362,7 @@ class MalusCardEffects
         ];
     }
 
+    /** Consomme un bouclier anti-malus de l'équipe s'il existe (sauvegarde si oui) ; retourne true si un bouclier a été consommé. */
     private function consumeMalusShield(GameSave $gameSave, int $targetId): bool
     {
         if (! $gameSave->gameState()->consumeMalusShield($targetId)) {

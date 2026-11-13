@@ -71,6 +71,7 @@ class CareerObjectiveService
     private const MATCH_DRAW = 1;
     private const MATCH_LOSS = -5;
 
+    /** Indique si la boucle de carrière est active : désactivée en Coupe du Monde et quand la difficulté de carrière est 'none'. */
     public function isEnabled(GameSave $gameSave): bool
     {
         if ($gameSave->competition_type === 'world_cup') {
@@ -339,6 +340,7 @@ class CareerObjectiveService
         $this->persist($gameSave, $c);
     }
 
+    /** Vrai si le joueur a été licencié ou a gagné sa carrière (la partie est terminée). */
     public function isGameOver(GameSave $gameSave): bool
     {
         if (! $this->isEnabled($gameSave)) {
@@ -360,11 +362,13 @@ class CareerObjectiveService
         return self::PRESETS[$difficulty] ?? self::PRESETS['standard'];
     }
 
+    /** Borne la jauge de confiance entre 0 et 100. */
     private function clampConfidence(int $value): int
     {
         return max(0, min(self::CONFIDENCE_MAX, $value));
     }
 
+    /** Écrit les données de carrière dans l'état de la partie et sauvegarde la partie (à appeler sous verrou de sauvegarde). */
     private function persist(GameSave $gameSave, array $career): void
     {
         $gameSave->gameState()->putCareer($career);

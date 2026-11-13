@@ -4,8 +4,10 @@ namespace App\Http\Requests\GameSaves;
 
 use Illuminate\Validation\Rule;
 
+/** Requête de signature d'un joueur libre (agent libre) dans une équipe de la sauvegarde. */
 class SignFreeAgentRequest extends GameSaveActionRequest
 {
+    /** Équipe d'accueil (limitée à la sauvegarde), nombre de matchs du contrat et motif facultatif. */
     public function rules(): array
     {
         return [

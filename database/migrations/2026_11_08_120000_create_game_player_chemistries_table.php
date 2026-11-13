@@ -4,8 +4,12 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Crée la table `game_player_chemistries` : alchimie entre deux joueurs d'une sauvegarde (score, matchs partagés, dernier essai, confirmation), avec une contrainte d'unicité sur la paire.
+ */
 return new class extends Migration
 {
+    /** Crée la table des alchimies. */
     public function up(): void
     {
         Schema::create('game_player_chemistries', function (Blueprint $table) {

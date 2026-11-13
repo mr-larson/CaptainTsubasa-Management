@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * Requête de connexion : valide l'e-mail et le mot de passe, authentifie l'utilisateur et limite les tentatives par e-mail + IP.
+ */
 class LoginRequest extends FormRequest
 {
     /**

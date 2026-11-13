@@ -4,10 +4,16 @@ namespace App\Helpers;
 
 use App\Enums\PlayerPosition;
 
+/**
+ * Note de jeu de tête d'un joueur, estimée à partir de son poste et de ses statistiques de défense, d'attaque et de blocage.
+ */
 class HeadingRating
 {
     public const DEFAULT_FIELD_RATING = 18;
 
+    /**
+     * Note de jeu de tête finale : l'estimation est ramenée dans une fourchette propre au rôle (défenseur, attaquant, milieu ; gardien inchangé).
+     */
     public static function forProfile(PlayerPosition|string|null $position, array $stats): int
     {
         $role = FormationHelper::roleFromPosition($position instanceof PlayerPosition ? $position->value : $position);

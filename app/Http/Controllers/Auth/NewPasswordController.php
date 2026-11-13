@@ -14,6 +14,7 @@ use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/** Réinitialisation du mot de passe via le lien reçu par e-mail (formulaire et enregistrement du nouveau mot de passe). */
 class NewPasswordController extends Controller
 {
     /**

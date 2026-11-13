@@ -6,7 +6,11 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Ajoute à `game_players` la colonne `luck`, puis migre les données : chaque joueur existant reçoit une chance tirée au hasard (`PlayerLuck::roll()`). Le tirage est irréversible : `down()` supprime seulement la colonne.
+ */
 return new class extends Migration {
+    /** Ajoute la colonne puis tire la chance des joueurs existants. */
     public function up(): void
     {
         Schema::table('game_players', function (Blueprint $table) {

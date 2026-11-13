@@ -29,6 +29,7 @@ use Random\Randomizer;
  */
 class SeasonChallengeService
 {
+    /** Nombre de défis tirés par équipe et par saison. */
     public const PER_SEASON = 5;
 
     /** Points (classement des défis) et prime (GL) par niveau. */
@@ -38,6 +39,7 @@ class SeasonChallengeService
         'hard'   => ['label' => 'Difficile', 'points' => 3, 'reward' => 500, 'mult' => 1.1],
     ];
 
+    /** Répartition des niveaux de difficulté mélangée puis attribuée aux familles. */
     private const TIER_DRAW = ['easy', 'easy', 'medium', 'medium', 'hard'];
 
     /** Une famille = un objectif par saison. */
@@ -58,6 +60,7 @@ class SeasonChallengeService
     /** Modulation des seuils des équipes humaines selon le mandat. */
     private const DIFFICULTY_MULT = ['none' => 1.0, 'survival' => 0.9, 'standard' => 1.0, 'conquest' => 1.1];
 
+    /** Vrai si les défis de saison sont actifs : pas en Coupe du Monde et option de configuration activée (par défaut oui). */
     public function isEnabled(GameSave $gameSave): bool
     {
         return $gameSave->competition_type !== 'world_cup'
@@ -125,6 +128,7 @@ class SeasonChallengeService
     }
 
     /** @return list<array<string, mixed>> */
+    /** Tire les 5 défis d'une équipe (un par famille, niveaux mixtes) avec un générateur graine par sauvegarde, équipe et saison : le résultat est reproductible. Renvoie clé, famille, niveau, cible, libellé, points et prime. */
     private function drawFor(GameSave $gameSave, int $teamId, int $season, array $ctx): array
     {
         // Tirage reproductible : même save + équipe + saison → mêmes défis.
@@ -153,12 +157,14 @@ class SeasonChallengeService
         return $out;
     }
 
+    /** Vrai si le défi peut être tiré pour cette équipe (le favori n'a pas d'équipe plus forte à battre). */
     private function isEligible(string $key, array $ctx): bool
     {
         // Le favori n'a personne de plus fort à battre.
         return ! ($key === 'beat_stronger_min' && $ctx['expected_rank'] <= 1);
     }
 
+    /** Seuil chiffré d'un défi selon le niveau, la force attendue de l'équipe, la durée de la saison, le budget et la difficulté du mandat. */
     private function target(string $key, string $tier, array $ctx): int
     {
         $m    = $ctx['matches'];
@@ -184,6 +190,7 @@ class SeasonChallengeService
         };
     }
 
+    /** Phrase affichée décrivant le défi et sa cible. */
     private function label(string $key, int $t): string
     {
         return match ($key) {
@@ -214,6 +221,7 @@ class SeasonChallengeService
      * @param  array<string, mixed>  $entry  state['challenges']['teams'][id]
      * @return array<string, int>  key => valeur
      */
+    /** Valeur actuelle de chaque défi de l'équipe, calculée sur les matchs joués, les contrats, le moral, le budget et les cartes de la saison. Lecture seule. */
     private function measure(GameSave $gameSave, GameTeam $team, array $entry, ?int $rank, array $strengthRanks): array
     {
         $teamId = (int) $team->id;
@@ -268,6 +276,7 @@ class SeasonChallengeService
         return $values;
     }
 
+    /** Plus longue série de matchs sans défaite. */
     private function bestUnbeatenStreak(Collection $games): int
     {
         $best = $cur = 0;
@@ -279,6 +288,7 @@ class SeasonChallengeService
         return $best;
     }
 
+    /** Ids des joueurs sous contrat actif de l'équipe cette semaine. */
     private function teamPlayerIds(GameSave $gameSave, int $teamId): Collection
     {
         return GameContract::where('game_save_id', $gameSave->id)
@@ -320,6 +330,7 @@ class SeasonChallengeService
         return $goals ? max($goals) : 0;
     }
 
+    /** Moral moyen arrondi de l'effectif de l'équipe (0 si effectif vide). */
     private function averageMorale(GameSave $gameSave, int $teamId): int
     {
         $ids = $this->teamPlayerIds($gameSave, $teamId);
@@ -348,6 +359,7 @@ class SeasonChallengeService
      * Statut d'un objectif : done / failed (définitifs) ou on_track / off_track
      * (encore ouverts). $final = fin de saison : tout devient done / failed.
      */
+    /** Statut d'un objectif : done / failed (définitifs) ou on_track / off_track (encore ouverts). $final = fin de saison : tout devient done / failed. */
     private function status(string $key, int $value, int $target, bool $final): string
     {
         if (in_array($key, self::MAX_KEYS, true)) {
@@ -369,6 +381,7 @@ class SeasonChallengeService
     }
 
     /** @return array<int, int> teamId => rang de force (1 = plus fort) */
+    /** Rang de force attendu de chaque équipe, enregistré lors du tirage. */
     private function strengthRanks(GameSave $gameSave): array
     {
         $out = [];
@@ -383,6 +396,7 @@ class SeasonChallengeService
      * @param  Collection<int, GameTeam>  $standings
      * @return list<array<string, mixed>>
      */
+    /** Évalue les défis d'une équipe : ajoute à chaque objectif sa valeur, son statut, la prime déjà versée et les libellés de famille et de niveau. Un défi déjà payé compte comme réussi. */
     private function evaluateTeam(GameSave $gameSave, GameTeam $team, array $entry, ?int $rank, array $strengthRanks, bool $final): array
     {
         $values = $this->measure($gameSave, $team, $entry, $rank, $strengthRanks);
@@ -460,6 +474,7 @@ class SeasonChallengeService
         }
     }
 
+    /** Verse au budget de l'équipe les primes des défis réussis non encore payées et les note dans paid_rewards. Retourne true si de l'argent a été versé (la sauvegarde de l'état reste à l'appelant). */
     private function creditRewards(GameTeam $team, array &$entry, array $objectives): bool
     {
         $amount = 0;

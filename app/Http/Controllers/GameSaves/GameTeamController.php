@@ -16,6 +16,7 @@ use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/** Gestion des équipes propres à une sauvegarde : liste, création, modification, suppression et logo. */
 class GameTeamController extends Controller
 {
     use AuthorizesGameSave;

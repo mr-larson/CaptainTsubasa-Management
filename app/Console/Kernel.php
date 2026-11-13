@@ -5,6 +5,7 @@ namespace App\Console;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
+/** Noyau console : planification des tâches et chargement des commandes Artisan. */
 class Kernel extends ConsoleKernel
 {
     /**

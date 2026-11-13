@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Illuminate\Auth\Middleware\Authenticate as Middleware;
 use Illuminate\Http\Request;
 
+/** Exige un utilisateur connecté ; sinon redirige vers la page de connexion (ou renvoie 401 pour une requête JSON). */
 class Authenticate extends Middleware
 {
     /**

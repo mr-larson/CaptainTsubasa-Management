@@ -4,8 +4,12 @@ use App\Models\BonusCard;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Migration de données : ajoute (ou met à jour) la carte malus or « Tapage médiatique — Or » (−30 de relation) dans `bonus_cards`. `down()` la supprime. Aucun changement de schéma.
+ */
 return new class extends Migration
 {
+    /** Insère la carte or. */
     public function up(): void
     {
         DB::table('bonus_cards')->updateOrInsert(

@@ -19,6 +19,7 @@ use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/** Joueurs d'une sauvegarde : liste et fiches, création, modification, suppression, photo, numéro de maillot et carte de moral. */
 class GamePlayerController extends Controller
 {
     use AuthorizesGameSave;
@@ -228,6 +229,7 @@ class GamePlayerController extends Controller
         ]);
     }
 
+    /** Change le numéro de maillot d'un joueur, sous le verrou de sauvegarde. Refuse si ce numéro est déjà porté par un autre joueur sous contrat actif dans la même équipe. Revient en arrière avec un message de succès ou une erreur sur le champ numéro. */
     public function updateNumber(UpdatePlayerNumberRequest $request, GameSave $gameSave, GamePlayer $player): \Illuminate\Http\RedirectResponse
     {
         $this->authorizeGameSave('update', $gameSave, $player);

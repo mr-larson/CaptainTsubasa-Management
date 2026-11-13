@@ -101,6 +101,11 @@ class MoraleService
             || ((int) ($player->coach_affinity ?? 0)) <= self::AFFINITY_REFUSAL_THRESHOLD;
     }
 
+    /**
+     * Applique le moral de fin de semaine à tous les joueurs : résultat du match, temps de jeu, salaire vs valeur, puis retour progressif vers le neutre.
+     * Écrit les nouveaux moraux (un UPDATE par paquet) et journalise chaque événement dans game_player_morale_logs.
+     * Ne fait rien si aucun match n'a été joué cette semaine.
+     */
     public function applyAfterWeek(GameSave $gameSave, int $week): void
     {
         $matches = GameMatch::with(['homeTeam', 'awayTeam', 'playerStats'])

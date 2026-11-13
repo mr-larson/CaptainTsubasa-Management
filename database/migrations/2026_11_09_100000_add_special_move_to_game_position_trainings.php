@@ -5,7 +5,11 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Permet à `game_position_trainings` de porter un entraînement de coup spécial : `target_position` devient nullable, et on ajoute `special_move` (JSON) et `cost`. `down()` supprime d'abord les lignes de coups spéciaux.
+ */
 return new class extends Migration {
+    /** Rend la position nullable et ajoute coup spécial et coût. */
     public function up(): void
     {
         Schema::table('game_position_trainings', function (Blueprint $table) {

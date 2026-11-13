@@ -19,6 +19,7 @@ use App\Models\GameSaves\GameTeam;
 class WeekClosingService
 {
 
+    /** Injecte tous les services appelés pendant la clôture de semaine (IA, simulation, économie, moral, promesses, saison, tournoi, défis...). */
     public function __construct(
         private AiLineUpService $aiLineUpService,
         private MatchSimulator $matchSimulator,
@@ -41,10 +42,12 @@ class WeekClosingService
         private CareerObjectiveService $careerObjectiveService,
     ) {
     }
+    /** Résultats possibles de close() : continuer à jouer, fin de partie (licenciement ou victoire), fin de saison. */
     public const OUTCOME_PLAY       = 'play';
     public const OUTCOME_GAME_OVER  = 'game_over';
     public const OUTCOME_SEASON_END = 'season_end';
 
+    /** Revenu hebdomadaire de base d'une équipe (en GL), avec primes de victoire et de nul. */
     public const BASE_INCOME = 500;
     private const WIN_BONUS   = 300;
     private const DRAW_BONUS  = 100;

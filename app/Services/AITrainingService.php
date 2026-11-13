@@ -12,9 +12,15 @@ use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Entraînement automatique des équipes gérées par l'IA.
+ * Chaque semaine, chaque équipe IA fait quelques séances : un joueur est choisi, une de ses stats progresse et il perd de l'endurance.
+ * Chaque séance coûte de l'argent à l'équipe. Les équipes humaines ne sont jamais entraînées ici (seulement par leurs entraînements manuels).
+ */
 class AITrainingService
 {
 
+    /** Reçoit le générateur aléatoire (injectable pour rendre les tirages déterministes en test). */
     public function __construct(private Randomizer $random)
     {
     }
@@ -38,6 +44,11 @@ class AITrainingService
         TeamStyle::TACTICAL_BALANCED   => [],
     ];
 
+    /**
+     * Lance l'entraînement de toutes les équipes IA pour la semaine courante de la partie.
+     * Ignore les joueurs blessés, suspendus ou en formation de poste. Les joueurs qui ont joué la semaine sont pris en compte pour l'endurance à préserver.
+     * Enregistre les séances dans l'historique de la saison (état de la partie), marque la semaine comme traitée (pas de double entraînement) puis sauvegarde la partie.
+     */
     public function trainForWeek(GameSave $gameSave): void
     {
         $state = $gameSave->gameState();
@@ -119,6 +130,12 @@ class AITrainingService
         $gameSave->save();
     }
 
+    /**
+     * Fait s'entraîner une équipe IA et retourne la liste des séances réalisées (joueur, stat, gain, coût).
+     * Le nombre de séances est limité par la config hebdomadaire moins celles déjà faites. Les joueurs éligibles doivent garder assez d'endurance (réserve selon titulaire, repos ou match joué).
+     * Priorité : gardiens reposés, joueurs en rotation, puis titulaires ou remplaçants selon la philosophie de l'équipe. 70 % du temps on prend le plus faible de son poste, 30 % un joueur au hasard.
+     * Chaque séance augmente la stat choisie, retire de l'endurance au joueur (sauvegardé en base) et débite le budget de l'équipe, écrit une seule fois en fin de boucle. S'arrête si le budget est insuffisant.
+     */
     protected function trainTeam(GameTeam $team, int $gainMax = 3, array $excludePlayerIds = [], ?string $tacticalStyle = null, ?GameSave $gameSave = null, bool $chargeCost = false, ?array $played = null): array
     {
         $contracts = $team->contracts->filter(fn($c) => $c->gamePlayer !== null);

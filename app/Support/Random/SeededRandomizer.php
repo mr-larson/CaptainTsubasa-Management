@@ -13,16 +13,19 @@ class SeededRandomizer implements Randomizer
 {
     private int $state;
 
+    /** Initialise le générateur avec une graine (une graine nulle est remplacée par une constante). */
     public function __construct(int $seed)
     {
         $this->state = ($seed & 0xFFFFFFFF) ?: 0x9E3779B9; // xorshift ne supporte pas l'état 0
     }
 
+    /** Entier pseudo-aléatoire entre $min et $max inclus, déterministe pour la graine. */
     public function int(int $min, int $max): int
     {
         return $min + $this->next() % ($max - $min + 1);
     }
 
+    /** Élément choisi dans la liste de façon déterministe. */
     public function pick(array $items): mixed
     {
         $items = array_values($items);
@@ -30,6 +33,7 @@ class SeededRandomizer implements Randomizer
         return $items[$this->int(0, count($items) - 1)];
     }
 
+    /** Liste mélangée de façon déterministe (Fisher-Yates), indexée de 0 à n-1. */
     public function shuffle(array $items): array
     {
         $items = array_values($items);
@@ -41,6 +45,7 @@ class SeededRandomizer implements Randomizer
         return $items;
     }
 
+    /** Avance l'état xorshift32 et renvoie le nouvel entier 32 bits. */
     private function next(): int
     {
         $x = $this->state;

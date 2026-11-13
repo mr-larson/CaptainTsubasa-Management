@@ -25,9 +25,11 @@ use App\Models\GameSaves\GameTeam;
 class TournamentService
 {
 
+    /** Injecte le générateur aléatoire (tirage des poules). */
     public function __construct(private Randomizer $random)
     {
     }
+    /** Lettres des groupes possibles (2 groupes dès 4 sélections, sinon 1). */
     private const GROUP_KEYS = ['A', 'B', 'C', 'D'];
 
     /**
@@ -190,6 +192,7 @@ class TournamentService
         return $fixtures;
     }
 
+    /** Crée un match programmé du tournoi pour la semaine et le tour donnés (group_a, group_b, semi, final). */
     private function createMatch(GameSave $gameSave, int $week, int $home, int $away, string $round): void
     {
         GameMatch::create([

@@ -14,6 +14,10 @@ use App\Models\GameSaves\GameTeam;
 use App\Services\Concerns\EvaluatesPlayers;
 use Illuminate\Support\Collection;
 
+/**
+ * Planification des formations des équipes IA : apprentissage d'un nouveau poste ou d'un coup spécial.
+ * Au plus une formation par équipe toutes les 4 semaines, selon le budget (avec réserve), l'effectif disponible, la fin de contrat, le style tactique et la philosophie.
+ */
 class AiFormationTrainingService
 {
     use EvaluatesPlayers;
@@ -32,11 +36,16 @@ class AiFormationTrainingService
         'FW' => ['shot', 'dribble', 'cross', 'pass'],
     ];
 
+    /** Reçoit le service qui démarre les formations et celui des cartes bonus (joueurs mis sur le banc). */
     public function __construct(
         private PositionTrainingService $formations,
         private BonusCardActivationService $cards,
     ) {}
 
+    /**
+     * Décide pour la semaine courante quelles équipes IA lancent une formation et la démarre.
+     * Inactif hors phase de match, si l'entraînement IA est désactivé ou sans séance autorisée. Ignore les équipes humaines, celles en cooldown, avec moins de 13 joueurs disponibles ou en fin de saison. Enregistre la formation dans l'historique d'entraînement IA de la saison (état de la partie) et sauvegarde la partie.
+     */
     public function planForWeek(GameSave $save): void
     {
         if (!$save->isInMatchPhase() || !$save->getConfig('ai_training_enabled', true)
@@ -107,6 +116,10 @@ class AiFormationTrainingService
         }
     }
 
+    /**
+     * Choisit la meilleure formation pour une équipe : tableau [contrat, poste cible, coup spécial] ou null.
+     * Évalue deux types de candidats : un remplaçant en surnombre qui apprend un poste en manque dans le schéma tactique, ou un joueur qui apprend un coup spécial cohérent avec son rôle, son niveau et le style de l'équipe. Retient le meilleur score.
+     */
     private function chooseFormation(GameTeam $team, Collection $available, int $week, int $lastWeek, bool $canTrainPosition, int $humanWeek, array $moves): ?array
     {
         $required = array_count_values(array_map(fn ($slot) => FormationHelper::slotRole($team->formation, $slot), range(1, 11)));

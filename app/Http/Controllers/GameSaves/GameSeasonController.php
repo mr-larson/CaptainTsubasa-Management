@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/** Fin de saison et fin de partie d'une sauvegarde : écran de bilan de saison, passage à la saison suivante et écran de game over du mode Ligue. */
 class GameSeasonController extends Controller
 {
     use AuthorizesGameSave;

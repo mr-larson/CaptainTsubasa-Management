@@ -5,8 +5,10 @@ namespace App\Http\Requests\GameSaves;
 use App\Helpers\FormationHelper;
 use Illuminate\Validation\Rule;
 
+/** Requête de mise à jour de la composition : un joueur par poste, sur 11 postes. */
 class UpdateLineupRequest extends GameSaveActionRequest
 {
+    /** Équipe, 11 postes (numéro + joueur éventuel) et formation facultative. */
     public function rules(): array
     {
         return [

@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Illuminate\Foundation\Http\Middleware\TrimStrings as Middleware;
 
+/** Retire les espaces en début et fin des champs texte reçus, sauf les mots de passe. */
 class TrimStrings extends Middleware
 {
     /**

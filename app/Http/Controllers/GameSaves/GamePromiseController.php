@@ -11,6 +11,7 @@ use App\Models\GameSaves\GameSave;
 use App\Services\PromiseService;
 use Illuminate\Http\RedirectResponse;
 
+/** Promesses de temps de jeu faites à un joueur de l'équipe contrôlée. */
 class GamePromiseController extends Controller
 {
     use AuthorizesGameSave;

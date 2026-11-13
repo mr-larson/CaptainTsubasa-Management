@@ -20,11 +20,13 @@ class UpdateGameConfigRequest extends GameSaveActionRequest
         'ai_start_budget', 'human_start_budget', 'ai_draft_budget', 'draft_budget',
     ];
 
+    /** Règles de GameConfig, hors options qui ne se changent qu'à la création. */
     public function rules(): array
     {
         return Arr::except(GameConfig::rules(), self::CREATION_ONLY);
     }
 
+    /** Vérifie la cohérence des gains d'entraînement en tenant compte des valeurs déjà en vigueur. */
     public function after(): array
     {
         return [
@@ -42,6 +44,7 @@ class UpdateGameConfigRequest extends GameSaveActionRequest
         ];
     }
 
+    /** Configuration validée et nettoyée, prête à être enregistrée dans la sauvegarde. */
     public function configData(): array
     {
         return GameConfig::sanitize($this->validated());

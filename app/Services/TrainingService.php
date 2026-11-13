@@ -10,9 +10,11 @@ use App\Models\GameSaves\GameTeam;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
+/** Entraînement individuel de l'équipe contrôlée : chaque séance fait gagner un nombre aléatoire de points sur une stat, coûte de la stamina et de l'argent, dans la limite d'un quota hebdomadaire. */
 class TrainingService
 {
 
+    /** Injecte le générateur aléatoire (gain de chaque séance). */
     public function __construct(private Randomizer $random)
     {
     }

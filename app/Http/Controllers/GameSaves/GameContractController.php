@@ -18,11 +18,13 @@ use App\Services\PromiseService;
 use App\Services\SeasonService;
 use Illuminate\Http\RedirectResponse;
 
+/** Contrats des joueurs d'une sauvegarde : création, modification, suppression, prolongation et résiliation d'un contrat. */
 class GameContractController extends Controller
 {
     use AuthorizesGameSave;
     use LocksGameSave;
 
+    /** Crée un contrat pour un joueur de la sauvegarde. Refuse si le joueur, trop mécontent, ne veut pas re-signer avec son club actuel ; s'il change de club, son moral repart à la valeur neutre et son affinité avec le coach à 0. Revient en arrière avec un message. */
     public function store(GameContractRequest $request, GameSave $gameSave, GamePlayer $player)
     {
         $this->authorizeGameSave('update', $gameSave, $player);
@@ -57,6 +59,7 @@ class GameContractController extends Controller
         return back()->with('success', 'Contrat créé.');
     }
 
+    /** Modifie un contrat existant avec les données validées et revient en arrière avec un message de succès. */
     public function update(GameContractRequest $request, GameSave $gameSave, GameContract $contract)
     {
         $this->authorizeGameSave('update', $gameSave, $contract);
@@ -66,6 +69,7 @@ class GameContractController extends Controller
         return back()->with('success', 'Contrat mis à jour.');
     }
 
+    /** Supprime un contrat de la sauvegarde et revient en arrière avec un message de succès. */
     public function destroy(GameSave $gameSave, GameContract $contract)
     {
         $this->authorizeGameSave('update', $gameSave, $contract);
@@ -75,6 +79,7 @@ class GameContractController extends Controller
         return back()->with('success', 'Contrat supprimé.');
     }
 
+    /** Prolonge le contrat d'un joueur de l'équipe contrôlée de N semaines, sous le verrou de sauvegarde. Vérifie : phase de saison (pas en Coupe du monde), contrat actif, fin de prolongation dans la saison, proposition à jour, absence de chevauchement avec un autre contrat, joueur non réfractaire et budget suffisant. Débite le budget du club (salaire de renouvellement x semaines), met à jour le contrat et valide une éventuelle promesse de prolongation. */
     public function renew(RenewContractRequest $request, GameSave $gameSave, GameContract $contract, SeasonService $seasons): RedirectResponse
     {
         $this->authorizeGameSave('update', $gameSave, $contract);

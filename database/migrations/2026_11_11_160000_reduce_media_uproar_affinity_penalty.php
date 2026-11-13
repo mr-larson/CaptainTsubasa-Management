@@ -3,8 +3,12 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Migration de données : réduit à 20 (au lieu de 30) la pénalité de relation de la carte argent « Tapage médiatique », en mettant à jour `effect_value` et la description. `down()` remet 30. Aucun changement de schéma.
+ */
 return new class extends Migration
 {
+    /** Applique la pénalité réduite. */
     public function up(): void
     {
         $this->updatePenalty(20);

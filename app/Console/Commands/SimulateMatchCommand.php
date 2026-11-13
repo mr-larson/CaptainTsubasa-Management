@@ -33,6 +33,9 @@ class SimulateMatchCommand extends Command
 
     protected $description = "Lance le moteur de match (MatchSimulator) sur un scénario jetable et affiche le résultat. Rien n'est persisté.";
 
+    /**
+     * Valide les styles, crée le scénario jetable, simule le match, affiche le résultat puis annule la transaction.
+     */
     public function handle(MatchSimulator $simulator): int
     {
         $homeStyle = (string) $this->option('home-style');

@@ -16,14 +16,12 @@ use App\Services\TrainableSpecialMoves;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\ValidationException;
 
+/** Entraînements d'une sauvegarde : séances de la semaine, formation à un nouveau poste et apprentissage de techniques spéciales. Les actions d'écriture exigent le droit de modifier la sauvegarde et le verrou de sauvegarde. */
 class TrainingController extends Controller
 {
     use AuthorizesGameSave;
     use LocksGameSave;
 
-    /**
-     * Lance des entraînements pour une sauvegarde donnée.
-     */
     /**
      * Séances d'entraînement IA d'une semaine de la saison en cours (onglet
      * Entraînement) : l'historique complet reste côté serveur.
@@ -39,6 +37,7 @@ class TrainingController extends Controller
         ]);
     }
 
+    /** Lance les entraînements de la semaine pour l'équipe contrôlée. Refuse (erreur de validation) si la saison ou la semaine envoyée n'est plus celle de la sauvegarde, puis applique les séances via TrainingService, sous verrou pour respecter le quota hebdomadaire. Revient en arrière avec un message de succès. */
     public function store(
         StoreTrainingRequest $request,
         GameSave $gameSave,
@@ -68,6 +67,7 @@ class TrainingController extends Controller
         });
     }
 
+    /** Lance l'apprentissage d'une technique spéciale par un joueur. Refuse hors phase de match, si la semaine a changé ou si la technique n'est pas dans le catalogue apprenable. Revient en arrière en indiquant la semaine de retour du joueur. */
     public function storeSpecial(StoreSpecialTrainingRequest $request, GameSave $gameSave, PositionTrainingService $service): RedirectResponse
     {
         $this->authorizeGameSave('update', $gameSave);

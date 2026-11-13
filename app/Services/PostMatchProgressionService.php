@@ -8,12 +8,20 @@ use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSave;
 use Illuminate\Support\Facades\DB;
 
+/** Progression des joueurs après un match : les bonnes actions (tirs, passes, dribbles, défense) rapportent des points de stats, modulés par le moral et plafonnés par match, par saison et par stat (99). */
 class PostMatchProgressionService
 {
+    /** Gain maximum par stat et par match. */
     private const STAT_MAX_PER_MATCH    = 2;
+    /** Total maximum de points gagnés par un joueur sur une saison. */
     private const SEASON_CAP_PER_PLAYER = 40;
+    /** Valeur maximale d'une stat. */
     private const STAT_MAX_VALUE        = 99;
 
+    /**
+     * Applique la progression d'un match joué : calcule les gains de chaque joueur de la sauvegarde, les écrit en base (transaction), met à jour le cumul de saison dans l'état de la partie, puis stocke le rapport dans match_stats.progression. Retourne ce rapport.
+     * À appeler sous le verrou de la sauvegarde : modifie et enregistre la partie et le match.
+     */
     public function applyForMatch(GameSave $gameSave, GameMatch $match): array
     {
         $matchStats = $match->match_stats ?? [];
@@ -130,6 +138,7 @@ class PostMatchProgressionService
         return $report;
     }
 
+    /** Gains bruts d'un joueur d'après ses stats de match : tir (buts + tirs et techniques réussis), passe, dribble et défense, chacun plafonné par match. Ne renvoie que les stats à gain positif. */
     private function computeGains(array $playerStats): array
     {
         $offense = $playerStats['offense'] ?? [];

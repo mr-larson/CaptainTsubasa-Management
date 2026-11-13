@@ -10,6 +10,7 @@ use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/** Demande d'un lien de réinitialisation du mot de passe (mot de passe oublié). */
 class PasswordResetLinkController extends Controller
 {
     /**

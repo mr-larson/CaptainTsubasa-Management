@@ -7,6 +7,7 @@ use App\Providers\RouteServiceProvider;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
+/** Renvoi du courriel de vérification de l'adresse e-mail. */
 class EmailVerificationNotificationController extends Controller
 {
     /**

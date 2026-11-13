@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Tightenco\Ziggy\Ziggy;
 
+/**
+ * Middleware Inertia : définit la vue racine et les props partagées avec toutes les pages (utilisateur, messages flash, routes Ziggy, styles d'équipe).
+ */
 class HandleInertiaRequests extends Middleware
 {
     /**

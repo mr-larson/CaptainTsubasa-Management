@@ -7,8 +7,10 @@ use App\Models\Player;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
 
+/** Requête de création ou d'édition d'un joueur du roster de référence (hors sauvegarde). */
 class PlayerRequest extends FormRequest
 {
+    /** Création ou modification autorisée par PlayerPolicy (réservée aux administrateurs). */
     public function authorize(): bool
     {
         $player = $this->route('player');
@@ -18,6 +20,7 @@ class PlayerRequest extends FormRequest
             : (bool) $this->user()?->can('create', Player::class);
     }
 
+    /** Identité, âge, postes, coût, photo, statistiques facultatives (0 à 100) et techniques spéciales. */
     public function rules(): array
     {
         return [

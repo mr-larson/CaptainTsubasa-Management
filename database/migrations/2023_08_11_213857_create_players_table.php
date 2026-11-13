@@ -4,8 +4,12 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Crée la table `players` du catalogue de référence : identité, âge, poste, coût, statistiques (JSON) et description, avec suppression logique et un index sur nom/poste.
+ */
 class CreatePlayersTable extends Migration
 {
+    /** Crée la table des joueurs de référence. */
     public function up(): void
     {
         Schema::create('players', function (Blueprint $table) {

@@ -6,6 +6,7 @@ use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GameMatchPlayerStat;
 use App\Models\GameSaves\GameSave;
 
+/** Statistiques de match des joueurs d'une sauvegarde : agrégation SQL depuis game_match_player_stats (avec cache), structure vide de référence, et récupération des anciens bilans. */
 class PlayerStatsService
 {
     /**
@@ -38,6 +39,7 @@ class PlayerStatsService
         return \Illuminate\Support\Facades\Cache::remember($key, now()->addDay(), fn () => self::aggregateForSave($gameSave));
     }
 
+    /** Agrège en SQL, pour chaque joueur, les compteurs (passes, tirs, dribbles, buts, interceptions, duels...) de tous les matchs joués de la sauvegarde. Le format est décrit dans le commentaire du dessus. */
     public static function aggregateForSave(GameSave $gameSave): array
     {
         $offense = ['pass', 'shot', 'dribble', 'special', 'cross'];
@@ -147,6 +149,7 @@ class PlayerStatsService
         // la refonte de la simulation.
     }
 
+    /** Structure de stats d'un joueur avec tous les compteurs à zéro (offense, défense, duels gagnés/perdus). */
     public static function emptyStats(): array
     {
         return [

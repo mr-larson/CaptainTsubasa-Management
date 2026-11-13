@@ -8,9 +8,14 @@ use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
 use Illuminate\Support\Collection;
 
+/**
+ * Boutique de cartes bonus/malus : tire chaque semaine 3 offres par équipe dans le catalogue.
+ * Les chances de palier (bronze, argent, or) dépendent du classement : plus l'équipe est mal classée, plus l'or est probable. Les offres sont stockées dans l'état de la partie.
+ */
 class BonusCardShopService
 {
 
+    /** Reçoit le générateur aléatoire (tirages de palier et de carte). */
     public function __construct(private Randomizer $random)
     {
     }

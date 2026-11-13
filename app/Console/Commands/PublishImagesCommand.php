@@ -5,6 +5,9 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 
+/**
+ * Commande `images:publish` : génère les images servies (WebP redimensionné, variante pixel des joueurs) depuis public/images vers public/storage.
+ */
 class PublishImagesCommand extends Command
 {
     protected $signature = 'images:publish
@@ -44,6 +47,9 @@ class PublishImagesCommand extends Command
     private const PIXEL_SIZE   = 64;
     private const PIXEL_COLORS = 24;
 
+    /**
+     * Parcourt les dossiers players et teams, convertit chaque image source (sauf si à jour, ou avec --force), supprime les anciennes variantes et affiche le bilan ; --dry-run ne fait que lister.
+     */
     public function handle(): int
     {
         if (! function_exists('imagewebp')) {

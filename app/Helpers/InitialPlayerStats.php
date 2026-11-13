@@ -6,8 +6,15 @@ use App\Models\GameSaves\GameSave;
 use App\Support\GameConfig;
 use App\Services\MoraleService;
 
+/**
+ * Calcule les valeurs de départ d'un joueur (vitesse, endurance, moral, chance) selon les options de la configuration de la partie.
+ */
 class InitialPlayerStats
 {
+    /**
+     * Renvoie vitesse, endurance, moral et chance initiaux.
+     * Les tirages aléatoires sont dérivés de la graine et de l'identifiant du joueur : même graine, mêmes valeurs.
+     */
     public static function forPlayer(GameSave $save, int $seed, int|string $playerId, int $baseSpeed): array
     {
         $draw = static fn (string $stat, int $min, int $max): int =>

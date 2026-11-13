@@ -37,6 +37,7 @@ class PromiseService
      * Temps de jeu promis : un tiers de la durée de match réglée pour la save
      * (10 tours sur 30 par défaut, 15 sur 45).
      */
+    /** Temps de jeu promis : un tiers de la durée de match réglée pour la save (10 tours sur 30 par défaut, 15 sur 45). */
     public static function playingTimeTarget(GameSave $gameSave): int
     {
         return max(1, (int) ceil((int) $gameSave->getConfig('match_max_turns') / 3));
@@ -88,6 +89,7 @@ class PromiseService
         ]);
     }
 
+    /** Prolongation signée : si le joueur a une promesse de prolongation en cours (saison et semaine valides), la marque tenue tout de suite et journalise le moral. Retourne true si une promesse a été honorée. */
     public function fulfillRenewal(GameSave $gameSave, GamePlayer $player, int $teamId): bool
     {
         $week = (int) ($gameSave->week ?? 1);
@@ -157,6 +159,7 @@ class PromiseService
         }
     }
 
+    /** Clôture une promesse (tenue ou rompue), applique le delta à la relation coach et au moral du joueur (bornés) et renvoie la ligne de journal de moral à insérer. */
     private function resolve(GamePromise $promise, GamePlayer $player, array $resolution, int $week, int $season, Carbon $now): array
     {
         [$kept, $label, $playedMatches, $playedTurns] = $resolution;
@@ -198,6 +201,7 @@ class PromiseService
         return $kept ? $config['kept'] : $config['broken'];
     }
 
+    /** Repos : tenue si le joueur n'a joué aucun tour ni été entraîné ou formé pendant la semaine de la promesse. Résolue à l'échéance, null avant. */
     private function evaluateRest(GameSave $gameSave, GamePromise $promise, int $week): ?array
     {
         if ($week < $promise->due_week) return null;

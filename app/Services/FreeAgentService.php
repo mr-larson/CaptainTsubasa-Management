@@ -31,6 +31,7 @@ class FreeAgentService
     /** Au-delà de 11 titulaires déjà sous contrat, le nouvel arrivant est remplaçant. */
     private const STARTERS_PER_TEAM = 11;
 
+    /** Injecte le service de saison (durée du championnat) et celui des défis de saison. */
     public function __construct(
         private SeasonService $seasonService,
         private SeasonChallengeService $seasonChallenges,
