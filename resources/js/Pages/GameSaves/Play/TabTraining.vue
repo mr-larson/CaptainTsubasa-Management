@@ -231,7 +231,7 @@ const selectedPlayerPerf = computed(() => {
     <div class="flex-1 flex flex-col gap-4 overflow-y-auto min-h-0 pr-1 [&>*]:shrink-0">
 
         <!-- HEADER -->
-        <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+        <div class="border border-slate-300 rounded-xl bg-slate-50 p-4">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                     <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Entraînement</h3>
@@ -241,13 +241,13 @@ const selectedPlayerPerf = computed(() => {
                 </div>
                 <div class="flex flex-wrap gap-3">
                     <!-- Budget & coût par séance -->
-                    <div v-if="trainingCost > 0" class="text-center px-4 py-2 rounded-xl border bg-white border-slate-200">
+                    <div v-if="trainingCost > 0" class="text-center px-4 py-2 rounded-xl border bg-white border-slate-300">
                         <div class="text-2xl font-black text-slate-700">{{ teamBudget }} <GameBanknote /></div>
                         <div class="text-2xs font-semibold text-slate-400">budget · {{ trainingCost }} <GameBanknote />/séance</div>
                     </div>
                     <!-- Entraînements manuels restants -->
                     <div class="text-center px-4 py-2 rounded-xl border"
-                         :class="remainingTrainingsThisWeek > 0 ? 'bg-teal-50 border-teal-200' : 'bg-slate-100 border-slate-200'">
+                         :class="remainingTrainingsThisWeek > 0 ? 'bg-teal-50 border-teal-200' : 'bg-slate-100 border-slate-300'">
                         <div class="text-2xl font-black"
                              :class="remainingTrainingsThisWeek > 0 ? 'text-teal-600' : 'text-slate-400'">
                             {{ remainingTrainingsThisWeek }}
@@ -325,7 +325,7 @@ const selectedPlayerPerf = computed(() => {
                     </PlayerIdentityCard>
 
                     <!-- Formation à un nouveau poste -->
-                    <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+                    <div class="border border-slate-300 rounded-xl bg-slate-50 p-4">
                         <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">🎓 Former à un nouveau poste</h4>
                         <p class="text-xs text-slate-500 mb-3">
                             Postes maîtrisés : <span class="font-semibold text-slate-700">{{ knownPositions(selectedPlayer).map(positionLabel).join(', ') }}</span>.
@@ -358,7 +358,7 @@ const selectedPlayerPerf = computed(() => {
                         </template>
                     </div>
 
-                    <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+                    <div class="border border-slate-300 rounded-xl bg-slate-50 p-4">
                         <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">✨ Technique spéciale</h4>
                         <p class="text-xs text-slate-500 mb-3">
                             Une technique spéciale par action. Le joueur apprend la technique en une semaine et reste indisponible pendant la formation.
@@ -415,7 +415,7 @@ const selectedPlayerPerf = computed(() => {
             </div>
             <div class="lg:col-span-3 flex flex-col gap-4">
                 <!-- Formulaire entraînement manuel -->
-                <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+                <div class="border border-slate-300 rounded-xl bg-slate-50 p-4">
                     <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
                         🏋️ Entraînement manuel
                     </h4>
@@ -426,7 +426,7 @@ const selectedPlayerPerf = computed(() => {
                     <div class="space-y-2 mb-3">
                         <div v-if="selectedTrainings.length" class="space-y-2 mb-3">
                             <div v-for="(slot, index) in selectedTrainings" :key="index"
-                                 class="flex flex-col gap-2 p-2.5 rounded-lg bg-white border border-slate-200">
+                                 class="flex flex-col gap-2 p-2.5 rounded-lg bg-white border border-slate-300">
 
                                 <!-- Carte joueur compacte -->
                                 <div v-if="playerForEntry({ player_id: slot.player_id })" class="flex items-center gap-2">
@@ -504,7 +504,7 @@ const selectedPlayerPerf = computed(() => {
         </div>
         <div class="grid grid-cols-12 gap-4">
             <div class="col-span-12 flex flex-col gap-4">
-                <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+                <div class="border border-slate-300 rounded-xl bg-slate-50 p-4">
                     <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center justify-between">
                         <span>🤖 Entraînement automatique</span>
                         <div class="flex items-center gap-2">
@@ -521,13 +521,13 @@ const selectedPlayerPerf = computed(() => {
                         <button type="button"
                                 @click="aiTeamFilter = null"
                                 class="px-2.5 py-1 rounded-full text-2xs font-semibold border transition-all"
-                                :class="aiTeamFilter === null ? 'bg-amber-400 text-white border-amber-500' : 'bg-white text-slate-500 border-slate-200 hover:border-amber-300'">
+                                :class="aiTeamFilter === null ? 'bg-amber-400 text-white border-amber-500' : 'bg-white text-slate-500 border-slate-300 hover:border-amber-300'">
                             Toutes
                         </button>
                         <button v-for="t in aiTeams" :key="t.id" type="button"
                                 @click="aiTeamFilter = aiTeamFilter === t.id ? null : t.id"
                                 class="px-2.5 py-1 rounded-full text-2xs font-semibold border transition-all"
-                                :class="aiTeamFilter === t.id ? 'bg-amber-400 text-white border-amber-500' : 'bg-white text-slate-500 border-slate-200 hover:border-amber-300'">
+                                :class="aiTeamFilter === t.id ? 'bg-amber-400 text-white border-amber-500' : 'bg-white text-slate-500 border-slate-300 hover:border-amber-300'">
                             {{ t.name }}
                         </button>
                     </div>
@@ -568,7 +568,7 @@ const selectedPlayerPerf = computed(() => {
                 </div>
 
                 <!-- Historique entraînements manuels -->
-                <div v-if="manualEntries.length" class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+                <div v-if="manualEntries.length" class="border border-slate-300 rounded-xl bg-slate-50 p-4">
                     <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
                         📋 Historique manuel — semaine {{ week }}
                     </h4>

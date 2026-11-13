@@ -71,7 +71,7 @@ const canPrepare = computed(() => props.myTeamId && Number(props.myTeamId) === N
 </script>
 
 <template>
-    <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 flex flex-col gap-4">
+    <div class="border border-slate-300 rounded-xl bg-slate-50 p-4 flex flex-col gap-4">
         <div class="flex items-center justify-between">
             <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider">
                 Avant-match · {{ label }} · {{ isHome ? '🏠 à domicile' : '✈️ à l\'extérieur' }}
@@ -82,7 +82,7 @@ const canPrepare = computed(() => props.myTeamId && Number(props.myTeamId) === N
         <div class="grid grid-cols-2 gap-4">
             <div v-for="(s, i) in sides" :key="i" class="flex flex-col items-center gap-2 text-center">
                 <template v-if="s">
-                    <div class="w-12 h-12 rounded-xl overflow-hidden bg-white border border-slate-200">
+                    <div class="w-12 h-12 rounded-xl overflow-hidden bg-white border border-slate-300">
                         <TeamLogoImage v-if="teamLogoUrl(s.team)" :src="teamLogoUrl(s.team)" class="w-full h-full" alt=""/>
                     </div>
                     <div class="text-sm font-bold text-slate-700">{{ s.team.name }}</div>
@@ -101,7 +101,7 @@ const canPrepare = computed(() => props.myTeamId && Number(props.myTeamId) === N
             </div>
         </div>
 
-        <div v-if="headToHead.length" class="border-t border-slate-200 pt-3">
+        <div v-if="headToHead.length" class="border-t border-slate-300 pt-3">
             <div class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Déjà joué cette saison</div>
             <div v-for="m in headToHead" :key="m.id" class="text-xs text-slate-600">
                 S{{ m.week }} : {{ teamById[m.home_team_id]?.name }}

@@ -19,7 +19,7 @@
                     <div
                         id="score-strip"
                         class="lg:col-span-2 grid grid-cols-[auto_1fr_auto] sm:grid-cols-3 items-center gap-2 rounded-xl px-3 py-4 sm:px-6 sm:py-6 text-neutral-800 shadow-md text-sm bg-white/90 shadow-md
-                   border border-slate-200/70"
+                   border border-slate-300/70"
                     >
                         <!-- Left: actions -->
                         <div class="flex items-center gap-3 justify-start">
@@ -131,13 +131,13 @@
                     <div
                         id="control-panel"
                         class="lg:col-span-1 h-full rounded-xl bg-white/90 shadow-md px-4 py-3 flex items-center justify-center
-                   border border-slate-200/70"
+                   border border-slate-300/70"
                     >
                         <div class="flex items-center gap-3 justify-center">
                             <!-- ⚠️ ID utilisé par engine.js -->
                             <button
                                 id="mode-one-player"
-                                class="rounded-full px-5 py-2 text-xs font-semibold shadow-sm bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200 active:translate-y-px"
+                                class="rounded-full px-5 py-2 text-xs font-semibold shadow-sm bg-slate-100 border border-slate-300 text-slate-700 hover:bg-slate-200 active:translate-y-px"
                             >
                                 Mode 2 joueurs
                             </button>
@@ -156,7 +156,7 @@
                             </select>
 
                             <a :href="route('guide') + '#match'" target="_blank" rel="noopener"
-                               class="whitespace-nowrap rounded-full px-3 py-2 text-xs font-semibold text-slate-500 border border-slate-200 hover:text-teal-600 hover:border-teal-300"
+                               class="whitespace-nowrap rounded-full px-3 py-2 text-xs font-semibold text-slate-500 border border-slate-300 hover:text-teal-600 hover:border-teal-300"
                                title="Règles du match (nouvel onglet)">❔ Aide</a>
                         </div>
                     </div>
@@ -354,7 +354,7 @@
                 <div id="bars-container" class="mt-3 flex flex-col gap-2 lg:mt-3 max-lg:sticky max-lg:bottom-0 max-lg:z-[60] max-lg:pb-[env(safe-area-inset-bottom)]">
                     <!-- Invite de tour (écrite par engine.js) : qui doit agir, juste au-dessus des cartes. -->
                     <div id="message-panel" aria-live="polite"
-                         class="mx-auto flex w-full flex-wrap items-baseline justify-center gap-x-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-center shadow-sm">
+                         class="mx-auto flex w-full flex-wrap items-baseline justify-center gap-x-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-center shadow-sm">
                         <span id="message-main" class="text-sm font-bold text-slate-700"></span>
                         <span id="message-sub" class="text-xs font-semibold text-teal-600"></span>
                     </div>

@@ -12,7 +12,7 @@ const emit = defineEmits(['inspect-team']);
 </script>
 
 <template>
-    <div class="flex max-h-[300px] flex-1 flex-col rounded-xl border border-slate-200 bg-slate-50 p-3 xl:min-h-[300px] xl:max-h-none">
+    <div class="flex max-h-[300px] flex-1 flex-col rounded-xl border border-slate-300 bg-slate-50 p-3 xl:min-h-[300px] xl:max-h-none">
         <SectionTitle class="mb-2">Ordre — Tour {{ round }}</SectionTitle>
         <div class="relative min-h-0 flex-1 overflow-y-auto xl:overflow-hidden">
             <div class="space-y-1 xl:absolute xl:inset-0 xl:overflow-y-auto">

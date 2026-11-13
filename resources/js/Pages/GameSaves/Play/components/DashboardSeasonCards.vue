@@ -71,7 +71,7 @@ const fmt = (n) => Number(n ?? 0).toLocaleString('fr-FR');
 <template>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
         <!-- Trajectoire -->
-        <div v-if="!isWorldCup" class="md:col-span-2 border border-slate-200 rounded-xl bg-slate-50 p-4">
+        <div v-if="!isWorldCup" class="md:col-span-2 border border-slate-300 rounded-xl bg-slate-50 p-4">
             <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
                 <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Trajectoire</h4>
                 <div v-if="objective" class="flex flex-wrap items-center gap-2 text-[11px]">
@@ -143,7 +143,7 @@ const fmt = (n) => Number(n ?? 0).toLocaleString('fr-FR');
         </div>
 
         <!-- Finances -->
-        <div id="dashboard-finances" class="border border-slate-200 rounded-xl bg-slate-50 p-4 scroll-mt-4" :class="isWorldCup ? 'md:col-span-3' : ''">
+        <div id="dashboard-finances" class="border border-slate-300 rounded-xl bg-slate-50 p-4 scroll-mt-4" :class="isWorldCup ? 'md:col-span-3' : ''">
             <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">Finances</h4>
             <div class="space-y-1.5 text-xs text-slate-600">
                 <div class="flex justify-between"><span>Budget</span><span class="font-black text-slate-700 tabular-nums">{{ fmt(budget) }} <GameBanknote /></span></div>
@@ -158,7 +158,7 @@ const fmt = (n) => Number(n ?? 0).toLocaleString('fr-FR');
                     <span>Entraînements / sem.</span>
                     <span class="font-bold text-slate-700 tabular-nums">−{{ fmt(weeklyTrainingCost) }} <GameBanknote /></span>
                 </div>
-                <div v-if="projection" class="pt-2 mt-1 border-t border-slate-200">
+                <div v-if="projection" class="pt-2 mt-1 border-t border-slate-300">
                     <div class="flex justify-between">
                         <span>Fin de saison (S{{ totalWeeks }})</span>
                         <span class="font-black text-teal-600 tabular-nums">≈ {{ fmt(projection.likely) }} <GameBanknote /></span>

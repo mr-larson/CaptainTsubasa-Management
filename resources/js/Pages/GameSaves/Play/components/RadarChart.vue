@@ -71,7 +71,7 @@ const radarAxes = computed(() =>
 </script>
 
 <template>
-    <div class="border border-slate-200 rounded-xl bg-slate-50 p-3 flex flex-col items-center">
+    <div class="border border-slate-300 rounded-xl bg-slate-50 p-3 flex flex-col items-center">
         <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-1 self-start">Profil technique</h4>
         <svg viewBox="0 0 180 180" class="w-40 h-40">
             <polygon class="stroke-slate-400 fill-slate-400/15" v-if="comparePolygon" :points="comparePolygon"

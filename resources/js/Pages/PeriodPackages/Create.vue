@@ -46,7 +46,7 @@ function submit() {
                 <h1 class="text-2xl font-bold text-slate-600 mb-6">Nouvelle période (bibliothèque)</h1>
             </div>
 
-            <div class="max-w-2xl mx-auto p-6 border border-slate-200 rounded-2xl bg-white shadow-sm">
+            <div class="max-w-2xl mx-auto p-6 border border-slate-300 rounded-2xl bg-white shadow-sm">
                 <form @submit.prevent="submit" class="flex flex-col gap-4">
 
                     <div>

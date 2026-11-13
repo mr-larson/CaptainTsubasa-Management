@@ -50,13 +50,13 @@ function score(match) {
         <!-- Poules -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div v-for="group in tournament.groups" :key="group.key"
-                 class="border border-slate-200 rounded-xl bg-white overflow-hidden">
-                <div class="px-4 py-2.5 bg-slate-50 border-b border-slate-100 text-sm font-bold text-slate-700">
+                 class="border border-slate-300 rounded-xl bg-white overflow-hidden">
+                <div class="px-4 py-2.5 bg-slate-50 border-b border-slate-300 text-sm font-bold text-slate-700">
                     Groupe {{ group.key }}
                 </div>
                 <div class="overflow-x-auto">
                 <table class="w-full text-sm min-w-[380px]">
-                    <thead class="border-b border-slate-200 text-2xs font-bold uppercase tracking-wider text-slate-400">
+                    <thead class="border-b border-slate-300 text-2xs font-bold uppercase tracking-wider text-slate-400">
                         <tr>
                             <th class="text-left py-2 pl-4">Sélection</th>
                             <th class="px-1.5"><abbr title="Matchs joués" class="cursor-help no-underline">J</abbr></th>
@@ -69,7 +69,7 @@ function score(match) {
                     </thead>
                     <tbody>
                         <tr v-for="(row, i) in group.rows" :key="row.team_id"
-                            class="border-t border-slate-50"
+                            class="border-t border-slate-300"
                             :class="row.qualified ? 'bg-emerald-50/60' : ''">
                             <td class="py-2 pl-4 flex items-center gap-2">
                                 <span class="w-4 text-[11px] font-bold"
@@ -87,7 +87,7 @@ function score(match) {
                     </tbody>
                 </table>
                 </div>
-                <div class="px-4 py-1.5 text-2xs text-emerald-600 bg-emerald-50/40 border-t border-slate-50">
+                <div class="px-4 py-1.5 text-2xs text-emerald-600 bg-emerald-50/40 border-t border-slate-300">
                     Les 2 premiers sont qualifiés.
                 </div>
             </div>
@@ -95,7 +95,7 @@ function score(match) {
 
         <!-- Tableau final (bracket) -->
         <div v-if="semis.length || finale.length"
-             class="border border-slate-200 rounded-xl bg-white p-4">
+             class="border border-slate-300 rounded-xl bg-white p-4">
             <div class="text-sm font-bold text-slate-700 mb-3">Phase à élimination directe</div>
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
 
@@ -103,13 +103,13 @@ function score(match) {
                 <div class="flex-1 flex flex-col gap-3">
                     <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Demi-finales</div>
                     <div v-for="(m, i) in semis" :key="'s' + i"
-                         class="rounded-xl border border-slate-200 overflow-hidden">
+                         class="rounded-xl border border-slate-300 overflow-hidden">
                         <div class="flex items-center justify-between px-3 py-2"
                              :class="isWinner(m, 'home') ? 'bg-indigo-50 font-bold text-indigo-700' : 'text-slate-600'">
                             <span>{{ m.home?.flag }} {{ m.home?.name ?? '—' }}</span>
                             <span>{{ m.played ? m.home_score : '' }}<span v-if="m.shootout" class="ml-1 text-2xs font-normal text-slate-400" title="Tirs au but">({{ m.shootout.home }})</span></span>
                         </div>
-                        <div class="flex items-center justify-between px-3 py-2 border-t border-slate-100"
+                        <div class="flex items-center justify-between px-3 py-2 border-t border-slate-300"
                              :class="isWinner(m, 'away') ? 'bg-indigo-50 font-bold text-indigo-700' : 'text-slate-600'">
                             <span>{{ m.away?.flag }} {{ m.away?.name ?? '—' }}</span>
                             <span>{{ m.played ? m.away_score : '' }}<span v-if="m.shootout" class="ml-1 text-2xs font-normal text-slate-400" title="Tirs au but">({{ m.shootout.away }})</span></span>
@@ -137,7 +137,7 @@ function score(match) {
                         </div>
                     </div>
                     </template>
-                    <div v-else class="rounded-xl border border-dashed border-slate-200 px-3 py-4 text-center text-xs text-slate-400">
+                    <div v-else class="rounded-xl border border-dashed border-slate-300 px-3 py-4 text-center text-xs text-slate-400">
                         En attente des qualifiés
                     </div>
                 </div>

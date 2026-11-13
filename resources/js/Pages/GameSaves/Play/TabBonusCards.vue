@@ -107,7 +107,7 @@ const tierClasses = (tier) => ({
     bronze: { border: 'border-amber-300', bg: 'bg-amber-50',   badge: 'bg-amber-500 text-white',      label: 'Bronze', glow: 'shadow-amber-100' },
     silver: { border: 'border-slate-300', bg: 'bg-slate-50',   badge: 'bg-slate-400 text-white',      label: 'Argent', glow: 'shadow-slate-100' },
     gold:   { border: 'border-yellow-300',bg: 'bg-yellow-50',  badge: 'bg-yellow-400 text-slate-700', label: 'Or',     glow: 'shadow-yellow-100' },
-}[tier] ?? { border: 'border-slate-200', bg: 'bg-white', badge: 'bg-slate-200', label: '?', glow: '' });
+}[tier] ?? { border: 'border-slate-300', bg: 'bg-white', badge: 'bg-slate-200', label: '?', glow: '' });
 
 const phaseLabel = (phase) => ({
     immediate:    '⚡ Effet immédiat',
@@ -197,7 +197,7 @@ const canConfirm = computed(() => {
     <div class="flex-1 flex flex-col gap-4 overflow-y-auto min-h-0 pr-1 [&>*]:shrink-0">
 
         <!-- HEADER -->
-        <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+        <div class="border border-slate-300 rounded-xl bg-slate-50 p-4">
             <div class="flex items-center justify-between">
                 <div>
                     <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Cartes Bonus</h3>
@@ -216,7 +216,7 @@ const canConfirm = computed(() => {
             </div>
 
             <!-- Onglets -->
-            <div class="mt-4 border-b border-slate-200">
+            <div class="mt-4 border-b border-slate-300">
                 <TabBar v-model="activeTab" :tabs="shopTabs" size="sm" label="Boutique et inventaire" />
             </div>
         </div>
@@ -344,10 +344,10 @@ const canConfirm = computed(() => {
 
                             <!-- Tags -->
                             <div class="flex gap-1.5 flex-wrap">
-                                <span class="text-2xs font-semibold px-2 py-0.5 rounded-full bg-white/70 border border-slate-200 text-slate-600">
+                                <span class="text-2xs font-semibold px-2 py-0.5 rounded-full bg-white/70 border border-slate-300 text-slate-600">
                                     {{ timingLabel(offer) }}
                                 </span>
-                                <span class="text-2xs font-semibold px-2 py-0.5 rounded-full bg-white/70 border border-slate-200 text-slate-600">
+                                <span class="text-2xs font-semibold px-2 py-0.5 rounded-full bg-white/70 border border-slate-300 text-slate-600">
                                     {{ targetLabel(offer.target) }}
                                 </span>
                             </div>
@@ -376,7 +376,7 @@ const canConfirm = computed(() => {
         <div v-if="activeTab === 'inventory'" class="flex flex-col gap-4">
 
             <!-- Cartes disponibles -->
-            <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+            <div class="border border-slate-300 rounded-xl bg-slate-50 p-4">
                 <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
                     ✅ Disponibles ({{ availableCards.length }})
                 </h4>
@@ -415,10 +415,10 @@ const canConfirm = computed(() => {
                                 <p class="text-2xs text-slate-600 leading-relaxed">{{ card.description }}</p>
 
                                 <div class="flex gap-1 flex-wrap">
-                                    <span class="text-3xs font-semibold px-1.5 py-0.5 rounded-full bg-white/80 border border-slate-200 text-slate-500">
+                                    <span class="text-3xs font-semibold px-1.5 py-0.5 rounded-full bg-white/80 border border-slate-300 text-slate-500">
                                         {{ timingLabel(card) }}
                                     </span>
-                                    <span class="text-3xs font-semibold px-1.5 py-0.5 rounded-full bg-white/80 border border-slate-200 text-slate-500">
+                                    <span class="text-3xs font-semibold px-1.5 py-0.5 rounded-full bg-white/80 border border-slate-300 text-slate-500">
                                         {{ targetLabel(card.target) }}
                                     </span>
                                 </div>
@@ -438,13 +438,13 @@ const canConfirm = computed(() => {
             </div>
 
             <!-- Cartes utilisées -->
-            <div v-if="usedCards.length" class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+            <div v-if="usedCards.length" class="border border-slate-300 rounded-xl bg-slate-50 p-4">
                 <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
                     ✓ Utilisées ({{ usedCards.length }})
                 </h4>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
                     <div v-for="card in usedCards" :key="card.id"
-                         class="border rounded-xl p-2 opacity-50 flex items-center gap-2 border-slate-200 bg-slate-100">
+                         class="border rounded-xl p-2 opacity-50 flex items-center gap-2 border-slate-300 bg-slate-100">
                         <span class="text-xl">{{ card.icon }}</span>
                         <div class="min-w-0">
                             <div class="text-2xs font-bold text-slate-600 truncate">{{ card.name }}</div>
@@ -463,7 +463,7 @@ const canConfirm = computed(() => {
                @close="cancelActivate">
 
                     <!-- Header -->
-                    <div class="p-5 border-b border-slate-100">
+                    <div class="p-5 border-b border-slate-300">
                         <div class="flex items-center gap-3">
                             <span class="text-4xl">{{ selectedCard.icon }}</span>
                             <div>
@@ -478,7 +478,7 @@ const canConfirm = computed(() => {
                     </div>
 
                     <!-- Sélection joueur si target=player -->
-                    <div v-if="needsTarget" class="p-5 border-b border-slate-100">
+                    <div v-if="needsTarget" class="p-5 border-b border-slate-300">
                         <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
                             Sélectionner un joueur cible
                         </p>
@@ -490,7 +490,7 @@ const canConfirm = computed(() => {
                                     class="w-full flex items-center px-3 py-2 rounded-lg text-xs border transition-all"
                                     :class="targetPlayerId === p.id
                                         ? 'bg-teal-500 text-white border-teal-600'
-                                        : 'bg-white border-slate-200 hover:border-teal-300 text-slate-700'">
+                                        : 'bg-white border-slate-300 hover:border-teal-300 text-slate-700'">
                                 <span class="font-semibold">{{ p.lastname }}</span>
                                 <span class="opacity-70 ml-1">— {{ positionLabel(p.position) }}</span>
                                 <span v-if="isInjuryCard" class="ml-1 text-rose-400">🤕</span>
@@ -508,7 +508,7 @@ const canConfirm = computed(() => {
                     </div>
 
                     <!-- Malus : cible = adversaire du prochain match -->
-                    <div v-if="isSelectedMalus && malusTargetMode(selectedCard) === 'opponent'" class="p-5 border-b border-slate-100">
+                    <div v-if="isSelectedMalus && malusTargetMode(selectedCard) === 'opponent'" class="p-5 border-b border-slate-300">
                         <div class="flex items-center gap-2 text-rose-700 text-sm font-semibold">
                             <span class="text-lg">🎯</span>
                             <span>Cible : l'adversaire de votre prochain match</span>
@@ -519,7 +519,7 @@ const canConfirm = computed(() => {
                     </div>
 
                     <!-- Malus : cible = 1er du classement (auto) -->
-                    <div v-else-if="isSelectedMalus && malusTargetMode(selectedCard) === 'leader'" class="p-5 border-b border-slate-100">
+                    <div v-else-if="isSelectedMalus && malusTargetMode(selectedCard) === 'leader'" class="p-5 border-b border-slate-300">
                         <div class="flex items-center gap-2 text-rose-700 text-sm font-semibold">
                             <span class="text-lg">👑</span>
                             <span>Cible : le 1<sup>er</sup> du classement<template v-if="leaderTeam"> — {{ leaderTeam.name }}</template></span>
@@ -530,7 +530,7 @@ const canConfirm = computed(() => {
                     </div>
 
                     <!-- Malus : sélection libre de l'équipe cible -->
-                    <div v-else-if="needsTeamSelect" class="p-5 border-b border-slate-100">
+                    <div v-else-if="needsTeamSelect" class="p-5 border-b border-slate-300">
                         <p class="text-xs font-bold text-rose-600 uppercase tracking-wider mb-2">
                             🎯 Choisir l'équipe à saboter
                         </p>
@@ -541,7 +541,7 @@ const canConfirm = computed(() => {
                                     class="w-full flex items-center px-3 py-2 rounded-lg text-xs border transition-all"
                                     :class="targetTeamId === t.id
                                         ? 'bg-rose-500 text-white border-rose-600'
-                                        : 'bg-white border-slate-200 hover:border-rose-300 text-slate-700'">
+                                        : 'bg-white border-slate-300 hover:border-rose-300 text-slate-700'">
                                 <span class="font-semibold">{{ t.name }}</span>
                                 <span class="ml-auto font-semibold"
                                       :class="targetTeamId === t.id ? 'text-white/90' : 'text-slate-400'">

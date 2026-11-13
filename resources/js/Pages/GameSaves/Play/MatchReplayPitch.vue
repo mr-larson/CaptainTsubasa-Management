@@ -454,7 +454,7 @@ onUnmounted(() => clearTimer());
         </div>
 
         <!-- Action en cours -->
-        <div class="min-h-[64px] rounded-xl border border-slate-100 bg-slate-50 p-3 flex items-start gap-3">
+        <div class="min-h-[64px] rounded-xl border border-slate-300 bg-slate-50 p-3 flex items-start gap-3">
             <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm shrink-0"
                  :class="resultBadgeClass(currentEvent)">
                 {{ actionIcon(currentEvent) }}
@@ -478,7 +478,7 @@ onUnmounted(() => clearTimer());
                 </div>
                 <div v-if="currentEvent?.details?.length" class="mt-1 flex flex-wrap gap-1">
                     <span v-for="(d, i) in currentEvent.details" :key="i"
-                          class="text-2xs px-1.5 py-0.5 rounded bg-white border border-slate-200 text-slate-500">{{ d }}</span>
+                          class="text-2xs px-1.5 py-0.5 rounded bg-white border border-slate-300 text-slate-500">{{ d }}</span>
                 </div>
             </div>
         </div>

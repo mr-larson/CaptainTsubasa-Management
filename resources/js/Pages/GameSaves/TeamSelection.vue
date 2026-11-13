@@ -42,7 +42,7 @@
                     <!-- Colonne gauche : liste équipes -->
                     <!-- overflow-hidden + min-h-0 : la carte ne pilote pas la hauteur de la rangée — elle s'aligne
                          sur la colonne du milieu (profil → bouton « Jouer avec »). La liste défile à l'intérieur. -->
-                    <div class="col-span-1 lg:col-span-2 border border-slate-200 rounded-xl bg-white p-3 flex flex-col gap-2 min-h-0 max-h-64 lg:max-h-none overflow-hidden">
+                    <div class="col-span-1 lg:col-span-2 border border-slate-300 rounded-xl bg-white p-3 flex flex-col gap-2 min-h-0 max-h-64 lg:max-h-none overflow-hidden">
                         <!-- Recherche -->
                         <div class="relative shrink-0">
                             <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 20 20">
@@ -67,8 +67,8 @@
                                 ? 'bg-teal-500 text-white border-teal-600 shadow-sm'
                                 : (selectedTeam?.id === team.id
                                     ? 'bg-teal-50 text-slate-700 border-teal-300 ring-1 ring-teal-200'
-                                    : 'bg-white text-slate-600 border-slate-100 hover:border-teal-200 hover:bg-teal-50')">
-                                <div class="w-7 h-7 rounded-lg overflow-hidden shrink-0 bg-slate-100 border border-slate-200 flex items-center justify-center">
+                                    : 'bg-white text-slate-600 border-slate-300 hover:border-teal-200 hover:bg-teal-50')">
+                                <div class="w-7 h-7 rounded-lg overflow-hidden shrink-0 bg-slate-100 border border-slate-300 flex items-center justify-center">
                                     <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(team)" :src="teamLogoUrl(team)" class="w-full h-full" alt=""/>
                                     <span v-else class="text-[8px] text-slate-400">—</span>
                                 </div>
@@ -96,9 +96,9 @@
                         <div class="col-span-1 lg:col-span-3 flex flex-col gap-3">
 
                             <!-- Logo + infos -->
-                            <div class="border border-slate-200 rounded-xl bg-white p-5">
+                            <div class="border border-slate-300 rounded-xl bg-white p-5">
                                 <div class="flex flex-col items-center gap-3 mb-4">
-                                    <div class="w-24 h-24 rounded-2xl overflow-hidden bg-slate-50 border border-slate-200 flex items-center justify-center">
+                                    <div class="w-24 h-24 rounded-2xl overflow-hidden bg-slate-50 border border-slate-300 flex items-center justify-center">
                                         <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(selectedTeam)" :src="teamLogoUrl(selectedTeam)" class="w-full h-full" alt=""/>
                                         <span v-else class="text-4xl">🏟️</span>
                                     </div>
@@ -119,7 +119,7 @@
                             </div>
 
                             <!-- Stats moyennes (prebuilt uniquement) -->
-                            <div v-if="gameMode !== 'draft'" class="border border-slate-200 rounded-xl bg-white p-4">
+                            <div v-if="gameMode !== 'draft'" class="border border-slate-300 rounded-xl bg-white p-4">
                                 <div class="flex items-center justify-between gap-2">
                                     <h4 class="text-2xs font-bold uppercase tracking-wider text-slate-400">Forces</h4>
                                     <button type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-teal-500"
@@ -151,7 +151,7 @@
                                         La vitesse, le moral, l’endurance et la chance affichés sont ceux du début de partie.
                                     </p>
                                 </div>
-                                <div v-if="teamRating" class="mt-3 flex items-center justify-between gap-2 border-t border-slate-200 pt-3"
+                                <div v-if="teamRating" class="mt-3 flex items-center justify-between gap-2 border-t border-slate-300 pt-3"
                                      :title="`Niveau du onze probable ${teamRating.level} · moral ${signedPct(teamRating.morale)} · endurance ${signedPct(teamRating.stamina)}`">
                                     <div>
                                         <div class="text-xs font-semibold text-slate-700">Note globale</div>
@@ -175,7 +175,7 @@
                             </div>
 
                             <!-- Radar (prebuilt uniquement) -->
-                            <div v-if="gameMode !== 'draft'" class="border border-slate-200 rounded-xl bg-white p-4 flex flex-col items-center">
+                            <div v-if="gameMode !== 'draft'" class="border border-slate-300 rounded-xl bg-white p-4 flex flex-col items-center">
                                 <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2 self-start">Profil</h4>
                                 <svg viewBox="0 0 160 160" class="w-36 h-36">
                                     <polygon class="stroke-slate-200" v-for="(pts,i) in radarGrids" :key="i" :points="pts" fill="none" stroke-width="0.8"/>
@@ -226,16 +226,16 @@
                                 </p>
 
                                 <!-- Récap hot-seat + lancement -->
-                                <div class="border border-slate-200 rounded-xl bg-white p-4">
+                                <div class="border border-slate-300 rounded-xl bg-white p-4">
                                     <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">
                                         Managers humains — {{ humanTeams.length }}
                                     </h4>
 
                                     <div v-if="humanTeams.length" class="space-y-1.5 mb-3">
                                         <div v-for="(t, i) in humanTeams" :key="t.id"
-                                             class="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-slate-50 border border-slate-100">
+                                             class="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-slate-50 border border-slate-300">
                                             <span class="w-5 h-5 rounded-full bg-teal-500 text-white text-2xs font-black flex items-center justify-center shrink-0">{{ i + 1 }}</span>
-                                            <div class="w-6 h-6 rounded-md overflow-hidden bg-white border border-slate-200 shrink-0 flex items-center justify-center">
+                                            <div class="w-6 h-6 rounded-md overflow-hidden bg-white border border-slate-300 shrink-0 flex items-center justify-center">
                                                 <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" class="w-full h-full" alt=""/>
                                                 <span v-else class="text-[8px] text-slate-400">—</span>
                                             </div>
@@ -263,7 +263,7 @@
                         </div>
 
                         <!-- Colonne droite : effectif (prebuilt) ou aperçu style (draft) -->
-                        <div class="col-span-1 lg:col-span-9 border border-slate-200 rounded-xl bg-white p-4 flex flex-col">
+                        <div class="col-span-1 lg:col-span-9 border border-slate-300 rounded-xl bg-white p-4 flex flex-col">
 
                             <!-- Mode prebuilt : effectif complet -->
                             <template v-if="gameMode !== 'draft'">
@@ -283,14 +283,14 @@
                                             <button v-for="player in group.players" :key="player.id" type="button"
                                                  @click="detailPlayer = player"
                                                  :title="`Voir la fiche de ${player.firstname} ${player.lastname}`"
-                                                 class="w-full text-left flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-slate-50 hover:bg-white hover:border-teal-200 hover:shadow-sm transition-all cursor-pointer">
+                                                 class="w-full text-left flex items-center gap-3 p-3 rounded-xl border border-slate-300 bg-slate-50 hover:bg-white hover:border-teal-200 hover:shadow-sm transition-all cursor-pointer">
                                                 <div class="relative shrink-0">
-                                                    <div class="w-12 h-12 rounded-xl overflow-hidden bg-slate-200 border border-slate-100">
+                                                    <div class="w-12 h-12 rounded-xl overflow-hidden bg-slate-200 border border-slate-300">
                                                         <PlayerPhoto :src="playerPhotoUrl(player)" class="w-full h-full object-cover" alt="" />
                                                         <div v-if="!playerPhotoUrl(player)" class="w-full h-full flex items-center justify-center text-slate-400 text-lg">👤</div>
                                                     </div>
                                                     <span v-if="nationalityFlag(player)"
-                                                          class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-white border border-slate-200 flex items-center justify-center text-[11px] leading-none shadow-sm"
+                                                          class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-white border border-slate-300 flex items-center justify-center text-[11px] leading-none shadow-sm"
                                                           :title="player.nationality">
                                                         {{ nationalityFlag(player) }}
                                                     </span>
@@ -362,7 +362,7 @@
 
                                 <div class="space-y-4">
                                     <!-- Style tactique -->
-                                    <div class="border border-slate-100 rounded-xl bg-slate-50 p-4">
+                                    <div class="border border-slate-300 rounded-xl bg-slate-50 p-4">
                                         <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">Style tactique</h4>
                                         <p class="text-sm text-slate-700">
                                             Cette équipe jouera avec un style
@@ -372,7 +372,7 @@
                                     </div>
 
                                     <!-- Philosophie -->
-                                    <div class="border border-slate-100 rounded-xl bg-slate-50 p-4">
+                                    <div class="border border-slate-300 rounded-xl bg-slate-50 p-4">
                                         <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">Philosophie de gestion</h4>
                                         <p class="text-sm text-slate-700">
                                             Approche
@@ -422,12 +422,12 @@
             <div v-if="detailPlayer" class="p-5 space-y-4">
                 <div class="flex items-start gap-4">
                     <div class="relative shrink-0">
-                        <div class="w-20 h-20 rounded-xl overflow-hidden bg-slate-200 border border-slate-100">
+                        <div class="w-20 h-20 rounded-xl overflow-hidden bg-slate-200 border border-slate-300">
                             <PlayerPhoto :src="playerPhotoUrl(detailPlayer)" class="w-full h-full object-cover" alt="" />
                             <div v-if="!playerPhotoUrl(detailPlayer)" class="w-full h-full flex items-center justify-center text-slate-400 text-2xl">👤</div>
                         </div>
                         <span v-if="nationalityFlag(detailPlayer)"
-                              class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center text-xs shadow-sm"
+                              class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-white border border-slate-300 flex items-center justify-center text-xs shadow-sm"
                               :title="detailPlayer.nationality">{{ nationalityFlag(detailPlayer) }}</span>
                     </div>
                     <div class="flex-1 min-w-0">
@@ -451,7 +451,7 @@
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <!-- Moral -->
-                    <div v-if="detailPlayer.morale_preview != null" class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <div v-if="detailPlayer.morale_preview != null" class="rounded-xl border border-slate-300 bg-slate-50 p-3">
                         <div class="flex items-center justify-between text-xs mb-1.5">
                             <span class="font-bold text-slate-500 uppercase tracking-wider text-2xs">Moral</span>
                             <span class="font-black" :class="moraleState(detailPlayer.morale_preview).text">
@@ -467,7 +467,7 @@
                         </p>
                     </div>
                     <!-- Endurance -->
-                    <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <div class="rounded-xl border border-slate-300 bg-slate-50 p-3">
                         <div class="flex items-center justify-between text-xs mb-1.5">
                             <span class="font-bold text-slate-500 uppercase tracking-wider text-2xs">Endurance</span>
                             <span class="font-black" :class="staminaText(statValue(detailPlayer, 'stamina'))">{{ statValue(detailPlayer, 'stamina') }}</span>
@@ -739,7 +739,7 @@ const statTone = (v) => Number(v) >= 70 ? 'text-emerald-600'
 // Pastille de note globale (mêmes seuils que les chiffres).
 const overallBadgeClass = (o) => o >= 70 ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
     : o >= 50 ? 'bg-amber-50 border-amber-300 text-amber-700'
-    : 'bg-slate-100 border-slate-200 text-slate-500';
+    : 'bg-slate-100 border-slate-300 text-slate-500';
 
 // Budget affiché = budget de départ réel en partie (difficulté), sinon celui du club.
 const startBudget = computed(() => props.humanStartBudget ?? selectedTeam.value?.budget ?? 0);

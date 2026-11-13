@@ -47,7 +47,7 @@ const rewardMax = computed(() => props.challenges.objectives.reduce((s, o) => s 
 </script>
 
 <template>
-    <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+    <div class="border border-slate-300 rounded-xl bg-slate-50 p-4">
         <div class="flex flex-wrap items-baseline justify-between gap-2 mb-3">
             <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">🎲 Défis de la saison</h3>
             <span class="text-[11px] text-slate-400">

@@ -24,12 +24,12 @@ const sides = computed(() => [
 </script>
 
 <template>
-    <div v-if="progression.length" class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+    <div v-if="progression.length" class="border border-slate-300 rounded-xl bg-slate-50 p-4">
         <h4 class="text-2xs font-bold text-slate-500 uppercase tracking-wider mb-3">📈 Progression suite à ce match</h4>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div v-for="side in sides" :key="side.key">
-                <div class="text-xs font-bold text-slate-600 mb-2 pb-1.5 border-b border-slate-200">
+                <div class="text-xs font-bold text-slate-600 mb-2 pb-1.5 border-b border-slate-300">
                     {{ side.name }}
                     <span class="text-2xs text-slate-400 font-normal ml-1">
                         ({{ side.players.length }} joueur{{ side.players.length > 1 ? 's' : '' }})

@@ -459,7 +459,7 @@ onMounted(() => {
 
                                 <!-- Sélecteur équipe -->
                                 <select v-model="inspectedTeamId"
-                                        class="w-full px-2 py-1 mb-2" :class="fieldClass({ shape: 'rect', size: 'sm', border: 'border-slate-200' })">
+                                        class="w-full px-2 py-1 mb-2" :class="fieldClass({ shape: 'rect', size: 'sm', border: 'border-slate-300' })">
                                     <option v-for="t in draftOrderTeams" :key="t.id" :value="t.id">
                                         {{ t.name }} ({{ t.rosterCount }})
                                     </option>
@@ -492,7 +492,7 @@ onMounted(() => {
                         <!-- ══════ COL CENTRALE + DROITE : Joueurs ══════ -->
                         <div class="col-span-1 flex min-w-0 flex-col lg:col-span-9">
 
-                            <div class="mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-xl border border-slate-200 bg-white px-4 py-3">
+                            <div class="mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-xl border border-slate-300 bg-white px-4 py-3">
                                 <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                                     <h1 class="text-sm font-bold text-slate-700">
                                         Tour {{ draft?.round ?? 1 }} — Pick {{ (draft?.current_pick_index ?? 0) + 1 }} / {{ draft?.order?.length ?? 0 }}
@@ -503,7 +503,7 @@ onMounted(() => {
                                     <div v-if="isProcessing && !isMyTurn" class="flex items-center gap-2">
                                         <div class="relative shrink-0">
                                             <TeamLogo :team="currentTeam" size="md" />
-                                            <div class="absolute inset-0 rounded-full border-2 border-slate-200 border-t-slate-600 animate-spin"></div>
+                                            <div class="absolute inset-0 rounded-full border-2 border-slate-300 border-t-slate-300 animate-spin"></div>
                                         </div>
                                         <span class="text-sm font-bold text-slate-600">
                                             {{ currentTeam?.name ?? '—' }} est en train de choisir...
@@ -569,7 +569,7 @@ onMounted(() => {
                                                 <p v-if="inspectedPlayer.description" class="mt-2 text-xs italic text-slate-500">{{ inspectedPlayer.description }}</p>
                                             </template>
                                         </PlayerIdentityCard>
-                                        <div class="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white p-3 text-xs">
+                                        <div class="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-300 bg-white p-3 text-xs">
                                             <span>Moral <strong :class="moraleState(inspectedPlayer.morale).text">{{ inspectedPlayer.morale ?? 60 }}/100</strong></span>
                                             <span>Coût draft <strong class="text-teal-700">{{ draftCost(inspectedPlayer) }} <GameBanknote /></strong></span>
                                             <ButtonPrimary type="button" size="sm" :disabled="isProcessing || !canAfford(inspectedPlayer)" @click="pickPlayer(inspectedPlayer)">
@@ -585,12 +585,12 @@ onMounted(() => {
 
                             <!-- Pas mon tour → derniers picks -->
                             <div v-else-if="!draftCompleted"
-                                 class="border border-dashed border-slate-200 rounded-xl p-6 text-slate-400">
+                                 class="border border-dashed border-slate-300 rounded-xl p-6 text-slate-400">
                                 <p class="text-center text-xs mb-4">Les autres équipes sont en train de piocher... Tu pourras choisir quand ce sera ton tour.</p>
 
                                 <div v-if="pickLog.length" class="flex flex-col gap-2 max-w-md mx-auto">
                                     <div v-for="(pick, idx) in [...pickLog].reverse().slice(0, 6)" :key="idx"
-                                         class="flex items-center gap-3 bg-white border border-slate-200 rounded-lg px-3 py-2">
+                                         class="flex items-center gap-3 bg-white border border-slate-300 rounded-lg px-3 py-2">
                                         <TeamLogo :team="teams.find(t => t.id === pick.team_id) ?? { name: pick.team_name }" size="md" />
                                         <div class="flex-1 text-left">
                                             <p class="text-sm font-semibold text-slate-700">{{ pick.player_name }}</p>
@@ -610,10 +610,10 @@ onMounted(() => {
         <Modal :show="!!rosterModalTeam" max-width="2xl" @close="rosterModalTeamId = null"
                :title="`${rosterModalTeam?.name ?? ''} · ${rosterModalPicks.length} joueur${rosterModalPicks.length > 1 ? 's' : ''} pioché${rosterModalPicks.length > 1 ? 's' : ''}`">
                 <div v-if="rosterModalPicks.length" class="grid gap-3 sm:grid-cols-2">
-                    <div class="max-h-[55vh] space-y-1 overflow-y-auto rounded-xl border border-slate-200 bg-slate-50 p-2">
+                    <div class="max-h-[55vh] space-y-1 overflow-y-auto rounded-xl border border-slate-300 bg-slate-50 p-2">
                         <button v-for="pick in rosterModalPicks" :key="pick.player_id" type="button"
                                 class="block w-full rounded-lg border px-2 py-2 text-left text-xs"
-                                :class="rosterModalPick?.player_id === pick.player_id ? 'border-teal-300 bg-teal-50' : 'border-slate-200 bg-white hover:border-slate-200'"
+                                :class="rosterModalPick?.player_id === pick.player_id ? 'border-teal-300 bg-teal-50' : 'border-slate-300 bg-white hover:border-slate-300'"
                                 :aria-pressed="rosterModalPick?.player_id === pick.player_id"
                                 @click="rosterModalPlayerId = pick.player_id">
                             <span class="block font-semibold text-slate-700">{{ pick.player_name }}</span>

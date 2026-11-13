@@ -18,8 +18,8 @@ export function useTeamStyles() {
         defensive:  'bg-blue-100    text-blue-700    border-blue-200',
         possession: 'bg-emerald-100 text-emerald-700 border-emerald-200',
         counter:    'bg-amber-100   text-amber-700   border-amber-200',
-        balanced:   'bg-slate-100   text-slate-700   border-slate-200',
-    }[key] ?? 'bg-slate-100 text-slate-700 border-slate-200');
+        balanced:   'bg-slate-100   text-slate-700   border-slate-300',
+    }[key] ?? 'bg-slate-100 text-slate-700 border-slate-300');
 
     // Couleurs par philosophie
     const philosophyColor = (key) => ({

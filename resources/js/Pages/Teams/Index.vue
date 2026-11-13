@@ -41,7 +41,7 @@
                     </span>
                 </template>
 
-                <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-6 shadow-sm">
+                <div class="bg-white border border-slate-300 rounded-xl p-4 sm:p-6 shadow-sm">
                     <form @submit.prevent="submit">
                         <TeamRecordBars v-if="!editor.creating.value" :wins="form.wins" :draws="form.draws" :losses="form.losses" />
 

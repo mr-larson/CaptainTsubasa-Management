@@ -84,7 +84,7 @@ const benchTitle = (p) => {
 </script>
 
 <template>
-    <div class="border border-slate-200 rounded-xl bg-slate-50 p-3 overflow-y-auto">
+    <div class="border border-slate-300 rounded-xl bg-slate-50 p-3 overflow-y-auto">
         <h3 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">{{ title }}</h3>
         <div v-if="players.length" class="space-y-3">
             <div v-for="group in groupedPlayers" :key="group.key" class="space-y-1">
@@ -99,7 +99,7 @@ const benchTitle = (p) => {
                              ? 'bg-teal-500 text-white border-teal-600 shadow-sm'
                              : rowHighlight(p)
                                  ? 'bg-teal-50 border-teal-200 text-slate-700'
-                                 : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-100',
+                                 : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-300',
                      ]">
                     <button type="button"
                             class="min-w-0 flex-1 rounded-lg px-2 py-1.5 text-left"

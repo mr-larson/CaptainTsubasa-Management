@@ -19,7 +19,7 @@ defineEmits(['select']);
 
 <template>
     <div class="flex items-center gap-2 rounded-lg border pr-2 transition-colors"
-         :class="selected ? 'border-teal-300 bg-teal-50' : 'border-slate-200 bg-white hover:bg-slate-50'">
+         :class="selected ? 'border-teal-300 bg-teal-50' : 'border-slate-300 bg-white hover:bg-slate-50'">
         <button type="button" class="flex min-w-0 flex-1 items-center gap-2 rounded-lg py-2 pl-2 text-left"
                 :aria-pressed="selected" @click="$emit('select', player)">
             <PlayerAvatar :player="player" show-flag :zoomable="false" />

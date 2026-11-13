@@ -77,9 +77,9 @@ export function useBonusCards({ gameSave, bonusCardOffers, bonusCardInventory })
     // ==========================
     const tierColor = (tier) => ({
         bronze: 'border-amber-400 bg-amber-50 text-amber-800',
-        silver: 'border-slate-400 bg-slate-100 text-slate-700',
+        silver: 'border-slate-300 bg-slate-100 text-slate-700',
         gold:   'border-yellow-400 bg-yellow-50 text-yellow-800',
-    }[tier] ?? 'border-slate-200 bg-white');
+    }[tier] ?? 'border-slate-300 bg-white');
 
     const tierBadge = (tier) => ({
         bronze: 'bg-amber-500 text-white',

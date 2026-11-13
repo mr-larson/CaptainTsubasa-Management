@@ -17,8 +17,8 @@ const props = defineProps({
 const slots = useSlots();
 
 const TONES = {
-    muted: 'border-slate-200 bg-slate-50',
-    white: 'border-slate-200 bg-white',
+    muted: 'border-slate-300 bg-slate-50',
+    white: 'border-slate-300 bg-white',
     amber: 'border-amber-200 bg-amber-50',
 };
 const PADDINGS = { sm: 'p-3', md: 'p-4' };

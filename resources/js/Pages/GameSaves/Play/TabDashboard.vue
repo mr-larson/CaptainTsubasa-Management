@@ -186,7 +186,7 @@ const { positionDelta, objective, projection, totalWeeks: seasonEndWeek } = useS
 const scrollToFinances = () =>
     document.getElementById('dashboard-finances')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-const KPI = 'border border-slate-200 rounded-xl bg-slate-50 p-2 text-left transition-colors hover:bg-slate-100 hover:border-slate-300';
+const KPI = 'border border-slate-300 rounded-xl bg-slate-50 p-2 text-left transition-colors hover:bg-slate-100 hover:border-slate-300';
 
 const matchesPlayed = computed(() =>
     (props.teamRecord.wins ?? 0) + (props.teamRecord.draws ?? 0) + (props.teamRecord.losses ?? 0)
@@ -200,7 +200,7 @@ const hasPlayed = computed(() => matchesPlayed.value > 0);
         <!-- ============================================ -->
         <!-- LIGNE 1 : Contexte + progression saison      -->
         <!-- ============================================ -->
-        <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+        <div class="border border-slate-300 rounded-xl bg-slate-50 p-4">
             <div class="flex flex-wrap items-center justify-between gap-4 mb-3">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl overflow-hidden shrink-0">
@@ -354,7 +354,7 @@ const hasPlayed = computed(() => matchesPlayed.value > 0);
              :class="{
          'border-2 border-teal-400':   midseasonBreakRecovery === null && !isByeWeek && nextMatchInfo?.isHome,
          'border-2 border-orange-400': midseasonBreakRecovery === null && !isByeWeek && !nextMatchInfo?.isHome,
-         'border border-slate-200':    isByeWeek || midseasonBreakRecovery !== null,
+         'border border-slate-300':    isByeWeek || midseasonBreakRecovery !== null,
      }">
 
             <div v-if="midseasonBreakRecovery !== null" class="p-5 flex flex-wrap items-center justify-between gap-4">
@@ -463,7 +463,7 @@ const hasPlayed = computed(() => matchesPlayed.value > 0);
         <!-- ============================================ -->
         <!-- LIGNE 4 : Forces face à face                -->
         <!-- ============================================ -->
-        <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+        <div class="border border-slate-300 rounded-xl bg-slate-50 p-4">
             <div class="flex items-center justify-between gap-2 mb-3">
                 <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider truncate">{{ team?.name ?? 'Mon équipe' }}</h4>
                 <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider shrink-0">Forces</h4>
@@ -493,7 +493,7 @@ const hasPlayed = computed(() => matchesPlayed.value > 0);
             </div>
             <p class="mt-2 text-2xs text-slate-500">Moyennes des effectifs sur 100 · Arrêt main et Poings calculés sur les gardiens.</p>
             <div v-if="opponentTeam && !isByeWeek && opponentThreats.length"
-                 class="mt-3 pt-3 border-t border-slate-200 flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-xs">
+                 class="mt-3 pt-3 border-t border-slate-300 flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-xs">
                 <span class="text-2xs font-bold text-slate-400 uppercase tracking-wider">À surveiller</span>
                 <span v-for="t in opponentThreats" :key="t.key" class="text-slate-700">
                     <span class="font-semibold">{{ t.text }}</span>
@@ -501,7 +501,7 @@ const hasPlayed = computed(() => matchesPlayed.value > 0);
                 </span>
             </div>
             <div v-if="team?.description || (opponentTeam && !isByeWeek && opponentTeam.description)"
-                 class="mt-3 pt-3 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                 class="mt-3 pt-3 border-t border-slate-300 grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <p class="text-xs text-slate-400 italic leading-relaxed line-clamp-2">{{ team?.description }}</p>
                 <p v-if="opponentTeam && !isByeWeek" class="text-xs text-slate-400 italic leading-relaxed line-clamp-2 sm:text-right">{{ opponentTeam.description }}</p>
             </div>

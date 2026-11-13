@@ -59,16 +59,16 @@ const teams = computed(() => {
                 :id="`prematch-team-${index}`"
                 :key="team.id"
                 :aria-label="team.venue"
-                class="min-w-0 overflow-hidden rounded-xl border border-slate-200"
+                class="min-w-0 overflow-hidden rounded-xl border border-slate-300"
                 :class="activeTeam === index ? '' : 'hidden xl:block'"
             >
                 <h4
-                    class="border-b border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold uppercase tracking-wider text-teal-700"
+                    class="border-b border-slate-300 bg-slate-50 px-3 py-2 text-xs font-bold uppercase tracking-wider text-teal-700"
                 >
                     {{ team.venue }}
                 </h4>
                 <div class="grid grid-cols-2">
-                    <div class="min-w-0 border-r border-slate-200">
+                    <div class="min-w-0 border-r border-slate-300">
                         <div class="bg-gradient-to-br from-slate-50 to-teal-50 p-3">
                             <div class="flex items-center gap-3">
                                 <div

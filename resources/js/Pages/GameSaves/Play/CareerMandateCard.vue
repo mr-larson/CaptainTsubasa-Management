@@ -10,7 +10,7 @@ defineEmits(['open-rules']);
     <!-- Variante compacte : empilée verticalement, pensée pour la colonne visuelle de gauche -->
     <div v-if="compact"
          class="px-3 py-3 rounded-xl border bg-white"
-         :class="career.alert ? 'border-rose-300 ring-1 ring-rose-100' : 'border-slate-200'">
+         :class="career.alert ? 'border-rose-300 ring-1 ring-rose-100' : 'border-slate-300'">
         <div class="flex items-center gap-1.5 min-w-0">
             <span class="text-base shrink-0">🎯</span>
             <p class="text-xs font-bold text-slate-700 truncate">{{ career.mandate.label }}</p>
@@ -40,7 +40,7 @@ defineEmits(['open-rules']);
     <!-- Variante large : bandeau horizontal, utilisée sur mobile (pas de colonne visuelle) -->
     <div v-else
          class="px-4 py-3 rounded-xl border bg-white"
-         :class="career.alert ? 'border-rose-300 ring-1 ring-rose-100' : 'border-slate-200'">
+         :class="career.alert ? 'border-rose-300 ring-1 ring-rose-100' : 'border-slate-300'">
         <div class="flex items-center justify-between gap-4 flex-wrap">
             <div class="flex items-center gap-2 min-w-0">
                 <span class="text-lg shrink-0">🎯</span>

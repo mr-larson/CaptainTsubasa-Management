@@ -136,7 +136,7 @@ const hasStarters = computed(() => sides.value.some(s => s.starters.length));
 </script>
 
 <template>
-    <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+    <div class="border border-slate-300 rounded-xl bg-slate-50 p-4">
         <div v-if="hasStarters" class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div v-for="s in sides" :key="s.side" class="min-w-0">
                 <!-- En-tête d'équipe -->
@@ -186,7 +186,7 @@ const hasStarters = computed(() => sides.value.some(s => s.starters.length));
                 </template>
 
                 <!-- Changements -->
-                <div v-if="s.subs.length" class="pt-2 border-t border-slate-200 space-y-0.5">
+                <div v-if="s.subs.length" class="pt-2 border-t border-slate-300 space-y-0.5">
                     <div v-for="(c, i) in s.subs" :key="i" class="text-[11px] text-slate-500">
                         🔄 <span class="font-mono text-slate-400">T{{ c.turn }}</span>
                         <span class="text-rose-500">{{ c.out }}</span> ➜ <span class="text-emerald-600">{{ c.in }}</span>

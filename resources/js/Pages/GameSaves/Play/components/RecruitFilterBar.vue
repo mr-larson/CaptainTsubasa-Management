@@ -15,7 +15,7 @@ const origin   = defineModel('origin',   { type: String, default: 'ALL' });
 const sort     = defineModel('sort',     { type: String, default: 'name' });
 const maxPrice = defineModel('maxPrice', { type: [Number, String], default: '' });
 
-const field = fieldClass({ size: 'sm', border: 'border-slate-200' });
+const field = fieldClass({ size: 'sm', border: 'border-slate-300' });
 const withCount = (option) => option.count == null ? option.label : `${option.label} (${option.count})`;
 </script>
 

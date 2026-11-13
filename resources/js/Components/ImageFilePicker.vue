@@ -12,6 +12,8 @@ const props = defineProps({
     currentUrl: { type: String, default: null },
     alt: { type: String, default: '' },
     emptyLabel: { type: String, default: 'Aucune' },
+    hidePreview: { type: Boolean, default: false },
+    fullWidth: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(['update:modelValue', 'preview']);
@@ -69,10 +71,10 @@ onBeforeUnmount(() => revokePreview());
             />
 
             <!-- faux input -->
-            <div class="flex items-center w-full md:w-56">
+            <div class="flex items-center min-w-0 w-full" :class="fullWidth ? '' : 'md:w-56'">
                 <button
                     type="button"
-                    class="shrink-0 px-3 py-1.5 rounded-l-full border border-slate-300 bg-white text-sm text-slate-700 hover:bg-white focus:outline-none focus:border-slate-700"
+                    class="shrink-0 px-3 py-1.5 rounded-l-full border border-slate-300 bg-white text-sm text-slate-700 hover:bg-white focus:outline-none focus:border-slate-300"
                     @click="openPicker"
                 >
                     Choisir
@@ -87,7 +89,7 @@ onBeforeUnmount(() => revokePreview());
             </div>
 
             <!-- preview carré -->
-            <div class="h-16 w-16 rounded border bg-white overflow-hidden flex items-center justify-center">
+            <div v-if="!hidePreview" class="h-16 w-16 rounded border bg-white overflow-hidden flex items-center justify-center">
                 <slot name="preview" :src="previewUrl || currentUrl">
                     <img
                         v-if="previewUrl || currentUrl"

@@ -149,7 +149,7 @@ const rankIcon = (rank) => {
 
             <div class="overflow-x-auto">
                 <table class="w-full text-xs min-w-max text-left">
-                    <thead class="border-b border-slate-200 text-2xs font-bold uppercase tracking-wider text-slate-400">
+                    <thead class="border-b border-slate-300 text-2xs font-bold uppercase tracking-wider text-slate-400">
                     <tr>
                         <th class="py-2 w-8 text-center">#</th>
                         <th class="py-2 pr-4">Équipe</th>
@@ -168,7 +168,7 @@ const rankIcon = (rank) => {
                     </thead>
                     <tbody>
                     <tr v-for="(row, index) in standings" :key="row.id"
-                        class="cursor-pointer border-b border-slate-100 last:border-0 transition-colors hover:bg-teal-100/60"
+                        class="cursor-pointer border-b border-slate-300 last:border-0 transition-colors hover:bg-teal-100/60"
                         @click="selectedTeam = row"
                         :class="team?.id === row.id ? 'bg-teal-50' : index % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'">
 

@@ -105,7 +105,7 @@
     box-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
     opacity: 0.55;
     filter: grayscale(0.8);
-    border-color: #94a3b8;
+    border-color: #cbd5e1;
 }
 .player.unavailable::after {
     content: "✕";
@@ -467,7 +467,7 @@
 
 .log-result-success { border-left-color: theme('colors.emerald.500'); }
 .log-result-failed  { border-left-color: theme('colors.rose.500'); }
-.log-result-neutral { border-left-color: #94a3b8; }
+.log-result-neutral { border-left-color: #cbd5e1; }
 .log-entry.log-result-success { background: linear-gradient(90deg, theme('colors.emerald.500 / 7%') 0%, rgba(248,250,252,0.7) 60%); }
 .log-entry.log-result-failed  { background: linear-gradient(90deg, theme('colors.rose.500 / 7%') 0%, rgba(248,250,252,0.7) 60%); }
 .log-entry.log-gold { background: linear-gradient(90deg, rgba(217,119,6,0.13) 0%, rgba(255,255,255,0.85) 60%); border-left-color: #d97706; }
@@ -478,7 +478,7 @@
 .log-entry.log-orange { border-left-color: #f97316; }
 .log-entry.log-red    { border-left-color: #ef4444; }
 .log-entry.log-yellow { border-left-color: #ca8a04; }
-.log-entry.log-slate  { border-left-color: #94a3b8; }
+.log-entry.log-slate  { border-left-color: #cbd5e1; }
 
 /* Entrées d'historique avec détail de duel disponible au clic */
 .log-entry--clickable { cursor: pointer; }

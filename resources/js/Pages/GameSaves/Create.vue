@@ -174,7 +174,7 @@ function submit() {
                 <div class="hidden md:block basis-1/4 p-4 bg-contain bg-center bg-no-repeat bg-[url('/images/Hyuga2.webp')]"></div>
 
                 <!-- Carte formulaire / config -->
-                <div class="basis-full md:basis-3/4 p-4 sm:p-6 border border-slate-200 rounded-2xl mx-0 md:mx-6 bg-white h-[calc(100vh-6rem)] md:h-[800px] flex flex-col shadow-sm overflow-hidden">
+                <div class="basis-full md:basis-3/4 p-4 sm:p-6 border border-slate-300 rounded-2xl mx-0 md:mx-6 bg-white h-[calc(100vh-6rem)] md:h-[800px] flex flex-col shadow-sm overflow-hidden">
 
                     <!-- Header -->
                     <div class="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -217,7 +217,7 @@ function submit() {
                     <!-- ====== FORMULAIRE CREATION ====== -->
                     <form v-show="!showConfig && !showRules" @submit.prevent="submit" class="flex flex-col flex-1 gap-6 overflow-y-auto">
 
-                        <div class="flex flex-col gap-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                        <div class="flex flex-col gap-6 rounded-xl border border-slate-300 bg-slate-50 p-4">
                             <!-- Nom de la partie -->
                             <div class="flex flex-col gap-1.5">
                                 <label for="label" class="text-xs font-bold text-slate-500 uppercase tracking-wider">
@@ -244,7 +244,7 @@ function submit() {
                                             class="relative flex flex-col gap-2 p-4 rounded-xl border-2 transition-all text-left"
                                             :class="form.competition_type === 'college_league'
                                                 ? 'border-teal-500 bg-teal-50 shadow-sm'
-                                                : 'border-slate-200 bg-white hover:border-slate-300'">
+                                                : 'border-slate-300 bg-white hover:border-slate-300'">
                                         <div class="flex items-center gap-2">
                                             <span class="text-xl">🏫</span>
                                             <span class="text-sm font-bold"
@@ -267,7 +267,7 @@ function submit() {
                                             class="relative flex flex-col gap-2 p-4 rounded-xl border-2 transition-all text-left"
                                             :class="form.competition_type === 'world_cup'
                                                 ? 'border-indigo-500 bg-indigo-50 shadow-sm'
-                                                : 'border-slate-200 bg-white hover:border-slate-300'">
+                                                : 'border-slate-300 bg-white hover:border-slate-300'">
                                         <div class="flex items-center gap-2">
                                             <span class="text-xl">🌍</span>
                                             <span class="text-sm font-bold"
@@ -336,7 +336,7 @@ function submit() {
                                             class="relative flex flex-col gap-2 p-4 rounded-xl border-2 transition-all text-left"
                                             :class="form.game_mode === 'prebuilt'
                                                 ? 'border-teal-500 bg-teal-50 shadow-sm'
-                                                : 'border-slate-200 bg-white hover:border-slate-300'">
+                                                : 'border-slate-300 bg-white hover:border-slate-300'">
                                         <div class="flex items-center gap-2">
                                             <span class="text-xl">🏟️</span>
                                             <span class="text-sm font-bold"
@@ -359,7 +359,7 @@ function submit() {
                                             class="relative flex flex-col gap-2 p-4 rounded-xl border-2 transition-all text-left"
                                             :class="form.game_mode === 'draft'
                                                 ? 'border-amber-500 bg-amber-50 shadow-sm'
-                                                : 'border-slate-200 bg-white hover:border-slate-300'">
+                                                : 'border-slate-300 bg-white hover:border-slate-300'">
                                         <div class="flex items-center gap-2">
                                             <span class="text-xl">🎯</span>
                                             <span class="text-sm font-bold"
@@ -385,7 +385,7 @@ function submit() {
                         <div class="flex-1"></div>
 
                         <!-- Boutons -->
-                        <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 border-t border-slate-100">
+                        <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 border-t border-slate-300">
                             <Link :href="route('mainMenu')"
                                   class="inline-flex min-h-11 items-center justify-center rounded-full border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50">
                                 ← Retour
@@ -404,7 +404,7 @@ function submit() {
                     <div v-show="showConfig" class="flex flex-col flex-1 gap-4 overflow-y-auto min-h-0">
 
                         <!-- Mandat de la direction -->
-                        <div class="border border-slate-200 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
+                        <div class="border border-slate-300 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
                             <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                                 <span>🎯</span> Mandat de la direction
                             </h4>
@@ -417,7 +417,7 @@ function submit() {
                                         class="relative flex flex-col gap-1 p-2.5 rounded-lg border-2 transition-all text-left"
                                         :class="config.career_difficulty === lvl.key
                                             ? 'border-teal-500 bg-teal-50'
-                                            : 'border-slate-200 bg-white hover:border-slate-300'">
+                                            : 'border-slate-300 bg-white hover:border-slate-300'">
                                     <span class="text-xs font-bold flex items-center gap-1.5"
                                           :class="config.career_difficulty === lvl.key ? 'text-teal-700' : 'text-slate-700'">
                                         <span>{{ lvl.icon }}</span> {{ lvl.label }}
@@ -439,7 +439,7 @@ function submit() {
                         </div>
 
                         <!-- Cartes -->
-                        <div class="border border-slate-200 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
+                        <div class="border border-slate-300 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
                             <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                                 <span>🃏</span> Cartes
                             </h4>
@@ -460,7 +460,7 @@ function submit() {
                         </div>
 
                         <!-- Données aléatoires -->
-                        <div class="border border-slate-200 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
+                        <div class="border border-slate-300 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
                             <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                                 <span>🎲</span> Données aléatoires
                             </h4>
@@ -505,7 +505,7 @@ function submit() {
                         </div>
 
                         <!-- Fatigue -->
-                        <div class="border border-slate-200 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
+                        <div class="border border-slate-300 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
                             <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                                 <span>⚡</span> Fatigue & Endurance
                             </h4>
@@ -528,7 +528,7 @@ function submit() {
                         </div>
 
                         <!-- Match -->
-                        <div class="border border-slate-200 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
+                        <div class="border border-slate-300 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
                             <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                                 <span>⚽</span> Match
                             </h4>
@@ -570,7 +570,7 @@ function submit() {
                         </div>
 
                         <!-- Économie -->
-                        <div v-if="form.competition_type !== 'world_cup'" class="border border-slate-200 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
+                        <div v-if="form.competition_type !== 'world_cup'" class="border border-slate-300 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
                             <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                                 <span>💰</span> Économie
                             </h4>
@@ -587,7 +587,7 @@ function submit() {
                         </div>
 
                         <!-- Entraînement -->
-                        <div class="border border-slate-200 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
+                        <div class="border border-slate-300 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
                             <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                                 <span>🏋️</span> Entraînement
                             </h4>
@@ -641,7 +641,7 @@ function submit() {
                         </div>
 
                         <!-- Visibilité -->
-                        <div class="border border-slate-200 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
+                        <div class="border border-slate-300 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
                             <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                                 <span>👁</span> Visibilité des joueurs
                             </h4>
@@ -653,7 +653,7 @@ function submit() {
                                     {{ originLabels[key] ?? key }}
                                 </label>
                             </div>
-                            <div class="border-t border-slate-200 pt-2 mt-1">
+                            <div class="border-t border-slate-300 pt-2 mt-1">
                                 <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
                                     <input type="checkbox" v-model="config.internationals_visible"
                                            class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
@@ -663,7 +663,7 @@ function submit() {
                         </div>
 
                         <!-- IA -->
-                        <div class="border border-slate-200 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
+                        <div class="border border-slate-300 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
                             <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                                 <span>🤖</span> Intelligence Artificielle
                             </h4>
@@ -683,7 +683,7 @@ function submit() {
 
                         <!-- Spacer + bouton reset -->
                         <div class="flex-1"></div>
-                        <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+                        <div class="flex items-center justify-between pt-3 border-t border-slate-300">
                             <button type="button" @click="resetDefaults"
                                     class="px-3 py-1.5 text-xs rounded-full border border-slate-300 bg-white hover:bg-slate-50 text-slate-600 font-medium">
                                 Réinitialiser
@@ -734,7 +734,7 @@ function submit() {
 
                     <div class="flex items-center justify-end gap-2 pt-2">
                         <button type="button" @click="showImportModal = false"
-                                class="px-4 py-2 text-xs font-semibold rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50">
+                                class="px-4 py-2 text-xs font-semibold rounded-lg border border-slate-300 text-slate-500 hover:bg-slate-50">
                             Annuler
                         </button>
                         <button type="submit" :disabled="importForm.processing"

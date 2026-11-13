@@ -36,7 +36,7 @@ defineProps({
                 ></div>
 
                 <!-- CONTENU en deux colonnes -->
-                <div class="basis-full xl:basis-3/4 grid grid-cols-1 md:grid-cols-2 gap-4 bg-white shadow-sm border border-slate-200 rounded-xl">
+                <div class="basis-full xl:basis-3/4 grid grid-cols-1 md:grid-cols-2 gap-4 bg-white shadow-sm border border-slate-300 rounded-xl">
 
                     <!-- Colonne gauche : Informations personnelles -->
                     <div class="p-6">
@@ -51,7 +51,7 @@ defineProps({
                         <div class="flex gap-4 mt-4">
                             <Link
                                 :href="route('dataBaseMenu')"
-                                class="w-40 h-10 bg-slate-50 hover:bg-slate-300 text-center font-semibold py-1 px-5 border-2 border-slate-500 rounded-full drop-shadow-md"
+                                class="w-40 h-10 bg-slate-50 hover:bg-slate-300 text-center font-semibold py-1 px-5 border-2 border-slate-300 rounded-full drop-shadow-md"
                             >
                                 Retour
                             </Link>

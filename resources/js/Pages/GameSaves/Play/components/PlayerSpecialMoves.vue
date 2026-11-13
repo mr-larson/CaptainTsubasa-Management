@@ -24,11 +24,11 @@ const actionLabels = {
         <ul v-if="moves.length" class="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <li v-for="(move, index) in moves" :key="move.key || index" class="min-w-0">
                 <button v-if="namesOnly" type="button" aria-haspopup="dialog"
-                        class="w-full rounded-lg border border-slate-200 bg-white p-2.5 text-left text-xs font-bold text-slate-700 hover:border-teal-300 hover:text-teal-700 focus-visible:outline-teal-600"
+                        class="w-full rounded-lg border border-slate-300 bg-white p-2.5 text-left text-xs font-bold text-slate-700 hover:border-teal-300 hover:text-teal-700 focus-visible:outline-teal-600"
                         @click="selectedMove = move">
                     {{ move.label || move.short_label || move.key }}
                 </button>
-                <div v-else class="rounded-lg border border-slate-200 bg-white p-2.5">
+                <div v-else class="rounded-lg border border-slate-300 bg-white p-2.5">
                     <div class="flex flex-wrap items-center gap-2">
                         <span class="text-xs font-bold text-slate-700">{{ move.label || move.short_label || move.key }}</span>
                         <span v-if="move.mode === 'attack' || move.mode === 'defense'"

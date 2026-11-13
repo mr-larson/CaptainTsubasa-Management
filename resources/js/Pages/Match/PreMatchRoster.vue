@@ -17,7 +17,7 @@ defineProps({ players: { type: Array, required: true } });
                 <th class="w-8 text-right"><abbr title="Note globale" class="no-underline">Note</abbr></th>
             </tr>
         </thead>
-        <tbody class="divide-y divide-slate-100">
+        <tbody class="divide-y divide-slate-300">
             <tr
                 v-for="player in players"
                 :key="player.id ?? `slot-${player.number}`"

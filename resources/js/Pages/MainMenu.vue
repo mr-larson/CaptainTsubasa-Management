@@ -50,7 +50,7 @@ import H2 from '@/Components/H2.vue';
                             </Link>
 
                             <Link :href="route('game-saves.index')"
-                                  class="group flex items-center gap-4 px-6 py-4 bg-white hover:bg-slate-50 text-slate-700 rounded-2xl font-bold text-base transition-all border border-slate-200 hover:border-teal-300 shadow-sm active:scale-[0.98]">
+                                  class="group flex items-center gap-4 px-6 py-4 bg-white hover:bg-slate-50 text-slate-700 rounded-2xl font-bold text-base transition-all border border-slate-300 hover:border-teal-300 shadow-sm active:scale-[0.98]">
                                 <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-xl shrink-0">
                                     💾
                                 </div>
@@ -62,7 +62,7 @@ import H2 from '@/Components/H2.vue';
                             </Link>
 
                             <Link :href="route('dataBaseMenu')"
-                                  class="group flex items-center gap-4 px-6 py-4 bg-white hover:bg-slate-50 text-slate-700 rounded-2xl font-bold text-base transition-all border border-slate-200 hover:border-slate-300 shadow-sm active:scale-[0.98]">
+                                  class="group flex items-center gap-4 px-6 py-4 bg-white hover:bg-slate-50 text-slate-700 rounded-2xl font-bold text-base transition-all border border-slate-300 hover:border-slate-300 shadow-sm active:scale-[0.98]">
                                 <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-xl shrink-0">
                                     🗂️
                                 </div>

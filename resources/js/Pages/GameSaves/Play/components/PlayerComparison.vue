@@ -45,7 +45,7 @@ const better = (row, a, b) => row.lower ? value(row, a) < value(row, b) : value(
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="row in rows" :key="row.key" class="border-b border-slate-100">
+                    <tr v-for="row in rows" :key="row.key" class="border-b border-slate-300">
                         <th scope="row" class="px-2 py-1.5 text-left font-medium text-slate-500">
                             <span v-if="row.color ?? STAT_COLORS[row.key]" class="mr-1 inline-block h-2 w-2 rounded-full" :class="row.color ?? STAT_COLORS[row.key]"></span>
                             {{ row.label }}

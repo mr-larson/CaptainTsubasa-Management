@@ -7,18 +7,25 @@
         </template>
 
         <div class="p-4 sm:p-6 max-w-8xl mx-auto flex flex-col gap-4">
-            <EditorSubNav
-                :back="{ href: route('dataBaseMenu'), label: 'Base de données' }"
-                :links="[
-                    { href: route('players.index'), label: 'Joueurs', active: true },
-                    { href: route('teams.index'), label: 'Équipes' },
-                    { href: route('contracts.index'), label: 'Contrats' },
-                ]"
-            />
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <EditorSubNav class="shrink-0"
+                    :back="{ href: route('dataBaseMenu'), label: 'Base de données' }"
+                    :links="[
+                        { href: route('players.index'), label: 'Joueurs', active: true },
+                        { href: route('teams.index'), label: 'Équipes' },
+                        { href: route('contracts.index'), label: 'Contrats' },
+                    ]"
+                />
+
+                <PlayerEditorFilters class="ml-auto"
+                    :filters="filters" :origins="filterOrigins" :teams="teams"
+                    :count="filteredPlayers.length" :total="players.length" @reset="resetFilters"
+                />
+            </div>
 
             <EntityEditor
                 title="Joueurs"
-                :items="players"
+                :items="filteredPlayers"
                 :selected-id="editor.selectedId.value"
                 :creating="editor.creating.value"
                 :search-text="p => `${p.firstname ?? ''} ${p.lastname ?? ''}`"
@@ -50,7 +57,7 @@
                 </template>
 
                 <!-- FICHE JOUEUR -->
-                <div v-show="activePanel === 'player'" class="bg-white border border-slate-200 rounded-xl p-4 sm:p-6 shadow-sm">
+                <div v-show="activePanel === 'player'" class="bg-white border border-slate-300 rounded-xl p-4 sm:p-6 shadow-sm">
                     <form @submit.prevent="submit">
                         <PlayerStatsPreview v-if="form.id" :stats="form.stats" />
 
@@ -77,7 +84,7 @@
                 </div>
 
                 <!-- COUPS SPÉCIAUX (enregistrés avec la fiche du joueur) -->
-                <div v-show="activePanel === 'moves'" class="bg-white border border-slate-200 rounded-xl p-4 sm:p-6 shadow-sm">
+                <div v-show="activePanel === 'moves'" class="bg-white border border-slate-300 rounded-xl p-4 sm:p-6 shadow-sm">
                     <form @submit.prevent="submit">
                         <SpecialMovesEditor v-model="form.special_moves" :errors="form.errors" />
                         <ButtonGroup>
@@ -89,7 +96,7 @@
                 </div>
 
                 <!-- CONTRAT (contrats de la base : équipe de départ du joueur) -->
-                <div v-show="activePanel === 'contract'" class="bg-white border border-slate-200 rounded-xl p-4 sm:p-6 shadow-sm">
+                <div v-show="activePanel === 'contract'" class="bg-white border border-slate-300 rounded-xl p-4 sm:p-6 shadow-sm">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-lg font-semibold text-slate-700">Contrat</h2>
                         <button v-if="!contract" type="button" @click="startNewContract"
@@ -141,6 +148,8 @@
 </template>
 
 <script setup>
+import PlayerEditorFilters from '@/Components/PlayerEditorFilters.vue';
+import { usePlayerEditorFilters } from '@/Composables/usePlayerEditorFilters.js';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { confirmDialog } from '@/Composables/useDialog.js';
@@ -172,6 +181,10 @@ const props = defineProps({
     // Ouvre directement une fiche vide (ancienne URL /players/create).
     startCreate: { type: Boolean, default: false },
 });
+
+const { filters, origins: filterOrigins, filtered: filteredPlayers, reset: resetFilters } = usePlayerEditorFilters(
+    () => props.players, {},
+);
 
 const BLANK = {
     id: null,

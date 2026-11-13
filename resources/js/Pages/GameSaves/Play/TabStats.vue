@@ -141,7 +141,7 @@ const sortIcon = (key) => {
             <!-- BLOC 1 : TOP PERFORMERS                      -->
             <!-- ============================================ -->
             <!-- Filtre équipe -->
-            <div class="border border-slate-200 rounded-xl bg-slate-50 p-3">
+            <div class="border border-slate-300 rounded-xl bg-slate-50 p-3">
                 <div class="flex flex-wrap gap-1.5 items-center">
                     <span class="text-2xs font-bold text-slate-400 uppercase tracking-wider mr-1">Filtrer :</span>
                     <button type="button"
@@ -149,7 +149,7 @@ const sortIcon = (key) => {
                             class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all"
                             :class="selectedTeamFilter === null
                     ? 'bg-teal-500 text-white border-teal-600'
-                    : 'bg-white text-slate-600 border-slate-200 hover:border-teal-300'">
+                    : 'bg-white text-slate-600 border-slate-300 hover:border-teal-300'">
                         🌍 Toutes les équipes
                     </button>
                     <button v-for="t in teams" :key="t.id" type="button"
@@ -157,7 +157,7 @@ const sortIcon = (key) => {
                             class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all"
                             :class="selectedTeamFilter === t.id
             ? 'bg-teal-500 text-white border-teal-600'
-            : 'bg-white text-slate-600 border-slate-200 hover:border-teal-300 hover:text-teal-600'">
+            : 'bg-white text-slate-600 border-slate-300 hover:border-teal-300 hover:text-teal-600'">
                         <div class="w-4 h-4 rounded-full overflow-hidden shrink-0 bg-slate-100">
                             <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" class="w-full h-full" alt=""/>
                         </div>
@@ -165,7 +165,7 @@ const sortIcon = (key) => {
                     </button>
                 </div>
             </div>
-            <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+            <div class="border border-slate-300 rounded-xl bg-slate-50 p-4">
                 <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">🏆 Meilleurs joueurs <span class="normal-case font-semibold text-slate-400 tracking-normal">· cumul de tous les matchs joués de la partie</span></h3>
 
                 <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -224,12 +224,12 @@ const sortIcon = (key) => {
             <!-- ============================================ -->
             <!-- BLOC 2 : COMPARATIF ÉQUIPES                 -->
             <!-- ============================================ -->
-            <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+            <div class="border border-slate-300 rounded-xl bg-slate-50 p-4">
                 <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">📋 Comparatif équipes</h3>
 
                 <div class="overflow-x-auto">
                     <table class="w-full text-xs min-w-max text-left">
-                        <thead class="border-b border-slate-200 text-2xs font-bold uppercase tracking-wider text-slate-400">
+                        <thead class="border-b border-slate-300 text-2xs font-bold uppercase tracking-wider text-slate-400">
                         <tr>
                             <th class="py-2 pr-4">Équipe</th>
                             <th v-for="col in [
@@ -257,13 +257,13 @@ const sortIcon = (key) => {
                         </thead>
                         <tbody>
                         <tr v-for="(t, i) in teamComparative" :key="t.id"
-                            class="border-b border-slate-100 last:border-0 transition-colors"
+                            class="border-b border-slate-300 last:border-0 transition-colors"
                             :class="isMyTeam(t.id) ? 'bg-teal-50' : i % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'"
                         >
                             <!-- Équipe -->
                             <td class="py-2 pr-4">
                                 <div class="flex items-center gap-2">
-                                    <div class="w-6 h-6 rounded overflow-hidden bg-white border border-slate-100 shrink-0">
+                                    <div class="w-6 h-6 rounded overflow-hidden bg-white border border-slate-300 shrink-0">
                                         <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" class="w-full h-full" alt=""/>
                                     </div>
                                     <span class="font-semibold truncate max-w-[120px]"

@@ -39,7 +39,7 @@ const name = computed(() => [props.player?.firstname, props.player?.lastname].fi
             <span v-else aria-hidden="true" :class="sizeClasses.text">{{ size === 'lg' ? '👤' : '?' }}</span>
         </div>
         <span v-if="flag" :title="player?.nationality ?? player?.player?.nationality"
-              class="absolute -bottom-0.5 -right-0.5 flex items-center justify-center rounded-full border border-slate-200 bg-white leading-none shadow-sm"
+              class="absolute -bottom-0.5 -right-0.5 flex items-center justify-center rounded-full border border-slate-300 bg-white leading-none shadow-sm"
               :class="sizeClasses.flag">
             {{ flag }}
         </span>

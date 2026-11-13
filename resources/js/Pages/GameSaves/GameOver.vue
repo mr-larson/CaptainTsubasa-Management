@@ -87,7 +87,7 @@ const difficultyLabel = {
                 </div>
 
                 <!-- Saison interrompue (licenciement en cours de saison) -->
-                <div v-if="midSeason" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6">
+                <div v-if="midSeason" class="bg-white rounded-2xl border border-slate-300 shadow-sm p-4 sm:p-6">
                     <div class="flex flex-wrap items-baseline justify-between gap-2 mb-4">
                         <h3 class="font-semibold text-slate-700">
                             Saison {{ finalSeason.season }} — {{ finalSeason.team }}
@@ -131,12 +131,12 @@ const difficultyLabel = {
 
                 <!-- Palmarès saison par saison -->
                 <div v-if="career.history.length" class="bg-white rounded-2xl shadow-lg overflow-hidden">
-                    <div class="px-4 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                    <div class="px-4 sm:px-6 py-4 border-b border-slate-300 flex items-center justify-between">
                         <h3 class="font-semibold text-slate-700">Parcours — mandat {{ difficultyLabel[career.difficulty] ?? career.difficulty }}</h3>
                     </div>
                     <div class="overflow-x-auto">
                     <table class="w-full text-sm min-w-[400px]">
-                        <thead class="border-b border-slate-200 text-2xs font-bold uppercase tracking-wider text-slate-400">
+                        <thead class="border-b border-slate-300 text-2xs font-bold uppercase tracking-wider text-slate-400">
                             <tr>
                                 <th class="text-left px-6 py-2">Saison</th>
                                 <th class="text-left px-2 py-2">Objectif</th>
@@ -145,7 +145,7 @@ const difficultyLabel = {
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="v in career.history" :key="v.season" class="border-t border-slate-50">
+                            <tr v-for="v in career.history" :key="v.season" class="border-t border-slate-300">
                                 <td class="px-6 py-2 font-semibold text-slate-600">{{ v.season }}</td>
                                 <td class="px-2 py-2 text-slate-500">{{ v.mandate }}</td>
                                 <td class="text-center px-2 py-2 font-semibold">

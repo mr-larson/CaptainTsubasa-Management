@@ -7,17 +7,24 @@
         </template>
 
         <div class="p-4 sm:p-6 max-w-8xl mx-auto flex flex-col gap-4">
-            <EditorSubNav
-                :back="{ href: route('game-saves.Play', { gameSave: gameSave.id }), label: 'Retour à la partie' }"
-                :links="[
-                    { href: route('game-saves.players.index', { gameSave: gameSave.id }), label: 'Joueurs', active: true },
-                    { href: route('game-saves.teams.index', { gameSave: gameSave.id }), label: 'Équipes' },
-                ]"
-            />
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <EditorSubNav class="shrink-0"
+                    :back="{ href: route('game-saves.Play', { gameSave: gameSave.id }), label: 'Retour à la partie' }"
+                    :links="[
+                        { href: route('game-saves.players.index', { gameSave: gameSave.id }), label: 'Joueurs', active: true },
+                        { href: route('game-saves.teams.index', { gameSave: gameSave.id }), label: 'Équipes' },
+                    ]"
+                />
+
+                <PlayerEditorFilters class="ml-auto"
+                    :filters="filters" :origins="filterOrigins" :teams="teams"
+                    :count="filteredPlayers.length" :total="players.length" @reset="resetFilters"
+                />
+            </div>
 
             <EntityEditor
                 title="Joueurs"
-                :items="players"
+                :items="filteredPlayers"
                 :selected-id="editor.selectedId.value"
                 :creating="editor.creating.value"
                 :search-text="p => `${p.firstname} ${p.lastname}`"
@@ -49,7 +56,7 @@
                 </template>
 
                 <!-- FICHE JOUEUR -->
-                <div v-show="activePanel === 'player'" class="bg-white border border-slate-200 rounded-xl p-4 sm:p-6 shadow-sm">
+                <div v-show="activePanel === 'player'" class="bg-white border border-slate-300 rounded-xl p-4 sm:p-6 shadow-sm">
                     <form @submit.prevent="submit">
                         <PlayerStatsPreview v-if="form.id" :stats="form" />
 
@@ -72,7 +79,7 @@
                 </div>
 
                 <!-- COUPS SPÉCIAUX (enregistrés avec la fiche du joueur) -->
-                <div v-show="activePanel === 'moves'" class="bg-white border border-slate-200 rounded-xl p-4 sm:p-6 shadow-sm">
+                <div v-show="activePanel === 'moves'" class="bg-white border border-slate-300 rounded-xl p-4 sm:p-6 shadow-sm">
                     <form @submit.prevent="submit">
                         <SpecialMovesEditor v-model="form.special_moves" :errors="form.errors" />
                         <ButtonGroup>
@@ -84,7 +91,7 @@
                 </div>
 
                 <!-- CONTRAT -->
-                <div v-show="activePanel === 'contract'" class="bg-white border border-slate-200 rounded-xl p-4 sm:p-6 shadow-sm">
+                <div v-show="activePanel === 'contract'" class="bg-white border border-slate-300 rounded-xl p-4 sm:p-6 shadow-sm">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-lg font-semibold text-slate-700">Contrat</h2>
                         <button v-if="!contract" type="button" @click="startNewContract"
@@ -143,6 +150,8 @@
 </template>
 
 <script setup>
+import PlayerEditorFilters from '@/Components/PlayerEditorFilters.vue';
+import { usePlayerEditorFilters } from '@/Composables/usePlayerEditorFilters.js';
 import { Head, router, useForm } from '@inertiajs/vue3'
 import { confirmDialog } from '@/Composables/useDialog.js'
 import { ref, computed } from 'vue'
@@ -175,6 +184,10 @@ const props = defineProps({
 })
 
 // Valeurs d'une fiche vide.
+const { filters, origins: filterOrigins, filtered: filteredPlayers, reset: resetFilters } = usePlayerEditorFilters(
+    () => props.players, { gameSave: () => props.gameSave },
+);
+
 const BLANK = {
     id: null, firstname: '', lastname: '', position: '', secondary_positions: [],
     cost: 0, description: '', photo: null, remove_photo: false,

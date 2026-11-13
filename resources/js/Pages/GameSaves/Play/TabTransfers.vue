@@ -216,7 +216,7 @@ const filteredHistory = computed(() =>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Salaire / semaine (<GameBanknote />)</label>
-                            <div class="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-slate-100 text-slate-600 font-semibold flex items-center justify-between">
+                            <div class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-sm bg-slate-100 text-slate-600 font-semibold flex items-center justify-between">
                                 <span>{{ transferSalary }} <GameBanknote /></span>
                                 <span class="text-2xs text-slate-400 font-normal">fixé</span>
                             </div>
@@ -224,7 +224,7 @@ const filteredHistory = computed(() =>
                     </div>
 
                     <!-- Comparaison avec le titulaire remplacé -->
-                    <div class="mb-3 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600">
+                    <div class="mb-3 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-600">
                         <template v-if="replacedStarter">
                             🔁 Remplacerait <span class="font-bold">{{ replacedStarter.lastname }}</span>, ton titulaire le plus faible à ce poste :
                             note {{ overallOf(replacedStarter) }} → {{ overallOf(selectedPlayer) }}
@@ -291,7 +291,7 @@ const filteredHistory = computed(() =>
 
             <div v-if="filteredHistory.length" class="space-y-1.5 max-h-[300px] overflow-y-auto pr-1">
                 <div v-for="entry in filteredHistory" :key="entry.player.id + '-' + entry.start_week"
-                     class="flex items-center gap-3 px-3 py-2 rounded-lg bg-white border border-slate-100">
+                     class="flex items-center gap-3 px-3 py-2 rounded-lg bg-white border border-slate-300">
                     <!-- Photo -->
                     <PlayerAvatar :player="entry.player" />
                     <!-- Nom -->

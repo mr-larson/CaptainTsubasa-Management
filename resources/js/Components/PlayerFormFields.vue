@@ -1,6 +1,6 @@
 <script setup>
 import { TEXTAREA_CLASS } from '@/Components/fieldStyles';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import FormField from '@/Components/FormField.vue';
 import FormErrorList from '@/Components/FormErrorList.vue';
 import ImageFilePicker from '@/Components/ImageFilePicker.vue';
@@ -38,6 +38,9 @@ function onPhotoChange(file) {
     props.form.photo = file;
     if (file && 'remove_photo' in props.form) props.form.remove_photo = false;
 }
+
+const selectedPhotoUrl = ref(null);
+const displayedPhoto = computed(() => selectedPhotoUrl.value || props.photoUrl);
 
 const stats = computed(() => (props.statsKey ? props.form[props.statsKey] : props.form));
 const statError = (key) => props.form.errors[props.statsKey ? `${props.statsKey}.${key}` : key];
@@ -84,7 +87,7 @@ const fullClass = computed(() => (props.layout === 'grid' ? 'sm:col-span-3' : 'l
 
         <FormField
             :layout="layout"
-            :class="layout === 'grid' || !showAge ? wideClass : ''"
+            :class="layout === 'grid' ? '' : (!showAge ? wideClass : '')"
             label="Photo"
             :error="form.errors.photo"
         >
@@ -92,6 +95,9 @@ const fullClass = computed(() => (props.layout === 'grid' ? 'sm:col-span-3' : 'l
                 :model-value="form.photo"
                 :current-url="photoUrl"
                 alt="Photo joueur"
+                :hide-preview="layout === 'grid'"
+                :full-width="layout === 'grid'"
+                @preview="selectedPhotoUrl = $event"
                 @update:model-value="onPhotoChange"
             >
                 <template #preview="{ src }">
@@ -104,6 +110,13 @@ const fullClass = computed(() => (props.layout === 'grid' ? 'sm:col-span-3' : 'l
                 </label>
             </ImageFilePicker>
         </FormField>
+
+        <div v-if="layout === 'grid'" class="flex items-start sm:pt-6">
+            <div class="h-28 w-28 shrink-0 overflow-hidden rounded border border-slate-300 bg-white flex items-center justify-center">
+                <PlayerPhoto v-if="displayedPhoto" :src="displayedPhoto" class="h-full w-full object-contain" alt="Photo du joueur" />
+                <span v-else class="text-xs text-slate-400">Aucune photo</span>
+            </div>
+        </div>
 
         <FormField :layout="layout" :class="wideClass" label="Postes secondaires" :error="form.errors.secondary_positions">
             <SecondaryPositionsPicker v-model="form.secondary_positions" :position="form.position" />

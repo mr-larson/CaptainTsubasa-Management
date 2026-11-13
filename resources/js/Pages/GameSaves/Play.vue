@@ -584,7 +584,7 @@ const saveGame = () => {
                               class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border transition-all"
                               :class="p.is_active
                                   ? 'bg-teal-500 text-white border-teal-600 shadow-sm'
-                                  : 'bg-white text-slate-500 border-slate-200'">
+                                  : 'bg-white text-slate-500 border-slate-300'">
                             <span class="w-4 h-4 rounded-full flex items-center justify-center text-2xs font-black"
                                   :class="p.is_active ? 'bg-white/90 text-teal-700' : 'bg-slate-100 text-slate-400'">
                                 {{ p.seat }}
@@ -611,10 +611,10 @@ const saveGame = () => {
                 </div>
 
                 <!-- Carte principale -->
-                <div class="flex-1 min-w-0 min-h-0 p-3 sm:p-4 border border-slate-200 rounded-xl shadow-sm min-[1400px]:mx-6 bg-white flex flex-col overflow-hidden">
+                <div class="flex-1 min-w-0 min-h-0 p-3 sm:p-4 border border-slate-300 rounded-xl shadow-sm min-[1400px]:mx-6 bg-white flex flex-col overflow-hidden">
 
                     <!-- Onglets -->
-                    <div class="mb-4 border-b border-slate-200 shrink-0">
+                    <div class="mb-4 border-b border-slate-300 shrink-0">
                         <TabBar v-model="activeTab" :tabs="tabs" stretch label="Sections de la partie" />
                     </div>
 

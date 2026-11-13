@@ -102,10 +102,10 @@ function promiseText(promise) {
     }
 }
 
-const KPI = 'border border-slate-200 rounded-xl bg-white p-3 flex flex-col items-center gap-0.5';
+const KPI = 'border border-slate-300 rounded-xl bg-white p-3 flex flex-col items-center gap-0.5';
 const KPI_LABEL = 'text-2xs font-bold text-slate-400 uppercase tracking-wider';
-const SECTION = 'border border-slate-200 rounded-xl bg-white p-3 flex flex-col gap-2';
-const ROW = 'w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg border border-slate-100 text-left text-xs hover:border-teal-300 hover:bg-teal-50 transition-colors';
+const SECTION = 'border border-slate-300 rounded-xl bg-white p-3 flex flex-col gap-2';
+const ROW = 'w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg border border-slate-300 text-left text-xs hover:border-teal-300 hover:bg-teal-50 transition-colors';
 const PILL = 'shrink-0 text-2xs font-bold px-2 py-0.5 rounded-full';
 const EMPTY = 'text-xs text-emerald-600';
 </script>
@@ -208,7 +208,7 @@ const EMPTY = 'text-xs text-emerald-600';
             <section v-if="cardsInHand !== null" :class="SECTION">
                 <h4 class="text-sm font-semibold text-slate-700">🎒 Cartes en main <span class="text-slate-400 font-normal">({{ cardsInHand.length }})</span></h4>
                 <div v-for="card in cardsInHand" :key="card.id"
-                     class="flex items-center justify-between gap-2 rounded-lg border border-slate-100 px-2.5 py-1.5 text-xs">
+                     class="flex items-center justify-between gap-2 rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs">
                     <span class="font-semibold text-slate-700" :title="card.description">{{ card.icon }} {{ card.name }}</span>
                     <span v-if="card.kind === 'malus'" :class="[PILL, 'bg-rose-100 text-rose-700']">Malus</span>
                 </div>
@@ -218,7 +218,7 @@ const EMPTY = 'text-xs text-emerald-600';
             <section v-if="cardsInHand !== null" :class="SECTION">
                 <h4 class="text-sm font-semibold text-slate-700">⚡ Bonus et malus actifs <span class="text-slate-400 font-normal">({{ activeEffects.length }})</span></h4>
                 <div v-for="(effect, index) in activeEffects" :key="index"
-                     class="flex items-center justify-between gap-2 rounded-lg border border-slate-100 px-2.5 py-1.5 text-xs">
+                     class="flex items-center justify-between gap-2 rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs">
                     <span>
                         <span class="font-semibold text-slate-700">{{ effect.icon }} {{ effect.name }}</span>
                         <span class="text-slate-500"> · {{ effect.detail }}</span>

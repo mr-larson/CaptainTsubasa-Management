@@ -139,7 +139,7 @@ const otherStatus = computed(() => ({
                     class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all"
                     :class="selectedOtherTeam?.id === t.id
                         ? 'bg-teal-500 text-white border-teal-600 shadow-sm'
-                        : 'bg-white text-slate-600 border-slate-200 hover:border-teal-300 hover:text-teal-600'"
+                        : 'bg-white text-slate-600 border-slate-300 hover:border-teal-300 hover:text-teal-600'"
                 >
                     <TeamLogo :team="t" size="xs" fallback="none" :bordered="false" />
                     {{ t.name }}
@@ -256,7 +256,7 @@ const otherStatus = computed(() => ({
                     <span class="px-3 py-1.5 rounded-full text-xs font-semibold border"
                           :class="selectedOtherPlayer.is_starter
                               ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                              : 'bg-white text-slate-500 border-slate-200'">
+                              : 'bg-white text-slate-500 border-slate-300'">
                         {{ selectedOtherPlayer.is_starter ? '✓ Titulaire' : 'Remplaçant' }}
                     </span>
                     <span v-if="selectedOtherPlayer.is_captain"

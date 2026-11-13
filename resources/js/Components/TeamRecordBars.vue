@@ -22,7 +22,7 @@ const bars = computed(() => {
 </script>
 
 <template>
-    <div class="mb-4 border border-slate-200 rounded-xl bg-slate-50 p-3">
+    <div class="mb-4 border border-slate-300 rounded-xl bg-slate-50 p-3">
         <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Bilan</h4>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-1.5">
             <div v-for="stat in bars" :key="stat.key" class="flex items-center gap-2">

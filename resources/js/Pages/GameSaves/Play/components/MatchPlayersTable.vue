@@ -103,7 +103,7 @@ const COLUMNS = [
     <div>
         <div class="overflow-x-auto">
             <table class="w-full text-xs min-w-max text-left">
-                <thead class="border-b border-slate-200 text-2xs font-bold uppercase tracking-wider text-slate-400">
+                <thead class="border-b border-slate-300 text-2xs font-bold uppercase tracking-wider text-slate-400">
                 <tr>
                     <th class="py-1.5 pr-3">Joueur</th>
                     <th v-for="c in COLUMNS" :key="c.key" :title="`${c.title} — cliquer pour trier`"
@@ -116,7 +116,7 @@ const COLUMNS = [
                 </thead>
                 <tbody>
                 <tr v-for="r in visibleRows" :key="r.pid"
-                    class="border-b border-slate-100 last:border-0 hover:bg-white transition-colors"
+                    class="border-b border-slate-300 last:border-0 hover:bg-white transition-colors"
                     :class="r.used ? '' : 'opacity-50'">
                     <td class="py-1.5 pr-3">
                         <div class="flex items-center gap-2">

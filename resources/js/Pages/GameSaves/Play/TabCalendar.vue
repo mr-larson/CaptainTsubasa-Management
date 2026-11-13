@@ -221,10 +221,10 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
                          :data-week="match.week"
                          class="flex items-center gap-2 px-3 py-2 rounded-lg border transition-all"
                          :class="[
-                            isByeMatch(match) ? 'bg-slate-50 border-slate-100 opacity-50' :
+                            isByeMatch(match) ? 'bg-slate-50 border-slate-300 opacity-50' :
                             isPlayable(match) || isUpcoming(match)
-                                ? 'bg-white border-slate-200 cursor-pointer hover:border-teal-300 hover:bg-teal-50'
-                                : 'bg-white border-slate-100',
+                                ? 'bg-white border-slate-300 cursor-pointer hover:border-teal-300 hover:bg-teal-50'
+                                : 'bg-white border-slate-300',
                             (previewMatch ? previewMatch.id === match.id : String(selectedMatchId) === String(match.id)) ? 'border-teal-400 bg-teal-50 shadow-sm' : '',
                             currentWeek && Number(match.week) === Number(currentWeek) ? 'ring-2 ring-inset ring-amber-400 !bg-amber-50 shadow-sm' : ''
                         ]"
@@ -326,7 +326,7 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
                              class="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-3 py-2 rounded-lg border bg-white transition-all"
                              :class="[
                                 isPlayable(m) || isUpcoming(m) ? 'cursor-pointer hover:border-teal-300 hover:bg-teal-50' : '',
-                                isMine(m) ? 'border-teal-300 ring-1 ring-teal-200' : 'border-slate-200',
+                                isMine(m) ? 'border-teal-300 ring-1 ring-teal-200' : 'border-slate-300',
                              ]"
                              :title="isPlayable(m) ? 'Ouvrir le match' : isUpcoming(m) ? 'Voir l\'avant-match' : undefined"
                              @click="openRow(m, teamById[m.home_team_id])">
@@ -360,7 +360,7 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
                 <!-- Classements de la journée -->
                 <Panel v-if="!preview && journeeMatches.some(m => m.status === 'played')"
                        :title="`Classements de la semaine ${journeeWeek}`">
-                    <div class="border-b border-slate-200 mb-3">
+                    <div class="border-b border-slate-300 mb-3">
                         <TabBar v-model="leaderTab" :tabs="LEADER_TABS" size="sm" wrap label="Classements de la semaine" />
                     </div>
 
@@ -370,7 +370,7 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
                     <div v-else-if="leaderRows.length" class="space-y-1">
                         <button v-for="(r, i) in leaderRows" :key="`${r.player_id}-${r.match_id}`" type="button"
                                 @click="selectedLeader = r" aria-haspopup="dialog"
-                                class="w-full flex items-center gap-3 px-3 py-2 rounded-lg border border-slate-200 bg-white text-left hover:border-teal-300 hover:bg-teal-50 transition-all"
+                                class="w-full flex items-center gap-3 px-3 py-2 rounded-lg border border-slate-300 bg-white text-left hover:border-teal-300 hover:bg-teal-50 transition-all"
                                 title="Voir la fiche du joueur">
                             <span v-if="leaderTab !== 'fouls'" class="w-6 text-center text-sm shrink-0" :class="i > 2 ? 'text-xs font-bold text-slate-400' : ''">
                                 {{ MEDALS[i] ?? i + 1 }}

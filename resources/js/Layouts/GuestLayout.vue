@@ -4,7 +4,7 @@
         <div class="w-full max-w-md">
             <!-- Carte formulaire -->
             <div
-                class="w-full bg-white rounded-xl border border-slate-200 shadow-lg px-6 py-6 md:px-8 md:py-8 text-slate-700"
+                class="w-full bg-white rounded-xl border border-slate-300 shadow-lg px-6 py-6 md:px-8 md:py-8 text-slate-700"
             >
                 <!-- Header : logo + lien retour -->
                 <div class="mb-4 flex items-center justify-between">

@@ -112,7 +112,7 @@ const MASTERY_CHIP = {
 </script>
 
 <template>
-    <div class="h-[280px] border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+    <div class="h-[280px] border border-slate-300 rounded-xl overflow-hidden shadow-sm">
         <div class="relative w-full h-full">
             <div class="absolute inset-0 bg-gradient-to-r from-green-800 via-green-700 to-green-800"></div>
             <div v-for="i in 8" :key="i" class="absolute top-0 h-full bg-green-900/15" :style="{ left:((i-1)*12.5)+'%', width:'12.5%' }"></div>
@@ -240,7 +240,7 @@ const MASTERY_CHIP = {
                 <div v-if="openSlot && openSlotDef"
                      class="absolute inset-2 z-10 bg-white/95 rounded-lg shadow-xl flex flex-col overflow-hidden"
                      @click.stop>
-                    <div class="flex items-center justify-between px-3 py-1.5 border-b border-slate-200 shrink-0">
+                    <div class="flex items-center justify-between px-3 py-1.5 border-b border-slate-300 shrink-0">
                         <span class="text-[11px] font-bold text-slate-700">
                             Poste {{ ZONE_LABELS[openSlotDef.zone] }} vide — qui faire entrer ?
                         </span>
@@ -251,7 +251,7 @@ const MASTERY_CHIP = {
                         <button v-for="c in openSlotCandidates" :key="c.player.id" type="button"
                                 @click="chooseCandidate(c.player)"
                                 class="w-full flex items-center gap-2 px-2 py-1 rounded-md border text-left transition-all"
-                                :class="c.unavailable ? 'border-slate-100 bg-slate-50 opacity-60 hover:opacity-100' : 'border-slate-200 bg-white hover:bg-teal-50 hover:border-teal-300'">
+                                :class="c.unavailable ? 'border-slate-300 bg-slate-50 opacity-60 hover:opacity-100' : 'border-slate-300 bg-white hover:bg-teal-50 hover:border-teal-300'">
                             <img v-if="playerPhotoUrl(c.player)" :src="playerPhotoUrl(c.player)" class="w-6 h-6 rounded-full object-cover" alt="" />
                             <span class="flex-1 min-w-0 text-xs font-semibold text-slate-700 truncate">{{ c.player.lastname }}</span>
                             <span v-if="c.unavailable" class="text-[11px]" :title="c.unavailable">{{ c.unavailableIcon }}</span>

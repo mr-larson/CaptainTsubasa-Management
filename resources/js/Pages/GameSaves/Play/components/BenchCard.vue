@@ -30,8 +30,8 @@ const staminaBar = (v) => v >= 60 ? 'bg-emerald-400' : v >= 30 ? 'bg-amber-400' 
 </script>
 
 <template>
-    <div class="h-[280px] border border-slate-200 rounded-xl bg-slate-100 overflow-hidden shadow-sm flex flex-col">
-        <div class="px-3 py-1.5 bg-slate-200/60 border-b border-slate-200 flex items-center justify-between shrink-0">
+    <div class="h-[280px] border border-slate-300 rounded-xl bg-slate-100 overflow-hidden shadow-sm flex flex-col">
+        <div class="px-3 py-1.5 bg-slate-200/60 border-b border-slate-300 flex items-center justify-between shrink-0">
             <h4 class="text-2xs font-bold text-slate-500 uppercase tracking-wider">Banc</h4>
             <span class="text-2xs font-bold text-slate-400">{{ substitutes.length }}</span>
         </div>
