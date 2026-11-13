@@ -35,7 +35,7 @@ class GameSeasonController extends Controller
 
         return Inertia::render('GameSaves/SeasonEnd', [
             'gameSave' => $gameSave,
-            'recap'    => $state['last_season_recap'] ?? null,
+            'recap'    => $gameSave->gameState()->lastSeasonRecap(),
         ]);
     }
 
@@ -95,7 +95,7 @@ class GameSeasonController extends Controller
                 'history'         => array_values($data['history'] ?? []),
                 'last_verdict'    => $data['last_verdict'],
             ],
-            'lastRecap' => $state['last_season_recap'] ?? null,
+            'lastRecap' => $gameSave->gameState()->lastSeasonRecap(),
             'finalSeason' => $this->currentSeasonSummary($gameSave, $data),
         ]);
     }

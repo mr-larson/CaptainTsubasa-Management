@@ -568,12 +568,11 @@ class GameSaveCreationController extends Controller
                 // dans l'ordre du package/BDD (sans notion de poste) ; on
                 // réorganise chaque équipe selon la formation et le niveau des
                 // joueurs à leur poste (principal ou secondaire).
-                $state = $gameSave->state ?? [];
+                $state = $gameSave->gameState();
                 foreach ($gameTeamsByBaseId as $gameTeam) {
                     $gameTeam->load('contracts.gamePlayer');
                     app(DraftService::class)->organizeTeamLineup($gameTeam, $gameSave, $state);
                 }
-                $gameSave->state = $state;
                 $gameSave->save();
             }
 

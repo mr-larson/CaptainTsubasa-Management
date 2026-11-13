@@ -32,7 +32,7 @@ class GameSanction extends Model
 
     public function scopeCurrentYellowCardCycle($query, GameSave $gameSave)
     {
-        $break = $gameSave->state['midseason_break'] ?? [];
+        $break = $gameSave->gameState()->midseasonBreak();
 
         return $query->where('game_save_id', $gameSave->id)
             ->whereIn('type', ['yellow', 'double_yellow'])

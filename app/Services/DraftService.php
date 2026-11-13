@@ -7,6 +7,7 @@ use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
 use App\Services\Concerns\EvaluatesPlayers;
+use App\Support\GameState;
 use Illuminate\Support\Facades\DB;
 
 class DraftService
@@ -459,15 +460,15 @@ class DraftService
             ->with(['contracts.gamePlayer'])
             ->get();
 
-        $state = $gameSave->state ?? [];
-
+        $state = $gameSave->gameState();
         foreach ($teams as $team) {
             $this->organizeTeamLineup($team, $gameSave, $state);
         }
 
-        unset($state['draft']['budgets']);
+        $draft = $state->get('draft', []);
+        unset($draft['budgets']);
+        $state->put('draft', $draft);
         $gameSave->phase = 'season';
-        $gameSave->state = $state;
         $gameSave->save();
 
         // Ouvre la saison : mandat, défis, calendrier, compositions IA (sous le
@@ -483,7 +484,7 @@ class DraftService
      * - Place chaque titulaire dans le bon slot de la formation
      * - Le reste en remplaçants
      */
-    public function organizeTeamLineup(GameTeam $team, GameSave $gameSave, array &$state): void
+    public function organizeTeamLineup(GameTeam $team, GameSave $gameSave, GameState $state): void
     {
         $contracts = $team->contracts->filter(fn($c) => $c->gamePlayer !== null);
         if ($contracts->isEmpty()) return;
@@ -549,10 +550,7 @@ class DraftService
             $lineupSlots[$slot] = $entry['player']->id;
         }
 
-        $state['lineup'][$team->id] = [
-            'formation' => $formation,
-            'slots'     => $lineupSlots,
-        ];
+        $state->setLineup($team->id, ['formation' => $formation, 'slots' => $lineupSlots]);
     }
 
     /**

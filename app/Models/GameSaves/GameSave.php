@@ -5,6 +5,7 @@ namespace App\Models\GameSaves;
 use App\Models\Team;
 use App\Models\User;
 use App\Support\GameConfig;
+use App\Support\GameState;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
@@ -33,28 +34,12 @@ class GameSave extends Model
         'phase' => 'string',
     ];
 
-    /**
-     * Clés du state purement serveur, jamais lues par le front : retirées de la
-     * sérialisation (props Inertia, JSON) pour alléger chaque page. La boutique
-     * contient notamment les offres de toutes les équipes IA.
-     */
-    public const SERVER_ONLY_STATE_KEYS = [
-        'shop',
-        'ai_training_week',
-        'season_progression',
-        'match_progression_history',
-        'training_history',
-        // Historique des séances IA (toutes équipes, ~95 Ko en semaine 19) : le
-        // front ne lit que la semaine affichée, via game-saves.training.ai-week.
-        'ai_training_history',
-    ];
-
     public function toArray()
     {
         $array = parent::toArray();
 
         if (is_array($array['state'] ?? null)) {
-            $array['state'] = Arr::except($array['state'], self::SERVER_ONLY_STATE_KEYS);
+            $array['state'] = Arr::except($array['state'], GameState::SERVER_ONLY_KEYS);
         }
 
         return $array;
@@ -148,10 +133,13 @@ class GameSave extends Model
 
     public function hasPendingMidseasonBreak(): bool
     {
-        $break = $this->state['midseason_break'] ?? [];
+        return $this->gameState()->hasPendingMidseasonBreak((int) $this->week);
+    }
 
-        return (int) ($break['return_week'] ?? 0) === (int) $this->week
-            && !($break['completed'] ?? true);
+    /** Accès typé au state JSON : voir GameState. */
+    public function gameState(): GameState
+    {
+        return new GameState($this);
     }
 
     /** Réglages de la partie (défauts, validation, tirages) : voir GameConfig. */

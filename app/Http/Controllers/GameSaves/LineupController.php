@@ -57,9 +57,8 @@ class LineupController extends Controller
      */
     private function syncLineupSlot(GameSave $gameSave, GameContract $contract, array $starterIds, ?int $preferredSlot = null): void
     {
-        $state  = $gameSave->state ?? [];
         $teamId = $contract->game_team_id;
-        $slots  = $state['lineup'][$teamId]['slots'] ?? null;
+        $slots  = $gameSave->gameState()->lineupSlots($teamId);
         if (!is_array($slots)) {
             return; // pas de compo enregistrée : l'ordre par défaut s'applique
         }
@@ -93,8 +92,7 @@ class LineupController extends Controller
             }
         }
 
-        $state['lineup'][$teamId]['slots'] = $slots;
-        $gameSave->state = $state;
+        $gameSave->gameState()->setLineupSlots($teamId, $slots);
         $gameSave->save();
     }
 
@@ -161,11 +159,7 @@ class LineupController extends Controller
                 $slots[(int) $row['slot']] = $row['player_id'] ? (int) $row['player_id'] : null;
             }
 
-            $state = $gameSave->state ?? [];
-            $state['lineup']                     = $state['lineup'] ?? [];
-            $state['lineup'][$team->id]          = $state['lineup'][$team->id] ?? [];
-            $state['lineup'][$team->id]['slots'] = $slots;
-            $gameSave->state = $state;
+            $gameSave->gameState()->setLineupSlots($team->id, $slots);
             $gameSave->save();
 
             if (!empty($data['formation'])) {
@@ -238,21 +232,7 @@ class LineupController extends Controller
                 ->update(['is_starter' => true]);
 
             // 2. Réassigner le slot du sortant vers le rentrant
-            $state      = $gameSave->state ?? [];
-            $lineup     = $state['lineup'] ?? [];
-            $teamLineup = $lineup[$team->id] ?? ['slots' => []];
-            $slots      = $teamLineup['slots'] ?? [];
-
-            foreach ($slots as $slot => $pid) {
-                if ((int) $pid === $starterId) {
-                    $slots[$slot] = $substituteId;
-                }
-            }
-
-            $teamLineup['slots'] = $slots;
-            $lineup[$team->id]   = $teamLineup;
-            $state['lineup']     = $lineup;
-            $gameSave->state     = $state;
+            $gameSave->gameState()->replaceInLineup($team->id, $starterId, $substituteId);
             $gameSave->save();
 
             return back()->with('success', 'Substitution effectuée.');

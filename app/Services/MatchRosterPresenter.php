@@ -25,7 +25,6 @@ class MatchRosterPresenter
      */
     public function forTeam(GameTeam $team, GameSave $gameSave, int $matchId): \Illuminate\Support\Collection
     {
-        $state      = $gameSave->state ?? [];
         $currentWeek = $gameSave->week ?? 1;
 
         // Joueurs blessés ou suspendus cette semaine
@@ -54,7 +53,7 @@ class MatchRosterPresenter
             ->getMatchStatModifiers($gameSave, $team->id, $matchId);
 
         $contracts = $team->contracts->loadMissing('gamePlayer');
-        $teamLineup = $state['lineup'][$team->id]['slots'] ?? null;
+        $teamLineup = $gameSave->gameState()->lineupSlots($team->id);
         $promises = GamePromise::where('game_save_id', $gameSave->id)
             ->where('game_team_id', $team->id)
             ->where('season', $gameSave->season)

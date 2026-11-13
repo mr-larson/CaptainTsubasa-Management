@@ -138,8 +138,7 @@ class FreeAgentController extends Controller
             $team->budget = $budget - $totalCost;
             $team->save();
 
-            $state = $gameSave->state ?? [];
-            $state['free_agent_signings'][] = [
+            $gameSave->gameState()->recordFreeAgentSigning([
                 'player_id'     => $player->id,
                 'team_id'       => $team->id,
                 'salary'        => $salary,
@@ -147,8 +146,7 @@ class FreeAgentController extends Controller
                 'total_cost'    => $totalCost,
                 'reason'        => $data['reason'] ?? null,
                 'week'          => $gameSave->week,
-            ];
-            $gameSave->state = $state;
+            ]);
             $gameSave->save();
 
             app(SeasonChallengeService::class)->payCompleted($gameSave, [(int) $team->id], ['signings_min']);

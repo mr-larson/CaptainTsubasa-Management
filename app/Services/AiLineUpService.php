@@ -12,6 +12,7 @@ use App\Models\GameSaves\GameSanction;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
 use App\Services\Concerns\EvaluatesPlayers;
+use App\Support\GameState;
 use Illuminate\Support\Collection;
 
 class AiLineUpService
@@ -94,26 +95,23 @@ class AiLineUpService
             ->with(['contracts' => fn($q) => $q->activeAt($currentWeek)->with('gamePlayer')])
             ->get();
 
-        $state = $gameSave->state ?? [];
+        $state = $gameSave->gameState();
         $cards = app(BonusCardActivationService::class);
 
         foreach ($aiTeams as $team) {
             $unavailableForMatch = array_merge($unavailableIds, $cards->getBenchedPlayerIds($gameSave, $team->id));
             $adapted = $this->adaptFormation($team, $unavailableForMatch, $state);
 
-            $rotation = $state['ai_rotation'][$team->id] ?? [];
+            $rotation = $state->aiRotation($team->id);
             $season = (int) $gameSave->season;
             if (($rotation['season'] ?? null) !== $season || ($rotation['week'] ?? null) !== (int) $currentWeek) {
                 $restingRoles = $adapted ? [] : $this->applyPhilosophyRotation($team, $unavailableForMatch, $state);
-                $state['ai_rotation'][$team->id] = [
-                    'season' => $season, 'week' => (int) $currentWeek, 'resting_roles' => $restingRoles,
-                ];
+                $state->setAiRotation($team->id, $season, (int) $currentWeek, $restingRoles);
             }
             if (!$adapted) $this->adjustTeamLineup($team, $unavailableIds, $state);
             $this->assignCaptain($team, $unavailableForMatch);
         }
 
-        $gameSave->state = $state;
         $gameSave->save();
     }
 
@@ -148,7 +146,7 @@ class AiLineUpService
         }
     }
 
-    private function adaptFormation(GameTeam $team, array $unavailableIds, array &$state): bool
+    private function adaptFormation(GameTeam $team, array $unavailableIds, GameState $state): bool
     {
         $current = $team->formation ?? FormationHelper::DEFAULT_FORMATION;
         $formations = FormationHelper::SLOT_ZONES;
@@ -194,7 +192,7 @@ class AiLineUpService
             $best = $baseline;
         }
 
-        $savedSlots = $state['lineup'][$team->id]['slots'] ?? [];
+        $savedSlots = $state->lineupSlots($team->id) ?? [];
         $seen = [];
         $currentMisplaced = 0;
         foreach ($formations[$current] as $slot => $zone) {
@@ -217,10 +215,7 @@ class AiLineUpService
         }
         $team->formation = $bestFormation;
         $team->save();
-        $state['lineup'][$team->id] = array_replace($state['lineup'][$team->id] ?? [], [
-            'formation' => $bestFormation,
-            'slots' => $slots,
-        ]);
+        $state->setLineup($team->id, ['formation' => $bestFormation, 'slots' => $slots]);
 
         return true;
     }
@@ -286,7 +281,7 @@ class AiLineUpService
      * Fait tourner les titulaires fatigués et donne du temps aux doublures
      * proches en niveau. Retourne le poste laissé par les joueurs mis au repos.
      */
-    protected function applyPhilosophyRotation(GameTeam $team, array $unavailableIds, array &$state): array
+    protected function applyPhilosophyRotation(GameTeam $team, array $unavailableIds, GameState $state): array
     {
         $philosophy = $team->management_philosophy ?? TeamStyle::PHILOSOPHY_BALANCED;
         $threshold = self::STAMINA_THRESHOLDS[$philosophy] ?? self::STAMINA_THRESHOLDS[TeamStyle::PHILOSOPHY_BALANCED];
@@ -295,7 +290,7 @@ class AiLineUpService
             $c->gamePlayer && !in_array($c->game_player_id, $unavailableIds));
         $starters = $contracts->where('is_starter', true)->sortBy(fn ($c) => $c->gamePlayer->stamina);
         $subs = $contracts->where('is_starter', false)->filter(fn ($c) => $c->gamePlayer->stamina >= $threshold);
-        $slots = array_map('intval', $state['lineup'][$team->id]['slots'] ?? []);
+        $slots = array_map('intval', $state->lineupSlots($team->id) ?? []);
         $restingRoles = [];
         $fieldRotations = 0;
 
@@ -353,7 +348,7 @@ class AiLineUpService
     /**
      * Remplace les titulaires indisponibles (blessés/suspendus).
      */
-    protected function adjustTeamLineup(GameTeam $team, array $unavailableIds, array &$state): bool
+    protected function adjustTeamLineup(GameTeam $team, array $unavailableIds, GameState $state): bool
     {
         $contracts = $team->contracts->filter(fn($c) => $c->gamePlayer !== null);
 
@@ -373,7 +368,7 @@ class AiLineUpService
 
         foreach ($unavailableStarters as $starterContract) {
             $starterPlayer   = $starterContract->gamePlayer;
-            $slots = array_map('intval', $state['lineup'][$team->id]['slots'] ?? []);
+            $slots = array_map('intval', $state->lineupSlots($team->id) ?? []);
             $starterPosition = $this->lineupPosition($team, $starterPlayer->position, (int) $starterPlayer->id, $slots);
 
             $replacement = $availableSubs
@@ -407,19 +402,14 @@ class AiLineUpService
         return $this->playerOverall($player, $position) * (0.55 + 0.45 * $stamina / 100) * $mastery;
     }
 
-    private function swapStarter(GameTeam $team, GameContract $starter, GameContract $replacement, array &$state): void
+    private function swapStarter(GameTeam $team, GameContract $starter, GameContract $replacement, GameState $state): void
     {
         $starter->is_starter = false;
         $replacement->is_starter = true;
         $starter->save();
         $replacement->save();
 
-        foreach ($state['lineup'][$team->id]['slots'] ?? [] as $slot => $playerId) {
-            if ((int) $playerId === (int) $starter->game_player_id) {
-                $state['lineup'][$team->id]['slots'][$slot] = $replacement->game_player_id;
-                break;
-            }
-        }
+        $state->replaceInLineup($team->id, (int) $starter->game_player_id, (int) $replacement->game_player_id);
     }
 
 }

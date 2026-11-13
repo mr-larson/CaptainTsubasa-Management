@@ -45,9 +45,7 @@ class SeasonService
             return;
         }
 
-        $state = $gameSave->state ?? [];
-        $state['midseason_break'] ??= ['return_week' => $closedWeek + 1, 'completed' => false];
-        $gameSave->state = $state;
+        $gameSave->gameState()->scheduleMidseasonBreak($closedWeek + 1);
     }
 
     public function completeMidseasonBreak(GameSave $gameSave): void
@@ -59,9 +57,7 @@ class SeasonService
             ->where('stamina', '<', 100)
             ->update(['stamina' => DB::raw("CASE WHEN stamina + {$recovery} > 100 THEN 100 ELSE stamina + {$recovery} END")]);
 
-        $state = $gameSave->state;
-        $state['midseason_break']['completed'] = true;
-        $gameSave->state = $state;
+        $gameSave->gameState()->completeMidseasonBreak();
         $gameSave->save();
     }
 
@@ -149,12 +145,7 @@ class SeasonService
             'challenges'        => $challenges,
         ];
 
-        $state = $gameSave->state ?? [];
-        $state['season_history']      = $state['season_history'] ?? [];
-        $state['season_history'][$gameSave->season] = $recap;
-        $state['last_season_recap']   = $recap;
-
-        $gameSave->state = $state;
+        $gameSave->gameState()->recordSeasonRecap((int) $gameSave->season, $recap);
         $gameSave->phase = 'season_end';
         $gameSave->save();
 
@@ -249,12 +240,13 @@ class SeasonService
         $gameSave->week   = 1;
         $gameSave->phase  = 'intersaison_draft';
 
-        $state = $gameSave->state ?? [];
-        unset($state['lineup'], $state['declaration_match_boosts'], $state['midseason_break']);
+        $state = $gameSave->gameState();
+        $state->forgetLineups();
+        $state->forgetDeclarationBoosts();
+        $state->forget('midseason_break');
         // Tous les contrats ont expiré : les signatures d'agents libres de la
         // saison passée n'ont plus lieu d'être (et bornent la taille du state).
-        unset($state['free_agent_signings']);
-        $gameSave->state = $state;
+        $state->forgetFreeAgentSignings();
         $gameSave->save();
 
         // Logs de moral et déclarations : on garde la saison qui vient de finir

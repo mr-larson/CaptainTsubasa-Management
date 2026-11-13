@@ -18,19 +18,19 @@ class MatchLineupSnapshot
     public function build(GameMatch $match): array
     {
         $week  = (int) $match->week;
-        $state = $match->gameSave?->state ?? [];
+        $gameState = $match->gameSave?->gameState();
 
         return [
-            'home' => $this->side($match->home_team_id, $match->homeTeam?->formation, (int) $match->game_save_id, $week, $state),
-            'away' => $this->side($match->away_team_id, $match->awayTeam?->formation, (int) $match->game_save_id, $week, $state),
+            'home' => $this->side($match->home_team_id, $match->homeTeam?->formation, (int) $match->game_save_id, $week, $gameState),
+            'away' => $this->side($match->away_team_id, $match->awayTeam?->formation, (int) $match->game_save_id, $week, $gameState),
         ];
     }
 
-    private function side(int $teamId, ?string $formation, int $saveId, int $week, array $state = []): array
+    private function side(int $teamId, ?string $formation, int $saveId, int $week, ?\App\Support\GameState $gameState = null): array
     {
         // Poste occupé sur le terrain (slot 1..11 de la formation) : composition enregistrée.
         $slotByPlayer = [];
-        foreach ($state['lineup'][$teamId]['slots'] ?? [] as $slot => $playerId) {
+        foreach ($gameState?->lineupSlots($teamId) ?? [] as $slot => $playerId) {
             if ($playerId) {
                 $slotByPlayer[(int) $playerId] = (int) $slot;
             }

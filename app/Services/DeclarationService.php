@@ -143,21 +143,16 @@ class DeclarationService
             ->orderBy('week')->orderBy('id')->value('id');
         if ($matchId === null) return false;
 
-        $state = $gameSave->state ?? [];
-        $state['declaration_match_boosts'][$matchId][$teamId][$player->id] = $modifier;
-        $gameSave->state = $state;
+        $gameSave->gameState()->addDeclarationBoost((int) $matchId, $teamId, (int) $player->id, $modifier);
         $gameSave->save();
         return true;
     }
 
     public function consumeMatchBoosts(GameSave $gameSave, int $matchId): void
     {
-        $state = $gameSave->state ?? [];
-        if (!isset($state['declaration_match_boosts'][$matchId])) return;
-
-        unset($state['declaration_match_boosts'][$matchId]);
-        $gameSave->state = $state;
-        $gameSave->save();
+        if ($gameSave->gameState()->consumeDeclarationBoosts($matchId)) {
+            $gameSave->save();
+        }
     }
 
     private function lastMatchDuelBalance(GameSave $gameSave, GamePlayer $player, int $teamId): int

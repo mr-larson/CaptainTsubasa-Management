@@ -154,9 +154,9 @@ class AITrainingService
         $starterReserve = $team->management_philosophy === TeamStyle::PHILOSOPHY_ECONOMIST ? 80 : 75;
         $restRecovery = $gameSave ? (int) $gameSave->getConfig('rest_stamina_recovery') : 0;
         $matchCost = $gameSave ? (int) $gameSave->getConfig('match_stamina_cost') : 0;
-        $rotation = $gameSave?->state['ai_rotation'][$team->id] ?? [];
-        $restingRoles = ($rotation['week'] ?? null) === (int) $gameSave?->week
-            && ($rotation['season'] ?? null) === (int) $gameSave?->season ? ($rotation['resting_roles'] ?? []) : [];
+        $restingRoles = $gameSave
+            ? $gameSave->gameState()->restingRoles($team->id, (int) $gameSave->season, (int) $gameSave->week)
+            : [];
         $rested = fn ($c) => $played !== null && !isset($played[$c->game_player_id]);
         $isKeeper = fn ($c) => $this->relevantStatsForPosition($c->gamePlayer->position ?? '') === self::STATS_BY_POSITION['GK'];
 

@@ -111,7 +111,7 @@ class MatchSimulator
     // ==========================
     private function simulateAndSave(GameMatch $m, ?GameSave $gameSave): void
     {
-        $lineups  = $gameSave?->state['lineup'] ?? [];
+        $lineups  = $gameSave?->gameState()->lineups() ?? [];
 
         // Malus « titulaire consigné » à appliquer pour ce match (par équipe).
         // On se contente de LIRE le malus ici : la consommation est centralisée
