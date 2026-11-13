@@ -15,7 +15,7 @@ use App\Models\GameSaves\GameSanction;
 use App\Services\AiLineUpService;
 use App\Services\CareerObjectiveService;
 use App\Services\MatchResultService;
-use App\Services\MatchRosterPresenter;
+use App\Services\MatchScreenBuilder;
 use App\Services\MatchSimulator;
 use App\Services\SeasonChallengeService;
 use App\Services\SeasonService;
@@ -49,157 +49,43 @@ class GameMatchController extends Controller
     use LocksGameSave;
 
     /**
-     * Affiche l'écran de match jouable : prépare la configuration du moteur de match
-     * (équipes, effectifs, formations, classement, réglages de la partie) pour le
-     * prochain match de l'équipe active.
+     * Affiche l'écran de match jouable : prépare le prochain match de l'équipe active
+     * puis envoie au moteur de match (navigateur) sa configuration de départ.
      *
      * Déroulé :
      *   1. redirige vers la page de jeu si une pause de mi-saison est en attente ;
      *   2. trouve l'équipe jouée (manager actif en hot-seat) et son prochain match ;
      *   3. remet à 3 les relances de capitaine des deux équipes ;
-     *   4. fait ajuster la composition de l'adversaire IA (blessés, fatigue) ;
-     *   5. détermine le mode de contrôle (un camp, ou les deux si derby entre humains) ;
-     *   6. envoie la configuration à la page « Match/Engine ».
+     *   4. fait ajuster la composition IA du jour (blessés, fatigue), sous le verrou de la partie ;
+     *   5. envoie la configuration à la page « Match/Engine ».
+     *
+     * Toute la préparation est dans App\Services\MatchScreenBuilder.
      */
-    public function match(Request $request, GameSave $gameSave): Response|RedirectResponse
+    public function match(Request $request, GameSave $gameSave, MatchScreenBuilder $screen): Response|RedirectResponse
     {
         $this->authorizeGameSave('view', $gameSave);
+
         if ($gameSave->hasPendingMidseasonBreak()) {
             return redirect()->route('game-saves.Play', $gameSave);
         }
 
-        // Équipe jouée = joueur ACTIF (hot-seat), repli sur l'équipe propriétaire.
-        $controlledGameTeam = ($gameSave->controlled_game_team_id
-            ? GameTeam::where('game_save_id', $gameSave->id)->find($gameSave->controlled_game_team_id)
-            : null)
-            ?? GameTeam::where('game_save_id', $gameSave->id)
-                ->where('base_team_id', $gameSave->team_id)
-                ->firstOrFail();
+        $week  = (int) ($gameSave->week ?? 1);
+        $team  = $screen->activeTeam($gameSave);
+        $match = $screen->nextMatch($gameSave, $team, $week);
 
-        // Seuls les contrats actifs cette semaine : ni contrat expiré, ni
-        // pré-contrat futur sur la feuille de match (comme simulateWeek et play).
-        $week = (int) ($gameSave->week ?? 1);
-        $activeContracts = fn ($q) => $q->activeAt($week)->with('gamePlayer.basePlayer');
+        $screen->resetCaptainRerolls($gameSave, $match);
 
-        $match = GameMatch::with([
-            'homeTeam.contracts' => $activeContracts,
-            'awayTeam.contracts' => $activeContracts,
-        ])
-            ->where('game_save_id', $gameSave->id)
-            ->where('status', 'scheduled')
-            ->where('week', '>=', $gameSave->week ?? 1)
-            ->where(function ($q) use ($controlledGameTeam) {
-                $q->where('home_team_id', $controlledGameTeam->id)
-                    ->orWhere('away_team_id', $controlledGameTeam->id);
-            })
-            ->orderBy('week')
-            ->firstOrFail();
-
-        // 3 relances de capitaine par match : remises à zéro au lancement (elles
-        // sont décomptées côté serveur pendant le match via useCaptainReroll).
-        GameContract::where('game_save_id', $gameSave->id)
-            ->whereIn('game_team_id', [$match->home_team_id, $match->away_team_id])
-            ->where('is_captain', true)
-            ->update(['captain_rerolls_remaining' => 3, 'captain_reroll_used_this_action' => false]);
+        // La composition IA ne s'ajuste que pour un match de CETTE semaine, sous verrou
+        // (c'est une écriture : deux onglets ne doivent pas l'appliquer en même temps).
         if ((int) $match->week === $week) {
-            $this->withSaveLock($gameSave, function (GameSave $save) use ($match, $week) {
-                if ((int) $save->week !== $week || $save->hasPendingMidseasonBreak()) return;
-                if ($match->fresh()?->status !== \App\Enums\MatchStatus::Scheduled) return;
-
-                app(AiLineUpService::class)->adjustLineupsForWeek($save, [$match->home_team_id, $match->away_team_id]);
-            });
-        }
-        $match->load(['homeTeam.contracts' => $activeContracts, 'awayTeam.contracts' => $activeContracts]);
-
-        $homeTeam = $match->homeTeam;
-        $awayTeam = $match->awayTeam;
-
-        $isControlledHome = ((int) $controlledGameTeam->id === (int) $homeTeam->id);
-
-        // Par défaut : mode single, côté selon domicile/extérieur de l'équipe contrôlée
-        $controlMode = $request->query('controlMode', 'single');
-        if (!in_array($controlMode, ['both', 'single'], true)) {
-            $controlMode = 'single';
+            $this->withSaveLock($gameSave, fn (GameSave $locked) => $screen->adjustOpponentLineups($locked, $match, $week));
         }
 
-        // Hot-seat : derby entre deux managers humains → les deux camps se
-        // jouent à la main (sinon l'IA jouerait l'équipe du second humain).
-        $humanIds = array_map('intval', $gameSave->controlledGameTeamIds());
-        if (in_array((int) $homeTeam->id, $humanIds, true) && in_array((int) $awayTeam->id, $humanIds, true)) {
-            $controlMode = 'both';
-        }
-
-        $controlledSide = 'internal';
-
-        $internalTeam = $isControlledHome ? $homeTeam : $awayTeam;
-        $externalTeam = $isControlledHome ? $awayTeam : $homeTeam;
-
-        $state   = $gameSave->state ?? [];
-        $lineups = $state['lineup'] ?? [];
-
-        $internalFormation = $internalTeam->formation ?? '3-2-3-2';
-        $externalFormation = $externalTeam->formation ?? '3-2-3-2';
-
-        $homeLogoUrl = $homeTeam->logo_path ? '/' . ltrim($homeTeam->logo_path, '/') : null;
-        $awayLogoUrl = $awayTeam->logo_path ? '/' . ltrim($awayTeam->logo_path, '/') : null;
-
-        $ranks = app(SeasonService::class)->sortStandings(
-            GameTeam::where('game_save_id', $gameSave->id)->get()
-        )->pluck('id')->flip()->map(fn ($index) => $index + 1);
+        // Mode de contrôle demandé dans l'URL (?controlMode=both|single) ; une valeur invalide → « single ».
+        $requestedMode = $request->query('controlMode', 'single');
 
         return Inertia::render('Match/Engine', [
-            'engineConfig' => [
-                'gameSaveId'     => $gameSave->id,
-                'matchId'        => $match->id,
-                'week'           => $match->week,
-                'maxTurns'       => (int) $gameSave->getConfig('match_max_turns', 30),
-                'criticalsEnabled' => (bool) $gameSave->getConfig('match_criticals_enabled'),
-                'maxSubstitutions' => (int) $gameSave->getConfig('match_max_substitutions'),
-                // Coupe du Monde, phase finale : égalité → tirs au but dans le moteur.
-                'isKnockout'     => in_array($match->round, ['semi', 'final'], true),
-                'controlMode'    => $controlMode,
-                'controlledSide' => $controlledSide,
-
-                'homeTeamName' => $homeTeam->name,
-                'awayTeamName' => $awayTeam->name,
-                'homeLogoUrl'  => $homeLogoUrl,
-                'awayLogoUrl'  => $awayLogoUrl,
-                'isControlledHome' => $isControlledHome,
-
-                'homeTeamId' => $match->home_team_id,
-                'internalIsHome' => $internalTeam->id === $match->home_team_id,
-                'awayTeamId' => $match->away_team_id,
-
-                'sides' => [
-                    'internalTeamId' => $internalTeam->id,
-                    'externalTeamId' => $externalTeam->id,
-                ],
-
-                'teams' => [
-                    'internal' => [
-                        'id'        => $internalTeam->id,
-                        'name'      => $internalTeam->name,
-                        'description' => $internalTeam->description,
-                        'rank' => $ranks->get($internalTeam->id),
-                        'logo_path' => $internalTeam->logo_path,
-                        'formation' => $internalFormation,
-                        'tacticalStyle' => $internalTeam->tactical_style,
-                        'managementPhilosophy' => $internalTeam->management_philosophy,
-                        'players'   => app(MatchRosterPresenter::class)->forTeam($internalTeam, $gameSave, $match->id),
-                    ],
-                    'external' => [
-                        'id'        => $externalTeam->id,
-                        'name'      => $externalTeam->name,
-                        'description' => $externalTeam->description,
-                        'rank' => $ranks->get($externalTeam->id),
-                        'logo_path' => $externalTeam->logo_path,
-                        'formation' => $externalFormation,
-                        'tacticalStyle' => $externalTeam->tactical_style,
-                        'managementPhilosophy' => $externalTeam->management_philosophy,
-                        'players'   => app(MatchRosterPresenter::class)->forTeam($externalTeam, $gameSave, $match->id),
-                    ],
-                ],
-            ],
+            'engineConfig' => $screen->engineConfig($gameSave, $match, $team, is_string($requestedMode) ? $requestedMode : 'single'),
         ]);
     }
 
