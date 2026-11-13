@@ -21,7 +21,7 @@ use Random\Randomizer;
  * Tous les objectifs se mesurent après coup sur les données de la saison
  * (matchs, contrats, moral, budget, cartes) : l'IA n'a rien à « viser ».
  *
- * Donnée : GameSave->state['challenges'] = [
+ * Donnée : GameSave->gameState() (clé challenges, voir GameState) = [
  *   'season' => int, 'drawn_at' => ISO, 'teams' => [teamId => [
  *       'baseline_budget' => int, 'objectives' => [...]]],
  * ]
@@ -78,7 +78,7 @@ class SeasonChallengeService
         }
 
         $season = (int) ($gameSave->season ?? 1);
-        if ((int) ($gameSave->state['challenges']['season'] ?? 0) === $season) {
+        if ($gameSave->gameState()->challengesSeason() === $season) {
             return;
         }
 
@@ -119,13 +119,7 @@ class SeasonChallengeService
         // Compteur de recrues remis à zéro avant d'ouvrir la saison des défis.
         GameTeam::where('game_save_id', $gameSave->id)->update(['season_signings' => 0]);
 
-        $state = $gameSave->state ?? [];
-        $state['challenges'] = [
-            'season'   => $season,
-            'drawn_at' => now()->toIso8601String(),
-            'teams'    => $byTeam,
-        ];
-        $gameSave->state = $state;
+        $gameSave->gameState()->startChallenges($season, now()->toIso8601String(), $byTeam);
         $gameSave->save();
     }
 
@@ -342,7 +336,7 @@ class SeasonChallengeService
     public static function recordSigning(GameContract $contract): void
     {
         $save = GameSave::query()->select(['id', 'season', 'competition_type', 'state'])->find($contract->game_save_id);
-        if (! $save || (int) ($save->state['challenges']['season'] ?? 0) !== (int) ($save->season ?? 1)) {
+        if (! $save || $save->gameState()->challengesSeason() !== (int) ($save->season ?? 1)) {
             return;
         }
 
@@ -377,7 +371,7 @@ class SeasonChallengeService
     private function strengthRanks(GameSave $gameSave): array
     {
         $out = [];
-        foreach ($gameSave->state['challenges']['teams'] ?? [] as $id => $entry) {
+        foreach ($gameSave->gameState()->challengeTeams() as $id => $entry) {
             $out[(int) $id] = (int) ($entry['expected_rank'] ?? 99);
         }
 
@@ -431,8 +425,7 @@ class SeasonChallengeService
      */
     public function payCompleted(GameSave $gameSave, ?array $teamIds = null, ?array $keys = null): void
     {
-        $state = $gameSave->state ?? [];
-        $data = $state['challenges'] ?? null;
+        $data = $gameSave->gameState()->challenges();
         if (! $this->isEnabled($gameSave) || ($gameSave->phase ?? 'season') !== 'season'
             || (int) ($data['season'] ?? 0) !== (int) ($gameSave->season ?? 1)) {
             return;
@@ -455,13 +448,13 @@ class SeasonChallengeService
         $changed = false;
         foreach (GameTeam::where('game_save_id', $gameSave->id)->whereKey(array_keys($entries))->get() as $team) {
             $objectives = $this->evaluateTeam($gameSave, $team, $entries[$team->id], null, $strengthRanks, false);
-            if ($this->creditRewards($team, $state['challenges']['teams'][$team->id], $objectives)) {
+            if ($this->creditRewards($team, $data['teams'][$team->id], $objectives)) {
                 $changed = true;
             }
         }
 
         if ($changed) {
-            $gameSave->state = $state;
+            $gameSave->gameState()->putChallenges($data);
             $gameSave->save();
         }
     }
@@ -489,13 +482,13 @@ class SeasonChallengeService
      */
     public function presentation(GameSave $gameSave): ?array
     {
-        $data = $gameSave->state['challenges'] ?? null;
+        $data = $gameSave->gameState()->challenges();
         if (! $this->isEnabled($gameSave) || ! $data || (int) $data['season'] !== (int) ($gameSave->season ?? 1)) {
             return null;
         }
 
         $teamId = (int) ($gameSave->controlled_game_team_id ?? 0);
-        $entry  = $data['teams'][$teamId] ?? $data['teams'][(string) $teamId] ?? null;
+        $entry  = $gameSave->gameState()->challengeEntry($teamId);
         $team   = $teamId ? GameTeam::find($teamId) : null;
         if (! $entry || ! $team) {
             return null;
@@ -526,8 +519,7 @@ class SeasonChallengeService
      */
     public function evaluateSeasonEnd(GameSave $gameSave, Collection $standings): ?array
     {
-        $state = $gameSave->state ?? [];
-        $data = $state['challenges'] ?? null;
+        $data = $gameSave->gameState()->challenges();
         if (! $this->isEnabled($gameSave) || ! $data || (int) $data['season'] !== (int) ($gameSave->season ?? 1)) {
             return null;
         }
@@ -537,7 +529,7 @@ class SeasonChallengeService
         $changed = false;
 
         foreach ($standings->values() as $i => $team) {
-            $entry = $data['teams'][$team->id] ?? $data['teams'][(string) $team->id] ?? null;
+            $entry = $gameSave->gameState()->challengeEntry((int) $team->id);
             if (! $entry) {
                 continue;
             }
@@ -559,13 +551,13 @@ class SeasonChallengeService
                 'objectives'    => $team->is_controlled ? array_values($objectives) : null,
             ];
 
-            if ($this->creditRewards($team, $state['challenges']['teams'][$team->id], $achieved)) {
+            if ($this->creditRewards($team, $data['teams'][$team->id], $achieved)) {
                 $changed = true;
             }
         }
 
         if ($changed) {
-            $gameSave->state = $state;
+            $gameSave->gameState()->putChallenges($data);
             $gameSave->save();
         }
 

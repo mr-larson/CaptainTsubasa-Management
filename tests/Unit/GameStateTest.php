@@ -94,4 +94,57 @@ class GameStateTest extends TestCase
 
         $this->assertSame(['lineup' => [3]], $save->toArray()['state']);
     }
+
+    public function test_draft_lifecycle_and_snake_order(): void
+    {
+        $state = $this->state();
+
+        $this->assertFalse($state->hasDraft());
+        $this->assertNull($state->currentDraftTeamId());
+        $this->assertFalse($state->draftCompleted());
+        $this->assertSame(1, $state->draftRound());
+
+        $state->startDraft([3, 5, 9], [3 => 8000, 5 => 8000, 9 => 10000]);
+        $this->assertSame([3 => 8000, 5 => 8000, 9 => 10000], $state->draftBudgets());
+        $this->assertSame('progressive', $state->draftPricing());
+        $this->assertSame(3, $state->currentDraftTeamId());
+
+        // Tour pair : ordre inversé.
+        $draft = $state->draft();
+        $draft['round'] = 2;
+        $draft['current_pick_index'] = 0;
+        $state->putDraft($draft);
+        $this->assertSame(9, $state->currentDraftTeamId());
+        $this->assertSame(2, $state->draftRound());
+
+        $draft['completed'] = true;
+        $state->putDraft($draft);
+        $this->assertTrue($state->draftCompleted());
+        $this->assertNull($state->currentDraftTeamId());
+
+        $state->forgetDraft();
+        $this->assertFalse($state->hasDraft());
+    }
+
+    public function test_challenges_accessors(): void
+    {
+        $state = $this->state();
+
+        $this->assertNull($state->challenges());
+        $this->assertSame(0, $state->challengesSeason());
+        $this->assertSame([], $state->challengeTeams());
+        $this->assertNull($state->challengeEntry(4));
+
+        $state->startChallenges(2, '2026-11-13T10:00:00+00:00', [4 => ['expected_rank' => 3]]);
+
+        $this->assertSame(2, $state->challengesSeason());
+        $this->assertSame(['expected_rank' => 3], $state->challengeEntry(4));
+        $this->assertSame(['expected_rank' => 3], $state->challengeEntry(4));
+        $this->assertNull($state->challengeEntry(5));
+
+        $data = $state->challenges();
+        $data['teams'][4]['paid_rewards']['k'] = 100;
+        $state->putChallenges($data);
+        $this->assertSame(100, $state->challengeEntry(4)['paid_rewards']['k']);
+    }
 }

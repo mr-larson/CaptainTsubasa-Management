@@ -56,7 +56,7 @@ class GameDraftController extends Controller
             'gameSave'         => $gameSave,
             'teams'            => $gameTeams,
             'freePlayers'      => $freePlayers,
-            'draftState'        => $gameSave->state['draft'] ?? null,
+            'draftState'        => $gameSave->gameState()->draft(),
             'controlledTeamId'  => $gameSave->controlled_game_team_id,
             'controlledTeamIds' => $gameSave->controlledGameTeamIds(),
             // Duos d'alchimie (une-deux), par base_player_id : pour badger les
@@ -88,8 +88,7 @@ class GameDraftController extends Controller
                 return response()->json(['error' => 'It is your turn to pick'], 400);
             }
 
-            $draft = ($gameSave->state ?? [])['draft'] ?? null;
-            if (!$draft || ($draft['completed'] ?? false)) {
+            if (!$gameSave->gameState()->hasDraft() || $gameSave->gameState()->draftCompleted()) {
                 // Draft terminé → finaliser
                 $draftService->finalizeDraft($gameSave);
                 return response()->json(['completed' => true]);
@@ -112,7 +111,7 @@ class GameDraftController extends Controller
             if ($aiService->shouldFinishDraft($team, $squadSize, DraftService::budgetFor($gameSave, $team))) {
                 $draftService->finishTeamDraft($gameSave, $team->id);
                 $gameSave->refresh();
-                $draftState = $gameSave->state['draft'] ?? [];
+                $draftState = $gameSave->gameState()->draft() ?? [];
 
                 return response()->json([
                     'pick'       => null,
@@ -130,7 +129,7 @@ class GameDraftController extends Controller
                 // même sous MIN_SQUAD : sinon le tour ne passe jamais.
                 $draftService->finishTeamDraft($gameSave, $team->id, force: true);
                 $gameSave->refresh();
-                $draftState = $gameSave->state['draft'] ?? [];
+                $draftState = $gameSave->gameState()->draft() ?? [];
 
                 return response()->json([
                     'pick'       => null,
@@ -149,7 +148,7 @@ class GameDraftController extends Controller
             }
             $gameSave->refresh();
 
-            $draftState = $gameSave->state['draft'] ?? [];
+            $draftState = $gameSave->gameState()->draft() ?? [];
 
             if ($draftState['completed'] ?? false) {
                 $draftService->finalizeDraft($gameSave);
@@ -203,7 +202,7 @@ class GameDraftController extends Controller
             }
 
             $gameSave->refresh();
-            $draftState = $gameSave->state['draft'] ?? [];
+            $draftState = $gameSave->gameState()->draft() ?? [];
 
             if ($draftState['completed'] ?? false) {
                 $draftService->finalizeDraft($gameSave);
@@ -247,8 +246,8 @@ class GameDraftController extends Controller
             $gameSave->refresh();
 
             return response()->json([
-                'draftState' => $gameSave->state['draft'] ?? [],
-                'completed'  => $allDone || ($gameSave->state['draft']['completed'] ?? false),
+                'draftState' => $gameSave->gameState()->draft() ?? [],
+                'completed'  => $allDone || $gameSave->gameState()->draftCompleted(),
             ]);
         });
     }

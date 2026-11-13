@@ -31,24 +31,13 @@ class DraftService
         foreach ($teamIdsOrder as $teamId) {
             $budgets[$teamId] = in_array((int) $teamId, $humanTeamIds, true) ? $humanBudget : $aiBudget;
         }
-        $state = $gameSave->state ?? [];
-        $state['draft'] = [
-            'order'              => array_values($teamIdsOrder),
-            'budgets'            => $budgets,
-            'pricing'            => 'progressive',
-            'current_pick_index' => 0,
-            'round'              => 1,
-            'picks'              => [],
-            'completed'          => false,
-            'finished_teams'     => [],
-        ];
-        $gameSave->state = $state;
+        $gameSave->gameState()->startDraft($teamIdsOrder, $budgets);
         $gameSave->save();
     }
 
     public static function budgetFor(GameSave $gameSave, GameTeam $team): int
     {
-        $budgets = $gameSave->state['draft']['budgets'] ?? null;
+        $budgets = $gameSave->gameState()->draftBudgets();
 
         // Les drafts déjà entamées avec une caisse commune gardent leur solde.
         return (int) ($budgets === null ? $team->budget : ($budgets[$team->id] ?? 0));
@@ -56,7 +45,7 @@ class DraftService
 
     public function pickCost(GameSave $gameSave, int $salary, int $weeks): int
     {
-        if (($gameSave->state['draft']['pricing'] ?? null) !== 'progressive') {
+        if ($gameSave->gameState()->draftPricing() !== 'progressive') {
             return intdiv($salary * $weeks, 2);
         }
 
@@ -73,18 +62,12 @@ class DraftService
      */
     public function executePick(GameSave $gameSave, int $playerId): ?array
     {
-        $state = $gameSave->state ?? [];
-        $draft = $state['draft'] ?? null;
+        $draft = $gameSave->gameState()->draft();
 
         if (!$draft || ($draft['completed'] ?? false)) return null;
 
-        $order     = $draft['order'] ?? [];
-        $pickIndex = $draft['current_pick_index'] ?? 0;
-        $round     = $draft['round'] ?? 1;
-
-        // Déterminer l'équipe courante (snake : rounds pairs = inversé)
-        $effectiveOrder = ($round % 2 === 0) ? array_reverse($order) : $order;
-        $currentTeamId  = $effectiveOrder[$pickIndex] ?? null;
+        // Équipe courante (ordre serpent : les tours pairs sont inversés)
+        $currentTeamId = $gameSave->gameState()->currentDraftTeamId();
 
         if (!$currentTeamId) return null;
 
@@ -98,7 +81,7 @@ class DraftService
 
         if ($squadSize >= self::MAX_SQUAD) {
             // Skip ce pick, avancer
-            return $this->advanceAndSkip($gameSave, $state, $draft);
+            return $this->advanceAndSkip($gameSave);
         }
 
         // Vérifier que le joueur est libre, draftable (non fictif) et visible
@@ -127,7 +110,7 @@ class DraftService
         if ($totalCost > $budget) return null;
 
         // Exécuter le pick
-        return DB::transaction(function () use ($gameSave, $team, $player, $salary, $seasonLength, $squadSize, $totalCost, $budget, $state, $draft) {
+        return DB::transaction(function () use ($gameSave, $team, $player, $salary, $seasonLength, $squadSize, $totalCost, $budget, $draft) {
             $isStarter = $squadSize < 11;
 
             // Numéro de maillot
@@ -185,8 +168,7 @@ class DraftService
             ];
 
             $draft['picks'][] = $pick;
-            $state['draft'] = $draft;
-            $gameSave->state = $state;
+            $gameSave->gameState()->putDraft($draft);
             $gameSave->save();
             $this->advancePick($gameSave);
 
@@ -200,8 +182,7 @@ class DraftService
      */
     public function advancePick(GameSave $gameSave): void
     {
-        $state = $gameSave->state ?? [];
-        $draft = $state['draft'] ?? [];
+        $draft = $gameSave->gameState()->draft() ?? [];
         $order = $draft['order'] ?? [];
         $total = count($order);
 
@@ -226,8 +207,7 @@ class DraftService
             $draft = $this->skipFullTeams($gameSave, $draft);
         }
 
-        $state['draft']  = $draft;
-        $gameSave->state = $state;
+        $gameSave->gameState()->putDraft($draft);
         $gameSave->save();
     }
 
@@ -282,8 +262,7 @@ class DraftService
      */
     public function isDraftComplete(GameSave $gameSave): bool
     {
-        $state  = $gameSave->state ?? [];
-        $draft  = $state['draft'] ?? [];
+        $draft  = $gameSave->gameState()->draft() ?? [];
         $finished = $draft['finished_teams'] ?? [];
 
         $teamIds = GameTeam::where('game_save_id', $gameSave->id)->pluck('id');
@@ -321,8 +300,7 @@ class DraftService
 
         if ($count < self::MIN_SQUAD && !$force) return false;
 
-        $state = $gameSave->state ?? [];
-        $draft = $state['draft'] ?? [];
+        $draft = $gameSave->gameState()->draft() ?? [];
         $finished = $draft['finished_teams'] ?? [];
 
         if (!in_array($teamId, $finished)) {
@@ -338,15 +316,13 @@ class DraftService
         }
 
         $draft['finished_teams'] = $finished;
-        $state['draft'] = $draft;
-        $gameSave->state = $state;
+        $gameSave->gameState()->putDraft($draft);
         $gameSave->save();
 
         // Vérifier si tout le monde a fini
         if ($this->isDraftComplete($gameSave)) {
             $draft['completed'] = true;
-            $state['draft'] = $draft;
-            $gameSave->state = $state;
+            $gameSave->gameState()->putDraft($draft);
             $gameSave->save();
             $this->finalizeDraft($gameSave);
             return true;
@@ -393,15 +369,7 @@ class DraftService
 
     public function getCurrentTeamId(GameSave $gameSave): ?int
     {
-        $draft = ($gameSave->state ?? [])['draft'] ?? null;
-        if (!$draft || ($draft['completed'] ?? false)) return null;
-
-        $order     = $draft['order'] ?? [];
-        $round     = $draft['round'] ?? 1;
-        $pickIndex = $draft['current_pick_index'] ?? 0;
-
-        $effectiveOrder = ($round % 2 === 0) ? array_reverse($order) : $order;
-        return $effectiveOrder[$pickIndex] ?? null;
+        return $gameSave->gameState()->currentDraftTeamId();
     }
 
     /**
@@ -416,7 +384,7 @@ class DraftService
 
     protected function getCurrentRound(GameSave $gameSave): int
     {
-        return ($gameSave->state ?? [])['draft']['round'] ?? 1;
+        return $gameSave->gameState()->draftRound();
     }
 
     protected function getSeasonLength(GameSave $gameSave): int
@@ -424,7 +392,7 @@ class DraftService
         return SeasonService::lengthForTeamCount(GameTeam::where('game_save_id', $gameSave->id)->count());
     }
 
-    protected function advanceAndSkip(GameSave $gameSave, array $state, array $draft): ?array
+    protected function advanceAndSkip(GameSave $gameSave): ?array
     {
         $this->advancePick($gameSave);
         return ['skipped' => true];
@@ -439,11 +407,10 @@ class DraftService
     public function purgeFinishedDraft(GameSave $gameSave): void
     {
         if (in_array($gameSave->phase, ['draft', 'intersaison_draft'], true)) return;
-        $state = $gameSave->state ?? [];
-        if (!array_key_exists('draft', $state)) return;
+        $state = $gameSave->gameState();
+        if (!$state->hasDraft()) return;
 
-        unset($state['draft']);
-        $gameSave->state = $state;
+        $state->forgetDraft();
         $gameSave->save();
     }
 
@@ -465,9 +432,9 @@ class DraftService
             $this->organizeTeamLineup($team, $gameSave, $state);
         }
 
-        $draft = $state->get('draft', []);
+        $draft = $state->draft() ?? [];
         unset($draft['budgets']);
-        $state->put('draft', $draft);
+        $state->putDraft($draft);
         $gameSave->phase = 'season';
         $gameSave->save();
 

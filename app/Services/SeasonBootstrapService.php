@@ -45,10 +45,8 @@ class SeasonBootstrapService
      */
     public function needsPreparation(GameSave $gameSave): bool
     {
-        $state = $gameSave->state ?? [];
-
         // state.draft résiduel une fois la draft terminée (cf. DraftService::purgeFinishedDraft).
-        if (! in_array($gameSave->phase, ['draft', 'intersaison_draft'], true) && array_key_exists('draft', $state)) {
+        if (! in_array($gameSave->phase, ['draft', 'intersaison_draft'], true) && $gameSave->gameState()->hasDraft()) {
             return true;
         }
 
@@ -64,7 +62,7 @@ class SeasonBootstrapService
             }
 
             if (app(SeasonChallengeService::class)->isEnabled($gameSave)
-                && (int) ($state['challenges']['season'] ?? 0) !== $season) {
+                && $gameSave->gameState()->challengesSeason() !== $season) {
                 return true;
             }
         }

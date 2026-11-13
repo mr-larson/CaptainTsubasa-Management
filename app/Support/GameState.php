@@ -16,8 +16,9 @@ use App\Models\GameSaves\GameSave;
  * lecture-modification-écriture de tout le JSON (voir LocksGameSave).
  *
  * Clés migrées : lineup, ai_rotation, midseason_break, season_history /
- * last_season_recap, free_agent_signings, declaration_match_boosts.
- * Clés encore lues en direct : draft, challenges, training, training_history,
+ * last_season_recap, free_agent_signings, declaration_match_boosts, draft,
+ * challenges.
+ * Clés encore lues en direct : training, training_history,
  * ai_training_history, shop, tournament, career, config (→ GameConfig), cartes
  * bonus/malus (active_pre_match_cards, pending_*, malus_shields, sponsor_results),
  * season_progression, match_progression_history, contract_departures.
@@ -254,5 +255,120 @@ final class GameState
     public function forgetDeclarationBoosts(): void
     {
         $this->forget('declaration_match_boosts');
+    }
+
+    // ── draft : état de la draft en cours ─────────────────────────────
+    //    ['order' => [teamId], 'budgets' => [teamId => int], 'pricing' => 'progressive',
+    //     'current_pick_index' => int, 'round' => int, 'picks' => [...], 'completed' => bool,
+    //     'finished_teams' => [teamId], 'exhausted_teams' => [teamId]]
+    //    Absente hors draft (purgée à l'ouverture de Play, voir DraftService::purgeFinishedDraft).
+
+    /** null s'il n'y a pas de draft. */
+    public function draft(): ?array
+    {
+        return $this->get('draft');
+    }
+
+    public function hasDraft(): bool
+    {
+        return $this->draft() !== null;
+    }
+
+    public function putDraft(array $draft): void
+    {
+        $this->put('draft', $draft);
+    }
+
+    public function forgetDraft(): void
+    {
+        $this->forget('draft');
+    }
+
+    /** Ouvre une draft : ordre des équipes (premier tour) et enveloppe par équipe. */
+    public function startDraft(array $order, array $budgets): void
+    {
+        $this->putDraft([
+            'order'              => array_values($order),
+            'budgets'            => $budgets,
+            'pricing'            => 'progressive',
+            'current_pick_index' => 0,
+            'round'              => 1,
+            'picks'              => [],
+            'completed'          => false,
+            'finished_teams'     => [],
+        ]);
+    }
+
+    public function draftCompleted(): bool
+    {
+        return (bool) ($this->draft()['completed'] ?? false);
+    }
+
+    public function draftRound(): int
+    {
+        return (int) ($this->draft()['round'] ?? 1);
+    }
+
+    /** Enveloppes par équipe ; null pour une ancienne draft à caisse commune. */
+    public function draftBudgets(): ?array
+    {
+        return $this->draft()['budgets'] ?? null;
+    }
+
+    public function draftPricing(): ?string
+    {
+        return $this->draft()['pricing'] ?? null;
+    }
+
+    /** Équipe qui doit choisir (ordre « serpent » : les tours pairs sont inversés) ; null si terminé. */
+    public function currentDraftTeamId(): ?int
+    {
+        $draft = $this->draft();
+        if (! $draft || ($draft['completed'] ?? false)) return null;
+
+        $order = $draft['order'] ?? [];
+        $effectiveOrder = ((int) ($draft['round'] ?? 1) % 2 === 0) ? array_reverse($order) : $order;
+        $teamId = $effectiveOrder[$draft['current_pick_index'] ?? 0] ?? null;
+
+        return $teamId === null ? null : (int) $teamId;
+    }
+
+    // ── challenges : défis de saison ──────────────────────────────────
+    //    ['season' => int, 'drawn_at' => iso8601, 'teams' => [teamId => entrée]]
+    //    entrée = ['baseline_budget', 'expected_rank', 'objectives' => [...], 'paid_rewards' => [...]]
+    //    (détail de l'entrée : SeasonChallengeService)
+
+    public function challenges(): ?array
+    {
+        return $this->get('challenges');
+    }
+
+    /** Saison pour laquelle les défis ont été tirés ; 0 s'ils ne l'ont pas encore été. */
+    public function challengesSeason(): int
+    {
+        return (int) ($this->challenges()['season'] ?? 0);
+    }
+
+    /** @return array<int|string, array> entrées par équipe */
+    public function challengeTeams(): array
+    {
+        return $this->challenges()['teams'] ?? [];
+    }
+
+    public function challengeEntry(int $teamId): ?array
+    {
+        $teams = $this->challengeTeams();
+
+        return $teams[$teamId] ?? $teams[(string) $teamId] ?? null;
+    }
+
+    public function startChallenges(int $season, string $drawnAt, array $teams): void
+    {
+        $this->put('challenges', ['season' => $season, 'drawn_at' => $drawnAt, 'teams' => $teams]);
+    }
+
+    public function putChallenges(array $challenges): void
+    {
+        $this->put('challenges', $challenges);
     }
 }
