@@ -144,7 +144,7 @@ Route::middleware('auth')->group(function () {
     });
 
     // Game saves
-    Route::prefix('game-saves')->name('game-saves.')->group(function () {
+    Route::prefix('game-saves')->name('game-saves.')->middleware('save.lock')->group(function () {
 
         // CRUD saves
         Route::get('/',        [GameSaveController::class, 'index'])->name('index');

@@ -105,26 +105,32 @@ class LineupController extends Controller
     public function toggleCaptain(Request $request, GameContract $contract)
     {
         $this->authorizeGameSave('update', $contract->gameSave);
-        if ($refused = $this->refuseUnlessActiveTeam($contract->gameSave, (int) $contract->game_team_id)) return $refused;
 
-        // Si ce joueur est déjà capitaine → on le retire simplement
-        if ($contract->is_captain) {
-            $contract->is_captain = false;
+        // Sous verrou : retirer l'ancien capitaine puis poser le nouveau est
+        // atomique, et deux requêtes simultanées ne laissent pas deux capitaines.
+        return $this->withSaveLock($contract->gameSave, function (GameSave $gameSave) use ($contract) {
+            $contract->refresh();
+            if ($refused = $this->refuseUnlessActiveTeam($gameSave, (int) $contract->game_team_id)) return $refused;
+
+            // Si ce joueur est déjà capitaine → on le retire simplement
+            if ($contract->is_captain) {
+                $contract->is_captain = false;
+                $contract->save();
+                return back()->with('success', 'Capitaine retiré.');
+            }
+
+            // Sinon : retirer le capitaine actuel de la même équipe
+            GameContract::where('game_team_id', $contract->game_team_id)
+                ->where('is_captain', true)
+                ->where('id', '!=', $contract->id)
+                ->update(['is_captain' => false]);
+
+            // Désigner le nouveau
+            $contract->is_captain = true;
             $contract->save();
-            return back()->with('success', 'Capitaine retiré.');
-        }
 
-        // Sinon : retirer le capitaine actuel de la même équipe
-        GameContract::where('game_team_id', $contract->game_team_id)
-            ->where('is_captain', true)
-            ->where('id', '!=', $contract->id)
-            ->update(['is_captain' => false]);
-
-        // Désigner le nouveau
-        $contract->is_captain = true;
-        $contract->save();
-
-        return back()->with('success', 'Nouveau capitaine désigné.');
+            return back()->with('success', 'Nouveau capitaine désigné.');
+        });
     }
 
     /**
