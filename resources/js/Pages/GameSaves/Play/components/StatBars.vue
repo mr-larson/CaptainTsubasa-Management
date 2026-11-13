@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import { useAnimatedStats } from '@/Composables/useAnimatedStats.js';
 import Panel from '@/Components/Panel.vue';
 import { playerStat } from '../recruitment.js';
 import { STAT_COLORS, usePlayerUtils } from '../usePlayerUtils.js';
@@ -58,11 +59,15 @@ const stats = computed(() => {
         (key !== 'cross' || props.highlightPosition) && (key !== 'luck' || valueOf(key) != null || valueOf(key, props.comparePlayer) != null)
     );
 });
+const { root, value: animatedValue, width: animatedWidth } = useAnimatedStats(
+    () => Object.fromEntries(stats.value.map(stat => [stat.key, valueOf(stat.key)])),
+    () => props.player?.id,
+);
 </script>
 
 <template>
-    <Panel padding="sm" title="Statistiques">
-        <div class="space-y-1.5">
+    <Panel ref="root" padding="sm" title="Statistiques">
+        <div class="space-y-1.5" aria-live="off">
             <div v-for="stat in stats" :key="stat.key" class="flex items-center gap-2 text-xs">
                 <span class="w-16 shrink-0 text-[11px]" :class="keyStats.includes(stat.key) ? 'font-bold text-teal-700' : 'text-slate-500'">{{ stat.label }}</span>
                 <div class="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden relative">
@@ -71,11 +76,11 @@ const stats = computed(() => {
                          :style="{ width: Math.min(comparePlayer[stat.key] ?? comparePlayer.stats?.[stat.key] ?? 0, 100) + '%' }">
                     </div>
                     <div class="h-full rounded-full" :class="stat.color"
-                         :style="{ width: Math.min(valueOf(stat.key) ?? 0, 100) + '%' }">
+                         :style="{ width: animatedWidth(stat.key) }">
                     </div>
                 </div>
                 <span class="w-6 text-right font-bold text-slate-700 text-[11px]">
-                    {{ valueOf(stat.key) ?? '—' }}
+                    {{ valueOf(stat.key) == null ? '—' : animatedValue(stat.key) }}
                 </span>
                 <span v-if="comparePlayer" class="w-5 text-right text-2xs text-slate-400">
                     {{ comparePlayer[stat.key] ?? comparePlayer.stats?.[stat.key] ?? '—' }}
