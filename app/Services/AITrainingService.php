@@ -40,11 +40,10 @@ class AITrainingService
 
     public function trainForWeek(GameSave $gameSave): void
     {
-        $state = $gameSave->state ?? [];
+        $state = $gameSave->gameState();
 
         // Empêcher un double entraînement IA pour la même semaine
-        $aiWeekKey = 'ai_training_week';
-        if (($state[$aiWeekKey] ?? null) === $gameSave->week) {
+        if ($state->aiTrainingWeek() === $gameSave->week) {
             return;
         }
 
@@ -101,38 +100,22 @@ class AITrainingService
         }
 
         // Toujours mettre à jour state.training avec la semaine courante
-        $training = $state['training'] ?? [];
-
-        // Réinitialiser si nouvelle semaine
-        if (
-            !isset($training['season'], $training['week']) ||
-            (int) $training['season'] !== $season ||
-            (int) $training['week'] !== $week
-        ) {
-            $training = ['season' => $season, 'week' => $week, 'entries' => [], 'ai_entries' => []];
-        }
-
-        // Toujours écrire ai_entries (vide ou non)
-        $training['ai_entries'] = $aiEntries;
+        // (réinitialisée si nouvelle semaine) et écrire ai_entries (vide ou non).
+        $state->setAiTraining((int) $season, (int) $week, $aiEntries);
 
         // Historique de la saison en cours (seul affiché par l'onglet
         // Entraînement) : les saisons passées sont purgées pour borner le state.
-        $history = array_values(array_filter(
-            $state['ai_training_history'] ?? [],
-            fn ($e) => (int) ($e['season'] ?? 0) === (int) $season
-        ));
+        $history = $state->aiTrainingHistoryOfSeason((int) $season);
         foreach ($allEntries as $entry) {
             $history[] = array_merge($entry, [
                 'season' => $season,
                 'week'   => $week,
             ]);
         }
-        $state['ai_training_history'] = $history;
-        $state['training'] = $training;
+        $state->putAiTrainingHistory($history);
 
         // Marquer cette semaine comme traitée
-        $state[$aiWeekKey] = $week;
-        $gameSave->state   = $state;
+        $state->markAiTrainingWeek($week);
         $gameSave->save();
     }
 
@@ -148,10 +131,9 @@ class AITrainingService
         $gainMin      = $gameSave ? (int) $gameSave->getConfig('training_gain_min') : 1;
         $trainingCost = ($chargeCost && $gameSave) ? (int) $gameSave->getConfig('training_cost') : 0;
         $trainCount   = $gameSave ? (int) $gameSave->getConfig('training_max_per_week') : 3;
-        $training = $gameSave?->state['training'] ?? [];
-        if ((int) ($training['week'] ?? 0) === (int) $gameSave?->week
-            && (int) ($training['season'] ?? 0) === (int) $gameSave?->season) {
-            $trainCount -= collect($training['entries'] ?? [])->where('team_id', $team->id)->count();
+        if ($gameSave) {
+            $trainCount -= collect($gameSave->gameState()->weekTrainingEntries((int) $gameSave->season, (int) $gameSave->week))
+                ->where('team_id', $team->id)->count();
         }
 
         // À la clôture, l'entraînement précède la récupération et le coût du match.

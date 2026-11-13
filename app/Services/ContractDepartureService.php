@@ -36,8 +36,7 @@ class ContractDepartureService
         if ($week % 2 !== 0 || $gameSave->competition_type === 'world_cup') return;
 
         $season = (int) ($gameSave->season ?? 1);
-        $lastCheck = $gameSave->gameState()->get('contract_departures', []);
-        if (($lastCheck['season'] ?? null) === $season && ($lastCheck['week'] ?? null) === $week) return;
+        if ($gameSave->gameState()->contractDeparturesDoneFor($season, $week)) return;
 
         $departures = [];
         $contracts = GameContract::where('game_save_id', $gameSave->id)
@@ -77,7 +76,7 @@ class ContractDepartureService
             ];
         }
 
-        $gameSave->gameState()->put('contract_departures', ['season' => $season, 'week' => $week, 'entries' => $departures]);
+        $gameSave->gameState()->putContractDepartures($season, $week, $departures);
         $gameSave->save();
     }
 

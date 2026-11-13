@@ -60,7 +60,7 @@ class AiFormationTrainingService
             ->merge(GameSanction::where('game_save_id', $save->id)->where('week_return', '>', $week)
                 ->where('weeks_suspended', '>', 0)->pluck('game_player_id'))
             ->merge(GamePositionTraining::unavailablePlayerIds($save->id, $week));
-        $history = collect($save->state['ai_training_history'] ?? [])->where('season', $season);
+        $history = collect($save->gameState()->aiTrainingHistoryOfSeason((int) $season));
         $recent = $history->where('week', '>', $week - self::COOLDOWN_WEEKS)
             ->whereIn('stat', ['position', 'special_move'])->pluck('team_id')->flip();
         $moves = null;
@@ -101,10 +101,9 @@ class AiFormationTrainingService
             ]);
         }
 
-        if ($history->count() > collect($save->state['ai_training_history'] ?? [])->where('season', $season)->count()) {
-            $state = $save->state ?? [];
-            $state['ai_training_history'] = $history->values()->all();
-            $save->update(['state' => $state]);
+        if ($history->count() > count($save->gameState()->aiTrainingHistoryOfSeason((int) $season))) {
+            $save->gameState()->putAiTrainingHistory($history->values()->all());
+            $save->save();
         }
     }
 

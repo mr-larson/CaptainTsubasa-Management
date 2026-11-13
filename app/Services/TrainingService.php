@@ -41,20 +41,11 @@ class TrainingService
 
         // 1️⃣ Lire l'état actuel des entraînements dans state. Le quota est
         // compté par équipe : en hot-seat, chaque manager a ses propres séances.
-        $state    = $gameSave->state ?? [];
-        $training = $state['training'] ?? null;
+        $state    = $gameSave->gameState();
         $teamId   = (int) $gameSave->controlled_game_team_id;
 
-        $weekEntries = [];   // toutes équipes confondues, semaine courante
-
-        if (
-            $training &&
-            isset($training['season'], $training['week']) &&
-            (int) $training['season'] === $season &&
-            (int) $training['week'] === $week
-        ) {
-            $weekEntries = $training['entries'] ?? [];
-        }
+        // Séances de la semaine courante, toutes équipes confondues.
+        $weekEntries = $state->weekTrainingEntries($season, $week);
 
         // Entrées sans team_id (antérieures au quota par équipe) : comptées pour tous.
         $currentEntries = array_values(array_filter(
@@ -163,7 +154,7 @@ class TrainingService
             $totalCost,
             $controlledTeam,
             $weekEntries,
-            &$state,
+            $state,
             &$applied,
             $season,
             $week
@@ -215,41 +206,36 @@ class TrainingService
                 $controlledTeam->save();
             }
 
-            if (!isset($state['training_history'])) {
-                $previous = $state['training'] ?? [];
-                $state['training_history'] = array_map(fn ($entry) => $entry + [
+            if ($state->trainingHistory() === null) {
+                $previous = $state->training() ?? [];
+                $state->putTrainingHistory(array_map(fn ($entry) => $entry + [
                     'season' => $previous['season'] ?? $season, 'week' => $previous['week'] ?? $week,
-                ], $previous['entries'] ?? []);
+                ], $previous['entries'] ?? []));
             }
-            $history = array_values(array_filter($state['training_history'] ?? [],
+            $history = array_values(array_filter($state->trainingHistory() ?? [],
                 fn ($entry) => (int) ($entry['season'] ?? 0) === $season));
             foreach ($applied as $entry) {
                 $history[] = $entry + ['season' => $season, 'week' => $week];
             }
-            $state['training_history'] = array_slice($history, -200);
+            $state->putTrainingHistory(array_slice($history, -200));
 
-            // Mise à jour de state['training']
-            $state['training'] = [
-                'season'  => $season,
-                'week'    => $week,
-                'entries' => array_merge(
-                    $weekEntries,
-                    array_map(function ($e) use ($controlledTeam) {
-                        return [
-                            'team_id'      => $controlledTeam->id,
-                            'player_id'    => $e['player_id'],
-                            'stat'         => $e['stat'],
-                            'gain'         => $e['gain'],
-                            'stamina_cost' => $e['stamina_cost'],
-                            'cost'         => $e['cost'],
-                            'created_at'   => now()->toIso8601String(),
-                        ];
-                    }, $applied)
-                ),
-            ];
+            // Séances de la semaine : les précédentes plus celles-ci.
+            $state->setWeekTraining($season, $week, array_merge(
+                $weekEntries,
+                array_map(function ($e) use ($controlledTeam) {
+                    return [
+                        'team_id'      => $controlledTeam->id,
+                        'player_id'    => $e['player_id'],
+                        'stat'         => $e['stat'],
+                        'gain'         => $e['gain'],
+                        'stamina_cost' => $e['stamina_cost'],
+                        'cost'         => $e['cost'],
+                        'created_at'   => now()->toIso8601String(),
+                    ];
+                }, $applied)
+            ));
         });
 
-        $gameSave->state = $state;
         $gameSave->save();
 
         return $applied;

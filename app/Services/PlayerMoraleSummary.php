@@ -57,17 +57,17 @@ class PlayerMoraleSummary
                 'week' => $declaration->week, 'season' => $declaration->season,
             ]);
         }
-        $state = $gameSave->state ?? [];
-        $manualHistory = $state['training_history'] ?? [];
+        $gameState = $gameSave->gameState();
+        $manualHistory = $gameState->trainingHistory() ?? [];
         // Les anciennes sauvegardes conservent au moins les séances de la semaine.
         if (!$manualHistory) {
-            $training = $state['training'] ?? [];
+            $training = $gameState->training() ?? [];
             $manualHistory = array_map(fn ($entry) => $entry + [
                 'week' => $training['week'] ?? $gameSave->week,
                 'season' => $training['season'] ?? $gameSave->season,
             ], $training['entries'] ?? []);
         }
-        foreach (array_merge($manualHistory, $state['ai_training_history'] ?? []) as $entry) {
+        foreach (array_merge($manualHistory, $gameState->aiTrainingHistory()) as $entry) {
             if (!in_array((int) ($entry['player_id'] ?? 0), $ids, true) || (int) ($entry['gain'] ?? 0) === 0) continue;
             $rows->push([
                 'player_id' => $entry['player_id'], 'category' => 'stats', 'source' => MoraleSource::Training->value,

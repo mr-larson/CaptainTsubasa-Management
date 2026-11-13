@@ -15,7 +15,7 @@ use Illuminate\Support\Collection;
  * match, et tranche en fin de saison (maintien, prime, licenciement). Un objectif
  * long terme (gagner N titres) conclut la partie par une victoire de carrière.
  *
- * Toute la donnée vit dans GameSave->state['career']. Le mode Coupe du Monde
+ * Toute la donnée vit dans GameSave->gameState()->career(). Le mode Coupe du Monde
  * (élimination directe, fin naturelle) n'est pas concerné.
  */
 class CareerObjectiveService
@@ -88,7 +88,7 @@ class CareerObjectiveService
      */
     public function data(GameSave $gameSave): array
     {
-        $career = $gameSave->state['career'] ?? [];
+        $career = $gameSave->gameState()->career();
         $preset = $this->preset($gameSave);
 
         return array_merge([
@@ -367,9 +367,7 @@ class CareerObjectiveService
 
     private function persist(GameSave $gameSave, array $career): void
     {
-        $state = $gameSave->state ?? [];
-        $state['career'] = $career;
-        $gameSave->state = $state;
+        $gameSave->gameState()->putCareer($career);
         $gameSave->save();
     }
 

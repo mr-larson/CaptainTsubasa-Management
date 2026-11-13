@@ -15,13 +15,14 @@ use App\Models\GameSaves\GameSave;
  * persiste. Ne remplace pas le verrou de save : une écriture reste un
  * lecture-modification-écriture de tout le JSON (voir LocksGameSave).
  *
- * Clés migrées : lineup, ai_rotation, midseason_break, season_history /
- * last_season_recap, free_agent_signings, declaration_match_boosts, draft,
- * challenges.
- * Clés encore lues en direct : training, training_history,
- * ai_training_history, shop, tournament, career, config (→ GameConfig), cartes
- * bonus/malus (active_pre_match_cards, pending_*, malus_shields, sponsor_results),
- * season_progression, match_progression_history, contract_departures.
+ * Toutes les clés du state ont leurs accesseurs : lineup, ai_rotation, midseason_break,
+ * season_history / last_season_recap, free_agent_signings, declaration_match_boosts,
+ * draft, challenges, training, training_history, ai_training_history, ai_training_week,
+ * season_progression, match_progression_history, cartes (active_pre_match_cards,
+ * pending_stat_debuffs, pending_malus, malus_shields, pending_sponsor_challenges,
+ * sponsor_results), shop, tournament, career, contract_departures.
+ * Seule `config` est à part : voir GameConfig. Une nouvelle clé s'ajoute ICI, avec sa
+ * forme documentée, et ne se lit pas par chaîne brute ailleurs.
  */
 final class GameState
 {
@@ -370,5 +371,309 @@ final class GameState
     public function putChallenges(array $challenges): void
     {
         $this->put('challenges', $challenges);
+    }
+
+    // ── training : séances de la semaine ──────────────────────────────
+    //    ['season' => int, 'week' => int, 'entries' => [séance], 'ai_entries' => [séance]]
+    //    séance = ['team_id', 'player_id', 'stat', 'gain', 'stamina_cost', 'cost', 'created_at', ...]
+
+    public function training(): ?array
+    {
+        return $this->get('training');
+    }
+
+    /** Séances enregistrées pour CETTE saison et semaine (toutes équipes), sinon []. */
+    public function weekTrainingEntries(int $season, int $week): array
+    {
+        $training = $this->training();
+
+        return $training
+            && (int) ($training['season'] ?? 0) === $season
+            && (int) ($training['week'] ?? 0) === $week
+            ? ($training['entries'] ?? [])
+            : [];
+    }
+
+    /** Remplace les séances de la semaine (les séances IA de l'état précédent sont abandonnées). */
+    public function setWeekTraining(int $season, int $week, array $entries): void
+    {
+        $this->put('training', ['season' => $season, 'week' => $week, 'entries' => $entries]);
+    }
+
+    /** Enregistre les séances IA de la semaine en gardant les séances humaines de cette semaine. */
+    public function setAiTraining(int $season, int $week, array $aiEntries): void
+    {
+        $this->put('training', [
+            'season'     => $season,
+            'week'       => $week,
+            'entries'    => $this->weekTrainingEntries($season, $week),
+            'ai_entries' => $aiEntries,
+        ]);
+    }
+
+    // ── training_history : séances humaines de la saison (200 dernières) ─
+
+    /** null tant qu'aucun historique n'a été constitué (anciennes sauvegardes). */
+    public function trainingHistory(): ?array
+    {
+        return $this->get('training_history');
+    }
+
+    public function putTrainingHistory(array $history): void
+    {
+        $this->put('training_history', $history);
+    }
+
+    // ── ai_training_history / ai_training_week : séances des équipes IA ─
+
+    public function aiTrainingHistory(): array
+    {
+        return $this->get('ai_training_history', []);
+    }
+
+    public function aiTrainingHistoryOfSeason(int $season): array
+    {
+        return array_values(array_filter(
+            $this->aiTrainingHistory(),
+            fn ($entry) => (int) ($entry['season'] ?? 0) === $season,
+        ));
+    }
+
+    public function aiTrainingHistoryOfWeek(int $season, int $week): array
+    {
+        return array_values(array_filter(
+            $this->aiTrainingHistory(),
+            fn ($entry) => (int) ($entry['season'] ?? 0) === $season && (int) ($entry['week'] ?? 0) === $week,
+        ));
+    }
+
+    public function putAiTrainingHistory(array $history): void
+    {
+        $this->put('ai_training_history', $history);
+    }
+
+    /** Dernière semaine pour laquelle l'entraînement IA a été traité (garde anti-doublon). */
+    public function aiTrainingWeek(): mixed
+    {
+        return $this->get('ai_training_week');
+    }
+
+    public function markAiTrainingWeek(mixed $week): void
+    {
+        $this->put('ai_training_week', $week);
+    }
+
+    // ── season_progression : gains de stats par joueur sur la saison ──
+    //    [season => [playerId => total gagné]] (plafonné par joueur et par saison)
+
+    /** Ne garde que la saison en cours : les précédentes ne servent plus au plafond. */
+    public function keepOnlySeasonProgression(int $season): void
+    {
+        $this->put('season_progression', [$season => $this->get('season_progression', [])[$season] ?? []]);
+    }
+
+    public function playerSeasonProgression(int $season, int $playerId): int
+    {
+        return (int) ($this->get('season_progression', [])[$season][$playerId] ?? 0);
+    }
+
+    public function setPlayerSeasonProgression(int $season, int $playerId, int $total): void
+    {
+        $progression = $this->get('season_progression', []);
+        $progression[$season][$playerId] = $total;
+        $this->put('season_progression', $progression);
+    }
+
+    // ── match_progression_history : derniers matchs traités (50) ──────
+
+    /** @param array{match_id: int, week: int, season: int, count: int} $entry */
+    public function recordMatchProgression(array $entry): void
+    {
+        $history = $this->get('match_progression_history', []);
+        $history[] = $entry;
+        $this->put('match_progression_history', array_slice($history, -50));
+    }
+
+    // ── cartes bonus / malus : effets en attente ──────────────────────
+    //    Chaque liste est ajoutée à l'activation d'une carte et purgée une fois
+    //    l'effet consommé (match joué, fin de semaine).
+
+    /** Boosts « prochain match » : [['game_bonus_card_id', 'game_team_id', 'effect_type', 'effect_value']] */
+    public function activePreMatchCards(): array
+    {
+        return $this->get('active_pre_match_cards', []);
+    }
+
+    public function addActivePreMatchCard(array $card): void
+    {
+        $this->put('active_pre_match_cards', [...$this->activePreMatchCards(), $card]);
+    }
+
+    public function putActivePreMatchCards(array $cards): void
+    {
+        $this->put('active_pre_match_cards', array_values($cards));
+    }
+
+    /** Debuffs de stats reçus par une équipe cible pour son prochain match. */
+    public function pendingStatDebuffs(): array
+    {
+        return $this->get('pending_stat_debuffs', []);
+    }
+
+    public function addPendingStatDebuff(array $debuff): void
+    {
+        $this->put('pending_stat_debuffs', [...$this->pendingStatDebuffs(), $debuff]);
+    }
+
+    public function putPendingStatDebuffs(array $debuffs): void
+    {
+        $this->put('pending_stat_debuffs', array_values($debuffs));
+    }
+
+    /** Malus offensifs en attente (titulaire consigné…) : ['target_team_id', 'target_player_id', 'effect_type', ...] */
+    public function pendingMalus(): array
+    {
+        return $this->get('pending_malus', []);
+    }
+
+    public function addPendingMalus(array $malus): void
+    {
+        $this->put('pending_malus', [...$this->pendingMalus(), $malus]);
+    }
+
+    public function putPendingMalus(array $malus): void
+    {
+        $this->put('pending_malus', array_values($malus));
+    }
+
+    /** @return array<int, int> ids des équipes protégées par un bouclier (un exemplaire par carte active) */
+    public function malusShields(): array
+    {
+        return array_map('intval', $this->get('malus_shields', []));
+    }
+
+    public function addMalusShield(int $teamId): void
+    {
+        $this->put('malus_shields', [...$this->malusShields(), $teamId]);
+    }
+
+    /** Consomme un bouclier de l'équipe ; false si elle n'en a pas. */
+    public function consumeMalusShield(int $teamId): bool
+    {
+        $shields = $this->malusShields();
+        $index = array_search($teamId, $shields, true);
+        if ($index === false) return false;
+
+        unset($shields[$index]);
+        $this->put('malus_shields', array_values($shields));
+
+        return true;
+    }
+
+    /** Défis sponsors (cartes finance) en cours : ['game_team_id', 'challenge', 'reward', ...] */
+    public function pendingSponsorChallenges(): array
+    {
+        return $this->get('pending_sponsor_challenges', []);
+    }
+
+    public function addSponsorChallenge(array $challenge): void
+    {
+        $this->put('pending_sponsor_challenges', [...$this->pendingSponsorChallenges(), $challenge]);
+    }
+
+    public function putPendingSponsorChallenges(array $challenges): void
+    {
+        $this->put('pending_sponsor_challenges', array_values($challenges));
+    }
+
+    /** Récap de la dernière clôture des défis sponsors. */
+    public function sponsorResults(): array
+    {
+        return $this->get('sponsor_results', []);
+    }
+
+    public function putSponsorResults(array $results): void
+    {
+        $this->put('sponsor_results', $results);
+    }
+
+    // ── shop : offres de la boutique de la semaine ────────────────────
+    //    ['season' => int, 'week' => int, 'offers_by_team' => [teamId => [offre]]]
+
+    public function shop(): ?array
+    {
+        return $this->get('shop');
+    }
+
+    /** Les offres ont-elles été tirées pour CETTE saison et semaine ? */
+    public function isShopFor(int $season, int $week): bool
+    {
+        $shop = $this->shop();
+
+        return $shop !== null
+            && (int) ($shop['season'] ?? 0) === $season
+            && (int) ($shop['week'] ?? 0) === $week;
+    }
+
+    public function putShop(int $season, int $week, array $offersByTeam): void
+    {
+        $this->put('shop', ['season' => $season, 'week' => $week, 'offers_by_team' => $offersByTeam]);
+    }
+
+    public function shopOffers(int $teamId): array
+    {
+        return $this->shop()['offers_by_team'][(string) $teamId] ?? [];
+    }
+
+    // ── tournament : Coupe du Monde (poules puis élimination) ─────────
+    //    ['groups' => [...], 'stage' => 'group'|...|'done', 'group_last_week' => int, 'champion_team_id' => ?int, ...]
+    //    (détail de la structure : TournamentService)
+
+    public function tournament(): ?array
+    {
+        return $this->get('tournament');
+    }
+
+    public function putTournament(array $tournament): void
+    {
+        $this->put('tournament', $tournament);
+    }
+
+    public function tournamentStage(): ?string
+    {
+        return $this->tournament()['stage'] ?? null;
+    }
+
+    // ── career : mandat de la direction, jauge de confiance ───────────
+    //    (détail de la structure : CareerObjectiveService)
+
+    public function career(): array
+    {
+        return $this->get('career', []);
+    }
+
+    public function putCareer(array $career): void
+    {
+        $this->put('career', $career);
+    }
+
+    // ── contract_departures : dernier passage des départs de joueurs ──
+
+    /** @return array{season?: int, week?: int, entries?: array} */
+    public function contractDepartures(): array
+    {
+        return $this->get('contract_departures', []);
+    }
+
+    public function contractDeparturesDoneFor(int $season, int $week): bool
+    {
+        $last = $this->contractDepartures();
+
+        return ($last['season'] ?? null) === $season && ($last['week'] ?? null) === $week;
+    }
+
+    public function putContractDepartures(int $season, int $week, array $entries): void
+    {
+        $this->put('contract_departures', ['season' => $season, 'week' => $week, 'entries' => $entries]);
     }
 }

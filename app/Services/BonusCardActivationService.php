@@ -182,8 +182,7 @@ class BonusCardActivationService
         $challenge = (string) ($card->effect_value['challenge'] ?? '');
         $reward    = (int) ($card->effect_value['reward'] ?? 0);
 
-        $state = $gameSave->state ?? [];
-        $state['pending_sponsor_challenges'][] = [
+        $gameSave->gameState()->addSponsorChallenge([
             'game_bonus_card_id' => $gameBonusCard->id,
             'game_team_id'       => $gameBonusCard->game_team_id,
             'challenge'          => $challenge,
@@ -192,8 +191,7 @@ class BonusCardActivationService
             'icon'               => $card->icon,
             'season'             => $gameSave->season,
             'week'               => $gameSave->week,
-        ];
-        $gameSave->state = $state;
+        ]);
         $gameSave->save();
 
         return ['message' => "Défi sponsor activé : {$card->name}. Récompense de {$reward} GL au prochain match si l'objectif est atteint."];
@@ -337,14 +335,12 @@ class BonusCardActivationService
      */
     private function markPreMatchCard(GameBonusCard $gameBonusCard, GameSave $gameSave): array
     {
-        $state = $gameSave->state ?? [];
-        $state['active_pre_match_cards'][] = [
+        $gameSave->gameState()->addActivePreMatchCard([
             'game_bonus_card_id' => $gameBonusCard->id,
             'game_team_id'       => $gameBonusCard->game_team_id,
             'effect_type'        => $gameBonusCard->bonusCard->effect_type,
             'effect_value'       => $gameBonusCard->bonusCard->effect_value,
-        ];
-        $gameSave->state = $state;
+        ]);
         $gameSave->save();
 
         return ['message' => 'Carte activée pour le prochain match.'];
@@ -360,7 +356,7 @@ class BonusCardActivationService
      */
     public function getActivePreMatchBoosts(GameSave $gameSave, int $teamId): array
     {
-        $cards = $gameSave->state['active_pre_match_cards'] ?? [];
+        $cards = $gameSave->gameState()->activePreMatchCards();
         return array_filter($cards, fn ($c) => (int) $c['game_team_id'] === $teamId);
     }
 
@@ -401,7 +397,7 @@ class BonusCardActivationService
         $team    = $this->getPreMatchStatBoosts($gameSave, $teamId); // boosts propres (positifs)
         $players = $gameSave->gameState()->declarationBoosts((int) $matchId, $teamId);
 
-        foreach ($gameSave->state['pending_stat_debuffs'] ?? [] as $d) {
+        foreach ($gameSave->gameState()->pendingStatDebuffs() as $d) {
             if ((int) ($d['target_team_id'] ?? 0) !== $teamId) continue;
 
             $deltas = $d['deltas'] ?? [];
@@ -426,13 +422,11 @@ class BonusCardActivationService
      */
     public function consumePreMatchCards(GameSave $gameSave, int $teamId): void
     {
-        $state = $gameSave->state ?? [];
-        $remaining = array_filter(
-            $state['active_pre_match_cards'] ?? [],
+        $state = $gameSave->gameState();
+        $state->putActivePreMatchCards(array_filter(
+            $state->activePreMatchCards(),
             fn ($c) => (int) $c['game_team_id'] !== $teamId
-        );
-        $state['active_pre_match_cards'] = array_values($remaining);
-        $gameSave->state = $state;
+        ));
         $gameSave->save();
     }
 
@@ -443,9 +437,9 @@ class BonusCardActivationService
      */
     public function consumePreMatchCardsForPlayedWeek(GameSave $gameSave, int $week): void
     {
-        $state = $gameSave->state ?? [];
-        $cards   = $state['active_pre_match_cards'] ?? [];
-        $debuffs = $state['pending_stat_debuffs'] ?? [];
+        $state   = $gameSave->gameState();
+        $cards   = $state->activePreMatchCards();
+        $debuffs = $state->pendingStatDebuffs();
         if (empty($cards) && empty($debuffs)) return;
 
         $playedTeamIds = GameMatch::where('game_save_id', $gameSave->id)
@@ -459,18 +453,17 @@ class BonusCardActivationService
         if (empty($playedTeamIds)) return;
 
         // Boosts propres : consommés quand l'équipe propriétaire a joué.
-        $state['active_pre_match_cards'] = array_values(array_filter(
+        $state->putActivePreMatchCards(array_filter(
             $cards,
             fn ($c) => !in_array((int) ($c['game_team_id'] ?? 0), $playedTeamIds, true)
         ));
 
         // Debuffs reçus : consommés quand l'équipe CIBLE a joué.
-        $state['pending_stat_debuffs'] = array_values(array_filter(
+        $state->putPendingStatDebuffs(array_filter(
             $debuffs,
             fn ($d) => !in_array((int) ($d['target_team_id'] ?? 0), $playedTeamIds, true)
         ));
 
-        $gameSave->state = $state;
         $gameSave->save();
     }
 
@@ -485,14 +478,13 @@ class BonusCardActivationService
      */
     public function resolveSponsorChallenges(GameSave $gameSave, int $week): array
     {
-        $state   = $gameSave->state ?? [];
-        $pending = $state['pending_sponsor_challenges'] ?? [];
+        $state   = $gameSave->gameState();
+        $pending = $state->pendingSponsorChallenges();
 
         // Toujours réinitialiser le récap de la semaine, même sans défi.
         if (empty($pending)) {
-            if (!empty($state['sponsor_results'])) {
-                $state['sponsor_results'] = [];
-                $gameSave->state = $state;
+            if (!empty($state->sponsorResults())) {
+                $state->putSponsorResults([]);
                 $gameSave->save();
             }
             return [];
@@ -547,9 +539,8 @@ class BonusCardActivationService
             ];
         }
 
-        $state['pending_sponsor_challenges'] = array_values($remaining);
-        $state['sponsor_results']            = $results; // récap de la dernière clôture
-        $gameSave->state = $state;
+        $state->putPendingSponsorChallenges($remaining);
+        $state->putSponsorResults($results); // récap de la dernière clôture
         $gameSave->save();
 
         return $results;

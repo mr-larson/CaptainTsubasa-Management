@@ -24,11 +24,7 @@ class AiBonusCardService
     public function processWeek(GameSave $gameSave): void
     {
         $controlledTeamIds = $gameSave->controlledGameTeamIds();
-        $shop = $gameSave->state['shop'] ?? null;
-
-        if (!$shop ||
-            (int) ($shop['season'] ?? 0) !== (int) $gameSave->season ||
-            (int) ($shop['week']   ?? 0) !== (int) $gameSave->week) {
+        if (!$gameSave->gameState()->isShopFor((int) $gameSave->season, (int) $gameSave->week)) {
             return; // Boutique pas encore générée
         }
 
@@ -37,7 +33,7 @@ class AiBonusCardService
         foreach ($teams as $team) {
             if (in_array((int) $team->id, $controlledTeamIds, true)) continue; // Skip équipes joueurs
 
-            $offers = $shop['offers_by_team'][(string) $team->id] ?? [];
+            $offers = $gameSave->gameState()->shopOffers((int) $team->id);
             $this->processTeam($gameSave, $team, $offers);
         }
     }

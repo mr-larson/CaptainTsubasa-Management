@@ -131,13 +131,9 @@ class MoraleService
 
         $unavailableIds = $this->resolveUnavailablePlayerIds($gameSave, $week);
         $activation = app(BonusCardActivationService::class);
-        $training = $gameSave->state['training'] ?? [];
-        $sessions = (int) ($training['season'] ?? 0) === $season && (int) ($training['week'] ?? 0) === $week
-            ? ($training['entries'] ?? [])
-            : [];
-        $trainedIds = collect($gameSave->state['ai_training_history'] ?? [])
-            ->filter(fn ($entry) => (int) $entry['season'] === $season && (int) $entry['week'] === $week)
-            ->merge($sessions)
+        $gameState = $gameSave->gameState();
+        $trainedIds = collect($gameState->aiTrainingHistoryOfWeek($season, $week))
+            ->merge($gameState->weekTrainingEntries($season, $week))
             ->pluck('player_id')
             ->flip();
 

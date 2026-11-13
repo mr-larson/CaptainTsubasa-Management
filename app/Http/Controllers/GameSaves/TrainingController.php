@@ -35,9 +35,7 @@ class TrainingController extends Controller
         $season = (int) ($gameSave->season ?? 1);
 
         return response()->json([
-            'entries' => collect($gameSave->state['ai_training_history'] ?? [])
-                ->filter(fn ($e) => (int) ($e['season'] ?? 0) === $season && (int) ($e['week'] ?? 0) === $week)
-                ->values()->all(),
+            'entries' => $gameSave->gameState()->aiTrainingHistoryOfWeek($season, $week),
         ]);
     }
 

@@ -126,11 +126,7 @@ class PositionTrainingService
         $maxPerWeek = (int) $gameSave->getConfig('training_max_per_week', config('training.max_trainings_per_week', 3));
         $cost       = (int) $gameSave->getConfig($move ? 'special_training_cost' : 'position_training_cost');
 
-        $state    = $gameSave->state ?? [];
-        $training = $state['training'] ?? null;
-        $weekEntries = ($training && (int) ($training['season'] ?? 0) === $season && (int) ($training['week'] ?? 0) === $week)
-            ? ($training['entries'] ?? [])
-            : [];
+        $weekEntries = $gameSave->gameState()->weekTrainingEntries($season, $week);
         $teamEntries = array_filter($weekEntries, fn ($e) => !isset($e['team_id']) || (int) $e['team_id'] === $teamId);
 
         if (count($teamEntries) >= $maxPerWeek) {
@@ -145,27 +141,22 @@ class PositionTrainingService
 
         $duration = $move ? 1 : self::durationFor($known, $target);
 
-        return DB::transaction(function () use ($gameSave, $team, $player, $target, $week, $season, $duration, $cost, $state, $weekEntries, $move) {
+        return DB::transaction(function () use ($gameSave, $team, $player, $target, $week, $season, $duration, $cost, $weekEntries, $move) {
             if ($cost > 0) {
                 $team->budget = max(0, (int) $team->budget - $cost);
                 $team->save();
             }
 
-            $state['training'] = [
-                'season'  => $season,
-                'week'    => $week,
-                'entries' => array_merge($weekEntries, [[
-                    'team_id'      => $team->id,
-                    'player_id'    => $player->id,
-                    'stat'         => $move ? 'special_move' : 'position',
-                    ...($move ? ['special_label' => $move['label']] : ['position' => $target]),
-                    'gain'         => 0,
-                    'stamina_cost' => 0,
-                    'cost'         => $cost,
-                    'created_at'   => now()->toIso8601String(),
-                ]]),
-            ];
-            $gameSave->state = $state;
+            $gameSave->gameState()->setWeekTraining($season, $week, array_merge($weekEntries, [[
+                'team_id'      => $team->id,
+                'player_id'    => $player->id,
+                'stat'         => $move ? 'special_move' : 'position',
+                ...($move ? ['special_label' => $move['label']] : ['position' => $target]),
+                'gain'         => 0,
+                'stamina_cost' => 0,
+                'cost'         => $cost,
+                'created_at'   => now()->toIso8601String(),
+            ]]));
             $gameSave->save();
 
             return GamePositionTraining::create([

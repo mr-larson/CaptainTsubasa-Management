@@ -212,11 +212,9 @@ class PromiseService
             ->get()
             ->sum(fn (GameMatch $match) => $this->turnsPlayed($match, $playerId));
 
-        $training = $gameSave->state['training'] ?? [];
-        $sessions = (int) ($training['season'] ?? 0) === $promise->season
-            && (int) ($training['week'] ?? 0) === $restWeek ? ($training['entries'] ?? []) : [];
+        $sessions = $gameSave->gameState()->weekTrainingEntries((int) $promise->season, (int) $restWeek);
         $trained = collect($sessions)->contains(fn ($entry) => (int) $entry['player_id'] === $playerId)
-            || collect($gameSave->state['ai_training_history'] ?? [])->contains(fn ($entry) =>
+            || collect($gameSave->gameState()->aiTrainingHistory())->contains(fn ($entry) =>
                 (int) $entry['player_id'] === $playerId && (int) $entry['season'] === $promise->season
                 && (int) $entry['week'] === $restWeek
             )

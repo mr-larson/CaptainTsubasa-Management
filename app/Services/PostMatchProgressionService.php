@@ -21,9 +21,9 @@ class PostMatchProgressionService
         if (empty($stats)) return [];
 
         $season = (int) ($gameSave->season ?? 1);
-        $state  = $gameSave->state ?? [];
+        $state  = $gameSave->gameState();
         // Seule la saison en cours sert au plafond : les précédentes sont purgées.
-        $state['season_progression'] = [$season => $state['season_progression'][$season] ?? []];
+        $state->keepOnlySeasonProgression($season);
 
         $report = [];
 
@@ -45,13 +45,13 @@ class PostMatchProgressionService
                 $teamIdByPlayer[(int) $c->game_player_id] ??= (int) $c->game_team_id;
             });
 
-        DB::transaction(function () use ($stats, $season, $match, $players, $teamIdByPlayer, &$state, &$report) {
+        DB::transaction(function () use ($stats, $season, $match, $players, $teamIdByPlayer, $state, &$report) {
             foreach ($stats as $playerId => $playerStats) {
                 $playerId = (int) $playerId;
                 $player   = $players->get($playerId);
                 if (!$player || !is_array($playerStats)) continue;
 
-                $alreadyGained = (int) ($state['season_progression'][$season][$playerId] ?? 0);
+                $alreadyGained = $state->playerSeasonProgression($season, $playerId);
                 if ($alreadyGained >= self::SEASON_CAP_PER_PLAYER) continue;
 
                 $remainingCap = self::SEASON_CAP_PER_PLAYER - $alreadyGained;
@@ -91,7 +91,7 @@ class PostMatchProgressionService
 
                 if ($totalApplied > 0) {
                     $player->save();
-                    $state['season_progression'][$season][$playerId] = $alreadyGained + $totalApplied;
+                    $state->setPlayerSeasonProgression($season, $playerId, $alreadyGained + $totalApplied);
 
                     // Détermine l'équipe et le side (home/away) pour affichage UI
                     $teamId   = $teamIdByPlayer[$playerId] ?? null;
@@ -108,22 +108,18 @@ class PostMatchProgressionService
                         'match_id'     => $match->id,
                         'gains'        => $applied,
                         'total'        => $totalApplied,
-                        'season_total' => $state['season_progression'][$season][$playerId],
+                        'season_total' => $alreadyGained + $totalApplied,
                     ];
                 }
             }
         });
 
-        $history = $state['match_progression_history'] ?? [];
-        $history[] = [
+        $state->recordMatchProgression([
             'match_id' => $match->id,
             'week'     => $match->week,
             'season'   => $season,
             'count'    => count($report),
-        ];
-        $state['match_progression_history'] = array_slice($history, -50);
-
-        $gameSave->state = $state;
+        ]);
         $gameSave->save();
 
         // Persister dans match_stats.progression pour l'affichage dans TabCalendar

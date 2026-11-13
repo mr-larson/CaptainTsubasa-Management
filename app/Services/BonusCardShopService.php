@@ -38,7 +38,6 @@ class BonusCardShopService
         }
         if ($allCards->isEmpty()) return;
 
-        $state = $gameSave->state ?? [];
         $offersByTeam = [];
 
         foreach ($teams as $team) {
@@ -55,24 +54,14 @@ class BonusCardShopService
             $offersByTeam[(string) $team->id] = $offers;
         }
 
-        $state['shop'] = [
-            'season'          => $season,
-            'week'            => $week,
-            'offers_by_team'  => $offersByTeam,
-        ];
-
-        $gameSave->state = $state;
+        $gameSave->gameState()->putShop((int) $season, (int) $week, $offersByTeam);
         $gameSave->save();
     }
 
     /** La boutique n'a pas été tirée pour la semaine / saison courante. */
     public function isStale(GameSave $gameSave): bool
     {
-        $shop = $gameSave->state['shop'] ?? null;
-
-        return !$shop
-            || (int) ($shop['season'] ?? 0) !== (int) $gameSave->season
-            || (int) ($shop['week']   ?? 0) !== (int) $gameSave->week;
+        return !$gameSave->gameState()->isShopFor((int) $gameSave->season, (int) $gameSave->week);
     }
 
     /**
@@ -92,17 +81,14 @@ class BonusCardShopService
      */
     public function getOffersForTeam(GameSave $gameSave, int $teamId): array
     {
-        $shop = $gameSave->state['shop'] ?? null;
-
         if ($this->isStale($gameSave)) {
             // Régénération : à appeler sous verrou de save (voir ensureFresh) ;
             // ce repli ne sert qu'aux appelants qui n'ont pas pu le faire.
             $this->generateWeeklyOffers($gameSave);
             $gameSave->refresh();
-            $shop = $gameSave->state['shop'] ?? [];
         }
 
-        $offers = $shop['offers_by_team'][(string) $teamId] ?? [];
+        $offers = $gameSave->gameState()->shopOffers($teamId);
 
         $malusEnabled = $gameSave->getConfig('bonus_cards_enabled', true)
             && $gameSave->getConfig('malus_cards_enabled', true);

@@ -147,4 +147,109 @@ class GameStateTest extends TestCase
         $state->putChallenges($data);
         $this->assertSame(100, $state->challengeEntry(4)['paid_rewards']['k']);
     }
+
+    public function test_training_entries_only_count_for_their_own_week(): void
+    {
+        $state = $this->state();
+
+        $this->assertNull($state->trainingHistory());
+        $this->assertSame([], $state->weekTrainingEntries(1, 4));
+
+        $state->setWeekTraining(1, 4, [['team_id' => 7, 'player_id' => 1]]);
+        $this->assertCount(1, $state->weekTrainingEntries(1, 4));
+        $this->assertSame([], $state->weekTrainingEntries(1, 5));
+        $this->assertSame([], $state->weekTrainingEntries(2, 4));
+
+        // Les séances IA gardent les séances humaines de la semaine, et se réinitialisent changeant de semaine.
+        $state->setAiTraining(1, 4, [['team_id' => 9]]);
+        $this->assertCount(1, $state->weekTrainingEntries(1, 4));
+        $this->assertSame([['team_id' => 9]], $state->training()['ai_entries']);
+        $state->setAiTraining(1, 5, []);
+        $this->assertSame([], $state->weekTrainingEntries(1, 5));
+    }
+
+    public function test_ai_training_history_filters_by_season_and_week(): void
+    {
+        $state = $this->state();
+        $state->putAiTrainingHistory([
+            ['season' => 1, 'week' => 2, 'team_id' => 1],
+            ['season' => 2, 'week' => 2, 'team_id' => 2],
+            ['season' => 2, 'week' => 3, 'team_id' => 3],
+        ]);
+
+        $this->assertCount(2, $state->aiTrainingHistoryOfSeason(2));
+        $this->assertSame([2], array_column($state->aiTrainingHistoryOfWeek(2, 2), 'team_id'));
+        $this->assertNull($state->aiTrainingWeek());
+        $state->markAiTrainingWeek(3);
+        $this->assertSame(3, $state->aiTrainingWeek());
+    }
+
+    public function test_season_progression_keeps_only_the_current_season(): void
+    {
+        $state = $this->state(['season_progression' => [1 => [5 => 40], 2 => [5 => 10]]]);
+
+        $state->keepOnlySeasonProgression(2);
+        $this->assertSame(10, $state->playerSeasonProgression(2, 5));
+        $this->assertSame(0, $state->playerSeasonProgression(1, 5));
+
+        $state->setPlayerSeasonProgression(2, 5, 25);
+        $this->assertSame(25, $state->playerSeasonProgression(2, 5));
+
+        for ($i = 0; $i < 60; $i++) {
+            $state->recordMatchProgression(['match_id' => $i, 'week' => 1, 'season' => 2, 'count' => 0]);
+        }
+        $this->assertCount(50, $state->raw()['match_progression_history']);
+        $this->assertSame(59, $state->raw()['match_progression_history'][49]['match_id']);
+    }
+
+    public function test_card_effect_lists_and_shields(): void
+    {
+        $state = $this->state();
+
+        $state->addActivePreMatchCard(['game_team_id' => 1]);
+        $state->addActivePreMatchCard(['game_team_id' => 2]);
+        $state->putActivePreMatchCards(array_filter($state->activePreMatchCards(), fn ($c) => $c['game_team_id'] !== 1));
+        $this->assertSame([['game_team_id' => 2]], $state->activePreMatchCards());
+
+        $state->addPendingMalus(['target_team_id' => 3]);
+        $state->addPendingStatDebuff(['target_team_id' => 3]);
+        $state->addSponsorChallenge(['game_team_id' => 4]);
+        $state->putSponsorResults([['game_team_id' => 4]]);
+        $this->assertCount(1, $state->pendingMalus());
+        $this->assertCount(1, $state->pendingStatDebuffs());
+        $this->assertCount(1, $state->pendingSponsorChallenges());
+        $this->assertCount(1, $state->sponsorResults());
+
+        $state->addMalusShield(8);
+        $state->addMalusShield(8);
+        $this->assertTrue($state->consumeMalusShield(8));
+        $this->assertSame([8], $state->malusShields());
+        $this->assertTrue($state->consumeMalusShield(8));
+        $this->assertFalse($state->consumeMalusShield(8));
+    }
+
+    public function test_shop_tournament_career_and_departures(): void
+    {
+        $state = $this->state();
+
+        $this->assertFalse($state->isShopFor(1, 3));
+        $state->putShop(1, 3, ['5' => [['name' => 'x']]]);
+        $this->assertTrue($state->isShopFor(1, 3));
+        $this->assertFalse($state->isShopFor(1, 4));
+        $this->assertSame([['name' => 'x']], $state->shopOffers(5));
+        $this->assertSame([], $state->shopOffers(6));
+
+        $this->assertNull($state->tournamentStage());
+        $state->putTournament(['stage' => 'done']);
+        $this->assertSame('done', $state->tournamentStage());
+
+        $this->assertSame([], $state->career());
+        $state->putCareer(['status' => 'active']);
+        $this->assertSame(['status' => 'active'], $state->career());
+
+        $this->assertFalse($state->contractDeparturesDoneFor(1, 4));
+        $state->putContractDepartures(1, 4, [['player_id' => 9]]);
+        $this->assertTrue($state->contractDeparturesDoneFor(1, 4));
+        $this->assertFalse($state->contractDeparturesDoneFor(1, 6));
+    }
 }

@@ -214,10 +214,10 @@ class GameSaveController extends Controller
             'aiTrainingInitial'   => [
                 'season'  => (int) ($gameSave->season ?? 1),
                 'week'    => max(1, (int) ($gameSave->week ?? 1) - 1),
-                'entries' => collect($gameSave->state['ai_training_history'] ?? [])
-                    ->filter(fn ($e) => (int) ($e['season'] ?? 0) === (int) ($gameSave->season ?? 1)
-                        && (int) ($e['week'] ?? 0) === max(1, (int) ($gameSave->week ?? 1) - 1))
-                    ->values()->all(),
+                'entries' => $gameSave->gameState()->aiTrainingHistoryOfWeek(
+                    (int) ($gameSave->season ?? 1),
+                    max(1, (int) ($gameSave->week ?? 1) - 1),
+                ),
             ],
             'tournament'          => $gameSave->competition_type === 'world_cup'
                 ? app(TournamentService::class)->presentation($gameSave)
@@ -322,16 +322,16 @@ class GameSaveController extends Controller
             : collect();
 
         // ─── Défis sponsor (cartes finance) de l'équipe contrôlée ───
-        $state = $gameSave->state ?? [];
+        $state = $gameSave->gameState();
         $sponsorChallenges = $controlledTeamId
             ? array_values(array_filter(
-                $state['pending_sponsor_challenges'] ?? [],
+                $state->pendingSponsorChallenges(),
                 fn ($c) => (int) ($c['game_team_id'] ?? 0) === (int) $controlledTeamId
             ))
             : [];
         $sponsorResults = $controlledTeamId
             ? array_values(array_filter(
-                $state['sponsor_results'] ?? [],
+                $state->sponsorResults(),
                 fn ($c) => (int) ($c['game_team_id'] ?? 0) === (int) $controlledTeamId
             ))
             : [];
@@ -339,7 +339,7 @@ class GameSaveController extends Controller
         // ─── Malus reçus : titulaires consignés contre l'équipe contrôlée ───
         $incomingMalus = $controlledTeamId
             ? array_values(array_filter(
-                $state['pending_malus'] ?? [],
+                $state->pendingMalus(),
                 fn ($m) => (int) ($m['target_team_id'] ?? 0) === (int) $controlledTeamId
                     && ($m['effect_type'] ?? '') === 'opponent_bench_starter'
             ))
@@ -348,7 +348,7 @@ class GameSaveController extends Controller
         // ─── Boucliers anti-malus actifs (carte Cellule de crise) ───
         $activeShields = $controlledTeamId
             ? count(array_filter(
-                $state['malus_shields'] ?? [],
+                $state->malusShields(),
                 fn ($id) => (int) $id === (int) $controlledTeamId
             ))
             : 0;

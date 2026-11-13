@@ -34,9 +34,7 @@ class MalusCardEffects
     {
         $teamId = (int) $gameBonusCard->game_team_id;
 
-        $state = $gameSave->state ?? [];
-        $state['malus_shields'][] = $teamId;
-        $gameSave->state = $state;
+        $gameSave->gameState()->addMalusShield($teamId);
         $gameSave->save();
 
         return ['message' => '🛡️ Cellule de crise active : le prochain malus subi sera annulé.'];
@@ -124,8 +122,7 @@ class MalusCardEffects
         $player = $chosen->gamePlayer;
         $name   = trim(($player->firstname ?? '') . ' ' . ($player->lastname ?? '')) ?: ($player->lastname ?? 'Joueur');
 
-        $state = $gameSave->state ?? [];
-        $state['pending_malus'][] = [
+        $gameSave->gameState()->addPendingMalus([
             'game_bonus_card_id' => $gameBonusCard->id,
             'source_team_id'     => (int) $gameBonusCard->game_team_id,
             'target_team_id'     => $opponentId,
@@ -136,8 +133,7 @@ class MalusCardEffects
             'icon'               => $gameBonusCard->bonusCard->icon,
             'created_season'     => $gameSave->season,
             'created_week'       => $gameSave->week,
-        ];
-        $gameSave->state = $state;
+        ]);
         $gameSave->save();
 
         $opponentName = GameTeam::find($opponentId)?->name ?? 'l\'adversaire';
@@ -341,9 +337,7 @@ class MalusCardEffects
 
     private function storeStatDebuff(GameSave $gameSave, array $entry): void
     {
-        $state = $gameSave->state ?? [];
-        $state['pending_stat_debuffs'][] = $entry;
-        $gameSave->state = $state;
+        $gameSave->gameState()->addPendingStatDebuff($entry);
         $gameSave->save();
     }
 
@@ -368,17 +362,10 @@ class MalusCardEffects
 
     private function consumeMalusShield(GameSave $gameSave, int $targetId): bool
     {
-        $state   = $gameSave->state ?? [];
-        $shields = array_map('intval', $state['malus_shields'] ?? []);
-
-        $idx = array_search($targetId, $shields, true);
-        if ($idx === false) {
+        if (! $gameSave->gameState()->consumeMalusShield($targetId)) {
             return false;
         }
 
-        unset($shields[$idx]);
-        $state['malus_shields'] = array_values($shields);
-        $gameSave->state = $state;
         $gameSave->save();
 
         return true;
@@ -501,7 +488,7 @@ class MalusCardEffects
      */
     public function getBenchedPlayerIds(GameSave $gameSave, int $teamId): array
     {
-        $entries = $gameSave->state['pending_malus'] ?? [];
+        $entries = $gameSave->gameState()->pendingMalus();
 
         return array_values(array_unique(array_map(
             fn ($m) => (int) $m['target_player_id'],
@@ -521,8 +508,8 @@ class MalusCardEffects
      */
     public function consumeMalusForPlayedWeek(GameSave $gameSave, int $week): void
     {
-        $state   = $gameSave->state ?? [];
-        $entries = $state['pending_malus'] ?? [];
+        $state   = $gameSave->gameState();
+        $entries = $state->pendingMalus();
         if (empty($entries)) return;
 
         $playedTeamIds = GameMatch::where('game_save_id', $gameSave->id)
@@ -540,8 +527,7 @@ class MalusCardEffects
               && in_array((int) ($m['target_team_id'] ?? 0), $playedTeamIds, true))
         );
 
-        $state['pending_malus'] = array_values($remaining);
-        $gameSave->state = $state;
+        $state->putPendingMalus($remaining);
         $gameSave->save();
     }
 

@@ -60,14 +60,12 @@ class TournamentService
             }
         }
 
-        $state = $gameSave->state ?? [];
-        $state['tournament'] = [
+        $gameSave->gameState()->putTournament([
             'groups'           => $groups,
             'stage'            => 'group',
             'group_last_week'  => $lastWeek,
             'champion_team_id' => null,
-        ];
-        $gameSave->state = $state;
+        ]);
         $gameSave->phase = GamePhase::Group;
         $gameSave->save();
     }
@@ -79,8 +77,7 @@ class TournamentService
      */
     public function advance(GameSave $gameSave): void
     {
-        $state = $gameSave->state ?? [];
-        $t     = $state['tournament'] ?? null;
+        $t = $gameSave->gameState()->tournament();
         if (! $t) return;
 
         $stage = $t['stage'] ?? 'group';
@@ -141,15 +138,14 @@ class TournamentService
             return; // 'done'
         }
 
-        $state['tournament'] = $t;
-        $gameSave->state     = $state;
+        $gameSave->gameState()->putTournament($t);
         $gameSave->save();
     }
 
     /** Le tournoi est-il terminé (champion connu) ? */
     public function isTournamentOver(GameSave $gameSave): bool
     {
-        return ($gameSave->state['tournament']['stage'] ?? null) === 'done';
+        return $gameSave->gameState()->tournamentStage() === 'done';
     }
 
     // ─────────────────────────── Helpers ───────────────────────────
@@ -289,7 +285,7 @@ class TournamentService
      */
     public function presentation(GameSave $gameSave): ?array
     {
-        $t = $gameSave->state['tournament'] ?? null;
+        $t = $gameSave->gameState()->tournament();
         if (! $t) return null;
 
         $teams = GameTeam::where('game_save_id', $gameSave->id)->get()->keyBy('id');
