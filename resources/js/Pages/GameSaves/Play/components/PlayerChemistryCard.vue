@@ -23,7 +23,7 @@ function propose(partnerId) {
         <p v-if="!relations.length" class="text-xs text-slate-500">
             Joue plusieurs matchs avec un coéquipier sur la même ligne ou une ligne voisine pour développer leurs automatismes.
         </p>
-        <ul v-else class="max-h-60 divide-y divide-slate-300 overflow-y-auto overscroll-contain">
+        <ul v-else class="max-h-60 divide-y divide-slate-200 overflow-y-auto overscroll-contain">
             <li v-for="relation in relations" :key="relation.partner_id"
                 class="py-3 first:pt-0 last:pb-0">
                 <div class="mb-1.5 flex items-center justify-between gap-2">

@@ -36,7 +36,7 @@ const isSelected = (item) => !props.creating && props.selectedId === item.id;
 <template>
     <div class="flex flex-col lg:flex-row gap-2 lg:h-[calc(100vh-11rem)] lg:min-h-[480px]">
         <!-- LISTE -->
-        <div class="lg:w-72 shrink-0 border border-slate-300 rounded-xl bg-slate-50 p-3 flex flex-col gap-3 max-h-[60vh] lg:max-h-none lg:h-full">
+        <div class="lg:w-72 shrink-0 border border-slate-200 rounded-xl bg-slate-50 p-3 flex flex-col gap-3 max-h-[60vh] lg:max-h-none lg:h-full">
             <div class="flex items-center justify-between">
                 <h3 class="text-sm font-semibold text-slate-700">
                     {{ title }} <span class="text-slate-400 font-normal">({{ items.length }})</span>
@@ -73,8 +73,8 @@ const isSelected = (item) => !props.creating && props.selectedId === item.id;
                         href="#"
                         @click.prevent="emit('select', item)"
                         :class="isSelected(item)
-                            ? 'bg-teal-500 text-white border-teal-500 shadow-sm'
-                            : 'bg-white text-slate-700 border-slate-300 hover:border-teal-300 hover:bg-teal-50'"
+                            ? 'bg-teal-50 text-teal-900 border-teal-300'
+                            : 'bg-white text-slate-700 border-slate-200 hover:border-teal-300 hover:bg-teal-50'"
                         class="flex items-center gap-2 px-3 py-2 border rounded-lg transition-all"
                     >
                         <slot name="item" :item="item" :selected="isSelected(item)" />
@@ -87,8 +87,8 @@ const isSelected = (item) => !props.creating && props.selectedId === item.id;
         </div>
 
         <!-- CARTE À ONGLETS -->
-        <div class="flex-1 min-w-0 min-h-0 bg-slate-50 border border-slate-300 rounded-2xl shadow-sm flex flex-col">
-            <div class="shrink-0 flex items-end justify-between flex-wrap gap-3 px-6 md:px-8 pt-4 border-b border-slate-300">
+        <div class="flex-1 min-w-0 min-h-0 bg-white border border-slate-200 rounded-2xl shadow-sm flex flex-col">
+            <div class="shrink-0 flex items-end justify-between flex-wrap gap-3 px-6 md:px-8 pt-4 pb-4 editor-tabs-header rounded-t-2xl">
                 <TabBar :model-value="activeTab" :tabs="tabs" @update:model-value="key => emit('update:activeTab', key)" />
 
                 <div class="flex items-center gap-2 pb-2">
@@ -103,6 +103,15 @@ const isSelected = (item) => !props.creating && props.selectedId === item.id;
             <div class="flex-1 min-h-0 overflow-y-auto p-4 md:p-6">
                 <slot />
             </div>
+            <div v-if="$slots.footer" class="shrink-0 border-t border-slate-200 bg-white px-4 py-3 md:px-6 rounded-b-2xl">
+                <slot name="footer" />
+            </div>
         </div>
     </div>
 </template>
+
+<style scoped>
+.editor-tabs-header {
+    background: linear-gradient(to bottom, #f1f5f9 0, #f1f5f9 calc(100% - 1rem), #fff calc(100% - 1rem), #fff 100%);
+}
+</style>

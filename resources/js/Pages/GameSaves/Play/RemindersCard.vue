@@ -13,7 +13,7 @@ defineProps({
 
 const emit = defineEmits(['open']);
 
-const ROW = 'checklist-row w-full border-0 border-b border-slate-300 rounded-none bg-transparent py-2 text-[11px] leading-relaxed font-semibold text-left transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600';
+const ROW = 'checklist-row w-full border-0 border-b border-slate-200 rounded-none bg-transparent py-2 text-[11px] leading-relaxed font-semibold text-left transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600';
 const LEVEL_ROW = {
     action: 'checklist-row--action text-teal-800',
     error: 'checklist-row--error text-rose-800',
@@ -23,7 +23,7 @@ const LEVEL_ROW = {
 </script>
 
 <template>
-    <div class="border border-slate-300 rounded-xl flex flex-col gap-3"
+    <div class="border border-slate-200 rounded-xl flex flex-col gap-3"
          :class="inDashboard ? 'bg-slate-50 p-4' : 'bg-white p-3'">
         <div v-if="actions.length">
             <div class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Avant le match</div>

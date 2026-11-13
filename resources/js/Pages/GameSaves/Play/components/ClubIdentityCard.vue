@@ -25,7 +25,7 @@ const props = defineProps({
             <p v-if="averageOverall !== null" class="text-xs text-slate-500">
                 Note d’équipe <strong class="tabular-nums text-slate-700">{{ averageOverall }}</strong>
             </p>
-            <p v-if="team?.description" class="text-xs text-slate-400 leading-relaxed line-clamp-3">
+            <p v-if="team?.description" class="text-xs text-slate-500 leading-relaxed line-clamp-3">
                 {{ team.description }}
             </p>
             <TeamStyleBadges :team="team" size="sm" />

@@ -71,7 +71,7 @@ const fmt = (n) => Number(n ?? 0).toLocaleString('fr-FR');
 <template>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
         <!-- Trajectoire -->
-        <div v-if="!isWorldCup" class="md:col-span-2 border border-slate-300 rounded-xl bg-slate-50 p-4">
+        <div v-if="!isWorldCup" class="md:col-span-2 border border-slate-200 rounded-xl bg-slate-50 p-4">
             <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
                 <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Trajectoire</h4>
                 <div v-if="objective" class="flex flex-wrap items-center gap-2 text-[11px]">
@@ -139,11 +139,11 @@ const fmt = (n) => Number(n ?? 0).toLocaleString('fr-FR');
                 <span v-if="targetRank" class="text-emerald-600">zone verte = objectif</span>
                 <span>S{{ points.at(-1).week }} · {{ points.at(-1).position }}e</span>
             </div>
-            <p v-else class="text-xs text-slate-400 italic">La courbe apparaîtra après le premier match.</p>
+            <p v-else class="text-xs text-slate-500 italic">La courbe apparaîtra après le premier match.</p>
         </div>
 
         <!-- Finances -->
-        <div id="dashboard-finances" class="border border-slate-300 rounded-xl bg-slate-50 p-4 scroll-mt-4" :class="isWorldCup ? 'md:col-span-3' : ''">
+        <div id="dashboard-finances" class="border border-slate-200 rounded-xl bg-slate-50 p-4 scroll-mt-4" :class="isWorldCup ? 'md:col-span-3' : ''">
             <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">Finances</h4>
             <div class="space-y-1.5 text-xs text-slate-600">
                 <div class="flex justify-between"><span>Budget</span><span class="font-black text-slate-700 tabular-nums">{{ fmt(budget) }} <GameBanknote /></span></div>
@@ -158,12 +158,12 @@ const fmt = (n) => Number(n ?? 0).toLocaleString('fr-FR');
                     <span>Entraînements / sem.</span>
                     <span class="font-bold text-slate-700 tabular-nums">−{{ fmt(weeklyTrainingCost) }} <GameBanknote /></span>
                 </div>
-                <div v-if="projection" class="pt-2 mt-1 border-t border-slate-300">
+                <div v-if="projection" class="pt-2 mt-1 border-t border-slate-200">
                     <div class="flex justify-between">
                         <span>Fin de saison (S{{ totalWeeks }})</span>
                         <span class="font-black text-teal-600 tabular-nums">≈ {{ fmt(projection.likely) }} <GameBanknote /></span>
                     </div>
-                    <p class="text-2xs text-slate-400 mt-0.5 leading-snug">
+                    <p class="text-2xs text-slate-500 mt-0.5 leading-snug">
                         Au rythme actuel, hors achats ({{ weeksLeft }} sem. de revenus). Minimum garanti : {{ fmt(projection.min) }} <GameBanknote />.
                     </p>
                 </div>

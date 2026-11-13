@@ -46,7 +46,7 @@ function submit() {
                 <h1 class="text-2xl font-bold text-slate-600 mb-6">Nouvelle période (bibliothèque)</h1>
             </div>
 
-            <div class="max-w-2xl mx-auto p-6 border border-slate-300 rounded-2xl bg-white shadow-sm">
+            <div class="max-w-2xl mx-auto p-6 border border-slate-200 rounded-2xl bg-white shadow-sm">
                 <form @submit.prevent="submit" class="flex flex-col gap-4">
 
                     <div>
@@ -72,7 +72,7 @@ function submit() {
                                     @click="openZipPicker">
                                 Choisir
                             </button>
-                            <div class="flex-1 px-3 py-1.5 rounded-r-full border border-l-0 border-slate-300 bg-white text-sm text-slate-600 truncate">
+                            <div class="flex-1 px-3 py-1.5 rounded-r-full border border-l-0 border-slate-200 bg-white text-sm text-slate-600 truncate">
                                 {{ selectedZipName || 'Aucun fichier choisi' }}
                             </div>
                         </div>
@@ -90,7 +90,7 @@ function submit() {
 
                     <div class="flex items-center justify-between pt-4">
                         <Link :href="route('period-packages.index')"
-                              class="inline-flex min-h-10 items-center justify-center rounded-full border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50">
+                              class="inline-flex min-h-10 items-center justify-center rounded-full border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50">
                             ← Annuler
                         </Link>
                         <ButtonPrimary :disabled="form.processing">

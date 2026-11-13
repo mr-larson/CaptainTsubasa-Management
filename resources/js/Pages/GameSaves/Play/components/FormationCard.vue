@@ -24,10 +24,10 @@ const emit = defineEmits(['change']);
 </script>
 
 <template>
-    <div class="border border-slate-300 rounded-xl bg-slate-50 p-4 flex flex-col gap-3">
+    <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 flex flex-col gap-3">
         <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Formation</h3>
 
-        <div v-if="readonly" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-semibold bg-white text-slate-700">
+        <div v-if="readonly" class="text-2xl font-bold tracking-tight text-slate-700">
             {{ FORMATION_LIST.find(f => f.key === formation)?.label ?? formation }}
         </div>
         <select v-else
@@ -40,11 +40,11 @@ const emit = defineEmits(['change']);
 
         <slot name="after-select" />
 
-        <p class="text-xs text-slate-500 leading-relaxed min-h-[2.5rem]">
+        <p class="text-xs text-slate-500 leading-relaxed" :class="readonly ? '' : 'min-h-[2.5rem]'">
             {{ FORMATIONS[formation]?.description ?? '—' }}
         </p>
 
-        <div class="border-t border-slate-300 pt-3">
+        <div class="border-t border-slate-200 pt-3">
             <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">Répartition</h4>
             <div class="flex gap-1.5 flex-wrap">
                 <template v-if="formationData">

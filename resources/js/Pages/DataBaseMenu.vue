@@ -7,10 +7,10 @@ import H2 from '@/Components/H2.vue';
 const isAdmin = computed(() => !!usePage().props.auth?.user?.is_admin);
 
 const sections = [
-    { label: 'Mon profil',  desc: 'Modifier mes informations',     icon: '👤', route: 'profile.edit',   admin: false, color: 'border-slate-300 hover:border-teal-300 hover:bg-teal-50' },
-    { label: 'Joueurs',     desc: 'Gérer les joueurs de la DB',    icon: '⚽', route: 'players.index',   admin: true,  color: 'border-slate-300 hover:border-teal-300 hover:bg-teal-50' },
-    { label: 'Équipes',     desc: 'Gérer les équipes de la DB',    icon: '🏟️', route: 'teams.index',     admin: true,  color: 'border-slate-300 hover:border-teal-300 hover:bg-teal-50' },
-    { label: 'Contrats',    desc: 'Gérer les contrats de la DB',   icon: '📋', route: 'contracts.index', admin: true,  color: 'border-slate-300 hover:border-teal-300 hover:bg-teal-50' },
+    { label: 'Mon profil',  desc: 'Modifier mes informations',     icon: '👤', route: 'profile.edit',   admin: false, color: 'border-slate-200 hover:border-teal-300 hover:bg-teal-50' },
+    { label: 'Joueurs',     desc: 'Gérer les joueurs de la DB',    icon: '⚽', route: 'players.index',   admin: true,  color: 'border-slate-200 hover:border-teal-300 hover:bg-teal-50' },
+    { label: 'Équipes',     desc: 'Gérer les équipes de la DB',    icon: '🏟️', route: 'teams.index',     admin: true,  color: 'border-slate-200 hover:border-teal-300 hover:bg-teal-50' },
+    { label: 'Contrats',    desc: 'Gérer les contrats de la DB',   icon: '📋', route: 'contracts.index', admin: true,  color: 'border-slate-200 hover:border-teal-300 hover:bg-teal-50' },
 ];
 
 // Les sections d'administration ne sont visibles que pour les admins.
@@ -66,7 +66,7 @@ const visibleSections = computed(() => sections.filter(s => !s.admin || isAdmin.
 
                         <!-- Retour -->
                         <Link :href="route('mainMenu')"
-                              class="flex items-center justify-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-500 text-sm font-semibold rounded-xl border border-slate-300 transition-all">
+                              class="flex items-center justify-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-500 text-sm font-semibold rounded-xl border border-slate-200 transition-all">
                             ← Retour au menu principal
                         </Link>
                     </div>

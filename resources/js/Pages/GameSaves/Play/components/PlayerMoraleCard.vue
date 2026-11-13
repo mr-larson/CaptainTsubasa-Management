@@ -131,7 +131,7 @@ const lastDeclarationSummary = computed(() => {
         </div>
 
         <!-- Relation coach -->
-        <div class="border-t border-slate-300 pt-3 mb-3">
+        <div class="border-t border-slate-200 pt-3 mb-3">
             <div class="flex items-center justify-between mb-1.5">
                 <h5 class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Relation coach</h5>
                 <span class="text-[11px] font-bold" :class="affinityDisplay.text">
@@ -219,7 +219,7 @@ const lastDeclarationSummary = computed(() => {
         <section class="space-y-2">
             <h5 class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Derniers changements</h5>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
-                <div class="min-w-0 rounded-xl border border-slate-300 bg-white/60 p-3 space-y-2">
+                <div class="min-w-0 rounded-xl border border-slate-200 bg-white/60 p-3 space-y-2">
                     <h6 class="text-xs font-bold text-slate-600">🙂 Moral et relation coach</h6>
                     <div v-for="(log, i) in selectedPlayerMoraleLogs" :key="i" class="flex items-start gap-2 text-xs">
                         <span class="w-7 text-right font-black shrink-0" :class="log.value > 0 ? 'text-emerald-600' : 'text-rose-500'">{{ log.value > 0 ? '+' : '' }}{{ log.value }}</span>
@@ -229,9 +229,9 @@ const lastDeclarationSummary = computed(() => {
                         </div>
                         <span class="text-2xs text-slate-400 shrink-0" :title="`Saison ${log.season}, semaine ${log.week}`">S{{ log.week }}</span>
                     </div>
-                    <p v-if="!selectedPlayerMoraleLogs.length" class="text-xs text-slate-400 italic">Aucun changement récent de moral ou de relation.</p>
+                    <p v-if="!selectedPlayerMoraleLogs.length" class="text-xs text-slate-500 italic">Aucun changement récent de moral ou de relation.</p>
                 </div>
-                <div class="min-w-0 rounded-xl border border-slate-300 bg-white/60 p-3 space-y-2">
+                <div class="min-w-0 rounded-xl border border-slate-200 bg-white/60 p-3 space-y-2">
                     <h6 class="text-xs font-bold text-slate-600">📈 Progression des statistiques</h6>
                     <div v-for="(log, i) in statChanges" :key="i" class="flex items-start gap-2 text-xs">
                         <span class="w-7 text-right font-black shrink-0" :class="log.value > 0 ? 'text-emerald-600' : 'text-rose-500'">{{ log.value > 0 ? '+' : '' }}{{ log.value }}</span>
@@ -241,7 +241,7 @@ const lastDeclarationSummary = computed(() => {
                         </div>
                         <span class="text-2xs text-slate-400 shrink-0" :title="`Saison ${log.season}, semaine ${log.week}`">S{{ log.week }}</span>
                     </div>
-                    <p v-if="!statChanges.length" class="text-xs text-slate-400 italic">Aucun gain de statistique enregistré récemment.</p>
+                    <p v-if="!statChanges.length" class="text-xs text-slate-500 italic">Aucun gain de statistique enregistré récemment.</p>
                 </div>
             </div>
         </section>

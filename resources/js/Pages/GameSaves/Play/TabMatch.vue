@@ -1,10 +1,11 @@
 <script setup>
+import PixelLoader from '@/Components/PixelLoader.vue';
 import Modal from '@/Components/Modal.vue';
 import TabBar from '@/Components/TabBar.vue';
 import { fieldClass } from '@/Components/fieldStyles';
 import ButtonSecondary from '@/Components/ButtonSecondary.vue';
 import ButtonPrimary from '@/Components/ButtonPrimary.vue';
-import { computed, ref, watch, nextTick, onBeforeUnmount } from 'vue';
+import { computed, ref, watch, onBeforeUnmount } from 'vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
 import MatchReplayPitch from './MatchReplayPitch.vue';
 import PlayerPhoto from '@/Components/PlayerPhoto.vue';
@@ -529,11 +530,6 @@ const showPlayer = (side) => {
     detailTab.value = 'players';
 };
 
-const scrollToLog = async () => {
-    detailTab.value = 'log';
-    await nextTick();
-    logSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-};
 
 const homeTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide === 'home'));
 const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide === 'away'));
@@ -543,8 +539,8 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
     <div class="flex-1 flex flex-col gap-4 overflow-y-auto min-h-0 pr-1 [&>*]:shrink-0">
 
         <!-- Navigation : équipe suivie, match précédent / suivant, accès direct -->
-        <div v-if="calendarTeam" class="border border-slate-300 rounded-xl bg-slate-50 p-3 flex flex-wrap items-center gap-2">
-            <div class="w-8 h-8 rounded-lg overflow-hidden bg-white border border-slate-300 shrink-0">
+        <div v-if="calendarTeam" class="border border-slate-200 rounded-xl bg-slate-50 p-3 flex flex-wrap items-center gap-2">
+            <div class="w-8 h-8 rounded-lg overflow-hidden bg-white border border-slate-200 shrink-0">
                 <TeamLogoImage v-if="teamLogoUrl(calendarTeam)" :src="teamLogoUrl(calendarTeam)" class="w-full h-full" alt=""/>
             </div>
             <select :value="calendarTeam.id" @change="onTeamChange($event.target.value)"
@@ -572,13 +568,14 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
         </div>
 
         <div v-if="selectedCalendarMatch && selectedCalendarMatchStats" class="flex flex-col gap-3">
-            <!-- Score du match -->
-            <div class="border border-slate-300 rounded-xl bg-slate-50 p-4">
+            <!-- Résumé et navigation forment un seul en-tête. -->
+            <div>
+            <div class="border border-b-0 border-slate-200 rounded-t-xl bg-slate-50 p-4 pb-3">
                 <div class="flex flex-wrap items-center justify-around gap-4">
 
                     <!-- Équipe domicile -->
                     <div class="flex flex-col items-center gap-1 flex-1">
-                        <div class="w-12 h-12 rounded-xl overflow-hidden bg-white border border-slate-300">
+                        <div class="w-12 h-12 rounded-xl overflow-hidden bg-white border border-slate-200">
                             <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(teamById[selectedCalendarMatch.home_team_id])"
                                  :src="teamLogoUrl(teamById[selectedCalendarMatch.home_team_id])"
                                  class="w-full h-full" alt=""/>
@@ -600,7 +597,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
 
                     <!-- Équipe extérieure -->
                     <div class="flex flex-col items-center gap-1 flex-1">
-                        <div class="w-12 h-12 rounded-xl overflow-hidden bg-white border border-slate-300">
+                        <div class="w-12 h-12 rounded-xl overflow-hidden bg-white border border-slate-200">
                             <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(teamById[selectedCalendarMatch.away_team_id])"
                                  :src="teamLogoUrl(teamById[selectedCalendarMatch.away_team_id])"
                                  class="w-full h-full" alt=""/>
@@ -612,7 +609,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                 </div>
 
                 <!-- Buteurs -->
-                <div v-if="scorers.length" class="mt-3 grid grid-cols-2 gap-6 text-[11px]">
+                <div v-if="scorers.length" aria-label="Buteurs du match" class="mt-1 grid grid-cols-2 gap-6 text-[11px]">
                     <div class="text-right space-y-0.5">
                         <div v-for="(g, i) in scorersBySide('home')" :key="'h' + i" class="text-slate-600">
                             <span class="font-semibold">{{ g.name }}</span><span v-if="g.special" class="text-amber-600"> (spécial)</span>
@@ -628,7 +625,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                 </div>
 
                 <!-- Homme du match + temps forts -->
-                <div v-if="manOfTheMatch || highlights.length" class="mt-3 pt-3 border-t border-slate-300 space-y-2">
+                <div v-if="manOfTheMatch || highlights.length" class="mt-3 pt-3 border-t border-slate-200 space-y-2">
                     <div v-if="manOfTheMatch" class="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs">
                         <div class="w-7 h-7 rounded-full overflow-hidden bg-amber-100 ring-2 ring-amber-300 shrink-0">
                             <PlayerPhoto v-if="manOfTheMatch.player" :src="playerPhotoUrl(manOfTheMatch.player)" class="w-full h-full object-cover" alt="" />
@@ -640,25 +637,25 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                     </div>
                     <div v-if="highlights.length" class="flex flex-wrap gap-1.5">
                         <span v-for="(h, i) in highlights" :key="i"
-                              class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white border border-slate-300 text-2xs font-semibold text-slate-600">
+                              class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white border border-slate-200 text-2xs font-semibold text-slate-600">
                             {{ h.icon }} {{ h.text }}<span v-if="h.turn" class="text-slate-400">· T{{ h.turn }}</span>
                         </span>
                     </div>
                 </div>
 
-                <div class="mt-3 flex justify-center gap-2">
+                <div class="mt-3 flex flex-wrap justify-center gap-4">
+                    <div class="flex flex-col items-center gap-1">
                     <ButtonPrimary type="button" size="sm" @click="showReplay = true">
                         ▶ Revoir le match
                     </ButtonPrimary>
-                    <ButtonSecondary size="sm" v-if="selectedCalendarEvents.length" @click="scrollToLog">
-                        📋 Déroulé complet
-                    </ButtonSecondary>
+                    <span class="text-2xs text-slate-500">Relecture animée sur le terrain</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- Onglets de la fiche de match -->
-            <div class="border-b border-slate-300">
-                <TabBar v-model="detailTab" :tabs="detailTabs" size="sm" wrap label="Fiche de match" />
+            <!-- Onglets intégrés au résumé, avec ouverture vers le contenu. -->
+            <TabBar v-model="detailTab" :tabs="detailTabs" size="sm" outlined label="Fiche de match"
+                    style="background-color: #f8fafc; border-radius: 0 0 0.75rem 0.75rem; padding-left: 1.5rem" />
             </div>
 
             <!-- Feuille de match -->
@@ -672,7 +669,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                         @show-player="showPlayer" />
 
             <!-- Barres comparatives équipes -->
-            <div v-show="detailTab === 'stats'" class="border border-slate-300 rounded-xl bg-slate-50 p-4">
+            <div v-show="detailTab === 'stats'" class="border border-slate-200 rounded-xl bg-slate-50 p-4">
                 <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-3">Comparatif équipes</h4>
                 <div class="space-y-2">
                     <div v-for="bar in statBars" :key="bar.label">
@@ -704,12 +701,12 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
 
             <!-- Joueurs -->
             <div v-show="detailTab === 'players'">
-        <div class="border border-slate-300 rounded-xl bg-slate-50 p-4">
+        <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
                 <div class="flex items-center justify-between mb-3">
                     <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider">
                         Joueurs — {{ statsTeamName }}
                     </h4>
-                    <div class="flex rounded-lg overflow-hidden border border-slate-300 text-[11px] font-semibold">
+                    <div class="flex rounded-lg overflow-hidden border border-slate-200 text-[11px] font-semibold">
                         <button type="button" @click="selectedStatsTeam = 'home'"
                                 class="px-3 py-1 transition-all"
                                 :class="selectedStatsTeam === 'home' ? 'bg-teal-500 text-white' : 'bg-white text-slate-500 hover:bg-slate-50'">
@@ -733,7 +730,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
             <!-- ============================================ -->
             <!-- BLOC : Déroulé du match (action par action)  -->
             <!-- ============================================ -->
-            <div v-if="selectedCalendarEvents.length" v-show="detailTab === 'log'" ref="logSection" class="border border-slate-300 rounded-xl bg-slate-50 p-4 scroll-mt-2">
+            <div v-if="selectedCalendarEvents.length" v-show="detailTab === 'log'" ref="logSection" class="border border-slate-200 rounded-xl bg-slate-50 p-4 scroll-mt-2">
                 <div class="flex items-center justify-between mb-3 gap-2 flex-wrap">
                     <h4 class="text-2xs font-bold text-slate-500 uppercase tracking-wider">
                         📋 Déroulé du match (action par action)
@@ -835,7 +832,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                             </div>
                         </div>
                     </div>
-                    <p v-if="!filteredLogEvents.length" class="text-[11px] text-slate-400 italic text-center py-4">
+                    <p v-if="!filteredLogEvents.length" class="text-[11px] text-slate-500 italic text-center py-4">
                         Aucune action de ce type dans ce match.
                     </p>
                 </div>
@@ -843,9 +840,9 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
         </div>
 
         <!-- Chargement / aucun match -->
-        <div v-else class="min-h-[300px] flex items-center justify-center rounded-xl border border-dashed border-slate-300 text-slate-400 text-sm">
+        <div v-else class="min-h-[300px] flex items-center justify-center rounded-xl border border-dashed border-slate-200 text-slate-400 text-sm">
             <div v-if="loadingMatchId" class="text-center p-8">
-                <div class="w-8 h-8 mx-auto mb-3 rounded-full border-4 border-teal-400 border-t-transparent animate-spin"></div>
+                <PixelLoader class="mx-auto mb-3" size="lg" />
                 <p>Chargement du match…</p>
             </div>
             <div v-else class="text-center p-8">
@@ -916,7 +913,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
 
                             <div v-if="homeTeamEvents.length" class="space-y-2">
                                 <div v-for="(ev, i) in homeTeamEvents" :key="i"
-                                     class="flex items-start gap-2 p-2 rounded-lg bg-slate-50 border border-slate-300">
+                                     class="flex items-start gap-2 p-2 rounded-lg bg-slate-50 border border-slate-200">
                                     <div class="w-6 h-6 rounded-full flex items-center justify-center text-white text-[11px] shrink-0"
                                          :class="ev.color">
                                         {{ ev.icon }}
@@ -927,7 +924,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                                     </div>
                                 </div>
                             </div>
-                            <p v-else class="text-xs text-slate-400 italic">Aucun événement notable.</p>
+                            <p v-else class="text-xs text-slate-500 italic">Aucun événement notable.</p>
                         </div>
 
                         <!-- AWAY -->
@@ -948,7 +945,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
 
                             <div v-if="awayTeamEvents.length" class="space-y-2">
                                 <div v-for="(ev, i) in awayTeamEvents" :key="i"
-                                     class="flex items-start gap-2 p-2 rounded-lg bg-slate-50 border border-slate-300">
+                                     class="flex items-start gap-2 p-2 rounded-lg bg-slate-50 border border-slate-200">
                                     <div class="w-6 h-6 rounded-full flex items-center justify-center text-white text-[11px] shrink-0"
                                          :class="ev.color">
                                         {{ ev.icon }}
@@ -959,12 +956,12 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                                     </div>
                                 </div>
                             </div>
-                            <p v-else class="text-xs text-slate-400 italic">Aucun événement notable.</p>
+                            <p v-else class="text-xs text-slate-500 italic">Aucun événement notable.</p>
                         </div>
                     </div>
 
                     <!-- Stats équipe résumé -->
-                    <div class="mt-4 pt-4 border-t border-slate-300 grid grid-cols-1 sm:grid-cols-2 gap-4 text-center text-xs">
+                    <div class="mt-4 pt-4 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-4 text-center text-xs">
                         <div class="flex justify-around text-slate-500">
                             <div><div class="font-black text-slate-700">{{ selectedCalendarMatchStats?.teams?.home?.shots ?? 0 }}</div><div>Tirs</div></div>
                             <div><div class="font-black text-slate-700">{{ selectedCalendarMatchStats?.teams?.home?.passes ?? 0 }}</div><div>Passes</div></div>

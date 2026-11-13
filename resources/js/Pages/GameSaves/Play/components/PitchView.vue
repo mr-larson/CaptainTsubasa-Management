@@ -112,7 +112,7 @@ const MASTERY_CHIP = {
 </script>
 
 <template>
-    <div class="h-[280px] border border-slate-300 rounded-xl overflow-hidden shadow-sm">
+    <div class="h-[280px] border border-slate-200 rounded-xl overflow-hidden shadow-sm">
         <div class="relative w-full h-full">
             <div class="absolute inset-0 bg-gradient-to-r from-green-800 via-green-700 to-green-800"></div>
             <div v-for="i in 8" :key="i" class="absolute top-0 h-full bg-green-900/15" :style="{ left:((i-1)*12.5)+'%', width:'12.5%' }"></div>
@@ -131,11 +131,12 @@ const MASTERY_CHIP = {
                     class="absolute -translate-x-1/2 -translate-y-1/2"
                     :class="playerForSlot(slot) ? 'cursor-grab active:cursor-grabbing' : slotCandidates ? 'cursor-pointer' : 'cursor-default'"
                     :style="{ left: playerPosition(slot).x+'%', top: playerPosition(slot).y+'%' }"
+                    :title="playerForSlot(slot) ? `Endurance ${staminaOf(playerForSlot(slot))}` : undefined"
                     :draggable="!!playerForSlot(slot)"
                     :role="playerForSlot(slot) || slotCandidates ? 'button' : undefined"
                     :tabindex="playerForSlot(slot) || slotCandidates ? 0 : undefined"
                     :aria-label="playerForSlot(slot)
-                        ? `${playerForSlot(slot).lastname ?? 'Joueur'}, poste ${slot}`
+                        ? `${playerForSlot(slot).lastname ?? 'Joueur'}, poste ${slot}, endurance ${staminaOf(playerForSlot(slot))}`
                         : slotCandidates ? `Poste ${slot} vide (${ZONE_NAMES[slotDef.zone] ?? ''}) : placer un joueur` : undefined"
                     @keydown.enter.prevent.stop="playerForSlot(slot) ? emit('player-click', playerForSlot(slot)) : onEmptySlotClick(slot)"
                     @keydown.space.prevent.stop="playerForSlot(slot) ? emit('player-click', playerForSlot(slot)) : onEmptySlotClick(slot)"
@@ -172,7 +173,7 @@ const MASTERY_CHIP = {
                                 isPickedUp(playerForSlot(slot))
                                     ? 'border-amber-300 ring-4 ring-amber-300/60 animate-pulse'
                                     : selectedSlot === Number(slot)
-                                        ? 'border-amber-300 ring-2 ring-amber-200'
+                                        ? 'border-teal-300 ring-2 ring-teal-200'
                                         : statusOf(playerForSlot(slot)) ? 'border-rose-500 ring-2 ring-rose-500/70'
                                         : 'border-white/70',
                                 slotDef.zone===0?'bg-amber-500':slotDef.zone===1?'bg-blue-500':slotDef.zone===2?'bg-emerald-500':slotDef.zone===3?'bg-orange-500':'bg-rose-500'
@@ -240,7 +241,7 @@ const MASTERY_CHIP = {
                 <div v-if="openSlot && openSlotDef"
                      class="absolute inset-2 z-10 bg-white/95 rounded-lg shadow-xl flex flex-col overflow-hidden"
                      @click.stop>
-                    <div class="flex items-center justify-between px-3 py-1.5 border-b border-slate-300 shrink-0">
+                    <div class="flex items-center justify-between px-3 py-1.5 border-b border-slate-200 shrink-0">
                         <span class="text-[11px] font-bold text-slate-700">
                             Poste {{ ZONE_LABELS[openSlotDef.zone] }} vide — qui faire entrer ?
                         </span>
@@ -260,7 +261,7 @@ const MASTERY_CHIP = {
                             </span>
                             <span class="w-8 text-right text-2xs font-bold text-slate-400" title="Endurance">{{ c.player.stamina ?? c.player.stats?.stamina ?? '—' }}</span>
                         </button>
-                        <p v-if="!openSlotCandidates.length" class="text-xs text-slate-400 italic text-center py-4">
+                        <p v-if="!openSlotCandidates.length" class="text-xs text-slate-500 italic text-center py-4">
                             Aucun remplaçant disponible.
                         </p>
                     </div>

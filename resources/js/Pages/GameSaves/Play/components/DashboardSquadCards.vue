@@ -68,7 +68,7 @@ const ROW = 'w-full flex items-center justify-between gap-2 px-2 py-1 rounded-lg
 <template>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
         <!-- Vestiaire -->
-        <div class="border border-slate-300 rounded-xl bg-slate-50 p-4">
+        <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
             <div class="flex items-center justify-between mb-2">
                 <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Vestiaire</h4>
                 <span class="text-xs font-bold" :class="moraleState(averageMorale).text"
@@ -90,7 +90,7 @@ const ROW = 'w-full flex items-center justify-between gap-2 px-2 py-1 rounded-lg
         </div>
 
         <!-- Contrats -->
-        <div class="border border-slate-300 rounded-xl bg-slate-50 p-4">
+        <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
             <div class="flex items-center justify-between mb-2">
                 <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Contrats</h4>
                 <span class="text-2xs text-slate-400">d'ici la semaine {{ week + CONTRACT_WINDOW }}</span>
@@ -112,7 +112,7 @@ const ROW = 'w-full flex items-center justify-between gap-2 px-2 py-1 rounded-lg
         </div>
 
         <!-- Meilleurs joueurs -->
-        <div class="border border-slate-300 rounded-xl bg-slate-50 p-4">
+        <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
             <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">Meilleurs joueurs</h4>
             <div v-if="topScorers.length || topDuelists.length" class="grid grid-cols-2 gap-3">
                 <div v-for="col in [
@@ -129,7 +129,7 @@ const ROW = 'w-full flex items-center justify-between gap-2 px-2 py-1 rounded-lg
                     <span v-if="!col.rows.length" class="text-[11px] text-slate-400">—</span>
                 </div>
             </div>
-            <p v-else class="text-xs text-slate-400 italic">Pas encore de match joué cette saison</p>
+            <p v-else class="text-xs text-slate-500 italic">Pas encore de match joué cette saison</p>
         </div>
     </div>
 </template>

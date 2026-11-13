@@ -84,7 +84,7 @@ const benchTitle = (p) => {
 </script>
 
 <template>
-    <div class="border border-slate-300 rounded-xl bg-slate-50 p-3 overflow-y-auto">
+    <div class="border border-slate-200 rounded-xl bg-slate-50 p-3 overflow-y-auto">
         <h3 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">{{ title }}</h3>
         <div v-if="players.length" class="space-y-3">
             <div v-for="group in groupedPlayers" :key="group.key" class="space-y-1">
@@ -96,13 +96,14 @@ const benchTitle = (p) => {
                      :class="[
                          $slots['row-action'] ? 'pr-2' : '',
                          selectedId === p.id
-                             ? 'bg-teal-500 text-white border-teal-600 shadow-sm'
+                             ? 'bg-teal-50 text-teal-900 border-teal-300'
                              : rowHighlight(p)
-                                 ? 'bg-teal-50 border-teal-200 text-slate-700'
-                                 : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-300',
+                                 ? 'bg-white border-teal-200 text-slate-700'
+                                 : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200',
                      ]">
                     <button type="button"
                             class="min-w-0 flex-1 rounded-lg px-2 py-1.5 text-left"
+                            :aria-pressed="selectedId === p.id"
                             @click="emit('select', p)">
                         <div class="flex items-center gap-2">
                             <!-- Photo -->
@@ -113,7 +114,7 @@ const benchTitle = (p) => {
 
                             <!-- Nom + poste -->
                             <div class="flex-1 min-w-0">
-                                <div class="text-xs font-semibold truncate">{{ p.lastname }}</div>
+                                <div class="text-xs font-semibold break-words leading-snug" :title="`${p.firstname ?? ''} ${p.lastname}`">{{ p.lastname }}</div>
                                 <div class="text-2xs opacity-60 truncate">{{ positionLabel(p.position) }}</div>
                             </div>
 
@@ -141,11 +142,11 @@ const benchTitle = (p) => {
                             <!-- Endurance bar + valeur -->
                             <div class="w-12 flex flex-col items-end gap-0.5 shrink-0">
                                 <div class="text-2xs font-bold"
-                                     :class="selectedId === p.id ? 'text-white/80' : 'text-slate-500'">
+                                     :class="selectedId === p.id ? 'text-teal-700' : 'text-slate-500'">
                                     {{ p.stamina ?? p.stats?.stamina ?? '—' }}
                                 </div>
                                 <div class="w-full h-1 rounded-full overflow-hidden"
-                                     :class="selectedId === p.id ? 'bg-white/30' : 'bg-slate-200'">
+                                     :class="selectedId === p.id ? 'bg-teal-100' : 'bg-slate-200'">
                                     <div class="h-full rounded-full transition-all"
                                          :class="staminaOf(p) >= 60 ? 'bg-emerald-400'
                                              : staminaOf(p) >= 30 ? 'bg-amber-400' : 'bg-rose-400'"

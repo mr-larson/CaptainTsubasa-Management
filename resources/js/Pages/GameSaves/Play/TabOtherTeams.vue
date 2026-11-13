@@ -138,7 +138,7 @@ const otherStatus = computed(() => ({
                     @click="emit('select-team', t)"
                     class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all"
                     :class="selectedOtherTeam?.id === t.id
-                        ? 'bg-teal-500 text-white border-teal-600 shadow-sm'
+                        ? 'bg-teal-50 text-teal-900 border-teal-300'
                         : 'bg-white text-slate-600 border-slate-300 hover:border-teal-300 hover:text-teal-600'"
                 >
                     <TeamLogo :team="t" size="xs" fallback="none" :bordered="false" />
@@ -148,7 +148,7 @@ const otherStatus = computed(() => ({
                     </span>
                     <span v-if="t.id === nextOpponentId"
                           class="ml-0.5 px-1.5 rounded-full text-3xs font-bold uppercase"
-                          :class="selectedOtherTeam?.id === t.id ? 'bg-white/25 text-white' : 'bg-orange-100 text-orange-600'">🎯 Prochain adversaire</span>
+                          :class="selectedOtherTeam?.id === t.id ? 'bg-orange-100 text-orange-800' : 'bg-orange-100 text-orange-600'">🎯 Prochain adversaire</span>
                 </button>
             </div>
         </Panel>
@@ -157,13 +157,13 @@ const otherStatus = computed(() => ({
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4" v-if="selectedOtherTeam">
             <!-- Lecture seule sauf option « Accès aux autres clubs » (équipes IA uniquement,
                  le serveur refuse le reste). -->
-            <FormationCard class="lg:col-span-4"
+            <FormationCard class="lg:col-span-3"
                            :formation="otherFormation"
                            :formationData="otherFormationData"
                            :readonly="!editable"
                            @change="f => emit('change-formation', f)" />
 
-            <PitchView class="lg:col-span-6"
+            <PitchView class="lg:col-span-7"
                        :formationData="otherFormationData"
                        :playerPosition="otherPlayerPosition"
                        :playerForSlot="otherPlayerForSlot"
@@ -256,7 +256,7 @@ const otherStatus = computed(() => ({
                     <span class="px-3 py-1.5 rounded-full text-xs font-semibold border"
                           :class="selectedOtherPlayer.is_starter
                               ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                              : 'bg-white text-slate-500 border-slate-300'">
+                              : 'bg-white text-slate-500 border-slate-200'">
                         {{ selectedOtherPlayer.is_starter ? '✓ Titulaire' : 'Remplaçant' }}
                     </span>
                     <span v-if="selectedOtherPlayer.is_captain"
@@ -271,7 +271,7 @@ const otherStatus = computed(() => ({
         </div>
 
         <!-- Aucune équipe sélectionnée -->
-        <div v-if="!selectedOtherTeam" class="flex items-center justify-center rounded-xl border border-dashed border-slate-300 p-10 text-slate-400 text-sm">
+        <div v-if="!selectedOtherTeam" class="flex items-center justify-center rounded-xl border border-dashed border-slate-200 p-10 text-slate-400 text-sm">
             Sélectionne une équipe ci-dessus
         </div>
         <PlayerComparison v-model="comparison" :availability="comparisonAvailability" />

@@ -28,7 +28,7 @@ const actionLabels = {
                         @click="selectedMove = move">
                     {{ move.label || move.short_label || move.key }}
                 </button>
-                <div v-else class="rounded-lg border border-slate-300 bg-white p-2.5">
+                <div v-else class="rounded-lg border border-slate-200 bg-white p-2.5">
                     <div class="flex flex-wrap items-center gap-2">
                         <span class="text-xs font-bold text-slate-700">{{ move.label || move.short_label || move.key }}</span>
                         <span v-if="move.mode === 'attack' || move.mode === 'defense'"

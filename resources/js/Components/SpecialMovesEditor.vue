@@ -70,7 +70,7 @@ function removeSpecialMove(index) {
             <div
                 v-for="(move, index) in modelValue"
                 :key="index"
-                class="border border-slate-300 bg-white rounded-xl shadow-sm px-4 py-3"
+                class="border border-slate-200 bg-white rounded-xl shadow-sm px-4 py-3"
             >
                 <FormErrorList :errors="errors" :prefix="`special_moves.${index}.`" />
 

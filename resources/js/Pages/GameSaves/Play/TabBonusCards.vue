@@ -105,9 +105,9 @@ const targetMeta = (card, player) => {
 // ==========================
 const tierClasses = (tier) => ({
     bronze: { border: 'border-amber-300', bg: 'bg-amber-50',   badge: 'bg-amber-500 text-white',      label: 'Bronze', glow: 'shadow-amber-100' },
-    silver: { border: 'border-slate-300', bg: 'bg-slate-50',   badge: 'bg-slate-400 text-white',      label: 'Argent', glow: 'shadow-slate-100' },
+    silver: { border: 'border-slate-200', bg: 'bg-slate-50',   badge: 'bg-slate-400 text-white',      label: 'Argent', glow: 'shadow-slate-100' },
     gold:   { border: 'border-yellow-300',bg: 'bg-yellow-50',  badge: 'bg-yellow-400 text-slate-700', label: 'Or',     glow: 'shadow-yellow-100' },
-}[tier] ?? { border: 'border-slate-300', bg: 'bg-white', badge: 'bg-slate-200', label: '?', glow: '' });
+}[tier] ?? { border: 'border-slate-200', bg: 'bg-white', badge: 'bg-slate-200', label: '?', glow: '' });
 
 const phaseLabel = (phase) => ({
     immediate:    '⚡ Effet immédiat',
@@ -197,7 +197,7 @@ const canConfirm = computed(() => {
     <div class="flex-1 flex flex-col gap-4 overflow-y-auto min-h-0 pr-1 [&>*]:shrink-0">
 
         <!-- HEADER -->
-        <div class="border border-slate-300 rounded-xl bg-slate-50 p-4">
+        <div class="bonus-tabs-header rounded-t-xl p-4">
             <div class="flex items-center justify-between">
                 <div>
                     <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Cartes Bonus</h3>
@@ -216,8 +216,8 @@ const canConfirm = computed(() => {
             </div>
 
             <!-- Onglets -->
-            <div class="mt-4 border-b border-slate-300">
-                <TabBar v-model="activeTab" :tabs="shopTabs" size="sm" label="Boutique et inventaire" />
+            <div class="bonus-tabs-track mt-4">
+                <TabBar v-model="activeTab" :tabs="shopTabs" size="sm" outlined label="Boutique et inventaire" style="background-color: #f8fafc; border-radius: 0 0 0.75rem 0.75rem; padding-left: 1.5rem" />
             </div>
         </div>
 
@@ -344,10 +344,10 @@ const canConfirm = computed(() => {
 
                             <!-- Tags -->
                             <div class="flex gap-1.5 flex-wrap">
-                                <span class="text-2xs font-semibold px-2 py-0.5 rounded-full bg-white/70 border border-slate-300 text-slate-600">
+                                <span class="text-2xs font-semibold px-2 py-0.5 rounded-full bg-white/70 border border-slate-200 text-slate-600">
                                     {{ timingLabel(offer) }}
                                 </span>
-                                <span class="text-2xs font-semibold px-2 py-0.5 rounded-full bg-white/70 border border-slate-300 text-slate-600">
+                                <span class="text-2xs font-semibold px-2 py-0.5 rounded-full bg-white/70 border border-slate-200 text-slate-600">
                                     {{ targetLabel(offer.target) }}
                                 </span>
                             </div>
@@ -361,7 +361,7 @@ const canConfirm = computed(() => {
                 </div>
             </div>
 
-            <div v-else class="flex items-center justify-center rounded-xl border border-dashed border-slate-300 p-12 text-center">
+            <div v-else class="flex items-center justify-center rounded-xl border border-dashed border-slate-200 p-12 text-center">
                 <div>
                     <div class="text-4xl mb-2">🃏</div>
                     <p class="text-slate-600 font-semibold">Boutique indisponible</p>
@@ -376,7 +376,7 @@ const canConfirm = computed(() => {
         <div v-if="activeTab === 'inventory'" class="flex flex-col gap-4">
 
             <!-- Cartes disponibles -->
-            <div class="border border-slate-300 rounded-xl bg-slate-50 p-4">
+            <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
                 <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
                     ✅ Disponibles ({{ availableCards.length }})
                 </h4>
@@ -415,10 +415,10 @@ const canConfirm = computed(() => {
                                 <p class="text-2xs text-slate-600 leading-relaxed">{{ card.description }}</p>
 
                                 <div class="flex gap-1 flex-wrap">
-                                    <span class="text-3xs font-semibold px-1.5 py-0.5 rounded-full bg-white/80 border border-slate-300 text-slate-500">
+                                    <span class="text-3xs font-semibold px-1.5 py-0.5 rounded-full bg-white/80 border border-slate-200 text-slate-500">
                                         {{ timingLabel(card) }}
                                     </span>
-                                    <span class="text-3xs font-semibold px-1.5 py-0.5 rounded-full bg-white/80 border border-slate-300 text-slate-500">
+                                    <span class="text-3xs font-semibold px-1.5 py-0.5 rounded-full bg-white/80 border border-slate-200 text-slate-500">
                                         {{ targetLabel(card.target) }}
                                     </span>
                                 </div>
@@ -432,19 +432,19 @@ const canConfirm = computed(() => {
                     </div>
                 </div>
 
-                <p v-else class="text-xs text-slate-400 italic text-center py-4">
+                <p v-else class="text-xs text-slate-500 italic text-center py-4">
                     Aucune carte disponible. Achetez des cartes dans la boutique !
                 </p>
             </div>
 
             <!-- Cartes utilisées -->
-            <div v-if="usedCards.length" class="border border-slate-300 rounded-xl bg-slate-50 p-4">
+            <div v-if="usedCards.length" class="border border-slate-200 rounded-xl bg-slate-50 p-4">
                 <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
                     ✓ Utilisées ({{ usedCards.length }})
                 </h4>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
                     <div v-for="card in usedCards" :key="card.id"
-                         class="border rounded-xl p-2 opacity-50 flex items-center gap-2 border-slate-300 bg-slate-100">
+                         class="border rounded-xl p-2 opacity-50 flex items-center gap-2 border-slate-200 bg-slate-100">
                         <span class="text-xl">{{ card.icon }}</span>
                         <div class="min-w-0">
                             <div class="text-2xs font-bold text-slate-600 truncate">{{ card.name }}</div>
@@ -463,7 +463,7 @@ const canConfirm = computed(() => {
                @close="cancelActivate">
 
                     <!-- Header -->
-                    <div class="p-5 border-b border-slate-300">
+                    <div class="p-5 border-b border-slate-200">
                         <div class="flex items-center gap-3">
                             <span class="text-4xl">{{ selectedCard.icon }}</span>
                             <div>
@@ -478,7 +478,7 @@ const canConfirm = computed(() => {
                     </div>
 
                     <!-- Sélection joueur si target=player -->
-                    <div v-if="needsTarget" class="p-5 border-b border-slate-300">
+                    <div v-if="needsTarget" class="p-5 border-b border-slate-200">
                         <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
                             Sélectionner un joueur cible
                         </p>
@@ -502,13 +502,13 @@ const canConfirm = computed(() => {
                             </button>
                         </div>
 
-                        <p v-else class="text-xs text-slate-400 italic">
+                        <p v-else class="text-xs text-slate-500 italic">
                             {{ isInjuryCard ? 'Aucun joueur blessé dans votre effectif.' : 'Aucun joueur dans votre effectif.' }}
                         </p>
                     </div>
 
                     <!-- Malus : cible = adversaire du prochain match -->
-                    <div v-if="isSelectedMalus && malusTargetMode(selectedCard) === 'opponent'" class="p-5 border-b border-slate-300">
+                    <div v-if="isSelectedMalus && malusTargetMode(selectedCard) === 'opponent'" class="p-5 border-b border-slate-200">
                         <div class="flex items-center gap-2 text-rose-700 text-sm font-semibold">
                             <span class="text-lg">🎯</span>
                             <span>Cible : l'adversaire de votre prochain match</span>
@@ -519,7 +519,7 @@ const canConfirm = computed(() => {
                     </div>
 
                     <!-- Malus : cible = 1er du classement (auto) -->
-                    <div v-else-if="isSelectedMalus && malusTargetMode(selectedCard) === 'leader'" class="p-5 border-b border-slate-300">
+                    <div v-else-if="isSelectedMalus && malusTargetMode(selectedCard) === 'leader'" class="p-5 border-b border-slate-200">
                         <div class="flex items-center gap-2 text-rose-700 text-sm font-semibold">
                             <span class="text-lg">👑</span>
                             <span>Cible : le 1<sup>er</sup> du classement<template v-if="leaderTeam"> — {{ leaderTeam.name }}</template></span>
@@ -530,7 +530,7 @@ const canConfirm = computed(() => {
                     </div>
 
                     <!-- Malus : sélection libre de l'équipe cible -->
-                    <div v-else-if="needsTeamSelect" class="p-5 border-b border-slate-300">
+                    <div v-else-if="needsTeamSelect" class="p-5 border-b border-slate-200">
                         <p class="text-xs font-bold text-rose-600 uppercase tracking-wider mb-2">
                             🎯 Choisir l'équipe à saboter
                         </p>
@@ -549,7 +549,7 @@ const canConfirm = computed(() => {
                                 </span>
                             </button>
                         </div>
-                        <p v-else class="text-xs text-slate-400 italic">Aucune autre équipe à cibler.</p>
+                        <p v-else class="text-xs text-slate-500 italic">Aucune autre équipe à cibler.</p>
                     </div>
 
                     <!-- Actions -->
@@ -565,3 +565,27 @@ const canConfirm = computed(() => {
 
     </div>
 </template>
+
+<style scoped>
+.bonus-tabs-header {
+    position: relative;
+    isolation: isolate;
+    background: linear-gradient(to bottom, #f8fafc 0, #f8fafc calc(100% - 1rem), #fff calc(100% - 1rem), #fff 100%);
+}
+
+.bonus-tabs-track {
+    margin-left: -1rem;
+    margin-right: -1rem;
+}
+
+.bonus-tabs-header::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    pointer-events: none;
+    inset: 0 0 3.5rem;
+    border: 1px solid #e2e8f0;
+    border-bottom: 0;
+    border-radius: 0.75rem 0.75rem 0 0;
+}
+</style>

@@ -230,8 +230,13 @@ const selectedPlayerPerf = computed(() => {
 <template>
     <div class="flex-1 flex flex-col gap-4 overflow-y-auto min-h-0 pr-1 [&>*]:shrink-0">
 
+        <p v-if="remainingTrainingsThisWeek <= 0" role="status"
+           class="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+            Tous les entraînements manuels de cette semaine ont été utilisés. Les séances et formations seront de nouveau disponibles la semaine prochaine.
+        </p>
+
         <!-- HEADER -->
-        <div class="border border-slate-300 rounded-xl bg-slate-50 p-4">
+        <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                     <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Entraînement</h3>
@@ -241,13 +246,13 @@ const selectedPlayerPerf = computed(() => {
                 </div>
                 <div class="flex flex-wrap gap-3">
                     <!-- Budget & coût par séance -->
-                    <div v-if="trainingCost > 0" class="text-center px-4 py-2 rounded-xl border bg-white border-slate-300">
+                    <div v-if="trainingCost > 0" class="text-center px-4 py-2 rounded-xl border bg-white border-slate-200">
                         <div class="text-2xl font-black text-slate-700">{{ teamBudget }} <GameBanknote /></div>
                         <div class="text-2xs font-semibold text-slate-400">budget · {{ trainingCost }} <GameBanknote />/séance</div>
                     </div>
                     <!-- Entraînements manuels restants -->
                     <div class="text-center px-4 py-2 rounded-xl border"
-                         :class="remainingTrainingsThisWeek > 0 ? 'bg-teal-50 border-teal-200' : 'bg-slate-100 border-slate-300'">
+                         :class="remainingTrainingsThisWeek > 0 ? 'bg-teal-50 border-teal-200' : 'bg-slate-100 border-slate-200'">
                         <div class="text-2xl font-black"
                              :class="remainingTrainingsThisWeek > 0 ? 'text-teal-600' : 'text-slate-400'">
                             {{ remainingTrainingsThisWeek }}
@@ -272,7 +277,7 @@ const selectedPlayerPerf = computed(() => {
             <!-- COLONNE GAUCHE : Effectif         -->
             <!-- ============================================ -->
             <!-- Hauteur calée sur les colonnes de droite (scroll interne) -->
-            <div class="lg:col-span-3 relative min-h-[320px]">
+            <div class="lg:col-span-4 relative min-h-[320px]">
                 <RosterList class="absolute inset-0"
                             :players="roster"
                             :selectedId="selectedPlayer?.id"
@@ -297,7 +302,7 @@ const selectedPlayerPerf = computed(() => {
             <!-- ============================================ -->
             <!-- COLONNE  CENTRAL & DROITE                               -->
             <!-- ============================================ -->
-            <div class="lg:col-span-6 flex flex-col gap-4">
+            <div class="lg:col-span-5 flex flex-col gap-4">
                 <!-- ====================================== -->
                 <!-- PROFIL JOUEUR SÉLECTIONNÉ              -->
                 <!-- ====================================== -->
@@ -313,19 +318,19 @@ const selectedPlayerPerf = computed(() => {
                     <PlayerIdentityCard :player="selectedPlayer"
                                         :subtitle="`${positionLabel(selectedPlayer.position)} • Endurance ${selectedPlayer.stamina ?? '—'}`">
                         <template #actions>
-                            <ButtonPrimary type="button" size="sm" @click="emit('add-slot', selectedPlayer.id)" :disabled="trainingButtonState.disabled">
+                            <ButtonPrimary v-if="remainingTrainingsThisWeek > 0" type="button" size="sm" @click="emit('add-slot', selectedPlayer.id)" :disabled="trainingButtonState.disabled">
                                 {{ trainingButtonState.label }}
                             </ButtonPrimary>
                         </template>
                         <template #footer>
-                            <p v-if="selectedPlayer.description" class="mt-2 text-xs text-slate-400 italic line-clamp-2">
+                            <p v-if="selectedPlayer.description" class="mt-2 text-xs text-slate-500 italic line-clamp-2">
                                 {{ selectedPlayer.description }}
                             </p>
                         </template>
                     </PlayerIdentityCard>
 
                     <!-- Formation à un nouveau poste -->
-                    <div class="border border-slate-300 rounded-xl bg-slate-50 p-4">
+                    <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
                         <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">🎓 Former à un nouveau poste</h4>
                         <p class="text-xs text-slate-500 mb-3">
                             Postes maîtrisés : <span class="font-semibold text-slate-700">{{ knownPositions(selectedPlayer).map(positionLabel).join(', ') }}</span>.
@@ -338,7 +343,7 @@ const selectedPlayerPerf = computed(() => {
                             <span v-else>En formation au poste de <strong>{{ positionLabel(currentPositionTraining.target_position) }}</strong></span>
                             — de retour en semaine {{ currentPositionTraining.week_return }}.
                         </div>
-                        <p v-else-if="!positionOptions.length" class="text-xs text-slate-400 italic">Il maîtrise déjà tous les postes.</p>
+                        <p v-else-if="!positionOptions.length" class="text-xs text-slate-500 italic">Il maîtrise déjà tous les postes.</p>
                         <template v-else>
                             <div class="flex flex-wrap items-center gap-2">
                                 <select v-model="positionTarget" class="flex-1 min-w-[160px] px-2 py-1.5" :class="fieldClass({ shape: 'rect', size: 'sm' })">
@@ -351,14 +356,14 @@ const selectedPlayerPerf = computed(() => {
                                     Lancer la formation<template v-if="positionTrainingCost > 0"> — {{ positionTrainingCost }} <GameBanknote /></template>
                                 </ButtonPrimary>
                             </div>
-                            <p class="mt-2 text-2xs" :class="positionTrainingState.reason ? 'text-rose-500' : 'text-slate-400'">
+                            <p v-if="remainingTrainingsThisWeek > 0" class="mt-2 text-2xs" :class="positionTrainingState.reason ? 'text-rose-500' : 'text-slate-400'">
                                 {{ positionTrainingState.reason
                                     || `Compte comme une séance de la semaine. ${selectedPlayer.lastname} manquera ${selectedPositionWeeks} match${selectedPositionWeeks > 1 ? 's' : ''}.` }}
                             </p>
                         </template>
                     </div>
 
-                    <div class="border border-slate-300 rounded-xl bg-slate-50 p-4">
+                    <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
                         <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">✨ Technique spéciale</h4>
                         <p class="text-xs text-slate-500 mb-3">
                             Une technique spéciale par action. Le joueur apprend la technique en une semaine et reste indisponible pendant la formation.
@@ -369,7 +374,7 @@ const selectedPlayerPerf = computed(() => {
                         <div v-if="currentPositionTraining" class="rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-xs text-violet-700">
                             {{ currentPositionTraining.special_label ?? 'Déjà en formation à un poste' }} · retour en semaine {{ currentPositionTraining.week_return }}.
                         </div>
-                        <p v-else-if="!specialOptions.length" class="text-xs text-slate-400 italic">Aucune technique compatible disponible.</p>
+                        <p v-else-if="!specialOptions.length" class="text-xs text-slate-500 italic">Aucune technique compatible disponible.</p>
                         <template v-else>
                             <div class="flex flex-wrap items-center gap-2">
                                 <select v-model="specialTarget" aria-label="Technique spéciale à apprendre"
@@ -384,7 +389,7 @@ const selectedPlayerPerf = computed(() => {
                                 </ButtonPrimary>
                             </div>
                             <p v-if="selectedSpecial?.description" class="mt-2 text-xs text-slate-500">{{ selectedSpecial.description }}</p>
-                            <p class="mt-2 text-2xs" :class="specialTrainingState.reason ? 'text-rose-500' : 'text-slate-400'">
+                            <p v-if="remainingTrainingsThisWeek > 0" class="mt-2 text-2xs" :class="specialTrainingState.reason ? 'text-rose-500' : 'text-slate-400'">
                                 {{ specialTrainingState.reason || 'Compte comme une séance de la semaine.' }}
                             </p>
                         </template>
@@ -402,11 +407,11 @@ const selectedPlayerPerf = computed(() => {
                 </template>
                 <!-- État vide -->
                 <div v-else
-                     class="flex-1 flex items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50/40 min-h-[400px] p-8">
+                     class="flex-1 flex items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50/40 min-h-[400px] p-8">
                     <div class="text-center max-w-xs">
                         <div class="text-5xl mb-3 opacity-30">👤</div>
                         <h4 class="text-sm font-bold text-slate-500 mb-2">Aucun joueur sélectionné</h4>
-                        <p class="text-xs text-slate-400 leading-relaxed">
+                        <p class="text-xs text-slate-500 leading-relaxed">
                             Clique sur un joueur dans la liste à gauche pour consulter son profil
                             et décider s'il a besoin d'un entraînement.
                         </p>
@@ -415,7 +420,7 @@ const selectedPlayerPerf = computed(() => {
             </div>
             <div class="lg:col-span-3 flex flex-col gap-4">
                 <!-- Formulaire entraînement manuel -->
-                <div class="border border-slate-300 rounded-xl bg-slate-50 p-4">
+                <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
                     <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
                         🏋️ Entraînement manuel
                     </h4>
@@ -426,7 +431,7 @@ const selectedPlayerPerf = computed(() => {
                     <div class="space-y-2 mb-3">
                         <div v-if="selectedTrainings.length" class="space-y-2 mb-3">
                             <div v-for="(slot, index) in selectedTrainings" :key="index"
-                                 class="flex flex-col gap-2 p-2.5 rounded-lg bg-white border border-slate-300">
+                                 class="flex flex-col gap-2 p-2.5 rounded-lg bg-white border border-slate-200">
 
                                 <!-- Carte joueur compacte -->
                                 <div v-if="playerForEntry({ player_id: slot.player_id })" class="flex items-center gap-2">
@@ -467,7 +472,7 @@ const selectedPlayerPerf = computed(() => {
                         </div>
 
                         <!-- État vide -->
-                        <div v-else class="mb-3 p-4 rounded-lg bg-slate-100 border border-dashed border-slate-300 text-center">
+                        <div v-else class="mb-3 p-4 rounded-lg bg-slate-100 border border-dashed border-slate-200 text-center">
                             <p class="text-[11px] text-slate-500 leading-relaxed">
                                 Sélectionne un joueur dans l'effectif puis appuie sur
                                 <span class="font-bold text-teal-600">🏋 Ajouter à l'entraînement</span>
@@ -495,16 +500,13 @@ const selectedPlayerPerf = computed(() => {
                        class="mt-3 text-xs text-rose-600 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2">
                         Budget insuffisant : il te faut {{ totalTrainingCost }} <GameBanknote /> pour ces séances.
                     </p>
-                    <p v-else-if="remainingTrainingsThisWeek <= 0"
-                       class="mt-3 text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-                        Tu as utilisé tous tes entraînements manuels pour cette semaine.
-                    </p>
+
                 </div>
             </div>
         </div>
         <div class="grid grid-cols-12 gap-4">
             <div class="col-span-12 flex flex-col gap-4">
-                <div class="border border-slate-300 rounded-xl bg-slate-50 p-4">
+                <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
                     <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center justify-between">
                         <span>🤖 Entraînement automatique</span>
                         <div class="flex items-center gap-2">
@@ -562,13 +564,13 @@ const selectedPlayerPerf = computed(() => {
                         </div>
                     </div>
 
-                    <div v-else class="text-xs text-slate-400 italic py-2">
+                    <div v-else class="text-xs text-slate-500 italic py-2">
                         L'entraînement automatique s'effectue après chaque match joué ou simulé.
                     </div>
                 </div>
 
                 <!-- Historique entraînements manuels -->
-                <div v-if="manualEntries.length" class="border border-slate-300 rounded-xl bg-slate-50 p-4">
+                <div v-if="manualEntries.length" class="border border-slate-200 rounded-xl bg-slate-50 p-4">
                     <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
                         📋 Historique manuel — semaine {{ week }}
                     </h4>

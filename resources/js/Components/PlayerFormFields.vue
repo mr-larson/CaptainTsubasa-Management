@@ -85,9 +85,10 @@ const fullClass = computed(() => (props.layout === 'grid' ? 'sm:col-span-3' : 'l
             <InputText id="cost" type="number" v-model="form.cost" class="mt-1 w-full" />
         </FormField>
 
+        <div :class="layout === 'grid' ? 'sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 items-start' : 'contents'">
         <FormField
             :layout="layout"
-            :class="layout === 'grid' ? '' : (!showAge ? wideClass : '')"
+            :class="layout === 'grid' ? 'min-w-0' : (!showAge ? wideClass : '')"
             label="Photo"
             :error="form.errors.photo"
         >
@@ -112,10 +113,12 @@ const fullClass = computed(() => (props.layout === 'grid' ? 'sm:col-span-3' : 'l
         </FormField>
 
         <div v-if="layout === 'grid'" class="flex items-start sm:pt-6">
-            <div class="h-28 w-28 shrink-0 overflow-hidden rounded border border-slate-300 bg-white flex items-center justify-center">
+            <div class="h-28 w-28 shrink-0 overflow-hidden rounded border border-slate-200 bg-white flex items-center justify-center">
                 <PlayerPhoto v-if="displayedPhoto" :src="displayedPhoto" class="h-full w-full object-contain" alt="Photo du joueur" />
                 <span v-else class="text-xs text-slate-400">Aucune photo</span>
             </div>
+        </div>
+
         </div>
 
         <FormField :layout="layout" :class="wideClass" label="Postes secondaires" :error="form.errors.secondary_positions">

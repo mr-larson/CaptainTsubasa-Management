@@ -36,10 +36,10 @@
                 @select="editor.select"
                 @create="editor.startCreating"
             >
-                <template #item="{ item, selected }">
+                <template #item="{ item }">
                     <span class="flex-1 truncate text-sm font-medium">{{ item.firstname }} {{ item.lastname }}</span>
                     <span v-if="item.position"
-                          :class="selected ? 'bg-white/20 text-white' : positionBadgeClass(item.position)"
+                          :class="positionBadgeClass(item.position)"
                           class="text-2xs font-bold px-2 py-0.5 rounded-full shrink-0">
                         {{ positionShort(item.position) }}
                     </span>
@@ -56,42 +56,27 @@
                 </template>
 
                 <!-- FICHE JOUEUR -->
-                <div v-show="activePanel === 'player'" class="bg-white border border-slate-300 rounded-xl p-4 sm:p-6 shadow-sm">
+                <div v-show="activePanel === 'player'" class="bg-slate-50 rounded-xl p-4 sm:p-6">
                     <form @submit.prevent="submit">
-                        <PlayerStatsPreview v-if="form.id" :stats="form" />
+                        <PlayerStatsPreview v-if="form.id" :player-id="form.id" :stats="form" />
 
                         <PlayerFormFields
                             :form="form"
                             layout="grid"
                             :photo-url="photoPath ? `/storage/${photoPath}` : null"
                         />
-
-                        <ButtonGroup>
-                            <ButtonPrimary :disabled="form.processing">
-                                {{ editor.creating.value ? 'Créer le joueur' : 'Mettre à jour' }}
-                            </ButtonPrimary>
-                            <ButtonDanger v-if="!editor.creating.value" type="button" class="w-36"
-                                          :disabled="form.processing || !form.id" @click="deletePlayer">
-                                Supprimer
-                            </ButtonDanger>
-                        </ButtonGroup>
                     </form>
                 </div>
 
                 <!-- COUPS SPÉCIAUX (enregistrés avec la fiche du joueur) -->
-                <div v-show="activePanel === 'moves'" class="bg-white border border-slate-300 rounded-xl p-4 sm:p-6 shadow-sm">
+                <div v-show="activePanel === 'moves'" class="bg-slate-50 rounded-xl p-4 sm:p-6">
                     <form @submit.prevent="submit">
                         <SpecialMovesEditor v-model="form.special_moves" :errors="form.errors" />
-                        <ButtonGroup>
-                            <ButtonPrimary :disabled="form.processing">
-                                {{ editor.creating.value ? 'Créer le joueur' : 'Mettre à jour' }}
-                            </ButtonPrimary>
-                        </ButtonGroup>
                     </form>
                 </div>
 
                 <!-- CONTRAT -->
-                <div v-show="activePanel === 'contract'" class="bg-white border border-slate-300 rounded-xl p-4 sm:p-6 shadow-sm">
+                <div v-show="activePanel === 'contract'" class="bg-slate-50 rounded-xl p-4 sm:p-6">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-lg font-semibold text-slate-700">Contrat</h2>
                         <button v-if="!contract" type="button" @click="startNewContract"
@@ -128,22 +113,31 @@
                                 </InputSelect>
                             </div>
                         </div>
-
-                        <ButtonGroup>
-                            <ButtonPrimary type="submit" :disabled="contractProcessing">
-                                {{ contract.id ? 'Mettre à jour' : 'Créer' }}
-                            </ButtonPrimary>
-                            <ButtonDanger v-if="contract.id" type="button" class="w-36"
-                                          :disabled="contractProcessing" @click="deleteContract">
-                                Supprimer
-                            </ButtonDanger>
-                        </ButtonGroup>
                     </form>
 
                     <p v-else class="text-sm text-slate-500 italic">
                         Aucun contrat défini pour ce joueur. Cliquez sur « + Ajouter » pour en créer un.
                     </p>
                 </div>
+                <template #footer>
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <div class="flex flex-wrap items-center gap-3">
+                            <ButtonDanger v-if="activePanel === 'contract' ? !!contract?.id : !editor.creating.value && !!form.id"
+                                          type="button" size="sm" :disabled="form.processing || contractProcessing"
+                                          @click="activePanel === 'contract' ? deleteContract() : deletePlayer()">
+                                {{ activePanel === 'contract' ? 'Supprimer le contrat' : 'Supprimer le joueur' }}
+                            </ButtonDanger>
+                        <span class="text-xs" aria-live="polite" :class="pendingChanges ? 'text-amber-700' : 'text-slate-500'">
+                            {{ pendingChanges ? '● Modifications non enregistrées' : 'Aucune modification en attente' }}
+                        </span>
+                        </div>
+                        <ButtonPrimary type="button" size="sm"
+                                       :disabled="form.processing || contractProcessing || (activePanel === 'contract' && !contract)"
+                                       @click="activePanel === 'contract' ? saveContract() : submit()">
+                            {{ form.processing || contractProcessing ? 'Enregistrement…' : activePanel === 'contract' ? 'Enregistrer le contrat' : editor.creating.value ? 'Créer le joueur' : 'Enregistrer le joueur' }}
+                        </ButtonPrimary>
+                    </div>
+                </template>
             </EntityEditor>
         </div>
     </AuthenticatedLayout>
@@ -164,7 +158,6 @@ import PlayerStatsPreview from '@/Components/PlayerStatsPreview.vue'
 import InputLabel from '@/Components/InputLabel.vue'
 import InputSelect from '@/Components/InputSelect.vue'
 import InputText from '@/Components/InputText.vue'
-import ButtonGroup from '@/Components/ButtonGroup.vue'
 import ButtonPrimary from '@/Components/ButtonPrimary.vue'
 import ButtonDanger from '@/Components/ButtonDanger.vue'
 import PlayerFormFields from '@/Components/PlayerFormFields.vue'
@@ -234,6 +227,12 @@ const editor = useEntityEditor({
         if (activePanel.value === 'contract') activePanel.value = 'player'
     },
 })
+
+const contractDirty = computed(() => {
+    const saved = props.players.find(player => player.id === form.id)?.contracts?.[0] ?? null;
+    return JSON.stringify(contract.value) !== JSON.stringify(saved);
+});
+const pendingChanges = computed(() => form.isDirty || contractDirty.value);
 
 const panelTabs = computed(() => [
     { key: 'player',   label: 'Fiche joueur' },

@@ -9,7 +9,7 @@ import StatBars from './StatBars.vue';
 
 /**
  * Fiche complète du joueur sélectionné (Mon équipe, Autres équipes) :
- * alerte de statut, identité (+ actions), moral, alchimie, radar, stats, perfs.
+ * alerte de statut, identité (+ actions), moral, radar, stats, perfs, alchimie.
  * Slots `actions` et `footer` transmis à la carte d'identité.
  */
 defineProps({
@@ -41,7 +41,7 @@ const emit = defineEmits(['make-promise', 'make-declaration']);
                 <template v-if="$slots.actions" #actions><slot name="actions" /></template>
                 <template #footer>
                     <slot name="footer" />
-                    <p v-if="player.description" class="mt-2 text-xs text-slate-400 italic">{{ player.description }}</p>
+                    <p v-if="player.description" class="mt-2 text-xs text-slate-500 italic">{{ player.description }}</p>
                 </template>
             </PlayerIdentityCard>
 
@@ -53,21 +53,21 @@ const emit = defineEmits(['make-promise', 'make-declaration']);
                               @make-promise="(p, t) => emit('make-promise', p, t)"
                               @make-declaration="(p, t) => emit('make-declaration', p, t)" />
 
-            <PlayerChemistryCard :key="player.id"
-                                 :gameSaveId="gameSaveId"
-                                 :playerId="player.id"
-                                 :relations="chemistry"
-                                 :editable="chemistryEditable" />
-
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <RadarChart :player="player" :accent="accent" />
                 <StatBars :player="player" />
             </div>
 
             <PerfChips :player="player" :perf="perf" />
+
+            <PlayerChemistryCard :key="player.id"
+                                 :gameSaveId="gameSaveId"
+                                 :playerId="player.id"
+                                 :relations="chemistry"
+                                 :editable="chemistryEditable" />
         </template>
 
-        <div v-else class="flex items-center justify-center rounded-xl border border-dashed border-slate-300 p-10 text-slate-400 text-sm">
+        <div v-else class="flex items-center justify-center rounded-xl border border-dashed border-slate-200 p-10 text-slate-400 text-sm">
             {{ emptyText }}
         </div>
     </div>

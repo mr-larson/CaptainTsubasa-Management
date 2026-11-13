@@ -102,10 +102,19 @@ function promiseText(promise) {
     }
 }
 
-const KPI = 'border border-slate-300 rounded-xl bg-white p-3 flex flex-col items-center gap-0.5';
+const clearStatuses = computed(() => [
+    !injured.value.length && 'Aucun blessé',
+    !suspended.value.length && !booked.value.length && 'Aucun carton ni suspension',
+    !contracts.value.length && `Aucun contrat à échéance dans les ${CONTRACT_HORIZON} semaines`,
+    !tired.value.length && !unhappy.value.length && 'Forme et moral sans alerte',
+].filter(Boolean));
+const urgentContracts = computed(() => contracts.value.filter(player => Number(player.contract_end_week) <= props.week + 1));
+const urgentPromises = computed(() => promises.value.filter(({ promise }) => Number(promise.due_week) <= props.week + 1));
+
+const KPI = 'border border-slate-200 rounded-xl bg-white p-3 flex flex-col items-center gap-0.5';
 const KPI_LABEL = 'text-2xs font-bold text-slate-400 uppercase tracking-wider';
-const SECTION = 'border border-slate-300 rounded-xl bg-white p-3 flex flex-col gap-2';
-const ROW = 'w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg border border-slate-300 text-left text-xs hover:border-teal-300 hover:bg-teal-50 transition-colors';
+const SECTION = 'border border-slate-200 rounded-xl bg-white p-3 flex flex-col gap-2';
+const ROW = 'w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-none border-0 border-b border-slate-200 last:border-b-0 text-left text-xs hover:border-teal-300 hover:bg-teal-50 transition-colors';
 const PILL = 'shrink-0 text-2xs font-bold px-2 py-0.5 rounded-full';
 const EMPTY = 'text-xs text-emerald-600';
 </script>
@@ -146,9 +155,41 @@ const EMPTY = 'text-xs text-emerald-600';
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <!-- Infirmerie -->
-            <section :class="SECTION">
+        <div v-if="urgentContracts.length || urgentPromises.length" role="status"
+             class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+            <strong>À traiter d’ici la semaine {{ week + 1 }} :</strong>
+            {{ urgentContracts.length }} contrat(s) à échéance · {{ urgentPromises.length }} promesse(s) à honorer.
+            Les fiches concernées sont en tête ci-dessous.
+        </div>
+        <div v-if="clearStatuses.length" class="flex flex-wrap gap-x-4 gap-y-2 rounded-lg bg-emerald-50 px-3 py-2 text-xs text-emerald-800">
+            <span v-for="status in clearStatuses" :key="status">✓ {{ status }}</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+            <section v-if="contracts.length" :class="SECTION">
+                <h4 class="text-sm font-semibold text-slate-700">📄 Contrats à échéance <span class="text-slate-400 font-normal">(≤ S{{ week + CONTRACT_HORIZON }})</span></h4>
+                <button v-for="p in contracts" :key="'c' + p.id" type="button" :class="ROW" @click="emit('open-player', p)">
+                    <span class="truncate font-semibold text-slate-700">{{ p.firstname }} {{ p.lastname }}</span>
+                    <span :class="[PILL, Number(p.contract_end_week) <= week + 1 ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700']">
+                        Fin S{{ p.contract_end_week }}
+                    </span>
+                </button>
+                <p v-if="!contracts.length" :class="EMPTY">✓ Aucun contrat ne se termine dans les {{ CONTRACT_HORIZON }} semaines</p>
+            </section>
+
+            <section v-if="playerPromises !== null && promises.length" :class="SECTION">
+                <h4 class="text-sm font-semibold text-slate-700">🤝 Promesses en cours <span class="text-slate-400 font-normal">({{ promises.length }})</span></h4>
+                <button v-for="{ player, promise } in promises" :key="promise.id" type="button" :class="ROW" @click="emit('open-player', player)">
+                    <span>
+                        <span class="font-semibold text-slate-700">{{ player.firstname }} {{ player.lastname }}</span>
+                        <span class="text-slate-500"> · {{ promiseText(promise) }}</span>
+                    </span>
+                    <span :class="[PILL, 'bg-sky-100 text-sky-700']">Échéance S{{ promise.due_week }}</span>
+                </button>
+                <p v-if="!promises.length" :class="EMPTY">Aucune promesse en cours</p>
+            </section>
+
+            <section v-if="injured.length" :class="SECTION">
                 <h4 class="text-sm font-semibold text-slate-700">🤕 Infirmerie <span class="text-slate-400 font-normal">({{ injured.length }})</span></h4>
                 <button v-for="{ p, inj } in injured" :key="'i' + p.id" type="button" :class="ROW" @click="emit('open-player', p)">
                     <span class="truncate"><span class="font-semibold text-slate-700">{{ p.lastname }}</span>
@@ -158,8 +199,7 @@ const EMPTY = 'text-xs text-emerald-600';
                 <p v-if="!injured.length" :class="EMPTY">✓ Aucun blessé</p>
             </section>
 
-            <!-- Discipline -->
-            <section :class="SECTION">
+            <section v-if="suspended.length || booked.length" :class="SECTION">
                 <h4 class="text-sm font-semibold text-slate-700">🟥 Discipline <span class="text-slate-400 font-normal">({{ suspended.length + booked.length }})</span></h4>
                 <button v-for="{ p, sus } in suspended" :key="'s' + p.id" type="button" :class="ROW" @click="emit('open-player', p)">
                     <span class="truncate"><span class="font-semibold text-slate-700">{{ p.lastname }}</span>
@@ -174,20 +214,7 @@ const EMPTY = 'text-xs text-emerald-600';
                 <p v-if="!suspended.length && !booked.length" :class="EMPTY">✓ Aucun carton ni suspension</p>
             </section>
 
-            <!-- Contrats -->
-            <section :class="SECTION">
-                <h4 class="text-sm font-semibold text-slate-700">📄 Contrats à échéance <span class="text-slate-400 font-normal">(≤ S{{ week + CONTRACT_HORIZON }})</span></h4>
-                <button v-for="p in contracts" :key="'c' + p.id" type="button" :class="ROW" @click="emit('open-player', p)">
-                    <span class="truncate font-semibold text-slate-700">{{ p.firstname }} {{ p.lastname }}</span>
-                    <span :class="[PILL, Number(p.contract_end_week) <= week + 1 ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700']">
-                        Fin S{{ p.contract_end_week }}
-                    </span>
-                </button>
-                <p v-if="!contracts.length" :class="EMPTY">✓ Aucun contrat ne se termine dans les {{ CONTRACT_HORIZON }} semaines</p>
-            </section>
-
-            <!-- Forme et moral -->
-            <section :class="SECTION">
+            <section v-if="tired.length || unhappy.length" :class="SECTION">
                 <h4 class="text-sm font-semibold text-slate-700">
                     💪 Forme et moral
                     <span class="text-slate-400 font-normal">· endurance moy. {{ averageStamina }} · moral moy.
@@ -205,20 +232,21 @@ const EMPTY = 'text-xs text-emerald-600';
                 </button>
                 <p v-if="!tired.length && !unhappy.length" :class="EMPTY">✓ Personne d'épuisé ni de mécontent</p>
             </section>
-            <section v-if="cardsInHand !== null" :class="SECTION">
+
+            <section v-if="cardsInHand?.length" :class="SECTION">
                 <h4 class="text-sm font-semibold text-slate-700">🎒 Cartes en main <span class="text-slate-400 font-normal">({{ cardsInHand.length }})</span></h4>
                 <div v-for="card in cardsInHand" :key="card.id"
-                     class="flex items-center justify-between gap-2 rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs">
+                     class="flex items-center justify-between gap-2 rounded-none border-0 border-b border-slate-200 last:border-b-0 px-2.5 py-1.5 text-xs">
                     <span class="font-semibold text-slate-700" :title="card.description">{{ card.icon }} {{ card.name }}</span>
                     <span v-if="card.kind === 'malus'" :class="[PILL, 'bg-rose-100 text-rose-700']">Malus</span>
                 </div>
                 <p v-if="!cardsInHand.length" :class="EMPTY">Aucune carte en main</p>
             </section>
 
-            <section v-if="cardsInHand !== null" :class="SECTION">
+            <section v-if="cardsInHand !== null && activeEffects.length" :class="SECTION">
                 <h4 class="text-sm font-semibold text-slate-700">⚡ Bonus et malus actifs <span class="text-slate-400 font-normal">({{ activeEffects.length }})</span></h4>
                 <div v-for="(effect, index) in activeEffects" :key="index"
-                     class="flex items-center justify-between gap-2 rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs">
+                     class="flex items-center justify-between gap-2 rounded-none border-0 border-b border-slate-200 last:border-b-0 px-2.5 py-1.5 text-xs">
                     <span>
                         <span class="font-semibold text-slate-700">{{ effect.icon }} {{ effect.name }}</span>
                         <span class="text-slate-500"> · {{ effect.detail }}</span>
@@ -228,19 +256,7 @@ const EMPTY = 'text-xs text-emerald-600';
                 <p v-if="!activeEffects.length" :class="EMPTY">Aucun effet actif</p>
             </section>
 
-            <section v-if="playerPromises !== null" :class="SECTION">
-                <h4 class="text-sm font-semibold text-slate-700">🤝 Promesses en cours <span class="text-slate-400 font-normal">({{ promises.length }})</span></h4>
-                <button v-for="{ player, promise } in promises" :key="promise.id" type="button" :class="ROW" @click="emit('open-player', player)">
-                    <span>
-                        <span class="font-semibold text-slate-700">{{ player.firstname }} {{ player.lastname }}</span>
-                        <span class="text-slate-500"> · {{ promiseText(promise) }}</span>
-                    </span>
-                    <span :class="[PILL, 'bg-sky-100 text-sky-700']">Échéance S{{ promise.due_week }}</span>
-                </button>
-                <p v-if="!promises.length" :class="EMPTY">Aucune promesse en cours</p>
-            </section>
-
-            <section v-if="playerPromises !== null" :class="SECTION">
+            <section v-if="playerPromises !== null && trainings.length" :class="SECTION">
                 <h4 class="text-sm font-semibold text-slate-700">🎓 Entraînements en cours <span class="text-slate-400 font-normal">({{ trainings.length }})</span></h4>
                 <button v-for="entry in trainings" :key="`${entry.type}-${entry.player.id}`" type="button"
                         :class="ROW" @click="emit('open-player', entry.player)">

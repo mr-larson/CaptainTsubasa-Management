@@ -31,6 +31,7 @@ export function useEntityEditor({ form, items, blank, apply, onCreate, initial, 
         creating.value = false;
         selectedId.value = item.id;
         apply(item);
+        form.defaults();
         form.clearErrors();
     }
 
@@ -50,6 +51,7 @@ export function useEntityEditor({ form, items, blank, apply, onCreate, initial, 
     function startCreating() {
         if (creating.value) return;
         Object.assign(form, clone(blank));
+        form.defaults();
         form.clearErrors();
         selectedId.value = null;
         creating.value = true;

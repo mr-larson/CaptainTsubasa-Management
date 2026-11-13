@@ -186,9 +186,17 @@ const comparisonAvailability = p => unavailability(p)?.label ?? "Disponible";
     <div class="flex-1 flex flex-col gap-4 overflow-y-auto min-h-0 pr-1 [&>*]:shrink-0"
          @click="emit('cancel-pickup')">
 
+        <div class="flex flex-wrap items-center justify-between gap-2 text-2xs text-slate-500">
+            <p>Terrain : titulaires · Banc : remplaçants. Clique sur un joueur pour afficher sa fiche.</p>
+            <div class="flex flex-wrap items-center gap-3" aria-label="Repères de sélection">
+                <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-teal-400" aria-hidden="true"></span>Joueur sélectionné</span>
+                <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-amber-400" aria-hidden="true"></span>Déplacement en cours</span>
+            </div>
+        </div>
+
         <!-- LIGNE 1 : Formation + Terrain + Banc -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
-            <FormationCard class="lg:col-span-4"
+            <FormationCard class="lg:col-span-3"
                            :formation="currentFormation"
                            :formationData="formationData"
                            :impact="formationImpact"
@@ -211,7 +219,7 @@ const comparisonAvailability = p => unavailability(p)?.label ?? "Disponible";
                 </template>
             </FormationCard>
 
-            <PitchView class="lg:col-span-6"
+            <PitchView class="lg:col-span-7"
                        :formationData="formationData"
                        :playerPosition="playerPosition"
                        :playerForSlot="playerForSlot"
@@ -359,7 +367,7 @@ const comparisonAvailability = p => unavailability(p)?.label ?? "Disponible";
                     </ButtonSecondary>
                 </template>
                 <template #footer>
-                    <p class="mt-3 text-2xs text-slate-400 italic">
+                    <p class="mt-3 text-2xs text-slate-500 italic">
                         💡 Sur le terrain : clique un joueur pour voir sa fiche, re-clique-le (ou glisse-le) pour le déplacer,
                         puis clique sa cible. Les postes vides « + » se remplissent d'un clic. Échap pour annuler.
                     </p>

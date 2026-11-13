@@ -39,7 +39,7 @@ const fallbackText = computed(() => {
 
 <template>
     <div class="flex shrink-0 items-center justify-center overflow-hidden bg-white"
-         :class="[sizeClasses.box, shape === 'circle' ? 'rounded-full' : 'rounded-md', bordered ? 'border border-slate-300' : '']">
+         :class="[sizeClasses.box, shape === 'circle' ? 'rounded-full' : 'rounded-md', bordered ? 'border border-slate-200' : '']">
         <TeamLogoImage v-if="logoUrl" loading="lazy" decoding="async" :src="logoUrl" alt="" class="h-full w-full" />
         <span v-else-if="fallbackText" aria-hidden="true" class="font-bold text-slate-400" :class="sizeClasses.text">{{ fallbackText }}</span>
     </div>

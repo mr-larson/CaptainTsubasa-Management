@@ -1,6 +1,7 @@
 <script setup>
 import ButtonSecondary from '@/Components/ButtonSecondary.vue';
 import { computed } from 'vue';
+import { useAnimatedStats } from '@/Composables/useAnimatedStats.js';
 import { STAT_COLORS, usePlayerUtils } from './usePlayerUtils.js';
 import { averageTeamStat, TEAM_STATS } from './teamStats.js';
 import TeamStyleBadges from "@/Pages/GameSaves/Play/components/TeamStyleBadges.vue";
@@ -148,6 +149,13 @@ const faceToFace = computed(() => TEAM_STATS.map(({ key, label, color }) => ({
     opp: props.isByeWeek ? null : averageTeamStat(opponentPlayers.value, key),
 })));
 
+const { root: forcesRoot, value: forcesValue, width: forcesWidth } = useAnimatedStats(
+    () => Object.fromEntries(faceToFace.value.flatMap(stat => [
+        [`${stat.key}:me`, stat.me], [`${stat.key}:opp`, stat.opp],
+    ])),
+    () => `${props.team?.id}:${opponentTeam.value?.id}:${props.week}`,
+);
+
 // Joueurs adverses à surveiller : meilleur buteur et meilleur duelliste.
 const opponentThreats = computed(() => {
     const players = opponentPlayers.value;
@@ -186,12 +194,16 @@ const { positionDelta, objective, projection, totalWeeks: seasonEndWeek } = useS
 const scrollToFinances = () =>
     document.getElementById('dashboard-finances')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-const KPI = 'border border-slate-300 rounded-xl bg-slate-50 p-2 text-left transition-colors hover:bg-slate-100 hover:border-slate-300';
+const KPI = 'border border-slate-200 rounded-xl bg-slate-50 p-2 text-left transition-colors hover:bg-slate-100 hover:border-slate-200';
 
 const matchesPlayed = computed(() =>
     (props.teamRecord.wins ?? 0) + (props.teamRecord.draws ?? 0) + (props.teamRecord.losses ?? 0)
 );
 const hasPlayed = computed(() => matchesPlayed.value > 0);
+const { root: seasonProgressRoot, value: animatedSeasonProgress, width: seasonProgressWidth } = useAnimatedStats(
+    () => ({ progress: seasonProgress.value }),
+    () => props.season,
+);
 </script>
 
 <template>
@@ -200,7 +212,7 @@ const hasPlayed = computed(() => matchesPlayed.value > 0);
         <!-- ============================================ -->
         <!-- LIGNE 1 : Contexte + progression saison      -->
         <!-- ============================================ -->
-        <div class="border border-slate-300 rounded-xl bg-slate-50 p-4">
+        <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
             <div class="flex flex-wrap items-center justify-between gap-4 mb-3">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl overflow-hidden shrink-0">
@@ -245,15 +257,15 @@ const hasPlayed = computed(() => matchesPlayed.value > 0);
             </div>
 
             <!-- Barre progression saison -->
-            <div>
+            <div ref="seasonProgressRoot">
                 <div class="flex justify-between text-2xs text-slate-400 mb-1">
                     <span>Semaine 1</span>
-                    <span class="font-semibold text-teal-500">{{ seasonProgress }}% de la saison</span>
+                    <span class="font-semibold text-teal-500">{{ animatedSeasonProgress('progress') }}% de la saison</span>
                     <span>Semaine {{ totalWeeks }}</span>
                 </div>
                 <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
-                    <div class="h-full bg-gradient-to-r from-teal-400 to-teal-500 rounded-full transition-all"
-                         :style="{ width: seasonProgress + '%' }">
+                    <div class="h-full bg-gradient-to-r from-teal-400 to-teal-500 rounded-full"
+                         :style="{ width: seasonProgressWidth('progress') }">
                     </div>
                 </div>
             </div>
@@ -350,11 +362,11 @@ const hasPlayed = computed(() => matchesPlayed.value > 0);
         <!-- ============================================ -->
         <!-- LIGNE 3 : Prochain match (hero)              -->
         <!-- ============================================ -->
-        <div class="rounded-xl overflow-hidden bg-slate-50"
+        <div class="rounded-xl overflow-hidden bg-white shadow-sm"
              :class="{
          'border-2 border-teal-400':   midseasonBreakRecovery === null && !isByeWeek && nextMatchInfo?.isHome,
          'border-2 border-orange-400': midseasonBreakRecovery === null && !isByeWeek && !nextMatchInfo?.isHome,
-         'border border-slate-300':    isByeWeek || midseasonBreakRecovery !== null,
+         'border border-slate-200':    isByeWeek || midseasonBreakRecovery !== null,
      }">
 
             <div v-if="midseasonBreakRecovery !== null" class="p-5 flex flex-wrap items-center justify-between gap-4">
@@ -371,7 +383,8 @@ const hasPlayed = computed(() => matchesPlayed.value > 0);
             </div>
             <div v-else-if="!isByeWeek && nextMatch && nextMatchInfo" class="p-1.5">
                 <!-- Label -->
-                <div class="text-center">
+                <div class="text-center mb-3">
+                    <h3 class="text-xs font-bold text-slate-700 mb-1">Prochain match</h3>
             <span class="text-2xs font-bold uppercase tracking-widest"
                   :class="nextMatchInfo.isHome ? 'text-teal-500' : 'text-orange-500'">
                 {{ nextMatchInfo.isHome ? '🏠 Domicile' : '✈️ Extérieur' }}
@@ -409,11 +422,11 @@ const hasPlayed = computed(() => matchesPlayed.value > 0);
                         </ButtonSecondary>
                         <div v-else class="flex flex-wrap items-center justify-center gap-2">
                             <button type="button"
-                                    class="px-6 py-1.5 rounded-full font-bold text-sm text-white shadow-sm transition-all hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                                    class="px-6 py-2.5 rounded-full font-bold text-sm text-white shadow-sm transition-all hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                                     :class="nextMatchInfo.isHome ? 'bg-teal-500 hover:bg-teal-600' : 'bg-orange-500 hover:bg-orange-600'"
                                     :disabled="simulating || launchingMatch"
                                     @click="emit('play-next-match')">
-                                ▶ Jouer
+                                ▶ Jouer le match
                             </button>
                             <ButtonSecondary v-if="canSimulateMatch" size="sm"
                                              :disabled="simulating || launchingMatch" @click="emit('simulate-match')">
@@ -455,7 +468,7 @@ const hasPlayed = computed(() => matchesPlayed.value > 0);
         </div>
 
         <!-- Conseils de l'adjoint -->
-        <AssistantAdviceCard :advice="advice" @apply="a => emit('apply-advice', a)" />
+        <AssistantAdviceCard class="border-l-4 border-l-teal-400" :advice="advice" @apply="a => emit('apply-advice', a)" />
 
         <!-- Cartes de la colonne gauche (rappels, mandat, récap) sur petit écran -->
         <slot name="side-cards" />
@@ -463,7 +476,7 @@ const hasPlayed = computed(() => matchesPlayed.value > 0);
         <!-- ============================================ -->
         <!-- LIGNE 4 : Forces face à face                -->
         <!-- ============================================ -->
-        <div class="border border-slate-300 rounded-xl bg-slate-50 p-4">
+        <div ref="forcesRoot" class="border border-slate-200 rounded-xl bg-slate-50 p-4">
             <div class="flex items-center justify-between gap-2 mb-3">
                 <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider truncate">{{ team?.name ?? 'Mon équipe' }}</h4>
                 <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider shrink-0">Forces</h4>
@@ -474,26 +487,26 @@ const hasPlayed = computed(() => matchesPlayed.value > 0);
             <div class="space-y-2">
                 <div v-for="stat in faceToFace" :key="stat.key" class="grid grid-cols-[1.75rem_minmax(0,1fr)_4.5rem_minmax(0,1fr)_1.75rem] items-center gap-2">
                     <span class="text-xs font-black text-right"
-                          :class="stat.me != null && stat.opp != null && stat.me > stat.opp ? 'text-emerald-600' : 'text-slate-700'">{{ stat.me ?? '—' }}</span>
+                          :class="stat.me != null && stat.opp != null && stat.me > stat.opp ? 'text-emerald-600' : 'text-slate-700'">{{ stat.me == null ? '—' : forcesValue(`${stat.key}:me`) }}</span>
                     <!-- Ma barre (croît vers la gauche) -->
                     <div class="h-2 bg-slate-200 rounded-full overflow-hidden flex justify-end">
-                        <div class="h-full rounded-full" :class="stat.color" :style="{ width: (stat.me ?? 0) + '%' }"></div>
+                        <div class="h-full rounded-full" :class="stat.color" :style="{ width: forcesWidth(`${stat.key}:me`) }"></div>
                     </div>
                     <span class="text-[11px] text-slate-500 text-center">{{ stat.label }}</span>
                     <!-- Barre adverse (croît vers la droite) -->
                     <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
                         <div v-if="stat.opp != null" class="h-full rounded-full opacity-60" :class="stat.color"
-                             :style="{ width: stat.opp + '%' }"></div>
+                             :style="{ width: forcesWidth(`${stat.key}:opp`) }"></div>
                     </div>
                     <span class="text-xs font-black"
                           :class="stat.me != null && stat.opp != null && stat.opp > stat.me ? 'text-rose-500' : 'text-slate-700'">
-                        {{ stat.opp ?? '—' }}
+                        {{ stat.opp == null ? '—' : forcesValue(`${stat.key}:opp`) }}
                     </span>
                 </div>
             </div>
             <p class="mt-2 text-2xs text-slate-500">Moyennes des effectifs sur 100 · Arrêt main et Poings calculés sur les gardiens.</p>
             <div v-if="opponentTeam && !isByeWeek && opponentThreats.length"
-                 class="mt-3 pt-3 border-t border-slate-300 flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-xs">
+                 class="mt-3 pt-3 border-t border-slate-200 flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-xs">
                 <span class="text-2xs font-bold text-slate-400 uppercase tracking-wider">À surveiller</span>
                 <span v-for="t in opponentThreats" :key="t.key" class="text-slate-700">
                     <span class="font-semibold">{{ t.text }}</span>
@@ -501,9 +514,9 @@ const hasPlayed = computed(() => matchesPlayed.value > 0);
                 </span>
             </div>
             <div v-if="team?.description || (opponentTeam && !isByeWeek && opponentTeam.description)"
-                 class="mt-3 pt-3 border-t border-slate-300 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <p class="text-xs text-slate-400 italic leading-relaxed line-clamp-2">{{ team?.description }}</p>
-                <p v-if="opponentTeam && !isByeWeek" class="text-xs text-slate-400 italic leading-relaxed line-clamp-2 sm:text-right">{{ opponentTeam.description }}</p>
+                 class="mt-3 pt-3 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <p class="text-xs text-slate-500 italic leading-relaxed line-clamp-2">{{ team?.description }}</p>
+                <p v-if="opponentTeam && !isByeWeek" class="text-xs text-slate-500 italic leading-relaxed line-clamp-2 sm:text-right">{{ opponentTeam.description }}</p>
             </div>
         </div>
 

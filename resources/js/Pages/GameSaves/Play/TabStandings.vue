@@ -1,13 +1,9 @@
 <script setup>
 import { computed, ref } from 'vue';
 import Modal from '@/Components/Modal.vue';
+import TeamDetailContent from './components/TeamDetailContent.vue';
 import Panel from '@/Components/Panel.vue';
-import PlayerAvatar from '@/Components/PlayerAvatar.vue';
 import TeamLogo from '@/Components/TeamLogo.vue';
-import { positionLabel } from '@/Enums/positionBadges.js';
-import ClubIdentityCard from './components/ClubIdentityCard.vue';
-import { averageTeamStat, TEAM_STATS } from './teamStats.js';
-import { STAT_COLORS, usePlayerUtils } from './usePlayerUtils.js';
 
 const props = defineProps({
     standings: { type: Array,  required: true },
@@ -15,18 +11,8 @@ const props = defineProps({
     matches:   { type: Array,  default: () => [] },
 });
 
-const { overallOf } = usePlayerUtils();
 const selectedTeam = ref(null);
 const selectedRank = computed(() => props.standings.findIndex(row => row.id === selectedTeam.value?.id) + 1);
-const selectedRoster = computed(() => (selectedTeam.value?.contracts ?? [])
-    .map(contract => contract.game_player ?? contract.gamePlayer ?? contract.player)
-    .filter(Boolean));
-const selectedStats = computed(() => [
-    ...TEAM_STATS.slice(0, 2),
-    { key: 'morale', label: 'Moral', color: 'bg-teal-400' },
-    ...TEAM_STATS.slice(2),
-].map(stat => ({ ...stat, value: averageTeamStat(selectedRoster.value, stat.key) })));
-
 const maxPoints = computed(() =>
     Math.max(1, ...props.standings.map(r => r.points ?? 0))
 );
@@ -138,7 +124,7 @@ const rankIcon = (rank) => {
                               :class="r.class">
                             {{ r.label }}
                         </span>
-                        <span v-if="!recentFormFor(team?.id).length" class="text-xs text-slate-400 italic">—</span>
+                        <span v-if="!recentFormFor(team?.id).length" class="text-xs text-slate-500 italic">—</span>
                     </div>
                 </div>
             </div>
@@ -149,7 +135,7 @@ const rankIcon = (rank) => {
 
             <div class="overflow-x-auto">
                 <table class="w-full text-xs min-w-max text-left">
-                    <thead class="border-b border-slate-300 text-2xs font-bold uppercase tracking-wider text-slate-400">
+                    <thead class="border-b border-slate-200 text-2xs font-bold uppercase tracking-wider text-slate-400">
                     <tr>
                         <th class="py-2 w-8 text-center">#</th>
                         <th class="py-2 pr-4">Équipe</th>
@@ -168,7 +154,7 @@ const rankIcon = (rank) => {
                     </thead>
                     <tbody>
                     <tr v-for="(row, index) in standings" :key="row.id"
-                        class="cursor-pointer border-b border-slate-300 last:border-0 transition-colors hover:bg-teal-100/60"
+                        class="cursor-pointer border-b border-slate-200 last:border-0 transition-colors hover:bg-teal-100/60"
                         @click="selectedTeam = row"
                         :class="team?.id === row.id ? 'bg-teal-50' : index % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'">
 
@@ -241,36 +227,7 @@ const rankIcon = (rank) => {
         <Modal :show="!!selectedTeam" max-width="2xl" title="Fiche de l’équipe" @close="selectedTeam = null">
             <template v-if="selectedTeam">
 
-                <ClubIdentityCard :team="selectedTeam" :rank="selectedRank" :total="standings.length"
-                                  :budget="selectedTeam.budget" :average-overall="selectedTeam.average_overall" />
-
-                <div class="grid items-start gap-3 sm:grid-cols-2">
-                    <Panel padding="sm" title="Forces" class="space-y-2">
-                        <div v-for="stat in selectedStats" :key="stat.key" class="flex items-center gap-2 text-xs">
-                            <span class="w-16 shrink-0 text-slate-500">{{ stat.label }}</span>
-                            <div aria-hidden="true" class="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-200">
-                                <div class="h-full rounded-full" :class="stat.color ?? STAT_COLORS[stat.key]"
-                                     :style="{ width: Math.min(stat.value ?? 0, 100) + '%' }"></div>
-                            </div>
-                            <span class="w-6 shrink-0 text-right font-bold tabular-nums text-slate-700">{{ stat.value ?? '—' }}</span>
-                        </div>
-                    </Panel>
-
-                    <Panel padding="sm" :title="`Effectif · ${selectedRoster.length}`">
-                        <ul v-if="selectedRoster.length" class="max-h-96 space-y-1 overflow-y-auto">
-                            <li v-for="player in selectedRoster" :key="player.id"
-                                class="flex items-center justify-between gap-2 rounded-lg bg-white px-2 py-1.5 text-xs">
-                                <PlayerAvatar :player="player" show-flag />
-                                <div class="min-w-0 flex-1">
-                                    <p class="truncate font-semibold text-slate-700">{{ player.firstname }} {{ player.lastname }}</p>
-                                    <p class="text-slate-500">{{ positionLabel(player.position) }}</p>
-                                </div>
-                                <span class="shrink-0 font-bold tabular-nums text-slate-700">{{ overallOf(player) }}</span>
-                            </li>
-                        </ul>
-                        <p v-else class="text-xs text-slate-500">Aucun joueur sous contrat.</p>
-                    </Panel>
-                </div>
+                <TeamDetailContent :team="selectedTeam" :rank="selectedRank" :total="standings.length" />
             </template>
         </Modal>
     </div>

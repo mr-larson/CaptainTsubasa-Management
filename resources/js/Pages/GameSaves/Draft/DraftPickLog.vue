@@ -23,6 +23,6 @@ const recent = computed(() => props.picks.slice(-5).reverse());
                 <PositionBadge :position="pick.position" />
             </div>
         </div>
-        <p v-else class="text-2xs text-slate-400 italic">Aucun pick encore</p>
+        <p v-else class="text-2xs text-slate-500 italic">Aucun pick encore</p>
     </Panel>
 </template>

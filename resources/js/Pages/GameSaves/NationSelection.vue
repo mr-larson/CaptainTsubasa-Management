@@ -43,7 +43,7 @@ function launch() {
         </template>
 
         <div class="p-2 sm:p-4">
-            <div class="border border-slate-300 rounded-2xl bg-white shadow-sm p-4 sm:p-6">
+            <div class="border border-slate-200 rounded-2xl bg-white shadow-sm p-4 sm:p-6">
 
                 <!-- Header -->
                 <div class="mb-6 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
@@ -56,7 +56,7 @@ function launch() {
                         </p>
                     </div>
                     <Link :href="route('game-saves.create')"
-                          class="shrink-0 px-4 py-2 bg-white hover:bg-slate-50 text-slate-500 text-sm font-semibold rounded-xl border border-slate-300 transition-all">
+                          class="shrink-0 px-4 py-2 bg-white hover:bg-slate-50 text-slate-500 text-sm font-semibold rounded-xl border border-slate-200 transition-all">
                         ← Retour
                     </Link>
                 </div>
@@ -93,7 +93,7 @@ function launch() {
                 <p v-if="form.errors.game_save" class="mt-4 text-xs text-rose-500">{{ form.errors.game_save }}</p>
 
                 <!-- Pied : lancement -->
-                <div class="mt-6 pt-4 border-t border-slate-300 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="mt-6 pt-4 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <p class="text-xs text-slate-400">
                         Ton effectif national est constitué automatiquement à partir des meilleurs joueurs de la nation.
                     </p>

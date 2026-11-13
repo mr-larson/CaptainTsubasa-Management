@@ -89,7 +89,7 @@ onBeforeUnmount(() => revokePreview());
             </div>
 
             <!-- preview carré -->
-            <div v-if="!hidePreview" class="h-16 w-16 rounded border bg-white overflow-hidden flex items-center justify-center">
+            <div v-if="!hidePreview" class="h-16 w-16 rounded border border-slate-200 bg-white overflow-hidden flex items-center justify-center">
                 <slot name="preview" :src="previewUrl || currentUrl">
                     <img
                         v-if="previewUrl || currentUrl"

@@ -108,12 +108,12 @@ function startNewSeason() {
 
                 <!-- Classement final & primes -->
                 <div v-if="recap?.standings" class="bg-white rounded-2xl shadow-lg overflow-hidden">
-                    <div class="px-4 sm:px-6 py-4 border-b border-slate-300">
+                    <div class="px-4 sm:px-6 py-4 border-b border-slate-200">
                         <h3 class="font-semibold text-slate-700">Classement final & primes</h3>
                     </div>
                     <div class="overflow-x-auto">
                     <table class="w-full text-sm min-w-[500px]">
-                        <thead class="border-b border-slate-300 text-2xs font-bold uppercase tracking-wider text-slate-400">
+                        <thead class="border-b border-slate-200 text-2xs font-bold uppercase tracking-wider text-slate-400">
                             <tr>
                                 <th class="text-left px-6 py-2">#</th>
                                 <th class="text-left px-2 py-2">Équipe</th>
@@ -127,7 +127,7 @@ function startNewSeason() {
                         </thead>
                         <tbody>
                             <tr v-for="row in recap.standings" :key="row.team_id"
-                                class="border-t border-slate-300"
+                                class="border-t border-slate-200"
                                 :class="{ 'bg-amber-50': row.rank === 1 }">
                                 <td class="px-6 py-2 font-semibold text-slate-600">{{ row.rank }}</td>
                                 <td class="px-2 py-2 flex items-center gap-2">
@@ -151,13 +151,13 @@ function startNewSeason() {
 
                 <!-- Classement des défis de saison -->
                 <div v-if="challenges?.length" class="bg-white rounded-2xl shadow-lg overflow-hidden">
-                    <div class="px-4 sm:px-6 py-4 border-b border-slate-300">
+                    <div class="px-4 sm:px-6 py-4 border-b border-slate-200">
                         <h3 class="font-semibold text-slate-700">🎲 Classement des défis de saison</h3>
                         <p class="text-xs text-slate-400 mt-0.5">Facile 1 pt · Moyen 2 pts · Difficile 3 pts. Départage : défis réussis, puis rang en championnat.</p>
                     </div>
                     <div class="overflow-x-auto">
                     <table class="w-full text-sm min-w-[460px]">
-                        <thead class="border-b border-slate-300 text-2xs font-bold uppercase tracking-wider text-slate-400">
+                        <thead class="border-b border-slate-200 text-2xs font-bold uppercase tracking-wider text-slate-400">
                             <tr>
                                 <th class="text-left px-6 py-2">#</th>
                                 <th class="text-left px-2 py-2">Équipe</th>
@@ -169,7 +169,7 @@ function startNewSeason() {
                         </thead>
                         <tbody>
                             <tr v-for="row in challenges" :key="row.team_id"
-                                class="border-t border-slate-300"
+                                class="border-t border-slate-200"
                                 :class="{ 'bg-amber-50': row.rank === 1, 'font-semibold': row.is_controlled }">
                                 <td class="px-6 py-2 font-semibold text-slate-600">{{ row.rank }}</td>
                                 <td class="px-2 py-2 flex items-center gap-2">
@@ -185,7 +185,7 @@ function startNewSeason() {
                         </tbody>
                     </table>
                     </div>
-                    <div v-for="row in myChallengeRows" :key="'d' + row.team_id" class="px-4 sm:px-6 py-4 border-t border-slate-300">
+                    <div v-for="row in myChallengeRows" :key="'d' + row.team_id" class="px-4 sm:px-6 py-4 border-t border-slate-200">
                         <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Bilan — {{ row.name }}</p>
                         <ul class="flex flex-col gap-1.5">
                             <li v-for="o in row.objectives" :key="o.key" class="flex items-center gap-2 text-sm">
@@ -200,14 +200,14 @@ function startNewSeason() {
 
                 <!-- Joueurs en rupture avec le coach / le club -->
                 <div v-if="recap?.transfer_requests?.length" class="bg-white rounded-2xl shadow-lg overflow-hidden border-l-4 border-rose-400">
-                    <div class="px-6 py-4 border-b border-slate-300">
+                    <div class="px-6 py-4 border-b border-slate-200">
                         <h3 class="font-semibold text-slate-700">⚠️ Joueurs en rupture</h3>
                         <p class="text-xs text-slate-400 mt-0.5">
                             Ces joueurs finissent la saison en rupture. Ceux fâchés contre le coach
                             refuseront d'être draftés par ton équipe la saison prochaine.
                         </p>
                     </div>
-                    <ul class="divide-y divide-slate-300">
+                    <ul class="divide-y divide-slate-200">
                         <li v-for="req in recap.transfer_requests" :key="req.player_id" class="px-6 py-3 flex items-center gap-3">
                             <PlayerPhoto :src="req.photo_path ? `/storage/${req.photo_path}` : null" class="w-10 h-10 rounded-full object-cover bg-slate-100" />
                             <div v-if="!req.photo_path" class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-300">👤</div>

@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import { useAnimatedStats } from '@/Composables/useAnimatedStats.js';
 
 const props = defineProps({
     challenges: { type: Object, required: true },
@@ -38,16 +39,21 @@ function barCls(o) {
 }
 
 function valueText(o) {
-    if (o.key === 'rank_max') return `${o.value}e / ${o.target}e`;
-    if (o.key === 'budget_min') return `${o.value.toLocaleString()} / ${o.target.toLocaleString()} billets`;
-    return `${o.value} / ${o.target}`;
+    if (o.key === 'rank_max') return `${challengeValue(`${o.key}:value`)}e / ${o.target}e`;
+    if (o.key === 'budget_min') return `${challengeValue(`${o.key}:value`).toLocaleString()} / ${o.target.toLocaleString()} billets`;
+    return `${challengeValue(`${o.key}:value`)} / ${o.target}`;
 }
 
 const rewardMax = computed(() => props.challenges.objectives.reduce((s, o) => s + o.reward, 0));
+const { root, value: challengeValue, width: challengeWidth } = useAnimatedStats(
+    () => Object.fromEntries(props.challenges.objectives.flatMap(objective => [
+        [`${objective.key}:progress`, progress(objective)], [`${objective.key}:value`, objective.value],
+    ])),
+);
 </script>
 
 <template>
-    <div class="border border-slate-300 rounded-xl bg-slate-50 p-4">
+    <div ref="root" class="border border-slate-200 rounded-xl bg-slate-50 p-4">
         <div class="flex flex-wrap items-baseline justify-between gap-2 mb-3">
             <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">🎲 Défis de la saison</h3>
             <span class="text-[11px] text-slate-400">
@@ -67,7 +73,7 @@ const rewardMax = computed(() => props.challenges.objectives.reduce((s, o) => s 
                 </div>
                 <div class="flex items-center gap-2 pl-6">
                     <div class="flex-1 h-1.5 rounded-full bg-slate-200 overflow-hidden">
-                        <div class="h-full rounded-full transition-all" :class="barCls(o)" :style="{ width: progress(o) + '%' }"></div>
+                        <div class="h-full rounded-full" :class="barCls(o)" :style="{ width: challengeWidth(`${o.key}:progress`) }"></div>
                     </div>
                     <span class="text-2xs text-slate-500 w-24 text-right tabular-nums">{{ valueText(o) }}</span>
                     <span class="text-2xs font-semibold w-24 text-right" :class="STATUS[o.status].cls">

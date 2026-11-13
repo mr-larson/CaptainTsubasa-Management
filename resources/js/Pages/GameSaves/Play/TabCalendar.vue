@@ -1,4 +1,5 @@
 <script setup>
+import PixelLoader from '@/Components/PixelLoader.vue';
 import TabBar from '@/Components/TabBar.vue';
 import { fieldClass } from '@/Components/fieldStyles';
 import ButtonSecondary from '@/Components/ButtonSecondary.vue';
@@ -10,9 +11,7 @@ import TeamLogo from '@/Components/TeamLogo.vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
 import MatchPreview from './components/MatchPreview.vue';
 import Modal from '@/Components/Modal.vue';
-import PlayerIdentityCard from './components/PlayerIdentityCard.vue';
-import PlayerSpecialMoves from './components/PlayerSpecialMoves.vue';
-import StatBars from './components/StatBars.vue';
+import PlayerDetailContent from './components/PlayerDetailContent.vue';
 
 /**
  * Onglet « Calendrier » : où et quand. Calendrier d'une équipe, journée
@@ -168,7 +167,6 @@ watch(leadersKey, async (key) => {
 const MEDALS = ['🥇', '🥈', '🥉'];
 const selectedLeader = ref(null);
 const leaderPlayer = computed(() => leaders.value?.players?.[selectedLeader.value?.player_id]);
-const leaderMorale = computed(() => moraleState(leaderPlayer.value?.morale));
 const leaderMatch = computed(() => props.allMatches.find(m => m.id === selectedLeader.value?.match_id));
 
 function openLeaderMatch() {
@@ -221,10 +219,10 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
                          :data-week="match.week"
                          class="flex items-center gap-2 px-3 py-2 rounded-lg border transition-all"
                          :class="[
-                            isByeMatch(match) ? 'bg-slate-50 border-slate-300 opacity-50' :
+                            isByeMatch(match) ? 'bg-slate-50 border-slate-200 opacity-50' :
                             isPlayable(match) || isUpcoming(match)
-                                ? 'bg-white border-slate-300 cursor-pointer hover:border-teal-300 hover:bg-teal-50'
-                                : 'bg-white border-slate-300',
+                                ? 'bg-white border-slate-200 cursor-pointer hover:border-teal-300 hover:bg-teal-50'
+                                : 'bg-white border-slate-200',
                             (previewMatch ? previewMatch.id === match.id : String(selectedMatchId) === String(match.id)) ? 'border-teal-400 bg-teal-50 shadow-sm' : '',
                             currentWeek && Number(match.week) === Number(currentWeek) ? 'ring-2 ring-inset ring-amber-400 !bg-amber-50 shadow-sm' : ''
                         ]"
@@ -277,9 +275,7 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
 
                         <!-- Icône stats dispo -->
                         <div class="w-4 shrink-0">
-                            <span v-if="loadingMatchId === match.id"
-                                  class="inline-block w-3 h-3 rounded-full border-2 border-teal-400 border-t-transparent animate-spin"
-                                  title="Chargement…"></span>
+                            <PixelLoader v-if="loadingMatchId === match.id" size="sm" />
                             <span v-else-if="match.status === 'played' && match.has_stats" class="text-teal-400 text-xs">📊</span>
                         </div>
                     </div>
@@ -326,7 +322,7 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
                              class="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-3 py-2 rounded-lg border bg-white transition-all"
                              :class="[
                                 isPlayable(m) || isUpcoming(m) ? 'cursor-pointer hover:border-teal-300 hover:bg-teal-50' : '',
-                                isMine(m) ? 'border-teal-300 ring-1 ring-teal-200' : 'border-slate-300',
+                                isMine(m) ? 'border-teal-300 ring-1 ring-teal-200' : 'border-slate-200',
                              ]"
                              :title="isPlayable(m) ? 'Ouvrir le match' : isUpcoming(m) ? 'Voir l\'avant-match' : undefined"
                              @click="openRow(m, teamById[m.home_team_id])">
@@ -341,7 +337,7 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
                                 </span>
                                 <span v-else class="text-[11px] text-slate-400 font-semibold">vs</span>
                                 <div v-if="m.round" class="text-3xs text-slate-400 mt-0.5">{{ roundTitle(m) }}</div>
-                                <div v-if="loadingMatchId === m.id" class="mx-auto mt-0.5 w-3 h-3 rounded-full border-2 border-teal-400 border-t-transparent animate-spin"></div>
+                                <PixelLoader v-if="loadingMatchId === m.id" class="mx-auto mt-0.5" size="sm" />
                             </div>
                             <div class="flex items-center gap-2 min-w-0">
                                 <TeamLogoImage v-if="teamLogoUrl(teamById[m.away_team_id])" :src="teamLogoUrl(teamById[m.away_team_id])" class="w-5 h-5 shrink-0" alt=""/>
@@ -349,7 +345,7 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
                                       :class="m.status === 'played' && m.away_score > m.home_score ? 'font-black' : ''">{{ teamById[m.away_team_id]?.name }}</span>
                             </div>
                         </div>
-                        <p v-if="!journeeMatches.length" class="text-xs text-slate-400 italic text-center py-6">Aucun match cette semaine.</p>
+                        <p v-if="!journeeMatches.length" class="text-xs text-slate-500 italic text-center py-6">Aucun match cette semaine.</p>
                     </div>
 
                     <p v-if="journeeMatches.length && journeeRest.length && !journeeMatches.some(m => m.round)" class="mt-3 text-[11px] text-slate-400">
@@ -360,12 +356,12 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
                 <!-- Classements de la journée -->
                 <Panel v-if="!preview && journeeMatches.some(m => m.status === 'played')"
                        :title="`Classements de la semaine ${journeeWeek}`">
-                    <div class="border-b border-slate-300 mb-3">
+                    <div class="border-b border-slate-200 mb-3">
                         <TabBar v-model="leaderTab" :tabs="LEADER_TABS" size="sm" wrap label="Classements de la semaine" />
                     </div>
 
                     <div v-if="leadersLoading && !leaders" class="py-6 flex justify-center">
-                        <div class="w-6 h-6 rounded-full border-4 border-teal-400 border-t-transparent animate-spin"></div>
+                        <PixelLoader />
                     </div>
                     <div v-else-if="leaderRows.length" class="space-y-1">
                         <button v-for="(r, i) in leaderRows" :key="`${r.player_id}-${r.match_id}`" type="button"
@@ -392,31 +388,19 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
                             </span>
                         </button>
                     </div>
-                    <p v-else class="text-xs text-slate-400 italic text-center py-6">
+                    <p v-else class="text-xs text-slate-500 italic text-center py-6">
                         {{ leaderTab === 'fouls' ? 'Aucun carton ni blessure cette semaine.' : 'Personne dans cette catégorie cette semaine.' }}
                     </p>
                 </Panel>
             </div>
         </div>
 
-        <div v-if="!calendarTeam" class="flex items-center justify-center rounded-xl border border-dashed border-slate-300 p-10 text-slate-400 text-sm">
+        <div v-if="!calendarTeam" class="flex items-center justify-center rounded-xl border border-dashed border-slate-200 p-10 text-slate-400 text-sm">
             Aucune équipe à afficher
         </div>
         <Modal :show="!!selectedLeader" max-width="lg" title="Fiche du joueur" @close="selectedLeader = null">
             <template v-if="selectedLeader">
-                <template v-if="leaderPlayer">
-                    <PlayerIdentityCard :player="leaderPlayer">
-                        <template #footer>
-                            <p v-if="leaderPlayer.morale != null" class="mt-1 text-xs" :class="leaderMorale.text">
-                                <span aria-hidden="true">{{ leaderMorale.emoji }}</span>
-                                Moral · {{ leaderMorale.label }} · {{ leaderPlayer.morale }}/100
-                            </p>
-                            <p v-if="leaderPlayer.description" class="mt-2 text-xs italic text-slate-500">{{ leaderPlayer.description }}</p>
-                        </template>
-                    </PlayerIdentityCard>
-                    <StatBars :player="leaderPlayer" highlight-position />
-                    <PlayerSpecialMoves :moves="leaderPlayer.special_moves ?? []" show-empty />
-                </template>
+                <PlayerDetailContent v-if="leaderPlayer" :player="leaderPlayer" />
                 <p v-else class="text-sm text-slate-600">
                     La fiche de {{ selectedLeader.firstname }} {{ selectedLeader.lastname }} est indisponible.
                 </p>

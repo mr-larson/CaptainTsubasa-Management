@@ -35,7 +35,7 @@ const formatDate = (value) => {
             <div class="flex flex-col md:flex-row">
                 <div class="hidden md:block basis-1/3 p-4 bg-contain bg-center bg-no-repeat bg-[url('/images/Jun_Misugi.webp')]"></div>
 
-                <div class="basis-full md:basis-2/3 p-4 sm:p-6 border border-slate-300 rounded-2xl mx-0 md:mx-6 bg-white min-h-[500px] flex flex-col shadow-sm">
+                <div class="basis-full md:basis-2/3 p-4 sm:p-6 border border-slate-200 rounded-2xl mx-0 md:mx-6 bg-white min-h-[500px] flex flex-col shadow-sm">
 
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                         <div>
@@ -62,7 +62,7 @@ const formatDate = (value) => {
 
                     <div v-else class="flex-1 flex flex-col gap-3 overflow-y-auto">
                         <div v-for="pkg in packages" :key="pkg.id"
-                             class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 px-4 py-3 rounded-xl border border-slate-300 bg-slate-50 hover:border-teal-300 hover:bg-teal-50 transition-all">
+                             class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-teal-300 hover:bg-teal-50 transition-all">
 
                             <div class="flex-1 min-w-0">
                                 <div class="text-sm font-bold text-slate-700 flex items-center gap-2">
@@ -92,9 +92,9 @@ const formatDate = (value) => {
                         </div>
                     </div>
 
-                    <div class="mt-6 pt-4 border-t border-slate-300 flex justify-end">
+                    <div class="mt-6 pt-4 border-t border-slate-200 flex justify-end">
                         <Link :href="route('game-saves.index')"
-                              class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-500 text-sm font-semibold rounded-xl border border-slate-300 transition-all">
+                              class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-500 text-sm font-semibold rounded-xl border border-slate-200 transition-all">
                             ← Retour
                         </Link>
                     </div>

@@ -634,7 +634,7 @@ export function updateSideCard(prefix, team, slotNumber) {
 
         const panel = document.createElement('div');
         panel.id = `${prefix}-sub-panel`;
-        panel.className = 'sub-panel hidden absolute right-1 top-8 z-[80] min-w-[180px] flex-col overflow-hidden rounded-[10px] border border-slate-300 bg-white shadow-lg max-h-[calc(100%-2.25rem)] [&:not(.hidden)]:flex';
+        panel.className = 'sub-panel hidden absolute right-1 top-8 z-[80] min-w-[180px] flex-col overflow-hidden rounded-[10px] border border-slate-200 bg-white shadow-lg max-h-[calc(100%-2.25rem)] [&:not(.hidden)]:flex';
 
         const header = document.createElement('div');
         header.className = 'shrink-0 bg-sky-500 px-2.5 py-1.5 text-2xs font-bold text-white';
@@ -662,7 +662,7 @@ export function updateSideCard(prefix, team, slotNumber) {
 
             const item = document.createElement('button');
             item.type = 'button';
-            item.className = 'w-full cursor-pointer border-0 border-b border-slate-300 bg-transparent px-2.5 py-1.5 text-left text-[11px] hover:bg-sky-50';
+            item.className = 'w-full cursor-pointer border-0 border-b border-slate-200 bg-transparent px-2.5 py-1.5 text-left text-[11px] hover:bg-sky-50';
             item.innerHTML = `
             <div class="font-bold" data-sub-name></div>
             <div class="text-3xs text-slate-500"><span data-sub-position></span> · ${fitTag}</div>

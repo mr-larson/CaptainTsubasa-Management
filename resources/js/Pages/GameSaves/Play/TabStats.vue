@@ -1,5 +1,9 @@
 <script setup>
 import { computed, ref } from 'vue';
+import Modal from '@/Components/Modal.vue';
+import TeamDetailContent from './components/TeamDetailContent.vue';
+import PlayerDetailContent from './components/PlayerDetailContent.vue';
+import { fieldClass } from '@/Components/fieldStyles';
 import { usePlayerUtils } from './usePlayerUtils.js';
 import PlayerPhoto from '@/Components/PlayerPhoto.vue';
 
@@ -43,6 +47,8 @@ const isMyTeam = (teamId) => teamId === props.team?.id;
 // ==========================
 //   FILTRE ÉQUIPE
 // ==========================
+const selectedPlayer = ref(null);
+const selectedTeam = ref(null);
 const selectedTeamFilter = ref(null)
 
 const filteredPlayersWithStats = computed(() =>
@@ -126,10 +132,10 @@ const sortIcon = (key) => {
 
         <!-- Pas de stats disponibles -->
         <div v-if="!hasAnyStats"
-             class="flex-1 flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 p-12 text-center gap-3">
+             class="flex-1 flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 p-12 text-center gap-3">
             <span class="text-4xl">📊</span>
             <p class="text-slate-600 font-semibold">Aucune statistique disponible</p>
-            <p class="text-xs text-slate-400 max-w-sm leading-relaxed">
+            <p class="text-xs text-slate-500 max-w-sm leading-relaxed">
                 Les stats de saison sont générées lors des matchs joués manuellement.
                 Joue quelques matchs pour voir apparaître les classements !
             </p>
@@ -140,32 +146,24 @@ const sortIcon = (key) => {
             <!-- ============================================ -->
             <!-- BLOC 1 : TOP PERFORMERS                      -->
             <!-- ============================================ -->
-            <!-- Filtre équipe -->
-            <div class="border border-slate-300 rounded-xl bg-slate-50 p-3">
-                <div class="flex flex-wrap gap-1.5 items-center">
-                    <span class="text-2xs font-bold text-slate-400 uppercase tracking-wider mr-1">Filtrer :</span>
-                    <button type="button"
-                            @click="selectedTeamFilter = null"
-                            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all"
-                            :class="selectedTeamFilter === null
-                    ? 'bg-teal-500 text-white border-teal-600'
-                    : 'bg-white text-slate-600 border-slate-300 hover:border-teal-300'">
-                        🌍 Toutes les équipes
-                    </button>
-                    <button v-for="t in teams" :key="t.id" type="button"
-                            @click="selectedTeamFilter = selectedTeamFilter === t.id ? null : t.id"
-                            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all"
-                            :class="selectedTeamFilter === t.id
-            ? 'bg-teal-500 text-white border-teal-600'
-            : 'bg-white text-slate-600 border-slate-300 hover:border-teal-300 hover:text-teal-600'">
-                        <div class="w-4 h-4 rounded-full overflow-hidden shrink-0 bg-slate-100">
-                            <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" class="w-full h-full" alt=""/>
-                        </div>
-                        {{ t.name }}
-                    </button>
-                </div>
+            <!-- Filtre du palmarès -->
+            <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-slate-50 p-3">
+                <label class="flex w-full flex-col gap-2 text-xs font-semibold text-slate-600 sm:w-auto sm:flex-row sm:items-center">
+                    Palmarès des joueurs
+                    <select v-model="selectedTeamFilter" aria-label="Équipe du palmarès"
+                            class="w-full sm:w-48 px-3 py-2" :class="fieldClass({ size: 'sm' })">
+                        <option :value="null">Toutes les équipes</option>
+                        <option v-for="t in teams" :key="t.id" :value="t.id">{{ t.name }}</option>
+                    </select>
+                </label>
+                <button v-if="team" type="button" @click="selectedTeamFilter = selectedTeamFilter === team.id ? null : team.id"
+                        :aria-pressed="selectedTeamFilter === team.id"
+                        class="rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors"
+                        :class="selectedTeamFilter === team.id ? 'border-teal-300 bg-teal-50 text-teal-800' : 'border-slate-300 bg-white text-slate-600 hover:bg-slate-100'">
+                    Mon équipe
+                </button>
             </div>
-            <div class="border border-slate-300 rounded-xl bg-slate-50 p-4">
+            <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
                 <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">🏆 Meilleurs joueurs <span class="normal-case font-semibold text-slate-400 tracking-normal">· cumul de tous les matchs joués de la partie</span></h3>
 
                 <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -184,8 +182,10 @@ const sortIcon = (key) => {
                             <span class="text-xs font-bold text-slate-600">{{ category.label }}</span>
                         </div>
 
-                        <div v-for="(p, rank) in category.players" :key="p.id"
-                             class="flex items-center gap-2 py-1 px-2 rounded-lg transition-all"
+                        <button type="button" v-for="(p, rank) in category.players" :key="p.id"
+                             class="flex w-full items-center gap-2 py-1 px-2 rounded-lg text-left transition-all hover:shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-600"
+                             @click="selectedPlayer = p"
+                             :aria-label="`Voir le détail de ${p.firstname ?? ''} ${p.lastname}`"
                              :class="isMyTeam(p.teamId) ? 'bg-teal-100 border border-teal-200' : 'bg-white/70'"
                         >
                             <!-- Rang -->
@@ -212,9 +212,9 @@ const sortIcon = (key) => {
                             <div class="text-xs font-black shrink-0" :class="isMyTeam(p.teamId) ? 'text-teal-600' : 'text-slate-600'">
                                 {{ category.stat(p) }}
                             </div>
-                        </div>
+                        </button>
 
-                        <p v-if="!category.players.length" class="text-2xs text-slate-400 italic text-center py-2">
+                        <p v-if="!category.players.length" class="text-2xs text-slate-500 italic text-center py-2">
                             Aucune donnée
                         </p>
                     </div>
@@ -224,14 +224,14 @@ const sortIcon = (key) => {
             <!-- ============================================ -->
             <!-- BLOC 2 : COMPARATIF ÉQUIPES                 -->
             <!-- ============================================ -->
-            <div class="border border-slate-300 rounded-xl bg-slate-50 p-4">
+            <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
                 <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">📋 Comparatif équipes</h3>
 
-                <div class="overflow-x-auto">
+                <div class="overflow-x-auto" role="region" aria-label="Comparatif des équipes, défilement horizontal" tabindex="0">
                     <table class="w-full text-xs min-w-max text-left">
-                        <thead class="border-b border-slate-300 text-2xs font-bold uppercase tracking-wider text-slate-400">
+                        <thead class="border-b border-slate-200 text-2xs font-bold uppercase tracking-wider text-slate-400">
                         <tr>
-                            <th class="py-2 pr-4">Équipe</th>
+                            <th class="sticky left-0 z-20 bg-slate-50 py-2 pr-4 shadow-[2px_0_4px_-2px_rgb(15_23_42_/_15%)]">Équipe</th>
                             <th v-for="col in [
                                     { key: 'shots',     label: 'Tirs'    },
                                     { key: 'shotSuccess',label: 'Buts' },
@@ -257,19 +257,21 @@ const sortIcon = (key) => {
                         </thead>
                         <tbody>
                         <tr v-for="(t, i) in teamComparative" :key="t.id"
-                            class="border-b border-slate-300 last:border-0 transition-colors"
+                            class="border-b border-slate-200 last:border-0 transition-colors"
                             :class="isMyTeam(t.id) ? 'bg-teal-50' : i % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'"
                         >
                             <!-- Équipe -->
-                            <td class="py-2 pr-4">
+                            <td class="sticky left-0 z-10 py-2 pr-4 shadow-[2px_0_4px_-2px_rgb(15_23_42_/_15%)]"
+                                :class="isMyTeam(t.id) ? 'bg-teal-50' : i % 2 === 0 ? 'bg-white' : 'bg-slate-50'">
                                 <div class="flex items-center gap-2">
-                                    <div class="w-6 h-6 rounded overflow-hidden bg-white border border-slate-300 shrink-0">
+                                    <div class="w-6 h-6 rounded overflow-hidden bg-white border border-slate-200 shrink-0">
                                         <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" class="w-full h-full" alt=""/>
                                     </div>
-                                    <span class="font-semibold truncate max-w-[120px]"
-                                          :class="isMyTeam(t.id) ? 'text-teal-700' : 'text-slate-700'">
+                                    <button type="button" class="font-semibold truncate max-w-[120px] text-left hover:underline focus-visible:outline-teal-600"
+                                            :class="isMyTeam(t.id) ? 'text-teal-700' : 'text-slate-700'"
+                                            aria-haspopup="dialog" @click="selectedTeam = teams.find(team => team.id === t.id)">
                                             {{ t.name }}
-                                        </span>
+                                        </button>
                                     <span v-if="isMyTeam(t.id)" class="text-3xs bg-teal-500 text-white px-1.5 py-0.5 rounded-full font-bold shrink-0">
                                             MON ÉQUIPE
                                         </span>
@@ -293,5 +295,11 @@ const sortIcon = (key) => {
             </div>
 
         </template>
+        <Modal :show="!!selectedTeam" title="Fiche de l’équipe" max-width="2xl" @close="selectedTeam = null">
+            <TeamDetailContent v-if="selectedTeam" :team="selectedTeam" :total="teams.length" />
+        </Modal>
+        <Modal :show="!!selectedPlayer" title="Fiche du joueur" :subtitle="selectedPlayer?.teamName" max-width="lg" @close="selectedPlayer = null">
+            <PlayerDetailContent v-if="selectedPlayer" :player="selectedPlayer" />
+        </Modal>
     </div>
 </template>
