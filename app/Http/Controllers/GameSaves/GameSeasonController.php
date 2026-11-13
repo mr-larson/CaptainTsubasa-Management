@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\GameSaves;
 
+use App\Enums\GamePhase;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\AuthorizesGameSave;
 use App\Http\Controllers\Concerns\LocksGameSave;
@@ -27,7 +28,7 @@ class GameSeasonController extends Controller
     {
         $this->authorizeGameSave('view', $gameSave);
 
-        if ($gameSave->phase !== 'season_end') {
+        if ($gameSave->currentPhase() !== GamePhase::SeasonEnd) {
             return redirect()->route('game-saves.Play', $gameSave);
         }
 
@@ -51,7 +52,7 @@ class GameSeasonController extends Controller
         // phase après la première requête et ne relance pas une 2e saison
         // (saison +2, bonus de draft payé deux fois).
         return $this->withSaveLock($gameSave, function (GameSave $gameSave) {
-            if ($gameSave->phase !== 'season_end') {
+            if ($gameSave->currentPhase() !== GamePhase::SeasonEnd) {
                 return redirect()->route('game-saves.Play', $gameSave);
             }
 

@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Enums\PromiseStatus;
+use App\Enums\GamePhase;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameInjury;
 use App\Models\GameSaves\GameMatch;
@@ -154,7 +156,7 @@ class SeasonService
         ];
 
         $gameSave->gameState()->recordSeasonRecap((int) $gameSave->season, $recap);
-        $gameSave->phase = 'season_end';
+        $gameSave->phase = GamePhase::SeasonEnd;
         $gameSave->save();
 
         return $recap;
@@ -241,12 +243,12 @@ class SeasonService
         // Formations de poste en cours : terminées pendant l'intersaison.
         $this->positionTrainingService->completeDue($gameSave, 0, all: true);
         GamePromise::where('game_save_id', $gameSave->id)
-            ->where('status', 'pending')
-            ->update(['status' => 'expired']);
+            ->where('status', PromiseStatus::Pending)
+            ->update(['status' => PromiseStatus::Expired]);
 
         $gameSave->season = ($gameSave->season ?? 1) + 1;
         $gameSave->week   = 1;
-        $gameSave->phase  = 'intersaison_draft';
+        $gameSave->phase  = GamePhase::IntersaisonDraft;
 
         $state = $gameSave->gameState();
         $state->forgetLineups();

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\GamePhase;
 use App\Models\GameSaves\GameMatch;
 use App\Services\TournamentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -51,7 +52,7 @@ class TournamentServiceTest extends TestCase
 
         $t = $save->state['tournament'];
         $this->assertSame('group', $t['stage']);
-        $this->assertSame('group', $save->phase);
+        $this->assertSame(GamePhase::Group, $save->phase);
         $this->assertCount(2, $t['groups']); // 4 sélections → 2 poules
 
         // Une poule de 2 → 1 match par poule → 2 matchs de poule.
@@ -88,7 +89,7 @@ class TournamentServiceTest extends TestCase
         $save->refresh();
         $this->assertSame('semi', $save->state['tournament']['stage']);
         $this->assertSame(2, GameMatch::where('game_save_id', $save->id)->where('round', 'semi')->count());
-        $this->assertSame('knockout', $save->phase);
+        $this->assertSame(GamePhase::Knockout, $save->phase);
 
         // Demies → finale.
         $this->playRounds($save->id, ['semi']);
@@ -103,7 +104,7 @@ class TournamentServiceTest extends TestCase
         $save->refresh();
 
         $this->assertSame('done', $save->state['tournament']['stage']);
-        $this->assertSame('finished', $save->phase);
+        $this->assertSame(GamePhase::Finished, $save->phase);
         $this->assertNotNull($save->state['tournament']['champion_team_id']);
         $this->assertTrue($this->service->isTournamentOver($save));
 

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\GamePhase;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameMatch;
 use App\Services\SeasonService;
@@ -86,7 +87,7 @@ class SeasonServiceTest extends TestCase
 
         // Récap persisté + phase de fin de saison.
         $save->refresh();
-        $this->assertSame('season_end', $save->phase);
+        $this->assertSame(GamePhase::SeasonEnd, $save->phase);
         $this->assertArrayHasKey(1, $save->state['season_history']);
         $this->assertSame($first->id, $save->state['last_season_recap']['champion']['id']);
     }
@@ -123,7 +124,7 @@ class SeasonServiceTest extends TestCase
         // Avancement de saison + reset.
         $this->assertSame(2, (int) $save->season);
         $this->assertSame(1, (int) $save->week);
-        $this->assertSame('intersaison_draft', $save->phase);
+        $this->assertSame(GamePhase::IntersaisonDraft, $save->phase);
         $this->assertSame(0, (int) $strong->fresh()->wins);
         $this->assertSame(0, (int) $weak->fresh()->goals_against);
 

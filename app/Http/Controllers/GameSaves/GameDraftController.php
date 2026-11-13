@@ -30,7 +30,7 @@ class GameDraftController extends Controller
     {
         $this->authorizeGameSave('view', $gameSave);
 
-        if (!in_array($gameSave->phase, ['draft', 'intersaison_draft'], true)) {
+        if (!$gameSave->isDraftPhase()) {
             return redirect()->route('game-saves.Play', $gameSave);
         }
 
@@ -77,7 +77,7 @@ class GameDraftController extends Controller
         // Verrou par save : deux picks concurrents ne peuvent pas signer le même
         // joueur ni consommer deux fois le même tour.
         return $this->withSaveLock($gameSave, function (GameSave $gameSave) {
-            if (!in_array($gameSave->phase, ['draft', 'intersaison_draft'], true)) {
+            if (!$gameSave->isDraftPhase()) {
                 return response()->json(['error' => 'Not in draft phase'], 400);
             }
 
@@ -176,7 +176,7 @@ class GameDraftController extends Controller
         // Verrou par save : deux picks concurrents ne peuvent pas signer le même
         // joueur ni consommer deux fois le même tour.
         return $this->withSaveLock($gameSave, function (GameSave $gameSave) use ($data) {
-            if (!in_array($gameSave->phase, ['draft', 'intersaison_draft'], true)) {
+            if (!$gameSave->isDraftPhase()) {
                 return response()->json(['error' => 'Not in draft phase'], 400);
             }
 
@@ -223,7 +223,7 @@ class GameDraftController extends Controller
         // Verrou par save : deux picks concurrents ne peuvent pas signer le même
         // joueur ni consommer deux fois le même tour.
         return $this->withSaveLock($gameSave, function (GameSave $gameSave) {
-            if (!in_array($gameSave->phase, ['draft', 'intersaison_draft'], true)) {
+            if (!$gameSave->isDraftPhase()) {
                 return response()->json(['error' => 'Not in draft phase'], 400);
             }
 

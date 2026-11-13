@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\GamePhase;
 use App\Models\GameSaves\GameBonusCard;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameMatch;
@@ -426,7 +427,7 @@ class SeasonChallengeService
     public function payCompleted(GameSave $gameSave, ?array $teamIds = null, ?array $keys = null): void
     {
         $data = $gameSave->gameState()->challenges();
-        if (! $this->isEnabled($gameSave) || ($gameSave->phase ?? 'season') !== 'season'
+        if (! $this->isEnabled($gameSave) || $gameSave->currentPhase() !== GamePhase::Season
             || (int) ($data['season'] ?? 0) !== (int) ($gameSave->season ?? 1)) {
             return;
         }

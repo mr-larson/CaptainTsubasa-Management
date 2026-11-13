@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\GamePhase;
 use App\Models\GameSaves\GameSave;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -77,7 +78,7 @@ class SaveLockGuardsTest extends TestCase
                 ->assertRedirect(route('game-saves.Play', $save));
 
             $this->assertSame(7, (int) $save->fresh()->week, "Phase {$phase} : la semaine ne doit pas avancer.");
-            $this->assertSame($phase, $save->fresh()->phase);
+            $this->assertSame($phase, $save->fresh()->phase->value);
             $this->assertSame(1000, (int) $team->fresh()->budget, "Phase {$phase} : aucun revenu ne doit être versé.");
         }
     }
@@ -169,7 +170,7 @@ class SaveLockGuardsTest extends TestCase
         $this->actingAs($user)->post(route('game-saves.season-end.continue', $save))->assertRedirect();
 
         $this->assertSame(2, (int) $save->fresh()->season);
-        $this->assertSame('intersaison_draft', $save->fresh()->phase);
+        $this->assertSame(GamePhase::IntersaisonDraft, $save->fresh()->phase);
 
         // Retour / F5 sur l'écran de fin de saison après le passage en saison 2 :
         // redirection vers Play, pas de TypeError 500.
@@ -179,8 +180,8 @@ class SaveLockGuardsTest extends TestCase
 
     public function test_is_in_match_phase(): void
     {
-        foreach (GameSave::MATCH_PHASES as $phase) {
-            $this->assertTrue((new GameSave(['phase' => $phase]))->isInMatchPhase(), $phase);
+        foreach (GamePhase::matchPhases() as $phase) {
+            $this->assertTrue((new GameSave(['phase' => $phase]))->isInMatchPhase(), $phase->value);
         }
         foreach (['draft', 'intersaison_draft', 'season_end', 'finished'] as $phase) {
             $this->assertFalse((new GameSave(['phase' => $phase]))->isInMatchPhase(), $phase);

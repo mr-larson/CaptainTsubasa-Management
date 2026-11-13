@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\MoraleSource;
 use App\Models\GameSaves\GameInjury;
 use App\Support\GameConfig;
 use App\Models\GameSaves\GameMatch;
@@ -172,7 +173,7 @@ class MoraleService
                     }
                     if ($resultDelta !== 0) {
                         $events[] = [
-                            'source' => 'result',
+                            'source' => MoraleSource::Result,
                             'value'  => $resultDelta,
                             'label'  => ($context['result'] > 0 ? 'Victoire contre ' : 'Défaite contre ') . $context['opponent'],
                         ];
@@ -184,13 +185,13 @@ class MoraleService
 
                         if ($hasPlayed) {
                             $events[] = [
-                                'source' => 'playing_time',
+                                'source' => MoraleSource::PlayingTime,
                                 'value'  => $contract->is_starter ? self::PLAYED_STARTER_DELTA : self::PLAYED_BENCH_DELTA,
                                 'label'  => 'A joué contre ' . $context['opponent'],
                             ];
                         } elseif (!$trainedIds->has($player->id) && !isset($benchedByMalus[$player->id])) {
                             $events[] = [
-                                'source' => 'playing_time',
+                                'source' => MoraleSource::PlayingTime,
                                 'value'  => $contract->is_starter ? self::MISSED_STARTER_DELTA : self::MISSED_BENCH_DELTA,
                                 'label'  => $contract->is_starter ? 'Titulaire laissé de côté' : 'Resté sur le banc',
                             ];
@@ -206,9 +207,9 @@ class MoraleService
                 $toleratesLowSalary = (int) ($player->coach_affinity ?? 0) >= self::AFFINITY_SALARY_TOLERANCE;
 
                 if ($ratio < self::SALARY_LOW_RATIO && !$toleratesLowSalary) {
-                    $events[] = ['source' => 'salary', 'value' => self::SALARY_LOW_DELTA, 'label' => 'Se sent sous-payé'];
+                    $events[] = ['source' => MoraleSource::Salary, 'value' => self::SALARY_LOW_DELTA, 'label' => 'Se sent sous-payé'];
                 } elseif ($ratio > self::SALARY_HIGH_RATIO) {
-                    $events[] = ['source' => 'salary', 'value' => self::SALARY_HIGH_DELTA, 'label' => 'Satisfait de son salaire'];
+                    $events[] = ['source' => MoraleSource::Salary, 'value' => self::SALARY_HIGH_DELTA, 'label' => 'Satisfait de son salaire'];
                 }
 
                 // 4. Retour progressif vers le neutre (non loggé)
@@ -227,7 +228,7 @@ class MoraleService
                     $logs[] = [
                         'game_save_id'   => $gameSave->id,
                         'game_player_id' => $player->id,
-                        'source'         => $event['source'],
+                        'source'         => $event['source']->value,
                         'value'          => $event['value'],
                         'label'          => $event['label'],
                         'week'           => $week,

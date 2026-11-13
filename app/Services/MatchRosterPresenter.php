@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\PromiseStatus;
 use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GamePromise;
 use App\Models\GameSaves\GameSave;
@@ -57,7 +58,7 @@ class MatchRosterPresenter
         $promises = GamePromise::where('game_save_id', $gameSave->id)
             ->where('game_team_id', $team->id)
             ->where('season', $gameSave->season)
-            ->where('status', 'pending')
+            ->where('status', PromiseStatus::Pending)
             ->where('start_week', '<=', $currentWeek)
             ->where('due_week', '>=', $currentWeek)
             ->get(['id', 'game_player_id', 'type', 'status', 'start_week', 'due_week',

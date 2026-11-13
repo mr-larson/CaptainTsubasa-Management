@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\GamePhase;
 use App\Contracts\Randomizer;
 use App\Enums\Nationality;
 use App\Models\GameSaves\GameMatch;
@@ -67,7 +68,7 @@ class TournamentService
             'champion_team_id' => null,
         ];
         $gameSave->state = $state;
-        $gameSave->phase = 'group';
+        $gameSave->phase = GamePhase::Group;
         $gameSave->save();
     }
 
@@ -112,7 +113,7 @@ class TournamentService
                 $t['stage'] = 'final';
             }
             $t['knockout_week'] = $week;
-            $gameSave->phase    = 'knockout';
+            $gameSave->phase    = GamePhase::Knockout;
 
         } elseif ($stage === 'semi') {
             if (! $this->stageComplete($gameSave, ['semi'])) return;
@@ -125,7 +126,7 @@ class TournamentService
             $t['winners']['semi'] = $winners; // persiste pour un affichage stable (égalités KO)
             $t['stage']      = 'final';
             $t['final_week'] = $week;
-            $gameSave->phase = 'knockout';
+            $gameSave->phase = GamePhase::Knockout;
 
         } elseif ($stage === 'final') {
             if (! $this->stageComplete($gameSave, ['final'])) return;
@@ -134,7 +135,7 @@ class TournamentService
             $t['winners']['final']  = $winners;
             $t['stage']             = 'done';
             $t['champion_team_id']  = $winners[0] ?? null;
-            $gameSave->phase        = 'finished';
+            $gameSave->phase        = GamePhase::Finished;
 
         } else {
             return; // 'done'

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\PromiseStatus;
 use App\Models\GameSaves\GameDeclaration;
 use App\Models\GameSaves\GameInjury;
 use App\Models\GameSaves\GameMatch;
@@ -75,7 +76,7 @@ class AiCoachService
 
             $hasPromise = GamePromise::where('game_save_id', $save->id)->where('game_team_id', $team->id)
                 ->where('season', $season)
-                ->where(fn ($query) => $query->where('status', 'pending')
+                ->where(fn ($query) => $query->where('status', PromiseStatus::Pending)
                     ->orWhere('start_week', '>', $week - self::PROMISE_COOLDOWN_WEEKS))
                 ->exists();
             if ($hasPromise) continue;

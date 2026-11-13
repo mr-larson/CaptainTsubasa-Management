@@ -2,6 +2,7 @@
 
 namespace App\Models\GameSaves;
 
+use App\Enums\GamePhase;
 use App\Models\Team;
 use App\Models\User;
 use App\Support\GameConfig;
@@ -31,7 +32,7 @@ class GameSave extends Model
 
     protected $casts = [
         'state' => 'array',
-        'phase' => 'string',
+        'phase' => GamePhase::class,
     ];
 
     public function toArray()
@@ -119,16 +120,26 @@ class GameSave extends Model
             && ! in_array($teamId, array_map('intval', $this->controlledGameTeamIds()), true);
     }
 
-    /**
-     * Phases pendant lesquelles des matchs se jouent (ligue ou Coupe du Monde).
-     * Hors de ces phases (draft, fin de saison, tournoi terminé), terminer un
-     * match ou simuler une semaine est refusé.
-     */
-    public const MATCH_PHASES = ['season', 'world_cup', 'group', 'knockout'];
+    /** Phase courante ; une sauvegarde ancienne sans phase est en saison. */
+    public function currentPhase(): GamePhase
+    {
+        return $this->phase ?? GamePhase::Season;
+    }
 
+    /** Draft initial ou d'intersaison. */
+    public function isDraftPhase(): bool
+    {
+        return $this->currentPhase()->isDraft();
+    }
+
+    /**
+     * Phases pendant lesquelles des matchs se jouent (ligue ou Coupe du Monde,
+     * cf. GamePhase::matchPhases()). Hors de ces phases (draft, fin de saison,
+     * tournoi terminé), terminer un match ou simuler une semaine est refusé.
+     */
     public function isInMatchPhase(): bool
     {
-        return in_array($this->phase ?? 'season', self::MATCH_PHASES, true);
+        return $this->currentPhase()->isMatchPhase();
     }
 
     public function hasPendingMidseasonBreak(): bool

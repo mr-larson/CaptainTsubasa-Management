@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\GameSaves;
 
+use App\Enums\GamePhase;
 use App\Http\Controllers\Controller;
 use App\Support\GameConfig;
 use App\Models\BonusCard;
@@ -69,10 +70,10 @@ class GameSaveController extends Controller
 
         // Draft en cours (onglet fermé, draft interrompu) : on y retourne au
         // lieu d'ouvrir Play avec des effectifs partiels. Idem fin de saison.
-        if (in_array($gameSave->phase, ['draft', 'intersaison_draft'], true)) {
+        if ($gameSave->isDraftPhase()) {
             return redirect()->route('game-saves.draft', $gameSave);
         }
-        if ($gameSave->phase === 'season_end') {
+        if ($gameSave->currentPhase() === GamePhase::SeasonEnd) {
             return redirect()->route('game-saves.season-end', $gameSave);
         }
 
@@ -104,7 +105,7 @@ class GameSaveController extends Controller
             ?? $gameTeams->firstWhere('base_team_id', $gameSave->team_id)
             ?? $gameTeams->first();
 
-        $canRenewContracts = $gameSave->competition_type !== 'world_cup' && ($gameSave->phase ?? 'season') === 'season';
+        $canRenewContracts = $gameSave->competition_type !== 'world_cup' && $gameSave->currentPhase() === GamePhase::Season;
         if ($canRenewContracts && $controlledTeam) {
             foreach ($controlledTeam->contracts as $contract) {
                 $contract->gamePlayer?->append('renewal_cost');

@@ -2,6 +2,7 @@
 
 namespace App\Services\Concerns;
 
+use App\Enums\MoraleSource;
 use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GamePlayerMoraleLog;
 use App\Models\GameSaves\GameSave;
@@ -14,7 +15,7 @@ trait LogsCoachAffinity
         if ($delta === 0) return;
         GamePlayerMoraleLog::create([
             'game_save_id' => $save->id, 'game_player_id' => $player->id,
-            'source' => 'coach_affinity', 'value' => $delta, 'label' => $label,
+            'source' => MoraleSource::CoachAffinity, 'value' => $delta, 'label' => $label,
             'week' => $save->week, 'season' => $save->season,
         ]);
     }

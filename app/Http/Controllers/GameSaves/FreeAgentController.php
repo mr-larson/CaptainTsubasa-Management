@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\GameSaves;
 
+use App\Enums\GamePhase;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\AuthorizesGameSave;
 use App\Http\Controllers\Concerns\LocksGameSave;
@@ -48,7 +49,7 @@ class FreeAgentController extends Controller
 
             $startWeek = $gameSave->week ?? 1;
             $remainingWeeks = max(0, app(SeasonService::class)->getSeasonLength($gameSave) - $startWeek);
-            if (($gameSave->phase ?? 'season') !== 'season' || $remainingWeeks === 0) {
+            if ($gameSave->currentPhase() !== GamePhase::Season || $remainingWeeks === 0) {
                 return back()->withErrors(['matches_total' => 'Il ne reste plus de semaines disponibles pour signer un joueur.']);
             }
             if ($data['matches_total'] > $remainingWeeks) {

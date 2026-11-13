@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\GameSaves;
 
+use App\Enums\GamePhase;
 use App\Http\Controllers\Controller;
 use App\Support\GameConfig;
 use App\Helpers\HeadingRating;
@@ -336,7 +337,7 @@ class GameSaveCreationController extends Controller
                 'period'  => $data['period'],
                 'season'  => 1,
                 'week'    => 1,
-                'phase'   => $isDraft ? 'draft' : 'season',
+                'phase'   => $isDraft ? GamePhase::Draft : GamePhase::Season,
                 'game_mode' => $gameMode,
                 'competition_type' => $data['competition_type'] ?? 'college_league',
                 'label'   => $data['label'] ?? null,
@@ -650,7 +651,7 @@ class GameSaveCreationController extends Controller
                 'period'           => $data['period'],
                 'season'           => 1,
                 'week'             => 1,
-                'phase'            => 'world_cup',
+                'phase'            => GamePhase::WorldCup,
                 'game_mode'        => 'prebuilt',
                 'competition_type' => 'world_cup',
                 'label'            => $data['label'] ?? null,

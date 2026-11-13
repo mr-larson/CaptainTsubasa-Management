@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\PromiseStatus;
 use App\Models\GameSaves\GameContract;
 use App\Services\ContractDepartureService;
 use App\Services\PromiseService;
@@ -53,7 +54,7 @@ class ContractDepartureServiceTest extends TestCase
         $this->assertTrue($humanContract->fresh()->isActive(2));
         $this->assertFalse(GameContract::where('game_player_id', $unhappy->id)->activeAt(3)->exists());
         $this->assertNull($save->state['lineup'][$human->id]['slots'][1]);
-        $this->assertSame('expired', $promise->fresh()->status);
+        $this->assertSame(PromiseStatus::Expired, $promise->fresh()->status);
         $this->assertCount(2, $save->state['contract_departures']['entries']);
 
         $service->resolveForWeek($save->fresh(), 2);

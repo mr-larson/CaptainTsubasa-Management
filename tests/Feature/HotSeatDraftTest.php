@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\GamePhase;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
 use App\Models\Team;
@@ -29,7 +30,7 @@ class HotSeatDraftTest extends TestCase
 
         $save = GameSave::where('user_id', $user->id)->firstOrFail();
 
-        $this->assertSame('draft', $save->phase);
+        $this->assertSame(GamePhase::Draft, $save->phase);
 
         $controlled = GameTeam::where('game_save_id', $save->id)
             ->where('is_controlled', true)

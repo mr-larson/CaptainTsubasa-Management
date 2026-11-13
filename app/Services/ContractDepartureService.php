@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\PromiseStatus;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GamePromise;
 use App\Models\GameSaves\GameSave;
@@ -66,8 +67,8 @@ class ContractDepartureService
             GamePromise::where('game_save_id', $gameSave->id)
                 ->where('game_player_id', $player->id)
                 ->where('game_team_id', $teamId)
-                ->where('status', 'pending')
-                ->update(['status' => 'expired']);
+                ->where('status', PromiseStatus::Pending)
+                ->update(['status' => PromiseStatus::Expired]);
 
             $departures[] = [
                 'player_name' => $player->full_name,

@@ -2,6 +2,7 @@
 
 namespace App\Models\GameSaves;
 
+use App\Enums\MoraleSource;
 use App\Models\GameSaves\Concerns\BelongsToGameSave;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -21,6 +22,7 @@ class GamePlayerMoraleLog extends Model
     ];
 
     protected $casts = [
+        'source' => MoraleSource::class,
         'value'  => 'integer',
         'week'   => 'integer',
         'season' => 'integer',

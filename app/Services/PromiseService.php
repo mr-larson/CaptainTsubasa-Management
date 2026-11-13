@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Enums\MoraleSource;
+use App\Enums\PromiseStatus;
 use App\Models\GameSaves\GameInjury;
 use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GamePlayer;
@@ -64,7 +66,7 @@ class PromiseService
 
         $alreadyPending = GamePromise::where('game_save_id', $gameSave->id)
             ->where('game_player_id', $player->id)
-            ->where('status', 'pending')
+            ->where('status', PromiseStatus::Pending)
             ->exists();
 
         if ($alreadyPending) {
@@ -95,7 +97,7 @@ class PromiseService
             ->where('game_team_id', $teamId)
             ->where('season', $season)
             ->where('type', 'renewal')
-            ->where('status', 'pending')
+            ->where('status', PromiseStatus::Pending)
             ->where('start_week', '<=', $week)
             ->where('due_week', '>=', $week)
             ->first();
@@ -119,7 +121,7 @@ class PromiseService
     public function evaluateForWeek(GameSave $gameSave, int $week): void
     {
         $promises = GamePromise::where('game_save_id', $gameSave->id)
-            ->where('status', 'pending')
+            ->where('status', PromiseStatus::Pending)
             ->with('gamePlayer')
             ->get();
 
@@ -133,7 +135,7 @@ class PromiseService
         foreach ($promises as $promise) {
             $player = $promise->gamePlayer;
             if (!$player) {
-                $promise->update(['status' => 'broken']);
+                $promise->update(['status' => PromiseStatus::Broken]);
                 continue;
             }
 
@@ -160,7 +162,7 @@ class PromiseService
         [$kept, $label, $playedMatches, $playedTurns] = $resolution;
 
         $promise->update([
-            'status'         => $kept ? 'kept' : 'broken',
+            'status'         => $kept ? PromiseStatus::Kept : PromiseStatus::Broken,
             'played_matches' => $playedMatches,
             'played_turns'   => $playedTurns,
         ]);
@@ -176,7 +178,7 @@ class PromiseService
         return [
             'game_save_id'   => $promise->game_save_id,
             'game_player_id' => $player->id,
-            'source'         => 'promise',
+            'source'         => MoraleSource::Promise->value,
             'value'          => $delta,
             'label'          => $label,
             'week'           => $week,
@@ -327,7 +329,7 @@ class PromiseService
      */
     public function starterProgress(GameSave $gameSave, Collection $promises, int $week): array
     {
-        $promises = $promises->where('type', 'starter')->where('status', 'pending')
+        $promises = $promises->where('type', 'starter')->where('status', PromiseStatus::Pending)
             ->filter(fn (GamePromise $promise) => $promise->start_week <= $week);
         if ($promises->isEmpty()) return [];
 

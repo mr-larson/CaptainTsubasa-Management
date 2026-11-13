@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\PromiseStatus;
 use App\Models\GameSaves\GameDeclaration;
 use App\Models\GameSaves\GameInjury;
 use App\Models\GameSaves\GameMatch;
@@ -72,8 +73,8 @@ class GameRulesFixesTest extends TestCase
 
         $this->assertSame(0, GameInjury::where('game_save_id', $save->id)->count());
         $this->assertSame(0, GameSanction::where('game_save_id', $save->id)->count());
-        $this->assertSame('expired', $pending->fresh()->status);
-        $this->assertSame('kept', $kept->fresh()->status);
+        $this->assertSame(PromiseStatus::Expired, $pending->fresh()->status);
+        $this->assertSame(PromiseStatus::Kept, $kept->fresh()->status);
     }
 
     public function test_declaration_cooldown_does_not_cross_seasons(): void

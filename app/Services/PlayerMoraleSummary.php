@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\MoraleSource;
 use App\Models\GameSaves\GameDeclaration;
 use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GamePlayerMoraleLog;
@@ -26,7 +27,7 @@ class PlayerMoraleSummary
             ->get()
             ->groupBy('game_player_id')
             ->map(fn($logs) => $logs->take(6)->map(fn($l) => [
-                'source' => $l->source,
+                'source' => $l->source->value,
                 'value'  => $l->value,
                 'label'  => $l->label,
                 'week'   => $l->week,
@@ -43,7 +44,7 @@ class PlayerMoraleSummary
             foreach ($logs as $log) {
                 $rows->push($log + ['player_id' => $playerId, 'category' => 'morale',
                     'metric' => match ($log['source']) {
-                        'promise' => 'Moral / coach', 'coach_affinity' => 'Relation coach', default => 'Moral',
+                        MoraleSource::Promise->value => 'Moral / coach', MoraleSource::CoachAffinity->value => 'Relation coach', default => 'Moral',
                     }]);
             }
         }
@@ -51,7 +52,7 @@ class PlayerMoraleSummary
             ->where('affinity_delta', '!=', 0)->orderByDesc('id')->limit(100)->get() as $declaration) {
             $rows->push([
                 'player_id' => $declaration->game_player_id, 'category' => 'morale', 'metric' => 'Relation coach',
-                'source' => 'declaration', 'source_label' => 'Presse', 'value' => $declaration->affinity_delta,
+                'source' => MoraleSource::Declaration->value, 'source_label' => 'Presse', 'value' => $declaration->affinity_delta,
                 'label' => $declaration->type === 'praise' ? 'Félicitations publiques' : 'Critique publique',
                 'week' => $declaration->week, 'season' => $declaration->season,
             ]);
@@ -69,7 +70,7 @@ class PlayerMoraleSummary
         foreach (array_merge($manualHistory, $state['ai_training_history'] ?? []) as $entry) {
             if (!in_array((int) ($entry['player_id'] ?? 0), $ids, true) || (int) ($entry['gain'] ?? 0) === 0) continue;
             $rows->push([
-                'player_id' => $entry['player_id'], 'category' => 'stats', 'source' => 'training',
+                'player_id' => $entry['player_id'], 'category' => 'stats', 'source' => MoraleSource::Training->value,
                 'source_label' => 'Entraînement', 'stat' => $entry['stat'], 'value' => $entry['gain'],
                 'old' => $entry['old_stat'] ?? null, 'new' => $entry['new_stat'] ?? null,
                 'week' => $entry['week'], 'season' => $entry['season'],
@@ -86,7 +87,7 @@ class PlayerMoraleSummary
                 foreach ($entry['gains'] ?? [] as $stat => $gain) {
                     if ((int) ($gain['gain'] ?? 0) === 0) continue;
                     $rows->push([
-                        'player_id' => $entry['player_id'], 'category' => 'stats', 'source' => 'match',
+                        'player_id' => $entry['player_id'], 'category' => 'stats', 'source' => MoraleSource::Match->value,
                         'source_label' => 'Performance en match', 'stat' => $stat, 'value' => $gain['gain'],
                         'old' => $gain['old'] ?? null, 'new' => $gain['new'] ?? null,
                         'week' => $match->week, 'season' => $gameSave->season,

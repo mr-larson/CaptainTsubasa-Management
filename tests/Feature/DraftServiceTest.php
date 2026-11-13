@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\GamePhase;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GamePlayer;
 use App\Services\DraftService;
@@ -253,7 +254,7 @@ class DraftServiceTest extends TestCase
         $this->service->finalizeDraft($save);
         $save->refresh();
 
-        $this->assertSame('season', $save->phase);
+        $this->assertSame(GamePhase::Season, $save->phase);
         $this->assertSame(500, (int) $team->fresh()->budget);
         $this->assertArrayNotHasKey('budgets', $save->state['draft']);
 

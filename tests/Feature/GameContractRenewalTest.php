@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\PromiseStatus;
 use App\Services\PromiseService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsGameWorld;
@@ -37,10 +38,10 @@ class GameContractRenewalTest extends TestCase
 
         $this->patch($url, ['end_week' => 5, 'weeks' => 26])->assertSessionHasErrors('weeks');
         $this->assertSame(5, $contract->fresh()->end_week);
-        $this->assertSame('pending', $promise->fresh()->status);
+        $this->assertSame(PromiseStatus::Pending, $promise->fresh()->status);
 
         $this->patch($url, ['end_week' => 5, 'weeks' => 1])->assertSessionHasNoErrors();
-        $this->assertSame('kept', $promise->fresh()->status);
+        $this->assertSame(PromiseStatus::Kept, $promise->fresh()->status);
         $this->assertEquals(75, $player->fresh()->morale);
         $this->assertEquals(15, $player->fresh()->coach_affinity);
         $this->assertSame(6, $contract->fresh()->end_week);
@@ -58,7 +59,7 @@ class GameContractRenewalTest extends TestCase
         $this->patch($url, ['end_week' => 30, 'weeks' => 1])->assertSessionHasErrors('weeks');
 
         $promises->evaluateForWeek($save, $promise->due_week);
-        $this->assertSame('kept', $promise->fresh()->status);
+        $this->assertSame(PromiseStatus::Kept, $promise->fresh()->status);
         $this->assertEquals(75, $player->fresh()->morale);
         $this->assertEquals(15, $player->fresh()->coach_affinity);
         $this->assertDatabaseHas('game_player_morale_logs', [

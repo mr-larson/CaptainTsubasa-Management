@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\PromiseStatus;
 use App\Models\GameSaves\GamePlayerMoraleLog;
 use App\Models\GameSaves\GamePromise;
 use App\Services\PlayerMoraleSummary;
@@ -42,7 +43,7 @@ class PromiseServiceTest extends TestCase
         $this->assertSame(5, $promise->due_week); // fenêtre de 5 semaines
         $this->assertSame(10, $promise->target_turns); // un tiers des 30 tours par défaut
         // status a un défaut SQL ('pending') appliqué au rechargement.
-        $this->assertSame('pending', $promise->fresh()->status);
+        $this->assertSame(PromiseStatus::Pending, $promise->fresh()->status);
     }
 
     public function test_playing_time_target_follows_match_length(): void
@@ -92,7 +93,7 @@ class PromiseServiceTest extends TestCase
         $this->service->evaluateForWeek($save, 1);
 
         $promise = GamePromise::where('game_player_id', $player->id)->first();
-        $this->assertSame('kept', $promise->status);
+        $this->assertSame(PromiseStatus::Kept, $promise->status);
         $this->assertSame(5, (int) $player->fresh()->coach_affinity); // +5
         $this->assertSame(65, (int) $player->fresh()->morale);        // +5
     }
@@ -115,7 +116,7 @@ class PromiseServiceTest extends TestCase
         $this->service->evaluateForWeek($save, 1);
 
         $promise = GamePromise::where('game_player_id', $player->id)->first();
-        $this->assertSame('broken', $promise->status);
+        $this->assertSame(PromiseStatus::Broken, $promise->status);
         $this->assertSame(-10, (int) $player->fresh()->coach_affinity);
         $this->assertSame(50, (int) $player->fresh()->morale);
 
@@ -156,7 +157,7 @@ class PromiseServiceTest extends TestCase
 
         $this->service->evaluateForWeek($save, 2);
         $this->service->evaluateForWeek($save, 2);
-        $this->assertSame('pending', $promise->fresh()->status);
+        $this->assertSame(PromiseStatus::Pending, $promise->fresh()->status);
         $this->assertSame(1, $promise->fresh()->played_matches);
         $this->assertFalse(GamePlayerMoraleLog::where('game_player_id', $player->id)->exists());
 
@@ -186,7 +187,7 @@ class PromiseServiceTest extends TestCase
         // Évaluation à l'échéance (semaine 5).
         $this->service->evaluateForWeek($save, 5);
 
-        $this->assertSame('kept', GamePromise::where('game_player_id', $player->id)->first()->status);
+        $this->assertSame(PromiseStatus::Kept, GamePromise::where('game_player_id', $player->id)->first()->status);
     }
 
     public function test_starter_promise_is_broken_when_target_missed(): void
@@ -207,7 +208,7 @@ class PromiseServiceTest extends TestCase
 
         $this->service->evaluateForWeek($save, 5);
 
-        $this->assertSame('broken', GamePromise::where('game_player_id', $player->id)->first()->status);
+        $this->assertSame(PromiseStatus::Broken, GamePromise::where('game_player_id', $player->id)->first()->status);
     }
 
     public function test_renewal_promise_is_broken_without_new_contract(): void
@@ -222,7 +223,7 @@ class PromiseServiceTest extends TestCase
         // Aucun nouveau contrat signé après la promesse → rompue à l'échéance.
         $this->service->evaluateForWeek($save, 4);
 
-        $this->assertSame('broken', GamePromise::where('game_player_id', $player->id)->first()->status);
+        $this->assertSame(PromiseStatus::Broken, GamePromise::where('game_player_id', $player->id)->first()->status);
     }
 
     public function test_previously_signed_renewal_is_recognized_at_the_next_week_closing(): void
@@ -236,7 +237,7 @@ class PromiseServiceTest extends TestCase
 
         $this->service->evaluateForWeek($save, 5);
 
-        $this->assertSame('kept', $promise->fresh()->status);
+        $this->assertSame(PromiseStatus::Kept, $promise->fresh()->status);
         $this->assertEquals(75, $player->fresh()->morale);
     }
 
@@ -267,12 +268,12 @@ class PromiseServiceTest extends TestCase
         ]]]);
 
         $this->service->evaluateForWeek($save, 2);
-        $this->assertSame('pending', $restPromise->fresh()->status);
+        $this->assertSame(PromiseStatus::Pending, $restPromise->fresh()->status);
         $this->service->evaluateForWeek($save, 3);
 
-        $this->assertSame('kept', $restPromise->fresh()->status);
-        $this->assertSame('broken', $subPromise->fresh()->status);
+        $this->assertSame(PromiseStatus::Kept, $restPromise->fresh()->status);
+        $this->assertSame(PromiseStatus::Broken, $subPromise->fresh()->status);
         $this->assertSame(1, $subPromise->fresh()->played_turns);
-        $this->assertSame('broken', $trainingPromise->fresh()->status);
+        $this->assertSame(PromiseStatus::Broken, $trainingPromise->fresh()->status);
     }
 }

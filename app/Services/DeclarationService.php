@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\MoraleSource;
 use App\Models\GameSaves\GameDeclaration;
 use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GamePlayer;
@@ -114,7 +115,7 @@ class DeclarationService
             GamePlayerMoraleLog::create([
                 'game_save_id'   => $gameSave->id,
                 'game_player_id' => $player->id,
-                'source'         => 'declaration',
+                'source'         => MoraleSource::Declaration,
                 'value'          => $moraleDelta,
                 'label'          => $type === 'praise'
                     ? 'Félicité publiquement par le coach'

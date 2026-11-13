@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\MoraleSource;
 use App\Contracts\Randomizer;
 use App\Models\GameSaves\GameBonusCard;
 use App\Models\GameSaves\GameInjury;
@@ -212,7 +213,7 @@ class BonusCardActivationService
         GamePlayerMoraleLog::create([
             'game_save_id'   => $gameSave->id,
             'game_player_id' => $player->id,
-            'source'         => 'bonus_card',
+            'source'         => MoraleSource::BonusCard,
             'value'          => $gain,
             'label'          => $gameBonusCard->bonusCard->name,
             'week'           => $gameSave->week,

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\GamePhase;
 use App\Contracts\Randomizer;
 use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GameSave;
@@ -27,7 +28,7 @@ class SeasonBootstrapService
     {
         if (! $gameSave->isInMatchPhase()) return;
 
-        if (($gameSave->phase ?? 'season') === 'season') {
+        if ($gameSave->currentPhase() === GamePhase::Season) {
             app(CareerObjectiveService::class)->ensureSeasonMandate($gameSave);
             $challenges = app(SeasonChallengeService::class);
             $challenges->ensureSeasonChallenges($gameSave);
@@ -46,7 +47,7 @@ class SeasonBootstrapService
     public function needsPreparation(GameSave $gameSave): bool
     {
         // state.draft résiduel une fois la draft terminée (cf. DraftService::purgeFinishedDraft).
-        if (! in_array($gameSave->phase, ['draft', 'intersaison_draft'], true) && $gameSave->gameState()->hasDraft()) {
+        if (! $gameSave->isDraftPhase() && $gameSave->gameState()->hasDraft()) {
             return true;
         }
 
@@ -54,7 +55,7 @@ class SeasonBootstrapService
 
         $season = (int) ($gameSave->season ?? 1);
 
-        if (($gameSave->phase ?? 'season') === 'season') {
+        if ($gameSave->currentPhase() === GamePhase::Season) {
             $career = app(CareerObjectiveService::class);
             if ($career->isEnabled($gameSave)) {
                 $data = $career->data($gameSave);

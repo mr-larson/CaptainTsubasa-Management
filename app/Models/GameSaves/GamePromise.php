@@ -2,6 +2,7 @@
 
 namespace App\Models\GameSaves;
 
+use App\Enums\PromiseStatus;
 use App\Models\GameSaves\Concerns\BelongsToGameSave;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -26,6 +27,7 @@ class GamePromise extends Model
     ];
 
     protected $casts = [
+        'status'         => PromiseStatus::class,
         'start_week'     => 'integer',
         'due_week'       => 'integer',
         'target_matches' => 'integer',

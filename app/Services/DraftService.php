@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\GamePhase;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSave;
@@ -406,7 +407,7 @@ class DraftService
      */
     public function purgeFinishedDraft(GameSave $gameSave): void
     {
-        if (in_array($gameSave->phase, ['draft', 'intersaison_draft'], true)) return;
+        if ($gameSave->isDraftPhase()) return;
         $state = $gameSave->gameState();
         if (!$state->hasDraft()) return;
 
@@ -435,7 +436,7 @@ class DraftService
         $draft = $state->draft() ?? [];
         unset($draft['budgets']);
         $state->putDraft($draft);
-        $gameSave->phase = 'season';
+        $gameSave->phase = GamePhase::Season;
         $gameSave->save();
 
         // Ouvre la saison : mandat, défis, calendrier, compositions IA (sous le

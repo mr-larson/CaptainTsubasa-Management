@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\GameSaves;
 
+use App\Enums\GamePhase;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\AuthorizesGameSave;
 use App\Http\Controllers\Concerns\LocksGameSave;
@@ -88,7 +89,7 @@ class GameContractController extends Controller
 
             $week = (int) ($gameSave->week ?? 1);
             $seasonEnd = $seasons->getSeasonLength($gameSave);
-            if ($gameSave->competition_type === 'world_cup' || ($gameSave->phase ?? 'season') !== 'season'
+            if ($gameSave->competition_type === 'world_cup' || $gameSave->currentPhase() !== GamePhase::Season
                 || !$contract->isActive($week) || $contract->end_week === null || $contract->end_week >= $seasonEnd) {
                 return back()->withErrors(['weeks' => 'Ce contrat ne peut pas être prolongé.']);
             }
