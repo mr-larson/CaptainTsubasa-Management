@@ -15,6 +15,7 @@ use App\Models\GameSaves\GameTeam;
 use App\Services\BonusCardActivationService;
 use App\Services\Concerns\EvaluatesPlayers;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class MatchSimulator
 {
@@ -95,9 +96,13 @@ class MatchSimulator
             ])
             ->get();
 
-        foreach ($others as $m) {
-            $this->simulateAndSave($m, $gameSave);
-        }
+        // Tout ou rien : un match à moitié enregistré (score sans classement,
+        // progression sans fautes…) ne doit jamais survivre à une erreur.
+        DB::transaction(function () use ($others, $gameSave) {
+            foreach ($others as $m) {
+                $this->simulateAndSave($m, $gameSave);
+            }
+        });
     }
 
     public function simulateMatchesCollection(Collection $matches, ?GameSave $gameSave = null): void
@@ -105,17 +110,22 @@ class MatchSimulator
         // Une seule instance par save : chaque match lit et enrichit le même state.
         $saves = $gameSave ? [(int) $gameSave->id => $gameSave] : [];
 
-        foreach ($matches as $m) {
-            if ($m->status !== \App\Enums\MatchStatus::Scheduled) continue;
+        // Atomique par appel, quel que soit l'appelant (contrôleur sous verrou,
+        // clôture de semaine, commande artisan) : une erreur sur un match annule
+        // aussi les matchs déjà simulés de la même série, jamais de semaine à moitié écrite.
+        DB::transaction(function () use ($matches, &$saves) {
+            foreach ($matches as $m) {
+                if ($m->status !== \App\Enums\MatchStatus::Scheduled) continue;
 
-            $m->loadMissing([
-                'homeTeam' => fn($q) => $q->with(['contracts' => fn($cq) => $cq->activeAt($m->week)->with('gamePlayer')]),
-                'awayTeam' => fn($q) => $q->with(['contracts' => fn($cq) => $cq->activeAt($m->week)->with('gamePlayer')]),
-            ]);
+                $m->loadMissing([
+                    'homeTeam' => fn($q) => $q->with(['contracts' => fn($cq) => $cq->activeAt($m->week)->with('gamePlayer')]),
+                    'awayTeam' => fn($q) => $q->with(['contracts' => fn($cq) => $cq->activeAt($m->week)->with('gamePlayer')]),
+                ]);
 
-            $saves[(int) $m->game_save_id] ??= GameSave::find($m->game_save_id);
-            $this->simulateAndSave($m, $saves[(int) $m->game_save_id]);
-        }
+                $saves[(int) $m->game_save_id] ??= GameSave::find($m->game_save_id);
+                $this->simulateAndSave($m, $saves[(int) $m->game_save_id]);
+            }
+        });
     }
 
     // ==========================
