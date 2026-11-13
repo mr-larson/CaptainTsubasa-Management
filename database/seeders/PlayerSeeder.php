@@ -4,35 +4,21 @@ namespace Database\Seeders;
 
 use App\Helpers\HeadingRating;
 use App\Helpers\ReferenceRosterBalance;
-use App\Enums\Nationality;
 use App\Models\Traits\CalculatesWeeklyCost;
 use Database\Seeders\Concerns\GuardsReferenceReseed;
+use Database\Seeders\Support\HeadingOverrides;
+use Database\Seeders\Support\PlayerNationality;
+use Database\Seeders\Support\PlayerPhotos;
+use Database\Seeders\Support\PlayerSkills;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class PlayerSeeder extends Seeder
 {
     use GuardsReferenceReseed;
     use CalculatesWeeklyCost;
-
-    /**
-     * Nationalité par défaut selon l'œuvre de provenance (origin).
-     * Les univers japonais (Captain Tsubasa au collège, Blue Lock, Ao Ashi,
-     * Hungry Heart) sont des équipes nippones ; École des Champions est italien
-     * majoritaire. Les exceptions sont gérées au cas par cas par les maps
-     * nationalities() de chaque classe Players\*. `null` = non sélectionnable.
-     */
-    private const DEFAULT_NATIONALITY_BY_ORIGIN = [
-        'captain_tsubasa'     => 'Japon',
-        'blue_lock'           => 'Japon',
-        'ao_ashi'             => 'Japon',
-        'hungry_heart'        => 'Japon',
-        'ecole_des_champions' => 'Italie',
-        'original'            => null,
-    ];
 
     /**
      * Run the database seeds.
@@ -48,20 +34,10 @@ class PlayerSeeder extends Seeder
         DB::table('players')->truncate();
         Schema::enableForeignKeyConstraints();
 
-        /**
-         * CONFIG IMAGES
-         * Source de vérité unique : public/storage/players/ (versionné dans le
-         * repo — le FS de prod est éphémère). Les .webp y sont générés par
-         * `images:publish` depuis public/images, nommés firstname-lastname.webp.
-         * Le seeder ne copie plus rien : il vérifie l'existence du fichier et
-         * renseigne photo_path en conséquence.
-         */
-        $storageDisk = Storage::disk('public');
-        $storageDir = 'players';
-
         // Données joueurs regroupées par source dans database/seeders/Players/.
-        // PlayerSeeder conserve toute la logique d'insertion (skills, images,
-        // special moves) ; chaque groupe est tagué par son `origin` (œuvre de
+        // PlayerSeeder compose la ligne `players` ; les calculs vivent dans
+        // database/seeders/Support/ (compétences, notes de tête, photos,
+        // nationalité). Chaque groupe est tagué par son `origin` (œuvre de
         // provenance) — club et agents libres Captain Tsubasa partagent la même.
         $playersByOrigin = [
             'captain_tsubasa' => array_merge(
@@ -101,195 +77,66 @@ class PlayerSeeder extends Seeder
         );
 
         foreach ($playersByOrigin as $origin => $players) {
-        foreach ($players as $player) {
-            $firstname = $player[0];
-            $lastname = $player[1];
-            $age = $player[2];
-            $position = $player[3];
-            $cost = $this->calculateWeeklyCost($player[5], $position);
-            $baseStats = $player[5];
-            $desc = $player[6] ?? null;
-            // Postes secondaires (optionnel, index 7) : postes où le joueur peut
-            // aussi évoluer, avec un bonus de poste réduit en match.
-            $secondaryPositions = $player[7] ?? [];
-
-            $fullStats = $this->buildSkills($baseStats, $position);
-
-            // -----------------------------
-            // PHOTO AUTO (si fichier existe)
-            // -----------------------------
-            $slug = Str::slug($firstname . ' ' . $lastname); // ex: taro-misaki
-
-            // Nationalité : override par slug, sinon défaut de l'œuvre, sinon null.
-            $nationality = $nationalityByPlayerSlug[$slug]
-                ?? self::DEFAULT_NATIONALITY_BY_ORIGIN[$origin]
-                ?? null;
-
-            // Validation stricte : une nationalité non reconnue (faute de frappe,
-            // langue mélangée comme « Sweden » au lieu de « Suède ») fait échouer
-            // le seed plutôt que de créer une nation fantôme. Pour un nouveau pays,
-            // ajoute-le d'abord dans App\Enums\Nationality.
-            if ($nationality !== null && !Nationality::isValid($nationality)) {
-                throw new \RuntimeException(
-                    "Nationalité inconnue « {$nationality} » pour le joueur « {$slug} ». "
-                    . "Ajoute-la dans App\\Enums\\Nationality ou corrige la valeur."
-                );
+            foreach ($players as $player) {
+                DB::table('players')->insert($this->row(
+                    $origin, $player, $nationalityByPlayerSlug, $specialMovesByPlayerSlug,
+                ));
             }
-
-            $headingOverride = $this->getHeadingOverride($slug);
-            if ($headingOverride !== null) {
-                $fullStats['heading'] = $headingOverride;
-            }
-            // players/taro-misaki.webp (généré par images:publish ; png/jpg en repli)
-            $photoPathDb = null;
-            foreach (['webp', 'png', 'jpg', 'jpeg'] as $ext) {
-                $candidate = $storageDir . '/' . $slug . '.' . $ext;
-                if ($storageDisk->exists($candidate)) {
-                    $photoPathDb = $candidate;
-                    break;
-                }
-            }
-            [$fullStats, $specialMoves] = ReferenceRosterBalance::apply(
-                $origin, trim($firstname . ' ' . $lastname), $position, $fullStats, $specialMovesByPlayerSlug[$slug] ?? [],
-            );
-            if ($headingOverride === null && !isset($baseStats['heading'])
-                && $fullStats['heading'] === HeadingRating::estimate($position, $fullStats)) {
-                $fullStats['heading'] = HeadingRating::forProfile($position, $fullStats);
-            }
-
-            DB::table('players')->insert([
-                'firstname' => $firstname,
-                'lastname' => $lastname,
-                'age' => $age,
-                'position' => $position,
-                'origin' => $origin,
-                'nationality' => $nationality,
-                'secondary_positions' => json_encode($secondaryPositions, JSON_UNESCAPED_UNICODE),
-                'cost' => $cost,
-                'stats' => json_encode($fullStats, JSON_UNESCAPED_UNICODE),
-                'heading' => $fullStats['heading'],
-                'special_moves' => $specialMoves ? json_encode($specialMoves, JSON_UNESCAPED_UNICODE)
-                    : null,
-                'description' => $desc,
-                'photo_path' => $photoPathDb, // null si image absente
-            ]);
         }
-        }
-    }
-    /**
-     * Génère les stats détaillées à partir des stats de base + position.
-     */
-    private function buildSkills(array $baseStats, string $position): array
-    {
-        $speed = $baseStats['speed'];
-        $stamina = $baseStats['stamina'];
-        $defense = $baseStats['defense'];
-        $attack = $baseStats['attack'];
-
-        // valeurs "génériques"
-        $shot = (int)round($attack);
-        $pass = (int)round($attack * 0.7 + $speed * 0.3);
-        $dribble = (int)round($attack * 0.7 + $speed * 0.3);
-        $block = (int)round($defense * 0.8 + $stamina * 0.2);
-        $intercept = (int)round($defense * 0.7 + $speed * 0.3);
-        $tackle = (int)round($defense * 0.9 + $stamina * 0.1);
-
-        // par défaut, les joueurs de champ ne sont pas bons gardiens
-        $handSave = max(5, (int)round($defense * 0.2));
-        $punchSave = max(5, (int)round($defense * 0.15));
-
-        switch ($position) {
-            case 'Forward':
-                $shot = (int)round(min(100, $attack * 1.05));
-                $dribble = (int)round(min(100, ($attack * 0.8 + $speed * 0.4) / 1.1));
-                $pass = (int)round(($attack * 0.75 + $speed * 0.35) / 1.1);
-                break;
-
-            case 'Midfielder':
-                $pass = (int)round(min(100, ($attack * 0.9 + $speed * 0.4) / 1.1));
-                $dribble = (int)round(min(100, ($attack * 0.85 + $speed * 0.4) / 1.1));
-                break;
-
-            case 'Defender':
-                $block = (int)round(min(100, $block * 1.05));
-                $tackle = (int)round(min(100, $tackle * 1.05));
-                $intercept = (int)round(($defense * 0.8 + $speed * 0.3) / 1.1);
-                break;
-
-            case 'Goalkeeper':
-                // les GK sont spéciaux
-                $shot = (int)round($attack * 0.8);
-                $pass = (int)round($attack * 0.7 + $speed * 0.3);
-                $dribble = (int)round($speed * 0.7 + $defense * 0.3);
-
-                $block = (int)round(($defense * 0.9 + $stamina * 0.3) / 1.2);
-                $intercept = (int)round($defense * 0.8 + $speed * 0.2);
-                $tackle = (int)round($defense * 0.7 + $stamina * 0.3);
-
-                $handSave = (int)round(min(100, ($defense * 1.3 + $stamina * 0.5) / 1.5));
-                $punchSave = (int)round(min(100, ($defense * 1.1 + $stamina * 0.7) / 1.5));
-                break;
-        }
-
-        $stats = $baseStats + [
-                'shot' => $shot,
-                'pass' => $pass,
-                'dribble' => $dribble,
-                'block' => $block,
-                'intercept' => $intercept,
-                'tackle' => $tackle,
-                'hand_save' => $handSave,
-                'punch_save' => $punchSave,
-            ];
-
-        return $stats + ['heading' => HeadingRating::estimate($position, $stats)];
     }
 
     /**
-     * Overrides manuels de la stat heading pour des joueurs connus
-     * (slug exact "prenom-nom"), au-delà du calcul automatique.
+     * Ligne `players` d'un joueur de référence.
+     * $player = [prénom, nom, âge, poste, (réservé), stats de base, description?, postes secondaires?].
      *
-     * On utilise une correspondance EXACTE (et non str_contains) pour éviter
-     * qu'une clé courte ne touche plusieurs joueurs par accident (ex. « soda »
-     * matchait Makoto ET Kazuaki Soda). Notes spécifiques au jeu aérien du joueur.
+     * @param array<string, string> $nationalityByPlayerSlug
+     * @param array<string, array>  $specialMovesByPlayerSlug
      */
-    private function getHeadingOverride(string $slug): ?int
+    private function row(string $origin, array $player, array $nationalityByPlayerSlug, array $specialMovesByPlayerSlug): array
     {
-        $overrides = [
-            // --- Élite du jeu aérien (29-30) ---
-            'masao-tachibana'      => 30, // frères Tachibana : tête acrobatique légendaire
-            'kazuo-tachibana'      => 30,
-            'hiroshi-jito'         => 30, // défenseur, spécialiste des duels aériens
-            'makoto-soda'          => 29, // Musashi, mur défensif dominant dans les airs
+        $firstname = $player[0];
+        $lastname = $player[1];
+        $age = $player[2];
+        $position = $player[3];
+        $baseStats = $player[5];
+        $cost = $this->calculateWeeklyCost($baseStats, $position);
+        $desc = $player[6] ?? null;
+        // Postes secondaires (optionnel, index 7) : postes où le joueur peut
+        // aussi évoluer, avec un bonus de poste réduit en match.
+        $secondaryPositions = $player[7] ?? [];
 
-            // --- Très forts de la tête (25-28) ---
-            'kojiro-hyuga'         => 28, // avant-centre puissant et impitoyable
-            'hikaru-matsuyama'     => 26, // capitaine de Furano, fort sur les centres
-            'kazuaki-soda'         => 25, // défenseur robuste
+        $fullStats = PlayerSkills::build($baseStats, $position);
+        $slug = Str::slug($firstname . ' ' . $lastname); // ex: taro-misaki
 
-            // --- Forts / au-dessus de la moyenne (22-24) ---
-            'karl-heinz-schneider' => 24, // « Kaiser » allemand, complet et physique
-            'hermann-kaltz'        => 24, // arrière allemand, jeu aérien solide
-            'juan-diaz'            => 24, // buteur argentin puissant
-            'louis-napoleon'       => 23, // libéro français athlétique
-            'shingo-takasugi'      => 22, // défenseur solide dans les duels
-            'carlos-santana'       => 22, // crack brésilien, complet
-            'salvatore-gentile'    => 22, // défenseur italien rugueux
-            'shun-nitta'           => 22, // attaquant explosif, bon dans la surface
+        $nationality = PlayerNationality::resolve($slug, $origin, $nationalityByPlayerSlug);
 
-            // --- Moyens (18-20) ---
-            'el-sid-pierre'        => 20, // meneur français athlétique
-            'gino-hernandez'       => 20, // ailier physique
-            'ryo-ishizaki'         => 20, // défenseur travailleur, généreux dans les duels
-            'jun-misugi'           => 19, // « prince du terrain », élégant mais technique
-            'teppei-kisugi'        => 18, // attaquant complet de Nankatsu
+        $headingOverride = HeadingOverrides::for($slug);
+        if ($headingOverride !== null) {
+            $fullStats['heading'] = $headingOverride;
+        }
 
-            // --- Faibles : techniciens / petits gabarits / meneurs au sol (11-14) ---
-            'taro-misaki'          => 14, // « magicien du terrain », jeu au sol
-            'takeshi-sawada'       => 12, // jeune surdoué technique, petit gabarit
-            'tsubasa-ozora'        => 11, // génie technique au sol, faible de la tête
+        [$fullStats, $specialMoves] = ReferenceRosterBalance::apply(
+            $origin, trim($firstname . ' ' . $lastname), $position, $fullStats, $specialMovesByPlayerSlug[$slug] ?? [],
+        );
+        if ($headingOverride === null && !isset($baseStats['heading'])
+            && $fullStats['heading'] === HeadingRating::estimate($position, $fullStats)) {
+            $fullStats['heading'] = HeadingRating::forProfile($position, $fullStats);
+        }
+
+        return [
+            'firstname' => $firstname,
+            'lastname' => $lastname,
+            'age' => $age,
+            'position' => $position,
+            'origin' => $origin,
+            'nationality' => $nationality,
+            'secondary_positions' => json_encode($secondaryPositions, JSON_UNESCAPED_UNICODE),
+            'cost' => $cost,
+            'stats' => json_encode($fullStats, JSON_UNESCAPED_UNICODE),
+            'heading' => $fullStats['heading'],
+            'special_moves' => $specialMoves ? json_encode($specialMoves, JSON_UNESCAPED_UNICODE) : null,
+            'description' => $desc,
+            'photo_path' => PlayerPhotos::pathFor($slug), // null si image absente
         ];
-
-        return $overrides[$slug] ?? null;
     }
 }
