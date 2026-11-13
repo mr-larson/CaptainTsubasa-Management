@@ -469,6 +469,10 @@ class DraftService
         $gameSave->phase = 'season';
         $gameSave->state = $state;
         $gameSave->save();
+
+        // Ouvre la saison : mandat, défis, calendrier, compositions IA (sous le
+        // verrou de la save, comme tous les appelants de finalizeDraft).
+        app(SeasonBootstrapService::class)->prepare($gameSave);
     }
 
     /**

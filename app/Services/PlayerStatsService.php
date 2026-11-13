@@ -23,6 +23,21 @@ class PlayerStatsService
      *   ...
      * ]
      */
+    /**
+     * aggregateForSave() mis en cache : les stats ne changent qu'à la fin d'un
+     * match, donc la clé suit le nombre de matchs joués et le dernier id. La
+     * page Play ne refait plus l'agrégation à chaque affichage.
+     */
+    public static function cachedAggregateForSave(GameSave $gameSave): array
+    {
+        $played = GameMatch::where('game_save_id', $gameSave->id)->where('status', 'played')
+            ->selectRaw('COUNT(*) AS n, MAX(id) AS last_id')->toBase()->first();
+
+        $key = sprintf('save-stats:%d:s%d:%d:%d', $gameSave->id, (int) ($gameSave->season ?? 1), $played->n, $played->last_id);
+
+        return \Illuminate\Support\Facades\Cache::remember($key, now()->addDay(), fn () => self::aggregateForSave($gameSave));
+    }
+
     public static function aggregateForSave(GameSave $gameSave): array
     {
         $offense = ['pass', 'shot', 'dribble', 'special', 'cross'];

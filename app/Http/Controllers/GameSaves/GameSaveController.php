@@ -33,6 +33,7 @@ use App\Services\MoraleService;
 use App\Services\PlayerMoraleSummary;
 use App\Services\PlayerChemistryService;
 use App\Services\NationalTeamAssembler;
+use App\Services\SeasonBootstrapService;
 use App\Services\SeasonService;
 use App\Services\PlayerStatsService;
 use App\Services\TournamentService;
@@ -614,6 +615,9 @@ class GameSaveController extends Controller
                     ->with('success', 'Partie créée — le draft commence !');
             }
 
+            // Première semaine : mandat, défis, calendrier, compositions IA.
+            app(SeasonBootstrapService::class)->prepare($gameSave);
+
             return redirect()->route('game-saves.Play', $gameSave)->with('success', 'Partie créée');
         });
     }
@@ -679,6 +683,7 @@ class GameSaveController extends Controller
 
             $assembler->assemble($gameSave, $nations, $controlled);
             $tournament->generateGroups($gameSave);
+            app(SeasonBootstrapService::class)->prepare($gameSave);
 
             return redirect()->route('game-saves.Play', $gameSave)
                 ->with('success', "Coupe du Monde créée — tu diriges {$controlled} !");
@@ -708,24 +713,18 @@ class GameSaveController extends Controller
             return redirect()->route('game-saves.season-end', $gameSave);
         }
 
-        // Fixe l'objectif de la direction pour la saison courante si besoin
-        // (couvre le mode draft : l'effectif n'existe qu'après la draft).
-        $this->withSaveLock($gameSave, function (GameSave $gameSave) use ($career) {
-            app(\App\Services\DraftService::class)->purgeFinishedDraft($gameSave);
+        // Filet de sécurité pour les sauvegardes antérieures aux transitions
+        // explicites (SeasonBootstrapService) : verrou seulement si quelque chose
+        // manque, et revérifié sous verrou. En régime normal, aucune écriture.
+        $bootstrap = app(SeasonBootstrapService::class);
+        if ($bootstrap->needsPreparation($gameSave)) {
+            $this->withSaveLock($gameSave, function (GameSave $locked) use ($bootstrap) {
+                if (! $bootstrap->needsPreparation($locked)) return;
 
-            if (!$gameSave->isInMatchPhase()) return;
-
-            if (($gameSave->phase ?? 'season') === 'season') {
-                $career->ensureSeasonMandate($gameSave);
-                $challenges = app(SeasonChallengeService::class);
-                $challenges->ensureSeasonChallenges($gameSave);
-                // Rattrape les objectifs déjà réussis dans les sauvegardes existantes.
-                $challenges->payCompleted($gameSave, [(int) $gameSave->controlled_game_team_id]);
-            }
-
-            $this->ensureCalendar($gameSave);
-            app(AiLineUpService::class)->prepareScheduledTeams($gameSave, (int) ($gameSave->week ?? 1));
-        });
+                app(DraftService::class)->purgeFinishedDraft($locked);
+                $bootstrap->prepare($locked);
+            });
+        }
 
         $currentWeek = $gameSave->week ?? 1;
 
@@ -780,11 +779,99 @@ class GameSaveController extends Controller
         ];
 
         // ─── Stats saison agrégées depuis game_matches.match_stats ───
-        $playerSeasonStats = PlayerStatsService::aggregateForSave($gameSave);
+        $playerSeasonStats = PlayerStatsService::cachedAggregateForSave($gameSave);
 
-        // ─── Blessures et suspensions actives ───
+        $availability = $this->availabilityProps($gameSave, $currentWeek);
 
-        $activeInjuries = GameInjury::where('game_save_id', $gameSave->id)
+        // ─── Moral : derniers changements par joueur (équipe contrôlée) ───
+        $controlledPlayerIds = $controlledTeam
+            ? $controlledTeam->contracts->pluck('game_player_id')
+            : collect();
+
+        // Moral, promesses (en cours + dernières évaluées), dernière déclaration publique.
+        $moraleSummary      = app(PlayerMoraleSummary::class);
+        $moraleLogs         = $moraleSummary->recentChanges($gameSave, $controlledPlayerIds);
+        $playerPromises     = $moraleSummary->promises($gameSave, $controlledPlayerIds);
+        $playerDeclarations = $moraleSummary->declarations($gameSave, $controlledPlayerIds);
+
+        $controlledTeamId = $gameSave->controlled_game_team_id;
+        $cards = $this->bonusCardProps($gameSave, $controlledTeamId);
+
+        $hotSeat = $this->hotSeatProp($gameSave, $gameTeams);
+
+        // Duos d'alchimie (une-deux), par base_player_id : pour badger les
+        // joueurs liés (effectif, mercato).
+        $duoLinks = PlayerLink::linksWithNamesFor(
+            GamePlayer::where('game_save_id', $gameSave->id)
+                ->whereNotNull('base_player_id')
+                ->distinct()
+                ->pluck('base_player_id')
+                ->all()
+        );
+
+        $chemistry = app(PlayerChemistryService::class);
+        $activeContracts = $gameTeams->flatMap(fn ($team) => $team->contracts);
+        $activePlayers = $activeContracts->pluck('gamePlayer')->filter();
+        $teamByPlayer = $activeContracts->pluck('game_team_id', 'game_player_id');
+        $rosterIds = $teamByPlayer->keys()->all();
+
+        return Inertia::render('GameSaves/Play', [
+            'midseasonBreakRecovery' => $gameSave->hasPendingMidseasonBreak() ? SeasonService::MIDSEASON_RECOVERY : null,
+            'contractSeasonEndWeek' => $canRenewContracts ? SeasonService::lengthForTeamCount($gameTeams->count()) : null,
+            'gameSave'            => $gameSave,
+            'managementStats'     => $managementStats,
+            'duoLinks'            => $duoLinks,
+            'playerChemistry'      => $chemistry->summary($gameSave, $activePlayers, $teamByPlayer),
+            'learnedDuos'          => $chemistry->confirmedPartners($gameSave, $rosterIds),
+            'teams'               => $gameTeams,
+            'matches'             => $matches,
+            'freePlayers'         => $freePlayers,
+            'controlledTeam'      => $controlledTeam,
+            'hotSeat'             => $hotSeat,
+            'playerSeasonStats'   => $playerSeasonStats,
+            'activeInjuries'      => $availability['injuries'],
+            'activeSuspensions'   => $availability['suspensions'],
+            'activePositionTrainings' => $availability['positionTrainings'],
+            'trainableSpecialMoves' => fn () => \App\Services\TrainableSpecialMoves::catalog(),
+            'specialTrainingCost' => (int) $gameSave->getConfig('special_training_cost'),
+            'activeYellowCards'   => $availability['yellowCards'],
+            'moraleLogs'          => $moraleLogs,
+            'playerPromises'      => $playerPromises,
+            'playerDeclarations'  => $playerDeclarations,
+            'bonusCardOffers'     => $cards['offers'],
+            'bonusCardInventory'  => $cards['inventory'],
+            'sponsorChallenges'   => $cards['sponsorChallenges'],
+            'sponsorResults'      => $cards['sponsorResults'],
+            'incomingMalus'       => $cards['incomingMalus'],
+            'activeShields'       => $cards['activeShields'],
+            'gameConfig'          => $gameSave->getConfig(),
+            // Séances IA de la dernière semaine jouée (celle affichée par défaut) ;
+            // les autres semaines se chargent à la demande.
+            'aiTrainingInitial'   => [
+                'season'  => (int) ($gameSave->season ?? 1),
+                'week'    => max(1, (int) ($gameSave->week ?? 1) - 1),
+                'entries' => collect($gameSave->state['ai_training_history'] ?? [])
+                    ->filter(fn ($e) => (int) ($e['season'] ?? 0) === (int) ($gameSave->season ?? 1)
+                        && (int) ($e['week'] ?? 0) === max(1, (int) ($gameSave->week ?? 1) - 1))
+                    ->values()->all(),
+            ],
+            'tournament'          => $gameSave->competition_type === 'world_cup'
+                ? app(TournamentService::class)->presentation($gameSave)
+                : null,
+            'career'              => app(CareerObjectiveService::class)->presentation($gameSave),
+            'seasonChallenges'    => app(SeasonChallengeService::class)->presentation($gameSave),
+            'incomeModel'         => WeekClosingService::humanIncomeModel($gameSave),
+        ]);
+    }
+
+    // ==========================
+    //   BUILDERS DE PROPS (play)
+    // ==========================
+
+    /** Blessures, suspensions, formations de poste et jaunes en cours. */
+    private function availabilityProps(GameSave $gameSave, int $currentWeek): array
+    {
+        $injuries = GameInjury::where('game_save_id', $gameSave->id)
             ->where('week_return', '>', $currentWeek)
             ->with('gamePlayer')
             ->get()
@@ -796,7 +883,7 @@ class GameSaveController extends Controller
                 'description'    => $i->description,
             ]);
 
-        $activeSuspensions = GameSanction::where('game_save_id', $gameSave->id)
+        $suspensions = GameSanction::where('game_save_id', $gameSave->id)
             ->where('week_return', '>', $currentWeek)
             ->where('weeks_suspended', '>', 0)
             ->get()
@@ -808,7 +895,7 @@ class GameSaveController extends Controller
             ]);
 
         // Formations de poste en cours (joueur indisponible jusqu'à week_return).
-        $activePositionTrainings = GamePositionTraining::where('game_save_id', $gameSave->id)
+        $positionTrainings = GamePositionTraining::where('game_save_id', $gameSave->id)
             ->whereNull('completed_at')
             ->get()
             ->map(fn ($t) => [
@@ -822,37 +909,29 @@ class GameSaveController extends Controller
         // Jaunes du cycle en cours (vers la prochaine suspension). Les sanctions
         // sont purgées à l'intersaison, donc tout est de la saison courante.
         $suspensionOn3Yellows = (bool) $gameSave->getConfig('suspension_on_3_yellows', true);
-        $activeYellowCards = GameSanction::currentYellowCardCycle($gameSave)
+        $yellowCards = GameSanction::currentYellowCardCycle($gameSave)
             ->get()
             ->groupBy('game_player_id')
             ->map(fn($cards) => $suspensionOn3Yellows ? $cards->count() % 3 : $cards->count())
             ->filter();
 
-        // ─── Moral : derniers changements par joueur (équipe contrôlée) ───
-        $controlledPlayerIds = $controlledTeam
-            ? $controlledTeam->contracts->pluck('game_player_id')
-            : collect();
+        return compact('injuries', 'suspensions', 'positionTrainings', 'yellowCards');
+    }
 
-        // Moral, promesses (en cours + dernières évaluées), dernière déclaration publique.
-        $moraleSummary      = app(PlayerMoraleSummary::class);
-        $moraleLogs         = $moraleSummary->recentChanges($gameSave, $controlledPlayerIds);
-        $playerPromises     = $moraleSummary->promises($gameSave, $controlledPlayerIds);
-        $playerDeclarations = $moraleSummary->declarations($gameSave, $controlledPlayerIds);
-
-        // ─── Bonus cards ───
-        $controlledTeamId = $gameSave->controlled_game_team_id;
-
+    /** Boutique, inventaire, défis sponsor, malus reçus et boucliers de l'équipe contrôlée. */
+    private function bonusCardProps(GameSave $gameSave, ?int $controlledTeamId): array
+    {
         // Boutique de la semaine : tirée au premier affichage, donc sous verrou
         // (seulement quand elle est périmée) ; la lecture, elle, reste libre.
         $shopService = app(BonusCardShopService::class);
         if ($controlledTeamId && $shopService->isStale($gameSave)) {
             $this->withSaveLock($gameSave, fn (GameSave $locked) => $shopService->ensureFresh($locked));
         }
-        $bonusCardOffers = $controlledTeamId
+        $offers = $controlledTeamId
             ? $shopService->getOffersForTeam($gameSave, $controlledTeamId)
             : [];
 
-        $bonusCardInventory = $controlledTeamId
+        $inventory = $controlledTeamId
             ? GameBonusCard::where('game_save_id', $gameSave->id)
                 ->where('game_team_id', $controlledTeamId)
                 ->with('bonusCard')
@@ -914,7 +993,12 @@ class GameSaveController extends Controller
             ))
             : 0;
 
-        // ─── Hot-seat multi-manager : qui joue, dans quel ordre ───
+        return compact('offers', 'inventory', 'sponsorChallenges', 'sponsorResults', 'incomingMalus', 'activeShields');
+    }
+
+    /** Qui joue, dans quel ordre (hot-seat multi-manager) ; null en mono-manager. */
+    private function hotSeatProp(GameSave $gameSave, Collection $gameTeams): ?array
+    {
         $controlledTeams = $gameTeams
             ->whereNotNull('human_seat')
             ->sortBy('human_seat')
@@ -937,69 +1021,7 @@ class GameSaveController extends Controller
             ];
         }
 
-        // Duos d'alchimie (une-deux), par base_player_id : pour badger les
-        // joueurs liés (effectif, mercato).
-        $duoLinks = PlayerLink::linksWithNamesFor(
-            GamePlayer::where('game_save_id', $gameSave->id)
-                ->whereNotNull('base_player_id')
-                ->distinct()
-                ->pluck('base_player_id')
-                ->all()
-        );
-
-        $chemistry = app(PlayerChemistryService::class);
-        $activeContracts = $gameTeams->flatMap(fn ($team) => $team->contracts);
-        $activePlayers = $activeContracts->pluck('gamePlayer')->filter();
-        $teamByPlayer = $activeContracts->pluck('game_team_id', 'game_player_id');
-        $rosterIds = $teamByPlayer->keys()->all();
-
-        return Inertia::render('GameSaves/Play', [
-            'midseasonBreakRecovery' => $gameSave->hasPendingMidseasonBreak() ? SeasonService::MIDSEASON_RECOVERY : null,
-            'contractSeasonEndWeek' => $canRenewContracts ? SeasonService::lengthForTeamCount($gameTeams->count()) : null,
-            'gameSave'            => $gameSave,
-            'managementStats'     => $managementStats,
-            'duoLinks'            => $duoLinks,
-            'playerChemistry'      => $chemistry->summary($gameSave, $activePlayers, $teamByPlayer),
-            'learnedDuos'          => $chemistry->confirmedPartners($gameSave, $rosterIds),
-            'teams'               => $gameTeams,
-            'matches'             => $matches,
-            'freePlayers'         => $freePlayers,
-            'controlledTeam'      => $controlledTeam,
-            'hotSeat'             => $hotSeat,
-            'playerSeasonStats'   => $playerSeasonStats,
-            'activeInjuries'      => $activeInjuries,
-            'activeSuspensions'   => $activeSuspensions,
-            'activePositionTrainings' => $activePositionTrainings,
-            'trainableSpecialMoves' => fn () => \App\Services\TrainableSpecialMoves::catalog(),
-            'specialTrainingCost' => (int) $gameSave->getConfig('special_training_cost'),
-            'activeYellowCards'   => $activeYellowCards,
-            'moraleLogs'          => $moraleLogs,
-            'playerPromises'      => $playerPromises,
-            'playerDeclarations'  => $playerDeclarations,
-            'bonusCardOffers'     => $bonusCardOffers,
-            'bonusCardInventory'  => $bonusCardInventory,
-            'sponsorChallenges'   => $sponsorChallenges,
-            'sponsorResults'      => $sponsorResults,
-            'incomingMalus'       => $incomingMalus,
-            'activeShields'       => $activeShields,
-            'gameConfig'          => $gameSave->getConfig(),
-            // Séances IA de la dernière semaine jouée (celle affichée par défaut) ;
-            // les autres semaines se chargent à la demande.
-            'aiTrainingInitial'   => [
-                'season'  => (int) ($gameSave->season ?? 1),
-                'week'    => max(1, (int) ($gameSave->week ?? 1) - 1),
-                'entries' => collect($gameSave->state['ai_training_history'] ?? [])
-                    ->filter(fn ($e) => (int) ($e['season'] ?? 0) === (int) ($gameSave->season ?? 1)
-                        && (int) ($e['week'] ?? 0) === max(1, (int) ($gameSave->week ?? 1) - 1))
-                    ->values()->all(),
-            ],
-            'tournament'          => $gameSave->competition_type === 'world_cup'
-                ? app(TournamentService::class)->presentation($gameSave)
-                : null,
-            'career'              => app(CareerObjectiveService::class)->presentation($gameSave),
-            'seasonChallenges'    => app(SeasonChallengeService::class)->presentation($gameSave),
-            'incomeModel'         => WeekClosingService::humanIncomeModel($gameSave),
-        ]);
+        return $hotSeat;
     }
 
     public function signFreeAgent(Request $request, GameSave $gameSave, GamePlayer $player): RedirectResponse
@@ -1174,67 +1196,6 @@ class GameSaveController extends Controller
     // ==========================
     //   HELPERS PRIVÉS
     // ==========================
-
-    private function ensureCalendar(GameSave $gameSave): void
-    {
-        // En Coupe du Monde, le calendrier (poules + élimination directe) est
-        // géré par le moteur de tournoi (Phase 4), pas par le round-robin de ligue.
-        if ($gameSave->competition_type === 'world_cup') return;
-
-        if ($gameSave->matches()->exists()) return;
-
-        $teamIds   = $gameSave->gameTeams()->pluck('id')->all();
-        $teamCount = count($teamIds);
-        if ($teamCount < 2) return;
-
-        // Mélanger pour éviter que la même équipe soit toujours extérieure
-        shuffle($teamIds);
-
-        if ($teamCount % 2 === 1) {
-            $teamIds[] = null;
-            $teamCount++;
-        }
-
-        $rounds = $teamCount - 1;
-        $half   = $teamCount / 2;
-        $ids    = $teamIds;
-        $matches = [];
-
-        for ($round = 0; $round < $rounds; $round++) {
-            $weekAller  = $round + 1;
-            $weekRetour = $round + 1 + $rounds;
-
-            for ($i = 0; $i < $half; $i++) {
-                $home = $ids[$i];
-                $away = $ids[$teamCount - 1 - $i];
-                if ($home === null || $away === null) continue;
-
-                // Alterner qui reçoit à l'aller vs retour
-                if ($round % 2 === 0) {
-                    $matches[] = ['week' => $weekAller,  'home' => $home, 'away' => $away];
-                    $matches[] = ['week' => $weekRetour, 'home' => $away, 'away' => $home];
-                } else {
-                    $matches[] = ['week' => $weekAller,  'home' => $away, 'away' => $home];
-                    $matches[] = ['week' => $weekRetour, 'home' => $home, 'away' => $away];
-                }
-            }
-
-            $fixed = array_shift($ids);
-            $last  = array_pop($ids);
-            array_unshift($ids, $fixed);
-            array_splice($ids, 1, 0, [$last]);
-        }
-
-        foreach ($matches as $m) {
-            GameMatch::create([
-                'game_save_id' => $gameSave->id,
-                'week'         => $m['week'],
-                'home_team_id' => $m['home'],
-                'away_team_id' => $m['away'],
-                'status'       => 'scheduled',
-            ]);
-        }
-    }
 
     public function updateConfig(Request $request, GameSave $gameSave): RedirectResponse
     {
