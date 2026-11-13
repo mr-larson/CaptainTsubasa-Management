@@ -313,6 +313,8 @@ class GameSaveController extends Controller
 
     public function start(GameSaveRequest $request): RedirectResponse
     {
+        if ($refused = $this->refuseIfSaveLimitReached($request)) return $refused;
+
         $data = $request->validated();
         $data['game_config'] = GameSave::sanitizeConfig($data['game_config'] ?? null) ?: null;
         $setupSeed = $request->session()->get('game_save_setup.player_stats_seed');
@@ -632,6 +634,8 @@ class GameSaveController extends Controller
      */
     public function startWorldCup(Request $request, NationalTeamAssembler $assembler, TournamentService $tournament): RedirectResponse
     {
+        if ($refused = $this->refuseIfSaveLimitReached($request)) return $refused;
+
         $data = $request->validate([
             'label'            => ['nullable', 'string', 'max:255'],
             'period'           => ['required', 'string', 'in:college'],
@@ -862,6 +866,19 @@ class GameSaveController extends Controller
             'seasonChallenges'    => app(SeasonChallengeService::class)->presentation($gameSave),
             'incomeModel'         => WeekClosingService::humanIncomeModel($gameSave),
         ]);
+    }
+
+    /** Plafond de sauvegardes par utilisateur (config game.max_saves_per_user). */
+    private function refuseIfSaveLimitReached(Request $request): ?RedirectResponse
+    {
+        $max = (int) config('game.max_saves_per_user');
+        if ($max > 0 && GameSave::where('user_id', $request->user()->id)->count() >= $max) {
+            return back()->withErrors([
+                'game_save' => "Tu as atteint la limite de {$max} parties. Supprime-en une pour en créer une nouvelle.",
+            ]);
+        }
+
+        return null;
     }
 
     // ==========================

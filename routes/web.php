@@ -20,6 +20,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TeamController;
 use App\Models\Player;
 use App\Models\Team;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -30,14 +31,21 @@ use Inertia\Inertia;
 */
 
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'teams' => Team::select('id','name','budget','logo_path')->orderBy('name')->get(),
+    // Page publique : le classement JSON_EXTRACT sur tous les joueurs ne doit
+    // pas tourner à chaque visite. Les données de référence changent rarement.
+    $reference = Cache::remember('welcome:reference', now()->addMinutes(10), fn () => [
+        'teams' => Team::select('id','name','budget','logo_path')->orderBy('name')->get()->toArray(),
         'players' => Player::select('id','firstname','lastname','position','photo_path','stats')
             ->orderByRaw("JSON_EXTRACT(stats, '$.attack') DESC")
             ->take(50)
-            ->get(),
+            ->get()
+            ->toArray(),
         // Compteur réel (l'échantillon ci-dessus est limité à 50).
         'playerCount' => Player::count(),
+    ]);
+
+    return Inertia::render('Welcome', [
+        ...$reference,
         // Captures réelles du jeu (public/images/welcome), affichées seulement si présentes.
         'screenshots' => collect(['match', 'dashboard'])
             ->mapWithKeys(fn ($name) => [$name => is_file(public_path("images/welcome/{$name}.webp")) ? "/images/welcome/{$name}.webp" : null])
@@ -144,15 +152,15 @@ Route::middleware('auth')->group(function () {
     });
 
     // Game saves
-    Route::prefix('game-saves')->name('game-saves.')->middleware('save.lock')->group(function () {
+    Route::prefix('game-saves')->name('game-saves.')->middleware(['throttle:game-writes', 'save.lock'])->group(function () {
 
         // CRUD saves
         Route::get('/',        [GameSaveController::class, 'index'])->name('index');
         Route::get('/create',  [GameSaveController::class, 'create'])->name('create');
-        Route::post('/',       [GameSaveController::class, 'store'])->name('store');
+        Route::post('/',       [GameSaveController::class, 'store'])->middleware('throttle:game-create')->name('store');
         Route::get('/setup',   [GameSaveController::class, 'setup'])->name('setup');
-        Route::post('/start',  [GameSaveController::class, 'start'])->name('start');
-        Route::post('/world-cup/start', [GameSaveController::class, 'startWorldCup'])->name('start-world-cup');
+        Route::post('/start',  [GameSaveController::class, 'start'])->middleware('throttle:game-create')->name('start');
+        Route::post('/world-cup/start', [GameSaveController::class, 'startWorldCup'])->middleware('throttle:game-create')->name('start-world-cup');
         Route::get('/continue',[GameSaveController::class, 'continue'])->name('continue');
         Route::get('/{gameSave}/draft', [GameDraftController::class, 'show'])->name('draft');
         Route::post('/{gameSave}/draft/ai-pick', [GameDraftController::class, 'aiPick'])->name('draft.ai-pick');
@@ -269,14 +277,8 @@ Route::middleware('auth')->group(function () {
     Route::patch('/game-contracts/{contract}/toggle-captain',
         [LineupController::class, 'toggleCaptain'])->name('game-contracts.toggle-captain');
 
-    // Match démo
-    Route::get('/match/demo', fn() => Inertia::render('Match/Engine'))->name('match.demo');
-
-    //Test — réservé aux admins (route de debug, expose des données de partie)
-    Route::get('/debug/styles/{gameSave}', function (\App\Models\GameSaves\GameSave $gameSave) {
-        return \App\Models\GameSaves\GameTeam::where('game_save_id', $gameSave->id)
-            ->get(['name', 'tactical_style', 'management_philosophy']);
-    })->middleware('admin');
+    // Match démo (moteur de rendu sans sauvegarde) : outil de dev, réservé aux admins.
+    Route::get('/match/demo', fn() => Inertia::render('Match/Engine'))->middleware('admin')->name('match.demo');
 });
 
 require __DIR__.'/auth.php';

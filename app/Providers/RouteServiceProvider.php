@@ -28,6 +28,22 @@ class RouteServiceProvider extends ServiceProvider
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
 
+        // Actions de jeu : plafond généreux par joueur (un double clic ou un
+        // script emballé ne doit pas saturer la base). Lectures non limitées.
+        RateLimiter::for('game-writes', function (Request $request) {
+            return $request->isMethodSafe()
+                ? Limit::none()
+                : Limit::perMinute(120)->by($request->user()?->id ?: $request->ip());
+        });
+
+        // Création de partie : des centaines de lignes insérées par appel.
+        RateLimiter::for('game-create', function (Request $request) {
+            return [
+                Limit::perMinute(5)->by('create-min:'.($request->user()?->id ?: $request->ip())),
+                Limit::perHour(30)->by('create-hour:'.($request->user()?->id ?: $request->ip())),
+            ];
+        });
+
         $this->routes(function () {
             Route::middleware('api')
                 ->prefix('api')

@@ -14,6 +14,9 @@
                 <p v-if="startForm.errors.setup_token" role="alert" class="mb-3 text-sm text-rose-600">
                     {{ startForm.errors.setup_token }}
                 </p>
+                <p v-if="startForm.errors.game_save" role="alert" class="mb-3 text-sm text-rose-600">
+                    {{ startForm.errors.game_save }}
+                </p>
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                         <p class="text-sm text-slate-400">

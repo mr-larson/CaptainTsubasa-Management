@@ -90,6 +90,7 @@ function launch() {
                 </div>
 
                 <p v-if="form.errors.nation" class="mt-4 text-xs text-rose-500">{{ form.errors.nation }}</p>
+                <p v-if="form.errors.game_save" class="mt-4 text-xs text-rose-500">{{ form.errors.game_save }}</p>
 
                 <!-- Pied : lancement -->
                 <div class="mt-6 pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
