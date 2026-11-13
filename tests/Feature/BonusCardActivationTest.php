@@ -149,6 +149,37 @@ class BonusCardActivationTest extends TestCase
         $this->assertSame(55, (int) $players->first()->fresh()->stamina);
     }
 
+    public function test_opponent_budget_and_morale_drain_hit_the_next_opponent(): void
+    {
+        $save = $this->makeSave();
+        $source = $this->makeTeam($save, ['is_controlled' => true]);
+        [$opponent, $players] = $this->makeTeamWithSquad($save, ['budget' => 1000]);
+        $this->makeMatch($save, $source, $opponent, ['week' => 1]);
+        $morale = (int) $players->first()->fresh()->morale;
+
+        $budget = $this->makeBonusCard(['kind' => 'malus', 'target' => 'opponent', 'effect_type' => 'opponent_budget_drain', 'effect_value' => ['amount' => 300]]);
+        $this->service->activate($this->makeGameCard($save, $source, $budget), $save);
+        $this->assertSame(700, (int) $opponent->fresh()->budget);
+
+        $drain = $this->makeBonusCard(['kind' => 'malus', 'target' => 'opponent', 'effect_type' => 'opponent_morale_drain', 'effect_value' => ['amount' => 10]]);
+        $this->service->activate($this->makeGameCard($save, $source, $drain), $save);
+        $this->assertSame(max(0, $morale - 10), (int) $players->first()->fresh()->morale);
+    }
+
+    public function test_opponent_team_stat_debuff_is_stored_for_the_next_match(): void
+    {
+        $save = $this->makeSave();
+        $source = $this->makeTeam($save, ['is_controlled' => true]);
+        [$opponent] = $this->makeTeamWithSquad($save);
+        $match = $this->makeMatch($save, $source, $opponent, ['week' => 1]);
+
+        $card = $this->makeBonusCard(['kind' => 'malus', 'target' => 'opponent', 'effect_type' => 'opponent_team_stat_debuff', 'effect_value' => ['stat' => 'speed', 'amount' => 12]]);
+        $this->service->activate($this->makeGameCard($save, $source, $card), $save);
+
+        $mods = $this->service->getMatchStatModifiers($save->fresh(), $opponent->id, $match->id);
+        $this->assertSame(-12, $mods['team']['speed'] ?? null);
+    }
+
     public function test_opponent_bench_starter_registers_pending_malus(): void
     {
         $save = $this->makeSave();

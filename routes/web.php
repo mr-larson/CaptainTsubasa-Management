@@ -10,7 +10,9 @@ use App\Http\Controllers\GameSaves\GamePlayerController;
 use App\Http\Controllers\GameSaves\GameDeclarationController;
 use App\Http\Controllers\GameSaves\GamePromiseController;
 use App\Http\Controllers\GameSaves\GamePlayerChemistryController;
+use App\Http\Controllers\GameSaves\FreeAgentController;
 use App\Http\Controllers\GameSaves\GameSaveController;
+use App\Http\Controllers\GameSaves\GameSaveCreationController;
 use App\Http\Controllers\GameSaves\GameTeamController;
 use App\Http\Controllers\GameSaves\LineupController;
 use App\Http\Controllers\GameSaves\TrainingController;
@@ -156,11 +158,11 @@ Route::middleware('auth')->group(function () {
 
         // CRUD saves
         Route::get('/',        [GameSaveController::class, 'index'])->name('index');
-        Route::get('/create',  [GameSaveController::class, 'create'])->name('create');
-        Route::post('/',       [GameSaveController::class, 'store'])->middleware('throttle:game-create')->name('store');
-        Route::get('/setup',   [GameSaveController::class, 'setup'])->name('setup');
-        Route::post('/start',  [GameSaveController::class, 'start'])->middleware('throttle:game-create')->name('start');
-        Route::post('/world-cup/start', [GameSaveController::class, 'startWorldCup'])->middleware('throttle:game-create')->name('start-world-cup');
+        Route::get('/create',  [GameSaveCreationController::class, 'create'])->name('create');
+        Route::post('/',       [GameSaveCreationController::class, 'store'])->middleware('throttle:game-create')->name('store');
+        Route::get('/setup',   [GameSaveCreationController::class, 'setup'])->name('setup');
+        Route::post('/start',  [GameSaveCreationController::class, 'start'])->middleware('throttle:game-create')->name('start');
+        Route::post('/world-cup/start', [GameSaveCreationController::class, 'startWorldCup'])->middleware('throttle:game-create')->name('start-world-cup');
         Route::get('/continue',[GameSaveController::class, 'continue'])->name('continue');
         Route::get('/{gameSave}/draft', [GameDraftController::class, 'show'])->name('draft');
         Route::post('/{gameSave}/draft/ai-pick', [GameDraftController::class, 'aiPick'])->name('draft.ai-pick');
@@ -177,7 +179,7 @@ Route::middleware('auth')->group(function () {
 
         // Agents libres
         Route::post('/{gameSave}/free-agents/{player}/sign',
-            [GameSaveController::class, 'signFreeAgent'])->name('free-agents.sign');
+            [FreeAgentController::class, 'signFreeAgent'])->name('free-agents.sign');
 
         // ── Matchs → GameMatchController ──────────────────────────
         Route::get('/{gameSave}/match',
