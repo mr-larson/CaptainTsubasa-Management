@@ -51,12 +51,14 @@ class Team extends Model
             ->withTimestamps();
     }
 
+    /** Contrats de référence de l'équipe (voir Contract). */
     public function contracts() : HasMany
     {
         return $this->hasMany(Contract::class);
     }
 
 
+    /** URL publique du logo, ou null si l'équipe n'en a pas. */
     public function getLogoUrlAttribute(): ?string
     {
         if (!$this->logo_path) {

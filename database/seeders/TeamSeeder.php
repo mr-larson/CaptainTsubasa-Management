@@ -10,10 +10,20 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
+/**
+ * Catalogue des 15 équipes de Captain Tsubasa (collège) : nom, description, style
+ * tactique, philosophie de gestion, formation par défaut et logo. Vide la table
+ * `teams` avant de la remplir (garde-fou en production : voir GuardsReferenceReseed).
+ */
 class TeamSeeder extends Seeder
 {
     use GuardsReferenceReseed;
 
+    /**
+     * Vide la table `teams` puis insère les 15 équipes, avec leur logo s'il existe dans
+     * public/storage/teams/ (fichier nommé d'après le slug du nom). Budget de départ
+     * 5 000 et bilan à zéro pour toutes.
+     */
     public function run(): void
     {
         if ($this->refusesProductionReseed('teams')) {

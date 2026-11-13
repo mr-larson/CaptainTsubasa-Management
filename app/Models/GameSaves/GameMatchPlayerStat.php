@@ -42,6 +42,7 @@ class GameMatchPlayerStat extends Model
 
     private const MAX = 65535; // unsignedSmallInteger
 
+    /** Match auquel appartient ce bilan. */
     public function match(): BelongsTo
     {
         return $this->belongsTo(GameMatch::class, 'game_match_id');
@@ -100,6 +101,10 @@ class GameMatchPlayerStat extends Model
         return $stats;
     }
 
+    /**
+     * Bilan de cette ligne dans la forme imbriquée historique (offense / defense /
+     * duelsWon / duelsLost).
+     */
     public function toStats(): array
     {
         return self::statsFromColumns($this->attributes);

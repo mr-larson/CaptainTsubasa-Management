@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Storage;
  */
 trait HasPhotoUrl
 {
+    /** URL publique de la photo, ou null si le joueur n'en a pas. */
     public function getPhotoUrlAttribute(): ?string
     {
         return $this->photo_path ? Storage::url($this->photo_path) : null;

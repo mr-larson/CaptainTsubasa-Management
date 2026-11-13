@@ -17,6 +17,11 @@ use Illuminate\Support\Facades\DB;
  */
 trait GuardsReferenceReseed
 {
+    /**
+     * Faut-il refuser de reseeder `$table` ? Vrai uniquement en production, sur une table
+     * déjà remplie, sans forçage (SEED_FORCE_REFERENCE_RESET). Affiche alors un avertissement ;
+     * le seeder doit s'arrêter sans rien modifier.
+     */
     protected function refusesProductionReseed(string $table): bool
     {
         if (! app()->environment('production')

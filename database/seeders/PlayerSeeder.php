@@ -15,6 +15,14 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
+/**
+ * Catalogue des joueurs de référence (table `players`) : vide la table, puis insère
+ * les joueurs de chaque œuvre (Captain Tsubasa, École des Champions, Hungry Heart,
+ * Blue Lock, Ao Ashi, joueurs originaux). Les données sont dans database/seeders/Players/
+ * (une classe par groupe ou par club) ; les calculs (stats dérivées, notes de tête,
+ * photos, nationalités) dans database/seeders/Support/. Garde-fou en production :
+ * voir GuardsReferenceReseed.
+ */
 class PlayerSeeder extends Seeder
 {
     use GuardsReferenceReseed;

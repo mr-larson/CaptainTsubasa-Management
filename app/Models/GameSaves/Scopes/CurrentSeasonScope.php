@@ -14,6 +14,10 @@ use Illuminate\Database\Eloquent\Scope;
  */
 class CurrentSeasonScope implements Scope
 {
+    /**
+     * Ajoute à la requête la condition « la ligne est de la saison courante de sa
+     * sauvegarde » (sous-requête sur game_saves.season).
+     */
     public function apply(Builder $builder, Model $model): void
     {
         $table = $model->getTable();

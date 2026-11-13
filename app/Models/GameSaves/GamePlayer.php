@@ -14,6 +14,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 
+/**
+ * Joueur d'une partie : copie du joueur du catalogue (base_player_id) avec ses
+ * stats propres, qui évoluent (entraînement, progression), son moral, sa relation
+ * avec le coach et sa chance. Les stats sont des colonnes, contrairement au
+ * catalogue (JSON). Peut aussi être un amateur ou un joueur fictif (Coupe du Monde).
+ */
 class GamePlayer extends Model
 {
     use HasFactory;
@@ -61,6 +67,10 @@ class GamePlayer extends Model
         'secondary_positions' => 'array',
     ];
 
+    /**
+     * À la création : tire la chance du joueur et estime sa note de tête si elles ne
+     * sont pas fournies.
+     */
     protected static function booted(): void
     {
         static::creating(function (GamePlayer $player) {
@@ -78,6 +88,7 @@ class GamePlayer extends Model
     /** Expose le coût avec majoration de polyvalence côté front. */
     protected $appends = ['adjusted_cost'];
 
+    /** Joueur du catalogue dont celui-ci est la copie (absent pour amateurs et fictifs). */
     public function basePlayer()
     {
         return $this->belongsTo(Player::class, 'base_player_id');
@@ -89,11 +100,13 @@ class GamePlayer extends Model
         return $this->hasMany(GameContract::class, 'game_player_id');
     }
 
+    /** Historique des variations de moral du joueur. */
     public function moraleLogs()
     {
         return $this->hasMany(GamePlayerMoraleLog::class, 'game_player_id');
     }
 
+    /** Promesses faites au joueur. */
     public function promises()
     {
         return $this->hasMany(GamePromise::class, 'game_player_id');
@@ -160,6 +173,10 @@ class GamePlayer extends Model
         return (int) round(($this->cost ?? 0) * $this->versatilityFactor());
     }
 
+    /**
+     * Coût hebdomadaire de renouvellement : calculé d'après les stats actuelles du
+     * joueur (qui ont pu progresser), avec la majoration de polyvalence.
+     */
     public function getRenewalCostAttribute(): int
     {
         $cost = $this->calculateWeeklyCost($this->getAttributes(), $this->position);

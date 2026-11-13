@@ -7,6 +7,12 @@ use App\Models\Team;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Équipe d'une partie : budget, résultats cumulés de la saison, formation, style
+ * tactique et philosophie de gestion. Peut être pilotée par un manager humain
+ * (is_controlled, siège human_seat) ou par l'IA. Créée à partir d'une équipe du
+ * catalogue (base_team_id) ou sans (Coupe du Monde).
+ */
 class GameTeam extends Model
 {
     use HasFactory;
@@ -36,16 +42,19 @@ class GameTeam extends Model
         'human_seat'    => 'integer',
     ];
 
+    /** Équipe du catalogue dont celle-ci est la copie de partie (peut être absente). */
     public function baseTeam()
     {
         return $this->belongsTo(Team::class, 'base_team_id');
     }
 
+    /** Contrats de l'équipe dans la partie (actifs ou non). */
     public function contracts()
     {
         return $this->hasMany(GameContract::class);
     }
 
+    /** Joueurs de l'équipe, obtenus à travers leurs contrats. */
     public function players()
     {
         // via les contrats

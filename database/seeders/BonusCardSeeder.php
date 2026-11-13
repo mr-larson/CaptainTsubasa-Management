@@ -32,6 +32,11 @@ class BonusCardSeeder extends Seeder
         return array_merge(...array_map(fn (string $family) => $family::cards(), self::FAMILIES));
     }
 
+    /**
+     * Supprime les anciennes cartes finance « argent gratuit », puis crée ou met à jour
+     * chaque carte du catalogue (par nom) au prix de la boutique. Peut être relancé sans
+     * risque : il ne touche pas aux exemplaires déjà achetés des cartes conservées.
+     */
     public function run(): void
     {
         // Anciennes cartes finance "argent gratuit" remplacées par les paris/défis.

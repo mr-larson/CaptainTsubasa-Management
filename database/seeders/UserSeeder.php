@@ -5,6 +5,10 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
+/**
+ * Comptes de test : un administrateur (admin@mail.com) et un utilisateur standard
+ * (user@mail.com). Ignoré en production (mots de passe faibles).
+ */
 class UserSeeder extends Seeder
 {
     /**

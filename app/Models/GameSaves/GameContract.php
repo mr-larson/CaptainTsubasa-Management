@@ -3,25 +3,33 @@
 namespace App\Models\GameSaves;
 
 use App\Models\GameSaves\Concerns\BelongsToGameSave;
+use App\Models\GameSaves\Concerns\ManagesCaptainRerolls;
+use App\Models\GameSaves\Concerns\ScopedToSaveSeason;
+use App\Observers\GameContractObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * Contrat d'un joueur avec une équipe dans une sauvegarde : salaire, semaines
+ * de début et de fin, titulaire ou remplaçant, capitaine.
+ *
+ * - Un contrat appartient à une saison (ScopedToSaveSeason) : à l'intersaison les
+ *   contrats expirent mais restent en base comme historique.
+ * - Les relances du capitaine sont gérées par ManagesCaptainRerolls.
+ * - La signature d'un contrat déclenche le comptage du défi « Recruter X
+ *   joueurs » via GameContractObserver.
+ */
+#[ObservedBy([GameContractObserver::class])]
 class GameContract extends Model
 {
     use HasFactory;
     use BelongsToGameSave;
-    use \App\Models\GameSaves\Concerns\ScopedToSaveSeason;
+    use ScopedToSaveSeason;
+    use ManagesCaptainRerolls;
 
-    protected static function booted(): void
-    {
-        // Défi « Recruter X joueurs » : compté à la signature (une recrue
-        // repartie ensuite reste comptée). Requête d'incrément directe : ne
-        // touche pas aux modèles GameSave / GameTeam déjà chargés par l'appelant.
-        static::created(function (GameContract $contract) {
-            \App\Services\SeasonChallengeService::recordSigning($contract);
-        });
-    }
-
+    /** Colonnes affectables en masse. */
     protected $fillable = [
         'game_save_id',
         'season',
@@ -36,6 +44,7 @@ class GameContract extends Model
         'captain_reroll_used_this_action',
     ];
 
+    /** Conversions : entiers pour les semaines et le salaire, booléens pour les drapeaux. */
     protected $casts = [
         'salary'                          => 'integer',
         'start_week'                      => 'integer',
@@ -50,20 +59,26 @@ class GameContract extends Model
     //   Relations
     // ──────────────────────────────────────────────
 
-    public function gameTeam()
+    /** Équipe qui emploie le joueur. */
+    public function gameTeam(): BelongsTo
     {
         return $this->belongsTo(GameTeam::class, 'game_team_id');
     }
 
-    public function gamePlayer()
+    /** Joueur sous contrat. */
+    public function gamePlayer(): BelongsTo
     {
         return $this->belongsTo(GamePlayer::class, 'game_player_id');
     }
 
     // ──────────────────────────────────────────────
-    //   Helpers gameplay
+    //   Validité du contrat
     // ──────────────────────────────────────────────
 
+    /**
+     * Le contrat est-il en vigueur à la semaine donnée ? Vrai entre sa semaine de
+     * début et sa semaine de fin incluses (fin nulle = jusqu'à la fin de la saison).
+     */
     public function isActive(int $currentWeek): bool
     {
         if ($this->end_week !== null && $currentWeek > $this->end_week) {
@@ -72,78 +87,15 @@ class GameContract extends Model
         return $currentWeek >= $this->start_week;
     }
 
+    /**
+     * Filtre SQL équivalent à isActive() : les contrats en vigueur à la semaine donnée.
+     * Usage : GameContract::activeAt($week)->get().
+     */
     public function scopeActiveAt($query, int $currentWeek)
     {
         return $query->where('start_week', '<=', $currentWeek)
             ->where(function ($q) use ($currentWeek) {
                 $q->whereNull('end_week')->orWhere('end_week', '>=', $currentWeek);
             });
-    }
-
-    // ──────────────────────────────────────────────
-    //   Captain Reroll
-    // ──────────────────────────────────────────────
-
-    /**
-     * Le capitaine peut-il relancer en ce moment ?
-     * Conditions : est capitaine + relances restantes + pas encore utilisé cette action
-     */
-    public function canUseReroll(): bool
-    {
-        return $this->is_captain
-            && $this->captain_rerolls_remaining > 0
-            && ! $this->captain_reroll_used_this_action;
-    }
-
-    /**
-     * Consomme une relance et pose le flag "utilisé cette action".
-     * Retourne false si impossible.
-     */
-    public function useReroll(): bool
-    {
-        if (! $this->canUseReroll()) {
-            return false;
-        }
-
-        $this->captain_rerolls_remaining--;
-        $this->captain_reroll_used_this_action = true;
-        $this->save();
-
-        return true;
-    }
-
-    /**
-     * Reset le flag entre deux actions (appelé au début de chaque nouvelle action).
-     */
-    public function resetRerollActionFlag(): void
-    {
-        if ($this->captain_reroll_used_this_action) {
-            $this->captain_reroll_used_this_action = false;
-            $this->save();
-        }
-    }
-
-    /**
-     * Reset complet pour un nouveau match.
-     */
-    public function resetForNewMatch(): void
-    {
-        $this->captain_rerolls_remaining       = 3;
-        $this->captain_reroll_used_this_action = false;
-        $this->save();
-    }
-
-    /**
-     * Retourne le statut capitaine pour le frontend.
-     */
-    public function captainRerollStatus(): array
-    {
-        return [
-            'contractId'       => $this->id,
-            'isCaptain'        => $this->is_captain,
-            'rerollsRemaining' => $this->captain_rerolls_remaining,
-            'canReroll'        => $this->canUseReroll(),
-            'usedThisAction'   => $this->captain_reroll_used_this_action,
-        ];
     }
 }

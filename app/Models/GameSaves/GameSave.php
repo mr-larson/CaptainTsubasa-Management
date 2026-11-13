@@ -11,6 +11,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 
+/**
+ * Une partie (sauvegarde) : saison et semaine courantes, phase, mode de jeu,
+ * équipe contrôlée et un `state` JSON pour tout le reste. Les accès au state passent
+ * par gameState() (GameState) et les réglages par config() (GameConfig).
+ */
 class GameSave extends Model
 {
     use HasFactory;
@@ -35,6 +40,10 @@ class GameSave extends Model
         'phase' => GamePhase::class,
     ];
 
+    /**
+     * Sérialisation de la partie pour les réponses JSON : retire du `state` les clés
+     * purement serveur (GameState::SERVER_ONLY_KEYS) pour alléger les pages.
+     */
     public function toArray()
     {
         $array = parent::toArray();
@@ -46,36 +55,43 @@ class GameSave extends Model
         return $array;
     }
 
+    /** Utilisateur propriétaire de la partie. */
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
+    /** Équipe du catalogue choisie à la création (mode ligue d'origine). */
     public function team()
     {
         return $this->belongsTo(Team::class);
     }
 
+    /** Matchs de la partie (saison courante uniquement, voir GameMatch). */
     public function matches()
     {
         return $this->hasMany(GameMatch::class);
     }
 
+    /** Équipes de la partie. */
     public function gameTeams()
     {
         return $this->hasMany(GameTeam::class);
     }
 
+    /** Joueurs de la partie (catalogue copié + amateurs + fictifs). */
     public function gamePlayers()
     {
         return $this->hasMany(GamePlayer::class);
     }
 
+    /** Contrats de la partie (saison courante uniquement, voir GameContract). */
     public function gameContracts()
     {
         return $this->hasMany(GameContract::class);
     }
 
+    /** Équipe du manager qui a la main actuellement (en hot-seat, le siège actif). */
     public function controlledGameTeam()
     {
         return $this->belongsTo(GameTeam::class, 'controlled_game_team_id');
@@ -142,6 +158,10 @@ class GameSave extends Model
         return $this->currentPhase()->isMatchPhase();
     }
 
+    /**
+     * La pause de mi-saison est-elle programmée pour la semaine courante et pas encore
+     * terminée ?
+     */
     public function hasPendingMidseasonBreak(): bool
     {
         return $this->gameState()->hasPendingMidseasonBreak((int) $this->week);
@@ -167,6 +187,10 @@ class GameSave extends Model
         return $key === null ? $config->all() : $config->get($key, $default);
     }
 
+    /**
+     * Enregistre des réglages dans le state (fusionnés avec ceux déjà enregistrés)
+     * et sauvegarde. Les valeurs doivent avoir été validées avant (GameConfig::rules).
+     */
     public function setConfig(array $values): void
     {
         $state = $this->state ?? [];

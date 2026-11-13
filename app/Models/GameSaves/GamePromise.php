@@ -7,6 +7,11 @@ use App\Models\GameSaves\Concerns\BelongsToGameSave;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * Promesse faite à un joueur (temps de jeu, titularisation, repos, renouvellement) :
+ * fenêtre en semaines, objectif, progression et statut (en cours / tenue / rompue /
+ * expirée). Sa résolution ajuste le moral du joueur (cf. PromiseService).
+ */
 class GamePromise extends Model
 {
     use BelongsToGameSave;
@@ -37,11 +42,13 @@ class GamePromise extends Model
         'season'         => 'integer',
     ];
 
+    /** Joueur à qui la promesse est faite. */
     public function gamePlayer(): BelongsTo
     {
         return $this->belongsTo(GamePlayer::class);
     }
 
+    /** Équipe qui a fait la promesse. */
     public function gameTeam(): BelongsTo
     {
         return $this->belongsTo(GameTeam::class);

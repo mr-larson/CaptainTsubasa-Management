@@ -7,6 +7,11 @@ use App\Models\GameSaves\Concerns\BelongsToGameSave;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * Journal des variations de moral d'un joueur : source (résultat, temps de jeu,
+ * salaire…), valeur signée, libellé, semaine et saison. Il alimente l'historique
+ * affiché dans l'onglet Moral ; les saisons anciennes sont purgées à l'intersaison.
+ */
 class GamePlayerMoraleLog extends Model
 {
     use BelongsToGameSave;
@@ -28,6 +33,7 @@ class GamePlayerMoraleLog extends Model
         'season' => 'integer',
     ];
 
+    /** Joueur dont le moral a varié. */
     public function gamePlayer(): BelongsTo
     {
         return $this->belongsTo(GamePlayer::class);

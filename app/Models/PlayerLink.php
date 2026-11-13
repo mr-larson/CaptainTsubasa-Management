@@ -17,11 +17,13 @@ class PlayerLink extends Model
         'label',
     ];
 
+    /** Premier joueur du duo. */
     public function playerA(): BelongsTo
     {
         return $this->belongsTo(Player::class, 'player_a_id');
     }
 
+    /** Second joueur du duo. */
     public function playerB(): BelongsTo
     {
         return $this->belongsTo(Player::class, 'player_b_id');

@@ -14,6 +14,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * Joueur du CATALOGUE (référence du jeu) : identité, poste, origine (œuvre), stats
+ * de base en JSON, coups spéciaux. Chaque partie en fait une copie (GamePlayer).
+ * Les stats sont toujours complétées par DEFAULT_STATS.
+ */
 class Player extends Model
 {
     use HasFactory;
@@ -71,6 +76,7 @@ class Player extends Model
     //  RELATIONS
     // ==========================
 
+    /** Équipes du catalogue où le joueur a un contrat (via la table `contracts`). */
     public function teams(): BelongsToMany
     {
         return $this
@@ -79,6 +85,7 @@ class Player extends Model
             ->withTimestamps();
     }
 
+    /** Contrats de référence du joueur. */
     public function contracts(): HasMany
     {
         return $this->hasMany(Contract::class);
@@ -120,6 +127,7 @@ class Player extends Model
     //  HELPERS POUR LE MOTEUR
     // ==========================
 
+    /** Valeur brute d'une stat (clé JSON), pour les accesseurs de HasSoccerStats. */
     protected function getBaseStat(string $key): int
     {
         $stats = $this->stats;

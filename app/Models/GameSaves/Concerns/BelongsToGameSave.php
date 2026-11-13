@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 trait BelongsToGameSave
 {
+    /** Sauvegarde (partie) à laquelle appartient la ligne. */
     public function gameSave(): BelongsTo
     {
         return $this->belongsTo(GameSave::class);

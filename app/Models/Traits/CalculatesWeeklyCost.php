@@ -2,8 +2,14 @@
 
 namespace App\Models\Traits;
 
+/** Calcul du coût hebdomadaire (salaire) d'un joueur à partir de ses stats. */
 trait CalculatesWeeklyCost
 {
+    /**
+     * Coût hebdomadaire d'un joueur : moyenne de ses stats utiles au poste (celles du
+     * gardien pour un gardien), au moins 10, majorée de 37,5 %. Les stats à 0 sont
+     * ignorées ; sans aucune stat, la moyenne vaut 20.
+     */
     private function calculateWeeklyCost(array $baseStats, ?string $position = null): int
     {
         if ($position === 'Goalkeeper') {

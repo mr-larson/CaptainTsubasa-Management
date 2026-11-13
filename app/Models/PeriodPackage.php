@@ -35,6 +35,7 @@ class PeriodPackage extends Model
         'contracts_json' => 'array',
     ];
 
+    /** Utilisateur qui a importé le package. */
     public function user()
     {
         return $this->belongsTo(User::class);

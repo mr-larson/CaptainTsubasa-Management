@@ -8,6 +8,7 @@ namespace App\Models\Traits;
  */
 trait HasFullName
 {
+    /** Nom complet « prénom nom ». */
     public function getFullNameAttribute(): string
     {
         return trim("{$this->firstname} {$this->lastname}");

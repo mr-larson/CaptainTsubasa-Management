@@ -33,6 +33,7 @@ class GamePositionTraining extends Model
         'cost' => 'integer',
     ];
 
+    /** Joueur en formation. */
     public function gamePlayer(): BelongsTo
     {
         return $this->belongsTo(GamePlayer::class);

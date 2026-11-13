@@ -8,6 +8,10 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
+/**
+ * Compte utilisateur. Possède des parties (gameSaves) et éventuellement des packages
+ * de période. Le droit d'administration est un drapeau à part (isAdmin).
+ */
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
@@ -56,6 +60,7 @@ class User extends Authenticatable
         return (bool) $this->is_admin;
     }
 
+    /** Parties de l'utilisateur. */
     public function gameSaves()
     {
         return $this->hasMany(\App\Models\GameSaves\GameSave::class);

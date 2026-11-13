@@ -44,6 +44,11 @@ class FictionalNationalsSeeder extends Seeder
         'Ivan', 'Marco', 'Diego', 'Yuki', 'Karl', 'Pablo', 'Nico', 'Sam',
     ];
 
+    /**
+     * Purge les joueurs fictifs existants, puis, pour chaque nationalité, complète
+     * l'effectif jusqu'à TARGET_SQUAD en comptant les vrais joueurs déjà présents. Les
+     * joueurs créés suivent le cycle de postes, ont des stats modestes et aucun contrat.
+     */
     public function run(): void
     {
         // 1. Purge des fictifs précédents (idempotence). Aucun contrat ne pointe

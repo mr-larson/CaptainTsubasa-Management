@@ -15,6 +15,10 @@ use Illuminate\Database\Eloquent\Builder;
  */
 trait ScopedToSaveSeason
 {
+    /**
+     * Appelé automatiquement par Eloquent : installe le filtre de saison courante et
+     * renseigne `season` à la création (celle de la sauvegarde, sauf valeur donnée).
+     */
     public static function bootScopedToSaveSeason(): void
     {
         static::addGlobalScope(new CurrentSeasonScope());

@@ -8,6 +8,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
+/**
+ * Duos d'alchimie du catalogue (table `player_links`) : paires de joueurs iconiques
+ * (Tsubasa & Misaki, jumeaux Tachibana…) qui débloquent l'action « une-deux » en
+ * match. Doit passer APRÈS PlayerSeeder (il retrouve les joueurs par leur slug).
+ */
 class PlayerLinkSeeder extends Seeder
 {
     use GuardsReferenceReseed;
@@ -37,6 +42,10 @@ class PlayerLinkSeeder extends Seeder
         ['nino-biancchi',        'riki-biancchi',    'Frères Biancchi'],
     ];
 
+    /**
+     * Vide la table `player_links` puis insère un lien par duo de DUOS dont les deux
+     * joueurs existent dans le catalogue (un duo dont un joueur manque est ignoré).
+     */
     public function run(): void
     {
         if ($this->refusesProductionReseed('player_links')) {
