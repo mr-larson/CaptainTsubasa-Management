@@ -359,7 +359,12 @@ class PlayPageBuilder
         ));
 
         return [
-            'offers'            => $teamId ? $this->shop->getOffersForTeam($gameSave, $teamId) : [],
+            // Offres de la boutique. Si elle est périmée, on n'affiche rien plutôt que de la
+            // régénérer ici : le builder ne fait que LIRE (le contrôleur la rafraîchit avant,
+            // sous verrou, via shopNeedsRefresh() / refreshShop()).
+            'offers'            => ($teamId && ! $this->shop->isStale($gameSave))
+                ? $this->shop->getOffersForTeam($gameSave, $teamId)
+                : [],
             'inventory'         => $teamId ? $this->cardInventory($gameSave, $teamId) : collect(),
             // Défis sponsor (cartes finance) de l'équipe : en cours, puis résultats de la dernière clôture.
             'sponsorChallenges' => $teamId ? $forTeam($state->pendingSponsorChallenges(), 'game_team_id') : [],

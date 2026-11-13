@@ -70,14 +70,44 @@ class PlayPageBuilderTest extends TestCase
         $this->assertTrue($hotSeat['players'][0]['is_active']);
     }
 
-    public function test_building_the_page_writes_nothing(): void
+    /** Compte les requêtes d'écriture (INSERT / UPDATE / DELETE) émises pendant $action. */
+    private function countWrites(callable $action): int
+    {
+        $writes = 0;
+        \Illuminate\Support\Facades\DB::listen(function ($query) use (&$writes) {
+            if (preg_match('/^\s*(insert|update|delete)\b/i', $query->sql)) {
+                $writes++;
+            }
+        });
+        $action();
+
+        return $writes;
+    }
+
+    public function test_building_the_page_writes_nothing_once_the_shop_is_fresh(): void
     {
         [$save] = $this->world();
-        $before = $save->fresh()->updated_at;
 
-        $this->builder()->build($save);
+        // Comme le contrôleur : la boutique est rafraîchie (sous verrou) AVANT la construction.
+        $this->assertTrue($this->builder()->shopNeedsRefresh($save));
+        $this->builder()->refreshShop($save);
+        $save = $save->fresh();
+        $this->assertFalse($this->builder()->shopNeedsRefresh($save));
 
-        $this->assertEquals($before, $save->fresh()->updated_at);
+        $this->assertSame(0, $this->countWrites(fn () => $this->builder()->build($save)));
+    }
+
+    public function test_a_stale_shop_is_shown_empty_instead_of_being_regenerated_by_the_builder(): void
+    {
+        [$save] = $this->world(); // boutique jamais tirée : périmée
+
+        $props = null;
+        $writes = $this->countWrites(function () use ($save, &$props) {
+            $props = $this->builder()->build($save);
+        });
+
+        $this->assertSame(0, $writes);
+        $this->assertSame([], $props['bonusCardOffers']);
     }
 
     public function test_shop_refresh_is_only_needed_with_a_controlled_team(): void
