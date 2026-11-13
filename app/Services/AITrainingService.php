@@ -171,6 +171,7 @@ class AITrainingService
         $trainedThisRound = [];
         $results = [];
         $trainedKeeper = false;
+        $budgetSpent = false;
 
         while (count($results) < $trainCount) {
             $pool = $eligiblePool->reject(fn ($c) =>
@@ -227,10 +228,11 @@ class AITrainingService
                 $gainApplied = $newStat - $oldStat;
             });
 
-            // Débiter le budget de l'équipe pour cette séance.
+            // Débiter le budget de l'équipe pour cette séance : en mémoire (la
+            // garde ci-dessus le relit), écrit une seule fois après la boucle.
             if ($trainingCost > 0) {
                 $team->budget = max(0, (int) ($team->budget ?? 0) - $trainingCost);
-                $team->save();
+                $budgetSpent = true;
             }
 
             $results[] = [
@@ -243,6 +245,10 @@ class AITrainingService
             ];
 
             $trainedKeeper = $trainedKeeper || $isKeeper($contract);
+        }
+
+        if ($budgetSpent) {
+            $team->save();
         }
 
         return $results;

@@ -161,7 +161,10 @@ class WeekClosingService
                 $resultByTeam[(int) $m->away_team_id] ??= $m->away_score <=> $m->home_score;
             });
 
-        foreach (GameTeam::where('game_save_id', $gameSave->id)->get() as $team) {
+        // Le revenu ne prend que quelques valeurs (base / victoire / nul, humain
+        // ou IA) : un seul UPDATE par montant plutôt qu'un par équipe.
+        $idsByIncome = [];
+        foreach (GameTeam::where('game_save_id', $gameSave->id)->get(['id', 'is_controlled']) as $team) {
             $income = $team->is_controlled ? $humanBaseIncome : self::BASE_INCOME;
 
             $result = $resultByTeam[(int) $team->id] ?? null;
@@ -171,8 +174,12 @@ class WeekClosingService
                 $income += self::DRAW_BONUS;
             }
 
-            $team->budget = ($team->budget ?? 0) + $income;
-            $team->save();
+            $idsByIncome[(int) $income][] = $team->id;
+        }
+
+        foreach ($idsByIncome as $income => $teamIds) {
+            GameTeam::whereIn('id', $teamIds)
+                ->update(['budget' => \Illuminate\Support\Facades\DB::raw('COALESCE(budget, 0) + ' . (int) $income)]);
         }
     }
 }
