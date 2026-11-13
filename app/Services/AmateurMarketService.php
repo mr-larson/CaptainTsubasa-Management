@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Contracts\Randomizer;
 use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSave;
 
@@ -16,6 +17,10 @@ use App\Models\GameSaves\GameSave;
  */
 class AmateurMarketService
 {
+
+    public function __construct(private Randomizer $random)
+    {
+    }
     /** Nombre minimum d'amateurs libres par poste. */
     public const FLOOR_BY_POSITION = [
         'Goalkeeper' => 1,
@@ -63,8 +68,8 @@ class AmateurMarketService
 
     public function generate(GameSave $gameSave, string $position): GamePlayer
     {
-        $low  = fn() => random_int(6, 10);   // stats hors poste
-        $main = fn() => random_int(10, 13);  // stats du poste (la base démarre à 15)
+        $low  = fn() => $this->random->int(6, 10);   // stats hors poste
+        $main = fn() => $this->random->int(10, 13);  // stats du poste (la base démarre à 15)
 
         $isGK  = $position === 'Goalkeeper';
         $isDef = $position === 'Defender';
@@ -73,15 +78,15 @@ class AmateurMarketService
 
         return GamePlayer::create([
             'game_save_id'        => $gameSave->id,
-            'firstname'           => self::FIRSTNAMES[array_rand(self::FIRSTNAMES)],
-            'lastname'            => self::LASTNAMES[array_rand(self::LASTNAMES)],
+            'firstname'           => $this->random->pick(self::FIRSTNAMES),
+            'lastname'            => $this->random->pick(self::LASTNAMES),
             'position'            => $position,
             'origin'              => GamePlayer::ORIGIN_AMATEUR,
             'nationality'         => \App\Enums\Nationality::JAPON,
             'secondary_positions' => [],
             'description'         => 'Joueur amateur du coin : peu coûteux, de quoi compléter un effectif.',
-            'speed'               => $gameSave->config()->initialSpeed(random_int(25, 40)),
-            'stamina'             => $gameSave->getConfig('initial_stamina_random') ? random_int(55, 75) : 100,
+            'speed'               => $gameSave->config()->initialSpeed($this->random->int(25, 40)),
+            'stamina'             => $gameSave->getConfig('initial_stamina_random') ? $this->random->int(55, 75) : 100,
             'luck'                => $gameSave->config()->rollLuck(),
             'attack'              => ($isAtt || $isMid) ? $main() : $low(),
             'defense'             => ($isDef || $isGK) ? $main() : $low(),
@@ -95,7 +100,7 @@ class AmateurMarketService
             'hand_save'           => $isGK ? $main() : 0,
             'punch_save'          => $isGK ? $main() : 0,
             'special_moves'       => [],
-            'cost'                => random_int(8, 15),
+            'cost'                => $this->random->int(8, 15),
             'morale'              => MoraleService::NEUTRAL_MORALE,
         ]);
     }

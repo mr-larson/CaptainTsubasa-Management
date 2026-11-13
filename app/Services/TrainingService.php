@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Contracts\Randomizer;
 use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GamePositionTraining;
 use App\Models\GameSaves\GameSave;
@@ -11,6 +12,10 @@ use Illuminate\Validation\ValidationException;
 
 class TrainingService
 {
+
+    public function __construct(private Randomizer $random)
+    {
+    }
     /**
      * Applique les entraînements pour une sauvegarde.
      *
@@ -178,7 +183,7 @@ class TrainingService
                 }
 
                 // Gain aléatoire
-                $gain = random_int($gainMin, $gainMax);
+                $gain = $this->random->int($gainMin, $gainMax);
 
                 // Appliquer le gain de stat avec clamp
                 $oldStatValue = (int) ($player->{$stat} ?? 0);

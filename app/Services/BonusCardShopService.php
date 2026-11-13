@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Contracts\Randomizer;
 use App\Models\BonusCard;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
@@ -9,6 +10,10 @@ use Illuminate\Support\Collection;
 
 class BonusCardShopService
 {
+
+    public function __construct(private Randomizer $random)
+    {
+    }
     /**
      * Génère 3 offres par équipe pour la semaine courante.
      * Les offres sont stockées dans state.shop.offers_by_team[team_id].
@@ -181,7 +186,7 @@ class BonusCardShopService
     private function drawTier(array $weights): string
     {
         $total = array_sum($weights);
-        $rand  = rand(1, $total);
+        $rand  = $this->random->int(1, $total);
         $cumul = 0;
         foreach ($weights as $tier => $w) {
             $cumul += $w;
@@ -208,7 +213,7 @@ class BonusCardShopService
         if ($pool->isEmpty()) return null;
 
         $totalWeight = $pool->sum('base_weight');
-        $rand = rand(1, max(1, $totalWeight));
+        $rand = $this->random->int(1, max(1, $totalWeight));
         $cumul = 0;
 
         foreach ($pool as $card) {

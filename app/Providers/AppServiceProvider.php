@@ -11,7 +11,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Source d'aléatoire injectable ; les tests de rejeu la remplacent par SeededRandomizer.
+        $this->app->bind(\App\Contracts\Randomizer::class, \App\Support\Random\NativeRandomizer::class);
     }
 
     /**

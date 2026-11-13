@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Contracts\Randomizer;
 use App\Models\GameSaves\GameContract;
 use App\Support\GameConfig;
 use App\Models\GameSaves\GamePlayer;
@@ -21,6 +22,10 @@ use Illuminate\Support\Collection;
  */
 class NationalTeamAssembler
 {
+
+    public function __construct(private Randomizer $random)
+    {
+    }
     public const SQUAD_SIZE = 18;
     public const STARTERS   = 11;
     public const FORMATION  = '3-2-3-2';
@@ -169,7 +174,7 @@ class NationalTeamAssembler
             'special_moves'       => $player->special_moves ?? [],
             'cost'                => $player->cost ?? 0,
             'morale'              => $gameSave->getConfig('initial_morale_random')
-                ? rand(GameConfig::INITIAL_MORALE_MIN, GameConfig::INITIAL_MORALE_MAX)
+                ? $this->random->int(GameConfig::INITIAL_MORALE_MIN, GameConfig::INITIAL_MORALE_MAX)
                 : MoraleService::NEUTRAL_MORALE,
         ]);
     }

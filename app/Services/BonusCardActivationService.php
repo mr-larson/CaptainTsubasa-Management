@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Contracts\Randomizer;
 use App\Models\GameSaves\GameBonusCard;
 use App\Models\GameSaves\GameInjury;
 use App\Models\GameSaves\GameMatch;
@@ -15,6 +16,10 @@ use Illuminate\Validation\ValidationException;
 class BonusCardActivationService
 {
     use Concerns\LogsCoachAffinity;
+
+    public function __construct(private Randomizer $random)
+    {
+    }
 
     /**
      * Active une carte depuis le tab Bonus (cartes immediate).
@@ -148,7 +153,7 @@ class BonusCardActivationService
             [$min, $max] = [$max, $min];
         }
 
-        $gain = random_int($min, $max);
+        $gain = $this->random->int($min, $max);
 
         $team = GameTeam::find($gameBonusCard->game_team_id);
         if (!$team) {

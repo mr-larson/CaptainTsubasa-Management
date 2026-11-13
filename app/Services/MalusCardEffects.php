@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Contracts\Randomizer;
 use App\Helpers\FormationHelper;
 use App\Models\BonusCard;
 use App\Models\GameSaves\GameBonusCard;
@@ -20,6 +21,10 @@ use Illuminate\Validation\ValidationException;
 class MalusCardEffects
 {
     use Concerns\LogsCoachAffinity;
+
+    public function __construct(private Randomizer $random)
+    {
+    }
 
     /**
      * Carte « Cellule de crise » : pose un bouclier qui annule le prochain malus
@@ -114,7 +119,7 @@ class MalusCardEffects
         $pick = (string) ($gameBonusCard->bonusCard->effect_value['pick'] ?? 'random');
         $chosen = $pick === 'key'
             ? $candidates->sortByDesc(fn ($c) => $this->playerRating($c->gamePlayer))->first()
-            : $candidates->random();
+            : $this->random->pick($candidates->all());
 
         $player = $chosen->gamePlayer;
         $name   = trim(($player->firstname ?? '') . ' ' . ($player->lastname ?? '')) ?: ($player->lastname ?? 'Joueur');

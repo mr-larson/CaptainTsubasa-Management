@@ -18,6 +18,29 @@ use App\Models\GameSaves\GameTeam;
  */
 class WeekClosingService
 {
+
+    public function __construct(
+        private AiLineUpService $aiLineUpService,
+        private MatchSimulator $matchSimulator,
+        private AITrainingService $aITrainingService,
+        private AITransferService $aITransferService,
+        private AmateurMarketService $amateurMarketService,
+        private BonusCardActivationService $bonusCardActivationService,
+        private MoraleService $moraleService,
+        private PromiseService $promiseService,
+        private ContractDepartureService $contractDepartureService,
+        private SeasonService $seasonService,
+        private PositionTrainingService $positionTrainingService,
+        private BonusCardShopService $bonusCardShopService,
+        private AiBonusCardService $aiBonusCardService,
+        private SeasonChallengeService $seasonChallengeService,
+        private TournamentService $tournamentService,
+        private AiFormationTrainingService $aiFormationTrainingService,
+        private AiCoachService $aiCoachService,
+        private PlayerChemistryService $playerChemistryService,
+        private CareerObjectiveService $careerObjectiveService,
+    ) {
+    }
     public const OUTCOME_PLAY       = 'play';
     public const OUTCOME_GAME_OVER  = 'game_over';
     public const OUTCOME_SEASON_END = 'season_end';
@@ -34,7 +57,7 @@ class WeekClosingService
     public function close(GameSave $gameSave, int $week): string
     {
         // 1. Préparer les équipes qui n’ont pas encore joué, puis simuler leurs matchs.
-        app(AiLineUpService::class)->prepareScheduledTeams($gameSave, $week);
+        $this->aiLineUpService->prepareScheduledTeams($gameSave, $week);
         $remaining = GameMatch::query()
             ->where('game_save_id', $gameSave->id)
             ->where('week', $week)
@@ -44,17 +67,17 @@ class WeekClosingService
                 'awayTeam' => fn($q) => $q->with(['contracts' => fn($cq) => $cq->activeAt($week)->with('gamePlayer')]),
             ])
             ->get();
-        app(MatchSimulator::class)->simulateMatchesCollection($remaining, $gameSave);
+        $this->matchSimulator->simulateMatchesCollection($remaining, $gameSave);
 
         // 2. IA : entraînement et recrutement.
         if ($gameSave->getConfig('ai_training_enabled', true)) {
-            app(AITrainingService::class)->trainForWeek($gameSave);
+            $this->aITrainingService->trainForWeek($gameSave);
         }
         if ($gameSave->getConfig('ai_transfers_enabled', true)) {
-            app(AITransferService::class)->recruitForWeek($gameSave);
+            $this->aITransferService->recruitForWeek($gameSave);
         }
         // Marché : toujours quelques amateurs libres pour compléter un effectif.
-        app(AmateurMarketService::class)->ensureFloor($gameSave);
+        $this->amateurMarketService->ensureFloor($gameSave);
 
         // 3. Revenus, défis sponsors, cartes consommées pour la semaine jouée.
         $this->applyWeeklyIncome($gameSave, $week);
@@ -62,7 +85,7 @@ class WeekClosingService
         $bonusEnabled = $gameSave->getConfig('bonus_cards_enabled', true);
         $malusEnabled = $bonusEnabled && $gameSave->getConfig('malus_cards_enabled', true);
 
-        $activation = app(BonusCardActivationService::class);
+        $activation = $this->bonusCardActivationService;
         if ($bonusEnabled) {
             $activation->resolveSponsorChallenges($gameSave, $week);
             $activation->consumePreMatchCardsForPlayedWeek($gameSave, $week);
@@ -70,16 +93,16 @@ class WeekClosingService
 
         // 4. Stamina, moral et promesses de la semaine jouée (avant incrément).
         StaminaService::applyAfterWeek($gameSave, $week);
-        app(MoraleService::class)->applyAfterWeek($gameSave, $week);
+        $this->moraleService->applyAfterWeek($gameSave, $week);
         if ($malusEnabled) {
             $activation->consumeMalusForPlayedWeek($gameSave, $week);
         }
-        app(PromiseService::class)->evaluateForWeek($gameSave, $week);
-        app(ContractDepartureService::class)->resolveForWeek($gameSave, $week);
+        $this->promiseService->evaluateForWeek($gameSave, $week);
+        $this->contractDepartureService->resolveForWeek($gameSave, $week);
 
         // 5. Semaine suivante : la main repasse au joueur du siège 1.
         $gameSave->week = max((int) ($gameSave->week ?? 1), $week + 1);
-        $seasonService = app(SeasonService::class);
+        $seasonService = $this->seasonService;
         $seasonService->scheduleMidseasonBreak($gameSave, $week);
         $firstHuman = $gameSave->controlledGameTeams()->first();
         if ($firstHuman) {
@@ -88,25 +111,25 @@ class WeekClosingService
         $gameSave->save();
 
         // Formations de poste arrivées à terme : le joueur revient avec son nouveau poste.
-        app(PositionTrainingService::class)->completeDue($gameSave, (int) $gameSave->week);
+        $this->positionTrainingService->completeDue($gameSave, (int) $gameSave->week);
 
         if ($bonusEnabled) {
-            app(BonusCardShopService::class)->generateWeeklyOffers($gameSave);
-            app(AiBonusCardService::class)->processWeek($gameSave);
+            $this->bonusCardShopService->generateWeeklyOffers($gameSave);
+            $this->aiBonusCardService->processWeek($gameSave);
         }
-        app(SeasonChallengeService::class)->payCompleted($gameSave);
+        $this->seasonChallengeService->payCompleted($gameSave);
 
         // 6. Coupe du Monde : progression du tournoi au lieu de la fin de saison.
         if ($gameSave->competition_type === 'world_cup') {
-            app(TournamentService::class)->advance($gameSave);
-            app(AiFormationTrainingService::class)->planForWeek($gameSave);
-            app(AiCoachService::class)->prepareForWeek($gameSave, $week);
-            app(PlayerChemistryService::class)->attemptForAiTeams($gameSave);
+            $this->tournamentService->advance($gameSave);
+            $this->aiFormationTrainingService->planForWeek($gameSave);
+            $this->aiCoachService->prepareForWeek($gameSave, $week);
+            $this->playerChemistryService->attemptForAiTeams($gameSave);
             return self::OUTCOME_PLAY;
         }
 
         // 7. Verdict de la direction (jauge de confiance), puis fin de saison.
-        $career = app(CareerObjectiveService::class);
+        $career = $this->careerObjectiveService;
         $career->afterWeek($gameSave, $week);
         if ($career->isGameOver($gameSave)) {
             return self::OUTCOME_GAME_OVER;
@@ -117,9 +140,9 @@ class WeekClosingService
             return self::OUTCOME_SEASON_END;
         }
 
-        app(AiFormationTrainingService::class)->planForWeek($gameSave);
-        app(AiCoachService::class)->prepareForWeek($gameSave, $week);
-        app(PlayerChemistryService::class)->attemptForAiTeams($gameSave);
+        $this->aiFormationTrainingService->planForWeek($gameSave);
+        $this->aiCoachService->prepareForWeek($gameSave, $week);
+        $this->playerChemistryService->attemptForAiTeams($gameSave);
 
         return self::OUTCOME_PLAY;
     }

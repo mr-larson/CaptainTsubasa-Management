@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Contracts\Randomizer;
 use App\Enums\TeamStyle;
 use App\Models\GameSaves\GameInjury;
 use App\Models\GameSaves\GameMatch;
@@ -13,6 +14,10 @@ use Illuminate\Support\Facades\DB;
 
 class AITrainingService
 {
+
+    public function __construct(private Randomizer $random)
+    {
+    }
     // Stats pertinentes par poste
     private const STATS_BY_POSITION = [
         'GK'  => ['hand_save', 'punch_save', 'defense', 'block', 'stamina', 'speed'],
@@ -197,10 +202,10 @@ class AITrainingService
             // Sélection avec variété :
             // 70% → joueur avec la plus grande faiblesse dans son poste
             // 30% → joueur aléatoire du pool (pour la variété)
-            $useRandom = (rand(1, 10) <= 3);
+            $useRandom = ($this->random->int(1, 10) <= 3);
 
             if ($useRandom) {
-                $contract = $pool->random();
+                $contract = $this->random->pick($pool->all());
             } else {
                 $contract = $pool
                     ->sortBy(fn($c) => $this->positionWeakness($c->gamePlayer))
@@ -216,7 +221,7 @@ class AITrainingService
 
             $gainApplied = 0;
             DB::transaction(function () use ($player, $statKey, $gainMin, $gainMax, $staminaCost, $statMin, $statMax, &$gainApplied) {
-                $gain       = rand($gainMin, $gainMax);
+                $gain       = $this->random->int($gainMin, $gainMax);
                 $oldStat    = (int) ($player->{$statKey} ?? 0);
                 $newStat    = min($statMax, max($statMin, $oldStat + $gain));
                 $oldStamina = (int) $player->stamina;
@@ -312,7 +317,7 @@ class AITrainingService
         // 60% → stat la plus basse
         // 30% → 2e stat la plus basse
         // 10% → 3e stat la plus basse (si dispo)
-        $roll = rand(1, 10);
+        $roll = $this->random->int(1, 10);
         if ($roll <= 6 || count($sorted) < 2) {
             return $sorted[0];
         } elseif ($roll <= 9 || count($sorted) < 3) {

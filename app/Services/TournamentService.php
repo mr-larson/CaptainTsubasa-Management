@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Contracts\Randomizer;
 use App\Enums\Nationality;
 use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GameSave;
@@ -22,6 +23,10 @@ use App\Models\GameSaves\GameTeam;
  */
 class TournamentService
 {
+
+    public function __construct(private Randomizer $random)
+    {
+    }
     private const GROUP_KEYS = ['A', 'B', 'C', 'D'];
 
     /**
@@ -31,7 +36,7 @@ class TournamentService
     public function generateGroups(GameSave $gameSave): void
     {
         $teamIds = GameTeam::where('game_save_id', $gameSave->id)->pluck('id')->all();
-        shuffle($teamIds);
+        $teamIds = $this->random->shuffle($teamIds);
 
         $count = count($teamIds);
         if ($count < 2) return;
@@ -386,7 +391,7 @@ class TournamentService
             return $winner;
         }
 
-        $winner = rand(0, 1) === 1 ? (int) $m->home_team_id : (int) $m->away_team_id;
+        $winner = $this->random->int(0, 1) === 1 ? (int) $m->home_team_id : (int) $m->away_team_id;
         $stats['shootout'] = ['winner_team_id' => $winner, 'simulated' => true];
         $m->match_stats = $stats;
         $m->save();

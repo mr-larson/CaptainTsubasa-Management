@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Contracts\Randomizer;
 use App\Enums\TeamStyle;
 use App\Models\PlayerLink;
 use App\Models\GameSaves\GameContract;
@@ -13,6 +14,10 @@ use App\Services\Concerns\EvaluatesPlayers;
 class DraftAIService
 {
     use EvaluatesPlayers;
+
+    public function __construct(private Randomizer $random)
+    {
+    }
 
     // Composition cible par poste
     private const TARGET_BY_POSITION = [
@@ -193,7 +198,7 @@ class DraftAIService
 
         // Un peu de variété : 70% le meilleur, 25% le 2e, 5% le 3e
         $top = $sorted->values()->take(3);
-        $roll = random_int(1, 100);
+        $roll = $this->random->int(1, 100);
 
         // La variété ne doit pas faire choisir un profil très loin derrière.
         $top = $top->filter(fn ($entry) => $entry['score'] >= $top[0]['score'] - 12)->values();

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Contracts\Randomizer;
 use App\Helpers\PlayerLuck;
 use App\Enums\TeamStyle;
 use App\Helpers\FormationHelper;
@@ -18,6 +19,17 @@ use Illuminate\Support\Collection;
 class MatchSimulator
 {
     use EvaluatesPlayers;
+
+    public function __construct(
+        private BonusCardActivationService $bonusCardActivationService,
+        private MatchLineupSnapshot $matchLineupSnapshot,
+        private FoulAndInjuryService $foulAndInjuryService,
+        private PostMatchProgressionService $postMatchProgressionService,
+        private PlayerChemistryService $playerChemistryService,
+        private DeclarationService $declarationService,
+        private Randomizer $random,
+    ) {
+    }
 
     private const MAX_TURNS                       = 30;
     private const MAX_ZONE_INDEX                  = 4;   // 5 zones, index 0..4
@@ -120,7 +132,7 @@ class MatchSimulator
         $benchedByTeam = [];
         $modsByTeam    = [];
         if ($gameSave) {
-            $activation = app(BonusCardActivationService::class);
+            $activation = $this->bonusCardActivationService;
             $benchedByTeam = [
                 (int) $m->home_team_id => $activation->getBenchedPlayerIds($gameSave, (int) $m->home_team_id),
                 (int) $m->away_team_id => $activation->getBenchedPlayerIds($gameSave, (int) $m->away_team_id),
@@ -159,7 +171,7 @@ class MatchSimulator
         $foulEvents = $matchStats['foul_events'] ?? [];
         unset($matchStats['foul_events']);
 
-        $matchStats['lineups'] = app(MatchLineupSnapshot::class)->build($m);
+        $matchStats['lineups'] = $this->matchLineupSnapshot->build($m);
 
         $m->home_score  = $homeScore;
         $m->away_score  = $awayScore;
@@ -168,14 +180,14 @@ class MatchSimulator
         $m->save();
 
         if ($gameSave && !empty($foulEvents)) {
-            app(FoulAndInjuryService::class)->processMatchEvents($gameSave, $m, $foulEvents);
+            $this->foulAndInjuryService->processMatchEvents($gameSave, $m, $foulEvents);
         }
 
         // Progression post-match pour les joueurs IA
         if ($gameSave) {
-            app(PostMatchProgressionService::class)->applyForMatch($gameSave, $m);
-            app(PlayerChemistryService::class)->recordMatch($gameSave, $m, simulated: true);
-            app(DeclarationService::class)->consumeMatchBoosts($gameSave, $m->id);
+            $this->postMatchProgressionService->applyForMatch($gameSave, $m);
+            $this->playerChemistryService->recordMatch($gameSave, $m, simulated: true);
+            $this->declarationService->consumeMatchBoosts($gameSave, $m->id);
         }
 
         $this->applyResultToStandings($m);
@@ -231,7 +243,7 @@ class MatchSimulator
         $heroicUsed = []; // "Dépassement de soi" : une seule fois par joueur et par match
 
         // État du ballon : équipe possédant, index de zone (0..MAX_ZONE_INDEX), face au gardien ?
-        $side          = random_int(0, 1) ? 'home' : 'away';
+        $side          = $this->random->int(0, 1) ? 'home' : 'away';
         $zone          = 0;
         $frontOfKeeper = false;
 
@@ -260,7 +272,7 @@ class MatchSimulator
             if ($frontOfKeeper || $zone >= self::MAX_ZONE_INDEX) {
                 $action = $frontOfKeeper
                     ? 'shot'
-                    : (random_int(1, 10) <= 6 ? 'shot' : 'dribble');
+                    : ($this->random->int(1, 10) <= 6 ? 'shot' : 'dribble');
             } else {
                 $action = $this->randomOffenseAction($attTeam->tactical_style, $zone, $attPlayers);
             }
@@ -280,7 +292,7 @@ class MatchSimulator
             // ----- Choix du défenseur (miroir RPS du client) -----
             if ($action === 'shot') {
                 $defender    = $defGK;
-                $defAction   = random_int(0, 1) ? 'hands' : 'punch';
+                $defAction   = $this->random->int(0, 1) ? 'hands' : 'punch';
                 $defCategory = 'defenseGK';
             } else {
                 $defAction   = $action === 'pass' ? 'intercept' : 'tackle';
@@ -342,7 +354,7 @@ class MatchSimulator
                 !$success && $attacker
                 && (int) ($attacker->morale ?? MoraleService::NEUTRAL_MORALE) > MoraleService::HEROIC_MORALE_THRESHOLD
                 && empty($heroicUsed[(string) $attacker->id])
-                && random_int(1, 100) <= (int) round(MoraleService::HEROIC_CHANCE * 100)
+                && $this->random->int(1, 100) <= (int) round(MoraleService::HEROIC_CHANCE * 100)
             ) {
                 $heroicUsed[(string) $attacker->id] = true;
 
@@ -432,7 +444,7 @@ class MatchSimulator
             $exhaustionChance = $action === 'shot' ? self::EXHAUSTION_INJURY_CHANCE_SHOT : self::EXHAUSTION_INJURY_CHANCE_FIELD;
             foreach ([$attacker, $defender] as $p) {
                 if (!$p || isset($exhaustedInjured[(int) $p->id])) continue;
-                if (($stamina[(string) $p->id] ?? 1) <= 0 && random_int(1, 10000) <= $exhaustionChance * 10000) {
+                if (($stamina[(string) $p->id] ?? 1) <= 0 && $this->random->int(1, 10000) <= $exhaustionChance * 10000) {
                     $exhaustedInjured[(int) $p->id] = true;
                     $foulEvents[] = ['type' => 'injury', 'player_id' => (int) $p->id, 'severity' => 'light'];
                 }
@@ -808,13 +820,13 @@ class MatchSimulator
         };
 
         if ($statKey === null) {
-            return $players->random();
+            return $this->random->pick($players->all());
         }
 
         $candidates = $players->filter(fn($p) => ($p->{$statKey} ?? 0) > 30);
         $pool       = $candidates->isNotEmpty() ? $candidates : $players;
 
-        return $pool->random();
+        return $this->random->pick($pool->all());
     }
 
     // ==========================
@@ -987,7 +999,7 @@ class MatchSimulator
         }
 
         $total = array_sum($weights);
-        $roll  = random_int(1, $total);
+        $roll  = $this->random->int(1, $total);
         $acc   = 0;
         foreach ($weights as $action => $weight) {
             $acc += $weight;
@@ -1272,15 +1284,15 @@ class MatchSimulator
 
         if ($defenseCritFail) {
             $foulEvents[] = ['type' => 'foul', 'fouler_player_id' => $defId, 'victim_player_id' => $attId, 'is_crit_fail' => true];
-            $r = random_int(0, 9999) / 10000;
+            $r = $this->random->int(0, 9999) / 10000;
             if ($r < PlayerLuck::CRITICAL_RED) {
                 $foulEvents[] = ['type' => 'card', 'player_id' => $defId, 'card_type' => 'red'];
             } elseif ($r < PlayerLuck::CRITICAL_RED + PlayerLuck::CRITICAL_YELLOW * $multiplier) {
                 $foulEvents[] = ['type' => 'card', 'player_id' => $defId, 'card_type' => 'yellow'];
             }
-        } elseif ($isTie && random_int(0, 9999) < self::TIE_FOUL_CHANCE * 10000) {
+        } elseif ($isTie && $this->random->int(0, 9999) < self::TIE_FOUL_CHANCE * 10000) {
             $foulEvents[] = ['type' => 'foul', 'fouler_player_id' => $defId, 'victim_player_id' => $attId, 'is_crit_fail' => false];
-            if (random_int(0, 9999) < PlayerLuck::TIE_YELLOW * $multiplier * 10000) {
+            if ($this->random->int(0, 9999) < PlayerLuck::TIE_YELLOW * $multiplier * 10000) {
                 $foulEvents[] = ['type' => 'card', 'player_id' => $defId, 'card_type' => 'yellow'];
             }
         }
@@ -1288,7 +1300,7 @@ class MatchSimulator
 
     private function d20(): int
     {
-        return random_int(1, 20);
+        return $this->random->int(1, 20);
     }
 
     // ==========================

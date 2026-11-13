@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Contracts\Randomizer;
 use App\Helpers\PlayerLuck;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameInjury;
@@ -13,6 +14,10 @@ use Illuminate\Support\Facades\DB;
 
 class FoulAndInjuryService
 {
+
+    public function __construct(private Randomizer $random)
+    {
+    }
     // Probabilités de blessure selon la sévérité du crit
     private const INJURY_CHANCE_CRIT_FAIL  = 0.30;
     private const INJURY_CHANCE_FOUL       = 0.10; // 10% chance sur faute simple
@@ -86,7 +91,7 @@ class FoulAndInjuryService
         // Blessure pour la victime seulement
         if ($victimId) {
             $chance = $isCritFail ? self::INJURY_CHANCE_CRIT_FAIL : self::INJURY_CHANCE_FOUL;
-            if (random_int(0, 9999) < $chance * PlayerLuck::incidentMultiplier($victimLuck) * 10000) {
+            if ($this->random->int(0, 9999) < $chance * PlayerLuck::incidentMultiplier($victimLuck) * 10000) {
                 $severity = $isCritFail ? $this->rollSeverity(0.3, 0.5, 0.2) : 'light';
                 $this->createInjury($gameSave, $match, $victimId, $severity, $week);
             }
@@ -139,7 +144,7 @@ class FoulAndInjuryService
         int $week
     ): void {
         $playerId = (int) $playerId;
-        $roll = mt_rand(1, 100);
+        $roll = $this->random->int(1, 100);
 
         if ($isCritFail) {
             if ($roll <= (self::RED_CHANCE_CRIT * 100)) {
@@ -188,7 +193,7 @@ class FoulAndInjuryService
     {
         $playerId = (int) $playerId;
         DB::transaction(function () use ($gameSave, $match, $playerId, $week) {
-            $weeksSuspended = rand(2, 3);
+            $weeksSuspended = $this->random->int(2, 3);
 
             GameSanction::create([
                 'game_save_id'      => $gameSave->id,
@@ -223,10 +228,10 @@ class FoulAndInjuryService
         if ($alreadyInjured) return;
 
         [$minWeeks, $maxWeeks] = self::INJURY_WEEKS[$severity] ?? [1, 1];
-        $weeksOut    = rand($minWeeks, $maxWeeks);
+        $weeksOut    = $this->random->int($minWeeks, $maxWeeks);
         $weekReturn  = $week + 1 + $weeksOut;
         $descriptions = self::INJURY_DESCRIPTIONS[$severity] ?? ['Blessure'];
-        $description = $descriptions[array_rand($descriptions)];
+        $description = $this->random->pick($descriptions);
 
         DB::transaction(function () use ($gameSave, $match, $playerId, $severity, $weeksOut, $weekReturn, $week, $description) {
             GameInjury::create([
@@ -251,7 +256,7 @@ class FoulAndInjuryService
      */
     protected function rollSeverity(float $lightChance, float $moderateChance, float $severeChance): string
     {
-        $roll = mt_rand(1, 100) / 100;
+        $roll = $this->random->int(1, 100) / 100;
         if ($roll <= $lightChance)                             return 'light';
         if ($roll <= $lightChance + $moderateChance)          return 'moderate';
         return 'severe';

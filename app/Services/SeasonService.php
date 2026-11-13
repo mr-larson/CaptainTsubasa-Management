@@ -14,6 +14,14 @@ use Illuminate\Support\Facades\DB;
 
 class SeasonService
 {
+
+    public function __construct(
+        private SeasonChallengeService $seasonChallengeService,
+        private CareerObjectiveService $careerObjectiveService,
+        private PositionTrainingService $positionTrainingService,
+        private DraftService $draftService,
+    ) {
+    }
     public const RANK_PRIZE_BASE = 6000;
     public const RANK_PRIZE_STEP = 400;
     public const MIDSEASON_RECOVERY = 20;
@@ -74,7 +82,7 @@ class SeasonService
         $mvp       = $this->findSeasonMvp($gameSave);
 
         // Défis de saison : évalués AVANT les primes de classement (objectif budget).
-        $challenges = app(SeasonChallengeService::class)->evaluateSeasonEnd($gameSave, $standings);
+        $challenges = $this->seasonChallengeService->evaluateSeasonEnd($gameSave, $standings);
 
         $standingsRecap = [];
         foreach ($standings as $i => $team) {
@@ -129,7 +137,7 @@ class SeasonService
         }
 
         // Verdict de la direction (objectif de classement, confiance, licenciement).
-        $careerVerdict = app(CareerObjectiveService::class)->evaluateSeasonEnd($gameSave, $standings);
+        $careerVerdict = $this->careerObjectiveService->evaluateSeasonEnd($gameSave, $standings);
 
         $recap = [
             'season'    => $gameSave->season,
@@ -231,7 +239,7 @@ class SeasonService
         // et purge les sanctions ; les promesses en cours deviennent caduques
         // (sans effet sur le moral : leur fenêtre a disparu avec le calendrier).
         // Formations de poste en cours : terminées pendant l'intersaison.
-        app(PositionTrainingService::class)->completeDue($gameSave, 0, all: true);
+        $this->positionTrainingService->completeDue($gameSave, 0, all: true);
         GamePromise::where('game_save_id', $gameSave->id)
             ->where('status', 'pending')
             ->update(['status' => 'expired']);
@@ -255,9 +263,9 @@ class SeasonService
         self::pruneOldLogs($gameSave);
 
         // Nouveau mandat de la direction pour la saison à venir.
-        app(CareerObjectiveService::class)->resetMandateForNewSeason($gameSave);
+        $this->careerObjectiveService->resetMandateForNewSeason($gameSave);
 
-        app(DraftService::class)->initDraft($gameSave, $draftOrder);
+        $this->draftService->initDraft($gameSave, $draftOrder);
     }
 
     /** Supprime logs de moral et déclarations antérieurs à la saison précédente. */

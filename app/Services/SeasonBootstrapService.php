@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Contracts\Randomizer;
 use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GameSave;
 
@@ -18,6 +19,10 @@ use App\Models\GameSaves\GameSave;
  */
 class SeasonBootstrapService
 {
+
+    public function __construct(private Randomizer $random)
+    {
+    }
     public function prepare(GameSave $gameSave): void
     {
         if (! $gameSave->isInMatchPhase()) return;
@@ -80,7 +85,7 @@ class SeasonBootstrapService
         if ($teamCount < 2) return;
 
         // Mélanger pour éviter que la même équipe soit toujours extérieure
-        shuffle($teamIds);
+        $teamIds = $this->random->shuffle($teamIds);
 
         if ($teamCount % 2 === 1) {
             $teamIds[] = null;
