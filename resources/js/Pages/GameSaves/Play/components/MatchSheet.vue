@@ -158,7 +158,7 @@ const hasStarters = computed(() => sides.value.some(s => s.starters.length));
                                 @click="emit('show-player', s.side, r.pid)"
                                 class="w-full flex items-center gap-2 px-1.5 py-1 rounded-md text-left text-xs hover:bg-white transition-colors"
                                 :class="r.used ? '' : 'opacity-45'"
-                                title="Voir ses stats du match">
+                                title="Voir la fiche du joueur">
                             <span class="w-5 text-right font-mono text-2xs text-slate-400 shrink-0">{{ r.p.number ?? '—' }}</span>
                             <span class="w-5 h-5 rounded-full overflow-hidden bg-slate-200 shrink-0">
                                 <PlayerPhoto :src="playerPhotoUrl(r.p)" class="w-full h-full object-cover" alt="" />

@@ -1,11 +1,10 @@
 <script setup>
-import PixelLoader from '@/Components/PixelLoader.vue';
 import Modal from '@/Components/Modal.vue';
+import PlayerDetailContent from './components/PlayerDetailContent.vue';
+import PixelLoader from '@/Components/PixelLoader.vue';
 import TabBar from '@/Components/TabBar.vue';
 import { fieldClass } from '@/Components/fieldStyles';
-import ButtonSecondary from '@/Components/ButtonSecondary.vue';
-import ButtonPrimary from '@/Components/ButtonPrimary.vue';
-import { computed, ref, watch, onBeforeUnmount } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { usePlayerUtils } from './usePlayerUtils.js';
 import MatchReplayPitch from './MatchReplayPitch.vue';
 import PlayerPhoto from '@/Components/PlayerPhoto.vue';
@@ -74,6 +73,7 @@ const detailTab = ref('sheet');
 const detailTabs = computed(() => {
     const tabs = [
         { key: 'sheet',   label: '📝 Feuille de match' },
+        { key: 'replay',  label: '▶ Revoir le match' },
         { key: 'stats',   label: '📊 Stats' },
         { key: 'players', label: '👥 Joueurs' },
     ];
@@ -331,21 +331,6 @@ const teamSaves = (side) => matchRoster(side).reduce((sum, p) => sum + playerSav
 const teamActionAttempts = (side, action) =>
     matchRoster(side).reduce((sum, p) => sum + playerMatchStat(p.id, `${action}.attempts`), 0);
 // ==========================
-//   REPLAY
-// ==========================
-const showReplay = ref(false);
-
-watch(() => props.selectedCalendarMatch?.id, () => { showReplay.value = false; });
-
-// Échap ferme le résumé
-const onKey = (e) => { if (e.key === 'Escape') showReplay.value = false; };
-watch(showReplay, (open) => {
-    if (open) window.addEventListener('keydown', onKey);
-    else      window.removeEventListener('keydown', onKey);
-});
-onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
-
-// ==========================
 //   DÉROULÉ DU MATCH (action par action)
 //   Alimenté par `match_stats.events`, produit aussi bien par le moteur
 //   client (state.matchLog → buildMatchStats) que par MatchSimulator (PHP),
@@ -524,11 +509,19 @@ const highlights = computed(() => {
 });
 
 const logSection = ref(null);
-// Feuille de match → stats du joueur dans l'onglet Joueurs
-const showPlayer = (side) => {
-    selectedStatsTeam.value = side;
-    detailTab.value = 'players';
+const selectedPlayer = ref(null);
+// Même fiche détaillée que dans le calendrier et le palmarès.
+const showPlayer = (side, playerId) => {
+    const snapshotPlayer = matchRoster(side).find(p => String(p.id) === String(playerId));
+    if (!snapshotPlayer) return;
+    const teamId = side === 'home' ? props.selectedCalendarMatch?.home_team_id : props.selectedCalendarMatch?.away_team_id;
+    const team = props.teamById[teamId];
+    const currentPlayer = [...props.calendarTeamRoster, ...props.calendarOpponentRoster,
+        ...(team?.contracts ?? []).map(c => c.game_player ?? c.gamePlayer).filter(Boolean)]
+        .find(p => String(p.id) === String(playerId));
+    selectedPlayer.value = { ...currentPlayer, ...snapshotPlayer, teamName: team?.name };
 };
+watch(() => props.selectedCalendarMatch?.id, () => { selectedPlayer.value = null; });
 
 
 const homeTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide === 'home'));
@@ -585,7 +578,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                         </div>
                     </div>
 
-                    <!-- Score + bouton replay -->
+                    <!-- Score -->
                     <div class="text-center shrink-0">
                         <div class="text-3xl font-black text-slate-700">
                             {{ selectedCalendarMatch.home_score }}
@@ -643,20 +636,115 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                     </div>
                 </div>
 
-                <div class="mt-3 flex flex-wrap justify-center gap-4">
-                    <div class="flex flex-col items-center gap-1">
-                    <ButtonPrimary type="button" size="sm" @click="showReplay = true">
-                        ▶ Revoir le match
-                    </ButtonPrimary>
-                    <span class="text-2xs text-slate-500">Relecture animée sur le terrain</span>
-                    </div>
-                </div>
+
             </div>
 
             <!-- Onglets intégrés au résumé, avec ouverture vers le contenu. -->
             <TabBar v-model="detailTab" :tabs="detailTabs" size="sm" outlined label="Fiche de match"
                     style="background-color: #f8fafc; border-radius: 0 0 0.75rem 0.75rem; padding-left: 1.5rem" />
             </div>
+
+            <!-- La relecture est montée uniquement dans son onglet pour arrêter la lecture à sa fermeture. -->
+            <section v-if="detailTab === 'replay'" :key="selectedCalendarMatch.id"
+                     aria-label="Relecture du match" class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+    <!-- Replay visuel basé sur le déroulé action par action (engine.js / MatchSimulator) -->
+    <MatchReplayPitch
+        v-if="selectedCalendarEvents.length"
+        :events="selectedCalendarEvents"
+        :home-name="teamById[selectedCalendarMatch.home_team_id]?.name ?? 'Domicile'"
+        :away-name="teamById[selectedCalendarMatch.away_team_id]?.name ?? 'Extérieur'"
+        :home-logo="teamLogoUrl(teamById[selectedCalendarMatch.home_team_id])"
+        :away-logo="teamLogoUrl(teamById[selectedCalendarMatch.away_team_id])"
+        :final-home-score="selectedCalendarMatch.home_score"
+        :final-away-score="selectedCalendarMatch.away_score"
+        :home-squad="replayHomeSquad"
+        :away-squad="replayAwaySquad"
+    />
+
+    <!-- Repli : ancien résumé statique (matchs sans 'events' enregistrés) -->
+    <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+        <!-- HOME -->
+        <div>
+            <div class="flex items-center gap-2 mb-3">
+                <div class="w-6 h-6 rounded overflow-hidden bg-slate-100 shrink-0">
+                    <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(teamById[selectedCalendarMatch.home_team_id])"
+                         :src="teamLogoUrl(teamById[selectedCalendarMatch.home_team_id])"
+                         class="w-full h-full" alt=""/>
+                </div>
+                <span class="text-xs font-black text-slate-700">
+                        {{ teamById[selectedCalendarMatch.home_team_id]?.name }}
+                    </span>
+                <span class="text-lg font-black text-emerald-600 ml-auto">
+                        {{ selectedCalendarMatch.home_score }}
+                    </span>
+            </div>
+
+            <div v-if="homeTeamEvents.length" class="space-y-2">
+                <div v-for="(ev, i) in homeTeamEvents" :key="i"
+                     class="flex items-start gap-2 p-2 rounded-lg bg-slate-50 border border-slate-200">
+                    <div class="w-6 h-6 rounded-full flex items-center justify-center text-white text-[11px] shrink-0"
+                         :class="ev.color">
+                        {{ ev.icon }}
+                    </div>
+                    <div class="min-w-0">
+                        <div class="text-xs font-semibold text-slate-700">{{ ev.text }}</div>
+                        <div v-if="ev.detail" class="text-2xs text-slate-400">{{ ev.detail }}</div>
+                    </div>
+                </div>
+            </div>
+            <p v-else class="text-xs text-slate-500 italic">Aucun événement notable.</p>
+        </div>
+
+        <!-- AWAY -->
+        <div>
+            <div class="flex items-center gap-2 mb-3">
+                <div class="w-6 h-6 rounded overflow-hidden bg-slate-100 shrink-0">
+                    <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(teamById[selectedCalendarMatch.away_team_id])"
+                         :src="teamLogoUrl(teamById[selectedCalendarMatch.away_team_id])"
+                         class="w-full h-full" alt=""/>
+                </div>
+                <span class="text-xs font-black text-slate-700">
+                        {{ teamById[selectedCalendarMatch.away_team_id]?.name }}
+                    </span>
+                <span class="text-lg font-black text-emerald-600 ml-auto">
+                        {{ selectedCalendarMatch.away_score }}
+                    </span>
+            </div>
+
+            <div v-if="awayTeamEvents.length" class="space-y-2">
+                <div v-for="(ev, i) in awayTeamEvents" :key="i"
+                     class="flex items-start gap-2 p-2 rounded-lg bg-slate-50 border border-slate-200">
+                    <div class="w-6 h-6 rounded-full flex items-center justify-center text-white text-[11px] shrink-0"
+                         :class="ev.color">
+                        {{ ev.icon }}
+                    </div>
+                    <div class="min-w-0">
+                        <div class="text-xs font-semibold text-slate-700">{{ ev.text }}</div>
+                        <div v-if="ev.detail" class="text-2xs text-slate-400">{{ ev.detail }}</div>
+                    </div>
+                </div>
+            </div>
+            <p v-else class="text-xs text-slate-500 italic">Aucun événement notable.</p>
+        </div>
+    </div>
+
+    <!-- Stats équipe résumé -->
+    <div class="mt-4 pt-4 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-4 text-center text-xs">
+        <div class="flex justify-around text-slate-500">
+            <div><div class="font-black text-slate-700">{{ selectedCalendarMatchStats?.teams?.home?.shots ?? 0 }}</div><div>Tirs</div></div>
+            <div><div class="font-black text-slate-700">{{ selectedCalendarMatchStats?.teams?.home?.passes ?? 0 }}</div><div>Passes</div></div>
+            <div><div class="font-black text-slate-700">{{ teamSaves('home') }}</div><div>Arrêts</div></div>
+            <div><div class="font-black text-slate-700">{{ selectedCalendarMatchStats?.teams?.home?.duelsWon ?? 0 }}</div><div>D+</div></div>
+        </div>
+        <div class="flex justify-around text-slate-500">
+            <div><div class="font-black text-slate-700">{{ selectedCalendarMatchStats?.teams?.away?.shots ?? 0 }}</div><div>Tirs</div></div>
+            <div><div class="font-black text-slate-700">{{ selectedCalendarMatchStats?.teams?.away?.passes ?? 0 }}</div><div>Passes</div></div>
+            <div><div class="font-black text-slate-700">{{ teamSaves('away') }}</div><div>Arrêts</div></div>
+            <div><div class="font-black text-slate-700">{{ selectedCalendarMatchStats?.teams?.away?.duelsWon ?? 0 }}</div><div>D+</div></div>
+        </div>
+    </div>
+            </section>
 
             <!-- Feuille de match -->
             <MatchSheet v-show="detailTab === 'sheet'"
@@ -851,130 +939,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
             </div>
         </div>
     </div>
-    <!-- ================================================ -->
-    <!-- MODAL REPLAY                                      -->
-    <!-- ================================================ -->
-    <Modal :show="showReplay" max-width="2xl" panel-class="max-h-[80vh] flex flex-col" @close="showReplay = false">
-
-                <!-- Header -->
-                <div class="p-4 bg-slate-700 text-white flex flex-wrap items-center justify-between gap-2 shrink-0">
-                    <div class="flex items-center gap-3">
-                        <span class="text-lg">▶</span>
-                        <div>
-                            <div class="font-black text-sm">
-                                {{ teamById[selectedCalendarMatch.home_team_id]?.name }}
-                                <span class="mx-2 text-slate-400">{{ selectedCalendarMatch.home_score }} - {{ selectedCalendarMatch.away_score }}</span>
-                                {{ teamById[selectedCalendarMatch.away_team_id]?.name }}
-                            </div>
-                            <div class="text-2xs text-slate-400">{{ roundTitle(selectedCalendarMatch) }}</div>
-                        </div>
-                    </div>
-                    <button type="button" @click="showReplay = false"
-                            class="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-sm transition-all">
-                        ✕
-                    </button>
-                </div>
-
-                <!-- Corps — deux colonnes home/away -->
-                <div class="flex-1 overflow-y-auto p-4">
-
-                    <!-- Replay visuel basé sur le déroulé action par action (engine.js / MatchSimulator) -->
-                    <MatchReplayPitch
-                        v-if="selectedCalendarEvents.length"
-                        :events="selectedCalendarEvents"
-                        :home-name="teamById[selectedCalendarMatch.home_team_id]?.name ?? 'Domicile'"
-                        :away-name="teamById[selectedCalendarMatch.away_team_id]?.name ?? 'Extérieur'"
-                        :home-logo="teamLogoUrl(teamById[selectedCalendarMatch.home_team_id])"
-                        :away-logo="teamLogoUrl(teamById[selectedCalendarMatch.away_team_id])"
-                        :final-home-score="selectedCalendarMatch.home_score"
-                        :final-away-score="selectedCalendarMatch.away_score"
-                        :home-squad="replayHomeSquad"
-                        :away-squad="replayAwaySquad"
-                    />
-
-                    <!-- Repli : ancien résumé statique (matchs sans 'events' enregistrés) -->
-                    <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-                        <!-- HOME -->
-                        <div>
-                            <div class="flex items-center gap-2 mb-3">
-                                <div class="w-6 h-6 rounded overflow-hidden bg-slate-100 shrink-0">
-                                    <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(teamById[selectedCalendarMatch.home_team_id])"
-                                         :src="teamLogoUrl(teamById[selectedCalendarMatch.home_team_id])"
-                                         class="w-full h-full" alt=""/>
-                                </div>
-                                <span class="text-xs font-black text-slate-700">
-                                        {{ teamById[selectedCalendarMatch.home_team_id]?.name }}
-                                    </span>
-                                <span class="text-lg font-black text-emerald-600 ml-auto">
-                                        {{ selectedCalendarMatch.home_score }}
-                                    </span>
-                            </div>
-
-                            <div v-if="homeTeamEvents.length" class="space-y-2">
-                                <div v-for="(ev, i) in homeTeamEvents" :key="i"
-                                     class="flex items-start gap-2 p-2 rounded-lg bg-slate-50 border border-slate-200">
-                                    <div class="w-6 h-6 rounded-full flex items-center justify-center text-white text-[11px] shrink-0"
-                                         :class="ev.color">
-                                        {{ ev.icon }}
-                                    </div>
-                                    <div class="min-w-0">
-                                        <div class="text-xs font-semibold text-slate-700">{{ ev.text }}</div>
-                                        <div v-if="ev.detail" class="text-2xs text-slate-400">{{ ev.detail }}</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <p v-else class="text-xs text-slate-500 italic">Aucun événement notable.</p>
-                        </div>
-
-                        <!-- AWAY -->
-                        <div>
-                            <div class="flex items-center gap-2 mb-3">
-                                <div class="w-6 h-6 rounded overflow-hidden bg-slate-100 shrink-0">
-                                    <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(teamById[selectedCalendarMatch.away_team_id])"
-                                         :src="teamLogoUrl(teamById[selectedCalendarMatch.away_team_id])"
-                                         class="w-full h-full" alt=""/>
-                                </div>
-                                <span class="text-xs font-black text-slate-700">
-                                        {{ teamById[selectedCalendarMatch.away_team_id]?.name }}
-                                    </span>
-                                <span class="text-lg font-black text-emerald-600 ml-auto">
-                                        {{ selectedCalendarMatch.away_score }}
-                                    </span>
-                            </div>
-
-                            <div v-if="awayTeamEvents.length" class="space-y-2">
-                                <div v-for="(ev, i) in awayTeamEvents" :key="i"
-                                     class="flex items-start gap-2 p-2 rounded-lg bg-slate-50 border border-slate-200">
-                                    <div class="w-6 h-6 rounded-full flex items-center justify-center text-white text-[11px] shrink-0"
-                                         :class="ev.color">
-                                        {{ ev.icon }}
-                                    </div>
-                                    <div class="min-w-0">
-                                        <div class="text-xs font-semibold text-slate-700">{{ ev.text }}</div>
-                                        <div v-if="ev.detail" class="text-2xs text-slate-400">{{ ev.detail }}</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <p v-else class="text-xs text-slate-500 italic">Aucun événement notable.</p>
-                        </div>
-                    </div>
-
-                    <!-- Stats équipe résumé -->
-                    <div class="mt-4 pt-4 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-4 text-center text-xs">
-                        <div class="flex justify-around text-slate-500">
-                            <div><div class="font-black text-slate-700">{{ selectedCalendarMatchStats?.teams?.home?.shots ?? 0 }}</div><div>Tirs</div></div>
-                            <div><div class="font-black text-slate-700">{{ selectedCalendarMatchStats?.teams?.home?.passes ?? 0 }}</div><div>Passes</div></div>
-                            <div><div class="font-black text-slate-700">{{ teamSaves('home') }}</div><div>Arrêts</div></div>
-                            <div><div class="font-black text-slate-700">{{ selectedCalendarMatchStats?.teams?.home?.duelsWon ?? 0 }}</div><div>D+</div></div>
-                        </div>
-                        <div class="flex justify-around text-slate-500">
-                            <div><div class="font-black text-slate-700">{{ selectedCalendarMatchStats?.teams?.away?.shots ?? 0 }}</div><div>Tirs</div></div>
-                            <div><div class="font-black text-slate-700">{{ selectedCalendarMatchStats?.teams?.away?.passes ?? 0 }}</div><div>Passes</div></div>
-                            <div><div class="font-black text-slate-700">{{ teamSaves('away') }}</div><div>Arrêts</div></div>
-                            <div><div class="font-black text-slate-700">{{ selectedCalendarMatchStats?.teams?.away?.duelsWon ?? 0 }}</div><div>D+</div></div>
-                        </div>
-                    </div>
-                </div>
+    <Modal :show="!!selectedPlayer" title="Fiche du joueur" :subtitle="selectedPlayer?.teamName" max-width="lg" @close="selectedPlayer = null">
+        <PlayerDetailContent v-if="selectedPlayer" :player="selectedPlayer" />
     </Modal>
 </template>
