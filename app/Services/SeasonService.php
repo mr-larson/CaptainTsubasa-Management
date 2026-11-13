@@ -229,7 +229,7 @@ class SeasonService
         // saison courante dès que `season` est incrémenté plus bas.
         GamePlayer::where('game_save_id', $gameSave->id)->select('id')->chunkById(250, function ($players) use ($gameSave) {
             foreach ($players as $player) {
-                GamePlayer::whereKey($player->id)->update(['number' => null, 'luck' => $gameSave->rollPlayerLuck()]);
+                GamePlayer::whereKey($player->id)->update(['number' => null, 'luck' => $gameSave->config()->rollLuck()]);
             }
         });
 

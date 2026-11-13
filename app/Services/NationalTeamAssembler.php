@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\GameSaves\GameContract;
+use App\Support\GameConfig;
 use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
@@ -151,9 +152,9 @@ class NationalTeamAssembler
             'secondary_positions' => $player->secondary_positions ?? [],
             'description'         => $player->description,
             'photo_path'          => $player->photo_path,
-            'speed'               => $gameSave->initialSpeed((int) ($player->speed ?? $s['speed'] ?? 50)),
-            'stamina'             => $gameSave->initialStamina(),
-            'luck'                => $gameSave->rollPlayerLuck(),
+            'speed'               => $gameSave->config()->initialSpeed((int) ($player->speed ?? $s['speed'] ?? 50)),
+            'stamina'             => $gameSave->config()->initialStamina(),
+            'luck'                => $gameSave->config()->rollLuck(),
             'attack'              => $player->attack     ?? $s['attack']     ?? 50,
             'defense'             => $player->defense    ?? $s['defense']    ?? 50,
             'shot'                => $player->shot       ?? $s['shot']       ?? 50,
@@ -168,7 +169,7 @@ class NationalTeamAssembler
             'special_moves'       => $player->special_moves ?? [],
             'cost'                => $player->cost ?? 0,
             'morale'              => $gameSave->getConfig('initial_morale_random')
-                ? rand(GameSave::INITIAL_MORALE_MIN, GameSave::INITIAL_MORALE_MAX)
+                ? rand(GameConfig::INITIAL_MORALE_MIN, GameConfig::INITIAL_MORALE_MAX)
                 : MoraleService::NEUTRAL_MORALE,
         ]);
     }

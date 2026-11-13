@@ -80,7 +80,7 @@ class GamePlayerController extends Controller
             $request->safe()->except(['photo', 'remove_photo'])
         );
 
-        $player->luck ??= $gameSave->rollPlayerLuck();
+        $player->luck ??= $gameSave->config()->rollLuck();
 
         // Upload éventuel de la photo
         if ($request->hasFile('photo')) {

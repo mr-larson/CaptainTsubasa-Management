@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\GameSaves\GameInjury;
+use App\Support\GameConfig;
 use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GamePlayerMoraleLog;
@@ -60,9 +61,9 @@ class MoraleService
      */
     public static function initialMoraleFromSeed(int $seed, int $basePlayerId): int
     {
-        $span = GameSave::INITIAL_MORALE_MAX - GameSave::INITIAL_MORALE_MIN + 1;
+        $span = GameConfig::INITIAL_MORALE_MAX - GameConfig::INITIAL_MORALE_MIN + 1;
 
-        return GameSave::INITIAL_MORALE_MIN + (crc32($seed . ':' . $basePlayerId) % $span);
+        return GameConfig::INITIAL_MORALE_MIN + (crc32($seed . ':' . $basePlayerId) % $span);
     }
 
     /**

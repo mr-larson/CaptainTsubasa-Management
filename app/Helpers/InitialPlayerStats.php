@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use App\Models\GameSaves\GameSave;
+use App\Support\GameConfig;
 use App\Services\MoraleService;
 
 class InitialPlayerStats
@@ -12,10 +13,10 @@ class InitialPlayerStats
         $draw = static fn (string $stat, int $min, int $max): int =>
             $min + crc32("{$seed}:{$playerId}:{$stat}") % ($max - $min + 1);
 
-        $speedVariation = GameSave::INITIAL_SPEED_VARIATION;
+        $speedVariation = GameConfig::INITIAL_SPEED_VARIATION;
 
         return [
-            'speed' => $save->initialSpeed($baseSpeed, $draw('speed', -$speedVariation, $speedVariation)),
+            'speed' => $save->config()->initialSpeed($baseSpeed, $draw('speed', -$speedVariation, $speedVariation)),
             'stamina' => $save->getConfig('initial_stamina_random') ? $draw('stamina', 60, 100) : 100,
             'morale' => $save->getConfig('initial_morale_random')
                 ? MoraleService::initialMoraleFromSeed($seed, is_int($playerId) ? $playerId : crc32($playerId))

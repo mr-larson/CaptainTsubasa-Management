@@ -3,6 +3,7 @@
 namespace App\Http\Requests\GameSaves;
 
 use App\Models\GameSaves\GameSave;
+use App\Support\GameConfig;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -66,7 +67,7 @@ class GameSaveRequest extends FormRequest
             'competition_type' => ['nullable', 'string', 'in:college_league,world_cup'],
 
             'game_config'      => ['nullable', 'array'],
-            ...GameSave::configRules('game_config.'),
+            ...GameConfig::rules('game_config.'),
             'setup_token'      => ['nullable', 'string', 'size:64'],
         ];
 
@@ -101,7 +102,7 @@ class GameSaveRequest extends FormRequest
         return [
             function ($validator) {
                 $config = $this->input('game_config');
-                if (is_array($config) && ! (new GameSave)->hasValidTrainingGains($config)) {
+                if (is_array($config) && ! (new GameConfig)->hasValidTrainingGains($config)) {
                     $validator->errors()->add('game_config', 'Le gain max doit être supérieur ou égal au gain min.');
                 }
             },
