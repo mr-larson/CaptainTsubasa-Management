@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\GameSaves;
 
+use App\Http\Resources\GameSaveResource;
 use App\Http\Requests\GameSaves\UpdatePlayerNumberRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\AuthorizesGameSave;
@@ -41,7 +42,7 @@ class GamePlayerController extends Controller
 
 
         return Inertia::render('GameSaves/GamePlayers/Index', [
-            'gameSave' => $gameSave,
+            'gameSave' => GameSaveResource::make($gameSave)->toArray(),
             'players'  => $players,
             'teams'    => $teams,
             // Joueur à ouvrir (ex. juste après sa création) / fiche vide demandée.
@@ -108,7 +109,7 @@ class GamePlayerController extends Controller
         $this->authorizeGameSave('view', $gameSave, $player);
 
         return Inertia::render('GameSaves/GamePlayers/Edit', [
-            'gameSave' => $gameSave,
+            'gameSave' => GameSaveResource::make($gameSave)->toArray(),
             'player'   => $player,
         ]);
     }

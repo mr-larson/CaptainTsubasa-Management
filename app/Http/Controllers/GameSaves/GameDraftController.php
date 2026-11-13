@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\GameSaves;
 
+use App\Http\Resources\GameSaveResource;
 use App\Http\Requests\GameSaves\PickDraftPlayerRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\AuthorizesGameSave;
@@ -54,7 +55,7 @@ class GameDraftController extends Controller
         }
 
         return Inertia::render('GameSaves/Draft', [
-            'gameSave'         => $gameSave,
+            'gameSave'         => GameSaveResource::make($gameSave)->toArray(),
             'teams'            => $gameTeams,
             'freePlayers'      => $freePlayers,
             'draftState'        => $gameSave->gameState()->draft(),

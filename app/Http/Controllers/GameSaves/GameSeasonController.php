@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\GameSaves;
 
+use App\Http\Resources\GameSaveResource;
 use App\Enums\GamePhase;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\AuthorizesGameSave;
@@ -35,7 +36,7 @@ class GameSeasonController extends Controller
         $state = $gameSave->state ?? [];
 
         return Inertia::render('GameSaves/SeasonEnd', [
-            'gameSave' => $gameSave,
+            'gameSave' => GameSaveResource::make($gameSave)->toArray(),
             'recap'    => $gameSave->gameState()->lastSeasonRecap(),
         ]);
     }
@@ -85,7 +86,7 @@ class GameSeasonController extends Controller
         $state = $gameSave->state ?? [];
 
         return Inertia::render('GameSaves/GameOver', [
-            'gameSave' => $gameSave,
+            'gameSave' => GameSaveResource::make($gameSave)->toArray(),
             'career'   => [
                 'status'          => $data['status'],
                 'fired_reason'    => $data['fired_reason'],

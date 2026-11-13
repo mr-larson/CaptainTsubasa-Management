@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\GameSaves;
 
+use App\Http\Resources\GameSaveResource;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\AuthorizesGameSave;
 use App\Http\Requests\GameSaves\GameTeamRequest;
@@ -31,7 +32,7 @@ class GameTeamController extends Controller
             ->get();
 
         return Inertia::render('GameSaves/GameTeams/Index', [
-            'gameSave' => $gameSave,
+            'gameSave' => GameSaveResource::make($gameSave)->toArray(),
             'teams'    => $teams,
             // Équipe à ouvrir (ex. juste après sa création) / fiche vide demandée.
             'selectedId'  => $request->integer('selected') ?: null,

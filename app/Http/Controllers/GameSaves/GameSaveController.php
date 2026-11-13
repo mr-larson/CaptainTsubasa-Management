@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\GameSaves;
 
+use App\Http\Resources\GameSaveResource;
 use App\Http\Requests\GameSaves\UpdateGameConfigRequest;
 use App\Enums\GamePhase;
 use App\Http\Controllers\Controller;
@@ -43,10 +44,10 @@ class GameSaveController extends Controller
 
     public function index(Request $request): Response
     {
-        $gameSaves = GameSave::with('team')
-            ->where('user_id', $request->user()->id)
+        $gameSaves = GameSave::where('user_id', $request->user()->id)
             ->orderByDesc('updated_at')
-            ->get();
+            ->get()
+            ->map(fn (GameSave $save) => GameSaveResource::summary($save)->toArray());
 
         return Inertia::render('GameSaves/Index', [
             'gameSaves' => $gameSaves,
@@ -181,7 +182,7 @@ class GameSaveController extends Controller
         return Inertia::render('GameSaves/Play', [
             'midseasonBreakRecovery' => $gameSave->hasPendingMidseasonBreak() ? SeasonService::MIDSEASON_RECOVERY : null,
             'contractSeasonEndWeek' => $canRenewContracts ? SeasonService::lengthForTeamCount($gameTeams->count()) : null,
-            'gameSave'            => $gameSave,
+            'gameSave'            => GameSaveResource::make($gameSave)->toArray(),
             'managementStats'     => $managementStats,
             'duoLinks'            => $duoLinks,
             'playerChemistry'      => $chemistry->summary($gameSave, $activePlayers, $teamByPlayer),
