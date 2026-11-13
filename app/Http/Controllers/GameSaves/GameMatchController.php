@@ -14,12 +14,9 @@ use App\Models\GameSaves\GameInjury;
 use App\Models\GameSaves\GameSanction;
 use App\Services\AiLineUpService;
 use App\Services\CareerObjectiveService;
-use App\Services\FoulAndInjuryService;
+use App\Services\MatchResultService;
 use App\Services\MatchRosterPresenter;
 use App\Services\MatchSimulator;
-use App\Services\DeclarationService;
-use App\Services\PostMatchProgressionService;
-use App\Services\PlayerChemistryService;
 use App\Services\SeasonChallengeService;
 use App\Services\SeasonService;
 use App\Services\WeekClosingService;
@@ -29,13 +26,40 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * MATCHS D'UNE PARTIE.
+ *
+ * Ce contrôleur gère tout ce qui touche au déroulé des matchs :
+ *
+ *   - match()                     écran de match jouable (le moteur tourne dans le navigateur) ;
+ *   - finishMatch()               enregistre le résultat d'un match joué à la main ;
+ *   - simulateMatch()             simule le match de l'équipe active côté serveur ;
+ *   - simulateWeek()              simule toute la semaine puis la clôture ;
+ *   - stats() / weekLeaders()     données JSON du calendrier (détail d'un match, classements) ;
+ *   - useCaptainReroll() / resetCaptainRerollActionFlag()   relances de capitaine pendant le match.
+ *
+ * La logique métier est dans les services :
+ *   - enregistrement d'un résultat → MatchResultService ;
+ *   - simulation                   → MatchSimulator ;
+ *   - clôture de semaine           → WeekClosingService.
+ */
 class GameMatchController extends Controller
 {
     use AuthorizesGameSave;
     use LocksGameSave;
 
     /**
-     * Écran de match jouable pour une session.
+     * Affiche l'écran de match jouable : prépare la configuration du moteur de match
+     * (équipes, effectifs, formations, classement, réglages de la partie) pour le
+     * prochain match de l'équipe active.
+     *
+     * Déroulé :
+     *   1. redirige vers la page de jeu si une pause de mi-saison est en attente ;
+     *   2. trouve l'équipe jouée (manager actif en hot-seat) et son prochain match ;
+     *   3. remet à 3 les relances de capitaine des deux équipes ;
+     *   4. fait ajuster la composition de l'adversaire IA (blessés, fatigue) ;
+     *   5. détermine le mode de contrôle (un camp, ou les deux si derby entre humains) ;
+     *   6. envoie la configuration à la page « Match/Engine ».
      */
     public function match(Request $request, GameSave $gameSave): Response|RedirectResponse
     {
@@ -180,9 +204,10 @@ class GameMatchController extends Controller
     }
 
     /**
-     * Détail d'un match joué (stats, déroulé, effectifs), chargé à la demande
-     * par le calendrier : la page Play ne reçoit pas les match_stats. Seul
-     * endroit où le déroulé (game_match_events) est lu.
+     * Détail d'un match déjà joué (statistiques, déroulé, effectifs, cartons et
+     * blessures), en JSON. Chargé À LA DEMANDE par le calendrier : la page de jeu ne
+     * reçoit pas ces données (trop lourdes). C'est le seul endroit où le déroulé du
+     * match (game_match_events) est lu.
      */
     public function stats(GameSave $gameSave, GameMatch $match): JsonResponse
     {
@@ -216,7 +241,7 @@ class GameMatchController extends Controller
     }
 
     /**
-     * Classements d'une journée (onglet Calendrier) : hommes du match,
+     * Classements d'une journée, en JSON (onglet Calendrier) : homme du match,
      * buteurs, passeurs, dribbleurs, gardiens, défenseurs, duels.
      */
     public function weekLeaders(GameSave $gameSave, int $week): JsonResponse
@@ -227,105 +252,65 @@ class GameMatchController extends Controller
     }
 
     /**
-     * Finalise un match joué manuellement.
+     * Enregistre le résultat d'un match que le manager vient de JOUER À LA MAIN
+     * (le moteur de match tourne dans le navigateur et envoie le résultat ici).
+     *
+     * Déroulé :
+     *   1. contrôles : le match appartient bien à la partie, les deux scores sont fournis ;
+     *   2. sous le verrou de la partie, on ignore la demande si le match est déjà joué
+     *      (double clic) et on refuse un match d'une semaine future ;
+     *   3. MatchResultService enregistre score, classement, fautes, progression, etc. ;
+     *   4. on enchaîne : un autre manager doit jouer, ou la semaine est clôturée.
+     *
+     * Toute la logique de l'enregistrement est dans App\Services\MatchResultService.
      */
-    public function finishMatch(FinishMatchRequest $request, GameSave $gameSave, GameMatch $match): RedirectResponse
+    public function finishMatch(FinishMatchRequest $request, GameSave $gameSave, GameMatch $match, MatchResultService $results): RedirectResponse
     {
         $this->authorizeGameSave('update', $gameSave);
 
         abort_unless((int) $match->game_save_id === (int) $gameSave->id, 404);
 
-        $data = $request->validated();
+        $data   = $request->validated();
+        $scores = $data['scoresByTeamId'];
 
-        $scores     = $data['scoresByTeamId'];
+        // Le moteur doit fournir le score des DEUX équipes de ce match.
         $homeTeamId = (int) $match->home_team_id;
         $awayTeamId = (int) $match->away_team_id;
-
-        if (!array_key_exists($homeTeamId, $scores) || !array_key_exists($awayTeamId, $scores)) {
+        if (! array_key_exists($homeTeamId, $scores) || ! array_key_exists($awayTeamId, $scores)) {
             abort(422, 'Scores incomplets pour ce match.');
         }
 
-        $homeScore = (int) $scores[$homeTeamId];
-        $awayScore = (int) $scores[$awayTeamId];
-
-        // Verrou par save : un double clic ou un retry attend la première
-        // requête puis retombe sur le match déjà joué, au lieu de recompter
-        // classement, revenus et fin de semaine. Tout est annulé en cas d'erreur.
-        return $this->withSaveLock($gameSave, function (GameSave $gameSave) use ($match, $data, $homeTeamId, $awayTeamId, $homeScore, $awayScore) {
+        // Verrou par partie : un double clic ou un rejeu attend la première requête, puis
+        // retombe sur le match déjà joué au lieu de recompter classement, revenus et semaine.
+        return $this->withSaveLock($gameSave, function (GameSave $gameSave) use ($match, $data, $scores, $homeTeamId, $awayTeamId, $results) {
             $match->refresh();
 
-            if ($match->status === \App\Enums\MatchStatus::Played || ! $gameSave->isInMatchPhase() || $gameSave->hasPendingMidseasonBreak()) {
+            if (! $results->canStillBeRecorded($gameSave, $match)) {
                 return redirect()->route('game-saves.Play', $gameSave);
             }
+            abort_if($results->isScheduledForFutureWeek($gameSave, $match), 422, 'Ce match n\'est pas encore programmé.');
 
-            // Un match d'une semaine future ferait sauter les semaines intermédiaires.
-            if ((int) $match->week > (int) ($gameSave->week ?? 1)) {
-                abort(422, 'Ce match n\'est pas encore programmé.');
-            }
-
-            // ─────────────────────────────────────────────────────────────
-            //  PARTIE PAR-MATCH : toujours exécutée pour le match qui vient
-            //  d'être joué (score, classement, fautes, progression, cartes).
-            // ─────────────────────────────────────────────────────────────
-
-            // 1. Sauvegarder le match avec match_stats (source de vérité).
-            // Tirs au but : gardés seulement pour une égalité en phase finale,
-            // avec un vainqueur qui dispute bien ce match.
-            $stats    = $data['match_stats'] ?? null;
-            $shootout = $stats['shootout'] ?? null;
-            if (is_array($stats) && array_key_exists('shootout', $stats)) {
-                $validShootout = in_array($match->round, ['semi', 'final'], true)
-                    && $homeScore === $awayScore
-                    && in_array((int) ($shootout['winner_team_id'] ?? 0), [$homeTeamId, $awayTeamId], true);
-                if (! $validShootout) {
-                    unset($stats['shootout']);
-                }
-            }
-
-            // Instantané des effectifs : l'historique reste juste après les transferts.
-            if (is_array($stats)) {
-                unset($stats['chemistry_recorded']);
-                $stats['lineups'] = app(\App\Services\MatchLineupSnapshot::class)->build($match);
-            }
-
-            $match->home_score  = $homeScore;
-            $match->away_score  = $awayScore;
-            $match->status      = 'played';
-            $match->match_stats = $stats;
-            $match->save();
-
-            // 2. Classement
-            $home = GameTeam::where('game_save_id', $gameSave->id)->findOrFail($homeTeamId);
-            $away = GameTeam::where('game_save_id', $gameSave->id)->findOrFail($awayTeamId);
-
-            if ($homeScore > $awayScore)      { $home->wins++;   $away->losses++; }
-            elseif ($homeScore < $awayScore)  { $away->wins++;   $home->losses++; }
-            else                              { $home->draws++;  $away->draws++;  }
-
-            $home->goals_for     += $homeScore;
-            $home->goals_against += $awayScore;
-            $away->goals_for     += $awayScore;
-            $away->goals_against += $homeScore;
-
-            $home->save();
-            $away->save();
-
-            // 3. Fautes, cartons et blessures (propres à ce match)
-            $foulEvents = $data['foulEvents'] ?? [];
-            app(FoulAndInjuryService::class)->processMatchEvents($gameSave, $match, $foulEvents);
-
-            // 4. Progression post-match (joueurs de ce match)
-            app(PostMatchProgressionService::class)->applyForMatch($gameSave, $match);
-            app(PlayerChemistryService::class)->recordMatch($gameSave, $match);
-            $gameSave->refresh();
-            app(DeclarationService::class)->consumeMatchBoosts($gameSave, $match->id);
-            app(SeasonChallengeService::class)->payCompleted($gameSave, [(int) $homeTeamId, (int) $awayTeamId]);
-
+            $results->record(
+                $gameSave,
+                $match,
+                (int) $scores[$homeTeamId],
+                (int) $scores[$awayTeamId],
+                $data['match_stats'] ?? null,
+                $data['foulEvents'] ?? [],
+            );
 
             return $this->continueAfterMatch($gameSave, (int) $match->week);
         });
     }
 
+    /**
+     * SIMULE (par le serveur) le prochain match de l'équipe active, sans le jouer à la main.
+     *
+     * Refusé (redirection) si le match n'est plus à jouer cette semaine ou si la partie
+     * est terminée. Interdit (403) si l'équipe active n'est pas dans ce match, ou si
+     * l'adversaire est aussi dirigé par un humain. Après simulation, enchaîne comme
+     * finishMatch : autre manager à faire jouer, ou clôture de la semaine.
+     */
     public function simulateMatch(GameSave $gameSave, GameMatch $match, MatchSimulator $simulator): RedirectResponse
     {
         $this->authorizeGameSave('update', $gameSave, $match);
@@ -363,6 +348,12 @@ class GameMatchController extends Controller
         });
     }
 
+    /**
+     * Étape qui suit un match terminé (joué ou simulé) :
+     *   - si un autre manager humain a encore un match à jouer cette semaine, la main
+     *     lui passe (hot-seat) et on revient à la page de jeu ;
+     *   - sinon la semaine est clôturée (WeekClosingService) et on va à l'écran adapté.
+     */
     private function continueAfterMatch(GameSave $save, int $week): RedirectResponse
     {
         // Les autres managers jouent leur match avant la clôture de la semaine.
@@ -378,8 +369,9 @@ class GameMatchController extends Controller
     }
 
     /**
-     * Prochain joueur humain (par ordre de siège) dont le match de la semaine
-     * n'est pas encore joué. Null si plus aucun.
+     * Prochain manager humain (par ordre de siège) dont le match de la semaine n'est
+     * pas encore joué, ou null si tous ont joué. Sert au hot-seat : on ne simule
+     * jamais le match d'un humain, on lui passe la main.
      */
     private function nextHumanWithPendingMatch(GameSave $gameSave, int $week): ?GameTeam
     {
@@ -402,7 +394,13 @@ class GameMatchController extends Controller
     }
 
     /**
-     * Simule tous les matchs de la semaine courante.
+     * Simule TOUTE la semaine courante : les matchs de toutes les équipes IA, puis
+     * clôture la semaine (revenus, entraînement IA, transferts, fin de saison éventuelle).
+     *
+     * Garde-fous (sous le verrou de la partie) : phase de matchs obligatoire, partie non
+     * terminée, semaine reçue identique à la semaine courante (idempotence), pause de
+     * mi-saison à terminer d'abord, et aucun manager humain avec un match en attente
+     * (sinon la main lui est passée).
      */
     public function simulateWeek(Request $request, GameSave $gameSave): RedirectResponse
     {
@@ -455,7 +453,8 @@ class GameMatchController extends Controller
     }
 
     /**
-     * Écran à afficher après la clôture d'une semaine (WeekClosingService).
+     * Choisit l'écran à afficher après la clôture d'une semaine : partie terminée,
+     * fin de saison, ou simple retour à la page de jeu (résultat de WeekClosingService).
      */
     private function redirectAfterWeek(GameSave $gameSave, string $outcome): RedirectResponse
     {
@@ -466,10 +465,10 @@ class GameMatchController extends Controller
         };
     }
 
-    // ==========================
-    //   HELPERS PRIVÉS
-    // ==========================
-
+    /**
+     * Décompte une relance de capitaine pendant le match (appelée par le moteur, en JSON).
+     * Répond 400 s'il n'en reste plus.
+     */
     public function useCaptainReroll(Request $request, GameSave $gameSave, GameContract $contract): JsonResponse
     {
         $this->authorizeGameSave('update', $gameSave, $contract);
@@ -487,6 +486,10 @@ class GameMatchController extends Controller
         ]);
     }
 
+    /**
+     * Réarme l'indicateur « relance déjà utilisée sur cette action » du capitaine
+     * (appelée par le moteur au début de chaque nouvelle action, en JSON).
+     */
     public function resetCaptainRerollActionFlag(Request $request, GameSave $gameSave, GameContract $contract): JsonResponse
     {
         $this->authorizeGameSave('update', $gameSave, $contract);
