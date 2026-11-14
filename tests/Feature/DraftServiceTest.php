@@ -268,4 +268,26 @@ class DraftServiceTest extends TestCase
 
         $this->assertSame(11, GameContract::where('game_team_id', $team->id)->where('is_starter', true)->count());
     }
+
+    public function test_affordable_player_check_resolves_the_human_teams_once_not_per_player(): void
+    {
+        $save  = $this->makeSave(['phase' => 'draft']);
+        $human = $this->makeTeam($save, ['is_controlled' => true, 'human_seat' => 1, 'budget' => 100000]);
+        $save->update(['controlled_game_team_id' => $human->id]);
+        foreach (range(1, 15) as $_) {
+            $this->makePlayer($save, ['cost' => 10, 'coach_affinity' => -100]); // tous en rupture avec le coach
+        }
+        app(\App\Services\Draft\DraftService::class)->initDraft($save->fresh(), [$human->id]);
+        $save = $save->fresh();
+
+        $teamReads = 0;
+        \Illuminate\Support\Facades\DB::listen(function ($q) use (&$teamReads) {
+            if (preg_match('/^\s*select/i', $q->sql) && str_contains($q->sql, '`is_controlled`')) $teamReads++;
+        });
+
+        $affordable = app(\App\Services\Draft\DraftService::class)->hasAffordablePlayer($save, $human);
+
+        $this->assertFalse($affordable, 'Tous les joueurs refusent une équipe humaine.');
+        $this->assertLessThanOrEqual(1, $teamReads, 'Les équipes humaines sont lues une fois, pas une fois par joueur.');
+    }
 }

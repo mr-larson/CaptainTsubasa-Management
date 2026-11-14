@@ -354,13 +354,16 @@ class DraftService
         $seasonLength = $this->getSeasonLength($gameSave);
         $budget       = self::budgetFor($gameSave, $team);
 
+        // Équipe humaine ou non : décidé une fois, pas à chaque joueur examiné.
+        $isHumanTeam = in_array((int) $team->id, $gameSave->controlledGameTeamIds(), true);
+
         return GamePlayer::where('game_save_id', $gameSave->id)
             ->whereDoesntHave('contracts')
             ->excludingFictional()
             ->visibleForConfig($gameSave)
             ->get()
             ->contains(fn ($p) => $this->pickCost($gameSave, $p->adjusted_cost, $seasonLength) <= $budget
-                && !$this->playerRefusesTeam($gameSave, $p, (int) $team->id));
+                && !($isHumanTeam && $this->refusesHumanCoach($p)));
     }
 
     /** Un joueur en rupture avec le coach (affinité sous le seuil de refus) refuse d'être drafté par une équipe humaine. Les équipes IA ne sont pas concernées. */
@@ -369,6 +372,12 @@ class DraftService
         // La rancune envers le coach ne concerne que les équipes humaines.
         if (!in_array($teamId, $gameSave->controlledGameTeamIds(), true)) return false;
 
+        return $this->refusesHumanCoach($player);
+    }
+
+    /** La relation du joueur avec le coach est-elle sous le seuil de refus ? (à appeler pour une équipe humaine) */
+    private function refusesHumanCoach(GamePlayer $player): bool
+    {
         return (int) ($player->coach_affinity ?? 0) <= MoraleService::AFFINITY_REFUSAL_THRESHOLD;
     }
 
