@@ -24,21 +24,21 @@
 
 // Taille des pixels (px CSS) pour chaque palier, du plus grossier au plus fin.
 // Impaires pour que la dilatation donne des blocs exactement carrés.
-const LEVELS = [21, 15, 11, 7, 5, 3];      // images
+const LEVELS = [27, 19, 13, 9, 5, 3];      // images
 // Texte : grille plus fine, pour qu'une ligne devienne des lettres « en briques »
 // et non une barre pleine (une cellule de 21 px avale une ligne de 15 px).
-const TEXT_LEVELS = [13, 11, 9, 7, 5, 3];
+const TEXT_LEVELS = [15, 13, 11, 9, 5, 3];
 // Ces tailles valent pour un texte de 22 px et plus ; en dessous, la grille est
 // réduite au prorata de la taille de police (un paragraphe de 15 px plafonne à ~9 px).
 const TEXT_REF_PX = 22;
 const textCell = (level, k) => {
     const s = Math.max(3, Math.round(TEXT_LEVELS[level] * k));
-    return s % 2 ? s : s - 1;   // tailles impaires : un filtre existe pour chacune de 3 à 13
+    return s % 2 ? s : s - 1;   // tailles impaires : un filtre existe pour chacune de 3 à TEXT_LEVELS[0]
 };
 const STEPS = LEVELS.length + 1;        // 0 = caché, 1..LEVELS = pixelisé, STEPS = net
-const STEP_MS = 55;                     // cadence des paliers (rythme rétro ~18 i/s)
+const STEP_MS = 75;                     // cadence des paliers (rythme rétro ~13 i/s) : 6 paliers ≈ 0,45 s
 const STAGGER_MS = 65;                  // décalage auto entre blocs qui démarrent ensemble
-const PALETTE_UNTIL = 3;                // images : palette réduite sur les 3 paliers les plus grossiers
+const PALETTE_UNTIL = 4;                // images : palette réduite sur les 4 paliers les plus grossiers
 const START = 1.0;                      // progression 0 quand le haut du bloc touche le bas de l'écran…
 const END = 0.78;                       // …et 1 quand il atteint 78 % de la hauteur d'écran
 const EXIT = 0.16;                      // en sortie par le haut : repixelisation sur les 16 % du haut
@@ -97,7 +97,12 @@ function ensureFilters() {
     const alphaBoost = '<feComponentTransfer><feFuncA type="linear" slope="2.4"/></feComponentTransfer>';
     const alphaSteps = '<feComponentTransfer><feFuncA type="discrete" tableValues="0 0.35 0.7 1"/></feComponentTransfer>';
 
-    svg.innerHTML = `<defs>${TEXT_LEVELS.map((s) => {
+    // Un filtre par taille impaire de 3 au palier le plus grossier (textCell peut
+    // tomber sur n'importe laquelle selon la taille de police).
+    const sizes = [];
+    for (let s = 3; s <= TEXT_LEVELS[0]; s += 2) sizes.push(s);
+
+    svg.innerHTML = `<defs>${sizes.map((s) => {
         const c = Math.floor(s / 2);
         return `<filter id="pxr-${s}" x="0" y="0" width="1" height="1" color-interpolation-filters="sRGB">
             <feGaussianBlur in="SourceGraphic" stdDeviation="${(s * 0.32).toFixed(2)}" result="blur"/>
