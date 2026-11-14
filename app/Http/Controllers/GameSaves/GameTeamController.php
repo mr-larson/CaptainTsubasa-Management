@@ -5,6 +5,7 @@ namespace App\Http\Controllers\GameSaves;
 use App\Http\Resources\GameSaveResource;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\AuthorizesGameSave;
+use App\Http\Controllers\Concerns\LocksGameSave;
 use App\Http\Requests\GameSaves\GameTeamRequest;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
@@ -20,6 +21,7 @@ use Inertia\Response;
 class GameTeamController extends Controller
 {
     use AuthorizesGameSave;
+    use LocksGameSave;
 
     /**
      * Liste des équipes d'une sauvegarde.
@@ -61,30 +63,34 @@ class GameTeamController extends Controller
 
         $data = $request->validated();
 
-        // gestion suppression logo
-        if ($request->boolean('remove_logo') && $team->logo_path) {
-            $this->deleteGameTeamLogo($team->logo_path, $gameSave->id);
-            $team->logo_path = null;
-        }
+        return $this->withSaveLock($gameSave, function () use ($request, $gameSave, $team, $data) {
+            $team->refresh();
 
-        // upload logo
-        if ($request->hasFile('logo')) {
-            if ($team->logo_path) {
+            // gestion suppression logo
+            if ($request->boolean('remove_logo') && $team->logo_path) {
                 $this->deleteGameTeamLogo($team->logo_path, $gameSave->id);
+                $team->logo_path = null;
             }
 
-            $team->logo_path = $this->storeGameTeamLogo(
-                $request->file('logo'),
-                $data['name'],
-                $gameSave->id
-            );
-        }
+            // upload logo
+            if ($request->hasFile('logo')) {
+                if ($team->logo_path) {
+                    $this->deleteGameTeamLogo($team->logo_path, $gameSave->id);
+                }
 
-        // données textuelles
-        $team->fill($request->safe()->except(['logo', 'remove_logo']));
-        $team->save();
+                $team->logo_path = $this->storeGameTeamLogo(
+                    $request->file('logo'),
+                    $data['name'],
+                    $gameSave->id
+                );
+            }
 
-        return back()->with('success', 'Équipe mise à jour.');
+            // données textuelles
+            $team->fill($request->safe()->except(['logo', 'remove_logo']));
+            $team->save();
+
+            return back()->with('success', 'Équipe mise à jour.');
+        });
     }
 
     /**
@@ -110,29 +116,31 @@ class GameTeamController extends Controller
 
         $data = $request->validated();
 
-        $team = new GameTeam();
-        $team->game_save_id = $gameSave->id;
-        $team->fill($request->safe()->except(['logo']));
+        return $this->withSaveLock($gameSave, function () use ($request, $gameSave, $data) {
+            $team = new GameTeam();
+            $team->game_save_id = $gameSave->id;
+            $team->fill($request->safe()->except(['logo']));
 
-        // upload éventuel
-        if ($request->hasFile('logo')) {
-            $team->logo_path = $this->storeGameTeamLogo(
-                $request->file('logo'),
-                $data['name'],
-                $gameSave->id
-            );
-        }
+            // upload éventuel
+            if ($request->hasFile('logo')) {
+                $team->logo_path = $this->storeGameTeamLogo(
+                    $request->file('logo'),
+                    $data['name'],
+                    $gameSave->id
+                );
+            }
 
-        $team->wins = 0;
-        $team->draws = 0;
-        $team->losses = 0;
+            $team->wins = 0;
+            $team->draws = 0;
+            $team->losses = 0;
 
-        $team->save();
+            $team->save();
 
-        return redirect()->route('game-saves.teams.index', [
-            'gameSave' => $gameSave->id,
-            'selected' => $team->id,
-        ])->with('success', 'Équipe créée.');
+            return redirect()->route('game-saves.teams.index', [
+                'gameSave' => $gameSave->id,
+                'selected' => $team->id,
+            ])->with('success', 'Équipe créée.');
+        });
     }
 
     /**
@@ -142,15 +150,18 @@ class GameTeamController extends Controller
     {
         $this->authorizeGameSave('update', $gameSave, $team);
 
-        if ($team->logo_path) {
-            $this->deleteGameTeamLogo($team->logo_path, $gameSave->id);
-        }
+        // Sous verrou : on ne supprime pas une équipe pendant qu'une semaine se simule.
+        return $this->withSaveLock($gameSave, function () use ($gameSave, $team) {
+            if ($team->logo_path) {
+                $this->deleteGameTeamLogo($team->logo_path, $gameSave->id);
+            }
 
-        $team->delete();
+            $team->delete();
 
-        return redirect()->route('game-saves.teams.index', [
-            'gameSave' => $gameSave->id,
-        ])->with('success', 'Équipe supprimée.');
+            return redirect()->route('game-saves.teams.index', [
+                'gameSave' => $gameSave->id,
+            ])->with('success', 'Équipe supprimée.');
+        });
     }
 
     /**
