@@ -33,12 +33,21 @@ class PlayerChemistryService
      * Enregistre l'alchimie d'un match joué : pour chaque équipe, calcule la présence de chaque joueur tour par tour puis met à jour les paires.
      * Pose elle-même un verrou sur la sauvegarde dans une transaction ; idempotent grâce au drapeau match_stats.chemistry_recorded.
      * $simulated = match simulé par l'IA (les titulaires sont supposés présents toute la durée).
+     * $saveAlreadyLocked = l'appelant tient déjà le verrou de la sauvegarde dans la transaction en cours
+     * (le simulateur le prend une fois pour toute sa série de matchs) : on ne le reprend pas.
      */
-    public function recordMatch(GameSave $save, GameMatch $match, bool $simulated = false): void
+    public function recordMatch(GameSave $save, GameMatch $match, bool $simulated = false, bool $saveAlreadyLocked = false): void
     {
-        DB::transaction(function () use ($save, $match, $simulated) {
-            GameSave::whereKey($save->id)->lockForUpdate()->firstOrFail();
-            $match->refresh();
+        DB::transaction(function () use ($save, $match, $simulated, $saveAlreadyLocked) {
+            if (! $saveAlreadyLocked) {
+                GameSave::whereKey($save->id)->lockForUpdate()->firstOrFail();
+            }
+
+            // Relit les colonnes du match sous verrou (statut, drapeau d'idempotence) SANS recharger
+            // ses relations : l'appelant garde ses équipes et sa partie déjà chargées.
+            $fresh = $match->newQueryWithoutScopes()->whereKey($match->getKey())->useWritePdo()->firstOrFail();
+            $match->setRawAttributes($fresh->getAttributes(), true);
+
             $stats = $match->match_stats ?? [];
             if ($match->status !== \App\Enums\MatchStatus::Played || ($stats['chemistry_recorded'] ?? false)) return;
 
@@ -46,15 +55,16 @@ class PlayerChemistryService
             $turns = min($maxTurns, max(0, (int) ($simulated ? $maxTurns : ($stats['presence_turns'] ?? 0))));
             if ($turns === 0) return;
 
+            $presences = [];
             foreach (['home', 'away'] as $side) {
                 $lineup = $stats['lineups'][$side] ?? [];
                 $roster = collect($lineup['players'] ?? [])->keyBy('id');
                 if ($roster->isEmpty()) continue;
-                $presence = $simulated
+                $presences[] = $simulated
                     ? $this->simulatedPresence($stats, $side, $roster, $lineup['formation'] ?? null, $turns)
                     : $this->playedPresence($stats['presence'][$side] ?? [], $roster, $lineup['formation'] ?? null, $turns);
-                $this->recordPairs($save, $presence, $turns);
             }
+            $this->recordPairs($save, $presences, $turns);
 
             $stats['chemistry_recorded'] = true;
             $match->match_stats = $stats;
@@ -106,35 +116,48 @@ class PlayerChemistryService
     }
 
     /**
-     * Pour chaque paire de joueurs, compte les tours passés dans la même ligne (poids 10) ou une ligne adjacente (poids 7), puis ajoute au score de duo (plafonné à 100) et +1 match commun.
+     * Pour chaque paire de joueurs d'un MÊME camp, compte les tours passés dans la même ligne (poids 10) ou une ligne adjacente (poids 7), puis ajoute au score de duo (plafonné à 100) et +1 match commun.
      * Les paires qui ont partagé moins d'un dixième des tours sont ignorées. Écrit en base par upsert.
+     *
+     * Les deux camps d'un match sont traités ensemble : une seule lecture des alchimies existantes et un
+     * seul upsert (leurs joueurs sont distincts, donc leurs paires aussi).
+     *
+     * @param array<int, array> $presences une présence par camp : [id joueur][tour] = rang de ligne
      */
-    private function recordPairs(GameSave $save, array $presence, int $turns): void
+    private function recordPairs(GameSave $save, array $presences, int $turns): void
     {
-        $ids = array_keys($presence);
-        sort($ids);
-        $existing = $this->forPlayers($save, $ids)->keyBy(fn ($row) => "{$row->player_a_id}:{$row->player_b_id}");
-        $updates = [];
-        foreach ($ids as $index => $a) {
-            foreach (array_slice($ids, $index + 1) as $b) {
-                $weight = 0;
-                $shared = 0;
-                foreach (array_intersect_key($presence[$a], $presence[$b]) as $turn => $rank) {
-                    $distance = abs($rank - $presence[$b][$turn]);
-                    if ($distance > 1) continue;
-                    $shared++;
-                    $weight += $distance === 0 ? 10 : 7;
-                }
-                if ($shared < (int) ceil($turns / 10)) continue;
+        $presences = array_values(array_filter($presences));
+        if ($presences === []) return;
 
-                $row = $existing->get("{$a}:{$b}");
-                $updates[] = [
-                    'game_save_id' => $save->id,
-                    'player_a_id' => $a,
-                    'player_b_id' => $b,
-                    'score' => min(100, ($row->score ?? 0) + (int) round($weight / $turns)),
-                    'shared_matches' => ($row->shared_matches ?? 0) + 1,
-                ];
+        $allIds = array_merge(...array_map('array_keys', $presences));
+        sort($allIds);
+        $existing = $this->forPlayers($save, $allIds)->keyBy(fn ($row) => "{$row->player_a_id}:{$row->player_b_id}");
+
+        $updates = [];
+        foreach ($presences as $presence) {
+            $ids = array_keys($presence);
+            sort($ids);
+            foreach ($ids as $index => $a) {
+                foreach (array_slice($ids, $index + 1) as $b) {
+                    $weight = 0;
+                    $shared = 0;
+                    foreach (array_intersect_key($presence[$a], $presence[$b]) as $turn => $rank) {
+                        $distance = abs($rank - $presence[$b][$turn]);
+                        if ($distance > 1) continue;
+                        $shared++;
+                        $weight += $distance === 0 ? 10 : 7;
+                    }
+                    if ($shared < (int) ceil($turns / 10)) continue;
+
+                    $row = $existing->get("{$a}:{$b}");
+                    $updates[] = [
+                        'game_save_id' => $save->id,
+                        'player_a_id' => $a,
+                        'player_b_id' => $b,
+                        'score' => min(100, ($row->score ?? 0) + (int) round($weight / $turns)),
+                        'shared_matches' => ($row->shared_matches ?? 0) + 1,
+                    ];
+                }
             }
         }
 

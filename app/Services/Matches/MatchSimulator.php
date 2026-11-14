@@ -99,8 +99,12 @@ class MatchSimulator
         // Tout ou rien : un match à moitié enregistré (score sans classement,
         // progression sans fautes…) ne doit jamais survivre à une erreur.
         DB::transaction(function () use ($others, $gameSave) {
+            // Le verrou de la partie est pris une fois pour toute la série (et non à chaque match).
+            if ($gameSave) {
+                GameSave::whereKey($gameSave->id)->lockForUpdate()->first();
+            }
             foreach ($others as $m) {
-                $this->simulateAndSave($m, $gameSave);
+                $this->simulateAndSave($m, $gameSave, saveLocked: (bool) $gameSave);
             }
         });
     }
@@ -120,6 +124,8 @@ class MatchSimulator
         // clôture de semaine, commande artisan) : une erreur sur un match annule
         // aussi les matchs déjà simulés de la même série, jamais de semaine à moitié écrite.
         DB::transaction(function () use ($matches, &$saves) {
+            $locked = []; // parties dont le verrou est déjà pris dans cette transaction
+
             foreach ($matches as $m) {
                 if ($m->status !== \App\Enums\MatchStatus::Scheduled) continue;
 
@@ -128,8 +134,17 @@ class MatchSimulator
                     'awayTeam' => fn($q) => $q->with(['contracts' => fn($cq) => $cq->activeAt($m->week)->with('gamePlayer')]),
                 ]);
 
-                $saves[(int) $m->game_save_id] ??= GameSave::find($m->game_save_id);
-                $this->simulateAndSave($m, $saves[(int) $m->game_save_id]);
+                // Une partie lue ici est verrouillée par la même requête ; une partie fournie par
+                // l'appelant est verrouillée une seule fois, au premier match qui la concerne.
+                $saveId = (int) $m->game_save_id;
+                if (! isset($saves[$saveId])) {
+                    $saves[$saveId] = GameSave::lockForUpdate()->find($saveId);
+                    $locked[$saveId] = true;
+                } elseif (! isset($locked[$saveId])) {
+                    GameSave::whereKey($saveId)->lockForUpdate()->first();
+                    $locked[$saveId] = true;
+                }
+                $this->simulateAndSave($m, $saves[$saveId], saveLocked: $saves[$saveId] !== null);
             }
         });
     }
@@ -146,7 +161,7 @@ class MatchSimulator
     // ==========================
     //   SIMULATION PRINCIPALE
     // ==========================
-    private function simulateAndSave(GameMatch $m, ?GameSave $gameSave): void
+    private function simulateAndSave(GameMatch $m, ?GameSave $gameSave, bool $saveLocked = false): void
     {
         $lineups  = $gameSave?->gameState()->lineups() ?? [];
 
@@ -215,7 +230,7 @@ class MatchSimulator
         // Progression post-match pour les joueurs IA
         if ($gameSave) {
             $this->postMatchProgressionService->applyForMatch($gameSave, $m);
-            $this->playerChemistryService->recordMatch($gameSave, $m, simulated: true);
+            $this->playerChemistryService->recordMatch($gameSave, $m, simulated: true, saveAlreadyLocked: $saveLocked);
             $this->declarationService->consumeMatchBoosts($gameSave, $m->id);
         }
 

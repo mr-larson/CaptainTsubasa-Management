@@ -66,6 +66,93 @@ class PlayerChemistryServiceTest extends TestCase
         $this->assertTrue($match->fresh()->match_stats['chemistry_recorded']);
     }
 
+    public function test_a_simulated_match_records_both_sides_in_one_read_and_stays_idempotent(): void
+    {
+        $save = $this->makeSave();
+        [$home, $homePlayers] = $this->makeTeamWithSquad($save);
+        [$away, $awayPlayers] = $this->makeTeamWithSquad($save);
+        $match = $this->makeMatch($save, $home, $away, ['status' => 'played']);
+        $lineups = app(MatchLineupSnapshot::class)->build($match);
+        $match->update(['match_stats' => [
+            'lineups' => $lineups,
+            'starters' => [
+                'home' => collect($lineups['home']['players'])->take(11)->pluck('id')->all(),
+                'away' => collect($lineups['away']['players'])->take(11)->pluck('id')->all(),
+            ],
+        ]]);
+        $match = $match->fresh(['homeTeam', 'awayTeam']);
+        $service = app(PlayerChemistryService::class);
+
+        // Le verrou est déjà tenu par l'appelant : on le prétend, dans sa transaction.
+        \Illuminate\Support\Facades\DB::transaction(function () use ($service, $save, $match) {
+            \App\Models\GameSaves\GameSave::whereKey($save->id)->lockForUpdate()->first();
+            $service->recordMatch($save, $match, simulated: true, saveAlreadyLocked: true);
+            $service->recordMatch($save, $match, simulated: true, saveAlreadyLocked: true);
+        });
+
+        foreach ([[$homePlayers, 1, 2], [$awayPlayers, 1, 2]] as [$players, $i, $j]) {
+            $this->assertDatabaseHas('game_player_chemistries', [
+                'game_save_id' => $save->id, 'player_a_id' => $players[$i]->id,
+                'player_b_id' => $players[$j]->id, 'score' => 10, 'shared_matches' => 1,
+            ]);
+        }
+        // Les équipes déjà chargées par l'appelant ne sont pas rechargées par la relecture du match.
+        $this->assertTrue($match->relationLoaded('homeTeam'));
+    }
+
+    public function test_recording_a_match_costs_a_single_chemistry_read_and_no_lock_when_already_held(): void
+    {
+        $save = $this->makeSave();
+        [$home] = $this->makeTeamWithSquad($save);
+        [$away] = $this->makeTeamWithSquad($save);
+        $match = $this->makeMatch($save, $home, $away, ['status' => 'played']);
+        $lineups = app(MatchLineupSnapshot::class)->build($match);
+        $match->update(['match_stats' => [
+            'lineups' => $lineups,
+            'starters' => [
+                'home' => collect($lineups['home']['players'])->take(11)->pluck('id')->all(),
+                'away' => collect($lineups['away']['players'])->take(11)->pluck('id')->all(),
+            ],
+        ]]);
+        $match = $match->fresh();
+
+        $selects = [];
+        \Illuminate\Support\Facades\DB::listen(function ($q) use (&$selects) {
+            if (str_starts_with(strtolower($q->sql), 'select')) $selects[] = strtolower($q->sql);
+        });
+
+        app(PlayerChemistryService::class)->recordMatch($save, $match, simulated: true, saveAlreadyLocked: true);
+
+        $chemistryReads = array_filter($selects, fn ($sql) => str_contains($sql, 'game_player_chemistries'));
+        $locks = array_filter($selects, fn ($sql) => str_contains($sql, 'for update'));
+        $this->assertCount(1, $chemistryReads, 'Une seule lecture d\'alchimie pour les deux camps.');
+        $this->assertCount(0, $locks, 'Le verrou tenu par l\'appelant n\'est pas repris.');
+        $this->assertLessThanOrEqual(2, count($selects), 'Relecture du match + lecture d\'alchimie, rien d\'autre.');
+    }
+
+    public function test_simulating_a_series_of_matches_locks_the_save_only_once(): void
+    {
+        $save = $this->makeSave();
+        $matches = [];
+        foreach (range(1, 3) as $_) {
+            [$home] = $this->makeTeamWithSquad($save);
+            [$away] = $this->makeTeamWithSquad($save);
+            $matches[] = $this->makeMatch($save, $home, $away);
+        }
+
+        $locks = 0;
+        \Illuminate\Support\Facades\DB::listen(function ($q) use (&$locks) {
+            if (str_contains(strtolower($q->sql), 'game_saves') && str_contains(strtolower($q->sql), 'for update')) $locks++;
+        });
+
+        app(MatchSimulator::class)->simulateMatchesCollection(collect($matches), $save);
+
+        $this->assertSame(1, $locks, 'Un seul verrou de partie pour toute la série.');
+        foreach ($matches as $m) {
+            $this->assertTrue($m->fresh()->match_stats['chemistry_recorded']);
+        }
+    }
+
     public function test_failed_attempt_waits_for_three_more_shared_matches(): void
     {
         $save = $this->makeSave();
