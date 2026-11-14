@@ -16,9 +16,9 @@ use App\Services\AiLineUpService;
 use App\Services\CareerObjectiveService;
 use App\Services\MatchResultService;
 use App\Services\MatchScreenBuilder;
+use App\Services\WeekAdvanceService;
 use App\Services\MatchSimulator;
 use App\Services\SeasonChallengeService;
-use App\Services\SeasonService;
 use App\Services\WeekClosingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -41,7 +41,7 @@ use Inertia\Response;
  * La logique métier est dans les services :
  *   - enregistrement d'un résultat → MatchResultService ;
  *   - simulation                   → MatchSimulator ;
- *   - clôture de semaine           → WeekClosingService.
+ *   - avancer / clôturer la semaine → WeekAdvanceService puis WeekClosingService.
  */
 class GameMatchController extends Controller
 {
@@ -150,7 +150,7 @@ class GameMatchController extends Controller
      *
      * Toute la logique de l'enregistrement est dans App\Services\MatchResultService.
      */
-    public function finishMatch(FinishMatchRequest $request, GameSave $gameSave, GameMatch $match, MatchResultService $results): RedirectResponse
+    public function finishMatch(FinishMatchRequest $request, GameSave $gameSave, GameMatch $match, MatchResultService $results, WeekAdvanceService $weeks): RedirectResponse
     {
         $this->authorizeGameSave('update', $gameSave);
 
@@ -168,7 +168,7 @@ class GameMatchController extends Controller
 
         // Verrou par partie : un double clic ou un rejeu attend la première requête, puis
         // retombe sur le match déjà joué au lieu de recompter classement, revenus et semaine.
-        return $this->withSaveLock($gameSave, function (GameSave $gameSave) use ($match, $data, $scores, $homeTeamId, $awayTeamId, $results) {
+        return $this->withSaveLock($gameSave, function (GameSave $gameSave) use ($match, $data, $scores, $homeTeamId, $awayTeamId, $results, $weeks) {
             $match->refresh();
 
             if (! $results->canStillBeRecorded($gameSave, $match)) {
@@ -185,7 +185,7 @@ class GameMatchController extends Controller
                 $data['foulEvents'] ?? [],
             );
 
-            return $this->continueAfterMatch($gameSave, (int) $match->week);
+            return $this->redirectAfterWeek($gameSave, $weeks->advanceAfterMatch($gameSave, (int) $match->week));
         });
     }
 
@@ -195,13 +195,14 @@ class GameMatchController extends Controller
      * Refusé (redirection) si le match n'est plus à jouer cette semaine ou si la partie
      * est terminée. Interdit (403) si l'équipe active n'est pas dans ce match, ou si
      * l'adversaire est aussi dirigé par un humain. Après simulation, enchaîne comme
-     * finishMatch : autre manager à faire jouer, ou clôture de la semaine.
+     * finishMatch (WeekAdvanceService::advanceAfterMatch) : autre manager à faire jouer,
+     * ou clôture de la semaine.
      */
-    public function simulateMatch(GameSave $gameSave, GameMatch $match, MatchSimulator $simulator): RedirectResponse
+    public function simulateMatch(GameSave $gameSave, GameMatch $match, MatchSimulator $simulator, WeekAdvanceService $weeks): RedirectResponse
     {
         $this->authorizeGameSave('update', $gameSave, $match);
 
-        return $this->withSaveLock($gameSave, function (GameSave $save) use ($match, $simulator) {
+        return $this->withSaveLock($gameSave, function (GameSave $save) use ($match, $simulator, $weeks) {
             $match->refresh();
             if ($match->status !== \App\Enums\MatchStatus::Scheduled || (int) $match->week !== (int) $save->week
                 || !$save->isInMatchPhase() || $save->hasPendingMidseasonBreak()) {
@@ -230,117 +231,36 @@ class GameMatchController extends Controller
 
             $result = "{$match->homeTeam->name} {$match->home_score}–{$match->away_score} {$match->awayTeam->name}";
 
-            return $this->continueAfterMatch($save, (int) $match->week)->with('success', "Match simulé · {$result}");
+            return $this->redirectAfterWeek($save, $weeks->advanceAfterMatch($save, (int) $match->week))
+                ->with('success', "Match simulé · {$result}");
         });
-    }
-
-    /**
-     * Étape qui suit un match terminé (joué ou simulé) :
-     *   - si un autre manager humain a encore un match à jouer cette semaine, la main
-     *     lui passe (hot-seat) et on revient à la page de jeu ;
-     *   - sinon la semaine est clôturée (WeekClosingService) et on va à l'écran adapté.
-     */
-    private function continueAfterMatch(GameSave $save, int $week): RedirectResponse
-    {
-        // Les autres managers jouent leur match avant la clôture de la semaine.
-        $next = $this->nextHumanWithPendingMatch($save, $week);
-        if ($next) {
-            $save->controlled_game_team_id = $next->id;
-            $save->save();
-
-            return redirect()->route('game-saves.Play', $save);
-        }
-
-        return $this->redirectAfterWeek($save, app(WeekClosingService::class)->close($save, $week));
-    }
-
-    /**
-     * Prochain manager humain (par ordre de siège) dont le match de la semaine n'est
-     * pas encore joué, ou null si tous ont joué. Sert au hot-seat : on ne simule
-     * jamais le match d'un humain, on lui passe la main.
-     */
-    private function nextHumanWithPendingMatch(GameSave $gameSave, int $week): ?GameTeam
-    {
-        foreach ($gameSave->controlledGameTeams()->get() as $team) {
-            $hasPending = GameMatch::where('game_save_id', $gameSave->id)
-                ->where('week', $week)
-                ->where('status', 'scheduled')
-                ->where(function ($q) use ($team) {
-                    $q->where('home_team_id', $team->id)
-                        ->orWhere('away_team_id', $team->id);
-                })
-                ->exists();
-
-            if ($hasPending) {
-                return $team;
-            }
-        }
-
-        return null;
     }
 
     /**
      * Simule TOUTE la semaine courante : les matchs de toutes les équipes IA, puis
-     * clôture la semaine (revenus, entraînement IA, transferts, fin de saison éventuelle).
+     * clôture de la semaine (revenus, entraînement IA, transferts, fin de saison éventuelle).
      *
-     * Garde-fous (sous le verrou de la partie) : phase de matchs obligatoire, partie non
-     * terminée, semaine reçue identique à la semaine courante (idempotence), pause de
-     * mi-saison à terminer d'abord, et aucun manager humain avec un match en attente
-     * (sinon la main lui est passée).
+     * Le navigateur envoie la semaine affichée (« week », pour qu'un double clic ne simule
+     * pas deux semaines) et, au besoin, « midseason_break » pour valider la pause de
+     * mi-saison. Le verrou de la partie sérialise les requêtes ; toutes les règles
+     * (phase, partie terminée, hot-seat, pause) sont dans App\Services\WeekAdvanceService.
      */
-    public function simulateWeek(Request $request, GameSave $gameSave): RedirectResponse
+    public function simulateWeek(Request $request, GameSave $gameSave, WeekAdvanceService $weeks): RedirectResponse
     {
         $this->authorizeGameSave('update', $gameSave);
 
-        // Verrou par save + garde de phase : un double clic ne simule pas deux
-        // semaines, et un re-POST pendant la draft / la fin de saison ne rejoue
-        // pas endSeason (primes et titres comptés deux fois).
-        return $this->withSaveLock($gameSave, function (GameSave $gameSave) use ($request) {
-            if (! $gameSave->isInMatchPhase()) {
-                return redirect()->route('game-saves.Play', $gameSave);
-            }
+        $displayedWeek = $request->filled('week') ? (int) $request->input('week') : null;
 
-            if (app(CareerObjectiveService::class)->isGameOver($gameSave)) {
-                return redirect()->route('game-saves.game-over', $gameSave);
-            }
-
-            $week = (int) ($gameSave->week ?? 1);
-
-            // Idempotence : le front envoie la semaine affichée. Un second POST
-            // (double clic) arrive après l'avancement et ne simule pas la
-            // semaine suivante, ni le match que le joueur devait disputer.
-            if ($request->filled('week') && (int) $request->input('week') !== $week) {
-                return redirect()->route('game-saves.Play', $gameSave);
-            }
-
-            if ($request->boolean('midseason_break')) {
-                app(SeasonService::class)->completeMidseasonBreak($gameSave);
-                return redirect()->route('game-saves.Play', $gameSave);
-            }
-            if ($gameSave->hasPendingMidseasonBreak()) {
-                return redirect()->route('game-saves.Play', $gameSave);
-            }
-
-            // Hot-seat : on ne simule jamais le match d'un manager humain. Si
-            // l'un d'eux doit encore jouer, la main lui passe.
-            $nextHuman = $this->nextHumanWithPendingMatch($gameSave, $week);
-            if ($nextHuman) {
-                $gameSave->controlled_game_team_id = $nextHuman->id;
-                $gameSave->save();
-
-                return redirect()->route('game-saves.Play', $gameSave);
-            }
-
-            return $this->redirectAfterWeek(
-                $gameSave,
-                app(WeekClosingService::class)->close($gameSave, $week),
-            );
-        });
+        return $this->withSaveLock($gameSave, fn (GameSave $locked) => $this->redirectAfterWeek(
+            $locked,
+            $weeks->simulateWeek($locked, $displayedWeek, $request->boolean('midseason_break')),
+        ));
     }
 
     /**
-     * Choisit l'écran à afficher après la clôture d'une semaine : partie terminée,
-     * fin de saison, ou simple retour à la page de jeu (résultat de WeekClosingService).
+     * Choisit l'écran à afficher après une action qui fait avancer la semaine : partie
+     * terminée, fin de saison, ou simple retour à la page de jeu (constantes
+     * WeekClosingService::OUTCOME_*, renvoyées par WeekAdvanceService).
      */
     private function redirectAfterWeek(GameSave $gameSave, string $outcome): RedirectResponse
     {
