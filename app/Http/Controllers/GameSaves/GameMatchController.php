@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\GameSaves;
 
 use App\Http\Requests\GameSaves\FinishMatchRequest;
+use App\Http\Requests\GameSaves\SimulateWeekRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\AuthorizesGameSave;
 use App\Http\Controllers\Concerns\LocksGameSave;
@@ -223,18 +224,19 @@ class GameMatchController extends Controller
      *
      * Le navigateur envoie la semaine affichée (« week », pour qu'un double clic ne simule
      * pas deux semaines) et, au besoin, « midseason_break » pour valider la pause de
-     * mi-saison. Le verrou de la partie sérialise les requêtes ; toutes les règles
+     * mi-saison (validées par SimulateWeekRequest). Le verrou de la partie sérialise les requêtes ; toutes les règles
      * (phase, partie terminée, hot-seat, pause) sont dans App\Services\Season\WeekAdvanceService.
      */
-    public function simulateWeek(Request $request, GameSave $gameSave, WeekAdvanceService $weeks): RedirectResponse
+    public function simulateWeek(SimulateWeekRequest $request, GameSave $gameSave, WeekAdvanceService $weeks): RedirectResponse
     {
         $this->authorizeGameSave('update', $gameSave);
 
-        $displayedWeek = $request->filled('week') ? (int) $request->input('week') : null;
+        $displayedWeek  = $request->displayedWeek();
+        $confirmsBreak  = $request->confirmsMidseasonBreak();
 
         return $this->withSaveLock($gameSave, fn (GameSave $locked) => $this->redirectAfterWeek(
             $locked,
-            $weeks->simulateWeek($locked, $displayedWeek, $request->boolean('midseason_break')),
+            $weeks->simulateWeek($locked, $displayedWeek, $confirmsBreak),
         ));
     }
 

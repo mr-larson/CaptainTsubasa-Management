@@ -89,4 +89,22 @@ class AuthorizationHardeningTest extends TestCase
         // Les réponses d'erreur sont couvertes aussi.
         $this->get('/page-inexistante')->assertNotFound()->assertHeader('X-Content-Type-Options', 'nosniff');
     }
+
+    public function test_simulate_week_validates_its_inputs(): void
+    {
+        $save = $this->makeSave();
+        $user = User::find($save->user_id);
+
+        $this->actingAs($user)
+            ->post(route('game-saves.simulate-week', $save), ['week' => 'abc'])
+            ->assertSessionHasErrors('week');
+
+        $this->actingAs($user)
+            ->post(route('game-saves.simulate-week', $save), ['week' => $save->week, 'midseason_break' => 'peut-être'])
+            ->assertSessionHasErrors('midseason_break');
+
+        $this->actingAs($user)
+            ->post(route('game-saves.simulate-week', $save), ['week' => $save->week, 'midseason_break' => false])
+            ->assertSessionHasNoErrors();
+    }
 }
