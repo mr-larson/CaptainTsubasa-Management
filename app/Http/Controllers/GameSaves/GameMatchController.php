@@ -9,16 +9,12 @@ use App\Http\Controllers\Concerns\LocksGameSave;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GameSave;
-use App\Models\GameSaves\GameTeam;
 use App\Models\GameSaves\GameInjury;
 use App\Models\GameSaves\GameSanction;
-use App\Services\AiLineUpService;
-use App\Services\CareerObjectiveService;
 use App\Services\MatchResultService;
+use App\Services\MatchSimulationService;
 use App\Services\MatchScreenBuilder;
 use App\Services\WeekAdvanceService;
-use App\Services\MatchSimulator;
-use App\Services\SeasonChallengeService;
 use App\Services\WeekClosingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -40,7 +36,7 @@ use Inertia\Response;
  *
  * La logique métier est dans les services :
  *   - enregistrement d'un résultat → MatchResultService ;
- *   - simulation                   → MatchSimulator ;
+ *   - « simuler mon match »         → MatchSimulationService (qui s'appuie sur MatchSimulator) ;
  *   - avancer / clôturer la semaine → WeekAdvanceService puis WeekClosingService.
  */
 class GameMatchController extends Controller
@@ -192,47 +188,29 @@ class GameMatchController extends Controller
     /**
      * SIMULE (par le serveur) le prochain match de l'équipe active, sans le jouer à la main.
      *
-     * Refusé (redirection) si le match n'est plus à jouer cette semaine ou si la partie
-     * est terminée. Interdit (403) si l'équipe active n'est pas dans ce match, ou si
-     * l'adversaire est aussi dirigé par un humain. Après simulation, enchaîne comme
-     * finishMatch (WeekAdvanceService::advanceAfterMatch) : autre manager à faire jouer,
-     * ou clôture de la semaine.
+     * Le verrou de la partie évite qu'un double clic simule le match deux fois. Toutes les
+     * règles sont dans App\Services\MatchSimulationService, qui répond par l'une de ces
+     * issues :
+     *   - interdit (403) : l'équipe active ne joue pas ce match, ou l'adversaire est aussi
+     *     dirigé par un humain ;
+     *   - rien à simuler : retour à l'écran indiqué (match déjà joué, partie terminée…) ;
+     *   - match simulé : on enchaîne (autre manager à faire jouer, ou clôture de la semaine)
+     *     avec un message résumant le score.
      */
-    public function simulateMatch(GameSave $gameSave, GameMatch $match, MatchSimulator $simulator, WeekAdvanceService $weeks): RedirectResponse
+    public function simulateMatch(GameSave $gameSave, GameMatch $match, MatchSimulationService $simulation): RedirectResponse
     {
         $this->authorizeGameSave('update', $gameSave, $match);
 
-        return $this->withSaveLock($gameSave, function (GameSave $save) use ($match, $simulator, $weeks) {
-            $match->refresh();
-            if ($match->status !== \App\Enums\MatchStatus::Scheduled || (int) $match->week !== (int) $save->week
-                || !$save->isInMatchPhase() || $save->hasPendingMidseasonBreak()) {
-                return redirect()->route('game-saves.Play', $save);
-            }
+        return $this->withSaveLock($gameSave, function (GameSave $save) use ($match, $simulation) {
+            $result = $simulation->simulateNextMatch($save, $match);
 
-            if (app(CareerObjectiveService::class)->isGameOver($save)) {
-                return redirect()->route('game-saves.game-over', $save);
-            }
+            abort_if($result->isForbidden(), 403, (string) $result->forbiddenMessage);
 
-            $activeTeamId = (int) $save->controlled_game_team_id;
-            if (!$activeTeamId && $save->team_id) {
-                $activeTeamId = (int) GameTeam::where('game_save_id', $save->id)
-                    ->where('base_team_id', $save->team_id)->value('id');
-            }
-            $homeId = (int) $match->home_team_id;
-            $awayId = (int) $match->away_team_id;
-            abort_unless($activeTeamId && in_array($activeTeamId, [$homeId, $awayId], true), 403);
-            $opponentId = $homeId === $activeTeamId ? $awayId : $homeId;
-            abort_if(in_array($opponentId, $save->controlledGameTeamIds(), true), 403, 'Ce match oppose deux managers humains.');
+            $redirect = $this->redirectAfterWeek($save, $result->outcome);
 
-            app(AiLineUpService::class)->adjustLineupsForWeek($save, [$opponentId]);
-            $simulator->simulateMatchesCollection(collect([$match]), $save);
-            $save->refresh();
-            app(SeasonChallengeService::class)->payCompleted($save, [$homeId, $awayId]);
-
-            $result = "{$match->homeTeam->name} {$match->home_score}–{$match->away_score} {$match->awayTeam->name}";
-
-            return $this->redirectAfterWeek($save, $weeks->advanceAfterMatch($save, (int) $match->week))
-                ->with('success', "Match simulé · {$result}");
+            return $result->summary !== null
+                ? $redirect->with('success', "Match simulé · {$result->summary}")
+                : $redirect;
         });
     }
 
