@@ -54,6 +54,16 @@ class AiCoachService
                 ->where('weeks_suspended', '>', 0)->pluck('game_player_id'))
             ->merge(GamePositionTraining::unavailablePlayerIds($save->id, $week));
 
+        // Contrôles par équipe lus UNE fois pour toute la ligue. Aucune équipe ne modifie les
+        // joueurs ni les promesses d'une autre : ces lectures valent pour chaque équipe du tour.
+        $recentDeclarers = GameDeclaration::where('game_save_id', $save->id)->where('season', $season)
+            ->where('week', '>', $week - DeclarationService::COOLDOWN_WEEKS)
+            ->pluck('game_player_id')->flip();
+        $teamsWithPromise = GamePromise::where('game_save_id', $save->id)->where('season', $season)
+            ->where(fn ($query) => $query->where('status', PromiseStatus::Pending)
+                ->orWhere('start_week', '>', $week - self::PROMISE_COOLDOWN_WEEKS))
+            ->pluck('game_team_id')->flip();
+
         foreach ($aiTeams as $team) {
             $match = $played->first(fn ($match) => $match->home_team_id === $team->id || $match->away_team_id === $team->id);
             if (!$match) continue;
@@ -64,29 +74,22 @@ class AiCoachService
             )->pluck('gamePlayer');
             $stats = $match->playerStatsMap();
 
-            $recentDeclaration = GameDeclaration::where('game_save_id', $save->id)->where('season', $season)
-                ->whereIn('game_player_id', $team->contracts->pluck('game_player_id'))
-                ->where('week', '>', $week - DeclarationService::COOLDOWN_WEEKS)
-                ->exists();
+            $recentDeclaration = $team->contracts->contains(fn ($contract) => $recentDeclarers->has($contract->game_player_id));
             if (!$recentDeclaration) {
                 $balance = fn ($player) => (int) ($stats[$player->id]['duelsWon'] ?? 0)
                     - (int) ($stats[$player->id]['duelsLost'] ?? 0);
                 $inForm = $starters->filter(fn ($player) => $balance($player) > 0)->sortByDesc($balance)->first();
                 $struggling = $starters->filter(fn ($player) => $balance($player) < 0 && $player->morale >= 60)
                     ->sortBy($balance)->first();
+                // Le délai est déjà vérifié ci-dessus et le bilan de duels déjà calculé : on les transmet.
                 if ($inForm) {
-                    $this->declarations->declare($save, $inForm, 'praise', $team->id);
+                    $this->declarations->declareWithKnownContext($save, $inForm, 'praise', $team->id, $balance($inForm));
                 } elseif ($struggling) {
-                    $this->declarations->declare($save, $struggling, 'criticize', $team->id);
+                    $this->declarations->declareWithKnownContext($save, $struggling, 'criticize', $team->id, $balance($struggling));
                 }
             }
 
-            $hasPromise = GamePromise::where('game_save_id', $save->id)->where('game_team_id', $team->id)
-                ->where('season', $season)
-                ->where(fn ($query) => $query->where('status', PromiseStatus::Pending)
-                    ->orWhere('start_week', '>', $week - self::PROMISE_COOLDOWN_WEEKS))
-                ->exists();
-            if ($hasPromise) continue;
+            if ($teamsWithPromise->has($team->id)) continue;
 
             $playedIds = MoraleService::resolvePlayedPlayerIds($match);
             $targetTurns = PromiseService::playingTimeTarget($save);

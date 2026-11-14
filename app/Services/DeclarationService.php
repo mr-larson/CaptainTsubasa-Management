@@ -56,7 +56,29 @@ class DeclarationService
             return 'Tu t\'es déjà exprimé publiquement sur ce joueur récemment.';
         }
 
-        $duelBalance = $this->lastMatchDuelBalance($gameSave, $player, $teamId);
+        return $this->perform($gameSave, $player, $type, $teamId, $this->lastMatchDuelBalance($gameSave, $player, $teamId));
+    }
+
+    /**
+     * Comme declare(), pour un appelant qui a DÉJÀ vérifié le délai entre deux déclarations
+     * sur ce joueur ET qui connaît son bilan de duels au dernier match (c'est le cas de
+     * l'entraîneur IA, qui les a déjà lus pour toute la ligue). Évite deux lectures par déclaration.
+     *
+     * @param int $duelBalance duels gagnés moins duels perdus lors du dernier match joué par l'équipe
+     */
+    public function declareWithKnownContext(GameSave $gameSave, GamePlayer $player, string $type, int $teamId, int $duelBalance): GameDeclaration
+    {
+        return $this->perform($gameSave, $player, $type, $teamId, $duelBalance);
+    }
+
+    /**
+     * Applique la déclaration (délai déjà vérifié) : tire le résultat, met à jour le moral et la
+     * relation du joueur, enregistre la déclaration et le journal de moral.
+     */
+    private function perform(GameSave $gameSave, GamePlayer $player, string $type, int $teamId, int $duelBalance): GameDeclaration
+    {
+        $week = (int) ($gameSave->week ?? 1);
+
         $deserved = $duelBalance > 0;
 
         if ($type === 'praise') {

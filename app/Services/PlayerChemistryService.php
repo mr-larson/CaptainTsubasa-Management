@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Helpers\FormationHelper;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameMatch;
+use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GamePlayerChemistry;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
@@ -254,7 +255,15 @@ class PlayerChemistryService
                     ->map(fn ($entry) => $entry + ['player_id' => $id])
             )->sortByDesc('score')->first();
             if ($eligible) {
-                $this->attempt($save, $team->id, $eligible['player_id'], $eligible['partner_id']);
+                // Les lectures de la ligue sont déjà là : pas de relecture pour cette tentative.
+                [$a, $b] = [$eligible['player_id'], $eligible['partner_id']]; // déjà ordonnés : a < b
+                $this->confirmAttempt(
+                    $rows->first(fn ($row) => $row->player_a_id === $a && $row->player_b_id === $b),
+                    $players[$a],
+                    $players[$b],
+                    fn () => isset($occupied[$a]) || isset($occupied[$b]),
+                    fn () => $historical,
+                );
             }
         }
     }
@@ -271,8 +280,31 @@ class PlayerChemistryService
             ->get()->pluck('gamePlayer', 'game_player_id');
         if ($players->count() !== 2) $this->reject('Les deux joueurs doivent être dans le même effectif.');
 
-        $row = $this->forPlayers($save, [$a, $b])->first();
-        if (!$row || $row->score < self::MIN_SCORE || $this->linkedIds($save, [$a, $b])) {
+        return $this->confirmAttempt(
+            $this->forPlayers($save, [$a, $b])->first(),
+            $players[$a],
+            $players[$b],
+            fn () => (bool) $this->linkedIds($save, [$a, $b]),
+            fn () => PlayerLink::partnerMapFor(array_filter([$players[$a]->base_player_id, $players[$b]->base_player_id])),
+        );
+    }
+
+    /**
+     * Décision de la tentative, à partir de données déjà lues : vérifie score minimum, duos déjà
+     * liés, délai de réessai et duo historique (sinon ValidationException), tire le dé contre la
+     * chance, enregistre la tentative et son résultat. Renvoie true si le duo est confirmé.
+     *
+     * Les deux lectures coûteuses sont passées en fonctions pour n'être exécutées que si les
+     * vérifications précédentes ont réussi (comme avant) ; l'IA, qui a déjà tout lu pour la ligue
+     * (attemptForAiTeams), les fournit sans nouvelle requête.
+     *
+     * @param GamePlayerChemistry|null $row        ligne d'alchimie de la paire (a < b)
+     * @param \Closure                 $isLinked   () => bool : l'un des deux joueurs est-il déjà dans un duo confirmé ?
+     * @param \Closure                 $partnerMap () => array : duos historiques (cf. PlayerLink::partnerMapFor)
+     */
+    private function confirmAttempt(?GamePlayerChemistry $row, GamePlayer $playerA, GamePlayer $playerB, \Closure $isLinked, \Closure $partnerMap): bool
+    {
+        if (!$row || $row->score < self::MIN_SCORE || $isLinked()) {
             $this->reject('Ce duo ne peut pas encore être proposé.');
         }
         if ($row->last_attempt_at_match_count !== null
@@ -280,9 +312,9 @@ class PlayerChemistryService
             $this->reject('Ils doivent jouer trois nouveaux matchs ensemble avant de réessayer.');
         }
 
-        $baseA = $players[$a]->base_player_id;
-        $baseB = $players[$b]->base_player_id;
-        if ($this->isHistorical(PlayerLink::partnerMapFor(array_filter([$baseA, $baseB])), $baseA, $baseB)) {
+        $baseA = $playerA->base_player_id;
+        $baseB = $playerB->base_player_id;
+        if ($this->isHistorical($partnerMap(), $baseA, $baseB)) {
             $this->reject('Ces joueurs forment déjà un duo historique.');
         }
 

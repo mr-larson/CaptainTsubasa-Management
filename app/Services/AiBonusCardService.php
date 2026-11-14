@@ -4,10 +4,13 @@ namespace App\Services;
 
 use App\Models\BonusCard;
 use App\Models\GameSaves\GameBonusCard;
+use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameInjury;
+use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
+use Illuminate\Support\Collection;
 
 /**
  * Achat et activation des cartes bonus par les équipes IA.
@@ -17,6 +20,25 @@ class AiBonusCardService
 {
     // Budget minimum que l'IA garde en réserve pour les transferts
     private const TRANSFER_RESERVE = 500;
+
+    /** Effets de carte qui modifient les joueurs d'UNE AUTRE équipe : ils périment les lectures préchargées. */
+    private const MALUS_EFFECTS = [
+        'opponent_stamina_drain', 'opponent_bench_starter', 'opponent_morale_drain', 'opponent_affinity_drain',
+        'opponent_budget_drain', 'opponent_team_stat_debuff', 'opponent_key_stat_debuff',
+    ];
+
+    /**
+     * Lectures de la ligue faites une fois pour toutes les équipes IA de la semaine (joueurs,
+     * blessures, matchs prévus, cartes d'avant-match en attente). null = à (re)lire.
+     */
+    private ?array $snapshot = null;
+
+    /**
+     * Vrai quand un malus a pu modifier des joueurs (endurance, moral, relation coach) : seules les
+     * fiches des joueurs sont à relire (une requête). Ni les blessures, ni les matchs, ni les
+     * cartes en attente ne changent à cause d'un malus.
+     */
+    private bool $playersStale = false;
 
     /** Reçoit le service qui applique réellement les effets des cartes. */
     public function __construct(
@@ -35,11 +57,25 @@ class AiBonusCardService
 
         $teams = $gameSave->gameTeams()->get();
 
+        // Offres de chaque équipe IA, et fiches des cartes concernées lues d'un coup.
+        $offersByTeam = [];
         foreach ($teams as $team) {
             if (in_array((int) $team->id, $controlledTeamIds, true)) continue; // Skip équipes joueurs
+            $offersByTeam[$team->id] = $gameSave->gameState()->shopOffers((int) $team->id);
+        }
+        $catalog = BonusCard::whereIn('id', collect($offersByTeam)->flatten(1)->pluck('bonus_card_id')->filter()->unique()->values())
+            ->get()->keyBy('id');
 
-            $offers = $gameSave->gameState()->shopOffers((int) $team->id);
-            $this->processTeam($gameSave, $team, $offers);
+        $this->snapshot = null;
+        $this->playersStale = false;
+        try {
+            foreach ($teams as $team) {
+                if (! isset($offersByTeam[$team->id])) continue;
+
+                $this->processTeam($gameSave, $team, $offersByTeam[$team->id], $catalog);
+            }
+        } finally {
+            $this->snapshot = null; // ne rien garder d'une semaine à l'autre
         }
     }
 
@@ -48,7 +84,7 @@ class AiBonusCardService
     // ──────────────────────────────────────────────────────────
 
     /** Traite une équipe IA : achète les offres rentables (débit du budget, création de la carte en base), active tout de suite les cartes immédiates utiles, puis active les cartes avant match si un match est à venir. */
-    private function processTeam(GameSave $gameSave, GameTeam $team, array $offers): void
+    private function processTeam(GameSave $gameSave, GameTeam $team, array $offers, Collection $catalog): void
     {
         if (empty($offers)) return;
 
@@ -56,6 +92,7 @@ class AiBonusCardService
 
         // Contexte de l'équipe pour prendre des décisions
         $context = $this->buildTeamContext($gameSave, $team);
+        $boughtPreMatch = []; // cartes d'avant-match achetées pendant ce tour (elles s'ajoutent à celles déjà en attente)
 
         foreach ($offers as $offer) {
             $cost = BonusCard::SHOP_PRICE;
@@ -87,6 +124,10 @@ class AiBonusCardService
                 'purchased_week'   => $gameSave->week,
             ]);
 
+            // La fiche de la carte est déjà connue : inutile de la relire en base à l'activation.
+            $card->setRelation('bonusCard', $catalog->get($offer['bonus_card_id']));
+            $boughtPreMatch[] = $card;
+
             $team->budget = $budget - $cost;
             $team->save();
             $budget = $team->budget;
@@ -99,7 +140,7 @@ class AiBonusCardService
         }
 
         // Activer les cartes pre_match en inventaire si match à venir
-        $this->activatePreMatchCards($gameSave, $team, $context);
+        $this->activatePreMatchCards($gameSave, $context, $boughtPreMatch);
     }
 
     // ──────────────────────────────────────────────────────────
@@ -277,19 +318,31 @@ class AiBonusCardService
             }
         } catch (\Throwable) {
             // Silencieux — l'IA ne plante pas si la carte échoue
+        } finally {
+            // Un malus peut avoir touché les joueurs d'une autre équipe : les prochaines équipes
+            // doivent lire l'état à jour, pas celui d'avant (c'est l'ordre des équipes qui compte).
+            if (in_array($effectType, self::MALUS_EFFECTS, true)) {
+                $this->playersStale = true;
+            }
         }
     }
 
-    /** Active les cartes disponibles en phase avant match de l'équipe, uniquement si elle a un match prévu cette semaine. Erreurs ignorées. */
-    private function activatePreMatchCards(GameSave $gameSave, GameTeam $team, array $context): void
+    /**
+     * Active les cartes d'avant-match disponibles de l'équipe, uniquement si elle a un match prévu
+     * cette semaine. Erreurs ignorées.
+     *
+     * Les cartes en attente sont celles lues avec le contexte de l'équipe, plus celles qu'elle vient
+     * d'acheter à ce tour (toujours disponibles, et d'avant-match selon leur fiche) : même liste
+     * que si on relisait la base, sans la requête.
+     *
+     * @param GameBonusCard[] $bought cartes achetées pendant ce tour
+     */
+    private function activatePreMatchCards(GameSave $gameSave, array $context, array $bought): void
     {
-        $pendingCards = GameBonusCard::query()
-            ->where('game_save_id', $gameSave->id)
-            ->where('game_team_id', $team->id)
-            ->where('status', 'available')
-            ->whereHas('bonusCard', fn ($q) => $q->where('execution_phase', 'pre_match'))
-            ->with('bonusCard')
-            ->get();
+        $pendingCards = ($context['pending_pre_match_cards'] ?? collect())->concat(
+            array_filter($bought, fn (GameBonusCard $card) => $card->status === 'available'
+                && $card->bonusCard?->execution_phase === 'pre_match')
+        );
 
         foreach ($pendingCards as $card) {
             // Activer si match cette semaine
@@ -305,26 +358,20 @@ class AiBonusCardService
     //   CONTEXTE ÉQUIPE
     // ──────────────────────────────────────────────────────────
 
-    /** Résume la situation d'une équipe pour les décisions : endurance moyenne, blessés actifs, joueurs au moral et à la relation coach les plus bas, budget, victoires/défaites et présence d'un match prévu cette semaine. */
+    /** Résume la situation d'une équipe pour les décisions : endurance moyenne, blessés actifs, joueurs au moral et à la relation coach les plus bas, budget, victoires/défaites, présence d'un match prévu cette semaine et cartes d'avant-match déjà en attente. */
     private function buildTeamContext(GameSave $gameSave, GameTeam $team): array
     {
+        $league = $this->leagueSnapshot($gameSave);
+
         // Stamina moyenne
-        $players = GamePlayer::query()
-            ->where('game_save_id', $gameSave->id)
-            ->whereHas('contracts', fn ($q) => $q->where('game_team_id', $team->id))
-            ->get();
+        $players = $league['playersByTeam']->get($team->id, collect());
 
         $avgStamina = $players->isNotEmpty()
             ? (int) $players->avg('stamina')
             : 100;
 
-        // Blessures actives
-        $injuries = GameInjury::query()
-            ->where('game_save_id', $gameSave->id)
-            ->whereIn('game_player_id', $players->pluck('id'))
-            ->where('week_return', '>', $gameSave->week)
-            ->orderByDesc('week_return')
-            ->get();
+        // Blessures actives (la plus lointaine d'abord), de cette équipe seulement
+        $injuries = $league['injuries']->filter(fn ($injury) => $players->contains('id', $injury->game_player_id))->values();
 
         // Joueur blessé le plus impactant = celui dont le retour est le plus loin
         $bestInjuredId = $injuries->first()?->game_player_id;
@@ -332,15 +379,6 @@ class AiBonusCardService
         // Joueur au moral le plus bas / à la pire relation avec le coach
         $worstMoralePlayer   = $players->sortBy('morale')->first();
         $worstAffinityPlayer = $players->sortBy('coach_affinity')->first();
-
-        // Match cette semaine
-        $hasMatchThisWeek = $gameSave->matches()
-            ->where('week', $gameSave->week)
-            ->where('status', 'scheduled')
-            ->where(fn ($q) => $q
-                ->where('home_team_id', $team->id)
-                ->orWhere('away_team_id', $team->id)
-            )->exists();
 
         return [
             'avg_stamina'               => $avgStamina,
@@ -353,7 +391,64 @@ class AiBonusCardService
             'budget'                    => $team->budget ?? 0,
             'wins'                      => $team->wins ?? 0,
             'losses'                    => $team->losses ?? 0,
-            'has_match_this_week'       => $hasMatchThisWeek,
+            'has_match_this_week'       => $league['teamsWithMatch']->has($team->id),
+            'pending_pre_match_cards'   => $league['pendingPreMatch']->get($team->id, collect()),
         ];
+    }
+
+    /**
+     * Lectures de toute la ligue en quelques requêtes (au lieu de quelques requêtes par équipe) :
+     *   - playersByTeam    : joueurs ayant un contrat (de la saison) dans l'équipe, par id croissant ;
+     *   - injuries         : blessures encore actives, retour le plus lointain d'abord ;
+     *   - teamsWithMatch   : équipes (en clés) ayant un match prévu cette semaine ;
+     *   - pendingPreMatch  : cartes d'avant-match disponibles, par équipe, avec leur fiche.
+     *
+     * Les fiches des joueurs sont relues (une requête) après un malus, qui peut les modifier ;
+     * le reste est gardé pour toute la semaine.
+     *
+     * @return array{playersByTeam: Collection, injuries: Collection, teamsWithMatch: Collection, pendingPreMatch: Collection}
+     */
+    private function leagueSnapshot(GameSave $gameSave): array
+    {
+        if ($this->snapshot === null) {
+            $contracts = GameContract::where('game_save_id', $gameSave->id)->get(['game_team_id', 'game_player_id']);
+
+            $this->snapshot = [
+                'teamPlayerIds' => $contracts->groupBy('game_team_id')
+                    ->map(fn ($rows) => $rows->pluck('game_player_id')->unique()->values()),
+                'injuries'      => GameInjury::query()
+                    ->where('game_save_id', $gameSave->id)
+                    ->where('week_return', '>', $gameSave->week)
+                    ->orderByDesc('week_return')
+                    ->get(),
+                'teamsWithMatch' => GameMatch::where('game_save_id', $gameSave->id)
+                    ->where('week', $gameSave->week)
+                    ->where('status', 'scheduled')
+                    ->get(['home_team_id', 'away_team_id'])
+                    ->flatMap(fn ($match) => [(int) $match->home_team_id, (int) $match->away_team_id])
+                    ->flip(),
+                'pendingPreMatch' => GameBonusCard::query()
+                    ->where('game_save_id', $gameSave->id)
+                    ->where('status', 'available')
+                    ->whereHas('bonusCard', fn ($q) => $q->where('execution_phase', 'pre_match'))
+                    ->with('bonusCard')
+                    ->get()
+                    ->groupBy('game_team_id'),
+            ];
+            $this->playersStale = true; // les joueurs n'ont pas encore été lus
+        }
+
+        if ($this->playersStale) {
+            $players = GamePlayer::where('game_save_id', $gameSave->id)
+                ->whereIn('id', $this->snapshot['teamPlayerIds']->flatten()->unique()->values())
+                ->get()->keyBy('id');
+
+            $this->snapshot['playersByTeam'] = $this->snapshot['teamPlayerIds']->map(
+                fn ($ids) => $ids->map(fn ($id) => $players->get($id))->filter()->sortBy('id')->values()
+            );
+            $this->playersStale = false;
+        }
+
+        return $this->snapshot;
     }
 }
