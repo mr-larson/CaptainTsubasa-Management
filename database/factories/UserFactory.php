@@ -18,6 +18,7 @@ class UserFactory extends Factory
      */
     protected static ?string $password = null;
 
+    /** Valeurs par défaut d'un utilisateur : e-mail vérifié, mot de passe « password ». */
     public function definition(): array
     {
         return [

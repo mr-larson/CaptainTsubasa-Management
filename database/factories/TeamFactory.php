@@ -17,6 +17,7 @@ class TeamFactory extends Factory
      */
     protected $model = Team::class;
 
+    /** Valeurs par défaut d'une équipe de référence (nom unique, budget et bilan aléatoires). */
     public function definition(): array
     {
         return [

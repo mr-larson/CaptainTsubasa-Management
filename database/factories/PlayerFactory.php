@@ -6,10 +6,15 @@ use App\Enums\PlayerPosition;
 use App\Models\Player;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
+/**
+ * Fabrique un joueur de référence aléatoire (catalogue `players`) pour les tests :
+ * identité, poste, coût et statistiques de base entre 40 et 99.
+ */
 class PlayerFactory extends Factory
 {
     protected $model = Player::class;
 
+    /** Valeurs par défaut d'un joueur de référence. */
     public function definition()
     {
         return [
