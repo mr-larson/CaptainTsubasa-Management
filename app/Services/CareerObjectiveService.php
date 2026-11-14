@@ -388,19 +388,23 @@ class CareerObjectiveService
 
         $teams = GameTeam::where('game_save_id', $gameSave->id)->pluck('id');
 
+        // Deux requêtes pour toute la ligue (au lieu de deux par équipe) : les contrats actifs
+        // de la semaine regroupés par équipe, puis les joueurs concernés.
+        $playerIdsByTeam = GameContract::where('game_save_id', $gameSave->id)
+            ->activeAt($currentWeek)
+            ->get(['game_team_id', 'game_player_id'])
+            ->groupBy('game_team_id')
+            ->map(fn ($contracts) => $contracts->pluck('game_player_id')->unique()->values());
+
+        $players = GamePlayer::whereIn('id', $playerIdsByTeam->flatten()->unique()->values())
+            ->get()
+            ->keyBy('id');
+
         $strengths = collect();
         foreach ($teams as $teamId) {
-            $playerIds = GameContract::where('game_save_id', $gameSave->id)
-                ->where('game_team_id', $teamId)
-                ->activeAt($currentWeek)
-                ->pluck('game_player_id');
-
-            if ($playerIds->isEmpty()) {
-                continue;
-            }
-
-            $ratings = GamePlayer::whereIn('id', $playerIds)
-                ->get()
+            $ratings = ($playerIdsByTeam->get($teamId) ?? collect())
+                ->map(fn ($id) => $players->get($id))
+                ->filter()
                 ->map(fn (GamePlayer $p) => (
                     $p->attack + $p->defense + $p->speed + $p->shot + $p->pass
                     + $p->dribble + $p->block + $p->intercept + $p->tackle + $p->heading
@@ -408,6 +412,7 @@ class CareerObjectiveService
                 ->sortDesc()
                 ->take(11);
 
+            // Équipe sans joueur sous contrat : pas de force calculable, absente du classement.
             if ($ratings->isEmpty()) {
                 continue;
             }

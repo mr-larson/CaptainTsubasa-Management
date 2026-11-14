@@ -168,9 +168,28 @@ class PlayerChemistryService
     public function summary(GameSave $save, Collection $players, ?Collection $teamByPlayer = null): array
     {
         $players = $players->keyBy('id');
-        $rows = $this->forPlayers($save, $players->keys()->all())->sortByDesc('score')->sortByDesc('confirmed');
-        $occupied = $this->linkedIds($save, $players->keys()->all());
-        $historical = PlayerLink::partnerMapFor($players->pluck('base_player_id')->filter()->unique()->all());
+
+        return $this->buildSummary(
+            $players,
+            $this->forPlayers($save, $players->keys()->all()),
+            $this->linkedIds($save, $players->keys()->all()),
+            PlayerLink::partnerMapFor($players->pluck('base_player_id')->filter()->unique()->all()),
+            $teamByPlayer,
+        );
+    }
+
+    /**
+     * Construit le résumé à partir de lectures DÉJÀ FAITES (summary() les fait pour un
+     * groupe de joueurs ; attemptForAiTeams() les fait une seule fois pour toute la ligue).
+     *
+     * @param Collection $players    joueurs concernés, indexés par id
+     * @param Collection $rows       lignes d'alchimie dont les deux joueurs sont dans $players
+     * @param array      $occupied   ids (en clés) des joueurs déjà engagés dans un duo confirmé
+     * @param array      $historical duos historiques (cf. PlayerLink::partnerMapFor)
+     */
+    private function buildSummary(Collection $players, Collection $rows, array $occupied, array $historical, ?Collection $teamByPlayer): array
+    {
+        $rows = $rows->sortByDesc('score')->sortByDesc('confirmed');
         $summary = [];
         foreach ($rows as $row) {
             if ($teamByPlayer !== null && $teamByPlayer[$row->player_a_id] !== $teamByPlayer[$row->player_b_id]) {
@@ -200,16 +219,37 @@ class PlayerChemistryService
         return $summary;
     }
 
-    /** Décision d'IA : chaque équipe non pilotée par l'humain tente son meilleur duo éligible (score le plus élevé). */
+    /**
+     * Décision d'IA : chaque équipe non pilotée par l'humain tente son meilleur duo éligible
+     * (score le plus élevé).
+     *
+     * Les lectures (alchimies, duos engagés, duos historiques) sont faites UNE FOIS pour tous
+     * les joueurs des équipes IA, puis réparties par équipe en mémoire : pas de relecture par équipe.
+     */
     public function attemptForAiTeams(GameSave $save): void
     {
         $week = (int) $save->week;
         $teams = GameTeam::where('game_save_id', $save->id)->where('is_controlled', false)
             ->where('id', '!=', (int) $save->controlled_game_team_id)
             ->with(['contracts' => fn ($query) => $query->activeAt($week)->with('gamePlayer')])->get();
+
+        $playersByTeam = $teams->mapWithKeys(fn ($team) => [$team->id => $team->contracts->pluck('gamePlayer')->filter()->keyBy('id')]);
+        $allPlayers    = $playersByTeam->flatten(1)->keyBy('id');
+        $allIds        = $allPlayers->keys()->all();
+        if ($allIds === []) {
+            return;
+        }
+
+        // Lectures globales : une paire n'est jamais entre deux équipes différentes ici (on filtre par équipe ci-dessous).
+        $allRows    = $this->forPlayers($save, $allIds);
+        $occupied   = $this->linkedIds($save, $allIds);
+        $historical = PlayerLink::partnerMapFor($allPlayers->pluck('base_player_id')->filter()->unique()->all());
+
         foreach ($teams as $team) {
-            $players = $team->contracts->pluck('gamePlayer')->filter();
-            $eligible = collect($this->summary($save, $players))->flatMap(fn ($entries, $id) =>
+            $players = $playersByTeam[$team->id];
+            $rows    = $allRows->filter(fn ($row) => $players->has($row->player_a_id) && $players->has($row->player_b_id));
+
+            $eligible = collect($this->buildSummary($players, $rows, $occupied, $historical, null))->flatMap(fn ($entries, $id) =>
                 collect($entries)->filter(fn ($entry) => $entry['can_attempt'] && $id < $entry['partner_id'])
                     ->map(fn ($entry) => $entry + ['player_id' => $id])
             )->sortByDesc('score')->first();

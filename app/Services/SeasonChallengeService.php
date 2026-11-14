@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Closure;
 use App\Enums\GamePhase;
 use App\Models\GameSaves\GameBonusCard;
 use App\Models\GameSaves\GameContract;
@@ -222,29 +223,17 @@ class SeasonChallengeService
      * @return array<string, int>  key => valeur
      */
     /** Valeur actuelle de chaque défi de l'équipe, calculée sur les matchs joués, les contrats, le moral, le budget et les cartes de la saison. Lecture seule. */
-    private function measure(GameSave $gameSave, GameTeam $team, array $entry, ?int $rank, array $strengthRanks): array
+    private function measure(GameSave $gameSave, GameTeam $team, array $entry, ?int $rank, array $strengthRanks, ?Closure $gamesFor = null): array
     {
         $teamId = (int) $team->id;
         $keys   = array_column($entry['objectives'] ?? [], 'key');
         $values = [];
 
         $needsMatches = array_intersect($keys, ['wins_min', 'unbeaten_streak', 'away_wins_min', 'clean_sheets_min', 'beat_stronger_min', 'big_wins_min']);
+        // Matchs joués de l'équipe (du plus ancien au plus récent). Quand l'appelant évalue
+        // plusieurs équipes d'affilée, un chargeur partagé lit tous les matchs UNE seule fois.
         $games = $needsMatches
-            ? GameMatch::where('game_save_id', $gameSave->id)
-                ->where('status', 'played')
-                ->where(fn ($q) => $q->where('home_team_id', $teamId)->orWhere('away_team_id', $teamId))
-                ->orderBy('week')
-                ->get(['home_team_id', 'away_team_id', 'home_score', 'away_score'])
-                ->map(function (GameMatch $m) use ($teamId) {
-                    $home = (int) $m->home_team_id === $teamId;
-
-                    return [
-                        'home' => $home,
-                        'gf'   => (int) ($home ? $m->home_score : $m->away_score),
-                        'ga'   => (int) ($home ? $m->away_score : $m->home_score),
-                        'opp'  => (int) ($home ? $m->away_team_id : $m->home_team_id),
-                    ];
-                })
+            ? ($gamesFor ?? $this->playedGamesLoader($gameSave))($teamId)
             : collect();
 
         foreach ($keys as $key) {
@@ -382,6 +371,42 @@ class SeasonChallengeService
 
     /** @return array<int, int> teamId => rang de force (1 = plus fort) */
     /** Rang de force attendu de chaque équipe, enregistré lors du tirage. */
+    /**
+     * Fabrique une fonction « matchs joués d'une équipe » qui lit TOUS les matchs joués de
+     * la partie à son premier appel, puis les répartit par équipe en mémoire. Évite une
+     * requête par équipe quand on évalue toute la ligue.
+     *
+     * Chaque match est renvoyé du point de vue de l'équipe : à domicile ou non, buts pour,
+     * buts contre, adversaire. Ordre : du plus ancien au plus récent.
+     *
+     * @return Closure(int): Collection<int, array{home: bool, gf: int, ga: int, opp: int}>
+     */
+    private function playedGamesLoader(GameSave $gameSave): Closure
+    {
+        $all = null;
+
+        return function (int $teamId) use ($gameSave, &$all): Collection {
+            $all ??= GameMatch::where('game_save_id', $gameSave->id)
+                ->where('status', 'played')
+                ->orderBy('week')
+                ->get(['home_team_id', 'away_team_id', 'home_score', 'away_score']);
+
+            return $all
+                ->filter(fn (GameMatch $m) => (int) $m->home_team_id === $teamId || (int) $m->away_team_id === $teamId)
+                ->map(function (GameMatch $m) use ($teamId) {
+                    $home = (int) $m->home_team_id === $teamId;
+
+                    return [
+                        'home' => $home,
+                        'gf'   => (int) ($home ? $m->home_score : $m->away_score),
+                        'ga'   => (int) ($home ? $m->away_score : $m->home_score),
+                        'opp'  => (int) ($home ? $m->away_team_id : $m->home_team_id),
+                    ];
+                })
+                ->values();
+        };
+    }
+
     private function strengthRanks(GameSave $gameSave): array
     {
         $out = [];
@@ -397,9 +422,9 @@ class SeasonChallengeService
      * @return list<array<string, mixed>>
      */
     /** Évalue les défis d'une équipe : ajoute à chaque objectif sa valeur, son statut, la prime déjà versée et les libellés de famille et de niveau. Un défi déjà payé compte comme réussi. */
-    private function evaluateTeam(GameSave $gameSave, GameTeam $team, array $entry, ?int $rank, array $strengthRanks, bool $final): array
+    private function evaluateTeam(GameSave $gameSave, GameTeam $team, array $entry, ?int $rank, array $strengthRanks, bool $final, ?Closure $gamesFor = null): array
     {
-        $values = $this->measure($gameSave, $team, $entry, $rank, $strengthRanks);
+        $values = $this->measure($gameSave, $team, $entry, $rank, $strengthRanks, $gamesFor);
 
         return array_map(function (array $o) use ($values, $final, $entry) {
             $value = $values[$o['key']] ?? 0;
@@ -460,9 +485,10 @@ class SeasonChallengeService
         if (!$entries) return;
 
         $strengthRanks = $this->strengthRanks($gameSave);
+        $gamesFor      = $this->playedGamesLoader($gameSave); // matchs lus une seule fois pour toutes les équipes
         $changed = false;
         foreach (GameTeam::where('game_save_id', $gameSave->id)->whereKey(array_keys($entries))->get() as $team) {
-            $objectives = $this->evaluateTeam($gameSave, $team, $entries[$team->id], null, $strengthRanks, false);
+            $objectives = $this->evaluateTeam($gameSave, $team, $entries[$team->id], null, $strengthRanks, false, $gamesFor);
             if ($this->creditRewards($team, $data['teams'][$team->id], $objectives)) {
                 $changed = true;
             }
@@ -541,6 +567,7 @@ class SeasonChallengeService
         }
 
         $strengthRanks = $this->strengthRanks($gameSave);
+        $gamesFor      = $this->playedGamesLoader($gameSave); // matchs lus une seule fois pour toutes les équipes
         $rows = [];
         $changed = false;
 
@@ -550,7 +577,7 @@ class SeasonChallengeService
                 continue;
             }
 
-            $objectives = $this->evaluateTeam($gameSave, $team, $entry, $i + 1, $strengthRanks, true);
+            $objectives = $this->evaluateTeam($gameSave, $team, $entry, $i + 1, $strengthRanks, true, $gamesFor);
             $achieved   = array_filter($objectives, fn ($o) => $o['status'] === 'done');
             $reward     = array_sum(array_column($achieved, 'reward'));
 

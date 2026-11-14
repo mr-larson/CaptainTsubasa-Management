@@ -192,7 +192,11 @@ class MatchSimulator
         $foulEvents = $matchStats['foul_events'] ?? [];
         unset($matchStats['foul_events']);
 
-        $matchStats['lineups'] = $this->matchLineupSnapshot->build($m);
+        if ($gameSave) {
+            $m->setRelation('gameSave', $gameSave); // évite de relire la partie pour chaque match
+        }
+        // Les équipes ont déjà leurs contrats actifs de la semaine (chargés plus haut) : on les réutilise.
+        $matchStats['lineups'] = $this->matchLineupSnapshot->build($m, contractsPreloaded: true);
 
         $m->home_score  = $homeScore;
         $m->away_score  = $awayScore;
