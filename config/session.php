@@ -168,7 +168,9 @@ return [
     |
     */
 
-    'secure' => env('SESSION_SECURE_COOKIE'),
+    // En production, le cookie n'est émis qu'en HTTPS même si la variable n'est
+    // pas définie. Ailleurs (local en HTTP), Laravel s'aligne sur la requête.
+    'secure' => env('SESSION_SECURE_COOKIE', env('APP_ENV', 'production') === 'production' ? true : null),
 
     /*
     |--------------------------------------------------------------------------
