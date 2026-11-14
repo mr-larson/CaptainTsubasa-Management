@@ -74,7 +74,7 @@ class CareerObjectiveService
     /** Indique si la boucle de carrière est active : désactivée en Coupe du Monde et quand la difficulté de carrière est 'none'. */
     public function isEnabled(GameSave $gameSave): bool
     {
-        if ($gameSave->competition_type === 'world_cup') {
+        if ($gameSave->isWorldCup()) {
             return false;
         }
 

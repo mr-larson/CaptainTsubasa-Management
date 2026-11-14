@@ -33,7 +33,6 @@ class Team extends Model
         'wins',
         'draws',
         'losses',
-        'formation',
         'default_formation',
         'logo_path',
         'tactical_style',

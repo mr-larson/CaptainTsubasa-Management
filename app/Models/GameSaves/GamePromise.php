@@ -40,6 +40,7 @@ class GamePromise extends Model
         'target_turns'   => 'integer',
         'played_turns'   => 'integer',
         'season'         => 'integer',
+        'renewal_signed_at' => 'datetime',
     ];
 
     /** Joueur à qui la promesse est faite. */

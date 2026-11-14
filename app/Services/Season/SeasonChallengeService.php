@@ -64,7 +64,7 @@ class SeasonChallengeService
     /** Vrai si les défis de saison sont actifs : pas en Coupe du Monde et option de configuration activée (par défaut oui). */
     public function isEnabled(GameSave $gameSave): bool
     {
-        return $gameSave->competition_type !== 'world_cup'
+        return ! $gameSave->isWorldCup()
             && (bool) $gameSave->getConfig('season_challenges_enabled', true);
     }
 

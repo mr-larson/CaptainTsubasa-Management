@@ -41,7 +41,7 @@ class ContractDepartureService
     /** À appeler sous le verrou de sauvegarde, après le bilan du moral et des promesses. */
     public function resolveForWeek(GameSave $gameSave, int $week): void
     {
-        if ($week % 2 !== 0 || $gameSave->competition_type === 'world_cup') return;
+        if ($week % 2 !== 0 || $gameSave->isWorldCup()) return;
 
         $season = (int) ($gameSave->season ?? 1);
         if ($gameSave->gameState()->contractDeparturesDoneFor($season, $week)) return;

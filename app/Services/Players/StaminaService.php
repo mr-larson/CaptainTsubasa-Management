@@ -53,7 +53,7 @@ class StaminaService
 
         self::applyStaminaChanges($gameSave, array_keys($playedPlayerIds));
 
-        if ($gameSave->competition_type !== 'world_cup') {
+        if (! $gameSave->isWorldCup()) {
             $recovery = self::FREE_AGENT_RECOVERY;
             GamePlayer::where('game_save_id', $gameSave->id)
                 ->excludingFictional()

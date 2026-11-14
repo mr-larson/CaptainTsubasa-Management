@@ -142,6 +142,16 @@ class GameSave extends Model
         return $this->phase ?? GamePhase::Season;
     }
 
+    public const COMPETITION_LEAGUE = 'college_league';
+
+    public const COMPETITION_WORLD_CUP = 'world_cup';
+
+    /** Partie de Coupe du Monde (tournoi de sélections) plutôt que mode Ligue. */
+    public function isWorldCup(): bool
+    {
+        return $this->competition_type === self::COMPETITION_WORLD_CUP;
+    }
+
     /** Draft initial ou d'intersaison. */
     public function isDraftPhase(): bool
     {

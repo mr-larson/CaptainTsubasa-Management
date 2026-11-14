@@ -51,7 +51,7 @@ class FreeAgentService
     public function sign(GameSave $gameSave, GamePlayer $player, GameTeam $team, int $matchesTotal, ?string $reason): ActionOutcome
     {
         // 1. Des sélections nationales ne recrutent pas.
-        if ($gameSave->competition_type === 'world_cup') {
+        if ($gameSave->isWorldCup()) {
             return ActionOutcome::error('player', 'Pas de transferts en Coupe du Monde.');
         }
 

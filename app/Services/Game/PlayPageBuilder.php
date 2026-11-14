@@ -86,7 +86,7 @@ class PlayPageBuilder
         $gameSave->load('controlledGameTeam');
 
         $controlledTeam    = $this->controlledTeam($gameSave, $gameTeams);
-        $canRenewContracts = $gameSave->competition_type !== 'world_cup' && $gameSave->currentPhase() === GamePhase::Season;
+        $canRenewContracts = ! $gameSave->isWorldCup() && $gameSave->currentPhase() === GamePhase::Season;
         if ($canRenewContracts && $controlledTeam) {
             // Coût de prolongation affiché sur chaque joueur de l'équipe contrôlée.
             foreach ($controlledTeam->contracts as $contract) {
@@ -132,7 +132,7 @@ class PlayPageBuilder
             'activeShields'           => $cards['activeShields'],
             'gameConfig'              => $gameSave->getConfig(),
             'aiTrainingInitial'       => $this->aiTrainingInitial($gameSave),
-            'tournament'              => $gameSave->competition_type === 'world_cup'
+            'tournament'              => $gameSave->isWorldCup()
                 ? $this->tournament->presentation($gameSave)
                 : null,
             'career'                  => $this->career->presentation($gameSave),

@@ -140,7 +140,7 @@ class WeekClosingService
         $this->seasonChallengeService->payCompleted($gameSave);
 
         // 6. Coupe du Monde : progression du tournoi au lieu de la fin de saison.
-        if ($gameSave->competition_type === 'world_cup') {
+        if ($gameSave->isWorldCup()) {
             $this->tournamentService->advance($gameSave);
             $this->aiFormationTrainingService->planForWeek($gameSave);
             $this->aiCoachService->prepareForWeek($gameSave, $week);
@@ -176,7 +176,7 @@ class WeekClosingService
     public static function humanIncomeModel(GameSave $gameSave): array
     {
         $base = self::BASE_INCOME;
-        if ($gameSave->competition_type !== 'world_cup') {
+        if (! $gameSave->isWorldCup()) {
             $preset = CareerObjectiveService::PRESETS[$gameSave->getConfig('career_difficulty', 'standard')] ?? null;
             if ($preset !== null) {
                 $base = $preset['weekly_income'];
