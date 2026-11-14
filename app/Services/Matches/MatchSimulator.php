@@ -12,6 +12,7 @@ use App\Services\Matches\Engine\ActionChooser;
 use App\Services\Matches\Engine\DuelModifiers;
 use App\Services\Matches\Engine\CrossResolver;
 use App\Services\Matches\Engine\MatchRoster;
+use App\Services\Matches\Engine\MatchState;
 use App\Services\Matches\Engine\MatchStats;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -262,280 +263,336 @@ class MatchSimulator
 
         $this->mods->assignRoles([$home, $away], $lineups);
 
-        $homeGK = $this->roster->getGoalkeeper($homePlayers);
-        $awayGK = $this->roster->getGoalkeeper($awayPlayers);
+        $state = $this->startMatch($home, $away, $homePlayers, $awayPlayers, $criticalsEnabled);
 
-        $playerStats = [];
-        $stamina     = [];
-        $staminaMax  = [];
-        foreach ($homePlayers->concat($awayPlayers) as $p) {
+        for ($turn = 1; $turn <= $maxTurns; $turn++) {
+            $this->playTurn($state, $turn);
+        }
+
+        return $this->buildResult($state, $maxTurns);
+    }
+
+    /** Prépare l'état initial : gardiens, endurance de départ de chaque titulaire, bilans à zéro, équipe qui engage tirée au sort. */
+    private function startMatch(GameTeam $home, GameTeam $away, Collection $homePlayers, Collection $awayPlayers, bool $criticalsEnabled): MatchState
+    {
+        $state = new MatchState(
+            $home, $away, $homePlayers, $awayPlayers,
+            $this->roster->getGoalkeeper($homePlayers),
+            $this->roster->getGoalkeeper($awayPlayers),
+            $criticalsEnabled,
+        );
+
+        foreach ($state->allPlayers() as $p) {
             // Endurance max = stat `stamina` (miroir du client) : un joueur peu
             // endurant atteint plus vite les paliers de fatigue. Repli sur 100.
             $max = (float) (($p->stamina ?? 0) > 0 ? $p->stamina : self::ENDURANCE_DEFAULT);
-            $staminaMax[(string) $p->id] = $max;
-            $stamina[(string) $p->id]    = $max;
+            $state->staminaMax[(string) $p->id] = $max;
+            $state->stamina[(string) $p->id]    = $max;
         }
 
-        $teamStats = [
-            'home' => ['goals' => 0, 'shots' => 0, 'passes' => 0, 'dribbles' => 0, 'duelsWon' => 0, 'duelsLost' => 0],
-            'away' => ['goals' => 0, 'shots' => 0, 'passes' => 0, 'dribbles' => 0, 'duelsWon' => 0, 'duelsLost' => 0],
+        $state->side = $this->random->int(0, 1) ? 'home' : 'away';
+
+        return $state;
+    }
+
+    /** Joue un tour : usure, choix de l'action, duel (ou centre / passe longue), enregistrement des bilans, coût d'endurance, blessure d'épuisement, puis progression ou changement de possession du ballon. */
+    private function playTurn(MatchState $s, int $turn): void
+    {
+        $isHomeAttacking = $s->side === 'home';
+        $attTeam    = $isHomeAttacking ? $s->home        : $s->away;
+        $attPlayers = $isHomeAttacking ? $s->homePlayers : $s->awayPlayers;
+        $defPlayers = $isHomeAttacking ? $s->awayPlayers : $s->homePlayers;
+        $defGK      = $isHomeAttacking ? $s->awayGK      : $s->homeGK;
+        $defSide    = $isHomeAttacking ? 'away'          : 'home';
+
+        $this->drainPassiveStamina($s);
+
+        $action = $this->chooseOffenseAction($s, $attTeam, $attPlayers);
+
+        // ----- Centre / Passe longue : résolution dédiée (checks multiples) -----
+        if ($action === 'cross' || $action === 'long_pass') {
+            $this->crossResolver()->resolve(
+                $action, $attPlayers, $defPlayers, $defGK, $s->stamina, $s->staminaMax,
+                $s->playerStats, $s->teamStats, $s->events, $s->goalEvents,
+                $s->side, $defSide, $s->zone, $s->frontOfKeeper, $turn, $isHomeAttacking
+            );
+            return;
+        }
+
+        $duel = $this->resolveDuel($s, $turn, $action, $attPlayers, $defPlayers, $defGK, $isHomeAttacking);
+        [$attacker, $defender, $defAction, $defCategory, $success] = [
+            $duel['attacker'], $duel['defender'], $duel['defAction'], $duel['defCategory'], $duel['success'],
         ];
-        $goalEvents = [];
-        $events     = [];
-        $foulEvents = []; // fautes / cartons / blessures (format foulEvents du moteur client)
-        $exhaustedInjured = []; // une seule blessure d'épuisement par joueur et par match
-        $heroicUsed = []; // "Dépassement de soi" : une seule fois par joueur et par match
 
-        // État du ballon : équipe possédant, index de zone (0..MAX_ZONE_INDEX), face au gardien ?
-        $side          = $this->random->int(0, 1) ? 'home' : 'away';
-        $zone          = 0;
-        $frontOfKeeper = false;
+        // ----- Fautes / cartons (duel de champ uniquement, comme le moteur) -----
+        if ($defCategory === 'defenseField' && $defender && $attacker) {
+            $this->rollFoul($s->foulEvents, $attacker, $defender, $s->criticalsEnabled && $duel['defenseRoll'] === 1, $duel['attackScore'] == $duel['defenseScore']);
+        }
 
-        for ($turn = 1; $turn <= $maxTurns; $turn++) {
-            $isHomeAttacking = $side === 'home';
-            $attTeam    = $isHomeAttacking ? $home       : $away;
-            $defTeam    = $isHomeAttacking ? $away       : $home;
-            $attPlayers = $isHomeAttacking ? $homePlayers: $awayPlayers;
-            $defPlayers = $isHomeAttacking ? $awayPlayers: $homePlayers;
-            $defGK      = $isHomeAttacking ? $awayGK     : $homeGK;
-            $defSide    = $isHomeAttacking ? 'away'      : 'home';
+        $isGoal = $success && $action === 'shot';
 
-            // ----- Usure passive : chaque titulaire perd un peu d'endurance à
-            //       chaque tour (en plus des coûts d'action). Placé en tête de
-            //       boucle pour s'appliquer aussi aux tours centre/passe longue. -----
-            if (self::PASSIVE_STAMINA_DRAIN_PER_TURN > 0) {
-                foreach ($homePlayers->concat($awayPlayers) as $p) {
-                    $pid = (string) ($p->id ?? 0);
-                    if (($stamina[$pid] ?? 0) > 0) {
-                        $stamina[$pid] = max(0.0, $stamina[$pid] - self::PASSIVE_STAMINA_DRAIN_PER_TURN);
-                    }
-                }
+        // ----- Déroulé du match (action par action), miroir de `state.matchLog`
+        //       côté moteur client : exploité par le résumé de match (TabCalendar). -----
+        $s->events[] = $this->buildEventEntry($turn, $s->side, $action, $defAction, $success, $isGoal, $attacker, $defender, $s->zone, $s->frontOfKeeper);
+
+        $this->recordDuelStats($s, $turn, $defSide, $action, $defAction, $success, $isGoal, $attacker, $defender);
+
+        // ----- Coût de stamina (action + déplacement de balle) -----
+        $this->mods->applyStaminaCost($s->stamina, $attacker, $action, 'attack', $duel['discountAttack']);
+        $this->mods->applyStaminaCost($s->stamina, $defender, $defAction, $defCategory, $duel['discountDefense']);
+
+        $this->rollExhaustionInjuries($s, $action, $attacker, $defender);
+
+        $this->advanceBall($s, $action, $success, $defSide);
+    }
+
+    /** Usure passive : chaque titulaire perd un peu d'endurance à chaque tour (en plus des coûts d'action). Placé en tête de tour pour s'appliquer aussi aux tours centre / passe longue. */
+    private function drainPassiveStamina(MatchState $s): void
+    {
+        if (self::PASSIVE_STAMINA_DRAIN_PER_TURN <= 0) {
+            return;
+        }
+
+        foreach ($s->allPlayers() as $p) {
+            $pid = (string) ($p->id ?? 0);
+            if (($s->stamina[$pid] ?? 0) > 0) {
+                $s->stamina[$pid] = max(0.0, $s->stamina[$pid] - self::PASSIVE_STAMINA_DRAIN_PER_TURN);
             }
+        }
+    }
 
-            // ----- Choix de l'action offensive -----
-            if ($frontOfKeeper || $zone >= self::MAX_ZONE_INDEX) {
-                $action = $frontOfKeeper
-                    ? 'shot'
-                    : ($this->random->int(1, 10) <= 6 ? 'shot' : 'dribble');
-            } else {
-                $action = $this->chooser->randomOffenseAction($attTeam->tactical_style, $zone, $attPlayers);
-            }
+    /** Action offensive du tour : tir forcé face au gardien, tir ou dribble en zone de finition, sinon choix selon le style de l'équipe. */
+    private function chooseOffenseAction(MatchState $s, GameTeam $attTeam, Collection $attPlayers): string
+    {
+        if ($s->frontOfKeeper || $s->zone >= self::MAX_ZONE_INDEX) {
+            return $s->frontOfKeeper
+                ? 'shot'
+                : ($this->random->int(1, 10) <= 6 ? 'shot' : 'dribble');
+        }
 
-            // ----- Centre / Passe longue : résolution dédiée (checks multiples) -----
-            if ($action === 'cross' || $action === 'long_pass') {
-                $this->crossResolver()->resolve(
-                    $action, $attPlayers, $defPlayers, $defGK, $stamina, $staminaMax,
-                    $playerStats, $teamStats, $events, $goalEvents,
-                    $side, $defSide, $zone, $frontOfKeeper, $turn, $isHomeAttacking
-                );
-                continue;
-            }
+        return $this->chooser->randomOffenseAction($attTeam->tactical_style, $s->zone, $attPlayers);
+    }
 
-            $attacker = $this->roster->pickPlayerForAction($attPlayers, $action);
+    /**
+     * Duel du tour : choisit l'attaquant et le défenseur, calcule leurs scores (stats, contexte,
+     * endurance, distance au but, domicile, dés, critiques naturels) et laisse un joueur très
+     * satisfait relancer un duel perdu (« Dépassement de soi », consigné dans le déroulé).
+     *
+     * @return array{attacker: mixed, defender: mixed, defAction: string, defCategory: string, success: bool,
+     *               attackScore: float, defenseScore: float, defenseRoll: int, discountAttack: bool, discountDefense: bool}
+     */
+    private function resolveDuel(MatchState $s, int $turn, string $action, Collection $attPlayers, Collection $defPlayers, $defGK, bool $isHomeAttacking): array
+    {
+        $attacker = $this->roster->pickPlayerForAction($attPlayers, $action);
 
-            // ----- Choix du défenseur (miroir RPS du client) -----
-            if ($action === 'shot') {
-                $defender    = $defGK;
-                $defAction   = $this->random->int(0, 1) ? 'hands' : 'punch';
-                $defCategory = 'defenseGK';
-            } else {
-                $defAction   = $action === 'pass' ? 'intercept' : 'tackle';
-                $defender    = $this->roster->pickPlayerForAction($defPlayers, $defAction);
-                $defCategory = 'defenseField';
-            }
+        // ----- Choix du défenseur (miroir RPS du client) -----
+        if ($action === 'shot') {
+            $defender    = $defGK;
+            $defAction   = $this->random->int(0, 1) ? 'hands' : 'punch';
+            $defCategory = 'defenseGK';
+        } else {
+            $defAction   = $action === 'pass' ? 'intercept' : 'tackle';
+            $defender    = $this->roster->pickPlayerForAction($defPlayers, $defAction);
+            $defCategory = 'defenseField';
+        }
 
-            // ----- Calcul des scores de duel (RPS + contexte + stamina + domicile) -----
-            // Contexte : `attack` (zone) + `speed` (dribble) côté attaque ;
-            //            `defense` (zone) + `speed` (tackle/intercept) côté défense.
-            $attackBase = $this->mods->statForAction($attacker, $action, 'attack')
-                * $this->mods->attackContextMultiplier($attacker, $action, $zone)
-                * $this->mods->staminaFactorOf($attacker, $stamina, $staminaMax);
+        // ----- Calcul des scores de duel (RPS + contexte + stamina + domicile) -----
+        // Contexte : `attack` (zone) + `speed` (dribble) côté attaque ;
+        //            `defense` (zone) + `speed` (tackle/intercept) côté défense.
+        $attackBase = $this->mods->statForAction($attacker, $action, 'attack')
+            * $this->mods->attackContextMultiplier($attacker, $action, $s->zone)
+            * $this->mods->staminaFactorOf($attacker, $s->stamina, $s->staminaMax);
 
-            if ($action === 'shot' && !$frontOfKeeper) {
-                $zonesToGoal = self::MAX_ZONE_INDEX - $zone;
-                $attackBase -= $zonesToGoal * self::SHOT_DISTANCE_PENALTY_PER_ZONE;
-            }
+        if ($action === 'shot' && !$s->frontOfKeeper) {
+            $zonesToGoal = self::MAX_ZONE_INDEX - $s->zone;
+            $attackBase -= $zonesToGoal * self::SHOT_DISTANCE_PENALTY_PER_ZONE;
+        }
 
-            $defenseBase = $this->mods->statForAction($defender, $defAction, $defCategory)
-                * $this->mods->defenseContextMultiplier($defender, $defAction, $defCategory, $zone)
-                * $this->mods->staminaFactorOf($defender, $stamina, $staminaMax);
+        $defenseBase = $this->mods->statForAction($defender, $defAction, $defCategory)
+            * $this->mods->defenseContextMultiplier($defender, $defAction, $defCategory, $s->zone)
+            * $this->mods->staminaFactorOf($defender, $s->stamina, $s->staminaMax);
 
-            // `block` (dernier rempart) : le moteur serveur envoie tous les tirs au
-            // gardien (pas de duel de contre dédié), alors le meilleur contreur de
-            // champ se jette devant la frappe et renforce l'arrêt — d'autant plus
-            // que le tir part de près du but (zone haute).
-            if ($action === 'shot') {
-                $blocker = $this->roster->fieldPlayers($defPlayers)->sortByDesc(fn($p) => $p->block ?? 0)->first();
-                if ($blocker) $defenseBase *= $this->mods->blockEdgeMultiplier($blocker, $zone);
-            }
+        // `block` (dernier rempart) : le moteur serveur envoie tous les tirs au
+        // gardien (pas de duel de contre dédié), alors le meilleur contreur de
+        // champ se jette devant la frappe et renforce l'arrêt — d'autant plus
+        // que le tir part de près du but (zone haute).
+        if ($action === 'shot') {
+            $blocker = $this->roster->fieldPlayers($defPlayers)->sortByDesc(fn($p) => $p->block ?? 0)->first();
+            if ($blocker) $defenseBase *= $this->mods->blockEdgeMultiplier($blocker, $s->zone);
+        }
 
-            // RPS : la défense "attendue" (intercept/tackle/gardien) compte comme bon contre
-            $defenseBase += self::GOOD_COUNTER_BONUS;
+        // RPS : la défense "attendue" (intercept/tackle/gardien) compte comme bon contre
+        $defenseBase += self::GOOD_COUNTER_BONUS;
 
-            // Bonus du domicile : ajouté au score de l'équipe à domicile, qu'elle attaque ou défende
-            if ($isHomeAttacking) $attackBase  += self::HOME_BONUS;
-            else                  $defenseBase += self::HOME_BONUS;
+        // Bonus du domicile : ajouté au score de l'équipe à domicile, qu'elle attaque ou défende
+        if ($isHomeAttacking) $attackBase  += self::HOME_BONUS;
+        else                  $defenseBase += self::HOME_BONUS;
+
+        $attackRoll  = $this->d20();
+        $defenseRoll = $this->d20();
+
+        $attackScore  = $attackBase  + $attackRoll;
+        $defenseScore = $defenseBase + $defenseRoll;
+
+        // Critique naturel : un 20 force la victoire de ce côté
+        $attackCrit  = $s->criticalsEnabled && $attackRoll === 20;
+        $defenseCrit = $s->criticalsEnabled && $defenseRoll === 20;
+
+        if ($attackCrit && !$defenseCrit)      $success = true;
+        elseif ($defenseCrit && !$attackCrit)  $success = false;
+        else                                   $success = $attackScore > $defenseScore;
+
+        $discountAttack = $attackCrit;
+        $discountDefense = $defenseCrit;
+
+        // ----- Moment héroïque : un joueur très satisfait peut relancer un duel perdu -----
+        if (
+            !$success && $attacker
+            && (int) ($attacker->morale ?? MoraleService::NEUTRAL_MORALE) > MoraleService::HEROIC_MORALE_THRESHOLD
+            && empty($s->heroicUsed[(string) $attacker->id])
+            && $this->random->int(1, 100) <= (int) round(MoraleService::HEROIC_CHANCE * 100)
+        ) {
+            $s->heroicUsed[(string) $attacker->id] = true;
 
             $attackRoll  = $this->d20();
             $defenseRoll = $this->d20();
-
             $attackScore  = $attackBase  + $attackRoll;
             $defenseScore = $defenseBase + $defenseRoll;
+            $attackCrit  = $s->criticalsEnabled && $attackRoll === 20;
+            $defenseCrit = $s->criticalsEnabled && $defenseRoll === 20;
 
-            // Critique naturel : un 20 force la victoire de ce côté
-            $attackCrit  = $criticalsEnabled && $attackRoll === 20;
-            $defenseCrit = $criticalsEnabled && $defenseRoll === 20;
+            $discountAttack = $discountAttack || $attackCrit;
+            $discountDefense = $discountDefense || $defenseCrit;
 
             if ($attackCrit && !$defenseCrit)      $success = true;
             elseif ($defenseCrit && !$attackCrit)  $success = false;
             else                                   $success = $attackScore > $defenseScore;
 
-            $discountAttack = $attackCrit;
-            $discountDefense = $defenseCrit;
-
-            // ----- Moment héroïque : un joueur très satisfait peut relancer un duel perdu -----
-            if (
-                !$success && $attacker
-                && (int) ($attacker->morale ?? MoraleService::NEUTRAL_MORALE) > MoraleService::HEROIC_MORALE_THRESHOLD
-                && empty($heroicUsed[(string) $attacker->id])
-                && $this->random->int(1, 100) <= (int) round(MoraleService::HEROIC_CHANCE * 100)
-            ) {
-                $heroicUsed[(string) $attacker->id] = true;
-
-                $attackRoll  = $this->d20();
-                $defenseRoll = $this->d20();
-                $attackScore  = $attackBase  + $attackRoll;
-                $defenseScore = $defenseBase + $defenseRoll;
-                $attackCrit  = $criticalsEnabled && $attackRoll === 20;
-                $defenseCrit = $criticalsEnabled && $defenseRoll === 20;
-
-                $discountAttack = $discountAttack || $attackCrit;
-                $discountDefense = $discountDefense || $defenseCrit;
-
-                if ($attackCrit && !$defenseCrit)      $success = true;
-                elseif ($defenseCrit && !$attackCrit)  $success = false;
-                else                                   $success = $attackScore > $defenseScore;
-
-                $events[] = [
-                    'turn'       => $turn,
-                    'actionType' => 'heroic',
-                    'team'       => $side,
-                    'result'     => $success ? 'success' : 'fail',
-                    'text'       => "🔥 Dépassement de soi — {$attacker->lastname}",
-                    'details'    => [$success ? '✓ Le duel est renversé !' : '✗ Le duel reste perdu'],
-                    'diceTag'    => round($attackScore, 1) . '-' . round($defenseScore, 1),
-                    'zone'            => $zone,
-                    'lane'            => null,
-                    'front_of_keeper' => $frontOfKeeper,
-                    'action'          => $action,
-                    'def_action'      => $defAction,
-                    'attacker'        => MatchStats::eventPlayerRef($attacker),
-                    'defender'        => MatchStats::eventPlayerRef($defender),
-                ];
-            }
-
-            // ----- Fautes / cartons (duel de champ uniquement, comme le moteur) -----
-            if ($defCategory === 'defenseField' && $defender && $attacker) {
-                $this->rollFoul($foulEvents, $attacker, $defender, $criticalsEnabled && $defenseRoll === 1, $attackScore == $defenseScore);
-            }
-
-            $isGoal = $success && $action === 'shot';
-
-            // ----- Déroulé du match (action par action), miroir de `state.matchLog`
-            //       côté moteur client : exploité par le résumé de match (TabCalendar). -----
-            $events[] = $this->buildEventEntry($turn, $side, $action, $defAction, $success, $isGoal, $attacker, $defender, $zone, $frontOfKeeper);
-
-            // ----- Enregistrement des stats joueurs -----
-            if ($attacker) {
-                $pid = (string) $attacker->id;
-                $playerStats[$pid] = $playerStats[$pid] ?? MatchStats::emptyPlayerStats();
-                $playerStats[$pid]['offense'][$action]['attempts']++;
-                if ($success) $playerStats[$pid]['offense'][$action]['success']++;
-                if ($isGoal) {
-                    $playerStats[$pid]['offense']['goals']++;
-                    $goalEvents[] = ['player_id' => $attacker->id, 'turn' => $turn];
-                }
-                $success ? $playerStats[$pid]['duelsWon']++ : $playerStats[$pid]['duelsLost']++;
-            }
-
-            if ($defender) {
-                $pid = (string) $defender->id;
-                $playerStats[$pid] = $playerStats[$pid] ?? MatchStats::emptyPlayerStats();
-                $playerStats[$pid]['defense'][$defAction]['attempts']++;
-                if (!$success) $playerStats[$pid]['defense'][$defAction]['success']++;
-                $success ? $playerStats[$pid]['duelsLost']++ : $playerStats[$pid]['duelsWon']++;
-            }
-
-            // ----- Stats d'équipe (tentatives, indépendamment du résultat) -----
-            if ($action === 'pass')         $teamStats[$side]['passes']++;
-            elseif ($action === 'dribble')  $teamStats[$side]['dribbles']++;
-            else                            $teamStats[$side]['shots']++;
-
-            if ($success) {
-                $teamStats[$side]['duelsWon']++;
-                $teamStats[$defSide]['duelsLost']++;
-                if ($isGoal) $teamStats[$side]['goals']++;
-            } else {
-                $teamStats[$side]['duelsLost']++;
-                $teamStats[$defSide]['duelsWon']++;
-            }
-
-            // ----- Coût de stamina (action + déplacement de balle) -----
-            $this->mods->applyStaminaCost($stamina, $attacker, $action, 'attack', $discountAttack);
-            $this->mods->applyStaminaCost($stamina, $defender, $defAction, $defCategory, $discountDefense);
-
-            // ----- Blessure d'épuisement (stamina à 0), comme le moteur client -----
-            $exhaustionChance = $action === 'shot' ? self::EXHAUSTION_INJURY_CHANCE_SHOT : self::EXHAUSTION_INJURY_CHANCE_FIELD;
-            foreach ([$attacker, $defender] as $p) {
-                if (!$p || isset($exhaustedInjured[(int) $p->id])) continue;
-                if (($stamina[(string) $p->id] ?? 1) <= 0 && $this->random->int(1, 10000) <= $exhaustionChance * 10000) {
-                    $exhaustedInjured[(int) $p->id] = true;
-                    $foulEvents[] = ['type' => 'injury', 'player_id' => (int) $p->id, 'severity' => 'light'];
-                }
-            }
-
-            // ----- Progression / changement de possession -----
-            if ($action === 'shot') {
-                // Le ballon repart de zéro côté défenseur, qu'il y ait but ou arrêt
-                $side          = $defSide;
-                $zone          = 0;
-                $frontOfKeeper = false;
-            } elseif ($success) {
-                if ($action === 'pass') {
-                    $zone = min(self::MAX_ZONE_INDEX, $zone + 1);
-                } elseif ($action === 'dribble') {
-                    if ($zone < self::MAX_ZONE_INDEX) $zone++;
-                    else                              $frontOfKeeper = true;
-                }
-            } else {
-                // Perte de balle : possession inversée, la zone est mise en miroir
-                $side          = $defSide;
-                $zone          = self::MAX_ZONE_INDEX - $zone;
-                $frontOfKeeper = false;
-            }
+            $s->events[] = [
+                'turn'       => $turn,
+                'actionType' => 'heroic',
+                'team'       => $s->side,
+                'result'     => $success ? 'success' : 'fail',
+                'text'       => "🔥 Dépassement de soi — {$attacker->lastname}",
+                'details'    => [$success ? '✓ Le duel est renversé !' : '✗ Le duel reste perdu'],
+                'diceTag'    => round($attackScore, 1) . '-' . round($defenseScore, 1),
+                'zone'            => $s->zone,
+                'lane'            => null,
+                'front_of_keeper' => $s->frontOfKeeper,
+                'action'          => $action,
+                'def_action'      => $defAction,
+                'attacker'        => MatchStats::eventPlayerRef($attacker),
+                'defender'        => MatchStats::eventPlayerRef($defender),
+            ];
         }
 
-        // Temps de jeu (matchs simulés) : pas de remplacements ici, donc chaque
-        // titulaire joue l'intégralité des tours, les remplaçants n'entrent pas.
+        return [
+            'attacker' => $attacker, 'defender' => $defender,
+            'defAction' => $defAction, 'defCategory' => $defCategory,
+            'success' => $success,
+            'attackScore' => $attackScore, 'defenseScore' => $defenseScore, 'defenseRoll' => $defenseRoll,
+            'discountAttack' => $discountAttack, 'discountDefense' => $discountDefense,
+        ];
+    }
+
+    /** Enregistre le duel dans les bilans : stats de l'attaquant et du défenseur, buts, tentatives et duels gagnés / perdus de chaque équipe. */
+    private function recordDuelStats(MatchState $s, int $turn, string $defSide, string $action, string $defAction, bool $success, bool $isGoal, $attacker, $defender): void
+    {
+        $side = $s->side;
+
+        if ($attacker) {
+            $pid = (string) $attacker->id;
+            $s->playerStats[$pid] = $s->playerStats[$pid] ?? MatchStats::emptyPlayerStats();
+            $s->playerStats[$pid]['offense'][$action]['attempts']++;
+            if ($success) $s->playerStats[$pid]['offense'][$action]['success']++;
+            if ($isGoal) {
+                $s->playerStats[$pid]['offense']['goals']++;
+                $s->goalEvents[] = ['player_id' => $attacker->id, 'turn' => $turn];
+            }
+            $success ? $s->playerStats[$pid]['duelsWon']++ : $s->playerStats[$pid]['duelsLost']++;
+        }
+
+        if ($defender) {
+            $pid = (string) $defender->id;
+            $s->playerStats[$pid] = $s->playerStats[$pid] ?? MatchStats::emptyPlayerStats();
+            $s->playerStats[$pid]['defense'][$defAction]['attempts']++;
+            if (!$success) $s->playerStats[$pid]['defense'][$defAction]['success']++;
+            $success ? $s->playerStats[$pid]['duelsLost']++ : $s->playerStats[$pid]['duelsWon']++;
+        }
+
+        // ----- Stats d'équipe (tentatives, indépendamment du résultat) -----
+        if ($action === 'pass')         $s->teamStats[$side]['passes']++;
+        elseif ($action === 'dribble')  $s->teamStats[$side]['dribbles']++;
+        else                            $s->teamStats[$side]['shots']++;
+
+        if ($success) {
+            $s->teamStats[$side]['duelsWon']++;
+            $s->teamStats[$defSide]['duelsLost']++;
+            if ($isGoal) $s->teamStats[$side]['goals']++;
+        } else {
+            $s->teamStats[$side]['duelsLost']++;
+            $s->teamStats[$defSide]['duelsWon']++;
+        }
+    }
+
+    /** Blessure d'épuisement (stamina à 0 après le duel), comme le moteur client : au plus une par joueur et par match. */
+    private function rollExhaustionInjuries(MatchState $s, string $action, $attacker, $defender): void
+    {
+        $exhaustionChance = $action === 'shot' ? self::EXHAUSTION_INJURY_CHANCE_SHOT : self::EXHAUSTION_INJURY_CHANCE_FIELD;
+        foreach ([$attacker, $defender] as $p) {
+            if (!$p || isset($s->exhaustedInjured[(int) $p->id])) continue;
+            if (($s->stamina[(string) $p->id] ?? 1) <= 0 && $this->random->int(1, 10000) <= $exhaustionChance * 10000) {
+                $s->exhaustedInjured[(int) $p->id] = true;
+                $s->foulEvents[] = ['type' => 'injury', 'player_id' => (int) $p->id, 'severity' => 'light'];
+            }
+        }
+    }
+
+    /** Progression du ballon après le duel : tir (reprise côté défenseur), passe ou dribble réussi (zone suivante ou face au gardien), perte de balle (possession inversée, zone en miroir). */
+    private function advanceBall(MatchState $s, string $action, bool $success, string $defSide): void
+    {
+        if ($action === 'shot') {
+            // Le ballon repart de zéro côté défenseur, qu'il y ait but ou arrêt
+            $s->side          = $defSide;
+            $s->zone          = 0;
+            $s->frontOfKeeper = false;
+        } elseif ($success) {
+            if ($action === 'pass') {
+                $s->zone = min(self::MAX_ZONE_INDEX, $s->zone + 1);
+            } elseif ($action === 'dribble') {
+                if ($s->zone < self::MAX_ZONE_INDEX) $s->zone++;
+                else                                 $s->frontOfKeeper = true;
+            }
+        } else {
+            // Perte de balle : possession inversée, la zone est mise en miroir
+            $s->side          = $defSide;
+            $s->zone          = self::MAX_ZONE_INDEX - $s->zone;
+            $s->frontOfKeeper = false;
+        }
+    }
+
+    /** Assemble le résultat : [buts domicile, buts visiteur, match_stats]. Pas de remplacements ici : chaque titulaire joue tous les tours, les remplaçants n'entrent pas. */
+    private function buildResult(MatchState $s, int $maxTurns): array
+    {
         $starters = [
-            'home' => $homePlayers->map(fn($p) => (string) $p->id)->values()->all(),
-            'away' => $awayPlayers->map(fn($p) => (string) $p->id)->values()->all(),
+            'home' => $s->homePlayers->map(fn($p) => (string) $p->id)->values()->all(),
+            'away' => $s->awayPlayers->map(fn($p) => (string) $p->id)->values()->all(),
         ];
         $playtime = [];
-        foreach ($homePlayers->concat($awayPlayers) as $p) {
+        foreach ($s->allPlayers() as $p) {
             $playtime[(string) $p->id] = $maxTurns;
         }
 
         $matchStats = [
-            'teams'    => $teamStats,
-            'players'  => $playerStats,
-            'events'   => $events,
-            'foul_events' => $foulEvents,
+            'teams'    => $s->teamStats,
+            'players'  => $s->playerStats,
+            'events'   => $s->events,
+            'foul_events' => $s->foulEvents,
             'starters' => $starters,
             'playtime' => $playtime,
         ];
 
-        return [$teamStats['home']['goals'], $teamStats['away']['goals'], $matchStats];
+        return [$s->teamStats['home']['goals'], $s->teamStats['away']['goals'], $matchStats];
     }
 
     /**
