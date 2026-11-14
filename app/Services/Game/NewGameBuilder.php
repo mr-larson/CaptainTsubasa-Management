@@ -17,6 +17,7 @@ use App\Models\Team;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use App\Services\Draft\DraftLineupOrganizer;
 use App\Services\Draft\DraftService;
 use App\Services\Season\SeasonBootstrapService;
 use App\Services\Season\SeasonService;
@@ -53,6 +54,7 @@ class NewGameBuilder
     public function __construct(
         private Randomizer $random,
         private DraftService $draftService,
+        private DraftLineupOrganizer $lineupOrganizer,
         private AmateurMarketService $amateurMarket,
         private SeasonBootstrapService $seasonBootstrap,
     ) {
@@ -498,7 +500,7 @@ class NewGameBuilder
 
         foreach ($teams as $team) {
             $team->load('contracts.gamePlayer');
-            $this->draftService->organizeTeamLineup($team, $gameSave, $state);
+            $this->lineupOrganizer->organize($team, $gameSave, $state);
         }
 
         $gameSave->save();

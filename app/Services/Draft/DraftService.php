@@ -7,8 +7,6 @@ use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
-use App\Services\Concerns\EvaluatesPlayers;
-use App\Support\GameState;
 use Illuminate\Support\Facades\DB;
 use App\Services\Players\MoraleService;
 use App\Services\Season\SeasonBootstrapService;
@@ -21,12 +19,14 @@ use App\Services\Season\SeasonService;
  */
 class DraftService
 {
-    use EvaluatesPlayers;
-
     public const MIN_SQUAD   = 14;
     public const MAX_SQUAD   = 18;
 
     private const STANDARD_WAGE = 40;
+
+    public function __construct(private DraftLineupOrganizer $lineups)
+    {
+    }
 
     /**
      * Ouvre une enveloppe de recrutement indépendante pour chaque équipe.
@@ -95,8 +95,29 @@ class DraftService
             return $this->advanceAndSkip($gameSave);
         }
 
-        // Vérifier que le joueur est libre, draftable (non fictif) et visible
-        // selon la config (listes de joueurs actives/inactives).
+        $player = $this->findPickablePlayer($gameSave, $playerId, (int) $currentTeamId);
+        if (!$player) return null;
+
+        // Coût = salaire hebdo (majoration polyvalence incluse) × semaines restantes × réduction draft
+        $seasonLength = $this->getSeasonLength($gameSave);
+        $salary       = $player->adjusted_cost;
+        $totalCost    = $this->pickCost($gameSave, $salary, $seasonLength);
+
+        $budget = self::budgetFor($gameSave, $team);
+        if ($totalCost > $budget) return null;
+
+        return DB::transaction(
+            fn () => $this->recordPick($gameSave, $team, $player, $salary, $seasonLength, $squadSize, $totalCost, $budget, $draft)
+        );
+    }
+
+    /**
+     * Le joueur demandé s'il peut être drafté par l'équipe courante : libre, draftable (non fictif),
+     * visible selon la config (listes de joueurs actives/inactives) et sans rancune envers le
+     * coach quand l'équipe est humaine. Null sinon.
+     */
+    private function findPickablePlayer(GameSave $gameSave, int $playerId, int $teamId): ?GamePlayer
+    {
         $player = GamePlayer::where('game_save_id', $gameSave->id)
             ->excludingFictional()
             ->visibleForConfig($gameSave)
@@ -110,81 +131,87 @@ class DraftService
         if ($hasContract) return null;
 
         // Rancune envers le coach : refuse d'être drafté par l'équipe contrôlée
-        if ($this->playerRefusesTeam($gameSave, $player, (int) $currentTeamId)) return null;
+        if ($this->playerRefusesTeam($gameSave, $player, $teamId)) return null;
 
-        // Coût = salaire hebdo (majoration polyvalence incluse) × semaines restantes × réduction draft
-        $seasonLength = $this->getSeasonLength($gameSave);
-        $salary       = $player->adjusted_cost;
-        $totalCost    = $this->pickCost($gameSave, $salary, $seasonLength);
+        return $player;
+    }
 
-        $budget = self::budgetFor($gameSave, $team);
-        if ($totalCost > $budget) return null;
+    /**
+     * Enregistre un pick validé (à appeler en transaction) : numéro de maillot, contrat, débit du
+     * budget de draft (ou du budget de l'équipe pour une draft à caisse commune), puis entrée dans
+     * l'historique des picks et passage au pick suivant. Retourne le pick enregistré.
+     *
+     * @param array $draft  état de la draft tel que lu avant le pick
+     */
+    private function recordPick(GameSave $gameSave, GameTeam $team, GamePlayer $player, int $salary, int $seasonLength, int $squadSize, int $totalCost, int $budget, array $draft): array
+    {
+        $isStarter = $squadSize < 11;
 
-        // Exécuter le pick
-        return DB::transaction(function () use ($gameSave, $team, $player, $salary, $seasonLength, $squadSize, $totalCost, $budget, $draft) {
-            $isStarter = $squadSize < 11;
+        // Drafté par un club IA (non humain) : la rancune envers le coach
+        // repart à zéro (nouveau départ).
+        if (!in_array((int) $team->id, $gameSave->controlledGameTeamIds(), true)
+            && (int) ($player->coach_affinity ?? 0) !== 0) {
+            $player->coach_affinity = 0;
+        }
 
-            // Numéro de maillot
-            $usedNumbers = GamePlayer::where('game_save_id', $gameSave->id)
-                ->whereHas('contracts', fn($q) => $q->where('game_team_id', $team->id))
-                ->pluck('number')
-                ->filter()
-                ->toArray();
+        $player->number = $this->firstFreeJerseyNumber($gameSave, $team);
+        $player->save();
 
-            $nextNumber = 1;
-            while (in_array($nextNumber, $usedNumbers)) {
-                $nextNumber++;
-            }
+        GameContract::create([
+            'game_save_id'                    => $gameSave->id,
+            'game_team_id'                    => $team->id,
+            'game_player_id'                  => $player->id,
+            'salary'                          => $salary,
+            'start_week'                      => 1,
+            'end_week'                        => $seasonLength,
+            'is_starter'                      => $isStarter,
+            'is_captain'                      => false,
+            'captain_rerolls_remaining'       => 3,
+            'captain_reroll_used_this_action' => false,
+        ]);
 
-            // Drafté par un club IA (non humain) : la rancune envers le coach
-            // repart à zéro (nouveau départ).
-            if (!in_array((int) $team->id, $gameSave->controlledGameTeamIds(), true)
-                && (int) ($player->coach_affinity ?? 0) !== 0) {
-                $player->coach_affinity = 0;
-            }
+        if (isset($draft['budgets'])) {
+            $draft['budgets'][$team->id] = $budget - $totalCost;
+        } else {
+            $team->budget = $budget - $totalCost;
+            $team->save();
+        }
 
-            $player->number = $nextNumber;
-            $player->save();
+        $pick = [
+            'team_id'    => $team->id,
+            'team_name'  => $team->name,
+            'player_id'  => $player->id,
+            'player_name'=> trim($player->firstname . ' ' . $player->lastname),
+            'position'   => $player->position,
+            'cost'       => $totalCost,
+            'total_cost' => $totalCost,
+            'round'      => $this->getCurrentRound($gameSave),
+            'photo_path' => $player->photo_path,
+        ];
 
-            GameContract::create([
-                'game_save_id'                    => $gameSave->id,
-                'game_team_id'                    => $team->id,
-                'game_player_id'                  => $player->id,
-                'salary'                          => $salary,
-                'start_week'                      => 1,
-                'end_week'                        => $seasonLength,
-                'is_starter'                      => $isStarter,
-                'is_captain'                      => false,
-                'captain_rerolls_remaining'       => 3,
-                'captain_reroll_used_this_action' => false,
-            ]);
+        $draft['picks'][] = $pick;
+        $gameSave->gameState()->putDraft($draft);
+        $gameSave->save();
+        $this->advancePick($gameSave);
 
-            if (isset($draft['budgets'])) {
-                $draft['budgets'][$team->id] = $budget - $totalCost;
-            } else {
-                $team->budget = $budget - $totalCost;
-                $team->save();
-            }
+        return $pick;
+    }
 
-            $pick = [
-                'team_id'    => $team->id,
-                'team_name'  => $team->name,
-                'player_id'  => $player->id,
-                'player_name'=> trim($player->firstname . ' ' . $player->lastname),
-                'position'   => $player->position,
-                'cost'       => $totalCost,
-                'total_cost' => $totalCost,
-                'round'      => $this->getCurrentRound($gameSave),
-                'photo_path' => $player->photo_path,
-            ];
+    /** Plus petit numéro de maillot libre dans l'équipe (à partir de 1). */
+    private function firstFreeJerseyNumber(GameSave $gameSave, GameTeam $team): int
+    {
+        $usedNumbers = GamePlayer::where('game_save_id', $gameSave->id)
+            ->whereHas('contracts', fn($q) => $q->where('game_team_id', $team->id))
+            ->pluck('number')
+            ->filter()
+            ->toArray();
 
-            $draft['picks'][] = $pick;
-            $gameSave->gameState()->putDraft($draft);
-            $gameSave->save();
-            $this->advancePick($gameSave);
+        $nextNumber = 1;
+        while (in_array($nextNumber, $usedNumbers)) {
+            $nextNumber++;
+        }
 
-            return $pick;
-        });
+        return $nextNumber;
     }
 
     /**
@@ -433,9 +460,6 @@ class DraftService
     }
 
     /**
-     * Finalise le draft : passe en phase season et génère le calendrier.
-     */
-    /**
      * Finalise le draft : réorganise les lineups de toutes les équipes,
      * puis passe en phase season.
      */
@@ -447,7 +471,7 @@ class DraftService
 
         $state = $gameSave->gameState();
         foreach ($teams as $team) {
-            $this->organizeTeamLineup($team, $gameSave, $state);
+            $this->lineups->organize($team, $gameSave, $state);
         }
 
         $draft = $state->draft() ?? [];
@@ -460,173 +484,4 @@ class DraftService
         // verrou de la save, comme tous les appelants de finalizeDraft).
         app(SeasonBootstrapService::class)->prepare($gameSave);
     }
-
-    /**
-     * Réorganise le lineup d'une équipe après le draft (ou à la création
-     * d'une partie "prebuilt" hors draft) :
-     * - Assigne les 11 meilleurs joueurs comme titulaires selon leur poste
-     *   (principal ou secondaire) et la formation
-     * - Place chaque titulaire dans le bon slot de la formation
-     * - Le reste en remplaçants
-     */
-    public function organizeTeamLineup(GameTeam $team, GameSave $gameSave, GameState $state): void
-    {
-        $contracts = $team->contracts->filter(fn($c) => $c->gamePlayer !== null);
-        if ($contracts->isEmpty()) return;
-
-        $formation = $team->formation ?? '4-2-2-2';
-        $slotsNeeded = $this->getSlotsByZone($formation);
-
-        // Assigner les titulaires slot par slot
-        $starters = [];
-        $assigned = []; // IDs déjà assignés
-
-        // Zone mapping : 0=GK, 1=DEF, 2=MDF, 3=MOF, 4=ATT
-        $zoneToPos = [0 => 'GK', 1 => 'DEF', 2 => 'MID', 3 => 'MID', 4 => 'ATT'];
-
-        foreach ($slotsNeeded as $slot => $zone) {
-            $targetPos = $zoneToPos[$zone] ?? 'MID';
-
-            $available = $contracts->reject(fn($c) => in_array($c->gamePlayer->id, $assigned, true));
-
-            // Meilleur joueur disponible sachant jouer ce poste (principal ou secondaire)
-            $found = $available
-                ->filter(fn($c) => in_array($targetPos, $this->playerPositionGroups($c->gamePlayer), true))
-                ->sortByDesc(fn($c) => $this->playerOverall($c->gamePlayer, $targetPos))
-                ->first();
-
-            // Fallback : aucun joueur ne maîtrise ce poste. On évite de mettre
-            // un gardien pur sur le terrain ou un joueur de champ dans les
-            // buts, sauf si c'est vraiment le seul joueur restant.
-            if (!$found) {
-                $fallbackPool = $targetPos === 'GK'
-                    ? $available->filter(fn($c) => $this->positionGroup($c->gamePlayer->position ?? '') === 'GK')
-                    : $available->reject(fn($c) => $this->positionGroup($c->gamePlayer->position ?? '') === 'GK');
-
-                if ($fallbackPool->isEmpty()) {
-                    $fallbackPool = $available;
-                }
-
-                $found = $fallbackPool
-                    ->sortByDesc(fn($c) => $this->playerOverall($c->gamePlayer, $targetPos))
-                    ->first();
-            }
-
-            if ($found) {
-                $starters[$slot] = ['contract' => $found, 'player' => $found->gamePlayer];
-                $assigned[] = $found->gamePlayer->id;
-            }
-        }
-
-        // Mettre à jour is_starter
-        $starterIds = array_map(fn($e) => $e['player']->id, $starters);
-
-        foreach ($contracts as $contract) {
-            $contract->is_starter = in_array($contract->gamePlayer->id, $starterIds);
-            $contract->save();
-        }
-
-        // Numéros de maillot cohérents avec le poste et la formation
-        $this->assignJerseyNumbers($contracts, $starters, $slotsNeeded);
-
-        // Sauvegarder le lineup dans state
-        $lineupSlots = [];
-        foreach ($starters as $slot => $entry) {
-            $lineupSlots[$slot] = $entry['player']->id;
-        }
-
-        $state->setLineup($team->id, ['formation' => $formation, 'slots' => $lineupSlots]);
-    }
-
-    /**
-     * Parse une formation (ex: "4-2-2-2") et retourne un mapping slot → zone.
-     * Zone : 0=GK, 1=DEF, 2=MDF, 3=MOF, 4=ATT
-     */
-    protected function getSlotsByZone(string $formation): array
-    {
-        $parts = array_map('intval', explode('-', $formation));
-        $slots = [];
-        $slotNum = 1;
-
-        // Slot 1 = GK (toujours)
-        $slots[$slotNum++] = 0;
-
-        // Les parties de la formation correspondent aux zones 1, 2, 3, 4
-        foreach ($parts as $zoneIndex => $count) {
-            $zone = $zoneIndex + 1; // 1=DEF, 2=MDF, 3=MOF, 4=ATT
-            for ($i = 0; $i < $count; $i++) {
-                $slots[$slotNum++] = $zone;
-            }
-        }
-
-        return $slots;
-    }
-
-    /**
-     * Attribue des numéros de maillot cohérents avec le poste et la formation.
-     *
-     * Les titulaires reçoivent en priorité le numéro conventionnel de leur zone
-     * (1 gardien ; 2-3-4-5 défense ; 5-6 milieu défensif ; 7-10-8 milieu
-     * offensif ; 9-11 attaque), avec résolution « premier libre » en cas de
-     * conflit. Les remplaçants prennent ensuite les numéros libres à partir de 12.
-     *
-     * @param  iterable  $contracts    Contrats de l'équipe (gamePlayer chargé).
-     * @param  array     $starters     slot => ['player' => GamePlayer, ...].
-     * @param  array     $slotsNeeded  slot => zone (0=GK..4=ATT).
-     */
-    protected function assignJerseyNumbers(iterable $contracts, array $starters, array $slotsNeeded): void
-    {
-        // Numéros conventionnels préférés par zone, par ordre de priorité.
-        $preferredByZone = [
-            0 => [1],                 // Gardien
-            1 => [2, 3, 4, 5, 6],     // Défenseurs
-            2 => [5, 6, 8, 4],        // Milieux défensifs
-            3 => [7, 10, 8, 11],      // Milieux offensifs
-            4 => [9, 11, 7, 10],      // Attaquants
-        ];
-
-        $used    = [];
-        $numbers = []; // player id => numéro
-
-        $nextFree = function (int $from) use (&$used): int {
-            $n = $from;
-            while (in_array($n, $used, true)) $n++;
-            return $n;
-        };
-
-        // 1) Titulaires, dans l'ordre des slots (gardien → défense → attaque)
-        ksort($starters);
-        foreach ($starters as $slot => $entry) {
-            $zone = $slotsNeeded[$slot] ?? 2;
-
-            $num = null;
-            foreach ($preferredByZone[$zone] ?? [] as $candidate) {
-                if (!in_array($candidate, $used, true)) { $num = $candidate; break; }
-            }
-            $num ??= $nextFree(2);
-
-            $used[]    = $num;
-            $numbers[$entry['player']->id] = $num;
-        }
-
-        // 2) Remplaçants : numéros libres restants à partir de 12
-        foreach ($contracts as $contract) {
-            $pid = $contract->gamePlayer->id;
-            if (isset($numbers[$pid])) continue;
-
-            $num       = $nextFree(12);
-            $used[]    = $num;
-            $numbers[$pid] = $num;
-        }
-
-        // 3) Persistance
-        foreach ($contracts as $contract) {
-            $p = $contract->gamePlayer;
-            if (isset($numbers[$p->id])) {
-                $p->number = $numbers[$p->id];
-                $p->save();
-            }
-        }
-    }
-
 }
