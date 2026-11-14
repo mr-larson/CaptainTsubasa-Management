@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers\GameSaves;
 
-use App\Enums\GamePhase;
-use App\Enums\Nationality;
 use App\Helpers\HeadingRating;
 use App\Helpers\InitialPlayerStats;
 use App\Http\Controllers\Controller;
@@ -12,20 +10,16 @@ use App\Http\Requests\GameSaves\StartWorldCupRequest;
 use App\Http\Requests\GameSaves\StoreGameSetupRequest;
 use App\Models\GameSaves\GameSave;
 use App\Models\PeriodPackage;
-use App\Models\Player;
 use App\Models\Team;
 use App\Models\User;
 use App\Services\CareerObjectiveService;
-use App\Services\NationalTeamAssembler;
 use App\Services\NewGameBuilder;
-use App\Services\SeasonBootstrapService;
-use App\Services\TournamentService;
+use App\Services\NewWorldCupBuilder;
 use App\Support\GameConfig;
 use Closure;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -38,20 +32,17 @@ use Inertia\Response;
  *   2. store()   — enregistre ces réglages en session (« étape 1 »).
  *   3. setup()   — affiche le choix de l'équipe (Ligue) ou de la nation (Coupe du Monde).
  *   4. start()          — lance une partie LIGUE (la construction est dans NewGameBuilder).
- *      startWorldCup()  — lance une partie COUPE DU MONDE.
+ *      startWorldCup()  — lance une partie COUPE DU MONDE (construction dans NewWorldCupBuilder).
  *
  * La logique de construction d'une partie n'est PAS ici :
  *   - Ligue         → App\Services\NewGameBuilder
- *   - Coupe du Monde → App\Services\NationalTeamAssembler + TournamentService
+ *   - Coupe du Monde → App\Services\NewWorldCupBuilder
  *
  * Ce contrôleur se limite à : vérifier les droits et les limites, lire la
  * requête, appeler le bon service, puis rediriger.
  */
 class GameSaveCreationController extends Controller
 {
-    /** Nombre de sélections qui participent à une Coupe du Monde. */
-    private const TOURNAMENT_NATIONS = 8;
-
     // ══════════════════════════════════════════════════════════════
     //   ÉTAPE 1 : RÉGLAGES
     // ══════════════════════════════════════════════════════════════
@@ -128,7 +119,7 @@ class GameSaveCreationController extends Controller
      *
      * Sans réglages en session (accès direct, session expirée), renvoie à l'étape 1.
      */
-    public function setup(Request $request): Response|RedirectResponse
+    public function setup(Request $request, NewWorldCupBuilder $worldCup): Response|RedirectResponse
     {
         $data = $request->session()->get('game_save_setup');
         if (! is_array($data) || empty($data['period'])) {
@@ -145,7 +136,7 @@ class GameSaveCreationController extends Controller
                 'label'           => $data['label'] ?? null,
                 'period'          => $data['period'],
                 'competitionType' => $competitionType,
-                'nations'         => $this->playableNations(),
+                'nations'         => $worldCup->playableNations(),
                 'gameConfig'      => $gameConfig,
             ]);
         }
@@ -296,46 +287,6 @@ class GameSaveCreationController extends Controller
         return $teams;
     }
 
-    /**
-     * Nations proposées pour la Coupe du Monde, calculées d'après le pool de
-     * joueurs (colonne « nationality »).
-     *
-     * Une nation est « jouable » si elle peut aligner un onze : au moins 11
-     * joueurs dont 1 gardien. Tri : nations jouables d'abord, puis par effectif
-     * décroissant.
-     *
-     * @return array<int, array<string, mixed>>
-     */
-    private function playableNations(): array
-    {
-        $rows = Player::query()
-            ->whereNotNull('nationality')
-            ->selectRaw('nationality, COUNT(*) as total')
-            ->selectRaw("SUM(CASE WHEN position = 'Goalkeeper' THEN 1 ELSE 0 END) as goalkeepers")
-            ->groupBy('nationality')
-            ->get()
-            ->keyBy('nationality');
-
-        $nations = [];
-        foreach (Nationality::ALL as $name) {
-            $row   = $rows->get($name);
-            $total = (int) ($row->total ?? 0);
-            $gk    = (int) ($row->goalkeepers ?? 0);
-
-            $nations[] = [
-                'name'        => $name,
-                'flag'        => Nationality::flag($name),
-                'total'       => $total,
-                'goalkeepers' => $gk,
-                'playable'    => $total >= 11 && $gk >= 1,
-            ];
-        }
-
-        usort($nations, fn ($a, $b) => [$b['playable'], $b['total']] <=> [$a['playable'], $a['total']]);
-
-        return $nations;
-    }
-
     // ══════════════════════════════════════════════════════════════
     //   LANCEMENT D'UNE PARTIE
     // ══════════════════════════════════════════════════════════════
@@ -416,14 +367,14 @@ class GameSaveCreationController extends Controller
     }
 
     /**
-     * Lance une partie COUPE DU MONDE : crée la sauvegarde, tire au sort les
-     * nations participantes (la nation choisie + des adversaires jouables), monte
-     * chaque sélection (NationalTeamAssembler), génère les poules du tournoi
-     * (TournamentService) et prépare la première semaine.
+     * Lance une partie COUPE DU MONDE avec la nation choisie par le manager.
      *
-     * Tout est fait dans une transaction : une erreur ne laisse aucune partie à moitié créée.
+     * Refusé (retour avec une erreur) si le plafond de parties est atteint ou si la
+     * nation n'a pas assez de joueurs pour aligner un onze. Sinon, NewWorldCupBuilder
+     * crée la partie (adversaires tirés au sort, sélections montées, poules, semaine 1)
+     * et on arrive sur la page de jeu.
      */
-    public function startWorldCup(StartWorldCupRequest $request, NationalTeamAssembler $assembler, TournamentService $tournament): RedirectResponse
+    public function startWorldCup(StartWorldCupRequest $request, NewWorldCupBuilder $worldCup): RedirectResponse
     {
         if ($refused = $this->refuseIfSaveLimitReached($request)) {
             return $refused;
@@ -431,46 +382,14 @@ class GameSaveCreationController extends Controller
 
         $data = $request->setupData();
 
-        // Nations réellement alignables (au moins 11 joueurs dont 1 gardien).
-        $playable = collect($this->playableNations())
-            ->where('playable', true)
-            ->pluck('name');
-
-        if (! $playable->contains($data['nation'])) {
+        if (! $worldCup->isPlayable($data['nation'])) {
             return back()->withErrors(['nation' => "Cette sélection n'a pas assez de joueurs pour concourir."]);
         }
 
-        // La nation de l'utilisateur + des adversaires tirés au sort parmi les autres.
-        $controlled = $data['nation'];
-        $opponents  = $playable->reject(fn ($n) => $n === $controlled)
-            ->shuffle()
-            ->take(self::TOURNAMENT_NATIONS - 1)
-            ->values();
-        $nations = collect([$controlled])->merge($opponents)->all();
+        $gameSave = $worldCup->build($request->user(), $data);
 
-        $initialState = ! empty($data['game_config']) ? ['config' => $data['game_config']] : null;
-
-        return DB::transaction(function () use ($request, $data, $assembler, $tournament, $nations, $controlled, $initialState) {
-            $gameSave = GameSave::create([
-                'user_id'          => $request->user()->id,
-                'team_id'          => null,
-                'period'           => $data['period'],
-                'season'           => 1,
-                'week'             => 1,
-                'phase'            => GamePhase::WorldCup,
-                'game_mode'        => 'prebuilt',
-                'competition_type' => 'world_cup',
-                'label'            => $data['label'] ?? null,
-                'state'            => $initialState,
-            ]);
-
-            $assembler->assemble($gameSave, $nations, $controlled); // équipes, joueurs, contrats des sélections
-            $tournament->generateGroups($gameSave);                 // poules et calendrier de la phase de groupes
-            app(SeasonBootstrapService::class)->prepare($gameSave); // première semaine
-
-            return redirect()->route('game-saves.Play', $gameSave)
-                ->with('success', "Coupe du Monde créée — tu diriges {$controlled} !");
-        });
+        return redirect()->route('game-saves.Play', $gameSave)
+            ->with('success', "Coupe du Monde créée — tu diriges {$data['nation']} !");
     }
 
     // ══════════════════════════════════════════════════════════════
