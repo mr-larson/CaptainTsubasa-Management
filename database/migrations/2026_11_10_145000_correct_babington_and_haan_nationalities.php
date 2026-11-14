@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\Nationality;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
@@ -10,14 +9,14 @@ return new class extends Migration
     {
         foreach (['players', 'game_players'] as $table) {
             foreach ([
-                ['Juan', 'Babington', Nationality::ARGENTINE],
-                ['', 'Haan', Nationality::PAYS_BAS],
+                ['Juan', 'Babington', 'Argentine'],
+                ['', 'Haan', 'Pays-Bas'],
             ] as [$firstname, $lastname, $nationality]) {
                 DB::table($table)
                     ->where('origin', 'captain_tsubasa')
                     ->where('firstname', $firstname)
                     ->where('lastname', $lastname)
-                    ->where(fn ($query) => $query->whereNull('nationality')->orWhere('nationality', Nationality::JAPON))
+                    ->where(fn ($query) => $query->whereNull('nationality')->orWhere('nationality', 'Japon'))
                     ->update(['nationality' => $nationality]);
             }
         }

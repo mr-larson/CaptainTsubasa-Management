@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\BonusCard;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
@@ -22,7 +21,7 @@ return new class extends Migration
                 'execution_phase' => 'immediate',
                 'effect_type' => 'opponent_affinity_drain',
                 'effect_value' => json_encode(['amount' => 30, 'target_mode' => 'select'], JSON_THROW_ON_ERROR),
-                'cost' => BonusCard::SHOP_PRICE,
+                'cost' => 200, // prix boutique au moment de la migration
                 'base_weight' => 35,
                 'icon' => '🗞️',
                 'created_at' => now(),
