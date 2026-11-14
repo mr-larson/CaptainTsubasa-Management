@@ -39,13 +39,13 @@ class TeamRequest extends FormRequest
 
         return [
             'name'        => ['required', 'string', 'max:255', Rule::unique('teams', 'name')->ignore($teamId)],
-            'description' => ['nullable', 'string'],
+            'description' => ['nullable', 'string', 'max:1000'],
             'budget'      => ['required', 'integer', 'min:0'],
             'wins'        => ['nullable', 'integer', 'min:0'],
             'draws'       => ['nullable', 'integer', 'min:0'],
             'losses'      => ['nullable', 'integer', 'min:0'],
 
-            'logo'        => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'logo'        => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
             'remove_logo' => ['nullable', 'boolean'],
 
             'tactical_style'         => ['nullable', Rule::in(TeamStyle::TACTICAL_STYLES)],

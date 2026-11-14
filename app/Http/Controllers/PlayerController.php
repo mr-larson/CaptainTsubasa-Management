@@ -21,6 +21,8 @@ class PlayerController extends Controller
      */
     public function index(Request $request): Response
     {
+        $this->authorize('viewAny', Player::class);
+
         return Inertia::render('Players/Index', [
             'players'        => Player::with('contracts.team')->orderBy('firstname')->get(),
             'teams'          => Team::orderBy('name')->get(['id', 'name', 'logo_path']),
@@ -85,6 +87,8 @@ class PlayerController extends Controller
     /** Supprime le joueur (suppression douce, photo conservée) et revient à la liste des joueurs. */
     public function destroy(Player $player): RedirectResponse
     {
+        $this->authorize('delete', $player);
+
         // Photo conservée (suppression douce, et les saves en copient le chemin).
         $player->delete();
 

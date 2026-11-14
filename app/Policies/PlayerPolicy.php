@@ -6,21 +6,22 @@ use App\Models\Player;
 use App\Models\User;
 
 /**
- * Données de référence (roster canonique). La consultation est ouverte aux
- * utilisateurs connectés ; toute modification est réservée aux administrateurs.
+ * Données de référence (roster canonique) : consultation comme modification
+ * sont réservées aux administrateurs, comme les routes qui y mènent (middleware
+ * `admin`). Les joueurs ne voient ces données qu'à travers leurs parties.
  */
 class PlayerPolicy
 {
-    /** Tout utilisateur connecté peut consulter la liste. */
+    /** Consultation de la liste réservée aux administrateurs (écrans d'administration). */
     public function viewAny(User $user): bool
     {
-        return true;
+        return $user->isAdmin();
     }
 
-    /** Tout utilisateur connecté peut consulter ce joueur. */
+    /** Consultation de ce joueur réservée aux administrateurs. */
     public function view(User $user, Player $player): bool
     {
-        return true;
+        return $user->isAdmin();
     }
 
     /** Création réservée aux administrateurs. */

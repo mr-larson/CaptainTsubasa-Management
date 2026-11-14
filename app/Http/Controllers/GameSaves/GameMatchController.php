@@ -148,9 +148,7 @@ class GameMatchController extends Controller
      */
     public function finishMatch(FinishMatchRequest $request, GameSave $gameSave, GameMatch $match, MatchResultService $results, WeekAdvanceService $weeks): RedirectResponse
     {
-        $this->authorizeGameSave('update', $gameSave);
-
-        abort_unless((int) $match->game_save_id === (int) $gameSave->id, 404);
+        $this->authorizeGameSave('update', $gameSave, $match);
 
         $data   = $request->validated();
         $scores = $data['scoresByTeamId'];

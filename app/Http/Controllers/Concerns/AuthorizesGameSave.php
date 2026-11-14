@@ -11,7 +11,9 @@ use Illuminate\Database\Eloquent\Model;
  * - L'ownership est délégué à GameSavePolicy (via $this->authorize()),
  *   ce qui fait bénéficier ces contrôleurs du bypass admin de Gate::before.
  * - Les ressources enfants fournies sont validées comme appartenant bien
- *   à la sauvegarde (protection contre les IDOR sur les ressources imbriquées).
+ *   à la sauvegarde. Le middleware save.scope le garantit déjà pour toutes les
+ *   routes /game-saves (404) ; ce contrôle est le second filet, utile si un
+ *   contrôleur est un jour appelé hors de ce groupe de routes.
  */
 trait AuthorizesGameSave
 {

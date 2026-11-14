@@ -9,8 +9,8 @@ class RenewContractRequest extends GameSaveActionRequest
     public function rules(): array
     {
         return [
-            'weeks'    => ['required', 'integer', 'min:1'],
-            'end_week' => ['required', 'integer', 'min:1'],
+            'weeks'    => ['required', 'integer', 'min:1', 'max:100'],
+            'end_week' => ['required', 'integer', 'min:1', 'max:1000'],
         ];
     }
 }

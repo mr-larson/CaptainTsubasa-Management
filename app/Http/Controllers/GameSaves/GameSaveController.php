@@ -8,7 +8,7 @@ use App\Enums\GamePhase;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\AuthorizesGameSave;
 use App\Http\Controllers\Concerns\LocksGameSave;
-use App\Http\Requests\GameSaves\GameSaveRequest;
+use App\Http\Requests\GameSaves\RenameGameSaveRequest;
 use App\Models\GameSaves\GameSave;
 use App\Services\Season\CareerObjectiveService;
 use App\Services\Draft\DraftService;
@@ -123,7 +123,7 @@ class GameSaveController extends Controller
      * saison, équipe et état sont pilotés par le serveur (un état renvoyé par le
      * navigateur serait périmé et écraserait les changements faits depuis l'affichage).
      */
-    public function update(GameSaveRequest $request, GameSave $gameSave): mixed
+    public function update(RenameGameSaveRequest $request, GameSave $gameSave): mixed
     {
         $this->authorizeGameSave('update', $gameSave);
         // Seul le libellé est modifiable par le client : semaine, saison, équipe

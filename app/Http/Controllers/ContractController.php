@@ -20,6 +20,8 @@ class ContractController extends Controller
      */
     public function index(Request $request): Response
     {
+        $this->authorize('viewAny', Contract::class);
+
         $contracts = Contract::with(['team', 'player'])
             ->get()
             ->map(fn (Contract $c) => [
@@ -94,6 +96,8 @@ class ContractController extends Controller
     /** Supprime un contrat et revient en arrière avec un message de succès. */
     public function destroy(Contract $contract): RedirectResponse
     {
+        $this->authorize('delete', $contract);
+
         $contract->delete();
 
         return back()->with('success', 'Le contrat a été supprimé.');

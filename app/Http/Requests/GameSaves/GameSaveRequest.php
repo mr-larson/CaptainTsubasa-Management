@@ -7,24 +7,17 @@ use App\Support\GameConfig;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-/** Requête de création ou de mise à jour d'une sauvegarde (équipes, mode, période, configuration). */
+/** Requête de création d'une sauvegarde (équipes, mode, période, configuration). Le renommage a sa propre requête : RenameGameSaveRequest. */
 class GameSaveRequest extends FormRequest
 {
-    /**
-     * Création : tout utilisateur connecté. Mise à jour : propriétaire de la
-     * sauvegarde (délégué à GameSavePolicy).
-     */
+    /** Tout utilisateur connecté peut créer une sauvegarde (délégué à GameSavePolicy). */
     public function authorize(): bool
     {
-        $gameSave = $this->route('gameSave');
-
-        return $gameSave instanceof GameSave
-            ? (bool) $this->user()?->can('update', $gameSave)
-            : (bool) $this->user()?->can('create', GameSave::class);
+        return (bool) $this->user()?->can('create', GameSave::class);
     }
 
     /**
-     * Règles de validation pour créer / mettre à jour une sauvegarde.
+     * Règles de validation pour créer une sauvegarde.
      */
     public function rules(): array
     {
@@ -53,9 +46,10 @@ class GameSaveRequest extends FormRequest
             ],
             // En mode package de période, les valeurs sont des team_key (string)
             // internes au package et non des id de la table globale `teams`.
+            // `distinct` : une même équipe ne peut pas occuper deux sièges.
             'team_ids.*' => $this->filled('period_package_id')
-                ? ['string']
-                : ['integer', 'exists:teams,id'],
+                ? ['string', 'distinct']
+                : ['integer', 'distinct', 'exists:teams,id'],
 
             'period_package_id' => [
                 'nullable',
@@ -72,25 +66,14 @@ class GameSaveRequest extends FormRequest
             'setup_token'      => ['nullable', 'string', 'size:64'],
         ];
 
-        // Différence création / mise à jour :
-        // - POST (store) : period obligatoire
-        // - PUT/PATCH (update) : period optionnelle
-        if ($this->isMethod('post')) {
-            $rules['period'] = [
-                'required',
-                'string',
-                Rule::in($allowedPeriods),
-            ];
+        $rules['period'] = [
+            'required',
+            'string',
+            Rule::in($allowedPeriods),
+        ];
 
-            // Création : au moins une équipe humaine (mono via team_id, ou liste).
-            $rules['team_id'][] = 'required_without:team_ids';
-        } else {
-            $rules['period'] = [
-                'sometimes',
-                'string',
-                Rule::in($allowedPeriods),
-            ];
-        }
+        // Au moins une équipe humaine (mono via team_id, ou liste).
+        $rules['team_id'][] = 'required_without:team_ids';
 
         return $rules;
     }

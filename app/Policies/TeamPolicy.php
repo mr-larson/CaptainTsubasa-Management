@@ -6,21 +6,22 @@ use App\Models\Team;
 use App\Models\User;
 
 /**
- * Données de référence (roster canonique). La consultation est ouverte aux
- * utilisateurs connectés ; toute modification est réservée aux administrateurs.
+ * Données de référence (roster canonique) : consultation comme modification
+ * sont réservées aux administrateurs, comme les routes qui y mènent (middleware
+ * `admin`). Les joueurs ne voient ces données qu'à travers leurs parties.
  */
 class TeamPolicy
 {
-    /** Tout utilisateur connecté peut consulter la liste. */
+    /** Consultation de la liste réservée aux administrateurs (écrans d'administration). */
     public function viewAny(User $user): bool
     {
-        return true;
+        return $user->isAdmin();
     }
 
-    /** Tout utilisateur connecté peut consulter cette équipe. */
+    /** Consultation de cette équipe réservée aux administrateurs. */
     public function view(User $user, Team $team): bool
     {
-        return true;
+        return $user->isAdmin();
     }
 
     /** Création réservée aux administrateurs. */

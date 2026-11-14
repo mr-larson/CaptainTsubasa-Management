@@ -14,12 +14,13 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * Le contrôle ne dépend plus de la mémoire de chaque contrôleur (passer les
  * enfants à authorizeGameSave) : un nouveau paramètre de route est vérifié
- * automatiquement dès qu'il expose un game_save_id. 404 plutôt que 403, comme
+ * automatiquement. Refus par défaut : un modèle sans game_save_id (donc sans
+ * lien prouvé avec la sauvegarde) est refusé lui aussi. 404 plutôt que 403, comme
  * le ferait scopeBindings(), pour ne pas révéler l'existence de la ressource.
  */
 class EnsureRouteModelsBelongToSave
 {
-    /** Refuse (404) toute ressource de la route dont le game_save_id diffère de la sauvegarde de l'URL. */
+    /** Refuse (404) toute ressource de la route dont le game_save_id est absent ou diffère de la sauvegarde de l'URL. */
     public function handle(Request $request, Closure $next): Response
     {
         $parameters = $request->route()?->parameters() ?? [];
@@ -31,7 +32,7 @@ class EnsureRouteModelsBelongToSave
 
                 $owner = $value->getAttribute('game_save_id');
                 abort_if(
-                    $owner !== null && (int) $owner !== (int) $gameSave->getKey(),
+                    (int) $owner !== (int) $gameSave->getKey(),
                     404,
                     "La ressource « {$name} » n'appartient pas à cette sauvegarde."
                 );

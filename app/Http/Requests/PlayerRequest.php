@@ -59,7 +59,7 @@ class PlayerRequest extends FormRequest
             'stats.punch_save' => ['nullable', 'integer', 'min:0', 'max:100'],
 
             // special moves
-            'special_moves'              => ['nullable', 'array'],
+            'special_moves'              => ['nullable', 'array', 'max:20'],
             'special_moves.*.key'        => ['required_with:special_moves', 'string', 'max:255'],
             'special_moves.*.label'      => ['required_with:special_moves', 'string', 'max:255'],
             'special_moves.*.mode'       => ['required_with:special_moves', 'string', 'in:attack,defense'],

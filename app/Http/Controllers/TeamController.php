@@ -19,6 +19,8 @@ class TeamController extends Controller
      */
     public function index(Request $request): Response
     {
+        $this->authorize('viewAny', Team::class);
+
         return Inertia::render('Teams/Index', [
             'teams'       => Team::orderBy('name')->get(),
             // Équipe à ouvrir (ex. juste après sa création) / fiche vide demandée.
@@ -102,6 +104,8 @@ class TeamController extends Controller
      */
     public function destroy(Team $team): RedirectResponse
     {
+        $this->authorize('delete', $team);
+
         $team->delete();
 
         return redirect()
