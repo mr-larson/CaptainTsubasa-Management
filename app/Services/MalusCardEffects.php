@@ -53,8 +53,9 @@ class MalusCardEffects
      */
     public function applyOpponentStaminaDrain(GameSave $gameSave, GameBonusCard $gameBonusCard, ?int $targetTeamId = null): array
     {
-        $opponentId = $this->resolveMalusTargetTeamId($gameSave, $gameBonusCard, $targetTeamId);
-        if ($blocked = $this->shieldBlock($gameSave, $opponentId)) {
+        $target = $this->resolveMalusTarget($gameSave, $gameBonusCard, $targetTeamId);
+        $opponentId = $target->id;
+        if ($blocked = $this->shieldBlock($gameSave, $target)) {
             return $blocked;
         }
 
@@ -76,7 +77,7 @@ class MalusCardEffects
             $drained++;
         }
 
-        $opponentName = GameTeam::find($opponentId)?->name ?? 'L\'adversaire';
+        $opponentName = $target->team()?->name ?? 'L\'adversaire';
 
         return [
             'message' => "😴 {$opponentName} : −{$amount} stamina infligés à {$drained} titulaire(s) avant le prochain match.",
@@ -93,7 +94,8 @@ class MalusCardEffects
      */
     public function applyOpponentBenchStarter(GameSave $gameSave, GameBonusCard $gameBonusCard, ?int $targetTeamId = null): array
     {
-        $opponentId = $this->resolveMalusTargetTeamId($gameSave, $gameBonusCard, $targetTeamId);
+        $target = $this->resolveMalusTarget($gameSave, $gameBonusCard, $targetTeamId);
+        $opponentId = $target->id;
         $week = (int) ($gameSave->week ?? 1);
         $starters = $this->opponentStarters($opponentId)
             ->filter(fn (GameContract $contract) => $contract->isActive($week));
@@ -111,7 +113,7 @@ class MalusCardEffects
         if ($candidates->isEmpty()) {
             throw ValidationException::withMessages(['card' => 'Aucun autre titulaire adverse ne peut être consigné.']);
         }
-        if ($blocked = $this->shieldBlock($gameSave, $opponentId)) {
+        if ($blocked = $this->shieldBlock($gameSave, $target)) {
             return $blocked;
         }
 
@@ -137,7 +139,7 @@ class MalusCardEffects
         ]);
         $gameSave->save();
 
-        $opponentName = GameTeam::find($opponentId)?->name ?? 'l\'adversaire';
+        $opponentName = $target->team()?->name ?? 'l\'adversaire';
 
         return [
             'message' => "🚫 {$name} ({$opponentName}) est consigné : il ne débutera pas le prochain match.",
@@ -149,8 +151,9 @@ class MalusCardEffects
      */
     public function applyOpponentMoraleDrain(GameSave $gameSave, GameBonusCard $gameBonusCard, ?int $targetTeamId = null): array
     {
-        $targetId = $this->resolveMalusTargetTeamId($gameSave, $gameBonusCard, $targetTeamId);
-        if ($blocked = $this->shieldBlock($gameSave, $targetId)) {
+        $target = $this->resolveMalusTarget($gameSave, $gameBonusCard, $targetTeamId);
+        $targetId = $target->id;
+        if ($blocked = $this->shieldBlock($gameSave, $target)) {
             return $blocked;
         }
         $amount = (int) ($gameBonusCard->bonusCard->effect_value['amount'] ?? 0);
@@ -167,7 +170,7 @@ class MalusCardEffects
             $updated++;
         }
 
-        $name = GameTeam::find($targetId)?->name ?? 'L\'adversaire';
+        $name = $target->team()?->name ?? 'L\'adversaire';
 
         return ['message' => "😤 {$name} : −{$amount} de moral infligé à {$updated} joueur(s)."];
     }
@@ -178,17 +181,19 @@ class MalusCardEffects
      */
     public function applyOpponentAffinityDrain(GameSave $gameSave, GameBonusCard $gameBonusCard, ?int $targetTeamId = null): array
     {
-        $targetId = $this->resolveMalusTargetTeamId($gameSave, $gameBonusCard, $targetTeamId);
-        if ($blocked = $this->shieldBlock($gameSave, $targetId)) {
+        $target = $this->resolveMalusTarget($gameSave, $gameBonusCard, $targetTeamId);
+        $targetId = $target->id;
+        if ($blocked = $this->shieldBlock($gameSave, $target)) {
             return $blocked;
         }
         $amount = (int) ($gameBonusCard->bonusCard->effect_value['amount'] ?? 0);
 
-        $candidates = $this->opponentStarters($targetId)
+        $starters   = $this->opponentStarters($targetId);
+        $candidates = $starters
             ->filter(fn ($c) => $c->gamePlayer && FormationHelper::roleFromPosition($c->gamePlayer->position) !== 'GK')
             ->values();
         if ($candidates->isEmpty()) {
-            $candidates = $this->opponentStarters($targetId)->filter(fn ($c) => $c->gamePlayer)->values();
+            $candidates = $starters->filter(fn ($c) => $c->gamePlayer)->values();
         }
         if ($candidates->isEmpty()) {
             throw ValidationException::withMessages(['card' => 'L\'adversaire n\'a aucun titulaire à cibler.']);
@@ -202,7 +207,7 @@ class MalusCardEffects
         $this->logCoachAffinity($gameSave, $player, $player->coach_affinity - $before, $gameBonusCard->bonusCard->name);
 
         $name     = trim(($player->firstname ?? '') . ' ' . ($player->lastname ?? '')) ?: ($player->lastname ?? 'Joueur');
-        $teamName = GameTeam::find($targetId)?->name ?? 'l\'adversaire';
+        $teamName = $target->team()?->name ?? 'l\'adversaire';
 
         return ['message' => "🗞️ {$name} ({$teamName}) : −{$amount} de relation avec son coach (désormais {$player->coach_affinity})."];
     }
@@ -212,13 +217,14 @@ class MalusCardEffects
      */
     public function applyOpponentBudgetDrain(GameSave $gameSave, GameBonusCard $gameBonusCard, ?int $targetTeamId = null): array
     {
-        $targetId = $this->resolveMalusTargetTeamId($gameSave, $gameBonusCard, $targetTeamId);
-        if ($blocked = $this->shieldBlock($gameSave, $targetId)) {
+        $target = $this->resolveMalusTarget($gameSave, $gameBonusCard, $targetTeamId);
+        $targetId = $target->id;
+        if ($blocked = $this->shieldBlock($gameSave, $target)) {
             return $blocked;
         }
         $amount = (int) ($gameBonusCard->bonusCard->effect_value['amount'] ?? 0);
 
-        $team = GameTeam::find($targetId);
+        $team = $target->team();
         if (!$team) {
             throw ValidationException::withMessages(['card' => 'Équipe cible introuvable.']);
         }
@@ -237,8 +243,9 @@ class MalusCardEffects
      */
     public function applyOpponentTeamStatDebuff(GameSave $gameSave, GameBonusCard $gameBonusCard, ?int $targetTeamId = null): array
     {
-        $targetId = $this->resolveMalusTargetTeamId($gameSave, $gameBonusCard, $targetTeamId);
-        if ($blocked = $this->shieldBlock($gameSave, $targetId)) {
+        $target = $this->resolveMalusTarget($gameSave, $gameBonusCard, $targetTeamId);
+        $targetId = $target->id;
+        if ($blocked = $this->shieldBlock($gameSave, $target)) {
             return $blocked;
         }
 
@@ -255,7 +262,7 @@ class MalusCardEffects
             'created_week'     => $gameSave->week,
         ]);
 
-        $name = GameTeam::find($targetId)?->name ?? 'L\'adversaire';
+        $name = $target->team()?->name ?? 'L\'adversaire';
 
         return ['message' => "🌧️ {$name} : {$this->deltaLabel($deltas)} à toute l'équipe pour son prochain match."];
     }
@@ -266,16 +273,18 @@ class MalusCardEffects
      */
     public function applyOpponentKeyStatDebuff(GameSave $gameSave, GameBonusCard $gameBonusCard, ?int $targetTeamId = null): array
     {
-        $targetId = $this->resolveMalusTargetTeamId($gameSave, $gameBonusCard, $targetTeamId);
-        if ($blocked = $this->shieldBlock($gameSave, $targetId)) {
+        $target = $this->resolveMalusTarget($gameSave, $gameBonusCard, $targetTeamId);
+        $targetId = $target->id;
+        if ($blocked = $this->shieldBlock($gameSave, $target)) {
             return $blocked;
         }
 
-        $candidates = $this->opponentStarters($targetId)
+        $starters   = $this->opponentStarters($targetId);
+        $candidates = $starters
             ->filter(fn ($c) => $c->gamePlayer && FormationHelper::roleFromPosition($c->gamePlayer->position) !== 'GK')
             ->values();
         if ($candidates->isEmpty()) {
-            $candidates = $this->opponentStarters($targetId)->filter(fn ($c) => $c->gamePlayer)->values();
+            $candidates = $starters->filter(fn ($c) => $c->gamePlayer)->values();
         }
         if ($candidates->isEmpty()) {
             throw ValidationException::withMessages(['card' => 'L\'adversaire n\'a aucun titulaire à museler.']);
@@ -297,7 +306,7 @@ class MalusCardEffects
         ]);
 
         $name     = trim(($player->firstname ?? '') . ' ' . ($player->lastname ?? '')) ?: ($player->lastname ?? 'Joueur');
-        $teamName = GameTeam::find($targetId)?->name ?? 'l\'adversaire';
+        $teamName = $target->team()?->name ?? 'l\'adversaire';
 
         return ['message' => "🥅 {$name} ({$teamName}) sera muselé : {$this->deltaLabel($deltas)} pour son prochain match."];
     }
@@ -348,13 +357,13 @@ class MalusCardEffects
      * bouclier actif, le consomme et annule le malus. Retourne le message de
      * blocage, ou null si pas de bouclier.
      */
-    private function shieldBlock(GameSave $gameSave, int $targetId): ?array
+    private function shieldBlock(GameSave $gameSave, MalusTarget $target): ?array
     {
-        if (!$this->consumeMalusShield($gameSave, $targetId)) {
+        if (!$this->consumeMalusShield($gameSave, $target->id)) {
             return null;
         }
 
-        $name = GameTeam::find($targetId)?->name ?? 'L\'adversaire';
+        $name = $target->team()?->name ?? 'L\'adversaire';
 
         return [
             'message' => "🛡️ {$name} a paré le malus avec une cellule de crise ! Effet annulé.",
@@ -405,19 +414,19 @@ class MalusCardEffects
      *                                    ; repli sur le leader si aucune cible
      *                                    fournie (cas IA).
      */
-    private function resolveMalusTargetTeamId(GameSave $gameSave, GameBonusCard $gameBonusCard, ?int $explicitTargetTeamId): int
+    private function resolveMalusTarget(GameSave $gameSave, GameBonusCard $gameBonusCard, ?int $explicitTargetTeamId): MalusTarget
     {
         $card         = $gameBonusCard->bonusCard;
         $sourceTeamId = (int) $gameBonusCard->game_team_id;
 
         if ($card->target !== \App\Enums\BonusCardTarget::Team) {
-            return $this->resolveNextOpponentTeamId($gameSave, $sourceTeamId);
+            return new MalusTarget($this->resolveNextOpponentTeamId($gameSave, $sourceTeamId));
         }
 
         $mode = (string) ($card->effect_value['target_mode'] ?? 'select');
 
         if ($mode === 'leader') {
-            return $this->resolveStandingsLeaderTeamId($gameSave, $sourceTeamId);
+            return $this->standingsLeader($gameSave->gameTeams()->get(), $sourceTeamId);
         }
 
         // mode 'select'
@@ -431,24 +440,28 @@ class MalusCardEffects
                 throw ValidationException::withMessages(['card' => 'Équipe cible invalide.']);
             }
 
-            return $explicitTargetTeamId;
+            return new MalusTarget($explicitTargetTeamId);
         }
 
-        // Aucune cible fournie : un humain doit choisir, l'IA tape le leader.
-        $controlledIds = $gameSave->controlledGameTeamIds();
-        if (in_array($sourceTeamId, $controlledIds, true)) {
+        // Aucune cible fournie : un humain doit choisir, l'IA tape le leader. Les équipes sont
+        // lues une seule fois pour savoir si l'émetteur est humain ET pour trouver le leader.
+        $teams = $gameSave->gameTeams()->get();
+        if ($teams->firstWhere('id', $sourceTeamId)?->is_controlled) {
             throw ValidationException::withMessages(['card' => 'Vous devez choisir une équipe cible.']);
         }
 
-        return $this->resolveStandingsLeaderTeamId($gameSave, $sourceTeamId);
+        return $this->standingsLeader($teams, $sourceTeamId);
     }
 
     /**
-     * Équipe en tête du classement (points = 3·victoires + nuls), hors $excludeTeamId.
+     * Équipe en tête du classement (points = 3·victoires + nuls), hors $excludeTeamId, parmi
+     * les équipes déjà lues. L'équipe trouvée est transmise à la cible : pas de relecture.
+     *
+     * @param \Illuminate\Support\Collection<int, GameTeam> $teams toutes les équipes de la partie
      */
-    private function resolveStandingsLeaderTeamId(GameSave $gameSave, int $excludeTeamId): int
+    private function standingsLeader(\Illuminate\Support\Collection $teams, int $excludeTeamId): MalusTarget
     {
-        $leader = $gameSave->gameTeams()->get()
+        $leader = $teams
             ->sortByDesc(fn ($t) => ($t->wins ?? 0) * 3 + ($t->draws ?? 0))
             ->first(fn ($t) => (int) $t->id !== $excludeTeamId);
 
@@ -456,7 +469,7 @@ class MalusCardEffects
             throw ValidationException::withMessages(['card' => 'Aucune équipe cible disponible.']);
         }
 
-        return (int) $leader->id;
+        return new MalusTarget((int) $leader->id, $leader);
     }
 
     /**
