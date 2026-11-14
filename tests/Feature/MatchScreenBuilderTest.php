@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Services\MatchScreenBuilder;
+use App\Services\Matches\MatchScreenBuilder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsGameWorld;

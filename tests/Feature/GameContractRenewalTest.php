@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\PromiseStatus;
-use App\Services\PromiseService;
+use App\Services\Players\PromiseService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsGameWorld;
 use Tests\TestCase;

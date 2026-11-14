@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Services\MatchStatsOrientation;
+use App\Services\Matches\MatchStatsOrientation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsGameWorld;
 use Tests\TestCase;

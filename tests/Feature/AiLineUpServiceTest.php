@@ -4,9 +4,9 @@ namespace Tests\Feature;
 
 use App\Enums\TeamStyle;
 use App\Models\GameSaves\GameInjury;
-use App\Services\AITrainingService;
-use App\Services\AiLineUpService;
-use App\Services\StaminaService;
+use App\Services\Ai\AITrainingService;
+use App\Services\Ai\AiLineUpService;
+use App\Services\Players\StaminaService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsGameWorld;
 use Tests\TestCase;

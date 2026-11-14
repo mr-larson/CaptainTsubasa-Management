@@ -3,9 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\GameSaves\GamePlayerChemistry;
-use App\Services\MatchLineupSnapshot;
-use App\Services\MatchSimulator;
-use App\Services\PlayerChemistryService;
+use App\Services\Matches\MatchLineupSnapshot;
+use App\Services\Matches\MatchSimulator;
+use App\Services\Players\PlayerChemistryService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 use Tests\Concerns\BuildsGameWorld;

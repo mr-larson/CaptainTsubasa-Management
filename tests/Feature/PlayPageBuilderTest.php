@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Services\PlayPageBuilder;
+use App\Services\Game\PlayPageBuilder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsGameWorld;
 use Tests\TestCase;

@@ -11,11 +11,11 @@ use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameInjury;
 use App\Models\GameSaves\GameSanction;
-use App\Services\MatchResultService;
-use App\Services\MatchSimulationService;
-use App\Services\MatchScreenBuilder;
-use App\Services\WeekAdvanceService;
-use App\Services\WeekClosingService;
+use App\Services\Matches\MatchResultService;
+use App\Services\Matches\MatchSimulationService;
+use App\Services\Matches\MatchScreenBuilder;
+use App\Services\Season\WeekAdvanceService;
+use App\Services\Season\WeekClosingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -55,7 +55,7 @@ class GameMatchController extends Controller
      *   4. fait ajuster la composition IA du jour (blessés, fatigue), sous le verrou de la partie ;
      *   5. envoie la configuration à la page « Match/Engine ».
      *
-     * Toute la préparation est dans App\Services\MatchScreenBuilder.
+     * Toute la préparation est dans App\Services\Matches\MatchScreenBuilder.
      */
     public function match(Request $request, GameSave $gameSave, MatchScreenBuilder $screen): Response|RedirectResponse
     {
@@ -130,7 +130,7 @@ class GameMatchController extends Controller
     {
         $this->authorizeGameSave('view', $gameSave);
 
-        return response()->json(app(\App\Services\WeekLeadersService::class)->forWeek($gameSave, $week));
+        return response()->json(app(\App\Services\Matches\WeekLeadersService::class)->forWeek($gameSave, $week));
     }
 
     /**
@@ -144,7 +144,7 @@ class GameMatchController extends Controller
      *   3. MatchResultService enregistre score, classement, fautes, progression, etc. ;
      *   4. on enchaîne : un autre manager doit jouer, ou la semaine est clôturée.
      *
-     * Toute la logique de l'enregistrement est dans App\Services\MatchResultService.
+     * Toute la logique de l'enregistrement est dans App\Services\Matches\MatchResultService.
      */
     public function finishMatch(FinishMatchRequest $request, GameSave $gameSave, GameMatch $match, MatchResultService $results, WeekAdvanceService $weeks): RedirectResponse
     {
@@ -189,7 +189,7 @@ class GameMatchController extends Controller
      * SIMULE (par le serveur) le prochain match de l'équipe active, sans le jouer à la main.
      *
      * Le verrou de la partie évite qu'un double clic simule le match deux fois. Toutes les
-     * règles sont dans App\Services\MatchSimulationService, qui répond par l'une de ces
+     * règles sont dans App\Services\Matches\MatchSimulationService, qui répond par l'une de ces
      * issues :
      *   - interdit (403) : l'équipe active ne joue pas ce match, ou l'adversaire est aussi
      *     dirigé par un humain ;
@@ -221,7 +221,7 @@ class GameMatchController extends Controller
      * Le navigateur envoie la semaine affichée (« week », pour qu'un double clic ne simule
      * pas deux semaines) et, au besoin, « midseason_break » pour valider la pause de
      * mi-saison. Le verrou de la partie sérialise les requêtes ; toutes les règles
-     * (phase, partie terminée, hot-seat, pause) sont dans App\Services\WeekAdvanceService.
+     * (phase, partie terminée, hot-seat, pause) sont dans App\Services\Season\WeekAdvanceService.
      */
     public function simulateWeek(Request $request, GameSave $gameSave, WeekAdvanceService $weeks): RedirectResponse
     {

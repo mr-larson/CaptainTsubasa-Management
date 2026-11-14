@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\MatchStatus;
-use App\Services\MatchResultService;
+use App\Services\Matches\MatchResultService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsGameWorld;
 use Tests\TestCase;

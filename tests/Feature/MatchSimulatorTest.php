@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\GameSaves\GameMatch;
-use App\Services\MatchSimulator;
+use App\Services\Matches\MatchSimulator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsGameWorld;
 use Tests\TestCase;

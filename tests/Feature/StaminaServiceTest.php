@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Services\StaminaService;
+use App\Services\Players\StaminaService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsGameWorld;
 use Tests\TestCase;

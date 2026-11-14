@@ -4,8 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\GameSaves\GameSave;
 use App\Models\User;
-use App\Services\DraftService;
-use App\Services\DraftTurnService;
+use App\Services\Draft\DraftService;
+use App\Services\Draft\DraftTurnService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsGameWorld;
 use Tests\TestCase;

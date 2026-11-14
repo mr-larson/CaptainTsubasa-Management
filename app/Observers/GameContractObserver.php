@@ -3,7 +3,7 @@
 namespace App\Observers;
 
 use App\Models\GameSaves\GameContract;
-use App\Services\SeasonChallengeService;
+use App\Services\Season\SeasonChallengeService;
 
 /**
  * Réagit aux événements d'un contrat de partie. Enregistré sur le modèle par

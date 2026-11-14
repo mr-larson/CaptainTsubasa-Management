@@ -9,7 +9,7 @@ use App\Http\Controllers\Concerns\LocksGameSave;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSave;
-use App\Services\DeclarationService;
+use App\Services\Players\DeclarationService;
 use Illuminate\Http\RedirectResponse;
 
 /** Déclarations publiques (féliciter ou critiquer) sur un joueur de l'équipe contrôlée. */

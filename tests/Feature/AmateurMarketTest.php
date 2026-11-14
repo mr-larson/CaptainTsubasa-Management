@@ -4,8 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GamePlayer;
-use App\Services\AITransferService;
-use App\Services\AmateurMarketService;
+use App\Services\Ai\AITransferService;
+use App\Services\Transfers\AmateurMarketService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsGameWorld;
 use Tests\TestCase;

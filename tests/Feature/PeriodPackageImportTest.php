@@ -11,7 +11,7 @@ use App\Models\PeriodPackage;
 use App\Models\Player;
 use App\Models\Team;
 use App\Models\User;
-use App\Services\PeriodPackageService;
+use App\Services\Game\PeriodPackageService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;

@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Services\CareerObjectiveService;
-use App\Services\PlayerChemistryService;
-use App\Services\SeasonChallengeService;
+use App\Services\Season\CareerObjectiveService;
+use App\Services\Players\PlayerChemistryService;
+use App\Services\Season\SeasonChallengeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\Concerns\BuildsGameWorld;
@@ -118,7 +118,7 @@ class WeekQueryBudgetTest extends TestCase
     {
         [$save, $teams] = $this->league(2);
         $match = $this->makeMatch($save, $teams[0], $teams[1]);
-        $snapshots = app(\App\Services\MatchLineupSnapshot::class);
+        $snapshots = app(\App\Services\Matches\MatchLineupSnapshot::class);
 
         // Référence : lecture en base (comportement d'origine).
         $fromDatabase = $snapshots->build($match->fresh());

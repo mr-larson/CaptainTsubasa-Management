@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Services\BonusCardActivationService;
-use App\Services\DeclarationService;
-use App\Services\MatchSimulator;
+use App\Services\Cards\BonusCardActivationService;
+use App\Services\Players\DeclarationService;
+use App\Services\Matches\MatchSimulator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsGameWorld;
 use Tests\TestCase;

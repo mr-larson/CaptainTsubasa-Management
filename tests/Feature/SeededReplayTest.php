@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Contracts\Randomizer;
 use App\Models\GameSaves\GameMatch;
-use App\Services\MatchSimulator;
+use App\Services\Matches\MatchSimulator;
 use App\Support\Random\SeededRandomizer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;

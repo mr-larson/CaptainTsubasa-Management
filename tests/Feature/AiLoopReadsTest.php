@@ -6,8 +6,8 @@ use App\Models\GameSaves\GameBonusCard;
 use App\Models\GameSaves\GameDeclaration;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
-use App\Services\AiBonusCardService;
-use App\Services\AiCoachService;
+use App\Services\Ai\AiBonusCardService;
+use App\Services\Ai\AiCoachService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\Concerns\BuildsGameWorld;
@@ -202,7 +202,7 @@ class AiLoopReadsTest extends TestCase
             'game_save_id' => $save->id, 'player_a_id' => $a, 'player_b_id' => $b, 'score' => 100, 'shared_matches' => 5,
         ]);
 
-        $service = new class extends \App\Services\PlayerChemistryService {
+        $service = new class extends \App\Services\Players\PlayerChemistryService {
             protected function roll(): int
             {
                 return 1; // le dé réussit toujours

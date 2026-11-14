@@ -3,8 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\GameSaves\GameMatch;
-use App\Services\WeekAdvanceService;
-use App\Services\WeekClosingService;
+use App\Services\Season\WeekAdvanceService;
+use App\Services\Season\WeekClosingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsGameWorld;
 use Tests\TestCase;

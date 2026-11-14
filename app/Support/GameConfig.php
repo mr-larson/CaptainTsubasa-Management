@@ -4,8 +4,8 @@ namespace App\Support;
 
 use App\Helpers\PlayerLuck;
 use App\Models\GameSaves\GameSave;
-use App\Services\CareerObjectiveService;
-use App\Services\TrainableSpecialMoves;
+use App\Services\Season\CareerObjectiveService;
+use App\Services\Training\TrainableSpecialMoves;
 use Illuminate\Support\Arr;
 
 /**

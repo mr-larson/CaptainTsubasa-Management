@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\BonusCard;
-use Database\Seeders\BonusCards;
 use Illuminate\Database\Seeder;
 
 /**

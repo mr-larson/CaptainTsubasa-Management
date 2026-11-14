@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\GameSaves\GameBonusCard;
-use App\Services\BonusCardShopService;
+use App\Services\Cards\BonusCardShopService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsGameWorld;
 use Tests\TestCase;

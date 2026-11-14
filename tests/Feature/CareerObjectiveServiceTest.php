@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\GameSaves\GameSave;
-use App\Services\CareerObjectiveService;
+use App\Services\Season\CareerObjectiveService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsGameWorld;
 use Tests\TestCase;

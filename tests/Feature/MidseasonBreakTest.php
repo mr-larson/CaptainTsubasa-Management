@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\GameSaves\GameSanction;
-use App\Services\FoulAndInjuryService;
+use App\Services\Matches\FoulAndInjuryService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsGameWorld;
 use Tests\TestCase;

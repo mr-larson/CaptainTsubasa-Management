@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\GameSaves\GameContract;
-use App\Services\FreeAgentService;
+use App\Services\Transfers\FreeAgentService;
 use App\Support\ActionOutcome;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsGameWorld;

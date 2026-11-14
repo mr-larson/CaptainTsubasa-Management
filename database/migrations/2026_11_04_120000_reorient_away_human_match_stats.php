@@ -1,7 +1,7 @@
 <?php
 
 use App\Models\GameSaves\GameMatch;
-use App\Services\MatchStatsOrientation;
+use App\Services\Matches\MatchStatsOrientation;
 use Illuminate\Database\Migrations\Migration;
 
 /**

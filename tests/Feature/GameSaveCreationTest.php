@@ -9,7 +9,7 @@ use App\Models\GameSaves\GameSave;
 use App\Models\Player;
 use App\Models\Team;
 use App\Models\User;
-use App\Services\AmateurMarketService;
+use App\Services\Transfers\AmateurMarketService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

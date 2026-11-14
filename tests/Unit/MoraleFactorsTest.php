@@ -4,7 +4,7 @@ namespace Tests\Unit;
 
 use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GamePlayer;
-use App\Services\MoraleService;
+use App\Services\Players\MoraleService;
 use Tests\TestCase;
 
 /**

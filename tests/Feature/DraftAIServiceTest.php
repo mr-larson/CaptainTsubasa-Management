@@ -4,8 +4,8 @@ namespace Tests\Feature;
 
 use App\Enums\TeamStyle;
 use App\Models\GameSaves\GameTeam;
-use App\Services\DraftAIService;
-use App\Services\DraftService;
+use App\Services\Ai\DraftAIService;
+use App\Services\Draft\DraftService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsGameWorld;
 use Tests\TestCase;

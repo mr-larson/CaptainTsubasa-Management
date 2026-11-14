@@ -10,10 +10,10 @@ use App\Http\Controllers\Concerns\AuthorizesGameSave;
 use App\Http\Controllers\Concerns\LocksGameSave;
 use App\Http\Requests\GameSaves\GameSaveRequest;
 use App\Models\GameSaves\GameSave;
-use App\Services\CareerObjectiveService;
-use App\Services\DraftService;
-use App\Services\PlayPageBuilder;
-use App\Services\SeasonBootstrapService;
+use App\Services\Season\CareerObjectiveService;
+use App\Services\Draft\DraftService;
+use App\Services\Game\PlayPageBuilder;
+use App\Services\Season\SeasonBootstrapService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -30,7 +30,7 @@ use Inertia\Response;
  *   - destroy()      supprime une partie.
  *
  * La CRÉATION d'une partie est dans GameSaveCreationController. Les données de la
- * page de jeu sont construites par App\Services\PlayPageBuilder.
+ * page de jeu sont construites par App\Services\Game\PlayPageBuilder.
  */
 class GameSaveController extends Controller
 {

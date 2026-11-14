@@ -10,9 +10,9 @@ use App\Http\Controllers\Concerns\LocksGameSave;
 use App\Http\Requests\Training\StoreTrainingRequest;
 use App\Models\GameSaves\GameSave;
 use App\Enums\PlayerPosition;
-use App\Services\PositionTrainingService;
-use App\Services\TrainingService;
-use App\Services\TrainableSpecialMoves;
+use App\Services\Training\PositionTrainingService;
+use App\Services\Training\TrainingService;
+use App\Services\Training\TrainableSpecialMoves;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\ValidationException;
 

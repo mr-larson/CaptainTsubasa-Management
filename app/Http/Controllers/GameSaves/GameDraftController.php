@@ -11,9 +11,9 @@ use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
 use App\Models\PlayerLink;
-use App\Services\DraftService;
-use App\Services\DraftTurnService;
-use App\Services\SeasonService;
+use App\Services\Draft\DraftService;
+use App\Services\Draft\DraftTurnService;
+use App\Services\Season\SeasonService;
 use App\Support\DraftTurnResult;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -33,8 +33,8 @@ use Inertia\Response;
  *   - finish()  clôt le draft d'une équipe humaine.
  *
  * Les trois actions d'écriture répondent en JSON (le draft se joue sans recharger la
- * page). Leur logique est dans App\Services\DraftTurnService ; les règles de fond
- * (ordre des tours, coûts, finalisation) dans App\Services\DraftService.
+ * page). Leur logique est dans App\Services\Draft\DraftTurnService ; les règles de fond
+ * (ordre des tours, coûts, finalisation) dans App\Services\Draft\DraftService.
  */
 class GameDraftController extends Controller
 {

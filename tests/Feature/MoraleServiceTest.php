@@ -3,8 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\GameSaves\GamePlayerMoraleLog;
-use App\Services\MoraleService;
-use App\Services\WeekClosingService;
+use App\Services\Players\MoraleService;
+use App\Services\Season\WeekClosingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsGameWorld;
 use Tests\TestCase;

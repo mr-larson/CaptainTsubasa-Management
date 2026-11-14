@@ -5,7 +5,7 @@ namespace Tests\Feature;
 use App\Enums\GamePhase;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameMatch;
-use App\Services\SeasonService;
+use App\Services\Season\SeasonService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsGameWorld;
 use Tests\TestCase;

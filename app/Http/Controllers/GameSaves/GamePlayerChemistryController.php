@@ -7,7 +7,7 @@ use App\Http\Controllers\Concerns\AuthorizesGameSave;
 use App\Http\Controllers\Concerns\LocksGameSave;
 use App\Http\Controllers\Controller;
 use App\Models\GameSaves\GameSave;
-use App\Services\PlayerChemistryService;
+use App\Services\Players\PlayerChemistryService;
 use Illuminate\Http\RedirectResponse;
 
 /** Alchimie entre joueurs : tentative de confirmer un duo (une-deux) entre deux joueurs de l'équipe contrôlée. */

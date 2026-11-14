@@ -11,7 +11,7 @@ use App\Http\Requests\GameSaves\GamePlayerRequest;
 use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
-use App\Services\PlayerMoraleSummary;
+use App\Services\Players\PlayerMoraleSummary;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;

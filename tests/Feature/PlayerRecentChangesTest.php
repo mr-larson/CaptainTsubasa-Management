@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Services\PlayerMoraleSummary;
+use App\Services\Players\PlayerMoraleSummary;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsGameWorld;
 use Tests\TestCase;

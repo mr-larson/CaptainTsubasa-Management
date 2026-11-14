@@ -4,9 +4,9 @@ namespace Tests\Feature;
 
 use App\Models\GameSaves\GameSave;
 use App\Models\User;
-use App\Services\PostMatchProgressionService;
-use App\Services\SeasonService;
-use App\Services\StaminaService;
+use App\Services\Players\PostMatchProgressionService;
+use App\Services\Season\SeasonService;
+use App\Services\Players\StaminaService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsGameWorld;
 use Tests\TestCase;

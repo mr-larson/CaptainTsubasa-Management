@@ -9,7 +9,7 @@ use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
 use App\Models\Player;
 use App\Models\User;
-use App\Services\NewWorldCupBuilder;
+use App\Services\WorldCup\NewWorldCupBuilder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

@@ -1,0 +1,132 @@
+<?php
+
+namespace App\Services\Players;
+
+use App\Models\GameSaves\GameContract;
+use App\Models\GameSaves\GameMatch;
+use App\Models\GameSaves\GamePlayer;
+use App\Models\GameSaves\GameSave;
+use App\Models\GameSaves\GameTeam;
+use Illuminate\Support\Facades\DB;
+
+/** Stamina des joueurs en fin de semaine : ceux qui ont joué en perdent, les autres en récupèrent ; les agents libres (hors Coupe du Monde) récupèrent un peu aussi. Coût et récupération sont réglables dans la configuration de la partie. */
+class StaminaService
+{
+    /** Stamina perdue par un joueur ayant joué (valeur par défaut). */
+    const MATCH_STAMINA_COST    = 5;
+    /** Stamina récupérée par un joueur au repos (valeur par défaut). */
+    const REST_STAMINA_RECOVERY = 10;
+    /** Stamina récupérée chaque semaine par un joueur sans contrat. */
+    private const FREE_AGENT_RECOVERY = 3;
+
+    /**
+     * Applique stamina d'après-match pour UN match spécifique.
+     * Conservé pour compatibilité — préférer applyAfterWeek().
+     */
+    public static function applyAfterMatch(GameSave $gameSave, ?GameMatch $match = null): void
+    {
+        if (!$match) return;
+
+        $playedPlayerIds = self::resolvePlayedPlayerIds($match);
+
+        self::applyStaminaChanges($gameSave, $playedPlayerIds);
+    }
+
+    /**
+     * Applique stamina d'après-semaine en agrégeant TOUS les matchs joués
+     * de la semaine donnée (source : match_stats, fallback : is_starter).
+     */
+    public static function applyAfterWeek(GameSave $gameSave, int $week): void
+    {
+        $matches = GameMatch::where('game_save_id', $gameSave->id)
+            ->where('week', $week)
+            ->where('status', 'played')
+            ->with('playerStats')
+            ->get();
+
+        $playedPlayerIds = [];
+        foreach ($matches as $match) {
+            foreach (self::resolvePlayedPlayerIds($match) as $pid) {
+                $playedPlayerIds[$pid] = true;
+            }
+        }
+
+        self::applyStaminaChanges($gameSave, array_keys($playedPlayerIds));
+
+        if ($gameSave->competition_type !== 'world_cup') {
+            $recovery = self::FREE_AGENT_RECOVERY;
+            GamePlayer::where('game_save_id', $gameSave->id)
+                ->excludingFictional()
+                ->whereDoesntHave('contracts', fn ($q) => $q->activeAt($week))
+                ->where('stamina', '<', 100)
+                ->update([
+                    'stamina' => DB::raw("CASE WHEN stamina + {$recovery} > 100 THEN 100 ELSE stamina + {$recovery} END"),
+                ]);
+        }
+    }
+
+    /**
+     * Détermine les IDs joueurs ayant joué un match.
+     * Le temps de jeu distingue un joueur réellement au repos d'un titulaire
+     * qui a disputé le match sans action enregistrée.
+     */
+    public static function resolvePlayedPlayerIds(GameMatch $match): array
+    {
+        if (isset($match->match_stats['playtime'])) {
+            return array_map('strval', array_keys(array_filter($match->match_stats['playtime'])));
+        }
+
+        if ($players = $match->playerStatsMap()) {
+            return array_map('strval', array_keys($players));
+        }
+
+        // Fallback : titulaires des deux équipes
+        $teamIds = array_filter([$match->home_team_id, $match->away_team_id]);
+        if (empty($teamIds)) return [];
+
+        return \App\Models\GameSaves\GameContract::query()
+            ->whereIn('game_team_id', $teamIds)
+            ->where('is_starter', true)
+            ->pluck('game_player_id')
+            ->map(fn($id) => (string) $id)
+            ->all();
+    }
+
+    /**
+     * Applique -2 aux joueurs ayant joué, +10 aux autres, sur toutes les
+     * équipes de la save.
+     */
+    protected static function applyStaminaChanges(GameSave $gameSave, array $playedPlayerIds): void
+    {
+        $playedSet = array_flip($playedPlayerIds);
+
+        $matchCost = (int) $gameSave->getConfig('match_stamina_cost', self::MATCH_STAMINA_COST);
+        $restRecov = (int) $gameSave->getConfig('rest_stamina_recovery', self::REST_STAMINA_RECOVERY);
+
+        $week = $gameSave->week ?? 1;
+
+        // Joueurs sous contrat actif dans la save (un joueur n'est compté
+        // qu'une fois), puis deux UPDATE en lot au lieu d'un save() par joueur.
+        // stamina est UNSIGNED : on compare avant de soustraire (pas de
+        // « out of range » MySQL). Les coûts sont des entiers validés (cast int).
+        $teamIds   = GameTeam::where('game_save_id', $gameSave->id)->pluck('id');
+        $playerIds = GameContract::whereIn('game_team_id', $teamIds)
+            ->activeAt($week)
+            ->distinct()
+            ->pluck('game_player_id')
+            ->map(fn($id) => (int) $id);
+
+        [$played, $rested] = $playerIds->partition(fn($id) => isset($playedSet[(string) $id]));
+
+        if ($played->isNotEmpty() && $matchCost !== 0) {
+            GamePlayer::whereIn('id', $played->values())->update([
+                'stamina' => DB::raw('CASE WHEN stamina < ' . $matchCost . ' THEN 0 ELSE stamina - ' . $matchCost . ' END'),
+            ]);
+        }
+        if ($rested->isNotEmpty() && $restRecov !== 0) {
+            GamePlayer::whereIn('id', $rested->values())->update([
+                'stamina' => DB::raw('CASE WHEN stamina + ' . $restRecov . ' > 100 THEN 100 ELSE stamina + ' . $restRecov . ' END'),
+            ]);
+        }
+    }
+}

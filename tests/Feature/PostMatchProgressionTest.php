@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Services\PostMatchProgressionService;
+use App\Services\Players\PostMatchProgressionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsGameWorld;
 use Tests\TestCase;

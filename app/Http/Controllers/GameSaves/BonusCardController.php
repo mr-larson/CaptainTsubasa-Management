@@ -9,8 +9,8 @@ use App\Http\Controllers\Concerns\AuthorizesGameSave;
 use App\Http\Controllers\Concerns\LocksGameSave;
 use App\Models\GameSaves\GameBonusCard;
 use App\Models\GameSaves\GameSave;
-use App\Services\BonusCardActivationService;
-use App\Services\BonusCardShopService;
+use App\Services\Cards\BonusCardActivationService;
+use App\Services\Cards\BonusCardShopService;
 use Illuminate\Http\RedirectResponse;
 
 /** Cartes bonus d'une sauvegarde : achat dans la boutique hebdomadaire et activation d'une carte possédée. */
@@ -115,7 +115,7 @@ class BonusCardController extends Controller
                     $request->input('target_player_id'),
                     $request->input('target_team_id'),
                 );
-                app(\App\Services\SeasonChallengeService::class)->payCompleted(
+                app(\App\Services\Season\SeasonChallengeService::class)->payCompleted(
                     $gameSave, [(int) $gameBonusCard->game_team_id], ['cards_used_min']
                 );
 

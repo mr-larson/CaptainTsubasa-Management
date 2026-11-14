@@ -9,7 +9,7 @@ use App\Http\Requests\GameSaves\SignFreeAgentRequest;
 use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
-use App\Services\FreeAgentService;
+use App\Services\Transfers\FreeAgentService;
 use App\Support\ActionOutcome;
 use Illuminate\Http\RedirectResponse;
 
@@ -20,7 +20,7 @@ use Illuminate\Http\RedirectResponse;
  * (onglet « Mercato » de la page de jeu).
  *
  * Les règles (budget, durée, moral, numéro de maillot…) ne sont PAS ici : elles
- * sont dans App\Services\FreeAgentService. Ce contrôleur vérifie les droits,
+ * sont dans App\Services\Transfers\FreeAgentService. Ce contrôleur vérifie les droits,
  * pose le verrou de la sauvegarde, appelle le service puis traduit son résultat
  * en redirection.
  */

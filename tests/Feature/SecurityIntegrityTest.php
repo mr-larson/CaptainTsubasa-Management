@@ -7,7 +7,7 @@ use App\Models\GameSaves\GameInjury;
 use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSave;
 use App\Models\User;
-use App\Services\FoulAndInjuryService;
+use App\Services\Matches\FoulAndInjuryService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;

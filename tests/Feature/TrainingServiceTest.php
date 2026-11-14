@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Services\TrainingService;
+use App\Services\Training\TrainingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 use Tests\Concerns\BuildsGameWorld;

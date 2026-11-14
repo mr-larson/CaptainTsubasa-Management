@@ -4,8 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\GameSaves\GameDeclaration;
 use App\Models\GameSaves\GamePromise;
-use App\Services\AiCoachService;
-use App\Services\BonusCardActivationService;
+use App\Services\Ai\AiCoachService;
+use App\Services\Cards\BonusCardActivationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsGameWorld;
 use Tests\TestCase;

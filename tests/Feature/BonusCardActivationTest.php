@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Services\BonusCardActivationService;
+use App\Services\Cards\BonusCardActivationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 use Tests\Concerns\BuildsGameWorld;

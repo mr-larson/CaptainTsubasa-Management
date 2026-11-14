@@ -12,9 +12,9 @@ use App\Models\GameSaves\GameSave;
 use App\Models\PeriodPackage;
 use App\Models\Team;
 use App\Models\User;
-use App\Services\CareerObjectiveService;
-use App\Services\NewGameBuilder;
-use App\Services\NewWorldCupBuilder;
+use App\Services\Season\CareerObjectiveService;
+use App\Services\Game\NewGameBuilder;
+use App\Services\WorldCup\NewWorldCupBuilder;
 use App\Support\GameConfig;
 use Closure;
 use Illuminate\Http\RedirectResponse;
@@ -35,8 +35,8 @@ use Inertia\Response;
  *      startWorldCup()  — lance une partie COUPE DU MONDE (construction dans NewWorldCupBuilder).
  *
  * La logique de construction d'une partie n'est PAS ici :
- *   - Ligue         → App\Services\NewGameBuilder
- *   - Coupe du Monde → App\Services\NewWorldCupBuilder
+ *   - Ligue         → App\Services\Game\NewGameBuilder
+ *   - Coupe du Monde → App\Services\WorldCup\NewWorldCupBuilder
  *
  * Ce contrôleur se limite à : vérifier les droits et les limites, lire la
  * requête, appeler le bon service, puis rediriger.

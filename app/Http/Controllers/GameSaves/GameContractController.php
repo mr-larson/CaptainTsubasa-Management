@@ -13,9 +13,9 @@ use App\Models\GameSaves\GameSave;
 
 
 use App\Models\GameSaves\GamePlayer;
-use App\Services\MoraleService;
-use App\Services\PromiseService;
-use App\Services\SeasonService;
+use App\Services\Players\MoraleService;
+use App\Services\Players\PromiseService;
+use App\Services\Season\SeasonService;
 use Illuminate\Http\RedirectResponse;
 
 /** Contrats des joueurs d'une sauvegarde : création, modification, suppression, prolongation et résiliation d'un contrat. */

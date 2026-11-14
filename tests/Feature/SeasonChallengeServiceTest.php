@@ -4,8 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
-use App\Services\SeasonChallengeService;
-use App\Services\SeasonService;
+use App\Services\Season\SeasonChallengeService;
+use App\Services\Season\SeasonService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsGameWorld;
 use Tests\TestCase;

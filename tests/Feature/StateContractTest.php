@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Services\PostMatchProgressionService;
-use App\Services\SeasonService;
-use App\Services\TournamentService;
-use App\Services\TrainingService;
+use App\Services\Players\PostMatchProgressionService;
+use App\Services\Season\SeasonService;
+use App\Services\WorldCup\TournamentService;
+use App\Services\Training\TrainingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsGameWorld;
 use Tests\TestCase;

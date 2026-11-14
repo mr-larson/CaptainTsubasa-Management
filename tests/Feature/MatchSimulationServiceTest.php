@@ -4,8 +4,8 @@ namespace Tests\Feature;
 
 use App\Enums\MatchStatus;
 use App\Models\User;
-use App\Services\MatchSimulationService;
-use App\Services\WeekClosingService;
+use App\Services\Matches\MatchSimulationService;
+use App\Services\Season\WeekClosingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsGameWorld;
 use Tests\TestCase;

@@ -10,7 +10,7 @@ use App\Models\GameSaves\GameTeam;
 use App\Models\Player;
 use App\Models\Team;
 use App\Models\User;
-use App\Services\NewGameBuilder;
+use App\Services\Game\NewGameBuilder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

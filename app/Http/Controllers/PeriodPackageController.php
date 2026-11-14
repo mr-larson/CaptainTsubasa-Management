@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\PeriodPackageRequest;
 use App\Models\PeriodPackage;
-use App\Services\PeriodPackageService;
+use App\Services\Game\PeriodPackageService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;

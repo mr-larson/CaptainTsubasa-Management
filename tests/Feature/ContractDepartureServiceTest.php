@@ -4,8 +4,8 @@ namespace Tests\Feature;
 
 use App\Enums\PromiseStatus;
 use App\Models\GameSaves\GameContract;
-use App\Services\ContractDepartureService;
-use App\Services\PromiseService;
+use App\Services\Transfers\ContractDepartureService;
+use App\Services\Players\PromiseService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsGameWorld;
 use Tests\TestCase;

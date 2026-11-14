@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\GamePhase;
 use App\Models\GameSaves\GameMatch;
-use App\Services\TournamentService;
+use App\Services\WorldCup\TournamentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsGameWorld;
 use Tests\TestCase;

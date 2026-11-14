@@ -9,7 +9,7 @@ use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
 use App\Models\User;
-use App\Services\MatchSimulator;
+use App\Services\Matches\MatchSimulator;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 

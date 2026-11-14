@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\GameSaves\GameInjury;
 use App\Models\GameSaves\GamePositionTraining;
-use App\Services\PositionTrainingService;
+use App\Services\Training\PositionTrainingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 use Tests\Concerns\BuildsGameWorld;

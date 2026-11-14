@@ -8,7 +8,7 @@ use App\Http\Controllers\Concerns\AuthorizesGameSave;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSave;
-use App\Services\PromiseService;
+use App\Services\Players\PromiseService;
 use Illuminate\Http\RedirectResponse;
 
 /** Promesses de temps de jeu faites à un joueur de l'équipe contrôlée. */

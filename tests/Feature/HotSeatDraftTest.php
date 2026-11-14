@@ -7,7 +7,7 @@ use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
 use App\Models\Team;
 use App\Models\User;
-use App\Services\DraftService;
+use App\Services\Draft\DraftService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Services\BonusCardActivationService;
+use App\Services\Cards\BonusCardActivationService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;

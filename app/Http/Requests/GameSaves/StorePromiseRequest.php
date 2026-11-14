@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\GameSaves;
 
-use App\Services\PromiseService;
+use App\Services\Players\PromiseService;
 use Illuminate\Validation\Rule;
 
 /** Requête de promesse faite par le manager à un joueur. */

@@ -5,7 +5,7 @@ namespace Tests\Feature;
 use App\Models\GameSaves\GameInjury;
 use App\Models\GameSaves\GameSanction;
 use App\Models\User;
-use App\Services\MatchLineupSnapshot;
+use App\Services\Matches\MatchLineupSnapshot;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsGameWorld;
 use Tests\TestCase;

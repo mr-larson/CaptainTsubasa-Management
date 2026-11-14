@@ -4,7 +4,7 @@ namespace App\Helpers;
 
 use App\Models\GameSaves\GameSave;
 use App\Support\GameConfig;
-use App\Services\MoraleService;
+use App\Services\Players\MoraleService;
 
 /**
  * Calcule les valeurs de départ d'un joueur (vitesse, endurance, moral, chance) selon les options de la configuration de la partie.

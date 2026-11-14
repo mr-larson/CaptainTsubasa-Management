@@ -5,7 +5,7 @@ namespace Tests\Feature;
 use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GameMatchEventLog;
 use App\Models\GameSaves\GameMatchPlayerStat;
-use App\Services\PlayerStatsService;
+use App\Services\Players\PlayerStatsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\Concerns\BuildsGameWorld;
