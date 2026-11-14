@@ -73,4 +73,20 @@ class AuthorizationHardeningTest extends TestCase
         $this->assertSame('Ma carrière', $save->label);
         $this->assertSame($week, $save->week);
     }
+
+    public function test_every_response_carries_the_security_headers(): void
+    {
+        $this->get('/')
+            ->assertHeader('X-Frame-Options', 'SAMEORIGIN')
+            ->assertHeader('X-Content-Type-Options', 'nosniff')
+            ->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
+            ->assertHeaderMissing('Strict-Transport-Security');
+
+        // HTTPS : le navigateur reçoit en plus l'obligation de rester en HTTPS.
+        $this->get('https://localhost/')
+            ->assertHeader('Strict-Transport-Security', 'max-age=31536000');
+
+        // Les réponses d'erreur sont couvertes aussi.
+        $this->get('/page-inexistante')->assertNotFound()->assertHeader('X-Content-Type-Options', 'nosniff');
+    }
 }
