@@ -57,4 +57,44 @@ class LockGameSaveMiddlewareTest extends TestCase
 
         $this->assertSame([$base], $this->levels);
     }
+
+    /**
+     * Une exception levée après une écriture annule cette écriture : Laravel la
+     * convertit en réponse avant le middleware, qui doit quand même annuler.
+     */
+    public function test_a_failing_write_is_rolled_back(): void
+    {
+        Route::middleware(['web', 'auth', LockGameSave::class])->group(function () {
+            Route::post('/_probe/{gameSave}/abort', function (GameSave $gameSave) {
+                $gameSave->forceFill(['label' => 'écrit puis annulé'])->save();
+                abort(422, 'Refusé après écriture.');
+            });
+            Route::post('/_probe/{gameSave}/crash', function (GameSave $gameSave) {
+                $gameSave->forceFill(['label' => 'écrit puis planté'])->save();
+                throw new \RuntimeException('Erreur inattendue.');
+            });
+            Route::post('/_probe/{gameSave}/ok', function (GameSave $gameSave) {
+                $gameSave->forceFill(['label' => 'écrit et gardé'])->save();
+
+                return 'ok';
+            });
+        });
+
+        $save  = $this->makeSave();
+        $user  = User::find($save->user_id);
+        $label = $save->label;
+        $base  = DB::transactionLevel();
+
+        $this->actingAs($user)->post("/_probe/{$save->id}/abort")->assertStatus(422);
+        $this->assertSame($label, $save->fresh()->label);
+
+        $this->actingAs($user)->post("/_probe/{$save->id}/crash")->assertStatus(500);
+        $this->assertSame($label, $save->fresh()->label);
+
+        $this->actingAs($user)->post("/_probe/{$save->id}/ok")->assertOk();
+        $this->assertSame('écrit et gardé', $save->fresh()->label);
+
+        // Aucune transaction laissée ouverte.
+        $this->assertSame($base, DB::transactionLevel());
+    }
 }

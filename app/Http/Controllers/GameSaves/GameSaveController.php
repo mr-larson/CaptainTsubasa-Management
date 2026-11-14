@@ -24,6 +24,7 @@ use Inertia\Response;
  *
  *   - index()        liste des parties de l'utilisateur ;
  *   - continue()     ouvre la dernière partie ;
+ *   - show()         adresse courte d'une partie, renvoie vers sa page de jeu ;
  *   - play()         page de jeu principale (données construites par PlayPageBuilder) ;
  *   - update()       renomme une partie ;
  *   - updateConfig() modifie la configuration en cours de partie ;
@@ -51,6 +52,17 @@ class GameSaveController extends Controller
         return Inertia::render('GameSaves/Index', [
             'gameSaves' => $gameSaves,
         ]);
+    }
+
+    /**
+     * Adresse courte d'une partie (/game-saves/{id}) : renvoie vers sa page de jeu,
+     * qui se charge elle-même d'aiguiller vers le draft ou la fin de saison.
+     */
+    public function show(GameSave $gameSave): RedirectResponse
+    {
+        $this->authorizeGameSave('view', $gameSave);
+
+        return redirect()->route('game-saves.Play', $gameSave);
     }
 
     /**
