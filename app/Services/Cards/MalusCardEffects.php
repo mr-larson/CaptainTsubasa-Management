@@ -11,6 +11,7 @@ use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use App\Services\Concerns\LogsCoachAffinity;
 
@@ -62,21 +63,18 @@ class MalusCardEffects
 
         $amount = BonusCard::teamStaminaDrainAmount($gameBonusCard->tier);
 
-        $starters = GameContract::where('game_team_id', $opponentId)
-            ->activeAt((int) ($gameSave->week ?? 1))
-            ->where('is_starter', true)
-            ->with('gamePlayer')
-            ->get()
-            ->unique('game_player_id');
-
-        $drained = 0;
-        foreach ($starters as $contract) {
-            $player = $contract->gamePlayer;
-            if (!$player) continue;
-            $player->stamina = max(0, (int) ($player->stamina ?? 0) - $amount);
-            $player->save();
-            $drained++;
-        }
+        // Joueurs titulaires de l'adversaire (une seule fois chacun), puis une seule mise à jour.
+        $drained = $this->subtractFromPlayers(
+            GamePlayer::query()->where('game_save_id', $gameSave->id)->whereIn(
+                'id',
+                GameContract::where('game_team_id', $opponentId)
+                    ->activeAt((int) ($gameSave->week ?? 1))
+                    ->where('is_starter', true)
+                    ->select('game_player_id')
+            ),
+            'stamina',
+            $amount,
+        );
 
         $opponentName = $target->team()?->name ?? 'L\'adversaire';
 
@@ -84,6 +82,26 @@ class MalusCardEffects
             'message' => "😴 {$opponentName} : −{$amount} stamina infligés à {$drained} titulaire(s) avant le prochain match.",
             'drained' => $drained,
         ];
+    }
+
+    /**
+     * Retire $amount à une colonne de stat (stamina, moral) d'un ensemble de joueurs, sans passer sous 0,
+     * en UNE requête de mise à jour (au lieu d'une par joueur). Retourne le nombre de joueurs visés.
+     * Le test CASE évite le dépassement des colonnes non signées.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder<GamePlayer> $players joueurs visés
+     * @param 'stamina'|'morale' $column
+     */
+    private function subtractFromPlayers(\Illuminate\Database\Eloquent\Builder $players, string $column, int $amount): int
+    {
+        $ids = $players->pluck('id');
+        if ($ids->isEmpty()) return 0;
+
+        GamePlayer::whereIn('id', $ids)->update([
+            $column => DB::raw("CASE WHEN {$column} > {$amount} THEN {$column} - {$amount} ELSE 0 END"),
+        ]);
+
+        return $ids->count();
     }
 
     /**
@@ -159,17 +177,13 @@ class MalusCardEffects
         }
         $amount = (int) ($gameBonusCard->bonusCard->effect_value['amount'] ?? 0);
 
-        $players = GamePlayer::query()
-            ->where('game_save_id', $gameSave->id)
-            ->whereHas('contracts', fn ($q) => $q->where('game_team_id', $targetId))
-            ->get();
-
-        $updated = 0;
-        foreach ($players as $player) {
-            $player->morale = max(0, (int) ($player->morale ?? 0) - $amount);
-            $player->save();
-            $updated++;
-        }
+        $updated = $this->subtractFromPlayers(
+            GamePlayer::query()
+                ->where('game_save_id', $gameSave->id)
+                ->whereHas('contracts', fn ($q) => $q->where('game_team_id', $targetId)),
+            'morale',
+            $amount,
+        );
 
         $name = $target->team()?->name ?? 'L\'adversaire';
 
