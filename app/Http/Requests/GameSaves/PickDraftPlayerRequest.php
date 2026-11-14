@@ -9,7 +9,7 @@ class PickDraftPlayerRequest extends GameSaveActionRequest
     public function rules(): array
     {
         return [
-            'player_id' => ['required', 'integer'],
+            'player_id' => ['required', 'integer', $this->existsInSave('game_players')],
         ];
     }
 }

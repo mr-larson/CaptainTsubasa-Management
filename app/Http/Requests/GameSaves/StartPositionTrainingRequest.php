@@ -12,7 +12,7 @@ class StartPositionTrainingRequest extends GameSaveActionRequest
     public function rules(): array
     {
         return [
-            'player_id' => ['required', 'integer'],
+            'player_id' => ['required', 'integer', $this->existsInSave('game_players')],
             'position'  => ['required', new Enum(PlayerPosition::class)],
         ];
     }

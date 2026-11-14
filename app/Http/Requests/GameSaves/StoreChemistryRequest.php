@@ -9,8 +9,8 @@ class StoreChemistryRequest extends GameSaveActionRequest
     public function rules(): array
     {
         return [
-            'player_id'  => ['required', 'integer', 'min:1'],
-            'partner_id' => ['required', 'integer', 'min:1', 'different:player_id'],
+            'player_id'  => ['required', 'integer', $this->existsInSave('game_players')],
+            'partner_id' => ['required', 'integer', 'different:player_id', $this->existsInSave('game_players')],
         ];
     }
 }

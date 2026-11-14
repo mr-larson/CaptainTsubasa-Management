@@ -9,9 +9,9 @@ class SubstitutePlayerRequest extends GameSaveActionRequest
     public function rules(): array
     {
         return [
-            'team_id'       => ['required', 'integer'],
-            'starter_id'    => ['required', 'integer'],  // game_player_id qui sort
-            'substitute_id' => ['required', 'integer'],  // game_player_id qui entre
+            'team_id'       => ['required', 'integer', $this->existsInSave('game_teams')],
+            'starter_id'    => ['required', 'integer', $this->existsInSave('game_players')],  // game_player_id qui sort
+            'substitute_id' => ['required', 'integer', $this->existsInSave('game_players')],  // game_player_id qui entre
         ];
     }
 }

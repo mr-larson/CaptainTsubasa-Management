@@ -172,6 +172,11 @@ class GameMatchController extends Controller
             }
             abort_if($results->isScheduledForFutureWeek($gameSave, $match), 422, 'Ce match n\'est pas encore programmé.');
 
+            // Seul le match de l'équipe qui a la main s'enregistre ici : ceux des
+            // équipes IA sont simulés par le serveur à la clôture de la semaine.
+            $activeTeamId = (int) $gameSave->controlled_game_team_id;
+            abort_if($activeTeamId && ! in_array($activeTeamId, [$homeTeamId, $awayTeamId], true), 403, 'Ton équipe ne joue pas ce match.');
+
             $results->record(
                 $gameSave,
                 $match,

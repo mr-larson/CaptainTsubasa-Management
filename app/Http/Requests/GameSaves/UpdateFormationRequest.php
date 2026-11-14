@@ -12,7 +12,7 @@ class UpdateFormationRequest extends GameSaveActionRequest
     public function rules(): array
     {
         return [
-            'team_id'   => ['required', 'integer'],
+            'team_id'   => ['required', 'integer', $this->existsInSave('game_teams')],
             'formation' => ['required', 'string', Rule::in(array_keys(FormationHelper::SLOT_ZONES))],
         ];
     }

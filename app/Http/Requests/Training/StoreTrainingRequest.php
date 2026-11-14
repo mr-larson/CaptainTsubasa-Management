@@ -42,7 +42,7 @@ class StoreTrainingRequest extends FormRequest
 
             // trainings : array de 1 à max_trainings_per_week
             'trainings'              => ['required', 'array', 'min:1', 'max:' . $this->maxPerWeek()],
-            'trainings.*.player_id'  => ['required', 'integer'],
+            'trainings.*.player_id'  => ['required', 'integer', Rule::exists('game_players', 'id')->where('game_save_id', $this->route('gameSave')?->id)],
             'trainings.*.stat'       => ['required', 'string', Rule::in($allowedStats)],
         ];
     }

@@ -156,6 +156,19 @@ class LineupController extends Controller
                 $slots[(int) $row['slot']] = $row['player_id'] ? (int) $row['player_id'] : null;
             }
 
+            // Les joueurs placés doivent être sous contrat actif avec cette équipe :
+            // sinon la composition pourrait aligner un joueur d'un autre club.
+            $playerIds = array_values(array_filter($slots));
+            $underContract = GameContract::where('game_save_id', $gameSave->id)
+                ->where('game_team_id', $team->id)
+                ->activeAt((int) ($gameSave->week ?? 1))
+                ->whereIn('game_player_id', $playerIds)
+                ->distinct()
+                ->count('game_player_id');
+            if ($underContract !== count($playerIds)) {
+                return back()->withErrors(['slots' => "La composition contient un joueur qui ne fait pas partie de l'équipe."]);
+            }
+
             $gameSave->gameState()->setLineupSlots($team->id, $slots);
             $gameSave->save();
 

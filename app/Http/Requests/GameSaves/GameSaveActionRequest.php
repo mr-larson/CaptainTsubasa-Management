@@ -4,6 +4,8 @@ namespace App\Http\Requests\GameSaves;
 
 use App\Models\GameSaves\GameSave;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Exists;
 
 /**
  * Base des requêtes d'écriture sous /game-saves/{gameSave} : l'utilisateur doit
@@ -25,5 +27,17 @@ abstract class GameSaveActionRequest extends FormRequest
     protected function gameSave(): GameSave
     {
         return $this->route('gameSave');
+    }
+
+    /**
+     * Règle « existe DANS cette sauvegarde » pour un identifiant envoyé par le
+     * navigateur (joueur, équipe…). Sans ce filtre, `exists` accepterait l'id
+     * d'une autre partie et le cloisonnement reposerait sur chaque service.
+     *
+     * @param  string  $table  table portant une colonne game_save_id (game_players, game_teams…)
+     */
+    protected function existsInSave(string $table): Exists
+    {
+        return Rule::exists($table, 'id')->where('game_save_id', $this->gameSave()->id);
     }
 }

@@ -147,7 +147,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/',                   [PeriodPackageController::class, 'index'])->name('index');
         Route::get('/create',             [PeriodPackageController::class, 'create'])->name('create');
         Route::get('/export-template',    [PeriodPackageController::class, 'exportTemplate'])->name('export-template');
-        Route::post('/',                  [PeriodPackageController::class, 'store'])->name('store');
+        // Import d'un zip (jusqu'à 20 Mo, décompressé et analysé) : débit limité.
+        Route::post('/',                  [PeriodPackageController::class, 'store'])->middleware('throttle:10,1')->name('store');
         Route::get('/{periodPackage}/export', [PeriodPackageController::class, 'export'])->name('export');
         Route::put('/{periodPackage}',    [PeriodPackageController::class, 'update'])->name('update');
         Route::delete('/{periodPackage}', [PeriodPackageController::class, 'destroy'])->name('destroy');
