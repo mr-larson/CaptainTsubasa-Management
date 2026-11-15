@@ -12,6 +12,7 @@ const props = defineProps({
     size: { type: String, default: 'sm' },        // xs | sm | md | lg
     shape: { type: String, default: 'circle' },   // circle | rounded
     showFlag: { type: Boolean, default: false },
+    whiteBackground: { type: Boolean, default: false },
     zoomable: { type: Boolean, default: true },
 });
 
@@ -32,8 +33,8 @@ const name = computed(() => [props.player?.firstname, props.player?.lastname].fi
 
 <template>
     <div class="relative shrink-0">
-        <div class="flex items-center justify-center overflow-hidden bg-slate-100 text-slate-400 shadow-sm"
-             :class="[sizeClasses.box, shape === 'circle' ? 'rounded-full' : 'rounded-xl']">
+        <div class="flex items-center justify-center overflow-hidden text-slate-400 shadow-sm"
+             :class="[whiteBackground ? 'bg-white' : 'bg-slate-100', sizeClasses.box, shape === 'circle' ? 'rounded-full' : 'rounded-xl']">
             <PlayerPhoto v-if="photo && zoomable" :src="photo" class="h-full w-full object-cover" :alt="name" />
             <img v-else-if="photo" :src="photo" class="h-full w-full object-cover" :alt="name" loading="lazy" decoding="async" />
             <span v-else aria-hidden="true" :class="sizeClasses.text">{{ size === 'lg' ? '👤' : '?' }}</span>

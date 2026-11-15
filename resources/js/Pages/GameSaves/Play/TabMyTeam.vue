@@ -219,7 +219,7 @@ const comparisonAvailability = p => unavailability(p)?.label ?? "Disponible";
                 </template>
             </FormationCard>
 
-            <PitchView class="lg:col-span-7"
+            <PitchView class="lg:col-span-7" whiteboard
                        :formationData="formationData"
                        :playerPosition="playerPosition"
                        :playerForSlot="playerForSlot"
@@ -317,6 +317,10 @@ const comparisonAvailability = p => unavailability(p)?.label ?? "Disponible";
                                 :perf="selectedMyPlayerPerf"
                                 @make-promise="(p, t) => emit('make-promise', p, t)"
                                 @make-declaration="(p, t) => emit('make-declaration', p, t)">
+                <template #header-actions>
+                    <ShirtNumberInput :number="selectedMyPlayer.number"
+                                      @change="(value, revert) => emit('update-number', selectedMyPlayer.id, value, revert)" />
+                </template>
                 <template #actions>
                     <!-- Entrée / sortie du onze -->
                     <template v-if="selectedMyPlayer.contract_id">
@@ -355,8 +359,7 @@ const comparisonAvailability = p => unavailability(p)?.label ?? "Disponible";
                     </template>
                     <CaptainToggle v-if="selectedMyPlayer.contract_id" :captain="!!selectedMyPlayer.is_captain"
                                    @toggle="emit('toggle-captain', selectedMyPlayer.contract_id)" />
-                    <ShirtNumberInput :number="selectedMyPlayer.number"
-                                      @change="(value, revert) => emit('update-number', selectedMyPlayer.id, value, revert)" />
+
                     <!-- Résiliation -->
                     <ButtonDanger size="sm" v-if="selectedMyPlayer.contract_id" @click="emit('release-player', selectedMyPlayer)" title="Résilier le contrat : salaire déjà versé non remboursé, relation avec le coach rompue (-100)">
                         ✖ Résilier

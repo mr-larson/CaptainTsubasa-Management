@@ -38,6 +38,7 @@ const emit = defineEmits(['make-promise', 'make-declaration']);
             <PlayerStatusAlert :player="player" v-bind="status" />
 
             <PlayerIdentityCard :player="player">
+                <template v-if="$slots['header-actions']" #header-actions><slot name="header-actions" /></template>
                 <template v-if="$slots.actions" #actions><slot name="actions" /></template>
                 <template #footer>
                     <slot name="footer" />

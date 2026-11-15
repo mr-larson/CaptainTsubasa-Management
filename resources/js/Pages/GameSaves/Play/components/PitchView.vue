@@ -7,6 +7,7 @@ import { usePlayerUtils } from '../usePlayerUtils.js';
  * `slotMastery` (optionnel) affiche les pastilles hors-poste / poste secondaire.
  */
 const props = defineProps({
+    whiteboard:     { type: Boolean, default: false },
     formationData:  { type: Object,   default: null },
     playerPosition: { type: Function, required: true },
     playerForSlot:  { type: Function, required: true },
@@ -112,17 +113,22 @@ const MASTERY_CHIP = {
 </script>
 
 <template>
-    <div class="h-[280px] border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+    <div class="h-[280px] border rounded-xl overflow-hidden"
+         :class="whiteboard ? 'border-slate-300 shadow-[0_4px_14px_rgba(15,23,42,0.12)]' : 'border-slate-200 shadow-sm'">
         <div class="relative w-full h-full">
-            <div class="absolute inset-0 bg-gradient-to-r from-green-800 via-green-700 to-green-800"></div>
-            <div v-for="i in 8" :key="i" class="absolute top-0 h-full bg-green-900/15" :style="{ left:((i-1)*12.5)+'%', width:'12.5%' }"></div>
-            <div class="absolute inset-2 border border-white/40 rounded pointer-events-none"></div>
-            <div class="absolute top-2 bottom-2 left-1/2 w-px bg-white/40"></div>
-            <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-full border border-white/30"></div>
-            <div class="absolute left-2 top-1/2 -translate-y-1/2 border border-white/30 w-[9%] h-[55%]"></div>
-            <div class="absolute right-2 top-1/2 -translate-y-1/2 border border-white/30 w-[9%] h-[55%]"></div>
-            <div class="absolute left-2 top-1/2 -translate-y-1/2 bg-white/15 border border-white/50 w-[2%] h-[22%]"></div>
-            <div class="absolute right-2 top-1/2 -translate-y-1/2 bg-white/15 border border-white/50 w-[2%] h-[22%]"></div>
+            <div class="absolute inset-0" :class="whiteboard ? 'bg-white' : 'bg-gradient-to-r from-green-800 via-green-700 to-green-800'"></div>
+            <template v-if="!whiteboard">
+                <div v-for="i in 8" :key="i" class="absolute top-0 h-full bg-green-900/15" :style="{ left:((i-1)*12.5)+'%', width:'12.5%' }"></div>
+            </template>
+            <div class="absolute inset-2 pointer-events-none" :class="whiteboard ? 'text-slate-700/40' : 'text-white/40'">
+                <div class="absolute inset-0 border border-current rounded"></div>
+                <div class="absolute top-0 bottom-0 left-1/2 w-px bg-current"></div>
+                <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-full border border-current"></div>
+                <div class="absolute left-0 top-1/2 -translate-y-1/2 border border-current w-[9%] h-[55%]"></div>
+                <div class="absolute right-0 top-1/2 -translate-y-1/2 border border-current w-[9%] h-[55%]"></div>
+                <div class="absolute left-0 top-1/2 -translate-y-1/2 border border-current w-[2%] h-[22%]" :class="whiteboard ? 'bg-slate-100' : 'bg-white/15'"></div>
+                <div class="absolute right-0 top-1/2 -translate-y-1/2 border border-current w-[2%] h-[22%]" :class="whiteboard ? 'bg-slate-100' : 'bg-white/15'"></div>
+            </div>
 
             <template v-if="formationData">
                 <div
@@ -130,7 +136,7 @@ const MASTERY_CHIP = {
                     :key="slot"
                     class="absolute -translate-x-1/2 -translate-y-1/2"
                     :class="playerForSlot(slot) ? 'cursor-grab active:cursor-grabbing' : slotCandidates ? 'cursor-pointer' : 'cursor-default'"
-                    :style="{ left: playerPosition(slot).x+'%', top: playerPosition(slot).y+'%' }"
+                    :style="{ left: playerPosition(slot).x+'%', top: (whiteboard ? Math.max(14, Math.min(86, playerPosition(slot).y)) : playerPosition(slot).y)+'%' }"
                     :title="playerForSlot(slot) ? `Endurance ${staminaOf(playerForSlot(slot))}` : undefined"
                     :draggable="!!playerForSlot(slot)"
                     :role="playerForSlot(slot) || slotCandidates ? 'button' : undefined"
@@ -155,10 +161,10 @@ const MASTERY_CHIP = {
                     <div v-if="!playerForSlot(slot) && slotCandidates"
                          class="flex flex-col items-center transition-transform duration-150 hover:scale-110"
                          :class="pickedPlayer ? 'scale-110' : ''">
-                        <div class="w-8 h-8 rounded-full border-2 border-dashed flex items-center justify-center text-white font-black text-sm shadow-md"
-                             :class="pickedPlayer ? 'border-amber-300 bg-amber-300/30 animate-pulse' : 'border-white/80 bg-black/25'">+</div>
-                        <div class="mt-0.5 px-1 rounded border-l-2 text-3xs font-semibold leading-tight bg-black/60 text-white pointer-events-none"
-                             :class="ZONE_BORDER[slotDef.zone]">
+                        <div class="w-8 h-8 rounded-full border-2 border-dashed flex items-center justify-center font-black text-sm shadow-sm"
+                             :class="pickedPlayer ? 'border-amber-400 bg-amber-100 text-slate-700 animate-pulse' : whiteboard ? 'border-slate-400 bg-slate-50 text-slate-700' : 'border-white/80 bg-black/25 text-white'">+</div>
+                        <div class="mt-0.5 px-1 rounded border-l-2 text-3xs font-semibold leading-tight pointer-events-none"
+                             :class="[ZONE_BORDER[slotDef.zone], whiteboard ? 'bg-slate-100 text-slate-700' : whiteboard ? 'bg-slate-100 text-slate-700' : 'bg-black/60 text-white']">
                             {{ ZONE_LABELS[slotDef.zone] ?? slot }} vide
                         </div>
                     </div>
@@ -200,7 +206,8 @@ const MASTERY_CHIP = {
                              class="absolute top-5 -right-1.5 w-3.5 h-3.5 rounded-sm bg-amber-400 border border-white text-[8px] leading-[11px] text-slate-700 text-center font-black pointer-events-none"
                              title="Capitaine">C</div>
                         <!-- Endurance -->
-                        <div v-if="playerForSlot(slot)" class="mt-0.5 w-8 h-[3px] rounded-full bg-black/40 overflow-hidden pointer-events-none"
+                        <div v-if="playerForSlot(slot)" class="mt-0.5 w-8 h-[3px] rounded-full overflow-hidden pointer-events-none"
+                             :class="whiteboard ? 'bg-slate-200' : 'bg-black/40'"
                              :title="`Endurance ${staminaOf(playerForSlot(slot))}`">
                             <div class="h-full rounded-full" :class="staminaBar(staminaOf(playerForSlot(slot)))"
                                  :style="{ width: Math.min(staminaOf(playerForSlot(slot)), 100) + '%' }"></div>
@@ -217,8 +224,8 @@ const MASTERY_CHIP = {
                              :title="ZONE_NAMES[slotDef.zone]"
                              :class="[ZONE_BORDER[slotDef.zone], isPickedUp(playerForSlot(slot))
                                 ? 'bg-amber-300 text-slate-700'
-                                : selectedSlot === Number(slot) ? 'bg-amber-300 text-slate-700'
-                                : statusOf(playerForSlot(slot)) ? 'bg-rose-600/90 text-white' : 'bg-black/60 text-white']">
+                                : selectedSlot === Number(slot) ? 'bg-teal-100 text-teal-800'
+                                : statusOf(playerForSlot(slot)) ? 'bg-rose-600/90 text-white' : whiteboard ? 'bg-slate-100 text-slate-700' : 'bg-black/60 text-white']">
                             {{ playerForSlot(slot)?.lastname ?? '—' }}
                         </div>
                     </div>

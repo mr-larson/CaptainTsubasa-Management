@@ -163,7 +163,7 @@ const otherStatus = computed(() => ({
                            :readonly="!editable"
                            @change="f => emit('change-formation', f)" />
 
-            <PitchView class="lg:col-span-7"
+            <PitchView class="lg:col-span-7" whiteboard
                        :formationData="otherFormationData"
                        :playerPosition="otherPlayerPosition"
                        :playerForSlot="otherPlayerForSlot"
@@ -243,14 +243,18 @@ const otherStatus = computed(() => ({
                                 accent="red"
                                 @make-promise="(p, t) => emit('make-promise', p, t)"
                                 @make-declaration="(p, t) => emit('make-declaration', p, t)">
+                <template #header-actions>
+                    <template v-if="editable"><ShirtNumberInput :number="selectedOtherPlayer.number"
+                                      @change="(value, revert) => emit('update-number', selectedOtherPlayer.id, value, revert)" /></template>
+                    <span v-else-if="selectedOtherPlayer.number" class="text-xs text-slate-500 font-semibold">N° {{ selectedOtherPlayer.number }}</span>
+                </template>
                 <template v-if="editable" #actions>
                     <ButtonSecondary size="sm" @click="emit('toggle-starter', selectedOtherPlayer.contract_id)">
                         {{ selectedOtherPlayer.is_starter ? '↓ Sortir du onze' : '+ Titulariser' }}
                     </ButtonSecondary>
                     <CaptainToggle :captain="!!selectedOtherPlayer.is_captain"
                                    @toggle="emit('toggle-captain', selectedOtherPlayer.contract_id)" />
-                    <ShirtNumberInput :number="selectedOtherPlayer.number"
-                                      @change="(value, revert) => emit('update-number', selectedOtherPlayer.id, value, revert)" />
+
                 </template>
                 <template v-else #actions>
                     <span class="px-3 py-1.5 rounded-full text-xs font-semibold border"
@@ -263,9 +267,7 @@ const otherStatus = computed(() => ({
                           class="px-3 py-1.5 rounded-full text-xs font-semibold border bg-amber-50 text-amber-700 border-amber-200">
                         👑 Capitaine
                     </span>
-                    <span v-if="selectedOtherPlayer.number" class="text-xs text-slate-500 font-semibold">
-                        N° {{ selectedOtherPlayer.number }}
-                    </span>
+
                 </template>
             </PlayerProfilePanel>
         </div>

@@ -24,7 +24,7 @@ const { overallOf } = usePlayerUtils();
     <Panel>
         <div class="flex items-start gap-4">
             <!-- Photo + overall -->
-            <PlayerAvatar :player="player" size="lg" shape="rounded" show-flag>
+            <PlayerAvatar :player="player" size="lg" shape="rounded" show-flag white-background>
                 <div class="absolute -top-2 -right-2 w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-[11px] font-black shadow"
                      :class="overallOf(player)>=80?'bg-emerald-500 text-white':overallOf(player)>=65?'bg-teal-500 text-white':overallOf(player)>=50?'bg-amber-400 text-slate-700':'bg-slate-400 text-white'">
                     {{ overallOf(player) }}
@@ -32,7 +32,10 @@ const { overallOf } = usePlayerUtils();
             </PlayerAvatar>
 
             <div class="flex-1 min-w-0">
-                <h3 class="text-base font-bold text-slate-700">{{ player.firstname }} {{ player.lastname }}</h3>
+                <div class="flex flex-wrap items-start justify-between gap-2">
+                    <h3 class="text-base font-bold text-slate-700">{{ player.firstname }} {{ player.lastname }}</h3>
+                    <div v-if="$slots['header-actions']" class="shrink-0"><slot name="header-actions" /></div>
+                </div>
 
                 <div v-if="showCaptainBadge && player.is_captain" class="flex items-center gap-1.5 mt-1">
                     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-2xs font-bold uppercase tracking-wide">
