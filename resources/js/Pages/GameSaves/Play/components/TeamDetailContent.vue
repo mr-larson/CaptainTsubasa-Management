@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import { useAnimatedStats } from '@/Composables/useAnimatedStats.js';
 import Panel from '@/Components/Panel.vue';
 import PlayerAvatar from '@/Components/PlayerAvatar.vue';
 import { positionLabel } from '@/Enums/positionBadges.js';
@@ -17,6 +18,10 @@ const selectedRoster = computed(() => (props.team.contracts ?? [])
 const selectedStats = computed(() => [
     ...TEAM_STATS.slice(0, 2), { key: 'morale', label: 'Moral', color: 'bg-teal-400' }, ...TEAM_STATS.slice(2),
 ].map(stat => ({ ...stat, value: averageTeamStat(selectedRoster.value, stat.key) })));
+const { root, value: animatedValue, width: animatedWidth } = useAnimatedStats(
+    () => Object.fromEntries(selectedStats.value.map(stat => [stat.key, stat.value])),
+    () => props.team.id,
+);
 </script>
 <template>
     <div class="flex flex-col gap-3">
@@ -24,14 +29,14 @@ const selectedStats = computed(() => [
                                   :budget="team.budget" :average-overall="team.average_overall" />
 
                 <div class="grid items-start gap-3 sm:grid-cols-2">
-                    <Panel padding="sm" title="Forces" class="space-y-2">
+                    <Panel ref="root" padding="sm" title="Forces" class="space-y-2">
                         <div v-for="stat in selectedStats" :key="stat.key" class="flex items-center gap-2 text-xs">
                             <span class="w-16 shrink-0 text-slate-500">{{ stat.label }}</span>
                             <div aria-hidden="true" class="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-200">
                                 <div class="h-full rounded-full" :class="stat.color ?? STAT_COLORS[stat.key]"
-                                     :style="{ width: Math.min(stat.value ?? 0, 100) + '%' }"></div>
+                                     :style="{ width: animatedWidth(stat.key) }"></div>
                             </div>
-                            <span class="w-6 shrink-0 text-right font-bold tabular-nums text-slate-700">{{ stat.value ?? '—' }}</span>
+                            <span class="w-6 shrink-0 text-right font-bold tabular-nums text-slate-700">{{ stat.value == null ? '—' : animatedValue(stat.key) }}</span>
                         </div>
                     </Panel>
 

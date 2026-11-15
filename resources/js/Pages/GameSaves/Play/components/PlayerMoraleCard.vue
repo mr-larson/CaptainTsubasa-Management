@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import { useAnimatedStats } from '@/Composables/useAnimatedStats.js';
 import Panel from '@/Components/Panel.vue';
 import { PLAYER_STATS } from '@/Enums/playerStats.js';
 import { usePlayerUtils } from '../usePlayerUtils.js';
@@ -18,6 +19,11 @@ const props = defineProps({
     // false : consultation seule (pas de bouton Promettre / Presse)
     editable:      { type: Boolean, default: true },
 });
+
+const { root, width: animatedWidth } = useAnimatedStats(
+    () => ({ morale: props.player?.morale ?? 60, affinity: (Number(props.player?.coach_affinity ?? 0) + 100) / 2 }),
+    () => props.player?.id,
+);
 
 const emit = defineEmits(['make-promise', 'make-declaration']);
 
@@ -97,7 +103,7 @@ const lastDeclarationSummary = computed(() => {
 </script>
 
 <template>
-    <Panel title="Moral">
+    <Panel ref="root" title="Moral">
         <template #header-actions>
             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold"
                   :class="selectedPlayerMorale.chip">
@@ -107,9 +113,9 @@ const lastDeclarationSummary = computed(() => {
         </template>
 
         <div class="h-2 bg-slate-200 rounded-full overflow-hidden mb-2">
-            <div class="h-full rounded-full transition-all"
+            <div class="h-full rounded-full"
                  :class="selectedPlayerMorale.bar"
-                 :style="{ width: Math.min(player.morale ?? 60, 100) + '%' }"></div>
+                 :style="{ width: animatedWidth('morale') }"></div>
         </div>
 
         <!-- Effets en match -->
@@ -141,9 +147,9 @@ const lastDeclarationSummary = computed(() => {
             </div>
             <div class="relative h-1.5 bg-slate-200 rounded-full overflow-hidden mb-2">
                 <div class="absolute top-0 bottom-0 w-px bg-slate-400/60 left-1/2"></div>
-                <div class="h-full rounded-full transition-all"
+                <div class="h-full rounded-full"
                      :class="affinityDisplay.bar"
-                     :style="{ width: ((selectedPlayerAffinity + 100) / 2) + '%' }"></div>
+                     :style="{ width: animatedWidth('affinity') }"></div>
             </div>
 
             <!-- Promesses -->
