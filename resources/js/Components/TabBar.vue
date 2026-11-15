@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 // Barre d'onglets commune (rôles ARIA, tabindex itinérant, flèches ← → / Début / Fin).
 // Un indicateur unique se déplace entre les onglets et suit leur largeur réelle.
@@ -7,6 +7,8 @@ const props = defineProps({
     // [{ key, label, count?, badge?, disabled?, disabledHint? }]
     tabs: { type: Array, required: true },
     modelValue: { type: [String, Number], default: null },
+    iconsOnly: { type: Boolean, default: false },
+    surface: { type: String, default: 'white' }, // white | muted (fond de la carte)
     size: { type: String, default: 'md' }, // md | sm
     // true : les onglets passent à la ligne ; false : la barre défile horizontalement.
     wrap: { type: Boolean, default: false },
@@ -18,6 +20,14 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue']);
 const buttons = ref([]);
+const tooltip = ref(null);
+const tooltipId = `tab-tooltip-${getCurrentInstance().uid}`;
+function showTooltip(tab, event) {
+    if (!props.iconsOnly) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    tooltip.value = { text: tab.label, left: Math.max(90, Math.min(window.innerWidth - 90, rect.left + rect.width / 2)), top: rect.bottom + 8 };
+}
+function hideTooltip() { tooltip.value = null; }
 const track = ref(null);
 const indicator = ref(null);
 const ready = ref(false);
@@ -49,7 +59,7 @@ function observe() {
     measure();
 }
 
-watch(() => [props.modelValue, props.tabs, props.size, props.wrap, props.stretch], observe, { deep: true, flush: 'post' });
+watch(() => [props.modelValue, props.tabs, props.size, props.wrap, props.stretch, props.iconsOnly], observe, { deep: true, flush: 'post' });
 watch(() => props.modelValue, async (current, previous) => {
     if (current === previous) return;
     const before = buttons.value.find(button => button?.dataset.tab === String(previous));
@@ -103,14 +113,14 @@ const SIZES = { md: 'px-3 py-2 text-sm', sm: 'px-3 py-1.5 text-xs' };
 
 <template>
     <nav ref="track" role="tablist" :aria-label="label"
-         class="magic-tabs relative isolate flex gap-1 rounded-xl bg-slate-100 px-2 py-1.5"
+         class="magic-tabs relative isolate flex gap-1 rounded-xl bg-slate-200 px-2 py-1.5"
          :class="[wrap ? 'flex-wrap' : 'overflow-x-auto', { 'magic-tabs--outlined': outlined }]"
          @keydown.right.prevent="move(1)" @keydown.left.prevent="move(-1)"
          @keydown.home.prevent="move('first')" @keydown.end.prevent="move('last')">
         <div v-if="indicator" aria-hidden="true" class="magic-indicator pointer-events-none absolute left-0 top-0"
              :class="{ 'magic-indicator--ready': ready }" :style="indicatorStyle">
             <div ref="liquidShape" class="absolute inset-0">
-            <svg class="absolute inset-0 h-full w-full text-white overflow-visible" viewBox="0 0 200 60" preserveAspectRatio="none">
+            <svg class="absolute inset-0 h-full w-full overflow-visible" :class="surface === 'muted' ? 'text-slate-50' : 'text-white'" viewBox="0 0 200 60" preserveAspectRatio="none">
                 <path fill="currentColor" transform="translate(0 60) scale(1 -1)" d="M0 0H200C182 0 190 30 180 46C175 54 168 58 156 58H44C32 58 25 54 20 46C10 30 18 0 0 0Z" />
                 <path v-if="outlined" fill="none" stroke="#e2e8f0" stroke-width="1" vector-effect="non-scaling-stroke"
                       transform="translate(0 60) scale(1 -1)"
@@ -125,19 +135,32 @@ const SIZES = { md: 'px-3 py-2 text-sm', sm: 'px-3 py-1.5 text-xs' };
                 :tabindex="modelValue === t.key ? 0 : -1"
                 :disabled="t.disabled"
                 :title="t.disabled ? t.disabledHint : null"
+                :aria-label="iconsOnly ? t.label : undefined"
+                :aria-describedby="iconsOnly && tooltip?.text === t.label ? `${tooltipId}` : undefined"
+                @mouseenter="showTooltip(t, $event)" @mouseleave="hideTooltip"
+                @focus="showTooltip(t, $event)" @blur="hideTooltip"
+                @keydown.esc="hideTooltip"
                 class="magic-tab relative z-10 shrink-0 whitespace-nowrap rounded-full font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-900"
-                :class="[SIZES[size] ?? SIZES.md, stretch ? 'min-w-max flex-1 text-center' : '', t.disabled
+                :class="[iconsOnly ? 'min-w-[44px] h-11 px-3 text-base flex items-center justify-center' : SIZES[size] ?? SIZES.md, stretch ? 'min-w-max flex-1 text-center' : '', t.disabled
                     ? 'text-slate-400 cursor-not-allowed'
                     : modelValue === t.key
-                        ? 'text-teal-700'
-                        : 'text-slate-500 hover:text-slate-800']"
+                        ? 'text-teal-600'
+                        : 'text-slate-500 hover:text-slate-700']"
                 @click="select(t)">
-            {{ t.label }}<span v-if="t.count !== undefined && t.count !== null" class="opacity-60"> ({{ t.count }})</span>
+            <span v-if="iconsOnly" aria-hidden="true">{{ t.icon }}</span>
+            <template v-else>{{ t.label }}</template><span v-if="t.count !== undefined && t.count !== null" class="opacity-60"> ({{ t.count }})</span>
             <span v-if="t.badge" class="ml-1 rounded-full px-1.5 py-0.5 text-2xs font-bold"
                   :class="modelValue === t.key ? 'bg-teal-50 text-teal-700' : 'bg-slate-200 text-slate-600'">
                 {{ t.badge }}
             </span>
         </button>
+        <Teleport to="body">
+            <div v-if="iconsOnly && tooltip" :id="tooltipId" role="tooltip"
+                 class="fixed z-[100] -translate-x-1/2 pointer-events-none rounded-lg bg-slate-800 px-3 py-1.5 text-xs font-semibold text-white shadow-lg"
+                 :style="{ left: tooltip.left + 'px', top: tooltip.top + 'px' }">
+                {{ tooltip.text }}
+            </div>
+        </Teleport>
     </nav>
 </template>
 

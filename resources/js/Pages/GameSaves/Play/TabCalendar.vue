@@ -127,19 +127,20 @@ const isMine = (m) => props.myTeamId && [m.home_team_id, m.away_team_id].map(Num
 //   CLASSEMENTS DE LA JOURNÉE (chargés à la demande, par semaine)
 // ==========================
 const LEADER_TABS = [
-    { key: 'motm',      label: '⭐ Hommes du match', unit: () => 'pts de note' },
-    { key: 'scorers',   label: '⚽ Buteurs',         unit: (v) => (v > 1 ? 'buts' : 'but') },
-    { key: 'passers',   label: '🎯 Passeurs',        unit: (v) => (v > 1 ? 'passes' : 'passe') },
-    { key: 'dribblers', label: '🌀 Dribbleurs',      unit: (v) => (v > 1 ? 'dribbles' : 'dribble') },
-    { key: 'keepers',   label: '🧤 Arrêts',          unit: (v) => (v > 1 ? 'arrêts' : 'arrêt') },
-    { key: 'defenders', label: '🛡️ Défenseurs',      unit: (v) => (v > 1 ? 'ballons gagnés' : 'ballon gagné') },
-    { key: 'duels',     label: '⚔️ Duels',           unit: (v) => (v > 1 ? 'duels gagnés' : 'duel gagné') },
+    { key: 'motm',      icon: '⭐', label: 'Hommes du match', unit: () => 'pts de note' },
+    { key: 'scorers',   icon: '⚽', label: 'Buteurs',         unit: (v) => (v > 1 ? 'buts' : 'but') },
+    { key: 'passers',   icon: '🎯', label: 'Passeurs',        unit: (v) => (v > 1 ? 'passes' : 'passe') },
+    { key: 'dribblers', icon: '🌀', label: 'Dribbleurs',      unit: (v) => (v > 1 ? 'dribbles' : 'dribble') },
+    { key: 'keepers',   icon: '🧤', label: 'Arrêts',          unit: (v) => (v > 1 ? 'arrêts' : 'arrêt') },
+    { key: 'defenders', icon: '🛡️', label: 'Défenseurs',      unit: (v) => (v > 1 ? 'ballons gagnés' : 'ballon gagné') },
+    { key: 'duels',     icon: '⚔️', label: 'Duels',           unit: (v) => (v > 1 ? 'duels gagnés' : 'duel gagné') },
     // Cartons et blessures de la semaine (les fautes ne sont pas conservées joueur par joueur)
-    { key: 'fouls',     label: '🟨 Fautes',          unit: () => '' },
+    { key: 'fouls',     icon: '🟨', label: 'Fautes',          unit: () => '' },
 ];
 const leaderTab = ref('motm');
 const leadersCache = ref({});
 const leadersLoading = ref(false);
+const leadersError = ref(false);
 
 // La clé change quand un match de la semaine est joué : le classement est rechargé.
 const leadersKey = computed(() => {
@@ -150,19 +151,22 @@ const leaders = computed(() => leadersCache.value[leadersKey.value] ?? null);
 const leaderRows = computed(() => leaders.value?.categories?.[leaderTab.value] ?? []);
 const leaderUnit = (v) => LEADER_TABS.find(t => t.key === leaderTab.value)?.unit(v) ?? '';
 
-watch(leadersKey, async (key) => {
+async function loadLeaders(key = leadersKey.value) {
     const played = journeeMatches.value.some(m => m.status === 'played');
     if (!played || leadersCache.value[key]) return;
     leadersLoading.value = true;
+    leadersError.value = false;
     try {
         const { data } = await axios.get(route('game-saves.weeks.leaders', { gameSave: props.gameSaveId, week: journeeWeek.value }));
         leadersCache.value = { ...leadersCache.value, [key]: data };
-    } catch {
-        // Classements indisponibles : la carte affiche simplement « aucun »
+    } catch (error) {
+        leadersError.value = true;
+        console.error('Chargement des classements impossible', error);
     } finally {
         leadersLoading.value = false;
     }
-}, { immediate: true });
+}
+watch(leadersKey, key => loadLeaders(key), { immediate: true });
 
 const MEDALS = ['🥇', '🥈', '🥉'];
 const selectedLeader = ref(null);
@@ -356,12 +360,19 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
                 <!-- Classements de la journée -->
                 <Panel v-if="!preview && journeeMatches.some(m => m.status === 'played')"
                        :title="`Classements de la semaine ${journeeWeek}`">
-                    <div class="border-b border-slate-200 mb-3">
-                        <TabBar v-model="leaderTab" :tabs="LEADER_TABS" size="sm" wrap label="Classements de la semaine" />
+                    <div class="mb-3">
+                        <TabBar v-model="leaderTab" :tabs="LEADER_TABS" size="sm" icons-only stretch surface="muted" label="Classements de la semaine" />
                     </div>
 
+                    <h4 class="mb-3 text-sm font-semibold text-slate-700" aria-live="polite">
+                        {{ LEADER_TABS.find(t => t.key === leaderTab)?.label }}
+                    </h4>
                     <div v-if="leadersLoading && !leaders" class="py-6 flex justify-center">
                         <PixelLoader />
+                    </div>
+                    <div v-else-if="leadersError" class="py-6 text-center">
+                        <p class="text-xs text-slate-500 mb-2">Impossible de charger les classements.</p>
+                        <ButtonSecondary size="sm" @click="loadLeaders()">Réessayer</ButtonSecondary>
                     </div>
                     <div v-else-if="leaderRows.length" class="space-y-1">
                         <button v-for="(r, i) in leaderRows" :key="`${r.player_id}-${r.match_id}`" type="button"
