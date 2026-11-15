@@ -147,7 +147,7 @@ const sortIcon = (key) => {
             <!-- BLOC 1 : TOP PERFORMERS                      -->
             <!-- ============================================ -->
             <!-- Filtre du palmarès -->
-            <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-slate-50 p-3">
+            <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-slate-50 p-3 shadow-card">
                 <label class="flex w-full flex-col gap-2 text-xs font-semibold text-slate-600 sm:w-auto sm:flex-row sm:items-center">
                     Palmarès des joueurs
                     <select v-model="selectedTeamFilter" aria-label="Équipe du palmarès"
@@ -163,7 +163,7 @@ const sortIcon = (key) => {
                     Mon équipe
                 </button>
             </div>
-            <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+            <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 shadow-card">
                 <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">🏆 Meilleurs joueurs <span class="normal-case font-semibold text-slate-400 tracking-normal">· cumul de tous les matchs joués de la partie</span></h3>
 
                 <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -224,7 +224,7 @@ const sortIcon = (key) => {
             <!-- ============================================ -->
             <!-- BLOC 2 : COMPARATIF ÉQUIPES                 -->
             <!-- ============================================ -->
-            <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+            <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 shadow-card">
                 <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">📋 Comparatif équipes</h3>
 
                 <div class="overflow-x-auto" role="region" aria-label="Comparatif des équipes, défilement horizontal" tabindex="0">

@@ -204,11 +204,11 @@ const canConfirm = computed(() => {
                     <p class="text-sm text-slate-600 mt-1">Saison {{ season }} — Semaine {{ week }}</p>
                 </div>
                 <div class="flex items-center gap-3">
-                    <div class="text-center px-4 py-2 rounded-xl border bg-emerald-50 border-emerald-200">
+                    <div class="text-center px-4 py-2 rounded-xl border bg-emerald-50 border-emerald-200 shadow-card">
                         <div class="text-lg font-black text-emerald-600">{{ teamBudget }} <GameBanknote /></div>
                         <div class="text-2xs font-semibold text-emerald-500">Budget</div>
                     </div>
-                    <div class="text-center px-4 py-2 rounded-xl border bg-teal-50 border-teal-200">
+                    <div class="text-center px-4 py-2 rounded-xl border bg-teal-50 border-teal-200 shadow-card">
                         <div class="text-lg font-black text-teal-600">{{ availableCards.length }}</div>
                         <div class="text-2xs font-semibold text-teal-500">En inventaire</div>
                     </div>
@@ -265,7 +265,7 @@ const canConfirm = computed(() => {
         <!-- BOUCLIER ANTI-MALUS ACTIF (Cellule de crise)      -->
         <!-- ================================================ -->
         <div v-if="activeShields > 0"
-             class="flex items-center gap-3 border border-emerald-300 bg-emerald-50 rounded-xl px-3 py-2">
+             class="flex items-center gap-3 border border-emerald-300 bg-emerald-50 rounded-xl px-3 py-2 shadow-card">
             <span class="text-xl">🛡️</span>
             <div class="flex-1 min-w-0">
                 <div class="text-xs font-bold text-emerald-800">
@@ -282,7 +282,7 @@ const canConfirm = computed(() => {
         <!-- ================================================ -->
         <div v-if="malusEnabled && incomingMalus.length" class="flex flex-col gap-2">
             <div v-for="(m, i) in incomingMalus" :key="'malus-in-' + i"
-                 class="flex items-center gap-3 border border-rose-300 bg-rose-50 rounded-xl px-3 py-2">
+                 class="flex items-center gap-3 border border-rose-300 bg-rose-50 rounded-xl px-3 py-2 shadow-card">
                 <span class="text-xl">{{ m.icon || '🚫' }}</span>
                 <div class="flex-1 min-w-0">
                     <div class="text-xs font-bold text-rose-800">Malus subi — {{ m.card_name || 'Titulaire consigné' }}</div>
@@ -376,7 +376,7 @@ const canConfirm = computed(() => {
         <div v-if="activeTab === 'inventory'" class="flex flex-col gap-4">
 
             <!-- Cartes disponibles -->
-            <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+            <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 shadow-card">
                 <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
                     ✅ Disponibles ({{ availableCards.length }})
                 </h4>
@@ -438,7 +438,7 @@ const canConfirm = computed(() => {
             </div>
 
             <!-- Cartes utilisées -->
-            <div v-if="usedCards.length" class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+            <div v-if="usedCards.length" class="border border-slate-200 rounded-xl bg-slate-50 p-4 shadow-card">
                 <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
                     ✓ Utilisées ({{ usedCards.length }})
                 </h4>

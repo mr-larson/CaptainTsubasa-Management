@@ -354,7 +354,7 @@
                 <div id="bars-container" class="mt-3 flex flex-col gap-2 lg:mt-3 max-lg:sticky max-lg:bottom-0 max-lg:z-[60] max-lg:pb-[env(safe-area-inset-bottom)]">
                     <!-- Invite de tour (écrite par engine.js) : qui doit agir, juste au-dessus des cartes. -->
                     <div id="message-panel" aria-live="polite"
-                         class="mx-auto flex w-full flex-wrap items-baseline justify-center gap-x-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-center shadow-sm">
+                         class="mx-auto flex w-full flex-wrap items-baseline justify-center gap-x-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-center shadow-card">
                         <span id="message-main" class="text-sm font-bold text-slate-700"></span>
                         <span id="message-sub" class="text-xs font-semibold text-teal-600"></span>
                     </div>

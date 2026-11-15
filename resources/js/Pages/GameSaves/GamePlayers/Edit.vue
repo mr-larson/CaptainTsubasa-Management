@@ -22,7 +22,7 @@
                 ></div>
 
                 <!-- FORM -->
-                <div class="basis-full md:basis-2/3 min-h-[500px] p-4 border border-slate-200 rounded-xl shadow-sm mx-0 md:mx-6 bg-white">
+                <div class="basis-full md:basis-2/3 min-h-[500px] p-4 border border-slate-200 rounded-xl mx-0 md:mx-6 bg-white shadow-card">
                     <form @submit.prevent="submit">
 
                         <PlayerFormFields

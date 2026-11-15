@@ -121,7 +121,7 @@ const EMPTY = 'text-xs text-emerald-600';
 
 <template>
     <div class="flex flex-col gap-4">
-        <section v-if="contractDepartures.length" class="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+        <section v-if="contractDepartures.length" class="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 shadow-card">
             <h4 class="font-semibold">Départs volontaires</h4>
             <ul class="mt-1 space-y-1">
                 <li v-for="(departure, index) in contractDepartures" :key="index">

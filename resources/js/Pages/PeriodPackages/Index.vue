@@ -35,7 +35,7 @@ const formatDate = (value) => {
             <div class="flex flex-col md:flex-row">
                 <div class="hidden md:block basis-1/3 p-4 bg-contain bg-center bg-no-repeat bg-[url('/images/Jun_Misugi.webp')]"></div>
 
-                <div class="basis-full md:basis-2/3 p-4 sm:p-6 border border-slate-200 rounded-2xl mx-0 md:mx-6 bg-white min-h-[500px] flex flex-col shadow-sm">
+                <div class="basis-full md:basis-2/3 p-4 sm:p-6 border border-slate-200 rounded-2xl mx-0 md:mx-6 bg-white min-h-[500px] flex flex-col shadow-card">
 
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                         <div>

@@ -532,7 +532,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
     <div class="flex-1 flex flex-col gap-4 overflow-y-auto min-h-0 pr-1 [&>*]:shrink-0">
 
         <!-- Navigation : équipe suivie, match précédent / suivant, accès direct -->
-        <div v-if="calendarTeam" class="border border-slate-200 rounded-xl bg-slate-50 p-3 flex flex-wrap items-center gap-2">
+        <div v-if="calendarTeam" class="border border-slate-200 rounded-xl bg-slate-50 p-3 flex flex-wrap items-center gap-2 shadow-card">
             <div class="w-8 h-8 rounded-lg overflow-hidden bg-white border border-slate-200 shrink-0">
                 <TeamLogoImage v-if="teamLogoUrl(calendarTeam)" :src="teamLogoUrl(calendarTeam)" class="w-full h-full" alt=""/>
             </div>
@@ -646,7 +646,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
 
             <!-- La relecture est montée uniquement dans son onglet pour arrêter la lecture à sa fermeture. -->
             <section v-if="detailTab === 'replay'" :key="selectedCalendarMatch.id"
-                     aria-label="Relecture du match" class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+                     aria-label="Relecture du match" class="border border-slate-200 rounded-xl bg-slate-50 p-4 shadow-card">
     <!-- Replay visuel basé sur le déroulé action par action (engine.js / MatchSimulator) -->
     <MatchReplayPitch
         v-if="selectedCalendarEvents.length"
@@ -757,7 +757,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                         @show-player="showPlayer" />
 
             <!-- Barres comparatives équipes -->
-            <div v-show="detailTab === 'stats'" class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+            <div v-show="detailTab === 'stats'" class="border border-slate-200 rounded-xl bg-slate-50 p-4 shadow-card">
                 <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-3">Comparatif équipes</h4>
                 <div class="space-y-2">
                     <div v-for="bar in statBars" :key="bar.label">
@@ -789,7 +789,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
 
             <!-- Joueurs -->
             <div v-show="detailTab === 'players'">
-        <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+        <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 shadow-card">
                 <div class="flex items-center justify-between mb-3">
                     <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider">
                         Joueurs — {{ statsTeamName }}
@@ -818,7 +818,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
             <!-- ============================================ -->
             <!-- BLOC : Déroulé du match (action par action)  -->
             <!-- ============================================ -->
-            <div v-if="selectedCalendarEvents.length" v-show="detailTab === 'log'" ref="logSection" class="border border-slate-200 rounded-xl bg-slate-50 p-4 scroll-mt-2">
+            <div v-if="selectedCalendarEvents.length" v-show="detailTab === 'log'" ref="logSection" class="border border-slate-200 rounded-xl bg-slate-50 p-4 scroll-mt-2 shadow-card">
                 <div class="flex items-center justify-between mb-3 gap-2 flex-wrap">
                     <h4 class="text-2xs font-bold text-slate-500 uppercase tracking-wider">
                         📋 Déroulé du match (action par action)

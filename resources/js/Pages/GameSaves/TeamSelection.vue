@@ -42,7 +42,7 @@
                     <!-- Colonne gauche : liste équipes -->
                     <!-- overflow-hidden + min-h-0 : la carte ne pilote pas la hauteur de la rangée — elle s'aligne
                          sur la colonne du milieu (profil → bouton « Jouer avec »). La liste défile à l'intérieur. -->
-                    <div class="col-span-1 lg:col-span-2 border border-slate-200 rounded-xl bg-white p-3 flex flex-col gap-2 min-h-0 max-h-64 lg:max-h-none overflow-hidden">
+                    <div class="col-span-1 lg:col-span-2 border border-slate-200 rounded-xl bg-white p-3 flex flex-col gap-2 min-h-0 max-h-64 lg:max-h-none overflow-hidden shadow-card">
                         <!-- Recherche -->
                         <div class="relative shrink-0">
                             <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 20 20">
@@ -96,7 +96,7 @@
                         <div class="col-span-1 lg:col-span-3 flex flex-col gap-3">
 
                             <!-- Logo + infos -->
-                            <div class="border border-slate-200 rounded-xl bg-white p-5">
+                            <div class="border border-slate-200 rounded-xl bg-white p-5 shadow-card">
                                 <div class="flex flex-col items-center gap-3 mb-4">
                                     <div class="w-24 h-24 rounded-2xl overflow-hidden bg-slate-50 border border-slate-200 flex items-center justify-center">
                                         <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(selectedTeam)" :src="teamLogoUrl(selectedTeam)" class="w-full h-full" alt=""/>
@@ -119,7 +119,7 @@
                             </div>
 
                             <!-- Stats moyennes (prebuilt uniquement) -->
-                            <div v-if="gameMode !== 'draft'" class="border border-slate-200 rounded-xl bg-white p-4">
+                            <div v-if="gameMode !== 'draft'" class="border border-slate-200 rounded-xl bg-white p-4 shadow-card">
                                 <div class="flex items-center justify-between gap-2">
                                     <h4 class="text-2xs font-bold uppercase tracking-wider text-slate-400">Forces</h4>
                                     <button type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-teal-500"
@@ -164,7 +164,7 @@
                             </div>
 
                             <!-- Info draft (draft uniquement) -->
-                            <div v-if="gameMode === 'draft'" class="border border-amber-200 rounded-xl bg-amber-50 p-4">
+                            <div v-if="gameMode === 'draft'" class="border border-amber-200 rounded-xl bg-amber-50 p-4 shadow-card">
                                 <h4 class="text-2xs font-bold text-amber-600 uppercase tracking-wider mb-2">🎯 Mode Draft</h4>
                                 <div class="space-y-2 text-xs text-amber-700">
                                     <p>L'équipe démarre <span class="font-bold">sans joueur</span>. Tu construiras ton effectif lors du draft.</p>
@@ -175,7 +175,7 @@
                             </div>
 
                             <!-- Radar (prebuilt uniquement) -->
-                            <div v-if="gameMode !== 'draft'" class="border border-slate-200 rounded-xl bg-white p-4 flex flex-col items-center">
+                            <div v-if="gameMode !== 'draft'" class="border border-slate-200 rounded-xl bg-white p-4 flex flex-col items-center shadow-card">
                                 <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2 self-start">Profil</h4>
                                 <svg viewBox="0 0 160 160" class="w-36 h-36">
                                     <polygon class="stroke-slate-200" v-for="(pts,i) in radarGrids" :key="i" :points="pts" fill="none" stroke-width="0.8"/>
@@ -226,7 +226,7 @@
                                 </p>
 
                                 <!-- Récap hot-seat + lancement -->
-                                <div class="border border-slate-200 rounded-xl bg-white p-4">
+                                <div class="border border-slate-200 rounded-xl bg-white p-4 shadow-card">
                                     <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">
                                         Managers humains — {{ humanTeams.length }}
                                     </h4>
@@ -263,7 +263,7 @@
                         </div>
 
                         <!-- Colonne droite : effectif (prebuilt) ou aperçu style (draft) -->
-                        <div class="col-span-1 lg:col-span-9 border border-slate-200 rounded-xl bg-white p-4 flex flex-col">
+                        <div class="col-span-1 lg:col-span-9 border border-slate-200 rounded-xl bg-white p-4 flex flex-col shadow-card">
 
                             <!-- Mode prebuilt : effectif complet -->
                             <template v-if="gameMode !== 'draft'">
@@ -451,7 +451,7 @@
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <!-- Moral -->
-                    <div v-if="detailPlayer.morale_preview != null" class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <div v-if="detailPlayer.morale_preview != null" class="rounded-xl border border-slate-200 bg-slate-50 p-3 shadow-card">
                         <div class="flex items-center justify-between text-xs mb-1.5">
                             <span class="font-bold text-slate-500 uppercase tracking-wider text-2xs">Moral</span>
                             <span class="font-black" :class="moraleState(detailPlayer.morale_preview).text">
@@ -467,7 +467,7 @@
                         </p>
                     </div>
                     <!-- Endurance -->
-                    <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <div class="rounded-xl border border-slate-200 bg-slate-50 p-3 shadow-card">
                         <div class="flex items-center justify-between text-xs mb-1.5">
                             <span class="font-bold text-slate-500 uppercase tracking-wider text-2xs">Endurance</span>
                             <span class="font-black" :class="staminaText(statValue(detailPlayer, 'stamina'))">{{ statValue(detailPlayer, 'stamina') }}</span>

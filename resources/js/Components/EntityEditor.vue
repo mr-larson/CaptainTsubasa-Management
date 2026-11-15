@@ -36,7 +36,7 @@ const isSelected = (item) => !props.creating && props.selectedId === item.id;
 <template>
     <div class="flex flex-col lg:flex-row gap-2 lg:h-[calc(100vh-11rem)] lg:min-h-[480px]">
         <!-- LISTE -->
-        <div class="lg:w-72 shrink-0 border border-slate-200 rounded-xl bg-slate-50 p-3 flex flex-col gap-3 max-h-[60vh] lg:max-h-none lg:h-full">
+        <div class="lg:w-72 shrink-0 border border-slate-200 rounded-xl bg-slate-50 p-3 flex flex-col gap-3 max-h-[60vh] lg:max-h-none lg:h-full shadow-card">
             <div class="flex items-center justify-between">
                 <h3 class="text-sm font-semibold text-slate-700">
                     {{ title }} <span class="text-slate-400 font-normal">({{ items.length }})</span>
@@ -87,7 +87,7 @@ const isSelected = (item) => !props.creating && props.selectedId === item.id;
         </div>
 
         <!-- CARTE À ONGLETS -->
-        <div class="flex-1 min-w-0 min-h-0 bg-white border border-slate-200 rounded-2xl shadow-sm flex flex-col">
+        <div class="flex-1 min-w-0 min-h-0 bg-white border border-slate-200 rounded-2xl flex flex-col shadow-card">
             <div class="shrink-0 flex items-end justify-between flex-wrap gap-3 px-6 md:px-8 pt-4 pb-4 editor-tabs-header rounded-t-2xl">
                 <TabBar :model-value="activeTab" :tabs="tabs" @update:model-value="key => emit('update:activeTab', key)" />
 

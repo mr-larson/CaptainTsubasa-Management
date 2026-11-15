@@ -71,7 +71,7 @@ const canPrepare = computed(() => props.myTeamId && Number(props.myTeamId) === N
 </script>
 
 <template>
-    <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 flex flex-col gap-4">
+    <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 flex flex-col gap-4 shadow-card">
         <div class="flex items-center justify-between">
             <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider">
                 Avant-match · {{ label }} · {{ isHome ? '🏠 à domicile' : '✈️ à l\'extérieur' }}

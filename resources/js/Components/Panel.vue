@@ -23,7 +23,7 @@ const TONES = {
 };
 const PADDINGS = { sm: 'p-3', md: 'p-4' };
 
-const classes = computed(() => ['rounded-xl border', TONES[props.tone] ?? TONES.muted, PADDINGS[props.padding] ?? PADDINGS.md]);
+const classes = computed(() => ['rounded-xl border shadow-card', TONES[props.tone] ?? TONES.muted, PADDINGS[props.padding] ?? PADDINGS.md]);
 const hasHeader = computed(() => !!props.title || !!slots.title || !!slots['header-actions']);
 </script>
 

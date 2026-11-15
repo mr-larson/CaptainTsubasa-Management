@@ -212,7 +212,7 @@ const { root: seasonProgressRoot, value: animatedSeasonProgress, width: seasonPr
         <!-- ============================================ -->
         <!-- LIGNE 1 : Contexte + progression saison      -->
         <!-- ============================================ -->
-        <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+        <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 shadow-card">
             <div class="flex flex-wrap items-center justify-between gap-4 mb-3">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl overflow-hidden shrink-0">
@@ -476,7 +476,7 @@ const { root: seasonProgressRoot, value: animatedSeasonProgress, width: seasonPr
         <!-- ============================================ -->
         <!-- LIGNE 4 : Forces face à face                -->
         <!-- ============================================ -->
-        <div ref="forcesRoot" class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+        <div ref="forcesRoot" class="border border-slate-200 rounded-xl bg-slate-50 p-4 shadow-card">
             <div class="flex items-center justify-between gap-2 mb-3">
                 <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider truncate">{{ team?.name ?? 'Mon équipe' }}</h4>
                 <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider shrink-0">Forces</h4>

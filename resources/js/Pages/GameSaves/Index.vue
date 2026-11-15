@@ -37,7 +37,7 @@ const formatDate = (value) => {
                 <div class="hidden md:block basis-1/3 mt-8 p-4 bg-contain bg-center bg-no-repeat bg-[url('/images/Jun_Misugi.webp')]"></div>
 
                 <!-- Carte -->
-                <div class="basis-full md:basis-2/3 mt-4 md:mt-8 p-4 sm:p-6 border border-slate-200 rounded-2xl mx-0 md:mx-6 bg-white min-h-[500px] flex flex-col shadow-sm">
+                <div class="basis-full md:basis-2/3 mt-4 md:mt-8 p-4 sm:p-6 border border-slate-200 rounded-2xl mx-0 md:mx-6 bg-white min-h-[500px] flex flex-col shadow-card">
 
                     <!-- Header -->
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">

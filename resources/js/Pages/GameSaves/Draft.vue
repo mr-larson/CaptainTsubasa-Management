@@ -493,7 +493,7 @@ onMounted(() => {
                         <!-- ══════ COL CENTRALE + DROITE : Joueurs ══════ -->
                         <div class="col-span-1 flex min-w-0 flex-col lg:col-span-9">
 
-                            <div class="mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-xl border border-slate-200 bg-white px-4 py-3">
+                            <div class="mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-card">
                                 <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                                     <h1 class="text-sm font-bold text-slate-700">
                                         Tour {{ draft?.round ?? 1 }} — Pick {{ (draft?.current_pick_index ?? 0) + 1 }} / {{ draft?.order?.length ?? 0 }}
@@ -570,7 +570,7 @@ onMounted(() => {
                                                 <p v-if="inspectedPlayer.description" class="mt-2 text-xs italic text-slate-500">{{ inspectedPlayer.description }}</p>
                                             </template>
                                         </PlayerIdentityCard>
-                                        <div class="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white p-3 text-xs">
+                                        <div class="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white p-3 text-xs shadow-card">
                                             <span>Moral <strong :class="moraleState(inspectedPlayer.morale).text">{{ inspectedPlayer.morale ?? 60 }}/100</strong></span>
                                             <span>Coût draft <strong class="text-teal-700">{{ draftCost(inspectedPlayer) }} <GameBanknote /></strong></span>
                                             <ButtonPrimary type="button" size="sm" :disabled="isProcessing || !canAfford(inspectedPlayer)" @click="pickPlayer(inspectedPlayer)">
@@ -611,7 +611,7 @@ onMounted(() => {
         <Modal :show="!!rosterModalTeam" max-width="2xl" @close="rosterModalTeamId = null"
                :title="`${rosterModalTeam?.name ?? ''} · ${rosterModalPicks.length} joueur${rosterModalPicks.length > 1 ? 's' : ''} pioché${rosterModalPicks.length > 1 ? 's' : ''}`">
                 <div v-if="rosterModalPicks.length" class="grid gap-3 sm:grid-cols-2">
-                    <div class="max-h-[55vh] space-y-1 overflow-y-auto rounded-xl border border-slate-200 bg-slate-50 p-2">
+                    <div class="max-h-[55vh] space-y-1 overflow-y-auto rounded-xl border border-slate-200 bg-slate-50 p-2 shadow-card">
                         <button v-for="pick in rosterModalPicks" :key="pick.player_id" type="button"
                                 class="block w-full rounded-lg border px-2 py-2 text-left text-xs"
                                 :class="rosterModalPick?.player_id === pick.player_id ? 'border-teal-300 bg-teal-50' : 'border-slate-300 bg-white hover:border-slate-300'"

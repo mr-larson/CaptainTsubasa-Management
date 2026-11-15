@@ -164,15 +164,15 @@ function resetDefaults() {
 
                 <!-- Compteurs -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div class="border border-slate-200 rounded-xl bg-white p-3 flex flex-col items-center gap-1">
+                    <div class="border border-slate-200 rounded-xl bg-white p-3 flex flex-col items-center gap-1 shadow-card">
                         <span class="text-2xl font-black text-slate-700">{{ stats.playersCount ?? '—' }}</span>
                         <span class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Joueurs</span>
                     </div>
-                    <div class="border border-slate-200 rounded-xl bg-white p-3 flex flex-col items-center gap-1">
+                    <div class="border border-slate-200 rounded-xl bg-white p-3 flex flex-col items-center gap-1 shadow-card">
                         <span class="text-2xl font-black text-slate-700">{{ stats.teamsCount ?? '—' }}</span>
                         <span class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Équipes</span>
                     </div>
-                    <div class="border border-slate-200 rounded-xl bg-white p-3 flex flex-col items-center gap-1">
+                    <div class="border border-slate-200 rounded-xl bg-white p-3 flex flex-col items-center gap-1 shadow-card">
                         <span class="text-2xl font-black text-slate-700">{{ stats.activeContractsCount ?? '—' }}</span>
                         <span class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Contrats actifs</span>
                     </div>

@@ -56,7 +56,7 @@
                 </template>
 
                 <!-- FICHE JOUEUR -->
-                <div v-show="activePanel === 'player'" class="bg-slate-50 rounded-xl p-4 sm:p-6">
+                <div v-show="activePanel === 'player'" class="bg-slate-50 rounded-xl p-4 sm:p-6 shadow-card">
                     <form @submit.prevent="submit">
                         <PlayerStatsPreview v-if="form.id" :player-id="form.id" :stats="form" />
 
@@ -69,14 +69,14 @@
                 </div>
 
                 <!-- COUPS SPÉCIAUX (enregistrés avec la fiche du joueur) -->
-                <div v-show="activePanel === 'moves'" class="bg-slate-50 rounded-xl p-4 sm:p-6">
+                <div v-show="activePanel === 'moves'" class="bg-slate-50 rounded-xl p-4 sm:p-6 shadow-card">
                     <form @submit.prevent="submit">
                         <SpecialMovesEditor v-model="form.special_moves" :errors="form.errors" />
                     </form>
                 </div>
 
                 <!-- CONTRAT -->
-                <div v-show="activePanel === 'contract'" class="bg-slate-50 rounded-xl p-4 sm:p-6">
+                <div v-show="activePanel === 'contract'" class="bg-slate-50 rounded-xl p-4 sm:p-6 shadow-card">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-lg font-semibold text-slate-700">Contrat</h2>
                         <button v-if="!contract" type="button" @click="startNewContract"

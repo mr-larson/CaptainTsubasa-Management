@@ -136,7 +136,7 @@ const hasStarters = computed(() => sides.value.some(s => s.starters.length));
 </script>
 
 <template>
-    <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+    <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 shadow-card">
         <div v-if="hasStarters" class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div v-for="s in sides" :key="s.side" class="min-w-0">
                 <!-- En-tête d'équipe -->

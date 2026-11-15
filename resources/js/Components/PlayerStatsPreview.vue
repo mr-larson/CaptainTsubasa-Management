@@ -19,7 +19,7 @@ const { root, value: animatedValue, width: animatedWidth } = useAnimatedStats(
 </script>
 
 <template>
-    <div ref="root" v-if="bars.length" class="mb-4 border border-slate-200 rounded-xl bg-white p-3">
+    <div ref="root" v-if="bars.length" class="mb-4 border border-slate-200 rounded-xl bg-white p-3 shadow-card">
         <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Aperçu des statistiques</h4>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1.5">
             <div v-for="stat in bars" :key="stat.key" class="flex items-center gap-2">

@@ -46,7 +46,7 @@ const verdictOutcomeLabel = (o) => ({
     <div class="flex flex-col gap-4">
 
         <!-- ÉTAT LIVE : mandat de la saison en cours (uniquement en partie) -->
-        <div v-if="career" class="border rounded-xl bg-white p-4"
+        <div v-if="career" class="border rounded-xl bg-white p-4 shadow-card"
              :class="career.alert ? 'border-rose-300 ring-1 ring-rose-100' : 'border-slate-200'">
             <div class="flex items-center justify-between mb-3">
                 <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Objectif de la saison</h4>
@@ -105,7 +105,7 @@ const verdictOutcomeLabel = (o) => ({
         </div>
 
         <!-- Dernier verdict -->
-        <div v-if="lastVerdict" class="border border-slate-200 rounded-xl bg-white p-4">
+        <div v-if="lastVerdict" class="border border-slate-200 rounded-xl bg-white p-4 shadow-card">
             <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Dernier verdict (saison {{ lastVerdict.season }})</h4>
             <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600">
                 <span>Classé <strong>{{ lastVerdict.rank }}<sup>e</sup></strong> (objectif top {{ lastVerdict.target_rank }})</span>
@@ -120,7 +120,7 @@ const verdictOutcomeLabel = (o) => ({
         </div>
 
         <!-- Historique des saisons -->
-        <div v-if="careerHistory.length" class="border border-slate-200 rounded-xl bg-white p-4">
+        <div v-if="careerHistory.length" class="border border-slate-200 rounded-xl bg-white p-4 shadow-card">
             <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Historique des saisons</h4>
             <table class="w-full text-xs">
                 <thead class="border-b border-slate-200 text-2xs font-bold uppercase tracking-wider text-slate-400">
@@ -148,7 +148,7 @@ const verdictOutcomeLabel = (o) => ({
         </div>
 
         <!-- ====== LES PAGES DU JEU ====== -->
-        <div class="border border-slate-200 rounded-xl bg-white p-4">
+        <div class="border border-slate-200 rounded-xl bg-white p-4 shadow-card">
             <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3">Les pages du jeu</h4>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
                 <div v-for="p in PAGES" :key="p.title" class="flex gap-2.5">
@@ -162,7 +162,7 @@ const verdictOutcomeLabel = (o) => ({
         </div>
 
         <!-- ====== LA DRAFT ====== -->
-        <div class="border border-slate-200 rounded-xl bg-white p-4">
+        <div class="border border-slate-200 rounded-xl bg-white p-4 shadow-card">
             <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">🎯 La draft</h4>
             <p class="text-xs text-slate-600 mb-2">
                 En début de partie (et à chaque intersaison), les équipes se constituent en piochant à tour de rôle dans le pool de joueurs libres.
@@ -178,7 +178,7 @@ const verdictOutcomeLabel = (o) => ({
         </div>
 
         <!-- ====== LES MATCHS ====== -->
-        <div class="border border-slate-200 rounded-xl bg-white p-4">
+        <div class="border border-slate-200 rounded-xl bg-white p-4 shadow-card">
             <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">⚽ Les matchs</h4>
             <p class="text-xs text-slate-600 mb-2">
                 Les matchs se jouent en <strong>tours</strong> : à chaque action (duel, tir, arrêt…), les stats des joueurs concernés s'affrontent, modulées par le hasard, le moral et les cartes.
@@ -193,7 +193,7 @@ const verdictOutcomeLabel = (o) => ({
         </div>
 
         <!-- ====== OBJECTIFS DE CARRIÈRE (règles) ====== -->
-        <div class="border border-slate-200 rounded-xl bg-white p-4 flex flex-col gap-3">
+        <div class="border border-slate-200 rounded-xl bg-white p-4 flex flex-col gap-3 shadow-card">
             <div>
                 <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">🎖️ Objectifs de carrière</h4>
                 <p class="text-xs text-slate-600">
@@ -226,7 +226,7 @@ const verdictOutcomeLabel = (o) => ({
         </div>
 
         <!-- Barème par difficulté -->
-        <div class="border border-slate-200 rounded-xl bg-white p-4">
+        <div class="border border-slate-200 rounded-xl bg-white p-4 shadow-card">
             <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Niveaux de difficulté</h4>
             <table class="w-full text-xs">
                 <thead class="border-b border-slate-200 text-2xs font-bold uppercase tracking-wider text-slate-400">

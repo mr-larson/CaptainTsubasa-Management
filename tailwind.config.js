@@ -15,6 +15,9 @@ export default {
 
     theme: {
         extend: {
+            boxShadow: {
+                card: '0 2px 6px rgba(15, 23, 42, 0.05)',
+            },
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },

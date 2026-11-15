@@ -174,7 +174,7 @@ function submit() {
                 <div class="hidden md:block basis-1/4 p-4 bg-contain bg-center bg-no-repeat bg-[url('/images/Hyuga2.webp')]"></div>
 
                 <!-- Carte formulaire / config -->
-                <div class="basis-full md:basis-3/4 p-4 sm:p-6 border border-slate-200 rounded-2xl mx-0 md:mx-6 bg-white h-[calc(100vh-6rem)] md:h-[800px] flex flex-col shadow-sm overflow-hidden">
+                <div class="basis-full md:basis-3/4 p-4 sm:p-6 border border-slate-200 rounded-2xl mx-0 md:mx-6 bg-white h-[calc(100vh-6rem)] md:h-[800px] flex flex-col overflow-hidden shadow-card">
 
                     <!-- Header -->
                     <div class="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">

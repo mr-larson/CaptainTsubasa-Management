@@ -577,7 +577,7 @@ const saveGame = () => {
 
             <!-- Hot-seat multi-manager : indicateur de tour -->
             <div v-if="hotSeat" class="max-w-3xl w-full mx-auto mb-4 shrink-0">
-                <div class="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-teal-200 bg-teal-50">
+                <div class="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-teal-200 bg-teal-50 shadow-card">
                     <span class="text-xs font-bold text-teal-600 uppercase tracking-wider shrink-0">Hot-seat</span>
                     <div class="flex items-center gap-2 flex-wrap">
                         <span v-for="p in hotSeat.players" :key="p.game_team_id"
@@ -611,7 +611,7 @@ const saveGame = () => {
                 </div>
 
                 <!-- Carte principale -->
-                <div class="flex-1 min-w-0 min-h-0 p-3 sm:p-4 border border-slate-200 rounded-xl shadow-sm min-[1400px]:mx-6 bg-white flex flex-col overflow-hidden">
+                <div class="flex-1 min-w-0 min-h-0 p-3 sm:p-4 border border-slate-200 rounded-xl shadow-[0_3px_12px_rgba(15,23,42,0.08)] min-[1400px]:mx-6 bg-white flex flex-col overflow-hidden">
 
                     <!-- Onglets -->
                     <div class="-mx-3 -mt-3 sm:-mx-4 sm:-mt-4 mb-4 shrink-0">

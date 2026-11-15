@@ -43,7 +43,7 @@ function launch() {
         </template>
 
         <div class="p-2 sm:p-4">
-            <div class="border border-slate-200 rounded-2xl bg-white shadow-sm p-4 sm:p-6">
+            <div class="border border-slate-200 rounded-2xl bg-white p-4 sm:p-6 shadow-card">
 
                 <!-- Header -->
                 <div class="mb-6 flex flex-col sm:flex-row sm:items-start justify-between gap-4">

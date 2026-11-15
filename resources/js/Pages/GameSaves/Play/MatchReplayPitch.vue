@@ -454,7 +454,7 @@ onUnmounted(() => clearTimer());
         </div>
 
         <!-- Action en cours -->
-        <div class="min-h-[64px] rounded-xl border border-slate-200 bg-slate-50 p-3 flex items-start gap-3">
+        <div class="min-h-[64px] rounded-xl border border-slate-200 bg-slate-50 p-3 flex items-start gap-3 shadow-card">
             <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm shrink-0"
                  :class="resultBadgeClass(currentEvent)">
                 {{ actionIcon(currentEvent) }}

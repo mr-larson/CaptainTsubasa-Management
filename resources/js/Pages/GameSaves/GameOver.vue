@@ -87,7 +87,7 @@ const difficultyLabel = {
                 </div>
 
                 <!-- Saison interrompue (licenciement en cours de saison) -->
-                <div v-if="midSeason" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6">
+                <div v-if="midSeason" class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-card">
                     <div class="flex flex-wrap items-baseline justify-between gap-2 mb-4">
                         <h3 class="font-semibold text-slate-700">
                             Saison {{ finalSeason.season }} — {{ finalSeason.team }}

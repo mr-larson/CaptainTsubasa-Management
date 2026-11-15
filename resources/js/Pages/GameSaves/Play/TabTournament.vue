@@ -50,7 +50,7 @@ function score(match) {
         <!-- Poules -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div v-for="group in tournament.groups" :key="group.key"
-                 class="border border-slate-200 rounded-xl bg-white overflow-hidden">
+                 class="border border-slate-200 rounded-xl bg-white overflow-hidden shadow-card">
                 <div class="px-4 py-2.5 bg-slate-50 border-b border-slate-200 text-sm font-bold text-slate-700">
                     Groupe {{ group.key }}
                 </div>
@@ -95,7 +95,7 @@ function score(match) {
 
         <!-- Tableau final (bracket) -->
         <div v-if="semis.length || finale.length"
-             class="border border-slate-200 rounded-xl bg-white p-4">
+             class="border border-slate-200 rounded-xl bg-white p-4 shadow-card">
             <div class="text-sm font-bold text-slate-700 mb-3">Phase à élimination directe</div>
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
 

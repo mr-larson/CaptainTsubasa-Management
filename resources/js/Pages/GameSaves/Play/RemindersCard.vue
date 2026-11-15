@@ -23,7 +23,7 @@ const LEVEL_ROW = {
 </script>
 
 <template>
-    <div class="border border-slate-200 rounded-xl flex flex-col gap-3"
+    <div class="border border-slate-200 rounded-xl shadow-card flex flex-col gap-3"
          :class="inDashboard ? 'bg-slate-50 p-4' : 'bg-white p-3'">
         <div v-if="actions.length">
             <div class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Avant le match</div>

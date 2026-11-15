@@ -36,7 +36,7 @@ defineProps({
                 ></div>
 
                 <!-- CONTENU en deux colonnes -->
-                <div class="basis-full xl:basis-3/4 grid grid-cols-1 md:grid-cols-2 gap-4 bg-white shadow-sm border border-slate-200 rounded-xl">
+                <div class="basis-full xl:basis-3/4 grid grid-cols-1 md:grid-cols-2 gap-4 bg-white border border-slate-200 rounded-xl shadow-card">
 
                     <!-- Colonne gauche : Informations personnelles -->
                     <div class="p-6">
@@ -69,7 +69,7 @@ defineProps({
 
             <!-- Zone dangereuse en-dessous -->
             <div class="mt-10 mx-auto">
-                <div class="p-6 bg-rose-50 shadow-sm border border-rose-200 rounded-xl">
+                <div class="p-6 bg-rose-50 border border-rose-200 rounded-xl shadow-card">
                     <DeleteUserForm class="w-full" />
                 </div>
             </div>

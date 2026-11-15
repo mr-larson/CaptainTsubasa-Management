@@ -24,7 +24,7 @@ const emit = defineEmits(['change']);
 </script>
 
 <template>
-    <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 flex flex-col gap-3">
+    <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 flex flex-col gap-3 shadow-card">
         <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Formation</h3>
 
         <div v-if="readonly" class="text-2xl font-bold tracking-tight text-slate-700">

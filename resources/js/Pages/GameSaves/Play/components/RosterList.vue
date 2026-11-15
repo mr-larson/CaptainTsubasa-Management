@@ -84,7 +84,7 @@ const benchTitle = (p) => {
 </script>
 
 <template>
-    <div class="border border-slate-200 rounded-xl bg-slate-50 p-3 overflow-y-auto">
+    <div class="border border-slate-200 rounded-xl bg-slate-50 p-3 overflow-y-auto shadow-card">
         <h3 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">{{ title }}</h3>
         <div v-if="players.length" class="space-y-3">
             <div v-for="group in groupedPlayers" :key="group.key" class="space-y-1">

@@ -17,7 +17,7 @@ const { sanctionTypeLabel } = usePlayerUtils();
 
 <template>
     <div v-if="isPlayerInjured(player.id)"
-         class="border border-rose-200 rounded-xl bg-rose-50 px-4 py-2.5 flex items-center gap-2">
+         class="border border-rose-200 rounded-xl bg-rose-50 px-4 py-2.5 flex items-center gap-2 shadow-card">
         <span class="text-lg">🤕</span>
         <div>
             <div class="text-xs font-bold text-rose-700">Joueur blessé</div>
@@ -28,7 +28,7 @@ const { sanctionTypeLabel } = usePlayerUtils();
         </div>
     </div>
     <div v-else-if="isPlayerSuspended(player.id)"
-         class="border border-amber-200 rounded-xl bg-amber-50 px-4 py-2.5 flex items-center gap-2">
+         class="border border-amber-200 rounded-xl bg-amber-50 px-4 py-2.5 flex items-center gap-2 shadow-card">
         <span class="text-lg">🚫</span>
         <div>
             <div class="text-xs font-bold text-amber-700">Joueur suspendu</div>
@@ -42,7 +42,7 @@ const { sanctionTypeLabel } = usePlayerUtils();
         </div>
     </div>
     <div v-else-if="isPlayerBenched(player.id)"
-         class="border border-rose-300 rounded-xl bg-rose-50 px-4 py-2.5 flex items-center gap-2">
+         class="border border-rose-300 rounded-xl bg-rose-50 px-4 py-2.5 flex items-center gap-2 shadow-card">
         <span class="text-lg">⛔</span>
         <div>
             <div class="text-xs font-bold text-rose-700">Joueur consigné par l'adversaire</div>
