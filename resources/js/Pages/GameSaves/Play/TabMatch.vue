@@ -11,6 +11,7 @@ import PlayerPhoto from '@/Components/PlayerPhoto.vue';
 import MatchProgression from './components/MatchProgression.vue';
 import MatchPlayersTable from './components/MatchPlayersTable.vue';
 import MatchSheet from './components/MatchSheet.vue';
+import MatchStatBars from './components/MatchStatBars.vue';
 import { isGoalEvent, eventKind, eventIcon, eventOutcome } from './matchEvents.js';
 
 const props = defineProps({
@@ -304,12 +305,6 @@ const statBars = computed(() => {
         row('Arrêts',        teamSaves('home'), teamSaves('away')),
     ];
 });
-
-const statBarWidth = (val, other) => {
-    const total = val + other;
-    if (!total) return 50;
-    return Math.round((val / total) * 100);
-};
 
 // Stats joueur dans le match sélectionné
 const playerMatchStat = (playerId, path) => {
@@ -757,30 +752,9 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                         @show-player="showPlayer" />
 
             <!-- Barres comparatives équipes -->
-            <div v-show="detailTab === 'stats'" class="border border-slate-200 rounded-xl bg-slate-50 p-4 shadow-card">
-                <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-3">Comparatif équipes</h4>
-                <div class="space-y-2">
-                    <div v-for="bar in statBars" :key="bar.label">
-                        <div class="text-2xs text-slate-400 text-center mb-0.5">{{ bar.label }}</div>
-                        <div class="flex items-center gap-2">
-                            <div class="w-8 text-right text-xs font-black"
-                                 :class="bar.home > bar.away ? 'text-blue-600' : 'text-slate-500'">{{ bar.home }}</div>
-                            <div class="flex-1 h-2.5 bg-slate-100 rounded-full overflow-hidden flex">
-                                <div class="h-full bg-blue-500 transition-all"
-                                     :style="{ width: statBarWidth(bar.home, bar.away) + '%' }"></div>
-                                <div class="h-full bg-orange-400 transition-all"
-                                     :style="{ width: statBarWidth(bar.away, bar.home) + '%' }"></div>
-                            </div>
-                            <div class="w-8 text-left text-xs font-black"
-                                 :class="bar.away > bar.home ? 'text-orange-500' : 'text-slate-500'">{{ bar.away }}</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex justify-between mt-2 text-[11px] font-semibold">
-                    <span class="text-blue-600">🏠 {{ homeTeamName }}</span>
-                    <span class="text-orange-500">{{ awayTeamName }} ✈️</span>
-                </div>
-            </div>
+            <MatchStatBars v-if="detailTab === 'stats'"
+                           :bars="statBars" :match-id="selectedCalendarMatch.id"
+                           :home-team-name="homeTeamName" :away-team-name="awayTeamName" />
 
             <!-- ============================================ -->
             <!-- BLOC : Progression des joueurs               -->
