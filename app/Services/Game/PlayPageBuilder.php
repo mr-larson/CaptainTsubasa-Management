@@ -48,6 +48,7 @@ class PlayPageBuilder
         private TournamentService $tournament,
         private CareerObjectiveService $career,
         private SeasonChallengeService $seasonChallenges,
+        private \App\Services\Players\PlayerRequestService $playerRequests,
     ) {
     }
 
@@ -124,6 +125,8 @@ class PlayPageBuilder
             'moraleLogs'              => $morale['logs'],
             'playerPromises'          => $morale['promises'],
             'playerDeclarations'      => $morale['declarations'],
+            // Demandes des joueurs de l'équipe qui a la main, en attente de réponse.
+            'playerRequests'          => $this->playerRequests->pendingForTeam($gameSave, $controlledTeam?->id),
             'bonusCardOffers'         => $cards['offers'],
             'bonusCardInventory'      => $cards['inventory'],
             'sponsorChallenges'       => $cards['sponsorChallenges'],

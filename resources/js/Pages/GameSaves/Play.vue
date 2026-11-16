@@ -69,6 +69,7 @@ const props = defineProps({
     managementStats:    { type: Object, default: () => ({}) },
     moraleLogs:         { type: Object, default: () => ({}) },
     playerPromises:     { type: Object, default: () => ({}) },
+    playerRequests:     { type: Array,  default: () => [] },
     playerDeclarations: { type: Object, default: () => ({}) },
     hotSeat:            { type: Object, required: false, default: null },
     tournament:         { type: Object, required: false, default: null },
@@ -89,6 +90,17 @@ const makePromise = (player, type = 'playing_time') => {
         route('game-saves.players.promises.store', { gameSave: props.gameSave.id, player: player.id }),
         { type },
         { preserveScroll: true }
+    );
+};
+
+// Réponse à la demande d'un joueur — answer : accept | decline | rest | physio | play
+const respondingToRequest = ref(false);
+const respondToPlayerRequest = (request, answer) => {
+    respondingToRequest.value = true;
+    router.post(
+        route('game-saves.player-requests.respond', { gameSave: props.gameSave.id, playerRequest: request.id }),
+        { answer },
+        { preserveScroll: true, onFinish: () => { respondingToRequest.value = false; } }
     );
 };
 
@@ -426,6 +438,7 @@ const { actions: checklistActions, squad: checklistSquad } = usePreMatchChecklis
     freePlayersCount,
     isWorldCup,
     playerPromises:       () => props.playerPromises,
+    playerRequests:       () => props.playerRequests,
     sponsorChallenges:    () => props.sponsorChallenges,
     playerYellowCards:    () => playerYellowCards,
     suspensionOn3Yellows: () => props.gameConfig?.suspension_on_3_yellows !== false,
@@ -663,6 +676,9 @@ const saveGame = () => {
                                   @apply-advice="applyAdvice"
                                   :career="career"
                                   :seasonChallenges="seasonChallenges"
+                                  :playerRequests="props.playerRequests"
+                                  :respondingToRequest="respondingToRequest"
+                                  @respond-request="respondToPlayerRequest"
                                   :incomeModel="props.incomeModel"
                                   :trainingCost="props.gameConfig?.training_cost ?? 0"
                                   :maxTrainings="props.gameConfig?.training_max_per_week ?? 3"

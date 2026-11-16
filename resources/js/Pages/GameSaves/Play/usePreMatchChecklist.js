@@ -23,7 +23,7 @@ const plural = (n, word) => `${n} ${word}${n > 1 ? 's' : ''}`;
 export function usePreMatchChecklist({
     roster: roster_, lineupIssues, remainingTrainings, availableCards, unboughtCardsCount,
     freePlayersCount, isWorldCup, playerPromises, sponsorChallenges, playerYellowCards,
-    suspensionOn3Yellows, week, playerInjury, playerSuspension,
+    suspensionOn3Yellows, week, playerInjury, playerSuspension, playerRequests,
 }) {
     const playerById = computed(() =>
         Object.fromEntries((toValue(roster_) ?? []).map(p => [Number(p.id), p]))
@@ -70,6 +70,12 @@ export function usePreMatchChecklist({
             items.push({ key: 'training', level: 'action', tab: 'training',
                 text: `🏋️ ${plural(trainings, 'entraînement')} disponible${trainings > 1 ? 's' : ''}` });
         }
+
+        // Demandes des joueurs en attente : sans réponse, elles valent refus à la clôture.
+        (toValue(playerRequests) ?? []).forEach(request => {
+            items.push({ key: `rq${request.id}`, level: 'action', tab: 'dashboard',
+                text: `🙋 ${request.player_name} : ${request.title.toLowerCase()} à traiter` });
+        });
 
         items.push(...promiseItems.value);
 

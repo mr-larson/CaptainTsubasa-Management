@@ -65,7 +65,9 @@ class AITrainingService
             ->where('week_return', '>', $week)->pluck('game_player_id')
             ->merge(GameSanction::where('game_save_id', $gameSave->id)->where('week_return', '>', $week)
                 ->where('weeks_suspended', '>', 0)->pluck('game_player_id'))
-            ->merge(GamePositionTraining::unavailablePlayerIds($gameSave->id, $week))->all();
+            ->merge(GamePositionTraining::unavailablePlayerIds($gameSave->id, $week))
+            // Repos promis à un joueur (demande acceptée) : pas d'entraînement cette semaine.
+            ->merge(\App\Services\Players\PromiseService::restingPlayerIds($gameSave, (int) $week))->all();
 
         // Toutes les équipes de la save
         $allTeams = GameTeam::where('game_save_id', $gameSave->id)

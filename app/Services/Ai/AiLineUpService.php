@@ -94,6 +94,8 @@ class AiLineUpService
         $unavailableIds = array_unique(array_merge(
             $injuredIds, $suspendedIds,
             GamePositionTraining::unavailablePlayerIds($gameSave->id, $currentWeek),
+            // Repos promis à un joueur (demande acceptée) : l'IA tient parole.
+            \App\Services\Players\PromiseService::restingPlayerIds($gameSave, (int) $currentWeek),
         ));
 
         $aiTeams = GameTeam::where('game_save_id', $gameSave->id)

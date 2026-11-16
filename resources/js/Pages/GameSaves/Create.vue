@@ -89,6 +89,7 @@ const config = reactive({
     season_challenges_enabled: true,
     bonus_cards_enabled: true,
     malus_cards_enabled: true,
+    player_requests_enabled: true,
     match_stamina_cost: 5,
     rest_stamina_recovery: 10,
     match_max_turns: 30,
@@ -455,6 +456,11 @@ function submit() {
                                            :disabled="!config.bonus_cards_enabled"
                                            class="rounded border-slate-300 text-teal-500 focus:ring-teal-400 disabled:opacity-40" />
                                     Cartes malus
+                                </label>
+                                <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                                    <input type="checkbox" v-model="config.player_requests_enabled"
+                                           class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
+                                    Demandes des joueurs
                                 </label>
                             </div>
                         </div>

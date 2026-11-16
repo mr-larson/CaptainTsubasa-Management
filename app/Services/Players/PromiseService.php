@@ -52,13 +52,26 @@ class PromiseService
         'rest'         => ['window' => 1, 'target' => 0,                'kept' => 5,  'broken' => -10],
     ];
 
+    /**
+     * Barème des promesses issues d'une demande du joueur, en [moral, relation coach].
+     * player  = demande acceptée (congé, temps de jeu) ; ailment = repos accordé pour
+     * un souci physique. Rompues, elles coûtent plus cher qu'un refus d'emblée
+     * (cf. PlayerRequestService::DECLINE) et qu'une promesse spontanée du coach.
+     */
+    const ORIGIN_DELTAS = [
+        'player'  => ['kept' => [5, 5], 'broken' => [-12, -12]],
+        'ailment' => ['kept' => [2, 4], 'broken' => [-12, -12]],
+    ];
+
     const AFFINITY_MIN = -100;
     const AFFINITY_MAX = 100;
 
     /**
      * Crée une promesse. Retourne le modèle, ou un message d'erreur (string).
+     * $origin : coach (promesse spontanée), player (demande du joueur acceptée) ou
+     * ailment (repos accordé pour un souci physique).
      */
-    public function create(GameSave $gameSave, GamePlayer $player, int $teamId, string $type = 'playing_time'): GamePromise|string
+    public function create(GameSave $gameSave, GamePlayer $player, int $teamId, string $type = 'playing_time', string $origin = 'coach'): GamePromise|string
     {
         $config = self::TYPES[$type] ?? null;
         if (!$config) {
@@ -81,6 +94,7 @@ class PromiseService
             'game_player_id' => $player->id,
             'game_team_id'   => $teamId,
             'type'           => $type,
+            'origin'         => $origin,
             'start_week'     => $week,
             'due_week'       => $week + $config['window'] - 1,
             'target_matches' => $config['target'] ?? 0,
@@ -170,10 +184,10 @@ class PromiseService
             'played_turns'   => $playedTurns,
         ]);
 
-        $delta = $this->delta($promise->type, $kept);
+        [$delta, $affinityDelta] = $this->deltas($promise, $kept);
 
         $player->coach_affinity = max(self::AFFINITY_MIN, min(self::AFFINITY_MAX,
-            (int) $player->coach_affinity + $delta
+            (int) $player->coach_affinity + $affinityDelta
         ));
         $player->morale = max(0, min(100, (int) $player->morale + $delta));
         $player->save();
@@ -192,13 +206,41 @@ class PromiseService
     }
 
     /**
-     * Delta relation/moral d'une promesse résolue selon son type.
+     * Deltas [moral, relation coach] d'une promesse résolue : barème de son origine si
+     * elle vient d'une demande du joueur, sinon barème de son type (même valeur pour les deux).
+     *
+     * @return array{0: int, 1: int}
      */
-    private function delta(string $type, bool $kept): int
+    private function deltas(GamePromise $promise, bool $kept): array
     {
-        $config = self::TYPES[$type] ?? self::TYPES['starter'];
+        $byOrigin = self::ORIGIN_DELTAS[$promise->origin ?? 'coach'] ?? null;
+        if ($byOrigin !== null) {
+            return $byOrigin[$kept ? 'kept' : 'broken'];
+        }
 
-        return $kept ? $config['kept'] : $config['broken'];
+        $config = self::TYPES[$promise->type] ?? self::TYPES['starter'];
+        $delta  = $kept ? $config['kept'] : $config['broken'];
+
+        return [$delta, $delta];
+    }
+
+    /**
+     * Joueurs à qui un repos est promis pour la semaine donnée (promesses « rest » en
+     * cours) : l'IA les écarte de sa composition et de ses entraînements pour tenir parole.
+     *
+     * @return array<int>
+     */
+    public static function restingPlayerIds(GameSave $gameSave, int $week): array
+    {
+        return GamePromise::where('game_save_id', $gameSave->id)
+            ->where('season', (int) ($gameSave->season ?? 1))
+            ->where('type', 'rest')
+            ->where('status', PromiseStatus::Pending)
+            ->where('start_week', '<=', $week)
+            ->where('due_week', '>=', $week)
+            ->pluck('game_player_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
     }
 
     /** Repos : tenue si le joueur n'a joué aucun tour ni été entraîné ou formé pendant la semaine de la promesse. Résolue à l'échéance, null avant. */

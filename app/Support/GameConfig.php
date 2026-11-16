@@ -23,6 +23,7 @@ final class GameConfig
     public const DEFAULTS = [
         'bonus_cards_enabled'       => true,
         'malus_cards_enabled'       => true,
+        'player_requests_enabled'   => true,
         'match_stamina_cost'        => 5,
         'rest_stamina_recovery'     => 10,
         'match_max_turns'           => 30,
@@ -153,6 +154,7 @@ final class GameConfig
         $rules = [
             'bonus_cards_enabled'     => ['boolean'],
             'malus_cards_enabled'     => ['boolean'],
+            'player_requests_enabled' => ['boolean'],
             'match_stamina_cost'      => ['integer', 'min:0', 'max:20'],
             'rest_stamina_recovery'   => ['integer', 'min:0', 'max:30'],
             'match_max_turns'         => ['integer', 'min:10', 'max:80'],

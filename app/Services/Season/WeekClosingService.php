@@ -16,6 +16,7 @@ use App\Services\Cards\BonusCardShopService;
 use App\Services\Matches\MatchSimulator;
 use App\Services\Players\MoraleService;
 use App\Services\Players\PlayerChemistryService;
+use App\Services\Players\PlayerRequestService;
 use App\Services\Players\PromiseService;
 use App\Services\Players\StaminaService;
 use App\Services\Training\PositionTrainingService;
@@ -57,6 +58,7 @@ class WeekClosingService
         private AiCoachService $aiCoachService,
         private PlayerChemistryService $playerChemistryService,
         private CareerObjectiveService $careerObjectiveService,
+        private PlayerRequestService $playerRequestService,
     ) {
     }
     /** Résultats possibles de close() : continuer à jouer, fin de partie (licenciement ou victoire), fin de saison. */
@@ -117,6 +119,8 @@ class WeekClosingService
         if ($malusEnabled) {
             $activation->consumeMalusForPlayedWeek($gameSave, $week);
         }
+        // Demandes des joueurs restées sans réponse : traitées comme un refus.
+        $this->playerRequestService->expireForWeek($gameSave, $week);
         $this->promiseService->evaluateForWeek($gameSave, $week);
         $this->contractDepartureService->resolveForWeek($gameSave, $week);
 
@@ -142,6 +146,7 @@ class WeekClosingService
         // 6. Coupe du Monde : progression du tournoi au lieu de la fin de saison.
         if ($gameSave->isWorldCup()) {
             $this->tournamentService->advance($gameSave);
+            $this->playerRequestService->generateForWeek($gameSave);
             $this->aiFormationTrainingService->planForWeek($gameSave);
             $this->aiCoachService->prepareForWeek($gameSave, $week);
             $this->playerChemistryService->attemptForAiTeams($gameSave);
@@ -160,6 +165,9 @@ class WeekClosingService
             return self::OUTCOME_SEASON_END;
         }
 
+        // Nouvelles demandes des joueurs pour la semaine qui s'ouvre (avant les promesses
+        // spontanées de l'IA : un joueur déjà servi n'en reçoit pas une seconde).
+        $this->playerRequestService->generateForWeek($gameSave);
         $this->aiFormationTrainingService->planForWeek($gameSave);
         $this->aiCoachService->prepareForWeek($gameSave, $week);
         $this->playerChemistryService->attemptForAiTeams($gameSave);

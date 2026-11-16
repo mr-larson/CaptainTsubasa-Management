@@ -143,6 +143,9 @@ class MoraleService
             ->pluck('player_id')
             ->flip();
 
+        // Repos promis cette semaine : ne pas jouer est justement ce qui était convenu.
+        $restingIds = array_flip(PromiseService::restingPlayerIds($gameSave, $week));
+
         $teams = GameTeam::where('game_save_id', $gameSave->id)
             ->with(['contracts' => fn($q) => $q->activeAt($week)->with('gamePlayer')])
             ->get();
@@ -191,7 +194,7 @@ class MoraleService
                                 'value'  => $contract->is_starter ? self::PLAYED_STARTER_DELTA : self::PLAYED_BENCH_DELTA,
                                 'label'  => 'A joué contre ' . $context['opponent'],
                             ];
-                        } elseif (!$trainedIds->has($player->id) && !isset($benchedByMalus[$player->id])) {
+                        } elseif (!$trainedIds->has($player->id) && !isset($benchedByMalus[$player->id]) && !isset($restingIds[$player->id])) {
                             $events[] = [
                                 'source' => MoraleSource::PlayingTime,
                                 'value'  => $contract->is_starter ? self::MISSED_STARTER_DELTA : self::MISSED_BENCH_DELTA,

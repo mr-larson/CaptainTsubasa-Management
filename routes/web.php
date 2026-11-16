@@ -8,6 +8,7 @@ use App\Http\Controllers\GameSaves\GameSeasonController;
 use App\Http\Controllers\GameSaves\GameMatchController;
 use App\Http\Controllers\GameSaves\GamePlayerController;
 use App\Http\Controllers\GameSaves\GameDeclarationController;
+use App\Http\Controllers\GameSaves\GamePlayerRequestController;
 use App\Http\Controllers\GameSaves\GamePromiseController;
 use App\Http\Controllers\GameSaves\GamePlayerChemistryController;
 use App\Http\Controllers\GameSaves\FreeAgentController;
@@ -237,6 +238,10 @@ Route::middleware('auth')->group(function () {
         // Promesses (relation coach)
         Route::post('/{gameSave}/players/{player}/promises',
             [GamePromiseController::class, 'store'])->name('players.promises.store');
+
+        // Demandes des joueurs (congé, temps de jeu, souci physique)
+        Route::post('/{gameSave}/player-requests/{playerRequest}/respond',
+            [GamePlayerRequestController::class, 'respond'])->name('player-requests.respond');
 
         // Déclarations publiques (relation coach)
         Route::post('/{gameSave}/players/{player}/declarations',

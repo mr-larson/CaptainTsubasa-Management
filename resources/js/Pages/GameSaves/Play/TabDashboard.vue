@@ -10,6 +10,7 @@ import DashboardSeasonCards from "@/Pages/GameSaves/Play/components/DashboardSea
 import AssistantAdviceCard from "@/Pages/GameSaves/Play/components/AssistantAdviceCard.vue";
 import { useSeasonTrajectory } from "@/Pages/GameSaves/Play/useSeasonTrajectory.js";
 import SeasonChallengesCard from "@/Pages/GameSaves/Play/components/SeasonChallengesCard.vue";
+import PlayerRequestsCard from "@/Pages/GameSaves/Play/components/PlayerRequestsCard.vue";
 
 const props = defineProps({
     gameSave:      { type: Object, required: true },
@@ -36,13 +37,15 @@ const props = defineProps({
     playerSeasonStats:  { type: Object,  default: () => ({}) },
     career:             { type: Object,  default: null },
     seasonChallenges:   { type: Object,  default: null },
+    playerRequests:     { type: Array,   default: () => [] },
+    respondingToRequest: { type: Boolean, default: false },
     advice:             { type: Array,   default: () => [] },
     incomeModel:        { type: Object,  default: null },
     trainingCost:       { type: Number,  default: 0 },
     maxTrainings:       { type: Number,  default: 3 },
 });
 
-const emit = defineEmits(['play-next-match', 'simulate-match', 'simulate-week', 'save-game', 'quit', 'change-tab', 'open-player', 'apply-advice']);
+const emit = defineEmits(['play-next-match', 'simulate-match', 'simulate-week', 'save-game', 'quit', 'change-tab', 'open-player', 'apply-advice', 'respond-request']);
 
 // Guide « Comment jouer » dans un nouvel onglet, pour ne pas quitter la partie.
 const openHelp = () => window.open(route('guide') + '#preparer', '_blank', 'noopener');
@@ -519,6 +522,12 @@ const { root: seasonProgressRoot, value: animatedSeasonProgress, width: seasonPr
                 <p v-if="opponentTeam && !isByeWeek" class="text-xs text-slate-500 italic leading-relaxed line-clamp-2 sm:text-right">{{ opponentTeam.description }}</p>
             </div>
         </div>
+
+        <!-- Demandes des joueurs en attente de réponse -->
+        <PlayerRequestsCard v-if="playerRequests.length" :requests="playerRequests" :budget="teamBudget"
+                            :processing="respondingToRequest"
+                            @respond="(request, answer) => emit('respond-request', request, answer)"
+                            @open-player="id => { const p = roster.find(x => Number(x.id) === Number(id)); if (p) emit('open-player', p); }" />
 
         <!-- Défis de la saison (second classement, sans effet sur le championnat) -->
         <SeasonChallengesCard v-if="seasonChallenges?.objectives?.length" :challenges="seasonChallenges" />

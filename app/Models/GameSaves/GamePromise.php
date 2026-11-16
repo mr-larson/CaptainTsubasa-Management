@@ -21,6 +21,7 @@ class GamePromise extends Model
         'game_player_id',
         'game_team_id',
         'type',
+        'origin',
         'start_week',
         'due_week',
         'target_matches',
