@@ -11,6 +11,38 @@
    ========================================================================== */
 #field-wrapper { min-height: 0; }
 
+/* Desktop: grow the pitch with the screen, while reserving room for score and actions.
+   Container units keep both side panels sized against the actual game width. */
+#game-wrapper {
+    max-width: 1500px;
+    container-type: inline-size;
+}
+@media (min-width: 1024px) {
+    #game-wrapper {
+        max-width: min(2200px, max(1120px, calc((100dvh - 420px) * 1.666667 + 632px)));
+    }
+    #main-row {
+        --side-width: clamp(220px, 15cqw, 300px);
+        --pitch-height: calc((100cqw - 2 * var(--side-width) - 32px) * 0.6);
+        grid-template-columns: var(--side-width) minmax(0, 1fr) var(--side-width);
+        gap: 16px;
+    }
+    #left-column, #field-wrapper, #right-column { grid-column: auto; }
+    #left-column {
+        max-height: var(--pitch-height);
+        overflow-y: auto;
+        justify-content: flex-start;
+        scrollbar-width: thin;
+    }
+    #home-card, #away-card { flex-shrink: 0; }
+    #game-wrapper .player {
+        width: clamp(35px, 2.1cqw, 44px);
+        height: clamp(35px, 2.1cqw, 44px);
+        font-size: clamp(12px, 0.75cqw, 15px);
+    }
+    #top-bar > div { padding-top: 16px; padding-bottom: 16px; }
+}
+
 /* ==========================================================================
    TERRAIN
    ========================================================================== */

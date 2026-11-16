@@ -6,7 +6,7 @@
         <LoadingOverlay :show="submittingResult" message="Enregistrement du match et fin de semaine…" />
 
         <div class="w-full px-4 lg:px-8 mt-4">
-            <div id="game-wrapper" ref="gameRoot" :inert="showPreMatch ? '' : undefined" class="mx-auto w-full max-w-[1500px]">
+            <div id="game-wrapper" ref="gameRoot" :inert="showPreMatch ? '' : undefined" class="mx-auto w-full">
 
                 <!-- =======================================================
                      TOP BAR : score (2/3) + control panel (1/3)
@@ -264,7 +264,7 @@
                     <div id="field-wrapper" class="lg:col-span-6 min-w-0 relative">
                         <div id="ai-turn-overlay">L'adversaire réfléchit…</div>
 
-                        <div id="field" class="lg:min-h-full">
+                        <div id="field">
                             <div id="border-rect" class="pitch-line"></div>
                             <div id="halfway-line" class="pitch-line"></div>
                             <div id="center-circle"></div>
@@ -316,7 +316,7 @@
 
                     <!-- RIGHT : log -->
                     <!-- RIGHT : log -->
-                    <div class="lg:col-span-2 min-w-0 min-h-0 max-h-[55vh] lg:max-h-none flex flex-col lg:relative">
+                    <div id="right-column" class="lg:col-span-2 min-w-0 min-h-0 max-h-[55vh] lg:max-h-none flex flex-col lg:relative">
                         <div
                             id="log-card"
                             class="w-full flex-1 min-h-0 rounded-2xl bg-white p-3 shadow-lg ring-1 ring-white/80 text-[11px] flex flex-col gap-2 lg:absolute lg:inset-0"
