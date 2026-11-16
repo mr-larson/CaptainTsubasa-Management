@@ -22,6 +22,10 @@ export const DUEL_RULES = {
     GOOD_COUNTER_BONUS: 2,
     GENERIC_ATTACK_BONUS: 2,
     SHOT_DISTANCE_PENALTY_PER_LINE: 1,
+    // Léger avantage sur la passe qui suit un dribble : le défenseur a été éliminé.
+    //  - décalage : un non-attaquant a dribblé jusqu'à la ligne d'attaque et sert un attaquant à sa hauteur ;
+    //  - retrait  : le porteur a dribblé la défense (face au gardien) et remet en retrait.
+    DRIBBLE_LAYOFF_FACTOR: 1.05,
 };
 
 // ==========================

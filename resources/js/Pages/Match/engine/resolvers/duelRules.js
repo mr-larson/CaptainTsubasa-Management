@@ -1,6 +1,27 @@
 // resources/js/Pages/Match/engine/resolvers/duelRules.js
 // Règles pierre-feuille-ciseaux des duels (bon contre, bonus).
-import { DUEL_RULES, TEXTS } from '../constants.js';
+import { DUEL_RULES, MAX_ZONE_INDEX, TEXTS } from '../constants.js';
+
+// -----------------------------------------------------------
+//   Passe après dribble (léger avantage au passeur)
+// -----------------------------------------------------------
+/**
+ * Avantage de la passe qui suit un dribble réussi. Retourne `null` (aucun avantage) ou
+ * `{ kind, label, factor }` :
+ *  - "backPass" : passe en retrait depuis le face-à-face avec le gardien (la défense a été dribblée) ;
+ *  - "sameLine" : un joueur qui n'est pas attaquant vient de dribbler jusqu'à la ligne d'attaque
+ *    de son équipe et sert un attaquant à sa hauteur.
+ * Seule la passe simple est concernée (les passes spéciales gardent leur propre calcul).
+ */
+export function dribbleLayoffBonus({ attackType, isBackPass = false, carrierRole = null, justDribbled = false, zoneIndex = 0, hasForwardOnLine = false }) {
+    if (attackType !== "pass") return null;
+    const factor = DUEL_RULES.DRIBBLE_LAYOFF_FACTOR;
+    if (isBackPass) return { kind: "backPass", label: "Passe en retrait", factor };
+    if (justDribbled && carrierRole !== "FW" && zoneIndex === MAX_ZONE_INDEX && hasForwardOnLine) {
+        return { kind: "sameLine", label: "Décalage (dribble)", factor };
+    }
+    return null;
+}
 
 // -----------------------------------------------------------
 //   RPS

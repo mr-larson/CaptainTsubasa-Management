@@ -2,7 +2,8 @@
 // Contexte partagé et helpers communs (positions, animations, enregistrement des duels).
 import { FIELD_RULES, TEXTS } from '../constants.js';
 import { runAfterDiceAnimation } from '../dice.js';
-import { applyBallMotion, isGoalkeeperId, pickWeightedPlayerInZone, setBallToKeeperVisual } from '../field.js';
+import { applyBallMotion, getCarrierElement, getPlayerId, isGoalkeeperId, pickWeightedPlayerInZone, setBallToKeeperVisual } from '../field.js';
+import { dribbleLayoffBonus } from './duelRules.js';
 import { setMessage } from '../ui.js';
 
 // Dépendances injectées par initResolversModule (resolvers.js), partagées par
@@ -38,6 +39,33 @@ export function afterFieldDuel(duel, callback) {
         return;
     }
     resume(duel);
+}
+
+/**
+ * Avantage « passe après dribble » pour le porteur actuel (cf. dribbleLayoffBonus) : lit l'état
+ * du match (passe en retrait demandée, dernier dribbleur, zone du ballon) et vérifie qu'un
+ * attaquant disponible se trouve bien sur la ligne. À appeler avant resetLastDribbler().
+ */
+export function currentDribbleLayoff(attackTeam, attackType) {
+    const b = ball();
+    const hasForwardOnLine = () => {
+        for (let slot = 2; slot <= 11; slot++) {
+            if (slot === b.number || shared.roster.getSlotRole(attackTeam, slot) !== "FW") continue;
+            const el = getCarrierElement(attackTeam, slot);
+            if (el && !el.classList.contains("unavailable")) return true;
+        }
+        return false;
+    };
+    const justDribbled = !!shared.state.lastDribblerId
+        && shared.state.lastDribblerId === getPlayerId(attackTeam, b.number);
+    return dribbleLayoffBonus({
+        attackType,
+        isBackPass: !!shared.state.backPass,
+        carrierRole: shared.roster.getSlotRole(attackTeam, b.number),
+        justDribbled,
+        zoneIndex: b.zoneIndex,
+        hasForwardOnLine: justDribbled && hasForwardOnLine(),
+    });
 }
 
 export function resetLastDribbler() {

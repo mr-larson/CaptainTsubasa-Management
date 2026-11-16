@@ -4,7 +4,7 @@ import { MAX_ZONE_INDEX, TEXTS, laneY } from '../constants.js';
 import { getCarrierElement, getPlayerXInternal, pickReceiverInCell } from '../field.js';
 import { pushLogEntry, setMessage, syncRecovererCard } from '../ui.js';
 import { playPlayerAnimation } from '../playerAnim.js';
-import { afterFieldDuel, givePossessionOnTie, _moveBall, ball, shared, resetLastDribbler, restoreBasePositions } from './context.js';
+import { afterFieldDuel, givePossessionOnTie, _moveBall, ball, shared, resetLastDribbler, restoreBasePositions, currentDribbleLayoff } from './context.js';
 import { defenseTag, getCounterTag, getLogTitleForDuel } from './duelRules.js';
 
 import { runFieldDuel } from './fieldDuel.js';
@@ -22,9 +22,11 @@ export function resolvePass(attackTeam, defenseTeam, defenseAction, defenderPick
 
     const duel = runFieldDuel({ attackTeam, defenseTeam, attackType, defenseAction, defenderPick, specialAction: "pass" });
     afterFieldDuel(duel, result => {
-        if (shared.state.pendingFreeKick) { startFreeKick(); return; }
+        if (shared.state.pendingFreeKick) { shared.state.backPass = false; startFreeKick(); return; }
 
         if (result.isTie) {
+            // La passe en retrait n'a pas abouti : ne pas la reporter sur la passe suivante.
+            shared.state.backPass = false;
             givePossessionOnTie(defenseTeam, result.defenderId);
             pushLogEntry(
                 isSpecial ? "Duel équilibré (passe spéciale)" : "Duel équilibré (passe)",
@@ -62,6 +64,9 @@ export function continuePass(attackTeam, defenseTeam, attackType, defenseAction,
 
     // Passe en retrait (depuis un face-à-face avec le gardien) : vers un partenaire
     // une zone plus bas, sans contrainte « vers l'avant ».
+    // Décalage : le dribbleur arrivé sur la ligne d'attaque sert un attaquant à sa hauteur
+    // (à lire avant resetLastDribbler et avant de consommer backPass).
+    const isSameLine = currentDribbleLayoff(attackTeam, attackType)?.kind === "sameLine";
     const isBackPass = !!shared.state.backPass;
     shared.state.backPass = false;
 
@@ -85,7 +90,7 @@ export function continuePass(attackTeam, defenseTeam, attackType, defenseAction,
         const carrierEl        = getCarrierElement(attackTeam, b.number);
         const carrierXInternal = carrierEl ? getPlayerXInternal(attackTeam, carrierEl) : null;
         const receiver = pickReceiverInCell(attackTeam, targetZone, targetLane, b.number, b.number,
-            isBackPass
+            isBackPass || isSameLine
                 ? { ignoreLaneForInitialPick: true }
                 : { forwardOnly: true, forwardFromXInternal: carrierXInternal, ignoreLaneForInitialPick: true });
 

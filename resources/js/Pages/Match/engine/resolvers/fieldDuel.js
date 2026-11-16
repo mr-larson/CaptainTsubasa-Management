@@ -6,7 +6,7 @@ import { applyStaminaCost, staminaFactor } from '../stamina.js';
 import { specialBaseFor } from '../RosterService.js';
 import { getCarrierElement, getPlayerId, pickFieldDefender, pickReceiverInCell, setBallToKeeperVisual } from '../field.js';
 import { highlightDuelPlayers, pushLogEntry, setMessage, syncRecovererCard, updateSideCard, updateTeamCard } from '../ui.js';
-import { afterReveals, _moveBall, animateBallToXY, ball, shared, recordDuelEvent, resetLastDribbler } from './context.js';
+import { afterReveals, _moveBall, animateBallToXY, ball, shared, recordDuelEvent, resetLastDribbler, currentDribbleLayoff } from './context.js';
 import { defenseTag, isGoodDefenseChoice } from './duelRules.js';
 import { aiShouldReroll, canAttackerReroll, doReroll, showCaptainRerollPrompt, tryHeroicMoment } from './captainReroll.js';
 
@@ -82,6 +82,9 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
     if (attackType === "dribble") {
         attackFactors.push(["Vitesse", shared.roster.speedDuelMultiplier(attackTeam, b.number)]);
     }
+    // Passe après dribble (décalage vers un attaquant ou passe en retrait) : léger avantage.
+    const layoff = currentDribbleLayoff(attackTeam, attackType);
+    if (layoff) attackFactors.push([layoff.label, layoff.factor]);
     const counter = defenseBase ?? defenseAction;
     if (counter === "tackle" || counter === "intercept") {
         defenseFactors.push(["Vitesse", shared.roster.speedDuelMultiplier(defenseTeam, defenderSlot)]);
