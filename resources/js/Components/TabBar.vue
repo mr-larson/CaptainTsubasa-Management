@@ -44,12 +44,23 @@ const indicatorStyle = computed(() => indicator.value ? {
 
 function measure() {
     const active = buttons.value.find(button => button?.dataset.tab === String(props.modelValue));
-    indicator.value = active && !active.disabled ? {
-        left: active.offsetLeft - 8,
+    if (!active || active.disabled) {
+        indicator.value = null;
+        return;
+    }
+    // Keep the active shape fitted to its label, even when buttons share a very wide track.
+    const content = active.querySelector('[data-tab-content]');
+    const padding = getComputedStyle(active);
+    const naturalWidth = content
+        ? content.offsetWidth + parseFloat(padding.paddingLeft) + parseFloat(padding.paddingRight)
+        : active.offsetWidth;
+    const width = Math.min(active.offsetWidth, Math.max(44, naturalWidth));
+    indicator.value = {
+        left: active.offsetLeft + (active.offsetWidth - width) / 2 - 8,
         top: active.offsetTop - 6,
-        width: active.offsetWidth + 16,
+        width: width + 16,
         height: active.offsetHeight + 12,
-    } : null;
+    };
 }
 
 function observe() {
@@ -126,7 +137,6 @@ const SIZES = { md: 'px-3 py-2 text-sm', sm: 'px-3 py-1.5 text-xs' };
                       transform="translate(0 60) scale(1 -1)"
                       d="M0 1.5C18 1.5 10 30 20 46C25 54 32 58 44 58H156C168 58 175 54 180 46C190 30 182 1.5 200 1.5" />
             </svg>
-            <span class="absolute inset-x-3 inset-y-2 magic-active-pill rounded-full border border-slate-300 bg-white"></span>
             </div>
         </div>
         <button v-for="t in tabs" :key="t.key" ref="buttons" type="button" role="tab"
@@ -144,14 +154,16 @@ const SIZES = { md: 'px-3 py-2 text-sm', sm: 'px-3 py-1.5 text-xs' };
                 :class="[iconsOnly ? 'min-w-[44px] h-11 px-3 text-base flex items-center justify-center' : SIZES[size] ?? SIZES.md, stretch ? 'min-w-max flex-1 text-center' : '', t.disabled
                     ? 'text-slate-400 cursor-not-allowed'
                     : modelValue === t.key
-                        ? 'text-teal-600'
+                        ? 'text-teal-700 font-bold'
                         : 'text-slate-500 hover:text-slate-700']"
                 @click="select(t)">
+            <span data-tab-content class="inline-block">
             <span v-if="iconsOnly" aria-hidden="true">{{ t.icon }}</span>
             <template v-else>{{ t.label }}</template><span v-if="t.count !== undefined && t.count !== null" class="opacity-60"> ({{ t.count }})</span>
             <span v-if="t.badge" class="ml-1 rounded-full px-1.5 py-0.5 text-2xs font-bold"
                   :class="modelValue === t.key ? 'bg-teal-50 text-teal-700' : 'bg-slate-200 text-slate-600'">
                 {{ t.badge }}
+            </span>
             </span>
         </button>
         <Teleport to="body">
@@ -180,8 +192,8 @@ const SIZES = { md: 'px-3 py-2 text-sm', sm: 'px-3 py-1.5 text-xs' };
     border-radius: inherit;
 }
 
-.magic-active-pill {
-    box-shadow: 0 2px 6px rgb(15 23 42 / 12%), 0 1px 2px rgb(15 23 42 / 6%);
+.magic-tab[aria-selected="true"] {
+    text-shadow: 0 1px 1px rgb(15 23 42 / 16%);
 }
 
 .magic-indicator--ready {
@@ -191,7 +203,7 @@ const SIZES = { md: 'px-3 py-2 text-sm', sm: 'px-3 py-1.5 text-xs' };
 }
 
 .magic-tab {
-    transition: color 180ms ease;
+    transition: color 180ms ease, text-shadow 180ms ease;
 }
 
 @media (prefers-reduced-motion: reduce) {
