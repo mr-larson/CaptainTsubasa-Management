@@ -38,6 +38,10 @@ class PreMatchCardService
             if ($stat && isset($ev['amount'])) {
                 $delta[$stat] = ($delta[$stat] ?? 0) + (int) $ev['amount'];
             }
+            // Carte à plusieurs stats (« Remontada », « Rage de l'outsider ») : {stats: {stat => montant}}.
+            foreach ((array) ($ev['stats'] ?? []) as $name => $amount) {
+                $delta[$name] = ($delta[$name] ?? 0) + (int) $amount;
+            }
             if (isset($ev['stamina_bonus'])) {
                 $delta['stamina'] = ($delta['stamina'] ?? 0) + (int) $ev['stamina_bonus'];
             }

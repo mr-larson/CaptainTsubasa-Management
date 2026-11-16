@@ -13,6 +13,8 @@ use App\Services\Cards\Effects\RevenuePerformanceEffect;
 use App\Services\Cards\Effects\SponsorChallengeEffect;
 use App\Services\Cards\Effects\StaminaBoostEffect;
 use App\Services\Cards\Effects\TeamMoraleBoostEffect;
+use App\Services\Cards\Effects\TeamRecoveryEffect;
+use App\Services\Cards\Effects\UnderdogStatBoostEffect;
 use Illuminate\Contracts\Container\Container;
 
 /**
@@ -35,12 +37,18 @@ class CardEffectRegistry
         // pre_match : juste marquer comme activée, MatchSimulator la lira
         'stat_boost'              => PreMatchCardEffect::class,
         'stat_boost_and_stamina'  => PreMatchCardEffect::class,
+        // cartes « remontada »
+        'underdog_stat_boost'     => UnderdogStatBoostEffect::class,
+        'team_recovery'           => TeamRecoveryEffect::class,
     ];
 
     /** Malus et bouclier : effet → méthode de MalusCardEffects. @var array<string, string> */
     private const MALUS_METHODS = [
         'malus_shield'              => 'applyMalusShield',
+        'malus_reflect'             => 'applyMalusReflect',
+        'opponent_budget_steal'     => 'applyOpponentBudgetSteal',
         'opponent_stamina_drain'    => 'applyOpponentStaminaDrain',
+        'opponent_partial_stamina_drain' => 'applyOpponentPartialStaminaDrain',
         'opponent_bench_starter'    => 'applyOpponentBenchStarter',
         'opponent_morale_drain'     => 'applyOpponentMoraleDrain',
         'opponent_affinity_drain'   => 'applyOpponentAffinityDrain',

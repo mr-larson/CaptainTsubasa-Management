@@ -130,6 +130,7 @@ class PlayPageBuilder
             'sponsorResults'          => $cards['sponsorResults'],
             'incomingMalus'           => $cards['incomingMalus'],
             'activeShields'           => $cards['activeShields'],
+            'activeTraps'             => $cards['activeTraps'],
             'gameConfig'              => $gameSave->getConfig(),
             'aiTrainingInitial'       => $this->aiTrainingInitial($gameSave),
             'tournament'              => $gameSave->isWorldCup()
@@ -358,7 +359,7 @@ class PlayPageBuilder
      * en cours et derniers résultats, malus reçus (titulaires consignés) et boucliers
      * anti-malus actifs. Tout est vide sans équipe contrôlée.
      *
-     * @return array{offers: mixed, inventory: Collection, sponsorChallenges: array, sponsorResults: array, incomingMalus: array, activeShields: int}
+     * @return array{offers: mixed, inventory: Collection, sponsorChallenges: array, sponsorResults: array, incomingMalus: array, activeShields: int, activeTraps: int}
      */
     private function bonusCards(GameSave $gameSave, ?int $teamId): array
     {
@@ -390,6 +391,10 @@ class PlayPageBuilder
             // Boucliers anti-malus actifs (carte « Cellule de crise »).
             'activeShields'     => $teamId
                 ? count(array_filter($state->malusShields(), fn ($id) => (int) $id === (int) $teamId))
+                : 0,
+            // Pièges posés (carte « Piège ») : le prochain malus reçu sera renvoyé.
+            'activeTraps'       => $teamId
+                ? count(array_filter($state->malusTraps(), fn ($id) => (int) $id === (int) $teamId))
                 : 0,
         ];
     }

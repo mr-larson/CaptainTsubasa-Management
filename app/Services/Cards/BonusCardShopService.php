@@ -4,13 +4,17 @@ namespace App\Services\Cards;
 
 use App\Contracts\Randomizer;
 use App\Models\BonusCard;
+use App\Models\GameSaves\GameBonusCard;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
+use App\Services\Season\SeasonService;
 use Illuminate\Support\Collection;
 
 /**
  * Boutique de cartes bonus/malus : tire chaque semaine 3 offres par équipe dans le catalogue.
  * Les chances de palier (bronze, argent, or) dépendent du classement : plus l'équipe est mal classée, plus l'or est probable. Les offres sont stockées dans l'état de la partie.
+ * Les 3 derniers du classement reçoivent en plus une carte gratuite chaque semaine (la « caisse à objets »).
+ * Certaines cartes « remontada » ne sont proposées qu'aux équipes du bas du classement (cf. BonusCard::isOfferableAt).
  */
 class BonusCardShopService
 {
@@ -31,8 +35,10 @@ class BonusCardShopService
 
         // Charger le classement actuel
         $teams    = $gameSave->gameTeams()->get();
-        $standings = $this->buildStandings($gameSave, $teams);
+        $standings = $this->buildStandings($teams);
         $total    = $teams->count();
+        $points   = $teams->mapWithKeys(fn ($t) => [$t->id => ($t->wins ?? 0) * 3 + ($t->draws ?? 0)]);
+        $leaderPoints = (int) $points->max();
 
         $malusEnabled = $gameSave->getConfig('bonus_cards_enabled', true)
             && $gameSave->getConfig('malus_cards_enabled', true);
@@ -41,9 +47,21 @@ class BonusCardShopService
         if (!$malusEnabled) {
             $allCards = $allCards->where('kind', '!=', 'malus');
         }
+        // Coupe du Monde : pas de classement de ligue, donc ni cartes réservées au bas du
+        // tableau, ni cartes visant « l'équipe de devant ».
+        if ($gameSave->isWorldCup()) {
+            $allCards = $allCards->reject(fn (BonusCard $card) => $card->dependsOnStandings());
+        }
         if ($allCards->isEmpty()) return;
 
         $offersByTeam = [];
+        $freeCards    = [];
+
+        // Équipes ayant déjà reçu leur carte gratuite cette semaine (boutique retirée deux fois).
+        $alreadyGifted = $this->alreadyGiftedTeamIds($gameSave);
+        if ($gameSave->gameState()->isShopFor((int) $season, (int) $week)) {
+            $freeCards = $gameSave->gameState()->shop()['free_cards'] ?? [];
+        }
 
         foreach ($teams as $team) {
             // Position dans le classement (1 = premier, $total = dernier)
@@ -54,12 +72,28 @@ class BonusCardShopService
 
             // 3 offres par semaine, tirées dans le catalogue commun : chaque
             // offre peut être bonus ou malus (le tirage respecte les base_weight).
-            $offers = $this->buildOffers($allCards, $weights, 3);
+            // Les cartes « remontada » n'entrent dans le tirage que pour les équipes concernées.
+            $behindLeader = (int) ($points[$team->id] ?? 0) < $leaderPoints;
+            $catalog = $allCards
+                ->filter(fn (BonusCard $card) => $card->isOfferableAt($position, $total, $behindLeader))
+                ->values();
+
+            $offers = $this->buildOffers($catalog, $weights, 3);
 
             $offersByTeam[(string) $team->id] = $offers;
+
+            // Caisse à objets : une carte gratuite pour les 3 derniers (hors Coupe du Monde).
+            if ($behindLeader && ! $gameSave->isWorldCup()
+                && self::isInBottomThree($position, $total)
+                && ! in_array((int) $team->id, $alreadyGifted, true)) {
+                $free = $this->grantFreeCard($gameSave, $team, $catalog, $weights, array_column($offers, 'bonus_card_id'));
+                if ($free !== null) {
+                    $freeCards[(string) $team->id] = $free;
+                }
+            }
         }
 
-        $gameSave->gameState()->putShop((int) $season, (int) $week, $offersByTeam);
+        $gameSave->gameState()->putShop((int) $season, (int) $week, $offersByTeam, $freeCards);
         $gameSave->save();
     }
 
@@ -153,6 +187,63 @@ class BonusCardShopService
         return $offers;
     }
 
+    /** Vrai pour les 3 derniers du classement (et jamais pour la moitié haute d'une petite ligue). */
+    public static function isInBottomThree(int $position, int $total): bool
+    {
+        return $position > $total / 2 && $position > $total - 3;
+    }
+
+    /**
+     * Offre une carte à une équipe du bas du classement : tirée comme une offre de boutique (mêmes
+     * chances de palier, mêmes cartes accessibles), hors des 3 offres de la semaine, et déposée
+     * directement dans son inventaire sans rien débiter.
+     *
+     * @param  int[]  $excludeCardIds  cartes déjà proposées à l'équipe cette semaine
+     * @return array|null la carte offerte (même forme qu'une offre), ou null si le catalogue est épuisé
+     */
+    private function grantFreeCard(GameSave $gameSave, GameTeam $team, Collection $catalog, array $weights, array $excludeCardIds): ?array
+    {
+        $card = $this->drawCard($catalog, $this->drawTier($weights), $excludeCardIds);
+        if (! $card) {
+            return null;
+        }
+
+        GameBonusCard::create([
+            'game_save_id'     => $gameSave->id,
+            'bonus_card_id'    => $card->id,
+            'game_team_id'     => $team->id,
+            'tier'             => $card->tier,
+            'cost_paid'        => 0,
+            'status'           => 'available',
+            'purchased_season' => $gameSave->season,
+            'purchased_week'   => $gameSave->week,
+        ]);
+
+        return [
+            'bonus_card_id'   => $card->id,
+            'kind'            => $card->kind,
+            'tier'            => $card->tier,
+            'name'            => $card->name,
+            'icon'            => $card->icon,
+            'target'          => $card->target->value,
+            'execution_phase' => $card->execution_phase,
+            'effect_type'     => $card->effect_type,
+            'effect_value'    => $card->effect_value,
+        ];
+    }
+
+    /** @return int[] équipes ayant déjà une carte gratuite (payée 0) datée de la semaine courante */
+    private function alreadyGiftedTeamIds(GameSave $gameSave): array
+    {
+        return GameBonusCard::where('game_save_id', $gameSave->id)
+            ->where('purchased_season', $gameSave->season)
+            ->where('purchased_week', $gameSave->week)
+            ->where('cost_paid', 0)
+            ->pluck('game_team_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+    }
+
     /**
      * Calcule les poids Bronze/Argent/Or selon la position.
      * Dernier → plus de Gold. Premier → quasi que du Bronze.
@@ -216,16 +307,13 @@ class BonusCardShopService
     }
 
     /**
-     * Construit un classement simplifié [team_id => position].
+     * Classement [team_id => position], avec le départage officiel de la ligue
+     * (points, différence de buts, buts marqués, victoires, nom).
      */
-    private function buildStandings(GameSave $gameSave, Collection $teams): array
+    private function buildStandings(Collection $teams): array
     {
-        $sorted = $teams->sortByDesc(fn ($t) =>
-            ($t->wins ?? 0) * 3 + ($t->draws ?? 0)
-        )->values();
-
         $standings = [];
-        foreach ($sorted as $i => $team) {
+        foreach (app(SeasonService::class)->sortStandings($teams) as $i => $team) {
             $standings[$team->id] = $i + 1;
         }
         return $standings;

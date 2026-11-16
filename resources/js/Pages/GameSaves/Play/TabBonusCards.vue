@@ -19,7 +19,9 @@ const props = defineProps({
     sponsorResults:   { type: Array,    default: () => [] },
     incomingMalus:    { type: Array,    default: () => [] },
     activeShields:    { type: Number,   default: 0 },
+    activeTraps:      { type: Number,   default: 0 },
     targetTeams:      { type: Array,    default: () => [] },
+    teamAhead:        { type: Object,   default: null },   // équipe classée juste devant (cartes "ahead")
     malusEnabled:     { type: Boolean,  default: true },
 });
 
@@ -37,7 +39,7 @@ const selectedCard   = ref(null);     // carte inventaire sélectionnée
 const targetPlayerId = ref(null);     // pour cartes "player"
 const targetTeamId   = ref(null);     // pour malus à cible choisie (target="team")
 
-// Mode de ciblage d'une carte malus : 'opponent' | 'select' | 'leader'
+// Mode de ciblage d'une carte malus : 'opponent' | 'select' | 'leader' | 'ahead'
 const malusTargetMode = (card) => {
     if (!card) return null;
     if (card.target === 'opponent') return 'opponent';
@@ -54,6 +56,15 @@ const usedCards      = computed(() => props.inventory.filter(c => c.status === '
 
 // Séparation bonus / malus (même onglet, sections distinctes)
 const isMalus = (c) => c?.kind === 'malus';
+// Carte « remontada » : réservée par la boutique aux équipes du bas du classement.
+const isComeback = (c) => !!c?.effect_value?.rank_gate;
+// Carte offerte aux derniers du classement (jamais payée).
+const isFree = (c) => c?.cost_paid != null && Number(c.cost_paid) === 0;
+// Carte(s) offerte(s) cette semaine et pas encore jouée(s).
+const freeCardsThisWeek = computed(() => props.inventory.filter(c =>
+    isFree(c) && c.status === 'available'
+    && Number(c.purchased_week) === Number(props.week) && Number(c.purchased_season) === Number(props.season)
+));
 
 const bonusOffers = computed(() => props.weeklyOffers.filter(o => !isMalus(o)));
 const malusOffers = computed(() => props.malusEnabled ? props.weeklyOffers.filter(o => isMalus(o)) : []);
@@ -138,6 +149,7 @@ const CHALLENGE_LABELS = {
     clean_sheet: 'Ne pas encaisser au prochain match',
     win_by_2:    'Gagner avec au moins 2 buts d\'écart',
     win_score_3: 'Gagner en marquant au moins 3 buts',
+    upset:       'Battre votre prochain adversaire, mieux classé que vous',
 };
 const challengeLabel = (c) => CHALLENGE_LABELS[c] ?? 'Objectif au prochain match';
 
@@ -189,6 +201,7 @@ const canConfirm = computed(() => {
     if (!selectedCard.value) return false;
     if (needsTarget.value && !targetPlayerId.value) return false;
     if (needsTeamSelect.value && !targetTeamId.value) return false;
+    if (malusTargetMode(selectedCard.value) === 'ahead' && !props.teamAhead) return false;
     return true;
 });
 </script>
@@ -262,6 +275,38 @@ const canConfirm = computed(() => {
         </div>
 
         <!-- ================================================ -->
+        <!-- CARTE OFFERTE (3 derniers du classement)          -->
+        <!-- ================================================ -->
+        <div v-for="card in freeCardsThisWeek" :key="'free-' + card.id"
+             class="flex items-center gap-3 border border-indigo-300 bg-indigo-50 rounded-xl px-3 py-2 shadow-card">
+            <span class="text-xl">🎁</span>
+            <div class="flex-1 min-w-0">
+                <div class="text-xs font-bold text-indigo-800">
+                    Carte offerte cette semaine : {{ card.icon }} {{ card.name }}
+                </div>
+                <div class="text-[11px] text-indigo-600">
+                    Les 3 derniers du classement reçoivent une carte gratuite chaque semaine. Elle est dans votre inventaire.
+                </div>
+            </div>
+        </div>
+
+        <!-- ================================================ -->
+        <!-- PIÈGE POSÉ (carte « Piège »)                      -->
+        <!-- ================================================ -->
+        <div v-if="activeTraps > 0"
+             class="flex items-center gap-3 border border-amber-300 bg-amber-50 rounded-xl px-3 py-2 shadow-card">
+            <span class="text-xl">🍌</span>
+            <div class="flex-1 min-w-0">
+                <div class="text-xs font-bold text-amber-800">
+                    Piège posé<template v-if="activeTraps > 1"> ×{{ activeTraps }}</template>
+                </div>
+                <div class="text-[11px] text-amber-700">
+                    Le prochain malus qui vise votre équipe sera renvoyé à son expéditeur.
+                </div>
+            </div>
+        </div>
+
+        <!-- ================================================ -->
         <!-- BOUCLIER ANTI-MALUS ACTIF (Cellule de crise)      -->
         <!-- ================================================ -->
         <div v-if="activeShields > 0"
@@ -328,6 +373,11 @@ const canConfirm = computed(() => {
                                             <span v-if="group.key === 'malus'"
                                                   class="text-3xs font-black px-1.5 py-0.5 rounded-full bg-rose-500 text-white">
                                                 MALUS
+                                            </span>
+                                            <span v-if="isComeback(offer)"
+                                                  title="Carte réservée aux équipes du bas du classement"
+                                                  class="text-3xs font-black px-1.5 py-0.5 rounded-full bg-indigo-500 text-white">
+                                                REMONTADA
                                             </span>
                                         </div>
                                     </div>
@@ -407,6 +457,10 @@ const canConfirm = computed(() => {
                                             <span v-if="group.key === 'malus'"
                                                   class="text-3xs font-black px-1.5 py-0.5 rounded-full bg-rose-500 text-white">
                                                 MALUS
+                                            </span>
+                                            <span v-if="isFree(card)"
+                                                  class="text-3xs font-black px-1.5 py-0.5 rounded-full bg-indigo-500 text-white">
+                                                OFFERTE
                                             </span>
                                         </div>
                                     </div>
@@ -526,6 +580,18 @@ const canConfirm = computed(() => {
                         </div>
                         <p class="text-[11px] text-slate-500 mt-1">
                             L'effet vise automatiquement l'équipe en tête du classement.
+                        </p>
+                    </div>
+
+                    <!-- Malus : cible = équipe classée juste devant (auto) -->
+                    <div v-else-if="isSelectedMalus && malusTargetMode(selectedCard) === 'ahead'" class="p-5 border-b border-slate-200">
+                        <div class="flex items-center gap-2 text-rose-700 text-sm font-semibold">
+                            <span class="text-lg">🎯</span>
+                            <span v-if="teamAhead">Cible : l'équipe classée juste devant vous — {{ teamAhead.name }} ({{ teamAhead.rank }}<sup>e</sup>)</span>
+                            <span v-else>Vous êtes en tête : aucune équipe devant vous.</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 mt-1">
+                            L'effet vise automatiquement l'équipe qui vous précède au classement.
                         </p>
                     </div>
 

@@ -96,6 +96,8 @@ class SponsorChallengeService
     {
         return match ($challenge) {
             'win'         => $scored > $against,
+            // « Prime de l'exploit » : l'adversaire mieux classé est vérifié à l'activation de la carte.
+            'upset'       => $scored > $against,
             'score_3'     => $scored >= 3,
             'clean_sheet' => $against === 0,
             'win_by_2'    => ($scored - $against) >= 2,

@@ -65,6 +65,7 @@ const props = defineProps({
     sponsorResults:     { type: Array, default: () => [] },
     incomingMalus:      { type: Array, default: () => [] },
     activeShields:      { type: Number, default: 0 },
+    activeTraps:        { type: Number, default: 0 },
     managementStats:    { type: Object, default: () => ({}) },
     moraleLogs:         { type: Object, default: () => ({}) },
     playerPromises:     { type: Object, default: () => ({}) },
@@ -200,14 +201,22 @@ const trainSpecial = ({ playerId, moveKey }) => router.post(
     { preserveScroll: true },
 );
 
-// Équipes ciblables par un malus à cible choisie (toutes sauf la mienne,
-// triées par classement → [0] = leader, pour l'affichage des cartes "leader").
+// Équipes ciblables par un malus à cible choisie (toutes sauf la mienne), dans
+// l'ordre du classement officiel → [0] = leader, pour l'affichage des cartes "leader".
 const targetableTeams = computed(() => {
     const meId = Number(team.value?.id ?? props.gameSave?.controlled_game_team_id ?? 0);
-    return [...(props.teams ?? [])]
-        .filter(t => Number(t.id) !== meId)
-        .sort((a, b) => ((b.wins ?? 0) * 3 + (b.draws ?? 0)) - ((a.wins ?? 0) * 3 + (a.draws ?? 0)))
-        .map((t, i) => ({ id: t.id, name: t.name, rank: i + 1 }));
+    return (standings.value ?? [])
+        .map((t, i) => ({ id: t.id, name: t.name, rank: i + 1 }))
+        .filter(t => Number(t.id) !== meId);
+});
+
+// Équipe classée juste devant la mienne (cible des cartes "équipe de devant") ; null si je suis en tête.
+const teamAhead = computed(() => {
+    const meId  = Number(team.value?.id ?? props.gameSave?.controlled_game_team_id ?? 0);
+    const index = (standings.value ?? []).findIndex(t => Number(t.id) === meId);
+    if (index <= 0) return null;
+    const ahead = standings.value[index - 1];
+    return { id: ahead.id, name: ahead.name, rank: index };
 });
 
 // Compteurs pour la checklist pré-match du dashboard
@@ -299,6 +308,9 @@ const clubStatus = computed(() => {
         })),
         ...(props.activeShields > 0 ? [{
             name: 'Cellule de crise', icon: '🛡️', detail: `${props.activeShields} protection(s)`, type: 'Bonus',
+        }] : []),
+        ...(props.activeTraps > 0 ? [{
+            name: 'Piège', icon: '🍌', detail: `${props.activeTraps} piège(s) posé(s)`, type: 'Bonus',
         }] : []),
         ...(props.gameConfig?.malus_cards_enabled === false ? [] : [
             ...props.incomingMalus,
@@ -913,7 +925,9 @@ const saveGame = () => {
                                    :sponsorResults="props.sponsorResults"
                                    :incomingMalus="props.incomingMalus"
                                    :activeShields="props.activeShields"
+                                   :activeTraps="props.activeTraps"
                                    :targetTeams="targetableTeams"
+                                   :teamAhead="teamAhead"
                                    :malusEnabled="props.gameConfig?.malus_cards_enabled !== false"
                                    @buy="buyCard"
                                    @activate="activateCard"

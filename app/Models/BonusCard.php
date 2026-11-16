@@ -45,6 +45,49 @@ class BonusCard extends Model
             . ' points d’endurance aux titulaires de l’équipe ciblée.';
     }
 
+    /**
+     * Vrai si la boutique peut proposer cette carte à une équipe classée $position sur $total.
+     *
+     * Deux règles, lues dans effect_value :
+     *   - `rank_gate` : carte « remontada » réservée au bas du classement — `bottom_3` (les 3
+     *     derniers, et jamais la moitié haute dans une petite ligue) ou `bottom_half` (moitié basse).
+     *     Elle exige aussi d'avoir moins de points que le leader : tant que tout le monde est à
+     *     égalité (début de saison), personne n'est « en retard ».
+     *   - `target_mode = ahead` : vise l'équipe classée juste devant, donc inutile pour le 1er.
+     */
+    public function isOfferableAt(int $position, int $total, bool $behindLeader): bool
+    {
+        $value = $this->effect_value ?? [];
+
+        if (($value['target_mode'] ?? null) === 'ahead' && $position <= 1) {
+            return false;
+        }
+
+        $gate = $value['rank_gate'] ?? null;
+        if ($gate === null) {
+            return true;
+        }
+        if (! $behindLeader) {
+            return false;
+        }
+
+        $inLowerHalf = $position > $total / 2;
+
+        return match ($gate) {
+            'bottom_3'    => \App\Services\Cards\BonusCardShopService::isInBottomThree($position, $total),
+            'bottom_half' => $inLowerHalf,
+            default       => true,
+        };
+    }
+
+    /** Vrai si la carte dépend du classement de la ligue (réservée au bas du tableau, ou visant l'équipe de devant). */
+    public function dependsOnStandings(): bool
+    {
+        $value = $this->effect_value ?? [];
+
+        return isset($value['rank_gate']) || ($value['target_mode'] ?? null) === 'ahead';
+    }
+
     /** Exemplaires de cette carte achetés dans les parties. */
     public function gameBonusCards(): HasMany
     {

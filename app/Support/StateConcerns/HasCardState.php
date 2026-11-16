@@ -93,6 +93,31 @@ trait HasCardState
         return true;
     }
 
+    /** @return array<int, int> ids des équipes ayant posé un piège (carte « Piège » : un exemplaire par carte active) */
+    public function malusTraps(): array
+    {
+        return array_map('intval', $this->get('malus_traps', []));
+    }
+
+    /** Pose un piège pour une équipe : le prochain malus qui la vise sera renvoyé à son expéditeur. */
+    public function addMalusTrap(int $teamId): void
+    {
+        $this->put('malus_traps', [...$this->malusTraps(), $teamId]);
+    }
+
+    /** Consomme un piège de l'équipe ; false si elle n'en a pas. */
+    public function consumeMalusTrap(int $teamId): bool
+    {
+        $traps = $this->malusTraps();
+        $index = array_search($teamId, $traps, true);
+        if ($index === false) return false;
+
+        unset($traps[$index]);
+        $this->put('malus_traps', array_values($traps));
+
+        return true;
+    }
+
     /** Défis sponsors (cartes finance) en cours : ['game_team_id', 'challenge', 'reward', ...] */
     public function pendingSponsorChallenges(): array
     {
@@ -124,7 +149,8 @@ trait HasCardState
     }
 
     // ── shop : offres de la boutique de la semaine ────────────────────
-    //    ['season' => int, 'week' => int, 'offers_by_team' => [teamId => [offre]]]
+    //    ['season' => int, 'week' => int, 'offers_by_team' => [teamId => [offre]],
+    //     'free_cards' => [teamId => carte offerte aux derniers du classement]]
 
     /** La boutique de cartes tirée pour la semaine, ou null si elle n'a pas été tirée. */
     public function shop(): ?array
@@ -143,9 +169,19 @@ trait HasCardState
     }
 
     /** Enregistre la boutique tirée pour la saison et la semaine données, avec les offres de chaque équipe. */
-    public function putShop(int $season, int $week, array $offersByTeam): void
+    public function putShop(int $season, int $week, array $offersByTeam, array $freeCards = []): void
     {
-        $this->put('shop', ['season' => $season, 'week' => $week, 'offers_by_team' => $offersByTeam]);
+        $this->put('shop', [
+            'season' => $season, 'week' => $week,
+            'offers_by_team' => $offersByTeam,
+            'free_cards'     => $freeCards,
+        ]);
+    }
+
+    /** Carte offerte cette semaine à une équipe du bas du classement (même forme qu'une offre), ou null. */
+    public function shopFreeCard(int $teamId): ?array
+    {
+        return $this->shop()['free_cards'][(string) $teamId] ?? null;
     }
 
     /** Offres de la boutique pour une équipe (liste vide si aucune). */

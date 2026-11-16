@@ -26,6 +26,7 @@ class AiBonusCardService
     private const MALUS_EFFECTS = [
         'opponent_stamina_drain', 'opponent_bench_starter', 'opponent_morale_drain', 'opponent_affinity_drain',
         'opponent_budget_drain', 'opponent_team_stat_debuff', 'opponent_key_stat_debuff',
+        'opponent_partial_stamina_drain', 'opponent_budget_steal',
     ];
 
     /**
@@ -93,6 +94,24 @@ class AiBonusCardService
 
         // Contexte de l'équipe pour prendre des décisions
         $context = $this->buildTeamContext($gameSave, $team);
+
+        // Carte gratuite des derniers du classement : déjà dans l'inventaire, à jouer si elle sert.
+        // (Les cartes d'avant-match offertes sont déjà dans les cartes en attente du contexte.)
+        $free = $gameSave->gameState()->shopFreeCard((int) $team->id);
+        if ($free !== null && ($free['execution_phase'] ?? '') === 'immediate') {
+            $freeCard = GameBonusCard::where('game_save_id', $gameSave->id)
+                ->where('game_team_id', $team->id)
+                ->where('bonus_card_id', $free['bonus_card_id'])
+                ->where('purchased_season', $gameSave->season)
+                ->where('purchased_week', $gameSave->week)
+                ->where('cost_paid', 0)
+                ->where('status', 'available')
+                ->with('bonusCard')
+                ->first();
+            if ($freeCard) {
+                $this->activateIfUseful($gameSave, $freeCard, $free, $context);
+            }
+        }
         $boughtPreMatch = []; // cartes d'avant-match achetées pendant ce tour (elles s'ajoutent à celles déjà en attente)
 
         foreach ($offers as $offer) {
@@ -192,8 +211,17 @@ class AiBonusCardService
                 $score = $worst < 0 ? min(85, (int) (abs($worst) * 1.5)) : 0;
                 break;
 
+            case 'team_recovery':
+                // « État de grâce » (réservée aux derniers) : remet endurance et moral à fond.
+                $score = 30 + (int) ((100 - ($context['avg_stamina'] ?? 100)) * 0.8);
+                if (($context['worst_morale'] ?? 60) < 50) {
+                    $score += 15;
+                }
+                break;
+
             case 'stat_boost':
             case 'stat_boost_and_stamina':
+            case 'underdog_stat_boost':
                 // Toujours utile avant un match
                 $score = 60;
                 // Bonus si l'équipe est en difficulté (peu de victoires)
@@ -209,6 +237,8 @@ class AiBonusCardService
             case 'opponent_budget_drain':
             case 'opponent_team_stat_debuff':
             case 'opponent_key_stat_debuff':
+            case 'opponent_partial_stamina_drain':
+            case 'opponent_budget_steal':
                 // Malus offensif. Carte "prochain adversaire" : utile seulement
                 // si l'IA a un match. Carte à cible choisie (target=team) : l'IA
                 // peut saboter le leader à tout moment.
@@ -218,6 +248,8 @@ class AiBonusCardService
                     'opponent_key_stat_debuff' => 50,
                     'opponent_affinity_drain'  => 48,
                     'opponent_budget_drain'    => 45,
+                    'opponent_partial_stamina_drain' => 44,
+                    'opponent_budget_steal'    => 50,
                     default                    => 52,
                 };
                 $isTeamTargeted = ($offer['target'] ?? 'opponent') === 'team';
@@ -242,6 +274,7 @@ class AiBonusCardService
                 break;
 
             case 'malus_shield':
+            case 'malus_reflect':
                 // Défensif : l'IA n'en abuse pas (réservé surtout au joueur).
                 $score = 25;
                 break;
@@ -300,6 +333,7 @@ class AiBonusCardService
                 'opponent_stamina_drain', 'opponent_bench_starter',
                 'opponent_morale_drain', 'opponent_affinity_drain', 'opponent_budget_drain',
                 'opponent_team_stat_debuff', 'opponent_key_stat_debuff',
+                'opponent_partial_stamina_drain', 'opponent_budget_steal',
             ], true)) {
                 // Malus prochain adversaire : si match à venir. Malus à cible
                 // choisie (target=team) : sans cible explicite, le service tape
@@ -308,13 +342,18 @@ class AiBonusCardService
                 if ($isTeamTargeted || ($context['has_match_this_week'] ?? false)) {
                     $this->activationService->activate($card, $gameSave);
                 }
+            } elseif ($effectType === 'team_recovery') {
+                // « État de grâce » : activer dès que l'effectif est entamé (endurance ou moral).
+                if (($context['avg_stamina'] ?? 100) < 80 || ($context['worst_morale'] ?? 60) < 50) {
+                    $this->activationService->activate($card, $gameSave);
+                }
             } elseif ($effectType === 'team_morale_boost') {
                 // +moral collectif : activer si un joueur a le moral bas.
                 if (($context['worst_morale'] ?? 60) < 55) {
                     $this->activationService->activate($card, $gameSave);
                 }
-            } elseif ($effectType === 'revenue_performance' || $effectType === 'malus_shield') {
-                // Revenu (argent immédiat) et bouclier défensif : activer direct.
+            } elseif (in_array($effectType, ['revenue_performance', 'malus_shield', 'malus_reflect'], true)) {
+                // Revenu (argent immédiat), bouclier et piège défensifs : activer direct.
                 $this->activationService->activate($card, $gameSave);
             }
         } catch (\Throwable) {

@@ -15,7 +15,15 @@ class MalusEffect implements CardEffect
 
     public function apply(GameSave $gameSave, GameBonusCard $gameBonusCard, ?int $targetPlayerId = null, ?int $targetTeamId = null): array
     {
-        // Le bouclier (applyMalusShield) n'a pas de cible : l'argument en trop est ignoré.
-        return $this->malus->{$this->method}($gameSave, $gameBonusCard, $targetTeamId);
+        // Le bouclier et le piège n'ont pas de cible : l'argument en trop est ignoré.
+        $result = $this->malus->{$this->method}($gameSave, $gameBonusCard, $targetTeamId);
+
+        // Malus renvoyé par un piège : l'expéditeur l'a subi lui-même, on le lui dit.
+        if ($trapOwner = $this->malus->pullReflection()) {
+            $result['message']   = "🍌 {$trapOwner} avait posé un piège : le malus vous est renvoyé ! " . ($result['message'] ?? '');
+            $result['reflected'] = true;
+        }
+
+        return $result;
     }
 }

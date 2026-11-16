@@ -188,6 +188,7 @@ const verdictOutcomeLabel = (o) => ({
                 <li><strong>Moral</strong> : influe sur toutes les actions en match (de −10 % à +5 %), avec un possible « dépassement de soi » au-delà d'un certain seuil.</li>
                 <li><strong>Fautes & cartons</strong> : une faute peut blesser (selon la config) ; cumuler des cartons jaunes entraîne une suspension.</li>
                 <li><strong>Cartes bonus/malus</strong> : activées avant le match, elles avantagent ton équipe ou pénalisent l'adversaire.</li>
+                <li><strong>Cartes « remontada »</strong> : plus tu es bas au classement, plus la boutique te propose des cartes puissantes. Certaines sont réservées aux 3 derniers ou à la moitié basse, et des malus visent l'équipe classée juste devant toi ou le leader. Les 3 derniers reçoivent en plus une <strong>carte gratuite</strong> chaque semaine.</li>
                 <li>Le résultat fait évoluer le classement, le moral des joueurs et la confiance de la direction.</li>
             </ul>
         </div>

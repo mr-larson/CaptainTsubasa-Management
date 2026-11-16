@@ -15,6 +15,7 @@ const CHALLENGE_LABELS = {
     clean_sheet: 'ne pas encaisser',
     win_by_2:    'gagner avec 2 buts d\'écart',
     win_score_3: 'gagner en marquant au moins 3 buts',
+    upset:       'battre un adversaire mieux classé',
 };
 
 const plural = (n, word) => `${n} ${word}${n > 1 ? 's' : ''}`;

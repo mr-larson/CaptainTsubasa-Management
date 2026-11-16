@@ -14,7 +14,7 @@ class BonusCardCatalogTest extends TestCase
         $cards = BonusCardSeeder::cards();
         $names = array_column($cards, 'name');
 
-        $this->assertCount(42, $cards);
+        $this->assertCount(51, $cards);
         $this->assertSame($names, array_values(array_unique($names)), 'Nom de carte en double.');
 
         foreach ($cards as $card) {

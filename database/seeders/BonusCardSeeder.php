@@ -23,6 +23,7 @@ class BonusCardSeeder extends Seeder
         BonusCards\MalusFatigueAndBenchCards::class,
         BonusCards\MalusTargetedCards::class,
         BonusCards\PreMatchTeamBoostCards::class,
+        BonusCards\ComebackCards::class,
     ];
 
     /** @return array<int, array<string, mixed>> */

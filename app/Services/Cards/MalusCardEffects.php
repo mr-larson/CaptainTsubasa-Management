@@ -14,15 +14,19 @@ use App\Models\GameSaves\GameTeam;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use App\Services\Concerns\LogsCoachAffinity;
+use App\Services\Season\SeasonService;
 
 /**
  * Effets des cartes malus (offensives, ciblant l'adversaire du prochain match,
- * une équipe choisie ou le leader) et des boucliers anti-malus. Extrait de
+ * une équipe choisie, le leader ou l'équipe classée juste devant) et des boucliers anti-malus. Extrait de
  * BonusCardActivationService, qui lui délègue l'activation.
  */
 class MalusCardEffects
 {
     use LogsCoachAffinity;
+
+    /** Nom de l'équipe qui vient de renvoyer un malus avec un piège (lu puis effacé par pullReflection). */
+    private ?string $reflectedBy = null;
 
     /** Injecte le générateur aléatoire (tirage du joueur consigné). */
     public function __construct(private Randomizer $random)
@@ -41,6 +45,30 @@ class MalusCardEffects
         $gameSave->save();
 
         return ['message' => '🛡️ Cellule de crise active : le prochain malus subi sera annulé.'];
+    }
+
+    /**
+     * Carte « Piège » : le prochain malus qui vise l'équipe est renvoyé à son expéditeur
+     * (consommé dans resolveMalusTarget, à la tentative de malus adverse).
+     */
+    public function applyMalusReflect(GameSave $gameSave, GameBonusCard $gameBonusCard): array
+    {
+        $gameSave->gameState()->addMalusTrap((int) $gameBonusCard->game_team_id);
+        $gameSave->save();
+
+        return ['message' => '🍌 Piège posé : le prochain malus qui vous vise sera renvoyé à son expéditeur.'];
+    }
+
+    /**
+     * Si le dernier malus appliqué a été renvoyé par un piège, retourne le nom de l'équipe qui
+     * l'a renvoyé (une seule fois), sinon null. Lu par MalusEffect pour prévenir l'expéditeur.
+     */
+    public function pullReflection(): ?string
+    {
+        $name = $this->reflectedBy;
+        $this->reflectedBy = null;
+
+        return $name;
     }
 
     // ──────────────────────────────────────────────────────────
@@ -80,6 +108,51 @@ class MalusCardEffects
 
         return [
             'message' => "😴 {$opponentName} : −{$amount} stamina infligés à {$drained} titulaire(s) avant le prochain match.",
+            'drained' => $drained,
+        ];
+    }
+
+    /**
+     * Carte malus « Croc-en-jambe » : fatigue légère, limitée à quelques titulaires de champ
+     * tirés au hasard (`count`), et non à tout le onze. L'endurance est longue à reconstituer :
+     * ce malus gêne la cible sans ruiner sa préparation. Le gardien est épargné.
+     */
+    public function applyOpponentPartialStaminaDrain(GameSave $gameSave, GameBonusCard $gameBonusCard, ?int $targetTeamId = null): array
+    {
+        $target = $this->resolveMalusTarget($gameSave, $gameBonusCard, $targetTeamId);
+        if ($blocked = $this->shieldBlock($gameSave, $target)) {
+            return $blocked;
+        }
+
+        $value  = $gameBonusCard->bonusCard->effect_value ?? [];
+        $amount = (int) ($value['amount'] ?? 0);
+        $count  = max(1, (int) ($value['count'] ?? 3));
+        $week   = (int) ($gameSave->week ?? 1);
+
+        $candidates = $this->opponentStarters($target->id)
+            ->filter(fn (GameContract $contract) => $contract->isActive($week)
+                && FormationHelper::roleFromPosition($contract->gamePlayer->position) !== 'GK')
+            ->values()
+            ->all();
+
+        // Tirage sans remise de $count titulaires de champ.
+        $chosenIds = [];
+        while (count($chosenIds) < $count && $candidates !== []) {
+            $pick = $this->random->pick($candidates);
+            $chosenIds[] = (int) $pick->game_player_id;
+            $candidates = array_values(array_filter($candidates, fn ($c) => $c !== $pick));
+        }
+
+        $drained = $this->subtractFromPlayers(
+            GamePlayer::query()->where('game_save_id', $gameSave->id)->whereIn('id', $chosenIds),
+            'stamina',
+            $amount,
+        );
+
+        $name = $target->team()?->name ?? 'L\'adversaire';
+
+        return [
+            'message' => "🦵 {$name} : −{$amount} stamina infligés à {$drained} titulaire(s) de champ.",
             'drained' => $drained,
         ];
     }
@@ -253,6 +326,41 @@ class MalusCardEffects
     }
 
     /**
+     * Carte malus « Robin des Bois » : prend jusqu'à `amount` au budget de l'équipe cible et le
+     * verse à l'émetteur. Si la cible a moins, on ne prend que ce qu'elle a (jamais de budget
+     * négatif) et l'émetteur ne reçoit que ce montant. Renvoyée par un piège, la carte coûte
+     * simplement ce montant à son émetteur.
+     */
+    public function applyOpponentBudgetSteal(GameSave $gameSave, GameBonusCard $gameBonusCard, ?int $targetTeamId = null): array
+    {
+        $target = $this->resolveMalusTarget($gameSave, $gameBonusCard, $targetTeamId);
+        if ($blocked = $this->shieldBlock($gameSave, $target)) {
+            return $blocked;
+        }
+        $amount   = (int) ($gameBonusCard->bonusCard->effect_value['amount'] ?? 0);
+        $sourceId = (int) $gameBonusCard->game_team_id;
+
+        $team = $target->team();
+        if (!$team) {
+            throw ValidationException::withMessages(['card' => 'Équipe cible introuvable.']);
+        }
+
+        $stolen = max(0, min($amount, (int) ($team->budget ?? 0)));
+        $team->budget = (int) ($team->budget ?? 0) - $stolen;
+        $team->save();
+
+        if ($target->id === $sourceId) {
+            return ['message' => "💰 Le vol se retourne contre vous : −{$stolen} GL de budget."];
+        }
+
+        GameTeam::where('id', $sourceId)->increment('budget', $stolen);
+
+        return ['message' => $stolen > 0
+            ? "💰 {$stolen} GL pris à {$team->name} et versés dans vos caisses."
+            : "💰 Les caisses de {$team->name} sont vides : rien à prendre."];
+    }
+
+    /**
      * Carte malus « Pelouse sabotée » : debuff de stat appliqué à TOUTE l'équipe
      * cible pour son prochain match (stocké dans state.pending_stat_debuffs).
      */
@@ -260,11 +368,12 @@ class MalusCardEffects
     {
         $target = $this->resolveMalusTarget($gameSave, $gameBonusCard, $targetTeamId);
         $targetId = $target->id;
+        $card   = $gameBonusCard->bonusCard;
+        $this->assertDebuffNotAlreadyPending($gameSave, $targetId, (string) $card->name);
         if ($blocked = $this->shieldBlock($gameSave, $target)) {
             return $blocked;
         }
 
-        $card   = $gameBonusCard->bonusCard;
         $deltas = $this->parseDebuffDeltas($card->effect_value);
 
         $this->storeStatDebuff($gameSave, [
@@ -360,6 +469,24 @@ class MalusCardEffects
         return implode(', ', $parts) ?: 'aucun effet';
     }
 
+    /**
+     * Refuse d'empiler deux fois le même debuff d'équipe sur une cible avant qu'elle ait joué
+     * (sinon plusieurs équipes pourraient cumuler la même carte sur le leader). Vérifié AVANT le
+     * bouclier, pour ne pas le consommer sur une activation de toute façon refusée.
+     */
+    private function assertDebuffNotAlreadyPending(GameSave $gameSave, int $targetId, string $cardName): void
+    {
+        foreach ($gameSave->gameState()->pendingStatDebuffs() as $debuff) {
+            if ((int) ($debuff['target_team_id'] ?? 0) === $targetId
+                && empty($debuff['target_player_id'])
+                && ($debuff['card_name'] ?? null) === $cardName) {
+                throw ValidationException::withMessages([
+                    'card' => 'Cette équipe subit déjà cette carte pour son prochain match.',
+                ]);
+            }
+        }
+    }
+
     /** Ajoute un debuff de stats en attente dans l'état de la partie et sauvegarde. */
     private function storeStatDebuff(GameSave $gameSave, array $entry): void
     {
@@ -401,7 +528,7 @@ class MalusCardEffects
     /**
      * Identifie l'équipe adverse du prochain match programmé de $teamId.
      */
-    private function resolveNextOpponentTeamId(GameSave $gameSave, int $teamId): int
+    public function resolveNextOpponentTeamId(GameSave $gameSave, int $teamId): int
     {
         $match = GameMatch::where('game_save_id', $gameSave->id)
             ->where('status', 'scheduled')
@@ -425,11 +552,30 @@ class MalusCardEffects
      * Résout l'équipe cible d'un malus selon le mode de la carte :
      *   - target=opponent              → adversaire du prochain match (auto)
      *   - target=team, mode=leader     → 1er du classement (hors soi)
+     *   - target=team, mode=ahead      → équipe classée juste devant l'émetteur
      *   - target=team, mode=select     → équipe explicitement choisie (humain)
      *                                    ; repli sur le leader si aucune cible
      *                                    fournie (cas IA).
      */
     private function resolveMalusTarget(GameSave $gameSave, GameBonusCard $gameBonusCard, ?int $explicitTargetTeamId): MalusTarget
+    {
+        $this->reflectedBy = null;
+        $target   = $this->resolveIntendedTarget($gameSave, $gameBonusCard, $explicitTargetTeamId);
+        $sourceId = (int) $gameBonusCard->game_team_id;
+
+        // Carte « Piège » : la cible renvoie le malus à l'expéditeur, qui le subit à sa place.
+        if ($target->id !== $sourceId && $gameSave->gameState()->consumeMalusTrap($target->id)) {
+            $gameSave->save();
+            $this->reflectedBy = $target->team()?->name ?? 'L\'adversaire';
+
+            return new MalusTarget($sourceId);
+        }
+
+        return $target;
+    }
+
+    /** Équipe que la carte vise d'après son mode de ciblage, avant tout renvoi par un piège. */
+    private function resolveIntendedTarget(GameSave $gameSave, GameBonusCard $gameBonusCard, ?int $explicitTargetTeamId): MalusTarget
     {
         $card         = $gameBonusCard->bonusCard;
         $sourceTeamId = (int) $gameBonusCard->game_team_id;
@@ -442,6 +588,10 @@ class MalusCardEffects
 
         if ($mode === 'leader') {
             return $this->standingsLeader($gameSave->gameTeams()->get(), $sourceTeamId);
+        }
+
+        if ($mode === 'ahead') {
+            return $this->teamAhead($gameSave->gameTeams()->get(), $sourceTeamId);
         }
 
         // mode 'select'
@@ -469,15 +619,14 @@ class MalusCardEffects
     }
 
     /**
-     * Équipe en tête du classement (points = 3·victoires + nuls), hors $excludeTeamId, parmi
+     * Équipe en tête du classement officiel (points, différence de buts…), hors $excludeTeamId, parmi
      * les équipes déjà lues. L'équipe trouvée est transmise à la cible : pas de relecture.
      *
      * @param \Illuminate\Support\Collection<int, GameTeam> $teams toutes les équipes de la partie
      */
     private function standingsLeader(\Illuminate\Support\Collection $teams, int $excludeTeamId): MalusTarget
     {
-        $leader = $teams
-            ->sortByDesc(fn ($t) => ($t->wins ?? 0) * 3 + ($t->draws ?? 0))
+        $leader = app(SeasonService::class)->sortStandings($teams)
             ->first(fn ($t) => (int) $t->id !== $excludeTeamId);
 
         if (!$leader) {
@@ -485,6 +634,26 @@ class MalusCardEffects
         }
 
         return new MalusTarget((int) $leader->id, $leader);
+    }
+
+    /**
+     * Équipe classée juste devant $sourceTeamId (la « carapace rouge »). Refusé si l'émetteur
+     * est déjà en tête : il n'a personne devant lui.
+     *
+     * @param \Illuminate\Support\Collection<int, GameTeam> $teams toutes les équipes de la partie
+     */
+    private function teamAhead(\Illuminate\Support\Collection $teams, int $sourceTeamId): MalusTarget
+    {
+        $sorted = app(SeasonService::class)->sortStandings($teams);
+        $index  = $sorted->search(fn ($t) => (int) $t->id === $sourceTeamId);
+
+        if ($index === false || $index === 0) {
+            throw ValidationException::withMessages(['card' => 'Aucune équipe n\'est classée devant vous.']);
+        }
+
+        $ahead = $sorted[$index - 1];
+
+        return new MalusTarget((int) $ahead->id, $ahead);
     }
 
     /**

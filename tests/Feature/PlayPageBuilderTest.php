@@ -47,7 +47,7 @@ class PlayPageBuilderTest extends TestCase
             'gameSave', 'teams', 'matches', 'freePlayers', 'controlledTeam', 'hotSeat', 'managementStats',
             'playerSeasonStats', 'activeInjuries', 'activeSuspensions', 'activePositionTrainings', 'activeYellowCards',
             'moraleLogs', 'playerPromises', 'playerDeclarations', 'bonusCardOffers', 'bonusCardInventory',
-            'sponsorChallenges', 'sponsorResults', 'incomingMalus', 'activeShields', 'gameConfig',
+            'sponsorChallenges', 'sponsorResults', 'incomingMalus', 'activeShields', 'activeTraps', 'gameConfig',
             'aiTrainingInitial', 'tournament', 'career', 'seasonChallenges', 'incomeModel',
             'duoLinks', 'playerChemistry', 'learnedDuos', 'midseasonBreakRecovery', 'contractSeasonEndWeek',
         ] as $key) {
