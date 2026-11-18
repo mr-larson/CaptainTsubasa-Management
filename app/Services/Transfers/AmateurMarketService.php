@@ -3,6 +3,7 @@
 namespace App\Services\Transfers;
 
 use App\Contracts\Randomizer;
+use App\Enums\Nationality;
 use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSave;
 use App\Services\Players\MoraleService;
@@ -31,14 +32,76 @@ class AmateurMarketService
         'Forward'    => 2,
     ];
 
-    private const FIRSTNAMES = [
-        'Akio', 'Daichi', 'Eiji', 'Fumio', 'Goro', 'Haruki', 'Isamu', 'Jiro', 'Kazuki', 'Kenta',
-        'Makoto', 'Naoki', 'Osamu', 'Riku', 'Satoru', 'Shinji', 'Takumi', 'Tetsuo', 'Yuji', 'Yusuke',
-    ];
-
-    private const LASTNAMES = [
-        'Abe', 'Endo', 'Fujita', 'Goto', 'Hayashi', 'Ikeda', 'Kato', 'Kimura', 'Kobayashi', 'Maeda',
-        'Mori', 'Murata', 'Nakano', 'Ogawa', 'Okada', 'Saito', 'Sakamoto', 'Shimizu', 'Ueno', 'Yamada',
+    /** Noms fictifs regroupés par nationalité pour éviter les mélanges entre pays. */
+    private const NAME_POOLS = [
+        Nationality::JAPON => [
+            'firstnames' => ['Akio', 'Daichi', 'Eiji', 'Fumio', 'Goro', 'Haruki', 'Isamu', 'Jiro', 'Kazuki', 'Kenta', 'Makoto', 'Naoki', 'Osamu', 'Riku', 'Satoru', 'Shinji', 'Takumi', 'Tetsuo', 'Yuji', 'Yusuke'],
+            'lastnames' => ['Abe', 'Endo', 'Fujita', 'Goto', 'Hayashi', 'Ikeda', 'Kato', 'Kimura', 'Kobayashi', 'Maeda', 'Mori', 'Murata', 'Nakano', 'Ogawa', 'Okada', 'Saito', 'Sakamoto', 'Shimizu', 'Ueno', 'Yamada'],
+        ],
+        Nationality::BELGIQUE => [
+            'firstnames' => ['Arnaud', 'Bastien', 'Florian', 'Jules', 'Lars', 'Milan', 'Niels', 'Wout'],
+            'lastnames' => ['Lambert', 'Dubois', 'Leclercq', 'Simon', 'Peeters', 'Claes', 'Maes', 'Willems'],
+        ],
+        Nationality::FRANCE => [
+            'firstnames' => ['Mathieu', 'Antoine', 'Benoît', 'Clément', 'Hugo', 'Loïc', 'Quentin', 'Rémi'],
+            'lastnames' => ['Moreau', 'Bernard', 'Chevalier', 'Garnier', 'Laurent', 'Lefèvre', 'Mercier', 'Perrin'],
+        ],
+        Nationality::ALLEMAGNE => [
+            'firstnames' => ['Felix', 'Jonas', 'Lukas', 'Moritz', 'Niklas', 'Philipp', 'Timo', 'Tobias'],
+            'lastnames' => ['Bauer', 'Becker', 'Fischer', 'Hoffmann', 'Keller', 'Koch', 'Schneider', 'Weiss'],
+        ],
+        Nationality::ANGLETERRE => [
+            'firstnames' => ['Callum', 'Ethan', 'Harry', 'Jack', 'Lewis', 'Oliver', 'Samuel', 'Thomas'],
+            'lastnames' => ['Bennett', 'Brooks', 'Cooper', 'Foster', 'Hughes', 'Parker', 'Turner', 'Wood'],
+        ],
+        Nationality::ESPAGNE => [
+            'firstnames' => ['Álvaro', 'Diego', 'Hugo', 'Iván', 'Javier', 'Marcos', 'Pablo', 'Sergio'],
+            'lastnames' => ['Cabrera', 'Castillo', 'Delgado', 'García', 'Medina', 'Ortega', 'Romero', 'Vega'],
+        ],
+        Nationality::ITALIE => [
+            'firstnames' => ['Alessio', 'Andrea', 'Davide', 'Fabio', 'Luca', 'Matteo', 'Niccolò', 'Simone'],
+            'lastnames' => ['Bianchi', 'Conti', 'De Luca', 'Ferrara', 'Galli', 'Lombardi', 'Marino', 'Rossi'],
+        ],
+        Nationality::PORTUGAL => [
+            'firstnames' => ['André', 'Diogo', 'Duarte', 'Gonçalo', 'João', 'Miguel', 'Rui', 'Tiago'],
+            'lastnames' => ['Barbosa', 'Cardoso', 'Correia', 'Fernandes', 'Lopes', 'Martins', 'Ribeiro', 'Sousa'],
+        ],
+        Nationality::PAYS_BAS => [
+            'firstnames' => ['Bram', 'Daan', 'Jesse', 'Joris', 'Koen', 'Luuk', 'Sander', 'Thijs'],
+            'lastnames' => ['Bakker', 'Bos', 'De Vries', 'Jansen', 'Mulder', 'Smit', 'Van Dijk', 'Visser'],
+        ],
+        Nationality::BRESIL => [
+            'firstnames' => ['Caio', 'Danilo', 'Felipe', 'Gustavo', 'Henrique', 'Leandro', 'Rafael', 'Vinícius'],
+            'lastnames' => ['Almeida', 'Barros', 'Carvalho', 'Costa', 'Ferreira', 'Mendes', 'Pereira', 'Santos'],
+        ],
+        Nationality::ARGENTINE => [
+            'firstnames' => ['Agustín', 'Bruno', 'Facundo', 'Gonzalo', 'Joaquín', 'Lautaro', 'Matías', 'Tomás'],
+            'lastnames' => ['Acosta', 'Benítez', 'Cabrera', 'Domínguez', 'Giménez', 'Molina', 'Rojas', 'Sosa'],
+        ],
+        Nationality::MAROC => [
+            'firstnames' => ['Amine', 'Ayoub', 'Hamza', 'Ilyas', 'Mehdi', 'Nabil', 'Walid', 'Yassine'],
+            'lastnames' => ['Alaoui', 'Amrani', 'Bennani', 'Berrada', 'El Fassi', 'Idrissi', 'Lahlou', 'Mansouri'],
+        ],
+        Nationality::NIGERIA => [
+            'firstnames' => ['Chidi', 'Chinedu', 'Emeka', 'Femi', 'Ibrahim', 'Kelechi', 'Seyi', 'Tunde'],
+            'lastnames' => ['Adeyemi', 'Afolabi', 'Bello', 'Eze', 'Nwosu', 'Obi', 'Okafor', 'Okeke'],
+        ],
+        Nationality::GHANA => [
+            'firstnames' => ['Kofi', 'Kwame', 'Kwesi', 'Kojo', 'Yaw', 'Kwaku', 'Nana', 'Akwasi'],
+            'lastnames' => ['Adjei', 'Agyeman', 'Asante', 'Boateng', 'Mensah', 'Ofori', 'Opoku', 'Owusu'],
+        ],
+        Nationality::COREE_DU_SUD => [
+            'firstnames' => ['Min-jun', 'Seo-jun', 'Ji-ho', 'Do-yun', 'Hyun-woo', 'Jun-seo', 'Si-woo', 'Tae-hyun'],
+            'lastnames' => ['Han', 'Jung', 'Kang', 'Kim', 'Lee', 'Lim', 'Park', 'Yoon'],
+        ],
+        Nationality::CHINE => [
+            'firstnames' => ['Wei', 'Jun', 'Tao', 'Lei', 'Hao', 'Ming', 'Jian', 'Peng'],
+            'lastnames' => ['Chen', 'Huang', 'Li', 'Liu', 'Wang', 'Wu', 'Yang', 'Zhang'],
+        ],
+        Nationality::ARABIE_SAOUDITE => [
+            'firstnames' => ['Omar', 'Abdullah', 'Fahad', 'Faisal', 'Khalid', 'Nasser', 'Saad', 'Yasir'],
+            'lastnames' => ['Al-Harbi', 'Al-Ghamdi', 'Al-Qahtani', 'Al-Shammari', 'Al-Dosari', 'Al-Otaibi', 'Al-Zahrani', 'Al-Shehri'],
+        ],
     ];
 
     /**
@@ -68,7 +131,7 @@ class AmateurMarketService
         return $created;
     }
 
-    /** Crée en base un joueur amateur libre au poste donné : nom japonais aléatoire, stats du poste entre 10 et 13, autres stats entre 6 et 10, coût de 8 à 15, moral neutre. */
+    /** Crée en base un joueur amateur libre au poste donné : nom et nationalité cohérents tirés au hasard, stats du poste entre 10 et 13, autres stats entre 6 et 10, coût de 8 à 15, moral neutre. */
     public function generate(GameSave $gameSave, string $position): GamePlayer
     {
         $low  = fn() => $this->random->int(6, 10);   // stats hors poste
@@ -79,13 +142,16 @@ class AmateurMarketService
         $isMid = $position === 'Midfielder';
         $isAtt = $position === 'Forward';
 
+        $nationality = $this->random->pick(array_keys(self::NAME_POOLS));
+        $names = self::NAME_POOLS[$nationality];
+
         return GamePlayer::create([
             'game_save_id'        => $gameSave->id,
-            'firstname'           => $this->random->pick(self::FIRSTNAMES),
-            'lastname'            => $this->random->pick(self::LASTNAMES),
+            'firstname'           => $this->random->pick($names['firstnames']),
+            'lastname'            => $this->random->pick($names['lastnames']),
             'position'            => $position,
             'origin'              => GamePlayer::ORIGIN_AMATEUR,
-            'nationality'         => \App\Enums\Nationality::JAPON,
+            'nationality'         => $nationality,
             'secondary_positions' => [],
             'description'         => 'Joueur amateur du coin : peu coûteux, de quoi compléter un effectif.',
             'speed'               => $gameSave->config()->initialSpeed($this->random->int(25, 40)),

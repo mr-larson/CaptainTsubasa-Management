@@ -2,11 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Contracts\Randomizer;
+use App\Enums\Nationality;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GamePlayer;
 use App\Services\Ai\AITransferService;
 use App\Services\Transfers\AmateurMarketService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Concerns\BuildsGameWorld;
 use Tests\TestCase;
 
@@ -37,6 +40,45 @@ class AmateurMarketTest extends TestCase
 
         // Idempotent tant que personne n'est engagé.
         $this->assertSame(0, app(AmateurMarketService::class)->ensureFloor($save));
+    }
+
+    #[DataProvider('amateurNationalities')]
+    public function test_generated_identity_matches_the_chosen_nationality(string $nationality, string $firstname, string $lastname): void
+    {
+        $save = $this->makeSave();
+        $random = \Mockery::mock(Randomizer::class);
+        $random->shouldReceive('pick')->once()
+            ->withArgs(fn (array $items) => in_array($nationality, $items, true))
+            ->andReturn($nationality);
+        $random->shouldReceive('pick')->once()
+            ->withArgs(fn (array $items) => in_array($firstname, $items, true))
+            ->andReturn($firstname);
+        $random->shouldReceive('pick')->once()
+            ->withArgs(fn (array $items) => in_array($lastname, $items, true))
+            ->andReturn($lastname);
+        $random->shouldReceive('int')->andReturnUsing(fn (int $min, int $max) => $min);
+
+        $player = (new AmateurMarketService($random))->generate($save, 'Midfielder')->fresh();
+
+        $this->assertSame($nationality, $player->nationality);
+        $this->assertSame($firstname, $player->firstname);
+        $this->assertSame($lastname, $player->lastname);
+        $this->assertSame(GamePlayer::ORIGIN_AMATEUR, $player->origin);
+        $this->assertNull($player->photo_path);
+        $this->assertLessThanOrEqual(15, $player->cost);
+    }
+
+    public static function amateurNationalities(): array
+    {
+        return [
+            'japon' => [Nationality::JAPON, 'Akio', 'Abe'],
+            'belgique' => [Nationality::BELGIQUE, 'Arnaud', 'Lambert'],
+            'france' => [Nationality::FRANCE, 'Benoît', 'Lefèvre'],
+            'bresil' => [Nationality::BRESIL, 'Vinícius', 'Almeida'],
+            'maroc' => [Nationality::MAROC, 'Yassine', 'Idrissi'],
+            'coree' => [Nationality::COREE_DU_SUD, 'Min-jun', 'Han'],
+            'arabie' => [Nationality::ARABIE_SAOUDITE, 'Omar', 'Al-Harbi'],
+        ];
     }
 
     public function test_floor_is_refilled_after_a_signing(): void
