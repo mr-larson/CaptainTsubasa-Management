@@ -1,4 +1,5 @@
 <script setup>
+import Badge from '@/Components/Badge.vue';
 import GameBanknote from '@/Components/GameBanknote.vue';
 import Panel from '@/Components/Panel.vue';
 import { positionLabel } from '@/Enums/positionBadges.js';
@@ -372,15 +373,15 @@ const canConfirm = computed(() => {
                                                   :class="tierClasses(offer.tier).badge">
                                                 {{ tierClasses(offer.tier).label }}
                                             </span>
-                                            <span v-if="group.key === 'malus'"
-                                                  class="text-3xs font-black px-1.5 py-0.5 rounded-full bg-rose-500 text-white">
+                                            <Badge v-if="group.key === 'malus'"
+                                                  tone="solid-rose" size="xs" weight="black">
                                                 MALUS
-                                            </span>
-                                            <span v-if="isComeback(offer)"
+                                            </Badge>
+                                            <Badge v-if="isComeback(offer)"
                                                   title="Carte réservée aux équipes du bas du classement"
-                                                  class="text-3xs font-black px-1.5 py-0.5 rounded-full bg-indigo-500 text-white">
+                                                  tone="solid-indigo" size="xs" weight="black">
                                                 REMONTADA
-                                            </span>
+                                            </Badge>
                                         </div>
                                     </div>
                                 </div>
@@ -396,12 +397,12 @@ const canConfirm = computed(() => {
 
                             <!-- Tags -->
                             <div class="flex gap-1.5 flex-wrap">
-                                <span class="text-2xs font-semibold px-2 py-0.5 rounded-full bg-white/70 border border-slate-200 text-slate-600">
+                                <Badge tone="outline" weight="semibold">
                                     {{ timingLabel(offer) }}
-                                </span>
-                                <span class="text-2xs font-semibold px-2 py-0.5 rounded-full bg-white/70 border border-slate-200 text-slate-600">
+                                </Badge>
+                                <Badge tone="outline" weight="semibold">
                                     {{ targetLabel(offer.target) }}
-                                </span>
+                                </Badge>
                             </div>
 
                             <!-- Bouton achat -->
@@ -456,14 +457,14 @@ const canConfirm = computed(() => {
                                                   :class="tierClasses(card.tier).badge">
                                                 {{ tierClasses(card.tier).label }}
                                             </span>
-                                            <span v-if="group.key === 'malus'"
-                                                  class="text-3xs font-black px-1.5 py-0.5 rounded-full bg-rose-500 text-white">
+                                            <Badge v-if="group.key === 'malus'"
+                                                  tone="solid-rose" size="xs" weight="black">
                                                 MALUS
-                                            </span>
-                                            <span v-if="isFree(card)"
-                                                  class="text-3xs font-black px-1.5 py-0.5 rounded-full bg-indigo-500 text-white">
+                                            </Badge>
+                                            <Badge v-if="isFree(card)"
+                                                  tone="solid-indigo" size="xs" weight="black">
                                                 OFFERTE
-                                            </span>
+                                            </Badge>
                                         </div>
                                     </div>
                                 </div>
@@ -471,12 +472,12 @@ const canConfirm = computed(() => {
                                 <p class="text-2xs text-slate-600 leading-relaxed">{{ card.description }}</p>
 
                                 <div class="flex gap-1 flex-wrap">
-                                    <span class="text-3xs font-semibold px-1.5 py-0.5 rounded-full bg-white/80 border border-slate-200 text-slate-500">
+                                    <Badge tone="outline-muted" size="xs" weight="semibold">
                                         {{ timingLabel(card) }}
-                                    </span>
-                                    <span class="text-3xs font-semibold px-1.5 py-0.5 rounded-full bg-white/80 border border-slate-200 text-slate-500">
+                                    </Badge>
+                                    <Badge tone="outline-muted" size="xs" weight="semibold">
                                         {{ targetLabel(card.target) }}
-                                    </span>
+                                    </Badge>
                                 </div>
 
                                 <div class="text-2xs font-semibold text-center rounded-lg py-1"

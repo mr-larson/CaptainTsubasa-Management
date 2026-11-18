@@ -1,4 +1,5 @@
 <script setup>
+import Badge from '@/Components/Badge.vue';
 import TeamLogoImage from '@/Components/TeamLogoImage.vue';
 import Panel from '@/Components/Panel.vue';
 import { isGoalkeeper } from '@/utils/playerStats.js';
@@ -275,9 +276,9 @@ const sortIcon = (key) => {
                                             aria-haspopup="dialog" @click="selectedTeam = teams.find(team => team.id === t.id)">
                                             {{ t.name }}
                                         </button>
-                                    <span v-if="isMyTeam(t.id)" class="text-3xs bg-teal-500 text-white px-1.5 py-0.5 rounded-full font-bold shrink-0">
+                                    <Badge v-if="isMyTeam(t.id)" tone="solid-teal" size="xs" class="shrink-0">
                                             MON ÉQUIPE
-                                        </span>
+                                        </Badge>
                                 </div>
                             </td>
 

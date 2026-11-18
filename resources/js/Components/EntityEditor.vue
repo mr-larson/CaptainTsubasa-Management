@@ -1,4 +1,5 @@
 <script setup>
+import Badge from '@/Components/Badge.vue';
 import TabBar from '@/Components/TabBar.vue';
 import { fieldClass } from '@/Components/fieldStyles';
 import { computed, ref } from 'vue';
@@ -92,9 +93,9 @@ const isSelected = (item) => !props.creating && props.selectedId === item.id;
                 <TabBar :model-value="activeTab" :tabs="tabs" @update:model-value="key => emit('update:activeTab', key)" />
 
                 <div class="flex items-center gap-2 pb-2">
-                    <span v-if="creating" class="text-2xs font-bold px-2 py-0.5 rounded-full bg-teal-50 text-teal-700">
+                    <Badge v-if="creating" tone="teal">
                         Nouveau
-                    </span>
+                    </Badge>
                     <slot name="badges" />
                 </div>
             </div>

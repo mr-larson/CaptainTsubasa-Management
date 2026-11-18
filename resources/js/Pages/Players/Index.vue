@@ -56,9 +56,9 @@
                           class="text-2xs font-bold px-2 py-0.5 rounded-full">
                         {{ positionLabels[form.position] ?? form.position }}
                     </span>
-                    <span v-if="overall" class="text-2xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                    <Badge v-if="overall">
                         OVR {{ overall }}
-                    </span>
+                    </Badge>
                 </template>
 
                 <!-- FICHE JOUEUR -->
@@ -147,6 +147,7 @@
 </template>
 
 <script setup>
+import Badge from '@/Components/Badge.vue';
 import PlayerEditorFilters from '@/Components/PlayerEditorFilters.vue';
 import { usePlayerEditorFilters } from '@/Composables/usePlayerEditorFilters.js';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';

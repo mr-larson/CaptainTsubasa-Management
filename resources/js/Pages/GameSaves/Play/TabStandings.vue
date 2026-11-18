@@ -1,4 +1,5 @@
 <script setup>
+import Badge from '@/Components/Badge.vue';
 import { computed, ref } from 'vue';
 import Modal from '@/Components/Modal.vue';
 import TeamDetailContent from './components/TeamDetailContent.vue';
@@ -161,10 +162,10 @@ const rankIcon = (rank) => {
                                       :class="team?.id === row.id ? 'text-teal-700' : 'text-slate-700'">
                                         {{ row.name }}
                                 </button>
-                                <span v-if="team?.id === row.id"
-                                      class="text-3xs bg-teal-500 text-white px-1.5 py-0.5 rounded-full font-bold shrink-0">
+                                <Badge v-if="team?.id === row.id"
+                                      tone="solid-teal" size="xs" class="shrink-0">
                                         MOI
-                                    </span>
+                                    </Badge>
                             </div>
                         </td>
 

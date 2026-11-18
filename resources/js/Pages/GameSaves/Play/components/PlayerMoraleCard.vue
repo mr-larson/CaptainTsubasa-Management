@@ -1,4 +1,5 @@
 <script setup>
+import Badge from '@/Components/Badge.vue';
 import SectionTitle from '@/Components/SectionTitle.vue';
 import { computed } from 'vue';
 import { useAnimatedStats } from '@/Composables/useAnimatedStats.js';
@@ -127,9 +128,9 @@ const lastDeclarationSummary = computed(() => {
                   title="Appliqué à toutes les actions en match (duels, tirs, arrêts)">
                 ⚔️ Effet en match : {{ selectedPlayerMoraleEffect.pct }}
             </span>
-            <span v-else class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs font-semibold bg-slate-100 text-slate-500">
+            <Badge v-else tone="slate-muted" weight="semibold" class="gap-1 inline-flex items-center">
                 ⚔️ Aucun effet en match
-            </span>
+            </Badge>
             <span v-if="selectedPlayerIsHeroic"
                   class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs font-bold bg-amber-100 text-amber-700"
                   title="5 % de chance de relancer gratuitement un duel perdu (une fois par match)">

@@ -1,4 +1,5 @@
 <script setup>
+import Badge from '@/Components/Badge.vue';
 import { formatDate } from '@/utils/format.js';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
@@ -64,8 +65,8 @@ const destroyPackage = async (pkg) => {
                             <div class="flex-1 min-w-0">
                                 <div class="text-sm font-bold text-slate-700 flex items-center gap-2">
                                     {{ pkg.name }}
-                                    <span v-if="pkg.is_shared" class="px-2 py-0.5 rounded-full bg-teal-100 text-teal-700 text-2xs font-bold uppercase tracking-wide">Partagée</span>
-                                    <span v-else class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 text-2xs font-bold uppercase tracking-wide">Privée</span>
+                                    <Badge v-if="pkg.is_shared" tone="teal-strong" class="tracking-wide uppercase">Partagée</Badge>
+                                    <Badge v-else tone="slate-muted" class="tracking-wide uppercase">Privée</Badge>
                                 </div>
                                 <div class="text-xs text-slate-400 mt-0.5">
                                     {{ pkg.description || 'Sans description' }}

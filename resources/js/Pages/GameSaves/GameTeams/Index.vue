@@ -35,9 +35,9 @@
                 </template>
 
                 <template #badges>
-                    <span class="text-2xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                    <Badge>
                         Budget : {{ Number(form.budget || 0).toLocaleString('fr-FR') }} <GameBanknote />
-                    </span>
+                    </Badge>
                 </template>
 
                 <Panel as="div" class="sm:p-6">
@@ -68,6 +68,7 @@
 </template>
 
 <script setup>
+import Badge from '@/Components/Badge.vue';
 import GameBanknote from '@/Components/GameBanknote.vue';
 import Panel from '@/Components/Panel.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';

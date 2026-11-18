@@ -1,4 +1,5 @@
 <script setup>
+import Badge from '@/Components/Badge.vue';
 import { useForm } from '@inertiajs/vue3';
 import ButtonSecondary from '@/Components/ButtonSecondary.vue';
 import Panel from '@/Components/Panel.vue';
@@ -39,10 +40,10 @@ function propose(partnerId) {
                          :style="{ width: relation.score + '%' }"></div>
                 </div>
                 <div class="flex flex-wrap items-center gap-1.5">
-                    <span class="rounded-full bg-slate-100 px-2 py-0.5 text-2xs font-semibold text-slate-500">
+                    <Badge tone="slate-muted" weight="semibold">
                         {{ relation.shared_matches }} {{ relation.shared_matches === 1 ? 'match' : 'matchs' }} ensemble
-                    </span>
-                    <span v-if="relation.confirmed" class="rounded-full bg-teal-100 px-2 py-0.5 text-2xs font-bold text-teal-700">🤝 Duo confirmé</span>
+                    </Badge>
+                    <Badge v-if="relation.confirmed" tone="teal-strong">🤝 Duo confirmé</Badge>
                     <ButtonSecondary v-else-if="editable && relation.can_attempt" size="sm" :disabled="form.processing"
                                      @click="propose(relation.partner_id)">
                         Proposer un duo · {{ relation.chance }} %
