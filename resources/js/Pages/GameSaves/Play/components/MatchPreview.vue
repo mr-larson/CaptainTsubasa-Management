@@ -1,4 +1,5 @@
 <script setup>
+import TeamLogoImage from '@/Components/TeamLogoImage.vue';
 import { resultFor } from '../matchResults.js';
 import SectionTitle from '@/Components/SectionTitle.vue';
 import Panel from '@/Components/Panel.vue';

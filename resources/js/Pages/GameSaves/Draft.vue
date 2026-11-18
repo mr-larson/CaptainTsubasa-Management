@@ -1,4 +1,5 @@
 <script setup>
+import GameBanknote from '@/Components/GameBanknote.vue';
 import { contractPlayer } from '@/Pages/GameSaves/Play/teamRoster.js';
 import PixelLoader from '@/Components/PixelLoader.vue';
 import { countByPositionGroup, positionLabel } from '@/Enums/positionBadges.js';

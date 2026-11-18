@@ -1,4 +1,5 @@
 <script setup>
+import TeamLogoImage from '@/Components/TeamLogoImage.vue';
 import { computed } from 'vue';
 
 /**

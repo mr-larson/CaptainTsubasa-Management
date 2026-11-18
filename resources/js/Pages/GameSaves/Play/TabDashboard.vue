@@ -1,4 +1,5 @@
 <script setup>
+import TeamLogoImage from '@/Components/TeamLogoImage.vue';
 import SectionTitle from '@/Components/SectionTitle.vue';
 import Panel from '@/Components/Panel.vue';
 import { contractPlayer, seasonStatsOf } from '@/Pages/GameSaves/Play/teamRoster.js';

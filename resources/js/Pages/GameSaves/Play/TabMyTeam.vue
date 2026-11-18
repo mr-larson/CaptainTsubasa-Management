@@ -1,4 +1,5 @@
 <script setup>
+import GameBanknote from '@/Components/GameBanknote.vue';
 import SectionTitle from '@/Components/SectionTitle.vue';
 import { fieldClass } from '@/Components/fieldStyles';
 import ButtonSecondary from '@/Components/ButtonSecondary.vue';

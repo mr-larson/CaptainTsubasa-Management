@@ -68,6 +68,7 @@
 </template>
 
 <script setup>
+import GameBanknote from '@/Components/GameBanknote.vue';
 import Panel from '@/Components/Panel.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import H2 from '@/Components/H2.vue';

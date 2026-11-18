@@ -1,4 +1,5 @@
 <script setup>
+import TeamLogoImage from '@/Components/TeamLogoImage.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import PlayerPhoto from '@/Components/PlayerPhoto.vue';

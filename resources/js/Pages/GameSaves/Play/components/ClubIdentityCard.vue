@@ -1,4 +1,5 @@
 <script setup>
+import GameBanknote from '@/Components/GameBanknote.vue';
 import Panel from '@/Components/Panel.vue';
 import TeamLogo from '@/Components/TeamLogo.vue';
 import TeamStyleBadges from '@/Pages/GameSaves/Play/components/TeamStyleBadges.vue';

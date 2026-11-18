@@ -1,4 +1,5 @@
 <script setup>
+import TeamLogoImage from '@/Components/TeamLogoImage.vue';
 import Panel from '@/Components/Panel.vue';
 import { isGoalkeeper } from '@/utils/playerStats.js';
 import { contractPlayer, seasonStatsOf } from '@/Pages/GameSaves/Play/teamRoster.js';

@@ -1,4 +1,5 @@
 <script setup>
+import GameBanknote from '@/Components/GameBanknote.vue';
 import { computed } from 'vue';
 import { positionLabel } from '@/Enums/positionBadges.js';
 import { usePlayerUtils } from '../usePlayerUtils.js';

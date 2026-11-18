@@ -1,4 +1,6 @@
 <script setup>
+import GameBanknote from '@/Components/GameBanknote.vue';
+import TeamLogoImage from '@/Components/TeamLogoImage.vue';
 import { positionLabel } from '@/Enums/positionBadges.js';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ButtonPrimary from '@/Components/ButtonPrimary.vue';

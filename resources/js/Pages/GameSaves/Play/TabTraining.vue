@@ -1,4 +1,5 @@
 <script setup>
+import GameBanknote from '@/Components/GameBanknote.vue';
 import Panel from '@/Components/Panel.vue';
 import { seasonStatsOf } from '@/Pages/GameSaves/Play/teamRoster.js';
 import { positionLabel } from '@/Enums/positionBadges.js';

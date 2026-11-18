@@ -1,4 +1,5 @@
 <script setup>
+import TeamLogoImage from '@/Components/TeamLogoImage.vue';
 import { computed, ref } from 'vue';
 import Modal from '@/Components/Modal.vue';
 import ButtonPrimary from '@/Components/ButtonPrimary.vue';

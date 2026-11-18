@@ -368,6 +368,7 @@
 </template>
 
 <script setup>
+import TeamLogoImage from '@/Components/TeamLogoImage.vue';
 import { fieldClass } from '@/Components/fieldStyles';
 // ==========================
 //  Imports Vue / Inertia

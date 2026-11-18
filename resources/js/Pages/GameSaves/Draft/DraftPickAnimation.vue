@@ -1,4 +1,5 @@
 <script setup>
+import GameBanknote from '@/Components/GameBanknote.vue';
 import PlayerPhoto from '@/Components/PlayerPhoto.vue';
 // Annonce plein écran du dernier joueur pioché.
 defineProps({

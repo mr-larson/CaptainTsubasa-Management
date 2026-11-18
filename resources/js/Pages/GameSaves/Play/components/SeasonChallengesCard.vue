@@ -1,4 +1,5 @@
 <script setup>
+import GameBanknote from '@/Components/GameBanknote.vue';
 import { computed } from 'vue';
 import { useAnimatedStats } from '@/Composables/useAnimatedStats.js';
 

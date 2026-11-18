@@ -1,4 +1,5 @@
 <script setup>
+import TeamLogoImage from '@/Components/TeamLogoImage.vue';
 import SectionTitle from '@/Components/SectionTitle.vue';
 import PixelLoader from '@/Components/PixelLoader.vue';
 import TabBar from '@/Components/TabBar.vue';

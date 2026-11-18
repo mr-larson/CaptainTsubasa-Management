@@ -1,4 +1,5 @@
 <script setup>
+import TeamLogoImage from '@/Components/TeamLogoImage.vue';
 import { ref, computed, watch, onUnmounted } from 'vue';
 import { FORMATIONS, DEFAULT_FORMATION, LANE_Y, GK_LANE_Y } from '@/Pages/Match/engine/formations.js';
 import { isGoalEvent as isGoal, eventIcon, eventOutcome, eventKind } from './matchEvents.js';

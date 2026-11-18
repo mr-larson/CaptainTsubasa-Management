@@ -1,4 +1,5 @@
 <script setup>
+import GameBanknote from '@/Components/GameBanknote.vue';
 import UniverseSelector from '@/Components/UniverseSelector.vue';
 import ConfigSection from '@/Components/ConfigSection.vue';
 import ConfigRange from '@/Components/ConfigRange.vue';
