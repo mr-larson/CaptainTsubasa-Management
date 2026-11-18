@@ -11,6 +11,7 @@ use App\Support\GameConfig;
 use App\Models\GameSaves\GamePlayer;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
+use App\Models\Nation;
 use App\Models\Player;
 use Illuminate\Support\Collection;
 use App\Services\Players\MoraleService;
@@ -102,9 +103,11 @@ class NationalTeamAssembler
             }
 
             $lineup = $this->lineups->recommendInitialLineup($squad);
+            $catalog = Nation::where('name', $nation)->first();
             $gameTeam = GameTeam::create([
                 'game_save_id'          => $gameSave->id,
                 'base_team_id'          => null,
+                'base_nation_id'        => $catalog?->id,
                 'name'                  => $nation,
                 'budget'                => 0,
                 'wins'                  => 0,
@@ -112,10 +115,11 @@ class NationalTeamAssembler
                 'losses'                => 0,
                 'goals_for'             => 0,
                 'goals_against'         => 0,
+                'logo_path'             => $catalog?->flag_path,
                 'formation'             => $lineup['formation'],
                 'description'           => $this->describe($squad),
-                'tactical_style'        => 'balanced',
-                'management_philosophy' => 'collective',
+                'tactical_style'        => $catalog?->tactical_style ?? 'balanced',
+                'management_philosophy' => $catalog?->management_philosophy ?? 'collective',
                 'is_controlled'         => $isHuman,
                 'human_seat'            => $isHuman ? $seats[$nation] + 1 : null,
             ]);

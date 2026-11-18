@@ -1,6 +1,6 @@
 # Plan de migration : table `nations` (mode Coupe du Monde)
 
-Date : 2026-11-18. Statut : **plan uniquement, rien n'est migré.**
+Date : 2026-11-18. Statut : **étapes 1 à 3 faites** (table `nations` remplie depuis l'enum, `game_teams.base_nation_id`, assembleur relié au catalogue). Restent : drapeaux en images (5), validation via la table et retrait de l'enum (4 partiel, 6).
 
 ## Objectif
 Passer les nations de « constante d'enum + emoji » à un catalogue en base, à l'image de `teams`

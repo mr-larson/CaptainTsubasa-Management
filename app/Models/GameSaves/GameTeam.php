@@ -21,6 +21,7 @@ class GameTeam extends Model
     protected $fillable = [
         'game_save_id',
         'base_team_id',
+        'base_nation_id',
         'is_controlled',
         'human_seat',
         'name',
@@ -46,6 +47,12 @@ class GameTeam extends Model
     public function baseTeam()
     {
         return $this->belongsTo(Team::class, 'base_team_id');
+    }
+
+    /** Nation du catalogue dont celle-ci est la sélection de partie (Coupe du Monde ; absente pour un club). */
+    public function baseNation()
+    {
+        return $this->belongsTo(\App\Models\Nation::class, 'base_nation_id');
     }
 
     /** Contrats de l'équipe dans la partie (actifs ou non). */

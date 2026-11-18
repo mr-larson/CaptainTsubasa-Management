@@ -240,4 +240,22 @@ class NewWorldCupBuilderTest extends TestCase
         $save = GameSave::where('user_id', $user->id)->firstOrFail();
         $this->assertSame(2, GameTeam::where('game_save_id', $save->id)->where('is_controlled', true)->count());
     }
+
+    public function test_the_nations_catalog_covers_every_nationality_of_the_enum(): void
+    {
+        $this->assertEqualsCanonicalizing(Nationality::ALL, \App\Models\Nation::pluck('name')->all());
+        $this->assertSame(0, \App\Models\Nation::whereNull('code')->orWhere('code', '')->count());
+    }
+
+    public function test_assembled_national_teams_are_linked_to_their_catalog_nation(): void
+    {
+        $nations = $this->seedTournament();
+        $save = $this->builder()->build(User::factory()->create(), ['nation' => $nations[0], 'period' => 'college', 'label' => 'x', 'game_config' => null]);
+
+        $teams = GameTeam::where('game_save_id', $save->id)->get();
+        $this->assertCount(8, $teams);
+        foreach ($teams as $team) {
+            $this->assertSame($team->name, $team->baseNation?->name);
+        }
+    }
 }
