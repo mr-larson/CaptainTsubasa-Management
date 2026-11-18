@@ -1,4 +1,5 @@
 <script setup>
+import NationFlag from '@/Components/NationFlag.vue';
 import Panel from '@/Components/Panel.vue';
 import { computed } from 'vue';
 
@@ -44,7 +45,7 @@ function isWinner(match, side) {
                 <div>
                     <div class="text-[11px] font-bold text-amber-600 uppercase tracking-wider">Champion</div>
                     <div class="text-base font-extrabold text-amber-800">
-                        {{ tournament.champion.flag }} {{ tournament.champion.name }}
+                        <NationFlag :flag="tournament.champion.flag" :url="tournament.champion.flag_url" :name="tournament.champion.name" /> {{ tournament.champion.name }}
                     </div>
                 </div>
             </div>
@@ -79,7 +80,7 @@ function isWinner(match, side) {
                             <td class="py-2 pl-4 flex items-center gap-2">
                                 <span class="w-4 text-[11px] font-bold"
                                       :class="row.qualified ? 'text-emerald-600' : 'text-slate-300'">{{ i + 1 }}</span>
-                                <span class="text-lg leading-none">{{ row.flag }}</span>
+                                <span class="text-lg leading-none"><NationFlag :flag="row.flag" :url="row.flag_url" :name="row.name" /></span>
                                 <span class="font-semibold text-slate-700">{{ row.name }}</span>
                                 <span v-if="tournament.eliminated?.[row.team_id]" class="text-2xs text-slate-400">éliminé</span>
                             </td>
@@ -116,7 +117,7 @@ function isWinner(match, side) {
                                  class="flex items-center justify-between px-3 py-2"
                                  :class="[side === 'away' ? 'border-t border-slate-200' : '',
                                           isWinner(m, side) ? 'bg-indigo-50 font-bold text-indigo-700' : 'text-slate-600']">
-                                <span>{{ m[side]?.flag }} {{ m[side]?.name ?? '—' }}</span>
+                                <span><NationFlag v-if="m[side]" :flag="m[side].flag" :url="m[side].flag_url" :name="m[side].name" /> {{ m[side]?.name ?? '—' }}</span>
                                 <span>{{ m.played ? m[side + '_score'] : '' }}<span v-if="m.shootout" class="ml-1 text-2xs font-normal text-slate-400" title="Tirs au but">({{ m.shootout[side] }})</span></span>
                             </div>
                         </div>
@@ -134,7 +135,7 @@ function isWinner(match, side) {
                                  class="flex items-center justify-between px-3 py-2.5"
                                  :class="[side === 'away' ? 'border-t border-amber-100' : '',
                                           isWinner(m, side) ? 'bg-amber-50 font-bold text-amber-700' : 'text-slate-600']">
-                                <span>{{ m[side]?.flag }} {{ m[side]?.name ?? '—' }}</span>
+                                <span><NationFlag v-if="m[side]" :flag="m[side].flag" :url="m[side].flag_url" :name="m[side].name" /> {{ m[side]?.name ?? '—' }}</span>
                                 <span>{{ m.played ? m[side + '_score'] : '' }}<span v-if="m.shootout" class="ml-1 text-2xs font-normal text-slate-400" title="Tirs au but">({{ m.shootout[side] }})</span></span>
                             </div>
                         </div>
@@ -151,7 +152,7 @@ function isWinner(match, side) {
                                  class="flex items-center justify-between px-3 py-2"
                                  :class="[side === 'away' ? 'border-t border-orange-100' : '',
                                           isWinner(m, side) ? 'bg-orange-50 font-bold text-orange-700' : 'text-slate-600']">
-                                <span>{{ m[side]?.flag }} {{ m[side]?.name ?? '—' }}</span>
+                                <span><NationFlag v-if="m[side]" :flag="m[side].flag" :url="m[side].flag_url" :name="m[side].name" /> {{ m[side]?.name ?? '—' }}</span>
                                 <span>{{ m.played ? m[side + '_score'] : '' }}<span v-if="m.shootout" class="ml-1 text-2xs font-normal text-slate-400" title="Tirs au but">({{ m.shootout[side] }})</span></span>
                             </div>
                         </div>

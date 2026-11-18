@@ -45,7 +45,7 @@ class GamePlayerController extends Controller
         return Inertia::render('GameSaves/GamePlayers/Index', [
             'gameSave' => GameSaveResource::make($gameSave)->toArray(),
             'players'  => $players,
-            'nationalities' => \App\Enums\Nationality::ALL,
+            'nationalities' => \App\Models\Nation::names(),
             'teams'    => $teams,
             // Joueur à ouvrir (ex. juste après sa création) / fiche vide demandée.
             'selectedId'  => $request->integer('selected') ?: null,
@@ -113,7 +113,7 @@ class GamePlayerController extends Controller
         return Inertia::render('GameSaves/GamePlayers/Edit', [
             'gameSave' => GameSaveResource::make($gameSave)->toArray(),
             'player'   => $player,
-            'nationalities' => \App\Enums\Nationality::ALL,
+            'nationalities' => \App\Models\Nation::names(),
         ]);
     }
 

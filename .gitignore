@@ -3,11 +3,12 @@
 /public/build
 /public/hot
 # Disque public servi directement depuis public/storage.
-# On ignore tout sauf les images statiques seedées (équipes/joueurs),
+# On ignore tout sauf les images statiques seedées (équipes/joueurs/drapeaux des nations),
 # qui doivent être livrées avec chaque déploiement (FS Laravel Cloud éphémère).
 /public/storage/*
 !/public/storage/players/
 !/public/storage/teams/
+!/public/storage/nations/
 /storage/*.key
 /vendor
 .env

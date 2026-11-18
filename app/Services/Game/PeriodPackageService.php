@@ -3,7 +3,6 @@
 namespace App\Services\Game;
 
 use App\Helpers\HeadingRating;
-use App\Enums\Nationality;
 use App\Enums\PlayerPosition;
 use App\Enums\TeamStyle;
 use App\Models\Contract;
@@ -199,7 +198,7 @@ class PeriodPackageService
                 'players.*.secondary_positions'   => ['nullable', 'array'],
                 'players.*.secondary_positions.*' => [new Enum(PlayerPosition::class)],
                 'players.*.origin'                => ['nullable', 'string', 'max:100'],
-                'players.*.nationality'           => ['nullable', Rule::in(Nationality::ALL)],
+                'players.*.nationality'           => ['nullable', Rule::exists('nations', 'name')],
                 'players.*.description'           => ['nullable', 'string', 'max:1000'],
                 'players.*.cost'                  => ['nullable', 'integer', 'min:0'],
                 'players.*.speed'                 => ['nullable', 'integer', 'min:0', 'max:100'],

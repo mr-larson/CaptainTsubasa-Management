@@ -179,7 +179,7 @@ final class GameConfig
             'visible_origins.*'       => ['boolean'],
             'internationals_visible'  => ['boolean'],
             'legends_countries'       => ['nullable', 'array'],
-            'legends_countries.*'     => ['string', \Illuminate\Validation\Rule::in(\App\Enums\Nationality::ALL)],
+            'legends_countries.*'     => ['string', \Illuminate\Validation\Rule::exists('nations', 'name')],
             'career_difficulty'       => ['string', 'in:none,survival,standard,conquest'],
             'season_challenges_enabled' => ['boolean'],
             'initial_morale_random'   => ['boolean'],
@@ -220,7 +220,7 @@ final class GameConfig
         }
 
         if (isset($clean['legends_countries'])) {
-            $clean['legends_countries'] = array_values(array_unique(array_intersect((array) $clean['legends_countries'], \App\Enums\Nationality::ALL)));
+            $clean['legends_countries'] = array_values(array_unique(array_intersect((array) $clean['legends_countries'], \App\Models\Nation::names())));
         }
 
         return $clean;

@@ -27,7 +27,7 @@ class PlayerController extends Controller
             'players'        => Player::with('contracts.team')->orderBy('firstname')->get(),
             'teams'          => Team::orderBy('name')->get(['id', 'name', 'logo_path']),
             'positions'      => PlayerPosition::values(),
-            'nationalities'  => \App\Enums\Nationality::ALL,
+            'nationalities'  => \App\Models\Nation::names(),
             'origins'        => \App\Enums\PlayerOrigin::LABELS,
             'positionLabels' => PlayerPosition::labels(),
             // Joueur à ouvrir (ex. juste après sa création) / fiche vide demandée.
