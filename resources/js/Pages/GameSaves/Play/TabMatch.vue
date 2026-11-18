@@ -1,4 +1,6 @@
 <script setup>
+import SectionTitle from '@/Components/SectionTitle.vue';
+import Panel from '@/Components/Panel.vue';
 import { formatDecimal } from '@/utils/format.js';
 import { isGoalkeeper } from '@/utils/playerStats.js';
 import { contractPlayer, playersOf } from '@/Pages/GameSaves/Play/teamRoster.js';
@@ -616,8 +618,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
             </div>
 
             <!-- La relecture est montée uniquement dans son onglet pour arrêter la lecture à sa fermeture. -->
-            <section v-if="detailTab === 'replay'" :key="selectedCalendarMatch.id"
-                     aria-label="Relecture du match" class="border border-slate-200 rounded-xl bg-slate-50 p-4 shadow-card">
+            <Panel v-if="detailTab === 'replay'" :key="selectedCalendarMatch.id" aria-label="Relecture du match">
     <!-- Replay visuel basé sur le déroulé action par action (engine.js / MatchSimulator) -->
     <MatchReplayPitch
         v-if="selectedCalendarEvents.length"
@@ -715,7 +716,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
             <div><div class="font-black text-slate-700">{{ selectedCalendarMatchStats?.teams?.away?.duelsWon ?? 0 }}</div><div>D+</div></div>
         </div>
     </div>
-            </section>
+            </Panel>
 
             <!-- Feuille de match -->
             <MatchSheet v-show="detailTab === 'sheet'"
@@ -739,11 +740,11 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
 
             <!-- Joueurs -->
             <div v-show="detailTab === 'players'">
-        <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 shadow-card">
+        <Panel as="div">
                 <div class="flex items-center justify-between mb-3">
-                    <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider">
+                    <SectionTitle>
                         Joueurs — {{ statsTeamName }}
-                    </h4>
+                    </SectionTitle>
                     <div class="flex rounded-lg overflow-hidden border border-slate-200 text-[11px] font-semibold">
                         <button type="button" @click="selectedStatsTeam = 'home'"
                                 class="px-3 py-1 transition-all"
@@ -762,7 +763,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                                    :starters="selectedCalendarMatchStats?.starters?.[selectedStatsTeam] ?? null"
                                    :playtime="selectedCalendarMatchStats?.playtime ?? null"
                                    :motmId="manOfTheMatch?.pid ?? null" />
-            </div>
+            </Panel>
             </div>
 
             <!-- ============================================ -->

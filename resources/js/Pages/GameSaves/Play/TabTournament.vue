@@ -1,4 +1,5 @@
 <script setup>
+import Panel from '@/Components/Panel.vue';
 import { computed } from 'vue';
 
 const props = defineProps({
@@ -89,8 +90,7 @@ function isWinner(match, side) {
         </div>
 
         <!-- Tableau final (bracket) -->
-        <div v-if="semis.length || finale.length"
-             class="border border-slate-200 rounded-xl bg-white p-4 shadow-card">
+        <Panel as="div" tone="white" v-if="semis.length || finale.length">
             <div class="text-sm font-bold text-slate-700 mb-3">Phase à élimination directe</div>
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
 
@@ -137,6 +137,6 @@ function isWinner(match, side) {
                     </div>
                 </div>
             </div>
-        </div>
+        </Panel>
     </div>
 </template>

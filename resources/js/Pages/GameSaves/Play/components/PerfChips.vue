@@ -1,4 +1,6 @@
 <script setup>
+import SectionTitle from '@/Components/SectionTitle.vue';
+import Panel from '@/Components/Panel.vue';
 import { isGoalkeeper } from '@/utils/playerStats.js';
 import { computed } from 'vue';
 
@@ -44,8 +46,8 @@ const hasNoPerf = computed(() => perfChips.value.every(c => c.val === 0));
 </script>
 
 <template>
-    <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 shadow-card">
-        <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-3">Performance saison</h4>
+    <Panel as="div">
+        <SectionTitle class="mb-3">Performance saison</SectionTitle>
         <div v-if="perfChips.length" class="flex flex-wrap gap-2">
             <div v-for="chip in perfChips" :key="chip.label"
                  class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
@@ -62,5 +64,5 @@ const hasNoPerf = computed(() => perfChips.value.every(c => c.val === 0));
         <p v-else-if="hasNoPerf" class="mt-2 text-2xs text-slate-500 italic">
             Aucun match joué pour le moment cette saison.
         </p>
-    </div>
+    </Panel>
 </template>

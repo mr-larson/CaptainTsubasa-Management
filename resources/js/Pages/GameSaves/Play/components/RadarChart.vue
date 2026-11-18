@@ -1,4 +1,5 @@
 <script setup>
+import SectionTitle from '@/Components/SectionTitle.vue';
 import { computed } from 'vue';
 
 /**
@@ -72,7 +73,7 @@ const radarAxes = computed(() =>
 
 <template>
     <div class="border border-slate-200 rounded-xl bg-slate-50 p-3 flex flex-col items-center shadow-card">
-        <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-1 self-start">Profil technique</h4>
+        <SectionTitle class="mb-1 self-start">Profil technique</SectionTitle>
         <svg viewBox="0 0 180 180" class="w-40 h-40">
             <polygon class="stroke-slate-400 fill-slate-400/15" v-if="comparePolygon" :points="comparePolygon"
                      stroke-width="1" stroke-dasharray="3,2"/>

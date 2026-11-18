@@ -1,4 +1,5 @@
 <script setup>
+import Panel from '@/Components/Panel.vue';
 import { computed } from 'vue';
 
 /**
@@ -105,7 +106,7 @@ const verdictOutcomeLabel = (o) => ({
         </div>
 
         <!-- Dernier verdict -->
-        <div v-if="lastVerdict" class="border border-slate-200 rounded-xl bg-white p-4 shadow-card">
+        <Panel as="div" tone="white" v-if="lastVerdict">
             <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Dernier verdict (saison {{ lastVerdict.season }})</h4>
             <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600">
                 <span>Classé <strong>{{ lastVerdict.rank }}<sup>e</sup></strong> (objectif top {{ lastVerdict.target_rank }})</span>
@@ -117,10 +118,10 @@ const verdictOutcomeLabel = (o) => ({
                 </span>
                 <span class="font-semibold">{{ verdictOutcomeLabel(lastVerdict.outcome) }}</span>
             </div>
-        </div>
+        </Panel>
 
         <!-- Historique des saisons -->
-        <div v-if="careerHistory.length" class="border border-slate-200 rounded-xl bg-white p-4 shadow-card">
+        <Panel as="div" tone="white" v-if="careerHistory.length">
             <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Historique des saisons</h4>
             <table class="w-full text-xs">
                 <thead class="border-b border-slate-200 text-2xs font-bold uppercase tracking-wider text-slate-400">
@@ -145,10 +146,10 @@ const verdictOutcomeLabel = (o) => ({
                 </tr>
                 </tbody>
             </table>
-        </div>
+        </Panel>
 
         <!-- ====== LES PAGES DU JEU ====== -->
-        <div class="border border-slate-200 rounded-xl bg-white p-4 shadow-card">
+        <Panel as="div" tone="white">
             <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3">Les pages du jeu</h4>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
                 <div v-for="p in PAGES" :key="p.title" class="flex gap-2.5">
@@ -159,10 +160,10 @@ const verdictOutcomeLabel = (o) => ({
                     </div>
                 </div>
             </div>
-        </div>
+        </Panel>
 
         <!-- ====== LA DRAFT ====== -->
-        <div class="border border-slate-200 rounded-xl bg-white p-4 shadow-card">
+        <Panel as="div" tone="white">
             <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">🎯 La draft</h4>
             <p class="text-xs text-slate-600 mb-2">
                 En début de partie (et à chaque intersaison), les équipes se constituent en piochant à tour de rôle dans le pool de joueurs libres.
@@ -175,10 +176,10 @@ const verdictOutcomeLabel = (o) => ({
                 <li>Clique sur le nom d'un joueur pour voir sa fiche complète (stats, radar). Les stats clés de son poste sont surlignées.</li>
                 <li>L'IA pioche selon ses besoins de poste, son style et sa philosophie de gestion.</li>
             </ul>
-        </div>
+        </Panel>
 
         <!-- ====== LES MATCHS ====== -->
-        <div class="border border-slate-200 rounded-xl bg-white p-4 shadow-card">
+        <Panel as="div" tone="white">
             <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">⚽ Les matchs</h4>
             <p class="text-xs text-slate-600 mb-2">
                 Les matchs se jouent en <strong>tours</strong> : à chaque action (duel, tir, arrêt…), les stats des joueurs concernés s'affrontent, modulées par le hasard, le moral et les cartes.
@@ -191,10 +192,10 @@ const verdictOutcomeLabel = (o) => ({
                 <li><strong>Cartes « remontada »</strong> : plus tu es bas au classement, plus la boutique te propose des cartes puissantes. Certaines sont réservées aux 3 derniers ou à la moitié basse, et des malus visent l'équipe classée juste devant toi ou le leader. Les 3 derniers reçoivent en plus une <strong>carte gratuite</strong> chaque semaine.</li>
                 <li>Le résultat fait évoluer le classement, le moral des joueurs et la confiance de la direction.</li>
             </ul>
-        </div>
+        </Panel>
 
         <!-- ====== OBJECTIFS DE CARRIÈRE (règles) ====== -->
-        <div class="border border-slate-200 rounded-xl bg-white p-4 flex flex-col gap-3 shadow-card">
+        <Panel as="div" tone="white" class="flex flex-col gap-3">
             <div>
                 <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">🎖️ Objectifs de carrière</h4>
                 <p class="text-xs text-slate-600">
@@ -224,10 +225,10 @@ const verdictOutcomeLabel = (o) => ({
                 <li><strong>Titre de champion</strong> : compte pour ta condition de victoire de carrière.</li>
             </ul>
             <p class="text-2xs text-slate-400">💡 Les clubs IA paient aussi leurs entraînements : un club fauché s'entraîne moins.</p>
-        </div>
+        </Panel>
 
         <!-- Barème par difficulté -->
-        <div class="border border-slate-200 rounded-xl bg-white p-4 shadow-card">
+        <Panel as="div" tone="white">
             <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Niveaux de difficulté</h4>
             <table class="w-full text-xs">
                 <thead class="border-b border-slate-200 text-2xs font-bold uppercase tracking-wider text-slate-400">
@@ -259,6 +260,6 @@ const verdictOutcomeLabel = (o) => ({
             <p class="text-2xs text-slate-400 mt-2">En mode « Bac à sable », aucun objectif n'est suivi : les saisons s'enchaînent librement (budget de départ 2500 <GameBanknote />, revenus pleins).</p>
             <p class="text-2xs text-slate-400">🎲 Défis de saison : chaque équipe (IA comprise) tire 5 objectifs par saison, un par famille (résultats, attaque & défense, vestiaire, gestion, exploits) — 2 faciles (1 pt, 150 <GameBanknote />), 2 moyens (2 pts, 300 <GameBanknote />), 1 difficile (3 pts, 500 <GameBanknote />). Seuils adaptés à la force de l'effectif. Sans effet sur le championnat : un classement des défis est publié en fin de saison.</p>
             <p class="text-2xs text-slate-400">💰 Budget de départ et revenu de base réduits ne concernent que ton club : les clubs IA partent avec le budget réglé à la création (2500 <GameBanknote /> par défaut) et 500 <GameBanknote />/sem.</p>
-        </div>
+        </Panel>
     </div>
 </template>

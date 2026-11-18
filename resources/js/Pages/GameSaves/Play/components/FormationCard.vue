@@ -1,4 +1,6 @@
 <script setup>
+import SectionTitle from '@/Components/SectionTitle.vue';
+import Panel from '@/Components/Panel.vue';
 import { fieldClass } from '@/Components/fieldStyles';
 import { FORMATIONS, FORMATION_LIST } from '@/Pages/Match/engine/formations.js';
 
@@ -24,7 +26,7 @@ const emit = defineEmits(['change']);
 </script>
 
 <template>
-    <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 flex flex-col gap-3 shadow-card">
+    <Panel as="div" class="flex flex-col gap-3">
         <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Formation</h3>
 
         <div v-if="readonly" class="text-2xl font-bold tracking-tight text-slate-700">
@@ -45,7 +47,7 @@ const emit = defineEmits(['change']);
         </p>
 
         <div class="border-t border-slate-200 pt-3">
-            <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">Répartition</h4>
+            <SectionTitle class="mb-2">Répartition</SectionTitle>
             <div class="flex gap-1.5 flex-wrap">
                 <template v-if="formationData">
                     <span v-for="(label, zone) in ['GK','DEF','MDF','MOF','ATT']" :key="zone"
@@ -56,5 +58,5 @@ const emit = defineEmits(['change']);
                 </template>
             </div>
         </div>
-    </div>
+    </Panel>
 </template>

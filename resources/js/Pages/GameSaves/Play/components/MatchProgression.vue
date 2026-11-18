@@ -1,4 +1,5 @@
 <script setup>
+import Panel from '@/Components/Panel.vue';
 import { computed } from 'vue';
 import PlayerPhoto from '@/Components/PlayerPhoto.vue';
 
@@ -24,7 +25,7 @@ const sides = computed(() => [
 </script>
 
 <template>
-    <div v-if="progression.length" class="border border-slate-200 rounded-xl bg-slate-50 p-4 shadow-card">
+    <Panel as="div" v-if="progression.length">
         <h4 class="text-2xs font-bold text-slate-500 uppercase tracking-wider mb-3">📈 Progression suite à ce match</h4>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -61,5 +62,5 @@ const sides = computed(() => [
                 </div>
             </div>
         </div>
-    </div>
+    </Panel>
 </template>

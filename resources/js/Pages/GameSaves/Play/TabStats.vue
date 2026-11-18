@@ -1,4 +1,5 @@
 <script setup>
+import Panel from '@/Components/Panel.vue';
 import { isGoalkeeper } from '@/utils/playerStats.js';
 import { contractPlayer, seasonStatsOf } from '@/Pages/GameSaves/Play/teamRoster.js';
 import { computed, ref } from 'vue';
@@ -164,7 +165,7 @@ const sortIcon = (key) => {
                     Mon équipe
                 </button>
             </div>
-            <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 shadow-card">
+            <Panel as="div">
                 <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">🏆 Meilleurs joueurs <span class="normal-case font-semibold text-slate-400 tracking-normal">· cumul de tous les matchs joués de la partie</span></h3>
 
                 <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -220,12 +221,12 @@ const sortIcon = (key) => {
                         </p>
                     </div>
                 </div>
-            </div>
+            </Panel>
 
             <!-- ============================================ -->
             <!-- BLOC 2 : COMPARATIF ÉQUIPES                 -->
             <!-- ============================================ -->
-            <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 shadow-card">
+            <Panel as="div">
                 <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">📋 Comparatif équipes</h3>
 
                 <div class="overflow-x-auto" role="region" aria-label="Comparatif des équipes, défilement horizontal" tabindex="0">
@@ -293,7 +294,7 @@ const sortIcon = (key) => {
                         </tbody>
                     </table>
                 </div>
-            </div>
+            </Panel>
 
         </template>
         <Modal :show="!!selectedTeam" title="Fiche de l’équipe" max-width="2xl" @close="selectedTeam = null">

@@ -1,4 +1,5 @@
 <script setup>
+import SectionTitle from '@/Components/SectionTitle.vue';
 
 // Checklist « Avant le match » (cf. usePreMatchChecklist) : actions de la semaine
 // + état du onze. Un clic mène à l'onglet concerné (et au joueur s'il y en a un).
@@ -26,7 +27,7 @@ const LEVEL_ROW = {
     <div class="border border-slate-200 rounded-xl shadow-card flex flex-col gap-3"
          :class="inDashboard ? 'bg-slate-50 p-4' : 'bg-white p-3'">
         <div v-if="actions.length">
-            <div class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Avant le match</div>
+            <SectionTitle as="div" class="mb-1.5">Avant le match</SectionTitle>
             <div class="flex flex-col">
                 <button v-for="item in actions" :key="item.key" type="button"
                         @click="emit('open', item)"
@@ -38,7 +39,7 @@ const LEVEL_ROW = {
 
         <div>
             <div class="flex items-center justify-between gap-2 mb-1.5">
-                <span class="text-2xs font-bold text-slate-400 uppercase tracking-wider">État du onze</span>
+                <SectionTitle as="span">État du onze</SectionTitle>
                 <span v-if="availability" class="text-2xs font-semibold"
                       :class="availability.available < availability.total ? 'text-amber-600' : 'text-slate-400'"
                       title="Joueurs ni blessés, ni suspendus, ni consignés">

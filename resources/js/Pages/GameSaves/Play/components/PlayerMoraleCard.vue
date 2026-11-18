@@ -1,4 +1,5 @@
 <script setup>
+import SectionTitle from '@/Components/SectionTitle.vue';
 import { computed } from 'vue';
 import { useAnimatedStats } from '@/Composables/useAnimatedStats.js';
 import Panel from '@/Components/Panel.vue';
@@ -139,7 +140,7 @@ const lastDeclarationSummary = computed(() => {
         <!-- Relation coach -->
         <div class="border-t border-slate-200 pt-3 mb-3">
             <div class="flex items-center justify-between mb-1.5">
-                <h5 class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Relation coach</h5>
+                <SectionTitle as="h5">Relation coach</SectionTitle>
                 <span class="text-[11px] font-bold" :class="affinityDisplay.text">
                     {{ affinityDisplay.label }}
                     <span class="opacity-60">{{ selectedPlayerAffinity > 0 ? '+' : '' }}{{ selectedPlayerAffinity }}</span>
@@ -170,7 +171,7 @@ const lastDeclarationSummary = computed(() => {
                     <template v-else>avant S{{ activePromise.due_week }}</template>
                 </span>
                 <template v-else-if="editable">
-                    <span class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Promettre :</span>
+                    <SectionTitle as="span">Promettre :</SectionTitle>
                     <button v-for="pt in PROMISE_TYPES" :key="pt.type" type="button"
                             @click="emit('make-promise', player, pt.type)"
                             class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-2xs font-bold border border-sky-300 bg-white text-sky-600 hover:bg-sky-50 transition-all"
@@ -195,7 +196,7 @@ const lastDeclarationSummary = computed(() => {
 
             <!-- Déclarations publiques -->
             <div class="flex flex-wrap items-center gap-1.5">
-                <span v-if="editable || lastDeclarationSummary" class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Presse :</span>
+                <SectionTitle as="span" v-if="editable || lastDeclarationSummary">Presse :</SectionTitle>
                 <template v-if="editable && !declarationOnCooldown">
                     <button type="button"
                             @click="emit('make-declaration', player, 'praise')"
@@ -223,7 +224,7 @@ const lastDeclarationSummary = computed(() => {
         </div>
 
         <section class="space-y-2">
-            <h5 class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Derniers changements</h5>
+            <SectionTitle as="h5">Derniers changements</SectionTitle>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
                 <div class="min-w-0 rounded-xl border border-slate-200 bg-white/60 p-3 space-y-2">
                     <h6 class="text-xs font-bold text-slate-600">🙂 Moral et relation coach</h6>

@@ -1,4 +1,5 @@
 <script setup>
+import Panel from '@/Components/Panel.vue';
 import { positionLabel } from '@/Enums/positionBadges.js';
 import Modal from '@/Components/Modal.vue';
 import TabBar from '@/Components/TabBar.vue';
@@ -426,7 +427,7 @@ const canConfirm = computed(() => {
         <div v-if="activeTab === 'inventory'" class="flex flex-col gap-4">
 
             <!-- Cartes disponibles -->
-            <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 shadow-card">
+            <Panel as="div">
                 <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
                     ✅ Disponibles ({{ availableCards.length }})
                 </h4>
@@ -489,10 +490,10 @@ const canConfirm = computed(() => {
                 <p v-else class="text-xs text-slate-500 italic text-center py-4">
                     Aucune carte disponible. Achetez des cartes dans la boutique !
                 </p>
-            </div>
+            </Panel>
 
             <!-- Cartes utilisées -->
-            <div v-if="usedCards.length" class="border border-slate-200 rounded-xl bg-slate-50 p-4 shadow-card">
+            <Panel as="div" v-if="usedCards.length">
                 <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
                     ✓ Utilisées ({{ usedCards.length }})
                 </h4>
@@ -506,7 +507,7 @@ const canConfirm = computed(() => {
                         </div>
                     </div>
                 </div>
-            </div>
+            </Panel>
         </div>
 
         <!-- ================================================ -->

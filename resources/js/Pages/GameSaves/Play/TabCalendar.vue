@@ -1,4 +1,5 @@
 <script setup>
+import SectionTitle from '@/Components/SectionTitle.vue';
 import PixelLoader from '@/Components/PixelLoader.vue';
 import TabBar from '@/Components/TabBar.vue';
 import { fieldClass } from '@/Components/fieldStyles';
@@ -311,7 +312,7 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
                         <button type="button" :disabled="journeeWeek <= 1" @click="journeeWeek--"
                                 class="px-2.5 py-1 rounded-lg text-xs font-bold border border-slate-300 bg-white text-slate-600 hover:bg-slate-100 disabled:opacity-40">◀</button>
                         <div class="text-center">
-                            <div class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Journée</div>
+                            <SectionTitle as="div">Journée</SectionTitle>
                             <div class="text-sm font-black text-slate-700">
                                 Semaine {{ journeeWeek }}
                                 <span v-if="Number(journeeWeek) === Number(currentWeek)" class="ml-1 text-2xs font-bold text-amber-600">en cours</span>

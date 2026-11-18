@@ -1,4 +1,5 @@
 <script setup>
+import SectionTitle from '@/Components/SectionTitle.vue';
 import StaminaBar from '@/Components/StaminaBar.vue';
 import { staminaOf } from '@/utils/playerStats.js';
 import { positionLabel } from '@/Enums/positionBadges.js';
@@ -86,12 +87,12 @@ const benchTitle = (p) => {
 
 <template>
     <div class="border border-slate-200 rounded-xl bg-slate-50 p-3 overflow-y-auto shadow-card">
-        <h3 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">{{ title }}</h3>
+        <SectionTitle as="h3" class="mb-2">{{ title }}</SectionTitle>
         <div v-if="players.length" class="space-y-3">
             <div v-for="group in groupedPlayers" :key="group.key" class="space-y-1">
-                <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider px-1">
+                <SectionTitle class="px-1">
                     {{ group.label }} <span class="opacity-60">({{ group.players.length }})</span>
-                </h4>
+                </SectionTitle>
                 <div v-for="p in group.players" :key="p.id"
                      class="flex items-center rounded-lg border transition-all"
                      :class="[

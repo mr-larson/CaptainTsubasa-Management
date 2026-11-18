@@ -1,4 +1,5 @@
 <script setup>
+import SectionTitle from '@/Components/SectionTitle.vue';
 import { fieldClass } from '@/Components/fieldStyles';
 import ButtonSecondary from '@/Components/ButtonSecondary.vue';
 import ButtonDanger from '@/Components/ButtonDanger.vue';
@@ -256,7 +257,7 @@ const comparisonAvailability = p => unavailability(p)?.label ?? "Disponible";
         <!-- État du onze : ce qui mérite attention avant le match -->
         <!-- Grand écran : déjà affiché en permanence dans la colonne gauche -->
         <div class="-mt-2 flex flex-wrap items-center gap-1.5 min-[1400px]:hidden">
-            <span class="text-2xs font-bold text-slate-400 uppercase tracking-wider mr-1">État du onze</span>
+            <SectionTitle as="span" class="mr-1">État du onze</SectionTitle>
             <template v-if="lineupIssues.length">
                 <component :is="issue.player ? 'button' : 'span'" v-for="issue in lineupIssues" :key="issue.key"
                            :type="issue.player ? 'button' : undefined"

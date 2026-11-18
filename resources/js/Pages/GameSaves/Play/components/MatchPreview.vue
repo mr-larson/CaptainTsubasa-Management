@@ -1,4 +1,6 @@
 <script setup>
+import SectionTitle from '@/Components/SectionTitle.vue';
+import Panel from '@/Components/Panel.vue';
 import ButtonPrimary from '@/Components/ButtonPrimary.vue';
 import { computed } from 'vue';
 import { usePlayerUtils } from '../usePlayerUtils.js';
@@ -71,11 +73,11 @@ const canPrepare = computed(() => props.myTeamId && Number(props.myTeamId) === N
 </script>
 
 <template>
-    <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 flex flex-col gap-4 shadow-card">
+    <Panel as="div" class="flex flex-col gap-4">
         <div class="flex items-center justify-between">
-            <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider">
+            <SectionTitle>
                 Avant-match · {{ label }} · {{ isHome ? '🏠 à domicile' : '✈️ à l\'extérieur' }}
-            </h4>
+            </SectionTitle>
             <button type="button" @click="emit('close')" class="text-[11px] text-slate-400 hover:text-slate-700">✕</button>
         </div>
 
@@ -102,7 +104,7 @@ const canPrepare = computed(() => props.myTeamId && Number(props.myTeamId) === N
         </div>
 
         <div v-if="headToHead.length" class="border-t border-slate-200 pt-3">
-            <div class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Déjà joué cette saison</div>
+            <SectionTitle as="div" class="mb-1.5">Déjà joué cette saison</SectionTitle>
             <div v-for="m in headToHead" :key="m.id" class="text-xs text-slate-600">
                 S{{ m.week }} : {{ teamById[m.home_team_id]?.name }}
                 <span class="font-black">{{ m.home_score }} - {{ m.away_score }}</span>
@@ -115,5 +117,5 @@ const canPrepare = computed(() => props.myTeamId && Number(props.myTeamId) === N
                 ⚙️ Préparer ma compo
             </ButtonPrimary>
         </div>
-    </div>
+    </Panel>
 </template>

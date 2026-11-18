@@ -1,4 +1,5 @@
 <script setup>
+import SectionTitle from '@/Components/SectionTitle.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import H2 from '@/Components/H2.vue';
 import { Head, Link } from '@inertiajs/vue3';
@@ -101,24 +102,24 @@ const difficultyLabel = {
                                 {{ finalSeason.rank }}<sup class="text-sm">e</sup>
                                 <span class="text-sm font-semibold text-slate-400">/ {{ finalSeason.team_count }}</span>
                             </p>
-                            <p class="text-2xs font-bold uppercase tracking-wider text-slate-400 mt-1">Classement</p>
+                            <SectionTitle as="p" class="mt-1">Classement</SectionTitle>
                         </div>
                         <div class="rounded-xl bg-slate-50 p-3">
                             <p class="text-2xl font-black text-slate-700">
                                 <span class="text-emerald-600">{{ finalSeason.wins }}</span>-<span class="text-slate-500">{{ finalSeason.draws }}</span>-<span class="text-rose-500">{{ finalSeason.losses }}</span>
                             </p>
-                            <p class="text-2xs font-bold uppercase tracking-wider text-slate-400 mt-1">Bilan V-N-D</p>
+                            <SectionTitle as="p" class="mt-1">Bilan V-N-D</SectionTitle>
                         </div>
                         <div class="rounded-xl bg-slate-50 p-3">
                             <p class="text-2xl font-black text-slate-700">{{ finalSeason.points }}</p>
-                            <p class="text-2xs font-bold uppercase tracking-wider text-slate-400 mt-1">Points</p>
+                            <SectionTitle as="p" class="mt-1">Points</SectionTitle>
                         </div>
                         <div class="rounded-xl bg-slate-50 p-3">
                             <p class="text-2xl font-black text-slate-700">
                                 {{ finalSeason.goals_for }}-{{ finalSeason.goals_against }}
                                 <span class="text-sm font-semibold text-slate-400">({{ goalDiff }})</span>
                             </p>
-                            <p class="text-2xs font-bold uppercase tracking-wider text-slate-400 mt-1">Buts pour-contre</p>
+                            <SectionTitle as="p" class="mt-1">Buts pour-contre</SectionTitle>
                         </div>
                     </div>
                     <p v-if="finalSeason.objective" class="mt-4 text-sm text-slate-500">

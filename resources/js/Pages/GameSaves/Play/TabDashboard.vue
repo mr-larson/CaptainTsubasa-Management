@@ -1,4 +1,6 @@
 <script setup>
+import SectionTitle from '@/Components/SectionTitle.vue';
+import Panel from '@/Components/Panel.vue';
 import { contractPlayer, seasonStatsOf } from '@/Pages/GameSaves/Play/teamRoster.js';
 import ButtonSecondary from '@/Components/ButtonSecondary.vue';
 import { computed } from 'vue';
@@ -216,7 +218,7 @@ const { root: seasonProgressRoot, value: animatedSeasonProgress, width: seasonPr
         <!-- ============================================ -->
         <!-- LIGNE 1 : Contexte + progression saison      -->
         <!-- ============================================ -->
-        <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 shadow-card">
+        <Panel as="div">
             <div class="flex flex-wrap items-center justify-between gap-4 mb-3">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl overflow-hidden shrink-0">
@@ -273,7 +275,7 @@ const { root: seasonProgressRoot, value: animatedSeasonProgress, width: seasonPr
                     </div>
                 </div>
             </div>
-        </div>
+        </Panel>
 
         <!-- Coupe du Monde : bannière champion -->
         <div v-if="isWorldCup && wcChampion"
@@ -294,9 +296,9 @@ const { root: seasonProgressRoot, value: animatedSeasonProgress, width: seasonPr
             <!-- Classement — Coupe du Monde : position dans la poule -->
             <button v-if="isWorldCup" type="button" :class="KPI" class="flex flex-col items-center gap-1"
                     @click="emit('change-tab', 'standings')" title="Voir le tournoi">
-                <span class="text-2xs font-bold text-slate-400 uppercase tracking-wider">
+                <SectionTitle as="span">
                     {{ wcStanding ? 'Poule ' + wcStanding.group : 'Tournoi' }}
-                </span>
+                </SectionTitle>
                 <span class="text-3xl font-black text-indigo-600">
                     {{ wcStanding ? wcStanding.position : '—' }}<sup v-if="wcStanding" class="text-base">e</sup>
                 </span>
@@ -310,7 +312,7 @@ const { root: seasonProgressRoot, value: animatedSeasonProgress, width: seasonPr
             <!-- Classement — Ligue : position, points, évolution, objectif -->
             <button v-else type="button" :class="KPI" class="flex flex-col items-center gap-1"
                     @click="emit('change-tab', 'standings')" title="Voir le classement">
-                <span class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Classement</span>
+                <SectionTitle as="span">Classement</SectionTitle>
                 <span class="flex items-baseline gap-2">
                     <span class="text-3xl font-black" :class="rankStyle">
                         <!-- Avant le 1er match, le rang n'est que l'ordre alphabétique : on affiche « — ». -->
@@ -335,7 +337,7 @@ const { root: seasonProgressRoot, value: animatedSeasonProgress, width: seasonPr
             <!-- Bilan -->
             <button type="button" :class="KPI" class="col-span-2 order-last sm:col-span-1 sm:order-none"
                     @click="emit('change-tab', 'calendar')" title="Voir le calendrier">
-                <span class="block text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2 text-center">Bilan</span>
+                <SectionTitle as="span" class="block mb-2 text-center">Bilan</SectionTitle>
                 <span class="flex gap-2">
                     <span class="flex-1 text-center bg-emerald-50 rounded-lg py-1.5">
                         <span class="block text-xl font-black text-emerald-600">{{ teamRecord.wins ?? 0 }}</span>
@@ -355,7 +357,7 @@ const { root: seasonProgressRoot, value: animatedSeasonProgress, width: seasonPr
             <!-- Budget -->
             <button type="button" :class="KPI" class="flex flex-col items-center gap-1"
                     @click="scrollToFinances" title="Voir le détail des finances">
-                <span class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Budget</span>
+                <SectionTitle as="span">Budget</SectionTitle>
                 <span class="text-3xl font-black text-teal-600 tabular-nums">{{ Number(teamBudget).toLocaleString('fr-FR') }}</span>
                 <span v-if="projection" class="text-2xs text-slate-400">
                     ≈ {{ projection.likely.toLocaleString('fr-FR') }} en S{{ seasonEndWeek }}
@@ -482,11 +484,11 @@ const { root: seasonProgressRoot, value: animatedSeasonProgress, width: seasonPr
         <!-- ============================================ -->
         <div ref="forcesRoot" class="border border-slate-200 rounded-xl bg-slate-50 p-4 shadow-card">
             <div class="flex items-center justify-between gap-2 mb-3">
-                <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider truncate">{{ team?.name ?? 'Mon équipe' }}</h4>
-                <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider shrink-0">Forces</h4>
-                <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider truncate text-right">
+                <SectionTitle class="truncate">{{ team?.name ?? 'Mon équipe' }}</SectionTitle>
+                <SectionTitle class="shrink-0">Forces</SectionTitle>
+                <SectionTitle class="truncate text-right">
                     {{ opponentTeam && !isByeWeek ? nextMatchInfo?.opponentName : 'Pas d\'adversaire' }}
-                </h4>
+                </SectionTitle>
             </div>
             <div class="space-y-2">
                 <div v-for="stat in faceToFace" :key="stat.key" class="grid grid-cols-[1.75rem_minmax(0,1fr)_4.5rem_minmax(0,1fr)_1.75rem] items-center gap-2">
@@ -511,7 +513,7 @@ const { root: seasonProgressRoot, value: animatedSeasonProgress, width: seasonPr
             <p class="mt-2 text-2xs text-slate-500">Moyennes des effectifs sur 100 · Arrêt main et Poings calculés sur les gardiens.</p>
             <div v-if="opponentTeam && !isByeWeek && opponentThreats.length"
                  class="mt-3 pt-3 border-t border-slate-200 flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-xs">
-                <span class="text-2xs font-bold text-slate-400 uppercase tracking-wider">À surveiller</span>
+                <SectionTitle as="span">À surveiller</SectionTitle>
                 <span v-for="t in opponentThreats" :key="t.key" class="text-slate-700">
                     <span class="font-semibold">{{ t.text }}</span>
                     <span class="text-slate-400"> · {{ t.detail }}</span>

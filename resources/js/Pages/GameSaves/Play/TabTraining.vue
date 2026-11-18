@@ -1,4 +1,5 @@
 <script setup>
+import Panel from '@/Components/Panel.vue';
 import { seasonStatsOf } from '@/Pages/GameSaves/Play/teamRoster.js';
 import { positionLabel } from '@/Enums/positionBadges.js';
 import { fieldClass } from '@/Components/fieldStyles';
@@ -237,7 +238,7 @@ const selectedPlayerPerf = computed(() => {
         </p>
 
         <!-- HEADER -->
-        <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 shadow-card">
+        <Panel as="div">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                     <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Entraînement</h3>
@@ -270,7 +271,7 @@ const selectedPlayerPerf = computed(() => {
                     </div>
                 </div>
             </div>
-        </div>
+        </Panel>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
 
@@ -331,7 +332,7 @@ const selectedPlayerPerf = computed(() => {
                     </PlayerIdentityCard>
 
                     <!-- Formation à un nouveau poste -->
-                    <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 shadow-card">
+                    <Panel as="div">
                         <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">🎓 Former à un nouveau poste</h4>
                         <p class="text-xs text-slate-500 mb-3">
                             Postes maîtrisés : <span class="font-semibold text-slate-700">{{ knownPositions(selectedPlayer).map(positionLabel).join(', ') }}</span>.
@@ -362,9 +363,9 @@ const selectedPlayerPerf = computed(() => {
                                     || `Compte comme une séance de la semaine. ${selectedPlayer.lastname} manquera ${selectedPositionWeeks} match${selectedPositionWeeks > 1 ? 's' : ''}.` }}
                             </p>
                         </template>
-                    </div>
+                    </Panel>
 
-                    <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 shadow-card">
+                    <Panel as="div">
                         <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">✨ Technique spéciale</h4>
                         <p class="text-xs text-slate-500 mb-3">
                             Une technique spéciale par action. Le joueur apprend la technique en une semaine et reste indisponible pendant la formation.
@@ -395,7 +396,7 @@ const selectedPlayerPerf = computed(() => {
                             </p>
                         </template>
                         <p v-if="specialTrainingError" role="alert" class="mt-2 text-xs text-rose-600">{{ specialTrainingError }}</p>
-                    </div>
+                    </Panel>
 
                     <!-- Radar + Barres stats -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -421,7 +422,7 @@ const selectedPlayerPerf = computed(() => {
             </div>
             <div class="lg:col-span-3 flex flex-col gap-4">
                 <!-- Formulaire entraînement manuel -->
-                <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 shadow-card">
+                <Panel as="div">
                     <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
                         🏋️ Entraînement manuel
                     </h4>
@@ -502,12 +503,12 @@ const selectedPlayerPerf = computed(() => {
                         Budget insuffisant : il te faut {{ totalTrainingCost }} <GameBanknote /> pour ces séances.
                     </p>
 
-                </div>
+                </Panel>
             </div>
         </div>
         <div class="grid grid-cols-12 gap-4">
             <div class="col-span-12 flex flex-col gap-4">
-                <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 shadow-card">
+                <Panel as="div">
                     <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center justify-between">
                         <span>🤖 Entraînement automatique</span>
                         <div class="flex items-center gap-2">
@@ -568,10 +569,10 @@ const selectedPlayerPerf = computed(() => {
                     <div v-else class="text-xs text-slate-500 italic py-2">
                         L'entraînement automatique s'effectue après chaque match joué ou simulé.
                     </div>
-                </div>
+                </Panel>
 
                 <!-- Historique entraînements manuels -->
-                <div v-if="manualEntries.length" class="border border-slate-200 rounded-xl bg-slate-50 p-4 shadow-card">
+                <Panel as="div" v-if="manualEntries.length">
                     <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
                         📋 Historique manuel — semaine {{ week }}
                     </h4>
@@ -602,7 +603,7 @@ const selectedPlayerPerf = computed(() => {
                             </div>
                         </div>
                     </div>
-                </div>
+                </Panel>
             </div>
         </div>
     </div>

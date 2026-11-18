@@ -2,6 +2,8 @@
 // Dashboard — pilotage de l'effectif : vestiaire (moral/relations), contrats
 // qui arrivent à échéance, meilleurs joueurs de la saison. Un clic sur un
 // joueur ouvre sa fiche dans Mon équipe.
+import SectionTitle from '@/Components/SectionTitle.vue';
+import Panel from '@/Components/Panel.vue';
 import { seasonStatsOf } from '../teamRoster.js';
 import { computed } from 'vue';
 import { usePlayerUtils } from '../usePlayerUtils.js';
@@ -69,9 +71,9 @@ const ROW = 'w-full flex items-center justify-between gap-2 px-2 py-1 rounded-lg
 <template>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
         <!-- Vestiaire -->
-        <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 shadow-card">
+        <Panel as="div">
             <div class="flex items-center justify-between mb-2">
-                <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Vestiaire</h4>
+                <SectionTitle>Vestiaire</SectionTitle>
                 <span class="text-xs font-bold" :class="moraleState(averageMorale).text"
                       title="Moral moyen de l'effectif">
                     {{ moraleState(averageMorale).emoji }} {{ averageMorale }}
@@ -88,12 +90,12 @@ const ROW = 'w-full flex items-center justify-between gap-2 px-2 py-1 rounded-lg
                 </span>
             </div>
             <p v-else class="text-xs text-emerald-600">✓ Aucun joueur mécontent ni en froid avec toi</p>
-        </div>
+        </Panel>
 
         <!-- Contrats -->
-        <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 shadow-card">
+        <Panel as="div">
             <div class="flex items-center justify-between mb-2">
-                <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Contrats</h4>
+                <SectionTitle>Contrats</SectionTitle>
                 <span class="text-2xs text-slate-400">d'ici la semaine {{ week + CONTRACT_WINDOW }}</span>
             </div>
             <div v-if="expiring.length" class="flex flex-col -mx-2">
@@ -110,11 +112,11 @@ const ROW = 'w-full flex items-center justify-between gap-2 px-2 py-1 rounded-lg
                 </span>
             </div>
             <p v-else class="text-xs text-emerald-600">✓ Aucun contrat n'arrive à échéance</p>
-        </div>
+        </Panel>
 
         <!-- Meilleurs joueurs -->
-        <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 shadow-card">
-            <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">Meilleurs joueurs</h4>
+        <Panel as="div">
+            <SectionTitle class="mb-2">Meilleurs joueurs</SectionTitle>
             <div v-if="topScorers.length || topDuelists.length" class="grid grid-cols-2 gap-3">
                 <div v-for="col in [
                         { title: '⚽ Buteurs', rows: topScorers },
@@ -131,6 +133,6 @@ const ROW = 'w-full flex items-center justify-between gap-2 px-2 py-1 rounded-lg
                 </div>
             </div>
             <p v-else class="text-xs text-slate-500 italic">Pas encore de match joué cette saison</p>
-        </div>
+        </Panel>
     </div>
 </template>

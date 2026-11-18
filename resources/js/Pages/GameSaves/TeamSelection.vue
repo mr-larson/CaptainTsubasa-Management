@@ -119,9 +119,9 @@
                             </div>
 
                             <!-- Stats moyennes (prebuilt uniquement) -->
-                            <div v-if="gameMode !== 'draft'" class="border border-slate-200 rounded-xl bg-white p-4 shadow-card">
+                            <Panel as="div" tone="white" v-if="gameMode !== 'draft'">
                                 <div class="flex items-center justify-between gap-2">
-                                    <h4 class="text-2xs font-bold uppercase tracking-wider text-slate-400">Forces</h4>
+                                    <SectionTitle>Forces</SectionTitle>
                                     <button type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-teal-500"
                                             :aria-expanded="showTeamStats" aria-controls="team-selection-stats"
                                             :aria-label="showTeamStats ? 'Masquer les statistiques' : 'Afficher les statistiques'"
@@ -161,7 +161,7 @@
                                     </div>
                                     <strong class="text-lg text-violet-600">{{ teamRating.note }}</strong>
                                 </div>
-                            </div>
+                            </Panel>
 
                             <!-- Info draft (draft uniquement) -->
                             <div v-if="gameMode === 'draft'" class="border border-amber-200 rounded-xl bg-amber-50 p-4 shadow-card">
@@ -175,8 +175,8 @@
                             </div>
 
                             <!-- Radar (prebuilt uniquement) -->
-                            <div v-if="gameMode !== 'draft'" class="border border-slate-200 rounded-xl bg-white p-4 flex flex-col items-center shadow-card">
-                                <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2 self-start">Profil</h4>
+                            <Panel as="div" tone="white" v-if="gameMode !== 'draft'" class="flex flex-col items-center">
+                                <SectionTitle class="mb-2 self-start">Profil</SectionTitle>
                                 <svg viewBox="0 0 160 160" class="w-36 h-36">
                                     <polygon class="stroke-slate-200" v-for="(pts,i) in radarGrids" :key="i" :points="pts" fill="none" stroke-width="0.8"/>
                                     <line class="stroke-slate-200" v-for="(ax,i) in radarAxes" :key="'a'+i" x1="80" y1="80" :x2="ax.x2" :y2="ax.y2" stroke-width="0.8"/>
@@ -184,7 +184,7 @@
                                     <circle class="fill-teal-500 stroke-white" v-for="(pt,i) in radarPoints" :key="'p'+i" :cx="pt.x" :cy="pt.y" r="2" stroke-width="1"/>
                                     <text class="fill-slate-400" v-for="(pt,i) in radarPoints" :key="'t'+i" :x="pt.lx" :y="pt.ly" text-anchor="middle" dominant-baseline="middle" font-size="7" font-weight="600">{{ pt.label }}</text>
                                 </svg>
-                            </div>
+                            </Panel>
 
                             <!-- Action — hot-seat multi-manager (solo ou plusieurs managers) -->
                             <!-- Solo : lancement direct, sans passer par la liste des managers -->
@@ -217,10 +217,10 @@
                             </p>
 
                             <!-- Récap hot-seat + lancement -->
-                            <div class="border border-slate-200 rounded-xl bg-white p-4 shadow-card">
-                                <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                            <Panel as="div" tone="white">
+                                <SectionTitle class="mb-2">
                                     Managers humains — {{ humanTeams.length }}
-                                </h4>
+                                </SectionTitle>
 
                                 <div v-if="humanTeams.length" class="space-y-1.5 mb-3">
                                     <div v-for="(t, i) in humanTeams" :key="t.id"
@@ -249,11 +249,11 @@
                                     <span v-if="startForm.processing">Chargement...</span>
                                     <span v-else>{{ gameMode === 'draft' ? '🎯 Lancer le draft' : '▶ Lancer la partie' }} ({{ humanTeams.length }} joueur{{ humanTeams.length > 1 ? 's' : '' }})</span>
                                 </ButtonPrimary>
-                            </div>
+                            </Panel>
                         </div>
 
                         <!-- Colonne droite : effectif (prebuilt) ou aperçu style (draft) -->
-                        <div class="col-span-1 lg:col-span-9 border border-slate-200 rounded-xl bg-white p-4 flex flex-col shadow-card">
+                        <Panel as="div" tone="white" class="col-span-1 lg:col-span-9 flex flex-col">
 
                             <!-- Mode prebuilt : effectif complet -->
                             <template v-if="gameMode !== 'draft'">
@@ -353,7 +353,7 @@
                                 <div class="space-y-4">
                                     <!-- Style tactique -->
                                     <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
-                                        <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">Style tactique</h4>
+                                        <SectionTitle class="mb-2">Style tactique</SectionTitle>
                                         <p class="text-sm text-slate-700">
                                             Cette équipe jouera avec un style
                                             <span class="font-bold">{{ styleLabel(selectedTeam.tactical_style) }}</span>.
@@ -363,7 +363,7 @@
 
                                     <!-- Philosophie -->
                                     <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
-                                        <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">Philosophie de gestion</h4>
+                                        <SectionTitle class="mb-2">Philosophie de gestion</SectionTitle>
                                         <p class="text-sm text-slate-700">
                                             Approche
                                             <span class="font-bold">{{ philosophyLabel(selectedTeam.management_philosophy) }}</span> :
@@ -395,7 +395,7 @@
                                     </div>
                                 </div>
                             </template>
-                        </div>
+                        </Panel>
                     </div>
 
                     <!-- Placeholder si aucune équipe sélectionnée -->
@@ -482,6 +482,8 @@
 </template>
 
 <script setup>
+import SectionTitle from '@/Components/SectionTitle.vue';
+import Panel from '@/Components/Panel.vue';
 import { positionLabel } from '@/Enums/positionBadges.js';
 import { positionGroupClass } from '@/Enums/positionBadges.js';
 import { fieldClass } from '@/Components/fieldStyles';

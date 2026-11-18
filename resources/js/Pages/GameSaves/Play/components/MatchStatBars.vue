@@ -1,4 +1,5 @@
 <script setup>
+import SectionTitle from '@/Components/SectionTitle.vue';
 import { useAnimatedStats } from '@/Composables/useAnimatedStats.js';
 
 const props = defineProps({
@@ -17,7 +18,7 @@ const statBarWidth = (value, other) => value + other ? value / (value + other) *
 
 <template>
             <div ref="root" class="border border-slate-200 rounded-xl bg-slate-50 p-4 shadow-card">
-                <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-3">Comparatif équipes</h4>
+                <SectionTitle class="mb-3">Comparatif équipes</SectionTitle>
                 <div class="space-y-2">
                     <div v-for="bar in bars" :key="bar.label">
                         <div class="text-2xs text-slate-400 text-center mb-0.5">{{ bar.label }}</div>

@@ -1,6 +1,8 @@
 <script setup>
 // Dashboard — trajectoire de la saison (position semaine par semaine, écart avec
 // l'objectif du mandat) et projection budgétaire.
+import SectionTitle from '@/Components/SectionTitle.vue';
+import Panel from '@/Components/Panel.vue';
 import Money from '@/Components/Money.vue';
 import { computed, ref } from 'vue';
 import { useSeasonTrajectory } from '../useSeasonTrajectory.js';
@@ -71,9 +73,9 @@ const weeklyTrainingCost = computed(() => props.trainingCost * props.maxTraining
 <template>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
         <!-- Trajectoire -->
-        <div v-if="!isWorldCup" class="md:col-span-2 border border-slate-200 rounded-xl bg-slate-50 p-4 shadow-card">
+        <Panel as="div" v-if="!isWorldCup" class="md:col-span-2">
             <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-                <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Trajectoire</h4>
+                <SectionTitle>Trajectoire</SectionTitle>
                 <div v-if="objective" class="flex flex-wrap items-center gap-2 text-[11px]">
                     <span class="font-semibold text-slate-500">🎯 {{ career.mandate.label }}</span>
                     <span class="px-2 py-0.5 rounded-full border font-semibold"
@@ -140,11 +142,11 @@ const weeklyTrainingCost = computed(() => props.trainingCost * props.maxTraining
                 <span>S{{ points.at(-1).week }} · {{ points.at(-1).position }}e</span>
             </div>
             <p v-else class="text-xs text-slate-500 italic">La courbe apparaîtra après le premier match.</p>
-        </div>
+        </Panel>
 
         <!-- Finances -->
-        <div id="dashboard-finances" class="border border-slate-200 rounded-xl bg-slate-50 p-4 scroll-mt-4 shadow-card" :class="isWorldCup ? 'md:col-span-3' : ''">
-            <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">Finances</h4>
+        <Panel as="div" id="dashboard-finances" class="scroll-mt-4" :class="isWorldCup ? 'md:col-span-3' : ''">
+            <SectionTitle class="mb-2">Finances</SectionTitle>
             <div class="space-y-1.5 text-xs text-slate-600">
                 <div class="flex justify-between"><span>Budget</span><span class="font-black text-slate-700 tabular-nums"><Money :amount="budget" /></span></div>
                 <div v-if="incomeModel" class="flex justify-between gap-2">
@@ -168,6 +170,6 @@ const weeklyTrainingCost = computed(() => props.trainingCost * props.maxTraining
                     </p>
                 </div>
             </div>
-        </div>
+        </Panel>
     </div>
 </template>

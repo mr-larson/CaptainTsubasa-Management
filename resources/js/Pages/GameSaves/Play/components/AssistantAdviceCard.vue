@@ -1,4 +1,6 @@
 <script setup>
+import SectionTitle from '@/Components/SectionTitle.vue';
+import Panel from '@/Components/Panel.vue';
 // Dashboard — « Conseils de l'adjoint » (cf. useAssistantAdvice). Chaque conseil
 // a une action ; Play.vue l'applique (changement, séances préparées, offre).
 defineProps({
@@ -16,8 +18,8 @@ const ACTION_STYLE = {
 </script>
 
 <template>
-    <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 shadow-card">
-        <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">Conseils de l'adjoint</h4>
+    <Panel as="div">
+        <SectionTitle class="mb-2">Conseils de l'adjoint</SectionTitle>
         <ul v-if="advice.length" class="flex flex-col divide-y divide-slate-200">
             <li v-for="a in advice" :key="a.key" class="flex flex-col sm:flex-row sm:items-center gap-2 py-2 first:pt-0 last:pb-0">
                 <span class="text-lg shrink-0 hidden sm:block" aria-hidden="true">{{ a.icon }}</span>
@@ -33,5 +35,5 @@ const ACTION_STYLE = {
             </li>
         </ul>
         <p v-else class="text-xs text-emerald-600">✓ Rien à signaler : l'équipe est prête.</p>
-    </div>
+    </Panel>
 </template>

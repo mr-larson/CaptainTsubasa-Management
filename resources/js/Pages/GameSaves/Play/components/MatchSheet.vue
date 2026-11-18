@@ -1,4 +1,6 @@
 <script setup>
+import SectionTitle from '@/Components/SectionTitle.vue';
+import Panel from '@/Components/Panel.vue';
 import { computed } from 'vue';
 import PlayerPhoto from '@/Components/PlayerPhoto.vue';
 import { usePlayerUtils } from '../usePlayerUtils.js';
@@ -136,7 +138,7 @@ const hasStarters = computed(() => sides.value.some(s => s.starters.length));
 </script>
 
 <template>
-    <div class="border border-slate-200 rounded-xl bg-slate-50 p-4 shadow-card">
+    <Panel as="div">
         <div v-if="hasStarters" class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div v-for="s in sides" :key="s.side" class="min-w-0">
                 <!-- En-tête d'équipe -->
@@ -153,7 +155,7 @@ const hasStarters = computed(() => sides.value.some(s => s.starters.length));
                     { key: 'bench',    label: 'Remplaçants', rows: s.bench },
                 ]" :key="block.key">
                     <div v-if="block.rows.length" class="mb-3">
-                        <div class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-1">{{ block.label }}</div>
+                        <SectionTitle as="div" class="mb-1">{{ block.label }}</SectionTitle>
                         <button v-for="r in block.rows" :key="r.pid" type="button"
                                 @click="emit('show-player', s.side, r.pid)"
                                 class="w-full flex items-center gap-2 px-1.5 py-1 rounded-md text-left text-xs hover:bg-white transition-colors"
@@ -200,5 +202,5 @@ const hasStarters = computed(() => sides.value.some(s => s.starters.length));
         <p v-if="hasStarters && !stats.lineups" class="mt-3 text-2xs text-slate-500 italic">
             Match antérieur à l'enregistrement des effectifs : les remplaçants sont ceux de l'effectif actuel.
         </p>
-    </div>
+    </Panel>
 </template>
