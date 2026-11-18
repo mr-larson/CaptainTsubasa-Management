@@ -1,4 +1,5 @@
 <script setup>
+import { seasonStatsOf } from '@/Pages/GameSaves/Play/teamRoster.js';
 import { positionLabel } from '@/Enums/positionBadges.js';
 import { fieldClass } from '@/Components/fieldStyles';
 import ButtonPrimary from '@/Components/ButtonPrimary.vue';
@@ -223,7 +224,7 @@ const statsForSlot = (slot) => {
 const selectedPlayerPerf = computed(() => {
     const p = selectedPlayer.value;
     if (!p) return null;
-    return props.playerSeasonStats?.[p.id] ?? props.playerSeasonStats?.[String(p.id)] ?? null;
+    return seasonStatsOf(props.playerSeasonStats, p.id);
 });
 </script>
 

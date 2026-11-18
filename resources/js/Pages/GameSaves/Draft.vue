@@ -1,4 +1,5 @@
 <script setup>
+import { contractPlayer } from '@/Pages/GameSaves/Play/teamRoster.js';
 import PixelLoader from '@/Components/PixelLoader.vue';
 import { countByPositionGroup, positionLabel } from '@/Enums/positionBadges.js';
 import { fieldClass } from '@/Components/fieldStyles';
@@ -81,7 +82,7 @@ const draftPlayersById = computed(() => {
     const players = new Map(props.freePlayers.map(player => [player.id, player]));
     for (const team of props.teams) {
         for (const contract of team.contracts ?? []) {
-            const player = contract.game_player ?? contract.gamePlayer;
+            const player = contractPlayer(contract);
             if (player) players.set(player.id, player);
         }
     }

@@ -1,4 +1,5 @@
 <script setup>
+import { playersOf } from '@/Pages/GameSaves/Play/teamRoster.js';
 import { computed } from 'vue';
 import { useAnimatedStats } from '@/Composables/useAnimatedStats.js';
 import Panel from '@/Components/Panel.vue';
@@ -13,8 +14,7 @@ const props = defineProps({
     total: { type: Number, default: 0 },
 });
 const { overallOf } = usePlayerUtils();
-const selectedRoster = computed(() => (props.team.contracts ?? [])
-    .map(contract => contract.game_player ?? contract.gamePlayer ?? contract.player).filter(Boolean));
+const selectedRoster = computed(() => playersOf(props.team));
 const selectedStats = computed(() => [
     ...TEAM_STATS.slice(0, 2), { key: 'morale', label: 'Moral', color: 'bg-teal-400' }, ...TEAM_STATS.slice(2),
 ].map(stat => ({ ...stat, value: averageTeamStat(selectedRoster.value, stat.key) })));

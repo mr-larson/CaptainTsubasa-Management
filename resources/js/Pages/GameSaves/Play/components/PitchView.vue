@@ -1,4 +1,6 @@
 <script setup>
+import StaminaBar from '@/Components/StaminaBar.vue';
+import { staminaOf } from '@/utils/playerStats.js';
 import { ref, computed, watch, onBeforeUnmount } from 'vue';
 import { usePlayerUtils } from '../usePlayerUtils.js';
 
@@ -62,8 +64,6 @@ const cardsOf   = (p) => {
 };
 const cardsTitle = (c) => [c.yellow ? `${c.yellow} carton${c.yellow > 1 ? 's' : ''} jaune${c.yellow > 1 ? 's' : ''}` : '', c.red ? 'suspendu (rouge)' : '']
     .filter(Boolean).join(' · ');
-const staminaOf = (p) => Number(p?.stamina ?? p?.stats?.stamina ?? 0);
-const staminaBar = (v) => v >= 60 ? 'bg-emerald-400' : v >= 30 ? 'bg-amber-400' : 'bg-rose-500';
 
 const pickedPlayer = computed(() => props.players.find(p => props.isPickedUp(p)) ?? null);
 
@@ -206,12 +206,10 @@ const MASTERY_CHIP = {
                              class="absolute top-5 -right-1.5 w-3.5 h-3.5 rounded-sm bg-amber-400 border border-white text-[8px] leading-[11px] text-slate-700 text-center font-black pointer-events-none"
                              title="Capitaine">C</div>
                         <!-- Endurance -->
-                        <div v-if="playerForSlot(slot)" class="mt-0.5 w-8 h-[3px] rounded-full overflow-hidden pointer-events-none"
-                             :class="whiteboard ? 'bg-slate-200' : 'bg-black/40'"
-                             :title="`Endurance ${staminaOf(playerForSlot(slot))}`">
-                            <div class="h-full rounded-full" :class="staminaBar(staminaOf(playerForSlot(slot)))"
-                                 :style="{ width: Math.min(staminaOf(playerForSlot(slot)), 100) + '%' }"></div>
-                        </div>
+                        <StaminaBar v-if="playerForSlot(slot)" :value="staminaOf(playerForSlot(slot))"
+                                    class="mt-0.5 h-[3px] w-8 pointer-events-none"
+                                    :class="whiteboard ? 'bg-slate-200' : 'bg-black/40'"
+                                    :title="`Endurance ${staminaOf(playerForSlot(slot))}`" />
                         <template v-if="slotMastery">
                             <div v-if="slotMastery(slot, slotDef) === 'off'"
                                  class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-rose-500 border border-white text-[8px] leading-[12px] text-white text-center font-bold pointer-events-none"

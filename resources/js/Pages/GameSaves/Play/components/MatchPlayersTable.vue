@@ -1,4 +1,5 @@
 <script setup>
+import { isGoalkeeper } from '@/utils/playerStats.js';
 import { computed, ref } from 'vue';
 import PlayerPhoto from '@/Components/PlayerPhoto.vue';
 import { usePlayerUtils } from '../usePlayerUtils.js';
@@ -17,7 +18,6 @@ const props = defineProps({
 
 const { playerPhotoUrl } = usePlayerUtils();
 
-const isGK = (p) => String(p?.position ?? '').toLowerCase().includes('goal');
 const stat = (pid, path) => {
     const s = props.stats?.[pid] ?? props.stats?.[String(pid)];
     if (!s) return 0;
@@ -42,7 +42,7 @@ const rows = computed(() => props.players.map(p => {
     return {
         p, pid, starter, minutes,
         used:     starter === true || (minutes ?? 0) > 0 || anyAction,
-        gk:       isGK(p),
+        gk:       isGoalkeeper(p),
         goals:    stat(pid, 'offense.goals'),
         shot:     pair(pid, 'offense.shot'),
         pass:     pair(pid, 'offense.pass'),

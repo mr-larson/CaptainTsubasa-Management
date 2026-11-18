@@ -1,4 +1,5 @@
 <script setup>
+import { contractPlayer, seasonStatsOf } from '@/Pages/GameSaves/Play/teamRoster.js';
 import ButtonSecondary from '@/Components/ButtonSecondary.vue';
 import { computed } from 'vue';
 import { useAnimatedStats } from '@/Composables/useAnimatedStats.js';
@@ -88,7 +89,7 @@ const opponentTeam = computed(() => {
 });
 
 const opponentPlayers = computed(() => (opponentTeam.value?.contracts ?? [])
-    .map(c => c.game_player ?? c.gamePlayer ?? c.player)
+    .map(contractPlayer)
     .filter(Boolean));
 
 // ==========================
@@ -162,7 +163,7 @@ const { root: forcesRoot, value: forcesValue, width: forcesWidth } = useAnimated
 // Joueurs adverses à surveiller : meilleur buteur et meilleur duelliste.
 const opponentThreats = computed(() => {
     const players = opponentPlayers.value;
-    const statOf  = (p) => props.playerSeasonStats?.[p.id] ?? props.playerSeasonStats?.[String(p.id)] ?? null;
+    const statOf  = (p) => seasonStatsOf(props.playerSeasonStats, p.id);
     const best = (pick) => players
         .map(p => ({ player: p, value: Number(pick(statOf(p)) ?? 0) }))
         .filter(r => r.value > 0)

@@ -1,4 +1,5 @@
 // resources/js/Pages/GameSaves/Play/useTeam.js
+import { contractPlayer } from './teamRoster.js';
 import { ref, computed, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { FORMATIONS, DEFAULT_FORMATION, FORMATION_LIST } from '@/Pages/Match/engine/formations.js';
@@ -15,7 +16,7 @@ export function useTeam({ gameSave, team }) {
     const roster = computed(() => {
         if (!team.value || !Array.isArray(team.value.contracts)) return [];
         return team.value.contracts
-            .map(c => c.game_player ?? c.gamePlayer ?? c.player ?? null)
+            .map(contractPlayer)
             .filter(Boolean);
     });
 
@@ -28,7 +29,7 @@ export function useTeam({ gameSave, team }) {
         if (!team.value || !Array.isArray(team.value.contracts)) return [];
         return team.value.contracts
             .map(c => {
-                const p = c.game_player ?? c.gamePlayer ?? c.player ?? null;
+                const p = contractPlayer(c);
                 if (!p) return null;
                 return {
                     ...p,

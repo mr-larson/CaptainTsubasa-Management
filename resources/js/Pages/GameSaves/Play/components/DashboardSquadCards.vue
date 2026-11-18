@@ -2,6 +2,7 @@
 // Dashboard — pilotage de l'effectif : vestiaire (moral/relations), contrats
 // qui arrivent à échéance, meilleurs joueurs de la saison. Un clic sur un
 // joueur ouvre sa fiche dans Mon équipe.
+import { seasonStatsOf } from '../teamRoster.js';
 import { computed } from 'vue';
 import { usePlayerUtils } from '../usePlayerUtils.js';
 
@@ -51,7 +52,7 @@ const expiring = computed(() => props.roster
 const leftLabel = (left) => left <= 0 ? 'cette semaine' : `dans ${left} sem.`;
 
 // ── Meilleurs joueurs ────────────────────────────────────────
-const statOf = (p) => props.playerSeasonStats?.[p.id] ?? props.playerSeasonStats?.[String(p.id)] ?? null;
+const statOf = (p) => seasonStatsOf(props.playerSeasonStats, p.id);
 
 const topBy = (pick, min = 1) => props.roster
     .map(p => ({ player: p, value: Number(pick(statOf(p)) ?? 0) }))

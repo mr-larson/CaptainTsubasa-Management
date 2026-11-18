@@ -1,4 +1,7 @@
 <script setup>
+import { formatDecimal } from '@/utils/format.js';
+import { isGoalkeeper } from '@/utils/playerStats.js';
+import { contractPlayer, playersOf } from '@/Pages/GameSaves/Play/teamRoster.js';
 import Modal from '@/Components/Modal.vue';
 import PlayerDetailContent from './components/PlayerDetailContent.vue';
 import PixelLoader from '@/Components/PixelLoader.vue';
@@ -117,7 +120,7 @@ const replaySquad = (teamId) => {
     if (!team) return null;
     const players = (team.contracts ?? [])
         .map(c => {
-            const p = c.game_player ?? c.gamePlayer ?? null;
+            const p = contractPlayer(c);
             return p ? {
                 id:         p.id,
                 lastname:   p.lastname,
@@ -154,7 +157,7 @@ const playersById = computed(() => {
     const map = {};
     for (const team of Object.values(props.teamById ?? {})) {
         for (const c of team?.contracts ?? []) {
-            const p = c.game_player ?? c.gamePlayer ?? null;
+            const p = contractPlayer(c);
             if (p) map[p.id] = p;
         }
     }
@@ -222,13 +225,12 @@ const filteredLogEvents = computed(() => {
 const expandedEvent = ref(null);
 watch(() => props.selectedCalendarMatch?.id, () => { expandedEvent.value = null; });
 
-const fmt = (n) => (Number.isFinite(Number(n)) ? Number(n).toFixed(1) : '—');
 const diceBreakdown = (ev) => {
     const m = ev?.meta;
     if (!m?.attack || !m?.defense) return null;
     const side = (s) => ({
-        total: fmt(s.total),
-        base:  fmt(s.base),
+        total: formatDecimal(s.total),
+        base:  formatDecimal(s.base),
         additions: (s.additions ?? []).map(a => `${a.label} ${a.value}`),
         tired: Number(s.staminaFactor ?? 1) < 1 ? `fatigue ×${Number(s.staminaFactor).toFixed(2)}` : null,
     });
@@ -236,7 +238,7 @@ const diceBreakdown = (ev) => {
         attack:  side(m.attack),
         defense: side(m.defense),
         winner:  m.result?.winner === 'attack' ? 'attaque' : m.result?.winner === 'defense' ? 'défense' : null,
-        diff:    fmt(Math.abs(m.result?.diff ?? 0)),
+        diff:    formatDecimal(Math.abs(m.result?.diff ?? 0)),
         rule:    m.result?.bonusRuleLabel ?? null,
         crit:    m.result?.critWinner ?? null,
         reroll:  !!m.captainReroll,
@@ -288,7 +290,6 @@ const playerMatchStat = (playerId, path) => {
     if (!s) return 0;
     return path.split('.').reduce((o, k) => o?.[k] ?? 0, s);
 };
-const isGK = (p) => p?.position?.toLowerCase().includes('goalkeeper');
 
 // Arrêts réussis d'un gardien (mains + poings + arrêt spécial)
 const playerSaves = (playerId) =>
@@ -337,14 +338,14 @@ const replayEvents = computed(() => {
         const hands = pStats.defense?.hands?.attempts ?? 0;
         const punch = pStats.defense?.punch?.attempts ?? 0;
         const saves = hands + punch;
-        if (saves > 0 && isGK(player)) {
+        if (saves > 0 && isGoalkeeper(player)) {
             const savesSuccess = (pStats.defense?.hands?.success ?? 0) + (pStats.defense?.punch?.success ?? 0);
             events.push({ type: 'save', teamSide, priority: 1, icon: '🧤', color: 'bg-violet-500', text: `${player.lastname} : ${savesSuccess} arrêt(s) sur ${saves} tir(s)`, detail: `Mains ${hands} · Poings ${punch}` });
         }
 
         const shotAttempts = pStats.offense?.shot?.attempts ?? 0;
         const shotSuccess  = pStats.offense?.shot?.success  ?? 0;
-        if (shotAttempts > 0 && !isGK(player)) {
+        if (shotAttempts > 0 && !isGoalkeeper(player)) {
             events.push({ type: 'shot', teamSide, priority: 2, icon: '🔥', color: 'bg-orange-400', text: `${player.lastname} : ${shotAttempts} tir(s)`, detail: shotSuccess > 0 ? `${shotSuccess} cadré(s)` : 'Aucun cadré' });
         }
 
@@ -487,7 +488,7 @@ const showPlayer = (side, playerId) => {
     const teamId = side === 'home' ? props.selectedCalendarMatch?.home_team_id : props.selectedCalendarMatch?.away_team_id;
     const team = props.teamById[teamId];
     const currentPlayer = [...props.calendarTeamRoster, ...props.calendarOpponentRoster,
-        ...(team?.contracts ?? []).map(c => c.game_player ?? c.gamePlayer).filter(Boolean)]
+        ...playersOf(team)]
         .find(p => String(p.id) === String(playerId));
     selectedPlayer.value = { ...currentPlayer, ...snapshotPlayer, teamName: team?.name };
 };

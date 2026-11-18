@@ -1,4 +1,6 @@
 <script setup>
+import StaminaBar from '@/Components/StaminaBar.vue';
+import { staminaOf } from '@/utils/playerStats.js';
 import { positionGroupClass } from '@/Enums/positionBadges.js';
 import { usePlayerUtils } from '../usePlayerUtils.js';
 
@@ -25,8 +27,6 @@ const FIT_RING = {
 const fitOf = (p) => (props.pickFit && !props.isPickedUp(p) ? props.pickFit(p) : null);
 
 const statusOf   = (p) => (props.playerStatus ? props.playerStatus(p) : null);
-const staminaOf  = (p) => Number(p?.stamina ?? p?.stats?.stamina ?? 0);
-const staminaBar = (v) => v >= 60 ? 'bg-emerald-400' : v >= 30 ? 'bg-amber-400' : 'bg-rose-500';
 </script>
 
 <template>
@@ -83,10 +83,7 @@ const staminaBar = (v) => v >= 60 ? 'bg-emerald-400' : v >= 30 ? 'bg-amber-400' 
                                   :class="positionGroupClass(positionGroup(p.position))">
                                 {{ positionGroup(p.position) === 'OTHER' ? '?' : positionGroup(p.position) }}
                             </span>
-                            <span class="w-5 h-[3px] rounded-full bg-slate-300 overflow-hidden">
-                                <span class="block h-full rounded-full" :class="staminaBar(staminaOf(p))"
-                                      :style="{ width: Math.min(staminaOf(p), 100) + '%' }"></span>
-                            </span>
+                            <StaminaBar :value="staminaOf(p)" class="h-[3px] w-5 bg-slate-300" />
                         </div>
                     </div>
                 </div>

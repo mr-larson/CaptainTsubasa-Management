@@ -1,6 +1,7 @@
 <script setup>
 // Dashboard — trajectoire de la saison (position semaine par semaine, écart avec
 // l'objectif du mandat) et projection budgétaire.
+import Money from '@/Components/Money.vue';
 import { computed, ref } from 'vue';
 import { useSeasonTrajectory } from '../useSeasonTrajectory.js';
 
@@ -65,7 +66,6 @@ const tooltipStyle = computed(() => {
 // ── Finances ─────────────────────────────────────────────────
 const weeklyTrainingCost = computed(() => props.trainingCost * props.maxTrainings);
 
-const fmt = (n) => Number(n ?? 0).toLocaleString('fr-FR');
 </script>
 
 <template>
@@ -146,25 +146,25 @@ const fmt = (n) => Number(n ?? 0).toLocaleString('fr-FR');
         <div id="dashboard-finances" class="border border-slate-200 rounded-xl bg-slate-50 p-4 scroll-mt-4 shadow-card" :class="isWorldCup ? 'md:col-span-3' : ''">
             <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">Finances</h4>
             <div class="space-y-1.5 text-xs text-slate-600">
-                <div class="flex justify-between"><span>Budget</span><span class="font-black text-slate-700 tabular-nums">{{ fmt(budget) }} <GameBanknote /></span></div>
+                <div class="flex justify-between"><span>Budget</span><span class="font-black text-slate-700 tabular-nums"><Money :amount="budget" /></span></div>
                 <div v-if="incomeModel" class="flex justify-between gap-2">
                     <span>Revenu / semaine</span>
                     <span class="text-right tabular-nums">
-                        <span class="font-bold text-slate-700">+{{ fmt(incomeModel.base) }} <GameBanknote /></span>
-                        <span class="text-slate-400"> · V +{{ fmt(incomeModel.win_bonus) }} <GameBanknote /> · N +{{ fmt(incomeModel.draw_bonus) }} <GameBanknote /></span>
+                        <span class="font-bold text-slate-700"><Money :amount="incomeModel.base" prefix="+" /></span>
+                        <span class="text-slate-400"> · V <Money :amount="incomeModel.win_bonus" prefix="+" /> · N <Money :amount="incomeModel.draw_bonus" prefix="+" /></span>
                     </span>
                 </div>
                 <div v-if="weeklyTrainingCost > 0" class="flex justify-between">
                     <span>Entraînements / sem.</span>
-                    <span class="font-bold text-slate-700 tabular-nums">−{{ fmt(weeklyTrainingCost) }} <GameBanknote /></span>
+                    <span class="font-bold text-slate-700 tabular-nums"><Money :amount="weeklyTrainingCost" prefix="−" /></span>
                 </div>
                 <div v-if="projection" class="pt-2 mt-1 border-t border-slate-200">
                     <div class="flex justify-between">
                         <span>Fin de saison (S{{ totalWeeks }})</span>
-                        <span class="font-black text-teal-600 tabular-nums">≈ {{ fmt(projection.likely) }} <GameBanknote /></span>
+                        <span class="font-black text-teal-600 tabular-nums"><Money :amount="projection.likely" prefix="≈ " /></span>
                     </div>
                     <p class="text-2xs text-slate-500 mt-0.5 leading-snug">
-                        Au rythme actuel, hors achats ({{ weeksLeft }} sem. de revenus). Minimum garanti : {{ fmt(projection.min) }} <GameBanknote />.
+                        Au rythme actuel, hors achats ({{ weeksLeft }} sem. de revenus). Minimum garanti : <Money :amount="projection.min" />.
                     </p>
                 </div>
             </div>

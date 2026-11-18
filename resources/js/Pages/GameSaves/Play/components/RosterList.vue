@@ -1,4 +1,6 @@
 <script setup>
+import StaminaBar from '@/Components/StaminaBar.vue';
+import { staminaOf } from '@/utils/playerStats.js';
 import { positionLabel } from '@/Enums/positionBadges.js';
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
@@ -47,7 +49,6 @@ const groupedPlayers = computed(() =>
         .filter(g => g.players.length > 0)
 );
 
-const staminaOf = (p) => p.stamina ?? p.stats?.stamina ?? 0;
 
 // Duos d'alchimie : badge 🤝 quand le partenaire de duo est dans le même
 // effectif (débloque l'action une-deux en match).
@@ -145,14 +146,8 @@ const benchTitle = (p) => {
                                      :class="selectedId === p.id ? 'text-teal-700' : 'text-slate-500'">
                                     {{ p.stamina ?? p.stats?.stamina ?? '—' }}
                                 </div>
-                                <div class="w-full h-1 rounded-full overflow-hidden"
-                                     :class="selectedId === p.id ? 'bg-teal-100' : 'bg-slate-200'">
-                                    <div class="h-full rounded-full transition-all"
-                                         :class="staminaOf(p) >= 60 ? 'bg-emerald-400'
-                                             : staminaOf(p) >= 30 ? 'bg-amber-400' : 'bg-rose-400'"
-                                         :style="{ width: Math.min(staminaOf(p), 100) + '%' }">
-                                    </div>
-                                </div>
+                                <StaminaBar :value="staminaOf(p)" class="h-1 w-full"
+                                            :class="selectedId === p.id ? 'bg-teal-100' : 'bg-slate-200'" />
                             </div>
 
                             <!-- Badge spécifique à l'onglet (ex : ✓ entraîné) -->

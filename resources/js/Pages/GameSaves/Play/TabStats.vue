@@ -1,4 +1,6 @@
 <script setup>
+import { isGoalkeeper } from '@/utils/playerStats.js';
+import { contractPlayer, seasonStatsOf } from '@/Pages/GameSaves/Play/teamRoster.js';
 import { computed, ref } from 'vue';
 import Modal from '@/Components/Modal.vue';
 import TeamDetailContent from './components/TeamDetailContent.vue';
@@ -26,7 +28,7 @@ const allPlayers = computed(() => {
     const players = [];
     for (const t of (props.teams ?? [])) {
         for (const c of (t.contracts ?? [])) {
-            const p = c.game_player ?? c.gamePlayer ?? c.player ?? null;
+            const p = contractPlayer(c);
             if (!p) continue;
             players.push({ ...p, teamId: t.id, teamName: t.name, teamLogoPath: t.logo_path });
         }
@@ -38,7 +40,7 @@ const allPlayers = computed(() => {
 const allPlayersWithStats = computed(() =>
     allPlayers.value.map(p => ({
         ...p,
-        perf: props.playerSeasonStats?.[p.id] ?? props.playerSeasonStats?.[String(p.id)] ?? props.playerSeasonStats?.[+p.id] ?? null,
+        perf: seasonStatsOf(props.playerSeasonStats, p.id),
     }))
 );
 
@@ -66,11 +68,10 @@ const topByFiltered = (getter, n = 5, filter = null) =>
 // ==========================
 //   TOP PERFORMERS
 // ==========================
-const isGK = (p) => p?.position?.toLowerCase().includes('goalkeeper');
 
-const topShooters  = computed(() => topByFiltered(p => p.perf?.offense?.goals ?? p.perf?.offense?.shot?.success ?? 0, 5, p => !isGK(p)));
-const topPassers   = computed(() => topByFiltered(p => p.perf?.offense?.pass?.success ?? 0, 5, p => !isGK(p)));
-const topDribblers = computed(() => topByFiltered(p => p.perf?.offense?.dribble?.success ?? 0, 5, p => !isGK(p)));
+const topShooters  = computed(() => topByFiltered(p => p.perf?.offense?.goals ?? p.perf?.offense?.shot?.success ?? 0, 5, p => !isGoalkeeper(p)));
+const topPassers   = computed(() => topByFiltered(p => p.perf?.offense?.pass?.success ?? 0, 5, p => !isGoalkeeper(p)));
+const topDribblers = computed(() => topByFiltered(p => p.perf?.offense?.dribble?.success ?? 0, 5, p => !isGoalkeeper(p)));
 const topDefenders = computed(() => topByFiltered(p => p.perf?.duelsWon ?? 0, 5, p => !p.position?.toLowerCase().includes('goalkeeper')));
 const topKeepers = computed(() => topByFiltered(
     p => (p.perf?.defense?.hands?.attempts ?? 0) + (p.perf?.defense?.punch?.attempts ?? 0),
@@ -90,7 +91,7 @@ const sortDesc = ref(true);
 const teamComparative = computed(() => {
     return (props.teams ?? []).map(t => {
         const playerIds = (t.contracts ?? [])
-            .map(c => c.game_player?.id ?? c.gamePlayer?.id ?? c.player?.id)
+            .map(c => contractPlayer(c)?.id)
             .filter(Boolean);
 
         const totals = { shots: 0, shotSuccess: 0, passes: 0, crosses: 0, dribbles: 0, intercepts: 0, tackles: 0, blocks: 0, headings: 0, saves: 0, duelsWon: 0, duelsLost: 0 };

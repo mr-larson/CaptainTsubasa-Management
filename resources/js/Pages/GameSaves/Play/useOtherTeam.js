@@ -1,4 +1,5 @@
 // resources/js/Pages/GameSaves/Play/useOtherTeam.js
+import { contractPlayer } from './teamRoster.js';
 import { ref, computed, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { FORMATIONS, DEFAULT_FORMATION, FORMATION_LIST } from '@/Pages/Match/engine/formations.js';
@@ -29,7 +30,7 @@ export function useOtherTeam({ gameSave, teams, controlledTeamId }) {
         if (!selectedOtherTeam.value || !Array.isArray(selectedOtherTeam.value.contracts)) return [];
         return selectedOtherTeam.value.contracts
             .map(c => {
-                const p = c.game_player ?? c.gamePlayer ?? c.player ?? null;
+                const p = contractPlayer(c);
                 if (!p) return null;
                 return {
                     ...p,

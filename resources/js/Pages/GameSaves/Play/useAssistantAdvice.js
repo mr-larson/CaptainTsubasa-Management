@@ -4,6 +4,7 @@
 //   train   : qui entraîner cette semaine, et sur quelle stat (point faible du poste)
 //   captain : capitaine indisponible ou sur le banc → brassard au meilleur titulaire disponible
 //   recruit : le titulaire le plus faible → le meilleur joueur libre abordable à son poste
+import { staminaOf, statOf } from '@/utils/playerStats.js';
 import { computed, toValue } from 'vue';
 import { masteryFor } from './lineupMastery.js';
 import { usePlayerUtils } from './usePlayerUtils.js';
@@ -29,9 +30,6 @@ export function useAssistantAdvice({
     freePlayers, budget, isWorldCup,
 }) {
     const { overallOf, keyStatsFor, positionGroup } = usePlayerUtils();
-
-    const staminaOf = (p) => Number(p?.stamina ?? p?.stats?.stamina ?? 0);
-    const statOf    = (p, k) => Number(p?.stats?.[k] ?? p?.[k] ?? 0);
 
     // ── Rotations ────────────────────────────────────────────
     const rotations = computed(() => {

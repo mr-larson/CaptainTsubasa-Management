@@ -1,4 +1,5 @@
 <script setup>
+import { isGoalkeeper } from '@/utils/playerStats.js';
 import { computed } from 'vue';
 
 /** Carte "Performance saison" : chips d'actions du joueur (GK / champ). */
@@ -12,7 +13,7 @@ const perfChips = computed(() => {
     const p    = props.player;
     const perf = props.perf;
     if (!p || !perf) return [];
-    const isGK = p.position?.toLowerCase().includes('goalkeeper');
+    const isGK = isGoalkeeper(p);
 
     if (isGK) return [
         { icon: '🧤', label: 'Arrêts',  val: perf.defense?.hands?.attempts     ?? 0, sub: perf.defense?.hands?.success     ?? 0, color: 'bg-violet-100 text-violet-700' },

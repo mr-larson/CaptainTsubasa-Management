@@ -1,4 +1,5 @@
 <script setup>
+import { seasonStatsOf } from '@/Pages/GameSaves/Play/teamRoster.js';
 import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import ButtonSecondary from '@/Components/ButtonSecondary.vue';
 import Panel from '@/Components/Panel.vue';
@@ -116,7 +117,7 @@ const selectedTeamRank = computed(() => {
 const selectedPlayerPerf = computed(() => {
     const p = props.selectedOtherPlayer;
     if (!p) return null;
-    return props.playerSeasonStats?.[p.id] ?? props.playerSeasonStats?.[String(p.id)] ?? {};
+    return seasonStatsOf(props.playerSeasonStats, p.id) ?? {};
 });
 const comparison = ref([]);
 const comparisonAvailability = p => otherUnavailability(p)?.label ?? 'Disponible';

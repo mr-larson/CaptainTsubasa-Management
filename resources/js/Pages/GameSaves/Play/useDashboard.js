@@ -1,4 +1,5 @@
 // resources/js/Pages/GameSaves/Play/useDashboard.js
+import { contractPlayer } from './teamRoster.js';
 import { computed } from 'vue';
 import { averageOverall } from './usePlayerUtils.js';
 
@@ -23,7 +24,7 @@ export function useDashboard({ teams, team, roster, activeInjuries, activeSuspen
                 goals_against: ga,
                 goal_diff: gf - ga,
                 average_overall: averageOverall((t.contracts ?? [])
-                    .map(contract => contract.game_player ?? contract.gamePlayer ?? contract.player)
+                    .map(contractPlayer)
                     .filter(Boolean)),
             };
         });

@@ -1,4 +1,5 @@
 <script setup>
+import { formatDate } from '@/utils/format.js';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { confirmDialog } from '@/Composables/useDialog.js';
@@ -17,10 +18,6 @@ const destroyPackage = async (pkg) => {
     router.delete(route('period-packages.destroy', pkg.id), { preserveScroll: true });
 };
 
-const formatDate = (value) => {
-    if (!value) return '—';
-    try { return new Date(value).toLocaleDateString('fr-FR'); } catch { return value; }
-};
 </script>
 
 <template>

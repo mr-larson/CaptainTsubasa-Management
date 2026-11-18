@@ -1,4 +1,5 @@
 // resources/js/Pages/GameSaves/Play/useCalendar.js
+import { contractPlayer } from './teamRoster.js';
 import { ref, computed } from 'vue';
 import axios from 'axios';
 import { alertDialog } from '@/Composables/useDialog.js';
@@ -127,7 +128,7 @@ export function useCalendar({ matches, teams, team, week }) {
     const calendarTeamRoster = computed(() => {
         if (!calendarTeam.value || !Array.isArray(calendarTeam.value.contracts)) return [];
         return calendarTeam.value.contracts
-            .map(c => c.game_player ?? c.gamePlayer ?? c.player ?? null)
+            .map(contractPlayer)
             .filter(Boolean);
     });
     const calendarOpponentRoster = computed(() => {
@@ -139,7 +140,7 @@ export function useCalendar({ matches, teams, team, week }) {
         const oppTeam = teams.value?.find(t => Number(t.id) === Number(oppId)) ?? null;
         if (!oppTeam || !Array.isArray(oppTeam.contracts)) return [];
         return oppTeam.contracts
-            .map(c => c.game_player ?? c.gamePlayer ?? c.player ?? null)
+            .map(contractPlayer)
             .filter(Boolean);
     });
 

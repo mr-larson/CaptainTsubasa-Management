@@ -1,4 +1,5 @@
 <script setup>
+import { contractPlayer } from '@/Pages/GameSaves/Play/teamRoster.js';
 import TabBar from '@/Components/TabBar.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import LoadingOverlay from '@/Components/LoadingOverlay.vue';
@@ -289,7 +290,7 @@ const squadAvailability = computed(() => ({
 const clubStatusTeamId = ref(null);
 const rosterForTeam = (t) => (t?.contracts ?? [])
     .map(c => {
-        const p = c.game_player ?? c.gamePlayer ?? c.player ?? null;
+        const p = contractPlayer(c);
         return p ? { ...p, contract_id: c.id, is_starter: c.is_starter ?? true, is_captain: c.is_captain ?? false, contract_end_week: c.end_week ?? null } : null;
     })
     .filter(Boolean);
