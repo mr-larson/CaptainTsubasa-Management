@@ -4,14 +4,21 @@ namespace Tests\Feature;
 
 use App\Enums\GamePhase;
 use App\Enums\Nationality;
+use App\Enums\TeamStyle;
+use App\Helpers\FormationHelper;
+use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GameMatch;
 use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
+use App\Models\Nation;
 use App\Models\Player;
 use App\Models\User;
+use App\Services\WorldCup\NationalSquadPicker;
+use App\Services\WorldCup\NationalTeamAssembler;
 use App\Services\WorldCup\NewWorldCupBuilder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Middleware\ThrottleRequests;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 /**
@@ -22,13 +29,23 @@ class NewWorldCupBuilderTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Les migrations de légendes insèrent de vrais joueurs dans la base de test : on repart d'un vivier
+     * vide pour que les comptes de ce test ne dépendent que de ce qu'il crée lui-même.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        DB::table('players')->delete();
+    }
+
     /** Donne $count joueurs à une nation, dont $goalkeepers gardiens. */
     private function seedNation(string $nation, int $count = 12, int $goalkeepers = 1): void
     {
         foreach (range(1, $count) as $i) {
             Player::factory()->create([
                 'nationality' => $nation,
-                'position'    => $i <= $goalkeepers ? 'Goalkeeper' : 'Midfielder',
+                'position' => $i <= $goalkeepers ? 'Goalkeeper' : 'Midfielder',
             ]);
         }
     }
@@ -78,7 +95,7 @@ class NewWorldCupBuilderTest extends TestCase
     public function test_build_creates_a_world_cup_with_eight_nations_and_the_chosen_one_controlled(): void
     {
         $nations = $this->seedTournament();
-        $user    = User::factory()->create();
+        $user = User::factory()->create();
 
         $save = $this->builder()->build($user, ['nation' => $nations[0], 'period' => 'college', 'label' => 'Mondial', 'game_config' => null]);
 
@@ -129,8 +146,8 @@ class NewWorldCupBuilderTest extends TestCase
     public function test_the_route_rejects_invalid_squads_without_creating_a_save(): void
     {
         [$nation, $other] = array_slice(Nationality::ALL, 0, 2);
-        $this->seedNation($nation, 24);
-        $this->seedNation($other, 1);
+        $this->seedTournament();       // 8 nations jouables : de quoi lancer un tournoi
+        $this->seedNation($nation, 12); // la nation choisie passe à 24 joueurs
         $ids = Player::where('nationality', $nation)->orderBy('id')->pluck('id')->all();
         $foreignId = Player::where('nationality', $other)->value('id');
         $deletedId = array_pop($ids);
@@ -185,6 +202,7 @@ class NewWorldCupBuilderTest extends TestCase
         $this->assertEqualsCanonicalizing($contracts->pluck('game_player_id')->all(), array_values($slots));
         $this->assertSame($contracts->firstWhere('gamePlayer.base_player_id', $ids[0])->game_player_id, $slots[1]);
     }
+
     public function test_the_route_accepts_twenty_players(): void
     {
         $nation = $this->seedTournament()[0];
@@ -203,7 +221,6 @@ class NewWorldCupBuilderTest extends TestCase
         $this->assertEqualsCanonicalizing($ids, $team->contracts()->with('gamePlayer')->get()->pluck('gamePlayer.base_player_id')->all());
         $this->assertSame(11, $team->contracts()->where('is_starter', true)->count());
     }
-
 
     public function test_hot_seat_creates_one_human_team_per_seat_and_draws_the_rest(): void
     {
@@ -243,8 +260,8 @@ class NewWorldCupBuilderTest extends TestCase
 
     public function test_the_nations_catalog_covers_every_nationality_of_the_enum(): void
     {
-        $this->assertEqualsCanonicalizing(Nationality::ALL, \App\Models\Nation::pluck('name')->all());
-        $this->assertSame(0, \App\Models\Nation::whereNull('code')->orWhere('code', '')->count());
+        $this->assertEqualsCanonicalizing(Nationality::ALL, Nation::pluck('name')->all());
+        $this->assertSame(0, Nation::whereNull('code')->orWhere('code', '')->count());
     }
 
     public function test_assembled_national_teams_are_linked_to_their_catalog_nation(): void
@@ -261,10 +278,10 @@ class NewWorldCupBuilderTest extends TestCase
 
     public function test_every_nation_has_a_valid_style_and_philosophy_with_some_variety(): void
     {
-        $nations = \App\Models\Nation::all();
+        $nations = Nation::all();
         foreach ($nations as $nation) {
-            $this->assertContains($nation->tactical_style, \App\Enums\TeamStyle::TACTICAL_STYLES, $nation->name);
-            $this->assertContains($nation->management_philosophy, \App\Enums\TeamStyle::PHILOSOPHIES, $nation->name);
+            $this->assertContains($nation->tactical_style, TeamStyle::TACTICAL_STYLES, $nation->name);
+            $this->assertContains($nation->management_philosophy, TeamStyle::PHILOSOPHIES, $nation->name);
         }
         $this->assertGreaterThanOrEqual(4, $nations->pluck('tactical_style')->unique()->count());
         $this->assertGreaterThanOrEqual(3, $nations->pluck('management_philosophy')->unique()->count());
@@ -274,16 +291,123 @@ class NewWorldCupBuilderTest extends TestCase
     {
         $nation = Nationality::ALL[0];
         // Onze attaquants très bien notés, mais peu de défenseurs/milieux moyens : l'IA doit quand même aligner une défense.
-        foreach (range(1, 2) as $i) Player::factory()->create(['nationality' => $nation, 'position' => 'Goalkeeper']);
-        foreach (range(1, 10) as $i) Player::factory()->create(['nationality' => $nation, 'position' => 'Forward', 'stats' => ['shot' => 95, 'attack' => 95, 'dribble' => 95, 'speed' => 95]]);
-        foreach (range(1, 5) as $i) Player::factory()->create(['nationality' => $nation, 'position' => 'Defender', 'stats' => ['defense' => 50, 'tackle' => 50, 'block' => 50, 'intercept' => 50]]);
-        foreach (range(1, 5) as $i) Player::factory()->create(['nationality' => $nation, 'position' => 'Midfielder']);
+        foreach (range(1, 2) as $i) {
+            Player::factory()->create(['nationality' => $nation, 'position' => 'Goalkeeper']);
+        }
+        foreach (range(1, 10) as $i) {
+            Player::factory()->create(['nationality' => $nation, 'position' => 'Forward', 'stats' => ['shot' => 95, 'attack' => 95, 'dribble' => 95, 'speed' => 95]]);
+        }
+        foreach (range(1, 5) as $i) {
+            Player::factory()->create(['nationality' => $nation, 'position' => 'Defender', 'stats' => ['defense' => 50, 'tackle' => 50, 'block' => 50, 'intercept' => 50]]);
+        }
+        foreach (range(1, 5) as $i) {
+            Player::factory()->create(['nationality' => $nation, 'position' => 'Midfielder']);
+        }
 
-        [$squad, $lineup] = app(\App\Services\WorldCup\NationalSquadPicker::class)->pick(Player::where('nationality', $nation)->get(), null);
+        [$squad, $lineup] = app(NationalSquadPicker::class)->pick(Player::where('nationality', $nation)->get(), null);
 
         $this->assertCount(18, $squad);
         $this->assertGreaterThanOrEqual(4, $squad->filter(fn ($p) => $p->position->value === 'Defender')->count());
         $this->assertCount(11, $lineup['slots']);
-        $this->assertArrayHasKey($lineup['formation'], \App\Helpers\FormationHelper::SLOT_ZONES);
+        $this->assertArrayHasKey($lineup['formation'], FormationHelper::SLOT_ZONES);
+    }
+
+    public function test_an_inactive_nation_is_neither_listed_nor_accepted(): void
+    {
+        $nations = $this->seedTournament();
+        Nation::where('name', $nations[1])->update(['is_active' => false]);
+        $user = User::factory()->create();
+
+        $this->assertNotContains($nations[1], array_column($this->builder()->playableNations(), 'name'));
+
+        $this->withoutMiddleware(ThrottleRequests::class)->actingAs($user)
+            ->post(route('game-saves.start-world-cup'), [
+                'period' => 'college', 'competition_type' => 'world_cup', 'nation' => $nations[1],
+                'player_ids' => Player::where('nationality', $nations[1])->orderBy('id')->limit(14)->pluck('id')->all(),
+            ])->assertSessionHasErrors('nation');
+        $this->assertSame(0, GameSave::where('user_id', $user->id)->count());
+    }
+
+    public function test_a_favourite_formation_is_used_only_when_the_squad_can_fill_it(): void
+    {
+        $nation = Nationality::ALL[0];
+        // 2 gardiens, 3 défenseurs seulement : un schéma à 5 défenseurs n'est pas jouable.
+        foreach (range(1, 2) as $i) {
+            Player::factory()->create(['nationality' => $nation, 'position' => 'Goalkeeper']);
+        }
+        foreach (range(1, 3) as $i) {
+            Player::factory()->create(['nationality' => $nation, 'position' => 'Defender']);
+        }
+        foreach (range(1, 6) as $i) {
+            Player::factory()->create(['nationality' => $nation, 'position' => 'Midfielder']);
+        }
+        foreach (range(1, 5) as $i) {
+            Player::factory()->create(['nationality' => $nation, 'position' => 'Forward']);
+        }
+        $picker = app(NationalSquadPicker::class);
+        $pool = Player::where('nationality', $nation)->get();
+
+        $this->assertNotSame('5-3-1-1', $picker->lineupFor($pool, '5-3-1-1')['formation']);
+        $this->assertSame('4-3-2-1', $picker->lineupFor($pool->merge(
+            collect(range(1, 2))->map(fn () => Player::factory()->create(['nationality' => $nation, 'position' => 'Defender']))
+        ), '4-3-2-1')['formation']);
+    }
+
+    public function test_every_nation_has_a_valid_favourite_formation(): void
+    {
+        foreach (Nation::all() as $nation) {
+            $this->assertArrayHasKey($nation->default_formation, FormationHelper::SLOT_ZONES, $nation->name);
+        }
+    }
+
+    public function test_every_national_team_starts_with_the_same_budget(): void
+    {
+        $nations = $this->seedTournament();
+        $save = $this->builder()->build(User::factory()->create(), ['nation' => $nations[0], 'period' => 'college', 'label' => 'x', 'game_config' => null]);
+
+        $this->assertSame([NationalTeamAssembler::START_BUDGET], GameTeam::where('game_save_id', $save->id)->pluck('budget')->unique()->map(fn ($b) => (int) $b)->all());
+    }
+
+    public function test_the_number_of_humans_is_capped_by_the_tournament_size(): void
+    {
+        $this->assertSame(2, NewWorldCupBuilder::maxHumans(8));
+        $this->assertSame(4, NewWorldCupBuilder::maxHumans(16));
+
+        $nations = $this->seedTournament();
+        $user = User::factory()->create();
+        $this->withoutMiddleware(ThrottleRequests::class)->actingAs($user)
+            ->post(route('game-saves.start-world-cup'), [
+                'period' => 'college', 'competition_type' => 'world_cup', 'nation' => $nations[0], 'co_nations' => [$nations[1], $nations[2]],
+                'player_ids' => Player::where('nationality', $nations[0])->orderBy('id')->limit(14)->pluck('id')->all(),
+            ])->assertSessionHasErrors('co_nations');
+        $this->assertSame(0, GameSave::where('user_id', $user->id)->count());
+    }
+
+    public function test_a_co_manager_squad_and_imposed_opponents_are_honoured(): void
+    {
+        $nations = $this->seedTournament();
+        $co = Player::where('nationality', $nations[1])->orderBy('id')->limit(12)->pluck('id')->all();
+
+        $save = $this->builder()->build(User::factory()->create(), [
+            'nation' => $nations[0], 'co_nations' => [$nations[1]], 'co_player_ids' => [$nations[1] => $co],
+            'opponents' => [$nations[7]], 'period' => 'college', 'label' => 'x', 'game_config' => null,
+        ]);
+
+        $coTeam = GameTeam::where('game_save_id', $save->id)->where('name', $nations[1])->firstOrFail();
+        $this->assertSame(12, GameContract::where('game_team_id', $coTeam->id)->count());
+        $this->assertSame(2, (int) $coTeam->human_seat);
+        $this->assertTrue(GameTeam::where('game_save_id', $save->id)->where('name', $nations[7])->exists());
+    }
+
+    public function test_the_setup_step_returns_a_squad_preview_for_each_co_manager(): void
+    {
+        $nations = $this->seedTournament();
+        $setup = ['period' => 'college', 'competition_type' => 'world_cup'];
+
+        $this->actingAs(User::factory()->create())->withSession(['game_save_setup' => $setup])
+            ->get(route('game-saves.setup', ['nation' => $nations[0], 'co_nations' => [$nations[1]], 'opponents' => [$nations[2]], 'nations_count' => 8]))
+            ->assertInertia(fn ($page) => $page->component('GameSaves/NationSelection')
+                ->where('coNations', [$nations[1]])->where('opponents', [$nations[2]])
+                ->has('coSquads', 1)->where('coSquads.0.name', $nations[1])->where('maxHumans', 2));
     }
 }

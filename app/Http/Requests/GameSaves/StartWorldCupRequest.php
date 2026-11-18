@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\GameSaves;
 
-use App\Enums\Nationality;
 use App\Http\Requests\GameSaves\Concerns\ChecksTrainingGains;
 use App\Models\GameSaves\GameSave;
 use App\Services\WorldCup\NationalTeamAssembler;
@@ -29,10 +28,15 @@ class StartWorldCupRequest extends FormRequest
             'label'            => ['nullable', 'string', 'max:255'],
             'period'           => ['required', 'string', 'in:college'],
             'competition_type' => ['required', 'string', 'in:world_cup'],
-            'nation'           => ['required', 'string', Rule::in(Nationality::ALL)],
+            'nation'           => ['required', 'string', Rule::exists('nations', 'name')->where('is_active', true)],
             'nations_count'    => ['nullable', 'integer', Rule::in(NewWorldCupBuilder::TOURNAMENT_SIZES)],
             'co_nations'       => ['nullable', 'array', 'list', 'max:'.(NewWorldCupBuilder::MAX_HUMANS - 1)],
-            'co_nations.*'     => ['string', 'distinct', Rule::in(Nationality::ALL), 'different:nation'],
+            'co_nations.*'     => ['string', 'distinct', Rule::exists('nations', 'name')->where('is_active', true), 'different:nation'],
+            'opponents'        => ['nullable', 'array', 'list', 'max:'.(max(NewWorldCupBuilder::TOURNAMENT_SIZES) - 1)],
+            'opponents.*'      => ['string', 'distinct', Rule::exists('nations', 'name')->where('is_active', true), 'different:nation'],
+            'co_player_ids'    => ['nullable', 'array'],
+            'co_player_ids.*'  => ['array', 'list', 'min:'.NationalTeamAssembler::MIN_PLAYERS, 'max:'.NationalTeamAssembler::MAX_PLAYERS],
+            'co_player_ids.*.*' => ['integer', 'distinct'],
             'player_ids'       => ['required', 'array', 'list', 'min:'.NationalTeamAssembler::MIN_PLAYERS, 'max:'.NationalTeamAssembler::MAX_PLAYERS],
             'player_ids.*'     => ['required', 'integer', 'distinct'],
             'game_config'      => ['nullable', 'array'],

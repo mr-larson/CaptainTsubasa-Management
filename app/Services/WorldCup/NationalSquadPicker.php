@@ -92,15 +92,36 @@ class NationalSquadPicker
     }
 
     /**
-     * Composition d'un effectif pour un schéma favori, ou pour le meilleur schéma s'il n'y en a pas.
+     * Composition d'un effectif pour un schéma favori (s'il est jouable avec ces joueurs), sinon pour le meilleur schéma.
      *
      * @return array{formation: string, slots: array<int, int>}
      */
     public function lineupFor(Collection $players, ?string $formation): array
     {
-        return $formation
+        return $formation && $this->formationFits($players, $formation)
             ? $this->lineups->recommendLineupForFormation($players, $formation)
             : $this->lineups->recommendInitialLineup($players);
+    }
+
+    /**
+     * Le schéma favori n'est retenu que si le vivier a, à chaque poste, assez de joueurs pour le remplir
+     * (ex. 5-3-1-1 demande 5 défenseurs). Sinon l'IA choisit le schéma qui convient à ses joueurs plutôt
+     * que d'aligner des joueurs hors de leur poste.
+     */
+    private function formationFits(Collection $players, string $formation): bool
+    {
+        if (! isset(FormationHelper::SLOT_ZONES[$formation])) {
+            return false;
+        }
+
+        $have = $players->countBy(fn (Player $p) => $this->group($p));
+        foreach ($this->needsOf($formation) as $group => $need) {
+            if ((int) ($have[$group] ?? 0) < $need) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /** Note synthétique d'un joueur selon son poste (sert au tri et à l'affichage). */

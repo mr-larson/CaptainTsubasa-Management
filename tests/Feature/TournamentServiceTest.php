@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Enums\GamePhase;
 use App\Models\GameSaves\GameMatch;
+use App\Models\GameSaves\GameSave;
+use App\Services\Season\WeekClosingService;
 use App\Services\WorldCup\TournamentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsGameWorld;
@@ -17,8 +19,8 @@ use Tests\TestCase;
  */
 class TournamentServiceTest extends TestCase
 {
-    use RefreshDatabase;
     use BuildsGameWorld;
+    use RefreshDatabase;
 
     private TournamentService $service;
 
@@ -121,7 +123,7 @@ class TournamentServiceTest extends TestCase
     }
 
     /** Monte un tournoi à 4 équipes jusqu'à la fin des poules (les demies sont créées). */
-    private function tournamentAtSemis(): \App\Models\GameSaves\GameSave
+    private function tournamentAtSemis(): GameSave
     {
         $save = $this->makeSave(['competition_type' => 'world_cup']);
         foreach (range(1, 8) as $i) {
@@ -158,7 +160,7 @@ class TournamentServiceTest extends TestCase
     {
         $save = $this->makeSave(['competition_type' => 'world_cup']);
         [$strong] = $this->makeTeamWithSquad($save, [], 11);
-        [$weak]   = $this->makeTeamWithSquad($save, [], 11);
+        [$weak] = $this->makeTeamWithSquad($save, [], 11);
         $m = $this->makeMatch($save, $strong, $weak, ['round' => 'final', 'status' => 'played', 'home_score' => 1, 'away_score' => 1]);
 
         $chance = (new \ReflectionMethod($this->service, 'shootoutHomeChance'))->invoke($this->service, $m);
@@ -228,16 +230,35 @@ class TournamentServiceTest extends TestCase
     public function test_hand_goes_to_the_first_human_that_still_has_a_match(): void
     {
         $save = $this->makeSave(['competition_type' => 'world_cup', 'week' => 5]);
-        $out    = $this->makeTeam($save, ['is_controlled' => true, 'human_seat' => 1]);   // éliminé : pas de match
-        $in     = $this->makeTeam($save, ['is_controlled' => true, 'human_seat' => 2]);
-        $ai     = $this->makeTeam($save);
+        $out = $this->makeTeam($save, ['is_controlled' => true, 'human_seat' => 1]);   // éliminé : pas de match
+        $in = $this->makeTeam($save, ['is_controlled' => true, 'human_seat' => 2]);
+        $ai = $this->makeTeam($save);
         $save->controlled_game_team_id = $out->id;
         $save->save();
         $this->makeMatch($save, $in, $ai, ['week' => 5, 'round' => 'final']);
 
-        $closing = app(\App\Services\Season\WeekClosingService::class);
+        $closing = app(WeekClosingService::class);
         (new \ReflectionMethod($closing, 'passHandToHumanWithMatch'))->invoke($closing, $save);
 
         $this->assertSame($in->id, (int) $save->refresh()->controlled_game_team_id);
+    }
+
+    public function test_group_ties_are_broken_by_head_to_head_before_goal_difference(): void
+    {
+        $save = $this->makeSave(['competition_type' => 'world_cup']);
+        [$a, $b, $c, $d] = [$this->makeTeam($save), $this->makeTeam($save), $this->makeTeam($save), $this->makeTeam($save)];
+        $played = fn ($h, $x, $hs, $as) => $this->makeMatch($save, $h, $x, ['status' => 'played', 'round' => 'group_a', 'home_score' => $hs, 'away_score' => $as]);
+        // A et B finissent à 3 points ; A a battu B, mais B a la meilleure différence de buts (+3 contre -1).
+        $played($a, $b, 1, 0);
+        $played($c, $a, 1, 0);
+        $played($d, $a, 1, 0);
+        $played($b, $c, 5, 0);
+        $played($d, $b, 1, 0);
+        $played($c, $d, 0, 0);
+
+        $order = (new \ReflectionMethod($this->service, 'groupStandings'))
+            ->invoke($this->service, $save, [$a->id, $b->id, $c->id, $d->id], 'group_a');
+
+        $this->assertSame([$d->id, $c->id, $a->id, $b->id], $order);
     }
 }

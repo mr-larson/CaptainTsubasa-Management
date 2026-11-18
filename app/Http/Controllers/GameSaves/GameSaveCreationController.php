@@ -133,18 +133,27 @@ class GameSaveCreationController extends Controller
 
         // Coupe du Monde : on choisit une nation, pas un club.
         if ($competitionType === 'world_cup') {
+            $nationsCount = in_array((int) $request->query('nations_count'), NewWorldCupBuilder::TOURNAMENT_SIZES, true)
+                ? (int) $request->query('nations_count')
+                : NewWorldCupBuilder::DEFAULT_SIZE;
+            $coNations = $this->queryNations($request, 'co_nations', $worldCup)
+                ->reject(fn ($n) => $n === $request->query('nation'))
+                ->take(NewWorldCupBuilder::maxHumans($nationsCount) - 1)->values()->all();
+
             return Inertia::render('GameSaves/NationSelection', [
                 'label'           => $data['label'] ?? null,
                 'period'          => $data['period'],
                 'competitionType' => $competitionType,
                 'nations'         => $worldCup->playableNations(),
                 'tournamentSizes' => NewWorldCupBuilder::TOURNAMENT_SIZES,
-                'coNations'       => collect((array) $request->query('co_nations', []))
-                    ->filter(fn ($n) => is_string($n) && in_array($n, \App\Enums\Nationality::ALL, true) && $n !== $request->query('nation') && $worldCup->isPlayable($n))
-                    ->unique()->take(NewWorldCupBuilder::MAX_HUMANS - 1)->values()->all(),
-                'nationsCount'    => in_array((int) $request->query('nations_count'), NewWorldCupBuilder::TOURNAMENT_SIZES, true)
-                    ? (int) $request->query('nations_count')
-                    : NewWorldCupBuilder::DEFAULT_SIZE,
+                'coNations'       => $coNations,
+                'opponents'       => $this->queryNations($request, 'opponents', $worldCup)
+                    ->reject(fn ($n) => $n === $request->query('nation') || in_array($n, $coNations, true))
+                    ->take($nationsCount - 1)->values()->all(),
+                'nationsCount'    => $nationsCount,
+                'maxHumans'       => NewWorldCupBuilder::maxHumans($nationsCount),
+                // Convocation de chaque co-manager (aperçu de son effectif), dans l'ordre des sièges.
+                'coSquads'        => $request->query('nation') ? array_map(fn ($n) => $worldCup->squadPreview($n), $coNations) : [],
                 'squad'           => function () use ($request, $worldCup) {
                     $nation = $request->query('nation');
 
@@ -408,6 +417,23 @@ class GameSaveCreationController extends Controller
         }
 
         $size = (int) ($data['nations_count'] ?? NewWorldCupBuilder::DEFAULT_SIZE);
+        $humans = 1 + count($data['co_nations'] ?? []);
+        if ($humans > NewWorldCupBuilder::maxHumans($size)) {
+            return back()->withErrors(['co_nations' => 'Un tournoi à '.$size.' équipes accepte au plus '.NewWorldCupBuilder::maxHumans($size).' managers.']);
+        }
+        // Les convocations des co-managers ne concernent que leurs nations.
+        if (array_diff(array_keys($data['co_player_ids'] ?? []), $data['co_nations'] ?? []) !== []) {
+            return back()->withErrors(['co_player_ids' => 'Convocation reçue pour une nation qui n\'a pas de manager.']);
+        }
+        $imposed = array_values(array_unique(array_merge($data['co_nations'] ?? [], $data['opponents'] ?? [], [$data['nation']])));
+        if (count($imposed) > $size) {
+            return back()->withErrors(['opponents' => "Trop de sélections imposées pour un tournoi à {$size} équipes."]);
+        }
+        foreach ($data['opponents'] ?? [] as $opponent) {
+            if (! $worldCup->isPlayable($opponent)) {
+                return back()->withErrors(['opponents' => "La sélection {$opponent} n'a pas assez de joueurs pour concourir."]);
+            }
+        }
         if ($worldCup->playableCount() < $size) {
             return back()->withErrors(['nations_count' => "Pas assez de sélections jouables pour un tournoi à {$size} équipes."]);
         }
@@ -416,6 +442,21 @@ class GameSaveCreationController extends Controller
 
         return redirect()->route('game-saves.Play', $gameSave)
             ->with('success', "Coupe du Monde créée — tu diriges {$data['nation']} !");
+    }
+
+    /**
+     * Nations jouables et actives passées en tableau dans la query string (co_nations, opponents),
+     * sans doublon. Ignore tout ce qui n'est pas une nation connue.
+     *
+     * @return \Illuminate\Support\Collection<int, string>
+     */
+    private function queryNations(Request $request, string $key, NewWorldCupBuilder $worldCup): \Illuminate\Support\Collection
+    {
+        $active = \App\Models\Nation::names(activeOnly: true);
+
+        return collect((array) $request->query($key, []))
+            ->filter(fn ($n) => is_string($n) && in_array($n, $active, true) && $worldCup->isPlayable($n))
+            ->unique()->values();
     }
 
     // ══════════════════════════════════════════════════════════════

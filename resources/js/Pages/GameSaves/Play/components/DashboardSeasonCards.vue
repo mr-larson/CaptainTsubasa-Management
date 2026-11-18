@@ -160,6 +160,10 @@ const weeklyTrainingCost = computed(() => props.trainingCost * props.maxTraining
                     <span>Entraînements / sem.</span>
                     <span class="font-bold text-slate-700 tabular-nums"><Money :amount="weeklyTrainingCost" prefix="−" /></span>
                 </div>
+                <p v-if="isWorldCup" class="text-2xs text-slate-500 leading-snug">
+                    Le budget finance les entraînements, les cartes bonus et les demandes des joueurs (soins).
+                    Pas de transferts ni de salaires en Coupe du Monde. Chaque sélection part avec le même montant.
+                </p>
                 <div v-if="projection" class="pt-2 mt-1 border-t border-slate-200">
                     <div class="flex justify-between">
                         <span>Fin de saison (S{{ totalWeeks }})</span>
