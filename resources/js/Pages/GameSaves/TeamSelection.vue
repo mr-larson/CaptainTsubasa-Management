@@ -495,6 +495,12 @@ import H2 from '@/Components/H2.vue';
 import PlayerPhoto from '@/Components/PlayerPhoto.vue';
 import Modal from '@/Components/Modal.vue';
 import RadarChart from '@/Pages/GameSaves/Play/components/RadarChart.vue';
+import {
+    polygonOf,
+    radarAxes as buildRadarAxes,
+    radarGrids as buildRadarGrids,
+    radarPoints as buildRadarPoints,
+} from '@/Pages/GameSaves/Play/radarGeometry.js';
 import PlayerSpecialMoves from './Play/components/PlayerSpecialMoves.vue';
 import StatBars from '@/Pages/GameSaves/Play/components/StatBars.vue';
 import SecondaryPositions from '@/Pages/GameSaves/Play/components/SecondaryPositions.vue';
@@ -733,53 +739,13 @@ const posBadgeClass = (pos) => positionGroupClass(positionGroup(pos));
 // ==========================
 //   RADAR
 // ==========================
-const RADAR_STATS = [
-    { key: 'shot',    label: 'Tir'     },
-    { key: 'pass',    label: 'Passe'   },
-    { key: 'dribble', label: 'Dribble' },
-    { key: 'defense', label: 'Défense' },
-    { key: 'speed',   label: 'Vitesse' },
-    { key: 'stamina', label: 'Endurance' },
-];
+const RADAR_SIZE = { cx: 80, cy: 80, r: 60, labelOffset: 14 };
 
-const radarPoints = computed(() => {
-    if (!roster.value.length) return RADAR_STATS.map((s, i) => {
-        const angle = (Math.PI * 2 * i / RADAR_STATS.length) - Math.PI / 2;
-        return { x: 80, y: 80, lx: 80 + 74 * Math.cos(angle), ly: 80 + 74 * Math.sin(angle), label: s.label };
-    });
-    const cx = 80, cy = 80, r = 60;
-    return RADAR_STATS.map((s, i) => {
-        const val   = Math.min(avgStat(s.key) / 100, 1);
-        const angle = (Math.PI * 2 * i / RADAR_STATS.length) - Math.PI / 2;
-        return {
-            x:  cx + r * val * Math.cos(angle),
-            y:  cy + r * val * Math.sin(angle),
-            lx: cx + (r + 14) * Math.cos(angle),
-            ly: cy + (r + 14) * Math.sin(angle),
-            label: s.label,
-        };
-    });
-});
-
-const radarPolygon = computed(() => radarPoints.value.map(p => `${p.x},${p.y}`).join(' '));
-
-const radarGrids = computed(() => {
-    const cx = 80, cy = 80, r = 60;
-    return [0.25, 0.5, 0.75, 1.0].map(scale =>
-        RADAR_STATS.map((_, i) => {
-            const angle = (Math.PI * 2 * i / RADAR_STATS.length) - Math.PI / 2;
-            return `${cx + r * scale * Math.cos(angle)},${cy + r * scale * Math.sin(angle)}`;
-        }).join(' ')
-    );
-});
-
-const radarAxes = computed(() => {
-    const cx = 80, cy = 80, r = 60;
-    return RADAR_STATS.map((_, i) => {
-        const angle = (Math.PI * 2 * i / RADAR_STATS.length) - Math.PI / 2;
-        return { x2: cx + r * Math.cos(angle), y2: cy + r * Math.sin(angle) };
-    });
-});
+// Profil moyen de l'équipe ; radar vide (au centre) tant que l'effectif est inconnu.
+const radarPoints = computed(() => buildRadarPoints(roster.value.length ? avgStat : null, RADAR_SIZE));
+const radarPolygon = computed(() => polygonOf(radarPoints.value));
+const radarGrids = computed(() => buildRadarGrids(RADAR_SIZE));
+const radarAxes = computed(() => buildRadarAxes(RADAR_SIZE));
 
 const label = props.label;
 </script>

@@ -1,6 +1,12 @@
 <script setup>
 import SectionTitle from '@/Components/SectionTitle.vue';
 import { computed } from 'vue';
+import {
+    polygonOf,
+    radarAxes as buildRadarAxes,
+    radarGrids as buildRadarGrids,
+    radarPoints as buildRadarPoints,
+} from '../radarGeometry.js';
 
 /**
  * Carte "Profil technique" : radar à 6 axes du joueur.
@@ -21,54 +27,19 @@ const ACCENTS = {
 
 const accentColors = computed(() => ACCENTS[props.accent] ?? ACCENTS.teal);
 
-const RADAR_STATS = [
-    { key: 'shot',    label: 'Tir'     },
-    { key: 'pass',    label: 'Passe'   },
-    { key: 'dribble', label: 'Dribble' },
-    { key: 'defense', label: 'Défense' },
-    { key: 'speed',   label: 'Vitesse' },
-    { key: 'stamina', label: 'Endurance' },
-];
+const SIZE = { cx: 90, cy: 90, r: 68, labelOffset: 16 };
 
-const CX = 90, CY = 90, R = 68;
-
-const pointsFor = (p) => {
-    if (!p) return [];
-    return RADAR_STATS.map((s, i) => {
-        const val   = Math.min(Number(p[s.key] ?? p.stats?.[s.key] ?? 0) / 100, 1);
-        const angle = (Math.PI * 2 * i / RADAR_STATS.length) - Math.PI / 2;
-        return {
-            x:  CX + R * val * Math.cos(angle),
-            y:  CY + R * val * Math.sin(angle),
-            lx: CX + (R + 16) * Math.cos(angle),
-            ly: CY + (R + 16) * Math.sin(angle),
-            label: s.label,
-        };
-    });
-};
+const pointsFor = (p) => (p ? buildRadarPoints((key) => Number(p[key] ?? p.stats?.[key] ?? 0), SIZE) : []);
 
 const radarPoints  = computed(() => pointsFor(props.player));
-const radarPolygon = computed(() => radarPoints.value.map(p => `${p.x},${p.y}`).join(' '));
+const radarPolygon = computed(() => polygonOf(radarPoints.value));
 
 const comparePolygon = computed(() =>
-    props.comparePlayer ? pointsFor(props.comparePlayer).map(p => `${p.x},${p.y}`).join(' ') : null
+    props.comparePlayer ? polygonOf(pointsFor(props.comparePlayer)) : null
 );
 
-const radarGrids = computed(() =>
-    [0.25, 0.5, 0.75, 1.0].map(scale =>
-        RADAR_STATS.map((_, i) => {
-            const angle = (Math.PI * 2 * i / RADAR_STATS.length) - Math.PI / 2;
-            return `${CX + R * scale * Math.cos(angle)},${CY + R * scale * Math.sin(angle)}`;
-        }).join(' ')
-    )
-);
-
-const radarAxes = computed(() =>
-    RADAR_STATS.map((_, i) => {
-        const angle = (Math.PI * 2 * i / RADAR_STATS.length) - Math.PI / 2;
-        return { x2: CX + R * Math.cos(angle), y2: CY + R * Math.sin(angle) };
-    })
-);
+const radarGrids = computed(() => buildRadarGrids(SIZE));
+const radarAxes  = computed(() => buildRadarAxes(SIZE));
 </script>
 
 <template>

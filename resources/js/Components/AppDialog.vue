@@ -7,8 +7,8 @@ import { dialogState, closeDialog } from '@/Composables/useDialog.js';
 
 <template>
     <!-- Modal gère déjà Échap, le piège de focus et le retour du focus -->
-    <Modal :show="dialogState.open" max-width="md" @close="closeDialog(false)">
-        <div class="p-6" :aria-labelledby="dialogState.title ? 'app-dialog-title' : undefined">
+    <Modal :show="dialogState.open" max-width="md" :labelledby="dialogState.title ? 'app-dialog-title' : null" @close="closeDialog(false)">
+        <div class="p-6">
             <h2 v-if="dialogState.title" id="app-dialog-title" class="mb-2 text-lg font-bold text-slate-700">
                 {{ dialogState.title }}
             </h2>

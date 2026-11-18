@@ -38,6 +38,11 @@ const props = defineProps({
         type: String,
         default: 'Fermer',
     },
+    // Id d'un titre fourni dans le contenu (modale sans `title`) : relie le titre au dialogue.
+    labelledby: {
+        type: String,
+        default: null,
+    },
 });
 
 const titleId = useId();
@@ -54,11 +59,13 @@ watch(
     () => props.show,
     async () => {
         if (props.show) {
+            document.addEventListener('keydown', closeOnEscape);
             document.body.style.overflow = 'hidden';
             previouslyFocused = document.activeElement;
             await nextTick();
             (panel.value?.querySelector(FOCUSABLE) ?? panel.value)?.focus();
         } else {
+            document.removeEventListener('keydown', closeOnEscape);
             document.body.style.overflow = null;
             previouslyFocused?.focus?.();
             previouslyFocused = null;
@@ -89,7 +96,11 @@ const closeOnEscape = (e) => {
     trapFocus(e);
 };
 
-onMounted(() => document.addEventListener('keydown', closeOnEscape));
+// Écouteur global posé seulement tant que la modale est ouverte : une page qui en monte
+// plusieurs n'accumule plus d'écouteurs sur les touches pour des modales fermées.
+onMounted(() => {
+    if (props.show) document.addEventListener('keydown', closeOnEscape);
+});
 
 onUnmounted(() => {
     document.removeEventListener('keydown', closeOnEscape);
@@ -139,7 +150,7 @@ const maxWidthClass = computed(() => {
                         ref="panel"
                         role="dialog"
                         aria-modal="true"
-                        :aria-labelledby="title ? titleId : undefined"
+                        :aria-labelledby="title ? titleId : (labelledby ?? undefined)"
                         tabindex="-1"
                         class="w-full bg-white rounded-2xl overflow-hidden shadow-2xl transform transition-all focus:outline-none"
                         :class="[maxWidthClass, panelClass]"
