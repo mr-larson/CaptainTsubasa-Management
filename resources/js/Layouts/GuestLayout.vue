@@ -26,6 +26,6 @@
         </div>
     </div>
 </template>
-<script setup lang="ts">
-import {Link} from "@inertiajs/vue3";
+<script setup>
+import { Link } from '@inertiajs/vue3';
 </script>

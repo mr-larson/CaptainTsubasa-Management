@@ -1,9 +1,7 @@
 <script setup>
 import GuestLayout from '@/Layouts/GuestLayout.vue';
-import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
 import AuthSubmitButton from '@/Components/AuthSubmitButton.vue';
-import InputText from '@/Components/InputText.vue';
+import AuthField from '@/Components/AuthField.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 
 defineProps({
@@ -34,21 +32,7 @@ const submit = () => {
         </div>
 
         <form @submit.prevent="submit">
-            <div>
-                <InputLabel for="email" value="Adresse e-mail" />
-
-                <InputText
-                    id="email"
-                    type="email"
-                    class="mt-1 block w-full"
-                    v-model="form.email"
-                    required
-                    autofocus
-                    autocomplete="username"
-                />
-
-                <InputError class="mt-2" :message="form.errors.email" />
-            </div>
+            <AuthField id="email" label="Adresse e-mail" type="email" required autofocus autocomplete="username" v-model="form.email" :error="form.errors.email" />
 
             <div class="flex items-center justify-end mt-4">
                 <AuthSubmitButton :processing="form.processing">Recevoir le lien de réinitialisation</AuthSubmitButton>

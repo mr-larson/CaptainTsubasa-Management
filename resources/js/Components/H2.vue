@@ -1,18 +1,5 @@
 <template>
-  <h2 :class="customClass">
-    <slot></slot>
-  </h2>
+    <h2 class="font-semibold text-xl leading-tight">
+        <slot />
+    </h2>
 </template>
-
-
-<script>
-export default {
-    name: "H2",
-    props: {
-        customClass: {
-            type: String,
-            default: "font-semibold text-xl leading-tight"
-        }
-  }
-};
-</script>

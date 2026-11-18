@@ -1,9 +1,7 @@
 <script setup>
 import GuestLayout from '@/Layouts/GuestLayout.vue';
-import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
 import AuthSubmitButton from '@/Components/AuthSubmitButton.vue';
-import InputText from '@/Components/InputText.vue';
+import AuthField from '@/Components/AuthField.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 
 const form = useForm({
@@ -26,19 +24,7 @@ const submit = () => {
         </div>
 
         <form @submit.prevent="submit">
-            <div>
-                <InputLabel for="password" value="Mot de passe" />
-                <InputText
-                    id="password"
-                    type="password"
-                    class="mt-1 block w-full"
-                    v-model="form.password"
-                    required
-                    autocomplete="current-password"
-                    autofocus
-                />
-                <InputError class="mt-2" :message="form.errors.password" />
-            </div>
+            <AuthField id="password" label="Mot de passe" type="password" required autocomplete="current-password" autofocus v-model="form.password" :error="form.errors.password" />
 
             <div class="flex justify-end mt-4">
                 <AuthSubmitButton :processing="form.processing">Confirmer</AuthSubmitButton>

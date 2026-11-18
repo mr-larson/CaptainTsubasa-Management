@@ -1,10 +1,9 @@
 <script setup>
 import Checkbox from '@/Components/Checkbox.vue';
 import GuestLayout from '@/Layouts/GuestLayout.vue';
-import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
 import AuthSubmitButton from '@/Components/AuthSubmitButton.vue';
-import InputText from '@/Components/InputText.vue';
+import AuthField from '@/Components/AuthField.vue';
+import PasswordToggle from '@/Components/PasswordToggle.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
@@ -48,41 +47,11 @@ const submit = () => {
         </div>
 
         <form @submit.prevent="submit">
-            <div>
-                <InputLabel for="email" value="Adresse e-mail" />
+            <AuthField id="email" label="Adresse e-mail" type="email" required autofocus autocomplete="username" v-model="form.email" :error="form.errors.email" wide />
 
-                <InputText
-                    id="email"
-                    type="email"
-                    class="mt-1 block md:w-96 bg-stone-100"
-                    v-model="form.email"
-                    required
-                    autofocus
-                    autocomplete="username"
-                />
-
-                <InputError class="mt-2" :message="form.errors.email" />
-            </div>
-
-            <div class="mt-4">
-                <InputLabel for="password" value="Mot de passe" />
-
-                <InputText
-                    id="password"
-                    :type="showPassword ? 'text' : 'password'"
-                    class="mt-1 block md:w-96 bg-stone-100"
-                    v-model="form.password"
-                    required
-                    autocomplete="current-password"
-                />
-                <button type="button" @click="showPassword = !showPassword"
-                        class="mt-1 block text-xs font-semibold text-teal-600 hover:text-teal-700"
-                        :aria-pressed="showPassword">
-                    {{ showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe' }}
-                </button>
-
-                <InputError class="mt-2" :message="form.errors.password" />
-            </div>
+            <AuthField id="password" label="Mot de passe" class="mt-4" :type="showPassword ? 'text' : 'password'" required autocomplete="current-password" v-model="form.password" :error="form.errors.password" wide>
+                <PasswordToggle v-model="showPassword" class="block" />
+            </AuthField>
 
 
             <div class="flex items-center justify-between mt-4">
