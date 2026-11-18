@@ -1,18 +1,16 @@
 <script setup>
+import { usePlayerStatus } from '../usePlayerStatus.js';
 import { usePlayerUtils } from '../usePlayerUtils.js';
 
 /** Bandeau d'alerte blessure / suspension / malus du joueur sélectionné. */
 defineProps({
     player:            { type: Object,   required: true },
-    isPlayerInjured:   { type: Function, default: () => false },
-    isPlayerSuspended: { type: Function, default: () => false },
     isPlayerBenched:   { type: Function, default: () => false },
-    playerInjury:      { type: Function, default: () => null },
-    playerSuspension:  { type: Function, default: () => null },
     playerBench:       { type: Function, default: () => null },
 });
 
 const { sanctionTypeLabel } = usePlayerUtils();
+const { isPlayerInjured, isPlayerSuspended, playerInjury, playerSuspension } = usePlayerStatus();
 </script>
 
 <template>

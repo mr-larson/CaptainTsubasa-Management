@@ -13,6 +13,7 @@ import H2 from '@/Components/H2.vue';
 // ==========================
 import { useTeam }      from '@/Pages/GameSaves/Play/useTeam.js';
 import { useDashboard } from '@/Pages/GameSaves/Play/useDashboard.js';
+import { providePlayerStatus } from '@/Pages/GameSaves/Play/usePlayerStatus.js';
 import { useCalendar }  from '@/Pages/GameSaves/Play/useCalendar.js';
 import { useTraining }  from '@/Pages/GameSaves/Play/useTraining.js';
 import { useTransfers } from '@/Pages/GameSaves/Play/useTransfers.js';
@@ -189,6 +190,9 @@ const {
     activeYellowCards: activeYellowCardsRef,
 });
 
+// Les statuts joueurs (blessé, suspendu, jaunes) sont lus directement par les listes, alertes et le statut du club.
+providePlayerStatus({ isPlayerInjured, isPlayerSuspended, playerInjury, playerSuspension, playerYellowCards });
+
 // Malus « titulaire consigné » subis : joueurs interdits de titularisation au
 // prochain match (mêmes helpers que blessure/suspension pour l'UI d'effectif).
 const benchedByMalus = computed(() => props.incomingMalus ?? []);
@@ -349,9 +353,6 @@ const clubStatus = computed(() => {
         teamBudget:       Number(viewed?.budget) || 0,
         teamRecord:       { wins: viewed?.wins ?? 0, draws: viewed?.draws ?? 0, losses: viewed?.losses ?? 0 },
         week:             Number(week.value) || 1,
-    playerInjury,
-    playerSuspension,
-    playerYellowCards,
         suspensionOn3Yellows: props.gameConfig?.suspension_on_3_yellows !== false,
     };
 });
@@ -735,13 +736,8 @@ const saveGame = () => {
                                @release-player="releasePlayer"
                                :gameSaveId="gameSave.id"
                                :contractSeasonEndWeek="contractSeasonEndWeek"
-                               :isPlayerInjured="isPlayerInjured"
-                               :isPlayerSuspended="isPlayerSuspended"
                                :isPlayerBenched="isPlayerBenched"
                                :playerPositionTraining="playerPositionTraining"
-                               :playerYellowCards="playerYellowCards"
-                               :playerInjury="playerInjury"
-                               :playerSuspension="playerSuspension"
                                :playerBench="playerBench"
                                @select-player="selectMyPlayer"
                                @toggle-starter="toggleStarter"
@@ -769,13 +765,8 @@ const saveGame = () => {
                                    :injuriesCountForTeam="injuriesCountForTeam"
                                    :suspensionsCountForTeam="suspensionsCountForTeam"
                                    :cardsCountForTeam="cardsCountForTeam"
-                                   :playerInjury="playerInjury"
-                                   :playerSuspension="playerSuspension"
                                    :playerSeasonStats="props.playerSeasonStats"
                                    :playerChemistry="props.playerChemistry"
-                                   :isPlayerInjured="isPlayerInjured"
-                                   :isPlayerSuspended="isPlayerSuspended"
-                                   :playerYellowCards="playerYellowCards"
                                    :isOtherPickedUp="isOtherPickedUp"
                                    :editable="otherTeamEditable"
                                    :gameSaveId="gameSave.id"
@@ -876,11 +867,6 @@ const saveGame = () => {
                                  :minStamina="props.gameConfig?.training_min_stamina ?? 10"
                                  :trainingState="trainingState"
                                  :playerSeasonStats="props.playerSeasonStats"
-                                 :isPlayerInjured="isPlayerInjured"
-                                 :isPlayerSuspended="isPlayerSuspended"
-                                 :playerYellowCards="playerYellowCards"
-                                 :playerInjury="playerInjury"
-                                 :playerSuspension="playerSuspension"
                                  :remainingTrainingsThisWeek="remainingTrainingsThisWeek"
                                  :hasPlayerBeenTrainedThisWeek="hasPlayerBeenTrainedThisWeek"
                                  :availableTrainingStats="availableTrainingStats"
@@ -932,7 +918,6 @@ const saveGame = () => {
                                    :season="season"
                                    :week="week"
                                    :isAlreadyBought="isAlreadyBought"
-                                   :isPlayerInjured="isPlayerInjured"
                                    :sponsorChallenges="props.sponsorChallenges"
                                    :sponsorResults="props.sponsorResults"
                                    :incomingMalus="props.incomingMalus"

@@ -1,4 +1,5 @@
 <script setup>
+import { usePlayerStatus } from './usePlayerStatus.js';
 import GameBanknote from '@/Components/GameBanknote.vue';
 import SectionTitle from '@/Components/SectionTitle.vue';
 import { fieldClass } from '@/Components/fieldStyles';
@@ -21,16 +22,12 @@ import ShirtNumberInput from './components/ShirtNumberInput.vue';
 import { masteryFor } from './lineupMastery.js';
 import { useLineupIssues, ISSUE_CHIP } from './useLineupIssues.js';
 
+const { isPlayerInjured, isPlayerSuspended, playerYellowCards } = usePlayerStatus();
 const props = defineProps({
     playerChemistry: { type: Object, default: () => ({}) },
     rosterWithStatus:     { type: Array,   required: true },
-    isPlayerInjured:      { type: Function, default: () => () => false },
-    isPlayerSuspended:    { type: Function, default: () => () => false },
     isPlayerBenched:      { type: Function, default: () => () => false },
     playerPositionTraining: { type: Function, default: () => null },
-    playerYellowCards:    { type: Function, default: () => () => 0 },
-    playerInjury:         { type: Function, default: () => () => null },
-    playerSuspension:     { type: Function, default: () => () => null },
     playerBench:          { type: Function, default: () => () => null },
     selectedMyPlayer:     { type: Object,  default: null },
     currentFormation:     { type: String,  required: true },
@@ -86,10 +83,7 @@ onBeforeUnmount(() => {
     emit('cancel-pickup'); // changement d'onglet : rien ne reste soulevé
 });
 
-const myStatus = computed(() => ({
-    isPlayerInjured: props.isPlayerInjured, isPlayerSuspended: props.isPlayerSuspended, isPlayerBenched: props.isPlayerBenched,
-    playerInjury: props.playerInjury, playerSuspension: props.playerSuspension, playerBench: props.playerBench,
-}));
+const myStatus = computed(() => ({ isPlayerBenched: props.isPlayerBenched, playerBench: props.playerBench }));
 const myMorale = computed(() => {
     const id = props.selectedMyPlayer?.id;
     return {
@@ -164,8 +158,8 @@ const { unavailability, lineupIssues } = useLineupIssues({
     roster:            () => props.rosterWithStatus,
     formationData:     () => props.formationData,
     playerForSlot:     () => props.playerForSlot,
-    isPlayerInjured:   () => props.isPlayerInjured,
-    isPlayerSuspended: () => props.isPlayerSuspended,
+    isPlayerInjured:   () => isPlayerInjured,
+    isPlayerSuspended: () => isPlayerSuspended,
     isPlayerBenched:   () => props.isPlayerBenched,
     positionTraining:  () => props.playerPositionTraining,
 });
@@ -294,12 +288,7 @@ const comparisonAvailability = p => unavailability(p)?.label ?? "Disponible";
                 <RosterList class="absolute inset-0"
                             :players="rosterWithStatus"
                             :selectedId="selectedMyPlayer?.id"
-                            :isPlayerInjured="isPlayerInjured"
-                            :isPlayerSuspended="isPlayerSuspended"
                             :isPlayerBenched="isPlayerBenched"
-                            :playerYellowCards="playerYellowCards"
-                            :playerInjury="playerInjury"
-                            :playerSuspension="playerSuspension"
                             :playerBench="playerBench"
                             @select="p => emit('select-player', p)" >
                     <template #row-action="{ player }">

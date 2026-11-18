@@ -1,4 +1,5 @@
 <script setup>
+import { usePlayerStatus } from '../usePlayerStatus.js';
 import GameBanknote from '@/Components/GameBanknote.vue';
 import { computed } from 'vue';
 import { positionLabel } from '@/Enums/positionBadges.js';
@@ -7,6 +8,7 @@ import { LOW_STAMINA } from '../usePreMatchChecklist.js';
 
 // Statut du club (onglet Gestion, page par défaut) : récap de tous les états de
 // l'équipe. Un clic sur un joueur ouvre sa fiche dans « Mon équipe ».
+const { playerInjury, playerSuspension, playerYellowCards } = usePlayerStatus();
 const props = defineProps({
     roster:            { type: Array,    default: () => [] },
     clubStanding:      { type: Object,   default: null },
@@ -14,9 +16,6 @@ const props = defineProps({
     teamBudget:        { type: Number,   default: 0 },
     teamRecord:        { type: Object,   default: () => ({ wins: 0, draws: 0, losses: 0 }) },
     week:              { type: Number,   default: 1 },
-    playerInjury:      { type: Function, default: () => null },
-    playerSuspension:  { type: Function, default: () => null },
-    playerYellowCards: { type: Function, default: () => 0 },
     suspensionOn3Yellows: { type: Boolean, default: true },
     cardsInHand:       { type: Array, default: null },
     activeEffects:     { type: Array, default: () => [] },
@@ -35,17 +34,17 @@ const CONTRACT_HORIZON = 4;
 const byName = (a, b) => (a.lastname ?? '').localeCompare(b.lastname ?? '');
 
 const injured = computed(() => props.roster
-    .map(p => ({ p, inj: props.playerInjury(p.id) }))
+    .map(p => ({ p, inj: playerInjury(p.id) }))
     .filter(x => x.inj)
     .sort((a, b) => (a.inj.week_return ?? 0) - (b.inj.week_return ?? 0)));
 
 const suspended = computed(() => props.roster
-    .map(p => ({ p, sus: props.playerSuspension(p.id) }))
+    .map(p => ({ p, sus: playerSuspension(p.id) }))
     .filter(x => x.sus)
     .sort((a, b) => (a.sus.week_return ?? 0) - (b.sus.week_return ?? 0)));
 
 const booked = computed(() => props.roster
-    .map(p => ({ p, n: Number(props.playerYellowCards(p.id)) || 0 }))
+    .map(p => ({ p, n: Number(playerYellowCards(p.id)) || 0 }))
     .filter(x => x.n > 0)
     .sort((a, b) => b.n - a.n || byName(a.p, b.p)));
 
@@ -61,7 +60,7 @@ const unhappy = computed(() => props.roster
     .filter(p => Number(p.morale ?? 60) <= LOW_MORALE)
     .sort((a, b) => Number(a.morale ?? 60) - Number(b.morale ?? 60)));
 
-const available = computed(() => props.roster.filter(p => !props.playerInjury(p.id) && !props.playerSuspension(p.id)).length);
+const available = computed(() => props.roster.filter(p => !playerInjury(p.id) && !playerSuspension(p.id)).length);
 
 const average = (key, fallback) => props.roster.length
     ? Math.round(props.roster.reduce((s, p) => s + Number(p[key] ?? p.stats?.[key] ?? fallback), 0) / props.roster.length)

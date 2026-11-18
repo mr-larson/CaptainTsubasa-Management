@@ -1,4 +1,5 @@
 <script setup>
+import { usePlayerStatus } from './usePlayerStatus.js';
 import { seasonStatsOf } from '@/Pages/GameSaves/Play/teamRoster.js';
 import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import ButtonSecondary from '@/Components/ButtonSecondary.vue';
@@ -15,6 +16,7 @@ import ClubOverview from './components/ClubOverview.vue';
 import PlayerProfilePanel from './components/PlayerProfilePanel.vue';
 import ShirtNumberInput from './components/ShirtNumberInput.vue';
 
+const { isPlayerInjured, isPlayerSuspended, playerYellowCards } = usePlayerStatus();
 const props = defineProps({
     // Équipes
     otherTeams:           { type: Array,    required: true },
@@ -33,8 +35,6 @@ const props = defineProps({
     otherFormationData:   { type: Object,   default: null },
     isOtherPickedUp: { type: Function, default: () => false },
     // Absence
-    playerInjury:        { type: Function, default: () => () => null },
-    playerSuspension:    { type: Function, default: () => () => null },
     // Classement / club
     standings:            { type: Array,    required: true },
     injuriesCountForTeam:   { type: Function, required: true },
@@ -42,9 +42,6 @@ const props = defineProps({
     cardsCountForTeam:      { type: Function, required: true },
     playerSeasonStats:      { type: Object,   default: () => ({}) },
     playerChemistry:        { type: Object,   default: () => ({}) },
-    isPlayerInjured:        { type: Function, default: () => () => false },
-    isPlayerSuspended:      { type: Function, default: () => () => false },
-    playerYellowCards:      { type: Function, default: () => () => 0 },
     // Option « Accès aux autres clubs » (équipe IA) : composition modifiable comme Mon équipe.
     editable:               { type: Boolean,  default: false },
     gameSaveId:             { type: Number,   required: true },
@@ -103,8 +100,8 @@ const overallByTeamId = computed(() => new Map(props.standings.map(row => [row.i
 
 // Indisponibilité (icône + contour rouge sur le terrain et le banc), comme dans Mon équipe.
 const otherUnavailability = (p) => {
-    if (props.isPlayerInjured(p.id))   return { label: 'Blessé',   icon: '🤕' };
-    if (props.isPlayerSuspended(p.id)) return { label: 'Suspendu', icon: '🚫' };
+    if (isPlayerInjured(p.id))   return { label: 'Blessé',   icon: '🤕' };
+    if (isPlayerSuspended(p.id)) return { label: 'Suspendu', icon: '🚫' };
     return null;
 };
 
@@ -121,10 +118,6 @@ const selectedPlayerPerf = computed(() => {
 });
 const comparison = ref([]);
 const comparisonAvailability = p => otherUnavailability(p)?.label ?? 'Disponible';
-const otherStatus = computed(() => ({
-    isPlayerInjured: props.isPlayerInjured, isPlayerSuspended: props.isPlayerSuspended,
-    playerInjury: props.playerInjury, playerSuspension: props.playerSuspension,
-}));
 </script>
 
 <template>
@@ -217,11 +210,6 @@ const otherStatus = computed(() => ({
                 <RosterList class="absolute inset-0"
                             :players="otherRosterWithStatus"
                             :selectedId="selectedOtherPlayer?.id"
-                            :isPlayerInjured="isPlayerInjured"
-                            :isPlayerSuspended="isPlayerSuspended"
-                            :playerYellowCards="playerYellowCards"
-                            :playerInjury="playerInjury"
-                            :playerSuspension="playerSuspension"
                             @select="p => emit('select-player', p)" >
                     <template #row-action="{ player }">
                         <PlayerCompareButton v-model="comparison" :player="{ ...player, comparisonTeamName: selectedOtherTeam?.name }" />
@@ -232,7 +220,6 @@ const otherStatus = computed(() => ({
             <!-- Profil joueur -->
             <PlayerProfilePanel class="lg:col-span-8"
                                 :player="selectedOtherPlayer"
-                                :status="otherStatus"
                                 :morale="morale"
                                 :morale-loading="moraleFor !== selectedOtherPlayer?.id"
                                 :morale-editable="editable"

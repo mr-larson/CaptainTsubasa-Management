@@ -1,4 +1,5 @@
 <script setup>
+import { usePlayerStatus } from './usePlayerStatus.js';
 import Badge from '@/Components/Badge.vue';
 import GameBanknote from '@/Components/GameBanknote.vue';
 import Panel from '@/Components/Panel.vue';
@@ -9,6 +10,7 @@ import ButtonSecondary from '@/Components/ButtonSecondary.vue';
 import ButtonPrimary from '@/Components/ButtonPrimary.vue';
 import { ref, computed } from 'vue';
 
+const { isPlayerInjured } = usePlayerStatus();
 const props = defineProps({
     weeklyOffers:     { type: Array,    default: () => [] },
     inventory:        { type: Array,    default: () => [] },
@@ -17,7 +19,6 @@ const props = defineProps({
     season:           { type: Number,   required: true },
     week:             { type: Number,   required: true },
     isAlreadyBought:  { type: Function, default: () => false },
-    isPlayerInjured:  { type: Function, default: () => false },
     sponsorChallenges:{ type: Array,    default: () => [] },
     sponsorResults:   { type: Array,    default: () => [] },
     incomingMalus:    { type: Array,    default: () => [] },
@@ -94,7 +95,7 @@ const INJURY_EFFECTS = ['injury_reduce', 'injury_cure'];
 const targetPlayers = computed(() => {
     if (!selectedCard.value) return [];
     if (INJURY_EFFECTS.includes(selectedCard.value.effect_type)) {
-        return props.rosterWithStatus.filter(p => props.isPlayerInjured(p.id));
+        return props.rosterWithStatus.filter(p => isPlayerInjured(p.id));
     }
     return props.rosterWithStatus;
 });

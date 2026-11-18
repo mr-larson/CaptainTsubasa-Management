@@ -1,4 +1,5 @@
 <script setup>
+import { usePlayerStatus } from '../usePlayerStatus.js';
 import SectionTitle from '@/Components/SectionTitle.vue';
 import StaminaBar from '@/Components/StaminaBar.vue';
 import { staminaOf } from '@/utils/playerStats.js';
@@ -13,16 +14,12 @@ import PlayerPhoto from '@/Components/PlayerPhoto.vue';
  * photo, nom, poste, moral, statuts (capitaine, blessure, suspension, cartons),
  * stamina et point titulaire. Slot #badge pour un badge spécifique par onglet.
  */
+const { isPlayerInjured, isPlayerSuspended, playerYellowCards, playerInjury, playerSuspension } = usePlayerStatus();
 const props = defineProps({
     players:           { type: Array,  required: true },
     selectedId:        { type: [Number, String], default: null },
     title:             { type: String, default: 'Effectif' },
-    isPlayerInjured:   { type: Function, default: () => false },
-    isPlayerSuspended: { type: Function, default: () => false },
     isPlayerBenched:   { type: Function, default: () => false },
-    playerYellowCards: { type: Function, default: () => 0 },
-    playerInjury:      { type: Function, default: () => null },
-    playerSuspension:  { type: Function, default: () => null },
     playerBench:       { type: Function, default: () => null },
     showMorale:        { type: Boolean, default: true },
     showStarterDot:    { type: Boolean, default: true },
@@ -70,12 +67,12 @@ const duoTitle = (p) => {
 };
 
 const injuryTitle = (p) => {
-    const inj = props.playerInjury(p.id);
+    const inj = playerInjury(p.id);
     return inj ? `${inj.description ?? 'Blessé'} — Retour S${inj.week_return}` : 'Blessé';
 };
 
 const suspensionTitle = (p) => {
-    const s = props.playerSuspension(p.id);
+    const s = playerSuspension(p.id);
     return s ? `${sanctionTypeLabel(s.type)} — Retour S${s.week_return ?? '—'}` : 'Suspendu';
 };
 

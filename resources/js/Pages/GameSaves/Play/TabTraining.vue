@@ -1,4 +1,5 @@
 <script setup>
+import { usePlayerStatus } from './usePlayerStatus.js';
 import GameBanknote from '@/Components/GameBanknote.vue';
 import Panel from '@/Components/Panel.vue';
 import { seasonStatsOf } from '@/Pages/GameSaves/Play/teamRoster.js';
@@ -16,6 +17,7 @@ import StatBars from '@/Pages/GameSaves/Play/components/StatBars.vue';
 import PerfChips from '@/Pages/GameSaves/Play/components/PerfChips.vue';
 import { LOW_STAMINA } from './usePreMatchChecklist.js';
 
+const { isPlayerInjured, isPlayerSuspended } = usePlayerStatus();
 const props = defineProps({
     season:                      { type: Number,   required: true },
     week:                        { type: Number,   required: true },
@@ -41,11 +43,6 @@ const props = defineProps({
     aiWeekMax:                   { type: Number,   default: 1 },
     // Nouvelles props pour le profil joueur
     playerSeasonStats:           { type: Object,   default: () => ({}) },
-    isPlayerInjured:             { type: Function, default: () => () => false },
-    isPlayerSuspended:           { type: Function, default: () => () => false },
-    playerYellowCards:           { type: Function, default: () => () => 0 },
-    playerInjury:                { type: Function, default: () => () => null },
-    playerSuspension:            { type: Function, default: () => () => null },
 });
 
 const emit = defineEmits(['add-slot', 'remove-slot', 'submit-training', 'prev-ai-week', 'next-ai-week', 'train-position', 'train-special']);
@@ -135,7 +132,7 @@ const formationState = (target, cost) => {
     if (props.selectedTrainings.some(s => Number(s.player_id) === Number(p.id))) return { disabled: true, reason: 'Retire ce joueur de la séance prévue pour lancer une formation.' };
     if (props.remainingTrainingsThisWeek - selectedCount.value <= 0) return { disabled: true, reason: 'Plus de séance disponible cette semaine.' };
     if (props.hasPlayerBeenTrainedThisWeek(p.id)) return { disabled: true, reason: 'Déjà entraîné cette semaine.' };
-    if (props.isPlayerInjured(p.id) || props.isPlayerSuspended(p.id)) return { disabled: true, reason: 'Indisponible : il pourra se former à son retour.' };
+    if (isPlayerInjured(p.id) || isPlayerSuspended(p.id)) return { disabled: true, reason: 'Indisponible : il pourra se former à son retour.' };
     if (cost > props.teamBudget - totalTrainingCost.value) return { disabled: true, reason: 'Budget insuffisant.' };
     return { disabled: false, reason: '' };
 };
@@ -293,11 +290,6 @@ const selectedPlayerPerf = computed(() => {
                 <RosterList class="absolute inset-0"
                             :players="roster"
                             :selectedId="selectedPlayer?.id"
-                            :isPlayerInjured="isPlayerInjured"
-                            :isPlayerSuspended="isPlayerSuspended"
-                            :playerYellowCards="playerYellowCards"
-                            :playerInjury="playerInjury"
-                            :playerSuspension="playerSuspension"
                             :rowHighlight="p => hasPlayerBeenTrainedThisWeek(p.id)"
                             @select="selectPlayer">
                     <template #badge="{ player, selected }">
@@ -321,9 +313,6 @@ const selectedPlayerPerf = computed(() => {
                 <template v-if="selectedPlayer">
 
                     <PlayerStatusAlert :player="selectedPlayer"
-                                       :isPlayerInjured="isPlayerInjured"
-                                       :isPlayerSuspended="isPlayerSuspended"
-                                       :playerInjury="playerInjury"
                                        :playerSuspension="playerSuspension" />
 
                     <!-- Identité -->
