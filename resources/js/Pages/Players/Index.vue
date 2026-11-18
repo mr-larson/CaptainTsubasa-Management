@@ -67,7 +67,6 @@
                             stats-key="stats"
                             :positions="positions"
                             :position-labels="positionLabels"
-                            show-age
                             :photo-url="photoPath ? `/storage/${photoPath}` : null"
                         />
                     </form>
