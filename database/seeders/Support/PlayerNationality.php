@@ -20,6 +20,8 @@ final class PlayerNationality
      */
     private const DEFAULT_BY_ORIGIN = [
         'captain_tsubasa'     => 'Japon',
+        'captain_tsubasa_international' => null,
+        'world_legends' => null,
         'blue_lock'           => 'Japon',
         'ao_ashi'             => 'Japon',
         'hungry_heart'        => 'Japon',

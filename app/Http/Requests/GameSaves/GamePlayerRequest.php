@@ -6,6 +6,8 @@ use App\Enums\PlayerPosition;
 use App\Models\GameSaves\GameSave;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
+use Illuminate\Validation\Rule;
+use App\Enums\Nationality;
 
 /** Requête de création ou d'édition d'un joueur au sein d'une sauvegarde. */
 class GamePlayerRequest extends FormRequest
@@ -23,7 +25,8 @@ class GamePlayerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'firstname'    => ['required', 'string', 'max:255'],
+            'firstname'    => ['present', 'nullable', 'string', 'max:255'],
+            'nationality' => ['nullable', Rule::in(Nationality::ALL)],
             'lastname'     => ['required', 'string', 'max:255'],
             'position'     => ['required', new Enum(PlayerPosition::class)],
             'secondary_positions'   => ['nullable', 'array'],

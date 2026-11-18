@@ -1,0 +1,65 @@
+[
+  {
+    "firstname": "Eden",
+    "lastname": "Hazard",
+    "previous_paths": [
+      "players/eden-hazard-2010.jpg",
+      "players/eden-hazard.jpg"
+    ],
+    "photo_path": "players/eden-hazard-2010.jpg"
+  },
+  {
+    "firstname": "Youri",
+    "lastname": "Tielemans",
+    "previous_paths": [
+      "players/youri-tielemans-2014.jpg",
+      "players/youri-tielemans.jpg"
+    ],
+    "photo_path": "players/youri-tielemans-2014.jpg"
+  },
+  {
+    "firstname": "Jérémy",
+    "lastname": "Doku",
+    "previous_paths": [
+      "players/jeremy-doku-2020.png",
+      "players/jeremy-doku.jpg"
+    ],
+    "photo_path": "players/jeremy-doku-2020.png"
+  },
+  {
+    "firstname": "Thomas",
+    "lastname": "Buffel",
+    "previous_paths": [
+      "players/thomas-buffel-2001.jpg",
+      "players/thomas-buffel.jpg"
+    ],
+    "photo_path": "players/thomas-buffel-2001.jpg"
+  },
+  {
+    "firstname": "Thomas",
+    "lastname": "Vermaelen",
+    "previous_paths": [
+      "players/thomas-vermaelen-2007.jpg",
+      "players/thomas-vermaelen.jpg"
+    ],
+    "photo_path": "players/thomas-vermaelen-2007.jpg"
+  },
+  {
+    "firstname": "Jan",
+    "lastname": "Vertonghen",
+    "previous_paths": [
+      "players/jan-vertonghen-2011.webp",
+      "players/jan-vertonghen.jpg"
+    ],
+    "photo_path": "players/jan-vertonghen-2011.webp"
+  },
+  {
+    "firstname": "Stijn",
+    "lastname": "Stijnen",
+    "previous_paths": [
+      "players/stijn-stijnen-2007.jpg",
+      "players/stijn-stijnen.jpg"
+    ],
+    "photo_path": "players/stijn-stijnen-2007.jpg"
+  }
+]

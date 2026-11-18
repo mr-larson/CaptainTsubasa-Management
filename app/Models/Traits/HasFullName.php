@@ -8,6 +8,12 @@ namespace App\Models\Traits;
  */
 trait HasFullName
 {
+    /** Les noms d'usage uniques (Pelé, Didi…) n'ont pas de prénom distinct. */
+    public function setFirstnameAttribute(?string $value): void
+    {
+        $this->attributes['firstname'] = $value ?? '';
+    }
+
     /** Nom complet « prénom nom ». */
     public function getFullNameAttribute(): string
     {

@@ -1,0 +1,21 @@
+{
+  "criteria": "Portrait pendant la carrière de joueur ; priorité aux débuts en club pour les Belges lorsque la source est vérifiable. Aucune photo récente de consultant ou entraîneur.",
+  "replaced": [
+    "vincent-kompany",
+    "jean-marie-pfaff",
+    "eric-gerets",
+    "wesley-sonck",
+    "philippe-albert",
+    "michel-preudhomme",
+    "luc-nilis",
+    "franky-van-der-elst",
+    "marc-wilmots",
+    "frank-vercauteren",
+    "gilles-de-bilde",
+    "gert-verheyen"
+  ],
+  "still_to_replace": [],
+  "not_a_full_prime_audit": true,
+  "catalogue_review": "legend-portrait-review.json",
+  "reviewed_on": "2026-11-18"
+}

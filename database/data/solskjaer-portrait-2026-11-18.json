@@ -1,0 +1,13 @@
+[
+  {
+    "firstname": "Ole Gunnar",
+    "lastname": "Solskjær",
+    "nationality": "Norvège",
+    "photo_path": "players/ole-gunnar-solskjaer-1999.webp",
+    "previous_paths": [
+      "players/ole-gunnar-solskjaer-1998.jpg",
+      "players/ole-gunnar-solskjaer.jpg",
+      "players/ole-gunnar-solskjaer.webp"
+    ]
+  }
+]

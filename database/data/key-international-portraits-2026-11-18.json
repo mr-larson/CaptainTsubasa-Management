@@ -1,0 +1,38 @@
+[
+  {
+    "firstname": "Gino",
+    "lastname": "Hernandez",
+    "nationality": "Italie",
+    "origin": "captain_tsubasa_international",
+    "photo_path": "players/gino-hernandez-official.png",
+    "previous_paths": [
+      "players/gino-hernandez.webp",
+      "players/gino-hernandez.png",
+      "players/gino-hernandez.jpg"
+    ]
+  },
+  {
+    "firstname": "Salvatore",
+    "lastname": "Gentile",
+    "nationality": "Italie",
+    "origin": "captain_tsubasa_international",
+    "photo_path": "players/salvatore-gentile-official.png",
+    "previous_paths": [
+      "players/salvatore-gentile.webp",
+      "players/salvatore-gentile.png",
+      "players/salvatore-gentile.jpg"
+    ]
+  },
+  {
+    "firstname": "Ruud",
+    "lastname": "Klisman",
+    "nationality": "Pays-Bas",
+    "origin": "captain_tsubasa_international",
+    "photo_path": "players/ruud-klisman-official.png",
+    "previous_paths": [
+      "players/ruud-klisman.webp",
+      "players/ruud-klisman.png",
+      "players/ruud-klisman.jpg"
+    ]
+  }
+]

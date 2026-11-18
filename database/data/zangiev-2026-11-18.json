@@ -1,0 +1,17 @@
+[
+    {
+        "firstname": "",
+        "lastname": "Zangiev",
+        "age": 13,
+        "position": "Forward",
+        "origin": "captain_tsubasa_international",
+        "nationality": "Ouzbékistan",
+        "secondary_positions": "[]",
+        "cost": 45,
+        "stats": "{\"speed\":63,\"stamina\":80,\"attack\":34,\"defense\":22,\"shot\":27,\"pass\":19,\"dribble\":22,\"block\":21,\"intercept\":18,\"tackle\":23,\"hand_save\":10,\"punch_save\":10,\"heading\":30}",
+        "heading": 30,
+        "special_moves": "[{\"key\":\"zangiev_great_rock_blaster\",\"mode\":\"attack\",\"label\":\"Great Rock Blaster\",\"short_label\":\"Rock\",\"cooldown\":3,\"base_action\":\"shot\",\"description\":\"La frappe puissante de Zangiev, présentée sur sa fiche officielle World Fighters.\"}]",
+        "description": "Attaquant et capitaine de l’Ouzbékistan Youth. Grand et puissant, Zangiev privilégie les duels physiques et les actions de percussion ; sa vitesse et sa technique restent limitées.",
+        "photo_path": "players/zangiev-world-fighters.png"
+    }
+]

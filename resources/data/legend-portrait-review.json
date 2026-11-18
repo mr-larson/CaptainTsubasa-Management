@@ -1,0 +1,3947 @@
+{
+  "reviewed_on": "2026-11-18",
+  "active_players": 394,
+  "illustrated_players": 393,
+  "players": [
+    {
+      "firstname": "Franz",
+      "lastname": "Beckenbauer",
+      "nationality": "Allemagne",
+      "photo_path": "players/franz-beckenbauer-1974.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.catawiki.com/en/l/47818309-panini-franz-beckenbauer-wc-munchen-74-original-loose-sticker-89-1974",
+      "period": "1974",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Lothar",
+      "lastname": "Matthäus",
+      "nationality": "Allemagne",
+      "photo_path": "players/lothar-matthaus-1990.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/USA-94-german/USA-23610.html?language=en",
+      "period": "1990",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Philipp",
+      "lastname": "Lahm",
+      "nationality": "Allemagne",
+      "photo_path": "players/philipp-lahm-2014.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/fussball-wm-sticker/world-cup-2014/brasil-2014-Lahm.html?language=de",
+      "period": "2014",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Andreas",
+      "lastname": "Brehme",
+      "nationality": "Allemagne",
+      "photo_path": "players/andreas-brehme-1991.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/football-stars-223/football-b/1S-057e.html?language=en",
+      "period": "1991",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Jürgen",
+      "lastname": "Kohler",
+      "nationality": "Allemagne",
+      "photo_path": "players/jurgen-kohler-1994.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/fussball-stars-223/fussball-k/1S-217.html?language=de",
+      "period": "1994",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Guido",
+      "lastname": "Buchwald",
+      "nationality": "Allemagne",
+      "photo_path": "players/guido-buchwald-1991.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/fussball-stars-223/fussball-b/1S-061.html?language=de",
+      "period": "1991",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Pierre",
+      "lastname": "Littbarski",
+      "nationality": "Allemagne",
+      "photo_path": "players/pierre-littbarski-1990.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.co.uk/itm/134801630965",
+      "period": "1990",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Thomas",
+      "lastname": "Hässler",
+      "nationality": "Allemagne",
+      "photo_path": "players/thomas-hassler-1994.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.euro-soccer-cards.com/gb/panini-usa-94/thomas-hassler-germany-180-usa-94",
+      "period": "1994",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Miroslav",
+      "lastname": "Klose",
+      "nationality": "Allemagne",
+      "photo_path": "players/miroslav-klose-2006.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/335424801285",
+      "period": "2006",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Jürgen",
+      "lastname": "Klinsmann",
+      "nationality": "Allemagne",
+      "photo_path": "players/jurgen-klinsmann-1990.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-90-sticker/Juergen-Klinsmann-Italia-90.html?language=en",
+      "period": "1990",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Rudi",
+      "lastname": "Völler",
+      "nationality": "Allemagne",
+      "photo_path": "players/rudi-voller-1992.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/fussball-stars-223/fussball-v/Rudi-Voeller-Panini-Futbol-92.html?language=de",
+      "period": "1992",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Lukas",
+      "lastname": "Podolski",
+      "nationality": "Allemagne",
+      "photo_path": "players/lukas-podolski-2010.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.coleka.com/en/stickers/panini-stickers/panini-football-sticker-albums/fifa-south-africa-2010/lukas-podolski-allemagne_i138875",
+      "period": "2010",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Fabien",
+      "lastname": "Barthez",
+      "nationality": "France",
+      "photo_path": "players/fabien-barthez-2002.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-2002/Korea-2002-Fabien-Barthez.html?language=en",
+      "period": "2002",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Hugo",
+      "lastname": "Lloris",
+      "nationality": "France",
+      "photo_path": "players/hugo-lloris-2018.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.coleka.com/en/stickers/panini-stickers/panini-football-sticker-albums/fifa-world-cup-russia-2018/hugo-lloris-france_i209073",
+      "period": "2018",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Marcel",
+      "lastname": "Desailly",
+      "nationality": "France",
+      "photo_path": "players/marcel-desailly-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/fussball-wm-sticker/world-cup-98/France-98-Desailly.html?language=de",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Patrick",
+      "lastname": "Vieira",
+      "nationality": "France",
+      "photo_path": "players/patrick-vieira-2000.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/Fussball-Euro-Sticker/Euro-2000/Euro-2000-Vieira.html",
+      "period": "2000",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Lilian",
+      "lastname": "Thuram",
+      "nationality": "France",
+      "photo_path": "players/lilian-thuram-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.fr/itm/153214973791",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Laurent",
+      "lastname": "Blanc",
+      "nationality": "France",
+      "photo_path": "players/laurent-blanc-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/fussball-wm-sticker/world-cup-98/France-98-Blanc.html?language=de",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Bixente",
+      "lastname": "Lizarazu",
+      "nationality": "France",
+      "photo_path": "players/bixente-lizarazu-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/fussball-stars-223/fussball-l/seriess-19028.html?language=de",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Frank",
+      "lastname": "Leboeuf",
+      "nationality": "France",
+      "photo_path": "players/frank-leboeuf-2000.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/Football-Euro-Stickers/Euro-2000/Euro-2000-Leboeuf.html?language=en",
+      "period": "2000",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Emmanuel",
+      "lastname": "Petit",
+      "nationality": "France",
+      "photo_path": "players/emmanuel-petit-2000.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/Football-Euro-Stickers/Euro-2000/Euro-2000-Petit.html?language=en",
+      "period": "2000",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Claude",
+      "lastname": "Makélélé",
+      "nationality": "France",
+      "photo_path": "players/claude-makelele-2006.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-2006/Germany-2006-Makelele.html?language=en",
+      "period": "2006",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Robert",
+      "lastname": "Pirès",
+      "nationality": "France",
+      "photo_path": "players/robert-pires-2000.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/134450858087",
+      "period": "2000",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Dominique",
+      "lastname": "Rocheteau",
+      "nationality": "France",
+      "photo_path": "players/dominique-rocheteau-1982.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-82-sticker/Dominique-Rocheteau-Espana-82.html?language=en",
+      "period": "1982",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Sylvain",
+      "lastname": "Wiltord",
+      "nationality": "France",
+      "photo_path": "players/sylvain-wiltord-2000.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/Fussball-Euro-Sticker/Euro-2000/Euro-2000-Wiltord.html",
+      "period": "2000",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Youri",
+      "lastname": "Djorkaeff",
+      "nationality": "France",
+      "photo_path": "players/youri-djorkaeff-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-98/France-98-Djorkaeff.html?language=en",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Ubaldo",
+      "lastname": "Fillol",
+      "nationality": "Argentine",
+      "photo_path": "players/ubaldo-fillol-1978.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/305439174841",
+      "period": "1978",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Nery",
+      "lastname": "Pumpido",
+      "nationality": "Argentine",
+      "photo_path": "players/nery-pumpido-1990.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.limundo.com/kupovina/Kolekcionarstvo/Albumi-i-slicice/Albumi/Italija-90-decje-novine/111068025/AukcijaNijeNadjena",
+      "period": "1990",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Daniel",
+      "lastname": "Passarella",
+      "nationality": "Argentine",
+      "photo_path": "players/daniel-passarella-1978.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.co.uk/itm/134811331854",
+      "period": "1978",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Oscar",
+      "lastname": "Ruggeri",
+      "nationality": "Argentine",
+      "photo_path": "players/oscar-ruggeri-1986.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.coleka.com/en/stickers/panini-stickers/panini-football-sticker-albums/mexico-86-world-cup/oscar-alfredo-ruggeri-argentine_i51226",
+      "period": "1986",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Roberto",
+      "lastname": "Ayala",
+      "nationality": "Argentine",
+      "photo_path": "players/roberto-ayala-2006.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/305207673519",
+      "period": "2006",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Javier",
+      "lastname": "Zanetti",
+      "nationality": "Argentine",
+      "photo_path": "players/javier-zanetti-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.pinterest.com/pin/zanetti--44965696269861373/",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Juan Pablo",
+      "lastname": "Sorín",
+      "nationality": "Argentine",
+      "photo_path": "players/juan-pablo-sorin-2002.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/134424373278",
+      "period": "2002",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Javier",
+      "lastname": "Mascherano",
+      "nationality": "Argentine",
+      "photo_path": "players/javier-mascherano-2014.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/fussball-wm-sticker/world-cup-2014/brasil-2014-Mascherano.html?language=de",
+      "period": "2014",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Jorge",
+      "lastname": "Burruchaga",
+      "nationality": "Argentine",
+      "photo_path": "players/jorge-burruchaga-1990.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-90-sticker/Jorge-Luis-Burruchaga-Italia-90.html?language=en",
+      "period": "1990",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Diego",
+      "lastname": "Simeone",
+      "nationality": "Argentine",
+      "photo_path": "players/diego-simeone-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-98/France-98-Simeone.html?language=en",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Ricardo",
+      "lastname": "Giusti",
+      "nationality": "Argentine",
+      "photo_path": "players/ricardo-giusti-1990.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/fussball-wm-sticker/world-cup-90-sticker/Richardoomar-Giusti-Italia-90.html?language=de",
+      "period": "1990",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Claudio",
+      "lastname": "Caniggia",
+      "nationality": "Argentine",
+      "photo_path": "players/claudio-caniggia-1990.png",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/396836840856",
+      "period": "1990",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Jorge",
+      "lastname": "Valdano",
+      "nationality": "Argentine",
+      "photo_path": "players/jorge-valdano-1986.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.euro-soccer-cards.com/es/panini-mexico-86/jorge-alberto-f--valdano-mexico-86",
+      "period": "1986",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Gabriel",
+      "lastname": "Batistuta",
+      "nationality": "Argentine",
+      "photo_path": "players/gabriel-batistuta-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-98/France-98-Batistuta.html?language=en",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Martín",
+      "lastname": "Palermo",
+      "nationality": "Argentine",
+      "photo_path": "players/martin-palermo-2003.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://tcgmatch.cl/producto/67d88e68421ffee2758f3e09",
+      "period": "2003",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Edwin",
+      "lastname": "van der Sar",
+      "nationality": "Pays-Bas",
+      "photo_path": "players/edwin-van-der-sar-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/334371087159",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Jaap",
+      "lastname": "Stam",
+      "nationality": "Pays-Bas",
+      "photo_path": "players/jaap-stam-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebid.net/us/for-sale/panini-s-fifa-world-cup-france-1998-stickers-no-304-stam-jaap-207660872.htm?srsltid=AfmBOoqw32KfSx9NJ3QNpyOeGq4xV3ZbA0ALFId_nY_O4El376z65l9w",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Ronald",
+      "lastname": "Koeman",
+      "nationality": "Pays-Bas",
+      "photo_path": "players/ronald-koeman-1988.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/Fussball-Euro-Sticker/Euro-88/Euro-88-Ronald-Koeman.html",
+      "period": "1988",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Giovanni",
+      "lastname": "van Bronckhorst",
+      "nationality": "Pays-Bas",
+      "photo_path": "players/giovanni-van-bronckhorst-2006.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/fussball-wm-sticker/world-cup-2006/Germany-2006-van-Bronckhorst.html?language=de",
+      "period": "2006",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Michael",
+      "lastname": "Reiziger",
+      "nationality": "Pays-Bas",
+      "photo_path": "players/michael-reiziger-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-98/France-98-Reiziger.html?language=en",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Frank",
+      "lastname": "Rijkaard",
+      "nationality": "Pays-Bas",
+      "photo_path": "players/frank-rijkaard-1994.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/186985664304",
+      "period": "1994",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Edgar",
+      "lastname": "Davids",
+      "nationality": "Pays-Bas",
+      "photo_path": "players/edgar-davids-1996.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.euro-soccer-cards.com/gb/panini-europa-europe-96/edgar-davids-nederland-86",
+      "period": "1996",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Mark",
+      "lastname": "van Bommel",
+      "nationality": "Pays-Bas",
+      "photo_path": "players/mark-van-bommel-2006.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/fussball-wm-sticker/world-cup-2006/Germany-2006-van-Bommel.html?language=de",
+      "period": "2006",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Dirk",
+      "lastname": "Kuyt",
+      "nationality": "Pays-Bas",
+      "photo_path": "players/dirk-kuyt-2010.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/fussball-wm-sticker/world-cup-2010/W10-351.html?language=de",
+      "period": "2010",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Marc",
+      "lastname": "Overmars",
+      "nationality": "Pays-Bas",
+      "photo_path": "players/marc-overmars-2000.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/134451964245",
+      "period": "2000",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Fernando",
+      "lastname": "Muslera",
+      "nationality": "Uruguay",
+      "photo_path": "players/fernando-muslera-2010.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.euro-soccer-cards.com/es/panini-fifa-world-cup-south-africa-2010/fernando-muslera-uruguay-70-wc-2010",
+      "period": "2010",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Diego",
+      "lastname": "Godín",
+      "nationality": "Uruguay",
+      "photo_path": "players/diego-godin-2014.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.euro-soccer-cards.com/es/panini-fifa-world-cup-brazil-2014/diego-godin-uruguay-264-wc-brazil-2014",
+      "period": "2014",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Diego",
+      "lastname": "Lugano",
+      "nationality": "Uruguay",
+      "photo_path": "players/diego-lugano-2010.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-2010/W10-071e.html?language=en",
+      "period": "2010",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Egidio",
+      "lastname": "Arévalo Ríos",
+      "nationality": "Uruguay",
+      "photo_path": "players/egidio-arevalo-rios-2018.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.cst.cam.ac.uk/blog/tmj32/world-cup-2018-sticker-collecting",
+      "period": "2018",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Diego",
+      "lastname": "Pérez",
+      "nationality": "Uruguay",
+      "photo_path": "players/diego-perez-2014.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.euro-soccer-cards.com/es/panini-fifa-world-cup-brazil-2014/diego-perez-uruguay-270-wc-brazil-2014",
+      "period": "2014",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Luis",
+      "lastname": "Suárez",
+      "nationality": "Uruguay",
+      "photo_path": "players/luis-suarez-2014.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.euro-soccer-cards.com/gb/panini-fifa-world-cup-brazil-2014/luis-suarez-uruguay-278-wc-brazil-2014",
+      "period": "2014",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Diego",
+      "lastname": "Forlán",
+      "nationality": "Uruguay",
+      "photo_path": "players/diego-forlan-2010.png",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/187618230820",
+      "period": "2010",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Guillermo",
+      "lastname": "Ochoa",
+      "nationality": "Mexique",
+      "photo_path": "players/guillermo-ochoa-2010.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://uk.pinterest.com/pin/guillermo-ochoa-of-mexico-2010-world-cup-finals-card--132363676528199257/",
+      "period": "2010",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Rafael",
+      "lastname": "Márquez",
+      "nationality": "Mexique",
+      "photo_path": "players/rafael-marquez-2010.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-2010/W10-056e.html?language=en",
+      "period": "2010",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Andrés",
+      "lastname": "Guardado",
+      "nationality": "Mexique",
+      "photo_path": "players/andres-guardado-2018.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.euro-soccer-cards.com/gb/andres-guardado-mexico-463",
+      "period": "2018",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Carlos",
+      "lastname": "Salcido",
+      "nationality": "Mexique",
+      "photo_path": "players/carlos-salcido-2006.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-2006/Germany-2006-Salcido.html?language=en",
+      "period": "2006",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Gerardo",
+      "lastname": "Torrado",
+      "nationality": "Mexique",
+      "photo_path": "players/gerardo-torrado-2002.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.fr/itm/256596530505",
+      "period": "2002",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Cuauhtémoc",
+      "lastname": "Blanco",
+      "nationality": "Mexique",
+      "photo_path": "players/cuauhtemoc-blanco-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/284944023337",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Luis",
+      "lastname": "Hernández",
+      "nationality": "Mexique",
+      "photo_path": "players/luis-hernandez-1998.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.coleka.com/en/stickers/panini-stickers/panini-football-sticker-albums/france-98/luis-hernandez-mex_i255535",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Cláudio",
+      "lastname": "Taffarel",
+      "nationality": "Brésil",
+      "photo_path": "players/claudio-taffarel-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/fussball-wm-sticker/world-cup-98/France-98-Taffarel.html?language=de",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Carlos",
+      "lastname": "Dunga",
+      "nationality": "Brésil",
+      "photo_path": "players/carlos-dunga-1990.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-90-sticker/Dunga-Italia-90.html?language=en",
+      "period": "1990",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Marcos",
+      "lastname": "Cafu",
+      "nationality": "Brésil",
+      "photo_path": "players/marcos-cafu-2002.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/186802512713",
+      "period": "2002",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Roberto",
+      "lastname": "Carlos",
+      "nationality": "Brésil",
+      "photo_path": "players/roberto-carlos-2002.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-2002/Korea-2002-Roberto-Carlos.html?language=en",
+      "period": "2002",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Fabio",
+      "lastname": "Cannavaro",
+      "nationality": "Italie",
+      "photo_path": "players/fabio-cannavaro-2006.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/404737434154",
+      "period": "2006",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Gianluca",
+      "lastname": "Zambrotta",
+      "nationality": "Italie",
+      "photo_path": "players/gianluca-zambrotta-2006.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.coleka.com/en/stickers/panini-stickers/panini-football-sticker-albums/fifa-world-cup-germany-2006/gianluca-zambrotta-italia_i181262",
+      "period": "2006",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Gennaro",
+      "lastname": "Gattuso",
+      "nationality": "Italie",
+      "photo_path": "players/gennaro-gattuso-2006.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.fr/itm/155404941085",
+      "period": "2006",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Kevin",
+      "lastname": "De Bruyne",
+      "nationality": "Belgique",
+      "photo_path": "players/kevin-de-bruyne-2011.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2015/07/panini-football-2011-covers-all-belgian.html",
+      "period": "2011",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Eden",
+      "lastname": "Hazard",
+      "nationality": "Belgique",
+      "photo_path": "players/eden-hazard-2010.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.fr/itm/154433996286",
+      "period": "2010",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Thibaut",
+      "lastname": "Courtois",
+      "nationality": "Belgique",
+      "photo_path": "players/thibaut-courtois-2011.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2015/07/panini-football-2011-covers-all-belgian.html",
+      "period": "2011",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Vincent",
+      "lastname": "Kompany",
+      "nationality": "Belgique",
+      "photo_path": "players/vincent-kompany-2004.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2023/12/panini-football-2004-belgium.html",
+      "period": "2004",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Enzo",
+      "lastname": "Scifo",
+      "nationality": "Belgique",
+      "photo_path": "players/enzo-scifo.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Enzo_Scifo-Internazionale.jpg",
+      "period": null,
+      "protected_illustration": false
+    },
+    {
+      "firstname": "Jan",
+      "lastname": "Ceulemans",
+      "nationality": "Belgique",
+      "photo_path": "players/jan-ceulemans-1980.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2022/04/panini-football-80-belgium.html",
+      "period": "1980",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Jean-Marie",
+      "lastname": "Pfaff",
+      "nationality": "Belgique",
+      "photo_path": "players/jean-marie-pfaff.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Training_Belgisch_nationale_voetbalelftal_in_Mechelen_voor_de_wedstrijd_woensdag,_Bestanddeelnr_931-1533.jpg",
+      "period": "1980-11-18",
+      "protected_illustration": false
+    },
+    {
+      "firstname": "Romelu",
+      "lastname": "Lukaku",
+      "nationality": "Belgique",
+      "photo_path": "players/romelu-lukaku-2011.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2015/07/panini-football-2011-covers-all-belgian.html",
+      "period": "2011",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Michel",
+      "lastname": "Preud'homme",
+      "nationality": "Belgique",
+      "photo_path": "players/michel-preudhomme-1980.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2022/04/panini-football-80-belgium.html",
+      "period": "1980",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Éric",
+      "lastname": "Gerets",
+      "nationality": "Belgique",
+      "photo_path": "players/eric-gerets-1981.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2019/11/panini-football-81-belgium.html",
+      "period": "1981",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Luc",
+      "lastname": "Nilis",
+      "nationality": "Belgique",
+      "photo_path": "players/luc-nilis-1991.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2022/03/panini-football-1991-belgium.html",
+      "period": "1991",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Jan",
+      "lastname": "Vertonghen",
+      "nationality": "Belgique",
+      "photo_path": "players/jan-vertonghen-2011.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://soccerstickersfc.net/2024/12/panini-uefa-champions-league-2010-2011-complete-album/",
+      "period": "2011",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Marc",
+      "lastname": "Degryse",
+      "nationality": "Belgique",
+      "photo_path": "players/marc-degryse-1991.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2022/03/panini-football-1991-belgium.html",
+      "period": "1991",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Franky",
+      "lastname": "Van der Elst",
+      "nationality": "Belgique",
+      "photo_path": "players/franky-van-der-elst-1990.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-90-sticker/Franky-Van-der-Elst-Italia-90.html?language=en",
+      "period": "1990",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Marc",
+      "lastname": "Wilmots",
+      "nationality": "Belgique",
+      "photo_path": "players/marc-wilmots-1996.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2022/04/panini-football-96-belgium.html",
+      "period": "1996",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Georges",
+      "lastname": "Grün",
+      "nationality": "Belgique",
+      "photo_path": "players/georges-grun.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Georges_Grun-1992.jpg",
+      "period": null,
+      "protected_illustration": false
+    },
+    {
+      "firstname": "Philippe",
+      "lastname": "Albert",
+      "nationality": "Belgique",
+      "photo_path": "players/philippe-albert-1994.png",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/166584435203",
+      "period": "1994",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "François",
+      "lastname": "Van der Elst",
+      "nationality": "Belgique",
+      "photo_path": "players/francois-van-der-elst-1980.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2022/04/panini-football-80-belgium.html",
+      "period": "1980",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Émile",
+      "lastname": "Mpenza",
+      "nationality": "Belgique",
+      "photo_path": "players/emile-mpenza-1997.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/372928845162",
+      "period": "1997",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Daniel",
+      "lastname": "Van Buyten",
+      "nationality": "Belgique",
+      "photo_path": "players/daniel-van-buyten-2000.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://stickersone.com/en/football-belgium-1999-2000-panini/sticker-daniel-van-buyten-44947",
+      "period": "2000",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Wesley",
+      "lastname": "Sonck",
+      "nationality": "Belgique",
+      "photo_path": "players/wesley-sonck-2002.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2022/05/panini-football-2002-belgium.html",
+      "period": "2002",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Nico",
+      "lastname": "Claesen",
+      "nationality": "Belgique",
+      "photo_path": "players/nico-claesen.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Belgium_vs_ussr_1986_(cropped).jpg",
+      "period": null,
+      "protected_illustration": false
+    },
+    {
+      "firstname": "Thomas",
+      "lastname": "Vermaelen",
+      "nationality": "Belgique",
+      "photo_path": "players/thomas-vermaelen-2007.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2017/07/panini-champions-league-20062007.html",
+      "period": "2007",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Youri",
+      "lastname": "Tielemans",
+      "nationality": "Belgique",
+      "photo_path": "players/youri-tielemans-2014.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.fr/itm/404935686459",
+      "period": "2014",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "René",
+      "lastname": "Vandereycken",
+      "nationality": "Belgique",
+      "photo_path": "players/rene-vandereycken-1980.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2022/04/panini-football-80-belgium.html",
+      "period": "1980",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Frank",
+      "lastname": "Vercauteren",
+      "nationality": "Belgique",
+      "photo_path": "players/frank-vercauteren-1980.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.co.uk/itm/373601822150",
+      "period": "1980",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Erwin",
+      "lastname": "Vandenbergh",
+      "nationality": "Belgique",
+      "photo_path": "players/erwin-vandenbergh.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Training_Belgisch_nationale_voetbalelftal_in_Mechelen_voor_de_wedstrijd_woensdag,_Bestanddeelnr_931-1524.jpg",
+      "period": null,
+      "protected_illustration": false
+    },
+    {
+      "firstname": "Stéphane",
+      "lastname": "Demol",
+      "nationality": "Belgique",
+      "photo_path": "players/stephane-demol.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://commons.wikimedia.org/wiki/File:St%C3%A9phane_Demol_-_Bologna_FC_1909.jpg",
+      "period": null,
+      "protected_illustration": false
+    },
+    {
+      "firstname": "Lorenzo",
+      "lastname": "Staelens",
+      "nationality": "Belgique",
+      "photo_path": "players/lorenzo-staelens-1997.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2015/07/panini-football-97-belgium.html",
+      "period": "1997",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Danny",
+      "lastname": "Boffin",
+      "nationality": "Belgique",
+      "photo_path": "players/danny-boffin.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Danny_Boffin.jpg",
+      "period": null,
+      "protected_illustration": false
+    },
+    {
+      "firstname": "Luis",
+      "lastname": "Oliveira",
+      "nationality": "Belgique",
+      "photo_path": "players/luis-oliveira-1991.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2022/03/panini-football-1991-belgium.html",
+      "period": "1991",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Gilles",
+      "lastname": "De Bilde",
+      "nationality": "Belgique",
+      "photo_path": "players/gilles-de-bilde-1995.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.benl.ebay.be/itm/323976738123",
+      "period": "1995",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Johan",
+      "lastname": "Walem",
+      "nationality": "Belgique",
+      "photo_path": "players/johan-walem.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Johan_Walem-Udinese_Calcio.jpg",
+      "period": null,
+      "protected_illustration": false
+    },
+    {
+      "firstname": "Bart",
+      "lastname": "Goor",
+      "nationality": "Belgique",
+      "photo_path": "players/bart-goor-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2022/04/panini-football-98-belgium.html",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Mbo",
+      "lastname": "Mpenza",
+      "nationality": "Belgique",
+      "photo_path": "players/mbo-mpenza-1997.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2015/07/panini-football-97-belgium.html",
+      "period": "1997",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Timmy",
+      "lastname": "Simons",
+      "nationality": "Belgique",
+      "photo_path": "players/timmy-simons-2004.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2023/12/panini-football-2004-belgium.html",
+      "period": "2004",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Thomas",
+      "lastname": "Buffel",
+      "nationality": "Belgique",
+      "photo_path": "players/thomas-buffel-2001.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.co.uk/itm/276113834141",
+      "period": "2001",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Gert",
+      "lastname": "Verheyen",
+      "nationality": "Belgique",
+      "photo_path": "players/gert-verheyen-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.co.uk/itm/196531358442",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Olivier",
+      "lastname": "Deschacht",
+      "nationality": "Belgique",
+      "photo_path": "players/olivier-deschacht-2004.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2023/12/panini-football-2004-belgium.html",
+      "period": "2004",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Jérémy",
+      "lastname": "Doku",
+      "nationality": "Belgique",
+      "photo_path": "players/jeremy-doku-2020.png",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/225833963840",
+      "period": "2020",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Leandro",
+      "lastname": "Trossard",
+      "nationality": "Belgique",
+      "photo_path": "players/leandro-trossard-2011.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2015/07/panini-football-2011-covers-all-belgian.html",
+      "period": "2011",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Gerd",
+      "lastname": "Müller",
+      "nationality": "Allemagne",
+      "photo_path": "players/gerd-muller-1974.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/134813378927",
+      "period": "1974",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Karl-Heinz",
+      "lastname": "Rummenigge",
+      "nationality": "Allemagne",
+      "photo_path": "players/karl-heinz-rummenigge-1982.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.coleka.com/en/stickers/panini-stickers/panini-football-sticker-albums/espana-82-world-cup/karl-heinz-rummenigge-deutschland-brd_i263889",
+      "period": "1982",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Thomas",
+      "lastname": "Müller",
+      "nationality": "Allemagne",
+      "photo_path": "players/thomas-muller-2014.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/324486045313",
+      "period": "2014",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Manuel",
+      "lastname": "Neuer",
+      "nationality": "Allemagne",
+      "photo_path": "players/manuel-neuer-2014.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.de/itm/373754715383?srsltid=AfmBOoqiR8kCFu45-KoXune6fhOuyvMISzM0PpdAPJ0zkU3ub7WNE_k9",
+      "period": "2014",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Helmut",
+      "lastname": "Rahn",
+      "nationality": "Allemagne",
+      "photo_path": "players/helmut-rahn-1954.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://uk.pinterest.com/pin/helmut-rahn-of-west-germany-1954-world-cup-finals-card--44965696271072350/",
+      "period": "1954",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Zinédine",
+      "lastname": "Zidane",
+      "nationality": "France",
+      "photo_path": "players/zinedine-zidane-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/fussball-wm-sticker/world-cup-98/France-98-Zidane.html?language=de",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Kylian",
+      "lastname": "Mbappé",
+      "nationality": "France",
+      "photo_path": "players/kylian-mbappe-2018.png",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.fr/itm/336198742324",
+      "period": "2018",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Just",
+      "lastname": "Fontaine",
+      "nationality": "France",
+      "photo_path": "players/just-fontaine-1958.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.catawiki.com/en/l/65792387-panini-wc-mexico-70-fontaine-history-1958-original-loose-card-1970",
+      "period": "1958",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Éric",
+      "lastname": "Cantona",
+      "nationality": "France",
+      "photo_path": "players/eric-cantona-1996.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/177549087617",
+      "period": "1996",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Diego",
+      "lastname": "Maradona",
+      "nationality": "Argentine",
+      "photo_path": "players/diego-maradona-1986.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.de/itm/125632933351",
+      "period": "1986",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Lionel",
+      "lastname": "Messi",
+      "nationality": "Argentine",
+      "photo_path": "players/lionel-messi-2014.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/fussball-wm-sticker/world-cup-2014/brasil-2014-Messi.html?language=de",
+      "period": "2014",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Mario",
+      "lastname": "Kempes",
+      "nationality": "Argentine",
+      "photo_path": "players/mario-kempes-1978.png",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.cfclassics.co/tournaments/wc/awards/goldenboot/world-cup-golden-boot-winners.htm",
+      "period": "1978",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Johan",
+      "lastname": "Cruyff",
+      "nationality": "Pays-Bas",
+      "photo_path": "players/johan-cruyff-1974.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/134557313529",
+      "period": "1974",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Juan Alberto",
+      "lastname": "Schiaffino",
+      "nationality": "Uruguay",
+      "photo_path": "players/juan-alberto-schiaffino-1950.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.coleka.com/en/stickers/panini-stickers/panini-football-sticker-albums/mexico-70-copa-mundial/schiaffino-uruguay-uruguay-1950_i220650",
+      "period": "Visuel de carrière reproduit sur une carte rétrospective ; date exacte du cliché non confirmée.",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "José",
+      "lastname": "Nasazzi",
+      "nationality": "Uruguay",
+      "photo_path": "players/jose-nasazzi-1930.png",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/397325594304",
+      "period": "Visuel de carrière reproduit sur une carte rétrospective ; date exacte du cliché non confirmée.",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "",
+      "lastname": "Pelé",
+      "nationality": "Brésil",
+      "photo_path": "players/pele-1970.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.catawiki.com/pt/l/99081543-1970-panini-world-cup-mexico-70-brasil-pele-1-card-excelente-ex",
+      "period": "1970",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "",
+      "lastname": "Ronaldo",
+      "nationality": "Brésil",
+      "photo_path": "players/ronaldo-2002.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/154557997394",
+      "period": "2002",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "",
+      "lastname": "Garrincha",
+      "nationality": "Brésil",
+      "photo_path": "players/garrincha-1962.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.catawiki.com/en/l/70389969-panini-world-cup-mexico-70-history-1962-garrincha-loose-card-1970",
+      "period": "1962",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "",
+      "lastname": "Didi",
+      "nationality": "Brésil",
+      "photo_path": "players/didi-1958.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.catawiki.com/en/l/78074919-panini-mexico-70-world-cup-didi-brasil-history-1958-1-card",
+      "period": "1958",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "",
+      "lastname": "Jairzinho",
+      "nationality": "Brésil",
+      "photo_path": "players/jairzinho-1970.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/286048282058",
+      "period": "1970",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "",
+      "lastname": "Romário",
+      "nationality": "Brésil",
+      "photo_path": "players/romario-1994.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.es/itm/124698018021",
+      "period": "1994",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "",
+      "lastname": "Vavá",
+      "nationality": "Brésil",
+      "photo_path": "players/vava-1958.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.swedishcollector.com/index.php/shop-main/sport/fotboll/alfa/graderade-2/vava-635-detail",
+      "period": "1958",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "",
+      "lastname": "Leônidas",
+      "nationality": "Brésil",
+      "photo_path": "players/leonidas-1938.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.pinterest.com/pin/0leonidas--624241198325721949/",
+      "period": "1938",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Paolo",
+      "lastname": "Rossi",
+      "nationality": "Italie",
+      "photo_path": "players/paolo-rossi-1982.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/fussball-wm-sticker/world-cup-82-sticker/Paolo-Rossi-Espana-82.html?language=de",
+      "period": "1982",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Giuseppe",
+      "lastname": "Meazza",
+      "nationality": "Italie",
+      "photo_path": "players/giuseppe-meazza-1934.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://uk.pinterest.com/pin/giuseppe-meazza-of-italy-1934-world-cup-finals-card--81416705756535790/",
+      "period": "1934",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Dino",
+      "lastname": "Zoff",
+      "nationality": "Italie",
+      "photo_path": "players/dino-zoff-1982.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-82-sticker/Dino-Zoff-Espana-82.html?language=en",
+      "period": "1982",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Gianluigi",
+      "lastname": "Buffon",
+      "nationality": "Italie",
+      "photo_path": "players/gianluigi-buffon-2006.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/175641724301",
+      "period": "2006",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Paolo",
+      "lastname": "Maldini",
+      "nationality": "Italie",
+      "photo_path": "players/paolo-maldini-1994.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/football-stars-223/football-m/1S-219e.html?language=en",
+      "period": "1994",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Roberto",
+      "lastname": "Baggio",
+      "nationality": "Italie",
+      "photo_path": "players/roberto-baggio-1994.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/fussball-wm-sticker/USA-94-deutsch/USA-94-Roberto-Baggio.html?language=de",
+      "period": "1994",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "",
+      "lastname": "Eusébio",
+      "nationality": "Portugal",
+      "photo_path": "players/eusebio-1966.png",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.cfclassics.co/tournaments/wc/years/1966/1966-world-cup-england.htm",
+      "period": "1966",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Bobby",
+      "lastname": "Charlton",
+      "nationality": "Angleterre",
+      "photo_path": "players/bobby-charlton-1970.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.co.uk/itm/226560177945",
+      "period": "1970",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Bobby",
+      "lastname": "Moore",
+      "nationality": "Angleterre",
+      "photo_path": "players/bobby-moore-1970.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.catawiki.com/en/l/73727573-panini-world-cup-mexico-70-england-bobby-moore-1970",
+      "period": "1970",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Xavi",
+      "lastname": "Hernández",
+      "nationality": "Espagne",
+      "photo_path": "players/xavi-hernandez-2010.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.es/itm/353524049410",
+      "period": "2010",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Andrés",
+      "lastname": "Iniesta",
+      "nationality": "Espagne",
+      "photo_path": "players/andres-iniesta-2010.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-2010/W10-577e.html?language=en",
+      "period": "2010",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Iker",
+      "lastname": "Casillas",
+      "nationality": "Espagne",
+      "photo_path": "players/iker-casillas-2010.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-2010/W10-24645.html?language=en",
+      "period": "2010",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "",
+      "lastname": "Rodri",
+      "nationality": "Espagne",
+      "photo_path": "players/rodri-2021.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.euro-soccer-cards.com/es/uefa-euro-2020-tournament-edition/uefa-euro-tournament-2020-olmo-rodri-spain-536",
+      "period": "2021",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Luka",
+      "lastname": "Modrić",
+      "nationality": "Croatie",
+      "photo_path": "players/luka-modric-2018.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.euro-soccer-cards.com/gb/luka-modric-croacia-322",
+      "period": "2018",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Oliver",
+      "lastname": "Kahn",
+      "nationality": "Allemagne",
+      "photo_path": "players/oliver-kahn-2002.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/393107849097",
+      "period": "2002",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Matthias",
+      "lastname": "Sammer",
+      "nationality": "Allemagne",
+      "photo_path": "players/matthias-sammer-1996.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/Football-Euro-Stickers/Euro-96/Euro-96-Sammer.html?language=en",
+      "period": "1996",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Michael",
+      "lastname": "Ballack",
+      "nationality": "Allemagne",
+      "photo_path": "players/michael-ballack-2006.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/fussball-wm-sticker/world-cup-2006/Germany-2006-Ballack.html?language=de",
+      "period": "2006",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Bodo",
+      "lastname": "Illgner",
+      "nationality": "Allemagne",
+      "photo_path": "players/bodo-illgner-1990.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/395328108433",
+      "period": "1990",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Andreas",
+      "lastname": "Möller",
+      "nationality": "Allemagne",
+      "photo_path": "players/andreas-moller-1996.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/Fussball-Euro-Sticker/Euro-96/Euro-96-Moeller.html",
+      "period": "1996",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Karl-Heinz",
+      "lastname": "Riedle",
+      "nationality": "Allemagne",
+      "photo_path": "players/karl-heinz-riedle-1994.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.euro-soccer-cards.com/gb/panini-usa-94/karlheinz-riedle-germany-184-usa-94",
+      "period": "1994",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Thierry",
+      "lastname": "Henry",
+      "nationality": "France",
+      "photo_path": "players/thierry-henry-2004.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/Football-Euro-Stickers/Euro-2004/Euro-2004-Thierry-Henry.html?language=en",
+      "period": "2004",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "David",
+      "lastname": "Trezeguet",
+      "nationality": "France",
+      "photo_path": "players/david-trezeguet-2000.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/Fussball-Euro-Sticker/Euro-2000/Euro-2000-Trezeguet.html",
+      "period": "2000",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Didier",
+      "lastname": "Deschamps",
+      "nationality": "France",
+      "photo_path": "players/didier-deschamps-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-98/France-98-Deschamps.html?language=en",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Jean-Pierre",
+      "lastname": "Papin",
+      "nationality": "France",
+      "photo_path": "players/jean-pierre-papin.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://commons.wikimedia.org/wiki/File:PapinJP1997_(cropped).jpg",
+      "period": "1997-08-18",
+      "protected_illustration": false
+    },
+    {
+      "firstname": "Juan Sebastián",
+      "lastname": "Verón",
+      "nationality": "Argentine",
+      "photo_path": "players/juan-sebastian-veron-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-98/France-98-Veron.html?language=en",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Lucas",
+      "lastname": "Biglia",
+      "nationality": "Argentine",
+      "photo_path": "players/lucas-biglia-2014.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.euro-soccer-cards.com/gb/panini-fifa-world-cup-brazil-2014/lucas-biglia-argentina-420-wc-brazil-2014",
+      "period": "2014",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Nicolas",
+      "lastname": "Frutos",
+      "nationality": "Argentine",
+      "photo_path": "players/nicolas-frutos-2007.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2021/01/panini-football-2007-belgium.html",
+      "period": "2007",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Fernando",
+      "lastname": "Redondo",
+      "nationality": "Argentine",
+      "photo_path": "players/fernando-redondo-1994.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.ca/itm/145471389859",
+      "period": "1994",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Frank",
+      "lastname": "de Boer",
+      "nationality": "Pays-Bas",
+      "photo_path": "players/frank-de-boer-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/353524586316",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Dennis",
+      "lastname": "Bergkamp",
+      "nationality": "Pays-Bas",
+      "photo_path": "players/dennis-bergkamp.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Dennis_Bergkamp_Euro_%2796.jpg",
+      "period": "1996-06-10 (match ; la date de numérisation indiquée sur le fichier est postérieure)",
+      "protected_illustration": false
+    },
+    {
+      "firstname": "Clarence",
+      "lastname": "Seedorf",
+      "nationality": "Pays-Bas",
+      "photo_path": "players/clarence-seedorf-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-98/France-98-Seedorf.html?language=en",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Patrick",
+      "lastname": "Kluivert",
+      "nationality": "Pays-Bas",
+      "photo_path": "players/patrick-kluivert-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.euro-soccer-cards.com/gb/panini-france-98/patrick-kluivert-nederland-313",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "John",
+      "lastname": "Bosman",
+      "nationality": "Pays-Bas",
+      "photo_path": "players/john-bosman-1990.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.voetbalheldenoppapier.nl/johnny-bosman.html",
+      "period": "1990",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Foeke",
+      "lastname": "Booy",
+      "nationality": "Pays-Bas",
+      "photo_path": "players/foeke-booy-1990.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2022/03/panini-football-1990-belgium.html",
+      "period": "1990",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Marco",
+      "lastname": "van Basten",
+      "nationality": "Pays-Bas",
+      "photo_path": "players/marco-van-basten-1990.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ricardo.ch/de/a/panini-fussball-sticker-marco-van-basten-1990-1282484272/",
+      "period": "1990",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "",
+      "lastname": "Rivaldo",
+      "nationality": "Brésil",
+      "photo_path": "players/rivaldo-2002.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.co.uk/itm/125900643462",
+      "period": "2002",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "",
+      "lastname": "Dante",
+      "nationality": "Brésil",
+      "photo_path": "players/dante-2014.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/fussball-wm-sticker/world-cup-2014/brasil-2014-Dante.html?language=de",
+      "period": "2014",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Alessandro",
+      "lastname": "Nesta",
+      "nationality": "Italie",
+      "photo_path": "players/alessandro-nesta-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-98/France-98-Nesta.html?language=en",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Alessandro",
+      "lastname": "Del Piero",
+      "nationality": "Italie",
+      "photo_path": "players/alessandro-del-piero-2000.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/Champions-League-Service/panini-champions-2000/Champions-2000-del-Piero.html?language=en",
+      "period": "2000",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Christian",
+      "lastname": "Vieri",
+      "nationality": "Italie",
+      "photo_path": "players/christian-vieri-2002.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-2002/Korea-2002-Vieri.html?language=en",
+      "period": "2002",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Angelo",
+      "lastname": "Peruzzi",
+      "nationality": "Italie",
+      "photo_path": "players/angelo-peruzzi-1996.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.euro-soccer-cards.com/gb/panini-europa-europe-96/angelo-peruzzi-italia-237",
+      "period": "1996",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Sebastiano",
+      "lastname": "Rossi",
+      "nationality": "Italie",
+      "photo_path": "players/sebastiano-rossi-1996.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.milanistichannel.com/news-milan/sebastiano-rossi-milan-intervista-dichiarazioni-gazzetta-dello-sport-sacchi-capello-berlusconi/",
+      "period": "années 1990 (maillot Milan Lotto/Opel ; année précise non confirmée)",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Franco",
+      "lastname": "Baresi",
+      "nationality": "Italie",
+      "photo_path": "players/franco-baresi-1994.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/fussball-wm-sticker/USA-94-deutsch/USA-94-Franco-Baresi.html?language=de",
+      "period": "1994",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Ciro",
+      "lastname": "Ferrara",
+      "nationality": "Italie",
+      "photo_path": "players/ciro-ferrara-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-98/France-98-Ferrara.html?language=en",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Christian",
+      "lastname": "Panucci",
+      "nationality": "Italie",
+      "photo_path": "players/christian-panucci-2000.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/134452024870",
+      "period": "2000",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Filippo",
+      "lastname": "Inzaghi",
+      "nationality": "Italie",
+      "photo_path": "players/filippo-inzaghi-2000.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/134452024865",
+      "period": "2000",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Luís",
+      "lastname": "Figo",
+      "nationality": "Portugal",
+      "photo_path": "players/luis-figo-2002.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-2002/Korea-2002-Figo.html?language=en",
+      "period": "2002",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Rui",
+      "lastname": "Costa",
+      "nationality": "Portugal",
+      "photo_path": "players/rui-costa-1996.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/Football-Euro-Stickers/Euro-96/Euro-96-Rui-Costa.html?language=en",
+      "period": "1996",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Sérgio",
+      "lastname": "Conceição",
+      "nationality": "Portugal",
+      "photo_path": "players/sergio-conceicao-1999.png",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/135600689701",
+      "period": "1999",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "David",
+      "lastname": "Beckham",
+      "nationality": "Angleterre",
+      "photo_path": "players/david-beckham-2002.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-2002/Korea-2002-Beckham.html?language=en",
+      "period": "2002",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Michael",
+      "lastname": "Owen",
+      "nationality": "Angleterre",
+      "photo_path": "players/michael-owen-2002.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/fussball-wm-sticker/world-cup-2002/Korea-2002-Owen.html?language=de",
+      "period": "2002",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Alan",
+      "lastname": "Shearer",
+      "nationality": "Angleterre",
+      "photo_path": "players/alan-shearer-1996.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/Football-Euro-Stickers/Euro-96/Euro-96-Alan-Shearer.html?language=en",
+      "period": "1996",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Gary",
+      "lastname": "Neville",
+      "nationality": "Angleterre",
+      "photo_path": "players/gary-neville-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/fussball-wm-sticker/world-cup-98/France-98-Gary-Neville.html?language=de",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Paul",
+      "lastname": "Scholes",
+      "nationality": "Angleterre",
+      "photo_path": "players/paul-scholes-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/fussball-wm-sticker/world-cup-98/France-98-Scholes.html?language=de",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Andy",
+      "lastname": "Cole",
+      "nationality": "Angleterre",
+      "photo_path": "players/andy-cole-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/225396268344",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Fernando",
+      "lastname": "Hierro",
+      "nationality": "Espagne",
+      "photo_path": "players/fernando-hierro-1994.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/fussball-wm-sticker/USA-94-deutsch/USA-94-Fernando-Hierro.html?language=de",
+      "period": "1994",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Raúl",
+      "lastname": "González",
+      "nationality": "Espagne",
+      "photo_path": "players/raul-gonzalez-2002.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-2002/Korea-2002-Gonzalez.html?language=en",
+      "period": "2002",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Pep",
+      "lastname": "Guardiola",
+      "nationality": "Espagne",
+      "photo_path": "players/pep-guardiola-1994.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://rotterdamcomics.com/products/panini-world-cup-usa-94-josep-guardiola-157-sticker",
+      "period": "1994",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Davor",
+      "lastname": "Šuker",
+      "nationality": "Croatie",
+      "photo_path": "players/davor-suker-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/fussball-wm-sticker/world-cup-98/France-98-Suker.html?language=de",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Vedran",
+      "lastname": "Runje",
+      "nationality": "Croatie",
+      "photo_path": "players/vedran-runje-2008.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.euro-soccer-cards.com/gb/panini-uefa-euro-2008-austria-switzerland/vedran-runje-croatia-201-euro-2012",
+      "period": "2008",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Milan",
+      "lastname": "Rapaić",
+      "nationality": "Croatie",
+      "photo_path": "players/milan-rapaic-2007.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2021/01/panini-football-2007-belgium.html",
+      "period": "2007",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Boško",
+      "lastname": "Balaban",
+      "nationality": "Croatie",
+      "photo_path": "players/bosko-balaban-2004.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/197782845568",
+      "period": "2004",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Robert",
+      "lastname": "Špehar",
+      "nationality": "Croatie",
+      "photo_path": "players/robert-spehar-1999.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.fr/itm/155828647949",
+      "period": "1999",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Mario",
+      "lastname": "Stanić",
+      "nationality": "Croatie",
+      "photo_path": "players/mario-stanic-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.co.uk/itm/234792396466",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Zvonimir",
+      "lastname": "Boban",
+      "nationality": "Croatie",
+      "photo_path": "players/zvonimir-boban-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-98/France-98-Boban.html?language=en",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Peter",
+      "lastname": "Schmeichel",
+      "nationality": "Danemark",
+      "photo_path": "players/peter-schmeichel-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/fussball-wm-sticker/world-cup-98/France-98-Schmeichel.html?language=de",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "José Luis",
+      "lastname": "Chilavert",
+      "nationality": "Paraguay",
+      "photo_path": "players/jose-luis-chilavert.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Chilavert_sanlorenzo.jpg",
+      "period": "1985",
+      "protected_illustration": false
+    },
+    {
+      "firstname": "Pavel",
+      "lastname": "Nedvěd",
+      "nationality": "République tchèque",
+      "photo_path": "players/pavel-nedved-1996.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.co.uk/itm/363386471022",
+      "period": "1996",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Daniel",
+      "lastname": "Zítka",
+      "nationality": "République tchèque",
+      "photo_path": "players/daniel-zitka-2004.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2023/12/panini-football-2004-belgium.html",
+      "period": "2004",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Jan",
+      "lastname": "Koller",
+      "nationality": "République tchèque",
+      "photo_path": "players/jan-koller-2000.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/Football-Euro-Stickers/Euro-2000/Euro-2000-Koller.html?language=en",
+      "period": "2000",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Roy",
+      "lastname": "Keane",
+      "nationality": "Irlande",
+      "photo_path": "players/roy-keane-1994.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.euro-soccer-cards.com/gb/panini-usa-94/roy-keane-republic-of-ireland-330-usa-94",
+      "period": "1994",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Gheorghe",
+      "lastname": "Hagi",
+      "nationality": "Roumanie",
+      "photo_path": "players/gheorghe-hagi-1994.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.euro-soccer-cards.com/gb/panini-usa-94/gheorghe-hagi-romania-85-usa-94",
+      "period": "1994",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Tibor",
+      "lastname": "Selymes",
+      "nationality": "Roumanie",
+      "photo_path": "players/tibor-selymes-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/fussball-wm-sticker/world-cup-98/France-98-Selymes.html?language=de",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Hidetoshi",
+      "lastname": "Nakata",
+      "nationality": "Japon",
+      "photo_path": "players/hidetoshi-nakata-1998.png",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.fr/itm/145518407971",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Andriy",
+      "lastname": "Shevchenko",
+      "nationality": "Ukraine",
+      "photo_path": "players/andriy-shevchenko-2006.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://br.pinterest.com/pin/44965696270215268/",
+      "period": "2006",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Hristo",
+      "lastname": "Stoichkov",
+      "nationality": "Bulgarie",
+      "photo_path": "players/hristo-stoichkov-1994.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/fussball-wm-sticker/USA-94-deutsch/USA-94-Hristo-Stoichkov.html?language=de",
+      "period": "1994",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "George",
+      "lastname": "Weah",
+      "nationality": "Liberia",
+      "photo_path": "players/george-weah-1997.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.it/itm/175128218373",
+      "period": "1997",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Oguchi",
+      "lastname": "Onyewu",
+      "nationality": "États-Unis",
+      "photo_path": "players/oguchi-onyewu-2007.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2021/01/panini-football-2007-belgium.html",
+      "period": "2007",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Roland",
+      "lastname": "Juhász",
+      "nationality": "Hongrie",
+      "photo_path": "players/roland-juhasz-2007.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2021/01/panini-football-2007-belgium.html",
+      "period": "2007",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Marcin",
+      "lastname": "Wasilewski",
+      "nationality": "Pologne",
+      "photo_path": "players/marcin-wasilewski.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Marcin-wasilewski-1311799603.jpg",
+      "period": "2011-07-24",
+      "protected_illustration": false
+    },
+    {
+      "firstname": "Mbark",
+      "lastname": "Boussoufa",
+      "nationality": "Maroc",
+      "photo_path": "players/mbark-boussoufa-2007.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2021/01/panini-football-2007-belgium.html",
+      "period": "2007",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Pär",
+      "lastname": "Zetterberg",
+      "nationality": "Suède",
+      "photo_path": "players/par-zetterberg-anderlecht.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sporting-charleroi.be/news/the-past-player-2/",
+      "period": "Période Anderlecht, années 1990 ; date exacte non confirmée.",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Nastja",
+      "lastname": "Čeh",
+      "nationality": "Slovénie",
+      "photo_path": "players/nastja-ceh.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Nastja_%C4%8Ceh.jpg",
+      "period": "2008",
+      "protected_illustration": false
+    },
+    {
+      "firstname": "Bryan",
+      "lastname": "Ruiz",
+      "nationality": "Costa Rica",
+      "photo_path": "players/bryan-ruiz-2014.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://co.pinterest.com/pin/295-bryan-ruiz-costa-rica-mundial-brasil-2014--236720524143718479/",
+      "period": "2014",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Aruna",
+      "lastname": "Dindane",
+      "nationality": "Côte d'Ivoire",
+      "photo_path": "players/aruna-dindane-2004.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2023/12/panini-football-2004-belgium.html",
+      "period": "2004",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Milan",
+      "lastname": "Jovanović",
+      "nationality": "Serbie",
+      "photo_path": "players/milan-jovanovic-2007.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2021/01/panini-football-2007-belgium.html",
+      "period": "2007",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Dieumerci",
+      "lastname": "Mbokani",
+      "nationality": "RD Congo",
+      "photo_path": "players/dieumerci-mbokani-2009.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2015/07/panini-football-2009-belgium.html",
+      "period": "2009",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Tomasz",
+      "lastname": "Radzinski",
+      "nationality": "Canada",
+      "photo_path": "players/tomasz-radzinski.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Tomasz_Radzinski_2004.jpg",
+      "period": "2004-09-04",
+      "protected_illustration": false
+    },
+    {
+      "firstname": "Rune",
+      "lastname": "Lange",
+      "nationality": "Norvège",
+      "photo_path": "players/rune-lange-2004.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2023/12/panini-football-2004-belgium.html",
+      "period": "2004",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Andrés",
+      "lastname": "Mendoza",
+      "nationality": "Pérou",
+      "photo_path": "players/andres-mendoza-2004.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2023/12/panini-football-2004-belgium.html",
+      "period": "2004",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Joseph",
+      "lastname": "Akpala",
+      "nationality": "Nigéria",
+      "photo_path": "players/joseph-akpala-2007.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2021/01/panini-football-2007-belgium.html",
+      "period": "2007",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Celestine",
+      "lastname": "Babayaro",
+      "nationality": "Nigéria",
+      "photo_path": "players/celestine-babayaro-1997.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2015/07/panini-football-97-belgium.html",
+      "period": "1997",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Paul",
+      "lastname": "Okon",
+      "nationality": "Australie",
+      "photo_path": "players/paul-okon-1996.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2022/04/panini-football-96-belgium.html",
+      "period": "1996",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Aurelio",
+      "lastname": "Vidmar",
+      "nationality": "Australie",
+      "photo_path": "players/aurelio-vidmar-1995.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2021/08/panini-football-95-belgium.html",
+      "period": "1995",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Besnik",
+      "lastname": "Hasi",
+      "nationality": "Albanie",
+      "photo_path": "players/besnik-hasi-2007.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2021/01/panini-football-2007-belgium.html",
+      "period": "2007",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Souleymane",
+      "lastname": "Oularé",
+      "nationality": "Guinée",
+      "photo_path": "players/souleymane-oulare-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2022/04/panini-football-98-belgium.html",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Jari",
+      "lastname": "Litmanen",
+      "nationality": "Finlande",
+      "photo_path": "players/jari-litmanen-1995.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.co.uk/itm/335508341876",
+      "period": "1995",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Dejan",
+      "lastname": "Savićević",
+      "nationality": "Yougoslavie",
+      "photo_path": "players/dejan-savicevic-1992.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/Football-Euro-Stickers/Euro-92/Euro-92-Dejan-Savicevic.html?language=en",
+      "period": "1992",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Predrag",
+      "lastname": "Mijatović",
+      "nationality": "Yougoslavie",
+      "photo_path": "players/predrag-mijatovic-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.co.uk/itm/186725800314",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Ryan",
+      "lastname": "Giggs",
+      "nationality": "Pays de Galles",
+      "photo_path": "players/ryan-giggs-1996.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/373718785291",
+      "period": "1996",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Dwight",
+      "lastname": "Yorke",
+      "nationality": "Trinité-et-Tobago",
+      "photo_path": "players/dwight-yorke-2001.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/134602860895",
+      "period": "2001",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Stijn",
+      "lastname": "Stijnen",
+      "nationality": "Belgique",
+      "photo_path": "players/stijn-stijnen-2007.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2021/01/panini-football-2007-belgium.html",
+      "period": "2007",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Silvio",
+      "lastname": "Proto",
+      "nationality": "Belgique",
+      "photo_path": "players/silvio-proto-2004.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2023/12/panini-football-2004-belgium.html",
+      "period": "2004",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Logan",
+      "lastname": "Bailly",
+      "nationality": "Belgique",
+      "photo_path": "players/logan-bailly-2007.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2021/01/panini-football-2007-belgium.html",
+      "period": "2007",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Philippe",
+      "lastname": "Léonard",
+      "nationality": "Belgique",
+      "photo_path": "players/philippe-leonard-1996.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2022/04/panini-football-96-belgium.html",
+      "period": "1996",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Jelle",
+      "lastname": "Van Damme",
+      "nationality": "Belgique",
+      "photo_path": "players/jelle-van-damme-2007.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2021/01/panini-football-2007-belgium.html",
+      "period": "2007",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Éric",
+      "lastname": "Deflandre",
+      "nationality": "Belgique",
+      "photo_path": "players/eric-deflandre-1997.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2015/07/panini-football-97-belgium.html",
+      "period": "1997",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Nicolas",
+      "lastname": "Lombaerts",
+      "nationality": "Belgique",
+      "photo_path": "players/nicolas-lombaerts-2007.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2021/01/panini-football-2007-belgium.html",
+      "period": "2007",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Birger",
+      "lastname": "Maertens",
+      "nationality": "Belgique",
+      "photo_path": "players/birger-maertens-2004.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2023/12/panini-football-2004-belgium.html",
+      "period": "2004",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Philippe",
+      "lastname": "Clement",
+      "nationality": "Belgique",
+      "photo_path": "players/philippe-clement-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2022/04/panini-football-98-belgium.html",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Carl",
+      "lastname": "Hoefkens",
+      "nationality": "Belgique",
+      "photo_path": "players/carl-hoefkens-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2022/04/panini-football-98-belgium.html",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Steven",
+      "lastname": "Defour",
+      "nationality": "Belgique",
+      "photo_path": "players/steven-defour-2007.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2021/01/panini-football-2007-belgium.html",
+      "period": "2007",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Walter",
+      "lastname": "Baseggio",
+      "nationality": "Belgique",
+      "photo_path": "players/walter-baseggio-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2022/04/panini-football-98-belgium.html",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Yves",
+      "lastname": "Vanderhaeghe",
+      "nationality": "Belgique",
+      "photo_path": "players/yves-vanderhaeghe-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2022/04/panini-football-98-belgium.html",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Bernd",
+      "lastname": "Thijs",
+      "nationality": "Belgique",
+      "photo_path": "players/bernd-thijs-2004.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2023/12/panini-football-2004-belgium.html",
+      "period": "2004",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Gaëtan",
+      "lastname": "Englebert",
+      "nationality": "Belgique",
+      "photo_path": "players/gaetan-englebert-2004.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2023/12/panini-football-2004-belgium.html",
+      "period": "2004",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Mémé",
+      "lastname": "Tchité",
+      "nationality": "Belgique",
+      "photo_path": "players/meme-tchite-2007.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2021/01/panini-football-2007-belgium.html",
+      "period": "2007",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "François",
+      "lastname": "Sterchele",
+      "nationality": "Belgique",
+      "photo_path": "players/francois-sterchele-2007.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2021/01/panini-football-2007-belgium.html",
+      "period": "2007",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Luigi",
+      "lastname": "Pieroni",
+      "nationality": "Belgique",
+      "photo_path": "players/luigi-pieroni-2004.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2023/12/panini-football-2004-belgium.html",
+      "period": "2004",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Cédric",
+      "lastname": "Roussel",
+      "nationality": "Belgique",
+      "photo_path": "players/cedric-roussel-1997.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2015/07/panini-football-97-belgium.html",
+      "period": "1997",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Filip",
+      "lastname": "De Wilde",
+      "nationality": "Belgique",
+      "photo_path": "players/filip-de-wilde.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Filip_De_Wilde.jpg",
+      "period": "1991-08-15",
+      "protected_illustration": false
+    },
+    {
+      "firstname": "Dany",
+      "lastname": "Verlinden",
+      "nationality": "Belgique",
+      "photo_path": "players/dany-verlinden-1997.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2015/07/panini-football-97-belgium.html",
+      "period": "1997",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Gilbert",
+      "lastname": "Bodart",
+      "nationality": "Belgique",
+      "photo_path": "players/gilbert-bodart-1990.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2022/03/panini-football-1990-belgium.html",
+      "period": "1990",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Geert",
+      "lastname": "De Vlieger",
+      "nationality": "Belgique",
+      "photo_path": "players/geert-de-vlieger.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Geert_De_Vlieger-1997.jpg",
+      "period": "1997",
+      "protected_illustration": false
+    },
+    {
+      "firstname": "Rudi",
+      "lastname": "Smidts",
+      "nationality": "Belgique",
+      "photo_path": "players/rudi-smidts-1990.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2022/03/panini-football-1990-belgium.html",
+      "period": "1990",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Regi",
+      "lastname": "Van Acker",
+      "nationality": "Belgique",
+      "photo_path": null,
+      "status": "à rechercher : aucun portrait de joueur vérifié ; ne pas utiliser les résultats entraîneur",
+      "source_url": null,
+      "period": null,
+      "protected_illustration": false
+    },
+    {
+      "firstname": "Vital",
+      "lastname": "Borkelmans",
+      "nationality": "Belgique",
+      "photo_path": "players/vital-borkelmans-1997.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2015/07/panini-football-97-belgium.html",
+      "period": "1997",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Glen",
+      "lastname": "De Boeck",
+      "nationality": "Belgique",
+      "photo_path": "players/glen-de-boeck-1997.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2015/07/panini-football-97-belgium.html",
+      "period": "1997",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Bertrand",
+      "lastname": "Crasson",
+      "nationality": "Belgique",
+      "photo_path": "players/bertrand-crasson-1992.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2022/03/panini-football-1992-belgium.html",
+      "period": "1992",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Nico",
+      "lastname": "Van Kerckhoven",
+      "nationality": "Belgique",
+      "photo_path": "players/nico-van-kerckhoven-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2022/04/panini-football-98-belgium.html",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Régis",
+      "lastname": "Genaux",
+      "nationality": "Belgique",
+      "photo_path": "players/regis-genaux-1996.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2022/04/panini-football-96-belgium.html",
+      "period": "1996",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Sven",
+      "lastname": "Vermant",
+      "nationality": "Belgique",
+      "photo_path": "players/sven-vermant-1997.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2015/07/panini-football-97-belgium.html",
+      "period": "1997",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Robby",
+      "lastname": "Van de Weyer",
+      "nationality": "Belgique",
+      "photo_path": "players/robby-van-de-weyer-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2022/04/panini-football-98-belgium.html",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Roberto",
+      "lastname": "Bisconti",
+      "nationality": "Belgique",
+      "photo_path": "players/roberto-bisconti-1997.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2015/07/panini-football-97-belgium.html",
+      "period": "1997",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Branko",
+      "lastname": "Strupar",
+      "nationality": "Belgique",
+      "photo_path": "players/branko-strupar-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2022/04/panini-football-98-belgium.html",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Josip",
+      "lastname": "Weber",
+      "nationality": "Belgique",
+      "photo_path": "players/josip-weber-1992.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2022/03/panini-football-1992-belgium.html",
+      "period": "1992",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Alexandre",
+      "lastname": "Czerniatynski",
+      "nationality": "Belgique",
+      "photo_path": "players/alexandre-czerniatynski-1990.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2022/03/panini-football-1990-belgium.html",
+      "period": "1990",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Michaël",
+      "lastname": "Goossens",
+      "nationality": "Belgique",
+      "photo_path": "players/michael-goossens-1996.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2022/04/panini-football-96-belgium.html",
+      "period": "1996",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Vítor",
+      "lastname": "Baía",
+      "nationality": "Portugal",
+      "photo_path": "players/vitor-baia-2002.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-2002/Korea-2002-Vitor-Baia.html?language=en",
+      "period": "2002",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "João",
+      "lastname": "Pinto",
+      "nationality": "Portugal",
+      "photo_path": "players/joao-pinto-1986.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.euro-soccer-cards.com/gb/panini-mexico-86/joao-pinto-mexico-86",
+      "period": "1986",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "",
+      "lastname": "Pepe",
+      "nationality": "Portugal",
+      "photo_path": "players/pepe-portugal-2008.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.euro-soccer-cards.com/gb/panini-uefa-euro-2008-austria-switzerland/pepe-portugal-106-euro-2012",
+      "period": "2008",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Ricardo",
+      "lastname": "Carvalho",
+      "nationality": "Portugal",
+      "photo_path": "players/ricardo-carvalho-2008.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.euro-soccer-cards.com/gb/panini-uefa-euro-2008-austria-switzerland/ricardo-carvalho-portugal-105-euro-2012",
+      "period": "2008",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Fábio",
+      "lastname": "Coentrão",
+      "nationality": "Portugal",
+      "photo_path": "players/fabio-coentrao-2011.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/116477045183",
+      "period": "2011",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Mário",
+      "lastname": "Coluna",
+      "nationality": "Portugal",
+      "photo_path": "players/mario-coluna-1968.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.independent.co.uk/news/obituaries/mario-coluna-footballer-whose-majestic-gifts-made-him-the-ideal-foil-for-eusebio-in-the-great-1960s-benfica-and-portugal-sides-9166569.html",
+      "period": "1968",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "",
+      "lastname": "Deco",
+      "nationality": "Portugal",
+      "photo_path": "players/deco-2004.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/Football-Euro-Stickers/Euro-2004/Euro-2004-Deco.html?language=en",
+      "period": "2004",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Cristiano",
+      "lastname": "Ronaldo",
+      "nationality": "Portugal",
+      "photo_path": "players/cristiano-ronaldo-2004.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/Fussball-Euro-Sticker/Euro-2004/Euro-2004-Christiano-Ronaldo.html?language=de",
+      "period": "2004",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Gordon",
+      "lastname": "Banks",
+      "nationality": "Angleterre",
+      "photo_path": "players/gordon-banks-1970.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.co.uk/itm/276875146733",
+      "period": "1970",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Rio",
+      "lastname": "Ferdinand",
+      "nationality": "Angleterre",
+      "photo_path": "players/rio-ferdinand-2002.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-2002/Korea-2002-R-Ferdinand.html?language=en",
+      "period": "2002",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Ashley",
+      "lastname": "Cole",
+      "nationality": "Angleterre",
+      "photo_path": "players/ashley-cole-2001.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.co.uk/itm/176814986063",
+      "period": "2001",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Billy",
+      "lastname": "Wright",
+      "nationality": "Angleterre",
+      "photo_path": "players/billy-wright-1958.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.co.uk/itm/313075358469",
+      "period": "1958",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Steven",
+      "lastname": "Gerrard",
+      "nationality": "Angleterre",
+      "photo_path": "players/steven-gerrard-2006.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-2006/Germany-2006-Gerrard.html?language=en",
+      "period": "2006",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Geoff",
+      "lastname": "Hurst",
+      "nationality": "Angleterre",
+      "photo_path": "players/geoff-hurst-1969.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/p/7056478332",
+      "period": "1969",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Harry",
+      "lastname": "Kane",
+      "nationality": "Angleterre",
+      "photo_path": "players/harry-kane-2018.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.coleka.com/en/stickers/panini-stickers/panini-football-sticker-albums/fifa-world-cup-russia-2018/harry-kane-england_i209473",
+      "period": "2018",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Sergio",
+      "lastname": "Ramos",
+      "nationality": "Espagne",
+      "photo_path": "players/sergio-ramos-2006.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-2006/Germany-2006-Ramos.html?language=en",
+      "period": "2006",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Carles",
+      "lastname": "Puyol",
+      "nationality": "Espagne",
+      "photo_path": "players/carles-puyol-2002.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-2002/Korea-2002-Puyol.html?language=en",
+      "period": "2002",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Gerard",
+      "lastname": "Piqué",
+      "nationality": "Espagne",
+      "photo_path": "players/gerard-pique-2010.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/fussball-wm-sticker/world-cup-2010/W10-566.html?language=de",
+      "period": "2010",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Jordi",
+      "lastname": "Alba",
+      "nationality": "Espagne",
+      "photo_path": "players/jordi-alba-2014.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/fussball-wm-sticker/world-cup-2014/brasil-2014-Alba.html?language=de",
+      "period": "2014",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Lamine",
+      "lastname": "Yamal",
+      "nationality": "Espagne",
+      "photo_path": "players/lamine-yamal-2024.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.co.uk/itm/256526394296",
+      "period": "2024",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Fernando",
+      "lastname": "Torres",
+      "nationality": "Espagne",
+      "photo_path": "players/fernando-torres-2006.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-2006/Germany-2006-Torres.html?language=en",
+      "period": "2006",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Stipe",
+      "lastname": "Pletikosa",
+      "nationality": "Croatie",
+      "photo_path": "players/stipe-pletikosa-2004.png",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/276541624812",
+      "period": "2004",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Darijo",
+      "lastname": "Srna",
+      "nationality": "Croatie",
+      "photo_path": "players/darijo-srna-2006.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.co.uk/itm/186724224019",
+      "period": "2006",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Robert",
+      "lastname": "Kovač",
+      "nationality": "Croatie",
+      "photo_path": "players/robert-kovac-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/fussball-stars-223/fussball-k/seriess-18273.html?language=de",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Dario",
+      "lastname": "Šimić",
+      "nationality": "Croatie",
+      "photo_path": "players/dario-simic-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-98/France-98-Simic.html?language=en",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Robert",
+      "lastname": "Jarni",
+      "nationality": "Croatie",
+      "photo_path": "players/robert-jarni-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-98/France-98-Jarni.html?language=en",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Ivan",
+      "lastname": "Rakitić",
+      "nationality": "Croatie",
+      "photo_path": "players/ivan-rakitic-2008.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/Fussball-Euro-Sticker/Euro-2008/euro-2008-Rakitic.html",
+      "period": "2008",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Robert",
+      "lastname": "Prosinečki",
+      "nationality": "Croatie",
+      "photo_path": "players/robert-prosinecki-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/fussball-wm-sticker/world-cup-98/France-98-Prosinecki.html?language=de",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Mario",
+      "lastname": "Mandžukić",
+      "nationality": "Croatie",
+      "photo_path": "players/mario-mandzukic-2016.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.euro-soccer-cards.com/gb/panini-uefa-euro-2016-france/mario-mandzukic-hrvatska-456-uefa-euro-2016",
+      "period": "2016",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Thomas",
+      "lastname": "Helveg",
+      "nationality": "Danemark",
+      "photo_path": "players/thomas-helveg-1998.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.coleka.com/en/stickers/panini-stickers/panini-football-sticker-albums/france-98/thomas-helveg-den_i255387",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Morten",
+      "lastname": "Olsen",
+      "nationality": "Danemark",
+      "photo_path": "players/morten-olsen-1988.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/Football-Euro-Stickers/Euro-88/Euro-88-Morten-Olsen.html?language=en",
+      "period": "1988",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Daniel",
+      "lastname": "Agger",
+      "nationality": "Danemark",
+      "photo_path": "players/daniel-agger-2012.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://sportmemos.no/products/009-daniel-agger-denmark-defender",
+      "period": "Portrait en sélection danoise, années 2000/2010 ; année exacte non confirmée.",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Jan",
+      "lastname": "Heintze",
+      "nationality": "Danemark",
+      "photo_path": "players/jan-heintze-1988.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/Football-Euro-Stickers/Euro-88/Euro-88-Jan-Heintze.html?language=en",
+      "period": "1988",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Søren",
+      "lastname": "Lerby",
+      "nationality": "Danemark",
+      "photo_path": "players/soren-lerby-1986.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-86-sticker/Soeren-Lerby-Mexico-86.html?language=en",
+      "period": "1986",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Christian",
+      "lastname": "Eriksen",
+      "nationality": "Danemark",
+      "photo_path": "players/christian-eriksen-2011.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.de/itm/114393511261",
+      "period": "2011",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Michael",
+      "lastname": "Laudrup",
+      "nationality": "Danemark",
+      "photo_path": "players/michael-laudrup-1986.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-86-sticker/Michael-Laudrup-Mexico-86.html?language=en",
+      "period": "1986",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Brian",
+      "lastname": "Laudrup",
+      "nationality": "Danemark",
+      "photo_path": "players/brian-laudrup-1998.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.coleka.com/en/stickers/panini-stickers/panini-football-sticker-albums/france-98/brian-laudrup-den_i255393",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Preben",
+      "lastname": "Elkjær Larsen",
+      "nationality": "Danemark",
+      "photo_path": "players/preben-elkjaer-larsen-1988.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://br.pinterest.com/pin/853361829376071974/",
+      "period": "1988",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Allan",
+      "lastname": "Simonsen",
+      "nationality": "Danemark",
+      "photo_path": "players/allan-simonsen-1986.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/fussball-wm-sticker/world-cup-86-sticker/Allan-Simonsen-Mexico-86.html?language=de",
+      "period": "1986",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Badou",
+      "lastname": "Ezzaki",
+      "nationality": "Maroc",
+      "photo_path": "players/badou-ezzaki-1986.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.euro-soccer-cards.com/es/panini-mexico-86/ezzaiki-baddou-zaki---mustapha-el-biaz-mexico-86",
+      "period": "1986",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Achraf",
+      "lastname": "Hakimi",
+      "nationality": "Maroc",
+      "photo_path": "players/achraf-hakimi-2018.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/303815649254",
+      "period": "2018",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Medhi",
+      "lastname": "Benatia",
+      "nationality": "Maroc",
+      "photo_path": "players/medhi-benatia-2018.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.coleka.com/en/stickers/panini-stickers/panini-football-sticker-albums/fifa-world-cup-russia-2018/medhi-benatia-morocco_i209034",
+      "period": "2018",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Noureddine",
+      "lastname": "Naybet",
+      "nationality": "Maroc",
+      "photo_path": "players/noureddine-naybet-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.co.uk/itm/115629915805",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Abdelkrim",
+      "lastname": "El Hadrioui",
+      "nationality": "Maroc",
+      "photo_path": "players/abdelkrim-el-hadrioui-1994.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.euro-soccer-cards.com/gb/panini-usa-94/lahcen-abrami-morocco-400-usa-94",
+      "period": "1994",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Mustapha",
+      "lastname": "Hadji",
+      "nationality": "Maroc",
+      "photo_path": "players/mustapha-hadji-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.fr/itm/144193222689",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Abdelmajid",
+      "lastname": "Dolmy",
+      "nationality": "Maroc",
+      "photo_path": "players/abdelmajid-dolmy-1986.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://paninifootnostalgie.blogspot.com/2014/06/album-coupe-du-monde-mexico-86.html",
+      "period": "1986",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Abdelaziz",
+      "lastname": "Bouderbala",
+      "nationality": "Maroc",
+      "photo_path": "players/abdelaziz-bouderbala-1986.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://cardhawkuk.com/product/panini-mexico-86-425-aziz-bouderbala-khalid-el-bied-morocco/",
+      "period": "1986",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Mohamed",
+      "lastname": "Timoumi",
+      "nationality": "Maroc",
+      "photo_path": "players/mohamed-timoumi-1986.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.euro-soccer-cards.com/gb/panini-mexico-86/abderrazak-khairi--mahomed-timoumi-mexico-86",
+      "period": "1986",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Larbi",
+      "lastname": "Benbarek",
+      "nationality": "Maroc",
+      "photo_path": "players/larbi-benbarek-1940.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/306594553393",
+      "period": "Photo de carrière ancienne, reproduite sur une carte Sportscaster de 1978 ; date de prise de vue non confirmée.",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Ahmed",
+      "lastname": "Faras",
+      "nationality": "Maroc",
+      "photo_path": "players/ahmed-faras-1970.png",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/285791470849",
+      "period": "1970",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Thomas",
+      "lastname": "Ravelli",
+      "nationality": "Suède",
+      "photo_path": "players/thomas-ravelli-1986.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/296319231275",
+      "period": "1986",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Roland",
+      "lastname": "Nilsson",
+      "nationality": "Suède",
+      "photo_path": "players/roland-nilsson-1994.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/USA-94-german/USA-94-Roland-Nilsson.html?language=en",
+      "period": "1994",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Björn",
+      "lastname": "Nordqvist",
+      "nationality": "Suède",
+      "photo_path": "players/bjorn-nordqvist-1974.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.coleka.com/en/stickers/panini-stickers/panini-football-sticker-albums/munchen-74-world-cup/bjorn-nordqvist-sweden_i163062",
+      "period": "1974",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Olof",
+      "lastname": "Mellberg",
+      "nationality": "Suède",
+      "photo_path": "players/olof-mellberg-2002.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/154561175782",
+      "period": "2002",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Orvar",
+      "lastname": "Bergmark",
+      "nationality": "Suède",
+      "photo_path": "players/orvar-bergmark-1958.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://swedishcollector.com/index.php/shop-main/sport/fotboll/alfa/graderade/sweden-623-orvar-bergmark-alifabolaget-1958-detail",
+      "period": "1958",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Nils",
+      "lastname": "Liedholm",
+      "nationality": "Suède",
+      "photo_path": "players/nils-liedholm-1958.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://swedishcollector.com/index.php/shop-main/sport/fotboll/alfa/graderade/nils-lidholm-621-detail",
+      "period": "1958",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Gunnar",
+      "lastname": "Gren",
+      "nationality": "Suède",
+      "photo_path": "players/gunnar-gren-1958.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/305475703504",
+      "period": "1958",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Fredrik",
+      "lastname": "Ljungberg",
+      "nationality": "Suède",
+      "photo_path": "players/fredrik-ljungberg-2002.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/picture/football-world-cup-sticker/world-cup-2002/Korea-2002-Ljungberg.html?language=en",
+      "period": "2002",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Gunnar",
+      "lastname": "Nordahl",
+      "nationality": "Suède",
+      "photo_path": "players/gunnar-nordahl-1954.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.transfermarkt.pl/gunnar-nordahl/profil/spieler/140644",
+      "period": "1954, AC Milan",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Zlatan",
+      "lastname": "Ibrahimović",
+      "nationality": "Suède",
+      "photo_path": "players/zlatan-ibrahimovic-2002.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.de/itm/374103370620",
+      "period": "2002",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Henrik",
+      "lastname": "Larsson",
+      "nationality": "Suède",
+      "photo_path": "players/henrik-larsson-1994.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/127771778438?itmmeta=01KMNBY45PY8XN6T41VTNQMVCN&itmprp=enc%3AAQALAAAA4DKQclQvzFwZQpmMrsO4LurWNjqujjeBGGJHbNRF0JPKDyG2bRKdkXl%2FQA%2FYies6dzFi1eFRAsT%2FaVCIJODtEE%2BFv%2BlelTn6cDJlGnmzW46kEz6mrfvevB3NSB3tqtJDfgXoxMa5oOX9xun93StTnMVIddw40DOKH5If4JbqKYVX4SFdSuW%2F0IsbtkQKiTXdQA1A6kedySdbhw%2BbHglSZFofcjFHHf3bt0LzFEdD5xz9vGI5uF5QMzs69O6f0Ek7U0e11CWSkn%2Fuc4AcG2XLsxm564cd%2Bc5zgYNe85YsRcTl%7Ctkp%3ABk9SR9rD-KulZw",
+      "period": "1994",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Erik",
+      "lastname": "Thorstvedt",
+      "nationality": "Norvège",
+      "photo_path": "players/erik-thorstvedt-1996.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.co.uk/itm/135114405333",
+      "period": "1996",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Henning",
+      "lastname": "Berg",
+      "nationality": "Norvège",
+      "photo_path": "players/henning-berg-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/fussball-wm-sticker/world-cup-98/France-98-Berg.html?language=de",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Rune",
+      "lastname": "Bratseth",
+      "nationality": "Norvège",
+      "photo_path": "players/rune-bratseth-1994.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/285285686152",
+      "period": "1994",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Ronny",
+      "lastname": "Johnsen",
+      "nationality": "Norvège",
+      "photo_path": "players/ronny-johnsen-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/fussball-wm-sticker/world-cup-98/France-98-Johnsen.html?language=de",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "John Arne",
+      "lastname": "Riise",
+      "nationality": "Norvège",
+      "photo_path": "players/john-arne-riise-2006.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/375521926996",
+      "period": "2006",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Erik",
+      "lastname": "Mykland",
+      "nationality": "Norvège",
+      "photo_path": "players/erik-mykland-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/fussball-wm-sticker/world-cup-98/France-98-Mykland.html?language=de",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Kjetil",
+      "lastname": "Rekdal",
+      "nationality": "Norvège",
+      "photo_path": "players/kjetil-rekdal-1994.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/266933238361",
+      "period": "1994",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Martin",
+      "lastname": "Ødegaard",
+      "nationality": "Norvège",
+      "photo_path": "players/martin-odegaard-2016.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/364513286143",
+      "period": "2016",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Ole Gunnar",
+      "lastname": "Solskjær",
+      "nationality": "Norvège",
+      "photo_path": "players/ole-gunnar-solskjaer-1999.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://soccerstickersfc.net/2024/10/panini-uefa-champions-league-1999-2000-complete-album/",
+      "period": "1999",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Erling",
+      "lastname": "Haaland",
+      "nationality": "Norvège",
+      "photo_path": "players/erling-haaland-2019.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://stockx.com/erling-haaland-2019-panini-fussball-sticker-32-ungraded",
+      "period": "2019",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Tom",
+      "lastname": "Lund",
+      "nationality": "Norvège",
+      "photo_path": "players/tom-lund-1978.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/fussball-wm-sticker/world-cup-78-sticker/Argentina-78-Lund.html?language=de",
+      "period": "1978",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Vincent",
+      "lastname": "Enyeama",
+      "nationality": "Nigéria",
+      "photo_path": "players/vincent-enyeama-2010.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.euro-soccer-cards.com/gb/panini-fifa-world-cup-south-africa-2010/vincent-enyeama-nigeria-127-wc-2010",
+      "period": "2010",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Joseph",
+      "lastname": "Yobo",
+      "nationality": "Nigéria",
+      "photo_path": "players/joseph-yobo-2010.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.euro-soccer-cards.com/gb/panini-fifa-world-cup-south-africa-2010/joseph-yobo-nigeria-128-wc-2010",
+      "period": "2010",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Stephen",
+      "lastname": "Keshi",
+      "nationality": "Nigéria",
+      "photo_path": "players/stephen-keshi-1994.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://soccerstickersfc.net/2026/01/panini-world-cup-1994-complete-album/",
+      "period": "1994",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Taribo",
+      "lastname": "West",
+      "nationality": "Nigéria",
+      "photo_path": "players/taribo-west-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/334551451371",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Ben",
+      "lastname": "Iroha",
+      "nationality": "Nigéria",
+      "photo_path": "players/ben-iroha-1994.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://soccerstickersfc.net/2026/01/panini-world-cup-1994-complete-album/",
+      "period": "1994",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Sunday",
+      "lastname": "Oliseh",
+      "nationality": "Nigéria",
+      "photo_path": "players/sunday-oliseh-2002.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/fussball-wm-sticker/world-cup-2002/Korea-2002-Oliseh.html?language=de",
+      "period": "2002",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "John Obi",
+      "lastname": "Mikel",
+      "nationality": "Nigéria",
+      "photo_path": "players/john-obi-mikel-2014.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.euro-soccer-cards.com/gb/panini-fifa-world-cup-brazil-2014/john-obi-mikel-nigeria-479-wc-brazil-2014",
+      "period": "2014",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Jay-Jay",
+      "lastname": "Okocha",
+      "nationality": "Nigéria",
+      "photo_path": "players/jay-jay-okocha-1998.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.sticker-worldwide.de/bilderdienst/fussball-wm-sticker/world-cup-98/France-98-Okocha.html?language=de",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Segun",
+      "lastname": "Odegbami",
+      "nationality": "Nigéria",
+      "photo_path": "players/segun-odegbami-1980.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.thehistoryville.com/nigerian-football/",
+      "period": "1980",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Rashidi",
+      "lastname": "Yekini",
+      "nationality": "Nigéria",
+      "photo_path": "players/rashidi-yekini-1994.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.euro-soccer-cards.com/gb/panini-usa-94/daniel-amokachi-nigeria-242-usa-94",
+      "period": "1994",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Nwankwo",
+      "lastname": "Kanu",
+      "nationality": "Nigéria",
+      "photo_path": "players/nwankwo-kanu-1998.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.coleka.com/en/stickers/panini-stickers/panini-football-sticker-albums/france-98/nwankwo-kanu-nga_i255426",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "",
+      "lastname": "Ronaldinho",
+      "nationality": "Brésil",
+      "photo_path": "players/ronaldinho-2002.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ebay.com/itm/336174812372",
+      "period": "2002",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "",
+      "lastname": "Neymar",
+      "nationality": "Brésil",
+      "photo_path": "players/neymar-2010.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://lista.mercadolivre.com.br/figurinha-do-neymar-do-santos-albuns-figurinhas",
+      "period": "2010",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Alin",
+      "lastname": "Stoica",
+      "nationality": "Roumanie",
+      "photo_path": "players/alin-stoica-2002.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://fsaatg.blogspot.com/2022/05/panini-football-2002-belgium.html",
+      "period": "2002",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Woon-jae",
+      "lastname": "Lee",
+      "nationality": "Corée du Sud",
+      "photo_path": "players/woon-jae-lee-2002.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://soccerstickersfc.net/2024/07/panini-world-cup-2002-complete-album/",
+      "period": "2002",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Chong-gug",
+      "lastname": "Song",
+      "nationality": "Corée du Sud",
+      "photo_path": "players/chong-gug-song-2002.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://soccerstickersfc.net/2024/07/panini-world-cup-2002-complete-album/",
+      "period": "2002",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Myung-bo",
+      "lastname": "Hong",
+      "nationality": "Corée du Sud",
+      "photo_path": "players/myung-bo-hong-2002.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://soccerstickersfc.net/2024/07/panini-world-cup-2002-complete-album/",
+      "period": "2002",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Min-jae",
+      "lastname": "Kim",
+      "nationality": "Corée du Sud",
+      "photo_path": "players/min-jae-kim-2022.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.ricardo.ch/de/a/panini-wm22-kor-7-min-jae-kim-1218158608/",
+      "period": "2022",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Young-pyo",
+      "lastname": "Lee",
+      "nationality": "Corée du Sud",
+      "photo_path": "players/young-pyo-lee-2002.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://soccerstickersfc.net/2024/07/panini-world-cup-2002-complete-album/",
+      "period": "2002",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Sang-chul",
+      "lastname": "Yoo",
+      "nationality": "Corée du Sud",
+      "photo_path": "players/sang-chul-yoo-1998.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://soccerstickersfc.net/2024/07/panini-world-cup-1998-complete-album/",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Sung-yueng",
+      "lastname": "Ki",
+      "nationality": "Corée du Sud",
+      "photo_path": "players/sung-yueng-ki-2014.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://soccerstickersfc.net/2024/07/panini-world-cup-2014-complete-album/",
+      "period": "2014",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Ji-sung",
+      "lastname": "Park",
+      "nationality": "Corée du Sud",
+      "photo_path": "players/ji-sung-park-2002.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://soccerstickersfc.net/2024/07/panini-world-cup-2002-complete-album/",
+      "period": "2002",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Bum-kun",
+      "lastname": "Cha",
+      "nationality": "Corée du Sud",
+      "photo_path": "players/bum-kun-cha-1986.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://soccerstickersfc.net/2026/01/panini-world-cup-1986-complete-album/",
+      "period": "1986",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Sun-hong",
+      "lastname": "Hwang",
+      "nationality": "Corée du Sud",
+      "photo_path": "players/sun-hong-hwang-2002.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://soccerstickersfc.net/2024/07/panini-world-cup-2002-complete-album/",
+      "period": "2002",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Heung-min",
+      "lastname": "Son",
+      "nationality": "Corée du Sud",
+      "photo_path": "players/heung-min-son-2014.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://soccerstickersfc.net/2024/07/panini-world-cup-2014-complete-album/",
+      "period": "2014",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Mohamed",
+      "lastname": "Al-Deayea",
+      "nationality": "Arabie saoudite",
+      "photo_path": "players/mohamed-al-deayea-1994.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://soccerstickersfc.net/2026/01/panini-world-cup-1994-complete-album/",
+      "period": "1994",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Ahmad",
+      "lastname": "Al-Dokhi",
+      "nationality": "Arabie saoudite",
+      "photo_path": "players/ahmad-al-dokhi-2002.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://soccerstickersfc.net/2024/07/panini-world-cup-2002-complete-album/",
+      "period": "2002",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Saleh",
+      "lastname": "Al-Nu'eimeh",
+      "nationality": "Arabie saoudite",
+      "photo_path": "players/saleh-al-nueimeh-1986.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://mydenarius.com/product/مجلة-الصقر-264/amp/",
+      "period": "1986",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Mohammed",
+      "lastname": "Al-Khilaiwi",
+      "nationality": "Arabie saoudite",
+      "photo_path": "players/mohammed-al-khilaiwi-1998.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://soccerstickersfc.net/2024/07/panini-world-cup-1998-complete-album/",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Hussein",
+      "lastname": "Abdulghani",
+      "nationality": "Arabie saoudite",
+      "photo_path": "players/hussein-abdulghani-1998.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://soccerstickersfc.net/2024/07/panini-world-cup-1998-complete-album/",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Fuad",
+      "lastname": "Anwar",
+      "nationality": "Arabie saoudite",
+      "photo_path": "players/fuad-anwar-1994.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://soccerstickersfc.net/2026/01/panini-world-cup-1994-complete-album/",
+      "period": "1994",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Mohammed",
+      "lastname": "Noor",
+      "nationality": "Arabie saoudite",
+      "photo_path": "players/mohammed-noor-carriere.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://arriyadiyah.com/791024",
+      "period": "Carrière en sélection saoudienne ; date exacte non confirmée.",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Yousuf",
+      "lastname": "Al-Thunayan",
+      "nationality": "Arabie saoudite",
+      "photo_path": "players/yousuf-al-thunayan-1998.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://soccerstickersfc.net/2024/07/panini-world-cup-1998-complete-album/",
+      "period": "1998",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Saeed",
+      "lastname": "Al-Owairan",
+      "nationality": "Arabie saoudite",
+      "photo_path": "players/saeed-al-owairan-1994.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://soccerstickersfc.net/2026/01/panini-world-cup-1994-complete-album/",
+      "period": "1994",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Majed",
+      "lastname": "Abdullah",
+      "nationality": "Arabie saoudite",
+      "photo_path": "players/majed-abdullah-1994.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://soccerstickersfc.net/2026/01/panini-world-cup-1994-complete-album/",
+      "period": "1994",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Salem",
+      "lastname": "Al-Dawsari",
+      "nationality": "Arabie saoudite",
+      "photo_path": "players/salem-al-dawsari-2018.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://soccerstickersfc.net/2024/07/panini-world-cup-2018-complete-album/",
+      "period": "2018",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Sami",
+      "lastname": "Al-Jaber",
+      "nationality": "Arabie saoudite",
+      "photo_path": "players/sami-al-jaber-1994.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://soccerstickersfc.net/2026/01/panini-world-cup-1994-complete-album/",
+      "period": "1994",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Huikang",
+      "lastname": "Zhang",
+      "nationality": "Chine",
+      "photo_path": "players/huikang-zhang-carriere.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://2008.sohu.com/20080106/n254487674.shtml",
+      "period": "Carrière en sélection, fin des années 1980 ; date exacte non confirmée.",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Jihai",
+      "lastname": "Sun",
+      "nationality": "Chine",
+      "photo_path": "players/jihai-sun-2002.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://soccerstickersfc.net/2024/07/panini-world-cup-2002-complete-album/",
+      "period": "2002",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Zhiyi",
+      "lastname": "Fan",
+      "nationality": "Chine",
+      "photo_path": "players/zhiyi-fan-2002.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://soccerstickersfc.net/2024/07/panini-world-cup-2002-complete-album/",
+      "period": "2002",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Weifeng",
+      "lastname": "Li",
+      "nationality": "Chine",
+      "photo_path": "players/weifeng-li-2002.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://soccerstickersfc.net/2024/07/panini-world-cup-2002-complete-album/",
+      "period": "2002",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Chengying",
+      "lastname": "Wu",
+      "nationality": "Chine",
+      "photo_path": "players/chengying-wu-2002.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://soccerstickersfc.net/2024/07/panini-world-cup-2002-complete-album/",
+      "period": "2002",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Tie",
+      "lastname": "Li",
+      "nationality": "Chine",
+      "photo_path": "players/tie-li-2002.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://soccerstickersfc.net/2024/07/panini-world-cup-2002-complete-album/",
+      "period": "2002",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Zhi",
+      "lastname": "Zheng",
+      "nationality": "Chine",
+      "photo_path": "players/zhi-zheng-charlton.png",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://m.dongqiudi.com/article/3510221.html",
+      "period": "Période Charlton Athletic, 2007–2009 ; date exacte non confirmée.",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Zhixing",
+      "lastname": "Rong",
+      "nationality": "Chine",
+      "photo_path": "players/zhixing-rong-carriere.png",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.phb123.com/bk/renwu/qoom152.html",
+      "period": "Carrière de joueur, années 1970–1980 ; date exacte non confirmée.",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Lei",
+      "lastname": "Wu",
+      "nationality": "Chine",
+      "photo_path": "players/lei-wu-2019.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://www.euro-soccer-cards.com/gb/adrenalyn-xl-la-liga-santander-2018-19/wu-lei-495-axl-18-19",
+      "period": "2019",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Haidong",
+      "lastname": "Hao",
+      "nationality": "Chine",
+      "photo_path": "players/haidong-hao-2002.webp",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://soccerstickersfc.net/2024/07/panini-world-cup-2002-complete-album/",
+      "period": "2002",
+      "protected_illustration": true
+    },
+    {
+      "firstname": "Wai Tong",
+      "lastname": "Lee",
+      "nationality": "Chine",
+      "photo_path": "players/wai-tong-lee-carriere.jpg",
+      "status": "portrait de carrière intégré",
+      "source_url": "https://multimedia.scmp.com/infographics/sport/article/3134214/asia-football-king/index.html",
+      "period": "Portrait de carrière dans les archives SCMP ; date exacte non confirmée.",
+      "protected_illustration": true
+    }
+  ]
+}

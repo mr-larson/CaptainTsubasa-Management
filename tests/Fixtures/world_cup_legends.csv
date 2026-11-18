@@ -1,0 +1,45 @@
+rank,firstname,lastname,nationality,position,secondary_position,status,catalogue_name
+1,,Pelé,Brésil,AT,BU,ajouté,Pelé
+2,Diego,Maradona,Argentine,MOC,AT,ajouté,Diego Maradona
+3,Lionel,Messi,Argentine,AD,MOC,ajouté,Lionel Messi
+4,,Ronaldo,Brésil,BU,AT,ajouté,Ronaldo
+5,Zinédine,Zidane,France,MOC,MC,ajouté,Zinédine Zidane
+6,Franz,Beckenbauer,Allemagne,LIB,MDC,déjà présent,Franz Beckenbauer
+7,,Garrincha,Brésil,AD,,ajouté,Garrincha
+8,Kylian,Mbappé,France,AG,BU,ajouté,Kylian Mbappé
+9,Gerd,Müller,Allemagne,BU,,ajouté,Gerd Müller
+10,Johan,Cruyff,Pays-Bas,AT,MOC,ajouté,Johan Cruyff
+11,Lothar,Matthäus,Allemagne,MC,LIB,déjà présent,Lothar Matthäus
+12,Miroslav,Klose,Allemagne,BU,,déjà présent,Miroslav Klose
+13,,Eusébio,Portugal,BU,AT,ajouté,Eusébio
+14,Paolo,Rossi,Italie,BU,,ajouté,Paolo Rossi
+15,Bobby,Charlton,Angleterre,MOC,MC,ajouté,Bobby Charlton
+16,Just,Fontaine,France,BU,,ajouté,Just Fontaine
+17,,Didi,Brésil,MC,MOC,ajouté,Didi
+18,,Jairzinho,Brésil,AD,BU,ajouté,Jairzinho
+19,Giuseppe,Meazza,Italie,AT,MOC,ajouté,Giuseppe Meazza
+20,Juan Alberto,Schiaffino,Uruguay,AT,MOC,ajouté,Juan Alberto Schiaffino
+21,Bobby,Moore,Angleterre,DC,,ajouté,Bobby Moore
+22,Dino,Zoff,Italie,GB,,ajouté,Dino Zoff
+23,Gianluigi,Buffon,Italie,GB,,ajouté,Gianluigi Buffon
+24,Paolo,Maldini,Italie,DG,DC,ajouté,Paolo Maldini
+25,,Cafu,Brésil,DD,MD,déjà présent,Marcos Cafu
+27,Hernández,Xavi,Espagne,MC,MOC,ajouté,Xavi Hernández
+28,Andrés,Iniesta,Espagne,MC,MOC,ajouté,Andrés Iniesta
+29,Mario,Kempes,Argentine,BU,AT,ajouté,Mario Kempes
+30,Diego,Forlán,Uruguay,AT,BU,déjà présent,Diego Forlán
+31,Luka,Modrić,Croatie,MC,MOC,ajouté,Luka Modrić
+32,,Romário,Brésil,BU,AT,ajouté,Romário
+33,,Vavá,Brésil,BU,,ajouté,Vavá
+34,Karl-Heinz,Rummenigge,Allemagne,BU,AD,ajouté,Karl-Heinz Rummenigge
+35,Jürgen,Klinsmann,Allemagne,BU,,déjà présent,Jürgen Klinsmann
+36,Thomas,Müller,Allemagne,AT,AD,ajouté,Thomas Müller
+37,Manuel,Neuer,Allemagne,GB,,ajouté,Manuel Neuer
+38,Iker,Casillas,Espagne,GB,,ajouté,Iker Casillas
+39,Fabio,Cannavaro,Italie,DC,,déjà présent,Fabio Cannavaro
+40,Daniel,Passarella,Argentine,DC,LIB,déjà présent,Daniel Passarella
+41,Helmut,Rahn,Allemagne,AD,BU,ajouté,Helmut Rahn
+44,,Leônidas,Brésil,BU,AT,ajouté,Leônidas
+45,José,Nasazzi,Uruguay,DC,DD,ajouté,José Nasazzi
+48,,Rodri,Espagne,MDC,MC,ajouté,Rodri
+49,Roberto,Baggio,Italie,AT,MOC,ajouté,Roberto Baggio

@@ -49,29 +49,31 @@ class PlayerSeeder extends Seeder
         // provenance) — club et agents libres Captain Tsubasa partagent la même.
         $playersByOrigin = [
             'captain_tsubasa' => array_merge(
-                Players\CaptainTsubasaClubPlayers::players(),
-                Players\CaptainTsubasaFreePlayers::players(),
+                Players\CaptainTsubasa\Clubs\Roster::players(),
+                Players\CaptainTsubasa\FreePlayers::players(),
                 // Stars étrangères de l'univers Tsubasa (sans contrat club) :
                 // disponibles comme agents libres et sélectionnables en équipe
                 // nationale via leur `nationality`.
-                Players\CaptainTsubasaInternationalPlayers::players(),
+                Players\CaptainTsubasa\International\Roster::players(),
             ),
-            'ecole_des_champions' => Players\EcoleDesChampionsPlayers::players(),
-            'hungry_heart'        => Players\HungryHeartPlayers::players(),
-            'blue_lock'           => Players\BlueLockPlayers::players(),
-            'ao_ashi'             => Players\AoAshiPlayers::players(),
-            'original'            => Players\RandomPlayers::players(),
+            'ecole_des_champions' => Players\EcoleDesChampions\Roster::players(),
+            'hungry_heart'        => Players\HungryHeart\Roster::players(),
+            'blue_lock'           => Players\BlueLock\Roster::players(),
+            'ao_ashi'             => Players\AoAshi\Roster::players(),
+            'original'            => Players\Original\Roster::players(),
+            // Dernier groupe pour préserver les ids du catalogue existant.
+            'world_legends'       => Players\InternationalLegends\Roster::players(),
         ];
 
         $specialMovesByPlayerSlug = array_merge(
-            Players\CaptainTsubasaClubPlayers::specialMoves(),
-            Players\CaptainTsubasaFreePlayers::specialMoves(),
-            Players\CaptainTsubasaInternationalPlayers::specialMoves(),
-            Players\EcoleDesChampionsPlayers::specialMoves(),
-            Players\HungryHeartPlayers::specialMoves(),
-            Players\BlueLockPlayers::specialMoves(),
-            Players\AoAshiPlayers::specialMoves(),
-            Players\RandomPlayers::specialMoves(),
+            Players\CaptainTsubasa\Clubs\Roster::specialMoves(),
+            Players\CaptainTsubasa\FreePlayers::specialMoves(),
+            Players\CaptainTsubasa\International\Roster::specialMoves(),
+            Players\EcoleDesChampions\Roster::specialMoves(),
+            Players\HungryHeart\Roster::specialMoves(),
+            Players\BlueLock\Roster::specialMoves(),
+            Players\AoAshi\Roster::specialMoves(),
+            Players\Original\Roster::specialMoves(),
         );
 
         // Nationalité par joueur (slug "prenom-nom" → pays). Sert à composer les
@@ -79,9 +81,10 @@ class PlayerSeeder extends Seeder
         //   override par slug  >  défaut par origin (DEFAULT_NATIONALITY_BY_ORIGIN)  >  null
         // Seules les classes ayant des exceptions exposent nationalities().
         $nationalityByPlayerSlug = array_merge(
-            Players\EcoleDesChampionsPlayers::nationalities(),
-            Players\HungryHeartPlayers::nationalities(),
-            Players\CaptainTsubasaInternationalPlayers::nationalities(),
+            Players\EcoleDesChampions\Roster::nationalities(),
+            Players\HungryHeart\Roster::nationalities(),
+            Players\CaptainTsubasa\International\Roster::nationalities(),
+            Players\InternationalLegends\Roster::nationalities(),
         );
 
         foreach ($playersByOrigin as $origin => $players) {
@@ -100,7 +103,7 @@ class PlayerSeeder extends Seeder
      * @param array<string, string> $nationalityByPlayerSlug
      * @param array<string, array>  $specialMovesByPlayerSlug
      */
-    private function row(string $origin, array $player, array $nationalityByPlayerSlug, array $specialMovesByPlayerSlug): array
+    public function row(string $origin, array $player, array $nationalityByPlayerSlug, array $specialMovesByPlayerSlug): array
     {
         $firstname = $player[0];
         $lastname = $player[1];
@@ -136,7 +139,7 @@ class PlayerSeeder extends Seeder
             'lastname' => $lastname,
             'age' => $age,
             'position' => $position,
-            'origin' => $origin,
+            'origin' => \App\Enums\PlayerOrigin::forNationality($origin, $nationality),
             'nationality' => $nationality,
             'secondary_positions' => json_encode($secondaryPositions, JSON_UNESCAPED_UNICODE),
             'cost' => $cost,
@@ -144,7 +147,7 @@ class PlayerSeeder extends Seeder
             'heading' => $fullStats['heading'],
             'special_moves' => $specialMoves ? json_encode($specialMoves, JSON_UNESCAPED_UNICODE) : null,
             'description' => $desc,
-            'photo_path' => PlayerPhotos::pathFor($slug), // null si image absente
+            'photo_path' => PlayerPhotos::pathFor($slug, \App\Enums\PlayerOrigin::forNationality($origin, $nationality)), // null si image absente ou homonyme d'un autre univers
         ];
     }
 }

@@ -6,7 +6,7 @@ use App\Models\Player;
 use App\Models\Team;
 use App\Models\Traits\CalculatesWeeklyCost;
 use Database\Seeders\Concerns\GuardsReferenceReseed;
-use Database\Seeders\Players\ClubRosters;
+use Database\Seeders\Players\CaptainTsubasa\Clubs\ClubRosters;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;

@@ -6,6 +6,8 @@ use App\Enums\PlayerPosition;
 use App\Models\Player;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
+use Illuminate\Validation\Rule;
+use App\Enums\Nationality;
 
 /** Requête de création ou d'édition d'un joueur du roster de référence (hors sauvegarde). */
 class PlayerRequest extends FormRequest
@@ -24,7 +26,9 @@ class PlayerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'firstname' => ['required', 'string', 'max:255'],
+            'firstname' => ['present', 'nullable', 'string', 'max:255'],
+            'origin' => ['nullable', Rule::in(array_keys(\App\Enums\PlayerOrigin::LABELS))],
+            'nationality' => ['nullable', Rule::in(Nationality::ALL)],
             'lastname'  => ['required', 'string', 'max:255'],
             'age'       => ['nullable', 'integer', 'min:1'],
             'position'  => ['required', new Enum(PlayerPosition::class)],

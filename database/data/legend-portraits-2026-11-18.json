@@ -1,0 +1,1999 @@
+[
+  {
+    "firstname": "Philippe",
+    "lastname": "Albert",
+    "previous_paths": [
+      "players/philippe-albert-1994.png",
+      "players/philippe-albert.jpg"
+    ],
+    "photo_path": "players/philippe-albert-1994.png"
+  },
+  {
+    "firstname": "Franky",
+    "lastname": "Van der Elst",
+    "previous_paths": [
+      "players/franky-van-der-elst-1990.jpg",
+      "players/franky-van-der-elst.jpg"
+    ],
+    "photo_path": "players/franky-van-der-elst-1990.jpg"
+  },
+  {
+    "firstname": "Gilles",
+    "lastname": "De Bilde",
+    "previous_paths": [
+      "players/gilles-de-bilde-1995.jpg",
+      "players/gilles-de-bilde.jpg"
+    ],
+    "photo_path": "players/gilles-de-bilde-1995.jpg"
+  },
+  {
+    "firstname": "Gert",
+    "lastname": "Verheyen",
+    "previous_paths": [
+      "players/gert-verheyen-1998.jpg",
+      "players/gert-verheyen.jpg"
+    ],
+    "photo_path": "players/gert-verheyen-1998.jpg"
+  },
+  {
+    "firstname": "Frank",
+    "lastname": "Vercauteren",
+    "previous_paths": [
+      "players/frank-vercauteren-1980.jpg",
+      "players/frank-vercauteren.jpg"
+    ],
+    "photo_path": "players/frank-vercauteren-1980.jpg"
+  },
+  {
+    "firstname": "Michael",
+    "lastname": "Ballack",
+    "previous_paths": [
+      "players/michael-ballack-2006.jpg"
+    ],
+    "photo_path": "players/michael-ballack-2006.jpg"
+  },
+  {
+    "firstname": "Franz",
+    "lastname": "Beckenbauer",
+    "previous_paths": [
+      "players/franz-beckenbauer-1974.jpg"
+    ],
+    "photo_path": "players/franz-beckenbauer-1974.jpg"
+  },
+  {
+    "firstname": "Andreas",
+    "lastname": "Brehme",
+    "previous_paths": [
+      "players/andreas-brehme-1991.jpg"
+    ],
+    "photo_path": "players/andreas-brehme-1991.jpg"
+  },
+  {
+    "firstname": "Guido",
+    "lastname": "Buchwald",
+    "previous_paths": [
+      "players/guido-buchwald-1991.jpg"
+    ],
+    "photo_path": "players/guido-buchwald-1991.jpg"
+  },
+  {
+    "firstname": "Thomas",
+    "lastname": "Hässler",
+    "previous_paths": [
+      "players/thomas-hassler-1994.jpg"
+    ],
+    "photo_path": "players/thomas-hassler-1994.jpg"
+  },
+  {
+    "firstname": "Bodo",
+    "lastname": "Illgner",
+    "previous_paths": [
+      "players/bodo-illgner-1990.jpg"
+    ],
+    "photo_path": "players/bodo-illgner-1990.jpg"
+  },
+  {
+    "firstname": "Oliver",
+    "lastname": "Kahn",
+    "previous_paths": [
+      "players/oliver-kahn-2002.jpg"
+    ],
+    "photo_path": "players/oliver-kahn-2002.jpg"
+  },
+  {
+    "firstname": "Jürgen",
+    "lastname": "Klinsmann",
+    "previous_paths": [
+      "players/jurgen-klinsmann-1990.jpg"
+    ],
+    "photo_path": "players/jurgen-klinsmann-1990.jpg"
+  },
+  {
+    "firstname": "Miroslav",
+    "lastname": "Klose",
+    "previous_paths": [
+      "players/miroslav-klose-2006.jpg"
+    ],
+    "photo_path": "players/miroslav-klose-2006.jpg"
+  },
+  {
+    "firstname": "Jürgen",
+    "lastname": "Kohler",
+    "previous_paths": [
+      "players/jurgen-kohler-1994.jpg"
+    ],
+    "photo_path": "players/jurgen-kohler-1994.jpg"
+  },
+  {
+    "firstname": "Philipp",
+    "lastname": "Lahm",
+    "previous_paths": [
+      "players/philipp-lahm-2014.jpg"
+    ],
+    "photo_path": "players/philipp-lahm-2014.jpg"
+  },
+  {
+    "firstname": "Pierre",
+    "lastname": "Littbarski",
+    "previous_paths": [
+      "players/pierre-littbarski-1990.jpg"
+    ],
+    "photo_path": "players/pierre-littbarski-1990.jpg"
+  },
+  {
+    "firstname": "Lothar",
+    "lastname": "Matthäus",
+    "previous_paths": [
+      "players/lothar-matthaus-1990.jpg"
+    ],
+    "photo_path": "players/lothar-matthaus-1990.jpg"
+  },
+  {
+    "firstname": "Andreas",
+    "lastname": "Möller",
+    "previous_paths": [
+      "players/andreas-moller-1996.jpg"
+    ],
+    "photo_path": "players/andreas-moller-1996.jpg"
+  },
+  {
+    "firstname": "Gerd",
+    "lastname": "Müller",
+    "previous_paths": [
+      "players/gerd-muller-1974.jpg"
+    ],
+    "photo_path": "players/gerd-muller-1974.jpg"
+  },
+  {
+    "firstname": "Thomas",
+    "lastname": "Müller",
+    "previous_paths": [
+      "players/thomas-muller-2014.jpg"
+    ],
+    "photo_path": "players/thomas-muller-2014.jpg"
+  },
+  {
+    "firstname": "Manuel",
+    "lastname": "Neuer",
+    "previous_paths": [
+      "players/manuel-neuer-2014.jpg"
+    ],
+    "photo_path": "players/manuel-neuer-2014.jpg"
+  },
+  {
+    "firstname": "Lukas",
+    "lastname": "Podolski",
+    "previous_paths": [
+      "players/lukas-podolski-2010.jpg"
+    ],
+    "photo_path": "players/lukas-podolski-2010.jpg"
+  },
+  {
+    "firstname": "Helmut",
+    "lastname": "Rahn",
+    "previous_paths": [
+      "players/helmut-rahn-1954.jpg"
+    ],
+    "photo_path": "players/helmut-rahn-1954.jpg"
+  },
+  {
+    "firstname": "Karl-Heinz",
+    "lastname": "Riedle",
+    "previous_paths": [
+      "players/karl-heinz-riedle-1994.jpg"
+    ],
+    "photo_path": "players/karl-heinz-riedle-1994.jpg"
+  },
+  {
+    "firstname": "Karl-Heinz",
+    "lastname": "Rummenigge",
+    "previous_paths": [
+      "players/karl-heinz-rummenigge-1982.jpg"
+    ],
+    "photo_path": "players/karl-heinz-rummenigge-1982.jpg"
+  },
+  {
+    "firstname": "Matthias",
+    "lastname": "Sammer",
+    "previous_paths": [
+      "players/matthias-sammer-1996.jpg"
+    ],
+    "photo_path": "players/matthias-sammer-1996.jpg"
+  },
+  {
+    "firstname": "Rudi",
+    "lastname": "Völler",
+    "previous_paths": [
+      "players/rudi-voller-1992.jpg"
+    ],
+    "photo_path": "players/rudi-voller-1992.jpg"
+  },
+  {
+    "firstname": "David",
+    "lastname": "Beckham",
+    "previous_paths": [
+      "players/david-beckham-2002.jpg"
+    ],
+    "photo_path": "players/david-beckham-2002.jpg"
+  },
+  {
+    "firstname": "Bobby",
+    "lastname": "Charlton",
+    "previous_paths": [
+      "players/bobby-charlton-1970.jpg"
+    ],
+    "photo_path": "players/bobby-charlton-1970.jpg"
+  },
+  {
+    "firstname": "Andy",
+    "lastname": "Cole",
+    "previous_paths": [
+      "players/andy-cole-1998.jpg"
+    ],
+    "photo_path": "players/andy-cole-1998.jpg"
+  },
+  {
+    "firstname": "Bobby",
+    "lastname": "Moore",
+    "previous_paths": [
+      "players/bobby-moore-1970.jpg"
+    ],
+    "photo_path": "players/bobby-moore-1970.jpg"
+  },
+  {
+    "firstname": "Gary",
+    "lastname": "Neville",
+    "previous_paths": [
+      "players/gary-neville-1998.jpg"
+    ],
+    "photo_path": "players/gary-neville-1998.jpg"
+  },
+  {
+    "firstname": "Michael",
+    "lastname": "Owen",
+    "previous_paths": [
+      "players/michael-owen-2002.jpg"
+    ],
+    "photo_path": "players/michael-owen-2002.jpg"
+  },
+  {
+    "firstname": "Paul",
+    "lastname": "Scholes",
+    "previous_paths": [
+      "players/paul-scholes-1998.jpg"
+    ],
+    "photo_path": "players/paul-scholes-1998.jpg"
+  },
+  {
+    "firstname": "Alan",
+    "lastname": "Shearer",
+    "previous_paths": [
+      "players/alan-shearer-1996.jpg"
+    ],
+    "photo_path": "players/alan-shearer-1996.jpg"
+  },
+  {
+    "firstname": "Fabien",
+    "lastname": "Barthez",
+    "previous_paths": [
+      "players/fabien-barthez-2002.jpg"
+    ],
+    "photo_path": "players/fabien-barthez-2002.jpg"
+  },
+  {
+    "firstname": "Laurent",
+    "lastname": "Blanc",
+    "previous_paths": [
+      "players/laurent-blanc-1998.jpg"
+    ],
+    "photo_path": "players/laurent-blanc-1998.jpg"
+  },
+  {
+    "firstname": "Éric",
+    "lastname": "Cantona",
+    "previous_paths": [
+      "players/eric-cantona-1996.jpg"
+    ],
+    "photo_path": "players/eric-cantona-1996.jpg"
+  },
+  {
+    "firstname": "Marcel",
+    "lastname": "Desailly",
+    "previous_paths": [
+      "players/marcel-desailly-1998.jpg"
+    ],
+    "photo_path": "players/marcel-desailly-1998.jpg"
+  },
+  {
+    "firstname": "Didier",
+    "lastname": "Deschamps",
+    "previous_paths": [
+      "players/didier-deschamps-1998.jpg"
+    ],
+    "photo_path": "players/didier-deschamps-1998.jpg"
+  },
+  {
+    "firstname": "Youri",
+    "lastname": "Djorkaeff",
+    "previous_paths": [
+      "players/youri-djorkaeff-1998.jpg"
+    ],
+    "photo_path": "players/youri-djorkaeff-1998.jpg"
+  },
+  {
+    "firstname": "Just",
+    "lastname": "Fontaine",
+    "previous_paths": [
+      "players/just-fontaine-1958.jpg"
+    ],
+    "photo_path": "players/just-fontaine-1958.jpg"
+  },
+  {
+    "firstname": "Thierry",
+    "lastname": "Henry",
+    "previous_paths": [
+      "players/thierry-henry-2004.jpg"
+    ],
+    "photo_path": "players/thierry-henry-2004.jpg"
+  },
+  {
+    "firstname": "Frank",
+    "lastname": "Leboeuf",
+    "previous_paths": [
+      "players/frank-leboeuf-2000.jpg"
+    ],
+    "photo_path": "players/frank-leboeuf-2000.jpg"
+  },
+  {
+    "firstname": "Bixente",
+    "lastname": "Lizarazu",
+    "previous_paths": [
+      "players/bixente-lizarazu-1998.jpg"
+    ],
+    "photo_path": "players/bixente-lizarazu-1998.jpg"
+  },
+  {
+    "firstname": "Hugo",
+    "lastname": "Lloris",
+    "previous_paths": [
+      "players/hugo-lloris-2018.webp"
+    ],
+    "photo_path": "players/hugo-lloris-2018.webp"
+  },
+  {
+    "firstname": "Claude",
+    "lastname": "Makélélé",
+    "previous_paths": [
+      "players/claude-makelele-2006.jpg"
+    ],
+    "photo_path": "players/claude-makelele-2006.jpg"
+  },
+  {
+    "firstname": "Kylian",
+    "lastname": "Mbappé",
+    "previous_paths": [
+      "players/kylian-mbappe-2018.png"
+    ],
+    "photo_path": "players/kylian-mbappe-2018.png"
+  },
+  {
+    "firstname": "Emmanuel",
+    "lastname": "Petit",
+    "previous_paths": [
+      "players/emmanuel-petit-2000.jpg"
+    ],
+    "photo_path": "players/emmanuel-petit-2000.jpg"
+  },
+  {
+    "firstname": "Robert",
+    "lastname": "Pirès",
+    "previous_paths": [
+      "players/robert-pires-2000.jpg"
+    ],
+    "photo_path": "players/robert-pires-2000.jpg"
+  },
+  {
+    "firstname": "Dominique",
+    "lastname": "Rocheteau",
+    "previous_paths": [
+      "players/dominique-rocheteau-1982.jpg"
+    ],
+    "photo_path": "players/dominique-rocheteau-1982.jpg"
+  },
+  {
+    "firstname": "Lilian",
+    "lastname": "Thuram",
+    "previous_paths": [
+      "players/lilian-thuram-1998.jpg"
+    ],
+    "photo_path": "players/lilian-thuram-1998.jpg"
+  },
+  {
+    "firstname": "David",
+    "lastname": "Trezeguet",
+    "previous_paths": [
+      "players/david-trezeguet-2000.jpg"
+    ],
+    "photo_path": "players/david-trezeguet-2000.jpg"
+  },
+  {
+    "firstname": "Patrick",
+    "lastname": "Vieira",
+    "previous_paths": [
+      "players/patrick-vieira-2000.jpg"
+    ],
+    "photo_path": "players/patrick-vieira-2000.jpg"
+  },
+  {
+    "firstname": "Sylvain",
+    "lastname": "Wiltord",
+    "previous_paths": [
+      "players/sylvain-wiltord-2000.jpg"
+    ],
+    "photo_path": "players/sylvain-wiltord-2000.jpg"
+  },
+  {
+    "firstname": "Zinédine",
+    "lastname": "Zidane",
+    "previous_paths": [
+      "players/zinedine-zidane-1998.jpg"
+    ],
+    "photo_path": "players/zinedine-zidane-1998.jpg"
+  },
+  {
+    "firstname": "Roberto",
+    "lastname": "Baggio",
+    "previous_paths": [
+      "players/roberto-baggio-1994.jpg"
+    ],
+    "photo_path": "players/roberto-baggio-1994.jpg"
+  },
+  {
+    "firstname": "Franco",
+    "lastname": "Baresi",
+    "previous_paths": [
+      "players/franco-baresi-1994.jpg"
+    ],
+    "photo_path": "players/franco-baresi-1994.jpg"
+  },
+  {
+    "firstname": "Gianluigi",
+    "lastname": "Buffon",
+    "previous_paths": [
+      "players/gianluigi-buffon-2006.jpg"
+    ],
+    "photo_path": "players/gianluigi-buffon-2006.jpg"
+  },
+  {
+    "firstname": "Fabio",
+    "lastname": "Cannavaro",
+    "previous_paths": [
+      "players/fabio-cannavaro-2006.jpg"
+    ],
+    "photo_path": "players/fabio-cannavaro-2006.jpg"
+  },
+  {
+    "firstname": "Alessandro",
+    "lastname": "Del Piero",
+    "previous_paths": [
+      "players/alessandro-del-piero-2000.jpg"
+    ],
+    "photo_path": "players/alessandro-del-piero-2000.jpg"
+  },
+  {
+    "firstname": "Ciro",
+    "lastname": "Ferrara",
+    "previous_paths": [
+      "players/ciro-ferrara-1998.jpg"
+    ],
+    "photo_path": "players/ciro-ferrara-1998.jpg"
+  },
+  {
+    "firstname": "Gennaro",
+    "lastname": "Gattuso",
+    "previous_paths": [
+      "players/gennaro-gattuso-2006.jpg"
+    ],
+    "photo_path": "players/gennaro-gattuso-2006.jpg"
+  },
+  {
+    "firstname": "Filippo",
+    "lastname": "Inzaghi",
+    "previous_paths": [
+      "players/filippo-inzaghi-2000.jpg"
+    ],
+    "photo_path": "players/filippo-inzaghi-2000.jpg"
+  },
+  {
+    "firstname": "Paolo",
+    "lastname": "Maldini",
+    "previous_paths": [
+      "players/paolo-maldini-1994.jpg"
+    ],
+    "photo_path": "players/paolo-maldini-1994.jpg"
+  },
+  {
+    "firstname": "Giuseppe",
+    "lastname": "Meazza",
+    "previous_paths": [
+      "players/giuseppe-meazza-1934.jpg"
+    ],
+    "photo_path": "players/giuseppe-meazza-1934.jpg"
+  },
+  {
+    "firstname": "Alessandro",
+    "lastname": "Nesta",
+    "previous_paths": [
+      "players/alessandro-nesta-1998.jpg"
+    ],
+    "photo_path": "players/alessandro-nesta-1998.jpg"
+  },
+  {
+    "firstname": "Christian",
+    "lastname": "Panucci",
+    "previous_paths": [
+      "players/christian-panucci-2000.jpg"
+    ],
+    "photo_path": "players/christian-panucci-2000.jpg"
+  },
+  {
+    "firstname": "Angelo",
+    "lastname": "Peruzzi",
+    "previous_paths": [
+      "players/angelo-peruzzi-1996.jpg"
+    ],
+    "photo_path": "players/angelo-peruzzi-1996.jpg"
+  },
+  {
+    "firstname": "Paolo",
+    "lastname": "Rossi",
+    "previous_paths": [
+      "players/paolo-rossi-1982.jpg"
+    ],
+    "photo_path": "players/paolo-rossi-1982.jpg"
+  },
+  {
+    "firstname": "Christian",
+    "lastname": "Vieri",
+    "previous_paths": [
+      "players/christian-vieri-2002.jpg",
+      "players/christian-vieri.jpg"
+    ],
+    "photo_path": "players/christian-vieri-2002.jpg"
+  },
+  {
+    "firstname": "Gianluca",
+    "lastname": "Zambrotta",
+    "previous_paths": [
+      "players/gianluca-zambrotta-2006.webp"
+    ],
+    "photo_path": "players/gianluca-zambrotta-2006.webp"
+  },
+  {
+    "firstname": "Dino",
+    "lastname": "Zoff",
+    "previous_paths": [
+      "players/dino-zoff-1982.jpg"
+    ],
+    "photo_path": "players/dino-zoff-1982.jpg"
+  },
+  {
+    "firstname": "Roberto",
+    "lastname": "Ayala",
+    "previous_paths": [
+      "players/roberto-ayala-2006.jpg"
+    ],
+    "photo_path": "players/roberto-ayala-2006.jpg"
+  },
+  {
+    "firstname": "Gabriel",
+    "lastname": "Batistuta",
+    "previous_paths": [
+      "players/gabriel-batistuta-1998.jpg"
+    ],
+    "photo_path": "players/gabriel-batistuta-1998.jpg"
+  },
+  {
+    "firstname": "Lucas",
+    "lastname": "Biglia",
+    "previous_paths": [
+      "players/lucas-biglia-2014.jpg"
+    ],
+    "photo_path": "players/lucas-biglia-2014.jpg"
+  },
+  {
+    "firstname": "Jorge",
+    "lastname": "Burruchaga",
+    "previous_paths": [
+      "players/jorge-burruchaga-1990.jpg"
+    ],
+    "photo_path": "players/jorge-burruchaga-1990.jpg"
+  },
+  {
+    "firstname": "Claudio",
+    "lastname": "Caniggia",
+    "previous_paths": [
+      "players/claudio-caniggia-1990.png"
+    ],
+    "photo_path": "players/claudio-caniggia-1990.png"
+  },
+  {
+    "firstname": "Ubaldo",
+    "lastname": "Fillol",
+    "previous_paths": [
+      "players/ubaldo-fillol-1978.jpg"
+    ],
+    "photo_path": "players/ubaldo-fillol-1978.jpg"
+  },
+  {
+    "firstname": "Ricardo",
+    "lastname": "Giusti",
+    "previous_paths": [
+      "players/ricardo-giusti-1990.jpg"
+    ],
+    "photo_path": "players/ricardo-giusti-1990.jpg"
+  },
+  {
+    "firstname": "Mario",
+    "lastname": "Kempes",
+    "previous_paths": [
+      "players/mario-kempes-1978.png"
+    ],
+    "photo_path": "players/mario-kempes-1978.png"
+  },
+  {
+    "firstname": "Diego",
+    "lastname": "Maradona",
+    "previous_paths": [
+      "players/diego-maradona-1986.jpg"
+    ],
+    "photo_path": "players/diego-maradona-1986.jpg"
+  },
+  {
+    "firstname": "Javier",
+    "lastname": "Mascherano",
+    "previous_paths": [
+      "players/javier-mascherano-2014.jpg"
+    ],
+    "photo_path": "players/javier-mascherano-2014.jpg"
+  },
+  {
+    "firstname": "Lionel",
+    "lastname": "Messi",
+    "previous_paths": [
+      "players/lionel-messi-2014.jpg"
+    ],
+    "photo_path": "players/lionel-messi-2014.jpg"
+  },
+  {
+    "firstname": "Martín",
+    "lastname": "Palermo",
+    "previous_paths": [
+      "players/martin-palermo-2003.jpg"
+    ],
+    "photo_path": "players/martin-palermo-2003.jpg"
+  },
+  {
+    "firstname": "Daniel",
+    "lastname": "Passarella",
+    "previous_paths": [
+      "players/daniel-passarella-1978.jpg"
+    ],
+    "photo_path": "players/daniel-passarella-1978.jpg"
+  },
+  {
+    "firstname": "Nery",
+    "lastname": "Pumpido",
+    "previous_paths": [
+      "players/nery-pumpido-1990.jpg"
+    ],
+    "photo_path": "players/nery-pumpido-1990.jpg"
+  },
+  {
+    "firstname": "Fernando",
+    "lastname": "Redondo",
+    "previous_paths": [
+      "players/fernando-redondo-1994.jpg"
+    ],
+    "photo_path": "players/fernando-redondo-1994.jpg"
+  },
+  {
+    "firstname": "Oscar",
+    "lastname": "Ruggeri",
+    "previous_paths": [
+      "players/oscar-ruggeri-1986.webp"
+    ],
+    "photo_path": "players/oscar-ruggeri-1986.webp"
+  },
+  {
+    "firstname": "Diego",
+    "lastname": "Simeone",
+    "previous_paths": [
+      "players/diego-simeone-1998.jpg"
+    ],
+    "photo_path": "players/diego-simeone-1998.jpg"
+  },
+  {
+    "firstname": "Juan Pablo",
+    "lastname": "Sorín",
+    "previous_paths": [
+      "players/juan-pablo-sorin-2002.jpg"
+    ],
+    "photo_path": "players/juan-pablo-sorin-2002.jpg"
+  },
+  {
+    "firstname": "Jorge",
+    "lastname": "Valdano",
+    "previous_paths": [
+      "players/jorge-valdano-1986.jpg"
+    ],
+    "photo_path": "players/jorge-valdano-1986.jpg"
+  },
+  {
+    "firstname": "Juan Sebastián",
+    "lastname": "Verón",
+    "previous_paths": [
+      "players/juan-sebastian-veron-1998.jpg"
+    ],
+    "photo_path": "players/juan-sebastian-veron-1998.jpg"
+  },
+  {
+    "firstname": "Javier",
+    "lastname": "Zanetti",
+    "previous_paths": [
+      "players/javier-zanetti-1998.jpg"
+    ],
+    "photo_path": "players/javier-zanetti-1998.jpg"
+  },
+  {
+    "firstname": "Mbo",
+    "lastname": "Mpenza",
+    "previous_paths": [
+      "players/mbo-mpenza-1997.jpg",
+      "players/mbo-mpenza.jpg"
+    ],
+    "photo_path": "players/mbo-mpenza-1997.jpg"
+  },
+  {
+    "firstname": "Cédric",
+    "lastname": "Roussel",
+    "previous_paths": [
+      "players/cedric-roussel-1997.jpg"
+    ],
+    "photo_path": "players/cedric-roussel-1997.jpg"
+  },
+  {
+    "firstname": "Glen",
+    "lastname": "De Boeck",
+    "previous_paths": [
+      "players/glen-de-boeck-1997.jpg"
+    ],
+    "photo_path": "players/glen-de-boeck-1997.jpg"
+  },
+  {
+    "firstname": "Éric",
+    "lastname": "Deflandre",
+    "previous_paths": [
+      "players/eric-deflandre-1997.jpg"
+    ],
+    "photo_path": "players/eric-deflandre-1997.jpg"
+  },
+  {
+    "firstname": "Vital",
+    "lastname": "Borkelmans",
+    "previous_paths": [
+      "players/vital-borkelmans-1997.jpg"
+    ],
+    "photo_path": "players/vital-borkelmans-1997.jpg"
+  },
+  {
+    "firstname": "Sven",
+    "lastname": "Vermant",
+    "previous_paths": [
+      "players/sven-vermant-1997.jpg"
+    ],
+    "photo_path": "players/sven-vermant-1997.jpg"
+  },
+  {
+    "firstname": "Lorenzo",
+    "lastname": "Staelens",
+    "previous_paths": [
+      "players/lorenzo-staelens-1997.jpg"
+    ],
+    "photo_path": "players/lorenzo-staelens-1997.jpg"
+  },
+  {
+    "firstname": "Dany",
+    "lastname": "Verlinden",
+    "previous_paths": [
+      "players/dany-verlinden-1997.jpg"
+    ],
+    "photo_path": "players/dany-verlinden-1997.jpg"
+  },
+  {
+    "firstname": "Roberto",
+    "lastname": "Bisconti",
+    "previous_paths": [
+      "players/roberto-bisconti-1997.jpg"
+    ],
+    "photo_path": "players/roberto-bisconti-1997.jpg"
+  },
+  {
+    "firstname": "Émile",
+    "lastname": "Mpenza",
+    "previous_paths": [
+      "players/emile-mpenza-1997.webp",
+      "players/emile-mpenza.jpg"
+    ],
+    "photo_path": "players/emile-mpenza-1997.webp"
+  },
+  {
+    "firstname": "John",
+    "lastname": "Bosman",
+    "previous_paths": [
+      "players/john-bosman-1990.jpg"
+    ],
+    "photo_path": "players/john-bosman-1990.jpg"
+  },
+  {
+    "firstname": "Johan",
+    "lastname": "Cruyff",
+    "previous_paths": [
+      "players/johan-cruyff-1974.jpg"
+    ],
+    "photo_path": "players/johan-cruyff-1974.jpg"
+  },
+  {
+    "firstname": "Edgar",
+    "lastname": "Davids",
+    "previous_paths": [
+      "players/edgar-davids-1996.jpg"
+    ],
+    "photo_path": "players/edgar-davids-1996.jpg"
+  },
+  {
+    "firstname": "Frank",
+    "lastname": "de Boer",
+    "previous_paths": [
+      "players/frank-de-boer-1998.jpg"
+    ],
+    "photo_path": "players/frank-de-boer-1998.jpg"
+  },
+  {
+    "firstname": "Patrick",
+    "lastname": "Kluivert",
+    "previous_paths": [
+      "players/patrick-kluivert-1998.jpg"
+    ],
+    "photo_path": "players/patrick-kluivert-1998.jpg"
+  },
+  {
+    "firstname": "Ronald",
+    "lastname": "Koeman",
+    "previous_paths": [
+      "players/ronald-koeman-1988.jpg"
+    ],
+    "photo_path": "players/ronald-koeman-1988.jpg"
+  },
+  {
+    "firstname": "Dirk",
+    "lastname": "Kuyt",
+    "previous_paths": [
+      "players/dirk-kuyt-2010.jpg"
+    ],
+    "photo_path": "players/dirk-kuyt-2010.jpg"
+  },
+  {
+    "firstname": "Marc",
+    "lastname": "Overmars",
+    "previous_paths": [
+      "players/marc-overmars-2000.jpg"
+    ],
+    "photo_path": "players/marc-overmars-2000.jpg"
+  },
+  {
+    "firstname": "Michael",
+    "lastname": "Reiziger",
+    "previous_paths": [
+      "players/michael-reiziger-1998.jpg"
+    ],
+    "photo_path": "players/michael-reiziger-1998.jpg"
+  },
+  {
+    "firstname": "Frank",
+    "lastname": "Rijkaard",
+    "previous_paths": [
+      "players/frank-rijkaard-1994.jpg"
+    ],
+    "photo_path": "players/frank-rijkaard-1994.jpg"
+  },
+  {
+    "firstname": "Clarence",
+    "lastname": "Seedorf",
+    "previous_paths": [
+      "players/clarence-seedorf-1998.jpg"
+    ],
+    "photo_path": "players/clarence-seedorf-1998.jpg"
+  },
+  {
+    "firstname": "Jaap",
+    "lastname": "Stam",
+    "previous_paths": [
+      "players/jaap-stam-1998.jpg"
+    ],
+    "photo_path": "players/jaap-stam-1998.jpg"
+  },
+  {
+    "firstname": "Marco",
+    "lastname": "van Basten",
+    "previous_paths": [
+      "players/marco-van-basten-1990.jpg"
+    ],
+    "photo_path": "players/marco-van-basten-1990.jpg"
+  },
+  {
+    "firstname": "Mark",
+    "lastname": "van Bommel",
+    "previous_paths": [
+      "players/mark-van-bommel-2006.jpg"
+    ],
+    "photo_path": "players/mark-van-bommel-2006.jpg"
+  },
+  {
+    "firstname": "Giovanni",
+    "lastname": "van Bronckhorst",
+    "previous_paths": [
+      "players/giovanni-van-bronckhorst-2006.jpg"
+    ],
+    "photo_path": "players/giovanni-van-bronckhorst-2006.jpg"
+  },
+  {
+    "firstname": "Edwin",
+    "lastname": "van der Sar",
+    "previous_paths": [
+      "players/edwin-van-der-sar-1998.jpg"
+    ],
+    "photo_path": "players/edwin-van-der-sar-1998.jpg"
+  },
+  {
+    "firstname": "Walter",
+    "lastname": "Baseggio",
+    "previous_paths": [
+      "players/walter-baseggio-1998.jpg"
+    ],
+    "photo_path": "players/walter-baseggio-1998.jpg"
+  },
+  {
+    "firstname": "Bart",
+    "lastname": "Goor",
+    "previous_paths": [
+      "players/bart-goor-1998.jpg",
+      "players/bart-goor.jpg"
+    ],
+    "photo_path": "players/bart-goor-1998.jpg"
+  },
+  {
+    "firstname": "Yves",
+    "lastname": "Vanderhaeghe",
+    "previous_paths": [
+      "players/yves-vanderhaeghe-1998.jpg"
+    ],
+    "photo_path": "players/yves-vanderhaeghe-1998.jpg"
+  },
+  {
+    "firstname": "Philippe",
+    "lastname": "Clement",
+    "previous_paths": [
+      "players/philippe-clement-1998.jpg"
+    ],
+    "photo_path": "players/philippe-clement-1998.jpg"
+  },
+  {
+    "firstname": "Branko",
+    "lastname": "Strupar",
+    "previous_paths": [
+      "players/branko-strupar-1998.jpg"
+    ],
+    "photo_path": "players/branko-strupar-1998.jpg"
+  },
+  {
+    "firstname": "Nico",
+    "lastname": "Van Kerckhoven",
+    "previous_paths": [
+      "players/nico-van-kerckhoven-1998.jpg"
+    ],
+    "photo_path": "players/nico-van-kerckhoven-1998.jpg"
+  },
+  {
+    "firstname": "Robby",
+    "lastname": "Van de Weyer",
+    "previous_paths": [
+      "players/robby-van-de-weyer-1998.jpg"
+    ],
+    "photo_path": "players/robby-van-de-weyer-1998.jpg"
+  },
+  {
+    "firstname": "Carl",
+    "lastname": "Hoefkens",
+    "previous_paths": [
+      "players/carl-hoefkens-1998.jpg",
+      "players/carl-hoefkens.jpg"
+    ],
+    "photo_path": "players/carl-hoefkens-1998.jpg"
+  },
+  {
+    "firstname": "Rudi",
+    "lastname": "Smidts",
+    "previous_paths": [
+      "players/rudi-smidts-1990.jpg"
+    ],
+    "photo_path": "players/rudi-smidts-1990.jpg"
+  },
+  {
+    "firstname": "Alexandre",
+    "lastname": "Czerniatynski",
+    "previous_paths": [
+      "players/alexandre-czerniatynski-1990.jpg"
+    ],
+    "photo_path": "players/alexandre-czerniatynski-1990.jpg"
+  },
+  {
+    "firstname": "Gilbert",
+    "lastname": "Bodart",
+    "previous_paths": [
+      "players/gilbert-bodart-1990.jpg"
+    ],
+    "photo_path": "players/gilbert-bodart-1990.jpg"
+  },
+  {
+    "firstname": "Birger",
+    "lastname": "Maertens",
+    "previous_paths": [
+      "players/birger-maertens-2004.jpg"
+    ],
+    "photo_path": "players/birger-maertens-2004.jpg"
+  },
+  {
+    "firstname": "Gaëtan",
+    "lastname": "Englebert",
+    "previous_paths": [
+      "players/gaetan-englebert-2004.jpg"
+    ],
+    "photo_path": "players/gaetan-englebert-2004.jpg"
+  },
+  {
+    "firstname": "Timmy",
+    "lastname": "Simons",
+    "previous_paths": [
+      "players/timmy-simons-2004.jpg",
+      "players/timmy-simons.jpg"
+    ],
+    "photo_path": "players/timmy-simons-2004.jpg"
+  },
+  {
+    "firstname": "Bernd",
+    "lastname": "Thijs",
+    "previous_paths": [
+      "players/bernd-thijs-2004.jpg"
+    ],
+    "photo_path": "players/bernd-thijs-2004.jpg"
+  },
+  {
+    "firstname": "Luigi",
+    "lastname": "Pieroni",
+    "previous_paths": [
+      "players/luigi-pieroni-2004.jpg"
+    ],
+    "photo_path": "players/luigi-pieroni-2004.jpg"
+  },
+  {
+    "firstname": "Vincent",
+    "lastname": "Kompany",
+    "previous_paths": [
+      "players/vincent-kompany-2004.jpg",
+      "players/vincent-kompany.jpg"
+    ],
+    "photo_path": "players/vincent-kompany-2004.jpg"
+  },
+  {
+    "firstname": "Olivier",
+    "lastname": "Deschacht",
+    "previous_paths": [
+      "players/olivier-deschacht-2004.jpg",
+      "players/olivier-deschacht.jpg"
+    ],
+    "photo_path": "players/olivier-deschacht-2004.jpg"
+  },
+  {
+    "firstname": "Silvio",
+    "lastname": "Proto",
+    "previous_paths": [
+      "players/silvio-proto-2004.jpg",
+      "players/silvio-proto.jpg"
+    ],
+    "photo_path": "players/silvio-proto-2004.jpg"
+  },
+  {
+    "firstname": "Logan",
+    "lastname": "Bailly",
+    "previous_paths": [
+      "players/logan-bailly-2007.jpg"
+    ],
+    "photo_path": "players/logan-bailly-2007.jpg"
+  },
+  {
+    "firstname": "Steven",
+    "lastname": "Defour",
+    "previous_paths": [
+      "players/steven-defour-2007.jpg"
+    ],
+    "photo_path": "players/steven-defour-2007.jpg"
+  },
+  {
+    "firstname": "Aruna",
+    "lastname": "Dindane",
+    "previous_paths": [
+      "players/aruna-dindane-2004.jpg"
+    ],
+    "photo_path": "players/aruna-dindane-2004.jpg"
+  },
+  {
+    "firstname": "Oguchi",
+    "lastname": "Onyewu",
+    "previous_paths": [
+      "players/oguchi-onyewu-2007.jpg"
+    ],
+    "photo_path": "players/oguchi-onyewu-2007.jpg"
+  },
+  {
+    "firstname": "Milan",
+    "lastname": "Rapaić",
+    "previous_paths": [
+      "players/milan-rapaic-2007.jpg"
+    ],
+    "photo_path": "players/milan-rapaic-2007.jpg"
+  },
+  {
+    "firstname": "Josip",
+    "lastname": "Weber",
+    "previous_paths": [
+      "players/josip-weber-1990.jpg"
+    ],
+    "photo_path": "players/josip-weber-1990.jpg"
+  },
+  {
+    "firstname": "Foeke",
+    "lastname": "Booy",
+    "previous_paths": [
+      "players/foeke-booy-1990.jpg"
+    ],
+    "photo_path": "players/foeke-booy-1990.jpg"
+  },
+  {
+    "firstname": "Jelle",
+    "lastname": "Van Damme",
+    "previous_paths": [
+      "players/jelle-van-damme-2007.jpg"
+    ],
+    "photo_path": "players/jelle-van-damme-2007.jpg"
+  },
+  {
+    "firstname": "Mémé",
+    "lastname": "Tchité",
+    "previous_paths": [
+      "players/meme-tchite-2007.jpg"
+    ],
+    "photo_path": "players/meme-tchite-2007.jpg"
+  },
+  {
+    "firstname": "Nicolas",
+    "lastname": "Lombaerts",
+    "previous_paths": [
+      "players/nicolas-lombaerts-2007.jpg"
+    ],
+    "photo_path": "players/nicolas-lombaerts-2007.jpg"
+  },
+  {
+    "firstname": "François",
+    "lastname": "Sterchele",
+    "previous_paths": [
+      "players/francois-sterchele-2007.jpg"
+    ],
+    "photo_path": "players/francois-sterchele-2007.jpg"
+  },
+  {
+    "firstname": "Besnik",
+    "lastname": "Hasi",
+    "previous_paths": [
+      "players/besnik-hasi-2007.jpg"
+    ],
+    "photo_path": "players/besnik-hasi-2007.jpg"
+  },
+  {
+    "firstname": "Régis",
+    "lastname": "Genaux",
+    "previous_paths": [
+      "players/regis-genaux-1996.jpg"
+    ],
+    "photo_path": "players/regis-genaux-1996.jpg"
+  },
+  {
+    "firstname": "Philippe",
+    "lastname": "Léonard",
+    "previous_paths": [
+      "players/philippe-leonard-1996.jpg"
+    ],
+    "photo_path": "players/philippe-leonard-1996.jpg"
+  },
+  {
+    "firstname": "Michaël",
+    "lastname": "Goossens",
+    "previous_paths": [
+      "players/michael-goossens-1996.jpg"
+    ],
+    "photo_path": "players/michael-goossens-1996.jpg"
+  },
+  {
+    "firstname": "Marc",
+    "lastname": "Wilmots",
+    "previous_paths": [
+      "players/marc-wilmots-1996.jpg",
+      "players/marc-wilmots-1999.jpg",
+      "players/marc-wilmots.jpg"
+    ],
+    "photo_path": "players/marc-wilmots-1996.jpg"
+  },
+  {
+    "firstname": "François",
+    "lastname": "Van der Elst",
+    "previous_paths": [
+      "players/francois-van-der-elst-1980.jpg",
+      "players/francois-van-der-elst.jpg"
+    ],
+    "photo_path": "players/francois-van-der-elst-1980.jpg"
+  },
+  {
+    "firstname": "Luis",
+    "lastname": "Oliveira",
+    "previous_paths": [
+      "players/luis-oliveira-1991.jpg"
+    ],
+    "photo_path": "players/luis-oliveira-1991.jpg"
+  },
+  {
+    "firstname": "Luc",
+    "lastname": "Nilis",
+    "previous_paths": [
+      "players/luc-nilis-1991.jpg",
+      "players/luc-nilis-1998.jpg",
+      "players/luc-nilis.jpg"
+    ],
+    "photo_path": "players/luc-nilis-1991.jpg"
+  },
+  {
+    "firstname": "Marc",
+    "lastname": "Degryse",
+    "previous_paths": [
+      "players/marc-degryse-1991.jpg",
+      "players/marc-degryse.png"
+    ],
+    "photo_path": "players/marc-degryse-1991.jpg"
+  },
+  {
+    "firstname": "Marcos",
+    "lastname": "Cafu",
+    "previous_paths": [
+      "players/marcos-cafu-2002.jpg"
+    ],
+    "photo_path": "players/marcos-cafu-2002.jpg"
+  },
+  {
+    "firstname": "Roberto",
+    "lastname": "Carlos",
+    "previous_paths": [
+      "players/roberto-carlos-2002.jpg"
+    ],
+    "photo_path": "players/roberto-carlos-2002.jpg"
+  },
+  {
+    "firstname": "",
+    "lastname": "Dante",
+    "previous_paths": [
+      "players/dante-2014.jpg"
+    ],
+    "photo_path": "players/dante-2014.jpg"
+  },
+  {
+    "firstname": "",
+    "lastname": "Didi",
+    "previous_paths": [
+      "players/didi-1958.jpg"
+    ],
+    "photo_path": "players/didi-1958.jpg"
+  },
+  {
+    "firstname": "Carlos",
+    "lastname": "Dunga",
+    "previous_paths": [
+      "players/carlos-dunga-1990.jpg"
+    ],
+    "photo_path": "players/carlos-dunga-1990.jpg"
+  },
+  {
+    "firstname": "",
+    "lastname": "Garrincha",
+    "previous_paths": [
+      "players/garrincha-1962.jpg"
+    ],
+    "photo_path": "players/garrincha-1962.jpg"
+  },
+  {
+    "firstname": "",
+    "lastname": "Jairzinho",
+    "previous_paths": [
+      "players/jairzinho-1970.jpg"
+    ],
+    "photo_path": "players/jairzinho-1970.jpg"
+  },
+  {
+    "firstname": "",
+    "lastname": "Leônidas",
+    "previous_paths": [
+      "players/leonidas-1938.jpg"
+    ],
+    "photo_path": "players/leonidas-1938.jpg"
+  },
+  {
+    "firstname": "",
+    "lastname": "Pelé",
+    "previous_paths": [
+      "players/pele-1970.jpg"
+    ],
+    "photo_path": "players/pele-1970.jpg"
+  },
+  {
+    "firstname": "",
+    "lastname": "Rivaldo",
+    "previous_paths": [
+      "players/rivaldo-2002.jpg"
+    ],
+    "photo_path": "players/rivaldo-2002.jpg"
+  },
+  {
+    "firstname": "",
+    "lastname": "Romário",
+    "previous_paths": [
+      "players/romario-1994.jpg"
+    ],
+    "photo_path": "players/romario-1994.jpg"
+  },
+  {
+    "firstname": "",
+    "lastname": "Ronaldo",
+    "previous_paths": [
+      "players/ronaldo-2002.jpg"
+    ],
+    "photo_path": "players/ronaldo-2002.jpg"
+  },
+  {
+    "firstname": "Cláudio",
+    "lastname": "Taffarel",
+    "previous_paths": [
+      "players/claudio-taffarel-1998.jpg"
+    ],
+    "photo_path": "players/claudio-taffarel-1998.jpg"
+  },
+  {
+    "firstname": "",
+    "lastname": "Vavá",
+    "previous_paths": [
+      "players/vava-1958.jpg"
+    ],
+    "photo_path": "players/vava-1958.jpg"
+  },
+  {
+    "firstname": "Jan",
+    "lastname": "Ceulemans",
+    "previous_paths": [
+      "players/jan-ceulemans-1980.jpg",
+      "players/jan-ceulemans-1990.jpg",
+      "players/jan-ceulemans.jpg"
+    ],
+    "photo_path": "players/jan-ceulemans-1980.jpg"
+  },
+  {
+    "firstname": "René",
+    "lastname": "Vandereycken",
+    "previous_paths": [
+      "players/rene-vandereycken-1980.jpg",
+      "players/rene-vandereycken.jpg"
+    ],
+    "photo_path": "players/rene-vandereycken-1980.jpg"
+  },
+  {
+    "firstname": "Michel",
+    "lastname": "Preud'homme",
+    "previous_paths": [
+      "players/michel-preudhomme-1980.jpg",
+      "players/michel-preudhomme-1994.jpg",
+      "players/michel-preudhomme.jpg"
+    ],
+    "photo_path": "players/michel-preudhomme-1980.jpg"
+  },
+  {
+    "firstname": "Bertrand",
+    "lastname": "Crasson",
+    "previous_paths": [
+      "players/bertrand-crasson-1992.jpg"
+    ],
+    "photo_path": "players/bertrand-crasson-1992.jpg"
+  },
+  {
+    "firstname": "Iker",
+    "lastname": "Casillas",
+    "previous_paths": [
+      "players/iker-casillas-2010.jpg"
+    ],
+    "photo_path": "players/iker-casillas-2010.jpg"
+  },
+  {
+    "firstname": "Raúl",
+    "lastname": "González",
+    "previous_paths": [
+      "players/raul-gonzalez-2002.jpg"
+    ],
+    "photo_path": "players/raul-gonzalez-2002.jpg"
+  },
+  {
+    "firstname": "Pep",
+    "lastname": "Guardiola",
+    "previous_paths": [
+      "players/pep-guardiola-1994.jpg"
+    ],
+    "photo_path": "players/pep-guardiola-1994.jpg"
+  },
+  {
+    "firstname": "Xavi",
+    "lastname": "Hernández",
+    "previous_paths": [
+      "players/xavi-hernandez-2010.jpg"
+    ],
+    "photo_path": "players/xavi-hernandez-2010.jpg"
+  },
+  {
+    "firstname": "Fernando",
+    "lastname": "Hierro",
+    "previous_paths": [
+      "players/fernando-hierro-1994.jpg"
+    ],
+    "photo_path": "players/fernando-hierro-1994.jpg"
+  },
+  {
+    "firstname": "Andrés",
+    "lastname": "Iniesta",
+    "previous_paths": [
+      "players/andres-iniesta-2010.jpg"
+    ],
+    "photo_path": "players/andres-iniesta-2010.jpg"
+  },
+  {
+    "firstname": "",
+    "lastname": "Rodri",
+    "previous_paths": [
+      "players/rodri-2021.jpg"
+    ],
+    "photo_path": "players/rodri-2021.jpg"
+  },
+  {
+    "firstname": "Sérgio",
+    "lastname": "Conceição",
+    "previous_paths": [
+      "players/sergio-conceicao-1999.png"
+    ],
+    "photo_path": "players/sergio-conceicao-1999.png"
+  },
+  {
+    "firstname": "Rui",
+    "lastname": "Costa",
+    "previous_paths": [
+      "players/rui-costa-1996.jpg"
+    ],
+    "photo_path": "players/rui-costa-1996.jpg"
+  },
+  {
+    "firstname": "",
+    "lastname": "Eusébio",
+    "previous_paths": [
+      "players/eusebio-1966.png"
+    ],
+    "photo_path": "players/eusebio-1966.png"
+  },
+  {
+    "firstname": "Luís",
+    "lastname": "Figo",
+    "previous_paths": [
+      "players/luis-figo-2002.jpg"
+    ],
+    "photo_path": "players/luis-figo-2002.jpg"
+  },
+  {
+    "firstname": "Boško",
+    "lastname": "Balaban",
+    "previous_paths": [
+      "players/bosko-balaban-2004.jpg"
+    ],
+    "photo_path": "players/bosko-balaban-2004.jpg"
+  },
+  {
+    "firstname": "Zvonimir",
+    "lastname": "Boban",
+    "previous_paths": [
+      "players/zvonimir-boban-1998.jpg"
+    ],
+    "photo_path": "players/zvonimir-boban-1998.jpg"
+  },
+  {
+    "firstname": "Luka",
+    "lastname": "Modrić",
+    "previous_paths": [
+      "players/luka-modric-2018.jpg"
+    ],
+    "photo_path": "players/luka-modric-2018.jpg"
+  },
+  {
+    "firstname": "Vedran",
+    "lastname": "Runje",
+    "previous_paths": [
+      "players/vedran-runje-2008.jpg"
+    ],
+    "photo_path": "players/vedran-runje-2008.jpg"
+  },
+  {
+    "firstname": "Robert",
+    "lastname": "Špehar",
+    "previous_paths": [
+      "players/robert-spehar-1999.jpg"
+    ],
+    "photo_path": "players/robert-spehar-1999.jpg"
+  },
+  {
+    "firstname": "Mario",
+    "lastname": "Stanić",
+    "previous_paths": [
+      "players/mario-stanic-1998.jpg"
+    ],
+    "photo_path": "players/mario-stanic-1998.jpg"
+  },
+  {
+    "firstname": "Davor",
+    "lastname": "Šuker",
+    "previous_paths": [
+      "players/davor-suker-1998.jpg"
+    ],
+    "photo_path": "players/davor-suker-1998.jpg"
+  },
+  {
+    "firstname": "Hristo",
+    "lastname": "Stoichkov",
+    "previous_paths": [
+      "players/hristo-stoichkov-1994.jpg"
+    ],
+    "photo_path": "players/hristo-stoichkov-1994.jpg"
+  },
+  {
+    "firstname": "Bryan",
+    "lastname": "Ruiz",
+    "previous_paths": [
+      "players/bryan-ruiz-2014.jpg"
+    ],
+    "photo_path": "players/bryan-ruiz-2014.jpg"
+  },
+  {
+    "firstname": "Peter",
+    "lastname": "Schmeichel",
+    "previous_paths": [
+      "players/peter-schmeichel-1998.jpg"
+    ],
+    "photo_path": "players/peter-schmeichel-1998.jpg"
+  },
+  {
+    "firstname": "Jari",
+    "lastname": "Litmanen",
+    "previous_paths": [
+      "players/jari-litmanen-1995.jpg"
+    ],
+    "photo_path": "players/jari-litmanen-1995.jpg"
+  },
+  {
+    "firstname": "Roy",
+    "lastname": "Keane",
+    "previous_paths": [
+      "players/roy-keane-1994.jpg"
+    ],
+    "photo_path": "players/roy-keane-1994.jpg"
+  },
+  {
+    "firstname": "Hidetoshi",
+    "lastname": "Nakata",
+    "previous_paths": [
+      "players/hidetoshi-nakata-1998.png"
+    ],
+    "photo_path": "players/hidetoshi-nakata-1998.png"
+  },
+  {
+    "firstname": "George",
+    "lastname": "Weah",
+    "previous_paths": [
+      "players/george-weah-1997.jpg"
+    ],
+    "photo_path": "players/george-weah-1997.jpg"
+  },
+  {
+    "firstname": "Ryan",
+    "lastname": "Giggs",
+    "previous_paths": [
+      "players/ryan-giggs-1996.jpg"
+    ],
+    "photo_path": "players/ryan-giggs-1996.jpg"
+  },
+  {
+    "firstname": "Jan",
+    "lastname": "Koller",
+    "previous_paths": [
+      "players/jan-koller-2000.jpg"
+    ],
+    "photo_path": "players/jan-koller-2000.jpg"
+  },
+  {
+    "firstname": "Pavel",
+    "lastname": "Nedvěd",
+    "previous_paths": [
+      "players/pavel-nedved-1996.jpg"
+    ],
+    "photo_path": "players/pavel-nedved-1996.jpg"
+  },
+  {
+    "firstname": "Gheorghe",
+    "lastname": "Hagi",
+    "previous_paths": [
+      "players/gheorghe-hagi-1994.jpg"
+    ],
+    "photo_path": "players/gheorghe-hagi-1994.jpg"
+  },
+  {
+    "firstname": "Tibor",
+    "lastname": "Selymes",
+    "previous_paths": [
+      "players/tibor-selymes-1998.jpg"
+    ],
+    "photo_path": "players/tibor-selymes-1998.jpg"
+  },
+  {
+    "firstname": "Dwight",
+    "lastname": "Yorke",
+    "previous_paths": [
+      "players/dwight-yorke-2001.jpg"
+    ],
+    "photo_path": "players/dwight-yorke-2001.jpg"
+  },
+  {
+    "firstname": "Andriy",
+    "lastname": "Shevchenko",
+    "previous_paths": [
+      "players/andriy-shevchenko-2006.jpg"
+    ],
+    "photo_path": "players/andriy-shevchenko-2006.jpg"
+  },
+  {
+    "firstname": "Predrag",
+    "lastname": "Mijatović",
+    "previous_paths": [
+      "players/predrag-mijatovic-1998.jpg"
+    ],
+    "photo_path": "players/predrag-mijatovic-1998.jpg"
+  },
+  {
+    "firstname": "Cuauhtémoc",
+    "lastname": "Blanco",
+    "previous_paths": [
+      "players/cuauhtemoc-blanco-1998.jpg"
+    ],
+    "photo_path": "players/cuauhtemoc-blanco-1998.jpg"
+  },
+  {
+    "firstname": "Andrés",
+    "lastname": "Guardado",
+    "previous_paths": [
+      "players/andres-guardado-2018.jpg"
+    ],
+    "photo_path": "players/andres-guardado-2018.jpg"
+  },
+  {
+    "firstname": "Luis",
+    "lastname": "Hernández",
+    "previous_paths": [
+      "players/luis-hernandez-1998.webp"
+    ],
+    "photo_path": "players/luis-hernandez-1998.webp"
+  },
+  {
+    "firstname": "Rafael",
+    "lastname": "Márquez",
+    "previous_paths": [
+      "players/rafael-marquez-2010.jpg"
+    ],
+    "photo_path": "players/rafael-marquez-2010.jpg"
+  },
+  {
+    "firstname": "Guillermo",
+    "lastname": "Ochoa",
+    "previous_paths": [
+      "players/guillermo-ochoa-2010.jpg"
+    ],
+    "photo_path": "players/guillermo-ochoa-2010.jpg"
+  },
+  {
+    "firstname": "Carlos",
+    "lastname": "Salcido",
+    "previous_paths": [
+      "players/carlos-salcido-2006.jpg"
+    ],
+    "photo_path": "players/carlos-salcido-2006.jpg"
+  },
+  {
+    "firstname": "Gerardo",
+    "lastname": "Torrado",
+    "previous_paths": [
+      "players/gerardo-torrado-2002.jpg"
+    ],
+    "photo_path": "players/gerardo-torrado-2002.jpg"
+  },
+  {
+    "firstname": "Diego",
+    "lastname": "Forlán",
+    "previous_paths": [
+      "players/diego-forlan-2010.png"
+    ],
+    "photo_path": "players/diego-forlan-2010.png"
+  },
+  {
+    "firstname": "Diego",
+    "lastname": "Godín",
+    "previous_paths": [
+      "players/diego-godin-2014.jpg"
+    ],
+    "photo_path": "players/diego-godin-2014.jpg"
+  },
+  {
+    "firstname": "Diego",
+    "lastname": "Lugano",
+    "previous_paths": [
+      "players/diego-lugano-2010.jpg"
+    ],
+    "photo_path": "players/diego-lugano-2010.jpg"
+  },
+  {
+    "firstname": "Fernando",
+    "lastname": "Muslera",
+    "previous_paths": [
+      "players/fernando-muslera-2010.jpg"
+    ],
+    "photo_path": "players/fernando-muslera-2010.jpg"
+  },
+  {
+    "firstname": "José",
+    "lastname": "Nasazzi",
+    "previous_paths": [
+      "players/jose-nasazzi-1930.png"
+    ],
+    "photo_path": "players/jose-nasazzi-1930.png"
+  },
+  {
+    "firstname": "Diego",
+    "lastname": "Pérez",
+    "previous_paths": [
+      "players/diego-perez-2014.jpg"
+    ],
+    "photo_path": "players/diego-perez-2014.jpg"
+  },
+  {
+    "firstname": "Juan Alberto",
+    "lastname": "Schiaffino",
+    "previous_paths": [
+      "players/juan-alberto-schiaffino-1950.jpg"
+    ],
+    "photo_path": "players/juan-alberto-schiaffino-1950.jpg"
+  },
+  {
+    "firstname": "Luis",
+    "lastname": "Suárez",
+    "previous_paths": [
+      "players/luis-suarez-2014.jpg"
+    ],
+    "photo_path": "players/luis-suarez-2014.jpg"
+  },
+  {
+    "firstname": "Dejan",
+    "lastname": "Savićević",
+    "previous_paths": [
+      "players/dejan-savicevic-1992.jpg"
+    ],
+    "photo_path": "players/dejan-savicevic-1992.jpg"
+  },
+  {
+    "firstname": "Egidio",
+    "lastname": "Arévalo Ríos",
+    "previous_paths": [
+      "players/egidio-arevalo-rios-2018.jpg"
+    ],
+    "photo_path": "players/egidio-arevalo-rios-2018.jpg"
+  },
+  {
+    "firstname": "Sebastiano",
+    "lastname": "Rossi",
+    "previous_paths": [
+      "players/sebastiano-rossi-1996.jpg"
+    ],
+    "photo_path": "players/sebastiano-rossi-1996.jpg"
+  },
+  {
+    "firstname": "Souleymane",
+    "lastname": "Oularé",
+    "previous_paths": [
+      "players/souleymane-oulare-1998.jpg"
+    ],
+    "photo_path": "players/souleymane-oulare-1998.jpg"
+  },
+  {
+    "firstname": "Roland",
+    "lastname": "Juhász",
+    "previous_paths": [
+      "players/roland-juhasz-2007.jpg"
+    ],
+    "photo_path": "players/roland-juhasz-2007.jpg"
+  },
+  {
+    "firstname": "Mbark",
+    "lastname": "Boussoufa",
+    "previous_paths": [
+      "players/mbark-boussoufa-2007.jpg"
+    ],
+    "photo_path": "players/mbark-boussoufa-2007.jpg"
+  },
+  {
+    "firstname": "Nicolas",
+    "lastname": "Frutos",
+    "previous_paths": [
+      "players/nicolas-frutos-2007.jpg"
+    ],
+    "photo_path": "players/nicolas-frutos-2007.jpg"
+  },
+  {
+    "firstname": "Milan",
+    "lastname": "Jovanović",
+    "previous_paths": [
+      "players/milan-jovanovic-2007.jpg"
+    ],
+    "photo_path": "players/milan-jovanovic-2007.jpg"
+  },
+  {
+    "firstname": "Joseph",
+    "lastname": "Akpala",
+    "previous_paths": [
+      "players/joseph-akpala-2007.jpg"
+    ],
+    "photo_path": "players/joseph-akpala-2007.jpg"
+  },
+  {
+    "firstname": "Rune",
+    "lastname": "Lange",
+    "previous_paths": [
+      "players/rune-lange-2004.jpg"
+    ],
+    "photo_path": "players/rune-lange-2004.jpg"
+  },
+  {
+    "firstname": "Andrés",
+    "lastname": "Mendoza",
+    "previous_paths": [
+      "players/andres-mendoza-2004.jpg"
+    ],
+    "photo_path": "players/andres-mendoza-2004.jpg"
+  },
+  {
+    "firstname": "Daniel",
+    "lastname": "Zítka",
+    "previous_paths": [
+      "players/daniel-zitka-2004.jpg"
+    ],
+    "photo_path": "players/daniel-zitka-2004.jpg"
+  },
+  {
+    "firstname": "Celestine",
+    "lastname": "Babayaro",
+    "previous_paths": [
+      "players/celestine-babayaro-1997.jpg"
+    ],
+    "photo_path": "players/celestine-babayaro-1997.jpg"
+  },
+  {
+    "firstname": "Paul",
+    "lastname": "Okon",
+    "previous_paths": [
+      "players/paul-okon-1996.jpg"
+    ],
+    "photo_path": "players/paul-okon-1996.jpg"
+  },
+  {
+    "firstname": "Aurelio",
+    "lastname": "Vidmar",
+    "previous_paths": [
+      "players/aurelio-vidmar-1995.jpg"
+    ],
+    "photo_path": "players/aurelio-vidmar-1995.jpg"
+  },
+  {
+    "firstname": "Dieumerci",
+    "lastname": "Mbokani",
+    "previous_paths": [
+      "players/dieumerci-mbokani-2009.jpg"
+    ],
+    "photo_path": "players/dieumerci-mbokani-2009.jpg"
+  },
+  {
+    "firstname": "Thibaut",
+    "lastname": "Courtois",
+    "previous_paths": [
+      "players/thibaut-courtois-2011.jpg",
+      "players/thibaut-courtois.jpg"
+    ],
+    "photo_path": "players/thibaut-courtois-2011.jpg"
+  },
+  {
+    "firstname": "Kevin",
+    "lastname": "De Bruyne",
+    "previous_paths": [
+      "players/kevin-de-bruyne-2011.jpg",
+      "players/kevin-de-bruyne.jpg"
+    ],
+    "photo_path": "players/kevin-de-bruyne-2011.jpg"
+  },
+  {
+    "firstname": "Romelu",
+    "lastname": "Lukaku",
+    "previous_paths": [
+      "players/romelu-lukaku-2011.jpg",
+      "players/romelu-lukaku.jpg"
+    ],
+    "photo_path": "players/romelu-lukaku-2011.jpg"
+  },
+  {
+    "firstname": "Leandro",
+    "lastname": "Trossard",
+    "previous_paths": [
+      "players/leandro-trossard-2011.jpg",
+      "players/leandro-trossard.jpg"
+    ],
+    "photo_path": "players/leandro-trossard-2011.jpg"
+  }
+]

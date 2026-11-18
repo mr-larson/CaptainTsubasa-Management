@@ -1,0 +1,297 @@
+[
+  {
+    "firstname": "Hermann",
+    "lastname": "Kaltz",
+    "nationality": "Allemagne",
+    "origin": "captain_tsubasa_international",
+    "photo_path": "players/hermann-kaltz-world-fighters.png",
+    "previous_paths": [
+      "players/hermann-kaltz.webp",
+      "players/hermann-kaltz.png",
+      "players/hermann-kaltz.jpg"
+    ]
+  },
+  {
+    "firstname": "Manfred",
+    "lastname": "Margus",
+    "nationality": "Allemagne",
+    "origin": "captain_tsubasa_international",
+    "photo_path": "players/manfred-margus-world-fighters.png",
+    "previous_paths": [
+      "players/manfred-margus.webp",
+      "players/manfred-margus.png",
+      "players/manfred-margus.jpg"
+    ]
+  },
+  {
+    "firstname": "Deuter",
+    "lastname": "Müller",
+    "nationality": "Allemagne",
+    "origin": "captain_tsubasa_international",
+    "photo_path": "players/deuter-muller-world-fighters.png",
+    "previous_paths": [
+      "players/deuter-muller.webp",
+      "players/deuter-muller.png",
+      "players/deuter-muller.jpg"
+    ]
+  },
+  {
+    "firstname": "Franz",
+    "lastname": "Schester",
+    "nationality": "Allemagne",
+    "origin": "captain_tsubasa_international",
+    "photo_path": "players/franz-schester-world-fighters.png",
+    "previous_paths": [
+      "players/franz-schester.webp",
+      "players/franz-schester.png",
+      "players/franz-schester.jpg"
+    ]
+  },
+  {
+    "firstname": "Karl-Heinz",
+    "lastname": "Schneider",
+    "nationality": "Allemagne",
+    "origin": "captain_tsubasa_international",
+    "photo_path": "players/karl-heinz-schneider-world-fighters.png",
+    "previous_paths": [
+      "players/karl-heinz-schneider.webp",
+      "players/karl-heinz-schneider.png",
+      "players/karl-heinz-schneider.jpg"
+    ]
+  },
+  {
+    "firstname": "Mark",
+    "lastname": "Owairan",
+    "nationality": "Arabie saoudite",
+    "origin": "captain_tsubasa_international",
+    "photo_path": "players/mark-owairan-world-fighters.png",
+    "previous_paths": [
+      "players/mark-owairan-world-youth.png",
+      "players/mark-owairan.webp",
+      "players/mark-owairan.png",
+      "players/mark-owairan.jpg"
+    ]
+  },
+  {
+    "firstname": "",
+    "lastname": "Vulcan",
+    "nationality": "Arabie saoudite",
+    "origin": "captain_tsubasa_international",
+    "photo_path": "players/vulcan-world-fighters.png",
+    "previous_paths": [
+      "players/vulcan-world-youth.png",
+      "players/vulcan.webp",
+      "players/vulcan.png",
+      "players/vulcan.jpg"
+    ]
+  },
+  {
+    "firstname": "Juan",
+    "lastname": "Diaz",
+    "nationality": "Argentine",
+    "origin": "captain_tsubasa_international",
+    "photo_path": "players/juan-diaz-world-fighters.png",
+    "previous_paths": [
+      "players/juan-diaz.webp",
+      "players/juan-diaz.png",
+      "players/juan-diaz.jpg"
+    ]
+  },
+  {
+    "firstname": "",
+    "lastname": "Alberto",
+    "nationality": "Brésil",
+    "origin": "captain_tsubasa_international",
+    "photo_path": "players/alberto-world-fighters.png",
+    "previous_paths": [
+      "players/alberto.webp",
+      "players/alberto.png",
+      "players/alberto.jpg"
+    ]
+  },
+  {
+    "firstname": "Luciano",
+    "lastname": "Leo",
+    "nationality": "Brésil",
+    "origin": "captain_tsubasa_international",
+    "photo_path": "players/luciano-leo-world-fighters.png",
+    "previous_paths": [
+      "players/luciano-leo.webp",
+      "players/luciano-leo.png",
+      "players/luciano-leo.jpg"
+    ]
+  },
+  {
+    "firstname": "",
+    "lastname": "Pepe",
+    "nationality": "Brésil",
+    "origin": "captain_tsubasa_international",
+    "photo_path": "players/pepe-world-fighters.png",
+    "previous_paths": [
+      "players/pepe.webp",
+      "players/pepe.png",
+      "players/pepe.jpg"
+    ]
+  },
+  {
+    "firstname": "",
+    "lastname": "Salinas",
+    "nationality": "Brésil",
+    "origin": "captain_tsubasa_international",
+    "photo_path": "players/salinas-world-fighters.png",
+    "previous_paths": [
+      "players/salinas.webp",
+      "players/salinas.png",
+      "players/salinas.jpg"
+    ]
+  },
+  {
+    "firstname": "Carlos",
+    "lastname": "Santana",
+    "nationality": "Brésil",
+    "origin": "captain_tsubasa_international",
+    "photo_path": "players/carlos-santana-world-fighters.png",
+    "previous_paths": [
+      "players/carlos-santana.webp",
+      "players/carlos-santana.png",
+      "players/carlos-santana.jpg"
+    ]
+  },
+  {
+    "firstname": "Junguang",
+    "lastname": "Xiao",
+    "nationality": "Chine",
+    "origin": "captain_tsubasa_international",
+    "photo_path": "players/junguang-xiao-world-fighters.png",
+    "previous_paths": [
+      "players/junguang-xiao-world-youth.png",
+      "players/junguang-xiao.webp",
+      "players/junguang-xiao.png",
+      "players/junguang-xiao.jpg"
+    ]
+  },
+  {
+    "firstname": "In-cheon",
+    "lastname": "Cha",
+    "nationality": "Corée du Sud",
+    "origin": "captain_tsubasa_international",
+    "photo_path": "players/in-cheon-cha-world-fighters.png",
+    "previous_paths": [
+      "players/in-cheon-cha-world-youth.png",
+      "players/in-cheon-cha.webp",
+      "players/in-cheon-cha.png",
+      "players/in-cheon-cha.jpg"
+    ]
+  },
+  {
+    "firstname": "Yong-un",
+    "lastname": "Lee",
+    "nationality": "Corée du Sud",
+    "origin": "captain_tsubasa_international",
+    "photo_path": "players/yong-un-lee-world-fighters.png",
+    "previous_paths": [
+      "players/yong-un-lee-world-youth.png",
+      "players/yong-un-lee.webp",
+      "players/yong-un-lee.png",
+      "players/yong-un-lee.jpg"
+    ]
+  },
+  {
+    "firstname": "Louis",
+    "lastname": "Napoleon",
+    "nationality": "France",
+    "origin": "captain_tsubasa_international",
+    "photo_path": "players/louis-napoleon-world-fighters.png",
+    "previous_paths": [
+      "players/louis-napoleon.webp",
+      "players/louis-napoleon.png",
+      "players/louis-napoleon.jpg"
+    ]
+  },
+  {
+    "firstname": "El Sid",
+    "lastname": "Pierre",
+    "nationality": "France",
+    "origin": "captain_tsubasa_international",
+    "photo_path": "players/el-sid-pierre-world-fighters.png",
+    "previous_paths": [
+      "players/el-sid-pierre.webp",
+      "players/el-sid-pierre.png",
+      "players/el-sid-pierre.jpg"
+    ]
+  },
+  {
+    "firstname": "Salvatore",
+    "lastname": "Gentile",
+    "nationality": "Italie",
+    "origin": "captain_tsubasa_international",
+    "photo_path": "players/salvatore-gentile-world-fighters.png",
+    "previous_paths": [
+      "players/salvatore-gentile-official.png",
+      "players/salvatore-gentile.webp",
+      "players/salvatore-gentile.png",
+      "players/salvatore-gentile.jpg"
+    ]
+  },
+  {
+    "firstname": "Gino",
+    "lastname": "Hernandez",
+    "nationality": "Italie",
+    "origin": "captain_tsubasa_international",
+    "photo_path": "players/gino-hernandez-world-fighters.png",
+    "previous_paths": [
+      "players/gino-hernandez-official.png",
+      "players/gino-hernandez.webp",
+      "players/gino-hernandez.png",
+      "players/gino-hernandez.jpg"
+    ]
+  },
+  {
+    "firstname": "Ricardo",
+    "lastname": "Espadas",
+    "nationality": "Mexique",
+    "origin": "captain_tsubasa_international",
+    "photo_path": "players/ricardo-espadas-world-fighters.png",
+    "previous_paths": [
+      "players/ricardo-espadas.webp",
+      "players/ricardo-espadas.png",
+      "players/ricardo-espadas.jpg"
+    ]
+  },
+  {
+    "firstname": "Brian",
+    "lastname": "Cruyfford",
+    "nationality": "Pays-Bas",
+    "origin": "captain_tsubasa_international",
+    "photo_path": "players/brian-cruyfford-world-fighters.png",
+    "previous_paths": [
+      "players/brian-cruyfford.webp",
+      "players/brian-cruyfford.png",
+      "players/brian-cruyfford.jpg"
+    ]
+  },
+  {
+    "firstname": "Ryoma",
+    "lastname": "Hino",
+    "nationality": "Uruguay",
+    "origin": "captain_tsubasa_international",
+    "photo_path": "players/ryoma-hino-world-fighters.png",
+    "previous_paths": [
+      "players/ryoma-hino.webp",
+      "players/ryoma-hino.png",
+      "players/ryoma-hino.jpg"
+    ]
+  },
+  {
+    "firstname": "Ramon",
+    "lastname": "Victorino",
+    "nationality": "Uruguay",
+    "origin": "captain_tsubasa_international",
+    "photo_path": "players/ramon-victorino-world-fighters.png",
+    "previous_paths": [
+      "players/ramon-victorino.webp",
+      "players/ramon-victorino.png",
+      "players/ramon-victorino.jpg"
+    ]
+  }
+]

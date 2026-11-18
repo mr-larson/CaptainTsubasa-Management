@@ -1,0 +1,32 @@
+[
+    {
+        "firstname": "",
+        "lastname": "Ronaldinho",
+        "age": 13,
+        "position": "Midfielder",
+        "origin": "world_legends",
+        "nationality": "Brésil",
+        "secondary_positions": "[\"Forward\"]",
+        "cost": 48,
+        "stats": "{\"speed\":77,\"stamina\":73,\"attack\":36,\"defense\":18,\"shot\":28,\"pass\":31,\"dribble\":31,\"block\":16,\"intercept\":20,\"tackle\":18,\"hand_save\":10,\"punch_save\":10,\"heading\":18}",
+        "heading": 18,
+        "special_moves": null,
+        "description": "Légendes internationales — profil adapté au jeu. Milieu créatif, spécialisé dans la dernière passe et la conservation du ballon. Poste : MOC, poste secondaire : AG. Créateur brésilien, spécialiste de la dernière passe, des feintes et de l’improvisation ; moins puissant à la finition que les grands buteurs.",
+        "photo_path": "players/ronaldinho-2002.jpg"
+    },
+    {
+        "firstname": "",
+        "lastname": "Neymar",
+        "age": 13,
+        "position": "Forward",
+        "origin": "world_legends",
+        "nationality": "Brésil",
+        "secondary_positions": "[\"Midfielder\"]",
+        "cost": 47,
+        "stats": "{\"speed\":80,\"stamina\":74,\"attack\":36,\"defense\":16,\"shot\":28,\"pass\":28,\"dribble\":30,\"block\":14,\"intercept\":17,\"tackle\":16,\"hand_save\":10,\"punch_save\":10,\"heading\":17}",
+        "heading": 17,
+        "special_moves": null,
+        "description": "Légendes internationales — profil adapté au jeu. Attaquant de couloir, spécialiste des appels et des accélérations. Poste : AG, poste secondaire : MOC. Attaquant créatif et rapide, spécialiste des duels et des combinaisons ; impact défensif et jeu aérien limités.",
+        "photo_path": "players/neymar-2010.jpg"
+    }
+]

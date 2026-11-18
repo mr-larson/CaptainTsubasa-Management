@@ -1,0 +1,13 @@
+[
+  {
+    "firstname": "Pär",
+    "lastname": "Zetterberg",
+    "nationality": "Suède",
+    "photo_path": "players/par-zetterberg-anderlecht.jpg",
+    "previous_paths": [
+      "players/par-zetterberg.jpg",
+      "players/par-zetterberg.webp",
+      "players/par-zetterberg.png"
+    ]
+  }
+]

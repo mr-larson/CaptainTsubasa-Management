@@ -1,0 +1,2609 @@
+{
+  "created_on": "2026-11-18",
+  "additions": [
+    {
+      "firstname": "Vítor",
+      "lastname": "Baía",
+      "age": 13,
+      "position": "Goalkeeper",
+      "origin": "world_legends",
+      "nationality": "Portugal",
+      "secondary_positions": "[]",
+      "cost": 49,
+      "stats": "{\"speed\":59,\"stamina\":74,\"attack\":14,\"defense\":34,\"shot\":11,\"pass\":22,\"dribble\":14,\"block\":22,\"intercept\":26,\"tackle\":17,\"hand_save\":28,\"punch_save\":27,\"heading\":15}",
+      "heading": 15,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Gardien de soutien, réactif et fiable sur sa ligne. Poste : GB.",
+      "photo_path": null
+    },
+    {
+      "firstname": "João",
+      "lastname": "Pinto",
+      "age": 13,
+      "position": "Defender",
+      "origin": "world_legends",
+      "nationality": "Portugal",
+      "secondary_positions": "[]",
+      "cost": 46,
+      "stats": "{\"speed\":67,\"stamina\":81,\"attack\":22,\"defense\":30,\"shot\":16,\"pass\":24,\"dribble\":21,\"block\":22,\"intercept\":26,\"tackle\":27,\"hand_save\":10,\"punch_save\":10,\"cross\":25,\"heading\":27}",
+      "heading": 27,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Latéral de soutien, appliqué défensivement et disponible dans son couloir. Poste : DD. Arrière droit du FC Porto, distinct de son homonyme attaquant.",
+      "photo_path": null
+    },
+    {
+      "firstname": "",
+      "lastname": "Pepe",
+      "age": 13,
+      "position": "Defender",
+      "origin": "world_legends",
+      "nationality": "Portugal",
+      "secondary_positions": "[]",
+      "cost": 47,
+      "stats": "{\"speed\":69,\"stamina\":80,\"attack\":19,\"defense\":35,\"shot\":14,\"pass\":22,\"dribble\":18,\"block\":29,\"intercept\":28,\"tackle\":29,\"hand_save\":10,\"punch_save\":10,\"heading\":29}",
+      "heading": 29,
+      "special_moves": "[{\"key\":\"pepe_skylab_shot\",\"mode\":\"attack\",\"label\":\"Tir Skylab\",\"short_label\":\"Skylab\",\"cooldown\":3,\"base_action\":\"shot\",\"description\":\"Une frappe surpuissante venue de São Paulo, un véritable boulet de canon.\"}]",
+      "description": "Légendes internationales — profil adapté au jeu. Défenseur de soutien, puissant au marquage et dans les duels. Poste : DC.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Ricardo",
+      "lastname": "Carvalho",
+      "age": 13,
+      "position": "Defender",
+      "origin": "world_legends",
+      "nationality": "Portugal",
+      "secondary_positions": "[]",
+      "cost": 47,
+      "stats": "{\"speed\":66,\"stamina\":77,\"attack\":21,\"defense\":34,\"shot\":15,\"pass\":25,\"dribble\":21,\"block\":24,\"intercept\":29,\"tackle\":28,\"hand_save\":10,\"punch_save\":10,\"heading\":27}",
+      "heading": 27,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Défenseur organisateur, spécialisé dans la lecture du jeu et la relance. Poste : DC.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Fábio",
+      "lastname": "Coentrão",
+      "age": 13,
+      "position": "Defender",
+      "origin": "world_legends",
+      "nationality": "Portugal",
+      "secondary_positions": "[\"Midfielder\"]",
+      "cost": 48,
+      "stats": "{\"speed\":76,\"stamina\":78,\"attack\":25,\"defense\":28,\"shot\":20,\"pass\":25,\"dribble\":26,\"block\":20,\"intercept\":25,\"tackle\":25,\"hand_save\":10,\"punch_save\":10,\"cross\":27,\"heading\":27}",
+      "heading": 27,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Latéral offensif et endurant, spécialisé dans les montées et les centres. Poste : DG, poste secondaire : MG.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Mário",
+      "lastname": "Coluna",
+      "age": 13,
+      "position": "Midfielder",
+      "origin": "world_legends",
+      "nationality": "Portugal",
+      "secondary_positions": "[]",
+      "cost": 50,
+      "stats": "{\"speed\":67,\"stamina\":82,\"attack\":28,\"defense\":30,\"shot\":26,\"pass\":27,\"dribble\":25,\"block\":23,\"intercept\":27,\"tackle\":27,\"hand_save\":10,\"punch_save\":10,\"heading\":18}",
+      "heading": 18,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Milieu récupérateur, spécialiste du placement et de la protection de la défense. Poste : MDC, poste secondaire : MC.",
+      "photo_path": null
+    },
+    {
+      "firstname": "",
+      "lastname": "Deco",
+      "age": 13,
+      "position": "Midfielder",
+      "origin": "world_legends",
+      "nationality": "Portugal",
+      "secondary_positions": "[]",
+      "cost": 46,
+      "stats": "{\"speed\":64,\"stamina\":76,\"attack\":31,\"defense\":23,\"shot\":25,\"pass\":29,\"dribble\":28,\"block\":16,\"intercept\":23,\"tackle\":18,\"hand_save\":10,\"punch_save\":10,\"heading\":17}",
+      "heading": 17,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Milieu créatif, spécialisé dans la dernière passe et la conservation du ballon. Poste : MC, poste secondaire : MOC.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Cristiano",
+      "lastname": "Ronaldo",
+      "age": 13,
+      "position": "Forward",
+      "origin": "world_legends",
+      "nationality": "Portugal",
+      "secondary_positions": "[]",
+      "cost": 48,
+      "stats": "{\"speed\":81,\"stamina\":80,\"attack\":38,\"defense\":17,\"shot\":30,\"pass\":25,\"dribble\":29,\"block\":14,\"intercept\":17,\"tackle\":16,\"hand_save\":10,\"punch_save\":10,\"heading\":30,\"cross\":26}",
+      "heading": 30,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Attaquant de couloir, spécialiste des appels et des accélérations. Poste : AG, poste secondaire : BU.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Gordon",
+      "lastname": "Banks",
+      "age": 13,
+      "position": "Goalkeeper",
+      "origin": "world_legends",
+      "nationality": "Angleterre",
+      "secondary_positions": "[]",
+      "cost": 50,
+      "stats": "{\"speed\":59,\"stamina\":74,\"attack\":14,\"defense\":35,\"shot\":11,\"pass\":19,\"dribble\":13,\"block\":22,\"intercept\":25,\"tackle\":17,\"hand_save\":29,\"punch_save\":27,\"heading\":16}",
+      "heading": 16,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Gardien de soutien, réactif et fiable sur sa ligne. Poste : GB.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Rio",
+      "lastname": "Ferdinand",
+      "age": 13,
+      "position": "Defender",
+      "origin": "world_legends",
+      "nationality": "Angleterre",
+      "secondary_positions": "[]",
+      "cost": 47,
+      "stats": "{\"speed\":68,\"stamina\":76,\"attack\":21,\"defense\":34,\"shot\":16,\"pass\":25,\"dribble\":21,\"block\":24,\"intercept\":28,\"tackle\":27,\"hand_save\":10,\"punch_save\":10,\"heading\":27}",
+      "heading": 27,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Défenseur organisateur, spécialisé dans la lecture du jeu et la relance. Poste : DC.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Ashley",
+      "lastname": "Cole",
+      "age": 13,
+      "position": "Defender",
+      "origin": "world_legends",
+      "nationality": "Angleterre",
+      "secondary_positions": "[]",
+      "cost": 49,
+      "stats": "{\"speed\":76,\"stamina\":80,\"attack\":24,\"defense\":32,\"shot\":17,\"pass\":24,\"dribble\":24,\"block\":22,\"intercept\":27,\"tackle\":28,\"hand_save\":10,\"punch_save\":10,\"cross\":25,\"heading\":28}",
+      "heading": 28,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Latéral de soutien, appliqué défensivement et disponible dans son couloir. Poste : DG.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Billy",
+      "lastname": "Wright",
+      "age": 13,
+      "position": "Defender",
+      "origin": "world_legends",
+      "nationality": "Angleterre",
+      "secondary_positions": "[\"Midfielder\"]",
+      "cost": 44,
+      "stats": "{\"speed\":59,\"stamina\":79,\"attack\":18,\"defense\":33,\"shot\":14,\"pass\":22,\"dribble\":17,\"block\":26,\"intercept\":27,\"tackle\":28,\"hand_save\":10,\"punch_save\":10,\"heading\":25}",
+      "heading": 25,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Défenseur de soutien, puissant au marquage et dans les duels. Poste : DC, poste secondaire : MDC.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Steven",
+      "lastname": "Gerrard",
+      "age": 13,
+      "position": "Midfielder",
+      "origin": "world_legends",
+      "nationality": "Angleterre",
+      "secondary_positions": "[]",
+      "cost": 49,
+      "stats": "{\"speed\":69,\"stamina\":82,\"attack\":32,\"defense\":27,\"shot\":28,\"pass\":27,\"dribble\":25,\"block\":20,\"intercept\":23,\"tackle\":25,\"hand_save\":10,\"punch_save\":10,\"heading\":18}",
+      "heading": 18,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Milieu de soutien endurant, capable de relier défense et attaque. Poste : MC, poste secondaire : MOC.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Geoff",
+      "lastname": "Hurst",
+      "age": 13,
+      "position": "Forward",
+      "origin": "world_legends",
+      "nationality": "Angleterre",
+      "secondary_positions": "[]",
+      "cost": 43,
+      "stats": "{\"speed\":64,\"stamina\":76,\"attack\":33,\"defense\":18,\"shot\":28,\"pass\":20,\"dribble\":23,\"block\":16,\"intercept\":17,\"tackle\":17,\"hand_save\":10,\"punch_save\":10,\"heading\":28}",
+      "heading": 28,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Avant-centre puissant, privilégiant la frappe aux combinaisons techniques. Poste : BU.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Harry",
+      "lastname": "Kane",
+      "age": 13,
+      "position": "Forward",
+      "origin": "world_legends",
+      "nationality": "Angleterre",
+      "secondary_positions": "[]",
+      "cost": 44,
+      "stats": "{\"speed\":61,\"stamina\":77,\"attack\":36,\"defense\":19,\"shot\":29,\"pass\":27,\"dribble\":24,\"block\":14,\"intercept\":16,\"tackle\":16,\"hand_save\":10,\"punch_save\":10,\"heading\":27}",
+      "heading": 27,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Attaquant de soutien, mobile et efficace dans la surface. Poste : BU, poste secondaire : AT.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Sergio",
+      "lastname": "Ramos",
+      "age": 13,
+      "position": "Defender",
+      "origin": "world_legends",
+      "nationality": "Espagne",
+      "secondary_positions": "[]",
+      "cost": 48,
+      "stats": "{\"speed\":71,\"stamina\":80,\"attack\":25,\"defense\":33,\"shot\":22,\"pass\":24,\"dribble\":22,\"block\":22,\"intercept\":24,\"tackle\":28,\"hand_save\":10,\"punch_save\":10,\"heading\":29,\"cross\":25}",
+      "heading": 29,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Latéral de soutien, appliqué défensivement et disponible dans son couloir. Poste : DD, poste secondaire : DC.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Carles",
+      "lastname": "Puyol",
+      "age": 13,
+      "position": "Defender",
+      "origin": "world_legends",
+      "nationality": "Espagne",
+      "secondary_positions": "[]",
+      "cost": 47,
+      "stats": "{\"speed\":65,\"stamina\":81,\"attack\":19,\"defense\":35,\"shot\":15,\"pass\":21,\"dribble\":17,\"block\":29,\"intercept\":28,\"tackle\":29,\"hand_save\":10,\"punch_save\":10,\"heading\":28}",
+      "heading": 28,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Défenseur de soutien, puissant au marquage et dans les duels. Poste : DC, poste secondaire : DD.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Gerard",
+      "lastname": "Piqué",
+      "age": 13,
+      "position": "Defender",
+      "origin": "world_legends",
+      "nationality": "Espagne",
+      "secondary_positions": "[]",
+      "cost": 46,
+      "stats": "{\"speed\":59,\"stamina\":76,\"attack\":23,\"defense\":33,\"shot\":18,\"pass\":27,\"dribble\":22,\"block\":24,\"intercept\":28,\"tackle\":26,\"hand_save\":10,\"punch_save\":10,\"heading\":28}",
+      "heading": 28,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Défenseur organisateur, spécialisé dans la lecture du jeu et la relance. Poste : DC.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Jordi",
+      "lastname": "Alba",
+      "age": 13,
+      "position": "Defender",
+      "origin": "world_legends",
+      "nationality": "Espagne",
+      "secondary_positions": "[\"Midfielder\"]",
+      "cost": 47,
+      "stats": "{\"speed\":79,\"stamina\":79,\"attack\":27,\"defense\":26,\"shot\":19,\"pass\":25,\"dribble\":25,\"block\":20,\"intercept\":22,\"tackle\":22,\"hand_save\":10,\"punch_save\":10,\"cross\":28,\"heading\":26}",
+      "heading": 26,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Latéral offensif et endurant, spécialisé dans les montées et les centres. Poste : DG, poste secondaire : MG.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Lamine",
+      "lastname": "Yamal",
+      "age": 13,
+      "position": "Forward",
+      "origin": "world_legends",
+      "nationality": "Espagne",
+      "secondary_positions": "[]",
+      "cost": 45,
+      "stats": "{\"speed\":78,\"stamina\":70,\"attack\":32,\"defense\":17,\"shot\":26,\"pass\":27,\"dribble\":30,\"block\":14,\"intercept\":17,\"tackle\":16,\"hand_save\":10,\"punch_save\":10,\"cross\":27,\"heading\":22}",
+      "heading": 22,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Attaquant de couloir, spécialiste des appels et des accélérations. Poste : AD.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Fernando",
+      "lastname": "Torres",
+      "age": 13,
+      "position": "Forward",
+      "origin": "world_legends",
+      "nationality": "Espagne",
+      "secondary_positions": "[]",
+      "cost": 45,
+      "stats": "{\"speed\":79,\"stamina\":75,\"attack\":35,\"defense\":17,\"shot\":28,\"pass\":21,\"dribble\":26,\"block\":14,\"intercept\":16,\"tackle\":16,\"hand_save\":10,\"punch_save\":10,\"heading\":26}",
+      "heading": 26,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Attaquant de soutien, mobile et efficace dans la surface. Poste : BU.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Stipe",
+      "lastname": "Pletikosa",
+      "age": 13,
+      "position": "Goalkeeper",
+      "origin": "world_legends",
+      "nationality": "Croatie",
+      "secondary_positions": "[]",
+      "cost": 46,
+      "stats": "{\"speed\":55,\"stamina\":72,\"attack\":14,\"defense\":31,\"shot\":11,\"pass\":18,\"dribble\":13,\"block\":22,\"intercept\":21,\"tackle\":17,\"hand_save\":27,\"punch_save\":25,\"heading\":14}",
+      "heading": 14,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Gardien de soutien, réactif et fiable sur sa ligne. Poste : GB.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Darijo",
+      "lastname": "Srna",
+      "age": 13,
+      "position": "Defender",
+      "origin": "world_legends",
+      "nationality": "Croatie",
+      "secondary_positions": "[\"Midfielder\"]",
+      "cost": 47,
+      "stats": "{\"speed\":72,\"stamina\":81,\"attack\":25,\"defense\":28,\"shot\":23,\"pass\":26,\"dribble\":24,\"block\":20,\"intercept\":22,\"tackle\":22,\"hand_save\":10,\"punch_save\":10,\"cross\":29,\"heading\":27}",
+      "heading": 27,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Latéral offensif et endurant, spécialisé dans les montées et les centres. Poste : DD, poste secondaire : MD.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Robert",
+      "lastname": "Kovač",
+      "age": 13,
+      "position": "Defender",
+      "origin": "world_legends",
+      "nationality": "Croatie",
+      "secondary_positions": "[]",
+      "cost": 44,
+      "stats": "{\"speed\":59,\"stamina\":76,\"attack\":18,\"defense\":32,\"shot\":14,\"pass\":20,\"dribble\":16,\"block\":28,\"intercept\":26,\"tackle\":28,\"hand_save\":10,\"punch_save\":10,\"heading\":27}",
+      "heading": 27,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Défenseur de soutien, puissant au marquage et dans les duels. Poste : DC.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Dario",
+      "lastname": "Šimić",
+      "age": 13,
+      "position": "Defender",
+      "origin": "world_legends",
+      "nationality": "Croatie",
+      "secondary_positions": "[]",
+      "cost": 45,
+      "stats": "{\"speed\":65,\"stamina\":76,\"attack\":19,\"defense\":31,\"shot\":14,\"pass\":21,\"dribble\":18,\"block\":26,\"intercept\":27,\"tackle\":27,\"hand_save\":10,\"punch_save\":10,\"heading\":26}",
+      "heading": 26,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Défenseur de soutien, puissant au marquage et dans les duels. Poste : DC, poste secondaire : DD.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Robert",
+      "lastname": "Jarni",
+      "age": 13,
+      "position": "Defender",
+      "origin": "world_legends",
+      "nationality": "Croatie",
+      "secondary_positions": "[\"Midfielder\"]",
+      "cost": 47,
+      "stats": "{\"speed\":77,\"stamina\":79,\"attack\":26,\"defense\":26,\"shot\":21,\"pass\":25,\"dribble\":25,\"block\":20,\"intercept\":22,\"tackle\":22,\"hand_save\":10,\"punch_save\":10,\"cross\":27,\"heading\":26}",
+      "heading": 26,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Latéral offensif et endurant, spécialisé dans les montées et les centres. Poste : DG, poste secondaire : MG.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Ivan",
+      "lastname": "Rakitić",
+      "age": 13,
+      "position": "Midfielder",
+      "origin": "world_legends",
+      "nationality": "Croatie",
+      "secondary_positions": "[]",
+      "cost": 45,
+      "stats": "{\"speed\":62,\"stamina\":78,\"attack\":29,\"defense\":24,\"shot\":26,\"pass\":28,\"dribble\":26,\"block\":16,\"intercept\":23,\"tackle\":18,\"hand_save\":10,\"punch_save\":10,\"heading\":17}",
+      "heading": 17,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Milieu créatif, spécialisé dans la dernière passe et la conservation du ballon. Poste : MD, poste secondaire : MC.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Robert",
+      "lastname": "Prosinečki",
+      "age": 13,
+      "position": "Midfielder",
+      "origin": "world_legends",
+      "nationality": "Croatie",
+      "secondary_positions": "[]",
+      "cost": 43,
+      "stats": "{\"speed\":61,\"stamina\":65,\"attack\":31,\"defense\":18,\"shot\":25,\"pass\":29,\"dribble\":29,\"block\":16,\"intercept\":20,\"tackle\":18,\"hand_save\":10,\"punch_save\":10,\"heading\":16}",
+      "heading": 16,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Milieu créatif, spécialisé dans la dernière passe et la conservation du ballon. Poste : MG, poste secondaire : MOC.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Mario",
+      "lastname": "Mandžukić",
+      "age": 13,
+      "position": "Forward",
+      "origin": "world_legends",
+      "nationality": "Croatie",
+      "secondary_positions": "[]",
+      "cost": 47,
+      "stats": "{\"speed\":67,\"stamina\":82,\"attack\":32,\"defense\":24,\"shot\":27,\"pass\":23,\"dribble\":22,\"block\":18,\"intercept\":22,\"tackle\":22,\"hand_save\":10,\"punch_save\":10,\"heading\":29}",
+      "heading": 29,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Attaquant collectif et endurant, utile au pressing et au repli défensif. Poste : BU, poste secondaire : AG.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Thomas",
+      "lastname": "Helveg",
+      "age": 13,
+      "position": "Defender",
+      "origin": "world_legends",
+      "nationality": "Danemark",
+      "secondary_positions": "[\"Midfielder\"]",
+      "cost": 46,
+      "stats": "{\"speed\":68,\"stamina\":79,\"attack\":22,\"defense\":29,\"shot\":16,\"pass\":24,\"dribble\":21,\"block\":22,\"intercept\":24,\"tackle\":26,\"hand_save\":10,\"punch_save\":10,\"cross\":25,\"heading\":27}",
+      "heading": 27,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Latéral de soutien, appliqué défensivement et disponible dans son couloir. Poste : DD, poste secondaire : MD.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Morten",
+      "lastname": "Olsen",
+      "age": 13,
+      "position": "Defender",
+      "origin": "world_legends",
+      "nationality": "Danemark",
+      "secondary_positions": "[\"Midfielder\"]",
+      "cost": 47,
+      "stats": "{\"speed\":60,\"stamina\":76,\"attack\":23,\"defense\":33,\"shot\":19,\"pass\":27,\"dribble\":22,\"block\":24,\"intercept\":29,\"tackle\":26,\"hand_save\":10,\"punch_save\":10,\"heading\":25}",
+      "heading": 25,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Défenseur organisateur, spécialisé dans la lecture du jeu et la relance. Poste : DC, poste secondaire : MDC.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Daniel",
+      "lastname": "Agger",
+      "age": 13,
+      "position": "Defender",
+      "origin": "world_legends",
+      "nationality": "Danemark",
+      "secondary_positions": "[]",
+      "cost": 47,
+      "stats": "{\"speed\":65,\"stamina\":75,\"attack\":23,\"defense\":32,\"shot\":22,\"pass\":26,\"dribble\":22,\"block\":24,\"intercept\":27,\"tackle\":24,\"hand_save\":10,\"punch_save\":10,\"heading\":27}",
+      "heading": 27,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Défenseur organisateur, spécialisé dans la lecture du jeu et la relance. Poste : DC.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Jan",
+      "lastname": "Heintze",
+      "age": 13,
+      "position": "Defender",
+      "origin": "world_legends",
+      "nationality": "Danemark",
+      "secondary_positions": "[\"Midfielder\"]",
+      "cost": 46,
+      "stats": "{\"speed\":71,\"stamina\":80,\"attack\":23,\"defense\":29,\"shot\":17,\"pass\":24,\"dribble\":22,\"block\":22,\"intercept\":26,\"tackle\":24,\"hand_save\":10,\"punch_save\":10,\"cross\":26,\"heading\":27}",
+      "heading": 27,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Latéral de soutien, appliqué défensivement et disponible dans son couloir. Poste : DG, poste secondaire : MG.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Søren",
+      "lastname": "Lerby",
+      "age": 13,
+      "position": "Midfielder",
+      "origin": "world_legends",
+      "nationality": "Danemark",
+      "secondary_positions": "[]",
+      "cost": 48,
+      "stats": "{\"speed\":66,\"stamina\":82,\"attack\":29,\"defense\":27,\"shot\":26,\"pass\":26,\"dribble\":23,\"block\":20,\"intercept\":23,\"tackle\":26,\"hand_save\":10,\"punch_save\":10,\"heading\":18}",
+      "heading": 18,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Milieu de soutien endurant, capable de relier défense et attaque. Poste : MC, poste secondaire : MDC.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Christian",
+      "lastname": "Eriksen",
+      "age": 13,
+      "position": "Midfielder",
+      "origin": "world_legends",
+      "nationality": "Danemark",
+      "secondary_positions": "[]",
+      "cost": 45,
+      "stats": "{\"speed\":62,\"stamina\":77,\"attack\":30,\"defense\":21,\"shot\":26,\"pass\":29,\"dribble\":26,\"block\":16,\"intercept\":20,\"tackle\":18,\"hand_save\":10,\"punch_save\":10,\"cross\":27,\"heading\":17}",
+      "heading": 17,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Milieu créatif, spécialisé dans la dernière passe et la conservation du ballon. Poste : MC, poste secondaire : MOC.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Michael",
+      "lastname": "Laudrup",
+      "age": 13,
+      "position": "Midfielder",
+      "origin": "world_legends",
+      "nationality": "Danemark",
+      "secondary_positions": "[\"Forward\"]",
+      "cost": 46,
+      "stats": "{\"speed\":70,\"stamina\":73,\"attack\":34,\"defense\":18,\"shot\":24,\"pass\":30,\"dribble\":29,\"block\":16,\"intercept\":20,\"tackle\":18,\"hand_save\":10,\"punch_save\":10,\"heading\":16}",
+      "heading": 16,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Milieu créatif, spécialisé dans la dernière passe et la conservation du ballon. Poste : MOC, poste secondaire : AT.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Brian",
+      "lastname": "Laudrup",
+      "age": 13,
+      "position": "Forward",
+      "origin": "world_legends",
+      "nationality": "Danemark",
+      "secondary_positions": "[\"Midfielder\"]",
+      "cost": 45,
+      "stats": "{\"speed\":78,\"stamina\":73,\"attack\":32,\"defense\":18,\"shot\":25,\"pass\":26,\"dribble\":29,\"block\":14,\"intercept\":17,\"tackle\":16,\"hand_save\":10,\"punch_save\":10,\"cross\":26,\"heading\":22}",
+      "heading": 22,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Attaquant de couloir, spécialiste des appels et des accélérations. Poste : AD, poste secondaire : MOC.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Preben",
+      "lastname": "Elkjær Larsen",
+      "age": 13,
+      "position": "Forward",
+      "origin": "world_legends",
+      "nationality": "Danemark",
+      "secondary_positions": "[]",
+      "cost": 46,
+      "stats": "{\"speed\":74,\"stamina\":79,\"attack\":35,\"defense\":19,\"shot\":28,\"pass\":22,\"dribble\":26,\"block\":16,\"intercept\":17,\"tackle\":17,\"hand_save\":10,\"punch_save\":10,\"heading\":25}",
+      "heading": 25,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Avant-centre puissant, privilégiant la frappe aux combinaisons techniques. Poste : BU.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Allan",
+      "lastname": "Simonsen",
+      "age": 13,
+      "position": "Forward",
+      "origin": "world_legends",
+      "nationality": "Danemark",
+      "secondary_positions": "[]",
+      "cost": 45,
+      "stats": "{\"speed\":76,\"stamina\":71,\"attack\":33,\"defense\":17,\"shot\":27,\"pass\":25,\"dribble\":29,\"block\":14,\"intercept\":17,\"tackle\":16,\"hand_save\":10,\"punch_save\":10,\"heading\":18}",
+      "heading": 18,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Attaquant de couloir, spécialiste des appels et des accélérations. Poste : AG, poste secondaire : AT.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Badou",
+      "lastname": "Ezzaki",
+      "age": 13,
+      "position": "Goalkeeper",
+      "origin": "world_legends",
+      "nationality": "Maroc",
+      "secondary_positions": "[]",
+      "cost": 48,
+      "stats": "{\"speed\":58,\"stamina\":73,\"attack\":14,\"defense\":32,\"shot\":11,\"pass\":18,\"dribble\":13,\"block\":22,\"intercept\":24,\"tackle\":17,\"hand_save\":28,\"punch_save\":26,\"heading\":14}",
+      "heading": 14,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Gardien de soutien, réactif et fiable sur sa ligne. Poste : GB. Surnom : Zaki.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Achraf",
+      "lastname": "Hakimi",
+      "age": 13,
+      "position": "Defender",
+      "origin": "world_legends",
+      "nationality": "Maroc",
+      "secondary_positions": "[\"Midfielder\"]",
+      "cost": 49,
+      "stats": "{\"speed\":81,\"stamina\":81,\"attack\":28,\"defense\":27,\"shot\":23,\"pass\":25,\"dribble\":26,\"block\":20,\"intercept\":22,\"tackle\":22,\"hand_save\":10,\"punch_save\":10,\"cross\":28,\"heading\":27}",
+      "heading": 27,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Latéral offensif et endurant, spécialisé dans les montées et les centres. Poste : DD, poste secondaire : MD.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Medhi",
+      "lastname": "Benatia",
+      "age": 13,
+      "position": "Defender",
+      "origin": "world_legends",
+      "nationality": "Maroc",
+      "secondary_positions": "[]",
+      "cost": 45,
+      "stats": "{\"speed\":62,\"stamina\":76,\"attack\":19,\"defense\":33,\"shot\":15,\"pass\":21,\"dribble\":17,\"block\":28,\"intercept\":27,\"tackle\":28,\"hand_save\":10,\"punch_save\":10,\"heading\":28}",
+      "heading": 28,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Défenseur de soutien, puissant au marquage et dans les duels. Poste : DC.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Noureddine",
+      "lastname": "Naybet",
+      "age": 13,
+      "position": "Defender",
+      "origin": "world_legends",
+      "nationality": "Maroc",
+      "secondary_positions": "[]",
+      "cost": 46,
+      "stats": "{\"speed\":64,\"stamina\":77,\"attack\":20,\"defense\":33,\"shot\":15,\"pass\":24,\"dribble\":19,\"block\":26,\"intercept\":28,\"tackle\":27,\"hand_save\":10,\"punch_save\":10,\"heading\":26}",
+      "heading": 26,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Défenseur de soutien, puissant au marquage et dans les duels. Poste : DC.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Abdelkrim",
+      "lastname": "El Hadrioui",
+      "age": 13,
+      "position": "Defender",
+      "origin": "world_legends",
+      "nationality": "Maroc",
+      "secondary_positions": "[\"Midfielder\"]",
+      "cost": 45,
+      "stats": "{\"speed\":69,\"stamina\":77,\"attack\":22,\"defense\":28,\"shot\":16,\"pass\":24,\"dribble\":21,\"block\":22,\"intercept\":24,\"tackle\":25,\"hand_save\":10,\"punch_save\":10,\"cross\":26,\"heading\":27}",
+      "heading": 27,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Latéral de soutien, appliqué défensivement et disponible dans son couloir. Poste : DG, poste secondaire : MG.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Mustapha",
+      "lastname": "Hadji",
+      "age": 13,
+      "position": "Midfielder",
+      "origin": "world_legends",
+      "nationality": "Maroc",
+      "secondary_positions": "[]",
+      "cost": 45,
+      "stats": "{\"speed\":72,\"stamina\":73,\"attack\":30,\"defense\":20,\"shot\":25,\"pass\":26,\"dribble\":28,\"block\":16,\"intercept\":20,\"tackle\":18,\"hand_save\":10,\"punch_save\":10,\"heading\":17}",
+      "heading": 17,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Milieu créatif, spécialisé dans la dernière passe et la conservation du ballon. Poste : MOC, poste secondaire : MD.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Abdelmajid",
+      "lastname": "Dolmy",
+      "age": 13,
+      "position": "Midfielder",
+      "origin": "world_legends",
+      "nationality": "Maroc",
+      "secondary_positions": "[]",
+      "cost": 46,
+      "stats": "{\"speed\":60,\"stamina\":80,\"attack\":22,\"defense\":30,\"shot\":18,\"pass\":27,\"dribble\":23,\"block\":23,\"intercept\":28,\"tackle\":26,\"hand_save\":10,\"punch_save\":10,\"heading\":18}",
+      "heading": 18,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Milieu récupérateur, spécialiste du placement et de la protection de la défense. Poste : MDC, poste secondaire : MC.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Abdelaziz",
+      "lastname": "Bouderbala",
+      "age": 13,
+      "position": "Midfielder",
+      "origin": "world_legends",
+      "nationality": "Maroc",
+      "secondary_positions": "[]",
+      "cost": 44,
+      "stats": "{\"speed\":74,\"stamina\":72,\"attack\":29,\"defense\":18,\"shot\":23,\"pass\":25,\"dribble\":29,\"block\":14,\"intercept\":18,\"tackle\":16,\"hand_save\":10,\"punch_save\":10,\"cross\":26,\"heading\":16}",
+      "heading": 16,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Milieu de couloir, rapide et habile dans les débordements. Poste : MG, poste secondaire : MOC.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Mohamed",
+      "lastname": "Timoumi",
+      "age": 13,
+      "position": "Midfielder",
+      "origin": "world_legends",
+      "nationality": "Maroc",
+      "secondary_positions": "[]",
+      "cost": 44,
+      "stats": "{\"speed\":65,\"stamina\":69,\"attack\":30,\"defense\":19,\"shot\":24,\"pass\":28,\"dribble\":29,\"block\":16,\"intercept\":20,\"tackle\":18,\"hand_save\":10,\"punch_save\":10,\"heading\":16}",
+      "heading": 16,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Milieu créatif, spécialisé dans la dernière passe et la conservation du ballon. Poste : MOC, poste secondaire : MC.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Larbi",
+      "lastname": "Benbarek",
+      "age": 13,
+      "position": "Forward",
+      "origin": "world_legends",
+      "nationality": "Maroc",
+      "secondary_positions": "[\"Midfielder\"]",
+      "cost": 45,
+      "stats": "{\"speed\":71,\"stamina\":73,\"attack\":33,\"defense\":18,\"shot\":26,\"pass\":28,\"dribble\":29,\"block\":16,\"intercept\":19,\"tackle\":17,\"hand_save\":10,\"punch_save\":10,\"heading\":19}",
+      "heading": 19,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Attaquant de liaison, capable de préparer une occasion autant que de la conclure. Poste : AT, poste secondaire : MOC.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Ahmed",
+      "lastname": "Faras",
+      "age": 13,
+      "position": "Forward",
+      "origin": "world_legends",
+      "nationality": "Maroc",
+      "secondary_positions": "[]",
+      "cost": 43,
+      "stats": "{\"speed\":67,\"stamina\":74,\"attack\":33,\"defense\":18,\"shot\":28,\"pass\":22,\"dribble\":25,\"block\":14,\"intercept\":16,\"tackle\":16,\"hand_save\":10,\"punch_save\":10,\"heading\":26}",
+      "heading": 26,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Attaquant de soutien, mobile et efficace dans la surface. Poste : BU.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Thomas",
+      "lastname": "Ravelli",
+      "age": 13,
+      "position": "Goalkeeper",
+      "origin": "world_legends",
+      "nationality": "Suède",
+      "secondary_positions": "[]",
+      "cost": 49,
+      "stats": "{\"speed\":59,\"stamina\":75,\"attack\":14,\"defense\":33,\"shot\":11,\"pass\":19,\"dribble\":13,\"block\":22,\"intercept\":25,\"tackle\":17,\"hand_save\":28,\"punch_save\":26,\"heading\":15}",
+      "heading": 15,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Gardien de soutien, réactif et fiable sur sa ligne. Poste : GB.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Roland",
+      "lastname": "Nilsson",
+      "age": 13,
+      "position": "Defender",
+      "origin": "world_legends",
+      "nationality": "Suède",
+      "secondary_positions": "[]",
+      "cost": 46,
+      "stats": "{\"speed\":68,\"stamina\":80,\"attack\":20,\"defense\":31,\"shot\":14,\"pass\":23,\"dribble\":20,\"block\":22,\"intercept\":27,\"tackle\":27,\"hand_save\":10,\"punch_save\":10,\"cross\":24,\"heading\":28}",
+      "heading": 28,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Latéral de soutien, appliqué défensivement et disponible dans son couloir. Poste : DD.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Björn",
+      "lastname": "Nordqvist",
+      "age": 13,
+      "position": "Defender",
+      "origin": "world_legends",
+      "nationality": "Suède",
+      "secondary_positions": "[]",
+      "cost": 45,
+      "stats": "{\"speed\":60,\"stamina\":79,\"attack\":18,\"defense\":33,\"shot\":14,\"pass\":22,\"dribble\":17,\"block\":27,\"intercept\":28,\"tackle\":28,\"hand_save\":10,\"punch_save\":10,\"heading\":27}",
+      "heading": 27,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Défenseur de soutien, puissant au marquage et dans les duels. Poste : DC.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Olof",
+      "lastname": "Mellberg",
+      "age": 13,
+      "position": "Defender",
+      "origin": "world_legends",
+      "nationality": "Suède",
+      "secondary_positions": "[]",
+      "cost": 45,
+      "stats": "{\"speed\":65,\"stamina\":80,\"attack\":18,\"defense\":32,\"shot\":14,\"pass\":20,\"dribble\":16,\"block\":28,\"intercept\":26,\"tackle\":28,\"hand_save\":10,\"punch_save\":10,\"heading\":28}",
+      "heading": 28,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Défenseur de soutien, puissant au marquage et dans les duels. Poste : DC, poste secondaire : DD.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Orvar",
+      "lastname": "Bergmark",
+      "age": 13,
+      "position": "Defender",
+      "origin": "world_legends",
+      "nationality": "Suède",
+      "secondary_positions": "[]",
+      "cost": 45,
+      "stats": "{\"speed\":67,\"stamina\":78,\"attack\":20,\"defense\":31,\"shot\":15,\"pass\":23,\"dribble\":20,\"block\":22,\"intercept\":27,\"tackle\":27,\"hand_save\":10,\"punch_save\":10,\"cross\":23,\"heading\":28}",
+      "heading": 28,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Latéral de soutien, appliqué défensivement et disponible dans son couloir. Poste : DG, poste secondaire : DD.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Nils",
+      "lastname": "Liedholm",
+      "age": 13,
+      "position": "Midfielder",
+      "origin": "world_legends",
+      "nationality": "Suède",
+      "secondary_positions": "[]",
+      "cost": 46,
+      "stats": "{\"speed\":62,\"stamina\":77,\"attack\":30,\"defense\":24,\"shot\":24,\"pass\":30,\"dribble\":27,\"block\":16,\"intercept\":24,\"tackle\":18,\"hand_save\":10,\"punch_save\":10,\"heading\":17}",
+      "heading": 17,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Milieu créatif, spécialisé dans la dernière passe et la conservation du ballon. Poste : MC, poste secondaire : MOC.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Gunnar",
+      "lastname": "Gren",
+      "age": 13,
+      "position": "Midfielder",
+      "origin": "world_legends",
+      "nationality": "Suède",
+      "secondary_positions": "[\"Forward\"]",
+      "cost": 45,
+      "stats": "{\"speed\":64,\"stamina\":73,\"attack\":32,\"defense\":19,\"shot\":26,\"pass\":29,\"dribble\":28,\"block\":16,\"intercept\":20,\"tackle\":18,\"hand_save\":10,\"punch_save\":10,\"heading\":22}",
+      "heading": 22,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Milieu créatif, spécialisé dans la dernière passe et la conservation du ballon. Poste : MOC, poste secondaire : AT.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Fredrik",
+      "lastname": "Ljungberg",
+      "age": 13,
+      "position": "Midfielder",
+      "origin": "world_legends",
+      "nationality": "Suède",
+      "secondary_positions": "[]",
+      "cost": 46,
+      "stats": "{\"speed\":77,\"stamina\":79,\"attack\":31,\"defense\":21,\"shot\":25,\"pass\":25,\"dribble\":27,\"block\":14,\"intercept\":18,\"tackle\":16,\"hand_save\":10,\"punch_save\":10,\"cross\":24,\"heading\":17}",
+      "heading": 17,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Milieu de couloir, rapide et habile dans les débordements. Poste : MD, poste secondaire : MOC.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Gunnar",
+      "lastname": "Nordahl",
+      "age": 13,
+      "position": "Forward",
+      "origin": "world_legends",
+      "nationality": "Suède",
+      "secondary_positions": "[]",
+      "cost": 44,
+      "stats": "{\"speed\":67,\"stamina\":77,\"attack\":37,\"defense\":18,\"shot\":30,\"pass\":20,\"dribble\":23,\"block\":16,\"intercept\":17,\"tackle\":17,\"hand_save\":10,\"punch_save\":10,\"heading\":30}",
+      "heading": 30,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Avant-centre puissant, privilégiant la frappe aux combinaisons techniques. Poste : BU.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Zlatan",
+      "lastname": "Ibrahimović",
+      "age": 13,
+      "position": "Forward",
+      "origin": "world_legends",
+      "nationality": "Suède",
+      "secondary_positions": "[]",
+      "cost": 46,
+      "stats": "{\"speed\":65,\"stamina\":75,\"attack\":37,\"defense\":18,\"shot\":30,\"pass\":27,\"dribble\":29,\"block\":18,\"intercept\":18,\"tackle\":18,\"hand_save\":10,\"punch_save\":10,\"heading\":28}",
+      "heading": 28,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Avant-centre de soutien, spécialiste du jeu aérien et des remises. Poste : BU, poste secondaire : AT.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Henrik",
+      "lastname": "Larsson",
+      "age": 13,
+      "position": "Forward",
+      "origin": "world_legends",
+      "nationality": "Suède",
+      "secondary_positions": "[]",
+      "cost": 46,
+      "stats": "{\"speed\":74,\"stamina\":80,\"attack\":35,\"defense\":21,\"shot\":29,\"pass\":25,\"dribble\":26,\"block\":14,\"intercept\":16,\"tackle\":16,\"hand_save\":10,\"punch_save\":10,\"heading\":29}",
+      "heading": 29,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Attaquant de soutien, mobile et efficace dans la surface. Poste : BU, poste secondaire : AT.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Erik",
+      "lastname": "Thorstvedt",
+      "age": 13,
+      "position": "Goalkeeper",
+      "origin": "world_legends",
+      "nationality": "Norvège",
+      "secondary_positions": "[]",
+      "cost": 48,
+      "stats": "{\"speed\":56,\"stamina\":74,\"attack\":14,\"defense\":32,\"shot\":11,\"pass\":19,\"dribble\":13,\"block\":22,\"intercept\":24,\"tackle\":17,\"hand_save\":27,\"punch_save\":28,\"heading\":14}",
+      "heading": 14,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Gardien de soutien, réactif et fiable sur sa ligne. Poste : GB.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Henning",
+      "lastname": "Berg",
+      "age": 13,
+      "position": "Defender",
+      "origin": "world_legends",
+      "nationality": "Norvège",
+      "secondary_positions": "[]",
+      "cost": 45,
+      "stats": "{\"speed\":65,\"stamina\":78,\"attack\":20,\"defense\":31,\"shot\":15,\"pass\":23,\"dribble\":19,\"block\":22,\"intercept\":27,\"tackle\":27,\"hand_save\":10,\"punch_save\":10,\"heading\":26,\"cross\":22}",
+      "heading": 26,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Latéral de soutien, appliqué défensivement et disponible dans son couloir. Poste : DD, poste secondaire : DC.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Rune",
+      "lastname": "Bratseth",
+      "age": 13,
+      "position": "Defender",
+      "origin": "world_legends",
+      "nationality": "Norvège",
+      "secondary_positions": "[]",
+      "cost": 48,
+      "stats": "{\"speed\":74,\"stamina\":77,\"attack\":21,\"defense\":34,\"shot\":16,\"pass\":24,\"dribble\":20,\"block\":24,\"intercept\":29,\"tackle\":28,\"hand_save\":10,\"punch_save\":10,\"heading\":28}",
+      "heading": 28,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Défenseur organisateur, spécialisé dans la lecture du jeu et la relance. Poste : DC.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Ronny",
+      "lastname": "Johnsen",
+      "age": 13,
+      "position": "Defender",
+      "origin": "world_legends",
+      "nationality": "Norvège",
+      "secondary_positions": "[\"Midfielder\"]",
+      "cost": 46,
+      "stats": "{\"speed\":70,\"stamina\":76,\"attack\":20,\"defense\":32,\"shot\":16,\"pass\":23,\"dribble\":19,\"block\":26,\"intercept\":27,\"tackle\":27,\"hand_save\":10,\"punch_save\":10,\"heading\":28}",
+      "heading": 28,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Défenseur de soutien, puissant au marquage et dans les duels. Poste : DC, poste secondaire : MDC.",
+      "photo_path": null
+    },
+    {
+      "firstname": "John Arne",
+      "lastname": "Riise",
+      "age": 13,
+      "position": "Defender",
+      "origin": "world_legends",
+      "nationality": "Norvège",
+      "secondary_positions": "[\"Midfielder\"]",
+      "cost": 48,
+      "stats": "{\"speed\":73,\"stamina\":81,\"attack\":26,\"defense\":28,\"shot\":28,\"pass\":23,\"dribble\":22,\"block\":20,\"intercept\":22,\"tackle\":25,\"hand_save\":10,\"punch_save\":10,\"cross\":27,\"heading\":27}",
+      "heading": 27,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Latéral offensif et endurant, spécialisé dans les montées et les centres. Poste : DG, poste secondaire : MG.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Erik",
+      "lastname": "Mykland",
+      "age": 13,
+      "position": "Midfielder",
+      "origin": "world_legends",
+      "nationality": "Norvège",
+      "secondary_positions": "[]",
+      "cost": 47,
+      "stats": "{\"speed\":68,\"stamina\":80,\"attack\":25,\"defense\":25,\"shot\":19,\"pass\":27,\"dribble\":27,\"block\":20,\"intercept\":25,\"tackle\":24,\"hand_save\":10,\"punch_save\":10,\"heading\":17}",
+      "heading": 17,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Milieu de soutien endurant, capable de relier défense et attaque. Poste : MC, poste secondaire : MDC.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Kjetil",
+      "lastname": "Rekdal",
+      "age": 13,
+      "position": "Midfielder",
+      "origin": "world_legends",
+      "nationality": "Norvège",
+      "secondary_positions": "[]",
+      "cost": 46,
+      "stats": "{\"speed\":60,\"stamina\":78,\"attack\":26,\"defense\":28,\"shot\":25,\"pass\":26,\"dribble\":22,\"block\":20,\"intercept\":27,\"tackle\":26,\"hand_save\":10,\"punch_save\":10,\"heading\":18}",
+      "heading": 18,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Milieu de soutien endurant, capable de relier défense et attaque. Poste : MC, poste secondaire : MDC.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Martin",
+      "lastname": "Ødegaard",
+      "age": 13,
+      "position": "Midfielder",
+      "origin": "world_legends",
+      "nationality": "Norvège",
+      "secondary_positions": "[]",
+      "cost": 47,
+      "stats": "{\"speed\":68,\"stamina\":79,\"attack\":32,\"defense\":22,\"shot\":25,\"pass\":29,\"dribble\":28,\"block\":16,\"intercept\":22,\"tackle\":18,\"hand_save\":10,\"punch_save\":10,\"heading\":17}",
+      "heading": 17,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Milieu créatif, spécialisé dans la dernière passe et la conservation du ballon. Poste : MOC, poste secondaire : MC.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Ole Gunnar",
+      "lastname": "Solskjær",
+      "age": 13,
+      "position": "Forward",
+      "origin": "world_legends",
+      "nationality": "Norvège",
+      "secondary_positions": "[]",
+      "cost": 44,
+      "stats": "{\"speed\":71,\"stamina\":73,\"attack\":34,\"defense\":18,\"shot\":29,\"pass\":24,\"dribble\":25,\"block\":14,\"intercept\":16,\"tackle\":16,\"hand_save\":10,\"punch_save\":10,\"cross\":23,\"heading\":24}",
+      "heading": 24,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Attaquant de soutien, mobile et efficace dans la surface. Poste : AD, poste secondaire : BU.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Erling",
+      "lastname": "Haaland",
+      "age": 13,
+      "position": "Forward",
+      "origin": "world_legends",
+      "nationality": "Norvège",
+      "secondary_positions": "[]",
+      "cost": 46,
+      "stats": "{\"speed\":79,\"stamina\":78,\"attack\":37,\"defense\":17,\"shot\":30,\"pass\":19,\"dribble\":23,\"block\":16,\"intercept\":17,\"tackle\":17,\"hand_save\":10,\"punch_save\":10,\"heading\":29}",
+      "heading": 29,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Avant-centre puissant, privilégiant la frappe aux combinaisons techniques. Poste : BU.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Tom",
+      "lastname": "Lund",
+      "age": 13,
+      "position": "Forward",
+      "origin": "world_legends",
+      "nationality": "Norvège",
+      "secondary_positions": "[]",
+      "cost": 45,
+      "stats": "{\"speed\":72,\"stamina\":72,\"attack\":32,\"defense\":18,\"shot\":27,\"pass\":27,\"dribble\":29,\"block\":16,\"intercept\":19,\"tackle\":17,\"hand_save\":10,\"punch_save\":10,\"heading\":21}",
+      "heading": 21,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Attaquant de liaison, capable de préparer une occasion autant que de la conclure. Poste : AG, poste secondaire : AT.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Vincent",
+      "lastname": "Enyeama",
+      "age": 13,
+      "position": "Goalkeeper",
+      "origin": "world_legends",
+      "nationality": "Nigéria",
+      "secondary_positions": "[]",
+      "cost": 49,
+      "stats": "{\"speed\":60,\"stamina\":75,\"attack\":14,\"defense\":33,\"shot\":11,\"pass\":20,\"dribble\":14,\"block\":22,\"intercept\":25,\"tackle\":17,\"hand_save\":28,\"punch_save\":26,\"heading\":15}",
+      "heading": 15,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Gardien de soutien, réactif et fiable sur sa ligne. Poste : GB.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Joseph",
+      "lastname": "Yobo",
+      "age": 13,
+      "position": "Defender",
+      "origin": "world_legends",
+      "nationality": "Nigéria",
+      "secondary_positions": "[]",
+      "cost": 46,
+      "stats": "{\"speed\":71,\"stamina\":79,\"attack\":20,\"defense\":31,\"shot\":15,\"pass\":22,\"dribble\":19,\"block\":22,\"intercept\":26,\"tackle\":27,\"hand_save\":10,\"punch_save\":10,\"heading\":27,\"cross\":22}",
+      "heading": 27,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Latéral de soutien, appliqué défensivement et disponible dans son couloir. Poste : DD, poste secondaire : DC.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Stephen",
+      "lastname": "Keshi",
+      "age": 13,
+      "position": "Defender",
+      "origin": "world_legends",
+      "nationality": "Nigéria",
+      "secondary_positions": "[\"Midfielder\"]",
+      "cost": 47,
+      "stats": "{\"speed\":60,\"stamina\":78,\"attack\":23,\"defense\":33,\"shot\":22,\"pass\":26,\"dribble\":20,\"block\":24,\"intercept\":28,\"tackle\":27,\"hand_save\":10,\"punch_save\":10,\"heading\":27}",
+      "heading": 27,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Défenseur organisateur, spécialisé dans la lecture du jeu et la relance. Poste : DC, poste secondaire : MDC.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Taribo",
+      "lastname": "West",
+      "age": 13,
+      "position": "Defender",
+      "origin": "world_legends",
+      "nationality": "Nigéria",
+      "secondary_positions": "[]",
+      "cost": 45,
+      "stats": "{\"speed\":67,\"stamina\":78,\"attack\":18,\"defense\":33,\"shot\":13,\"pass\":19,\"dribble\":16,\"block\":28,\"intercept\":24,\"tackle\":29,\"hand_save\":10,\"punch_save\":10,\"heading\":27}",
+      "heading": 27,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Défenseur de soutien, puissant au marquage et dans les duels. Poste : DC, poste secondaire : DG.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Ben",
+      "lastname": "Iroha",
+      "age": 13,
+      "position": "Defender",
+      "origin": "world_legends",
+      "nationality": "Nigéria",
+      "secondary_positions": "[\"Midfielder\"]",
+      "cost": 46,
+      "stats": "{\"speed\":73,\"stamina\":77,\"attack\":23,\"defense\":28,\"shot\":17,\"pass\":23,\"dribble\":23,\"block\":22,\"intercept\":25,\"tackle\":25,\"hand_save\":10,\"punch_save\":10,\"cross\":25,\"heading\":27}",
+      "heading": 27,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Latéral de soutien, appliqué défensivement et disponible dans son couloir. Poste : DG, poste secondaire : MG.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Sunday",
+      "lastname": "Oliseh",
+      "age": 13,
+      "position": "Midfielder",
+      "origin": "world_legends",
+      "nationality": "Nigéria",
+      "secondary_positions": "[]",
+      "cost": 48,
+      "stats": "{\"speed\":64,\"stamina\":80,\"attack\":25,\"defense\":30,\"shot\":27,\"pass\":26,\"dribble\":22,\"block\":23,\"intercept\":28,\"tackle\":27,\"hand_save\":10,\"punch_save\":10,\"heading\":18}",
+      "heading": 18,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Milieu récupérateur, spécialiste du placement et de la protection de la défense. Poste : MDC, poste secondaire : MC.",
+      "photo_path": null
+    },
+    {
+      "firstname": "John Obi",
+      "lastname": "Mikel",
+      "age": 13,
+      "position": "Midfielder",
+      "origin": "world_legends",
+      "nationality": "Nigéria",
+      "secondary_positions": "[]",
+      "cost": 46,
+      "stats": "{\"speed\":59,\"stamina\":78,\"attack\":23,\"defense\":29,\"shot\":17,\"pass\":28,\"dribble\":24,\"block\":23,\"intercept\":27,\"tackle\":26,\"hand_save\":10,\"punch_save\":10,\"heading\":18}",
+      "heading": 18,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Milieu récupérateur, spécialiste du placement et de la protection de la défense. Poste : MC, poste secondaire : MDC.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Jay-Jay",
+      "lastname": "Okocha",
+      "age": 13,
+      "position": "Midfielder",
+      "origin": "world_legends",
+      "nationality": "Nigéria",
+      "secondary_positions": "[]",
+      "cost": 45,
+      "stats": "{\"speed\":70,\"stamina\":70,\"attack\":33,\"defense\":18,\"shot\":26,\"pass\":28,\"dribble\":30,\"block\":16,\"intercept\":20,\"tackle\":18,\"hand_save\":10,\"punch_save\":10,\"cross\":25,\"heading\":16}",
+      "heading": 16,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Milieu créatif, spécialisé dans la dernière passe et la conservation du ballon. Poste : MOC, poste secondaire : MD.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Segun",
+      "lastname": "Odegbami",
+      "age": 13,
+      "position": "Forward",
+      "origin": "world_legends",
+      "nationality": "Nigéria",
+      "secondary_positions": "[]",
+      "cost": 45,
+      "stats": "{\"speed\":78,\"stamina\":75,\"attack\":32,\"defense\":17,\"shot\":27,\"pass\":23,\"dribble\":28,\"block\":14,\"intercept\":17,\"tackle\":16,\"hand_save\":10,\"punch_save\":10,\"cross\":26,\"heading\":24}",
+      "heading": 24,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Attaquant de couloir, spécialiste des appels et des accélérations. Poste : AD, poste secondaire : BU.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Rashidi",
+      "lastname": "Yekini",
+      "age": 13,
+      "position": "Forward",
+      "origin": "world_legends",
+      "nationality": "Nigéria",
+      "secondary_positions": "[]",
+      "cost": 44,
+      "stats": "{\"speed\":70,\"stamina\":76,\"attack\":36,\"defense\":18,\"shot\":29,\"pass\":19,\"dribble\":22,\"block\":16,\"intercept\":17,\"tackle\":17,\"hand_save\":10,\"punch_save\":10,\"heading\":29}",
+      "heading": 29,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Avant-centre puissant, privilégiant la frappe aux combinaisons techniques. Poste : BU.",
+      "photo_path": null
+    },
+    {
+      "firstname": "Nwankwo",
+      "lastname": "Kanu",
+      "age": 13,
+      "position": "Forward",
+      "origin": "world_legends",
+      "nationality": "Nigéria",
+      "secondary_positions": "[]",
+      "cost": 44,
+      "stats": "{\"speed\":62,\"stamina\":72,\"attack\":33,\"defense\":19,\"shot\":27,\"pass\":27,\"dribble\":29,\"block\":16,\"intercept\":19,\"tackle\":17,\"hand_save\":10,\"punch_save\":10,\"heading\":26}",
+      "heading": 26,
+      "special_moves": null,
+      "description": "Légendes internationales — profil adapté au jeu. Attaquant de liaison, capable de préparer une occasion autant que de la conclure. Poste : AG, poste secondaire : AT.",
+      "photo_path": null
+    }
+  ],
+  "updates": [
+    {
+      "origin": "captain_tsubasa",
+      "firstname": "Takeshi",
+      "lastname": "Sawada",
+      "previous": {
+        "cost": 50,
+        "stats": "{\"pass\": 27, \"shot\": 25, \"block\": 19, \"speed\": 73, \"attack\": 35, \"tackle\": 23, \"defense\": 28, \"dribble\": 27, \"heading\": 12, \"stamina\": 80, \"hand_save\": 15, \"intercept\": 24, \"punch_save\": 15}"
+      },
+      "values": {
+        "cost": 46,
+        "stats": "{\"speed\":70,\"stamina\":73,\"defense\":24,\"attack\":31,\"shot\":23,\"pass\":27,\"dribble\":25,\"block\":19,\"intercept\":22,\"tackle\":20,\"hand_save\":15,\"punch_save\":15,\"heading\":12}"
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "Hermann",
+      "lastname": "Kaltz",
+      "previous": {
+        "cost": 52,
+        "stats": "{\"pass\": 27, \"shot\": 21, \"block\": 30, \"speed\": 72, \"attack\": 28, \"tackle\": 30, \"defense\": 39, \"dribble\": 24, \"heading\": 24, \"stamina\": 80, \"hand_save\": 15, \"intercept\": 28, \"punch_save\": 15}"
+      },
+      "values": {
+        "cost": 51,
+        "stats": "{\"speed\":72,\"stamina\":80,\"defense\":37,\"attack\":28,\"shot\":21,\"pass\":27,\"dribble\":24,\"block\":28,\"intercept\":28,\"tackle\":29,\"hand_save\":15,\"punch_save\":15,\"heading\":24}"
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "Manfred",
+      "lastname": "Margus",
+      "previous": {
+        "cost": 47,
+        "stats": "{\"pass\": 21, \"shot\": 16, \"block\": 30, \"speed\": 66, \"attack\": 20, \"tackle\": 30, \"defense\": 38, \"dribble\": 18, \"heading\": 22, \"stamina\": 76, \"hand_save\": 15, \"intercept\": 28, \"punch_save\": 15}",
+        "heading": 22,
+        "description": "Défenseur central solide et discipliné, pilier de l’arrière-garde allemande."
+      },
+      "values": {
+        "cost": 44,
+        "stats": "{\"speed\":65,\"stamina\":76,\"defense\":20,\"attack\":35,\"shot\":28,\"pass\":21,\"dribble\":22,\"block\":18,\"intercept\":18,\"tackle\":19,\"hand_save\":15,\"punch_save\":15,\"heading\":23}",
+        "heading": 23,
+        "description": "Avant-centre allemand puissant, Margus apporte sa présence physique et son jeu aérien pour conclure les attaques."
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "Franz",
+      "lastname": "Schester",
+      "previous": {
+        "cost": 47,
+        "stats": "{\"pass\": 21, \"shot\": 16, \"block\": 30, \"speed\": 66, \"attack\": 20, \"tackle\": 30, \"defense\": 38, \"dribble\": 18, \"heading\": 20, \"stamina\": 76, \"hand_save\": 15, \"intercept\": 28, \"punch_save\": 15}",
+        "heading": 20,
+        "description": "Défenseur central solide et discipliné, pilier de l’arrière-garde allemande."
+      },
+      "values": {
+        "cost": 48,
+        "stats": "{\"speed\":70,\"stamina\":76,\"defense\":26,\"attack\":32,\"shot\":24,\"pass\":28,\"dribble\":26,\"block\":20,\"intercept\":23,\"tackle\":22,\"hand_save\":15,\"punch_save\":15,\"heading\":18}",
+        "heading": 18,
+        "description": "Milieu technique allemand, Schester organise les attaques par ses passes et sa conduite de balle, en soutien de Schneider et Margus."
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "Louis",
+      "lastname": "Napoleon",
+      "previous": {
+        "cost": 50,
+        "stats": "{\"pass\": 27, \"shot\": 31, \"block\": 19, \"speed\": 74, \"attack\": 40, \"tackle\": 21, \"defense\": 23, \"dribble\": 29, \"heading\": 23, \"stamina\": 78, \"hand_save\": 15, \"intercept\": 21, \"punch_save\": 15}"
+      },
+      "values": {
+        "cost": 48,
+        "stats": "{\"speed\":74,\"stamina\":78,\"defense\":23,\"attack\":37,\"shot\":29,\"pass\":24,\"dribble\":26,\"block\":19,\"intercept\":21,\"tackle\":21,\"hand_save\":15,\"punch_save\":15,\"heading\":23}"
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Salinas",
+      "previous": {
+        "cost": 52,
+        "stats": "{\"pass\": 18, \"shot\": 13, \"block\": 26, \"speed\": 60, \"attack\": 16, \"tackle\": 20, \"defense\": 38, \"dribble\": 16, \"heading\": 17, \"stamina\": 76, \"hand_save\": 30, \"intercept\": 24, \"punch_save\": 29}",
+        "heading": 17
+      },
+      "values": {
+        "cost": 50,
+        "stats": "{\"speed\":60,\"stamina\":75,\"defense\":35,\"attack\":16,\"shot\":13,\"pass\":18,\"dribble\":16,\"block\":24,\"intercept\":22,\"tackle\":20,\"hand_save\":29,\"punch_save\":28,\"heading\":16}",
+        "heading": 16
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Alberto",
+      "previous": {
+        "cost": 52,
+        "stats": "{\"pass\": 26, \"shot\": 20, \"block\": 30, \"speed\": 73, \"attack\": 26, \"tackle\": 30, \"defense\": 39, \"dribble\": 24, \"heading\": 30, \"stamina\": 82, \"hand_save\": 15, \"intercept\": 28, \"punch_save\": 15}",
+        "heading": 30
+      },
+      "values": {
+        "cost": 49,
+        "stats": "{\"speed\":71,\"stamina\":77,\"defense\":34,\"attack\":26,\"shot\":20,\"pass\":26,\"dribble\":24,\"block\":27,\"intercept\":25,\"tackle\":27,\"hand_save\":15,\"punch_save\":15,\"heading\":29}",
+        "heading": 29
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Casa Grande",
+      "previous": {
+        "cost": 50,
+        "stats": "{\"pass\": 24, \"shot\": 19, \"block\": 30, \"speed\": 71, \"attack\": 24, \"tackle\": 30, \"defense\": 39, \"dribble\": 22, \"heading\": 30, \"stamina\": 81, \"hand_save\": 15, \"intercept\": 27, \"punch_save\": 15}",
+        "heading": 30
+      },
+      "values": {
+        "cost": 48,
+        "stats": "{\"speed\":69,\"stamina\":76,\"defense\":34,\"attack\":24,\"shot\":19,\"pass\":24,\"dribble\":22,\"block\":27,\"intercept\":24,\"tackle\":27,\"hand_save\":15,\"punch_save\":15,\"heading\":29}",
+        "heading": 29
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Giorgi",
+      "previous": {
+        "cost": 49,
+        "stats": "{\"pass\": 23, \"shot\": 18, \"block\": 29, \"speed\": 70, \"attack\": 22, \"tackle\": 29, \"defense\": 37, \"dribble\": 22, \"heading\": 30, \"stamina\": 79, \"hand_save\": 15, \"intercept\": 27, \"punch_save\": 15}",
+        "heading": 30
+      },
+      "values": {
+        "cost": 46,
+        "stats": "{\"speed\":68,\"stamina\":74,\"defense\":32,\"attack\":22,\"shot\":18,\"pass\":23,\"dribble\":22,\"block\":26,\"intercept\":24,\"tackle\":26,\"hand_save\":15,\"punch_save\":15,\"heading\":28}",
+        "heading": 28
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Senardo",
+      "previous": {
+        "cost": 48,
+        "stats": "{\"pass\": 22, \"shot\": 17, \"block\": 28, \"speed\": 69, \"attack\": 21, \"tackle\": 28, \"defense\": 36, \"dribble\": 21, \"heading\": 29, \"stamina\": 78, \"hand_save\": 15, \"intercept\": 26, \"punch_save\": 15}",
+        "heading": 29
+      },
+      "values": {
+        "cost": 45,
+        "stats": "{\"speed\":67,\"stamina\":73,\"defense\":31,\"attack\":21,\"shot\":17,\"pass\":22,\"dribble\":21,\"block\":25,\"intercept\":23,\"tackle\":25,\"hand_save\":15,\"punch_save\":15,\"heading\":28}",
+        "heading": 28
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Silva",
+      "previous": {
+        "cost": 50,
+        "stats": "{\"pass\": 29, \"shot\": 26, \"block\": 22, \"speed\": 73, \"attack\": 33, \"tackle\": 24, \"defense\": 27, \"dribble\": 28, \"heading\": 18, \"stamina\": 80, \"hand_save\": 15, \"intercept\": 24, \"punch_save\": 15}"
+      },
+      "values": {
+        "cost": 49,
+        "stats": "{\"speed\":71,\"stamina\":76,\"defense\":27,\"attack\":31,\"shot\":26,\"pass\":27,\"dribble\":26,\"block\":22,\"intercept\":24,\"tackle\":24,\"hand_save\":15,\"punch_save\":15,\"heading\":18}"
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Dugo",
+      "previous": {
+        "cost": 50,
+        "stats": "{\"pass\": 28, \"shot\": 25, \"block\": 22, \"speed\": 73, \"attack\": 32, \"tackle\": 23, \"defense\": 27, \"dribble\": 28, \"heading\": 18, \"stamina\": 79, \"hand_save\": 15, \"intercept\": 24, \"punch_save\": 15}"
+      },
+      "values": {
+        "cost": 48,
+        "stats": "{\"speed\":71,\"stamina\":75,\"defense\":27,\"attack\":30,\"shot\":25,\"pass\":26,\"dribble\":26,\"block\":22,\"intercept\":24,\"tackle\":23,\"hand_save\":15,\"punch_save\":15,\"heading\":18}"
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Blanco",
+      "previous": {
+        "cost": 50,
+        "stats": "{\"pass\": 28, \"shot\": 24, \"block\": 24, \"speed\": 72, \"attack\": 31, \"tackle\": 25, \"defense\": 29, \"dribble\": 27, \"heading\": 18, \"stamina\": 80, \"hand_save\": 15, \"intercept\": 26, \"punch_save\": 15}"
+      },
+      "values": {
+        "cost": 49,
+        "stats": "{\"speed\":70,\"stamina\":76,\"defense\":29,\"attack\":29,\"shot\":24,\"pass\":26,\"dribble\":25,\"block\":24,\"intercept\":26,\"tackle\":25,\"hand_save\":15,\"punch_save\":15,\"heading\":18}"
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Marcio",
+      "previous": {
+        "cost": 48,
+        "stats": "{\"pass\": 27, \"shot\": 24, \"block\": 22, \"speed\": 71, \"attack\": 30, \"tackle\": 23, \"defense\": 26, \"dribble\": 26, \"heading\": 18, \"stamina\": 78, \"hand_save\": 15, \"intercept\": 24, \"punch_save\": 15}"
+      },
+      "values": {
+        "cost": 47,
+        "stats": "{\"speed\":69,\"stamina\":74,\"defense\":26,\"attack\":28,\"shot\":24,\"pass\":25,\"dribble\":24,\"block\":22,\"intercept\":24,\"tackle\":23,\"hand_save\":15,\"punch_save\":15,\"heading\":18}"
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Pepe",
+      "previous": {
+        "nationality": "Brésil",
+        "cost": 51,
+        "stats": "{\"pass\": 25, \"shot\": 31, \"block\": 19, \"speed\": 78, \"attack\": 41, \"tackle\": 21, \"defense\": 24, \"dribble\": 29, \"heading\": 24, \"stamina\": 83, \"hand_save\": 15, \"intercept\": 21, \"punch_save\": 15}",
+        "heading": 24
+      },
+      "values": {
+        "nationality": "Portugal",
+        "cost": 48,
+        "stats": "{\"speed\":75,\"stamina\":78,\"defense\":24,\"attack\":36,\"shot\":28,\"pass\":23,\"dribble\":26,\"block\":19,\"intercept\":21,\"tackle\":21,\"hand_save\":15,\"punch_save\":15,\"heading\":23}",
+        "heading": 23
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "Luciano",
+      "lastname": "Leo",
+      "previous": {
+        "cost": 50,
+        "stats": "{\"pass\": 26, \"shot\": 29, \"block\": 18, \"speed\": 80, \"attack\": 38, \"tackle\": 20, \"defense\": 23, \"dribble\": 30, \"heading\": 24, \"stamina\": 82, \"hand_save\": 15, \"intercept\": 20, \"punch_save\": 15}",
+        "heading": 24
+      },
+      "values": {
+        "cost": 48,
+        "stats": "{\"speed\":78,\"stamina\":78,\"defense\":23,\"attack\":35,\"shot\":27,\"pass\":25,\"dribble\":28,\"block\":18,\"intercept\":20,\"tackle\":20,\"hand_save\":15,\"punch_save\":15,\"heading\":23}",
+        "heading": 23
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "Ramon",
+      "lastname": "Galvan",
+      "previous": {
+        "cost": 49,
+        "stats": "{\"pass\": 23, \"shot\": 18, \"block\": 30, \"speed\": 69, \"attack\": 22, \"tackle\": 30, \"defense\": 38, \"dribble\": 22, \"heading\": 30, \"stamina\": 77, \"hand_save\": 15, \"intercept\": 28, \"punch_save\": 15}",
+        "heading": 30
+      },
+      "values": {
+        "cost": 48,
+        "stats": "{\"speed\":69,\"stamina\":77,\"defense\":35,\"attack\":22,\"shot\":18,\"pass\":23,\"dribble\":22,\"block\":28,\"intercept\":26,\"tackle\":28,\"hand_save\":15,\"punch_save\":15,\"heading\":29}",
+        "heading": 29
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "Juan",
+      "lastname": "Babington",
+      "previous": {
+        "cost": 51,
+        "stats": "{\"pass\": 30, \"shot\": 26, \"block\": 23, \"speed\": 72, \"attack\": 32, \"tackle\": 25, \"defense\": 27, \"dribble\": 29, \"heading\": 18, \"stamina\": 79, \"hand_save\": 15, \"intercept\": 25, \"punch_save\": 15}"
+      },
+      "values": {
+        "cost": 49,
+        "stats": "{\"speed\":72,\"stamina\":75,\"defense\":27,\"attack\":30,\"shot\":26,\"pass\":27,\"dribble\":26,\"block\":23,\"intercept\":25,\"tackle\":25,\"hand_save\":15,\"punch_save\":15,\"heading\":18}"
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Conzales",
+      "previous": {
+        "cost": 52,
+        "stats": "{\"pass\": 18, \"shot\": 13, \"block\": 26, \"speed\": 60, \"attack\": 16, \"tackle\": 20, \"defense\": 38, \"dribble\": 16, \"heading\": 17, \"stamina\": 76, \"hand_save\": 29, \"intercept\": 24, \"punch_save\": 28}",
+        "heading": 17
+      },
+      "values": {
+        "cost": 48,
+        "stats": "{\"speed\":60,\"stamina\":72,\"defense\":32,\"attack\":16,\"shot\":13,\"pass\":18,\"dribble\":16,\"block\":23,\"intercept\":21,\"tackle\":20,\"hand_save\":27,\"punch_save\":25,\"heading\":14}",
+        "heading": 14
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Amerigo",
+      "previous": {
+        "cost": 50,
+        "stats": "{\"pass\": 23, \"shot\": 17, \"block\": 30, \"speed\": 70, \"attack\": 22, \"tackle\": 30, \"defense\": 38, \"dribble\": 22, \"heading\": 30, \"stamina\": 80, \"hand_save\": 15, \"intercept\": 28, \"punch_save\": 15}",
+        "heading": 30
+      },
+      "values": {
+        "cost": 47,
+        "stats": "{\"speed\":68,\"stamina\":75,\"defense\":33,\"attack\":22,\"shot\":17,\"pass\":23,\"dribble\":22,\"block\":27,\"intercept\":25,\"tackle\":27,\"hand_save\":15,\"punch_save\":15,\"heading\":29}",
+        "heading": 29
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Pazu",
+      "previous": {
+        "cost": 49,
+        "stats": "{\"pass\": 22, \"shot\": 17, \"block\": 29, \"speed\": 69, \"attack\": 21, \"tackle\": 29, \"defense\": 38, \"dribble\": 21, \"heading\": 30, \"stamina\": 80, \"hand_save\": 15, \"intercept\": 27, \"punch_save\": 15}",
+        "heading": 30
+      },
+      "values": {
+        "cost": 46,
+        "stats": "{\"speed\":67,\"stamina\":75,\"defense\":33,\"attack\":21,\"shot\":17,\"pass\":22,\"dribble\":21,\"block\":26,\"intercept\":24,\"tackle\":26,\"hand_save\":15,\"punch_save\":15,\"heading\":29}",
+        "heading": 29
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Olivares",
+      "previous": {
+        "cost": 48,
+        "stats": "{\"pass\": 21, \"shot\": 16, \"block\": 29, \"speed\": 68, \"attack\": 20, \"tackle\": 29, \"defense\": 37, \"dribble\": 20, \"heading\": 30, \"stamina\": 79, \"hand_save\": 15, \"intercept\": 27, \"punch_save\": 15}",
+        "heading": 30
+      },
+      "values": {
+        "cost": 45,
+        "stats": "{\"speed\":66,\"stamina\":74,\"defense\":32,\"attack\":20,\"shot\":16,\"pass\":21,\"dribble\":20,\"block\":26,\"intercept\":24,\"tackle\":26,\"hand_save\":15,\"punch_save\":15,\"heading\":28}",
+        "heading": 28
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Filippo",
+      "previous": {
+        "cost": 47,
+        "stats": "{\"pass\": 21, \"shot\": 16, \"block\": 28, \"speed\": 67, \"attack\": 20, \"tackle\": 28, \"defense\": 36, \"dribble\": 20, \"heading\": 29, \"stamina\": 78, \"hand_save\": 15, \"intercept\": 26, \"punch_save\": 15}",
+        "heading": 29
+      },
+      "values": {
+        "cost": 44,
+        "stats": "{\"speed\":65,\"stamina\":73,\"defense\":31,\"attack\":20,\"shot\":16,\"pass\":21,\"dribble\":20,\"block\":25,\"intercept\":23,\"tackle\":25,\"hand_save\":15,\"punch_save\":15,\"heading\":28}",
+        "heading": 28
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Dionisi",
+      "previous": {
+        "cost": 51,
+        "stats": "{\"pass\": 29, \"shot\": 26, \"block\": 23, \"speed\": 72, \"attack\": 33, \"tackle\": 25, \"defense\": 28, \"dribble\": 28, \"heading\": 18, \"stamina\": 80, \"hand_save\": 15, \"intercept\": 25, \"punch_save\": 15}"
+      },
+      "values": {
+        "cost": 49,
+        "stats": "{\"speed\":70,\"stamina\":76,\"defense\":28,\"attack\":31,\"shot\":26,\"pass\":27,\"dribble\":26,\"block\":23,\"intercept\":25,\"tackle\":25,\"hand_save\":15,\"punch_save\":15,\"heading\":18}"
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Enrico",
+      "previous": {
+        "cost": 49,
+        "stats": "{\"pass\": 28, \"shot\": 25, \"block\": 22, \"speed\": 71, \"attack\": 32, \"tackle\": 24, \"defense\": 27, \"dribble\": 27, \"heading\": 18, \"stamina\": 79, \"hand_save\": 15, \"intercept\": 24, \"punch_save\": 15}"
+      },
+      "values": {
+        "cost": 48,
+        "stats": "{\"speed\":69,\"stamina\":75,\"defense\":27,\"attack\":30,\"shot\":25,\"pass\":26,\"dribble\":25,\"block\":22,\"intercept\":24,\"tackle\":24,\"hand_save\":15,\"punch_save\":15,\"heading\":18}"
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Pedro",
+      "previous": {
+        "cost": 50,
+        "stats": "{\"pass\": 28, \"shot\": 25, \"block\": 24, \"speed\": 71, \"attack\": 31, \"tackle\": 26, \"defense\": 29, \"dribble\": 27, \"heading\": 18, \"stamina\": 80, \"hand_save\": 15, \"intercept\": 26, \"punch_save\": 15}"
+      },
+      "values": {
+        "cost": 49,
+        "stats": "{\"speed\":69,\"stamina\":76,\"defense\":29,\"attack\":29,\"shot\":25,\"pass\":26,\"dribble\":25,\"block\":24,\"intercept\":26,\"tackle\":26,\"hand_save\":15,\"punch_save\":15,\"heading\":18}"
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Fengas",
+      "previous": {
+        "cost": 50,
+        "stats": "{\"pass\": 27, \"shot\": 24, \"block\": 24, \"speed\": 70, \"attack\": 30, \"tackle\": 26, \"defense\": 29, \"dribble\": 26, \"heading\": 18, \"stamina\": 79, \"hand_save\": 15, \"intercept\": 26, \"punch_save\": 15}"
+      },
+      "values": {
+        "cost": 48,
+        "stats": "{\"speed\":68,\"stamina\":75,\"defense\":29,\"attack\":28,\"shot\":24,\"pass\":25,\"dribble\":24,\"block\":24,\"intercept\":26,\"tackle\":26,\"hand_save\":15,\"punch_save\":15,\"heading\":18}"
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "Ramon",
+      "lastname": "Victorino",
+      "previous": {
+        "cost": 51,
+        "stats": "{\"pass\": 25, \"shot\": 31, \"block\": 21, \"speed\": 74, \"attack\": 41, \"tackle\": 23, \"defense\": 25, \"dribble\": 28, \"heading\": 24, \"stamina\": 82, \"hand_save\": 15, \"intercept\": 23, \"punch_save\": 15}"
+      },
+      "values": {
+        "cost": 50,
+        "stats": "{\"speed\":76,\"stamina\":79,\"defense\":25,\"attack\":38,\"shot\":29,\"pass\":23,\"dribble\":26,\"block\":21,\"intercept\":23,\"tackle\":23,\"hand_save\":15,\"punch_save\":15,\"heading\":24}"
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "Hans",
+      "lastname": "Dolman",
+      "previous": {
+        "cost": 52,
+        "stats": "{\"pass\": 19, \"shot\": 13, \"block\": 26, \"speed\": 60, \"attack\": 16, \"tackle\": 20, \"defense\": 38, \"dribble\": 16, \"heading\": 17, \"stamina\": 76, \"hand_save\": 30, \"intercept\": 24, \"punch_save\": 29}",
+        "heading": 17
+      },
+      "values": {
+        "cost": 48,
+        "stats": "{\"speed\":60,\"stamina\":72,\"defense\":32,\"attack\":16,\"shot\":13,\"pass\":19,\"dribble\":16,\"block\":23,\"intercept\":21,\"tackle\":20,\"hand_save\":27,\"punch_save\":26,\"heading\":14}",
+        "heading": 14
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "Leon",
+      "lastname": "Dick",
+      "previous": {
+        "cost": 50,
+        "stats": "{\"pass\": 24, \"shot\": 18, \"block\": 30, \"speed\": 70, \"attack\": 23, \"tackle\": 30, \"defense\": 38, \"dribble\": 23, \"heading\": 30, \"stamina\": 80, \"hand_save\": 15, \"intercept\": 28, \"punch_save\": 15}",
+        "heading": 30
+      },
+      "values": {
+        "cost": 47,
+        "stats": "{\"speed\":68,\"stamina\":75,\"defense\":33,\"attack\":23,\"shot\":18,\"pass\":24,\"dribble\":23,\"block\":27,\"intercept\":25,\"tackle\":27,\"hand_save\":15,\"punch_save\":15,\"heading\":29}",
+        "heading": 29
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "Ruud",
+      "lastname": "Klisman",
+      "previous": {
+        "cost": 51,
+        "stats": "{\"pass\": 30, \"shot\": 28, \"block\": 22, \"speed\": 72, \"attack\": 35, \"tackle\": 24, \"defense\": 27, \"dribble\": 29, \"heading\": 18, \"stamina\": 80, \"hand_save\": 15, \"intercept\": 24, \"punch_save\": 15}"
+      },
+      "values": {
+        "cost": 49,
+        "stats": "{\"speed\":70,\"stamina\":76,\"defense\":27,\"attack\":33,\"shot\":28,\"pass\":28,\"dribble\":27,\"block\":22,\"intercept\":24,\"tackle\":24,\"hand_save\":15,\"punch_save\":15,\"heading\":18}"
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Haan",
+      "previous": {
+        "cost": 51,
+        "stats": "{\"pass\": 29, \"shot\": 25, \"block\": 24, \"speed\": 71, \"attack\": 31, \"tackle\": 26, \"defense\": 29, \"dribble\": 27, \"heading\": 18, \"stamina\": 80, \"hand_save\": 15, \"intercept\": 26, \"punch_save\": 15}"
+      },
+      "values": {
+        "cost": 49,
+        "stats": "{\"speed\":69,\"stamina\":76,\"defense\":29,\"attack\":29,\"shot\":25,\"pass\":27,\"dribble\":25,\"block\":24,\"intercept\":26,\"tackle\":26,\"hand_save\":15,\"punch_save\":15,\"heading\":18}"
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "Johan",
+      "lastname": "Rensenbrink",
+      "previous": {
+        "cost": 50,
+        "stats": "{\"pass\": 26, \"shot\": 29, \"block\": 18, \"speed\": 77, \"attack\": 38, \"tackle\": 20, \"defense\": 23, \"dribble\": 30, \"heading\": 24, \"stamina\": 79, \"hand_save\": 15, \"intercept\": 20, \"punch_save\": 15}",
+        "heading": 24
+      },
+      "values": {
+        "cost": 48,
+        "stats": "{\"speed\":75,\"stamina\":75,\"defense\":23,\"attack\":35,\"shot\":27,\"pass\":25,\"dribble\":28,\"block\":18,\"intercept\":20,\"tackle\":20,\"hand_save\":15,\"punch_save\":15,\"heading\":23}",
+        "heading": 23
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "Gert",
+      "lastname": "Keizer",
+      "previous": {
+        "cost": 49,
+        "stats": "{\"pass\": 26, \"shot\": 28, \"block\": 18, \"speed\": 75, \"attack\": 37, \"tackle\": 20, \"defense\": 23, \"dribble\": 29, \"heading\": 23, \"stamina\": 78, \"hand_save\": 15, \"intercept\": 20, \"punch_save\": 15}"
+      },
+      "values": {
+        "cost": 47,
+        "stats": "{\"speed\":73,\"stamina\":74,\"defense\":23,\"attack\":34,\"shot\":26,\"pass\":25,\"dribble\":27,\"block\":18,\"intercept\":20,\"tackle\":20,\"hand_save\":15,\"punch_save\":15,\"heading\":23}"
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "Ricardo",
+      "lastname": "Espadas",
+      "previous": {
+        "cost": 50,
+        "stats": "{\"pass\": 17, \"shot\": 12, \"block\": 25, \"speed\": 58, \"attack\": 15, \"tackle\": 19, \"defense\": 36, \"dribble\": 15, \"heading\": 16, \"stamina\": 74, \"hand_save\": 28, \"intercept\": 23, \"punch_save\": 27}",
+        "heading": 16
+      },
+      "values": {
+        "cost": 49,
+        "stats": "{\"speed\":58,\"stamina\":73,\"defense\":32,\"attack\":15,\"shot\":12,\"pass\":17,\"dribble\":15,\"block\":25,\"intercept\":23,\"tackle\":19,\"hand_save\":27,\"punch_save\":26,\"heading\":14}",
+        "heading": 14
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Medina",
+      "previous": {
+        "cost": 46,
+        "stats": "{\"pass\": 21, \"shot\": 16, \"block\": 27, \"speed\": 67, \"attack\": 20, \"tackle\": 27, \"defense\": 35, \"dribble\": 20, \"heading\": 29, \"stamina\": 76, \"hand_save\": 15, \"intercept\": 25, \"punch_save\": 15}",
+        "heading": 29
+      },
+      "values": {
+        "cost": 43,
+        "stats": "{\"speed\":65,\"stamina\":71,\"defense\":30,\"attack\":20,\"shot\":16,\"pass\":21,\"dribble\":20,\"block\":24,\"intercept\":22,\"tackle\":24,\"hand_save\":15,\"punch_save\":15,\"heading\":28}",
+        "heading": 28
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Carvajal",
+      "previous": {
+        "cost": 46,
+        "stats": "{\"pass\": 22, \"shot\": 16, \"block\": 27, \"speed\": 68, \"attack\": 21, \"tackle\": 27, \"defense\": 35, \"dribble\": 21, \"heading\": 29, \"stamina\": 76, \"hand_save\": 15, \"intercept\": 25, \"punch_save\": 15}",
+        "heading": 29
+      },
+      "values": {
+        "cost": 44,
+        "stats": "{\"speed\":66,\"stamina\":71,\"defense\":30,\"attack\":21,\"shot\":16,\"pass\":22,\"dribble\":21,\"block\":24,\"intercept\":22,\"tackle\":24,\"hand_save\":15,\"punch_save\":15,\"heading\":28}",
+        "heading": 28
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Gomez",
+      "previous": {
+        "cost": 45,
+        "stats": "{\"pass\": 20, \"shot\": 15, \"block\": 26, \"speed\": 66, \"attack\": 19, \"tackle\": 26, \"defense\": 34, \"dribble\": 19, \"heading\": 29, \"stamina\": 75, \"hand_save\": 15, \"intercept\": 24, \"punch_save\": 15}",
+        "heading": 29
+      },
+      "values": {
+        "cost": 42,
+        "stats": "{\"speed\":64,\"stamina\":70,\"defense\":29,\"attack\":19,\"shot\":15,\"pass\":20,\"dribble\":19,\"block\":23,\"intercept\":21,\"tackle\":23,\"hand_save\":15,\"punch_save\":15,\"heading\":27}",
+        "heading": 27
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Espino",
+      "previous": {
+        "cost": 45,
+        "stats": "{\"pass\": 20, \"shot\": 15, \"block\": 26, \"speed\": 66, \"attack\": 20, \"tackle\": 26, \"defense\": 34, \"dribble\": 20, \"heading\": 29, \"stamina\": 74, \"hand_save\": 15, \"intercept\": 24, \"punch_save\": 15}",
+        "heading": 29
+      },
+      "values": {
+        "cost": 42,
+        "stats": "{\"speed\":64,\"stamina\":69,\"defense\":29,\"attack\":20,\"shot\":15,\"pass\":20,\"dribble\":20,\"block\":23,\"intercept\":21,\"tackle\":23,\"hand_save\":15,\"punch_save\":15,\"heading\":27}",
+        "heading": 27
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Rivera",
+      "previous": {
+        "cost": 44,
+        "stats": "{\"pass\": 20, \"shot\": 15, \"block\": 26, \"speed\": 65, \"attack\": 19, \"tackle\": 26, \"defense\": 33, \"dribble\": 19, \"heading\": 29, \"stamina\": 75, \"hand_save\": 15, \"intercept\": 24, \"punch_save\": 15}",
+        "heading": 29
+      },
+      "values": {
+        "cost": 41,
+        "stats": "{\"speed\":63,\"stamina\":70,\"defense\":28,\"attack\":19,\"shot\":15,\"pass\":20,\"dribble\":19,\"block\":23,\"intercept\":21,\"tackle\":23,\"hand_save\":15,\"punch_save\":15,\"heading\":27}",
+        "heading": 27
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Zaragoza",
+      "previous": {
+        "cost": 49,
+        "stats": "{\"pass\": 28, \"shot\": 25, \"block\": 22, \"speed\": 70, \"attack\": 31, \"tackle\": 24, \"defense\": 27, \"dribble\": 27, \"heading\": 18, \"stamina\": 78, \"hand_save\": 15, \"intercept\": 24, \"punch_save\": 15}"
+      },
+      "values": {
+        "cost": 47,
+        "stats": "{\"speed\":68,\"stamina\":74,\"defense\":27,\"attack\":29,\"shot\":25,\"pass\":26,\"dribble\":25,\"block\":22,\"intercept\":24,\"tackle\":24,\"hand_save\":15,\"punch_save\":15,\"heading\":18}"
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Garcia",
+      "previous": {
+        "cost": 48,
+        "stats": "{\"pass\": 27, \"shot\": 23, \"block\": 23, \"speed\": 69, \"attack\": 29, \"tackle\": 24, \"defense\": 28, \"dribble\": 26, \"heading\": 18, \"stamina\": 77, \"hand_save\": 15, \"intercept\": 25, \"punch_save\": 15}"
+      },
+      "values": {
+        "cost": 47,
+        "stats": "{\"speed\":67,\"stamina\":73,\"defense\":28,\"attack\":27,\"shot\":23,\"pass\":25,\"dribble\":24,\"block\":23,\"intercept\":25,\"tackle\":24,\"hand_save\":15,\"punch_save\":15,\"heading\":18}"
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Suarez",
+      "previous": {
+        "cost": 47,
+        "stats": "{\"pass\": 26, \"shot\": 23, \"block\": 22, \"speed\": 68, \"attack\": 28, \"tackle\": 23, \"defense\": 26, \"dribble\": 26, \"heading\": 18, \"stamina\": 76, \"hand_save\": 15, \"intercept\": 23, \"punch_save\": 15}"
+      },
+      "values": {
+        "cost": 45,
+        "stats": "{\"speed\":66,\"stamina\":72,\"defense\":26,\"attack\":26,\"shot\":23,\"pass\":24,\"dribble\":24,\"block\":22,\"intercept\":23,\"tackle\":23,\"hand_save\":15,\"punch_save\":15,\"heading\":18}"
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Alvez",
+      "previous": {
+        "cost": 49,
+        "stats": "{\"pass\": 25, \"shot\": 28, \"block\": 18, \"speed\": 75, \"attack\": 37, \"tackle\": 20, \"defense\": 23, \"dribble\": 28, \"heading\": 23, \"stamina\": 79, \"hand_save\": 15, \"intercept\": 20, \"punch_save\": 15}"
+      },
+      "values": {
+        "cost": 47,
+        "stats": "{\"speed\":73,\"stamina\":75,\"defense\":23,\"attack\":34,\"shot\":26,\"pass\":24,\"dribble\":26,\"block\":18,\"intercept\":20,\"tackle\":20,\"hand_save\":15,\"punch_save\":15,\"heading\":23}"
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Lopez",
+      "previous": {
+        "cost": 48,
+        "stats": "{\"pass\": 24, \"shot\": 27, \"block\": 18, \"speed\": 74, \"attack\": 36, \"tackle\": 20, \"defense\": 23, \"dribble\": 27, \"heading\": 23, \"stamina\": 78, \"hand_save\": 15, \"intercept\": 20, \"punch_save\": 15}"
+      },
+      "values": {
+        "cost": 46,
+        "stats": "{\"speed\":72,\"stamina\":74,\"defense\":23,\"attack\":33,\"shot\":25,\"pass\":23,\"dribble\":25,\"block\":18,\"intercept\":20,\"tackle\":20,\"hand_save\":15,\"punch_save\":15,\"heading\":23}"
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Amoruso",
+      "previous": {
+        "cost": 48,
+        "stats": "{\"pass\": 16, \"shot\": 12, \"block\": 24, \"speed\": 57, \"attack\": 14, \"tackle\": 18, \"defense\": 35, \"dribble\": 15, \"heading\": 16, \"stamina\": 73, \"hand_save\": 27, \"intercept\": 22, \"punch_save\": 26}",
+        "heading": 16
+      },
+      "values": {
+        "cost": 46,
+        "stats": "{\"speed\":57,\"stamina\":70,\"defense\":30,\"attack\":14,\"shot\":12,\"pass\":16,\"dribble\":15,\"block\":22,\"intercept\":20,\"tackle\":18,\"hand_save\":25,\"punch_save\":24,\"heading\":14}",
+        "heading": 14
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "Salvatore",
+      "lastname": "Gentile",
+      "previous": {
+        "stats": "{\"pass\": 22, \"shot\": 17, \"block\": 30, \"speed\": 69, \"attack\": 21, \"tackle\": 30, \"defense\": 39, \"dribble\": 21, \"heading\": 22, \"stamina\": 81, \"hand_save\": 15, \"intercept\": 28, \"punch_save\": 15}"
+      },
+      "values": {
+        "stats": "{\"speed\":69,\"stamina\":81,\"defense\":38,\"attack\":21,\"shot\":17,\"pass\":22,\"dribble\":21,\"block\":29,\"intercept\":28,\"tackle\":29,\"hand_save\":15,\"punch_save\":15,\"heading\":22}"
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Tacchinardi",
+      "previous": {
+        "cost": 49,
+        "stats": "{\"pass\": 22, \"shot\": 16, \"block\": 30, \"speed\": 68, \"attack\": 21, \"tackle\": 30, \"defense\": 38, \"dribble\": 21, \"heading\": 30, \"stamina\": 80, \"hand_save\": 15, \"intercept\": 27, \"punch_save\": 15}",
+        "heading": 30
+      },
+      "values": {
+        "cost": 46,
+        "stats": "{\"speed\":66,\"stamina\":75,\"defense\":33,\"attack\":21,\"shot\":16,\"pass\":22,\"dribble\":21,\"block\":27,\"intercept\":24,\"tackle\":27,\"hand_save\":15,\"punch_save\":15,\"heading\":29}",
+        "heading": 29
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Fresi",
+      "previous": {
+        "cost": 47,
+        "stats": "{\"pass\": 21, \"shot\": 16, \"block\": 29, \"speed\": 67, \"attack\": 20, \"tackle\": 29, \"defense\": 37, \"dribble\": 20, \"heading\": 30, \"stamina\": 79, \"hand_save\": 15, \"intercept\": 27, \"punch_save\": 15}",
+        "heading": 30
+      },
+      "values": {
+        "cost": 45,
+        "stats": "{\"speed\":65,\"stamina\":74,\"defense\":32,\"attack\":20,\"shot\":16,\"pass\":21,\"dribble\":20,\"block\":26,\"intercept\":24,\"tackle\":26,\"hand_save\":15,\"punch_save\":15,\"heading\":28}",
+        "heading": 28
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Galante",
+      "previous": {
+        "cost": 47,
+        "stats": "{\"pass\": 21, \"shot\": 16, \"block\": 29, \"speed\": 67, \"attack\": 20, \"tackle\": 29, \"defense\": 37, \"dribble\": 20, \"heading\": 30, \"stamina\": 79, \"hand_save\": 15, \"intercept\": 26, \"punch_save\": 15}",
+        "heading": 30
+      },
+      "values": {
+        "cost": 44,
+        "stats": "{\"speed\":65,\"stamina\":74,\"defense\":32,\"attack\":20,\"shot\":16,\"pass\":21,\"dribble\":20,\"block\":26,\"intercept\":23,\"tackle\":26,\"hand_save\":15,\"punch_save\":15,\"heading\":28}",
+        "heading": 28
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Pagotto",
+      "previous": {
+        "cost": 46,
+        "stats": "{\"pass\": 20, \"shot\": 15, \"block\": 28, \"speed\": 66, \"attack\": 19, \"tackle\": 28, \"defense\": 36, \"dribble\": 19, \"heading\": 29, \"stamina\": 78, \"hand_save\": 15, \"intercept\": 26, \"punch_save\": 15}",
+        "heading": 29
+      },
+      "values": {
+        "cost": 43,
+        "stats": "{\"speed\":64,\"stamina\":73,\"defense\":31,\"attack\":19,\"shot\":15,\"pass\":20,\"dribble\":19,\"block\":25,\"intercept\":23,\"tackle\":25,\"hand_save\":15,\"punch_save\":15,\"heading\":28}",
+        "heading": 28
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Totti",
+      "previous": {
+        "cost": 51,
+        "stats": "{\"pass\": 30, \"shot\": 28, \"block\": 22, \"speed\": 73, \"attack\": 36, \"tackle\": 24, \"defense\": 27, \"dribble\": 30, \"heading\": 18, \"stamina\": 80, \"hand_save\": 15, \"intercept\": 24, \"punch_save\": 15}"
+      },
+      "values": {
+        "cost": 50,
+        "stats": "{\"speed\":71,\"stamina\":76,\"defense\":27,\"attack\":34,\"shot\":28,\"pass\":28,\"dribble\":28,\"block\":22,\"intercept\":24,\"tackle\":24,\"hand_save\":15,\"punch_save\":15,\"heading\":18}"
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Branca",
+      "previous": {
+        "cost": 49,
+        "stats": "{\"pass\": 27, \"shot\": 27, \"block\": 22, \"speed\": 70, \"attack\": 32, \"tackle\": 23, \"defense\": 26, \"dribble\": 26, \"heading\": 18, \"stamina\": 78, \"hand_save\": 15, \"intercept\": 23, \"punch_save\": 15}"
+      },
+      "values": {
+        "cost": 47,
+        "stats": "{\"speed\":68,\"stamina\":74,\"defense\":26,\"attack\":30,\"shot\":27,\"pass\":25,\"dribble\":24,\"block\":22,\"intercept\":23,\"tackle\":23,\"hand_save\":15,\"punch_save\":15,\"heading\":18}"
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Delvecchio",
+      "previous": {
+        "cost": 49,
+        "stats": "{\"pass\": 27, \"shot\": 26, \"block\": 23, \"speed\": 70, \"attack\": 31, \"tackle\": 24, \"defense\": 28, \"dribble\": 26, \"heading\": 18, \"stamina\": 79, \"hand_save\": 15, \"intercept\": 25, \"punch_save\": 15}"
+      },
+      "values": {
+        "cost": 48,
+        "stats": "{\"speed\":68,\"stamina\":75,\"defense\":28,\"attack\":29,\"shot\":26,\"pass\":25,\"dribble\":24,\"block\":23,\"intercept\":25,\"tackle\":24,\"hand_save\":15,\"punch_save\":15,\"heading\":18}"
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Panucci",
+      "previous": {
+        "cost": 50,
+        "stats": "{\"pass\": 27, \"shot\": 23, \"block\": 25, \"speed\": 71, \"attack\": 29, \"tackle\": 26, \"defense\": 30, \"dribble\": 25, \"heading\": 19, \"stamina\": 80, \"hand_save\": 15, \"intercept\": 27, \"punch_save\": 15}",
+        "heading": 19
+      },
+      "values": {
+        "cost": 48,
+        "stats": "{\"speed\":69,\"stamina\":76,\"defense\":30,\"attack\":27,\"shot\":23,\"pass\":25,\"dribble\":23,\"block\":25,\"intercept\":27,\"tackle\":26,\"hand_save\":15,\"punch_save\":15,\"heading\":18}",
+        "heading": 18
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Lentini",
+      "previous": {
+        "cost": 49,
+        "stats": "{\"pass\": 26, \"shot\": 28, \"block\": 18, \"speed\": 76, \"attack\": 37, \"tackle\": 20, \"defense\": 23, \"dribble\": 29, \"heading\": 23, \"stamina\": 79, \"hand_save\": 15, \"intercept\": 20, \"punch_save\": 15}"
+      },
+      "values": {
+        "cost": 47,
+        "stats": "{\"speed\":74,\"stamina\":75,\"defense\":23,\"attack\":34,\"shot\":26,\"pass\":25,\"dribble\":27,\"block\":18,\"intercept\":20,\"tackle\":20,\"hand_save\":15,\"punch_save\":15,\"heading\":23}"
+      }
+    },
+    {
+      "origin": "captain_tsubasa_international",
+      "firstname": "",
+      "lastname": "Bianchi",
+      "previous": {
+        "cost": 48,
+        "stats": "{\"pass\": 24, \"shot\": 28, \"block\": 18, \"speed\": 74, \"attack\": 36, \"tackle\": 20, \"defense\": 23, \"dribble\": 27, \"heading\": 23, \"stamina\": 78, \"hand_save\": 15, \"intercept\": 20, \"punch_save\": 15}"
+      },
+      "values": {
+        "cost": 46,
+        "stats": "{\"speed\":72,\"stamina\":74,\"defense\":23,\"attack\":33,\"shot\":26,\"pass\":23,\"dribble\":25,\"block\":18,\"intercept\":20,\"tackle\":20,\"hand_save\":15,\"punch_save\":15,\"heading\":23}"
+      }
+    },
+    {
+      "origin": "hungry_heart",
+      "firstname": "Kyosuke",
+      "lastname": "Kano",
+      "previous": {
+        "cost": 40,
+        "stats": "{\"pass\": 20, \"shot\": 24, \"block\": 14, \"speed\": 68, \"attack\": 30, \"tackle\": 14, \"defense\": 16, \"dribble\": 24, \"heading\": 21, \"stamina\": 68, \"hand_save\": 10, \"intercept\": 15, \"punch_save\": 10}",
+        "heading": 21
+      },
+      "values": {
+        "cost": 42,
+        "stats": "{\"speed\":68,\"stamina\":72,\"defense\":16,\"attack\":32,\"shot\":26,\"pass\":21,\"dribble\":24,\"block\":14,\"intercept\":15,\"tackle\":14,\"hand_save\":10,\"punch_save\":10,\"heading\":22}",
+        "heading": 22
+      }
+    },
+    {
+      "origin": "hungry_heart",
+      "firstname": "Rafael",
+      "lastname": "Del Franco",
+      "previous": {
+        "cost": 41,
+        "stats": "{\"pass\": 26, \"shot\": 20, \"block\": 16, \"speed\": 64, \"attack\": 28, \"tackle\": 17, \"defense\": 20, \"dribble\": 23, \"heading\": 16, \"stamina\": 66, \"hand_save\": 10, \"intercept\": 19, \"punch_save\": 10}"
+      },
+      "values": {
+        "cost": 42,
+        "stats": "{\"speed\":64,\"stamina\":70,\"defense\":20,\"attack\":29,\"shot\":20,\"pass\":26,\"dribble\":25,\"block\":16,\"intercept\":19,\"tackle\":17,\"hand_save\":10,\"punch_save\":10,\"heading\":16}"
+      }
+    },
+    {
+      "origin": "hungry_heart",
+      "firstname": "Koji",
+      "lastname": "Sakai",
+      "previous": {
+        "cost": 41,
+        "stats": "{\"pass\": 14, \"shot\": 10, \"block\": 20, \"speed\": 52, \"attack\": 12, \"tackle\": 15, \"defense\": 22, \"dribble\": 12, \"heading\": 10, \"stamina\": 64, \"hand_save\": 26, \"intercept\": 18, \"punch_save\": 24}",
+        "heading": 10
+      },
+      "values": {
+        "cost": 43,
+        "stats": "{\"speed\":52,\"stamina\":70,\"defense\":26,\"attack\":12,\"shot\":10,\"pass\":16,\"dribble\":12,\"block\":20,\"intercept\":18,\"tackle\":15,\"hand_save\":26,\"punch_save\":25,\"heading\":12}",
+        "heading": 12
+      }
+    },
+    {
+      "origin": "hungry_heart",
+      "firstname": "Gohzo",
+      "lastname": "Kamata",
+      "previous": {
+        "cost": 37,
+        "stats": "{\"pass\": 15, \"shot\": 13, \"block\": 23, \"speed\": 56, \"attack\": 16, \"tackle\": 23, \"defense\": 25, \"dribble\": 14, \"heading\": 26, \"stamina\": 66, \"hand_save\": 10, \"intercept\": 20, \"punch_save\": 10}",
+        "heading": 26
+      },
+      "values": {
+        "cost": 40,
+        "stats": "{\"speed\":56,\"stamina\":70,\"defense\":28,\"attack\":19,\"shot\":17,\"pass\":18,\"dribble\":14,\"block\":24,\"intercept\":22,\"tackle\":23,\"hand_save\":10,\"punch_save\":10,\"heading\":27}",
+        "heading": 27
+      }
+    },
+    {
+      "origin": "hungry_heart",
+      "firstname": "Yoshiya",
+      "lastname": "Sako",
+      "previous": {
+        "cost": 38,
+        "stats": "{\"pass\": 23, \"shot\": 17, \"block\": 16, \"speed\": 58, \"attack\": 23, \"tackle\": 18, \"defense\": 22, \"dribble\": 19, \"heading\": 17, \"stamina\": 62, \"hand_save\": 10, \"intercept\": 19, \"punch_save\": 10}"
+      },
+      "values": {
+        "cost": 40,
+        "stats": "{\"speed\":58,\"stamina\":68,\"defense\":24,\"attack\":25,\"shot\":17,\"pass\":25,\"dribble\":21,\"block\":16,\"intercept\":21,\"tackle\":18,\"hand_save\":10,\"punch_save\":10,\"heading\":17}"
+      }
+    },
+    {
+      "origin": "hungry_heart",
+      "firstname": "Hiroshi",
+      "lastname": "Ichikawa",
+      "previous": {
+        "cost": 37,
+        "stats": "{\"pass\": 20, \"shot\": 17, \"block\": 16, \"speed\": 60, \"attack\": 22, \"tackle\": 17, \"defense\": 20, \"dribble\": 19, \"heading\": 16, \"stamina\": 60, \"hand_save\": 10, \"intercept\": 18, \"punch_save\": 10}",
+        "heading": 16
+      },
+      "values": {
+        "cost": 39,
+        "stats": "{\"speed\":60,\"stamina\":66,\"defense\":22,\"attack\":24,\"shot\":17,\"pass\":22,\"dribble\":21,\"block\":16,\"intercept\":18,\"tackle\":17,\"hand_save\":10,\"punch_save\":10,\"heading\":17}",
+        "heading": 17
+      }
+    },
+    {
+      "origin": "hungry_heart",
+      "firstname": "Masashi",
+      "lastname": "Esaka",
+      "previous": {
+        "cost": 36,
+        "stats": "{\"pass\": 20, \"shot\": 16, \"block\": 15, \"speed\": 56, \"attack\": 21, \"tackle\": 16, \"defense\": 19, \"dribble\": 18, \"heading\": 16, \"stamina\": 62, \"hand_save\": 10, \"intercept\": 17, \"punch_save\": 10}"
+      },
+      "values": {
+        "cost": 37,
+        "stats": "{\"speed\":56,\"stamina\":66,\"defense\":21,\"attack\":23,\"shot\":16,\"pass\":22,\"dribble\":20,\"block\":15,\"intercept\":17,\"tackle\":16,\"hand_save\":10,\"punch_save\":10,\"heading\":16}"
+      }
+    },
+    {
+      "origin": "blue_lock",
+      "firstname": "Yoichi",
+      "lastname": "Isagi",
+      "previous": {
+        "cost": 43,
+        "stats": "{\"pass\": 26, \"shot\": 26, \"block\": 15, \"speed\": 68, \"attack\": 32, \"tackle\": 16, \"defense\": 18, \"dribble\": 24, \"heading\": 16, \"stamina\": 70, \"hand_save\": 10, \"intercept\": 18, \"punch_save\": 10}"
+      },
+      "values": {
+        "cost": 44,
+        "stats": "{\"speed\":68,\"stamina\":70,\"defense\":18,\"attack\":34,\"shot\":27,\"pass\":26,\"dribble\":22,\"block\":15,\"intercept\":23,\"tackle\":16,\"hand_save\":10,\"punch_save\":10,\"heading\":16}"
+      }
+    },
+    {
+      "origin": "blue_lock",
+      "firstname": "Meguru",
+      "lastname": "Bachira",
+      "previous": {
+        "stats": "{\"pass\": 24, \"shot\": 22, \"block\": 15, \"speed\": 70, \"attack\": 30, \"tackle\": 16, \"defense\": 18, \"dribble\": 30, \"heading\": 16, \"stamina\": 68, \"hand_save\": 10, \"intercept\": 18, \"punch_save\": 10}"
+      },
+      "values": {
+        "stats": "{\"speed\":70,\"stamina\":68,\"defense\":18,\"attack\":32,\"shot\":22,\"pass\":26,\"dribble\":30,\"block\":15,\"intercept\":18,\"tackle\":16,\"hand_save\":10,\"punch_save\":10,\"heading\":16}"
+      }
+    },
+    {
+      "origin": "blue_lock",
+      "firstname": "Hyoma",
+      "lastname": "Chigiri",
+      "previous": {
+        "stats": "{\"pass\": 20, \"shot\": 24, \"block\": 13, \"speed\": 84, \"attack\": 30, \"tackle\": 14, \"defense\": 16, \"dribble\": 24, \"heading\": 16, \"stamina\": 64, \"hand_save\": 10, \"intercept\": 16, \"punch_save\": 10}"
+      },
+      "values": {
+        "stats": "{\"speed\":84,\"stamina\":64,\"defense\":16,\"attack\":32,\"shot\":24,\"pass\":20,\"dribble\":26,\"block\":13,\"intercept\":16,\"tackle\":14,\"hand_save\":10,\"punch_save\":10,\"heading\":16}"
+      }
+    },
+    {
+      "origin": "blue_lock",
+      "firstname": "Rensuke",
+      "lastname": "Kunigami",
+      "previous": {
+        "cost": 42,
+        "stats": "{\"pass\": 19, \"shot\": 28, \"block\": 16, \"speed\": 66, \"attack\": 32, \"tackle\": 18, \"defense\": 20, \"dribble\": 20, \"heading\": 22, \"stamina\": 72, \"hand_save\": 10, \"intercept\": 17, \"punch_save\": 10}"
+      },
+      "values": {
+        "cost": 43,
+        "stats": "{\"speed\":66,\"stamina\":76,\"defense\":20,\"attack\":34,\"shot\":28,\"pass\":19,\"dribble\":20,\"block\":16,\"intercept\":17,\"tackle\":18,\"hand_save\":10,\"punch_save\":10,\"heading\":22}"
+      }
+    },
+    {
+      "origin": "blue_lock",
+      "firstname": "Reo",
+      "lastname": "Mikage",
+      "previous": {
+        "secondary_positions": "[]",
+        "cost": 43,
+        "stats": "{\"pass\": 28, \"shot\": 20, \"block\": 17, \"speed\": 64, \"attack\": 28, \"tackle\": 18, \"defense\": 22, \"dribble\": 23, \"heading\": 25, \"stamina\": 70, \"hand_save\": 10, \"intercept\": 20, \"punch_save\": 10}",
+        "heading": 25
+      },
+      "values": {
+        "secondary_positions": "[\"Midfielder\"]",
+        "cost": 45,
+        "stats": "{\"speed\":64,\"stamina\":70,\"defense\":28,\"attack\":28,\"shot\":23,\"pass\":28,\"dribble\":23,\"block\":17,\"intercept\":25,\"tackle\":24,\"hand_save\":10,\"punch_save\":10,\"heading\":26}",
+        "heading": 26
+      }
+    },
+    {
+      "origin": "blue_lock",
+      "firstname": "Ryusei",
+      "lastname": "Shido",
+      "previous": {
+        "cost": 37,
+        "stats": "{\"pass\": 20, \"shot\": 21, \"block\": 13, \"speed\": 64, \"attack\": 26, \"tackle\": 14, \"defense\": 16, \"dribble\": 21, \"heading\": 20, \"stamina\": 62, \"hand_save\": 10, \"intercept\": 14, \"punch_save\": 10}",
+        "heading": 20,
+        "description": "Attaquant de Matsukaze Kokuo invité au Blue Lock. Il sympathise avec Isagi mais est éliminé dès la première épreuve par ce dernier."
+      },
+      "values": {
+        "cost": 42,
+        "stats": "{\"speed\":72,\"stamina\":74,\"defense\":16,\"attack\":36,\"shot\":29,\"pass\":20,\"dribble\":21,\"block\":13,\"intercept\":14,\"tackle\":14,\"hand_save\":10,\"punch_save\":10,\"heading\":22}",
+        "heading": 22,
+        "description": "Attaquant explosif de Blue Lock, Shido possède un instinct du but exceptionnel dans la surface. Ses reprises acrobatiques et son engagement physique en font un finisseur redoutable, malgré son tempérament provocateur."
+      }
+    },
+    {
+      "origin": "blue_lock",
+      "firstname": "Jingo",
+      "lastname": "Raichi",
+      "previous": {
+        "cost": 36,
+        "stats": "{\"pass\": 14, \"shot\": 18, \"block\": 15, \"speed\": 60, \"attack\": 19, \"tackle\": 19, \"defense\": 18, \"dribble\": 17, \"heading\": 19, \"stamina\": 64, \"hand_save\": 10, \"intercept\": 15, \"punch_save\": 10}",
+        "heading": 19,
+        "description": "Attaquant grande gueule de Blue Lock. Beau parleur au niveau de jeu modeste, il compense par son énergie et sa détermination affichée."
+      },
+      "values": {
+        "cost": 41,
+        "stats": "{\"speed\":60,\"stamina\":80,\"defense\":27,\"attack\":19,\"shot\":18,\"pass\":14,\"dribble\":17,\"block\":15,\"intercept\":23,\"tackle\":26,\"hand_save\":10,\"punch_save\":10,\"heading\":20}",
+        "heading": 20,
+        "description": "Joueur combatif de Blue Lock, Raichi se distingue par son endurance et son marquage tenace. Moins créatif avec le ballon, il use ses adversaires par son engagement et sa présence dans les duels."
+      }
+    },
+    {
+      "origin": "blue_lock",
+      "firstname": "Gin",
+      "lastname": "Gagamaru",
+      "previous": {
+        "cost": 44,
+        "stats": "{\"pass\": 14, \"shot\": 10, \"block\": 22, \"speed\": 56, \"attack\": 12, \"tackle\": 16, \"defense\": 24, \"dribble\": 12, \"heading\": 11, \"stamina\": 66, \"hand_save\": 28, \"intercept\": 20, \"punch_save\": 26}"
+      },
+      "values": {
+        "cost": 47,
+        "stats": "{\"speed\":63,\"stamina\":72,\"defense\":24,\"attack\":12,\"shot\":10,\"pass\":14,\"dribble\":12,\"block\":22,\"intercept\":20,\"tackle\":16,\"hand_save\":28,\"punch_save\":26,\"heading\":11}"
+      }
+    },
+    {
+      "origin": "ao_ashi",
+      "firstname": "Ashito",
+      "lastname": "Aoi",
+      "previous": {
+        "cost": 45,
+        "stats": "{\"pass\": 23, \"shot\": 20, \"block\": 17, \"speed\": 72, \"attack\": 26, \"tackle\": 25, \"defense\": 28, \"dribble\": 17, \"heading\": 26, \"stamina\": 74, \"hand_save\": 10, \"intercept\": 26, \"punch_save\": 10}"
+      },
+      "values": {
+        "cost": 47,
+        "stats": "{\"speed\":72,\"stamina\":74,\"defense\":28,\"attack\":28,\"shot\":22,\"pass\":29,\"dribble\":17,\"block\":17,\"intercept\":28,\"tackle\":25,\"hand_save\":10,\"punch_save\":10,\"heading\":26}"
+      }
+    },
+    {
+      "origin": "ao_ashi",
+      "firstname": "Eisaku",
+      "lastname": "Ohtomo",
+      "previous": {
+        "cost": 43,
+        "stats": "{\"pass\": 28, \"shot\": 18, \"block\": 20, \"speed\": 60, \"attack\": 24, \"tackle\": 22, \"defense\": 26, \"dribble\": 20, \"heading\": 17, \"stamina\": 70, \"hand_save\": 10, \"intercept\": 23, \"punch_save\": 10}",
+        "heading": 17
+      },
+      "values": {
+        "cost": 44,
+        "stats": "{\"speed\":60,\"stamina\":70,\"defense\":28,\"attack\":24,\"shot\":18,\"pass\":29,\"dribble\":23,\"block\":20,\"intercept\":23,\"tackle\":22,\"hand_save\":10,\"punch_save\":10,\"heading\":18}",
+        "heading": 18
+      }
+    },
+    {
+      "origin": "ao_ashi",
+      "firstname": "Soichiro",
+      "lastname": "Tachibana",
+      "previous": {
+        "cost": 40,
+        "stats": "{\"pass\": 22, \"shot\": 24, \"block\": 14, \"speed\": 66, \"attack\": 30, \"tackle\": 15, \"defense\": 16, \"dribble\": 22, \"heading\": 21, \"stamina\": 66, \"hand_save\": 10, \"intercept\": 15, \"punch_save\": 10}",
+        "heading": 21
+      },
+      "values": {
+        "cost": 42,
+        "stats": "{\"speed\":66,\"stamina\":72,\"defense\":16,\"attack\":33,\"shot\":27,\"pass\":22,\"dribble\":22,\"block\":14,\"intercept\":15,\"tackle\":15,\"hand_save\":10,\"punch_save\":10,\"heading\":22}",
+        "heading": 22
+      }
+    },
+    {
+      "origin": "ao_ashi",
+      "firstname": "Keiji",
+      "lastname": "Togashi",
+      "previous": {
+        "cost": 40,
+        "stats": "{\"pass\": 17, \"shot\": 13, \"block\": 26, \"speed\": 58, \"attack\": 16, \"tackle\": 26, \"defense\": 28, \"dribble\": 15, \"heading\": 27, \"stamina\": 68, \"hand_save\": 10, \"intercept\": 22, \"punch_save\": 10}",
+        "heading": 27,
+        "description": "Défenseur central de l'équipe B d'Esperion et colocataire d'Ashito. Solide et discipliné, il assure la stabilité de la ligne arrière par son sens du placement."
+      },
+      "values": {
+        "cost": 43,
+        "stats": "{\"speed\":58,\"stamina\":68,\"defense\":32,\"attack\":23,\"shot\":22,\"pass\":22,\"dribble\":15,\"block\":26,\"intercept\":22,\"tackle\":28,\"hand_save\":10,\"punch_save\":10,\"heading\":28}",
+        "heading": 28,
+        "description": "Défenseur central de l'équipe B d'Esperion et colocataire d'Ashito. Physique et offensif, il combine impact dans les duels, bonnes bases techniques et frappe puissante pour soutenir les attaques."
+      }
+    },
+    {
+      "origin": "ao_ashi",
+      "firstname": "Kanpei",
+      "lastname": "Kuroda",
+      "previous": {
+        "cost": 42,
+        "stats": "{\"pass\": 26, \"shot\": 18, \"block\": 18, \"speed\": 62, \"attack\": 25, \"tackle\": 20, \"defense\": 24, \"dribble\": 21, \"heading\": 17, \"stamina\": 68, \"hand_save\": 10, \"intercept\": 22, \"punch_save\": 10}"
+      },
+      "values": {
+        "cost": 43,
+        "stats": "{\"speed\":62,\"stamina\":68,\"defense\":24,\"attack\":25,\"shot\":18,\"pass\":28,\"dribble\":25,\"block\":18,\"intercept\":24,\"tackle\":20,\"hand_save\":10,\"punch_save\":10,\"heading\":17}"
+      }
+    },
+    {
+      "origin": "ao_ashi",
+      "firstname": "Jun",
+      "lastname": "Asari",
+      "previous": {
+        "cost": 41,
+        "stats": "{\"pass\": 20, \"shot\": 15, \"block\": 23, \"speed\": 66, \"attack\": 20, \"tackle\": 23, \"defense\": 25, \"dribble\": 18, \"heading\": 26, \"stamina\": 66, \"hand_save\": 10, \"intercept\": 21, \"punch_save\": 10}"
+      },
+      "values": {
+        "cost": 43,
+        "stats": "{\"speed\":71,\"stamina\":66,\"defense\":25,\"attack\":24,\"shot\":15,\"pass\":25,\"dribble\":23,\"block\":23,\"intercept\":21,\"tackle\":23,\"hand_save\":10,\"punch_save\":10,\"heading\":26}"
+      }
+    },
+    {
+      "origin": "ao_ashi",
+      "firstname": "Yuma",
+      "lastname": "Motoki",
+      "previous": {
+        "cost": 42,
+        "stats": "{\"pass\": 22, \"shot\": 26, \"block\": 14, \"speed\": 68, \"attack\": 32, \"tackle\": 15, \"defense\": 17, \"dribble\": 24, \"heading\": 22, \"stamina\": 68, \"hand_save\": 10, \"intercept\": 16, \"punch_save\": 10}"
+      },
+      "values": {
+        "cost": 43,
+        "stats": "{\"speed\":68,\"stamina\":68,\"defense\":17,\"attack\":35,\"shot\":28,\"pass\":25,\"dribble\":27,\"block\":14,\"intercept\":16,\"tackle\":15,\"hand_save\":10,\"punch_save\":10,\"heading\":22}"
+      }
+    },
+    {
+      "origin": "ao_ashi",
+      "firstname": "Ryuichi",
+      "lastname": "Takeshima",
+      "previous": {
+        "cost": 41,
+        "stats": "{\"pass\": 17, \"shot\": 13, \"block\": 27, \"speed\": 60, \"attack\": 17, \"tackle\": 27, \"defense\": 29, \"dribble\": 15, \"heading\": 28, \"stamina\": 70, \"hand_save\": 10, \"intercept\": 23, \"punch_save\": 10}",
+        "heading": 28
+      },
+      "values": {
+        "cost": 42,
+        "stats": "{\"speed\":60,\"stamina\":70,\"defense\":32,\"attack\":17,\"shot\":13,\"pass\":17,\"dribble\":15,\"block\":29,\"intercept\":23,\"tackle\":28,\"hand_save\":10,\"punch_save\":10,\"heading\":29}",
+        "heading": 29
+      }
+    },
+    {
+      "origin": "world_legends",
+      "firstname": "Bobby",
+      "lastname": "Charlton",
+      "previous": {
+        "cost": 42,
+        "stats": "{\"pass\": 27, \"shot\": 21, \"block\": 16, \"speed\": 64, \"attack\": 28, \"tackle\": 18, \"defense\": 20, \"dribble\": 25, \"heading\": 16, \"stamina\": 69, \"hand_save\": 10, \"intercept\": 20, \"punch_save\": 10}",
+        "heading": 16
+      },
+      "values": {
+        "cost": 46,
+        "stats": "{\"speed\":68,\"stamina\":77,\"attack\":35,\"defense\":20,\"shot\":29,\"pass\":28,\"dribble\":27,\"block\":16,\"intercept\":20,\"tackle\":18,\"hand_save\":10,\"punch_save\":10,\"heading\":17}",
+        "heading": 17
+      }
+    },
+    {
+      "origin": "world_legends",
+      "firstname": "Bobby",
+      "lastname": "Moore",
+      "previous": {
+        "cost": 42,
+        "stats": "{\"pass\": 19, \"shot\": 15, \"block\": 26, \"speed\": 57, \"attack\": 18, \"tackle\": 26, \"defense\": 29, \"dribble\": 16, \"heading\": 26, \"stamina\": 72, \"hand_save\": 10, \"intercept\": 24, \"punch_save\": 10}",
+        "heading": 26
+      },
+      "values": {
+        "cost": 46,
+        "stats": "{\"speed\":59,\"stamina\":77,\"attack\":20,\"defense\":35,\"shot\":15,\"pass\":25,\"dribble\":20,\"block\":26,\"intercept\":29,\"tackle\":28,\"hand_save\":10,\"punch_save\":10,\"heading\":25}",
+        "heading": 25
+      }
+    },
+    {
+      "origin": "world_legends",
+      "firstname": "Xavi",
+      "lastname": "Hernández",
+      "previous": {
+        "stats": "{\"pass\": 29, \"shot\": 22, \"block\": 20, \"speed\": 66, \"attack\": 30, \"tackle\": 23, \"defense\": 25, \"dribble\": 26, \"heading\": 18, \"stamina\": 78, \"hand_save\": 10, \"intercept\": 23, \"punch_save\": 10}",
+        "heading": 18
+      },
+      "values": {
+        "stats": "{\"speed\":62,\"stamina\":80,\"attack\":30,\"defense\":24,\"shot\":21,\"pass\":30,\"dribble\":28,\"block\":20,\"intercept\":25,\"tackle\":23,\"hand_save\":10,\"punch_save\":10,\"heading\":17}",
+        "heading": 17
+      }
+    },
+    {
+      "origin": "world_legends",
+      "firstname": "Andrés",
+      "lastname": "Iniesta",
+      "previous": {
+        "stats": "{\"pass\": 28, \"shot\": 22, \"block\": 20, \"speed\": 66, \"attack\": 32, \"tackle\": 23, \"defense\": 25, \"dribble\": 28, \"heading\": 18, \"stamina\": 78, \"hand_save\": 10, \"intercept\": 23, \"punch_save\": 10}",
+        "heading": 18
+      },
+      "values": {
+        "stats": "{\"speed\":68,\"stamina\":75,\"attack\":32,\"defense\":21,\"shot\":24,\"pass\":29,\"dribble\":30,\"block\":20,\"intercept\":23,\"tackle\":23,\"hand_save\":10,\"punch_save\":10,\"heading\":17}",
+        "heading": 17
+      }
+    },
+    {
+      "origin": "world_legends",
+      "firstname": "Iker",
+      "lastname": "Casillas",
+      "previous": {
+        "cost": 48,
+        "stats": "{\"pass\": 18, \"shot\": 11, \"block\": 22, \"speed\": 57, \"attack\": 14, \"tackle\": 17, \"defense\": 35, \"dribble\": 13, \"heading\": 16, \"stamina\": 70, \"hand_save\": 29, \"intercept\": 21, \"punch_save\": 27}"
+      },
+      "values": {
+        "cost": 50,
+        "stats": "{\"speed\":62,\"stamina\":74,\"attack\":14,\"defense\":35,\"shot\":11,\"pass\":20,\"dribble\":14,\"block\":22,\"intercept\":26,\"tackle\":17,\"hand_save\":29,\"punch_save\":27,\"heading\":16}"
+      }
+    },
+    {
+      "origin": "world_legends",
+      "firstname": "",
+      "lastname": "Rodri",
+      "previous": {
+        "cost": 44,
+        "stats": "{\"pass\": 24, \"shot\": 17, \"block\": 23, \"speed\": 61, \"attack\": 21, \"tackle\": 26, \"defense\": 28, \"dribble\": 19, \"heading\": 18, \"stamina\": 76, \"hand_save\": 10, \"intercept\": 26, \"punch_save\": 10}",
+        "heading": 18
+      },
+      "values": {
+        "cost": 48,
+        "stats": "{\"speed\":59,\"stamina\":81,\"attack\":25,\"defense\":32,\"shot\":24,\"pass\":29,\"dribble\":23,\"block\":23,\"intercept\":29,\"tackle\":27,\"hand_save\":10,\"punch_save\":10,\"heading\":19}",
+        "heading": 19
+      }
+    },
+    {
+      "origin": "world_legends",
+      "firstname": "Luka",
+      "lastname": "Modrić",
+      "previous": {
+        "cost": 47,
+        "stats": "{\"pass\": 28, \"shot\": 22, \"block\": 20, \"speed\": 66, \"attack\": 31, \"tackle\": 23, \"defense\": 25, \"dribble\": 27, \"heading\": 18, \"stamina\": 79, \"hand_save\": 10, \"intercept\": 23, \"punch_save\": 10}"
+      },
+      "values": {
+        "cost": 49,
+        "stats": "{\"speed\":68,\"stamina\":81,\"attack\":31,\"defense\":25,\"shot\":23,\"pass\":29,\"dribble\":28,\"block\":20,\"intercept\":25,\"tackle\":23,\"hand_save\":10,\"punch_save\":10,\"heading\":18}"
+      }
+    },
+    {
+      "origin": "world_legends",
+      "firstname": "Rui",
+      "lastname": "Costa",
+      "previous": {
+        "cost": 42,
+        "stats": "{\"pass\": 27, \"shot\": 21, \"block\": 16, \"speed\": 64, \"attack\": 28, \"tackle\": 18, \"defense\": 20, \"dribble\": 25, \"heading\": 16, \"stamina\": 69, \"hand_save\": 10, \"intercept\": 20, \"punch_save\": 10}",
+        "heading": 16
+      },
+      "values": {
+        "cost": 45,
+        "stats": "{\"speed\":65,\"stamina\":74,\"attack\":32,\"defense\":20,\"shot\":25,\"pass\":30,\"dribble\":28,\"block\":16,\"intercept\":20,\"tackle\":18,\"hand_save\":10,\"punch_save\":10,\"heading\":17}",
+        "heading": 17
+      }
+    },
+    {
+      "origin": "world_legends",
+      "firstname": "David",
+      "lastname": "Beckham",
+      "previous": {
+        "cost": 43,
+        "stats": "{\"pass\": 28, \"shot\": 26, \"block\": 16, \"cross\": 29, \"speed\": 64, \"attack\": 28, \"tackle\": 18, \"defense\": 20, \"dribble\": 25, \"heading\": 16, \"stamina\": 69, \"hand_save\": 10, \"intercept\": 20, \"punch_save\": 10}",
+        "heading": 16
+      },
+      "values": {
+        "cost": 45,
+        "stats": "{\"speed\":63,\"stamina\":79,\"attack\":30,\"defense\":23,\"shot\":27,\"pass\":29,\"dribble\":23,\"block\":16,\"intercept\":20,\"tackle\":18,\"hand_save\":10,\"punch_save\":10,\"cross\":30,\"heading\":17}",
+        "heading": 17
+      }
+    },
+    {
+      "origin": "world_legends",
+      "firstname": "Paul",
+      "lastname": "Scholes",
+      "previous": {
+        "cost": 42,
+        "stats": "{\"pass\": 27, \"shot\": 21, \"block\": 16, \"speed\": 64, \"attack\": 28, \"tackle\": 18, \"defense\": 20, \"dribble\": 25, \"heading\": 16, \"stamina\": 69, \"hand_save\": 10, \"intercept\": 20, \"punch_save\": 10}",
+        "heading": 16
+      },
+      "values": {
+        "cost": 45,
+        "stats": "{\"speed\":61,\"stamina\":75,\"attack\":31,\"defense\":22,\"shot\":27,\"pass\":29,\"dribble\":26,\"block\":16,\"intercept\":20,\"tackle\":18,\"hand_save\":10,\"punch_save\":10,\"heading\":17}",
+        "heading": 17
+      }
+    },
+    {
+      "origin": "world_legends",
+      "firstname": "Raúl",
+      "lastname": "González",
+      "previous": {
+        "cost": 42,
+        "stats": "{\"pass\": 25, \"shot\": 24, \"block\": 16, \"speed\": 66, \"attack\": 29, \"tackle\": 17, \"defense\": 19, \"dribble\": 24, \"heading\": 21, \"stamina\": 70, \"hand_save\": 10, \"intercept\": 19, \"punch_save\": 10}",
+        "heading": 21
+      },
+      "values": {
+        "cost": 46,
+        "stats": "{\"speed\":68,\"stamina\":77,\"attack\":35,\"defense\":19,\"shot\":28,\"pass\":25,\"dribble\":27,\"block\":16,\"intercept\":19,\"tackle\":17,\"hand_save\":10,\"punch_save\":10,\"heading\":25}",
+        "heading": 25
+      }
+    },
+    {
+      "origin": "world_legends",
+      "firstname": "Davor",
+      "lastname": "Šuker",
+      "previous": {
+        "cost": 41,
+        "stats": "{\"pass\": 20, \"shot\": 25, \"block\": 14, \"speed\": 68, \"attack\": 30, \"tackle\": 16, \"defense\": 17, \"dribble\": 23, \"heading\": 21, \"stamina\": 72, \"hand_save\": 10, \"intercept\": 16, \"punch_save\": 10}",
+        "heading": 21
+      },
+      "values": {
+        "cost": 43,
+        "stats": "{\"speed\":66,\"stamina\":73,\"attack\":35,\"defense\":17,\"shot\":29,\"pass\":23,\"dribble\":26,\"block\":14,\"intercept\":16,\"tackle\":16,\"hand_save\":10,\"punch_save\":10,\"heading\":25}",
+        "heading": 25
+      }
+    },
+    {
+      "origin": "world_legends",
+      "firstname": "Zvonimir",
+      "lastname": "Boban",
+      "previous": {
+        "cost": 42,
+        "stats": "{\"pass\": 27, \"shot\": 21, \"block\": 16, \"speed\": 64, \"attack\": 28, \"tackle\": 18, \"defense\": 20, \"dribble\": 25, \"heading\": 16, \"stamina\": 69, \"hand_save\": 10, \"intercept\": 20, \"punch_save\": 10}",
+        "heading": 16
+      },
+      "values": {
+        "cost": 45,
+        "stats": "{\"speed\":65,\"stamina\":74,\"attack\":31,\"defense\":22,\"shot\":24,\"pass\":28,\"dribble\":28,\"block\":16,\"intercept\":20,\"tackle\":18,\"hand_save\":10,\"punch_save\":10,\"heading\":17}",
+        "heading": 17
+      }
+    },
+    {
+      "origin": "world_legends",
+      "firstname": "Peter",
+      "lastname": "Schmeichel",
+      "previous": {
+        "cost": 48,
+        "stats": "{\"pass\": 18, \"shot\": 11, \"block\": 22, \"speed\": 57, \"attack\": 14, \"tackle\": 17, \"defense\": 35, \"dribble\": 13, \"heading\": 16, \"stamina\": 70, \"hand_save\": 28, \"intercept\": 21, \"punch_save\": 29}"
+      },
+      "values": {
+        "cost": 50,
+        "stats": "{\"speed\":58,\"stamina\":76,\"attack\":15,\"defense\":35,\"shot\":12,\"pass\":23,\"dribble\":14,\"block\":22,\"intercept\":26,\"tackle\":17,\"hand_save\":28,\"punch_save\":29,\"heading\":16}"
+      }
+    }
+  ],
+  "retirements": [
+    {
+      "origin": "ecole_des_champions",
+      "firstname": "Nero",
+      "lastname": "Martella"
+    },
+    {
+      "origin": "ecole_des_champions",
+      "firstname": "Erio",
+      "lastname": "Caruso"
+    },
+    {
+      "origin": "ecole_des_champions",
+      "firstname": "Bento",
+      "lastname": "Capone"
+    },
+    {
+      "origin": "ecole_des_champions",
+      "firstname": "Carlos",
+      "lastname": "Oliveira Tavares"
+    },
+    {
+      "origin": "ecole_des_champions",
+      "firstname": "Giovanni",
+      "lastname": "Barbossa-Perreira"
+    }
+  ]
+}

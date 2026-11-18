@@ -1,0 +1,585 @@
+[
+  {
+    "firstname": "João",
+    "lastname": "Pinto",
+    "nationality": "Portugal",
+    "photo_path": "players/joao-pinto-1986.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "",
+    "lastname": "Pepe",
+    "nationality": "Portugal",
+    "photo_path": "players/pepe-portugal-2008.jpg",
+    "previous_paths": [
+      "players/pepe.webp"
+    ]
+  },
+  {
+    "firstname": "Ricardo",
+    "lastname": "Carvalho",
+    "nationality": "Portugal",
+    "photo_path": "players/ricardo-carvalho-2008.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Fábio",
+    "lastname": "Coentrão",
+    "nationality": "Portugal",
+    "photo_path": "players/fabio-coentrao-2011.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Mário",
+    "lastname": "Coluna",
+    "nationality": "Portugal",
+    "photo_path": "players/mario-coluna-1968.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "",
+    "lastname": "Deco",
+    "nationality": "Portugal",
+    "photo_path": "players/deco-2004.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Cristiano",
+    "lastname": "Ronaldo",
+    "nationality": "Portugal",
+    "photo_path": "players/cristiano-ronaldo-2004.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Vítor",
+    "lastname": "Baía",
+    "nationality": "Portugal",
+    "photo_path": "players/vitor-baia-2002.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Gordon",
+    "lastname": "Banks",
+    "nationality": "Angleterre",
+    "photo_path": "players/gordon-banks-1970.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Rio",
+    "lastname": "Ferdinand",
+    "nationality": "Angleterre",
+    "photo_path": "players/rio-ferdinand-2002.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Ashley",
+    "lastname": "Cole",
+    "nationality": "Angleterre",
+    "photo_path": "players/ashley-cole-2001.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Billy",
+    "lastname": "Wright",
+    "nationality": "Angleterre",
+    "photo_path": "players/billy-wright-1958.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Steven",
+    "lastname": "Gerrard",
+    "nationality": "Angleterre",
+    "photo_path": "players/steven-gerrard-2006.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Geoff",
+    "lastname": "Hurst",
+    "nationality": "Angleterre",
+    "photo_path": "players/geoff-hurst-1969.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Harry",
+    "lastname": "Kane",
+    "nationality": "Angleterre",
+    "photo_path": "players/harry-kane-2018.webp",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Sergio",
+    "lastname": "Ramos",
+    "nationality": "Espagne",
+    "photo_path": "players/sergio-ramos-2006.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Carles",
+    "lastname": "Puyol",
+    "nationality": "Espagne",
+    "photo_path": "players/carles-puyol-2002.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Gerard",
+    "lastname": "Piqué",
+    "nationality": "Espagne",
+    "photo_path": "players/gerard-pique-2010.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Jordi",
+    "lastname": "Alba",
+    "nationality": "Espagne",
+    "photo_path": "players/jordi-alba-2014.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Lamine",
+    "lastname": "Yamal",
+    "nationality": "Espagne",
+    "photo_path": "players/lamine-yamal-2024.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Fernando",
+    "lastname": "Torres",
+    "nationality": "Espagne",
+    "photo_path": "players/fernando-torres-2006.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Stipe",
+    "lastname": "Pletikosa",
+    "nationality": "Croatie",
+    "photo_path": "players/stipe-pletikosa-2004.png",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Darijo",
+    "lastname": "Srna",
+    "nationality": "Croatie",
+    "photo_path": "players/darijo-srna-2006.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Robert",
+    "lastname": "Kovač",
+    "nationality": "Croatie",
+    "photo_path": "players/robert-kovac-1998.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Dario",
+    "lastname": "Šimić",
+    "nationality": "Croatie",
+    "photo_path": "players/dario-simic-1998.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Robert",
+    "lastname": "Jarni",
+    "nationality": "Croatie",
+    "photo_path": "players/robert-jarni-1998.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Ivan",
+    "lastname": "Rakitić",
+    "nationality": "Croatie",
+    "photo_path": "players/ivan-rakitic-2008.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Robert",
+    "lastname": "Prosinečki",
+    "nationality": "Croatie",
+    "photo_path": "players/robert-prosinecki-1998.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Mario",
+    "lastname": "Mandžukić",
+    "nationality": "Croatie",
+    "photo_path": "players/mario-mandzukic-2016.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Thomas",
+    "lastname": "Helveg",
+    "nationality": "Danemark",
+    "photo_path": "players/thomas-helveg-1998.webp",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Morten",
+    "lastname": "Olsen",
+    "nationality": "Danemark",
+    "photo_path": "players/morten-olsen-1988.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Daniel",
+    "lastname": "Agger",
+    "nationality": "Danemark",
+    "photo_path": "players/daniel-agger-2012.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Jan",
+    "lastname": "Heintze",
+    "nationality": "Danemark",
+    "photo_path": "players/jan-heintze-1988.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Søren",
+    "lastname": "Lerby",
+    "nationality": "Danemark",
+    "photo_path": "players/soren-lerby-1986.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Christian",
+    "lastname": "Eriksen",
+    "nationality": "Danemark",
+    "photo_path": "players/christian-eriksen-2011.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Michael",
+    "lastname": "Laudrup",
+    "nationality": "Danemark",
+    "photo_path": "players/michael-laudrup-1986.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Brian",
+    "lastname": "Laudrup",
+    "nationality": "Danemark",
+    "photo_path": "players/brian-laudrup-1998.webp",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Preben",
+    "lastname": "Elkjær Larsen",
+    "nationality": "Danemark",
+    "photo_path": "players/preben-elkjaer-larsen-1988.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Allan",
+    "lastname": "Simonsen",
+    "nationality": "Danemark",
+    "photo_path": "players/allan-simonsen-1986.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Badou",
+    "lastname": "Ezzaki",
+    "nationality": "Maroc",
+    "photo_path": "players/badou-ezzaki-1986.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Achraf",
+    "lastname": "Hakimi",
+    "nationality": "Maroc",
+    "photo_path": "players/achraf-hakimi-2018.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Medhi",
+    "lastname": "Benatia",
+    "nationality": "Maroc",
+    "photo_path": "players/medhi-benatia-2018.webp",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Noureddine",
+    "lastname": "Naybet",
+    "nationality": "Maroc",
+    "photo_path": "players/noureddine-naybet-1998.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Mustapha",
+    "lastname": "Hadji",
+    "nationality": "Maroc",
+    "photo_path": "players/mustapha-hadji-1998.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Abdelmajid",
+    "lastname": "Dolmy",
+    "nationality": "Maroc",
+    "photo_path": "players/abdelmajid-dolmy-1986.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Abdelaziz",
+    "lastname": "Bouderbala",
+    "nationality": "Maroc",
+    "photo_path": "players/abdelaziz-bouderbala-1986.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Mohamed",
+    "lastname": "Timoumi",
+    "nationality": "Maroc",
+    "photo_path": "players/mohamed-timoumi-1986.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Larbi",
+    "lastname": "Benbarek",
+    "nationality": "Maroc",
+    "photo_path": "players/larbi-benbarek-1940.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Ahmed",
+    "lastname": "Faras",
+    "nationality": "Maroc",
+    "photo_path": "players/ahmed-faras-1970.png",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Thomas",
+    "lastname": "Ravelli",
+    "nationality": "Suède",
+    "photo_path": "players/thomas-ravelli-1986.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Roland",
+    "lastname": "Nilsson",
+    "nationality": "Suède",
+    "photo_path": "players/roland-nilsson-1994.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Björn",
+    "lastname": "Nordqvist",
+    "nationality": "Suède",
+    "photo_path": "players/bjorn-nordqvist-1974.webp",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Olof",
+    "lastname": "Mellberg",
+    "nationality": "Suède",
+    "photo_path": "players/olof-mellberg-2002.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Orvar",
+    "lastname": "Bergmark",
+    "nationality": "Suède",
+    "photo_path": "players/orvar-bergmark-1958.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Nils",
+    "lastname": "Liedholm",
+    "nationality": "Suède",
+    "photo_path": "players/nils-liedholm-1958.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Gunnar",
+    "lastname": "Gren",
+    "nationality": "Suède",
+    "photo_path": "players/gunnar-gren-1958.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Fredrik",
+    "lastname": "Ljungberg",
+    "nationality": "Suède",
+    "photo_path": "players/fredrik-ljungberg-2002.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Gunnar",
+    "lastname": "Nordahl",
+    "nationality": "Suède",
+    "photo_path": "players/gunnar-nordahl-1954.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Zlatan",
+    "lastname": "Ibrahimović",
+    "nationality": "Suède",
+    "photo_path": "players/zlatan-ibrahimovic-2002.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Henrik",
+    "lastname": "Larsson",
+    "nationality": "Suède",
+    "photo_path": "players/henrik-larsson-1994.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Erik",
+    "lastname": "Thorstvedt",
+    "nationality": "Norvège",
+    "photo_path": "players/erik-thorstvedt-1996.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Henning",
+    "lastname": "Berg",
+    "nationality": "Norvège",
+    "photo_path": "players/henning-berg-1998.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Rune",
+    "lastname": "Bratseth",
+    "nationality": "Norvège",
+    "photo_path": "players/rune-bratseth-1994.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Ronny",
+    "lastname": "Johnsen",
+    "nationality": "Norvège",
+    "photo_path": "players/ronny-johnsen-1998.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "John Arne",
+    "lastname": "Riise",
+    "nationality": "Norvège",
+    "photo_path": "players/john-arne-riise-2006.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Erik",
+    "lastname": "Mykland",
+    "nationality": "Norvège",
+    "photo_path": "players/erik-mykland-1998.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Kjetil",
+    "lastname": "Rekdal",
+    "nationality": "Norvège",
+    "photo_path": "players/kjetil-rekdal-1994.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Martin",
+    "lastname": "Ødegaard",
+    "nationality": "Norvège",
+    "photo_path": "players/martin-odegaard-2016.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Ole Gunnar",
+    "lastname": "Solskjær",
+    "nationality": "Norvège",
+    "photo_path": "players/ole-gunnar-solskjaer-1998.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Erling",
+    "lastname": "Haaland",
+    "nationality": "Norvège",
+    "photo_path": "players/erling-haaland-2019.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Tom",
+    "lastname": "Lund",
+    "nationality": "Norvège",
+    "photo_path": "players/tom-lund-1978.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Vincent",
+    "lastname": "Enyeama",
+    "nationality": "Nigéria",
+    "photo_path": "players/vincent-enyeama-2010.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Joseph",
+    "lastname": "Yobo",
+    "nationality": "Nigéria",
+    "photo_path": "players/joseph-yobo-2010.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Taribo",
+    "lastname": "West",
+    "nationality": "Nigéria",
+    "photo_path": "players/taribo-west-1998.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Sunday",
+    "lastname": "Oliseh",
+    "nationality": "Nigéria",
+    "photo_path": "players/sunday-oliseh-2002.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "John Obi",
+    "lastname": "Mikel",
+    "nationality": "Nigéria",
+    "photo_path": "players/john-obi-mikel-2014.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Jay-Jay",
+    "lastname": "Okocha",
+    "nationality": "Nigéria",
+    "photo_path": "players/jay-jay-okocha-1998.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Rashidi",
+    "lastname": "Yekini",
+    "nationality": "Nigéria",
+    "photo_path": "players/rashidi-yekini-1994.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Nwankwo",
+    "lastname": "Kanu",
+    "nationality": "Nigéria",
+    "photo_path": "players/nwankwo-kanu-1998.webp",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Stephen",
+    "lastname": "Keshi",
+    "nationality": "Nigéria",
+    "photo_path": "players/stephen-keshi-1994.webp",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Ben",
+    "lastname": "Iroha",
+    "nationality": "Nigéria",
+    "photo_path": "players/ben-iroha-1994.webp",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Abdelkrim",
+    "lastname": "El Hadrioui",
+    "nationality": "Maroc",
+    "photo_path": "players/abdelkrim-el-hadrioui-1994.jpg",
+    "previous_paths": []
+  },
+  {
+    "firstname": "Segun",
+    "lastname": "Odegbami",
+    "nationality": "Nigéria",
+    "photo_path": "players/segun-odegbami-1980.jpg",
+    "previous_paths": []
+  }
+]

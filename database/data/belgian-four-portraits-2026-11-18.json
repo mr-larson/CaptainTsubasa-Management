@@ -1,0 +1,47 @@
+[
+  {
+    "firstname": "Josip",
+    "lastname": "Weber",
+    "nationality": "Belgique",
+    "photo_path": "players/josip-weber-1992.jpg",
+    "previous_paths": [
+      "players/josip-weber-1990.jpg",
+      "players/josip-weber.jpg",
+      "players/josip-weber.webp",
+      "players/josip-weber.png"
+    ]
+  },
+  {
+    "firstname": "Wesley",
+    "lastname": "Sonck",
+    "nationality": "Belgique",
+    "photo_path": "players/wesley-sonck-2002.jpg",
+    "previous_paths": [
+      "players/wesley-sonck.jpg",
+      "players/wesley-sonck.webp",
+      "players/wesley-sonck.png"
+    ]
+  },
+  {
+    "firstname": "Daniel",
+    "lastname": "Van Buyten",
+    "nationality": "Belgique",
+    "photo_path": "players/daniel-van-buyten-2000.jpg",
+    "previous_paths": [
+      "players/daniel-van-buyten.jpg",
+      "players/daniel-van-buyten.webp",
+      "players/daniel-van-buyten.png"
+    ]
+  },
+  {
+    "firstname": "Éric",
+    "lastname": "Gerets",
+    "nationality": "Belgique",
+    "photo_path": "players/eric-gerets-1981.jpg",
+    "previous_paths": [
+      "players/eric-gerets.jpg",
+      "players/eric-gerets.webp",
+      "players/eric-gerets.png"
+    ]
+  }
+]
