@@ -9,6 +9,7 @@ const props = defineProps({
 
 const stageLabel = computed(() => ({
     group:    'Phase de poules',
+    round16:  'Huitièmes de finale',
     quarter:  'Quarts de finale',
     semi:     'Demi-finales',
     final:    'Finale',
@@ -16,7 +17,7 @@ const stageLabel = computed(() => ({
 }[props.tournament?.stage] ?? '—'));
 
 // Tours à élimination directe présents, dans l'ordre ; la finale et la 3e place sont affichées à part.
-const ROUND_LABELS = { quarter: 'Quarts de finale', semi: 'Demi-finales' };
+const ROUND_LABELS = { round16: 'Huitièmes de finale', quarter: 'Quarts de finale', semi: 'Demi-finales' };
 const earlyRounds = computed(() => Object.entries(ROUND_LABELS)
     .map(([key, label]) => ({ key, label, matches: props.tournament?.bracket?.[key] ?? [] }))
     .filter(r => r.matches.length));
@@ -97,7 +98,7 @@ function isWinner(match, side) {
                 </table>
                 </div>
                 <div class="px-4 py-1.5 text-2xs text-emerald-600 bg-emerald-50/40 border-t border-slate-200">
-                    Les 2 premiers sont qualifiés.
+                    Les 2 premiers sont qualifiés<template v-if="tournament.third_slots"> ainsi que les {{ tournament.third_slots }} meilleurs troisièmes</template>.
                 </div>
             </div>
         </div>

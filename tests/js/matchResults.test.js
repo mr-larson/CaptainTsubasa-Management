@@ -12,6 +12,8 @@ describe('libellés de tour', () => {
         expect(roundShort({ round: 'group_b', week: 2 })).toBe('Pl.B');
         expect(roundShort({ round: 'final', week: 9 })).toBe('F');
         expect(roundShort({ round: 'quarter', week: 6 })).toBe('¼');
+        expect(roundShort({ round: 'round16', week: 4 })).toBe('⅛');
+        expect(roundTitle({ round: 'group_h', week: 1 })).toBe('Poule H');
         expect(roundTitle({ round: 'third', week: 9 })).toBe('Match pour la 3e place');
         expect(roundShort({ week: 3 })).toBe('S3');
         expect(roundTitle({ round: 'semi', week: 8 })).toBe('Demi-finale');

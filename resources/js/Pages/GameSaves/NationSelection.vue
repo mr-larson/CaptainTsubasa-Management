@@ -39,6 +39,9 @@ const form = useForm({
 });
 
 // ── Étape 1 : nations ─────────────────────────────────────────
+// Format de chaque taille de tournoi, affiché à côté du bouton.
+const SIZE_HINTS = { 8: '2 poules, demies', 16: '4 poules, quarts', 24: '6 poules, 8es (+ 4 meilleurs 3es)', 32: '8 poules, 8es' };
+
 const playableCount = computed(() => props.nations.filter(n => n.playable).length);
 const sizeAvailable = (size) => playableCount.value >= size;
 const maxHumans = computed(() => Math.max(1, Math.min(4, Math.floor(form.nations_count / 4))));
@@ -150,7 +153,7 @@ function launch() {
                                 ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
                                 : 'border-slate-300 bg-white text-slate-600 hover:border-indigo-300'">
                         {{ size }} sélections
-                        <span class="text-2xs font-normal text-slate-400">· {{ size === 16 ? '4 poules, quarts' : '2 poules, demies' }}</span>
+                        <span class="text-2xs font-normal text-slate-400">· {{ SIZE_HINTS[size] }}</span>
                     </button>
                 </div>
 
