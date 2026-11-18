@@ -749,6 +749,7 @@ const saveGame = () => {
 
                     <!-- ======== AUTRES ÉQUIPES ======== -->
                     <TabOtherTeams v-else-if="activeTab === 'other-teams'"
+                                   :isWorldCup="isWorldCup"
                                    :nextOpponentId="nextMatch ? (nextMatch.home_team_id === team?.id ? nextMatch.away_team_id : nextMatch.home_team_id) : null"
                                    :otherTeams="otherTeams"
                                    :selectedOtherTeam="selectedOtherTeam"

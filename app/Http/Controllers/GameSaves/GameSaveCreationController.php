@@ -138,6 +138,13 @@ class GameSaveCreationController extends Controller
                 'period'          => $data['period'],
                 'competitionType' => $competitionType,
                 'nations'         => $worldCup->playableNations(),
+                'tournamentSizes' => NewWorldCupBuilder::TOURNAMENT_SIZES,
+                'coNations'       => collect((array) $request->query('co_nations', []))
+                    ->filter(fn ($n) => is_string($n) && in_array($n, \App\Enums\Nationality::ALL, true) && $n !== $request->query('nation') && $worldCup->isPlayable($n))
+                    ->unique()->take(NewWorldCupBuilder::MAX_HUMANS - 1)->values()->all(),
+                'nationsCount'    => in_array((int) $request->query('nations_count'), NewWorldCupBuilder::TOURNAMENT_SIZES, true)
+                    ? (int) $request->query('nations_count')
+                    : NewWorldCupBuilder::DEFAULT_SIZE,
                 'squad'           => function () use ($request, $worldCup) {
                     $nation = $request->query('nation');
 
@@ -392,6 +399,17 @@ class GameSaveCreationController extends Controller
 
         if (! $worldCup->isPlayable($data['nation'])) {
             return back()->withErrors(['nation' => "Cette sélection n'a pas assez de joueurs pour concourir."]);
+        }
+
+        foreach ($data['co_nations'] ?? [] as $coNation) {
+            if (! $worldCup->isPlayable($coNation)) {
+                return back()->withErrors(['co_nations' => "La sélection {$coNation} n'a pas assez de joueurs pour concourir."]);
+            }
+        }
+
+        $size = (int) ($data['nations_count'] ?? NewWorldCupBuilder::DEFAULT_SIZE);
+        if ($worldCup->playableCount() < $size) {
+            return back()->withErrors(['nations_count' => "Pas assez de sélections jouables pour un tournoi à {$size} équipes."]);
         }
 
         $gameSave = $worldCup->build($request->user(), $data);

@@ -61,11 +61,24 @@ class NationalTeamAssembler
         ];
     }
 
-    public function assemble(GameSave $gameSave, array $nations, string $controlledNation, ?array $playerIds = null): void
+    /**
+     * Monte toutes les sélections de la partie.
+     *
+     * Hot-seat : la nation $controlledNation prend le siège 1 (et la main au démarrage), les
+     * $coHumanNations les sièges suivants, dans l'ordre. Seule la nation du siège 1 a une
+     * convocation choisie ($playerIds) ; les autres managers humains reçoivent le meilleur
+     * onze automatique, qu'ils ajustent ensuite dans « Mon équipe ».
+     *
+     * @param array<int, string> $nations          toutes les nations du tournoi (humaines comprises)
+     * @param array<int, string> $coHumanNations   nations humaines supplémentaires (sièges 2, 3…)
+     */
+    public function assemble(GameSave $gameSave, array $nations, string $controlledNation, ?array $playerIds = null, array $coHumanNations = []): void
     {
         $state = $gameSave->gameState();
+        $seats = array_flip(array_values(array_merge([$controlledNation], $coHumanNations))); // nation → siège - 1
 
         foreach ($nations as $nation) {
+            $isHuman      = isset($seats[$nation]);
             $isControlled = $nation === $controlledNation;
             $query = Player::where('nationality', $nation)->orderBy('id');
             if ($isControlled && $playerIds !== null) {
@@ -81,8 +94,8 @@ class NationalTeamAssembler
             } else {
                 $squad = $this->automaticSquad($query->get());
                 if ($squad->count() < self::MIN_PLAYERS || !$squad->contains(fn (Player $player) => $this->positionGroup($player) === 'GK')) {
-                    if ($isControlled) {
-                        throw ValidationException::withMessages(['nation' => "Cette sélection n'a plus assez de joueurs pour concourir."]);
+                    if ($isHuman) {
+                        throw ValidationException::withMessages(['nation' => "La sélection {$nation} n'a plus assez de joueurs pour concourir."]);
                     }
                     continue;
                 }
@@ -103,8 +116,8 @@ class NationalTeamAssembler
                 'description'           => $this->describe($squad),
                 'tactical_style'        => 'balanced',
                 'management_philosophy' => 'collective',
-                'is_controlled'         => $isControlled,
-                'human_seat'            => $isControlled ? 1 : null,
+                'is_controlled'         => $isHuman,
+                'human_seat'            => $isHuman ? $seats[$nation] + 1 : null,
             ]);
 
             $slots = $this->snapshotSquad($gameSave, $gameTeam, $squad, $lineup['slots']);

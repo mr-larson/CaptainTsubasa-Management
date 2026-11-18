@@ -13,14 +13,16 @@ use App\Models\GameSaves\GameTeam;
  * Moteur de tournoi pour le mode Coupe du Monde (jumeau de SeasonService).
  *
  * Format : phase de poules (round-robin simple par groupe) puis élimination
- * directe. Avec 8 sélections : 2 groupes de 4 → les 2 premiers de chaque groupe
- * → demi-finales (A1-B2, B1-A2) → finale.
+ * directe, les 2 premiers de chaque groupe se qualifiant.
+ *   - 8 sélections  : 2 groupes de 4 → demi-finales (A1-B2, B1-A2) → finale + match pour la 3e place ;
+ *   - 16 sélections : 4 groupes de 4 → quarts → demies → finale + match pour la 3e place
+ *     (les quarts sont ordonnés pour que deux équipes d'un même groupe ne se recroisent pas en demie).
  *
  * Cycle : generateGroups() à la création, puis advance() après chaque journée
- * (appelé par GameMatchController) fait progresser group → semi → final → done.
+ * (appelé par WeekClosingService) fait progresser group → [quarter] → semi → final → done.
  *
  * Stockage de la structure dans game_saves.state['tournament'] ; chaque match
- * porte son `round` (group_a/group_b/semi/final).
+ * porte son `round` (group_a…group_d / quarter / semi / third / final).
  */
 class TournamentService
 {
@@ -29,7 +31,7 @@ class TournamentService
     public function __construct(private Randomizer $random)
     {
     }
-    /** Lettres des groupes possibles (2 groupes dès 4 sélections, sinon 1). */
+    /** Lettres des groupes possibles (4 groupes à 16 sélections, 2 dès 4, sinon 1). */
     private const GROUP_KEYS = ['A', 'B', 'C', 'D'];
 
     /**
@@ -44,8 +46,8 @@ class TournamentService
         $count = count($teamIds);
         if ($count < 2) return;
 
-        // 2 groupes dès qu'on a au moins 4 sélections, sinon 1 seul groupe.
-        $groupCount = $count >= 4 ? 2 : 1;
+        // 4 groupes dès 16 sélections, 2 dès 4 sélections, sinon 1 seul groupe.
+        $groupCount = $count >= 16 ? 4 : ($count >= 4 ? 2 : 1);
         $keys       = array_slice(self::GROUP_KEYS, 0, $groupCount);
 
         $groups = array_fill_keys($keys, []);
@@ -74,8 +76,8 @@ class TournamentService
 
     /**
      * Fait progresser le tournoi quand le tour courant est terminé :
-     * group → (demies ou finale) → finale → champion. Sans effet tant que le
-     * tour courant n'est pas entièrement joué.
+     * group → (quarts) → demies → finale + 3e place → champion. Sans effet tant que
+     * le tour courant n'est pas entièrement joué.
      */
     public function advance(GameSave $gameSave): void
     {
@@ -96,42 +98,48 @@ class TournamentService
             }
 
             $week = ($t['group_last_week'] ?? 1) + 1;
-            $keys = array_keys($qual);
+            [$round, $pairs] = $this->firstKnockoutPairs(array_values($qual));
+            foreach ($pairs as [$home, $away]) {
+                $this->createMatch($gameSave, $week, $home, $away, $round);
+            }
+            $t['stage']         = $round;
+            $t['knockout_week'] = $week;
+            $gameSave->phase    = GamePhase::Knockout;
 
-            if (count($keys) >= 2) {
-                // Demi-finales croisées : A1-B2, B1-A2.
-                $a = $qual[$keys[0]];
-                $b = $qual[$keys[1]];
-                if (isset($a[0], $b[1])) $this->createMatch($gameSave, $week, $a[0], $b[1], 'semi');
-                if (isset($b[0], $a[1])) $this->createMatch($gameSave, $week, $b[0], $a[1], 'semi');
+        } elseif ($stage === 'quarter' || $stage === 'semi') {
+            if (! $this->stageComplete($gameSave, [$stage])) return;
+
+            $winners = $this->roundWinners($gameSave, $stage);
+            $week    = ($t['knockout_week'] ?? ($gameSave->week ?? 1)) + 1;
+            $t['winners'][$stage] = $winners; // persiste pour un affichage stable (égalités KO)
+
+            if ($stage === 'quarter') {
+                // Demies : vainqueurs des quarts 1-2 et 3-4 (ordre pensé pour éviter les revanches de poule).
+                foreach (array_chunk($winners, 2) as $pair) {
+                    if (count($pair) === 2) $this->createMatch($gameSave, $week, $pair[0], $pair[1], 'semi');
+                }
                 $t['stage'] = 'semi';
             } else {
-                // Un seul groupe : finale directe entre les 2 premiers.
-                $a = $qual[$keys[0]];
-                if (isset($a[0], $a[1])) $this->createMatch($gameSave, $week, $a[0], $a[1], 'final');
-                $t['stage'] = 'final';
+                if (count($winners) >= 2) {
+                    $this->createMatch($gameSave, $week, $winners[0], $winners[1], 'final');
+                }
+                // Match pour la 3e place : les deux perdants des demies, joué la même semaine que la finale.
+                $losers = $this->roundLosers($gameSave, 'semi');
+                if (count($losers) >= 2) {
+                    $this->createMatch($gameSave, $week, $losers[0], $losers[1], 'third');
+                }
+                $t['stage']      = 'final';
+                $t['final_week'] = $week;
             }
             $t['knockout_week'] = $week;
             $gameSave->phase    = GamePhase::Knockout;
 
-        } elseif ($stage === 'semi') {
-            if (! $this->stageComplete($gameSave, ['semi'])) return;
-
-            $winners = $this->roundWinners($gameSave, 'semi');
-            $week    = ($t['knockout_week'] ?? ($gameSave->week ?? 1)) + 1;
-            if (count($winners) >= 2) {
-                $this->createMatch($gameSave, $week, $winners[0], $winners[1], 'final');
-            }
-            $t['winners']['semi'] = $winners; // persiste pour un affichage stable (égalités KO)
-            $t['stage']      = 'final';
-            $t['final_week'] = $week;
-            $gameSave->phase = GamePhase::Knockout;
-
         } elseif ($stage === 'final') {
-            if (! $this->stageComplete($gameSave, ['final'])) return;
+            if (! $this->stageComplete($gameSave, ['final', 'third'])) return;
 
             $winners                = $this->roundWinners($gameSave, 'final');
             $t['winners']['final']  = $winners;
+            $t['winners']['third']  = $this->roundWinners($gameSave, 'third');
             $t['stage']             = 'done';
             $t['champion_team_id']  = $winners[0] ?? null;
             $gameSave->phase        = GamePhase::Finished;
@@ -142,6 +150,29 @@ class TournamentService
 
         $gameSave->gameState()->putTournament($t);
         $gameSave->save();
+    }
+
+    /**
+     * Premier tour à élimination directe selon le nombre de groupes, avec ses affiches.
+     * Un groupe : finale directe. Deux groupes : demies A1-B2 / B1-A2. Quatre groupes :
+     * quarts (A1-B2, C1-D2, B1-A2, D1-C2) dont les vainqueurs se croisent 1-2 et 3-4.
+     *
+     * @param  array<int, array<int, int>> $qual qualifiés par groupe, dans l'ordre A, B, C…
+     * @return array{0: string, 1: array<int, array{0:int,1:int}>} [tour, affiches (domicile, extérieur)]
+     */
+    private function firstKnockoutPairs(array $qual): array
+    {
+        if (count($qual) < 2) {
+            return ['final', isset($qual[0][0], $qual[0][1]) ? [[$qual[0][0], $qual[0][1]]] : []];
+        }
+
+        $first = $second = [];
+        foreach (array_chunk($qual, 2) as [$a, $b]) {
+            if (isset($a[0], $b[1])) $first[]  = [$a[0], $b[1]];
+            if (isset($b[0], $a[1])) $second[] = [$b[0], $a[1]];
+        }
+
+        return [count($qual) >= 4 ? 'quarter' : 'semi', array_merge($first, $second)];
     }
 
     /** Le tournoi est-il terminé (champion connu) ? */
@@ -312,7 +343,7 @@ class TournamentService
         // Bracket : demies puis finale. Vainqueur depuis le score, ou (égalité)
         // depuis les vainqueurs persistés à l'avancement.
         $bracket = [];
-        foreach (['semi', 'final'] as $round) {
+        foreach (['quarter', 'semi', 'third', 'final'] as $round) {
             $matches = GameMatch::where('game_save_id', $gameSave->id)
                 ->where('round', $round)->orderBy('id')->get()->values();
             if ($matches->isEmpty()) continue;
@@ -344,11 +375,50 @@ class TournamentService
         }
 
         return [
-            'stage'    => $t['stage'] ?? 'group',
-            'groups'   => $groups,
-            'bracket'  => $bracket,
-            'champion' => $ref($t['champion_team_id'] ?? null),
+            'stage'      => $t['stage'] ?? 'group',
+            'groups'     => $groups,
+            'bracket'    => $bracket,
+            'champion'   => $ref($t['champion_team_id'] ?? null),
+            'eliminated' => $this->eliminatedTeams($t['stage'] ?? 'group', $groups, $bracket),
         ];
+    }
+
+    /**
+     * Sélections déjà sorties du tournoi, avec le tour de leur élimination :
+     * 'group' (non qualifiée), 'quarter', 'semi' (battue en demie) ou 'final' (finaliste battu).
+     * Sert à afficher « Éliminé » au manager au lieu de le laisser sans repère.
+     *
+     * @param  array<int, array<string, mixed>> $groups  poules telles que renvoyées par presentation()
+     * @param  array<string, array<int, array<string, mixed>>> $bracket
+     * @return array<int, string> team_id => tour d'élimination
+     */
+    private function eliminatedTeams(string $stage, array $groups, array $bracket): array
+    {
+        $out = [];
+
+        if ($stage !== 'group') {
+            foreach ($groups as $group) {
+                foreach ($group['rows'] as $row) {
+                    if (! $row['qualified']) {
+                        $out[$row['team_id']] = 'group';
+                    }
+                }
+            }
+        }
+
+        foreach (['quarter', 'semi', 'final'] as $round) {
+            foreach ($bracket[$round] ?? [] as $match) {
+                if (! $match['played'] || $match['winner_team_id'] === null) {
+                    continue;
+                }
+                $loser = (int) $match['home']['team_id'] === (int) $match['winner_team_id']
+                    ? $match['away']['team_id']
+                    : $match['home']['team_id'];
+                $out[$loser] = $round;
+            }
+        }
+
+        return $out;
     }
 
     /**
@@ -373,6 +443,39 @@ class TournamentService
     }
 
     /**
+     * Perdants des matchs joués d'un tour à élimination directe (même ordre que roundWinners).
+     *
+     * @return array<int, int>
+     */
+    private function roundLosers(GameSave $gameSave, string $round): array
+    {
+        $matches = GameMatch::where('game_save_id', $gameSave->id)
+            ->where('round', $round)->where('status', 'played')->orderBy('id')->get();
+
+        $losers = [];
+        foreach ($matches as $m) {
+            $winner = $this->matchWinner($m);
+            $losers[] = (int) $winner === (int) $m->home_team_id ? (int) $m->away_team_id : (int) $m->home_team_id;
+        }
+
+        return $losers;
+    }
+
+    /**
+     * Probabilité (en %) que l'équipe à domicile gagne une séance de tirs au but simulée.
+     * 50 % à force égale, +1 point par point de force d'écart (CareerObjectiveService::teamStrengths),
+     * bornée à 35–65 % : la loterie des tirs au but garde le dernier mot.
+     */
+    private function shootoutHomeChance(GameMatch $m): int
+    {
+        $save      = GameSave::find($m->game_save_id);
+        $strengths = $save ? app(\App\Services\Season\CareerObjectiveService::class)->teamStrengths($save) : collect();
+        $gap       = (float) ($strengths[$m->home_team_id] ?? 0) - (float) ($strengths[$m->away_team_id] ?? 0);
+
+        return (int) max(35, min(65, round(50 + $gap)));
+    }
+
+    /**
      * Vainqueur d'un match à élimination directe. Égalité → vainqueur des tirs
      * au but joués dans le moteur (match_stats.shootout) ; pour un match simulé,
      * tirage unique enregistré dans match_stats pour rester stable d'un appel à l'autre.
@@ -391,7 +494,9 @@ class TournamentService
             return $winner;
         }
 
-        $winner = $this->random->int(0, 1) === 1 ? (int) $m->home_team_id : (int) $m->away_team_id;
+        $winner = $this->random->int(0, 99) < $this->shootoutHomeChance($m)
+            ? (int) $m->home_team_id
+            : (int) $m->away_team_id;
         $stats['shootout'] = ['winner_team_id' => $winner, 'simulated' => true];
         $m->match_stats = $stats;
         $m->save();

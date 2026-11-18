@@ -204,4 +204,40 @@ class NewWorldCupBuilderTest extends TestCase
         $this->assertSame(11, $team->contracts()->where('is_starter', true)->count());
     }
 
+
+    public function test_hot_seat_creates_one_human_team_per_seat_and_draws_the_rest(): void
+    {
+        $nations = $this->seedTournament();
+        $user = User::factory()->create();
+
+        $save = $this->builder()->build($user, [
+            'nation' => $nations[0], 'co_nations' => [$nations[3], $nations[5]],
+            'period' => 'college', 'label' => 'Hot-seat', 'game_config' => null,
+        ]);
+
+        $humans = GameTeam::where('game_save_id', $save->id)->where('is_controlled', true)->orderBy('human_seat')->get();
+        $this->assertSame([$nations[0], $nations[3], $nations[5]], $humans->pluck('name')->all());
+        $this->assertSame([1, 2, 3], $humans->pluck('human_seat')->map(fn ($s) => (int) $s)->all());
+        $this->assertSame($humans[0]->id, (int) $save->controlled_game_team_id);
+        $this->assertSame(8, GameTeam::where('game_save_id', $save->id)->count());
+        $this->assertSame(5, GameTeam::where('game_save_id', $save->id)->where('is_controlled', false)->count());
+    }
+
+    public function test_the_route_accepts_co_nations_and_rejects_the_main_nation_among_them(): void
+    {
+        $nations = $this->seedTournament();
+        $user = User::factory()->create();
+        $ids = Player::where('nationality', $nations[0])->orderBy('id')->limit(14)->pluck('id')->all();
+        $data = ['period' => 'college', 'competition_type' => 'world_cup', 'nation' => $nations[0], 'player_ids' => $ids];
+        $this->withoutMiddleware(ThrottleRequests::class)->actingAs($user);
+
+        $this->post(route('game-saves.start-world-cup'), $data + ['co_nations' => [$nations[0]]])
+            ->assertSessionHasErrors('co_nations.0');
+        $this->assertSame(0, GameSave::where('user_id', $user->id)->count());
+
+        $this->post(route('game-saves.start-world-cup'), $data + ['co_nations' => [$nations[1]]])
+            ->assertSessionHasNoErrors();
+        $save = GameSave::where('user_id', $user->id)->firstOrFail();
+        $this->assertSame(2, GameTeam::where('game_save_id', $save->id)->where('is_controlled', true)->count());
+    }
 }

@@ -26,8 +26,14 @@ use App\Services\Season\SeasonBootstrapService;
  */
 class NewWorldCupBuilder
 {
-    /** Nombre de sélections qui participent à une Coupe du Monde. */
-    private const TOURNAMENT_NATIONS = 8;
+    /** Tailles de tournoi proposées (nombre de sélections) : 2 groupes de 4, ou 4 groupes de 4. */
+    public const TOURNAMENT_SIZES = [8, 16];
+
+    /** Taille par défaut d'un tournoi. */
+    public const DEFAULT_SIZE = 8;
+
+    /** Managers humains maximum autour de la même table (nation principale + co-managers). */
+    public const MAX_HUMANS = 4;
 
     /** Effectif minimum pour aligner un onze : 11 joueurs dont au moins 1 gardien. */
     private const MIN_GOALKEEPERS = 1;
@@ -91,6 +97,12 @@ class NewWorldCupBuilder
         return $this->assembler->preview($nation);
     }
 
+    /** Nombre de nations jouables : borne haute de la taille de tournoi choisissable. */
+    public function playableCount(): int
+    {
+        return $this->playableNames()->count();
+    }
+
     /** Vrai si la nation a assez de joueurs (dont un gardien) pour disputer le tournoi. */
     public function isPlayable(string $nation): bool
     {
@@ -114,7 +126,7 @@ class NewWorldCupBuilder
      * étape échoue, aucune partie à moitié créée n'apparaît dans la liste.
      *
      * Déroulé :
-     *   1. tirage au sort des adversaires parmi les autres nations jouables ;
+     *   1. tirage au sort des adversaires parmi les autres nations jouables (8 ou 16 sélections) ;
      *   2. création de la sauvegarde (phase « world_cup », semaine 1) ;
      *   3. montage de chaque sélection (équipes, joueurs, contrats) ;
      *   4. tirage des poules et calendrier de la phase de groupes ;
@@ -122,15 +134,18 @@ class NewWorldCupBuilder
      *
      * L'appelant doit avoir vérifié que la nation est jouable (isPlayable).
      *
-     * @param array $data données validées : nation, period, label, game_config (déjà nettoyée)
+     * @param array $data données validées : nation, period, label, game_config (déjà nettoyée), nations_count (8 ou 16, facultatif), co_nations (nations des autres managers hot-seat, facultatif)
      */
     public function build(User $user, array $data): GameSave
     {
         $controlled = $data['nation'];
-        $nations    = array_merge([$controlled], $this->drawOpponents($controlled));
+        $size       = (int) ($data['nations_count'] ?? self::DEFAULT_SIZE);
+        $coHumans   = array_values(array_unique(array_diff($data['co_nations'] ?? [], [$controlled])));
+        $humans     = array_merge([$controlled], $coHumans);
+        $nations    = array_merge($humans, $this->drawOpponents($humans, $size));
         $state      = ! empty($data['game_config']) ? ['config' => $data['game_config']] : null;
 
-        return DB::transaction(function () use ($user, $data, $nations, $controlled, $state) {
+        return DB::transaction(function () use ($user, $data, $nations, $controlled, $coHumans, $state) {
             $gameSave = GameSave::create([
                 'user_id'          => $user->id,
                 'team_id'          => null,
@@ -144,7 +159,7 @@ class NewWorldCupBuilder
                 'state'            => $state,
             ]);
 
-            $this->assembler->assemble($gameSave, $nations, $controlled, $data['player_ids'] ?? null);
+            $this->assembler->assemble($gameSave, $nations, $controlled, $data['player_ids'] ?? null, $coHumans);
             $this->tournament->generateGroups($gameSave);                  // poules et calendrier
             $this->seasonBootstrap->prepare($gameSave);                    // première semaine
 
@@ -156,12 +171,13 @@ class NewWorldCupBuilder
      * Adversaires tirés au sort parmi les autres nations jouables, de quoi remplir le
      * tournoi (la nation du manager compte pour une des sélections).
      *
+     * @param  array<int, string> $humans nations des managers humains (déjà qualifiées d'office)
      * @return array<int, string> noms de nations
      */
-    private function drawOpponents(string $controlled): array
+    private function drawOpponents(array $humans, int $size): array
     {
-        $others = $this->playableNames()->reject(fn ($name) => $name === $controlled)->values()->all();
+        $others = $this->playableNames()->reject(fn ($name) => in_array($name, $humans, true))->values()->all();
 
-        return array_slice($this->random->shuffle($others), 0, self::TOURNAMENT_NATIONS - 1);
+        return array_slice($this->random->shuffle($others), 0, $size - count($humans));
     }
 }

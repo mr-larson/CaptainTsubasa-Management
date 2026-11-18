@@ -6,6 +6,7 @@ use App\Enums\Nationality;
 use App\Http\Requests\GameSaves\Concerns\ChecksTrainingGains;
 use App\Models\GameSaves\GameSave;
 use App\Services\WorldCup\NationalTeamAssembler;
+use App\Services\WorldCup\NewWorldCupBuilder;
 use App\Support\GameConfig;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -29,6 +30,9 @@ class StartWorldCupRequest extends FormRequest
             'period'           => ['required', 'string', 'in:college'],
             'competition_type' => ['required', 'string', 'in:world_cup'],
             'nation'           => ['required', 'string', Rule::in(Nationality::ALL)],
+            'nations_count'    => ['nullable', 'integer', Rule::in(NewWorldCupBuilder::TOURNAMENT_SIZES)],
+            'co_nations'       => ['nullable', 'array', 'list', 'max:'.(NewWorldCupBuilder::MAX_HUMANS - 1)],
+            'co_nations.*'     => ['string', 'distinct', Rule::in(Nationality::ALL), 'different:nation'],
             'player_ids'       => ['required', 'array', 'list', 'min:'.NationalTeamAssembler::MIN_PLAYERS, 'max:'.NationalTeamAssembler::MAX_PLAYERS],
             'player_ids.*'     => ['required', 'integer', 'distinct'],
             'game_config'      => ['nullable', 'array'],

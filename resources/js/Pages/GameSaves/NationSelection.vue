@@ -3,7 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ButtonPrimary from '@/Components/ButtonPrimary.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import H2 from '@/Components/H2.vue';
-import { computed, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 const props = defineProps({
     label: { type: String, default: null },
@@ -12,6 +12,9 @@ const props = defineProps({
     nations: { type: Array, default: () => [] },
     squad: { type: Object, default: null },
     gameConfig: { type: Object, default: null },
+    tournamentSizes: { type: Array, default: () => [8] },
+    nationsCount: { type: Number, default: 8 },
+    coNations: { type: Array, default: () => [] },
 });
 
 const form = useForm({
@@ -19,16 +22,37 @@ const form = useForm({
     period: props.period,
     competition_type: props.competitionType,
     nation: props.squad?.name ?? null,
+    nations_count: props.nationsCount,
+    co_nations: [...props.coNations],
     player_ids: [...(props.squad?.selectedIds ?? [])],
     game_config: props.gameConfig,
 });
 
 const playableCount = computed(() => props.nations.filter(n => n.playable).length);
+// Une taille de tournoi n'est proposée que s'il y a assez de sélections jouables.
+const sizeAvailable = (size) => playableCount.value >= size;
+
+// Hot-seat : plusieurs managers humains, chacun sa sélection (la 1re choisie prend le siège 1).
+const MAX_HUMANS = 4;
+const hotSeat = ref(props.coNations.length > 0);
+const seatOf = (name) => form.nation === name ? 1 : (form.co_nations.indexOf(name) + 2 || null);
 
 function pick(nation) {
     if (!nation.playable) return;
+    if (hotSeat.value && form.nation && nation.name !== form.nation) {
+        // Ajoute ou retire un co-manager.
+        if (form.co_nations.includes(nation.name)) {
+            form.co_nations = form.co_nations.filter(n => n !== nation.name);
+        } else if (form.co_nations.length < MAX_HUMANS - 1) {
+            form.co_nations.push(nation.name);
+        }
+        return;
+    }
     form.nation = nation.name;
+    form.co_nations = form.co_nations.filter(n => n !== nation.name);
 }
+
+watch(hotSeat, (on) => { if (!on) form.co_nations = []; });
 
 const selected = computed(() => new Set(form.player_ids));
 const hasKeeper = computed(() => props.squad?.players.some(player =>
@@ -91,6 +115,31 @@ function launch() {
                     </Link>
                 </div>
 
+                <!-- Taille du tournoi -->
+                <div class="mb-5 flex flex-wrap items-center gap-2">
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wide mr-1">Format</span>
+                    <button v-for="size in tournamentSizes" :key="size" type="button"
+                            :disabled="!sizeAvailable(size)"
+                            @click="form.nations_count = size"
+                            class="px-3 py-1.5 rounded-lg border text-sm font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                            :class="form.nations_count === size
+                                ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+                                : 'border-slate-300 bg-white text-slate-600 hover:border-indigo-300'">
+                        {{ size }} sélections
+                        <span class="text-2xs font-normal text-slate-400">· {{ size === 16 ? '4 poules, quarts' : '2 poules, demies' }}</span>
+                    </button>
+                </div>
+
+                <!-- Hot-seat -->
+                <label class="mb-4 flex flex-wrap items-center gap-2 text-sm text-slate-600 cursor-pointer">
+                    <input type="checkbox" v-model="hotSeat" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" />
+                    <span class="font-semibold">Hot-seat</span>
+                    <span class="text-xs text-slate-400">
+                        plusieurs managers sur le même écran : choisis ta nation, puis clique celles des autres
+                        (jusqu'à {{ MAX_HUMANS }} managers, onze automatique pour les co-managers).
+                    </span>
+                </label>
+
                 <!-- Grille des nations -->
                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                     <button v-for="nation in nations" :key="nation.name"
@@ -101,7 +150,7 @@ function launch() {
                             :class="[
                                 !nation.playable
                                     ? 'border-slate-300 bg-slate-50 opacity-60 cursor-not-allowed'
-                                    : (form.nation === nation.name
+                                    : (seatOf(nation.name)
                                         ? 'border-indigo-500 bg-indigo-50 shadow-sm'
                                         : 'border-slate-300 bg-white hover:border-indigo-300'),
                             ]">
@@ -112,19 +161,25 @@ function launch() {
                             {{ nation.total }} joueur{{ nation.total > 1 ? 's' : '' }}
                             <template v-if="!nation.playable"> · incomplet</template>
                         </span>
-                        <div v-if="form.nation === nation.name"
+                        <div v-if="hotSeat && seatOf(nation.name)"
+                             class="absolute top-2 right-2 px-1.5 h-5 rounded-full bg-indigo-500 flex items-center justify-center">
+                            <span class="text-white text-2xs font-bold">Siège {{ seatOf(nation.name) }}</span>
+                        </div>
+                        <div v-else-if="form.nation === nation.name"
                              class="absolute top-2 right-2 w-5 h-5 rounded-full bg-indigo-500 flex items-center justify-center">
                             <span class="text-white text-2xs font-bold">✓</span>
                         </div>
                     </button>
                 </div>
 
+                <p v-if="form.errors.nations_count" class="mt-4 text-xs text-rose-500">{{ form.errors.nations_count }}</p>
+                <p v-if="form.errors.co_nations" class="mt-4 text-xs text-rose-500">{{ form.errors.co_nations }}</p>
                 <p v-if="form.errors.nation" class="mt-4 text-xs text-rose-500">{{ form.errors.nation }}</p>
                 <p v-if="form.errors.game_save" class="mt-4 text-xs text-rose-500">{{ form.errors.game_save }}</p>
 
                 <div class="mt-6 pt-4 border-t border-slate-200 flex justify-end">
                     <Link v-if="form.nation"
-                          :href="route('game-saves.setup', { nation: form.nation })"
+                          :href="route('game-saves.setup', { nation: form.nation, nations_count: form.nations_count, co_nations: form.co_nations })"
                           class="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700">
                         Convoquer les joueurs de {{ form.nation }}
                     </Link>

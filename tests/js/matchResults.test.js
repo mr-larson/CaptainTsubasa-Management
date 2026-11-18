@@ -11,6 +11,8 @@ describe('libellés de tour', () => {
     it('donne le tour de Coupe du Monde ou la semaine de ligue', () => {
         expect(roundShort({ round: 'group_b', week: 2 })).toBe('Pl.B');
         expect(roundShort({ round: 'final', week: 9 })).toBe('F');
+        expect(roundShort({ round: 'quarter', week: 6 })).toBe('¼');
+        expect(roundTitle({ round: 'third', week: 9 })).toBe('Match pour la 3e place');
         expect(roundShort({ week: 3 })).toBe('S3');
         expect(roundTitle({ round: 'semi', week: 8 })).toBe('Demi-finale');
         expect(roundTitle({ week: 3 })).toBe('Semaine 3');

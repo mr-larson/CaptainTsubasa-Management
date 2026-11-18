@@ -57,7 +57,7 @@ const openHelp = () => window.open(route('guide') + '#preparer', '_blank', 'noop
 
 // ── Coupe du Monde : contexte de poule de l'équipe contrôlée + étape ──
 const wcStageLabel = computed(() => ({
-    group: 'Phase de poules', semi: 'Demi-finales', final: 'Finale', done: 'Terminé',
+    group: 'Phase de poules', quarter: 'Quarts de finale', semi: 'Demi-finales', final: 'Finale', done: 'Terminé',
 }[props.tournament?.stage] ?? '—'));
 
 const wcStanding = computed(() => {
@@ -73,6 +73,20 @@ const wcStanding = computed(() => {
 });
 
 const wcChampion = computed(() => props.tournament?.champion ?? null);
+
+// Parcours de l'équipe contrôlée : champion, finaliste, éliminé (avec le tour), ou encore en lice.
+const wcOutcome = computed(() => {
+    const t = props.tournament, id = props.team?.id;
+    if (!props.isWorldCup || !t || id == null) return null;
+    if (t.champion?.team_id === id) return { label: 'Champion du monde', tone: 'amber' };
+    const exit = t.eliminated?.[id];
+    if (t.bracket?.third?.[0]?.winner_team_id === id) return { label: 'Médaille de bronze', tone: 'amber' };
+    if (exit === 'final') return { label: 'Finaliste', tone: 'amber' };
+    if (exit === 'quarter') return { label: 'Éliminé en quart de finale', tone: 'slate' };
+    if (exit === 'semi')  return { label: 'Éliminé en demi-finale', tone: 'slate' };
+    if (exit === 'group') return { label: 'Éliminé en poules', tone: 'slate' };
+    return null;
+});
 
 // ==========================
 //   HELPERS
@@ -102,7 +116,12 @@ const opponentPlayers = computed(() => (opponentTeam.value?.contracts ?? [])
 const totalWeeks = computed(() => {
     // Dernière semaine du calendrier (juste aussi en Coupe du Monde).
     const weeks = (props.matches ?? []).map(m => Number(m.week) || 0);
-    if (weeks.length) return Math.max(...weeks);
+    if (weeks.length) {
+        // Coupe du Monde : les demies et la finale sont créées au fil du tournoi.
+        // On ajoute les tours restants pour que la barre ne retombe pas à chaque phase.
+        const remaining = props.isWorldCup ? ({ group: (props.tournament?.groups?.length ?? 2) >= 4 ? 3 : 2, quarter: 2, semi: 1 }[props.tournament?.stage] ?? 0) : 0;
+        return Math.max(...weeks) + remaining;
+    }
     const n = props.standings.length;
     if (n < 2) return 28;
     return n % 2 === 1 ? n * 2 : (n - 1) * 2;
@@ -217,7 +236,7 @@ const { root: seasonProgressRoot, value: animatedSeasonProgress, width: seasonPr
                 </div>
 
                 <div class="flex items-center gap-6">
-                    <div class="text-center">
+                    <div v-if="!isWorldCup" class="text-center">
                         <div class="text-lg font-black text-slate-700">{{ season }}</div>
                         <div class="text-2xs text-slate-400 font-semibold">Saison</div>
                     </div>
@@ -250,7 +269,7 @@ const { root: seasonProgressRoot, value: animatedSeasonProgress, width: seasonPr
             <div ref="seasonProgressRoot">
                 <div class="flex justify-between text-2xs text-slate-400 mb-1">
                     <span>Semaine 1</span>
-                    <span class="font-semibold text-teal-500">{{ animatedSeasonProgress('progress') }}% de la saison</span>
+                    <span class="font-semibold text-teal-500">{{ animatedSeasonProgress('progress') }}% {{ isWorldCup ? 'du tournoi' : 'de la saison' }}</span>
                     <span>Semaine {{ totalWeeks }}</span>
                 </div>
                 <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
@@ -287,7 +306,11 @@ const { root: seasonProgressRoot, value: animatedSeasonProgress, width: seasonPr
                     {{ wcStanding ? wcStanding.position : '—' }}<sup v-if="wcStanding" class="text-base">e</sup>
                 </span>
                 <span class="text-2xs text-slate-400">{{ wcStanding ? '/ ' + wcStanding.total : wcStageLabel }}</span>
-                <span v-if="wcStanding" class="text-2xs font-bold px-2 py-0.5 rounded-full"
+                <span v-if="wcOutcome" class="text-2xs font-bold px-2 py-0.5 rounded-full text-center"
+                      :class="wcOutcome.tone === 'amber' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-600'">
+                    {{ wcOutcome.label }}
+                </span>
+                <span v-else-if="wcStanding" class="text-2xs font-bold px-2 py-0.5 rounded-full"
                       :class="wcStanding.qualified ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-500'">
                     {{ wcStanding.qualified ? 'Qualifié' : wcStanding.points + ' pts' }}
                 </span>
@@ -343,7 +366,7 @@ const { root: seasonProgressRoot, value: animatedSeasonProgress, width: seasonPr
                     @click="scrollToFinances" title="Voir le détail des finances">
                 <SectionTitle as="span">Budget</SectionTitle>
                 <span class="text-3xl font-black text-teal-600 tabular-nums">{{ Number(teamBudget).toLocaleString('fr-FR') }}</span>
-                <span v-if="projection" class="text-2xs text-slate-400">
+                <span v-if="projection && !isWorldCup" class="text-2xs text-slate-400">
                     ≈ {{ projection.likely.toLocaleString('fr-FR') }} en S{{ seasonEndWeek }}
                 </span>
             </button>

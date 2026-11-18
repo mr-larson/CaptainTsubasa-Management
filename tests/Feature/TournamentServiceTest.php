@@ -98,8 +98,8 @@ class TournamentServiceTest extends TestCase
         $this->assertSame('final', $save->state['tournament']['stage']);
         $this->assertSame(1, GameMatch::where('game_save_id', $save->id)->where('round', 'final')->count());
 
-        // Finale → champion.
-        $this->playRounds($save->id, ['final']);
+        // Finale + match pour la 3e place → champion.
+        $this->playRounds($save->id, ['final', 'third']);
         $this->service->advance($save);
         $save->refresh();
 
@@ -118,5 +118,126 @@ class TournamentServiceTest extends TestCase
         $save = $this->makeSave(['competition_type' => 'world_cup']);
 
         $this->assertNull($this->service->presentation($save));
+    }
+
+    /** Monte un tournoi à 4 équipes jusqu'à la fin des poules (les demies sont créées). */
+    private function tournamentAtSemis(): \App\Models\GameSaves\GameSave
+    {
+        $save = $this->makeSave(['competition_type' => 'world_cup']);
+        foreach (range(1, 8) as $i) {
+            $this->makeTeam($save);
+        }
+        $this->service->generateGroups($save);
+        $this->playRounds($save->id, ['group_a', 'group_b']);
+        $this->service->advance($save);
+
+        return $save->refresh();
+    }
+
+    public function test_presentation_lists_eliminated_teams_with_their_exit_round(): void
+    {
+        $save = $this->tournamentAtSemis();
+
+        // Après les poules : les non-qualifiés sont sortis en « group ».
+        $eliminated = $this->service->presentation($save)['eliminated'];
+        $this->assertCount(4, $eliminated);
+        $this->assertSame(['group'], array_values(array_unique($eliminated)));
+
+        // Après la finale : le finaliste battu sort en « final ».
+        $this->playRounds($save->id, ['semi']);
+        $this->service->advance($save);
+        $this->playRounds($save->id, ['final']);
+        $this->service->advance($save);
+        $eliminated = $this->service->presentation($save->refresh())['eliminated'];
+        $loser = (int) GameMatch::where('game_save_id', $save->id)->where('round', 'final')->value('away_team_id');
+        $this->assertSame('final', $eliminated[$loser]);
+        $this->assertContains('semi', $eliminated);
+    }
+
+    public function test_simulated_shootout_favours_the_stronger_side_but_stays_open(): void
+    {
+        $save = $this->makeSave(['competition_type' => 'world_cup']);
+        [$strong] = $this->makeTeamWithSquad($save, [], 11);
+        [$weak]   = $this->makeTeamWithSquad($save, [], 11);
+        $m = $this->makeMatch($save, $strong, $weak, ['round' => 'final', 'status' => 'played', 'home_score' => 1, 'away_score' => 1]);
+
+        $chance = (new \ReflectionMethod($this->service, 'shootoutHomeChance'))->invoke($this->service, $m);
+
+        $this->assertGreaterThanOrEqual(35, $chance);
+        $this->assertLessThanOrEqual(65, $chance);
+    }
+
+    public function test_eight_team_tournament_adds_a_third_place_match_with_the_semifinal_losers(): void
+    {
+        $save = $this->tournamentAtSemis();
+        $this->playRounds($save->id, ['semi']);
+        $this->service->advance($save);
+
+        $semiLosers = GameMatch::where('game_save_id', $save->id)->where('round', 'semi')->pluck('away_team_id')->map(fn ($id) => (int) $id)->sort()->values()->all();
+        $third = GameMatch::where('game_save_id', $save->id)->where('round', 'third')->get();
+        $this->assertCount(1, $third);
+        $this->assertSame($semiLosers, collect([$third[0]->home_team_id, $third[0]->away_team_id])->map(fn ($id) => (int) $id)->sort()->values()->all());
+        $this->assertSame($third[0]->week, GameMatch::where('game_save_id', $save->id)->where('round', 'final')->value('week'));
+
+        // Tant que la 3e place n'est pas jouée, le tournoi n'est pas terminé.
+        $this->playRounds($save->id, ['final']);
+        $this->service->advance($save);
+        $this->assertSame('final', $save->refresh()->state['tournament']['stage']);
+
+        $this->playRounds($save->id, ['third']);
+        $this->service->advance($save);
+        $this->assertTrue($this->service->isTournamentOver($save->refresh()));
+    }
+
+    public function test_sixteen_team_tournament_runs_through_quarterfinals_without_group_rematches(): void
+    {
+        $save = $this->makeSave(['competition_type' => 'world_cup']);
+        foreach (range(1, 16) as $i) {
+            $this->makeTeam($save);
+        }
+        $this->service->generateGroups($save);
+        $groups = $save->refresh()->state['tournament']['groups'];
+        $this->assertCount(4, $groups);
+
+        $this->playRounds($save->id, ['group_a', 'group_b', 'group_c', 'group_d']);
+        $this->service->advance($save);
+        $this->assertSame('quarter', $save->refresh()->state['tournament']['stage']);
+        $this->assertSame(4, GameMatch::where('game_save_id', $save->id)->where('round', 'quarter')->count());
+
+        $this->playRounds($save->id, ['quarter']);
+        $this->service->advance($save);
+        $semis = GameMatch::where('game_save_id', $save->id)->where('round', 'semi')->get();
+        $this->assertCount(2, $semis);
+
+        // Chaque demie oppose deux équipes de groupes différents des quarts (A1/B2 contre C1/D2, etc.).
+        $groupOf = fn (int $teamId) => collect($groups)->search(fn ($ids) => in_array($teamId, $ids, true));
+        $quarters = GameMatch::where('game_save_id', $save->id)->where('round', 'quarter')->orderBy('id')->get();
+        $this->assertSame([$quarters[0]->home_team_id, $quarters[1]->home_team_id], [$semis[0]->home_team_id, $semis[0]->away_team_id]);
+        $this->assertNotSame($groupOf((int) $semis[0]->home_team_id), $groupOf((int) $semis[0]->away_team_id));
+
+        $this->playRounds($save->id, ['semi']);
+        $this->service->advance($save);
+        $this->playRounds($save->id, ['final', 'third']);
+        $this->service->advance($save);
+
+        $this->assertTrue($this->service->isTournamentOver($save->refresh()));
+        $bracket = $this->service->presentation($save)['bracket'];
+        $this->assertSame([4, 2, 1, 1], [count($bracket['quarter']), count($bracket['semi']), count($bracket['third']), count($bracket['final'])]);
+    }
+
+    public function test_hand_goes_to_the_first_human_that_still_has_a_match(): void
+    {
+        $save = $this->makeSave(['competition_type' => 'world_cup', 'week' => 5]);
+        $out    = $this->makeTeam($save, ['is_controlled' => true, 'human_seat' => 1]);   // éliminé : pas de match
+        $in     = $this->makeTeam($save, ['is_controlled' => true, 'human_seat' => 2]);
+        $ai     = $this->makeTeam($save);
+        $save->controlled_game_team_id = $out->id;
+        $save->save();
+        $this->makeMatch($save, $in, $ai, ['week' => 5, 'round' => 'final']);
+
+        $closing = app(\App\Services\Season\WeekClosingService::class);
+        (new \ReflectionMethod($closing, 'passHandToHumanWithMatch'))->invoke($closing, $save);
+
+        $this->assertSame($in->id, (int) $save->refresh()->controlled_game_team_id);
     }
 }

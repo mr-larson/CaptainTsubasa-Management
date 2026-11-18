@@ -10,11 +10,11 @@ export const FORM_STYLE = {
 
 const ROUND_SHORT = {
     group_a: 'Pl.A', group_b: 'Pl.B', group_c: 'Pl.C', group_d: 'Pl.D',
-    semi: '½', final: 'F',
+    quarter: '¼', semi: '½', third: '3e', final: 'F',
 };
 const ROUND_TITLE = {
     group_a: 'Poule A', group_b: 'Poule B', group_c: 'Poule C', group_d: 'Poule D',
-    semi: 'Demi-finale', final: 'Finale',
+    quarter: 'Quart de finale', semi: 'Demi-finale', third: 'Match pour la 3e place', final: 'Finale',
 };
 
 /** Libellé court d'un match : tour de Coupe du Monde (Pl.A, ½, F) ou semaine de ligue (S3). */

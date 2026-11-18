@@ -36,7 +36,7 @@ class MatchScreenBuilder
     private const CAPTAIN_REROLLS = 3;
 
     /** Rounds de Coupe du Monde où une égalité se joue aux tirs au but. */
-    private const KNOCKOUT_ROUNDS = ['semi', 'final'];
+    private const KNOCKOUT_ROUNDS = ['quarter', 'semi', 'third', 'final'];
 
     public function __construct(
         private AiLineUpService $aiLineUps,

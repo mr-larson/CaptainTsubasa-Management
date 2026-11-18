@@ -146,6 +146,7 @@ class WeekClosingService
         // 6. Coupe du Monde : progression du tournoi au lieu de la fin de saison.
         if ($gameSave->isWorldCup()) {
             $this->tournamentService->advance($gameSave);
+            $this->passHandToHumanWithMatch($gameSave);
             $this->playerRequestService->generateForWeek($gameSave);
             $this->aiFormationTrainingService->planForWeek($gameSave);
             $this->aiCoachService->prepareForWeek($gameSave, $week);
@@ -173,6 +174,32 @@ class WeekClosingService
         $this->playerChemistryService->attemptForAiTeams($gameSave);
 
         return self::OUTCOME_PLAY;
+    }
+
+    /**
+     * Coupe du Monde en hot-seat : un manager éliminé n'a plus de match, alors que le siège 1 reprend
+     * la main à chaque semaine. On donne donc la main au premier manager (par siège) qui a un match
+     * programmé cette semaine ; si aucun n'en a, la main reste inchangée.
+     */
+    private function passHandToHumanWithMatch(GameSave $gameSave): void
+    {
+        $humans = $gameSave->controlledGameTeams()->get();
+        if ($humans->count() < 2) {
+            return;
+        }
+
+        $withMatch = GameMatch::where('game_save_id', $gameSave->id)
+            ->where('week', $gameSave->week)
+            ->where('status', 'scheduled')
+            ->get(['home_team_id', 'away_team_id'])
+            ->flatMap(fn ($m) => [(int) $m->home_team_id, (int) $m->away_team_id])
+            ->all();
+
+        $next = $humans->first(fn ($team) => in_array((int) $team->id, $withMatch, true));
+        if ($next && (int) $gameSave->controlled_game_team_id !== (int) $next->id) {
+            $gameSave->controlled_game_team_id = $next->id;
+            $gameSave->save();
+        }
     }
 
     /**

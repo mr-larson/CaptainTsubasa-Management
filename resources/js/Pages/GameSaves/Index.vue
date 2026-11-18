@@ -77,7 +77,7 @@ const periodLabel = (p) => ({ college: 'Collège', highschool: 'Lycée', pro: 'P
                                 </div>
                                 <div class="text-xs text-slate-400 mt-0.5">
                                     {{ periodLabel(save.period) }}
-                                    · Saison {{ save.season }} · Semaine {{ save.week }}
+                                    · {{ save.competition_type === 'world_cup' ? 'Coupe du Monde' : `Saison ${save.season}` }} · Semaine {{ save.week }}
                                     <span v-if="save.phase === 'draft' || save.phase === 'intersaison_draft'"
                                           class="ml-1 px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-semibold">Draft en cours</span>
                                     · <span class="text-slate-300">{{ formatDateTime(save.updated_at) }}</span>

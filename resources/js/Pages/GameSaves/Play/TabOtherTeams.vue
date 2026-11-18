@@ -18,6 +18,7 @@ import ShirtNumberInput from './components/ShirtNumberInput.vue';
 
 const { isPlayerInjured, isPlayerSuspended, playerYellowCards } = usePlayerStatus();
 const props = defineProps({
+    isWorldCup: { type: Boolean, default: false },
     // Équipes
     otherTeams:           { type: Array,    required: true },
     selectedOtherTeam:    { type: Object,   default: null },
@@ -124,7 +125,7 @@ const comparisonAvailability = p => otherUnavailability(p)?.label ?? 'Disponible
     <div class="flex-1 flex flex-col gap-4 overflow-y-auto min-h-0 pr-1 [&>*]:shrink-0">
 
         <!-- LIGNE 1 : Sélecteur équipe (chips horizontales) -->
-        <Panel padding="sm" title="Équipes de la ligue">
+        <Panel padding="sm" :title="isWorldCup ? 'Sélections du tournoi' : 'Équipes de la ligue'">
             <div class="flex flex-wrap gap-1.5">
                 <button
                     v-for="t in sortedTeams" :key="t.id"
