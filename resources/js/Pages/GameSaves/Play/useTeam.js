@@ -5,6 +5,7 @@ import { router } from '@inertiajs/vue3';
 import { FORMATIONS, DEFAULT_FORMATION, FORMATION_LIST } from '@/Pages/Match/engine/formations.js';
 import { usePlayerUtils } from './usePlayerUtils.js';
 import { countMismatches, optimizeSlots } from './lineupMastery.js';
+import { buildLineupForm, slotOfPlayer, moveToSlot, swapSlots, slotToPlayerMap, pitchPosition, interactionKind } from './lineupSlots.js';
 
 export function useTeam({ gameSave, team }) {
     const { overallOf, playerPhotoUrl, teamLogoUrl } = usePlayerUtils();
@@ -160,25 +161,10 @@ export function useTeam({ gameSave, team }) {
 
     const lineupForm = ref([]);
 
-    const getSlotForPlayer = (playerId) => {
-        if (!playerId || !Array.isArray(lineupForm.value)) return null;
-        const row = lineupForm.value.find(r => r.player_id === playerId);
-        return row ? row.slot : null;
-    };
+    const getSlotForPlayer = (playerId) => slotOfPlayer(lineupForm.value, playerId);
 
     const initLineupForm = () => {
-        const unplaced = new Set(starters.value.map(player => player.id));
-        const slots = [];
-        for (let slot = 1; slot <= 11; slot++) {
-            const playerId = initialLineupSlots.value[slot];
-            slots.push({ slot, player_id: unplaced.delete(playerId) ? playerId : null });
-        }
-        for (const playerId of unplaced) {
-            const available = slots.find(row => !row.player_id);
-            if (!available) break;
-            available.player_id = playerId;
-        }
-        lineupForm.value = slots;
+        lineupForm.value = buildLineupForm(starters.value.map(player => player.id), initialLineupSlots.value);
     };
 
     initLineupForm();
@@ -201,25 +187,7 @@ export function useTeam({ gameSave, team }) {
     const changeSelectedPlayerSlot = (newSlotValue) => {
         const player = selectedMyPlayer.value;
         if (!player) return;
-        const slotNumber = Number(newSlotValue);
-        if (!slotNumber || slotNumber < 1 || slotNumber > 11) return;
-
-        const playerId    = player.id;
-        const currentSlot = getSlotForPlayer(playerId);
-        if (currentSlot === slotNumber) return;
-
-        const currentRow = lineupForm.value.find(r => r.player_id === playerId) || null;
-        const targetRow  = lineupForm.value.find(r => r.slot === slotNumber) || null;
-        if (!targetRow) return;
-
-        const previousPlayerAtTarget = targetRow.player_id ?? null;
-        if (currentRow) {
-            currentRow.player_id = previousPlayerAtTarget;
-            targetRow.player_id  = playerId;
-        } else {
-            targetRow.player_id = playerId;
-        }
-        saveLineup();
+        if (moveToSlot(lineupForm.value, player.id, newSlotValue)) saveLineup();
     };
 
     // ==========================
@@ -285,23 +253,9 @@ export function useTeam({ gameSave, team }) {
     // ==========================
     //   TERRAIN UNIFIÉ (coordonnées visuelles)
     // ==========================
-    const PITCH_ZONE_X = { 0: 6, 1: 22, 2: 40, 3: 60, 4: 78 };
-    const PITCH_LANE_Y = { 0: 10, 1: 30, 2: 50, 3: 70, 4: 90 };
+    const playerPosition = (slot) => pitchPosition(formationData.value, slot);
 
-    const playerPosition = (slot) => {
-        const def = formationData.value?.slots?.[Number(slot)];
-        if (!def) return { x: 50, y: 50 };
-        return {
-            x: PITCH_ZONE_X[def.zone] ?? 50,
-            y: def.laneIndex === null ? 50 : (PITCH_LANE_Y[def.laneIndex] ?? 50),
-        };
-    };
-
-    const slotToPlayer = computed(() => {
-        const map = {};
-        lineupForm.value.forEach(row => { if (row.player_id) map[row.slot] = row.player_id; });
-        return map;
-    });
+    const slotToPlayer = computed(() => slotToPlayerMap(lineupForm.value));
 
     const playerForSlot = (slot, rosterRef) => {
         const pid = slotToPlayer.value[slot];
@@ -325,12 +279,7 @@ export function useTeam({ gameSave, team }) {
     const isPickedUp = (player) => !!player && pickedUpPlayerId.value === player.id;
 
     const swapPitchPlayers = (playerAId, playerBId, record = true) => {
-        if (!playerAId || !playerBId || playerAId === playerBId) return;
-        const rowA = lineupForm.value.find(r => r.player_id === playerAId);
-        const rowB = lineupForm.value.find(r => r.player_id === playerBId);
-        if (!rowA || !rowB) return; // les deux doivent être titulaires
-
-        [rowA.player_id, rowB.player_id] = [rowB.player_id, rowA.player_id];
+        if (!swapSlots(lineupForm.value, playerAId, playerBId)) return; // les deux doivent être titulaires
         if (record) {
             recordChange(`${nameOf(playerAId)} ⇄ ${nameOf(playerBId)}`, () => swapPitchPlayers(playerAId, playerBId, false));
         }
@@ -434,13 +383,10 @@ export function useTeam({ gameSave, team }) {
      * - 2 remplaçants   → no-op
      */
     const resolvePlayerInteraction = (source, target) => {
-        if (source.is_starter && target.is_starter) {
-            swapPitchPlayers(source.id, target.id);
-        } else if (!source.is_starter && target.is_starter) {
-            substitutePlayer(target.id, source.id);
-        } else if (source.is_starter && !target.is_starter) {
-            substitutePlayer(source.id, target.id);
-        }
+        const kind = interactionKind(source, target);
+        if (kind === 'swap') swapPitchPlayers(source.id, target.id);
+        else if (kind === 'bench-in') substitutePlayer(target.id, source.id);
+        else if (kind === 'bench-out') substitutePlayer(source.id, target.id);
         // banc ↔ banc → rien
     };
 

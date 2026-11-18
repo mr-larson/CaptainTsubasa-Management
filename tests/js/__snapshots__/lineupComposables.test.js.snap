@@ -1,0 +1,406 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`useOtherTeam — composition d’un autre club > construit la composition initiale du club sélectionné 1`] = `
+{
+  "forSlot": [
+    201,
+    205,
+    211,
+  ],
+  "form": "1:201 2:202 3:203 4:204 5:205 6:206 7:207 8:208 9:209 10:210 11:211",
+  "pos": [
+    {
+      "x": 6,
+      "y": 50,
+    },
+    {
+      "x": 22,
+      "y": 10,
+    },
+    {
+      "x": 40,
+      "y": 30,
+    },
+    {
+      "x": 60,
+      "y": 90,
+    },
+    {
+      "x": 78,
+      "y": 70,
+    },
+  ],
+  "slotOf": [
+    1,
+    5,
+    null,
+  ],
+  "team": 2,
+}
+`;
+
+exports[`useOtherTeam — composition d’un autre club > déplace le joueur sélectionné vers un autre poste 1`] = `
+{
+  "calls": [
+    {
+      "data": {
+        "slots": [
+          {
+            "player_id": 201,
+            "slot": 1,
+          },
+          {
+            "player_id": 202,
+            "slot": 2,
+          },
+          {
+            "player_id": 203,
+            "slot": 3,
+          },
+          {
+            "player_id": 204,
+            "slot": 4,
+          },
+          {
+            "player_id": 209,
+            "slot": 5,
+          },
+          {
+            "player_id": 206,
+            "slot": 6,
+          },
+          {
+            "player_id": 207,
+            "slot": 7,
+          },
+          {
+            "player_id": 208,
+            "slot": 8,
+          },
+          {
+            "player_id": 205,
+            "slot": 9,
+          },
+          {
+            "player_id": 210,
+            "slot": 10,
+          },
+          {
+            "player_id": 211,
+            "slot": 11,
+          },
+        ],
+        "team_id": 2,
+      },
+      "method": "post",
+      "onError": false,
+      "url": "game-saves.lineup.update{"gameSave":7}",
+    },
+  ],
+  "form": "1:201 2:202 3:203 4:204 5:209 6:206 7:207 8:208 9:205 10:210 11:211",
+  "selectedSlot": 9,
+}
+`;
+
+exports[`useOtherTeam — composition d’un autre club > échange deux titulaires (clic, clic) et remplace par un remplaçant 1`] = `
+{
+  "calls": [
+    {
+      "data": {
+        "slots": [
+          {
+            "player_id": 201,
+            "slot": 1,
+          },
+          {
+            "player_id": 202,
+            "slot": 2,
+          },
+          {
+            "player_id": 205,
+            "slot": 3,
+          },
+          {
+            "player_id": 204,
+            "slot": 4,
+          },
+          {
+            "player_id": 203,
+            "slot": 5,
+          },
+          {
+            "player_id": 206,
+            "slot": 6,
+          },
+          {
+            "player_id": 207,
+            "slot": 7,
+          },
+          {
+            "player_id": 208,
+            "slot": 8,
+          },
+          {
+            "player_id": 209,
+            "slot": 9,
+          },
+          {
+            "player_id": 210,
+            "slot": 10,
+          },
+          {
+            "player_id": 211,
+            "slot": 11,
+          },
+        ],
+        "team_id": 2,
+      },
+      "method": "post",
+      "onError": false,
+      "url": "game-saves.lineup.update{"gameSave":7}",
+    },
+    {
+      "data": {
+        "starter_id": 202,
+        "substitute_id": 212,
+        "team_id": 2,
+      },
+      "method": "post",
+      "onError": false,
+      "url": "game-saves.lineup.substitute{"gameSave":7}",
+    },
+  ],
+  "form": "1:201 2:202 3:205 4:204 5:203 6:206 7:207 8:208 9:209 10:210 11:211",
+  "picked": null,
+}
+`;
+
+exports[`useTeam — composition de mon équipe > construit la composition initiale et les coordonnées du terrain 1`] = `
+{
+  "forSlot": [
+    101,
+    105,
+    111,
+  ],
+  "form": "1:101 2:102 3:103 4:104 5:105 6:106 7:107 8:108 9:109 10:110 11:111",
+  "pos": [
+    {
+      "x": 6,
+      "y": 50,
+    },
+    {
+      "x": 22,
+      "y": 10,
+    },
+    {
+      "x": 22,
+      "y": 90,
+    },
+    {
+      "x": 60,
+      "y": 90,
+    },
+    {
+      "x": 78,
+      "y": 70,
+    },
+  ],
+  "slotOf": [
+    1,
+    5,
+    null,
+  ],
+  "starters": [
+    101,
+    102,
+    103,
+    104,
+    105,
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+  ],
+}
+`;
+
+exports[`useTeam — composition de mon équipe > déplace le joueur sélectionné vers un autre poste (libre ou occupé) et ignore les valeurs invalides 1`] = `
+{
+  "calls": [
+    {
+      "data": {
+        "slots": [
+          {
+            "player_id": 101,
+            "slot": 1,
+          },
+          {
+            "player_id": 102,
+            "slot": 2,
+          },
+          {
+            "player_id": 103,
+            "slot": 3,
+          },
+          {
+            "player_id": 104,
+            "slot": 4,
+          },
+          {
+            "player_id": 109,
+            "slot": 5,
+          },
+          {
+            "player_id": 106,
+            "slot": 6,
+          },
+          {
+            "player_id": 107,
+            "slot": 7,
+          },
+          {
+            "player_id": 108,
+            "slot": 8,
+          },
+          {
+            "player_id": 105,
+            "slot": 9,
+          },
+          {
+            "player_id": 110,
+            "slot": 10,
+          },
+          {
+            "player_id": 111,
+            "slot": 11,
+          },
+        ],
+        "team_id": 1,
+      },
+      "method": "post",
+      "onError": true,
+      "url": "game-saves.lineup.update{"gameSave":7}",
+    },
+  ],
+  "form": "1:101 2:102 3:103 4:104 5:109 6:106 7:107 8:108 9:105 10:110 11:111",
+  "selectedSlot": 9,
+}
+`;
+
+exports[`useTeam — composition de mon équipe > ignore l’échange entre deux remplaçants et un échange avec soi-même 1`] = `
+{
+  "calls": 0,
+  "form": "1:101 2:102 3:103 4:104 5:105 6:106 7:107 8:108 9:109 10:110 11:111",
+  "picked": null,
+}
+`;
+
+exports[`useTeam — composition de mon équipe > remplace un titulaire par un remplaçant et sait annuler 1`] = `
+{
+  "afterSub": {
+    "form": "1:101 2:112 3:103 4:104 5:105 6:106 7:107 8:108 9:109 10:110 11:111",
+    "starters": [
+      101,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108,
+      109,
+      110,
+      111,
+      112,
+    ],
+    "undo": "P12 remplace P2",
+  },
+  "calls": [
+    {
+      "data": {
+        "starter_id": 102,
+        "substitute_id": 112,
+        "team_id": 1,
+      },
+      "method": "post",
+      "onError": true,
+      "url": "game-saves.lineup.substitute{"gameSave":7}",
+    },
+    {
+      "data": {
+        "starter_id": 112,
+        "substitute_id": 102,
+        "team_id": 1,
+      },
+      "method": "post",
+      "onError": true,
+      "url": "game-saves.lineup.substitute{"gameSave":7}",
+    },
+  ],
+}
+`;
+
+exports[`useTeam — composition de mon équipe > échange deux titulaires par clics successifs (sélection, prise, échange) 1`] = `
+{
+  "calls": [
+    {
+      "data": {
+        "slots": [
+          {
+            "player_id": 101,
+            "slot": 1,
+          },
+          {
+            "player_id": 102,
+            "slot": 2,
+          },
+          {
+            "player_id": 105,
+            "slot": 3,
+          },
+          {
+            "player_id": 104,
+            "slot": 4,
+          },
+          {
+            "player_id": 103,
+            "slot": 5,
+          },
+          {
+            "player_id": 106,
+            "slot": 6,
+          },
+          {
+            "player_id": 107,
+            "slot": 7,
+          },
+          {
+            "player_id": 108,
+            "slot": 8,
+          },
+          {
+            "player_id": 109,
+            "slot": 9,
+          },
+          {
+            "player_id": 110,
+            "slot": 10,
+          },
+          {
+            "player_id": 111,
+            "slot": 11,
+          },
+        ],
+        "team_id": 1,
+      },
+      "method": "post",
+      "onError": true,
+      "url": "game-saves.lineup.update{"gameSave":7}",
+    },
+  ],
+  "form": "1:101 2:102 3:105 4:104 5:103 6:106 7:107 8:108 9:109 10:110 11:111",
+  "picked": null,
+  "undo": "P3 ⇄ P5",
+}
+`;

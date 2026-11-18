@@ -3,6 +3,7 @@ import { contractPlayer } from './teamRoster.js';
 import { ref, computed, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { FORMATIONS, DEFAULT_FORMATION, FORMATION_LIST } from '@/Pages/Match/engine/formations.js';
+import { buildLineupForm, slotOfPlayer, moveToSlot, swapSlots, slotToPlayerMap, pitchPosition, interactionKind } from './lineupSlots.js';
 
 export function useOtherTeam({ gameSave, teams, controlledTeamId }) {
 
@@ -91,18 +92,8 @@ export function useOtherTeam({ gameSave, teams, controlledTeamId }) {
     const otherLineupForm = ref([]);
 
     const initOtherLineupForm = () => {
-        const unplaced = new Set(otherRosterWithStatus.value.filter(p => p.is_starter).map(p => p.id));
-        const slots = [];
-        for (let slot = 1; slot <= 11; slot++) {
-            const playerId = otherLineupSlots.value[slot];
-            slots.push({ slot, player_id: unplaced.delete(playerId) ? playerId : null });
-        }
-        for (const playerId of unplaced) {
-            const available = slots.find(row => !row.player_id);
-            if (!available) break;
-            available.player_id = playerId;
-        }
-        otherLineupForm.value = slots;
+        const starterIds = otherRosterWithStatus.value.filter(p => p.is_starter).map(p => p.id);
+        otherLineupForm.value = buildLineupForm(starterIds, otherLineupSlots.value);
     };
 
     initOtherLineupForm();
@@ -111,11 +102,7 @@ export function useOtherTeam({ gameSave, teams, controlledTeamId }) {
         () => initOtherLineupForm()
     );
 
-    const getOtherSlotForPlayer = (playerId) => {
-        if (!playerId || !Array.isArray(otherLineupForm.value)) return null;
-        const row = otherLineupForm.value.find(r => r.player_id === playerId);
-        return row ? row.slot : null;
-    };
+    const getOtherSlotForPlayer = (playerId) => slotOfPlayer(otherLineupForm.value, playerId);
 
     const saveOtherLineup = () => {
         if (!selectedOtherTeam.value) return;
@@ -129,25 +116,7 @@ export function useOtherTeam({ gameSave, teams, controlledTeamId }) {
     const changeOtherPlayerSlot = (newSlotValue) => {
         const player = selectedOtherPlayer.value;
         if (!player) return;
-        const slotNumber = Number(newSlotValue);
-        if (!slotNumber || slotNumber < 1 || slotNumber > 11) return;
-
-        const playerId    = player.id;
-        const currentSlot = getOtherSlotForPlayer(playerId);
-        if (currentSlot === slotNumber) return;
-
-        const currentRow = otherLineupForm.value.find(r => r.player_id === playerId) || null;
-        const targetRow  = otherLineupForm.value.find(r => r.slot === slotNumber) || null;
-        if (!targetRow) return;
-
-        const prev = targetRow.player_id ?? null;
-        if (currentRow) {
-            currentRow.player_id = prev;
-            targetRow.player_id  = playerId;
-        } else {
-            targetRow.player_id = playerId;
-        }
-        saveOtherLineup();
+        if (moveToSlot(otherLineupForm.value, player.id, newSlotValue)) saveOtherLineup();
     };
 
     // ==========================
@@ -173,23 +142,9 @@ export function useOtherTeam({ gameSave, teams, controlledTeamId }) {
     // ==========================
     //   TERRAIN UNIFIÉ
     // ==========================
-    const PITCH_ZONE_X = { 0: 6, 1: 22, 2: 40, 3: 60, 4: 78 };
-    const PITCH_LANE_Y = { 0: 10, 1: 30, 2: 50, 3: 70, 4: 90 };
+    const otherPlayerPosition = (slot) => pitchPosition(otherFormationData.value, slot);
 
-    const otherPlayerPosition = (slot) => {
-        const def = otherFormationData.value?.slots?.[Number(slot)];
-        if (!def) return { x: 50, y: 50 };
-        return {
-            x: PITCH_ZONE_X[def.zone] ?? 50,
-            y: def.laneIndex === null ? 50 : (PITCH_LANE_Y[def.laneIndex] ?? 50),
-        };
-    };
-
-    const otherSlotToPlayer = computed(() => {
-        const map = {};
-        otherLineupForm.value.forEach(row => { if (row.player_id) map[row.slot] = row.player_id; });
-        return map;
-    });
+    const otherSlotToPlayer = computed(() => slotToPlayerMap(otherLineupForm.value));
 
     const otherPlayerForSlot = (slot) => {
         const pid = otherSlotToPlayer.value[slot];
@@ -228,12 +183,7 @@ export function useOtherTeam({ gameSave, teams, controlledTeamId }) {
     });
 
     const swapOtherPitchPlayers = (playerAId, playerBId) => {
-        if (!playerAId || !playerBId || playerAId === playerBId) return;
-        const rowA = otherLineupForm.value.find(r => r.player_id === playerAId);
-        const rowB = otherLineupForm.value.find(r => r.player_id === playerBId);
-        if (!rowA || !rowB) return;
-
-        [rowA.player_id, rowB.player_id] = [rowB.player_id, rowA.player_id];
+        if (!swapSlots(otherLineupForm.value, playerAId, playerBId)) return;
         saveOtherLineup();
     };
 
@@ -251,13 +201,10 @@ export function useOtherTeam({ gameSave, teams, controlledTeamId }) {
      * 4 cas : starter↔starter (swap), banc→terrain (sub), terrain→banc (sub), banc↔banc (no-op).
      */
     const resolveOtherPlayerInteraction = (source, target) => {
-        if (source.is_starter && target.is_starter) {
-            swapOtherPitchPlayers(source.id, target.id);
-        } else if (!source.is_starter && target.is_starter) {
-            substituteOtherPlayer(target.id, source.id);
-        } else if (source.is_starter && !target.is_starter) {
-            substituteOtherPlayer(source.id, target.id);
-        }
+        const kind = interactionKind(source, target);
+        if (kind === 'swap') swapOtherPitchPlayers(source.id, target.id);
+        else if (kind === 'bench-in') substituteOtherPlayer(target.id, source.id);
+        else if (kind === 'bench-out') substituteOtherPlayer(source.id, target.id);
     };
 
     const handleOtherPlayerClick = (player) => {
