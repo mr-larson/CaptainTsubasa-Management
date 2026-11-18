@@ -40,7 +40,6 @@ const { playerPhotoUrl } = usePlayerUtils();
 const ZONE_LABELS = ['GK', 'DEF', 'MDF', 'MOF', 'ATT'];
 const ZONE_NAMES  = ['gardien', 'défenseur', 'milieu défensif', 'milieu offensif', 'attaquant'];
 // Liseré du nom = couleur de la zone (même code que la « Répartition » de la carte Formation)
-const ZONE_BORDER = ['border-amber-400', 'border-blue-400', 'border-emerald-400', 'border-orange-400', 'border-rose-400'];
 
 // Pendant la prise : adéquation du joueur soulevé à chaque autre poste.
 const HALO = {
@@ -164,8 +163,8 @@ const MASTERY_CHIP = {
                          :class="pickedPlayer ? 'scale-110' : ''">
                         <div class="w-8 h-8 rounded-full border-2 border-dashed flex items-center justify-center font-black text-sm shadow-sm"
                              :class="pickedPlayer ? 'border-amber-400 bg-amber-100 text-slate-700 animate-pulse' : whiteboard ? 'border-slate-400 bg-slate-50 text-slate-700' : 'border-white/80 bg-black/25 text-white'">+</div>
-                        <div class="mt-0.5 px-1 rounded border-l-2 text-3xs font-semibold leading-tight pointer-events-none"
-                             :class="[ZONE_BORDER[slotDef.zone], whiteboard ? 'bg-slate-100 text-slate-700' : whiteboard ? 'bg-slate-100 text-slate-700' : 'bg-black/60 text-white']">
+                        <div class="mt-0.5 px-1 rounded text-3xs font-semibold leading-tight pointer-events-none"
+                             :class="[whiteboard ? 'bg-slate-100 text-slate-700' : whiteboard ? 'bg-slate-100 text-slate-700' : 'bg-black/60 text-white']">
                             {{ ZONE_LABELS[slotDef.zone] ?? slot }} vide
                         </div>
                     </div>
@@ -219,9 +218,9 @@ const MASTERY_CHIP = {
                                  class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-400 border border-white text-[8px] leading-[12px] text-slate-700 text-center font-bold pointer-events-none"
                                  title="Poste secondaire : bonus réduit">2</div>
                         </template>
-                        <div class="mt-0.5 px-1 rounded border-l-2 text-3xs font-semibold leading-tight text-center max-w-[64px] truncate pointer-events-none"
+                        <div class="mt-0.5 px-1 rounded text-3xs font-semibold leading-tight text-center max-w-[64px] truncate pointer-events-none"
                              :title="ZONE_NAMES[slotDef.zone]"
-                             :class="[ZONE_BORDER[slotDef.zone], isPickedUp(playerForSlot(slot))
+                             :class="[isPickedUp(playerForSlot(slot))
                                 ? 'bg-amber-300 text-slate-700'
                                 : selectedSlot === Number(slot) ? 'bg-teal-100 text-teal-800'
                                 : statusOf(playerForSlot(slot)) ? 'bg-rose-600/90 text-white' : whiteboard ? 'bg-slate-100 text-slate-700' : 'bg-black/60 text-white']">
