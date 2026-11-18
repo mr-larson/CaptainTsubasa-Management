@@ -1,4 +1,5 @@
 <script setup>
+import PlayerPhoto from '@/Components/PlayerPhoto.vue';
 import StaminaBar from '@/Components/StaminaBar.vue';
 import { staminaOf } from '@/utils/playerStats.js';
 import { positionGroupClass } from '@/Enums/positionBadges.js';
@@ -67,7 +68,7 @@ const statusOf   = (p) => (props.playerStatus ? props.playerStatus(p) : null);
                                         ? 'border-teal-400 ring-2 ring-teal-300'
                                         : 'border-white/70'
                              ]">
-                            <img v-if="playerPhotoUrl(p)" :src="playerPhotoUrl(p)" class="w-full h-full object-cover pointer-events-none" alt=""/>
+                            <PlayerPhoto :zoomable="false" v-if="playerPhotoUrl(p)" :src="playerPhotoUrl(p)" class="w-full h-full object-cover pointer-events-none" alt=""/>
                             <span v-else class="text-3xs font-bold text-white">?</span>
                         </div>
                         <div class="mt-0.5 px-1 rounded text-3xs font-semibold leading-tight text-center max-w-[56px] truncate pointer-events-none"

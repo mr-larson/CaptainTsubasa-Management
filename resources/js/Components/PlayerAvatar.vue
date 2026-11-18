@@ -35,8 +35,7 @@ const name = computed(() => [props.player?.firstname, props.player?.lastname].fi
     <div class="relative shrink-0">
         <div class="flex items-center justify-center overflow-hidden text-slate-400 shadow-sm"
              :class="[whiteBackground ? 'bg-white' : 'bg-slate-100', sizeClasses.box, shape === 'circle' ? 'rounded-full' : 'rounded-xl']">
-            <PlayerPhoto v-if="photo && zoomable" :src="photo" class="h-full w-full object-cover" :alt="name" />
-            <img v-else-if="photo" :src="photo" class="h-full w-full object-cover" :alt="name" loading="lazy" decoding="async" />
+            <PlayerPhoto v-if="photo" :src="photo" :zoomable="zoomable" class="h-full w-full object-cover" :alt="name" />
             <span v-else aria-hidden="true" :class="sizeClasses.text">{{ size === 'lg' ? '👤' : '?' }}</span>
         </div>
         <span v-if="flag" :title="player?.nationality ?? player?.player?.nationality"

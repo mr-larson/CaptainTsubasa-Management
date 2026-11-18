@@ -1,4 +1,5 @@
 <script setup>
+import PlayerPhoto from '@/Components/PlayerPhoto.vue';
 import StaminaBar from '@/Components/StaminaBar.vue';
 import { staminaOf } from '@/utils/playerStats.js';
 import { ref, computed, watch, onBeforeUnmount } from 'vue';
@@ -184,7 +185,7 @@ const MASTERY_CHIP = {
                                         : 'border-white/70',
                                 slotDef.zone===0?'bg-amber-500':slotDef.zone===1?'bg-blue-500':slotDef.zone===2?'bg-emerald-500':slotDef.zone===3?'bg-orange-500':'bg-rose-500'
                             ]">
-                            <img v-if="playerForSlot(slot) && playerPhotoUrl(playerForSlot(slot))"
+                            <PlayerPhoto :zoomable="false" v-if="playerForSlot(slot) && playerPhotoUrl(playerForSlot(slot))"
                                  :src="playerPhotoUrl(playerForSlot(slot))" class="w-full h-full object-cover pointer-events-none" alt=""/>
                             <span v-else class="text-3xs font-bold text-white">{{ slot }}</span>
                         </div>
@@ -258,7 +259,7 @@ const MASTERY_CHIP = {
                                 @click="chooseCandidate(c.player)"
                                 class="w-full flex items-center gap-2 px-2 py-1 rounded-md border text-left transition-all"
                                 :class="c.unavailable ? 'border-slate-300 bg-slate-50 opacity-60 hover:opacity-100' : 'border-slate-300 bg-white hover:bg-teal-50 hover:border-teal-300'">
-                            <img v-if="playerPhotoUrl(c.player)" :src="playerPhotoUrl(c.player)" class="w-6 h-6 rounded-full object-cover" alt="" />
+                            <PlayerPhoto :zoomable="false" v-if="playerPhotoUrl(c.player)" :src="playerPhotoUrl(c.player)" class="w-6 h-6 rounded-full object-cover" alt="" />
                             <span class="flex-1 min-w-0 text-xs font-semibold text-slate-700 truncate">{{ c.player.lastname }}</span>
                             <span v-if="c.unavailable" class="text-[11px]" :title="c.unavailable">{{ c.unavailableIcon }}</span>
                             <span v-if="c.mastery" class="px-1.5 py-0.5 rounded-full text-3xs font-bold" :class="MASTERY_CHIP[c.mastery].class">

@@ -808,7 +808,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                                 <span v-if="ev.attacker"
                                       class="inline-flex items-center gap-1 pl-0.5 pr-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-2xs font-bold">
                                     <span class="w-4 h-4 rounded-full overflow-hidden bg-emerald-200 shrink-0">
-                                        <img loading="lazy" decoding="async" v-if="eventPlayerPhoto(ev.attacker)" :src="eventPlayerPhoto(ev.attacker)" class="w-full h-full object-cover" alt=""/>
+                                        <PlayerPhoto :zoomable="false" v-if="eventPlayerPhoto(ev.attacker)" :src="eventPlayerPhoto(ev.attacker)" class="w-full h-full object-cover" alt=""/>
                                     </span>
                                     N°{{ ev.attacker.number ?? '?' }} {{ ev.attacker.name }}
                                     <span v-if="eventActionLabel(ev.action)" class="opacity-60 font-semibold">· {{ eventActionLabel(ev.action) }}</span>
@@ -817,7 +817,7 @@ const awayTeamEvents = computed(() => replayEvents.value.filter(e => e.teamSide 
                                 <span v-if="ev.defender"
                                       class="inline-flex items-center gap-1 pl-0.5 pr-1.5 py-0.5 rounded-full bg-rose-100 text-rose-700 text-2xs font-bold">
                                     <span class="w-4 h-4 rounded-full overflow-hidden bg-rose-200 shrink-0">
-                                        <img loading="lazy" decoding="async" v-if="eventPlayerPhoto(ev.defender)" :src="eventPlayerPhoto(ev.defender)" class="w-full h-full object-cover" alt=""/>
+                                        <PlayerPhoto :zoomable="false" v-if="eventPlayerPhoto(ev.defender)" :src="eventPlayerPhoto(ev.defender)" class="w-full h-full object-cover" alt=""/>
                                     </span>
                                     N°{{ ev.defender.number ?? '?' }} {{ ev.defender.name }}
                                     <span v-if="eventActionLabel(ev.def_action)" class="opacity-60 font-semibold">· {{ eventActionLabel(ev.def_action) }}</span>
