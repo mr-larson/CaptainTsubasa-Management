@@ -694,7 +694,12 @@ const teamRatingOf = (players) => {
     };
 };
 const teamRating = computed(() => teamRatingOf(roster.value));
-const teamNote   = (team) => teamRatingOf((team.contracts ?? []).map(c => c.player).filter(Boolean))?.note ?? null;
+// Note de chaque équipe, calculée une fois par jeu de données (le template la lit 3 fois par équipe).
+const teamNotes = computed(() => new Map(props.teams.map(team => [
+    team.id,
+    teamRatingOf((team.contracts ?? []).map(c => c.player).filter(Boolean))?.note ?? null,
+])));
+const teamNote   = (team) => teamNotes.value.get(team.id) ?? null;
 const signedPct  = (v) => `${v > 0 ? '+' : ''}${v.toLocaleString('fr-FR')} %`;
 
 // Endurance : couleur du rouge (épuisé) au vert (en pleine forme).

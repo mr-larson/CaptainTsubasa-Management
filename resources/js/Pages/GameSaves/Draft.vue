@@ -106,6 +106,22 @@ const inspectedTeamId = ref(props.controlledTeamId);
 // Rosters locaux par équipe (reconstruits depuis les picks)
 const teamRosters = ref({});
 
+// Un pick confirmé par le serveur : journal, pool des joueurs libres, effectif et budget de l'équipe.
+const applyPick = (pick) => {
+    pickLog.value.push(pick);
+    availablePlayers.value = availablePlayers.value.filter(p => p.id !== pick.player_id);
+
+    const roster = teamRosters.value[pick.team_id];
+    if (roster) {
+        roster.count++;
+        roster.budget -= pick.total_cost;
+    }
+};
+
+// Les six derniers picks, du plus récent au plus ancien (le journal est consulté à chaque rendu).
+const recentPicks = computed(() => [...pickLog.value].reverse().slice(0, 6));
+const teamsById = computed(() => new Map(props.teams.map(team => [team.id, team])));
+
 // Init rosters depuis les contrats existants
 function initRosters() {
     const rosters = {};
@@ -294,14 +310,7 @@ async function runAiPicks() {
             }
 
             if (data.pick && !data.skipped) {
-                pickLog.value.push(data.pick);
-                availablePlayers.value = availablePlayers.value.filter(p => p.id !== data.pick.player_id);
-
-                if (teamRosters.value[data.pick.team_id]) {
-                    teamRosters.value[data.pick.team_id].count++;
-                    teamRosters.value[data.pick.team_id].budget -= data.pick.total_cost;
-                }
-
+                applyPick(data.pick);
                 await showPickAnimation(data.pick);
             }
 
@@ -352,14 +361,7 @@ async function pickPlayer(player) {
         const data = response.data;
 
         if (data.pick) {
-            pickLog.value.push(data.pick);
-            availablePlayers.value = availablePlayers.value.filter(p => p.id !== data.pick.player_id);
-
-            if (teamRosters.value[data.pick.team_id]) {
-                teamRosters.value[data.pick.team_id].count++;
-                teamRosters.value[data.pick.team_id].budget -= data.pick.total_cost;
-            }
-
+            applyPick(data.pick);
             await showPickAnimation(data.pick);
         }
 
@@ -587,9 +589,9 @@ onMounted(() => {
                                 <p class="text-center text-xs mb-4">Les autres équipes sont en train de piocher... Tu pourras choisir quand ce sera ton tour.</p>
 
                                 <div v-if="pickLog.length" class="flex flex-col gap-2 max-w-md mx-auto">
-                                    <div v-for="(pick, idx) in [...pickLog].reverse().slice(0, 6)" :key="idx"
+                                    <div v-for="pick in recentPicks" :key="pick.player_id"
                                          class="flex items-center gap-3 bg-white border border-slate-200 rounded-lg px-3 py-2">
-                                        <TeamLogo :team="teams.find(t => t.id === pick.team_id) ?? { name: pick.team_name }" size="md" />
+                                        <TeamLogo :team="teamsById.get(pick.team_id) ?? { name: pick.team_name }" size="md" />
                                         <div class="flex-1 text-left">
                                             <p class="text-sm font-semibold text-slate-700">{{ pick.player_name }}</p>
                                             <p class="text-2xs text-slate-400">{{ pick.team_name }}</p>

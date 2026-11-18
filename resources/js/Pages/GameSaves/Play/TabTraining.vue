@@ -55,6 +55,15 @@ const { playerPhotoUrl, statColor } = usePlayerUtils();
 const staminaAfter = (slot) => Math.max(0, Number(playerForEntry({ player_id: slot.player_id })?.stamina ?? 0) - props.staminaCost);
 
 // Coût total des séances sélectionnées et budget restant après paiement.
+// Clé stable par ligne de la séance : la liste s'édite (ajout, retrait, plan proposé) et l'index
+// ferait réutiliser le mauvais élément (liste déroulante, focus) après un retrait.
+const slotKeys = new WeakMap();
+let slotKeySeq = 0;
+const slotKey = (slot) => {
+    if (!slotKeys.has(slot)) slotKeys.set(slot, ++slotKeySeq);
+    return slotKeys.get(slot);
+};
+
 const selectedCount = computed(() => props.selectedTrainings.filter(s => s.player_id).length);
 const totalTrainingCost = computed(() => selectedCount.value * props.trainingCost);
 const budgetAfter = computed(() => props.teamBudget - totalTrainingCost.value);
@@ -432,7 +441,7 @@ const selectedPlayerPerf = computed(() => {
 
                     <div class="space-y-2 mb-3">
                         <div v-if="selectedTrainings.length" class="space-y-2 mb-3">
-                            <div v-for="(slot, index) in selectedTrainings" :key="index"
+                            <div v-for="(slot, index) in selectedTrainings" :key="slotKey(slot)"
                                  class="flex flex-col gap-2 p-2.5 rounded-lg bg-white border border-slate-200">
 
                                 <!-- Carte joueur compacte -->

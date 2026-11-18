@@ -6,6 +6,7 @@ import { fieldClass } from '@/Components/fieldStyles';
 import ButtonSecondary from '@/Components/ButtonSecondary.vue';
 import { computed, ref, watch, nextTick } from 'vue';
 import axios from 'axios';
+import { FORM_STYLE, playedResultFor, roundShort, roundTitle } from './matchResults.js';
 import Panel from '@/Components/Panel.vue';
 import PlayerAvatar from '@/Components/PlayerAvatar.vue';
 import TeamLogo from '@/Components/TeamLogo.vue';
@@ -44,25 +45,7 @@ const { teamLogoUrl } = usePlayerUtils();
 // ==========================
 //   HELPERS
 // ==========================
-const ROUND_SHORT = {
-    group_a: 'Pl.A', group_b: 'Pl.B', group_c: 'Pl.C', group_d: 'Pl.D',
-    semi: '½', final: 'F',
-};
-const roundShort = (match) => ROUND_SHORT[match?.round] ?? `S${match?.week}`;
-const roundTitle = (match) => ({
-    group_a: 'Poule A', group_b: 'Poule B', group_c: 'Poule C', group_d: 'Poule D',
-    semi: 'Demi-finale', final: 'Finale',
-}[match?.round] ?? `Semaine ${match?.week}`);
-
-const matchResult = (match, teamId) => {
-    if (!match || match.status !== 'played') return null;
-    const isHome  = match.home_team_id === teamId;
-    const scored  = isHome ? (match.home_score ?? 0) : (match.away_score ?? 0);
-    const against = isHome ? (match.away_score ?? 0) : (match.home_score ?? 0);
-    if (scored > against)  return { label: 'V', bg: 'bg-emerald-500', text: 'text-white' };
-    if (scored === against) return { label: 'N', bg: 'bg-slate-300',   text: 'text-slate-700' };
-    return { label: 'D', bg: 'bg-rose-500', text: 'text-white' };
-};
+const matchResult = playedResultFor;
 
 const scoreFor = (match, teamId) => {
     if (!match || match.status !== 'played') return null;
@@ -246,7 +229,7 @@ watch(() => [props.calendarTeam?.id, props.currentWeek], async () => {
                         <div class="w-6 h-6 rounded-full flex items-center justify-center text-2xs font-black shrink-0"
                              :class="isByeMatch(match) ? 'bg-slate-200 text-slate-400' :
                                     matchResult(match, calendarTeam.id)
-                                        ? [matchResult(match, calendarTeam.id).bg, matchResult(match, calendarTeam.id).text]
+                                        ? FORM_STYLE[matchResult(match, calendarTeam.id).label]
                                         : 'bg-slate-100 text-slate-400'">
                             {{ isByeMatch(match) ? '—' : (matchResult(match, calendarTeam.id)?.label ?? '?') }}
                         </div>

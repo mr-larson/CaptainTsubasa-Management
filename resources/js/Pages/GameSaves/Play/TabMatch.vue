@@ -1,4 +1,5 @@
 <script setup>
+import { roundShort, roundTitle } from './matchResults.js';
 import SectionTitle from '@/Components/SectionTitle.vue';
 import Panel from '@/Components/Panel.vue';
 import { formatDecimal } from '@/utils/format.js';
@@ -99,16 +100,6 @@ const { playerPhotoUrl, teamLogoUrl } = usePlayerUtils();
 
 // Libellé court de la colonne gauche : tour de Coupe du Monde (poule / ½ / F)
 // si le match porte un `round`, sinon la semaine de ligue (S1, S2…).
-const ROUND_SHORT = {
-    group_a: 'Pl.A', group_b: 'Pl.B', group_c: 'Pl.C', group_d: 'Pl.D',
-    semi: '½', final: 'F',
-};
-const roundShort = (match) => ROUND_SHORT[match?.round] ?? `S${match?.week}`;
-const roundTitle = (match) => ({
-    group_a: 'Poule A', group_b: 'Poule B', group_c: 'Poule C', group_d: 'Poule D',
-    semi: 'Demi-finale', final: 'Finale',
-}[match?.round] ?? `Semaine ${match?.week}`);
-
 const homeTeamName = computed(() =>
     props.selectedCalendarMatch ? props.teamById[props.selectedCalendarMatch.home_team_id]?.name : ''
 );

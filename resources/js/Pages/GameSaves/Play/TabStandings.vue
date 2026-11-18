@@ -4,6 +4,7 @@ import Modal from '@/Components/Modal.vue';
 import TeamDetailContent from './components/TeamDetailContent.vue';
 import Panel from '@/Components/Panel.vue';
 import TeamLogo from '@/Components/TeamLogo.vue';
+import { FORM_STYLE, recentFormByTeam } from './matchResults.js';
 
 const props = defineProps({
     standings: { type: Array,  required: true },
@@ -18,23 +19,9 @@ const maxPoints = computed(() =>
 );
 
 // Forme récente : 5 derniers matchs joués pour chaque équipe
-const recentFormFor = (teamId) => {
-    const played = props.matches
-        .filter(m =>
-            m.status === 'played' &&
-            (Number(m.home_team_id) === teamId || Number(m.away_team_id) === teamId)
-        )
-        .slice(-5);
-
-    return played.map(m => {
-        const isHome   = m.home_team_id === teamId;
-        const scored   = isHome ? (m.home_score ?? 0) : (m.away_score ?? 0);
-        const conceded = isHome ? (m.away_score ?? 0) : (m.home_score ?? 0);
-        if (scored > conceded)  return { label: 'V', class: 'bg-emerald-500 text-white' };
-        if (scored === conceded) return { label: 'N', class: 'bg-slate-300 text-slate-700' };
-        return { label: 'D', class: 'bg-rose-500 text-white' };
-    });
-};
+// Calculée en un seul passage sur les matchs, pas une relecture complète par ligne du classement.
+const formByTeam = computed(() => recentFormByTeam(props.matches));
+const recentFormFor = (teamId) => formByTeam.value.get(Number(teamId)) ?? [];
 
 // Buts pour/contre : maintenus sur game_teams et fournis par chaque ligne du classement.
 const goalsFor     = (row) => row.goals_for     ?? 0;
@@ -121,7 +108,7 @@ const rankIcon = (rank) => {
                     <div class="flex gap-1">
                         <span v-for="(r, i) in recentFormFor(team?.id)" :key="i"
                               class="w-6 h-6 rounded-full flex items-center justify-center text-2xs font-black"
-                              :class="r.class">
+                              :class="FORM_STYLE[r.label]">
                             {{ r.label }}
                         </span>
                         <span v-if="!recentFormFor(team?.id).length" class="text-xs text-slate-500 italic">—</span>
@@ -200,7 +187,7 @@ const rankIcon = (rank) => {
                             <div class="flex gap-0.5">
                                     <span v-for="(r, i) in recentFormFor(row.id)" :key="i"
                                           class="w-5 h-5 rounded-full flex items-center justify-center text-3xs font-black"
-                                          :class="r.class">
+                                          :class="FORM_STYLE[r.label]">
                                         {{ r.label }}
                                     </span>
                                 <span v-if="!recentFormFor(row.id).length" class="text-2xs text-slate-300">—</span>

@@ -1,4 +1,5 @@
 <script setup>
+import { resultFor } from '../matchResults.js';
 import SectionTitle from '@/Components/SectionTitle.vue';
 import Panel from '@/Components/Panel.vue';
 import ButtonPrimary from '@/Components/ButtonPrimary.vue';
@@ -28,13 +29,6 @@ const opponent = computed(() => props.teamById[isHome.value ? props.match.away_t
 
 const played = computed(() => props.allMatches.filter(m => m.status === 'played'));
 
-const resultFor = (m, teamId) => {
-    const home = m.home_team_id === teamId;
-    const gf = home ? m.home_score : m.away_score;
-    const ga = home ? m.away_score : m.home_score;
-    return gf > ga ? 'V' : gf === ga ? 'N' : 'D';
-};
-
 const profile = (t) => {
     if (!t) return null;
     const idx  = props.standings.findIndex(r => r.id === t.id);
@@ -43,7 +37,7 @@ const profile = (t) => {
         .filter(m => m.home_team_id === t.id || m.away_team_id === t.id)
         .sort((a, b) => b.week - a.week)
         .slice(0, 5)
-        .map(m => resultFor(m, t.id))
+        .map(m => resultFor(m, t.id).label)
         .reverse();
     return {
         team: t,

@@ -2,6 +2,7 @@
 import SectionTitle from '@/Components/SectionTitle.vue';
 import Panel from '@/Components/Panel.vue';
 import { contractPlayer, seasonStatsOf } from '@/Pages/GameSaves/Play/teamRoster.js';
+import { FORM_STYLE, playedMatchesOf, recentForm, resultFor } from './matchResults.js';
 import ButtonSecondary from '@/Components/ButtonSecondary.vue';
 import { computed } from 'vue';
 import { useAnimatedStats } from '@/Composables/useAnimatedStats.js';
@@ -113,28 +114,10 @@ const seasonProgress = computed(() =>
 // ==========================
 //   FORME RÉCENTE
 // ==========================
-const FORM_STYLE = {
-    V: 'bg-emerald-500 text-white',
-    N: 'bg-slate-300 text-slate-700',
-    D: 'bg-rose-500 text-white',
-};
-
-// Matchs joués d'une équipe, du plus ancien au plus récent.
-const playedMatchesOf = (teamId) => (props.matches ?? [])
-    .filter(m => m.status === 'played' && (m.home_team_id === teamId || m.away_team_id === teamId))
-    .sort((a, b) => (Number(a.season ?? 0) - Number(b.season ?? 0)) || (Number(a.week) - Number(b.week)));
-
-const resultFor = (m, teamId) => {
-    const isHome   = m.home_team_id === teamId;
-    const scored   = Number(isHome ? m.home_score : m.away_score) || 0;
-    const conceded = Number(isHome ? m.away_score : m.home_score) || 0;
-    return { label: scored > conceded ? 'V' : scored === conceded ? 'N' : 'D', scored, conceded };
-};
-
 // 5 derniers résultats (le plus récent à droite).
-const formOf = (teamId) => teamId == null ? [] : playedMatchesOf(teamId).slice(-5).map(m => ({
-    ...resultFor(m, teamId),
-    title: `S${m.week} : ${resultFor(m, teamId).scored}-${resultFor(m, teamId).conceded}`,
+const formOf = (teamId) => recentForm(props.matches, teamId).map(r => ({
+    ...r,
+    title: `S${r.week} : ${r.scored}-${r.conceded}`,
 }));
 
 const myForm       = computed(() => formOf(props.team?.id));
@@ -144,7 +127,7 @@ const opponentForm = computed(() => formOf(opponentTeam.value?.id));
 const lastHeadToHead = computed(() => {
     const me = props.team?.id, opp = opponentTeam.value?.id;
     if (me == null || opp == null) return null;
-    const m = playedMatchesOf(me).filter(x => x.home_team_id === opp || x.away_team_id === opp).at(-1);
+    const m = playedMatchesOf(props.matches, me).filter(x => x.home_team_id === opp || x.away_team_id === opp).at(-1);
     return m ? { ...resultFor(m, me), week: m.week } : null;
 });
 
