@@ -27,8 +27,8 @@ use Illuminate\Support\Facades\DB;
  */
 class NewWorldCupBuilder
 {
-    /** Tailles de tournoi proposées (nombre de sélections) : 2 groupes de 4, ou 4 groupes de 4. */
-    public const TOURNAMENT_SIZES = [8, 16];
+    /** Tailles de tournoi proposées (nombre de sélections) : 2, 4, 6 ou 8 groupes de 4. */
+    public const TOURNAMENT_SIZES = [8, 16, 24, 32];
 
     /** Taille par défaut d'un tournoi. */
     public const DEFAULT_SIZE = 8;

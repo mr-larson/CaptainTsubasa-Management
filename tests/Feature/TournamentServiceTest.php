@@ -4,8 +4,11 @@ namespace Tests\Feature;
 
 use App\Enums\GamePhase;
 use App\Models\GameSaves\GameMatch;
+use App\Models\GameSaves\GameSanction;
 use App\Models\GameSaves\GameSave;
 use App\Services\Season\WeekClosingService;
+use App\Services\WorldCup\GroupStandingsService;
+use App\Services\WorldCup\KnockoutService;
 use App\Services\WorldCup\TournamentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsGameWorld;
@@ -163,7 +166,7 @@ class TournamentServiceTest extends TestCase
         [$weak] = $this->makeTeamWithSquad($save, [], 11);
         $m = $this->makeMatch($save, $strong, $weak, ['round' => 'final', 'status' => 'played', 'home_score' => 1, 'away_score' => 1]);
 
-        $chance = (new \ReflectionMethod($this->service, 'shootoutHomeChance'))->invoke($this->service, $m);
+        $chance = app(KnockoutService::class)->shootoutHomeChance($m);
 
         $this->assertGreaterThanOrEqual(35, $chance);
         $this->assertLessThanOrEqual(65, $chance);
@@ -256,9 +259,106 @@ class TournamentServiceTest extends TestCase
         $played($d, $b, 1, 0);
         $played($c, $d, 0, 0);
 
-        $order = (new \ReflectionMethod($this->service, 'groupStandings'))
-            ->invoke($this->service, $save, [$a->id, $b->id, $c->id, $d->id], 'group_a');
+        $order = app(GroupStandingsService::class)
+            ->ranking($save, [$a->id, $b->id, $c->id, $d->id], 'group_a');
 
         $this->assertSame([$d->id, $c->id, $a->id, $b->id], $order);
+    }
+
+    public function test_a_full_tie_is_settled_by_fair_play_then_by_a_stable_lot(): void
+    {
+        $save = $this->makeSave(['competition_type' => 'world_cup']);
+        $a = $this->makeTeam($save);
+        $b = $this->makeTeam($save);
+        $this->makeMatch($save, $a, $b, ['status' => 'played', 'round' => 'group_a', 'home_score' => 1, 'away_score' => 1]);
+        $standings = app(GroupStandingsService::class);
+
+        // Égalité parfaite : le tirage au sort est stable d'un appel à l'autre.
+        $first = $standings->ranking($save, [$a->id, $b->id], 'group_a');
+        $this->assertSame($first, $standings->ranking($save, [$b->id, $a->id], 'group_a'));
+
+        // Un carton jaune du premier le fait reculer : le fair-play passe avant le tirage.
+        $leader = $first[0];
+        $team = $leader === $a->id ? $a : $b;
+        $player = $this->makePlayer($save);
+        $this->makeContract($save, $team, $player);
+        GameSanction::create([
+            'game_save_id' => $save->id, 'season' => 1, 'game_player_id' => $player->id,
+            'game_match_id' => GameMatch::where('game_save_id', $save->id)->value('id'), 'type' => 'yellow',
+            'weeks_suspended' => 0, 'week_match' => 1, 'week_return' => 1, 'yellow_card_count' => 1,
+        ]);
+
+        $this->assertSame($first[1], $standings->ranking($save, [$a->id, $b->id], 'group_a')[0]);
+    }
+
+    /** Monte un tournoi de $teams équipes et le joue jusqu'au bout (le domicile gagne toujours 2-0). */
+    private function playWholeTournament(int $teams): array
+    {
+        $save = $this->makeSave(['competition_type' => 'world_cup']);
+        foreach (range(1, $teams) as $i) {
+            $this->makeTeam($save);
+        }
+        $this->service->generateGroups($save);
+        $stages = [];
+        $groupRounds = array_map(fn ($k) => 'group_'.$k, range('a', chr(ord('a') + TournamentService::groupCountFor($teams) - 1)));
+        foreach ([$groupRounds, ['round16'], ['quarter'], ['semi'], ['final', 'third']] as $rounds) {
+            $this->playRounds($save->id, $rounds);
+            $this->service->advance($save);
+            $stages[] = $save->refresh()->state['tournament']['stage'];
+        }
+
+        return [$save, $stages];
+    }
+
+    public function test_a_32_team_tournament_goes_through_the_round_of_16(): void
+    {
+        [$save, $stages] = $this->playWholeTournament(32);
+
+        $this->assertSame(['round16', 'quarter', 'semi', 'final', 'done'], $stages);
+        $this->assertSame(8, GameMatch::where('game_save_id', $save->id)->where('round', 'round16')->count());
+        $this->assertSame(48, GameMatch::where('game_save_id', $save->id)->where('round', 'like', 'group_%')->count()); // 8 groupes x 6 matchs
+        $this->assertCount(8, $save->state['tournament']['groups']);
+        $this->assertSame([], $save->state['tournament']['best_thirds']);
+    }
+
+    public function test_a_24_team_tournament_qualifies_the_four_best_thirds_without_group_rematches(): void
+    {
+        $save = $this->makeSave(['competition_type' => 'world_cup']);
+        foreach (range(1, 24) as $i) {
+            $this->makeTeam($save);
+        }
+        $this->service->generateGroups($save);
+        $groups = $save->refresh()->state['tournament']['groups'];
+        $this->assertCount(6, $groups);
+
+        $this->playRounds($save->id, ['group_a', 'group_b', 'group_c', 'group_d', 'group_e', 'group_f']);
+        $this->service->advance($save);
+        $t = $save->refresh()->state['tournament'];
+
+        $this->assertSame('round16', $t['stage']);
+        $this->assertCount(4, $t['best_thirds']);
+        $round16 = GameMatch::where('game_save_id', $save->id)->where('round', 'round16')->orderBy('id')->get();
+        $this->assertCount(8, $round16);
+        // 16 équipes distinctes : 6 premiers, 6 deuxièmes, 4 troisièmes.
+        $this->assertCount(16, $round16->flatMap(fn ($m) => [$m->home_team_id, $m->away_team_id])->unique());
+
+        // Un troisième n'affronte jamais le premier de son propre groupe.
+        $groupOf = fn (int $id) => collect($groups)->search(fn ($ids) => in_array($id, $ids, true));
+        foreach ($round16 as $m) {
+            if (in_array($m->away_team_id, $t['best_thirds'], true)) {
+                $this->assertNotSame($groupOf($m->home_team_id), $groupOf($m->away_team_id));
+            }
+        }
+
+        // Les troisièmes qualifiés sont signalés dans la présentation.
+        $qualifiedThirds = collect($this->service->presentation($save)['groups'])->flatMap(fn ($g) => array_slice($g['rows'], 2, 1))->where('qualified', true);
+        $this->assertCount(4, $qualifiedThirds);
+        $this->assertSame(4, $this->service->presentation($save)['third_slots']);
+
+        foreach ([['round16'], ['quarter'], ['semi'], ['final', 'third']] as $rounds) {
+            $this->playRounds($save->id, $rounds);
+            $this->service->advance($save);
+        }
+        $this->assertTrue($this->service->isTournamentOver($save->refresh()));
     }
 }

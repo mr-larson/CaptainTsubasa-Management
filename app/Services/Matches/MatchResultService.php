@@ -34,7 +34,7 @@ use App\Services\Season\SeasonChallengeService;
 class MatchResultService
 {
     /** Rounds de Coupe du Monde où une égalité se joue aux tirs au but. */
-    private const KNOCKOUT_ROUNDS = ['quarter', 'semi', 'third', 'final'];
+    private const KNOCKOUT_ROUNDS = ['round16', 'quarter', 'semi', 'third', 'final'];
 
     /** Injecte les services appelés lors de l'enregistrement d'un résultat (compositions, blessures, progression, alchimie, déclarations, défis). */
     public function __construct(

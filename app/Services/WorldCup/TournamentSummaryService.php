@@ -28,6 +28,7 @@ class TournamentSummaryService
     /** Libellé du dernier tour atteint par une équipe éliminée. */
     private const EXIT_LABELS = [
         'group' => 'Éliminé en poules',
+        'round16' => 'Éliminé en huitième de finale',
         'quarter' => 'Éliminé en quart de finale',
         'semi' => 'Éliminé en demi-finale',
         'final' => 'Finaliste',
