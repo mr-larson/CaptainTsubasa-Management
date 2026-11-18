@@ -4,13 +4,11 @@ import { Link } from '@inertiajs/vue3';
 import TeamLogoImage from '@/Components/TeamLogoImage.vue';
 import SectionTitle from '@/Components/SectionTitle.vue';
 import Panel from '@/Components/Panel.vue';
-import { contractPlayer, seasonStatsOf } from '@/Pages/GameSaves/Play/teamRoster.js';
-import { FORM_STYLE, playedMatchesOf, recentForm, resultFor } from './matchResults.js';
+import { remainingWeeks } from './worldCup.js';
 import ButtonSecondary from '@/Components/ButtonSecondary.vue';
 import { computed } from 'vue';
 import { useAnimatedStats } from '@/Composables/useAnimatedStats.js';
-import { STAT_COLORS, usePlayerUtils } from './usePlayerUtils.js';
-import { averageTeamStat, TEAM_STATS } from './teamStats.js';
+import { usePlayerUtils } from './usePlayerUtils.js';
 import TeamStyleBadges from "@/Pages/GameSaves/Play/components/TeamStyleBadges.vue";
 import DashboardSquadCards from "@/Pages/GameSaves/Play/components/DashboardSquadCards.vue";
 import DashboardSeasonCards from "@/Pages/GameSaves/Play/components/DashboardSeasonCards.vue";
@@ -18,6 +16,9 @@ import AssistantAdviceCard from "@/Pages/GameSaves/Play/components/AssistantAdvi
 import { useSeasonTrajectory } from "@/Pages/GameSaves/Play/useSeasonTrajectory.js";
 import SeasonChallengesCard from "@/Pages/GameSaves/Play/components/SeasonChallengesCard.vue";
 import PlayerRequestsCard from "@/Pages/GameSaves/Play/components/PlayerRequestsCard.vue";
+import DashboardNextMatchCard from "@/Pages/GameSaves/Play/components/DashboardNextMatchCard.vue";
+import DashboardForcesCard from "@/Pages/GameSaves/Play/components/DashboardForcesCard.vue";
+import DashboardWorldCupTile from "@/Pages/GameSaves/Play/components/DashboardWorldCupTile.vue";
 
 const props = defineProps({
     gameSave:      { type: Object, required: true },
@@ -57,47 +58,7 @@ const emit = defineEmits(['play-next-match', 'simulate-match', 'simulate-week', 
 // Guide « Comment jouer » dans un nouvel onglet, pour ne pas quitter la partie.
 const openHelp = () => window.open(route('guide') + '#preparer', '_blank', 'noopener');
 
-// ── Coupe du Monde : contexte de poule de l'équipe contrôlée + étape ──
-const wcStageLabel = computed(() => ({
-    group: 'Phase de poules', quarter: 'Quarts de finale', semi: 'Demi-finales', final: 'Finale', done: 'Terminé',
-}[props.tournament?.stage] ?? '—'));
-
-const wcStanding = computed(() => {
-    if (!props.isWorldCup || !props.tournament || !props.team) return null;
-    for (const group of props.tournament.groups ?? []) {
-        const idx = group.rows.findIndex(r => r.team_id === props.team.id);
-        if (idx !== -1) {
-            const row = group.rows[idx];
-            return { group: group.key, position: idx + 1, total: group.rows.length, points: row.points, qualified: row.qualified };
-        }
-    }
-    return null; // équipe non trouvée (ne devrait pas arriver)
-});
-
 const wcChampion = computed(() => props.tournament?.champion ?? null);
-
-/** Rang d'une équipe dans sa poule (« 2e du groupe B »), ou null hors phase de poules / équipe inconnue. */
-function groupRankLabel(teamId) {
-    for (const group of props.tournament?.groups ?? []) {
-        const index = group.rows.findIndex(r => r.team_id === teamId);
-        if (index !== -1) return `${index + 1}${index === 0 ? 'er' : 'e'} du groupe ${group.key}`;
-    }
-    return null;
-}
-
-// Parcours de l'équipe contrôlée : champion, finaliste, éliminé (avec le tour), ou encore en lice.
-const wcOutcome = computed(() => {
-    const t = props.tournament, id = props.team?.id;
-    if (!props.isWorldCup || !t || id == null) return null;
-    if (t.champion?.team_id === id) return { label: 'Champion du monde', tone: 'amber' };
-    const exit = t.eliminated?.[id];
-    if (t.bracket?.third?.[0]?.winner_team_id === id) return { label: 'Médaille de bronze', tone: 'amber' };
-    if (exit === 'final') return { label: 'Finaliste', tone: 'amber' };
-    if (exit === 'quarter') return { label: 'Éliminé en quart de finale', tone: 'slate' };
-    if (exit === 'semi')  return { label: 'Éliminé en demi-finale', tone: 'slate' };
-    if (exit === 'group') return { label: 'Éliminé en poules', tone: 'slate' };
-    return null;
-});
 
 // ==========================
 //   HELPERS
@@ -117,10 +78,6 @@ const opponentTeam = computed(() => {
     return oppId ? props.teamById[oppId] ?? null : null;
 });
 
-const opponentPlayers = computed(() => (opponentTeam.value?.contracts ?? [])
-    .map(contractPlayer)
-    .filter(Boolean));
-
 // ==========================
 //   SAISON PROGRESSION
 // ==========================
@@ -130,8 +87,7 @@ const totalWeeks = computed(() => {
     if (weeks.length) {
         // Coupe du Monde : les demies et la finale sont créées au fil du tournoi.
         // On ajoute les tours restants pour que la barre ne retombe pas à chaque phase.
-        const remaining = props.isWorldCup ? ({ group: (props.tournament?.groups?.length ?? 2) >= 4 ? 3 : 2, quarter: 2, semi: 1 }[props.tournament?.stage] ?? 0) : 0;
-        return Math.max(...weeks) + remaining;
+        return Math.max(...weeks) + (props.isWorldCup ? remainingWeeks(props.tournament) : 0);
     }
     const n = props.standings.length;
     if (n < 2) return 28;
@@ -143,57 +99,6 @@ const seasonProgress = computed(() =>
         ? 100
         : Math.min(100, Math.round(((props.week - 1) / Math.max(totalWeeks.value, 1)) * 100))
 );
-
-// ==========================
-//   FORME RÉCENTE
-// ==========================
-// 5 derniers résultats (le plus récent à droite).
-const formOf = (teamId) => recentForm(props.matches, teamId).map(r => ({
-    ...r,
-    title: `S${r.week} : ${r.scored}-${r.conceded}`,
-}));
-
-const myForm       = computed(() => formOf(props.team?.id));
-const opponentForm = computed(() => formOf(opponentTeam.value?.id));
-
-// Dernière confrontation avec l'adversaire du prochain match.
-const lastHeadToHead = computed(() => {
-    const me = props.team?.id, opp = opponentTeam.value?.id;
-    if (me == null || opp == null) return null;
-    const m = playedMatchesOf(props.matches, me).filter(x => x.home_team_id === opp || x.away_team_id === opp).at(-1);
-    return m ? { ...resultFor(m, me), week: m.week } : null;
-});
-
-const faceToFace = computed(() => TEAM_STATS.map(({ key, label, color }) => ({
-    key, label,
-    color: color ?? STAT_COLORS[key],
-    me: averageTeamStat(props.roster, key),
-    opp: props.isByeWeek ? null : averageTeamStat(opponentPlayers.value, key),
-})));
-
-const { root: forcesRoot, value: forcesValue, width: forcesWidth } = useAnimatedStats(
-    () => Object.fromEntries(faceToFace.value.flatMap(stat => [
-        [`${stat.key}:me`, stat.me], [`${stat.key}:opp`, stat.opp],
-    ])),
-    () => `${props.team?.id}:${opponentTeam.value?.id}:${props.week}`,
-);
-
-// Joueurs adverses à surveiller : meilleur buteur et meilleur duelliste.
-const opponentThreats = computed(() => {
-    const players = opponentPlayers.value;
-    const statOf  = (p) => seasonStatsOf(props.playerSeasonStats, p.id);
-    const best = (pick) => players
-        .map(p => ({ player: p, value: Number(pick(statOf(p)) ?? 0) }))
-        .filter(r => r.value > 0)
-        .sort((a, b) => b.value - a.value)[0] ?? null;
-    const scorer  = best(s => s?.offense?.goals);
-    const duelist = best(s => s?.duelsWon);
-    return [
-        scorer  && { key: 'goals', text: `⚽ ${scorer.player.lastname}`,  detail: `${scorer.value} but${scorer.value > 1 ? 's' : ''}` },
-        duelist && { key: 'duels', text: `💪 ${duelist.player.lastname}`, detail: `${duelist.value} duels gagnés` },
-    ].filter(Boolean);
-});
-
 
 // ==========================
 //   RANK STYLE
@@ -314,24 +219,7 @@ const { root: seasonProgressRoot, value: animatedSeasonProgress, width: seasonPr
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
 
             <!-- Classement — Coupe du Monde : position dans la poule -->
-            <button v-if="isWorldCup" type="button" :class="KPI" class="flex flex-col items-center gap-1"
-                    @click="emit('change-tab', 'standings')" title="Voir le tournoi">
-                <SectionTitle as="span">
-                    {{ wcStanding ? 'Poule ' + wcStanding.group : 'Tournoi' }}
-                </SectionTitle>
-                <span class="text-3xl font-black text-indigo-600">
-                    {{ wcStanding ? wcStanding.position : '—' }}<sup v-if="wcStanding" class="text-base">e</sup>
-                </span>
-                <span class="text-2xs text-slate-400">{{ wcStanding ? '/ ' + wcStanding.total : wcStageLabel }}</span>
-                <span v-if="wcOutcome" class="text-2xs font-bold px-2 py-0.5 rounded-full text-center"
-                      :class="wcOutcome.tone === 'amber' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-600'">
-                    {{ wcOutcome.label }}
-                </span>
-                <span v-else-if="wcStanding" class="text-2xs font-bold px-2 py-0.5 rounded-full"
-                      :class="wcStanding.qualified ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-500'">
-                    {{ wcStanding.qualified ? (tournament?.stage === 'group' ? 'En zone de qualification' : 'Qualifié') : wcStanding.points + ' pts' }}
-                </span>
-            </button>
+            <DashboardWorldCupTile v-if="isWorldCup" :tournament="tournament" :team="team" @open="emit('change-tab', 'standings')" />
 
             <!-- Classement — Ligue : position, points, évolution, objectif -->
             <button v-else type="button" :class="KPI" class="flex flex-col items-center gap-1"
@@ -392,123 +280,14 @@ const { root: seasonProgressRoot, value: animatedSeasonProgress, width: seasonPr
         <!-- ============================================ -->
         <!-- LIGNE 3 : Prochain match (hero)              -->
         <!-- ============================================ -->
-        <div class="rounded-xl overflow-hidden bg-white shadow-sm"
-             :class="{
-         'border-2 border-teal-400':   midseasonBreakRecovery === null && !isByeWeek && nextMatchInfo?.isHome,
-         'border-2 border-orange-400': midseasonBreakRecovery === null && !isByeWeek && !nextMatchInfo?.isHome,
-         'border border-slate-200':    isByeWeek || midseasonBreakRecovery !== null,
-     }">
-
-            <div v-if="midseasonBreakRecovery !== null" class="p-5 flex flex-wrap items-center justify-between gap-4">
-                <div>
-                    <div class="text-sm font-bold text-slate-700">Trêve de mi-saison</div>
-                    <div class="mt-1 text-xs text-slate-600">
-                        Une semaine sans match. Tous les joueurs récupèrent jusqu’à {{ midseasonBreakRecovery }} points
-                        d’endurance et le compteur de cartons jaunes repart à zéro.
-                    </div>
-                </div>
-                <ButtonSecondary :disabled="simulating" @click="emit('simulate-week')">
-                    Terminer la trêve
-                </ButtonSecondary>
-            </div>
-            <div v-else-if="!isByeWeek && nextMatch && nextMatchInfo" class="p-1.5">
-                <!-- Label -->
-                <div class="text-center mb-3">
-                    <h3 class="text-xs font-bold text-slate-700 mb-1">Prochain match</h3>
-            <span class="text-2xs font-bold uppercase tracking-widest"
-                  :class="nextMatchInfo.isHome ? 'text-teal-500' : 'text-orange-500'">
-                {{ nextMatchInfo.isHome ? '🏠 Domicile' : '✈️ Extérieur' }}
-                &nbsp;•&nbsp; Semaine {{ nextMatchInfo.week }}
-            </span>
-                </div>
-
-                <!-- Affrontement -->
-                <div class="flex flex-wrap items-center justify-around gap-3 sm:gap-4">
-                    <!-- Mon équipe -->
-                    <div class="flex flex-col items-center gap-2 flex-1">
-                        <div class="w-14 h-14 rounded-2xl overflow-hidden flex items-center justify-center">
-                            <TeamLogoImage v-if="teamLogoUrl(team)" :src="teamLogoUrl(team)" class="w-full h-full" alt=""/>
-                            <span v-else class="text-2xl">🏟️</span>
-                        </div>
-                        <div class="text-sm font-bold text-slate-700 text-center">{{ team?.name ?? '—' }}</div>
-                        <div class="text-2xs text-slate-400">{{ isWorldCup ? (groupRankLabel(team?.id) ?? '') : (clubStanding ? `${clubStanding.position}e au classement` : '') }}</div>
-                        <div v-if="myForm.length" class="flex gap-1" aria-label="Forme récente">
-                            <span v-for="(r, i) in myForm" :key="i" :title="r.title"
-                                  class="w-5 h-5 rounded text-2xs font-black flex items-center justify-center" :class="FORM_STYLE[r.label]">{{ r.label }}</span>
-                        </div>
-                    </div>
-
-                    <!-- VS + Bouton central -->
-                    <div class="text-center shrink-0 flex flex-col items-center gap-3">
-                        <div class="text-3xl font-black text-slate-300">VS</div>
-                        <div v-if="lastHeadToHead" class="text-2xs text-slate-400 -mt-2">
-                            Dernier duel (S{{ lastHeadToHead.week }}) :
-                            <span class="font-bold" :class="{ 'text-emerald-600': lastHeadToHead.label === 'V', 'text-rose-500': lastHeadToHead.label === 'D', 'text-slate-500': lastHeadToHead.label === 'N' }">
-                                {{ lastHeadToHead.scored }}-{{ lastHeadToHead.conceded }}
-                            </span>
-                        </div>
-                        <ButtonSecondary size="sm" v-if="isByeWeek" :disabled="simulating" @click="emit('simulate-week')">
-                            ⏭ Simuler S{{ week }}
-                        </ButtonSecondary>
-                        <div v-else class="flex flex-wrap items-center justify-center gap-2">
-                            <button type="button"
-                                    class="px-6 py-2.5 rounded-full font-bold text-sm text-white shadow-sm transition-all hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
-                                    :class="nextMatchInfo.isHome ? 'bg-teal-500 hover:bg-teal-600' : 'bg-orange-500 hover:bg-orange-600'"
-                                    :disabled="simulating || launchingMatch"
-                                    @click="emit('play-next-match')">
-                                ▶ Jouer le match
-                            </button>
-                            <ButtonSecondary v-if="canSimulateMatch" size="sm"
-                                             :disabled="simulating || launchingMatch" @click="emit('simulate-match')">
-                                ⏩ Simuler le match
-                            </ButtonSecondary>
-                        </div>
-                    </div>
-
-                    <!-- Adversaire -->
-                    <div class="flex flex-col items-center gap-2 flex-1">
-                        <div class="w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center">
-                            <TeamLogoImage v-if="teamLogoUrl(opponentTeam)" :src="teamLogoUrl(opponentTeam)" class="w-full h-full" alt=""/>
-                            <span v-else class="text-2xl">⚽</span>
-                        </div>
-                        <div class="text-sm font-bold text-slate-700 text-center">{{ nextMatchInfo.opponentName }}</div>
-                        <div class="text-2xs text-slate-400">
-                            {{ isWorldCup ? (groupRankLabel(opponentTeam?.id) ?? '')
-                            : (standings.findIndex(r => r.id === opponentTeam?.id) + 1 > 0
-                                ? `${standings.findIndex(r => r.id === opponentTeam?.id) + 1}e au classement`
-                                : '') }}
-                        </div>
-                        <div v-if="opponentForm.length" class="flex gap-1" aria-label="Forme récente de l'adversaire">
-                            <span v-for="(r, i) in opponentForm" :key="i" :title="r.title"
-                                  class="w-5 h-5 rounded text-2xs font-black flex items-center justify-center" :class="FORM_STYLE[r.label]">{{ r.label }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Coupe du Monde terminée : plus de semaine à simuler -->
-            <div v-else-if="isWorldCup && tournament?.stage === 'done'" class="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <div class="text-sm font-semibold text-slate-600">Tournoi terminé</div>
-                    <div class="text-xs text-slate-400 mt-0.5">Plus aucun match à jouer : consulte le bilan du tournoi.</div>
-                </div>
-                <Link :href="route('game-saves.tournament-end', gameSave.id)"
-                      class="px-4 py-2 rounded-xl bg-amber-500 text-white text-sm font-bold hover:bg-amber-600 text-center">
-                    Bilan du tournoi
-                </Link>
-            </div>
-
-            <!-- Semaine sans match -->
-            <div v-else class="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <div class="text-sm font-semibold text-slate-600">Semaine {{ week }} — Pas de match</div>
-                    <div class="text-xs text-slate-400 mt-0.5">Semaine de repos ou en attente du calendrier</div>
-                </div>
-                <ButtonSecondary size="md" :disabled="simulating" @click="emit('simulate-week')">
-                    ⏭ Simuler la semaine
-                </ButtonSecondary>
-            </div>
-        </div>
+        <DashboardNextMatchCard :gameSave="gameSave" :team="team" :opponentTeam="opponentTeam" :nextMatch="nextMatch"
+                                :nextMatchInfo="nextMatchInfo" :isByeWeek="isByeWeek"
+                                :midseasonBreakRecovery="midseasonBreakRecovery" :simulating="simulating"
+                                :launchingMatch="launchingMatch" :canSimulateMatch="canSimulateMatch"
+                                :isWorldCup="isWorldCup" :tournament="tournament" :clubStanding="clubStanding"
+                                :standings="standings" :matches="matches" :week="week"
+                                @play-next-match="emit('play-next-match')" @simulate-match="emit('simulate-match')"
+                                @simulate-week="emit('simulate-week')" />
 
         <!-- Conseils de l'adjoint -->
         <AssistantAdviceCard class="border-l-4 border-l-teal-400" :advice="advice" @apply="a => emit('apply-advice', a)" />
@@ -519,49 +298,8 @@ const { root: seasonProgressRoot, value: animatedSeasonProgress, width: seasonPr
         <!-- ============================================ -->
         <!-- LIGNE 4 : Forces face à face                -->
         <!-- ============================================ -->
-        <div ref="forcesRoot" class="border border-slate-200 rounded-xl bg-slate-50 p-4 shadow-card">
-            <div class="flex items-center justify-between gap-2 mb-3">
-                <SectionTitle class="truncate">{{ team?.name ?? 'Mon équipe' }}</SectionTitle>
-                <SectionTitle class="shrink-0">Forces</SectionTitle>
-                <SectionTitle class="truncate text-right">
-                    {{ opponentTeam && !isByeWeek ? nextMatchInfo?.opponentName : 'Pas d\'adversaire' }}
-                </SectionTitle>
-            </div>
-            <div class="space-y-2">
-                <div v-for="stat in faceToFace" :key="stat.key" class="grid grid-cols-[1.75rem_minmax(0,1fr)_4.5rem_minmax(0,1fr)_1.75rem] items-center gap-2">
-                    <span class="text-xs font-black text-right"
-                          :class="stat.me != null && stat.opp != null && stat.me > stat.opp ? 'text-emerald-600' : 'text-slate-700'">{{ stat.me == null ? '—' : forcesValue(`${stat.key}:me`) }}</span>
-                    <!-- Ma barre (croît vers la gauche) -->
-                    <div class="h-2 bg-slate-200 rounded-full overflow-hidden flex justify-end">
-                        <div class="h-full rounded-full" :class="stat.color" :style="{ width: forcesWidth(`${stat.key}:me`) }"></div>
-                    </div>
-                    <span class="text-[11px] text-slate-500 text-center">{{ stat.label }}</span>
-                    <!-- Barre adverse (croît vers la droite) -->
-                    <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
-                        <div v-if="stat.opp != null" class="h-full rounded-full opacity-60" :class="stat.color"
-                             :style="{ width: forcesWidth(`${stat.key}:opp`) }"></div>
-                    </div>
-                    <span class="text-xs font-black"
-                          :class="stat.me != null && stat.opp != null && stat.opp > stat.me ? 'text-rose-500' : 'text-slate-700'">
-                        {{ stat.opp == null ? '—' : forcesValue(`${stat.key}:opp`) }}
-                    </span>
-                </div>
-            </div>
-            <p class="mt-2 text-2xs text-slate-500">Moyennes des effectifs sur 100 · Arrêt main et Poings calculés sur les gardiens.</p>
-            <div v-if="opponentTeam && !isByeWeek && opponentThreats.length"
-                 class="mt-3 pt-3 border-t border-slate-200 flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-xs">
-                <SectionTitle as="span">À surveiller</SectionTitle>
-                <span v-for="t in opponentThreats" :key="t.key" class="text-slate-700">
-                    <span class="font-semibold">{{ t.text }}</span>
-                    <span class="text-slate-400"> · {{ t.detail }}</span>
-                </span>
-            </div>
-            <div v-if="team?.description || (opponentTeam && !isByeWeek && opponentTeam.description)"
-                 class="mt-3 pt-3 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <p class="text-xs text-slate-500 italic leading-relaxed line-clamp-2">{{ team?.description }}</p>
-                <p v-if="opponentTeam && !isByeWeek" class="text-xs text-slate-500 italic leading-relaxed line-clamp-2 sm:text-right">{{ opponentTeam.description }}</p>
-            </div>
-        </div>
+        <DashboardForcesCard :team="team" :opponentTeam="opponentTeam" :nextMatchInfo="nextMatchInfo" :roster="roster"
+                             :isByeWeek="isByeWeek" :playerSeasonStats="playerSeasonStats" :week="week" />
 
         <!-- Demandes des joueurs en attente de réponse -->
         <PlayerRequestsCard v-if="playerRequests.length" :requests="playerRequests" :budget="teamBudget"
