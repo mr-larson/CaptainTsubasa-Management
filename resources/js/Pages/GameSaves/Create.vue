@@ -1,5 +1,9 @@
 <script setup>
 import UniverseSelector from '@/Components/UniverseSelector.vue';
+import ConfigSection from '@/Components/ConfigSection.vue';
+import ConfigRange from '@/Components/ConfigRange.vue';
+import ConfigToggle from '@/Components/ConfigToggle.vue';
+import { TRAINING_COST_FIELDS as trainingCostFields } from '@/Components/configFields.js';
 import { fieldClass, TEXTAREA_CLASS } from '@/Components/fieldStyles';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ButtonPrimary from '@/Components/ButtonPrimary.vue';
@@ -402,10 +406,7 @@ function submit() {
                     <div v-show="showConfig" class="flex flex-col flex-1 gap-4 overflow-y-auto min-h-0">
 
                         <!-- Mandat de la direction -->
-                        <div class="border border-slate-200 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
-                            <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                                <span>🎯</span> Mandat de la direction
-                            </h4>
+                        <ConfigSection compact icon="🎯" title="Mandat de la direction">
                             <p class="text-2xs text-slate-400 -mt-1">
                                 Définit l'objectif de classement, la patience du board et la condition de victoire de carrière.
                             </p>
@@ -426,243 +427,100 @@ function submit() {
                                     </span>
                                 </button>
                             </div>
-                            <label class="flex items-start gap-2 text-xs text-slate-700 cursor-pointer mt-1">
-                                <input type="checkbox" v-model="config.season_challenges_enabled"
-                                       class="mt-0.5 rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
-                                <span>
-                                    🎲 Défis de saison
-                                    <span class="block text-2xs text-slate-400">5 objectifs tirés au sort par équipe et par saison (primes + classement des défis, sans effet sur le championnat).</span>
-                                </span>
-                            </label>
-                        </div>
+                            <ConfigToggle v-model="config.season_challenges_enabled" class="mt-1">
+                                🎲 Défis de saison
+                                <template #hint>5 objectifs tirés au sort par équipe et par saison (primes + classement des défis, sans effet sur le championnat).</template>
+                            </ConfigToggle>
+                        </ConfigSection>
 
-                        <!-- Cartes -->
-                        <div class="border border-slate-200 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
-                            <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                                <span>🃏</span> Cartes
-                            </h4>
+                        <ConfigSection compact icon="🃏" title="Cartes">
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
-                                    <input type="checkbox" v-model="config.bonus_cards_enabled"
-                                           class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
-                                    Cartes bonus
-                                </label>
-                                <label class="flex items-center gap-2 text-xs cursor-pointer"
-                                       :class="config.bonus_cards_enabled ? 'text-slate-700' : 'text-slate-400'">
-                                    <input type="checkbox" v-model="config.malus_cards_enabled"
-                                           :disabled="!config.bonus_cards_enabled"
-                                           class="rounded border-slate-300 text-teal-500 focus:ring-teal-400 disabled:opacity-40" />
-                                    Cartes malus
-                                </label>
-                                <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
-                                    <input type="checkbox" v-model="config.player_requests_enabled"
-                                           class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
-                                    Demandes des joueurs
-                                </label>
+                                <ConfigToggle v-model="config.bonus_cards_enabled">Cartes bonus</ConfigToggle>
+                                <ConfigToggle v-model="config.malus_cards_enabled" :disabled="!config.bonus_cards_enabled">Cartes malus</ConfigToggle>
+                                <ConfigToggle v-model="config.player_requests_enabled">Demandes des joueurs</ConfigToggle>
                             </div>
-                        </div>
+                        </ConfigSection>
 
-                        <!-- Données aléatoires -->
-                        <div class="border border-slate-200 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
-                            <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                                <span>🎲</span> Données aléatoires
-                            </h4>
+                        <ConfigSection compact icon="🎲" title="Données aléatoires">
                             <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                 <div class="flex flex-col gap-2">
-                                    <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
-                                        <input type="checkbox" v-model="config.initial_morale_random"
-                                               class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
+                                    <ConfigToggle v-model="config.initial_morale_random">
                                         Moral initial aléatoire (45–75 par joueur)
-                                    </label>
-                                    <p class="text-2xs text-slate-400">
-                                        Désactivé, le moral de départ est fixé à 60.
-                                    </p>
-                                    <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
-                                        <input type="checkbox" v-model="config.initial_stamina_random"
-                                               class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
+                                        <template #hint>Désactivé, le moral de départ est fixé à 60.</template>
+                                    </ConfigToggle>
+                                    <ConfigToggle v-model="config.initial_stamina_random">
                                         Endurance initiale aléatoire (60–100)
-                                    </label>
-                                    <p class="text-2xs text-slate-400">
-                                        Les amateurs générés tirent entre 55 et 75. Désactivée, l’endurance de départ est fixée à 100.
-                                    </p>
+                                        <template #hint>Les amateurs générés tirent entre 55 et 75. Désactivée, l’endurance de départ est fixée à 100.</template>
+                                    </ConfigToggle>
                                 </div>
                                 <div class="flex flex-col gap-2">
-                                    <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
-                                        <input type="checkbox" v-model="config.initial_speed_random"
-                                               class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
+                                    <ConfigToggle v-model="config.initial_speed_random">
                                         Vitesse variable (−10 à +10)
-                                    </label>
-                                    <p class="text-2xs text-slate-400">
-                                        Le tirage varie la note de base dans la limite de 0 à 100. La vitesse obtenue est conservée d’une saison à l’autre.
-                                    </p>
-                                    <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
-                                        <input type="checkbox" v-model="config.luck_random"
-                                               class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
+                                        <template #hint>Le tirage varie la note de base dans la limite de 0 à 100. La vitesse obtenue est conservée d’une saison à l’autre.</template>
+                                    </ConfigToggle>
+                                    <ConfigToggle v-model="config.luck_random">
                                         Chance aléatoire (20–80 par joueur)
-                                    </label>
-                                    <p class="text-2xs text-slate-400">
-                                        Tirée à la création de la partie et au début de chaque saison. Désactivée, la chance est fixée à 50.
-                                    </p>
+                                        <template #hint>Tirée à la création de la partie et au début de chaque saison. Désactivée, la chance est fixée à 50.</template>
+                                    </ConfigToggle>
                                 </div>
                             </div>
-                        </div>
+                        </ConfigSection>
 
-                        <!-- Fatigue -->
-                        <div class="border border-slate-200 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
-                            <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                                <span>⚡</span> Fatigue & Endurance
-                            </h4>
+                        <ConfigSection compact icon="⚡" title="Fatigue & Endurance">
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <div class="flex flex-col gap-1">
-                                    <label class="text-2xs text-slate-500">Coût en endurance / match</label>
-                                    <div class="flex items-center gap-2">
-                                        <input type="range" v-model.number="config.match_stamina_cost" min="0" max="20" class="flex-1 h-1 accent-teal-500" />
-                                        <span class="text-xs font-bold text-slate-700 w-5 text-right">{{ config.match_stamina_cost }}</span>
-                                    </div>
-                                </div>
-                                <div class="flex flex-col gap-1">
-                                    <label class="text-2xs text-slate-500">Récupération remplaçants</label>
-                                    <div class="flex items-center gap-2">
-                                        <input type="range" v-model.number="config.rest_stamina_recovery" min="0" max="30" class="flex-1 h-1 accent-teal-500" />
-                                        <span class="text-xs font-bold text-slate-700 w-5 text-right">{{ config.rest_stamina_recovery }}</span>
-                                    </div>
-                                </div>
+                                <ConfigRange v-model="config.match_stamina_cost" label="Coût en endurance / match" :max="20" />
+                                <ConfigRange v-model="config.rest_stamina_recovery" label="Récupération remplaçants" :max="30" />
                             </div>
-                        </div>
+                        </ConfigSection>
 
-                        <!-- Match -->
-                        <div class="border border-slate-200 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
-                            <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                                <span>⚽</span> Match
-                            </h4>
+                        <ConfigSection compact icon="⚽" title="Match">
                             <div class="grid grid-cols-1 items-start gap-3 sm:grid-cols-2">
                                 <div class="flex flex-col gap-3">
-                                    <div class="flex flex-col gap-1 max-w-xs">
-                                        <label class="text-2xs text-slate-500">Tours par match</label>
-                                        <div class="flex items-center gap-2">
-                                            <input type="range" v-model.number="config.match_max_turns" min="10" max="80" step="5" class="flex-1 h-1 accent-teal-500" />
-                                            <span class="text-xs font-bold text-slate-700 w-5 text-right">{{ config.match_max_turns }}</span>
-                                        </div>
-                                    </div>
-                                    <div class="flex flex-col gap-1 max-w-xs">
-                                        <label for="setup-match-substitutions" class="text-2xs text-slate-500">Remplacements par équipe</label>
-                                        <div class="flex items-center gap-2">
-                                            <input id="setup-match-substitutions" type="range" v-model.number="config.match_max_substitutions" min="0" max="11" step="1" class="flex-1 h-1 accent-teal-500" />
-                                            <span class="text-xs font-bold text-slate-700 w-5 text-right">{{ config.match_max_substitutions }}</span>
-                                        </div>
-                                    </div>
+                                    <ConfigRange v-model="config.match_max_turns" label="Tours par match" :min="10" :max="80" :step="5" class="max-w-xs" />
+                                    <ConfigRange v-model="config.match_max_substitutions" id="setup-match-substitutions" label="Remplacements par équipe" :max="11" class="max-w-xs" />
                                 </div>
                                 <div class="flex flex-col gap-2">
-                                    <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
-                                        <input type="checkbox" v-model="config.match_criticals_enabled"
-                                               class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
-                                        Activer les critiques
-                                    </label>
-                                    <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
-                                        <input type="checkbox" v-model="config.injury_on_foul"
-                                               class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
-                                        Blessures sur faute
-                                    </label>
-                                    <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
-                                        <input type="checkbox" v-model="config.suspension_on_3_yellows"
-                                               class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
-                                        Suspension 3 jaunes
-                                    </label>
+                                    <ConfigToggle v-model="config.match_criticals_enabled">Activer les critiques</ConfigToggle>
+                                    <ConfigToggle v-model="config.injury_on_foul">Blessures sur faute</ConfigToggle>
+                                    <ConfigToggle v-model="config.suspension_on_3_yellows">Suspension 3 jaunes</ConfigToggle>
                                 </div>
                             </div>
-                        </div>
+                        </ConfigSection>
 
-                        <!-- Économie -->
-                        <div v-if="form.competition_type !== 'world_cup'" class="border border-slate-200 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
-                            <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                                <span>💰</span> Économie
-                            </h4>
+                        <ConfigSection v-if="form.competition_type !== 'world_cup'" compact icon="💰" title="Économie">
                             <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                <div v-for="field in budgetFields" :key="field.key" class="flex flex-col gap-1 min-w-0">
-                                    <label :for="field.key" class="text-2xs text-slate-500">{{ field.label }}</label>
-                                    <div class="flex items-center gap-2">
-                                        <input :id="field.key" v-model.number="config[field.key]" type="range" :min="field.min" max="20000" step="250" class="flex-1 h-1 accent-teal-500" />
-                                        <span class="text-xs font-bold text-slate-700 w-14 text-right">{{ config[field.key] }} <GameBanknote /></span>
-                                    </div>
-                                </div>
+                                <ConfigRange v-for="field in budgetFields" :key="field.key" v-model="config[field.key]"
+                                             :id="field.key" :label="field.label" :min="field.min" :max="20000" :step="250" value-width="w-14">
+                                    <template #value>{{ config[field.key] }} <GameBanknote /></template>
+                                </ConfigRange>
                             </div>
                             <p class="text-2xs text-slate-400">Les budgets de draft sont réservés au recrutement. Les soldes expirent à la fin de chaque draft.</p>
-                        </div>
+                        </ConfigSection>
 
-                        <!-- Entraînement -->
-                        <div class="border border-slate-200 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
-                            <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                                <span>🏋️</span> Entraînement
-                            </h4>
+                        <ConfigSection compact icon="🏋️" title="Entraînement">
                             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                                <div class="flex flex-col gap-1">
-                                    <label class="text-2xs text-slate-500">Sessions / sem.</label>
-                                    <div class="flex items-center gap-1">
-                                        <input type="range" v-model.number="config.training_max_per_week" min="1" max="10" class="flex-1 h-1 accent-teal-500" />
-                                        <span class="text-2xs font-bold text-slate-700 w-3 text-right">{{ config.training_max_per_week }}</span>
-                                    </div>
-                                </div>
-                                <div class="flex flex-col gap-1">
-                                    <label class="text-2xs text-slate-500">Gain min</label>
-                                    <div class="flex items-center gap-1">
-                                        <input type="range" v-model.number="config.training_gain_min" min="0" max="10" class="flex-1 h-1 accent-teal-500" />
-                                        <span class="text-2xs font-bold text-slate-700 w-3 text-right">{{ config.training_gain_min }}</span>
-                                    </div>
-                                </div>
-                                <div class="flex flex-col gap-1">
-                                    <label class="text-2xs text-slate-500">Gain max</label>
-                                    <div class="flex items-center gap-1">
-                                        <input type="range" v-model.number="config.training_gain_max" min="1" max="20" class="flex-1 h-1 accent-teal-500" />
-                                        <span class="text-2xs font-bold text-slate-700 w-3 text-right">{{ config.training_gain_max }}</span>
-                                    </div>
-                                </div>
-                                <div class="flex flex-col gap-1">
-                                    <label class="text-2xs text-slate-500">Coût en endurance</label>
-                                    <div class="flex items-center gap-1">
-                                        <input type="range" v-model.number="config.training_stamina_cost" min="0" max="15" class="flex-1 h-1 accent-teal-500" />
-                                        <span class="text-2xs font-bold text-slate-700 w-3 text-right">{{ config.training_stamina_cost }}</span>
-                                    </div>
-                                </div>
+                                <ConfigRange v-model="config.training_max_per_week" label="Sessions / sem." :min="1" :max="10" value-width="w-3" />
+                                <ConfigRange v-model="config.training_gain_min" label="Gain min" :max="10" value-width="w-3" />
+                                <ConfigRange v-model="config.training_gain_max" label="Gain max" :min="1" :max="20" value-width="w-3" />
+                                <ConfigRange v-model="config.training_stamina_cost" label="Coût en endurance" :max="15" value-width="w-3" />
                             </div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <div class="flex flex-col gap-1">
-                                    <label class="text-2xs text-slate-500">Endurance min. requise</label>
-                                    <div class="flex items-center gap-2">
-                                        <input type="range" v-model.number="config.training_min_stamina" min="0" max="50" step="5" class="flex-1 h-1 accent-teal-500" />
-                                        <span class="text-xs font-bold text-slate-700 w-5 text-right">{{ config.training_min_stamina }}</span>
-                                    </div>
-                                </div>
-                                <div v-for="(label, key) in { training_cost: 'Coût par séance simple', position_training_cost: 'Coût par formation de poste', special_training_cost: 'Coût par technique spéciale' }"
-                                     :key="key" class="flex flex-col gap-1">
-                                    <label class="text-2xs text-slate-500">{{ label }} (<GameBanknote />)</label>
-                                    <div class="flex items-center gap-2">
-                                        <input type="range" v-model.number="config[key]" min="0" max="2000" step="50" class="flex-1 h-1 accent-teal-500" />
-                                        <span class="text-xs font-bold text-slate-700 w-10 text-right">{{ config[key] }}</span>
-                                    </div>
-                                </div>
+                                <ConfigRange v-model="config.training_min_stamina" label="Endurance min. requise" :max="50" :step="5" />
+                                <ConfigRange v-for="(label, key) in trainingCostFields" :key="key" v-model="config[key]"
+                                             :max="2000" :step="50" value-width="w-10">
+                                    {{ label }} (<GameBanknote />)
+                                </ConfigRange>
                             </div>
-                        </div>
+                        </ConfigSection>
 
                         <UniverseSelector :config="config" :options="universeOptions" />
 
-                        <!-- IA -->
-                        <div class="border border-slate-200 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
-                            <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                                <span>🤖</span> Intelligence Artificielle
-                            </h4>
+                        <ConfigSection compact icon="🤖" title="Intelligence Artificielle">
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
-                                    <input type="checkbox" v-model="config.ai_transfers_enabled"
-                                           class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
-                                    Transferts IA
-                                </label>
-                                <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
-                                    <input type="checkbox" v-model="config.ai_training_enabled"
-                                           class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
-                                    Entraînement IA
-                                </label>
+                                <ConfigToggle v-model="config.ai_transfers_enabled">Transferts IA</ConfigToggle>
+                                <ConfigToggle v-model="config.ai_training_enabled">Entraînement IA</ConfigToggle>
                             </div>
-                        </div>
+                        </ConfigSection>
 
                         <!-- Spacer + bouton reset -->
                         <div class="flex-1"></div>
