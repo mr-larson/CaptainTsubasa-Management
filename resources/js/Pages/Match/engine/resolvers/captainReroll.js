@@ -102,7 +102,7 @@ export function doReroll(ctx, heroic = false) {
     const {
         attackTeam, defenseTeam, attackType, defenseAction,
         attackBaseRaw, defenseBaseRaw, attackStamF, defenseStamF, attackFactors, defenseFactors,
-        defenderId, defenderSlot, clearanceBonus, specialAction,
+        defenderId, defenderSlot, clearanceBonus,
     } = ctx;
 
     if (!heroic) consumeReroll(attackTeam);

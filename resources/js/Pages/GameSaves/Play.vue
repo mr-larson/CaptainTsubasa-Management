@@ -13,7 +13,6 @@ import H2 from '@/Components/H2.vue';
 import { useTeam }      from '@/Pages/GameSaves/Play/useTeam.js';
 import { useDashboard } from '@/Pages/GameSaves/Play/useDashboard.js';
 import { useCalendar }  from '@/Pages/GameSaves/Play/useCalendar.js';
-import { useStats }     from '@/Pages/GameSaves/Play/useStats.js';
 import { useTraining }  from '@/Pages/GameSaves/Play/useTraining.js';
 import { useTransfers } from '@/Pages/GameSaves/Play/useTransfers.js';
 import { useOtherTeam } from '@/Pages/GameSaves/Play/useOtherTeam.js';
@@ -159,18 +158,16 @@ const team           = computed(() => props.controlledTeam || null); // alias li
 //   COMPOSABLES
 // ==========================
 const {
-    roster, rosterWithStatus, starters,
+    roster, rosterWithStatus,
     selectedMyPlayer, selectMyPlayer,
-    overallOf, toggleStarter, toggleCaptain,
-    lineupForm, getSlotForPlayer, saveLineup, changeSelectedPlayerSlot,
+    toggleStarter, toggleCaptain,
+    lineupForm, changeSelectedPlayerSlot,
     currentFormation, formationData, saveFormation,
-    slotRoleInfo, miniPitchMarkerStyle,
-    playerPhotoUrl, teamLogoUrl,
-    playerPosition, slotToPlayer, playerForSlot, selectedSlot,
+    miniPitchMarkerStyle,
+    playerPosition, playerForSlot, selectedSlot,
     isPickedUp, handlePlayerClick, handleDragStart, handleDragOver, handleDrop,
     cancelPickup, pickUpPlayer, fillEmptySlot, handleDropOnSlot,
     lastChange, undoLastChange, formationImpact, reorganizeLineup, substitutePlayer,
-    FORMATIONS, FORMATION_LIST,
 } = useTeam({ gameSave: gameSaveRef, team: teamRef });
 
 const activeInjuriesRef    = computed(() => props.activeInjuries    ?? []);
@@ -184,7 +181,7 @@ const {
     injuriesCountForTeam, suspensionsCountForTeam, cardsCountForTeam,
     isPlayerInjured, isPlayerSuspended, playerYellowCards, playerInjury, playerSuspension,
 } = useDashboard({
-    teams: teamsRef, gameSave: gameSaveRef, team: teamRef, roster,
+    teams: teamsRef, team: teamRef, roster,
     activeInjuries: activeInjuriesRef,
     activeSuspensions: activeSuspensionsRef,
     activeYellowCards: activeYellowCardsRef,
@@ -240,9 +237,9 @@ const freePlayersCount = computed(() => (availableFreePlayers.value ?? []).lengt
 
 const {
     isByeMatch, teamById,
-    opponentTeamIdFor, opponentNameFor, opponentNameForTeam,
-    myMatches, isByeWeek, nextMatch, nextMatchInfo,
-    selectedCalendarTeamId, calendarTeams, calendarTeam, selectCalendarTeam,
+    opponentNameForTeam,
+    isByeWeek, nextMatch, nextMatchInfo,
+    calendarTeams, calendarTeam, selectCalendarTeam,
     calendarRows, calendarTeamRoster, calendarOpponentRoster,
     selectedCalendarMatch, selectedCalendarMatchStats,
     selectedCalendarMyTeamStats, selectedCalendarOpponentStats,
@@ -252,14 +249,12 @@ const {
 
 const playerSeasonStatsRef = computed(() => props.playerSeasonStats ?? {});
 
-const {
-    selectedMyPlayerPerf: _selectedMyPlayerPerf,
-    selectedStatsTeamId, selectedStatsTeam,
-    selectedTeamPlayerStats, teamStats,
-} = useStats({ gameSave: gameSaveRef, teams: teamsRef, team: teamRef, roster, playerSeasonStats: playerSeasonStatsRef });
-
-// selectedMyPlayerPerf est une fonction qui retourne un computed
-const selectedMyPlayerPerf = computed(() => _selectedMyPlayerPerf(selectedMyPlayer).value);
+// Performance cumulée du joueur sélectionné (agrégée côté PHP depuis game_matches).
+const selectedMyPlayerPerf = computed(() => {
+    const player = selectedMyPlayer.value;
+    if (!player) return null;
+    return playerSeasonStatsRef.value[player.id] ?? playerSeasonStatsRef.value[String(player.id)] ?? null;
+});
 
 const {
     trainingState, myEntriesThisWeek, remainingTrainingsThisWeek,
@@ -418,9 +413,8 @@ const bonusCardInventoryRef = computed(() => props.bonusCardInventory ?? []);
 
 const {
     weeklyOffers, buyCard,
-    inventory, availableCards, usedCards,
-    selectedCard, activateCard,
-    tierColor, tierBadge, phaseLabel, targetLabel,
+    inventory, availableCards,
+    activateCard,
     isAlreadyBought,
 } = useBonusCards({
     gameSave: gameSaveRef,

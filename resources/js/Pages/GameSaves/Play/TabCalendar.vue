@@ -38,7 +38,7 @@ const props = defineProps({
 
 const emit = defineEmits(['select-team', 'open-match', 'change-tab']);
 
-const { teamLogoUrl, moraleState } = usePlayerUtils();
+const { teamLogoUrl } = usePlayerUtils();
 
 // ==========================
 //   HELPERS

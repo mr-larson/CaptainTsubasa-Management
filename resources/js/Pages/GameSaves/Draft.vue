@@ -183,10 +183,6 @@ const draftOrderTeams = computed(() => {
     });
 });
 
-const inspectedTeam = computed(() =>
-    props.teams.find(t => t.id === inspectedTeamId.value)
-);
-
 const inspectedRoster = computed(() => {
     return pickLog.value
         .filter(p => p.team_id === inspectedTeamId.value)

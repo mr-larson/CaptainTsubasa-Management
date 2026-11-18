@@ -1,5 +1,5 @@
 // resources/js/Pages/Match/engine/RosterService.js
-import { STATS, POSITION_BONUS, SECONDARY_POSITION_BONUS_FACTOR, OFF_POSITION_MALUS, MORALE_FACTORS, MORALE_DEFAULT, DUEL_CONTEXT, MAX_ZONE_INDEX } from './constants.js';
+import { STATS, SECONDARY_POSITION_BONUS_FACTOR, OFF_POSITION_MALUS, MORALE_FACTORS, MORALE_DEFAULT, DUEL_CONTEXT, MAX_ZONE_INDEX } from './constants.js';
 import { FORMATIONS, DEFAULT_FORMATION } from './formations.js';
 
 export class RosterService {

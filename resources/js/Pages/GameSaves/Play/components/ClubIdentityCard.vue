@@ -4,7 +4,7 @@ import TeamLogo from '@/Components/TeamLogo.vue';
 import TeamStyleBadges from '@/Pages/GameSaves/Play/components/TeamStyleBadges.vue';
 
 /** Carte club : logo, nom, classement, budget, description et styles. */
-const props = defineProps({
+defineProps({
     team:   { type: Object, default: null },
     rank:   { type: Number, default: null },
     total:  { type: Number, default: null },

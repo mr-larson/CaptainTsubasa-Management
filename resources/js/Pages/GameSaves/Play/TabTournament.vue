@@ -19,11 +19,6 @@ function isWinner(match, side) {
     if (!match.played || match.winner_team_id == null) return false;
     return match[side]?.team_id === match.winner_team_id;
 }
-
-function score(match) {
-    if (!match.played) return 'vs';
-    return `${match.home_score} – ${match.away_score}`;
-}
 </script>
 
 <template>

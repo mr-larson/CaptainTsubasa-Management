@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { averageOverall } from './usePlayerUtils.js';
 
-export function useDashboard({ teams, gameSave, team, roster, activeInjuries, activeSuspensions, activeYellowCards }) {
+export function useDashboard({ teams, team, roster, activeInjuries, activeSuspensions, activeYellowCards }) {
 
     // ==========================
     //   CLASSEMENT

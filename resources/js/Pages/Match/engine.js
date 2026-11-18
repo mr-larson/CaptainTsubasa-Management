@@ -12,21 +12,21 @@ import { createWhistleCue } from './engine/whistle.js';
 
 import {
     initStaminaModule, initStamina,
-    getStaminaRatio, staminaFactor, updateStaminaUI,
+    updateStaminaUI,
 } from './engine/stamina.js';
 
 import {
-    initDiceUI, bindDuelTooltipEvents, showDuelDice, showSpecialTooltip, hideBreakdownTooltip,
+    initDiceUI, bindDuelTooltipEvents, showSpecialTooltip, hideBreakdownTooltip,
     disposeDiceUI, runAfterDiceAnimation, rollDie, showSimulationRoll,
 } from './engine/dice.js';
 
 import {
     initFieldModule,
-    otherTeam, getPlayerId, getKeeperId, isGoalkeeperId,
-    moveBallToPlayer, getCarrierElement, getPlayerXInternal,
-    pickFieldDefender, pickWeightedPlayerInZone,
+    otherTeam, getPlayerId, getKeeperId,
+    moveBallToPlayer, getCarrierElement,
+    pickFieldDefender,
     initBasePositions, applyPreMatchPositions, applyKickoffPositions, restoreBasePositions,
-    decayHeat, markTouch,
+    decayHeat,
 } from './engine/field.js';
 
 import {
@@ -44,10 +44,8 @@ import {
 
 import {
     initResolversModule,
-    isGoodDefenseChoice, givePossessionOnTie,
     resolvePass, resolveDribble, resolveOneTwo, resolveShot, resolveShotKeeperDuel,
     resolveCross, resolveLongPass,
-    performKeeperClearance, recordDuelEvent,
     resetCaptainRerollActionFlag,
 } from './engine/resolvers.js';
 

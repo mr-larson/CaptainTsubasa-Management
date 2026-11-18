@@ -247,31 +247,6 @@ const toggleEvent = (ev) => {
     expandedEvent.value = expandedEvent.value === ev.index ? null : ev.index;
 };
 
-// Résultat d'un match pour une équipe donnée
-const matchResult = (match, teamId) => {
-    if (!match || match.status !== 'played') return null;
-    const isHome  = match.home_team_id === teamId;
-    const scored  = isHome ? (match.home_score ?? 0) : (match.away_score ?? 0);
-    const against = isHome ? (match.away_score ?? 0) : (match.home_score ?? 0);
-    if (scored > against)  return { label: 'V', bg: 'bg-emerald-500', text: 'text-white' };
-    if (scored === against) return { label: 'N', bg: 'bg-slate-300',   text: 'text-slate-700' };
-    return { label: 'D', bg: 'bg-rose-500', text: 'text-white' };
-};
-
-const scoreFor = (match, teamId) => {
-    if (!match || match.status !== 'played') return null;
-    const isHome = match.home_team_id === teamId;
-    const s = isHome ? match.home_score : match.away_score;
-    const a = isHome ? match.away_score : match.home_score;
-    return { scored: s ?? 0, against: a ?? 0 };
-};
-
-const opponentTeam = (match, teamId) => {
-    if (!match || !teamId) return null;
-    const oppId = match.home_team_id === teamId ? match.away_team_id : match.home_team_id;
-    return props.teamById[oppId] ?? null;
-};
-
 const selectedStatsTeam = ref('home');
 
 const statsTeamId = computed(() => {

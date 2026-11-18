@@ -11,7 +11,7 @@ import PlayerAvatar from '@/Components/PlayerAvatar.vue';
  *  - #actions : boutons d'action (titulaire, capitaine, entraînement…)
  *  - #footer  : contenu libre sous les actions (astuces, description…)
  */
-const props = defineProps({
+defineProps({
     player:           { type: Object,  required: true },
     subtitle:         { type: String,  default: null },
     showCaptainBadge: { type: Boolean, default: true },

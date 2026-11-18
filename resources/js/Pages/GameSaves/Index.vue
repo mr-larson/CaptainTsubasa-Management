@@ -4,7 +4,7 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import { confirmDialog } from '@/Composables/useDialog.js';
 import H2 from '@/Components/H2.vue';
 
-const props = defineProps({
+defineProps({
     gameSaves: { type: Array, required: true },
 });
 

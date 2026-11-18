@@ -63,7 +63,7 @@
                             <button v-for="team in filteredTeams" :key="team.id" type="button"
                                     @click="selectTeam(team)"
                                     class="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-semibold border transition-all text-left"
-                                    :class="(isMultiMode ? isHumanTeam(team) : startForm.team_id === team.id)
+                                    :class="isHumanTeam(team)
                                 ? 'bg-teal-500 text-white border-teal-600 shadow-sm'
                                 : (selectedTeam?.id === team.id
                                     ? 'bg-teal-50 text-slate-700 border-teal-300 ring-1 ring-teal-200'
@@ -75,9 +75,9 @@
                                 <span class="truncate">{{ team.name }}</span>
                                 <span v-if="teamNote(team) != null"
                                       class="ml-auto shrink-0 px-1.5 py-0.5 rounded-md text-2xs font-black tabular-nums"
-                                      :class="(isMultiMode ? isHumanTeam(team) : startForm.team_id === team.id) ? 'bg-white/90 text-teal-700' : 'bg-slate-100 text-slate-600'"
+                                      :class="isHumanTeam(team) ? 'bg-white/90 text-teal-700' : 'bg-slate-100 text-slate-600'"
                                       title="Note d'équipe (niveau du onze, moral, endurance)">{{ teamNote(team) }}</span>
-                                <span v-if="isMultiMode && isHumanTeam(team)"
+                                <span v-if="isHumanTeam(team)"
                                       class="shrink-0 w-5 h-5 rounded-full bg-white/90 text-teal-700 text-2xs font-black flex items-center justify-center"
                                       :class="teamNote(team) == null ? 'ml-auto' : ''">
                                     {{ seatOf(team) }}
@@ -186,80 +186,70 @@
                                 </svg>
                             </div>
 
-                            <!-- Action — DRAFT : lancer directement (mono-équipe) -->
-                            <ButtonPrimary v-if="!isMultiMode" type="button" size="lg" class="w-full"
-                                           :disabled="!startForm.team_id || startForm.processing"
-                                           @click="startWithTeam">
+                            <!-- Action — hot-seat multi-manager (solo ou plusieurs managers) -->
+                            <!-- Solo : lancement direct, sans passer par la liste des managers -->
+                            <p v-if="!humanTeams.length" class="-mb-1 text-center text-xs font-semibold text-slate-600">
+                                {{ launchRecap }}
+                            </p>
+                            <ButtonPrimary v-if="!humanTeams.length" type="button" size="lg" class="w-full"
+                                           :disabled="startForm.processing"
+                                           @click="startSolo(selectedTeam)">
                                 <span v-if="startForm.processing">Chargement...</span>
-                                <span v-else>🎯 Drafter avec {{ selectedTeam.name }}</span>
+                                <span v-else>▶ Jouer avec {{ selectedTeam.name }}</span>
                             </ButtonPrimary>
+                            <button type="button"
+                                    class="w-full min-h-11 px-4 rounded-full font-bold text-sm transition-colors flex items-center justify-center gap-2"
+                                    :class="isHumanTeam(selectedTeam)
+                    ? 'bg-white text-rose-600 border border-rose-300 hover:bg-rose-50'
+                    : 'bg-[oklch(64.5%_0.246_16.439)] hover:bg-[oklch(58.6%_0.253_17.585)] text-white shadow-md'"
+                                    @click="toggleHumanTeam(selectedTeam)">
+                                <template v-if="isHumanTeam(selectedTeam)">
+                                    <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                                    <span class="truncate">Retirer le joueur {{ seatOf(selectedTeam) }}</span>
+                                </template>
+                                <template v-else>
+                                    <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                                    <span class="truncate">{{ humanTeams.length ? `Ajouter en joueur ${humanTeams.length + 1}` : 'Partie à plusieurs' }}</span>
+                                </template>
+                            </button>
+                            <p class="-mt-2 text-[11px] text-slate-500 text-center leading-snug">
+                                Chaque équipe pilotée est confiée à un manager humain ; les autres sont gérées par l'IA. Les joueurs jouent à tour de rôle sur cet écran.
+                            </p>
 
-                            <!-- Action — PREBUILT : hot-seat multi-manager -->
-                            <template v-else>
-                                <!-- Solo : lancement direct, sans passer par la liste des managers -->
-                                <p v-if="!humanTeams.length" class="-mb-1 text-center text-xs font-semibold text-slate-600">
+                            <!-- Récap hot-seat + lancement -->
+                            <div class="border border-slate-200 rounded-xl bg-white p-4 shadow-card">
+                                <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                                    Managers humains — {{ humanTeams.length }}
+                                </h4>
+
+                                <div v-if="humanTeams.length" class="space-y-1.5 mb-3">
+                                    <div v-for="(t, i) in humanTeams" :key="t.id"
+                                         class="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-slate-50 border border-slate-200">
+                                        <span class="w-5 h-5 rounded-full bg-teal-500 text-white text-2xs font-black flex items-center justify-center shrink-0">{{ i + 1 }}</span>
+                                        <div class="w-6 h-6 rounded-md overflow-hidden bg-white border border-slate-200 shrink-0 flex items-center justify-center">
+                                            <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" class="w-full h-full" alt=""/>
+                                            <span v-else class="text-[8px] text-slate-400">—</span>
+                                        </div>
+                                        <span class="flex-1 truncate text-xs font-semibold text-slate-700">{{ t.name }}</span>
+                                        <button type="button" @click="removeHumanTeam(t)"
+                                                class="shrink-0 text-slate-300 hover:text-rose-500 text-base leading-none">×</button>
+                                    </div>
+                                </div>
+                                <p v-else class="text-xs text-slate-500 italic mb-3">
+                                    Aucune équipe pilotée pour l'instant : choisis une équipe à gauche puis clique sur « Piloter ».
+                                </p>
+
+                                <p v-if="humanTeams.length" class="mb-2 text-center text-xs font-semibold text-slate-600">
                                     {{ launchRecap }}
                                 </p>
-                                <ButtonPrimary v-if="!humanTeams.length" type="button" size="lg" class="w-full"
-                                               :disabled="startForm.processing"
-                                               @click="startSolo(selectedTeam)">
+
+                                <ButtonPrimary type="button" size="lg" class="w-full"
+                                               :disabled="!humanTeams.length || startForm.processing"
+                                               @click="startWithTeam">
                                     <span v-if="startForm.processing">Chargement...</span>
-                                    <span v-else>▶ Jouer avec {{ selectedTeam.name }}</span>
+                                    <span v-else>{{ gameMode === 'draft' ? '🎯 Lancer le draft' : '▶ Lancer la partie' }} ({{ humanTeams.length }} joueur{{ humanTeams.length > 1 ? 's' : '' }})</span>
                                 </ButtonPrimary>
-                                <button type="button"
-                                        class="w-full min-h-11 px-4 rounded-full font-bold text-sm transition-colors flex items-center justify-center gap-2"
-                                        :class="isHumanTeam(selectedTeam)
-                        ? 'bg-white text-rose-600 border border-rose-300 hover:bg-rose-50'
-                        : 'bg-[oklch(64.5%_0.246_16.439)] hover:bg-[oklch(58.6%_0.253_17.585)] text-white shadow-md'"
-                                        @click="toggleHumanTeam(selectedTeam)">
-                                    <template v-if="isHumanTeam(selectedTeam)">
-                                        <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
-                                        <span class="truncate">Retirer le joueur {{ seatOf(selectedTeam) }}</span>
-                                    </template>
-                                    <template v-else>
-                                        <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-                                        <span class="truncate">{{ humanTeams.length ? `Ajouter en joueur ${humanTeams.length + 1}` : 'Partie à plusieurs' }}</span>
-                                    </template>
-                                </button>
-                                <p class="-mt-2 text-[11px] text-slate-500 text-center leading-snug">
-                                    Chaque équipe pilotée est confiée à un manager humain ; les autres sont gérées par l'IA. Les joueurs jouent à tour de rôle sur cet écran.
-                                </p>
-
-                                <!-- Récap hot-seat + lancement -->
-                                <div class="border border-slate-200 rounded-xl bg-white p-4 shadow-card">
-                                    <h4 class="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-                                        Managers humains — {{ humanTeams.length }}
-                                    </h4>
-
-                                    <div v-if="humanTeams.length" class="space-y-1.5 mb-3">
-                                        <div v-for="(t, i) in humanTeams" :key="t.id"
-                                             class="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-slate-50 border border-slate-200">
-                                            <span class="w-5 h-5 rounded-full bg-teal-500 text-white text-2xs font-black flex items-center justify-center shrink-0">{{ i + 1 }}</span>
-                                            <div class="w-6 h-6 rounded-md overflow-hidden bg-white border border-slate-200 shrink-0 flex items-center justify-center">
-                                                <TeamLogoImage loading="lazy" decoding="async" v-if="teamLogoUrl(t)" :src="teamLogoUrl(t)" class="w-full h-full" alt=""/>
-                                                <span v-else class="text-[8px] text-slate-400">—</span>
-                                            </div>
-                                            <span class="flex-1 truncate text-xs font-semibold text-slate-700">{{ t.name }}</span>
-                                            <button type="button" @click="removeHumanTeam(t)"
-                                                    class="shrink-0 text-slate-300 hover:text-rose-500 text-base leading-none">×</button>
-                                        </div>
-                                    </div>
-                                    <p v-else class="text-xs text-slate-500 italic mb-3">
-                                        Aucune équipe pilotée pour l'instant : choisis une équipe à gauche puis clique sur « Piloter ».
-                                    </p>
-
-                                    <p v-if="humanTeams.length" class="mb-2 text-center text-xs font-semibold text-slate-600">
-                                        {{ launchRecap }}
-                                    </p>
-
-                                    <ButtonPrimary type="button" size="lg" class="w-full"
-                                                   :disabled="!humanTeams.length || startForm.processing"
-                                                   @click="startWithTeam">
-                                        <span v-if="startForm.processing">Chargement...</span>
-                                        <span v-else>{{ gameMode === 'draft' ? '🎯 Lancer le draft' : '▶ Lancer la partie' }} ({{ humanTeams.length }} joueur{{ humanTeams.length > 1 ? 's' : '' }})</span>
-                                    </ButtonPrimary>
-                                </div>
-                            </template>
+                            </div>
                         </div>
 
                         <!-- Colonne droite : effectif (prebuilt) ou aperçu style (draft) -->
@@ -549,7 +539,6 @@ const filteredTeams = computed(() => {
 const startForm = useForm({
     label:     props.label || '',
     period:    props.period,
-    team_id:   null,
     team_ids:  [],
     game_mode: props.gameMode,
     competition_type: props.competitionType,
@@ -557,9 +546,7 @@ const startForm = useForm({
     period_package_id: props.periodPackage?.id ?? null,
 });
 
-// Hot-seat multi-manager : équipes humaines dans l'ordre des sièges.
-// Disponible dans les deux modes (prebuilt ET draft).
-const isMultiMode = computed(() => true);
+// Hot-seat multi-manager : équipes humaines dans l'ordre des sièges (prebuilt ET draft).
 const humanTeams  = ref([]);
 
 // Récapitulatif avant lancement (« Ligue · Solo · Effectifs pré-faits · Nankatsu »),
@@ -635,8 +622,6 @@ const philosophyDescription = (key) => ({
 
 function selectTeam(team) {
     selectedTeam.value = team;
-    // En draft, la sélection vaut directement choix de l'équipe (mono).
-    if (!isMultiMode.value) startForm.team_id = team.id;
 }
 
 // Solo : une seule équipe pilotée, lancement immédiat.
@@ -646,16 +631,7 @@ function startSolo(team) {
 }
 
 function startWithTeam() {
-    // Mode draft : une seule équipe.
-    if (!isMultiMode.value) {
-        if (!startForm.team_id) return;
-        startForm
-            .transform(d => ({ label: d.label, period: d.period, game_mode: d.game_mode, competition_type: d.competition_type, team_id: d.team_id, game_config: d.game_config, setup_token: props.setupToken }))
-            .post(route('game-saves.start'), { preserveScroll: true });
-        return;
-    }
-
-    // Mode prebuilt : 1 à N équipes humaines (hot-seat), dans l'ordre des sièges.
+    // 1 à N équipes humaines (hot-seat), dans l'ordre des sièges.
     // En mode package, t.id est le team_key (string) du package sélectionné.
     if (!humanTeams.value.length) return;
     startForm.team_ids = humanTeams.value.map(t => t.id);

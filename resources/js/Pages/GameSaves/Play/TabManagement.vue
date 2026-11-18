@@ -22,7 +22,7 @@ const emit = defineEmits(['open-player', 'select-club']);
 // Sélecteur d'équipe du statut du club ; le reste est transmis au panneau.
 const statusPanelProps = computed(() => {
     if (!props.clubStatus) return {};
-    const { teams, teamId, isMine, ...panel } = props.clubStatus;
+    const { teams: _teams, teamId: _teamId, isMine: _isMine, ...panel } = props.clubStatus;
     return panel;
 });
 

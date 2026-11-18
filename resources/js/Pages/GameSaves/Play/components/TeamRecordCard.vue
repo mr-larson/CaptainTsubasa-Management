@@ -2,7 +2,7 @@
 import Panel from '@/Components/Panel.vue';
 
 /** Carte "Bilan" : victoires / nuls / défaites. */
-const props = defineProps({
+defineProps({
     wins:   { type: Number, default: 0 },
     draws:  { type: Number, default: 0 },
     losses: { type: Number, default: 0 },

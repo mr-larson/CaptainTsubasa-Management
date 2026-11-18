@@ -2,7 +2,7 @@
 import { usePlayerUtils } from '../usePlayerUtils.js';
 
 /** Bandeau d'alerte blessure / suspension / malus du joueur sélectionné. */
-const props = defineProps({
+defineProps({
     player:            { type: Object,   required: true },
     isPlayerInjured:   { type: Function, default: () => false },
     isPlayerSuspended: { type: Function, default: () => false },

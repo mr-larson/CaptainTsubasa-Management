@@ -240,12 +240,7 @@ export function pickReceiverInCell(team, zoneIndex, laneIndex, fallbackNumber, e
     const { forwardOnly = false, forwardFromXInternal = null, ignoreLaneForInitialPick = false } = opts;
 
     const excludeId = excludeNumber ? getPlayerId(team, excludeNumber) : null;
-    // Exclure les joueurs indisponibles des receveurs
-    const unavailableExcludes = [];
-    _rootEl.querySelectorAll(`.player.${team === 'internal' ? 'internal' : 'external'}.unavailable`).forEach(el => {
-        if (el.dataset.player) unavailableExcludes.push(el.dataset.player);
-    });
-    const allExcludeIds = excludeId ? [excludeId, ...unavailableExcludes] : unavailableExcludes;
+    // Les joueurs indisponibles sont écartés par pickWeightedPlayerInZone lui-même.
 
     let receiverId = pickWeightedPlayerInZone(team, zoneIndex, laneIndex, {
         topK: 6, excludeIds: excludeId ? [excludeId] : [], ignoreLane: ignoreLaneForInitialPick,

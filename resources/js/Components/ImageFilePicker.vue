@@ -8,7 +8,7 @@ import { ref, watch, onBeforeUnmount } from 'vue';
 // l'aperçu local. L'URL de l'aperçu est émise (`preview`) pour les pages qui
 // l'affichent ailleurs (en-tête de fiche).
 const props = defineProps({
-    modelValue: { default: null }, // File | null
+    modelValue: { type: File, default: null }, // File | null
     currentUrl: { type: String, default: null },
     alt: { type: String, default: '' },
     emptyLabel: { type: String, default: 'Aucune' },
