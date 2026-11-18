@@ -89,10 +89,10 @@ const isSelected = (item) => !props.creating && props.selectedId === item.id;
 
         <!-- CARTE À ONGLETS -->
         <div class="flex-1 min-w-0 min-h-0 bg-white border border-slate-200 rounded-2xl flex flex-col shadow-card">
-            <div class="shrink-0 flex items-end justify-between flex-wrap gap-3 px-6 md:px-8 pt-4 pb-4 editor-tabs-header rounded-t-2xl">
-                <TabBar :model-value="activeTab" :tabs="tabs" @update:model-value="key => emit('update:activeTab', key)" />
+            <div class="shrink-0 grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto] items-end gap-x-4 gap-y-2 px-4 md:px-6 pt-3 bg-slate-200 rounded-t-2xl">
+                <TabBar size="sm" class="editor-tabs min-w-0 max-w-full" :model-value="activeTab" :tabs="tabs" @update:model-value="key => emit('update:activeTab', key)" />
 
-                <div class="flex items-center gap-2 pb-2">
+                <div class="row-start-1 sm:row-auto flex flex-wrap items-center justify-end gap-2 pb-2 sm:pb-3">
                     <Badge v-if="creating" tone="teal">
                         Nouveau
                     </Badge>
@@ -112,7 +112,13 @@ const isSelected = (item) => !props.creating && props.selectedId === item.id;
 </template>
 
 <style scoped>
-.editor-tabs-header {
-    background: linear-gradient(to bottom, #e2e8f0 0, #e2e8f0 calc(100% - 1rem), #fff calc(100% - 1rem), #fff 100%);
+/* Le bandeau partage le fond des onglets ; l'onglet actif rejoint directement
+   la surface blanche. Le défilement tactile reste disponible sur petit écran. */
+:deep(.editor-tabs) {
+    border-radius: 0;
+    scrollbar-width: none;
+}
+:deep(.editor-tabs::-webkit-scrollbar) {
+    display: none;
 }
 </style>
