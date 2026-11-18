@@ -5,6 +5,7 @@ import { router } from '@inertiajs/vue3';
 import { FORMATIONS, DEFAULT_FORMATION, FORMATION_LIST } from '@/Pages/Match/engine/formations.js';
 import { usePlayerUtils } from './usePlayerUtils.js';
 import { countMismatches, optimizeSlots } from './lineupMastery.js';
+import { LINEUP_PROPS } from './reloadScopes.js';
 import { buildLineupForm, slotOfPlayer, moveToSlot, swapSlots, slotToPlayerMap, pitchPosition, interactionKind } from './lineupSlots.js';
 
 export function useTeam({ gameSave, team }) {
@@ -128,13 +129,13 @@ export function useTeam({ gameSave, team }) {
         router.patch(
             route('game-saves.contracts.toggle-starter', { gameSave: gameSave.value.id, contract: contractId }),
             slot ? { slot } : {},
-            { preserveScroll: true, onError: rollback }
+            { preserveScroll: true, only: LINEUP_PROPS, onError: rollback }
         );
     };
 
     const toggleCaptain = (contractId) => {
         if (!contractId) return;
-        router.patch(route('game-saves.contracts.toggle-captain', { gameSave: gameSave.value.id, contract: contractId }), {}, { preserveScroll: true });
+        router.patch(route('game-saves.contracts.toggle-captain', { gameSave: gameSave.value.id, contract: contractId }), {}, { preserveScroll: true, only: LINEUP_PROPS });
     };
 
     // `onError` : l'appelant remet l'input sur l'ancien numéro si le serveur
@@ -146,7 +147,7 @@ export function useTeam({ gameSave, team }) {
                 player: playerId,
             }),
             { number: parseInt(number) },
-            { preserveScroll: true, onError: () => onError?.() }
+            { preserveScroll: true, only: LINEUP_PROPS, onError: () => onError?.() }
         );
     };
 
@@ -175,7 +176,7 @@ export function useTeam({ gameSave, team }) {
         router.post(
             route('game-saves.lineup.update', { gameSave: gameSave.value.id }),
             { team_id: team.value.id, slots: lineupForm.value },
-            { preserveScroll: true, onError: rollback }
+            { preserveScroll: true, only: LINEUP_PROPS, onError: rollback }
         );
     };
 
@@ -215,7 +216,7 @@ export function useTeam({ gameSave, team }) {
         router.post(
             route('game-saves.lineup.formation', { gameSave: gameSave.value.id }),
             { team_id: team.value.id, formation: formationKey },
-            { preserveScroll: true }
+            { preserveScroll: true, only: LINEUP_PROPS }
         );
     };
 
@@ -302,7 +303,7 @@ export function useTeam({ gameSave, team }) {
         router.post(
             route('game-saves.lineup.substitute', { gameSave: gameSave.value.id }),
             { team_id: team.value.id, starter_id: starterId, substitute_id: substituteId },
-            { preserveScroll: true, onError: rollback }
+            { preserveScroll: true, only: LINEUP_PROPS, onError: rollback }
         );
     };
 

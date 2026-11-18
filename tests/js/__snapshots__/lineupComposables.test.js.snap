@@ -94,6 +94,11 @@ exports[`useOtherTeam — composition d’un autre club > déplace le joueur sé
       },
       "method": "post",
       "onError": false,
+      "only": [
+        "gameSave",
+        "controlledTeam",
+        "teams",
+      ],
       "url": "game-saves.lineup.update{"gameSave":7}",
     },
   ],
@@ -157,6 +162,11 @@ exports[`useOtherTeam — composition d’un autre club > échange deux titulair
       },
       "method": "post",
       "onError": false,
+      "only": [
+        "gameSave",
+        "controlledTeam",
+        "teams",
+      ],
       "url": "game-saves.lineup.update{"gameSave":7}",
     },
     {
@@ -167,6 +177,11 @@ exports[`useOtherTeam — composition d’un autre club > échange deux titulair
       },
       "method": "post",
       "onError": false,
+      "only": [
+        "gameSave",
+        "controlledTeam",
+        "teams",
+      ],
       "url": "game-saves.lineup.substitute{"gameSave":7}",
     },
   ],
@@ -281,6 +296,11 @@ exports[`useTeam — composition de mon équipe > déplace le joueur sélectionn
       },
       "method": "post",
       "onError": true,
+      "only": [
+        "gameSave",
+        "controlledTeam",
+        "teams",
+      ],
       "url": "game-saves.lineup.update{"gameSave":7}",
     },
   ],
@@ -325,6 +345,11 @@ exports[`useTeam — composition de mon équipe > remplace un titulaire par un r
       },
       "method": "post",
       "onError": true,
+      "only": [
+        "gameSave",
+        "controlledTeam",
+        "teams",
+      ],
       "url": "game-saves.lineup.substitute{"gameSave":7}",
     },
     {
@@ -335,6 +360,11 @@ exports[`useTeam — composition de mon équipe > remplace un titulaire par un r
       },
       "method": "post",
       "onError": true,
+      "only": [
+        "gameSave",
+        "controlledTeam",
+        "teams",
+      ],
       "url": "game-saves.lineup.substitute{"gameSave":7}",
     },
   ],
@@ -396,6 +426,11 @@ exports[`useTeam — composition de mon équipe > échange deux titulaires par c
       },
       "method": "post",
       "onError": true,
+      "only": [
+        "gameSave",
+        "controlledTeam",
+        "teams",
+      ],
       "url": "game-saves.lineup.update{"gameSave":7}",
     },
   ],

@@ -5,8 +5,8 @@ import { ref } from 'vue';
 const calls = [];
 vi.mock('@inertiajs/vue3', () => ({
     router: {
-        patch: (url, data, opts) => calls.push({ method: 'patch', url, data, onError: !!opts?.onError }),
-        post: (url, data, opts) => calls.push({ method: 'post', url, data, onError: !!opts?.onError }),
+        patch: (url, data, opts) => calls.push({ method: 'patch', url, data, only: opts?.only, onError: !!opts?.onError }),
+        post: (url, data, opts) => calls.push({ method: 'post', url, data, only: opts?.only, onError: !!opts?.onError }),
     },
     usePage: () => ({ props: {} }),
 }));

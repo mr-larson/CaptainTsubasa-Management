@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Enums\TeamStyle;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Inertia\Middleware;
 use Tightenco\Ziggy\Ziggy;
 
@@ -41,11 +42,13 @@ class HandleInertiaRequests extends Middleware
             // Messages flash des contrôleurs (->with('success'|'info'|'message'|'error')),
             // affichés par le toast global d'AuthenticatedLayout. `status` reste
             // lu directement par les pages Breeze (profil, mot de passe).
-            'flash' => fn () => array_filter([
+            // `always` : inclus même dans une visite partielle (`only`), sinon le message d'une
+            // action qui ne recharge que quelques props serait perdu (il n'est lu qu'une fois).
+            'flash' => Inertia::always(fn () => array_filter([
                 'success' => $request->session()->get('success'),
                 'info'    => $request->session()->get('info') ?? $request->session()->get('message'),
                 'error'   => $request->session()->get('error'),
-            ]),
+            ])),
             'ziggy' => function () use ($request) {
                 return array_merge((new Ziggy)->toArray(), [
                     'location' => $request->url(),

@@ -76,72 +76,110 @@ class PlayPageBuilder
     // ──────────────────────────────────────────────────────────────
 
     /**
-     * Toutes les props de la page de jeu, prêtes pour Inertia.
+     * Toutes les props de la page de jeu, résolues. Équivalent de lazy() dont on a exécuté
+     * chaque fonction : pratique hors Inertia (tests, scripts).
      *
      * @return array<string, mixed>
      */
     public function build(GameSave $gameSave): array
     {
-        $week      = $gameSave->week ?? 1;
-        $gameTeams = $this->teams($gameSave, $week);
-        $gameSave->load('controlledGameTeam');
+        return array_map(
+            fn ($prop) => $prop instanceof \Closure ? $prop() : $prop,
+            $this->lazy($gameSave),
+        );
+    }
 
-        $controlledTeam    = $this->controlledTeam($gameSave, $gameTeams);
+    /**
+     * Les props de la page de jeu, chacune sous forme de fonction : Inertia n'exécute que celles
+     * qu'une visite partielle demande (`only`). Après une action de composition, la page ne
+     * recalcule ni les agents libres, ni le calendrier, ni les cartes.
+     *
+     * Les données lues par plusieurs props (équipes, effectif, moral, cartes…) sont calculées au
+     * plus une fois, et seulement si une prop demandée en a besoin.
+     *
+     * @return array<string, mixed>
+     */
+    public function lazy(GameSave $gameSave): array
+    {
+        $week = $gameSave->week ?? 1;
+
+        $memo = [];
+        $once = function (string $key, \Closure $make) use (&$memo) {
+            return array_key_exists($key, $memo) ? $memo[$key] : $memo[$key] = $make();
+        };
+
         $canRenewContracts = ! $gameSave->isWorldCup() && $gameSave->currentPhase() === GamePhase::Season;
-        if ($canRenewContracts && $controlledTeam) {
-            // Coût de prolongation affiché sur chaque joueur de l'équipe contrôlée.
-            foreach ($controlledTeam->contracts as $contract) {
-                $contract->gamePlayer?->append('renewal_cost');
-            }
-        }
 
-        $freePlayers  = $this->freePlayers($gameSave, $week);
-        $availability = $this->availability($gameSave, $week);
-        $morale       = $this->morale($gameSave, $controlledTeam);
-        $cards        = $this->bonusCards($gameSave, $gameSave->controlled_game_team_id);
-        $roster       = $this->rosterOf($gameTeams);
+        $gameTeams = fn () => $once('teams', fn () => $this->teams($gameSave, $week));
+
+        $controlledTeam = fn () => $once('controlledTeam', function () use ($gameSave, $gameTeams, $canRenewContracts) {
+            $team = $this->controlledTeam($gameSave, $gameTeams());
+            if ($canRenewContracts && $team) {
+                // Coût de prolongation affiché sur chaque joueur de l'équipe contrôlée.
+                foreach ($team->contracts as $contract) {
+                    $contract->gamePlayer?->append('renewal_cost');
+                }
+            }
+
+            return $team;
+        });
+
+        $freePlayers  = fn () => $once('freePlayers', fn () => $this->freePlayers($gameSave, $week));
+        $availability = fn () => $once('availability', fn () => $this->availability($gameSave, $week));
+        $morale       = fn () => $once('morale', fn () => $this->morale($gameSave, $controlledTeam()));
+        $cards        = fn () => $once('cards', fn () => $this->bonusCards($gameSave, $gameSave->controlled_game_team_id));
+        $roster       = fn () => $once('roster', fn () => $this->rosterOf($gameTeams()));
 
         return [
             'midseasonBreakRecovery'  => $gameSave->hasPendingMidseasonBreak() ? SeasonService::MIDSEASON_RECOVERY : null,
-            'contractSeasonEndWeek'   => $canRenewContracts ? SeasonService::lengthForTeamCount($gameTeams->count()) : null,
-            'gameSave'                => GameSaveResource::make($gameSave)->toArray(),
-            'managementStats'         => $this->managementStats($gameSave, $gameTeams, $freePlayers),
-            'duoLinks'                => $this->duoLinks($gameSave),
-            'playerChemistry'         => $this->chemistry->summary($gameSave, $roster['players'], $roster['teamByPlayer']),
-            'learnedDuos'             => $this->chemistry->confirmedPartners($gameSave, $roster['playerIds']),
-            'teams'                   => $gameTeams,
-            'matches'                 => $this->calendar($gameSave),
-            'freePlayers'             => $freePlayers,
-            'controlledTeam'          => $controlledTeam,
-            'hotSeat'                 => $this->hotSeat($gameSave, $gameTeams),
-            'playerSeasonStats'       => PlayerStatsService::cachedAggregateForSave($gameSave),
-            'activeInjuries'          => $availability['injuries'],
-            'activeSuspensions'       => $availability['suspensions'],
-            'activePositionTrainings' => $availability['positionTrainings'],
-            // Catalogue chargé à la demande (prop paresseuse d'Inertia).
+            'contractSeasonEndWeek'   => fn () => $canRenewContracts ? SeasonService::lengthForTeamCount($gameTeams()->count()) : null,
+            'gameSave'                => function () use ($gameSave) {
+                $gameSave->load('controlledGameTeam');
+
+                return GameSaveResource::make($gameSave)->toArray();
+            },
+            'managementStats'         => fn () => $this->managementStats($gameSave, $gameTeams(), $freePlayers()),
+            'duoLinks'                => fn () => $this->duoLinks($gameSave),
+            'playerChemistry'         => fn () => $this->chemistry->summary($gameSave, $roster()['players'], $roster()['teamByPlayer']),
+            'learnedDuos'             => fn () => $this->chemistry->confirmedPartners($gameSave, $roster()['playerIds']),
+            // L'équipe contrôlée est résolue d'abord : elle porte le coût de prolongation de ses joueurs.
+            'teams'                   => function () use ($gameTeams, $controlledTeam) {
+                $controlledTeam();
+
+                return $gameTeams();
+            },
+            'matches'                 => fn () => $this->calendar($gameSave),
+            'freePlayers'             => fn () => $freePlayers(),
+            'controlledTeam'          => fn () => $controlledTeam(),
+            'hotSeat'                 => fn () => $this->hotSeat($gameSave, $gameTeams()),
+            'playerSeasonStats'       => fn () => PlayerStatsService::cachedAggregateForSave($gameSave),
+            'activeInjuries'          => fn () => $availability()['injuries'],
+            'activeSuspensions'       => fn () => $availability()['suspensions'],
+            'activePositionTrainings' => fn () => $availability()['positionTrainings'],
+            // Catalogue chargé à la demande.
             'trainableSpecialMoves'   => fn () => TrainableSpecialMoves::catalog(),
             'specialTrainingCost'     => (int) $gameSave->getConfig('special_training_cost'),
-            'activeYellowCards'       => $availability['yellowCards'],
-            'moraleLogs'              => $morale['logs'],
-            'playerPromises'          => $morale['promises'],
-            'playerDeclarations'      => $morale['declarations'],
+            'activeYellowCards'       => fn () => $availability()['yellowCards'],
+            'moraleLogs'              => fn () => $morale()['logs'],
+            'playerPromises'          => fn () => $morale()['promises'],
+            'playerDeclarations'      => fn () => $morale()['declarations'],
             // Demandes des joueurs de l'équipe qui a la main, en attente de réponse.
-            'playerRequests'          => $this->playerRequests->pendingForTeam($gameSave, $controlledTeam?->id),
-            'bonusCardOffers'         => $cards['offers'],
-            'bonusCardInventory'      => $cards['inventory'],
-            'sponsorChallenges'       => $cards['sponsorChallenges'],
-            'sponsorResults'          => $cards['sponsorResults'],
-            'incomingMalus'           => $cards['incomingMalus'],
-            'activeShields'           => $cards['activeShields'],
-            'activeTraps'             => $cards['activeTraps'],
+            'playerRequests'          => fn () => $this->playerRequests->pendingForTeam($gameSave, $controlledTeam()?->id),
+            'bonusCardOffers'         => fn () => $cards()['offers'],
+            'bonusCardInventory'      => fn () => $cards()['inventory'],
+            'sponsorChallenges'       => fn () => $cards()['sponsorChallenges'],
+            'sponsorResults'          => fn () => $cards()['sponsorResults'],
+            'incomingMalus'           => fn () => $cards()['incomingMalus'],
+            'activeShields'           => fn () => $cards()['activeShields'],
+            'activeTraps'             => fn () => $cards()['activeTraps'],
             'gameConfig'              => $gameSave->getConfig(),
-            'aiTrainingInitial'       => $this->aiTrainingInitial($gameSave),
-            'tournament'              => $gameSave->isWorldCup()
+            'aiTrainingInitial'       => fn () => $this->aiTrainingInitial($gameSave),
+            'tournament'              => fn () => $gameSave->isWorldCup()
                 ? $this->tournament->presentation($gameSave)
                 : null,
-            'career'                  => $this->career->presentation($gameSave),
-            'seasonChallenges'        => $this->seasonChallenges->presentation($gameSave),
-            'incomeModel'             => WeekClosingService::humanIncomeModel($gameSave),
+            'career'                  => fn () => $this->career->presentation($gameSave),
+            'seasonChallenges'        => fn () => $this->seasonChallenges->presentation($gameSave),
+            'incomeModel'             => fn () => WeekClosingService::humanIncomeModel($gameSave),
         ];
     }
 

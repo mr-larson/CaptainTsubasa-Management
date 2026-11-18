@@ -115,7 +115,7 @@ class GameSaveController extends Controller
             $this->withSaveLock($gameSave, fn (GameSave $locked) => $page->refreshShop($locked));
         }
 
-        return Inertia::render('GameSaves/Play', $page->build($gameSave));
+        return Inertia::render('GameSaves/Play', $page->lazy($gameSave));
     }
 
     /**
