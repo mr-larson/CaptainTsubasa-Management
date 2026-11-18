@@ -217,7 +217,7 @@ class MatchScreenBuilder
             'id'                   => $team->id,
             'name'                 => $team->name,
             'description'          => $team->description,
-            'rank'                 => $ranks->get($team->id),
+            'rank'                 => $gameSave->isWorldCup() ? null : $ranks->get($team->id), // pas de classement de ligue en Coupe du Monde
             'logo_path'            => $team->logo_path,
             'formation'            => $team->formation ?? '3-2-3-2',
             'tacticalStyle'        => $team->tactical_style,

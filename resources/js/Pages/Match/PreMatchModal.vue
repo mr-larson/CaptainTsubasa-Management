@@ -89,12 +89,8 @@ const teams = computed(() => {
                                     </p>
                                     <h5 class="mt-0.5 text-base font-extrabold text-slate-800">{{ team.name }}</h5>
                                     <p class="mt-1 text-xs text-slate-600">
-                                        {{
-                                            team.rank
-                                                ? `${team.rank}${team.rank === 1 ? 'er' : 'e'} au classement`
-                                                : 'Classement indisponible'
-                                        }}
-                                        · Note du onze : <strong>{{ team.overall ?? '—' }}</strong>
+                                        <template v-if="team.rank">{{ team.rank }}{{ team.rank === 1 ? 'er' : 'e' }} au classement · </template>
+                                        Note du onze : <strong>{{ team.overall ?? '—' }}</strong>
                                     </p>
                                 </div>
                             </div>
