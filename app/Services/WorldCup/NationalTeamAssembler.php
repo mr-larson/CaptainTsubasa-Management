@@ -26,7 +26,13 @@ use Illuminate\Validation\ValidationException;
  */
 class NationalTeamAssembler
 {
-    /** Budget de départ de CHAQUE sélection : il finance entraînements, cartes bonus et demandes des joueurs (pas de transferts ni de salaires en Coupe du Monde). */
+    /**
+     * Budget de départ de CHAQUE sélection : il finance entraînements, cartes bonus et demandes des joueurs (pas
+     * de transferts ni de salaires en Coupe du Monde). Mesuré sur 4 tournois (8 et 16 équipes) : l'IA reçoit
+     * environ 2 500 de revenus et en dépense 2 400 à 2 700, soit presque tout ce qu'elle a (1 500 + revenus) ;
+     * un manager qui ne dépense rien finit vers 4 000-4 500. Départ et revenus étant identiques pour tous,
+     * l'écart ne vient que de l'usage du budget : pas de rééquilibrage nécessaire.
+     */
     public const START_BUDGET = 1500;
 
     public const SQUAD_SIZE = NationalSquadPicker::SQUAD_SIZE;

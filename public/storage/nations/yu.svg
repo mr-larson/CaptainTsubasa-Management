@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" width="900" height="600">
+  <title>Yougoslavie (RSF de Yougoslavie)</title>
+  <rect width="900" height="200" y="0" fill="#0c4076"/>
+  <rect width="900" height="200" y="200" fill="#ffffff"/>
+  <rect width="900" height="200" y="400" fill="#d52b1e"/>
+  <polygon points="450.0,205.0 472.3,269.3 540.4,270.6 486.1,311.7 505.8,376.9 450.0,338.0 394.2,376.9 413.9,311.7 359.6,270.6 427.7,269.3" fill="#d52b1e" stroke="#ffd100" stroke-width="12" stroke-linejoin="miter"/>
+</svg>
