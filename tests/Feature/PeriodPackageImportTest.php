@@ -23,6 +23,16 @@ class PeriodPackageImportTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Les migrations de légendes insèrent de vrais joueurs dans la base de test : on repart d'un vivier
+     * vide pour que les comptes de ce test ne dépendent que de ce qu'il crée lui-même.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        \Illuminate\Support\Facades\DB::table('players')->delete();
+    }
+
     private function makeZipUpload(array $entries): UploadedFile
     {
         $path = tempnam(sys_get_temp_dir(), 'ppkg').'.zip';

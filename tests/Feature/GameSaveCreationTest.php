@@ -17,6 +17,16 @@ class GameSaveCreationTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Les migrations de légendes insèrent de vrais joueurs dans la base de test : on repart d'un vivier
+     * vide pour que les comptes de ce test ne dépendent que de ce qu'il crée lui-même.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        \Illuminate\Support\Facades\DB::table('players')->delete();
+    }
+
     public function test_start_bulk_inserts_players_contracts_and_jersey_numbers(): void
     {
         $user = User::factory()->create();
