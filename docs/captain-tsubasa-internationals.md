@@ -2,10 +2,10 @@
 
 ## État au 18 novembre 2026
 
-40 personnages actifs, tous avec un portrait local. 33 seconds rôles sans
+47 personnages actifs, tous avec un portrait local. 28 seconds rôles sans
 portrait sont archivés sur demande de l'utilisateur, sans suppression physique
 ni modification des joueurs déjà copiés dans des parties. Le catalogue complet
-local compte désormais 722 joueurs actifs, dont 394 légendes internationales.
+local compte désormais 772 joueurs actifs, dont 437 légendes internationales.
 
 Les personnages connus sans image ont été conservés : Gino Hernandez,
 Salvatore Gentile et Ruud Klisman. Trois illustrations officielles Dream Team
@@ -44,7 +44,7 @@ au choix de resserrer le catalogue, pas à une affirmation qu'ils sont inventés
 | Argentine | 1 | Juan Babington |
 | Uruguay | 9 | Conzales, Amerigo, Pazu, Olivares, Filippo, Dionisi, Enrico, Pedro, Fengas |
 | Pays-Bas | 1 | Haan |
-| Mexique | 10 | Medina, Carvajal, Gomez, Espino, Rivera, Zaragoza, Garcia, Suarez, Alvez, Lopez |
+| Mexique | 5 | Medina, Carvajal, Gomez, Espino, Rivera |
 | Italie | 11 | Amoruso, Tacchinardi, Fresi, Galante, Pagotto, Totti, Branca, Delvecchio, Panucci, Lentini, Bianchi |
 
 ## Application et préservation des données
@@ -109,3 +109,28 @@ Zhongming isolent le visage et le haut du buste sans retoucher les originaux.
 Le module virtuel des crédits est désormais invalidé quand le registre change en
 mode développement : les nouveaux cadrages ne restent plus cachés par un index
 chargé avant leur ajout. Un déploiement nécessite la compilation et la migration.
+
+
+## Mexique : réintégration du noyau aztèque
+
+Zaragoza, Garcia, Suarez, Alvez et Lopez rejoignent Espadas dans le catalogue
+actif : trois milieux et deux attaquants. Ils font partie des cinq guerriers du
+Soleil aztèque présentés dans le manga World Youth et sur la page officielle
+[World Fighters](https://en.bandainamcoent.eu/captain-tsubasa/captain-tsubasa-2-world-fighters/characters).
+Le nom Alvez est conservé pour éviter un doublon avec son alias officiel Arbez.
+Medina, Carvajal, Gomez, Espino et Rivera restent archivés.
+
+Les cinq icônes officielles sont transparentes, conservées sans retouche et
+créditées dans le registre des illustrations. Le cadrage se fait à l'affichage.
+Les statistiques reprennent les profils de soutien archivés : ils restent sous
+les grands meneurs et buteurs du catalogue. Aucun nouveau pouvoir de combinaison
+n'est inventé pour le moteur de match.
+
+La migration `2026_11_18_210000_restore_mexico_aztec_warriors` réutilise les ids des
+profils archivés sans photo, ou ajoute les profils absents. Les portraits manuels,
+archives avec photo personnelle, statistiques éditées et copies des parties ne
+sont pas modifiés. Le seeder fournit les mêmes cinq personnages aux bases neuves.
+
+## Sénégal
+
+Ismail Senghor (meneur et capitaine) et Moussa Malick Diallo (attaquant rapide et puissant) sont ajoutés dans le fichier pays `Senegal.php`. Introduits dans Rise of New Champions et confirmés sur le [site officiel World Fighters](https://fr.bandainamcoent.eu/captain-tsubasa/captain-tsubasa-2-world-fighters/characters), ils disposent chacun d’une illustration officielle transparente Rise of New Champions. Aucun joueur secondaire de remplissage n’est ajouté.

@@ -17,6 +17,8 @@ namespace App\Enums;
  */
 class Nationality
 {
+    public const SENEGAL = 'Sénégal';
+    public const CAMEROUN = 'Cameroun';
     public const TRINITE_TOBAGO = 'Trinité-et-Tobago';
     public const DANEMARK = 'Danemark';
     public const PARAGUAY = 'Paraguay';
@@ -118,10 +120,14 @@ class Nationality
         self::FINLANDE,
         self::PAYS_GALLES,
         self::YOUGOSLAVIE,
+        self::SENEGAL,
+        self::CAMEROUN,
     ];
 
     /** Drapeau emoji par nationalité (affichage). */
     public const FLAGS = [
+        self::SENEGAL => '🇸🇳',
+        self::CAMEROUN => '🇨🇲',
         self::TRINITE_TOBAGO => '🇹🇹',
         self::DANEMARK => '🇩🇰',
         self::PARAGUAY => '🇵🇾',

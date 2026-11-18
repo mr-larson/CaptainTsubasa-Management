@@ -15,16 +15,18 @@ class CuratedTsubasaInternationalsTest extends TestCase
     use RefreshDatabase;
     use BuildsGameWorld;
 
-    public function test_fresh_catalogue_keeps_40_illustrated_characters_and_omits_archived_secondary_roles(): void
+    public function test_fresh_catalogue_keeps_47_illustrated_characters_and_omits_archived_secondary_roles(): void
     {
         $this->seed(PlayerSeeder::class);
         $players = Player::where('origin', PlayerOrigin::INTERNATIONAL)->get();
-        $this->assertCount(40, $players);
+        $this->assertCount(47, $players);
         foreach ($players as $player) {
             $this->assertNotNull($player->photo_path, $player->full_name);
             $this->assertFileExists(public_path('storage/'.$player->photo_path));
         }
         foreach (json_decode(file_get_contents(database_path('data/secondary-internationals-retirement-2026-11-18.json')), true) as $identity) {
+            // Les cinq guerriers aztèques sont réintégrés par la demande ultérieure.
+            if ($identity['nationality'] === 'Mexique' && in_array($identity['lastname'], ['Zaragoza', 'Garcia', 'Suarez', 'Alvez', 'Lopez'], true)) continue;
             $this->assertDatabaseMissing('players', $identity);
         }
         foreach (json_decode(file_get_contents(database_path('data/key-international-portraits-2026-11-18.json')), true) as $portrait) {
@@ -127,6 +129,38 @@ class CuratedTsubasaInternationalsTest extends TestCase
         unset($before['photo_path'], $after['photo_path'], $savedBefore['photo_path'], $savedAfter['photo_path']);
         $this->assertSame($before, $after);
         $this->assertSame($savedBefore, $savedAfter);
+    }
+
+    public function test_mexico_restoration_preserves_ids_edits_manual_archives_and_saved_players(): void
+    {
+        $identity = ['origin' => PlayerOrigin::INTERNATIONAL, 'nationality' => Nationality::MEXIQUE, 'firstname' => ''];
+        // Reconstituer la base avant cette migration, qui est aussi exécutée au démarrage du test.
+        Player::withTrashed()->where($identity)->whereIn('lastname', ['Zaragoza', 'Garcia', 'Suarez', 'Alvez', 'Lopez'])->forceDelete();
+        $archived = Player::factory()->create($identity + ['lastname' => 'Garcia', 'photo_path' => null, 'cost' => 999]);
+        $archived->delete();
+        $before = Player::withTrashed()->findOrFail($archived->id)->getAttributes();
+        $custom = Player::factory()->create($identity + ['lastname' => 'Suarez', 'photo_path' => 'players/personal.png']);
+        $manualArchive = Player::factory()->create($identity + ['lastname' => 'Lopez', 'photo_path' => 'players/manual.png']);
+        $manualArchive->delete();
+        $homonym = Player::factory()->create(['origin' => PlayerOrigin::LEGENDS, 'nationality' => Nationality::MEXIQUE, 'firstname' => '', 'lastname' => 'Garcia', 'photo_path' => null]);
+        $saved = $this->makePlayer($this->makeSave(), ['base_player_id' => $archived->id, 'photo_path' => null]);
+        $savedBefore = $saved->fresh()->getAttributes();
+
+        $migration = require database_path('migrations/2026_11_18_210000_restore_mexico_aztec_warriors.php');
+        $migration->up();
+        $migration->up();
+
+        $restored = Player::findOrFail($archived->id);
+        $this->assertSame('players/garcia-world-fighters.png', $restored->photo_path);
+        $after = $restored->getAttributes();
+        unset($before['deleted_at'], $before['updated_at'], $before['photo_path'], $after['deleted_at'], $after['updated_at'], $after['photo_path']);
+        $this->assertSame($before, $after);
+        $this->assertSame('players/personal.png', $custom->fresh()->photo_path);
+        $this->assertSoftDeleted('players', ['id' => $manualArchive->id]);
+        $this->assertNull($homonym->fresh()->photo_path);
+        $this->assertSame($savedBefore, $saved->fresh()->getAttributes());
+        $this->assertSame(5, Player::withTrashed()->where($identity)->count());
+        $this->assertDatabaseHas('players', $identity + ['lastname' => 'Alvez', 'photo_path' => 'players/alvez-world-fighters.png', 'deleted_at' => null]);
     }
 
 }

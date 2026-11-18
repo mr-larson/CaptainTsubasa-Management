@@ -38,6 +38,8 @@ const POSITION_LABELS = {
 
 // Drapeaux par nationalité (miroir de App\Enums\Nationality::FLAGS).
 const NATIONALITY_FLAGS = {
+    'Sénégal': '🇸🇳',
+    'Cameroun': '🇨🇲',
     "Trinité-et-Tobago": "🇹🇹",
     "Danemark": "🇩🇰",
     "Paraguay": "🇵🇾",

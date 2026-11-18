@@ -40,6 +40,7 @@ class Roster
         Countries\SouthKorea::class,
         Countries\SaudiArabia::class,
         Countries\Uzbekistan::class,
+        Countries\Senegal::class,
     ];
 
     /**
@@ -197,6 +198,8 @@ class Roster
     public static function nationalities(): array
     {
         return [
+            'ismail-senghor' => 'Sénégal',
+            'moussa-malick-diallo' => 'Sénégal',
             'zangiev' => 'Ouzbékistan',
             // Compléments World Youth asiatiques
             'junguang-xiao' => 'Chine',
@@ -244,6 +247,11 @@ class Roster
             'gert-keizer'          => 'Pays-Bas',
             // Mexique
             'ricardo-espadas'      => 'Mexique',
+            'zaragoza'            => 'Mexique',
+            'garcia'              => 'Mexique',
+            'suarez'              => 'Mexique',
+            'alvez'               => 'Mexique',
+            'lopez'               => 'Mexique',
             // Italie (la Squadra Azzurra puise aussi dans l'École des Champions)
             'gino-hernandez'       => 'Italie',
             'salvatore-gentile'    => 'Italie',

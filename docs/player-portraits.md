@@ -2,7 +2,7 @@
 
 ## État du catalogue au 18 novembre 2026
 
-Le catalogue local comprend 394 légendes actives : 393 ont un portrait,
+Le catalogue local comprend 437 légendes actives : 436 ont un portrait,
 dont 77 des 78 joueurs belges. Les 83 nouveaux profils ajoutés le 18 novembre
 sont tous illustrés. Regi Van Acker reste sans portrait : les résultats
 vérifiés le montrent entraîneur, pas joueur. Ce cas reste ouvert.
@@ -184,3 +184,75 @@ World Fighters de Bandai Namco. Les personnages, nationalités et statistiques
 restent identiques ; les deux images inversées de Hernandez et Gentile sur la
 page officielle ont été réattribuées après contrôle visuel. Les autres portraits
 et les anciens fichiers sont conservés.
+
+## Bulgarie : onze historique et Berbatov
+
+Onze profils ajoutés le 18 novembre complètent Stoichkov déjà illustré : Mihaylov,
+Shalamanov, Ivanov, Penev, Gaganelov, Stiliyan Petrov, Balakov, Bonev, Kostadinov,
+Asparuhov et Berbatov. La Bulgarie compte ainsi douze légendes, dont un gardien
+et quatre défenseurs. Les notes restent adaptées au catalogue : Asparuhov et
+Stoichkov portent l'attaque, Balakov la création, Ivanov la défense, Petrov
+l'endurance ; Berbatov privilégie la technique à la vitesse.
+
+Les portraits montrent exclusivement leur carrière de joueur :
+
+- Panini Mexico 1970 : Shalamanov, Gaganelov, Penev, Bonev et Asparuhov ;
+  [collection photographiée](https://www.catawiki.com/es/l/80150139-panini-world-cup-mexico-70-bulgaria-green-back-bisvalida-12-card).
+- Panini USA 1994 : Mihaylov, Ivanov, Balakov et Kostadinov ;
+  [pages d'album](https://soccerstickersfc.net/2026/01/panini-world-cup-1994-complete-album/).
+- Panini Euro 2004 : Stiliyan Petrov et Berbatov ;
+  [pages d'album](https://soccerstickersfc.net/2024/07/panini-euro-2004-complete-album/).
+
+Le portrait 1994 existant de Stoichkov reste conservé. Les fichiers sources des
+nouvelles images sont intacts, avec cadrage vectoriel et crédits dans le registre.
+Le relevé `legend-portrait-review.json` cité plus haut décrit l'audit antérieur à
+ce complément ; les onze sources bulgares sont dans le registre des illustrations.
+
+La migration `2026_11_18_220000_add_bulgarian_legends` ajoute uniquement les profils
+absents. Elle préserve les statistiques et photos éditées, les archives et les
+copies des parties existantes. Elle est appliquée en local ; déploiement des
+images, compilation et migration seront nécessaires en production.
+
+## Roumanie : onze historique
+
+Dix profils complètent Hagi, Selymes et Alin Stoica déjà présents : Duckadam,
+Petrescu, Popescu, Belodedici, Chivu, Bölöni, Munteanu, Lăcătuș, Mutu et Dobrin.
+La Roumanie compte treize légendes, toutes illustrées. Les trois portraits et
+profils antérieurs restent conservés.
+
+Les visuels montrent les joueurs durant leur carrière :
+
+- Dobrin : Panini Mexico 1970, [vignette de collection](https://www.catawiki.com/en/l/74836833-panini-mexico-70-world-cup-dobrin-romania-1-card).
+- Bölöni : Panini Euro 1984, [vignette 198](https://sportmemos.no/products/198-ladislau-boloni-romania).
+- Petrescu, Popescu, Belodedici, Munteanu et Lăcătuș :
+  [Panini USA 1994](https://soccerstickersfc.net/2026/01/panini-world-cup-1994-complete-album/).
+- Chivu et Mutu : [Panini Euro 2008](https://soccerstickersfc.net/2024/07/panini-euro-2008-complete-album/).
+- Duckadam : vignette de joueur du Steaua relayée par
+  [Old School Panini](https://x.com/OldSchoolPanini/status/1245267800748371968).
+  Son édition et son photographe ne sont pas identifiés ; aucune année de
+  publication ni attribution certaine à Panini n'est inventée.
+
+Les originaux sont conservés avec cadrage vectoriel et crédits. La migration
+`2026_11_18_230000_add_romanian_legends` ajoute uniquement les absents et préserve
+les profils édités, archives et copies des parties. Elle est appliquée en local ;
+les images, la compilation et cette migration restent à déployer en production.
+
+## Sénégal — onze historique et personnages Captain Tsubasa
+
+Onze légendes ajoutées dans `InternationalLegends/Countries/Senegal.php` : Édouard Mendy, Beye, Koulibaly, Roger Mendy, Ciss, Gueye, Papa Bouba Diop, Fadiga, Diouf, Bocandé et Mané. Statistiques adaptées à l’échelle du jeu, avec Mané en tête offensivement et Koulibaly comme référence défensive.
+
+Portraits : Panini Mondial 2002 (Diop, Fadiga, Diouf), Mondial 2022 (Édouard Mendy, Koulibaly, Ciss, Gueye, Mané), Monaco 1991 (Roger Mendy), Lens 1992 (Bocandé) et Marseille 2005–2006 (Beye). Les fichiers originaux sont conservés ; le cadrage du visage est défini dans les crédits. Sources et droits sont indiqués individuellement dans le registre des illustrations.
+
+Senghor et Diallo appartiennent à l’univers Captain Tsubasa — Internationaux, avec leurs illustrations officielles transparentes Rise of New Champions. Il s’agit de personnages issus des jeux vidéo, pas du manga World Youth.
+
+La migration `2026_11_18_240000_add_senegal_players_and_nation.php` ajoute les profils manquants et le Sénégal (drapeau et formation 4-2-1-3 (quatre défenseurs, trois milieux et trois attaquants)). Elle conserve les profils existants, les archives et les joueurs des parties déjà créées. Le seeder reprend les mêmes profils pour les nouvelles bases ; les nouvelles parties utilisent le catalogue mis à jour. En production, il faut déployer les fichiers images puis exécuter les migrations.
+
+## Cameroun — onze historique
+
+Les onze profils de `InternationalLegends/Countries/Cameroon.php` couvrent un gardien, quatre défenseurs, trois milieux et trois attaquants. Eto’o est la référence offensive, N’Kono la référence dans les buts ; les spécialités de Song, Kundé, Geremi, Womé, Foé, Mbappé Léppé, Abega, Milla et Mboma sont différenciées sur l’échelle actuelle du jeu.
+
+Dix portraits Panini de carrière : [Mondial 1982](https://soccerstickersfc.net/2026/01/panini-world-cup-1982-complete-album/) pour N’Kono, Kundé, Abega et Milla ; [Mondial 2002](https://soccerstickersfc.net/2024/07/panini-world-cup-2002-complete-album/) pour Geremi, Song, Womé, Foé, Eto’o et Mboma. Les cartes doubles de 1982 sont cadrées individuellement dans le registre des illustrations, sans modifier les fichiers originaux.
+
+Mbappé Léppé : [photo d’archive de carrière publiée par Football-the-story](https://www.football-the-story.com/samuel-mbappe-leppe), de faible définition et non datée. Aucune vignette Panini vérifiable n’a été trouvée ; le registre précise explicitement cette exception et le crédit DR, sans inventer une édition ni une licence libre.
+
+La migration `2026_11_19_000000_add_cameroon_players_and_nation.php` ajoute uniquement les profils manquants, ainsi que le Cameroun et son drapeau. Formation 4-2-1-3 (quatre défenseurs, trois milieux, trois attaquants). Profils personnalisés, archives et parties existantes sont conservés. Le seeder couvre les nouvelles bases ; la production doit recevoir les portraits et la migration.
