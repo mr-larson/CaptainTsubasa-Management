@@ -65,6 +65,7 @@ class WeekClosingService
     public const OUTCOME_PLAY       = 'play';
     public const OUTCOME_GAME_OVER  = 'game_over';
     public const OUTCOME_SEASON_END = 'season_end';
+    public const OUTCOME_TOURNAMENT_END = 'tournament_end';
 
     /** Revenu hebdomadaire de base d'une équipe (en GL), avec primes de victoire et de nul. */
     public const BASE_INCOME = 500;
@@ -147,6 +148,9 @@ class WeekClosingService
         if ($gameSave->isWorldCup()) {
             $this->tournamentService->advance($gameSave);
             $this->passHandToHumanWithMatch($gameSave);
+            if ($this->tournamentService->isTournamentOver($gameSave)) {
+                return self::OUTCOME_TOURNAMENT_END;
+            }
             $this->playerRequestService->generateForWeek($gameSave);
             $this->aiFormationTrainingService->planForWeek($gameSave);
             $this->aiCoachService->prepareForWeek($gameSave, $week);

@@ -242,7 +242,7 @@ class GameMatchController extends Controller
 
     /**
      * Choisit l'écran à afficher après une action qui fait avancer la semaine : partie
-     * terminée, fin de saison, ou simple retour à la page de jeu (constantes
+     * terminée, fin de saison, fin de tournoi, ou simple retour à la page de jeu (constantes
      * WeekClosingService::OUTCOME_*, renvoyées par WeekAdvanceService).
      */
     private function redirectAfterWeek(GameSave $gameSave, string $outcome): RedirectResponse
@@ -250,6 +250,7 @@ class GameMatchController extends Controller
         return match ($outcome) {
             WeekClosingService::OUTCOME_GAME_OVER  => redirect()->route('game-saves.game-over', $gameSave),
             WeekClosingService::OUTCOME_SEASON_END => redirect()->route('game-saves.season-end', $gameSave),
+            WeekClosingService::OUTCOME_TOURNAMENT_END => redirect()->route('game-saves.tournament-end', $gameSave),
             default                                => redirect()->route('game-saves.Play', $gameSave),
         };
     }

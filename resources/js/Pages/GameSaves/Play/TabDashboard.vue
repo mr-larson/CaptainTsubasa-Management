@@ -1,4 +1,6 @@
 <script setup>
+import NationFlag from '@/Components/NationFlag.vue';
+import { Link } from '@inertiajs/vue3';
 import TeamLogoImage from '@/Components/TeamLogoImage.vue';
 import SectionTitle from '@/Components/SectionTitle.vue';
 import Panel from '@/Components/Panel.vue';
@@ -74,6 +76,15 @@ const wcStanding = computed(() => {
 
 const wcChampion = computed(() => props.tournament?.champion ?? null);
 
+/** Rang d'une équipe dans sa poule (« 2e du groupe B »), ou null hors phase de poules / équipe inconnue. */
+function groupRankLabel(teamId) {
+    for (const group of props.tournament?.groups ?? []) {
+        const index = group.rows.findIndex(r => r.team_id === teamId);
+        if (index !== -1) return `${index + 1}${index === 0 ? 'er' : 'e'} du groupe ${group.key}`;
+    }
+    return null;
+}
+
 // Parcours de l'équipe contrôlée : champion, finaliste, éliminé (avec le tour), ou encore en lice.
 const wcOutcome = computed(() => {
     const t = props.tournament, id = props.team?.id;
@@ -128,7 +139,9 @@ const totalWeeks = computed(() => {
 });
 
 const seasonProgress = computed(() =>
-    Math.round(((props.week - 1) / Math.max(totalWeeks.value, 1)) * 100)
+    props.isWorldCup && props.tournament?.stage === 'done'
+        ? 100
+        : Math.min(100, Math.round(((props.week - 1) / Math.max(totalWeeks.value, 1)) * 100))
 );
 
 // ==========================
@@ -286,8 +299,12 @@ const { root: seasonProgressRoot, value: animatedSeasonProgress, width: seasonPr
             <span class="text-4xl">🏆</span>
             <div class="text-center">
                 <div class="text-[11px] font-bold text-amber-600 uppercase tracking-wider">Champion du Monde</div>
-                <div class="text-xl font-extrabold text-amber-800">{{ wcChampion.flag }} {{ wcChampion.name }}</div>
+                <div class="text-xl font-extrabold text-amber-800"><NationFlag :flag="wcChampion.flag" :url="wcChampion.flag_url" :name="wcChampion.name" /> {{ wcChampion.name }}</div>
             </div>
+            <Link :href="route('game-saves.tournament-end', gameSave.id)"
+                  class="ml-2 px-3 py-1.5 rounded-lg bg-amber-500 text-white text-xs font-bold hover:bg-amber-600">
+                Bilan du tournoi
+            </Link>
         </div>
 
         <!-- ============================================ -->
@@ -312,7 +329,7 @@ const { root: seasonProgressRoot, value: animatedSeasonProgress, width: seasonPr
                 </span>
                 <span v-else-if="wcStanding" class="text-2xs font-bold px-2 py-0.5 rounded-full"
                       :class="wcStanding.qualified ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-500'">
-                    {{ wcStanding.qualified ? 'Qualifié' : wcStanding.points + ' pts' }}
+                    {{ wcStanding.qualified ? (tournament?.stage === 'group' ? 'En zone de qualification' : 'Qualifié') : wcStanding.points + ' pts' }}
                 </span>
             </button>
 
@@ -414,7 +431,7 @@ const { root: seasonProgressRoot, value: animatedSeasonProgress, width: seasonPr
                             <span v-else class="text-2xl">🏟️</span>
                         </div>
                         <div class="text-sm font-bold text-slate-700 text-center">{{ team?.name ?? '—' }}</div>
-                        <div class="text-2xs text-slate-400">{{ clubStanding ? `${clubStanding.position}e au classement` : '' }}</div>
+                        <div class="text-2xs text-slate-400">{{ isWorldCup ? (groupRankLabel(team?.id) ?? '') : (clubStanding ? `${clubStanding.position}e au classement` : '') }}</div>
                         <div v-if="myForm.length" class="flex gap-1" aria-label="Forme récente">
                             <span v-for="(r, i) in myForm" :key="i" :title="r.title"
                                   class="w-5 h-5 rounded text-2xs font-black flex items-center justify-center" :class="FORM_STYLE[r.label]">{{ r.label }}</span>
@@ -456,9 +473,10 @@ const { root: seasonProgressRoot, value: animatedSeasonProgress, width: seasonPr
                         </div>
                         <div class="text-sm font-bold text-slate-700 text-center">{{ nextMatchInfo.opponentName }}</div>
                         <div class="text-2xs text-slate-400">
-                            {{ standings.findIndex(r => r.id === opponentTeam?.id) + 1 > 0
-                            ? `${standings.findIndex(r => r.id === opponentTeam?.id) + 1}e au classement`
-                            : '' }}
+                            {{ isWorldCup ? (groupRankLabel(opponentTeam?.id) ?? '')
+                            : (standings.findIndex(r => r.id === opponentTeam?.id) + 1 > 0
+                                ? `${standings.findIndex(r => r.id === opponentTeam?.id) + 1}e au classement`
+                                : '') }}
                         </div>
                         <div v-if="opponentForm.length" class="flex gap-1" aria-label="Forme récente de l'adversaire">
                             <span v-for="(r, i) in opponentForm" :key="i" :title="r.title"
@@ -466,6 +484,18 @@ const { root: seasonProgressRoot, value: animatedSeasonProgress, width: seasonPr
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Coupe du Monde terminée : plus de semaine à simuler -->
+            <div v-else-if="isWorldCup && tournament?.stage === 'done'" class="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <div class="text-sm font-semibold text-slate-600">Tournoi terminé</div>
+                    <div class="text-xs text-slate-400 mt-0.5">Plus aucun match à jouer : consulte le bilan du tournoi.</div>
+                </div>
+                <Link :href="route('game-saves.tournament-end', gameSave.id)"
+                      class="px-4 py-2 rounded-xl bg-amber-500 text-white text-sm font-bold hover:bg-amber-600 text-center">
+                    Bilan du tournoi
+                </Link>
             </div>
 
             <!-- Semaine sans match -->

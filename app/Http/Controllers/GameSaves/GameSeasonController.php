@@ -12,6 +12,7 @@ use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
 use App\Services\Season\CareerObjectiveService;
 use App\Services\Season\SeasonService;
+use App\Services\WorldCup\TournamentSummaryService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -69,6 +70,25 @@ class GameSeasonController extends Controller
             return redirect()->route('game-saves.draft', $gameSave)
                 ->with('success', "Saison {$gameSave->season} — la draft commence !");
         });
+    }
+
+    /**
+     * Écran de fin de tournoi (Coupe du Monde) : podium, parcours des managers, buteurs, chiffres clés.
+     * Redirige vers la page de jeu tant que le tournoi n'est pas terminé (ou hors Coupe du Monde).
+     */
+    public function tournamentEnd(GameSave $gameSave, TournamentSummaryService $summaries): Response|RedirectResponse
+    {
+        $this->authorizeGameSave('view', $gameSave);
+
+        $summary = $gameSave->isWorldCup() ? $summaries->summary($gameSave) : null;
+        if ($summary === null) {
+            return redirect()->route('game-saves.Play', $gameSave);
+        }
+
+        return Inertia::render('GameSaves/TournamentEnd', [
+            'gameSave' => GameSaveResource::make($gameSave)->toArray(),
+            'summary'  => $summary,
+        ]);
     }
 
     /**
