@@ -64,7 +64,6 @@
                 <!-- FICHE JOUEUR -->
                 <div v-show="activePanel === 'player'" class="bg-slate-50 rounded-xl p-4 sm:p-6 shadow-card">
                     <form @submit.prevent="submit">
-                        <PlayerStatsPreview v-if="form.id" :player-id="form.id" :stats="form.stats" />
 
                         <PlayerFormFields
                             :form="form"
@@ -158,7 +157,6 @@ import { ref, computed } from 'vue';
 import H2 from '@/Components/H2.vue';
 import EntityEditor from '@/Components/EntityEditor.vue';
 import EditorSubNav from '@/Components/EditorSubNav.vue';
-import PlayerStatsPreview from '@/Components/PlayerStatsPreview.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import InputSelect from '@/Components/InputSelect.vue';
 import InputText from '@/Components/InputText.vue';

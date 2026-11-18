@@ -8,7 +8,8 @@ import InputText from '@/Components/InputText.vue';
 import InputSelect from '@/Components/InputSelect.vue';
 import PlayerPhoto from '@/Components/PlayerPhoto.vue';
 import SecondaryPositionsPicker from '@/Components/SecondaryPositionsPicker.vue';
-import { PLAYER_STATS, PLAYER_POSITIONS } from '@/Enums/playerStats.js';
+import PlayerStatsPreview from '@/Components/PlayerStatsPreview.vue';
+import { PLAYER_POSITIONS } from '@/Enums/playerStats.js';
 
 // Champs communs des formulaires joueur (joueurs de base de la BDD et joueurs
 // d'une partie). Chaque page garde son useForm, sa route et ses champs propres
@@ -45,7 +46,6 @@ const selectedPhotoUrl = ref(null);
 const displayedPhoto = computed(() => selectedPhotoUrl.value || props.photoUrl);
 
 const stats = computed(() => (props.statsKey ? props.form[props.statsKey] : props.form));
-const statError = (key) => props.form.errors[props.statsKey ? `${props.statsKey}.${key}` : key];
 
 const containerClass = computed(() => (props.layout === 'grid'
     ? 'grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4'
@@ -55,14 +55,18 @@ const fullClass = computed(() => (props.layout === 'grid' ? 'sm:col-span-3' : 'l
 </script>
 
 <template>
+    <PlayerStatsPreview :stats="stats" :player-id="form.id" editable
+                        :errors="form.errors" :error-prefix="statsKey ? `${statsKey}.` : ''"
+                        @update:stat="(key, value) => stats[key] = value" />
+
     <!-- Infos générales -->
     <div :class="containerClass">
-        <FormField :layout="layout" label="Prénom" for="firstname" :error="form.errors.firstname">
-            <InputText id="firstname" v-model="form.firstname" class="mt-1 w-full" autocomplete="given-name" />
+        <FormField :layout="layout" label="Prénom" for="player-firstname" :error="form.errors.firstname">
+            <InputText id="player-firstname" v-model="form.firstname" class="mt-1 w-full" autocomplete="off" data-bwignore="true" />
         </FormField>
 
-        <FormField :layout="layout" label="Nom" for="lastname" :error="form.errors.lastname">
-            <InputText id="lastname" v-model="form.lastname" class="mt-1 w-full" autocomplete="family-name" />
+        <FormField :layout="layout" label="Nom" for="player-lastname" :error="form.errors.lastname">
+            <InputText id="player-lastname" v-model="form.lastname" class="mt-1 w-full" autocomplete="off" data-bwignore="true" />
         </FormField>
 
         <FormField v-if="showAge" :layout="layout" label="Âge" for="age" :error="form.errors.age">
@@ -154,17 +158,4 @@ const fullClass = computed(() => (props.layout === 'grid' ? 'sm:col-span-3' : 'l
         </FormField>
     </div>
 
-    <!-- Stats -->
-    <div :class="containerClass">
-        <FormField
-            v-for="stat in PLAYER_STATS"
-            :key="stat.key"
-            :layout="layout"
-            :label="stat.label"
-            :for="`stat-${stat.key}`"
-            :error="statError(stat.key)"
-        >
-            <InputText :id="`stat-${stat.key}`" type="number" v-model="stats[stat.key]" class="mt-1 w-full" />
-        </FormField>
-    </div>
 </template>
