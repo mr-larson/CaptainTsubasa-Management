@@ -22,7 +22,7 @@ use App\Services\Season\SeasonBootstrapService;
  *
  * Contrairement à la Ligue (NewGameBuilder), les équipes ne sont pas copiées d'une
  * table d'équipes : chaque sélection est MONTÉE à partir des joueurs de sa nationalité
- * par NationalTeamAssembler (complétée par des joueurs fictifs si besoin).
+ * par NationalTeamAssembler.
  */
 class NewWorldCupBuilder
 {
@@ -30,7 +30,6 @@ class NewWorldCupBuilder
     private const TOURNAMENT_NATIONS = 8;
 
     /** Effectif minimum pour aligner un onze : 11 joueurs dont au moins 1 gardien. */
-    private const MIN_PLAYERS = 11;
     private const MIN_GOALKEEPERS = 1;
 
     /** Noms des nations jouables, calculés une seule fois par instance. */
@@ -78,13 +77,18 @@ class NewWorldCupBuilder
                 'flag'        => Nationality::flag($name),
                 'total'       => $total,
                 'goalkeepers' => $gk,
-                'playable'    => $total >= self::MIN_PLAYERS && $gk >= self::MIN_GOALKEEPERS,
+                'playable'    => $total >= NationalTeamAssembler::MIN_PLAYERS && $gk >= self::MIN_GOALKEEPERS,
             ];
         }
 
         usort($nations, fn ($a, $b) => [$b['playable'], $b['total']] <=> [$a['playable'], $a['total']]);
 
         return $nations;
+    }
+
+    public function squadPreview(string $nation): ?array
+    {
+        return $this->assembler->preview($nation);
     }
 
     /** Vrai si la nation a assez de joueurs (dont un gardien) pour disputer le tournoi. */
@@ -140,7 +144,7 @@ class NewWorldCupBuilder
                 'state'            => $state,
             ]);
 
-            $this->assembler->assemble($gameSave, $nations, $controlled);  // équipes, joueurs, contrats
+            $this->assembler->assemble($gameSave, $nations, $controlled, $data['player_ids'] ?? null);
             $this->tournament->generateGroups($gameSave);                  // poules et calendrier
             $this->seasonBootstrap->prepare($gameSave);                    // première semaine
 

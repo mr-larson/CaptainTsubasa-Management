@@ -2,6 +2,8 @@
 
 namespace App\Services\Concerns;
 
+use App\Enums\PlayerPosition;
+
 /**
  * Logique partagée d'évaluation des joueurs (poste, overall) utilisée par
  * tous les services de sélection/recrutement IA (draft, rotation hebdo,
@@ -23,9 +25,9 @@ trait EvaluatesPlayers
     ];
 
     /** Ramène un poste (texte libre : GK, DEF, MDF/MOF, ATT...) à l'un des groupes GK, DEF, MID ou ATT. Milieu par défaut si le poste est inconnu. */
-    protected function positionGroup(string $position): string
+    protected function positionGroup(string|PlayerPosition $position): string
     {
-        $p = strtoupper(trim($position));
+        $p = strtoupper(trim($position instanceof PlayerPosition ? $position->value : $position));
         if (str_contains($p, 'GK') || str_contains($p, 'GOAL'))    return 'GK';
         if (str_contains($p, 'DEF') || str_contains($p, 'BACK'))   return 'DEF';
         if (str_contains($p, 'MDF') || str_contains($p, 'MID') || str_contains($p, 'MOF')) return 'MID';

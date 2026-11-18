@@ -3,6 +3,9 @@
 namespace App\Services\WorldCup;
 
 use App\Contracts\Randomizer;
+use App\Enums\Nationality;
+use App\Services\Ai\AiLineUpService;
+use Illuminate\Validation\ValidationException;
 use App\Models\GameSaves\GameContract;
 use App\Support\GameConfig;
 use App\Models\GameSaves\GamePlayer;
@@ -24,28 +27,68 @@ use App\Services\Players\MoraleService;
 class NationalTeamAssembler
 {
 
-    /** Injecte le générateur aléatoire (moral initial aléatoire des joueurs). */
-    public function __construct(private Randomizer $random)
+    public const SQUAD_SIZE = 18;
+    public const MIN_PLAYERS = 11;
+    public const MAX_PLAYERS = 20;
+
+    public function __construct(private Randomizer $random, private AiLineUpService $lineups)
     {
     }
-    public const SQUAD_SIZE = 18;
-    public const STARTERS   = 11;
-    public const FORMATION  = '3-2-3-2';
 
-    /**
-     * @param array<int, string> $nations          noms de nations (Nationality::ALL)
-     * @param string             $controlledNation  nation pilotée par le joueur
-     */
-    public function assemble(GameSave $gameSave, array $nations, string $controlledNation): void
+    public function preview(string $nation): ?array
     {
+        $players = Player::where('nationality', $nation)->orderBy('lastname')->orderBy('firstname')->orderBy('id')->get();
+        $squad = $this->automaticSquad($players);
+        if ($squad->count() < self::MIN_PLAYERS || !$squad->contains(fn (Player $player) => $this->positionGroup($player) === 'GK')) {
+            return null;
+        }
+        $lineup = $this->lineups->recommendInitialLineup($squad);
+
+        return [
+            'name' => $nation,
+            'flag' => Nationality::flag($nation),
+            'players' => $players->map(fn (Player $player) => [
+                'id' => $player->id,
+                'name' => $player->full_name,
+                'position' => $player->position->value,
+                'overall' => round($this->overall($player)),
+            ])->all(),
+            'selectedIds' => $squad->pluck('id')->all(),
+            'formation' => $lineup['formation'],
+            'description' => $this->describe($squad),
+            'minPlayers' => self::MIN_PLAYERS,
+            'maxPlayers' => self::MAX_PLAYERS,
+        ];
+    }
+
+    public function assemble(GameSave $gameSave, array $nations, string $controlledNation, ?array $playerIds = null): void
+    {
+        $state = $gameSave->gameState();
+
         foreach ($nations as $nation) {
-            $squad = $this->selectSquad($nation);
-            if ($squad->count() < self::STARTERS) {
-                continue; // sécurité : nation non alignable, ignorée
+            $isControlled = $nation === $controlledNation;
+            $query = Player::where('nationality', $nation)->orderBy('id');
+            if ($isControlled && $playerIds !== null) {
+                $squad = $query->whereKey($playerIds)->lockForUpdate()->get();
+                if ($squad->count() !== count($playerIds)
+                    || $squad->count() < self::MIN_PLAYERS
+                    || $squad->count() > self::MAX_PLAYERS
+                    || !$squad->contains(fn (Player $player) => $this->positionGroup($player) === 'GK')) {
+                    throw ValidationException::withMessages([
+                        'player_ids' => 'Convoque entre 11 et 20 joueurs disponibles de cette nation, dont au moins un gardien.',
+                    ]);
+                }
+            } else {
+                $squad = $this->automaticSquad($query->get());
+                if ($squad->count() < self::MIN_PLAYERS || !$squad->contains(fn (Player $player) => $this->positionGroup($player) === 'GK')) {
+                    if ($isControlled) {
+                        throw ValidationException::withMessages(['nation' => "Cette sélection n'a plus assez de joueurs pour concourir."]);
+                    }
+                    continue;
+                }
             }
 
-            $isControlled = $nation === $controlledNation;
-
+            $lineup = $this->lineups->recommendInitialLineup($squad);
             $gameTeam = GameTeam::create([
                 'game_save_id'          => $gameSave->id,
                 'base_team_id'          => null,
@@ -56,14 +99,16 @@ class NationalTeamAssembler
                 'losses'                => 0,
                 'goals_for'             => 0,
                 'goals_against'         => 0,
-                'formation'             => self::FORMATION,
+                'formation'             => $lineup['formation'],
+                'description'           => $this->describe($squad),
                 'tactical_style'        => 'balanced',
                 'management_philosophy' => 'collective',
                 'is_controlled'         => $isControlled,
                 'human_seat'            => $isControlled ? 1 : null,
             ]);
 
-            $this->snapshotSquad($gameSave, $gameTeam, $squad);
+            $slots = $this->snapshotSquad($gameSave, $gameTeam, $squad, $lineup['slots']);
+            $state->setLineup($gameTeam->id, ['formation' => $lineup['formation'], 'slots' => $slots]);
 
             if ($isControlled) {
                 $gameSave->controlled_game_team_id = $gameTeam->id;
@@ -73,74 +118,66 @@ class NationalTeamAssembler
         $gameSave->save();
     }
 
-    /**
-     * Sélectionne jusqu'à SQUAD_SIZE joueurs d'une nation, ORDONNÉS : le XI
-     * d'abord (1 gardien + 10 meilleurs joueurs de champ), puis les remplaçants
-     * (gardiens restants + reste des joueurs de champ par note décroissante).
-     *
-     * @return Collection<int, array{player: Player, starter: bool, captain: bool}>
-     */
-    private function selectSquad(string $nation): Collection
+    private function automaticSquad(Collection $players): Collection
     {
-        $entries = Player::where('nationality', $nation)->get()->map(fn(Player $p) => [
-            'player'  => $p,
-            'group'   => $this->positionGroup($p),
-            'overall' => $this->overall($p),
-        ]);
+        $ranked = $players->sortByDesc(fn (Player $player) => $this->overall($player));
+        $keepers = $ranked->filter(fn (Player $player) => $this->positionGroup($player) === 'GK');
+        $field = $ranked->diff($keepers);
 
-        $gks   = $entries->where('group', 'GK')->sortByDesc('overall')->values();
-        $field = $entries->where('group', '!=', 'GK')->sortByDesc('overall')->values();
-
-        // XI : 1 gardien (si présent) + meilleurs joueurs de champ.
-        $starters = collect();
-        if ($gks->isNotEmpty()) {
-            $starters->push($gks->first());
-        }
-        $fieldStarters = $field->take(self::STARTERS - $starters->count());
-        $starters      = $starters->concat($fieldStarters);
-
-        // Remplaçants : gardiens restants + joueurs de champ restants.
-        $subs = $gks->slice(1)->concat($field->slice($fieldStarters->count()));
-
-        $ordered = $starters->concat($subs)->take(self::SQUAD_SIZE)->values();
-
-        // Capitaine = meilleur joueur de champ titulaire (sinon, meilleur joueur).
-        $captainPlayerId = ($field->first()['player'] ?? $ordered->first()['player'])->id;
-
-        return $ordered->values()->map(fn($e, $i) => [
-            'player'  => $e['player'],
-            'starter' => $i < self::STARTERS,
-            'captain' => $e['player']->id === $captainPlayerId,
-        ]);
+        return $keepers->take(1)->concat($field->take(10))
+            ->concat($keepers->skip(1))->concat($field->skip(10))
+            ->take(self::SQUAD_SIZE)->values();
     }
 
-    /**
-     * @param Collection<int, array{player: Player, starter: bool, captain: bool}> $squad
-     */
-    private function snapshotSquad(GameSave $gameSave, GameTeam $team, Collection $squad): void
+    private function describe(Collection $squad): string
     {
-        $starterNumber = 1;
-        $subNumber     = 12;
+        $groups = $squad->countBy(fn (Player $player) => $this->positionGroup($player));
+        $roles = ['GK' => ['gardien', 'gardiens'], 'DEF' => ['défenseur', 'défenseurs'], 'MID' => ['milieu', 'milieux'], 'FW' => ['attaquant', 'attaquants']];
+        $breakdown = [];
+        foreach ($roles as $group => [$singular, $plural]) {
+            $count = $groups->get($group, 0);
+            $breakdown[] = $count.' '.($count > 1 ? $plural : $singular);
+        }
 
-        foreach ($squad as $entry) {
-            $isStarter = $entry['starter'];
-            $gamePlayer = $this->snapshotPlayer($gameSave, $entry['player']);
-            $gamePlayer->number = $isStarter ? $starterNumber++ : $subNumber++;
+        return "La sélection réunit ".implode(', ', array_slice($breakdown, 0, -1)).' et '.end($breakdown).'.';
+    }
+
+    /** Copie les joueurs et convertit les emplacements du onze en identifiants de la partie. */
+    private function snapshotSquad(GameSave $gameSave, GameTeam $team, Collection $squad, array $slots): array
+    {
+        $starterSlots = array_flip($slots);
+        $captainId = $squad->filter(fn (Player $player) => isset($starterSlots[$player->id]) && $this->positionGroup($player) !== 'GK')
+            ->sortByDesc(fn (Player $player) => $this->overall($player))->first()?->id ?? $slots[1];
+        $subNumber = self::MIN_PLAYERS + 1;
+        $savedSlots = [];
+
+        foreach ($squad as $player) {
+            $slot = $starterSlots[$player->id] ?? null;
+            $gamePlayer = $this->snapshotPlayer($gameSave, $player);
+            $gamePlayer->number = $slot ?? $subNumber++;
             $gamePlayer->save();
+
+            if ($slot !== null) {
+                $savedSlots[$slot] = $gamePlayer->id;
+            }
 
             GameContract::create([
                 'game_save_id'                    => $gameSave->id,
                 'game_team_id'                    => $team->id,
                 'game_player_id'                  => $gamePlayer->id,
-                'salary'                          => $entry['player']->cost ?? 0,
+                'salary'                          => $player->cost ?? 0,
                 'start_week'                      => 1,
                 'end_week'                        => null, // actif toute la durée du tournoi
-                'is_starter'                      => $isStarter,
-                'is_captain'                      => $entry['captain'],
+                'is_starter'                      => $slot !== null,
+                'is_captain'                      => $player->id === $captainId,
                 'captain_rerolls_remaining'       => 3,
                 'captain_reroll_used_this_action' => false,
             ]);
         }
+
+        ksort($savedSlots);
+
+        return $savedSlots;
     }
 
     /** Snapshot d'un joueur de base vers game_players (miroir de GameSaveController::start). */

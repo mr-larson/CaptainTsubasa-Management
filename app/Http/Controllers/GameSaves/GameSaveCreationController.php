@@ -54,6 +54,7 @@ class GameSaveCreationController extends Controller
     public function create(Request $request): Response
     {
         return Inertia::render('GameSaves/Create', [
+            'universeOptions' => \App\Support\UniverseOptions::forPlayers(),
             'periodPackages'    => $this->periodPackagesSummary($request->user()),
             'draftBudgets'      => GameConfig::DRAFT_BUDGETS,
             'aiDraftBudget'     => GameConfig::DEFAULTS['ai_draft_budget'],
@@ -137,6 +138,13 @@ class GameSaveCreationController extends Controller
                 'period'          => $data['period'],
                 'competitionType' => $competitionType,
                 'nations'         => $worldCup->playableNations(),
+                'squad'           => function () use ($request, $worldCup) {
+                    $nation = $request->query('nation');
+
+                    return is_string($nation) && $worldCup->isPlayable($nation)
+                        ? $worldCup->squadPreview($nation)
+                        : null;
+                },
                 'gameConfig'      => $gameConfig,
             ]);
         }

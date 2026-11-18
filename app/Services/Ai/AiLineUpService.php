@@ -175,30 +175,10 @@ class AiLineUpService
 
         $styleWeights = self::STYLE_ZONE_WEIGHTS[$team->tactical_style] ?? [];
         $starterPreference = $team->management_philosophy === TeamStyle::PHILOSOPHY_STARS ? 4 : 2;
-        $candidates = [];
-        foreach (array_unique(self::ZONE_POSITIONS) as $position) {
-            $pool = $position === 'GK' ? $keepers : $available->diff($keepers);
-            $candidates[$position] = $pool->map(function (GameContract $contract) use ($position, $starterPreference) {
-                $player = $contract->gamePlayer;
-                $fits = in_array($position, $this->playerPositionGroups($player), true);
-                $score = $this->readiness($player, $position) * ($fits ? 1 : 0.65);
-
-                return ['id' => (int) $player->id, 'fits' => $fits, 'score' => $score + ($contract->is_starter ? $starterPreference : 0)];
-            })->sortByDesc('score')->keyBy('id');
-        }
-
-        $baseline = $this->scoreFormation($formations[$current], $candidates, $styleWeights);
-        $bestFormation = $current;
-        $best = $baseline;
-        foreach ($formations as $formation => $zones) {
-            if ($formation === $current) continue;
-            $option = $this->scoreFormation($zones, $candidates, $styleWeights);
-            if ($option['misplaced'] < $best['misplaced']
-                || ($option['misplaced'] === $best['misplaced'] && $option['score'] > $best['score'])) {
-                $bestFormation = $formation;
-                $best = $option;
-            }
-        }
+        $players = $available->map(fn (GameContract $contract) => $contract->gamePlayer);
+        $starterIds = $available->where('is_starter', true)->pluck('game_player_id')->all();
+        $candidates = $this->formationCandidates($players, $starterIds, $starterPreference);
+        [$bestFormation, $best, $baseline] = $this->bestFormation($current, $candidates, $styleWeights);
 
         if ($best['misplaced'] === $baseline['misplaced'] && $best['score'] < $baseline['score'] + self::FORMATION_CHANGE_MARGIN) {
             $bestFormation = $current;
@@ -231,6 +211,54 @@ class AiLineUpService
         $state->setLineup($team->id, ['formation' => $bestFormation, 'slots' => $slots]);
 
         return true;
+    }
+
+    /** Composition initiale à partir des joueurs du catalogue. */
+    public function recommendInitialLineup(Collection $players): array
+    {
+        $candidates = $this->formationCandidates($players, [], 0);
+        [$formation, $best] = $this->bestFormation(FormationHelper::DEFAULT_FORMATION, $candidates, []);
+
+        return ['formation' => $formation, 'slots' => $best['slots']];
+    }
+
+    private function formationCandidates(Collection $players, array $starterIds, int $starterPreference): array
+    {
+        $keepers = $players->filter(fn ($player) => $this->positionGroup($player->position ?? '') === 'GK');
+        $field = $players->diff($keepers);
+        $candidates = [];
+
+        foreach (array_unique(self::ZONE_POSITIONS) as $position) {
+            $pool = $position === 'GK' ? $keepers : ($field->count() >= 10 ? $field : $players);
+            $candidates[$position] = $pool->map(function ($player) use ($position, $starterIds, $starterPreference) {
+                $outfieldKeeper = $position !== 'GK' && $this->positionGroup($player->position ?? '') === 'GK';
+                $fits = !$outfieldKeeper && in_array($position, $this->playerPositionGroups($player), true);
+                $score = $outfieldKeeper ? -1 : $this->readiness($player, $position) * ($fits ? 1 : 0.65);
+
+                return ['id' => (int) $player->id, 'fits' => $fits, 'score' => $score + (in_array($player->id, $starterIds, true) ? $starterPreference : 0)];
+            })->sortByDesc('score')->keyBy('id');
+        }
+
+        return $candidates;
+    }
+
+    private function bestFormation(string $current, array $candidates, array $styleWeights): array
+    {
+        $formations = FormationHelper::SLOT_ZONES;
+        $baseline = $this->scoreFormation($formations[$current], $candidates, $styleWeights);
+        $bestFormation = $current;
+        $best = $baseline;
+        foreach ($formations as $formation => $zones) {
+            if ($formation === $current) continue;
+            $option = $this->scoreFormation($zones, $candidates, $styleWeights);
+            if ($option['misplaced'] < $best['misplaced']
+                || ($option['misplaced'] === $best['misplaced'] && $option['score'] > $best['score'])) {
+                $bestFormation = $formation;
+                $best = $option;
+            }
+        }
+
+        return [$bestFormation, $best, $baseline];
     }
 
     /** Note un schéma tactique : place les joueurs dans les postes de chaque zone, en respectant leurs postes possibles quand c'est faisable. Retourne les postes attribués ('slots'), le score total et le nombre de joueurs mal placés ('misplaced'). */

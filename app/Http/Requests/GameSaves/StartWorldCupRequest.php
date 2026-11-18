@@ -5,6 +5,7 @@ namespace App\Http\Requests\GameSaves;
 use App\Enums\Nationality;
 use App\Http\Requests\GameSaves\Concerns\ChecksTrainingGains;
 use App\Models\GameSaves\GameSave;
+use App\Services\WorldCup\NationalTeamAssembler;
 use App\Support\GameConfig;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -28,8 +29,20 @@ class StartWorldCupRequest extends FormRequest
             'period'           => ['required', 'string', 'in:college'],
             'competition_type' => ['required', 'string', 'in:world_cup'],
             'nation'           => ['required', 'string', Rule::in(Nationality::ALL)],
+            'player_ids'       => ['required', 'array', 'list', 'min:'.NationalTeamAssembler::MIN_PLAYERS, 'max:'.NationalTeamAssembler::MAX_PLAYERS],
+            'player_ids.*'     => ['required', 'integer', 'distinct'],
             'game_config'      => ['nullable', 'array'],
             ...GameConfig::rules('game_config.'),
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'player_ids.required' => 'Convoque entre 11 et 20 joueurs.',
+            'player_ids.min' => 'Convoque au moins 11 joueurs.',
+            'player_ids.max' => 'Convoque au maximum 20 joueurs.',
+            'player_ids.*.distinct' => 'Chaque joueur doit être sélectionné une seule fois.',
         ];
     }
 
