@@ -9,3 +9,9 @@
  * erreurs de validation sont toujours renvoyés par le serveur.
  */
 export const LINEUP_PROPS = ['gameSave', 'controlledTeam', 'teams'];
+
+/**
+ * Achat d'une carte : débite le budget de l'équipe qui a la main (porté par `controlledTeam` et
+ * `teams`) et ajoute la carte à l'inventaire ; la boutique est rechargée pour marquer l'offre achetée.
+ */
+export const CARD_BUY_PROPS = ['controlledTeam', 'teams', 'bonusCardInventory', 'bonusCardOffers'];

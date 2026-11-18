@@ -1,6 +1,7 @@
 // resources/js/Pages/GameSaves/Play/useBonusCards.js
 import { computed } from 'vue';
 import { router } from '@inertiajs/vue3';
+import { CARD_BUY_PROPS } from './reloadScopes.js';
 
 export function useBonusCards({ gameSave, bonusCardOffers, bonusCardInventory }) {
 
@@ -35,7 +36,7 @@ export function useBonusCards({ gameSave, bonusCardOffers, bonusCardInventory })
                 bonus_card_id: offer.bonus_card_id,
                 tier:          offer.tier,
             },
-            { preserveScroll: true }
+            { preserveScroll: true, only: CARD_BUY_PROPS }
         );
     };
 

@@ -154,4 +154,36 @@ class PlayPartialReloadTest extends TestCase
         $this->assertArrayNotHasKey('matches', $props);
         $this->assertTrue((bool) $contract->fresh()->is_captain);
     }
+
+    public function test_buying_a_card_only_needs_the_budget_the_inventory_and_the_shop(): void
+    {
+        [$save, $mine, $user] = $this->world();
+        $mine->update(['budget' => 1000]);
+        $card = $this->makeBonusCard(['tier' => 'gold', 'cost' => 200]);
+        $save->update(['state' => ['shop' => [
+            'season' => $save->season, 'week' => $save->week,
+            'offers_by_team' => [$mine->id => [[
+                'bonus_card_id' => $card->id, 'name' => $card->name, 'tier' => 'gold', 'cost' => 200,
+            ]]],
+        ]]]);
+
+        $this->actingAs($user)->post(route('game-saves.bonus-cards.buy', $save), [
+            'bonus_card_id' => $card->id, 'tier' => 'gold',
+        ])->assertSessionHasNoErrors();
+
+        // Rechargement qui suit l'achat : seules les props de CARD_BUY_PROPS sont demandées.
+        $props = $this->actingAs($user)
+            ->withHeaders($this->inertia(['controlledTeam', 'teams', 'bonusCardInventory', 'bonusCardOffers']))
+            ->get(route('game-saves.Play', $save))
+            ->assertOk()
+            ->json('props');
+
+        $this->assertEqualsCanonicalizing(
+            ['controlledTeam', 'teams', 'bonusCardInventory', 'bonusCardOffers', 'errors', 'flash'],
+            array_keys($props)
+        );
+        $this->assertEquals(800, $props['controlledTeam']['budget']);
+        $this->assertEquals(800, collect($props['teams'])->firstWhere('id', $mine->id)['budget']);
+        $this->assertCount(1, $props['bonusCardInventory']);
+    }
 }
