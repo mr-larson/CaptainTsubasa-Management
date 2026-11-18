@@ -41,6 +41,9 @@ use App\Services\WorldCup\TournamentService;
  */
 class PlayPageBuilder
 {
+    /** Colonnes jamais lues par le front de jeu, retirées du JSON des équipes et agents libres. */
+    private const TIMESTAMPS = ['created_at', 'updated_at'];
+
     public function __construct(
         private BonusCardShopService $shop,
         private PlayerMoraleSummary $moraleSummary,
@@ -191,10 +194,21 @@ class PlayPageBuilder
     /** Équipes de la partie (ordre alphabétique) avec leurs contrats actifs cette semaine et leurs joueurs. */
     private function teams(GameSave $gameSave, int $week): Collection
     {
-        return GameTeam::with(['contracts' => fn ($q) => $q->activeAt($week)->with('gamePlayer')])
+        $teams = GameTeam::with(['contracts' => fn ($q) => $q->activeAt($week)->with('gamePlayer')])
             ->where('game_save_id', $gameSave->id)
             ->orderBy('name')
             ->get();
+
+        // Les horodatages ne servent pas à l'écran de jeu : on les retire de la page (≈ 60 octets × chaque ligne).
+        foreach ($teams as $team) {
+            $team->makeHidden(self::TIMESTAMPS);
+            foreach ($team->contracts as $contract) {
+                $contract->makeHidden(self::TIMESTAMPS);
+                $contract->gamePlayer?->makeHidden(self::TIMESTAMPS);
+            }
+        }
+
+        return $teams;
     }
 
     /**
@@ -235,7 +249,8 @@ class PlayPageBuilder
             ->visibleForConfig($gameSave)
             ->orderBy('lastname')
             ->orderBy('firstname')
-            ->get();
+            ->get()
+            ->each->makeHidden(self::TIMESTAMPS);
     }
 
     /** Compteurs de l'onglet « Gestion » : joueurs, équipes, contrats actifs, agents libres. */
