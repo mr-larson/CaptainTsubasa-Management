@@ -1,0 +1,79 @@
+[
+  {
+    "firstname": "Hermann",
+    "lastname": "Kaltz",
+    "nationality": "Allemagne",
+    "photo_path": "players/hermann-kaltz.webp",
+    "previous_path": "players/hermann-kaltz-world-fighters.png"
+  },
+  {
+    "firstname": "Manfred",
+    "lastname": "Margus",
+    "nationality": "Allemagne",
+    "photo_path": "players/manfred-margus.webp",
+    "previous_path": "players/manfred-margus-world-fighters.png"
+  },
+  {
+    "firstname": "Deuter",
+    "lastname": "Müller",
+    "nationality": "Allemagne",
+    "photo_path": "players/deuter-muller.webp",
+    "previous_path": "players/deuter-muller-world-fighters.png"
+  },
+  {
+    "firstname": "Franz",
+    "lastname": "Schester",
+    "nationality": "Allemagne",
+    "photo_path": "players/franz-schester.webp",
+    "previous_path": "players/franz-schester-world-fighters.png"
+  },
+  {
+    "firstname": "Karl-Heinz",
+    "lastname": "Schneider",
+    "nationality": "Allemagne",
+    "photo_path": "players/karl-heinz-schneider.webp",
+    "previous_path": "players/karl-heinz-schneider-world-fighters.png"
+  },
+  {
+    "firstname": "In-cheon",
+    "lastname": "Cha",
+    "nationality": "Corée du Sud",
+    "photo_path": "players/in-cheon-cha-world-youth.png",
+    "previous_path": "players/in-cheon-cha-world-fighters.png"
+  },
+  {
+    "firstname": "Yong-un",
+    "lastname": "Lee",
+    "nationality": "Corée du Sud",
+    "photo_path": "players/yong-un-lee-world-youth.png",
+    "previous_path": "players/yong-un-lee-world-fighters.png"
+  },
+  {
+    "firstname": "Louis",
+    "lastname": "Napoleon",
+    "nationality": "France",
+    "photo_path": "players/louis-napoleon.webp",
+    "previous_path": "players/louis-napoleon-world-fighters.png"
+  },
+  {
+    "firstname": "El Sid",
+    "lastname": "Pierre",
+    "nationality": "France",
+    "photo_path": "players/el-sid-pierre.webp",
+    "previous_path": "players/el-sid-pierre-world-fighters.png"
+  },
+  {
+    "firstname": "Salvatore",
+    "lastname": "Gentile",
+    "nationality": "Italie",
+    "photo_path": "players/salvatore-gentile-official.png",
+    "previous_path": "players/salvatore-gentile-world-fighters.png"
+  },
+  {
+    "firstname": "Gino",
+    "lastname": "Hernandez",
+    "nationality": "Italie",
+    "photo_path": "players/gino-hernandez-official.png",
+    "previous_path": "players/gino-hernandez-world-fighters.png"
+  }
+]

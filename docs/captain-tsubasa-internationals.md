@@ -88,3 +88,24 @@ sont pas modifiés. Le contrôle local confirme 24 changements de portrait et
 aucun autre changement des fiches de référence. Une activité de jeu a modifié
 les sauvegardes entre les relevés globaux ; le rejeu immédiat de la migration
 confirme son idempotence et la préservation des joueurs de parties et contrats.
+
+## Fonds transparents et cadrages du 18 novembre
+
+Onze icônes World Fighters ont un fond noir intégré au fichier fourni : les cinq
+Allemands, les deux Français, les deux Italiens et les deux Coréens. Le catalogue
+préfère de nouveau leurs visuels transparents déjà présents (Dream Team pour
+Gentile, Hernandez, Lee et Cha ; portraits historiques du projet pour les autres).
+Les fichiers Bandai et leurs crédits restent conservés. La provenance externe des
+portraits historiques n'étant pas documentée, aucune nouvelle attribution n'est
+inventée.
+
+La migration `2026_11_18_170000_use_transparent_international_portraits` remplace
+uniquement ces chemins connus dans le catalogue actif et ses copies en partie.
+Elle ne modifie pas les photos personnelles, statistiques ou contrats. Les bases
+neuves utilisent les mêmes choix via `PlayerPhotos`.
+
+Les cadrages de Taira Nakamura, Lucas Rondi, Fei Xiang, Ruud Klisman et Wang
+Zhongming isolent le visage et le haut du buste sans retoucher les originaux.
+Le module virtuel des crédits est désormais invalidé quand le registre change en
+mode développement : les nouveaux cadrages ne restent plus cachés par un index
+chargé avant leur ajout. Un déploiement nécessite la compilation et la migration.

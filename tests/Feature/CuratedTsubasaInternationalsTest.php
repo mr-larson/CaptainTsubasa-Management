@@ -104,4 +104,29 @@ class CuratedTsubasaInternationalsTest extends TestCase
         $this->assertSame($savedBefore, $saved->fresh()->getAttributes());
     }
 
+    public function test_transparent_refresh_updates_only_known_black_backgrounds_in_catalogue_and_saves(): void
+    {
+        $identity = ['firstname' => 'Yong-un', 'lastname' => 'Lee', 'origin' => PlayerOrigin::INTERNATIONAL, 'nationality' => Nationality::COREE_DU_SUD];
+        $old = 'players/yong-un-lee-world-fighters.png';
+        $new = 'players/yong-un-lee-world-youth.png';
+        $player = Player::factory()->create($identity + ['photo_path' => $old]);
+        $saved = $this->makePlayer($this->makeSave(), $identity + ['base_player_id' => $player->id, 'photo_path' => $old]);
+        $custom = Player::factory()->create($identity + ['photo_path' => 'players/personal.png']);
+        $before = $player->fresh()->getAttributes();
+        $savedBefore = $saved->fresh()->getAttributes();
+
+        $migration = require database_path('migrations/2026_11_18_170000_use_transparent_international_portraits.php');
+        $migration->up();
+        $migration->up();
+
+        $this->assertSame($new, $player->fresh()->photo_path);
+        $this->assertSame($new, $saved->fresh()->photo_path);
+        $this->assertSame('players/personal.png', $custom->fresh()->photo_path);
+        $after = $player->fresh()->getAttributes();
+        $savedAfter = $saved->fresh()->getAttributes();
+        unset($before['photo_path'], $after['photo_path'], $savedBefore['photo_path'], $savedAfter['photo_path']);
+        $this->assertSame($before, $after);
+        $this->assertSame($savedBefore, $savedAfter);
+    }
+
 }

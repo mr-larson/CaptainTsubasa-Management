@@ -21,6 +21,16 @@ export default function photoCredits() {
     return {
         name: 'photo-credits',
 
+        handleHotUpdate({ file, server }) {
+            if (file !== PHOTOS && file !== ILLUSTRATIONS) return;
+            for (const id of [INDEX, DETAIL]) {
+                const module = server.moduleGraph.getModuleById(`\0${id}`);
+                if (module) server.moduleGraph.invalidateModule(module);
+            }
+            server.ws.send({ type: 'full-reload' });
+            return [];
+        },
+
         resolveId(id) {
             if (id === INDEX || id === DETAIL) return `\0${id}`;
         },

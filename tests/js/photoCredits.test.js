@@ -40,6 +40,25 @@ describe('modules virtuels de crédits photo', () => {
         if (positioned) expect(index[positioned.slug].o).toBe(positioned.object_position);
     });
 
+    it('invalide les cadrages et les crédits en développement après une modification', () => {
+        const indexModule = { id: 'index' };
+        const detailModule = { id: 'detail' };
+        const invalidated = [];
+        const sent = [];
+        const server = {
+            moduleGraph: {
+                getModuleById: (id) => id.endsWith('photo-credits-index') ? indexModule : detailModule,
+                invalidateModule: (module) => invalidated.push(module),
+            },
+            ws: { send: (message) => sent.push(message) },
+        };
+        expect(plugin.handleHotUpdate({ file: '/unrelated.json', server })).toBeUndefined();
+        expect(invalidated).toHaveLength(0);
+        plugin.handleHotUpdate({ file: new URL('../../resources/data/player-illustration-credits.json', import.meta.url).pathname, server });
+        expect(invalidated).toEqual([indexModule, detailModule]);
+        expect(sent).toEqual([{ type: 'full-reload' }]);
+    });
+
     it("marque les photos sans i et les illustrations avec i, y compris sans dimensions", () => {
         for (const entry of photos) expect(index[entry.slug].i).toBeUndefined();
         for (const entry of illustrations) expect(index[entry.slug].i).toBe(1);
