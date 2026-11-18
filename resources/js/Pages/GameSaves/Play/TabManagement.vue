@@ -1,4 +1,5 @@
 <script setup>
+import SectionTitle from '@/Components/SectionTitle.vue';
 import GameBanknote from '@/Components/GameBanknote.vue';
 import UniverseSelector from '@/Components/UniverseSelector.vue';
 import ConfigSection from '@/Components/ConfigSection.vue';
@@ -168,15 +169,15 @@ function resetDefaults() {
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div class="border border-slate-200 rounded-xl bg-white p-3 flex flex-col items-center gap-1 shadow-card">
                         <span class="text-2xl font-black text-slate-700">{{ stats.playersCount ?? '—' }}</span>
-                        <span class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Joueurs</span>
+                        <SectionTitle as="span">Joueurs</SectionTitle>
                     </div>
                     <div class="border border-slate-200 rounded-xl bg-white p-3 flex flex-col items-center gap-1 shadow-card">
                         <span class="text-2xl font-black text-slate-700">{{ stats.teamsCount ?? '—' }}</span>
-                        <span class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Équipes</span>
+                        <SectionTitle as="span">Équipes</SectionTitle>
                     </div>
                     <div class="border border-slate-200 rounded-xl bg-white p-3 flex flex-col items-center gap-1 shadow-card">
                         <span class="text-2xl font-black text-slate-700">{{ stats.activeContractsCount ?? '—' }}</span>
-                        <span class="text-2xs font-bold text-slate-400 uppercase tracking-wider">Contrats actifs</span>
+                        <SectionTitle as="span">Contrats actifs</SectionTitle>
                     </div>
                     <button type="button"
                             class="border rounded-xl p-3 flex flex-col items-center gap-1 transition-all"
