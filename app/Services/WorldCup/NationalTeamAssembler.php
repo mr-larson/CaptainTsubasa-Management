@@ -4,7 +4,6 @@ namespace App\Services\WorldCup;
 
 use App\Contracts\Randomizer;
 use App\Enums\Nationality;
-use App\Services\Ai\AiLineUpService;
 use Illuminate\Validation\ValidationException;
 use App\Models\GameSaves\GameContract;
 use App\Support\GameConfig;
@@ -28,22 +27,23 @@ use App\Services\Players\MoraleService;
 class NationalTeamAssembler
 {
 
-    public const SQUAD_SIZE = 18;
-    public const MIN_PLAYERS = 11;
+    public const SQUAD_SIZE = NationalSquadPicker::SQUAD_SIZE;
+    public const MIN_PLAYERS = NationalSquadPicker::MIN_PLAYERS;
     public const MAX_PLAYERS = 20;
 
-    public function __construct(private Randomizer $random, private AiLineUpService $lineups)
+    public function __construct(private Randomizer $random, private NationalSquadPicker $picker)
     {
     }
 
     public function preview(string $nation): ?array
     {
         $players = Player::where('nationality', $nation)->orderBy('lastname')->orderBy('firstname')->orderBy('id')->get();
-        $squad = $this->automaticSquad($players);
-        if ($squad->count() < self::MIN_PLAYERS || !$squad->contains(fn (Player $player) => $this->positionGroup($player) === 'GK')) {
+        $catalog = Nation::where('name', $nation)->first();
+        $picked = $this->picker->pick($players, $catalog?->default_formation, $catalog?->tactical_style ?? 'balanced', $catalog?->management_philosophy ?? 'collective');
+        if ($picked === null) {
             return null;
         }
-        $lineup = $this->lineups->recommendInitialLineup($squad);
+        [$squad, $lineup] = $picked;
 
         return [
             'name' => $nation,
@@ -82,6 +82,7 @@ class NationalTeamAssembler
             $isHuman      = isset($seats[$nation]);
             $isControlled = $nation === $controlledNation;
             $query = Player::where('nationality', $nation)->orderBy('id');
+            $catalog = Nation::where('name', $nation)->first();
             if ($isControlled && $playerIds !== null) {
                 $squad = $query->whereKey($playerIds)->lockForUpdate()->get();
                 if ($squad->count() !== count($playerIds)
@@ -92,18 +93,18 @@ class NationalTeamAssembler
                         'player_ids' => 'Convoque entre 11 et 20 joueurs disponibles de cette nation, dont au moins un gardien.',
                     ]);
                 }
+                $lineup = $this->picker->lineupFor($squad, $catalog?->default_formation);
             } else {
-                $squad = $this->automaticSquad($query->get());
-                if ($squad->count() < self::MIN_PLAYERS || !$squad->contains(fn (Player $player) => $this->positionGroup($player) === 'GK')) {
+                $picked = $this->picker->pick($query->get(), $catalog?->default_formation, $catalog?->tactical_style ?? 'balanced', $catalog?->management_philosophy ?? 'collective');
+                if ($picked === null) {
                     if ($isHuman) {
                         throw ValidationException::withMessages(['nation' => "La sélection {$nation} n'a plus assez de joueurs pour concourir."]);
                     }
                     continue;
                 }
+                [$squad, $lineup] = $picked;
             }
 
-            $lineup = $this->lineups->recommendInitialLineup($squad);
-            $catalog = Nation::where('name', $nation)->first();
             $gameTeam = GameTeam::create([
                 'game_save_id'          => $gameSave->id,
                 'base_team_id'          => null,
@@ -133,17 +134,6 @@ class NationalTeamAssembler
         }
 
         $gameSave->save();
-    }
-
-    private function automaticSquad(Collection $players): Collection
-    {
-        $ranked = $players->sortByDesc(fn (Player $player) => $this->overall($player));
-        $keepers = $ranked->filter(fn (Player $player) => $this->positionGroup($player) === 'GK');
-        $field = $ranked->diff($keepers);
-
-        return $keepers->take(1)->concat($field->take(10))
-            ->concat($keepers->skip(1))->concat($field->skip(10))
-            ->take(self::SQUAD_SIZE)->values();
     }
 
     private function describe(Collection $squad): string
@@ -235,18 +225,10 @@ class NationalTeamAssembler
         ]);
     }
 
-    /** Note synthétique d'un joueur selon son poste, pour le tri de sélection. */
+    /** Note synthétique d'un joueur selon son poste (définie dans NationalSquadPicker). */
     private function overall(Player $player): float
     {
-        $s   = $player->stats ?? [];
-        $get = fn(string $k): float => (float) ($s[$k] ?? $player->{$k} ?? 0);
-
-        return match ($this->positionGroup($player)) {
-            'GK'    => ($get('hand_save') + $get('punch_save') + $get('defense')) / 3,
-            'DEF'   => ($get('defense') + $get('tackle') + $get('block') + $get('intercept')) / 4,
-            'MID'   => ($get('pass') + $get('dribble') + $get('attack') + $get('speed')) / 4,
-            default => ($get('shot') + $get('attack') + $get('dribble') + $get('speed')) / 4,
-        };
+        return $this->picker->overall($player);
     }
 
     /** Regroupe le poste du joueur en GK / DEF / MID / FW (MID par défaut). */

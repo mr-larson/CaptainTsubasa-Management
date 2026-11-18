@@ -27,7 +27,7 @@ class DraftAIService
     }
 
     // Composition cible par poste
-    private const TARGET_BY_POSITION = [
+    public const TARGET_BY_POSITION = [
         'GK'  => 2,
         'DEF' => 5,
         'MID' => 5,
@@ -35,7 +35,7 @@ class DraftAIService
     ];
 
     // Stats clés par style tactique (pour scorer les joueurs)
-    private const STYLE_STATS = [
+    public const STYLE_STATS = [
         TeamStyle::TACTICAL_OFFENSIVE  => ['shot', 'dribble', 'attack', 'speed'],
         TeamStyle::TACTICAL_DEFENSIVE  => ['defense', 'tackle', 'block', 'intercept'],
         TeamStyle::TACTICAL_POSSESSION => ['pass', 'dribble', 'intercept', 'stamina'],

@@ -222,6 +222,27 @@ class AiLineUpService
         return ['formation' => $formation, 'slots' => $best['slots']];
     }
 
+    /**
+     * Composition à partir des joueurs donnés pour un schéma IMPOSÉ (ex. schéma favori d'une
+     * sélection nationale). Retombe sur le meilleur schéma (recommendInitialLineup) si le schéma
+     * est inconnu ou si l'effectif ne permet pas d'aligner onze joueurs dans ce schéma.
+     *
+     * @return array{formation: string, slots: array<int, int>} slot (1..11) => id de joueur
+     */
+    public function recommendLineupForFormation(Collection $players, string $formation): array
+    {
+        if (! isset(FormationHelper::SLOT_ZONES[$formation])) {
+            return $this->recommendInitialLineup($players);
+        }
+
+        $candidates = $this->formationCandidates($players, [], 0);
+        $best = $this->scoreFormation(FormationHelper::SLOT_ZONES[$formation], $candidates, []);
+
+        return count($best['slots']) >= 11
+            ? ['formation' => $formation, 'slots' => $best['slots']]
+            : $this->recommendInitialLineup($players);
+    }
+
     private function formationCandidates(Collection $players, array $starterIds, int $starterPreference): array
     {
         $keepers = $players->filter(fn ($player) => $this->positionGroup($player->position ?? '') === 'GK');

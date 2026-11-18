@@ -258,4 +258,32 @@ class NewWorldCupBuilderTest extends TestCase
             $this->assertSame($team->name, $team->baseNation?->name);
         }
     }
+
+    public function test_every_nation_has_a_valid_style_and_philosophy_with_some_variety(): void
+    {
+        $nations = \App\Models\Nation::all();
+        foreach ($nations as $nation) {
+            $this->assertContains($nation->tactical_style, \App\Enums\TeamStyle::TACTICAL_STYLES, $nation->name);
+            $this->assertContains($nation->management_philosophy, \App\Enums\TeamStyle::PHILOSOPHIES, $nation->name);
+        }
+        $this->assertGreaterThanOrEqual(4, $nations->pluck('tactical_style')->unique()->count());
+        $this->assertGreaterThanOrEqual(3, $nations->pluck('management_philosophy')->unique()->count());
+    }
+
+    public function test_an_ai_squad_fills_the_formation_by_position_not_only_by_rating(): void
+    {
+        $nation = Nationality::ALL[0];
+        // Onze attaquants très bien notés, mais peu de défenseurs/milieux moyens : l'IA doit quand même aligner une défense.
+        foreach (range(1, 2) as $i) Player::factory()->create(['nationality' => $nation, 'position' => 'Goalkeeper']);
+        foreach (range(1, 10) as $i) Player::factory()->create(['nationality' => $nation, 'position' => 'Forward', 'stats' => ['shot' => 95, 'attack' => 95, 'dribble' => 95, 'speed' => 95]]);
+        foreach (range(1, 5) as $i) Player::factory()->create(['nationality' => $nation, 'position' => 'Defender', 'stats' => ['defense' => 50, 'tackle' => 50, 'block' => 50, 'intercept' => 50]]);
+        foreach (range(1, 5) as $i) Player::factory()->create(['nationality' => $nation, 'position' => 'Midfielder']);
+
+        [$squad, $lineup] = app(\App\Services\WorldCup\NationalSquadPicker::class)->pick(Player::where('nationality', $nation)->get(), null);
+
+        $this->assertCount(18, $squad);
+        $this->assertGreaterThanOrEqual(4, $squad->filter(fn ($p) => $p->position->value === 'Defender')->count());
+        $this->assertCount(11, $lineup['slots']);
+        $this->assertArrayHasKey($lineup['formation'], \App\Helpers\FormationHelper::SLOT_ZONES);
+    }
 }
