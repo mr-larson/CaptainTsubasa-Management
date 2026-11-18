@@ -5,6 +5,8 @@ import { POSITION_GROUPS, positionGroup } from '@/Enums/positionBadges.js';
 import { compareRecruits } from './recruitment.js';
 
 export const ORIGIN_OPTIONS = [
+    { key: 'captain_tsubasa_international', label: 'Captain Tsubasa — Internationaux' },
+    { key: 'world_legends', label: 'Légendes internationales' },
     { key: 'captain_tsubasa',     label: 'Captain Tsubasa' },
     { key: 'blue_lock',           label: 'Blue Lock' },
     { key: 'hungry_heart',        label: 'Hungry Heart' },

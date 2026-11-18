@@ -18,7 +18,7 @@
                 />
 
                 <PlayerEditorFilters class="ml-auto"
-                    :filters="filters" :origins="filterOrigins" :teams="teams"
+                    :filters="filters" :nationalities="filterNationalities" :origins="filterOrigins" :teams="teams"
                     :count="filteredPlayers.length" :total="players.length" @reset="resetFilters"
                 />
             </div>
@@ -28,7 +28,7 @@
                 :items="filteredPlayers"
                 :selected-id="editor.selectedId.value"
                 :creating="editor.creating.value"
-                :search-text="p => `${p.firstname ?? ''} ${p.lastname ?? ''}`"
+                :search-text="p => `${p.firstname ?? ''} ${p.lastname ?? ''} ${p.nationality ?? ''} ${origins[p.origin] ?? p.origin ?? ''}`"
                 search-placeholder="Rechercher un joueur"
                 empty-label="Aucun joueur trouvé."
                 add-title="Créer un joueur"
@@ -38,7 +38,12 @@
                 @create="editor.startCreating"
             >
                 <template #item="{ item }">
-                    <span class="flex-1 truncate text-sm font-medium">{{ item.firstname }} {{ item.lastname }}</span>
+                    <span class="flex-1 min-w-0 text-left">
+                        <span class="block truncate text-sm font-medium">{{ item.firstname }} {{ item.lastname }}</span>
+                        <span v-if="homonymNames.has(playerName(item))" class="block text-2xs text-slate-500">
+                            {{ origins[item.origin] ?? item.origin }} · {{ item.nationality || 'Nationalité non renseignée' }}
+                        </span>
+                    </span>
                     <span v-if="item.position"
                           :class="positionBadgeClass(item.position)"
                           class="text-2xs font-bold px-2 py-0.5 rounded-full shrink-0">
@@ -63,6 +68,7 @@
 
                         <PlayerFormFields
                             :form="form"
+                            :nationalities="nationalities" :origins="origins"
                             layout="grid"
                             stats-key="stats"
                             :positions="positions"
@@ -165,6 +171,8 @@ import { useEntityEditor, clone } from '@/Composables/useEntityEditor.js';
 
 const props = defineProps({
     players: { type: Array, required: true },
+    nationalities: { type: Array, default: () => [] },
+    origins: { type: Object, default: () => ({}) },
     teams: { type: Array, required: true },
     positions: { type: Array, required: true },
     positionLabels: { type: Object, required: true },
@@ -174,15 +182,27 @@ const props = defineProps({
     startCreate: { type: Boolean, default: false },
 });
 
-const { filters, origins: filterOrigins, filtered: filteredPlayers, reset: resetFilters } = usePlayerEditorFilters(
+const { filters, origins: filterOrigins, nationalities: filterNationalities, filtered: filteredPlayers, reset: resetFilters } = usePlayerEditorFilters(
     () => props.players, {},
 );
+
+const playerName = player => `${player.firstname ?? ''} ${player.lastname ?? ''}`.trim().toLocaleLowerCase();
+const homonymNames = computed(() => {
+    const counts = new Map();
+    for (const player of props.players) {
+        const name = playerName(player);
+        counts.set(name, (counts.get(name) ?? 0) + 1);
+    }
+    return new Set([...counts].filter(([, count]) => count > 1).map(([name]) => name));
+});
 
 const BLANK = {
     id: null,
     firstname: '',
     lastname: '',
     age: '',
+    nationality: '',
+    origin: '',
     position: '',
     secondary_positions: [],
     cost: '',
@@ -214,6 +234,8 @@ const editor = useEntityEditor({
             firstname: player.firstname ?? '',
             lastname: player.lastname ?? '',
             age: player.age ?? '',
+            nationality: player.nationality ?? '',
+            origin: player.origin ?? '',
             position: player.position ?? '',
             secondary_positions: clone(player.secondary_positions ?? []),
             cost: player.cost ?? '',

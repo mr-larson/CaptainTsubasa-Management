@@ -17,7 +17,7 @@
                 />
 
                 <PlayerEditorFilters class="ml-auto"
-                    :filters="filters" :origins="filterOrigins" :teams="teams"
+                    :filters="filters" :nationalities="filterNationalities" :origins="filterOrigins" :teams="teams"
                     :count="filteredPlayers.length" :total="players.length" @reset="resetFilters"
                 />
             </div>
@@ -62,6 +62,7 @@
 
                         <PlayerFormFields
                             :form="form"
+                            :nationalities="nationalities"
                             layout="grid"
                             :photo-url="photoPath ? `/storage/${photoPath}` : null"
                         />
@@ -169,6 +170,7 @@ import { useEntityEditor, clone } from '@/Composables/useEntityEditor.js'
 const props = defineProps({
     gameSave: Object,
     players: Array,
+    nationalities: { type: Array, default: () => [] },
     teams:   Array,
     // Joueur à sélectionner à l'ouverture (ex. juste après sa création).
     selectedId: { type: Number, default: null },
@@ -177,13 +179,13 @@ const props = defineProps({
 })
 
 // Valeurs d'une fiche vide.
-const { filters, origins: filterOrigins, filtered: filteredPlayers, reset: resetFilters } = usePlayerEditorFilters(
+const { filters, origins: filterOrigins, nationalities: filterNationalities, filtered: filteredPlayers, reset: resetFilters } = usePlayerEditorFilters(
     () => props.players, { gameSave: () => props.gameSave },
 );
 
 const BLANK = {
     id: null, firstname: '', lastname: '', position: '', secondary_positions: [],
-    cost: 0, description: '', photo: null, remove_photo: false,
+    nationality: '', cost: 0, description: '', photo: null, remove_photo: false,
     speed: 0, attack: 0, defense: 0, stamina: 0, shot: 0, pass: 0, dribble: 0,
     block: 0, intercept: 0, tackle: 0, heading: 0, hand_save: 0, punch_save: 0,
     special_moves: [],
@@ -210,6 +212,7 @@ const editor = useEntityEditor({
             firstname: player.firstname,
             lastname: player.lastname,
             position: player.position,
+            nationality: player.nationality ?? '',
             secondary_positions: clone(player.secondary_positions ?? []),
             cost: player.cost,
             description: player.description ?? '',

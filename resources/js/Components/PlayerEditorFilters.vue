@@ -6,6 +6,7 @@ import { PLAYER_STATS } from '@/Enums/playerStats.js';
 defineProps({
     filters: { type: Object, required: true },
     origins: { type: Array, required: true },
+    nationalities: { type: Array, default: () => [] },
     teams: { type: Array, required: true },
     count: { type: Number, required: true },
     total: { type: Number, required: true },
@@ -28,6 +29,14 @@ const field = fieldClass({ size: 'sm', border: 'border-slate-300' });
             <select v-model="filters.origin" class="block w-full" :class="field">
                 <option value="ALL">Tous les univers</option>
                 <option v-for="origin in origins" :key="origin.key" :value="origin.key">{{ origin.label }}</option>
+            </select>
+        </label>
+        <label class="text-xs text-slate-500">
+            <span class="sr-only">Nationalité</span>
+            <select v-model="filters.nationality" class="block w-full" :class="field">
+                <option value="ALL">Toutes les nationalités</option>
+                <option value="NONE">Non renseignée</option>
+                <option v-for="nation in nationalities" :key="nation" :value="nation">{{ nation }}</option>
             </select>
         </label>
         <label class="text-xs text-slate-500">

@@ -43,6 +43,8 @@ final class GameConfig
         'ai_training_enabled'       => true,
         'visible_origins'           => [
             'captain_tsubasa'     => true,
+            'captain_tsubasa_international' => true,
+            'world_legends' => false,
             'ecole_des_champions' => true,
             'hungry_heart'        => true,
             'blue_lock'           => true,
@@ -50,6 +52,7 @@ final class GameConfig
             'original'            => true,
         ],
         'internationals_visible'    => true,
+        'legends_countries'         => null, // null = tous les pays ; [] = aucun.
         'career_difficulty'         => 'standard',
         'season_challenges_enabled' => true,
         // Appliqué uniquement à la création du monde (sans effet en cours de partie)
@@ -175,6 +178,8 @@ final class GameConfig
             'visible_origins'         => ['array'],
             'visible_origins.*'       => ['boolean'],
             'internationals_visible'  => ['boolean'],
+            'legends_countries'       => ['nullable', 'array'],
+            'legends_countries.*'     => ['string', \Illuminate\Validation\Rule::in(\App\Enums\Nationality::ALL)],
             'career_difficulty'       => ['string', 'in:none,survival,standard,conquest'],
             'season_challenges_enabled' => ['boolean'],
             'initial_morale_random'   => ['boolean'],
@@ -212,6 +217,10 @@ final class GameConfig
                 $clean['visible_origins'],
                 array_keys(self::DEFAULTS['visible_origins']),
             );
+        }
+
+        if (isset($clean['legends_countries'])) {
+            $clean['legends_countries'] = array_values(array_unique(array_intersect((array) $clean['legends_countries'], \App\Enums\Nationality::ALL)));
         }
 
         return $clean;

@@ -25,6 +25,8 @@ const props = defineProps({
     positions: { type: Array, default: () => PLAYER_POSITIONS },
     positionLabels: { type: Object, default: () => ({}) },
     positionPlaceholder: { type: String, default: 'Choisir...' },
+    nationalities: { type: Array, default: () => [] },
+    origins: { type: Object, default: () => ({}) },
     showAge: { type: Boolean, default: false },
     costLabel: { type: String, default: 'Coût' },
     // Photo déjà enregistrée (URL), affichée tant qu'aucun fichier n'est choisi.
@@ -83,6 +85,19 @@ const fullClass = computed(() => (props.layout === 'grid' ? 'sm:col-span-3' : 'l
 
         <FormField :layout="layout" :label="costLabel" for="cost" :error="form.errors.cost">
             <InputText id="cost" type="number" v-model="form.cost" class="mt-1 w-full" />
+        </FormField>
+
+        <FormField v-if="nationalities.length" :layout="layout" label="Nationalité" for="nationality" :error="form.errors.nationality">
+            <InputSelect id="nationality" v-model="form.nationality" placeholder="" class="mt-1 w-full">
+                <option value="">Non renseignée</option>
+                <option v-for="nation in nationalities" :key="nation" :value="nation">{{ nation }}</option>
+            </InputSelect>
+        </FormField>
+        <FormField v-if="Object.keys(origins).length" :class="layout === 'grid' ? '' : fullClass" :layout="layout" label="Univers" for="origin" :error="form.errors.origin">
+            <InputSelect id="origin" v-model="form.origin" placeholder="" class="mt-1 w-full">
+                <option value="">Non renseigné</option>
+                <option v-for="(label, key) in origins" :key="key" :value="key">{{ label }}</option>
+            </InputSelect>
         </FormField>
 
         <div :class="layout === 'grid' ? 'sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 items-start' : 'contents'">

@@ -1,4 +1,5 @@
 <script setup>
+import UniverseSelector from '@/Components/UniverseSelector.vue';
 import ButtonSecondary from '@/Components/ButtonSecondary.vue';
 import ButtonPrimary from '@/Components/ButtonPrimary.vue';
 import { ref, reactive, computed, watch } from 'vue';
@@ -8,6 +9,7 @@ import ClubStatusPanel from './components/ClubStatusPanel.vue';
 import { fieldClass } from '@/Components/fieldStyles';
 
 const props = defineProps({
+    universeOptions: { type: Object, default: () => ({ counts: {}, countries: [] }) },
     gameSave: { type: Object, required: true },
     managementStats: { type: Object, default: () => ({}) },
     gameConfig: { type: Object, default: () => ({}) },
@@ -53,14 +55,7 @@ const activeSection = ref(props.initialSection ?? (props.clubStatus ? 'status' :
 
 watch(() => props.initialSection, (v) => { if (v) activeSection.value = v; });
 
-const originLabels = {
-    captain_tsubasa:     'Captain Tsubasa',
-    ecole_des_champions: 'École des Champions',
-    hungry_heart:        'Hungry Heart',
-    blue_lock:           'Blue Lock',
-    ao_ashi:             'Ao Ashi',
-    original:            'Joueurs générés',
-};
+
 
 const config = reactive({ ...props.gameConfig });
 
@@ -108,7 +103,7 @@ function resetDefaults() {
         ai_transfers_enabled: true,
         ai_training_enabled: true,
         visible_origins: {
-            captain_tsubasa: true,
+            captain_tsubasa: true, captain_tsubasa_international: true, world_legends: false,
             ecole_des_champions: false,
             hungry_heart: false,
             blue_lock: false,
@@ -116,6 +111,7 @@ function resetDefaults() {
             original: true,
         },
         internationals_visible: false,
+        legends_countries: null,
         other_teams_editable: false,
     };
     Object.assign(config, defaults);
@@ -427,28 +423,7 @@ function resetDefaults() {
                     </div>
                 </div>
 
-                <!-- Visibilité joueurs -->
-                <div class="border border-slate-200 rounded-lg bg-white p-4 flex flex-col gap-3">
-                    <h4 class="text-sm font-bold text-slate-700 flex items-center gap-1.5">
-                        <span class="text-base">👁</span> Visibilité des joueurs
-                    </h4>
-                    <p class="text-xs text-slate-500">Active ou désactive les groupes de joueurs par univers d'origine.</p>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                        <label v-for="(enabled, key) in config.visible_origins" :key="key"
-                               class="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
-                            <input type="checkbox" v-model="config.visible_origins[key]"
-                                   class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
-                            {{ originLabels[key] ?? key }}
-                        </label>
-                    </div>
-                    <div class="border-t border-slate-200 pt-3 mt-1">
-                        <label class="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
-                            <input type="checkbox" v-model="config.internationals_visible"
-                                   class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
-                            Joueurs internationaux visibles
-                        </label>
-                    </div>
-                </div>
+                <UniverseSelector :config="config" :options="universeOptions" in-game />
 
                 <!-- Accès aux autres clubs -->
                 <div class="border border-slate-200 rounded-lg bg-white p-4 flex flex-col gap-3">

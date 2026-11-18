@@ -27,6 +27,7 @@
 
                         <PlayerFormFields
                             :form="form"
+                            :nationalities="nationalities"
                             :photo-url="player.photo_path && !form.remove_photo ? `/storage/${player.photo_path}` : null"
                             :removable-photo="!!player.photo_path"
                         />
@@ -63,11 +64,13 @@ import ButtonGroup from "@/Components/ButtonGroup.vue";
 import ButtonPrimary from "@/Components/ButtonPrimary.vue";
 
 const props = defineProps({
+    nationalities: { type: Array, default: () => [] },
     gameSave: Object,
     player: Object,
 })
 
 const form = useForm({
+    nationality: props.player.nationality ?? '',
     firstname: props.player.firstname ?? '',
     lastname: props.player.lastname ?? '',
     position: props.player.position ?? '',

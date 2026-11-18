@@ -112,6 +112,6 @@ const isSelected = (item) => !props.creating && props.selectedId === item.id;
 
 <style scoped>
 .editor-tabs-header {
-    background: linear-gradient(to bottom, #f1f5f9 0, #f1f5f9 calc(100% - 1rem), #fff calc(100% - 1rem), #fff 100%);
+    background: linear-gradient(to bottom, #e2e8f0 0, #e2e8f0 calc(100% - 1rem), #fff calc(100% - 1rem), #fff 100%);
 }
 </style>

@@ -73,6 +73,7 @@ const props = defineProps({
     playerDeclarations: { type: Object, default: () => ({}) },
     hotSeat:            { type: Object, required: false, default: null },
     tournament:         { type: Object, required: false, default: null },
+    universeOptions:    { type: Object, default: () => ({ counts: {}, countries: [] }) },
     gameConfig:         { type: Object, default: () => ({}) },
     aiTrainingInitial:  { type: Object, default: null },
     career:             { type: Object, required: false, default: null },
@@ -948,6 +949,7 @@ const saveGame = () => {
                     <TabManagement v-else-if="activeTab === 'management'"
                                    :gameSave="gameSave"
                                    :managementStats="props.managementStats"
+                                   :universe-options="props.universeOptions"
                                    :gameConfig="props.gameConfig"
                                    :career="career"
                                    :initialSection="managementInitialSection"

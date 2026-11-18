@@ -1,4 +1,5 @@
 <script setup>
+import UniverseSelector from '@/Components/UniverseSelector.vue';
 import { fieldClass, TEXTAREA_CLASS } from '@/Components/fieldStyles';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ButtonPrimary from '@/Components/ButtonPrimary.vue';
@@ -9,6 +10,7 @@ import GameRules from '@/Components/GameRules.vue';
 import Modal from '@/Components/Modal.vue';
 
 const props = defineProps({
+    universeOptions: { type: Object, default: () => ({ counts: {}, countries: [] }) },
     aiDraftBudget: { type: Number, required: true },
     aiStartBudget: { type: Number, required: true },
     humanStartBudgets: { type: Object, required: true },
@@ -68,14 +70,7 @@ const showConfig = ref(false);
 const showRules = ref(false);
 const showConfigHint = ref(true);
 
-const originLabels = {
-    captain_tsubasa:     'Captain Tsubasa',
-    ecole_des_champions: 'École des Champions',
-    hungry_heart:        'Hungry Heart',
-    blue_lock:           'Blue Lock',
-    ao_ashi:             'Ao Ashi',
-    original:            'Joueurs générés',
-};
+
 
 const careerLevels = [
     { key: 'none',     icon: '∞',  label: 'Bac à sable',  desc: 'Aucun objectif. Les saisons s\'enchaînent à l\'infini. Budget 2500 billets, revenus pleins.' },
@@ -109,7 +104,7 @@ const config = reactive({
     human_start_budget: props.humanStartBudgets.standard, ai_start_budget: props.aiStartBudget,
     draft_budget: props.draftBudgets.standard, ai_draft_budget: props.aiDraftBudget,
     visible_origins: {
-        captain_tsubasa: true,
+        captain_tsubasa: true, captain_tsubasa_international: true, world_legends: false,
         ecole_des_champions: false,
         hungry_heart: false,
         blue_lock: false,
@@ -117,6 +112,7 @@ const config = reactive({
         original: true,
     },
     internationals_visible: false,
+    legends_countries: null,
 });
 
 const budgetFields = [
@@ -150,8 +146,9 @@ function resetDefaults() {
         initial_morale_random: true, initial_stamina_random: true, initial_speed_random: true, luck_random: true,
         human_start_budget: props.humanStartBudgets.standard, ai_start_budget: props.aiStartBudget,
         draft_budget: props.draftBudgets.standard, ai_draft_budget: props.aiDraftBudget,
-        visible_origins: { captain_tsubasa: true, ecole_des_champions: false, hungry_heart: false, blue_lock: false, ao_ashi: false, original: true },
+        visible_origins: { captain_tsubasa: true, captain_tsubasa_international: true, world_legends: false, ecole_des_champions: false, hungry_heart: false, blue_lock: false, ao_ashi: false, original: true },
         internationals_visible: false,
+        legends_countries: null,
     });
 }
 
@@ -646,27 +643,7 @@ function submit() {
                             </div>
                         </div>
 
-                        <!-- Visibilité -->
-                        <div class="border border-slate-200 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">
-                            <h4 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                                <span>👁</span> Visibilité des joueurs
-                            </h4>
-                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                                <label v-for="(enabled, key) in config.visible_origins" :key="key"
-                                       class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
-                                    <input type="checkbox" v-model="config.visible_origins[key]"
-                                           class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
-                                    {{ originLabels[key] ?? key }}
-                                </label>
-                            </div>
-                            <div class="border-t border-slate-200 pt-2 mt-1">
-                                <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
-                                    <input type="checkbox" v-model="config.internationals_visible"
-                                           class="rounded border-slate-300 text-teal-500 focus:ring-teal-400" />
-                                    Joueurs internationaux
-                                </label>
-                            </div>
-                        </div>
+                        <UniverseSelector :config="config" :options="universeOptions" />
 
                         <!-- IA -->
                         <div class="border border-slate-200 rounded-lg bg-slate-50 p-3 flex flex-col gap-2">

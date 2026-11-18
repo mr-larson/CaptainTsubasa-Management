@@ -5,12 +5,13 @@ import { ORIGIN_OPTIONS } from '@/Pages/GameSaves/Play/useRecruitFilters.js';
 import { compareRecruits, playerStat } from '@/Pages/GameSaves/Play/recruitment.js';
 
 export function usePlayerEditorFilters(players, { gameSave = null } = {}) {
-    const filters = reactive({ position: 'ALL', origin: 'ALL', team: 'ALL', sort: 'name', direction: 'desc' });
+    const filters = reactive({ position: 'ALL', origin: 'ALL', nationality: 'ALL', team: 'ALL', sort: 'name', direction: 'desc' });
     const origins = computed(() => {
         const keys = [...new Set(toValue(players).map(p => p.origin ?? 'unknown'))];
         return keys.map(key => ({ key, label: ORIGIN_OPTIONS.find(o => o.key === key)?.label
             ?? ({ unknown: 'Non renseigné', fictional: 'Fictifs' }[key] ?? key) }));
     });
+    const nationalities = computed(() => [...new Set(toValue(players).map(p => p.nationality).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'fr')));
     const currentContracts = player => (player.contracts ?? []).filter(contract => {
         const save = toValue(gameSave);
         if (!save) return contract.team_id != null;
@@ -26,6 +27,7 @@ export function usePlayerEditorFilters(players, { gameSave = null } = {}) {
     const filtered = computed(() => toValue(players).filter(player => {
         if (filters.position !== 'ALL' && positionGroup(player.position) !== filters.position) return false;
         if (filters.origin !== 'ALL' && (player.origin ?? 'unknown') !== filters.origin) return false;
+        if (filters.nationality !== 'ALL' && (player.nationality || 'NONE') !== filters.nationality) return false;
         if (filters.team === 'ALL') return true;
         const contracts = currentContracts(player);
         return filters.team === 'FREE' ? contracts.length === 0
@@ -37,6 +39,6 @@ export function usePlayerEditorFilters(players, { gameSave = null } = {}) {
         if (filters.sort === 'name') return result;
         return filters.direction === 'asc' ? -result : result;
     }));
-    const reset = () => Object.assign(filters, { position: 'ALL', origin: 'ALL', team: 'ALL', sort: 'name', direction: 'desc' });
-    return { filters, origins, filtered, reset };
+    const reset = () => Object.assign(filters, { position: 'ALL', origin: 'ALL', nationality: 'ALL', team: 'ALL', sort: 'name', direction: 'desc' });
+    return { filters, origins, nationalities, filtered, reset };
 }

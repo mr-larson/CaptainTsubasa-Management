@@ -172,6 +172,7 @@ class PlayPageBuilder
             'incomingMalus'           => fn () => $cards()['incomingMalus'],
             'activeShields'           => fn () => $cards()['activeShields'],
             'activeTraps'             => fn () => $cards()['activeTraps'],
+            'universeOptions'         => fn () => \App\Support\UniverseOptions::forPlayers(GamePlayer::where('game_save_id', $gameSave->id)),
             'gameConfig'              => $gameSave->getConfig(),
             'aiTrainingInitial'       => fn () => $this->aiTrainingInitial($gameSave),
             'tournament'              => fn () => $gameSave->isWorldCup()

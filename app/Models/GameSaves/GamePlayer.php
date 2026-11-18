@@ -122,14 +122,22 @@ class GamePlayer extends Model
 
         $hidden = array_keys(array_filter($origins, fn($v) => !$v));
         if (!empty($hidden)) {
-            $query->whereNotIn('origin', $hidden);
+            $query->where(fn ($q) => $q->whereNull('origin')->orWhereNotIn('origin', $hidden));
+        }
+
+        if (is_array($config['legends_countries'] ?? null)) {
+            $query->where(fn ($q) => $q->whereNull('origin')->orWhere('origin', '!=', 'world_legends')
+                ->orWhere(fn ($legends) => $legends->where('origin', 'world_legends')
+                    ->whereIn('nationality', $config['legends_countries'])));
         }
 
         if (empty($config['internationals_visible'])) {
             $query->where(function ($q) {
-                $q->where('origin', '!=', 'captain_tsubasa')
+                $q->where(fn ($origins) => $origins->whereNull('origin')
+                    ->orWhereNotIn('origin', ['captain_tsubasa_international', 'world_legends']))
+                  ->where(fn ($legacy) => $legacy->where('origin', '!=', 'captain_tsubasa')
                   ->orWhereNull('nationality')
-                  ->orWhere('nationality', \App\Enums\Nationality::JAPON);
+                  ->orWhere('nationality', \App\Enums\Nationality::JAPON));
             });
         }
     }
