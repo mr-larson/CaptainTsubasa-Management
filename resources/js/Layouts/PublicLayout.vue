@@ -33,6 +33,7 @@ import { Link } from '@inertiajs/vue3';
                 <Link :href="route('welcome')" class="hover:text-teal-300">Accueil</Link>
                 <Link :href="route('guide')" class="hover:text-teal-300">Comment jouer</Link>
                 <Link :href="route('privacy')" class="hover:text-teal-300">Confidentialité</Link>
+                <Link :href="route('photo-credits')" class="hover:text-teal-300">Crédits des photos</Link>
             </nav>
         </footer>
     </div>

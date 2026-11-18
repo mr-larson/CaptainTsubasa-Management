@@ -61,6 +61,9 @@ Route::get('/', function () {
 // Pages publiques d'information.
 Route::get('/comment-jouer', fn () => Inertia::render('Guide'))->name('guide');
 Route::get('/confidentialite', fn () => Inertia::render('Privacy'))->name('privacy');
+Route::get('/credits-photos', fn () => Inertia::render('PhotoCredits', [
+    'photos' => App\Support\PlayerPhotoCredits::all(),
+]))->name('photo-credits');
 
 // Référencement : URLs absolues construites depuis APP_URL (goldeneleven.be en prod).
 // Ne pas déposer de robots.txt / sitemap.xml statiques dans public/ : ils masqueraient ces routes.

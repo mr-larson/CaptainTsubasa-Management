@@ -396,6 +396,7 @@ const faq = [
             <nav class="flex flex-wrap gap-4" aria-label="Liens du projet">
                 <Link :href="route('guide')" class="hover:text-teal-300">Comment jouer</Link>
                 <Link :href="route('privacy')" class="hover:text-teal-300">Confidentialité</Link>
+                <Link :href="route('photo-credits')" class="hover:text-teal-300">Crédits des photos</Link>
                 <a href="https://gautd8.notion.site/Captain-Tsubasa-Management-28c47313c8ca4fb5b0e3652491118849"
                    target="_blank" rel="noopener" class="hover:text-teal-300">Documentation du projet</a>
                 <a href="https://github.com/mr-larson/CaptainTsubasa-Management" target="_blank" rel="noopener"
