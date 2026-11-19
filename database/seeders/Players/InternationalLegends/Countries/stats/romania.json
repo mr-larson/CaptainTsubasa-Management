@@ -1,0 +1,112 @@
+{
+  "nationality": "Roumanie",
+  "sources": "Palmarès : Wikipédia / FIFA. Deux joueurs ajoutés par migration (Dumitrescu, Răducioiu), sans portrait : à illustrer. Le pays n'a qu'un gardien (Duckadam) et aucun personnage Captain Tsubasa.",
+  "players": {
+    "Tibor Selymes": {
+      "stats": {
+        "speed": 73,
+        "cross": 25
+      },
+      "why": "Anderlecht, Mondial 1994 : latéral rapide, sérieux."
+    },
+    "Dan Petrescu": {
+      "stats": {
+        "speed": 75,
+        "stamina": 82,
+        "cross": 28,
+        "defense": 28
+      },
+      "why": "Chelsea (FA Cup 1997), 95 sélections : latéral droit infatigable, centres et montées."
+    },
+    "Gheorghe Popescu": {
+      "stats": {
+        "defense": 32,
+        "pass": 29,
+        "intercept": 30,
+        "shot": 24
+      },
+      "why": "Barcelone, Tottenham, capitaine de 1994 : défenseur relanceur."
+    },
+    "Miodrag Belodedici": {
+      "stats": {
+        "defense": 32,
+        "intercept": 31,
+        "pass": 28
+      },
+      "why": "Vainqueur de la Coupe d'Europe avec Steaua (1986) et l'Étoile rouge (1991) : libéro de lecture."
+    },
+    "Cristian Chivu": {
+      "stats": {
+        "defense": 31,
+        "intercept": 29,
+        "pass": 27,
+        "speed": 70
+      },
+      "why": "Triplé 2010 avec l'Inter : défenseur gaucher complet."
+    },
+    "Marius Lăcătuș": {
+      "stats": {
+        "speed": 76,
+        "stamina": 80,
+        "attack": 31,
+        "dribble": 27,
+        "shot": 25
+      },
+      "why": "Coupe d'Europe 1986 avec Steaua, Mondial 1994 : ailier endurant."
+    },
+    "Adrian Mutu": {
+      "stats": {
+        "attack": 33,
+        "shot": 28,
+        "dribble": 29,
+        "pass": 26
+      },
+      "why": "Fiorentina, Juventus, Chelsea : attaquant technique et vif."
+    },
+    "Nicolae Dobrin": {
+      "stats": {
+        "pass": 28,
+        "dribble": 29,
+        "attack": 31
+      },
+      "why": "Légende de Pitești dans les années 1960-70 : meneur technique."
+    },
+    "Helmuth Duckadam": {
+      "stats": {
+        "defense": 31,
+        "hand_save": 29,
+        "punch_save": 27
+      },
+      "why": "Héros de la Coupe d'Europe 1986 avec quatre penalties arrêtés en finale."
+    },
+    "Gheorghe Hagi": {
+      "stats": {
+        "pass": 31,
+        "dribble": 28,
+        "shot": 28,
+        "attack": 33,
+        "speed": 62,
+        "stamina": 68
+      },
+      "why": "Le Maradona des Carpates, Real Madrid, Barcelone, Galatasaray : pied gauche, vision et frappe."
+    },
+    "Ladislau Bölöni": {
+      "stats": {
+        "defense": 29,
+        "intercept": 28,
+        "stamina": 80,
+        "pass": 27
+      },
+      "why": "Coupe d'Europe 1986 avec Steaua : milieu de récupération."
+    },
+    "Dorinel Munteanu": {
+      "stats": {
+        "stamina": 83,
+        "pass": 28,
+        "shot": 24,
+        "speed": 69
+      },
+      "why": "Record de sélections du pays, Mondial 1994 : milieu endurant."
+    }
+  }
+}
