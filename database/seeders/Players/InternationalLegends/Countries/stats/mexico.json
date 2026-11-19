@@ -1,0 +1,70 @@
+{
+  "nationality": "Mexique",
+  "sources": "Palmarès : Wikipédia / FIFA. Sept joueurs ajoutés par migration (Hugo Sánchez, Chicharito, Campos, Suárez, Pardo, Lozano, Jiménez), sans portrait : à illustrer. Le pays n'avait que sept joueurs.",
+  "players": {
+    "Rafael Márquez": {
+      "stats": {
+        "defense": 32,
+        "pass": 28,
+        "intercept": 28,
+        "tackle": 26,
+        "speed": 62,
+        "heading": 27,
+        "attack": 24
+      },
+      "why": "Ligue des champions 2006 avec Barcelone, cinq Mondiaux : défenseur relanceur."
+    },
+    "Carlos Salcido": {
+      "stats": {
+        "speed": 68,
+        "stamina": 76,
+        "defense": 27
+      },
+      "why": "PSV, Fulham, Mondial 2006 : latéral gauche volontaire."
+    },
+    "Cuauhtémoc Blanco": {
+      "stats": {
+        "attack": 30,
+        "dribble": 27,
+        "shot": 25,
+        "pass": 25,
+        "speed": 64,
+        "stamina": 68
+      },
+      "why": "Mondiaux 1998, 2002 et 2010, inventeur du « Blanco bounce » : technicien, tireur de penalties."
+    },
+    "Luis Hernández": {
+      "stats": {
+        "attack": 31,
+        "shot": 28,
+        "speed": 70
+      },
+      "why": "Le Matador, quatre buts au Mondial 1998 : buteur de surface."
+    },
+    "Guillermo Ochoa": {
+      "stats": {
+        "defense": 32,
+        "hand_save": 28,
+        "punch_save": 28
+      },
+      "why": "Cinq Mondiaux, héros de 2014 et 2018 : réflexes et arrêts décisifs."
+    },
+    "Andrés Guardado": {
+      "stats": {
+        "pass": 28,
+        "stamina": 78,
+        "shot": 24,
+        "attack": 27
+      },
+      "why": "Capitaine, cinq Mondiaux, Valence et Betis : milieu polyvalent et durable."
+    },
+    "Gerardo Torrado": {
+      "stats": {
+        "tackle": 26,
+        "intercept": 26,
+        "stamina": 76
+      },
+      "why": "Milieu défensif, 150 sélections : récupérateur sobre."
+    }
+  }
+}
