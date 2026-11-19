@@ -17,10 +17,11 @@ class RomanianLegendsTest extends TestCase
     {
         $this->seed(PlayerSeeder::class);
         $players = Player::where('origin', 'world_legends')->where('nationality', 'Roumanie')->get();
-        $this->assertCount(13, $players);
+        // Treize profils d'origine avec portrait, plus Dumitrescu et Răducioiu (revue Roumanie, sans portrait).
+        $this->assertCount(15, $players);
         $this->assertCount(1, $players->where('position', 'Goalkeeper'));
         $this->assertCount(5, $players->where('position', 'Defender'));
-        foreach ($players as $player) {
+        foreach ($players->reject(fn ($p) => in_array($p->lastname, ['Dumitrescu', 'Răducioiu'], true)) as $player) {
             $this->assertNotNull($player->photo_path, $player->full_name);
             $this->assertFileExists(public_path('storage/'.$player->photo_path));
         }
@@ -53,7 +54,7 @@ class RomanianLegendsTest extends TestCase
         $this->assertSame($savedBefore, $saved->fresh()->getAttributes());
         $this->assertSame($otherBefore, $other->fresh()->getAttributes());
         $this->assertSoftDeleted('players', ['id' => $archive->id]);
-        $this->assertSame(10, Player::withTrashed()->where($identity)->whereNotIn('lastname', ['Hagi', 'Selymes', 'Stoica'])->count());
+        $this->assertSame(12, Player::withTrashed()->where($identity)->whereNotIn('lastname', ['Hagi', 'Selymes', 'Stoica'])->count());
         $this->assertDatabaseHas('players', $identity + ['firstname' => 'Adrian', 'lastname' => 'Mutu', 'photo_path' => 'players/adrian-mutu-2008.webp']);
     }
 }

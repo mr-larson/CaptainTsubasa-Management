@@ -1,0 +1,32 @@
+[
+    {
+        "firstname": "Ilie",
+        "lastname": "Dumitrescu",
+        "age": 13,
+        "position": "Forward",
+        "origin": "world_legends",
+        "nationality": "Roumanie",
+        "secondary_positions": "[]",
+        "cost": 44,
+        "stats": "{\"speed\":74,\"stamina\":72,\"attack\":31,\"defense\":18,\"shot\":25,\"pass\":24,\"dribble\":28,\"block\":14,\"intercept\":18,\"tackle\":16,\"hand_save\":10,\"punch_save\":10,\"heading\":22}",
+        "heading": 22,
+        "special_moves": null,
+        "description": "Légendes internationales — profil adapté au jeu. Milieu de couloir, rapide et habile dans les débordements. Poste : AD, poste secondaire : AT. Deux buts contre l’Argentine au Mondial 1994, Steaua Bucarest, Tottenham et West Ham ; ailier droit rapide et dribbleur.",
+        "photo_path": null
+    },
+    {
+        "firstname": "Florin",
+        "lastname": "Răducioiu",
+        "age": 13,
+        "position": "Forward",
+        "origin": "world_legends",
+        "nationality": "Roumanie",
+        "secondary_positions": "[]",
+        "cost": 42,
+        "stats": "{\"speed\":70,\"stamina\":70,\"attack\":31,\"defense\":17,\"shot\":27,\"pass\":20,\"dribble\":23,\"block\":14,\"intercept\":16,\"tackle\":16,\"hand_save\":10,\"punch_save\":10,\"heading\":22}",
+        "heading": 22,
+        "special_moves": null,
+        "description": "Légendes internationales — profil adapté au jeu. Attaquant de soutien, mobile et efficace dans la surface. Poste : BU. Milan, Espanyol, West Ham, buteur du Mondial 1994 ; finisseur vif dans la surface.",
+        "photo_path": null
+    }
+]
