@@ -100,9 +100,15 @@ class NewWorldCupBuilder
         return $nations;
     }
 
-    public function squadPreview(string $nation): ?array
+    public function squadPreview(string $nation, ?array $gameConfig = null, ?int $seed = null): ?array
     {
-        return $this->assembler->preview($nation);
+        return $this->assembler->preview($nation, $gameConfig, $seed);
+    }
+
+    /** Onze projeté pour une convocation (terrain de la page de convocation). */
+    public function lineupPreview(string $nation, array $playerIds, ?string $formation = null): ?array
+    {
+        return $this->assembler->lineupPreview($nation, $playerIds, $formation);
     }
 
     /** Nombre de nations jouables : borne haute de la taille de tournoi choisissable. */
@@ -151,7 +157,7 @@ class NewWorldCupBuilder
         $coHumans = array_values(array_unique(array_diff($data['co_nations'] ?? [], [$controlled])));
         $humans = array_merge([$controlled], $coHumans);
         $nations = array_merge($humans, $this->drawOpponents($humans, $size, $data['opponents'] ?? []));
-        $state = ! empty($data['game_config']) ? ['config' => $data['game_config']] : null;
+        $state = ['config' => $data['game_config'] ?? [], 'player_stats_seed' => $data['player_stats_seed'] ?? random_int(1, 2_000_000_000)];
 
         return DB::transaction(function () use ($user, $data, $nations, $controlled, $coHumans, $state) {
             $gameSave = GameSave::create([
@@ -167,7 +173,7 @@ class NewWorldCupBuilder
                 'state' => $state,
             ]);
 
-            $this->assembler->assemble($gameSave, $nations, $controlled, $data['player_ids'] ?? null, $coHumans, $data['co_player_ids'] ?? []);
+            $this->assembler->assemble($gameSave, $nations, $controlled, $data['player_ids'] ?? null, $coHumans, $data['co_player_ids'] ?? [], $data['formation'] ?? null, $data['co_formations'] ?? [], $data['lineup_slots'] ?? null, $data['co_lineup_slots'] ?? []);
             $this->tournament->generateGroups($gameSave);                  // poules et calendrier
             $this->seasonBootstrap->prepare($gameSave);                    // première semaine
 

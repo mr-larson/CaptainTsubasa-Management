@@ -14,9 +14,11 @@ use App\Models\Team;
 use App\Models\User;
 use App\Services\Season\CareerObjectiveService;
 use App\Services\Game\NewGameBuilder;
+use App\Services\WorldCup\NationalTeamAssembler;
 use App\Services\WorldCup\NewWorldCupBuilder;
 use App\Support\GameConfig;
 use Closure;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -131,6 +133,9 @@ class GameSaveCreationController extends Controller
         $gameConfig      = $data['game_config'] ?? null;
         $gameMode        = $data['game_mode'] ?? 'prebuilt';
 
+        $seed = $data['player_stats_seed'] ?? random_int(1, 2_000_000_000);
+        $request->session()->put('game_save_setup.player_stats_seed', $seed);
+
         // Coupe du Monde : on choisit une nation, pas un club.
         if ($competitionType === 'world_cup') {
             $nationsCount = in_array((int) $request->query('nations_count'), NewWorldCupBuilder::TOURNAMENT_SIZES, true)
@@ -153,12 +158,12 @@ class GameSaveCreationController extends Controller
                 'nationsCount'    => $nationsCount,
                 'maxHumans'       => NewWorldCupBuilder::maxHumans($nationsCount),
                 // Convocation de chaque co-manager (aperçu de son effectif), dans l'ordre des sièges.
-                'coSquads'        => $request->query('nation') ? array_map(fn ($n) => $worldCup->squadPreview($n), $coNations) : [],
-                'squad'           => function () use ($request, $worldCup) {
+                'coSquads'        => $request->query('nation') ? array_map(fn ($n) => $worldCup->squadPreview($n, $gameConfig, $seed), $coNations) : [],
+                'squad'           => function () use ($request, $worldCup, $gameConfig, $seed) {
                     $nation = $request->query('nation');
 
                     return is_string($nation) && $worldCup->isPlayable($nation)
-                        ? $worldCup->squadPreview($nation)
+                        ? $worldCup->squadPreview($nation, $gameConfig, $seed)
                         : null;
                 },
                 'gameConfig'      => $gameConfig,
@@ -175,11 +180,6 @@ class GameSaveCreationController extends Controller
                 ->visibleTo($request->user())
                 ->findOrFail($data['period_package_id']);
         }
-
-        // Graine des stats initiales : reprise de l'étape 1 (ou tirée si absente),
-        // puis re-mémorisée pour que start() retrouve exactement la même.
-        $seed = $data['player_stats_seed'] ?? random_int(1, 2_000_000_000);
-        $request->session()->put('game_save_setup.player_stats_seed', $seed);
 
         // Aperçu des stats avec les réglages de la partie (moral/endurance/vitesse aléatoires…).
         $previewSave  = new GameSave(['state' => ['config' => $gameConfig ?? []]]);
@@ -391,6 +391,24 @@ class GameSaveCreationController extends Controller
     }
 
     /**
+     * Aperçu JSON du onze que l'IA alignerait avec une convocation en cours de saisie (terrain de la page
+     * de convocation). Renvoie `lineup: null` tant que la sélection ne permet pas d'aligner un onze.
+     */
+    public function worldCupLineupPreview(Request $request, NewWorldCupBuilder $worldCup): JsonResponse
+    {
+        $data = $request->validate([
+            'nation'       => ['required', 'string', 'max:100'],
+            'player_ids'   => ['present', 'array', 'max:'.NationalTeamAssembler::MAX_PLAYERS],
+            'player_ids.*' => ['integer', 'distinct'],
+            'formation' => ['nullable', 'string', \Illuminate\Validation\Rule::in(array_keys(\App\Helpers\FormationHelper::SLOT_ZONES))],
+        ]);
+
+        return response()->json(['lineup' => $worldCup->isPlayable($data['nation'])
+            ? $worldCup->lineupPreview($data['nation'], $data['player_ids'], $data['formation'] ?? null)
+            : null]);
+    }
+
+    /**
      * Lance une partie COUPE DU MONDE avec la nation choisie par le manager.
      *
      * Refusé (retour avec une erreur) si le plafond de parties est atteint ou si la
@@ -416,6 +434,13 @@ class GameSaveCreationController extends Controller
             }
         }
 
+        if (array_diff(array_keys($data['co_lineup_slots'] ?? []), $data['co_nations'] ?? []) !== []) {
+            return back()->withErrors(['co_lineup_slots' => 'Composition reçue pour une nation qui n’a pas de manager.']);
+        }
+        if (array_diff(array_keys($data['co_formations'] ?? []), $data['co_nations'] ?? []) !== []) {
+            return back()->withErrors(['co_formations' => 'Formation reçue pour une nation qui n’a pas de manager.']);
+        }
+
         $size = (int) ($data['nations_count'] ?? NewWorldCupBuilder::DEFAULT_SIZE);
         $humans = 1 + count($data['co_nations'] ?? []);
         if ($humans > NewWorldCupBuilder::maxHumans($size)) {
@@ -438,6 +463,7 @@ class GameSaveCreationController extends Controller
             return back()->withErrors(['nations_count' => "Pas assez de sélections jouables pour un tournoi à {$size} équipes."]);
         }
 
+        $data['player_stats_seed'] = $request->session()->get('game_save_setup.player_stats_seed') ?? random_int(1, 2_000_000_000);
         $gameSave = $worldCup->build($request->user(), $data);
 
         return redirect()->route('game-saves.Play', $gameSave)

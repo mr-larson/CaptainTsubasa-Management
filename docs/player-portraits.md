@@ -1,5 +1,16 @@
 # Portraits des joueurs réels
 
+## Affichage des vignettes belges complètes
+
+À la demande du 18 novembre, les 67 visuels de collection belges actuellement
+préférés affichent la vignette avec son contour et son nom, plutôt qu'un cadrage
+sur le visage. Les coordonnées sont dans `player-illustration-credits.json` ;
+les originaux restent intacts. Une page d'album reste cadrée sur une seule vignette.
+Cette passe de cadrage ne remplace pas les sources par des éditions du sommet
+de popularité : cette sélection reste à faire. Les autres Belges qui utilisent
+une photographie classique, ainsi que Regi Van Acker sans portrait, nécessitent
+encore une source de collection vérifiée.
+
 ## État du catalogue au 18 novembre 2026
 
 Le catalogue local comprend 437 légendes actives : 436 ont un portrait,
