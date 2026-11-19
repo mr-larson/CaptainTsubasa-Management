@@ -1,0 +1,50 @@
+{
+  "nationality": "Cameroun",
+  "sources": "Palmarès : Wikipédia / CAF. Notes FIFA 10 (fut.gg) quand elles existent : Eto'o PAC 92 TIR 86 PAS 73 DRI 85 DEF 63 TÊT 80 ; Song PAC 69 TIR 38 PAS 57 DRI 55 DEF 83 TÊT 79. Ramenées à l'échelle du jeu, plafonds de LegendTuning respectés.",
+  "players": {
+    "Thomas N'Kono": {
+      "stats": {"speed": 58, "stamina": 74, "defense": 33, "block": 22, "intercept": 21, "hand_save": 29, "punch_save": 28},
+      "why": "Gardien de référence des années 80 (Espanyol, Coupe du monde 1982 et 1990) : placement et réflexes, sans la sortie aérienne des meilleurs."
+    },
+    "Geremi Njitap": {
+      "stats": {"speed": 70, "stamina": 80, "defense": 27, "pass": 27, "cross": 30, "shot": 25, "dribble": 22, "tackle": 22},
+      "why": "Latéral/milieu droit champion d'Europe des clubs et double champion d'Afrique : centres et coups de pied arrêtés, énorme volume."
+    },
+    "Rigobert Song": {
+      "stats": {"speed": 64, "stamina": 80, "attack": 16, "defense": 32, "shot": 14, "pass": 18, "dribble": 14, "block": 28, "intercept": 24, "tackle": 28, "heading": 29},
+      "why": "Défenseur dur sur l'homme (FIFA 10 : DEF 83, TIR 38, PAS 57) : tacle et jeu de tête, très peu de technique."
+    },
+    "Emmanuel Kundé": {
+      "stats": {"speed": 62, "stamina": 76, "defense": 30, "pass": 26, "shot": 23, "intercept": 29, "tackle": 24, "block": 24},
+      "why": "Libéro de la génération 1990, tireur de penalty : lecture du jeu et relance plus que puissance."
+    },
+    "Pierre Womé": {
+      "stats": {"speed": 72, "stamina": 77, "defense": 27, "tackle": 26, "cross": 27, "shot": 23, "pass": 22},
+      "why": "Latéral gauche champion olympique 2000 : énergie et pied gauche puissant, correct défensivement."
+    },
+    "Marc-Vivien Foé": {
+      "stats": {"speed": 64, "stamina": 82, "attack": 20, "defense": 29, "shot": 16, "pass": 25, "dribble": 18, "block": 27, "intercept": 28, "tackle": 28, "heading": 27},
+      "why": "Milieu récupérateur puissant (Lens, Lyon) : endurance et récupération, volontairement pauvre en finition et en dribble."
+    },
+    "Samuel Mbappé Léppé": {
+      "stats": {"speed": 64, "stamina": 76, "attack": 28, "defense": 24, "shot": 24, "pass": 26, "dribble": 25, "heading": 28},
+      "why": "Le Maréchal des années 60-70 : présence physique et jeu de tête, joueur complet sans point faible ni sommet net."
+    },
+    "Théophile Abega": {
+      "stats": {"speed": 66, "stamina": 72, "attack": 30, "defense": 18, "shot": 23, "pass": 30, "dribble": 28},
+      "why": "Le Docteur, meneur du sacre africain de 1984 : passe et vision avant tout, peu d'impact défensif."
+    },
+    "Samuel Eto'o": {
+      "stats": {"speed": 82, "stamina": 80, "attack": 37, "defense": 17, "shot": 30, "pass": 27, "dribble": 30, "heading": 28},
+      "why": "Quatre fois joueur africain de l'année, trois Ligues des champions (FIFA 10 : PAC 92, TIR 86, DRI 85, TÊT 80) : vitesse, finition et pressing, tête correcte."
+    },
+    "Roger Milla": {
+      "stats": {"speed": 74, "stamina": 76, "attack": 33, "shot": 28, "pass": 25, "dribble": 29, "heading": 25},
+      "why": "Icône du Mondial 1990, joueur africain de l'année 1976 et 1990 : feintes et sens du but, moins de vitesse pure qu'Eto'o."
+    },
+    "Patrick Mboma": {
+      "stats": {"speed": 68, "stamina": 76, "attack": 34, "shot": 29, "pass": 19, "dribble": 24, "heading": 31},
+      "why": "Champion olympique 2000 et double champion d'Afrique : frappe lourde et jeu aérien, pas de créativité."
+    }
+  }
+}

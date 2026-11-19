@@ -2,6 +2,8 @@
 
 namespace Database\Seeders\Players\InternationalLegends;
 
+use Database\Seeders\Players\InternationalLegends\Support\LegendStatFiles;
+use Database\Seeders\Players\InternationalLegends\Support\LegendTuning;
 use Database\Seeders\Players\InternationalLegends\Support\WorldLegendProfiles;
 use Illuminate\Support\Str;
 use Database\Seeders\Players\InternationalLegends\Countries\Belgium;
@@ -78,7 +80,13 @@ final class Roster
                 array_push($players, ...WorldLegendProfiles::players($country::EXTRA_ADDITIONS));
             }
         }
-        return $players;
+        // Individualise les profils partagés (rang de stature + points forts).
+        return array_map(function (array $player): array {
+            $name = trim($player[0].' '.$player[1]);
+            $player[5] = LegendTuning::adjust($name, $player[3], $player[5]);
+            $player[5] = LegendStatFiles::apply($name, $player[5]);
+            return $player;
+        }, $players);
     }
 
     public static function nationalities(): array
