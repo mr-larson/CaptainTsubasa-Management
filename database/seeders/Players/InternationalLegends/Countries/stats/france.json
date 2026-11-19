@@ -1,0 +1,170 @@
+{
+  "nationality": "France",
+  "sources": "Palmarès : Wikipédia. Douze joueurs ajoutés par migration (Platini, Kopa, Giresse, Tigana, Bossis, Bats, Ribéry, Benzema, Griezmann, Pogba, Kanté, Varane), sans portrait : à illustrer. Valeurs sous les plafonds de Captain Tsubasa.",
+  "players": {
+    "Fabien Barthez": {
+      "stats": {
+        "defense": 31,
+        "hand_save": 27,
+        "punch_save": 28
+      },
+      "why": "Champion du monde 1998 et d'Europe 2000 : agilité et réflexes, sorties plus aléatoires."
+    },
+    "Hugo Lloris": {
+      "stats": {
+        "defense": 32,
+        "hand_save": 28,
+        "punch_save": 29
+      },
+      "why": "Capitaine champion du monde 2018, Tottenham : réflexes et sorties aériennes."
+    },
+    "Marcel Desailly": {
+      "stats": {
+        "speed": 64,
+        "stamina": 78,
+        "defense": 33,
+        "tackle": 28,
+        "heading": 29
+      },
+      "why": "Roc de 1998, deux Ligues des champions : puissance et vitesse pour un défenseur central."
+    },
+    "Lilian Thuram": {
+      "stats": {
+        "speed": 72,
+        "stamina": 78,
+        "defense": 32,
+        "tackle": 28,
+        "intercept": 27
+      },
+      "why": "Plus de 140 sélections, champion du monde 1998 : latéral et central, tacle et lecture."
+    },
+    "Laurent Blanc": {
+      "stats": {
+        "defense": 31,
+        "pass": 28,
+        "heading": 28,
+        "shot": 22
+      },
+      "why": "Libéro élégant de 1998, buteur du premier but en or : relance et jeu de tête."
+    },
+    "Bixente Lizarazu": {
+      "stats": {
+        "speed": 73,
+        "stamina": 80,
+        "cross": 26
+      },
+      "why": "Latéral gauche infatigable, champion du monde 1998 : volume de jeu."
+    },
+    "Didier Deschamps": {
+      "stats": {
+        "stamina": 78,
+        "pass": 26,
+        "intercept": 28,
+        "tackle": 26
+      },
+      "why": "Capitaine de 1998 et 2000 : récupération et leadership, peu technique."
+    },
+    "Claude Makélélé": {
+      "stats": {
+        "defense": 31,
+        "intercept": 28,
+        "tackle": 28,
+        "stamina": 78
+      },
+      "why": "Référence du poste de récupérateur (Real Madrid, Chelsea) : tout dans la couverture."
+    },
+    "Robert Pirès": {
+      "stats": {
+        "speed": 72,
+        "dribble": 29,
+        "pass": 29
+      },
+      "why": "Arsenal, champion d'Europe 2000 : milieu gauche, dribble et passe."
+    },
+    "Zinédine Zidane": {
+      "stats": {
+        "speed": 64,
+        "stamina": 72,
+        "attack": 37,
+        "shot": 26,
+        "pass": 31,
+        "dribble": 30,
+        "heading": 26
+      },
+      "why": "Ballon d'Or 1998, champion du monde et d'Europe : maîtrise du ballon et vision, sommet du milieu français."
+    },
+    "Kylian Mbappé": {
+      "stats": {
+        "speed": 82,
+        "attack": 37,
+        "shot": 29,
+        "dribble": 29,
+        "pass": 22
+      },
+      "why": "Champion du monde 2018 : vitesse de pointe et accélérations, peu de jeu de passe."
+    },
+    "Thierry Henry": {
+      "stats": {
+        "speed": 80,
+        "attack": 36,
+        "shot": 29,
+        "dribble": 28,
+        "pass": 22,
+        "heading": 18
+      },
+      "why": "Arsenal Invincibles, champion du monde 1998 : vitesse et finition sur le côté."
+    },
+    "David Trezeguet": {
+      "stats": {
+        "attack": 32,
+        "shot": 30,
+        "dribble": 22,
+        "speed": 68,
+        "heading": 26
+      },
+      "why": "But en or de l'Euro 2000, Juventus : pur finisseur."
+    },
+    "Just Fontaine": {
+      "stats": {
+        "attack": 35,
+        "shot": 30,
+        "heading": 27
+      },
+      "why": "13 buts au Mondial 1958, record toujours inégalé : finition."
+    },
+    "Jean-Pierre Papin": {
+      "stats": {
+        "attack": 33,
+        "shot": 29,
+        "heading": 27
+      },
+      "why": "Ballon d'Or 1991, Marseille et Milan : finisseur acrobatique."
+    },
+    "Éric Cantona": {
+      "stats": {
+        "attack": 34,
+        "shot": 27,
+        "pass": 27,
+        "dribble": 26,
+        "speed": 66
+      },
+      "why": "Manchester United, quatre titres : attaquant créatif, charisme et frappe."
+    },
+    "Youri Djorkaeff": {
+      "stats": {
+        "attack": 29,
+        "shot": 25,
+        "pass": 28
+      },
+      "why": "Champion du monde 1998, Inter : milieu offensif, frappe lointaine."
+    },
+    "Sylvain Wiltord": {
+      "stats": {
+        "speed": 72,
+        "attack": 28,
+        "shot": 24
+      },
+      "why": "Arsenal, buteur de l'Euro 2000 : appels en profondeur."
+    }
+  }
+}
