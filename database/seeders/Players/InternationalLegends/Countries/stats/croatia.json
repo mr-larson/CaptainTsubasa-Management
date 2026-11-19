@@ -1,0 +1,111 @@
+{
+  "nationality": "Croatie",
+  "sources": "Palmarès : Wikipédia / FIFA. Deux joueurs ajoutés par migration (Perišić, Gvardiol), sans portrait : à illustrer. Candidats éventuels au retrait (peu connus) : Balaban, Špehar, Stanić, Rapaić, Runje.",
+  "players": {
+    "Darijo Srna": {
+      "stats": {
+        "speed": 72,
+        "stamina": 82,
+        "cross": 28,
+        "shot": 25,
+        "defense": 28
+      },
+      "why": "Capitaine, plus de 130 sélections, Shakhtar : latéral droit infatigable, centres et coups francs."
+    },
+    "Robert Kovač": {
+      "stats": {
+        "defense": 32,
+        "tackle": 28
+      },
+      "why": "Bayern, Juventus, Mondial 2002 et 2006 : défenseur dur et sûr."
+    },
+    "Dario Šimić": {
+      "stats": {
+        "defense": 31,
+        "intercept": 28,
+        "pass": 23
+      },
+      "why": "Milan, 100 sélections : défenseur de lecture."
+    },
+    "Robert Jarni": {
+      "stats": {
+        "speed": 77,
+        "stamina": 79,
+        "shot": 26,
+        "cross": 26
+      },
+      "why": "3e du Mondial 1998, Real Madrid : latéral gauche, frappe du pied gauche."
+    },
+    "Davor Šuker": {
+      "stats": {
+        "attack": 36,
+        "shot": 30,
+        "heading": 25,
+        "dribble": 26,
+        "pass": 23
+      },
+      "why": "Soulier d'or du Mondial 1998, Real Madrid : finition, lob célèbre contre le Danemark."
+    },
+    "Mario Mandžukić": {
+      "stats": {
+        "heading": 30,
+        "stamina": 82,
+        "attack": 32,
+        "shot": 27,
+        "defense": 24
+      },
+      "why": "Finaliste du Mondial 2018, Ligue des champions 2013 avec le Bayern : avant-centre qui défend, tête et abattage."
+    },
+    "Stipe Pletikosa": {
+      "stats": {
+        "defense": 31,
+        "hand_save": 27,
+        "punch_save": 27
+      },
+      "why": "Gardien du Spartak, Hajduk et Tottenham, 100 sélections : sûr."
+    },
+    "Luka Modrić": {
+      "stats": {
+        "stamina": 82,
+        "pass": 31,
+        "dribble": 29,
+        "attack": 32,
+        "shot": 26,
+        "defense": 25
+      },
+      "why": "Ballon d'Or 2018, six Ligues des champions : maître du milieu, passes et dribbles."
+    },
+    "Zvonimir Boban": {
+      "stats": {
+        "pass": 29,
+        "attack": 31,
+        "dribble": 28,
+        "shot": 25,
+        "stamina": 72,
+        "speed": 65
+      },
+      "why": "3e du Mondial 1998, Milan : meneur de jeu, vision et technique."
+    },
+    "Ivan Rakitić": {
+      "stats": {
+        "pass": 29,
+        "stamina": 80,
+        "shot": 27,
+        "attack": 29,
+        "defense": 24
+      },
+      "why": "Finaliste du Mondial 2018, Ligue des champions 2015 : milieu complet, frappes de loin."
+    },
+    "Robert Prosinečki": {
+      "stats": {
+        "dribble": 30,
+        "pass": 30,
+        "shot": 26,
+        "attack": 32,
+        "stamina": 66,
+        "speed": 62
+      },
+      "why": "Étoile rouge, Real Madrid, Barcelone, 3e du Mondial 1998 : milieu technique, gaucher fin."
+    }
+  }
+}
