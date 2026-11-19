@@ -1,0 +1,174 @@
+{
+  "nationality": "Argentine",
+  "sources": "Palmarès : Wikipédia / FIFA. Cinq joueurs ajoutés par migration (Di Stéfano, Riquelme, Di María, E. Martínez, Agüero), sans portrait : à illustrer.",
+  "players": {
+    "Lionel Messi": {
+      "stats": {
+        "speed": 77,
+        "stamina": 70,
+        "attack": 38,
+        "shot": 30,
+        "pass": 29,
+        "dribble": 31
+      },
+      "why": "Huit Ballons d'Or, champion du monde 2022 : dribble et finition, un cran au-dessus de tous."
+    },
+    "Diego Maradona": {
+      "stats": {
+        "speed": 76,
+        "stamina": 66,
+        "attack": 38,
+        "shot": 28,
+        "pass": 30,
+        "dribble": 31,
+        "defense": 20
+      },
+      "why": "Champion du monde 1986, Naples : conduite de balle et création, sommet technique du milieu."
+    },
+    "Mario Kempes": {
+      "stats": {
+        "speed": 70,
+        "stamina": 78,
+        "attack": 34,
+        "shot": 30
+      },
+      "why": "Champion du monde 1978, meilleur buteur et meilleur joueur : buteur au gros volume de course."
+    },
+    "Gabriel Batistuta": {
+      "stats": {
+        "speed": 65,
+        "attack": 35,
+        "shot": 30,
+        "heading": 24
+      },
+      "why": "Fiorentina et Roma, 10 buts en Coupe du monde : frappe de loin et puissance."
+    },
+    "Claudio Caniggia": {
+      "stats": {
+        "speed": 79,
+        "attack": 31,
+        "dribble": 27,
+        "shot": 26
+      },
+      "why": "But décisif contre le Brésil en 1990 : attaquant de pointe, très rapide."
+    },
+    "Jorge Valdano": {
+      "stats": {
+        "attack": 30,
+        "shot": 26,
+        "heading": 25
+      },
+      "why": "Champion du monde 1986 : avant-centre élégant."
+    },
+    "Martín Palermo": {
+      "stats": {
+        "attack": 30,
+        "shot": 27,
+        "heading": 28
+      },
+      "why": "Buteur de Boca, trois buts en un match de Copa América : buteur de tête."
+    },
+    "Daniel Passarella": {
+      "stats": {
+        "defense": 31,
+        "pass": 27,
+        "shot": 25,
+        "attack": 25,
+        "stamina": 78,
+        "heading": 28
+      },
+      "why": "Capitaine champion du monde 1978, défenseur buteur : coups francs et penalties."
+    },
+    "Oscar Ruggeri": {
+      "stats": {
+        "defense": 31,
+        "heading": 27,
+        "tackle": 27
+      },
+      "why": "Champion du monde 1986 : défenseur dur."
+    },
+    "Roberto Ayala": {
+      "stats": {
+        "defense": 31,
+        "block": 27,
+        "intercept": 28,
+        "pass": 20
+      },
+      "why": "Plus de 100 sélections : défenseur de lecture et d'anticipation."
+    },
+    "Javier Zanetti": {
+      "stats": {
+        "stamina": 82,
+        "defense": 30,
+        "speed": 70,
+        "pass": 26
+      },
+      "why": "Plus de 140 sélections, triplé 2010 avec l'Inter : latéral et milieu infatigable."
+    },
+    "Juan Pablo Sorín": {
+      "stats": {
+        "speed": 73,
+        "cross": 28
+      },
+      "why": "Latéral gauche, centres et montées."
+    },
+    "Ubaldo Fillol": {
+      "stats": {
+        "defense": 32,
+        "hand_save": 28,
+        "punch_save": 27
+      },
+      "why": "Meilleur gardien du Mondial 1978, River Plate : réflexes et sorties."
+    },
+    "Diego Simeone": {
+      "stats": {
+        "stamina": 80,
+        "tackle": 28,
+        "intercept": 27
+      },
+      "why": "Milieu de combat, plus de 100 sélections : intensité et agressivité."
+    },
+    "Jorge Burruchaga": {
+      "stats": {
+        "dribble": 25,
+        "pass": 25,
+        "attack": 27,
+        "shot": 24
+      },
+      "why": "Auteur du but de la finale 1986 : milieu offensif, appels et passes."
+    },
+    "Javier Mascherano": {
+      "stats": {
+        "defense": 30,
+        "tackle": 28,
+        "intercept": 28,
+        "stamina": 78,
+        "pass": 25
+      },
+      "why": "Plus de 140 sélections, quatre Ligues des champions : milieu et défenseur central, tacle et anticipation."
+    },
+    "Juan Sebastián Verón": {
+      "stats": {
+        "pass": 30,
+        "shot": 26,
+        "attack": 28,
+        "stamina": 74
+      },
+      "why": "Milieu de Parme et Manchester United : passes longues et frappes."
+    },
+    "Fernando Redondo": {
+      "stats": {
+        "pass": 31,
+        "dribble": 26,
+        "defense": 28
+      },
+      "why": "Le Prince, Real Madrid : milieu défensif élégant, talonnade légendaire."
+    },
+    "Lucas Biglia": {
+      "stats": {
+        "pass": 27
+      },
+      "why": "Milieu de Lazio et Milan, finaliste du Mondial 2014 : relance posée."
+    }
+  }
+}
