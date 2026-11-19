@@ -1,0 +1,163 @@
+{
+  "nationality": "Italie",
+  "sources": "Palmarès : Wikipédia / FIFA. Neuf joueurs ajoutés par migration (Pirlo, Totti, De Rossi, Rivera, Tardelli, Facchetti, Scirea, Chiellini, Riva), sans portrait : à illustrer. L'Italie n'avait qu'un milieu au départ.",
+  "players": {
+    "Gianluigi Buffon": {
+      "stats": {
+        "defense": 37,
+        "hand_save": 29,
+        "punch_save": 29
+      },
+      "why": "Champion du monde 2006, 10 Scudetti, 176 sélections : le gardien de référence, sans point faible."
+    },
+    "Dino Zoff": {
+      "stats": {
+        "defense": 36,
+        "hand_save": 29,
+        "punch_save": 28
+      },
+      "why": "Capitaine champion du monde 1982 à 40 ans : gardien d'une régularité et d'un calme légendaires."
+    },
+    "Angelo Peruzzi": {
+      "stats": {
+        "defense": 32,
+        "hand_save": 27,
+        "punch_save": 27
+      },
+      "why": "Juventus, Lazio, champion du monde 2006 (remplaçant) : gardien sûr."
+    },
+    "Paolo Maldini": {
+      "stats": {
+        "speed": 73,
+        "defense": 34,
+        "block": 28,
+        "intercept": 28,
+        "tackle": 29,
+        "heading": 29,
+        "attack": 24,
+        "pass": 26
+      },
+      "why": "Cinq Ligues des champions avec Milan, 126 sélections : latéral puis central, anticipation et propreté du tacle."
+    },
+    "Franco Baresi": {
+      "stats": {
+        "speed": 62,
+        "defense": 34,
+        "intercept": 29,
+        "pass": 27
+      },
+      "why": "Capitaine de Milan, finaliste du Mondial 1994 : libéro de référence, placement et lecture."
+    },
+    "Alessandro Nesta": {
+      "stats": {
+        "speed": 66,
+        "defense": 33,
+        "intercept": 28,
+        "tackle": 28
+      },
+      "why": "Champion du monde 2006, Ligues des champions avec Milan : défenseur élégant, tacle propre."
+    },
+    "Fabio Cannavaro": {
+      "stats": {
+        "speed": 60,
+        "defense": 33,
+        "intercept": 28,
+        "tackle": 28,
+        "heading": 26,
+        "attack": 18
+      },
+      "why": "Capitaine champion du monde 2006 et Ballon d'Or 2006 : petit gabarit, anticipation et détente."
+    },
+    "Ciro Ferrara": {
+      "stats": {
+        "defense": 31,
+        "tackle": 27
+      },
+      "why": "Naples (Scudetto avec Maradona) et Juventus : défenseur solide."
+    },
+    "Gianluca Zambrotta": {
+      "stats": {
+        "speed": 70,
+        "stamina": 80,
+        "defense": 29,
+        "cross": 28,
+        "attack": 22
+      },
+      "why": "Champion du monde 2006, Juventus, Barcelone : latéral infatigable."
+    },
+    "Christian Panucci": {
+      "stats": {
+        "speed": 68,
+        "defense": 27
+      },
+      "why": "Latéral de Milan, Real, Roma : polyvalent."
+    },
+    "Gennaro Gattuso": {
+      "stats": {
+        "stamina": 82,
+        "tackle": 28,
+        "intercept": 27,
+        "defense": 29,
+        "attack": 20
+      },
+      "why": "Champion du monde 2006, Milan : milieu de combat, intensité de tous les instants."
+    },
+    "Roberto Baggio": {
+      "stats": {
+        "attack": 34,
+        "shot": 28,
+        "pass": 29,
+        "dribble": 30,
+        "speed": 66,
+        "stamina": 66
+      },
+      "why": "Ballon d'Or 1993, finaliste du Mondial 1994 : dribble, finesse et coups francs."
+    },
+    "Giuseppe Meazza": {
+      "stats": {
+        "attack": 34,
+        "shot": 30,
+        "dribble": 27,
+        "pass": 27
+      },
+      "why": "Double champion du monde 1934 et 1938, Inter : buteur et passeur de légende."
+    },
+    "Alessandro Del Piero": {
+      "stats": {
+        "attack": 34,
+        "dribble": 30,
+        "shot": 29,
+        "pass": 27,
+        "speed": 66
+      },
+      "why": "Champion du monde 2006, légende de la Juventus : dribble et frappe enroulée."
+    },
+    "Christian Vieri": {
+      "stats": {
+        "shot": 30,
+        "heading": 26,
+        "attack": 33,
+        "speed": 66,
+        "dribble": 22
+      },
+      "why": "Meilleur buteur du Mondial 1998 : avant-centre puissant, tête et frappe."
+    },
+    "Paolo Rossi": {
+      "stats": {
+        "shot": 30,
+        "attack": 33,
+        "speed": 68
+      },
+      "why": "Champion du monde 1982, Soulier d'or et Ballon d'Or 1982 : renard de la surface."
+    },
+    "Filippo Inzaghi": {
+      "stats": {
+        "shot": 30,
+        "attack": 32,
+        "speed": 68,
+        "dribble": 22
+      },
+      "why": "Champion du monde 2006, deux Ligues des champions avec Milan : rapide à l'appel, pur finisseur."
+    }
+  }
+}
