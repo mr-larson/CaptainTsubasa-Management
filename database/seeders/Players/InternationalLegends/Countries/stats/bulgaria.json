@@ -1,0 +1,98 @@
+{
+  "nationality": "Bulgarie",
+  "sources": "Palmarès : Wikipédia / FIFA. Deux joueurs ajoutés par migration (Letchkov, Petrov), sans portrait : à illustrer. Le pays n'a qu'un gardien (Mihaylov) et aucun personnage Captain Tsubasa.",
+  "players": {
+    "Hristo Stoichkov": {
+      "stats": {
+        "attack": 36,
+        "shot": 30,
+        "dribble": 28,
+        "speed": 70,
+        "pass": 22
+      },
+      "why": "Ballon d'Or 1994, Soulier d'or du Mondial 1994, Ligue des champions 1992 avec Barcelone : frappe du pied gauche et caractère."
+    },
+    "Emil Kostadinov": {
+      "stats": {
+        "speed": 78,
+        "attack": 32,
+        "shot": 27,
+        "dribble": 28
+      },
+      "why": "Buteur contre la France en 1993, 4e du Mondial 1994 : ailier rapide et opportuniste."
+    },
+    "Georgi Asparuhov": {
+      "stats": {
+        "attack": 35,
+        "shot": 29,
+        "speed": 70,
+        "heading": 29
+      },
+      "why": "Gundi, légende de Levski, buteur et athlétique : avant-centre puissant, joueur du siècle bulgare."
+    },
+    "Dimitar Berbatov": {
+      "stats": {
+        "attack": 34,
+        "dribble": 29,
+        "pass": 28,
+        "shot": 28,
+        "speed": 60,
+        "stamina": 66
+      },
+      "why": "Soulier d'or de Premier League 2011 avec Manchester United, Tottenham : élégance et toucher de balle, lent."
+    },
+    "Borislav Mihaylov": {
+      "stats": {
+        "defense": 32,
+        "hand_save": 28,
+        "punch_save": 27
+      },
+      "why": "Capitaine de 1994, plus de 100 sélections : gardien d'expérience."
+    },
+    "Stiliyan Petrov": {
+      "stats": {
+        "stamina": 83,
+        "defense": 28,
+        "tackle": 27,
+        "pass": 28
+      },
+      "why": "Capitaine d'Aston Villa, Celtic : milieu de combat et de relance."
+    },
+    "Krasimir Balakov": {
+      "stats": {
+        "pass": 31,
+        "dribble": 30,
+        "attack": 32,
+        "shot": 26,
+        "speed": 66
+      },
+      "why": "4e du Mondial 1994, Stuttgart et Sporting : meneur de jeu, vision et passe."
+    },
+    "Hristo Bonev": {
+      "stats": {
+        "attack": 32,
+        "pass": 30,
+        "shot": 27,
+        "dribble": 28
+      },
+      "why": "Icône de Lokomotiv Plovdiv des années 1960-70 : meneur offensif, passes et buts."
+    },
+    "Trifon Ivanov": {
+      "stats": {
+        "defense": 32,
+        "tackle": 28,
+        "block": 28,
+        "heading": 28
+      },
+      "why": "Capitaine de combat du Mondial 1994, la Bête : défenseur dur et dominant."
+    },
+    "Dimitar Penev": {
+      "stats": {
+        "defense": 31,
+        "pass": 27,
+        "intercept": 28
+      },
+      "why": "Défenseur de légende devenu sélectionneur des demi-finalistes de 1994 : lecture du jeu."
+    }
+  }
+}
