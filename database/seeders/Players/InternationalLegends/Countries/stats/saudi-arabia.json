@@ -1,0 +1,85 @@
+{
+  "nationality": "Arabie saoudite",
+  "sources": "Palmarès : Wikipédia / FIFA. Aucun joueur ajouté : tous les noms très connus sont présents, et le pays compte aussi deux personnages Captain Tsubasa (Mark Owairan, Vulcan) qui ne sont pas retouchés ici.",
+  "players": {
+    "Saeed Al-Owairan": {
+      "stats": {
+        "speed": 79,
+        "stamina": 74,
+        "attack": 33,
+        "shot": 27,
+        "dribble": 29,
+        "pass": 23
+      },
+      "why": "Auteur du but solitaire contre la Belgique au Mondial 1994 : dribble et vitesse, le Maradona du désert."
+    },
+    "Majed Abdullah": {
+      "stats": {
+        "attack": 35,
+        "shot": 28,
+        "heading": 28,
+        "speed": 76
+      },
+      "why": "Légende d'Al-Nassr, meilleur buteur du pays à son époque, trois Coupes d'Asie : finisseur et jeu de tête."
+    },
+    "Salem Al-Dawsari": {
+      "stats": {
+        "attack": 33,
+        "speed": 79,
+        "dribble": 29,
+        "shot": 27,
+        "stamina": 80
+      },
+      "why": "Auteur du but de la victoire contre l'Argentine au Mondial 2022, Al-Hilal : ailier rapide et sang-froid."
+    },
+    "Sami Al-Jaber": {
+      "stats": {
+        "attack": 33,
+        "shot": 28,
+        "speed": 72,
+        "heading": 25
+      },
+      "why": "Quatre Coupes du monde, Al-Hilal : attaquant d'expérience, but au Mondial 2006."
+    },
+    "Mohamed Al-Deayea": {
+      "stats": {
+        "defense": 33,
+        "hand_save": 28,
+        "punch_save": 27
+      },
+      "why": "Plus de 170 sélections et trois Mondiaux : gardien d'expérience, sûr de sa ligne."
+    },
+    "Hussein Abdulghani": {
+      "stats": {
+        "speed": 74,
+        "stamina": 81,
+        "cross": 26
+      },
+      "why": "Latéral gauche du Mondial 1994 : endurant, montées sur le côté."
+    },
+    "Mohammed Noor": {
+      "stats": {
+        "pass": 28,
+        "stamina": 82,
+        "shot": 25
+      },
+      "why": "Al-Ittihad, titres asiatiques : milieu organisé, volume de jeu."
+    },
+    "Fuad Anwar": {
+      "stats": {
+        "tackle": 27,
+        "stamina": 82,
+        "defense": 30
+      },
+      "why": "Milieu défensif du Mondial 1994 : récupération."
+    },
+    "Yousuf Al-Thunayan": {
+      "stats": {
+        "pass": 29,
+        "dribble": 29,
+        "attack": 31
+      },
+      "why": "Milieu offensif technique des années 1990 : passes et dribbles."
+    }
+  }
+}
