@@ -1,0 +1,116 @@
+{
+  "nationality": "Portugal",
+  "sources": "Palmarès : Wikipédia / FIFA. Huit joueurs ajoutés par migration (Bernardo Silva, Bruno Fernandes, Rúben Dias, Pauleta, Nani, Futre, Patrício, Moutinho), sans portrait : à illustrer. Le pays n'avait que douze joueurs. À vérifier : identité de « João Pinto » (plusieurs joueurs portent ce nom).",
+  "players": {
+    "Eusébio": {
+      "stats": {
+        "attack": 36,
+        "shot": 30,
+        "speed": 79,
+        "dribble": 26,
+        "stamina": 74
+      },
+      "why": "Ballon d'Or 1965, meilleur buteur du Mondial 1966 : vitesse et frappe, la Panthère noire."
+    },
+    "Cristiano Ronaldo": {
+      "stats": {
+        "speed": 81,
+        "stamina": 80,
+        "attack": 38,
+        "shot": 30,
+        "heading": 30,
+        "dribble": 29,
+        "pass": 25
+      },
+      "why": "Cinq Ballons d'Or, cinq Ligues des champions, champion d'Europe 2016 : athlète complet, tête et frappe."
+    },
+    "Luís Figo": {
+      "stats": {
+        "attack": 34,
+        "pass": 29,
+        "dribble": 29,
+        "speed": 74,
+        "cross": 30
+      },
+      "why": "Ballon d'Or 2000, Barcelone et Real Madrid : ailier droit, dribble et centres."
+    },
+    "Rui Costa": {
+      "stats": {
+        "attack": 33,
+        "pass": 31,
+        "dribble": 28,
+        "shot": 26,
+        "speed": 62
+      },
+      "why": "Ligue des champions 2003 avec Milan, Fiorentina : meneur de jeu élégant et frappeur de loin."
+    },
+    "Deco": {
+      "stats": {
+        "pass": 30,
+        "dribble": 28,
+        "shot": 25,
+        "stamina": 78,
+        "defense": 22
+      },
+      "why": "Deux Ligues des champions (Porto 2004, Barcelone 2006) : meneur de jeu complet et travailleur."
+    },
+    "Sérgio Conceição": {
+      "stats": {
+        "speed": 78,
+        "dribble": 25,
+        "shot": 24,
+        "attack": 28
+      },
+      "why": "Ailier de Lazio, Parme et Porto : vitesse et agressivité."
+    },
+    "Mário Coluna": {
+      "stats": {
+        "stamina": 82,
+        "defense": 30,
+        "pass": 28,
+        "shot": 28,
+        "attack": 30
+      },
+      "why": "Le Monstre sacré de Benfica, deux Coupes d'Europe, 3e du Mondial 1966 : milieu complet et puissant."
+    },
+    "Vítor Baía": {
+      "stats": {
+        "defense": 34,
+        "hand_save": 28,
+        "punch_save": 27
+      },
+      "why": "Ligue des champions 2004 avec Porto, longévité : gardien sûr dans les airs."
+    },
+    "Pepe": {
+      "stats": {
+        "defense": 34,
+        "tackle": 29,
+        "block": 29,
+        "intercept": 27,
+        "heading": 29,
+        "speed": 69
+      },
+      "why": "Trois Ligues des champions avec le Real, champion d'Europe 2016 : défenseur dur et tenace."
+    },
+    "Ricardo Carvalho": {
+      "stats": {
+        "defense": 34,
+        "intercept": 29,
+        "tackle": 27,
+        "speed": 66,
+        "pass": 25
+      },
+      "why": "Ligue des champions 2004 avec Porto, Chelsea, Real : défenseur de lecture, très anticipateur."
+    },
+    "Fábio Coentrão": {
+      "stats": {
+        "speed": 78,
+        "stamina": 80,
+        "cross": 27,
+        "defense": 27,
+        "attack": 25
+      },
+      "why": "Champion d'Espagne 2012 avec le Real, latéral gauche rapide et offensif."
+    }
+  }
+}
