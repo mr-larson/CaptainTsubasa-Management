@@ -1,0 +1,136 @@
+{
+  "nationality": "Brésil",
+  "sources": "Palmarès : Wikipédia / FIFA. Vingt joueurs ajoutés par migration, sans portrait : à illustrer. Valeurs sous les plafonds de Captain Tsubasa.",
+  "players": {
+    "Cláudio Taffarel": {
+      "stats": {
+        "defense": 31,
+        "hand_save": 27,
+        "punch_save": 27
+      },
+      "why": "Champion du monde 1994, héros de la séance de tirs au but : gardien sûr de sa ligne."
+    },
+    "Marcos Cafu": {
+      "stats": {
+        "speed": 77,
+        "stamina": 82,
+        "defense": 28,
+        "cross": 30
+      },
+      "why": "Capitaine champion du monde 2002, plus de 140 sélections : latéral droit infatigable, montées et centres."
+    },
+    "Roberto Carlos": {
+      "stats": {
+        "speed": 77,
+        "stamina": 77,
+        "attack": 24,
+        "shot": 26,
+        "pass": 26,
+        "defense": 28
+      },
+      "why": "Champion du monde 2002, Real Madrid : coups francs surpuissants et montées sur le côté gauche."
+    },
+    "Carlos Dunga": {
+      "stats": {
+        "stamina": 80,
+        "defense": 29,
+        "intercept": 27,
+        "tackle": 27,
+        "pass": 26
+      },
+      "why": "Capitaine champion du monde 1994 : milieu défensif combatif, volume et intensité."
+    },
+    "Dante": {
+      "stats": {
+        "defense": 29,
+        "heading": 28
+      },
+      "why": "Bayern, Borussia Mönchengladbach, Seleção 2010 : défenseur central solide, bon de la tête."
+    },
+    "Didi": {
+      "stats": {
+        "attack": 30,
+        "shot": 26,
+        "pass": 31,
+        "dribble": 24
+      },
+      "why": "Double champion du monde 1958 et 1962, inventeur de la « feuille morte » : passe, vision et coups francs."
+    },
+    "Rivaldo": {
+      "stats": {
+        "speed": 64,
+        "stamina": 68,
+        "attack": 35,
+        "shot": 29,
+        "dribble": 28,
+        "pass": 27
+      },
+      "why": "Ballon d'Or 1999, champion du monde 2002 : frappe du pied gauche et dribble, peu de repli."
+    },
+    "Ronaldinho": {
+      "stats": {
+        "speed": 77,
+        "attack": 36,
+        "shot": 28,
+        "pass": 31,
+        "dribble": 31
+      },
+      "why": "Ballon d'Or 2005, champion du monde 2002, Ligue des champions 2006 : dribble et dernière passe."
+    },
+    "Romário": {
+      "stats": {
+        "stamina": 66,
+        "attack": 35,
+        "shot": 29,
+        "dribble": 27
+      },
+      "why": "Champion du monde 1994, Ballon d'Or FIFA 1994 : finisseur dans la surface, économe de ses efforts."
+    },
+    "Neymar": {
+      "stats": {
+        "speed": 80,
+        "stamina": 70,
+        "attack": 36,
+        "shot": 28,
+        "pass": 28,
+        "dribble": 30
+      },
+      "why": "Barcelone (Ligue des champions 2015), Santos, PSG : dribbleur et passeur, vitesse et créativité."
+    },
+    "Vavá": {
+      "stats": {
+        "attack": 32,
+        "shot": 30,
+        "heading": 22
+      },
+      "why": "Double champion du monde 1958 et 1962, deux buts en finale : finisseur."
+    },
+    "Leônidas": {
+      "stats": {
+        "speed": 70,
+        "attack": 34,
+        "shot": 29,
+        "dribble": 29
+      },
+      "why": "Meilleur buteur du Mondial 1938, inventeur du retourné acrobatique : finition et dribble."
+    },
+    "Garrincha": {
+      "stats": {
+        "speed": 79,
+        "attack": 35,
+        "dribble": 31,
+        "pass": 26
+      },
+      "why": "Double champion du monde 1958 et 1962, meilleur joueur du Mondial 1962 : dribbleur du côté droit, vitesse et feintes."
+    },
+    "Jairzinho": {
+      "stats": {
+        "speed": 79,
+        "attack": 33,
+        "shot": 30,
+        "dribble": 28
+      },
+      "why": "Buteur dans chaque match du Mondial 1970 : ailier puissant et finisseur."
+    }
+  }
+}
