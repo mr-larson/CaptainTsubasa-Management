@@ -1,0 +1,115 @@
+{
+  "nationality": "Nigéria",
+  "sources": "Palmarès : Wikipédia / FIFA. Trois joueurs ajoutés par migration (Osimhen, Finidi George, Amunike), sans portrait : à illustrer. Le pays n'a qu'un gardien (Enyeama) et aucun personnage Captain Tsubasa.",
+  "players": {
+    "Celestine Babayaro": {
+      "stats": {
+        "speed": 78,
+        "stamina": 77,
+        "cross": 24
+      },
+      "why": "Champion olympique 1996, Chelsea (FA Cup) : latéral gauche très rapide."
+    },
+    "Joseph Yobo": {
+      "stats": {
+        "defense": 31,
+        "speed": 71,
+        "stamina": 79,
+        "heading": 27
+      },
+      "why": "Capitaine, Everton, Fenerbahçe, plus de 100 sélections : défenseur central athlétique."
+    },
+    "Stephen Keshi": {
+      "stats": {
+        "defense": 33,
+        "pass": 26,
+        "intercept": 28
+      },
+      "why": "Capitaine champion d'Afrique 1994 : libéro, leader de la génération 1994."
+    },
+    "Taribo West": {
+      "stats": {
+        "defense": 33,
+        "tackle": 29,
+        "block": 28,
+        "speed": 67,
+        "stamina": 78,
+        "attack": 18
+      },
+      "why": "Champion olympique 1996, Inter et Milan : défenseur dur, tresses et marquage."
+    },
+    "Ben Iroha": {
+      "stats": {
+        "speed": 73,
+        "stamina": 77
+      },
+      "why": "Champion d'Afrique 1994 : latéral droit vif."
+    },
+    "Segun Odegbami": {
+      "stats": {
+        "speed": 78,
+        "dribble": 28,
+        "attack": 32
+      },
+      "why": "Capitaine champion d'Afrique 1980 : ailier rapide."
+    },
+    "Rashidi Yekini": {
+      "stats": {
+        "attack": 36,
+        "shot": 29,
+        "heading": 29,
+        "speed": 70
+      },
+      "why": "Premier buteur nigérian en Coupe du monde, joueur africain de l'année 1993 : avant-centre puissant, tête."
+    },
+    "Nwankwo Kanu": {
+      "stats": {
+        "dribble": 29,
+        "pass": 27,
+        "attack": 33,
+        "shot": 27,
+        "heading": 26,
+        "speed": 64,
+        "stamina": 70
+      },
+      "why": "Ligue des champions 1995 avec l'Ajax, Arsenal, champion olympique 1996 : grand attaquant technique."
+    },
+    "Vincent Enyeama": {
+      "stats": {
+        "defense": 33,
+        "hand_save": 28,
+        "punch_save": 28
+      },
+      "why": "Champion d'Afrique 2013, Lille : gardien de référence du Nigéria."
+    },
+    "Sunday Oliseh": {
+      "stats": {
+        "defense": 30,
+        "tackle": 27,
+        "shot": 28,
+        "stamina": 80,
+        "pass": 26
+      },
+      "why": "Ligue des champions 1995 avec l'Ajax, Juventus : milieu à la frappe de loin célèbre."
+    },
+    "John Obi Mikel": {
+      "stats": {
+        "pass": 28,
+        "stamina": 78,
+        "defense": 29
+      },
+      "why": "Ligue des champions 2012 avec Chelsea, champion d'Afrique 2013 : milieu de relais."
+    },
+    "Jay-Jay Okocha": {
+      "stats": {
+        "dribble": 30,
+        "pass": 28,
+        "attack": 33,
+        "shot": 27,
+        "speed": 70,
+        "stamina": 70
+      },
+      "why": "PSG, Bolton, champion d'Afrique 1994 : dribbleur au toucher et aux feintes exceptionnels."
+    }
+  }
+}
