@@ -21,6 +21,7 @@ use App\Http\Controllers\PeriodPackageController;
 use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TeamController;
+use App\Http\Controllers\UserController;
 use App\Models\Player;
 use App\Models\Team;
 use Illuminate\Support\Facades\Cache;
@@ -113,6 +114,15 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile',  [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::patch('/profile/preferences', [ProfileController::class, 'updatePreferences'])->name('profile.preferences');
+
+    // Utilisateurs — liste des comptes, réservée aux admins
+    Route::middleware('admin')->group(function () {
+        Route::get('/users',                       [UserController::class, 'index'])->name('users.index');
+        Route::patch('/users/{user}',              [UserController::class, 'update'])->name('users.update');
+        Route::delete('/users/{user}',             [UserController::class, 'destroy'])->name('users.destroy');
+        Route::patch('/admin/game-saves/{gameSave}',  [UserController::class, 'updateGameSave'])->name('users.game-saves.update');
+        Route::delete('/admin/game-saves/{gameSave}', [UserController::class, 'destroyGameSave'])->name('users.game-saves.destroy');
+    });
 
     // Équipes (base) — données de référence : gestion réservée aux admins
     Route::prefix('teams')->name('teams.')->middleware('admin')->group(function () {

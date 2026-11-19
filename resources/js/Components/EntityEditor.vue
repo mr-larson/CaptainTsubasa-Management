@@ -17,6 +17,8 @@ const props = defineProps({
     searchText: { type: Function, required: true },
     emptyLabel: { type: String, default: 'Aucun résultat.' },
     addTitle: { type: String, default: 'Créer' },
+    // Masque le bouton « + Ajouter » (entités qui ne se créent pas ici).
+    canCreate: { type: Boolean, default: true },
     // [{ key, label, badge?, disabled?, disabledHint? }]
     tabs: { type: Array, required: true },
     activeTab: { type: String, required: true },
@@ -43,6 +45,7 @@ const isSelected = (item) => !props.creating && props.selectedId === item.id;
                     {{ title }} <span class="text-slate-400 font-normal">({{ items.length }})</span>
                 </h3>
                 <button
+                    v-if="canCreate"
                     type="button"
                     @click="emit('create')"
                     class="flex items-center justify-center h-7 px-2.5 rounded-full text-xs font-bold shadow-sm transition-colors"

@@ -16,22 +16,22 @@ const field = fieldClass({ size: 'sm', border: 'border-slate-300' });
 </script>
 
 <template>
-    <div class="flex flex-wrap justify-end items-center gap-2" aria-label="Filtres des joueurs">
-        <label class="text-xs text-slate-500">
+    <div class="flex flex-wrap xl:flex-nowrap justify-end items-center gap-2" aria-label="Filtres des joueurs">
+        <label class="text-xs text-slate-500 xl:min-w-0 xl:shrink">
             <span class="sr-only">Poste</span>
             <select v-model="filters.position" class="block w-full" :class="field">
                 <option value="ALL">Tous les postes</option>
                 <option v-for="group in POSITION_GROUPS" :key="group.key" :value="group.key">{{ group.plural }}</option>
             </select>
         </label>
-        <label class="text-xs text-slate-500">
+        <label class="text-xs text-slate-500 xl:min-w-0 xl:shrink">
             <span class="sr-only">Univers</span>
             <select v-model="filters.origin" class="block w-full" :class="field">
                 <option value="ALL">Tous les univers</option>
                 <option v-for="origin in origins" :key="origin.key" :value="origin.key">{{ origin.label }}</option>
             </select>
         </label>
-        <label class="text-xs text-slate-500">
+        <label class="text-xs text-slate-500 xl:min-w-0 xl:shrink">
             <span class="sr-only">Nationalité</span>
             <select v-model="filters.nationality" class="block w-full" :class="field">
                 <option value="ALL">Toutes les nationalités</option>
@@ -39,7 +39,7 @@ const field = fieldClass({ size: 'sm', border: 'border-slate-300' });
                 <option v-for="nation in nationalities" :key="nation" :value="nation">{{ nation }}</option>
             </select>
         </label>
-        <label class="text-xs text-slate-500">
+        <label class="text-xs text-slate-500 xl:min-w-0 xl:shrink">
             <span class="sr-only">Équipe sous contrat</span>
             <select v-model="filters.team" class="block w-full max-w-[220px]" :class="field">
                 <option value="ALL">Toutes les équipes</option>
@@ -47,7 +47,7 @@ const field = fieldClass({ size: 'sm', border: 'border-slate-300' });
                 <option v-for="team in teams" :key="team.id" :value="String(team.id)">{{ team.name }}</option>
             </select>
         </label>
-        <label class="text-xs text-slate-500">
+        <label class="text-xs text-slate-500 xl:min-w-0 xl:shrink">
             <span class="sr-only">Trier par</span>
             <select v-model="filters.sort" class="block w-full" :class="field">
                 <option value="name">Nom (A → Z)</option>
@@ -57,7 +57,7 @@ const field = fieldClass({ size: 'sm', border: 'border-slate-300' });
                 <option v-for="stat in PLAYER_STATS" :key="stat.key" :value="stat.key">{{ stat.label }}</option>
             </select>
         </label>
-        <label v-if="filters.sort !== 'name'" class="text-xs text-slate-500">
+        <label v-if="filters.sort !== 'name'" class="text-xs text-slate-500 xl:min-w-0 xl:shrink">
             <span class="sr-only">Ordre</span>
             <select v-model="filters.direction" class="block w-full" :class="field">
                 <option value="desc">Décroissant</option>
@@ -71,6 +71,6 @@ const field = fieldClass({ size: 'sm', border: 'border-slate-300' });
                 <path d="M3 4v6h6" />
             </svg>
         </button>
-        <span class="py-2 text-xs text-slate-500" aria-live="polite">{{ count }} / {{ total }} joueurs</span>
+        <span class="py-2 text-xs text-slate-500 whitespace-nowrap shrink-0" aria-live="polite">{{ count }} / {{ total }} joueurs</span>
     </div>
 </template>

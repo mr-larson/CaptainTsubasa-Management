@@ -13,6 +13,7 @@
                     { href: route('players.index'), label: 'Joueurs' },
                     { href: route('teams.index'), label: 'Équipes', active: true },
                     { href: route('contracts.index'), label: 'Contrats' },
+                    { href: route('users.index'), label: 'Utilisateurs' },
                 ]"
             />
 

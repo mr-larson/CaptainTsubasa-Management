@@ -7,17 +7,18 @@
         </template>
 
         <div class="p-4 sm:p-6 max-w-8xl mx-auto flex flex-col gap-4">
-            <div class="flex flex-wrap items-center justify-between gap-4">
+            <div class="flex flex-wrap xl:flex-nowrap items-center justify-between gap-4">
                 <EditorSubNav class="shrink-0"
                     :back="{ href: route('dataBaseMenu'), label: 'Base de données' }"
                     :links="[
                         { href: route('players.index'), label: 'Joueurs', active: true },
                         { href: route('teams.index'), label: 'Équipes' },
                         { href: route('contracts.index'), label: 'Contrats' },
+                        { href: route('users.index'), label: 'Utilisateurs' },
                     ]"
                 />
 
-                <PlayerEditorFilters class="ml-auto"
+                <PlayerEditorFilters class="ml-auto xl:min-w-0"
                     :filters="filters" :nationalities="filterNationalities" :origins="filterOrigins" :teams="teams"
                     :count="filteredPlayers.length" :total="players.length" @reset="resetFilters"
                 />
