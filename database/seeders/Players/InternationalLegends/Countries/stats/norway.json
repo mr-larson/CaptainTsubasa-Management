@@ -1,0 +1,97 @@
+{
+  "nationality": "Norvège",
+  "sources": "Palmarès : Wikipédia / FIFA. Quatre joueurs ajoutés par migration (Flo, Carew, Hangeland, Sørloth), sans portrait : à illustrer. Le pays n'a qu'un gardien (Thorstvedt) et aucun personnage Captain Tsubasa.",
+  "players": {
+    "Henning Berg": {
+      "stats": {
+        "defense": 31,
+        "intercept": 27
+      },
+      "why": "Manchester United, Blackburn (Premier League 1995) : défenseur propre."
+    },
+    "Rune Bratseth": {
+      "stats": {
+        "defense": 34,
+        "speed": 72,
+        "intercept": 29,
+        "pass": 24
+      },
+      "why": "Champion d'Allemagne 1988 avec Werder Brême, capitaine : défenseur élégant et rapide."
+    },
+    "Ronny Johnsen": {
+      "stats": {
+        "defense": 32,
+        "speed": 70,
+        "heading": 28
+      },
+      "why": "Triplé 1999 avec Manchester United : défenseur central sûr."
+    },
+    "John Arne Riise": {
+      "stats": {
+        "speed": 73,
+        "stamina": 81,
+        "shot": 28,
+        "cross": 28,
+        "defense": 27
+      },
+      "why": "Ligue des champions 2005 avec Liverpool : latéral gauche, frappe du pied gauche."
+    },
+    "Ole Gunnar Solskjær": {
+      "stats": {
+        "attack": 34,
+        "shot": 29,
+        "speed": 71,
+        "dribble": 25,
+        "stamina": 70
+      },
+      "why": "Buteur de la finale de la Ligue des champions 1999, joker de Manchester United : finisseur opportuniste."
+    },
+    "Erling Haaland": {
+      "stats": {
+        "attack": 38,
+        "shot": 30,
+        "speed": 79,
+        "heading": 29,
+        "stamina": 76,
+        "dribble": 23,
+        "pass": 19
+      },
+      "why": "Soulier d'or, triplé 2023 avec Manchester City : puissance, vitesse et finition."
+    },
+    "Erik Thorstvedt": {
+      "stats": {
+        "defense": 32,
+        "hand_save": 27,
+        "punch_save": 27
+      },
+      "why": "Tottenham, Mondial 1994 : gardien sûr."
+    },
+    "Erik Mykland": {
+      "stats": {
+        "pass": 27,
+        "stamina": 80
+      },
+      "why": "Mondiaux 1994 et 1998 : milieu endurant."
+    },
+    "Kjetil Rekdal": {
+      "stats": {
+        "shot": 27,
+        "attack": 27,
+        "defense": 28,
+        "stamina": 78
+      },
+      "why": "Penalty contre le Brésil au Mondial 1998 : milieu complet, frappe du pied droit."
+    },
+    "Martin Ødegaard": {
+      "stats": {
+        "pass": 30,
+        "dribble": 28,
+        "attack": 32,
+        "shot": 26,
+        "speed": 68,
+        "stamina": 76
+      },
+      "why": "Capitaine d'Arsenal, ex-prodige du Real : meneur de jeu, passes et dribbles."
+    }
+  }
+}
