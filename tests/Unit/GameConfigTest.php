@@ -77,7 +77,10 @@ class GameConfigTest extends TestCase
         $this->assertSame(100, $off->initialStamina());
         $this->assertSame(\App\Helpers\PlayerLuck::NEUTRAL, $off->rollLuck());
 
-        $on = new GameConfig();
+        // La vitesse n'est plus aléatoire par défaut : le tirage doit être demandé.
+        $this->assertSame(50, (new GameConfig())->initialSpeed(50, 10));
+
+        $on = new GameConfig(['initial_speed_random' => true]);
         $this->assertSame(60, $on->initialSpeed(50, 10));
         $this->assertSame(100, $on->initialSpeed(95, 10));   // borné à 100
     }

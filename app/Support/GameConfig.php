@@ -76,7 +76,8 @@ final class GameConfig
         // Appliqué uniquement à la création du monde (sans effet en cours de partie)
         'initial_morale_random'     => true,
         'initial_stamina_random'    => true,
-        'initial_speed_random'      => true,
+        // Désactivée par défaut : la vitesse fait partie de l'identité d'un joueur (un ailier rapide reste rapide).
+        'initial_speed_random'      => false,
         // Tirée à la création et au passage à une nouvelle saison.
         'luck_random'               => true,
         // Budget de départ des clubs IA (création du monde uniquement)
