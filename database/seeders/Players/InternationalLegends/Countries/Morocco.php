@@ -24,4 +24,12 @@ final class Morocco
         ['firstname' => 'Larbi', 'lastname' => 'Benbarek', 'profile' => 'second_striker', 'position' => 'AT', 'secondary' => 'MOC', 'stats' => ['speed' => 71, 'stamina' => 73, 'attack' => 33, 'defense' => 18, 'shot' => 26, 'pass' => 28, 'dribble' => 29, 'heading' => 19]],
         ['firstname' => 'Ahmed', 'lastname' => 'Faras', 'profile' => 'striker', 'position' => 'BU', 'stats' => ['speed' => 67, 'stamina' => 74, 'attack' => 33, 'defense' => 18, 'shot' => 28, 'pass' => 22, 'dribble' => 25, 'heading' => 26]],
     ];
+
+    // Compléments de la revue Maroc : seulement douze joueurs au départ (un seul gardien, aucun Tsubasa).
+    public const EXTRA_ADDITIONS = [
+        ['firstname' => 'Yassine', 'lastname' => 'Bounou', 'profile' => 'keeper', 'position' => 'GB', 'secondary' => null, 'stats' => ['speed' => 60, 'stamina' => 72, 'defense' => 33, 'hand_save' => 28, 'punch_save' => 29], 'note' => 'Bono, demi-finaliste du Mondial 2022 et vainqueur de la Ligue Europa avec Séville ; gardien aux arrêts décisifs, notamment aux tirs au but.'],
+        ['firstname' => 'Hakim', 'lastname' => 'Ziyech', 'profile' => 'playmaker', 'position' => 'AD', 'secondary' => 'MOC', 'stats' => ['speed' => 66, 'stamina' => 66, 'attack' => 31, 'shot' => 27, 'pass' => 29, 'dribble' => 27], 'note' => 'Ajax, Chelsea (Ligue des champions 2021), demi-finaliste du Mondial 2022 ; gaucher créatif, centres et frappes enroulées.'],
+        ['firstname' => 'Sofyan', 'lastname' => 'Amrabat', 'profile' => 'holding', 'position' => 'MC', 'secondary' => null, 'stats' => ['speed' => 66, 'stamina' => 82, 'attack' => 20, 'defense' => 29, 'shot' => 18, 'pass' => 25, 'tackle' => 28, 'intercept' => 27], 'note' => 'Demi-finaliste du Mondial 2022, Fiorentina ; milieu récupérateur infatigable, très peu offensif.'],
+        ['firstname' => 'Youssef', 'lastname' => 'En-Nesyri', 'profile' => 'target', 'position' => 'BU', 'secondary' => null, 'stats' => ['speed' => 72, 'stamina' => 74, 'attack' => 31, 'shot' => 26, 'heading' => 30, 'dribble' => 21], 'note' => 'Vainqueur de la Ligue Europa 2020 avec Séville, buteur de tête contre le Portugal au Mondial 2022 ; avant-centre athlétique, détente exceptionnelle.'],
+    ];
 }
