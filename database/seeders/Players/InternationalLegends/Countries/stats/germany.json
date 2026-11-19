@@ -1,0 +1,193 @@
+{
+  "nationality": "Allemagne",
+  "sources": "Palmarès : Wikipédia / FIFA. Sept joueurs ajoutés par migration (Maier, F. Walter, Netzer, Breitner, Kroos, Schweinsteiger, Seeler), sans portrait : à illustrer.",
+  "players": {
+    "Franz Beckenbauer": {
+      "stats": {
+        "defense": 33,
+        "pass": 30,
+        "intercept": 28,
+        "attack": 24,
+        "dribble": 22,
+        "shot": 21
+      },
+      "why": "Der Kaiser, champion du monde 1974 et d'Europe 1972, trois Coupes d'Europe : libéro élégant, relance et lecture."
+    },
+    "Matthias Sammer": {
+      "stats": {
+        "speed": 64,
+        "defense": 32,
+        "intercept": 28,
+        "tackle": 27,
+        "attack": 22,
+        "pass": 26,
+        "shot": 20
+      },
+      "why": "Ballon d'Or 1996, champion d'Europe : libéro qui montait au but, anticipation."
+    },
+    "Philipp Lahm": {
+      "stats": {
+        "intercept": 28,
+        "pass": 27,
+        "stamina": 78
+      },
+      "why": "Capitaine champion du monde 2014, triplé 2013 : latéral intelligent, lecture et régularité."
+    },
+    "Andreas Brehme": {
+      "stats": {
+        "speed": 73,
+        "shot": 25,
+        "stamina": 78
+      },
+      "why": "Champion du monde 1990, auteur du penalty de la finale : latéral polyvalent, bon des deux pieds."
+    },
+    "Jürgen Kohler": {
+      "stats": {
+        "defense": 31,
+        "tackle": 27,
+        "heading": 27
+      },
+      "why": "Champion du monde 1990 et d'Europe 1996 : marqueur dur, Juventus."
+    },
+    "Guido Buchwald": {
+      "stats": {
+        "stamina": 78,
+        "defense": 30,
+        "tackle": 26
+      },
+      "why": "Champion du monde 1990 : marqueur infatigable sur Maradona."
+    },
+    "Lukas Podolski": {
+      "stats": {
+        "shot": 30,
+        "attack": 31
+      },
+      "why": "Champion du monde 2014 : frappe de gauche surpuissante."
+    },
+    "Karl-Heinz Riedle": {
+      "stats": {
+        "heading": 27,
+        "shot": 26,
+        "attack": 30
+      },
+      "why": "Champion d'Europe 1996, Ligue des champions 1997 : fort de la tête."
+    },
+    "Helmut Rahn": {
+      "stats": {
+        "speed": 75,
+        "shot": 29,
+        "dribble": 26
+      },
+      "why": "Auteur du but de la finale 1954 : ailier droit puissant et buteur."
+    },
+    "Thomas Müller": {
+      "stats": {
+        "speed": 64,
+        "stamina": 78,
+        "attack": 32,
+        "shot": 27,
+        "pass": 26,
+        "dribble": 24
+      },
+      "why": "Champion du monde 2014, 10 buts en Coupe du monde 2010 : insaisissable dans les espaces, travailleur."
+    },
+    "Karl-Heinz Rummenigge": {
+      "stats": {
+        "speed": 74,
+        "attack": 35,
+        "shot": 30,
+        "dribble": 27
+      },
+      "why": "Double Ballon d'Or 1980 et 1981, finaliste de deux Mondiaux : vitesse et frappe."
+    },
+    "Gerd Müller": {
+      "stats": {
+        "attack": 37,
+        "shot": 30,
+        "heading": 26,
+        "speed": 66,
+        "dribble": 20
+      },
+      "why": "Le Bombardier, champion du monde 1974 : buteur de surface, instinct inégalé."
+    },
+    "Rudi Völler": {
+      "stats": {
+        "shot": 29,
+        "heading": 26,
+        "attack": 32
+      },
+      "why": "Champion du monde 1990, Rome et Marseille : buteur de surface."
+    },
+    "Jürgen Klinsmann": {
+      "stats": {
+        "speed": 70,
+        "shot": 29,
+        "heading": 26,
+        "attack": 32
+      },
+      "why": "Champion du monde 1990 et d'Europe 1996 : buteur mobile et combatif."
+    },
+    "Miroslav Klose": {
+      "stats": {
+        "heading": 30,
+        "shot": 29,
+        "attack": 33,
+        "dribble": 21,
+        "speed": 62
+      },
+      "why": "Meilleur buteur de l'histoire de la Coupe du monde (16 buts) : tête et placement."
+    },
+    "Manuel Neuer": {
+      "stats": {
+        "defense": 37,
+        "hand_save": 29,
+        "punch_save": 29,
+        "speed": 68,
+        "pass": 24,
+        "stamina": 74
+      },
+      "why": "Champion du monde 2014, six titres de Ligue des champions : gardien-libéro, sorties et relance."
+    },
+    "Oliver Kahn": {
+      "stats": {
+        "defense": 36,
+        "hand_save": 29,
+        "punch_save": 28
+      },
+      "why": "Meilleur joueur du Mondial 2002, Ligue des champions 2001 : autorité et réflexes."
+    },
+    "Thomas Hässler": {
+      "stats": {
+        "dribble": 28,
+        "pass": 27,
+        "speed": 66
+      },
+      "why": "Champion du monde 1990, petit milieu technique."
+    },
+    "Pierre Littbarski": {
+      "stats": {
+        "dribble": 31,
+        "speed": 75
+      },
+      "why": "Champion du monde 1990, Cologne : dribbleur rapide."
+    },
+    "Michael Ballack": {
+      "stats": {
+        "shot": 27,
+        "heading": 26,
+        "attack": 28,
+        "stamina": 78
+      },
+      "why": "Finaliste du Mondial 2002 et de la Ligue des champions 2008 : milieu buteur, tête et frappe."
+    },
+    "Lothar Matthäus": {
+      "stats": {
+        "attack": 30,
+        "stamina": 82,
+        "pass": 29,
+        "shot": 28
+      },
+      "why": "Capitaine champion du monde 1990, Ballon d'Or 1990, 150 sélections : box-to-box complet."
+    }
+  }
+}
