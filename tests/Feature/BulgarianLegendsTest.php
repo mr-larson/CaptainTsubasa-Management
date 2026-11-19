@@ -17,10 +17,11 @@ class BulgarianLegendsTest extends TestCase
     {
         $this->seed(PlayerSeeder::class);
         $players = Player::where('origin', 'world_legends')->where('nationality', 'Bulgarie')->get();
-        $this->assertCount(12, $players);
+        // Douze profils d'origine avec portrait, plus Letchkov et Petrov (revue Bulgarie, sans portrait).
+        $this->assertCount(14, $players);
         $this->assertCount(1, $players->where('position', 'Goalkeeper'));
         $this->assertCount(4, $players->where('position', 'Defender'));
-        foreach ($players as $player) {
+        foreach ($players->reject(fn ($p) => in_array($p->lastname, ['Letchkov', 'Petrov'], true) && $p->firstname !== 'Stiliyan') as $player) {
             $this->assertNotNull($player->photo_path);
             $this->assertFileExists(public_path('storage/'.$player->photo_path));
         }
@@ -53,7 +54,7 @@ class BulgarianLegendsTest extends TestCase
         $this->assertSame($savedBefore, $saved->fresh()->getAttributes());
         $this->assertSame($otherBefore, $other->fresh()->getAttributes());
         $this->assertSoftDeleted('players', ['id' => $archive->id]);
-        $this->assertSame(11, Player::withTrashed()->where($identity)->where('lastname', '!=', 'Stoichkov')->count());
+        $this->assertSame(13, Player::withTrashed()->where($identity)->where('lastname', '!=', 'Stoichkov')->count());
         $this->assertDatabaseHas('players', $identity + ['firstname' => 'Georgi', 'lastname' => 'Asparuhov', 'photo_path' => 'players/georgi-asparuhov-1970.jpg']);
     }
 }

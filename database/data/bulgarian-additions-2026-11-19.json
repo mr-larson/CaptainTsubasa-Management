@@ -1,0 +1,32 @@
+[
+    {
+        "firstname": "Yordan",
+        "lastname": "Letchkov",
+        "age": 13,
+        "position": "Midfielder",
+        "origin": "world_legends",
+        "nationality": "Bulgarie",
+        "secondary_positions": "[]",
+        "cost": 44,
+        "stats": "{\"speed\":62,\"stamina\":76,\"attack\":29,\"defense\":22,\"shot\":26,\"pass\":28,\"dribble\":25,\"block\":16,\"intercept\":20,\"tackle\":18,\"hand_save\":10,\"punch_save\":10,\"heading\":28}",
+        "heading": 28,
+        "special_moves": null,
+        "description": "Légendes internationales — profil adapté au jeu. Milieu créatif, spécialisé dans la dernière passe et la conservation du ballon. Poste : MC. Demi-finaliste du Mondial 1994, auteur du but de tête qui élimine l’Allemagne, Hambourg et Marseille ; milieu à la tête rasée, jeu de tête et arrivées.",
+        "photo_path": null
+    },
+    {
+        "firstname": "Martin",
+        "lastname": "Petrov",
+        "age": 13,
+        "position": "Forward",
+        "origin": "world_legends",
+        "nationality": "Bulgarie",
+        "secondary_positions": "[]",
+        "cost": 44,
+        "stats": "{\"speed\":74,\"stamina\":72,\"attack\":29,\"defense\":18,\"shot\":25,\"pass\":25,\"dribble\":26,\"block\":14,\"intercept\":18,\"tackle\":16,\"hand_save\":10,\"punch_save\":10,\"cross\":27,\"heading\":21}",
+        "heading": 21,
+        "special_moves": null,
+        "description": "Légendes internationales — profil adapté au jeu. Milieu de couloir, rapide et habile dans les débordements. Poste : AG. Atlético de Madrid, Manchester City, Wolfsburg ; ailier gauche rapide, centres et frappes.",
+        "photo_path": null
+    }
+]
