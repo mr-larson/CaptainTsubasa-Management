@@ -35,4 +35,10 @@ final class Croatia
         ['firstname' => 'Robert', 'lastname' => 'Prosinečki', 'profile' => 'playmaker', 'position' => 'MG', 'secondary' => 'MOC', 'stats' => ['speed' => 61, 'stamina' => 65, 'attack' => 31, 'defense' => 18, 'shot' => 25, 'pass' => 29, 'dribble' => 29]],
         ['firstname' => 'Mario', 'lastname' => 'Mandžukić', 'profile' => 'worker_forward', 'position' => 'BU', 'secondary' => 'AG', 'stats' => ['speed' => 67, 'stamina' => 82, 'attack' => 32, 'defense' => 24, 'shot' => 27, 'pass' => 23, 'dribble' => 22, 'heading' => 29]],
     ];
+
+    // Compléments de la revue Croatie : deux noms très connus manquants (Perišić, Gvardiol).
+    public const EXTRA_ADDITIONS = [
+        ['firstname' => 'Ivan', 'lastname' => 'Perišić', 'profile' => 'winger', 'position' => 'AG', 'secondary' => 'DG', 'stats' => ['speed' => 74, 'stamina' => 84, 'attack' => 30, 'shot' => 27, 'pass' => 26, 'dribble' => 26, 'cross' => 27], 'note' => 'Finaliste du Mondial 2018 avec buteur en finale, 3e en 2022, Inter, Bayern ; ailier gaucher infatigable, centres et frappes de volée.'],
+        ['firstname' => 'Joško', 'lastname' => 'Gvardiol', 'profile' => 'stopper', 'position' => 'DC', 'secondary' => 'DG', 'stats' => ['speed' => 72, 'stamina' => 76, 'defense' => 32, 'block' => 27, 'tackle' => 28, 'heading' => 27, 'pass' => 24], 'note' => '3e du Mondial 2022, Leipzig puis Manchester City, triplé 2023 ; jeune défenseur central rapide et dur au duel.'],
+    ];
 }

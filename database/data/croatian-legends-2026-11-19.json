@@ -1,0 +1,32 @@
+[
+    {
+        "firstname": "Ivan",
+        "lastname": "Perišić",
+        "age": 13,
+        "position": "Forward",
+        "origin": "world_legends",
+        "nationality": "Croatie",
+        "secondary_positions": "[\"Defender\"]",
+        "cost": 46,
+        "stats": "{\"speed\":74,\"stamina\":84,\"attack\":30,\"defense\":18,\"shot\":27,\"pass\":26,\"dribble\":26,\"block\":14,\"intercept\":18,\"tackle\":16,\"hand_save\":10,\"punch_save\":10,\"cross\":27,\"heading\":21}",
+        "heading": 21,
+        "special_moves": null,
+        "description": "Légendes internationales — profil adapté au jeu. Milieu de couloir, rapide et habile dans les débordements. Poste : AG, poste secondaire : DG. Finaliste du Mondial 2018 avec buteur en finale, 3e en 2022, Inter, Bayern ; ailier gaucher infatigable, centres et frappes de volée.",
+        "photo_path": null
+    },
+    {
+        "firstname": "Joško",
+        "lastname": "Gvardiol",
+        "age": 13,
+        "position": "Defender",
+        "origin": "world_legends",
+        "nationality": "Croatie",
+        "secondary_positions": "[]",
+        "cost": 46,
+        "stats": "{\"speed\":72,\"stamina\":76,\"attack\":18,\"defense\":32,\"shot\":15,\"pass\":24,\"dribble\":16,\"block\":27,\"intercept\":24,\"tackle\":28,\"hand_save\":10,\"punch_save\":10,\"heading\":27}",
+        "heading": 27,
+        "special_moves": null,
+        "description": "Légendes internationales — profil adapté au jeu. Défenseur de soutien, puissant au marquage et dans les duels. Poste : DC, poste secondaire : DG. 3e du Mondial 2022, Leipzig puis Manchester City, triplé 2023 ; jeune défenseur central rapide et dur au duel.",
+        "photo_path": null
+    }
+]
