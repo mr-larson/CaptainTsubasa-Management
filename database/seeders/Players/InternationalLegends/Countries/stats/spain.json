@@ -1,0 +1,135 @@
+{
+  "nationality": "Espagne",
+  "sources": "Palmarès : Wikipédia / FIFA. Sept joueurs ajoutés par migration (Villa, Busquets, Xabi Alonso, Fàbregas, Butragueño, Zubizarreta, Pedri), sans portrait : à illustrer.",
+  "players": {
+    "Fernando Hierro": {
+      "stats": {
+        "defense": 31,
+        "pass": 28,
+        "shot": 24,
+        "heading": 28
+      },
+      "why": "Capitaine du Real, 90 sélections : défenseur buteur, penalties et coups francs."
+    },
+    "Sergio Ramos": {
+      "stats": {
+        "defense": 33,
+        "speed": 71,
+        "heading": 30,
+        "stamina": 80,
+        "attack": 25,
+        "tackle": 28
+      },
+      "why": "Champion du monde 2010, 5 Ligues des champions : défenseur buteur, but à la 93e minute en finale 2014."
+    },
+    "Carles Puyol": {
+      "stats": {
+        "defense": 35,
+        "block": 29,
+        "tackle": 29,
+        "stamina": 81,
+        "pass": 20,
+        "speed": 65
+      },
+      "why": "Capitaine de Barcelone, champion du monde 2010 : cœur et engagement, tacle et placement."
+    },
+    "Gerard Piqué": {
+      "stats": {
+        "defense": 33,
+        "pass": 28,
+        "intercept": 28,
+        "speed": 59,
+        "shot": 22
+      },
+      "why": "Champion du monde 2010, trois Ligues des champions : défenseur relanceur."
+    },
+    "Jordi Alba": {
+      "stats": {
+        "speed": 79,
+        "stamina": 80,
+        "cross": 28,
+        "attack": 27
+      },
+      "why": "Champion d'Europe 2012, Barcelone : latéral gauche rapide, appels et centres."
+    },
+    "Raúl González": {
+      "stats": {
+        "attack": 35,
+        "shot": 29,
+        "dribble": 26,
+        "pass": 25,
+        "speed": 68
+      },
+      "why": "Real Madrid, trois Ligues des champions : buteur et passeur, 44 buts en sélection."
+    },
+    "Fernando Torres": {
+      "stats": {
+        "speed": 79,
+        "attack": 35,
+        "shot": 28,
+        "dribble": 26,
+        "heading": 26
+      },
+      "why": "Champion du monde 2010, auteur du but de la finale de l'Euro 2008 : accélérations et finition."
+    },
+    "Lamine Yamal": {
+      "stats": {
+        "speed": 78,
+        "dribble": 30,
+        "attack": 33,
+        "shot": 26,
+        "pass": 27
+      },
+      "why": "Champion d'Europe 2024 à 16 ans, Barcelone : dribbleur précoce, accélérations du côté droit."
+    },
+    "Iker Casillas": {
+      "stats": {
+        "defense": 36,
+        "hand_save": 29,
+        "punch_save": 29
+      },
+      "why": "Capitaine champion du monde 2010 et d'Europe 2008 et 2012, trois Ligues des champions : gardien aux réflexes légendaires."
+    },
+    "Xavi Hernández": {
+      "stats": {
+        "pass": 31,
+        "stamina": 80,
+        "dribble": 28,
+        "attack": 31,
+        "shot": 22,
+        "speed": 62
+      },
+      "why": "Quatre Ligues des champions, champion du monde 2010 : métronome du jeu de passes."
+    },
+    "Andrés Iniesta": {
+      "stats": {
+        "dribble": 31,
+        "pass": 30,
+        "attack": 32,
+        "stamina": 76,
+        "speed": 68
+      },
+      "why": "Auteur du but de la finale du Mondial 2010, quatre Ligues des champions : conduite de balle, élégance."
+    },
+    "Rodri": {
+      "stats": {
+        "defense": 32,
+        "intercept": 29,
+        "pass": 29,
+        "shot": 25,
+        "stamina": 81,
+        "speed": 59
+      },
+      "why": "Ballon d'Or 2024, champion d'Europe 2024, City : milieu défensif complet, frappe de loin."
+    },
+    "Pep Guardiola": {
+      "stats": {
+        "pass": 30,
+        "intercept": 27,
+        "stamina": 74,
+        "attack": 22
+      },
+      "why": "Barcelone, Dream Team : milieu défensif cérébral."
+    }
+  }
+}
