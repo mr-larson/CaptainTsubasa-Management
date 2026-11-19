@@ -426,7 +426,7 @@ function submit() {
                     <div v-show="showConfig" class="flex flex-col flex-1 gap-4 overflow-y-auto min-h-0">
 
                         <!-- Mandat de la direction -->
-                        <ConfigSection compact icon="🎯" title="Mandat de la direction">
+                        <ConfigSection v-if="form.competition_type !== 'world_cup'" compact icon="🎯" title="Mandat de la direction">
                             <p class="text-2xs text-slate-400 -mt-1">
                                 Définit l'objectif de classement, la patience du board et la condition de victoire de carrière.
                             </p>
