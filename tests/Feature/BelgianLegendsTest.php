@@ -50,8 +50,9 @@ class BelgianLegendsTest extends TestCase
         $this->assertCount(10, $belgians->where('position', 'Goalkeeper'));
         $this->assertSame([PlayerOrigin::LEGENDS], $belgians->pluck('origin')->unique()->values()->all());
         $this->assertSame('🇧🇪', Nationality::flag(Nationality::BELGIQUE));
-        $this->assertSame(30, Player::where('lastname', 'De Bruyne')->firstOrFail()->stats['pass']);
-        $this->assertSame(30, Player::where('firstname', 'Eden')->where('lastname', 'Hazard')->firstOrFail()->stats['dribble']);
+        // Points forts de la revue belge (Countries/stats/belgium.json).
+        $this->assertSame(31, Player::where('lastname', 'De Bruyne')->firstOrFail()->stats['pass']);
+        $this->assertSame(31, Player::where('firstname', 'Eden')->where('lastname', 'Hazard')->firstOrFail()->stats['dribble']);
         $this->assertSame(30, Player::where('lastname', 'Courtois')->firstOrFail()->stats['hand_save']);
         $this->assertGreaterThan(Player::where('lastname', 'Trossard')->firstOrFail()->stats['attack'],
             Player::where('lastname', 'Lukaku')->firstOrFail()->stats['attack']);

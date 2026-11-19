@@ -1,0 +1,392 @@
+{
+  "nationality": "Belgique",
+  "sources": "Palmarès : Wikipédia. Vérification des identités : Philippe Léonard confirmé (arrière gauche, Standard/Monaco/Nice/Feyenoord, 26 sélections). À vérifier : Regi Van Acker (surtout connu comme entraîneur, aucune source de joueur d'élite) et Robby Van de Weyer (profil trouvé : attaquant né en 1975, pas milieu). Les attributs restent des choix de jeu, sous les plafonds de Captain Tsubasa.",
+  "players": {
+    "Thibaut Courtois": {
+      "stats": {
+        "speed": 60,
+        "defense": 37,
+        "block": 26,
+        "intercept": 24,
+        "hand_save": 30,
+        "punch_save": 28
+      },
+      "why": "Meilleur gardien du monde au sommet (Real Madrid, Chelsea, Golden Glove 2018) : réflexes et envergure, lent en dehors de sa ligne."
+    },
+    "Michel Preud'homme": {
+      "stats": {
+        "defense": 36,
+        "hand_save": 29,
+        "punch_save": 29,
+        "intercept": 25
+      },
+      "why": "Meilleur gardien du Mondial 1994 (Yashin) : placement et sorties, très régulier."
+    },
+    "Jean-Marie Pfaff": {
+      "stats": {
+        "defense": 34,
+        "hand_save": 28,
+        "punch_save": 29
+      },
+      "why": "Bayern, Mondial 1982 et 1986 : gardien spectaculaire, arrêts réflexes."
+    },
+    "Gilbert Bodart": {
+      "stats": {
+        "defense": 30,
+        "hand_save": 27,
+        "punch_save": 26
+      },
+      "why": "Standard et Belgique des années 90, fiable mais sous Preud'homme."
+    },
+    "Jan Ceulemans": {
+      "stats": {
+        "speed": 70,
+        "stamina": 78,
+        "attack": 35,
+        "shot": 28,
+        "pass": 26,
+        "dribble": 26,
+        "heading": 30
+      },
+      "why": "Club Bruges, 4e du Mondial 1986, Soulier d'or : buteur complet, très fort de la tête et endurant."
+    },
+    "Nico Claesen": {
+      "stats": {
+        "attack": 31,
+        "shot": 28,
+        "pass": 18,
+        "dribble": 21,
+        "speed": 64
+      },
+      "why": "Tottenham, Mondial 1986 : finisseur dans la surface, peu créatif."
+    },
+    "Alexandre Czerniatynski": {
+      "stats": {
+        "attack": 30,
+        "shot": 26,
+        "speed": 68
+      },
+      "why": "Buteur d'Anderlecht et Beveren : placement et finition."
+    },
+    "Jérémy Doku": {
+      "stats": {
+        "speed": 82,
+        "stamina": 66,
+        "attack": 30,
+        "shot": 20,
+        "pass": 17,
+        "dribble": 29,
+        "defense": 12
+      },
+      "why": "Ailier de Manchester City : un des meilleurs dribbleurs d'Europe en 1 contre 1 et une vitesse de pointe élite, peu de finition et aucun repli."
+    },
+    "Eden Hazard": {
+      "stats": {
+        "speed": 77,
+        "stamina": 74,
+        "attack": 37,
+        "shot": 28,
+        "pass": 28,
+        "dribble": 31,
+        "heading": 16
+      },
+      "why": "Chelsea et Real Madrid, joueur de l'année de Premier League 2015 : dribble et accélérations, faible de la tête."
+    },
+    "Romelu Lukaku": {
+      "stats": {
+        "speed": 72,
+        "stamina": 78,
+        "attack": 34,
+        "shot": 29,
+        "pass": 22,
+        "dribble": 21,
+        "heading": 30
+      },
+      "why": "Meilleur buteur de l'histoire de la Belgique, MVP de Serie A 2021 : puissance, finition et jeu aérien, peu de technique."
+    },
+    "Émile Mpenza": {
+      "stats": {
+        "speed": 74,
+        "attack": 29,
+        "shot": 24,
+        "dribble": 21
+      },
+      "why": "Standard, Schalke, Manchester City : attaquant rapide et physique, irrégulier."
+    },
+    "Mbo Mpenza": {
+      "stats": {
+        "speed": 68,
+        "attack": 27,
+        "shot": 22,
+        "dribble": 20
+      },
+      "why": "Standard, Sporting : plus discret que son frère, tout-terrain."
+    },
+    "Luc Nilis": {
+      "stats": {
+        "speed": 71,
+        "attack": 34,
+        "shot": 28,
+        "pass": 26,
+        "dribble": 27
+      },
+      "why": "Anderlecht et PSV, Mondial 1994 et 1998 : second attaquant, finisseur et créateur à la fois."
+    },
+    "Leandro Trossard": {
+      "stats": {
+        "speed": 66,
+        "stamina": 70,
+        "attack": 29,
+        "shot": 23,
+        "pass": 20,
+        "dribble": 25
+      },
+      "why": "Genk, Brighton, Arsenal : joueur de couloir technique, dribble avant finition."
+    },
+    "François Van der Elst": {
+      "stats": {
+        "speed": 76,
+        "attack": 31,
+        "shot": 25,
+        "pass": 24,
+        "dribble": 26
+      },
+      "why": "Anderlecht, West Ham, Mondial 1982 et 1986 : ailier véloce et technique."
+    },
+    "Erwin Vandenbergh": {
+      "stats": {
+        "attack": 31,
+        "shot": 28,
+        "heading": 24
+      },
+      "why": "Lierse, Anderlecht, Mondial 1982 : buteur de surface, Soulier d'or."
+    },
+    "Josip Weber": {
+      "stats": {
+        "speed": 70,
+        "attack": 31,
+        "shot": 28
+      },
+      "why": "Cercle Bruges, meilleur buteur du championnat 1992-93 et du Mondial 1994 : instinct de buteur."
+    },
+    "Branko Strupar": {
+      "stats": {
+        "attack": 30,
+        "shot": 27
+      },
+      "why": "Genk, Derby County : buteur de surface efficace."
+    },
+    "François Sterchele": {
+      "stats": {
+        "attack": 28,
+        "shot": 26
+      },
+      "why": "Club Bruges, Soulier d'or 2008 : finisseur avant tout."
+    },
+    "Kevin De Bruyne": {
+      "stats": {
+        "speed": 75,
+        "stamina": 80,
+        "attack": 37,
+        "shot": 28,
+        "pass": 31,
+        "dribble": 27,
+        "defense": 24
+      },
+      "why": "Manchester City, plus de 100 passes décisives en Premier League : passe, frappe de loin et volume de jeu."
+    },
+    "Enzo Scifo": {
+      "stats": {
+        "speed": 66,
+        "stamina": 72,
+        "attack": 34,
+        "shot": 26,
+        "pass": 30,
+        "dribble": 29,
+        "defense": 22,
+        "tackle": 19
+      },
+      "why": "Anderlecht, Inter, Monaco, quatre Mondiaux : meneur de jeu élégant, peu défensif."
+    },
+    "Marc Wilmots": {
+      "stats": {
+        "speed": 66,
+        "stamina": 78,
+        "attack": 30,
+        "shot": 25,
+        "pass": 24,
+        "dribble": 22,
+        "tackle": 24,
+        "heading": 26
+      },
+      "why": "Le Sanglier : Schalke (Coupe UEFA 1997), 4 Mondiaux : arrivées dans la surface, combativité et endurance."
+    },
+    "Franky Van der Elst": {
+      "stats": {
+        "stamina": 76,
+        "defense": 30,
+        "intercept": 28,
+        "tackle": 27,
+        "pass": 26
+      },
+      "why": "Club Bruges, Mondial 1986 : milieu récupérateur et relanceur."
+    },
+    "Thomas Buffel": {
+      "stats": {
+        "speed": 72,
+        "stamina": 66,
+        "attack": 24,
+        "dribble": 24
+      },
+      "why": "Feyenoord, Rangers : milieu de couloir rapide (la vitesse était sous-évaluée)."
+    },
+    "Bart Goor": {
+      "stats": {
+        "speed": 68,
+        "stamina": 66,
+        "dribble": 21
+      },
+      "why": "Anderlecht, Hertha Berlin : milieu de couloir, vitesse correcte."
+    },
+    "Timmy Simons": {
+      "stats": {
+        "speed": 58,
+        "stamina": 72,
+        "defense": 26,
+        "pass": 24
+      },
+      "why": "Club Bruges, PSV, record de sélections : milieu défensif posé, relance simple."
+    },
+    "Youri Tielemans": {
+      "stats": {
+        "stamina": 74,
+        "attack": 26,
+        "shot": 25,
+        "pass": 28
+      },
+      "why": "Leicester (FA Cup 2021), Monaco, Aston Villa : passe et frappe de loin."
+    },
+    "Marc Degryse": {
+      "stats": {
+        "attack": 28,
+        "pass": 28,
+        "dribble": 25,
+        "shot": 22
+      },
+      "why": "Anderlecht, Sheffield Wednesday, Bordeaux : créateur plus que buteur."
+    },
+    "Johan Walem": {
+      "stats": {
+        "shot": 24,
+        "pass": 25
+      },
+      "why": "Anderlecht, Galatasaray : coups de pied arrêtés."
+    },
+    "Steven Defour": {
+      "stats": {
+        "stamina": 78,
+        "tackle": 26,
+        "shot": 22
+      },
+      "why": "Standard, Anderlecht : récupérateur technique."
+    },
+    "Vincent Kompany": {
+      "stats": {
+        "speed": 65,
+        "defense": 34,
+        "block": 28,
+        "tackle": 28,
+        "heading": 29,
+        "pass": 25
+      },
+      "why": "Capitaine de Manchester City, 4 titres de Premier League : leadership, jeu de tête et anticipation."
+    },
+    "Éric Gerets": {
+      "stats": {
+        "speed": 71,
+        "defense": 32,
+        "block": 28,
+        "tackle": 28,
+        "stamina": 78
+      },
+      "why": "Standard, PSV (Coupe d'Europe 1988), Mondial 1982 et 1986 : défenseur et latéral complet."
+    },
+    "Jan Vertonghen": {
+      "stats": {
+        "speed": 62,
+        "defense": 32,
+        "pass": 27,
+        "stamina": 76
+      },
+      "why": "Ajax, Tottenham, plus de 150 sélections : défenseur propre, bonne relance."
+    },
+    "Philippe Albert": {
+      "stats": {
+        "defense": 32,
+        "block": 27,
+        "heading": 28,
+        "pass": 26
+      },
+      "why": "Anderlecht, Newcastle, Mondial 1994 : défenseur élégant, relance et tête."
+    },
+    "Georges Grün": {
+      "stats": {
+        "defense": 30,
+        "heading": 27
+      },
+      "why": "Anderlecht, Parme : défenseur solide, bon de la tête."
+    },
+    "Daniel Van Buyten": {
+      "stats": {
+        "speed": 55,
+        "stamina": 68,
+        "defense": 28,
+        "heading": 30,
+        "block": 25,
+        "tackle": 24
+      },
+      "why": "Bayern, Marseille : colosse, puissance et jeu aérien, lent."
+    },
+    "Jelle Van Damme": {
+      "stats": {
+        "speed": 58,
+        "defense": 27,
+        "tackle": 28
+      },
+      "why": "Genk, Standard, Gand : défenseur dur sur l'homme."
+    },
+    "Thomas Vermaelen": {
+      "stats": {
+        "speed": 60,
+        "defense": 29,
+        "pass": 24,
+        "heading": 26
+      },
+      "why": "Ajax, Arsenal, Barcelone : défenseur relanceur."
+    },
+    "Philippe Clement": {
+      "stats": {
+        "stamina": 80,
+        "defense": 29,
+        "tackle": 26,
+        "intercept": 24
+      },
+      "why": "Club Bruges, Rangers : capitaine endurant, bon tacleur."
+    },
+    "Olivier Deschacht": {
+      "stats": {
+        "speed": 64,
+        "stamina": 74,
+        "defense": 25
+      },
+      "why": "Anderlecht : latéral gauche sérieux (vitesse sous-évaluée)."
+    },
+    "Filip De Wilde": {
+      "stats": {
+        "hand_save": 26,
+        "punch_save": 25
+      },
+      "why": "Anderlecht, Sporting : gardien sûr de sa ligne."
+    }
+  }
+}
