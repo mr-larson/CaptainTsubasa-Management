@@ -67,10 +67,26 @@ trait EvaluatesPlayers
 
         $score = 0.0;
         foreach ($weights as $stat => $weight) {
-            $score += ($player->{$stat} ?? 0) * $weight;
+            $score += $this->playerStatValue($player, $stat) * $weight;
         }
 
         return (int) round($score);
+    }
+
+    /**
+     * Valeur d'une stat d'un joueur, quelle que soit sa forme : colonne d'un joueur de partie
+     * (GamePlayer) ou clé du JSON `stats` d'un joueur du catalogue (Player), où les colonnes
+     * n'existent pas. Sans cela, tous les joueurs du catalogue valaient 0 et le choix des
+     * titulaires d'une sélection nationale ne dépendait plus de leur niveau.
+     */
+    protected function playerStatValue($player, string $stat): float
+    {
+        $stats = $player->stats ?? null;
+        if (is_array($stats) && array_key_exists($stat, $stats)) {
+            return (float) $stats[$stat];
+        }
+
+        return (float) ($player->{$stat} ?? 0);
     }
     /** Bonus ou malus de forme d'un candidat au recrutement : endurance (par rapport à 80), moral (par rapport à 60) et chance (par rapport à 50), pondérés. $staminaWeight règle l'importance de l'endurance. */
     protected function recruitmentReadiness($player, float $staminaWeight): float

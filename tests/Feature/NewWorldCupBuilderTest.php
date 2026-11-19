@@ -307,9 +307,14 @@ class NewWorldCupBuilderTest extends TestCase
         [$squad, $lineup] = app(NationalSquadPicker::class)->pick(Player::where('nationality', $nation)->get(), null);
 
         $this->assertCount(18, $squad);
-        $this->assertGreaterThanOrEqual(4, $squad->filter(fn ($p) => $p->position->value === 'Defender')->count());
         $this->assertCount(11, $lineup['slots']);
         $this->assertArrayHasKey($lineup['formation'], FormationHelper::SLOT_ZONES);
+        // Le schéma retenu dépend maintenant du niveau réel des joueurs : la défense alignée doit
+        // simplement remplir les postes de défenseur de ce schéma (et non onze attaquants).
+        $defenseSlots = count(array_filter(FormationHelper::SLOT_ZONES[$lineup['formation']], fn ($zone) => $zone === 1));
+        $startingDefenders = $squad->whereIn('id', array_values($lineup['slots']))->filter(fn ($p) => $p->position->value === 'Defender')->count();
+        $this->assertGreaterThanOrEqual(3, $startingDefenders);
+        $this->assertSame($defenseSlots, $startingDefenders);
     }
 
     public function test_an_inactive_nation_is_neither_listed_nor_accepted(): void
