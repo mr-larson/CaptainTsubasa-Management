@@ -19,6 +19,7 @@ const props = defineProps({
     aiDraftBudget: { type: Number, required: true },
     aiStartBudget: { type: Number, required: true },
     humanStartBudgets: { type: Object, required: true },
+    humanWeeklyIncomes: { type: Object, required: true },
     draftBudgets: { type: Object, required: true },
     periodPackages: { type: Array, default: () => [] },
 });
@@ -77,11 +78,12 @@ const showConfigHint = ref(true);
 
 
 
+// Exigence du board par niveau (le budget de départ et le revenu se règlent dans « Économie »).
 const careerLevels = [
-    { key: 'none',     icon: '∞',  label: 'Bac à sable',  desc: 'Aucun objectif. Les saisons s\'enchaînent à l\'infini. Budget 2500 billets, revenus pleins.' },
-    { key: 'survival', icon: '🛡️', label: 'Survie',       desc: 'Petit club. La direction tolère un objectif modeste mais reste impatiente. 1 titre pour gagner. Budget 1500 billets, 500 billets/sem.' },
-    { key: 'standard', icon: '⚖️', label: 'Standard',     desc: 'Objectif calé sur la force de l\'effectif. 2 titres pour gagner. Budget 1000 billets, 450 billets/sem.' },
-    { key: 'conquest', icon: '👑', label: 'Conquête',     desc: 'Gros club. Le board exige le haut du tableau ET tient les cordons de la bourse. 3 titres pour gagner. Budget 500 billets, 350 billets/sem.' },
+    { key: 'none',     icon: '∞',  label: 'Bac à sable',  desc: 'Aucun objectif. Les saisons s\'enchaînent à l\'infini.' },
+    { key: 'survival', icon: '🛡️', label: 'Survie',       desc: 'Petit club. Objectif de classement indulgent, progression modeste exigée. 3 saisons réussies pour gagner.' },
+    { key: 'standard', icon: '⚖️', label: 'Standard',     desc: 'Objectif calé sur la force de l\'effectif. 4 saisons réussies pour gagner.' },
+    { key: 'conquest', icon: '👑', label: 'Conquête',     desc: 'Gros club. Le board exige le haut du tableau et une forte progression. 5 saisons réussies pour gagner.' },
 ];
 
 const config = reactive({
@@ -107,6 +109,7 @@ const config = reactive({
     ai_training_enabled: true,
     initial_morale_random: true, initial_stamina_random: true, initial_speed_random: true, luck_random: true,
     human_start_budget: props.humanStartBudgets.standard, ai_start_budget: props.aiStartBudget,
+    human_weekly_income: props.humanWeeklyIncomes.standard,
     draft_budget: props.draftBudgets.standard, ai_draft_budget: props.aiDraftBudget,
     visible_origins: {
         captain_tsubasa: true, captain_tsubasa_international: true, world_legends: false,
@@ -155,6 +158,9 @@ function selectDifficulty(difficulty) {
     if (config.human_start_budget === props.humanStartBudgets[config.career_difficulty]) {
         config.human_start_budget = props.humanStartBudgets[difficulty];
     }
+    if (config.human_weekly_income === props.humanWeeklyIncomes[config.career_difficulty]) {
+        config.human_weekly_income = props.humanWeeklyIncomes[difficulty];
+    }
     config.career_difficulty = difficulty;
 }
 
@@ -171,6 +177,7 @@ function resetDefaults() {
         ai_transfers_enabled: true, ai_training_enabled: true,
         initial_morale_random: true, initial_stamina_random: true, initial_speed_random: true, luck_random: true,
         human_start_budget: props.humanStartBudgets.standard, ai_start_budget: props.aiStartBudget,
+        human_weekly_income: props.humanWeeklyIncomes.standard,
         draft_budget: props.draftBudgets.standard, ai_draft_budget: props.aiDraftBudget,
         ...universePreset(form.competition_type),
     });
@@ -428,7 +435,8 @@ function submit() {
                         <!-- Mandat de la direction -->
                         <ConfigSection v-if="form.competition_type !== 'world_cup'" compact icon="🎯" title="Mandat de la direction">
                             <p class="text-2xs text-slate-400 -mt-1">
-                                Définit l'objectif de classement, la patience du board et la condition de victoire de carrière.
+                                Chaque saison, le board juge 4 piliers : classement, effectif, vestiaire et finances. Réussis assez de saisons pour gagner ta carrière.
+                                Le budget de départ et les revenus se règlent dans « Économie ».
                             </p>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 <button v-for="lvl in careerLevels" :key="lvl.key" type="button"
@@ -512,6 +520,10 @@ function submit() {
                                 <ConfigRange v-for="field in budgetFields" :key="field.key" v-model="config[field.key]"
                                              :id="field.key" :label="field.label" :min="field.min" :max="20000" :step="250" value-width="w-14">
                                     <template #value>{{ config[field.key] }} <GameBanknote /></template>
+                                </ConfigRange>
+                                <ConfigRange v-model="config.human_weekly_income" id="human_weekly_income" label="Revenu hebdomadaire par équipe humaine"
+                                             :min="0" :max="1500" :step="50" value-width="w-14">
+                                    <template #value>{{ config.human_weekly_income }} <GameBanknote />/sem</template>
                                 </ConfigRange>
                             </div>
                             <p class="text-2xs text-slate-400">Les budgets de draft sont réservés au recrutement. Les soldes expirent à la fin de chaque draft.</p>

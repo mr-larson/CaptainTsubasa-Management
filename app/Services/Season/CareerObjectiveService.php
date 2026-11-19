@@ -21,43 +21,51 @@ use Illuminate\Support\Collection;
 class CareerObjectiveService
 {
     /**
-     * Réglages par niveau de mandat choisi à la création.
-     *
-     * start_budget / weekly_income ne s'appliquent qu'aux équipes humaines :
-     * l'IA part avec le réglage ai_start_budget (2500 par défaut) et 500 GL/sem. Bac à sable : SANDBOX_START_BUDGET, l'écart relatif fait la difficulté.
+     * Exigence du board par niveau de mandat choisi à la création (objectifs, confiance,
+     * victoire) : rang cible, progression de force, moral, budget. Le volet économie (budget de départ, revenus) est dans GameConfig::ECONOMY_PRESETS.
      */
-    public const SANDBOX_START_BUDGET = 2500;
-
     public const PRESETS = [
         'survival' => [
             'label'         => 'Survie',
             'confidence'    => 45,
             'titles'        => 1,
+            'seasons'       => 3,    // saisons réussies (score ≥ seuil) pour gagner la carrière
             'rank_offset'   => 2,   // objectif plus indulgent (rang plus bas toléré)
             'win_bonus'     => 20,
             'fail_penalty'  => 16,
-            'start_budget'  => 1500,
-            'weekly_income' => 500,
+            'strength_gain' => 1,    // progression de force moyenne du onze exigée sur la saison
+            'morale_target' => 55,   // moral moyen visé en fin de saison
+            'budget_share'  => 0.2,   // part des revenus de la saison à mettre de côté
+            'rank_weight'   => 30,    // poids du classement dans le score (les 3 autres piliers se partagent le reste)
+            'success_threshold' => 50,  // score minimal (0-100) pour que la saison compte comme réussie
         ],
         'standard' => [
             'label'         => 'Standard',
             'confidence'    => 50,
             'titles'        => 2,
+            'seasons'       => 4,    // saisons réussies (score ≥ seuil) pour gagner la carrière
             'rank_offset'   => 0,
             'win_bonus'     => 18,
             'fail_penalty'  => 22,
-            'start_budget'  => 1000,
-            'weekly_income' => 450,
+            'strength_gain' => 2,    // progression de force moyenne du onze exigée sur la saison
+            'morale_target' => 60,   // moral moyen visé en fin de saison
+            'budget_share'  => 0.4,   // part des revenus de la saison à mettre de côté
+            'rank_weight'   => 40,    // poids du classement dans le score (les 3 autres piliers se partagent le reste)
+            'success_threshold' => 60,  // score minimal (0-100) pour que la saison compte comme réussie
         ],
         'conquest' => [
             'label'         => 'Conquête',
             'confidence'    => 55,
             'titles'        => 3,
+            'seasons'       => 5,    // saisons réussies (score ≥ seuil) pour gagner la carrière
             'rank_offset'   => -2,  // objectif exigeant (doit finir plus haut)
             'win_bonus'     => 15,
             'fail_penalty'  => 28,
-            'start_budget'  => 500, // le board exige ET tient les cordons de la bourse
-            'weekly_income' => 350,
+            'strength_gain' => 3,    // progression de force moyenne du onze exigée sur la saison
+            'morale_target' => 66,   // moral moyen visé en fin de saison
+            'budget_share'  => 0.6,   // part des revenus de la saison à mettre de côté
+            'rank_weight'   => 50,    // poids du classement dans le score (les 3 autres piliers se partagent le reste)
+            'success_threshold' => 70,  // score minimal (0-100) pour que la saison compte comme réussie
         ],
     ];
 
@@ -99,6 +107,10 @@ class CareerObjectiveService
             'mandate'         => null,
             'titles_required' => $preset['titles'],
             'titles_won'      => 0,
+            // Victoire : 'seasons' (N saisons réussies, mandat à piliers) ou 'titles' (parties plus anciennes : N titres).
+            'win_mode'        => 'titles',
+            'seasons_required' => $preset['seasons'],
+            'seasons_won'     => 0,
             'history'         => [],
             'last_verdict'    => null,
             'fired_reason'    => null,
@@ -127,6 +139,11 @@ class CareerObjectiveService
             'mandate'         => $c['mandate'],
             'titles_required' => (int) $c['titles_required'],
             'titles_won'      => (int) $c['titles_won'],
+            // Valeurs actuelles des piliers mesurables en cours de saison (classement : voir le dashboard).
+            'live'            => ! empty($c['mandate']['pillars']) ? $this->livePillarValues($gameSave) : null,
+            'win_mode'        => $c['win_mode'],
+            'seasons_required' => (int) $c['seasons_required'],
+            'seasons_won'     => (int) $c['seasons_won'],
             'last_verdict'    => $c['last_verdict'],
             'fired_reason'    => $c['fired_reason'],
             // Historique des saisons jouées, trié par n° de saison croissant.
@@ -175,6 +192,7 @@ class CareerObjectiveService
 
         $targetRank = max(1, min($teamCount, $expectedRank + $preset['rank_offset']));
 
+        $c['win_mode'] = 'seasons';   // un mandat à piliers bascule la partie sur « N saisons réussies »
         $c['mandate'] = [
             'season'        => $season,
             'target_rank'   => $targetRank,
@@ -183,6 +201,7 @@ class CareerObjectiveService
             'label'         => $targetRank <= 1
                 ? 'Titre de champion'
                 : "Finir dans le top {$targetRank}",
+            'pillars'       => $this->buildPillars($gameSave, $preset, $strengths, $controlledId, $targetRank, $expectedRank, $teamCount),
         ];
 
         $this->persist($gameSave, $c);
@@ -278,15 +297,33 @@ class CareerObjectiveService
         $mandate    = $c['mandate'] ?? ['target_rank' => $rank, 'label' => '—'];
         $target     = (int) ($mandate['target_rank'] ?? $rank);
         $preset     = $this->preset($gameSave);
-        $met        = $rank <= $target;
         $isChampion = $rank === 1;
 
-        if ($met) {
-            // Dépassement de l'objectif : bonus supplémentaire par rang gagné.
-            $delta = $preset['win_bonus'] + max(0, $target - $rank) * 4;
+        $score = null;
+        $pillars = null;
+        if (! empty($mandate['pillars'])) {
+            // Mandat à 4 piliers : le score (0-100) décide du mouvement de confiance.
+            [$pillars, $score] = $this->scorePillars($gameSave, $mandate['pillars'], $rank, $controlledId, $preset);
+            $met = $score >= $preset['success_threshold'];
+
+            if ($met) {
+                $delta = $preset['win_bonus']
+                    + (int) round(8 * ($score - $preset['success_threshold']) / max(1, 100 - $preset['success_threshold']))
+                    + ($isChampion ? 4 : 0);
+            } else {
+                $delta = - (int) round($preset['fail_penalty'] * (1 + ($preset['success_threshold'] - $score) / $preset['success_threshold']));
+            }
         } else {
-            // Échec : pénalité aggravée selon l'ampleur du raté.
-            $delta = - (int) round($preset['fail_penalty'] * (1 + 0.25 * ($rank - $target)));
+            // Ancien mandat (partie commencée avant les piliers) : classement seul.
+            $met = $rank <= $target;
+
+            if ($met) {
+                // Dépassement de l'objectif : bonus supplémentaire par rang gagné.
+                $delta = $preset['win_bonus'] + max(0, $target - $rank) * 4;
+            } else {
+                // Échec : pénalité aggravée selon l'ampleur du raté.
+                $delta = - (int) round($preset['fail_penalty'] * (1 + 0.25 * ($rank - $target)));
+            }
         }
 
         $c['confidence'] = $this->clampConfidence((int) $c['confidence'] + $delta);
@@ -294,10 +331,16 @@ class CareerObjectiveService
         if ($isChampion) {
             $c['titles_won'] = (int) $c['titles_won'] + 1;
         }
+        if ($pillars !== null && $met) {
+            $c['seasons_won'] = (int) $c['seasons_won'] + 1;
+        }
 
         // Décision : victoire de carrière > licenciement > maintien.
         $outcome = 'retained';
-        if ((int) $c['titles_won'] >= (int) $c['titles_required']) {
+        $victory = $c['win_mode'] === 'seasons'
+            ? (int) $c['seasons_won'] >= (int) $c['seasons_required']
+            : (int) $c['titles_won'] >= (int) $c['titles_required'];
+        if ($victory) {
             $c['status'] = 'won';
             $outcome = 'won';
         } elseif ($c['confidence'] <= self::CONFIDENCE_FIRED) {
@@ -312,12 +355,16 @@ class CareerObjectiveService
             'target_rank' => $target,
             'mandate'     => $mandate['label'] ?? null,
             'met'         => $met,
+            'score'       => $score,
+            'pillars'     => $pillars,
             'champion'    => $isChampion,
             'confidence'  => (int) $c['confidence'],
             'delta'       => $delta,
             'outcome'     => $outcome,
             'titles_won'  => (int) $c['titles_won'],
             'titles_required' => (int) $c['titles_required'],
+            'seasons_won'     => (int) $c['seasons_won'],
+            'seasons_required' => (int) $c['seasons_required'],
         ];
 
         $c['last_verdict'] = $verdict;
@@ -353,6 +400,96 @@ class CareerObjectiveService
     // ==========================
     //   HELPERS PRIVÉS
     // ==========================
+
+    /**
+     * Mesure les 4 piliers en fin de saison et calcule le score du mandat (0-100) :
+     * chaque pilier atteint rapporte son poids (classement : rank_weight, les trois
+     * autres se partagent le reste à parts égales).
+     *
+     * @param  array<string, array<string, int|float>>  $targets  piliers fixés dans le mandat
+     * @return array{0: array<string, array<string, mixed>>, 1: int}  [détail par pilier, score]
+     */
+    private function scorePillars(GameSave $gameSave, array $targets, int $rank, int $teamId, array $preset): array
+    {
+        $otherWeight = (100 - $preset['rank_weight']) / 3;
+
+        $values = [
+            'rank'     => $rank,
+            'strength' => (float) $this->teamStrengths($gameSave)->get($teamId, 0),
+            'morale'   => $this->averageMorale($gameSave, $teamId),
+            'budget'   => (int) (GameTeam::whereKey($teamId)->value('budget') ?? 0),
+        ];
+
+        $pillars = [];
+        $score = 0.0;
+        foreach (['rank' => 'Classement', 'strength' => 'Effectif', 'morale' => 'Vestiaire', 'budget' => 'Finances'] as $key => $label) {
+            $target = $targets[$key]['target'] ?? null;
+            if ($target === null) {
+                continue;
+            }
+            $weight = $key === 'rank' ? $preset['rank_weight'] : $otherWeight;
+            $met = $key === 'rank' ? $values[$key] <= $target : $values[$key] >= $target;
+            $score += $met ? $weight : 0;
+            $pillars[$key] = ['label' => $label, 'target' => $target, 'value' => $values[$key], 'met' => $met, 'weight' => round($weight, 1)];
+        }
+
+        return [$pillars, (int) round($score)];
+    }
+
+    /**
+     * Valeurs actuelles de l'équipe contrôlée sur les piliers mesurables à tout moment.
+     *
+     * @return array{strength: float, morale: int, budget: int}
+     */
+    private function livePillarValues(GameSave $gameSave): array
+    {
+        $teamId = (int) ($gameSave->controlled_game_team_id ?? 0);
+
+        return [
+            'strength' => (float) $this->teamStrengths($gameSave)->get($teamId, 0),
+            'morale'   => $this->averageMorale($gameSave, $teamId),
+            'budget'   => (int) (GameTeam::whereKey($teamId)->value('budget') ?? 0),
+        ];
+    }
+
+    /** Moral moyen arrondi de l'effectif sous contrat de l'équipe (0 si effectif vide). */
+    private function averageMorale(GameSave $gameSave, int $teamId): int
+    {
+        $ids = GameContract::where('game_save_id', $gameSave->id)
+            ->where('game_team_id', $teamId)
+            ->activeAt((int) ($gameSave->week ?? 1))
+            ->pluck('game_player_id');
+
+        return $ids->isEmpty() ? 0 : (int) round(GamePlayer::whereIn('id', $ids)->avg('morale') ?? 0);
+    }
+
+    /**
+     * Cibles des 4 piliers du mandat (classement, stats, vestiaire, finances), figées en
+     * début de saison avec les valeurs de départ qui servent à mesurer la progression.
+     *
+     * @param  Collection<int, float>  $strengths
+     * @return array<string, array<string, int|float>>
+     */
+    private function buildPillars(GameSave $gameSave, array $preset, Collection $strengths, int $teamId, int $targetRank, int $expectedRank, int $teamCount): array
+    {
+        $baseStrength = (float) $strengths->get($teamId);
+        $baseBudget   = (int) (GameTeam::whereKey($teamId)->value('budget') ?? 0);
+        $income       = WeekClosingService::humanIncomeModel($gameSave)['base'];
+        $weeks        = SeasonService::lengthForTeamCount($teamCount);
+
+        return [
+            'rank'     => ['target' => $targetRank, 'expected' => $expectedRank],
+            'strength' => [
+                'baseline' => $baseStrength,
+                'target'   => round(min(100, $baseStrength + $preset['strength_gain']), 2),
+            ],
+            'morale'   => ['target' => min(90, (int) $preset['morale_target'])],
+            'budget'   => [
+                'baseline' => $baseBudget,
+                'target'   => $baseBudget + (int) (round($income * $weeks * $preset['budget_share'] / 50) * 50),
+            ],
+        ];
+    }
 
     /** @return array<string, mixed> */
     private function preset(GameSave $gameSave): array

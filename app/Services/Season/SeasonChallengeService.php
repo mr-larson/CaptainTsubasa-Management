@@ -58,6 +58,9 @@ class SeasonChallengeService
     /** Objectifs jugés sur l'état final (pas de validation anticipée). */
     private const FINAL_STATE_KEYS = ['rank_max', 'avg_morale_min', 'budget_min'];
 
+    /** Défis qui doublonneraient un pilier du mandat (classement, moral, budget) : exclus du tirage de l'équipe jugée par le board. */
+    private const MANDATE_PILLAR_KEYS = ['rank_max', 'avg_morale_min', 'budget_min'];
+
     /** Modulation des seuils des équipes humaines selon le mandat. */
     private const DIFFICULTY_MULT = ['none' => 1.0, 'survival' => 0.9, 'standard' => 1.0, 'conquest' => 1.1];
 
@@ -99,6 +102,8 @@ class SeasonChallengeService
         $humanIncome  = WeekClosingService::humanIncomeModel($gameSave)['base'];
         $difficulty   = (string) $gameSave->getConfig('career_difficulty', 'standard');
         $rankedIds    = $strengths->keys()->values();
+        $careerEnabled = app(CareerObjectiveService::class)->isEnabled($gameSave);
+        $controlledId = (int) ($gameSave->controlled_game_team_id ?? 0);
 
         $byTeam = [];
         foreach ($teams as $id => $team) {
@@ -112,6 +117,8 @@ class SeasonChallengeService
                 'budget'        => (int) ($team->budget ?? 0),
                 'income'        => $team->is_controlled ? $humanIncome : WeekClosingService::BASE_INCOME,
                 'diff_mult'     => $team->is_controlled ? (self::DIFFICULTY_MULT[$difficulty] ?? 1.0) : 1.0,
+                // L'équipe jugée par le mandat du board n'a pas de défi qui ferait doublon avec ses piliers.
+                'has_mandate'   => $careerEnabled && (int) $team->id === $controlledId,
             ];
 
             $byTeam[$id] = [
@@ -162,7 +169,12 @@ class SeasonChallengeService
     private function isEligible(string $key, array $ctx): bool
     {
         // Le favori n'a personne de plus fort à battre.
-        return ! ($key === 'beat_stronger_min' && $ctx['expected_rank'] <= 1);
+        if ($key === 'beat_stronger_min' && $ctx['expected_rank'] <= 1) {
+            return false;
+        }
+
+        // Classement, moral et budget sont déjà des piliers du mandat de l'équipe contrôlée.
+        return ! (($ctx['has_mandate'] ?? false) && in_array($key, self::MANDATE_PILLAR_KEYS, true));
     }
 
     /** Seuil chiffré d'un défi selon le niveau, la force attendue de l'équipe, la durée de la saison, le budget et la difficulté du mandat. */

@@ -2,6 +2,8 @@
 import GameBanknote from '@/Components/GameBanknote.vue';
 import Panel from '@/Components/Panel.vue';
 import { computed } from 'vue';
+import MandatePillars from '@/Pages/GameSaves/Play/MandatePillars.vue';
+import { livePillarRows } from '@/Pages/GameSaves/Play/mandatePillars';
 
 /**
  * Règles du jeu, réutilisable :
@@ -15,9 +17,9 @@ const props = defineProps({
 
 // Barème statique (miroir de CareerObjectiveService).
 const DIFFICULTY_PRESETS = [
-    { key: 'survival', label: 'Survie',   confidence: 45, titles: 1, budget: '1500 billets', income: '500 billets/sem', rank: 'Objectif indulgent (rang toléré +2)' },
-    { key: 'standard', label: 'Standard', confidence: 50, titles: 2, budget: '1000 billets', income: '450 billets/sem', rank: 'Objectif = classement attendu' },
-    { key: 'conquest', label: 'Conquête', confidence: 55, titles: 3, budget: '500 billets', income: '350 billets/sem', rank: 'Objectif exigeant (rang −2)' },
+    { key: 'survival', label: 'Survie',   confidence: 45, seasons: 3, threshold: 50, budget: '1500 billets', income: '500 billets/sem', rank: 'Rang toléré +2 · effectif +1 · moral 55 · 20 % des revenus épargnés' },
+    { key: 'standard', label: 'Standard', confidence: 50, seasons: 4, threshold: 60, budget: '1000 billets', income: '450 billets/sem', rank: 'Rang attendu · effectif +2 · moral 60 · 40 % des revenus épargnés' },
+    { key: 'conquest', label: 'Conquête', confidence: 55, seasons: 5, threshold: 70, budget: '500 billets', income: '350 billets/sem', rank: 'Rang −2 · effectif +3 · moral 66 · 60 % des revenus épargnés' },
 ];
 
 // Présentation des pages/onglets du jeu.
@@ -34,6 +36,7 @@ const PAGES = [
     { icon: '⚙️', title: 'Gestion',       text: 'Base de données (joueurs/équipes), profil, configuration de la partie, et ces règles.' },
 ];
 
+const liveRows = computed(() => livePillarRows(props.career?.mandate, props.career?.live));
 const lastVerdict = computed(() => props.career?.last_verdict ?? null);
 const careerHistory = computed(() => props.career?.history ?? []);
 
@@ -87,19 +90,27 @@ const verdictOutcomeLabel = (o) => ({
                 <p class="text-2xs text-slate-400 mt-1">⚠️ Sous 25 le board est en alerte · à 0 c'est le licenciement.</p>
             </div>
 
-            <!-- Titres -->
+            <!-- Piliers du mandat en cours -->
+            <div v-if="liveRows.length" class="mt-3">
+                <span class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Piliers du mandat</span>
+                <MandatePillars :rows="liveRows" />
+            </div>
+
+            <!-- Condition de victoire : saisons réussies (mandat à piliers) ou titres (anciennes parties) -->
             <div class="mt-3 flex items-center gap-2 flex-wrap">
-                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Titres</span>
+                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{{ career.win_mode === 'seasons' ? 'Saisons réussies' : 'Titres' }}</span>
                 <div class="flex items-center gap-1">
-                    <span v-for="n in career.titles_required" :key="n"
+                    <span v-for="n in (career.win_mode === 'seasons' ? career.seasons_required : career.titles_required)" :key="n"
                           class="w-5 h-5 rounded-full flex items-center justify-center text-[11px]"
-                          :class="n <= career.titles_won ? 'bg-amber-100' : 'bg-slate-100 grayscale opacity-50'">🏆</span>
+                          :class="n <= (career.win_mode === 'seasons' ? career.seasons_won : career.titles_won) ? 'bg-amber-100' : 'bg-slate-100 grayscale opacity-50'">{{ career.win_mode === 'seasons' ? '✅' : '🏆' }}</span>
                 </div>
-                <span class="text-xs font-semibold text-slate-600">{{ career.titles_won }} / {{ career.titles_required }} pour gagner</span>
+                <span class="text-xs font-semibold text-slate-600">
+                    {{ career.win_mode === 'seasons' ? `${career.seasons_won} / ${career.seasons_required}` : `${career.titles_won} / ${career.titles_required}` }} pour gagner
+                </span>
             </div>
 
             <div v-if="career.status === 'won'" class="mt-3 px-3 py-2 rounded-lg bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-700">
-                🏆 Carrière accomplie : objectif de titres atteint !
+                🏆 Carrière accomplie : {{ career.win_mode === 'seasons' ? 'objectif de saisons réussies atteint' : 'objectif de titres atteint' }} !
             </div>
             <div v-else-if="career.status === 'fired'" class="mt-3 px-3 py-2 rounded-lg bg-rose-50 border border-rose-200 text-xs font-semibold text-rose-700">
                 ❌ Tu as été licencié{{ career.fired_reason === 'mid_season' ? ' en cours de saison' : ' en fin de saison' }}.
@@ -200,8 +211,8 @@ const verdictOutcomeLabel = (o) => ({
             <div>
                 <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">🎖️ Objectifs de carrière</h4>
                 <p class="text-xs text-slate-600">
-                    En mode Ligue, la direction te fixe un objectif de classement chaque saison et suit une <strong>jauge de confiance</strong>.
-                    Atteins assez de titres pour gagner ta carrière… ou tombe à 0 et tu es licencié.
+                    En mode Ligue, la direction te fixe chaque saison un mandat à <strong>4 piliers</strong> (classement, effectif, vestiaire, finances) et suit une <strong>jauge de confiance</strong>.
+                    Réussis assez de saisons pour gagner ta carrière… ou tombe à 0 et tu es licencié.
                 </p>
             </div>
 
@@ -222,8 +233,9 @@ const verdictOutcomeLabel = (o) => ({
             <ul class="text-xs text-slate-600 space-y-1 list-disc pl-4">
                 <li><strong>Exploit</strong> (+3) : battre une équipe plus forte que la tienne.</li>
                 <li><strong>Contre-performance</strong> (−3) : perdre contre une équipe plus faible.</li>
-                <li><strong>Fin de saison</strong> : gros bonus si l'objectif est atteint (et plus encore en le dépassant), forte pénalité sinon — d'autant plus que le ratage est large.</li>
-                <li><strong>Titre de champion</strong> : compte pour ta condition de victoire de carrière.</li>
+                <li><strong>Fin de saison</strong> : chaque pilier atteint rapporte des points (le classement pèse le plus). Au-dessus du seuil de la difficulté la saison est réussie (bonus de confiance), en dessous c'est une pénalité d'autant plus forte que le score est bas.</li>
+                <li><strong>Piliers</strong> : rang final, progression de la force moyenne du onze, moral moyen de l'effectif, budget en caisse.</li>
+                <li><strong>Titre de champion</strong> : bonus de confiance, mais il n'est plus requis pour gagner la carrière.</li>
             </ul>
             <p class="text-2xs text-slate-400">💡 Les clubs IA paient aussi leurs entraînements : un club fauché s'entraîne moins.</p>
         </Panel>
@@ -236,7 +248,8 @@ const verdictOutcomeLabel = (o) => ({
                 <tr>
                     <th class="text-left py-1">Niveau</th>
                     <th class="text-center py-1">Confiance départ</th>
-                    <th class="text-center py-1">Titres à gagner</th>
+                    <th class="text-center py-1">Saisons à réussir</th>
+                    <th class="text-center py-1">Seuil de réussite</th>
                     <th class="text-center py-1">Budget départ</th>
                     <th class="text-center py-1">Revenu de base</th>
                     <th class="text-left py-1 pl-3">Exigence</th>
@@ -250,7 +263,8 @@ const verdictOutcomeLabel = (o) => ({
                         <span v-if="career && career.difficulty === d.key" class="text-3xs font-bold text-teal-600 ml-1">• en cours</span>
                     </td>
                     <td class="py-1.5 text-center text-slate-600">{{ d.confidence }}</td>
-                    <td class="py-1.5 text-center text-slate-600">{{ d.titles }} 🏆</td>
+                    <td class="py-1.5 text-center text-slate-600">{{ d.seasons }} ✅</td>
+                    <td class="py-1.5 text-center text-slate-600">{{ d.threshold }} / 100</td>
                     <td class="py-1.5 text-center text-slate-600">{{ d.budget }}</td>
                     <td class="py-1.5 text-center text-slate-600">{{ d.income }}</td>
                     <td class="py-1.5 pl-3 text-slate-500">{{ d.rank }}</td>
@@ -259,8 +273,8 @@ const verdictOutcomeLabel = (o) => ({
             </table>
             <p class="text-2xs text-slate-500 mt-2"><GameBanknote /> Ce billet représente la monnaie virtuelle de Golden Eleven.</p>
             <p class="text-2xs text-slate-400 mt-2">En mode « Bac à sable », aucun objectif n'est suivi : les saisons s'enchaînent librement (budget de départ 2500 <GameBanknote />, revenus pleins).</p>
-            <p class="text-2xs text-slate-400">🎲 Défis de saison : chaque équipe (IA comprise) tire 5 objectifs par saison, un par famille (résultats, attaque & défense, vestiaire, gestion, exploits) — 2 faciles (1 pt, 150 <GameBanknote />), 2 moyens (2 pts, 300 <GameBanknote />), 1 difficile (3 pts, 500 <GameBanknote />). Seuils adaptés à la force de l'effectif. Sans effet sur le championnat : un classement des défis est publié en fin de saison.</p>
-            <p class="text-2xs text-slate-400">💰 Budget de départ et revenu de base réduits ne concernent que ton club : les clubs IA partent avec le budget réglé à la création (2500 <GameBanknote /> par défaut) et 500 <GameBanknote />/sem.</p>
+            <p class="text-2xs text-slate-400">🎲 Défis de saison : chaque équipe (IA comprise) tire 5 objectifs par saison, un par famille (résultats, attaque & défense, vestiaire, gestion, exploits) — 2 faciles (1 pt, 150 <GameBanknote />), 2 moyens (2 pts, 300 <GameBanknote />), 1 difficile (3 pts, 500 <GameBanknote />). Seuils adaptés à la force de l'effectif. Ton club n'a pas de défi de classement, de moral ou de budget : ce sont déjà des piliers de ton mandat. Sans effet sur le championnat : un classement des défis est publié en fin de saison.</p>
+            <p class="text-2xs text-slate-400">💰 Budget de départ et revenu de base réduits ne concernent que ton club : les clubs IA partent avec le budget réglé à la création (2500 <GameBanknote /> par défaut) et 500 <GameBanknote />/sem. Ces valeurs de départ se règlent à la création de la partie.</p>
         </Panel>
     </div>
 </template>

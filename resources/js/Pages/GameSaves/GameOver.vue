@@ -54,8 +54,14 @@ const difficultyLabel = {
                     </h1>
                     <p class="mt-3 text-sm opacity-90 max-w-lg mx-auto px-6">
                         <template v-if="won">
-                            Objectif de carrière atteint : {{ career.titles_won }} titre(s) de champion
-                            remporté(s) sur les {{ career.titles_required }} attendu(s). Mission accomplie.
+                            <template v-if="career.win_mode === 'seasons'">
+                                Objectif de carrière atteint : {{ career.seasons_won }} saison(s) réussie(s)
+                                sur les {{ career.seasons_required }} attendues. Mission accomplie.
+                            </template>
+                            <template v-else>
+                                Objectif de carrière atteint : {{ career.titles_won }} titre(s) de champion
+                                remporté(s) sur les {{ career.titles_required }} attendu(s). Mission accomplie.
+                            </template>
                         </template>
                         <template v-else-if="career.fired_reason === 'mid_season'">
                             La confiance du board s'est effondrée en pleine saison. Ton aventure s'arrête
@@ -71,8 +77,8 @@ const difficultyLabel = {
                 <!-- Chiffres clés -->
                 <div class="grid grid-cols-3 gap-3">
                     <div class="bg-white rounded-2xl shadow p-4 text-center">
-                        <p class="text-3xl font-black text-slate-700">{{ career.titles_won }}</p>
-                        <p class="text-xs text-slate-400 uppercase tracking-wider mt-1">Titres</p>
+                        <p class="text-3xl font-black text-slate-700">{{ career.win_mode === 'seasons' ? career.seasons_won : career.titles_won }}</p>
+                        <p class="text-xs text-slate-400 uppercase tracking-wider mt-1">{{ career.win_mode === 'seasons' ? 'Saisons réussies' : 'Titres' }}</p>
                     </div>
                     <div class="bg-white rounded-2xl shadow p-4 text-center">
                         <p class="text-3xl font-black text-slate-700">{{ seasonsManaged }}</p>

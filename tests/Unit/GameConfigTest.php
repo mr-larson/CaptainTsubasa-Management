@@ -20,6 +20,19 @@ class GameConfigTest extends TestCase
         $this->assertSame(6000, $explicit->int('draft_budget'));
     }
 
+    public function test_economy_defaults_follow_difficulty_but_explicit_values_win(): void
+    {
+        foreach (['none' => [2500, 500], 'survival' => [1500, 500], 'standard' => [1000, 450], 'conquest' => [500, 350]] as $difficulty => [$budget, $income]) {
+            $config = new GameConfig(['career_difficulty' => $difficulty]);
+            $this->assertSame($budget, $config->int('human_start_budget'), $difficulty);
+            $this->assertSame($income, $config->int('human_weekly_income'), $difficulty);
+        }
+
+        $explicit = new GameConfig(['career_difficulty' => 'conquest', 'human_start_budget' => 2000, 'human_weekly_income' => 600]);
+        $this->assertSame(2000, $explicit->int('human_start_budget'));
+        $this->assertSame(600, $explicit->int('human_weekly_income'));
+    }
+
     public function test_get_falls_back_to_the_default_for_unknown_saved_key(): void
     {
         $this->assertSame(3, (new GameConfig())->get('training_max_per_week'));

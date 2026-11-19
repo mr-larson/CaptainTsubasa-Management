@@ -4,7 +4,6 @@ namespace App\Support;
 
 use App\Helpers\PlayerLuck;
 use App\Models\GameSaves\GameSave;
-use App\Services\Season\CareerObjectiveService;
 use App\Services\Training\TrainableSpecialMoves;
 use Illuminate\Support\Arr;
 
@@ -18,6 +17,25 @@ use Illuminate\Support\Arr;
  */
 final class GameConfig
 {
+    /** Budget de départ du manager en bac à sable (difficulté « none ») : l'écart relatif avec les clubs IA fait la difficulté. */
+    public const SANDBOX_START_BUDGET = 2500;
+
+    /** Revenu hebdomadaire de base en bac à sable et en Coupe du Monde (celui des clubs IA). */
+    public const BASE_WEEKLY_INCOME = 500;
+
+    /**
+     * Volet économie de chaque niveau de difficulté : valeurs par défaut du budget de départ
+     * et du revenu hebdomadaire de l'équipe humaine (l'IA a ses propres réglages). Ce ne sont
+     * que des défauts : human_start_budget et human_weekly_income, une fois enregistrés, priment.
+     * L'exigence sportive du board (objectifs, confiance) vit dans CareerObjectiveService::PRESETS.
+     */
+    public const ECONOMY_PRESETS = [
+        'none'     => ['start_budget' => self::SANDBOX_START_BUDGET, 'weekly_income' => self::BASE_WEEKLY_INCOME],
+        'survival' => ['start_budget' => 1500, 'weekly_income' => 500],
+        'standard' => ['start_budget' => 1000, 'weekly_income' => 450],
+        'conquest' => ['start_budget' => 500,  'weekly_income' => 350], // le board exige ET tient les cordons de la bourse
+    ];
+
     public const DRAFT_BUDGETS = ['conquest' => 7000, 'standard' => 8500, 'survival' => 10000, 'none' => 8000];
 
     public const DEFAULTS = [
@@ -62,7 +80,8 @@ final class GameConfig
         // Tirée à la création et au passage à une nouvelle saison.
         'luck_random'               => true,
         // Budget de départ des clubs IA (création du monde uniquement)
-        'human_start_budget'        => null, // Par défaut, budget du mandat.
+        'human_start_budget'        => null, // Par défaut, celui de la difficulté (ECONOMY_PRESETS).
+        'human_weekly_income'       => null, // Par défaut, celui de la difficulté (ECONOMY_PRESETS).
         'ai_start_budget'           => 2500,
         'ai_draft_budget'           => 10000,
         'draft_budget'              => self::DRAFT_BUDGETS['standard'],
@@ -101,9 +120,9 @@ final class GameConfig
         $config['draft_budget'] = $this->saved['draft_budget']
             ?? self::DRAFT_BUDGETS[$config['career_difficulty']]
             ?? self::DEFAULTS['draft_budget'];
-        $config['human_start_budget'] = $this->saved['human_start_budget']
-            ?? CareerObjectiveService::PRESETS[$config['career_difficulty']]['start_budget']
-            ?? CareerObjectiveService::SANDBOX_START_BUDGET;
+        $economy = self::ECONOMY_PRESETS[$config['career_difficulty']] ?? self::ECONOMY_PRESETS['none'];
+        $config['human_start_budget'] = $this->saved['human_start_budget'] ?? $economy['start_budget'];
+        $config['human_weekly_income'] = $this->saved['human_weekly_income'] ?? $economy['weekly_income'];
 
         return $config;
     }
@@ -188,6 +207,7 @@ final class GameConfig
             'luck_random'             => ['boolean'],
             'ai_start_budget'         => ['integer', 'min:0', 'max:20000'],
             'human_start_budget'      => ['integer', 'min:0', 'max:20000'],
+            'human_weekly_income'     => ['integer', 'min:0', 'max:5000'],
             'ai_draft_budget'         => ['integer', 'min:3000', 'max:20000'],
             'draft_budget'            => ['integer', 'min:3000', 'max:20000'],
             'other_teams_editable'    => ['boolean'],

@@ -88,6 +88,39 @@ class SeasonChallengeServiceTest extends TestCase
         }
     }
 
+    public function test_controlled_team_never_gets_a_challenge_duplicating_a_mandate_pillar(): void
+    {
+        $forbidden = ['rank_max', 'avg_morale_min', 'budget_min'];
+
+        // Sur plusieurs sauvegardes (tirages différents), l'équipe jugée par le board n'a jamais ces défis.
+        for ($i = 0; $i < 12; $i++) {
+            $save  = $this->makeSave();
+            $teams = $this->world($save);
+
+            $this->service->ensureSeasonChallenges($save);
+            $data = $save->fresh()->state['challenges']['teams'];
+
+            $this->assertEmpty(array_intersect($forbidden, array_column($data[$teams[0]->id]['objectives'], 'key')));
+            $this->assertCount(SeasonChallengeService::PER_SEASON, $data[$teams[0]->id]['objectives']);
+        }
+    }
+
+    public function test_controlled_team_keeps_those_challenges_without_a_mandate(): void
+    {
+        $seen = [];
+        for ($i = 0; $i < 30; $i++) {
+            $save = $this->makeSave();
+            $save->setConfig(['career_difficulty' => 'none']);   // bac à sable : pas de mandat
+            $teams = $this->world($save->fresh());
+
+            $this->service->ensureSeasonChallenges($save->fresh());
+            $keys = array_column($save->fresh()->state['challenges']['teams'][$teams[0]->id]['objectives'], 'key');
+            $seen = array_merge($seen, array_intersect(['rank_max', 'avg_morale_min', 'budget_min'], $keys));
+        }
+
+        $this->assertNotEmpty($seen, 'Sans mandat, classement / moral / budget restent tirables.');
+    }
+
     public function test_draw_is_stable_for_the_same_season(): void
     {
         $save = $this->makeSave();

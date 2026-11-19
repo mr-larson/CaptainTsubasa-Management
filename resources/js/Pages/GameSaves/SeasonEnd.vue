@@ -8,6 +8,8 @@ import H2 from '@/Components/H2.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import PlayerPhoto from '@/Components/PlayerPhoto.vue';
+import MandatePillars from './Play/MandatePillars.vue';
+import { verdictPillarRows } from './Play/mandatePillars';
 
 const props = defineProps({
     gameSave: { type: Object, required: true },
@@ -62,14 +64,20 @@ function startNewSeason() {
                                 Verdict de la direction
                             </p>
                             <h3 class="text-lg font-bold text-slate-700 mt-1">
-                                <template v-if="verdict.outcome === 'won'">🏆 Mission accomplie — {{ verdict.titles_won }} titre(s) !</template>
+                                <template v-if="verdict.outcome === 'won' && verdict.pillars">🏆 Mission accomplie — {{ verdict.seasons_won }} saison(s) réussie(s) !</template>
+                                <template v-else-if="verdict.outcome === 'won'">🏆 Mission accomplie — {{ verdict.titles_won }} titre(s) !</template>
                                 <template v-else-if="verdict.outcome === 'fired'">📉 La direction met fin à ton mandat</template>
-                                <template v-else-if="verdict.met">✅ Objectif atteint</template>
+                                <template v-else-if="verdict.met">✅ {{ verdict.pillars ? 'Saison réussie' : 'Objectif atteint' }}</template>
                                 <template v-else>⚠️ Objectif manqué</template>
                             </h3>
                             <p class="text-sm text-slate-600 mt-1">
                                 Objectif : <strong>{{ verdict.mandate }}</strong> ·
                                 classement final : <strong>{{ verdict.rank }}<sup>e</sup></strong>
+                                <template v-if="verdict.pillars"> · score : <strong>{{ verdict.score }} / 100</strong></template>
+                            </p>
+                            <MandatePillars v-if="verdict.pillars" :rows="verdictPillarRows(verdict.pillars)" class="mt-3 max-w-md" />
+                            <p v-if="verdict.pillars" class="text-xs text-slate-500 mt-2">
+                                Saisons réussies : {{ verdict.seasons_won }} / {{ verdict.seasons_required }}
                             </p>
                         </div>
                         <div class="text-right shrink-0">

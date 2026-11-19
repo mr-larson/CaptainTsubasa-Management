@@ -17,7 +17,7 @@ class UpdateGameConfigRequest extends GameSaveActionRequest
 
     private const CREATION_ONLY = [
         'initial_morale_random', 'initial_stamina_random', 'initial_speed_random', 'luck_random',
-        'ai_start_budget', 'human_start_budget', 'ai_draft_budget', 'draft_budget',
+        'ai_start_budget', 'human_start_budget', 'human_weekly_income', 'ai_draft_budget', 'draft_budget',
     ];
 
     /** Règles de GameConfig, hors options qui ne se changent qu'à la création. */

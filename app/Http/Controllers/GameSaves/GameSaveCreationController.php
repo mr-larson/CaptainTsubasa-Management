@@ -12,7 +12,6 @@ use App\Models\GameSaves\GameSave;
 use App\Models\PeriodPackage;
 use App\Models\Team;
 use App\Models\User;
-use App\Services\Season\CareerObjectiveService;
 use App\Services\Game\NewGameBuilder;
 use App\Services\WorldCup\NationalTeamAssembler;
 use App\Services\WorldCup\NewWorldCupBuilder;
@@ -62,8 +61,8 @@ class GameSaveCreationController extends Controller
             'aiDraftBudget'     => GameConfig::DEFAULTS['ai_draft_budget'],
             'aiStartBudget'     => GameConfig::DEFAULTS['ai_start_budget'],
             // Budget de départ du manager selon la difficulté de carrière choisie.
-            'humanStartBudgets' => ['none' => CareerObjectiveService::SANDBOX_START_BUDGET]
-                + array_map(fn (array $preset) => $preset['start_budget'], CareerObjectiveService::PRESETS),
+            'humanStartBudgets' => array_map(fn (array $economy) => $economy['start_budget'], GameConfig::ECONOMY_PRESETS),
+            'humanWeeklyIncomes' => array_map(fn (array $economy) => $economy['weekly_income'], GameConfig::ECONOMY_PRESETS),
         ]);
     }
 

@@ -1,9 +1,20 @@
 <script setup>
-defineProps({
+import { computed } from 'vue';
+import MandatePillars from './MandatePillars.vue';
+import { livePillarRows } from './mandatePillars';
+
+const props = defineProps({
     career:  { type: Object, required: true },
     compact: { type: Boolean, default: false },
 });
 defineEmits(['open-rules']);
+
+const rows = computed(() => livePillarRows(props.career.mandate, props.career.live));
+
+// Condition de victoire : N saisons réussies (mandat à piliers) ou N titres (parties plus anciennes).
+const goal = computed(() => props.career.win_mode === 'seasons'
+    ? { icon: '✅', won: props.career.seasons_won, required: props.career.seasons_required, unit: 'saison(s) réussie(s)' }
+    : { icon: '🏆', won: props.career.titles_won, required: props.career.titles_required, unit: 'titre(s)' });
 </script>
 
 <template>
@@ -20,9 +31,10 @@ defineEmits(['open-rules']);
         </div>
         <p class="text-[11px] text-slate-400 mt-1">{{ career.difficulty_label }}</p>
         <p class="text-[11px] text-slate-400">
-            🏆 {{ career.titles_won }} / {{ career.titles_required }} titre(s)
+            {{ goal.icon }} {{ goal.won }} / {{ goal.required }} {{ goal.unit }}
             <span v-if="career.alert" class="text-rose-500 font-semibold block">board en alerte</span>
         </p>
+        <MandatePillars v-if="rows.length" :rows="rows" dense class="mt-2" />
         <div class="flex items-center gap-2 mt-2">
             <div class="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
                 <div class="h-full rounded-full transition-all"
@@ -53,7 +65,7 @@ defineEmits(['open-rules']);
                                 title="Voir le détail des règles et objectifs">ℹ</button>
                     </p>
                     <p class="text-[11px] text-slate-400">
-                        🏆 {{ career.titles_won }} / {{ career.titles_required }} titre(s) pour gagner
+                        {{ goal.icon }} {{ goal.won }} / {{ goal.required }} {{ goal.unit }} pour gagner
                         <span v-if="career.alert" class="text-rose-500 font-semibold">· board en alerte</span>
                     </p>
                 </div>
@@ -71,5 +83,6 @@ defineEmits(['open-rules']);
                 </span>
             </div>
         </div>
+        <MandatePillars v-if="rows.length" :rows="rows" class="mt-3 pt-3 border-t border-slate-100" />
     </div>
 </template>
