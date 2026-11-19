@@ -24,4 +24,13 @@ final class Sweden
         ['firstname' => 'Zlatan', 'lastname' => 'Ibrahimović', 'profile' => 'target', 'position' => 'BU', 'secondary' => 'AT', 'stats' => ['speed' => 65, 'stamina' => 75, 'attack' => 37, 'defense' => 18, 'shot' => 30, 'pass' => 27, 'dribble' => 29, 'heading' => 28]],
         ['firstname' => 'Henrik', 'lastname' => 'Larsson', 'profile' => 'striker', 'position' => 'BU', 'secondary' => 'AT', 'stats' => ['speed' => 74, 'stamina' => 80, 'attack' => 35, 'defense' => 21, 'shot' => 29, 'pass' => 25, 'dribble' => 26, 'heading' => 29]],
     ];
+
+    // Compléments de la revue Suède : seulement douze joueurs au départ (un seul gardien).
+    public const EXTRA_ADDITIONS = [
+        ['firstname' => 'Tomas', 'lastname' => 'Brolin', 'profile' => 'second_striker', 'position' => 'MOC', 'secondary' => 'AG', 'stats' => ['speed' => 66, 'stamina' => 70, 'attack' => 31, 'defense' => 16, 'shot' => 25, 'pass' => 28, 'dribble' => 28], 'note' => '3e du Mondial 1994 et héros du pays, Parme ; meneur et buteur élégant, technique et vision.'],
+        ['firstname' => 'Alexander', 'lastname' => 'Isak', 'profile' => 'striker', 'position' => 'BU', 'secondary' => null, 'stats' => ['speed' => 78, 'stamina' => 72, 'attack' => 33, 'shot' => 27, 'pass' => 24, 'dribble' => 28, 'heading' => 22], 'note' => 'Real Sociedad puis Newcastle, plus grand talent suédois de sa génération ; avant-centre rapide et élégant, finisseur sang-froid.'],
+        ['firstname' => 'Kurt', 'lastname' => 'Hamrin', 'profile' => 'winger', 'position' => 'AD', 'secondary' => null, 'stats' => ['speed' => 75, 'stamina' => 70, 'attack' => 33, 'shot' => 28, 'pass' => 24, 'dribble' => 27], 'note' => 'Finaliste du Mondial 1958, plus de 190 buts en Serie A avec Fiorentina et Milan ; ailier droit buteur.'],
+        ['firstname' => 'Ronnie', 'lastname' => 'Hellström', 'profile' => 'keeper', 'position' => 'GB', 'secondary' => null, 'stats' => ['speed' => 58, 'stamina' => 72, 'defense' => 32, 'hand_save' => 27, 'punch_save' => 27], 'note' => 'Gardien du Mondial 1974 et 1978, Kaiserslautern ; sûr et régulier, longévité.'],
+        ['firstname' => 'Stefan', 'lastname' => 'Schwarz', 'profile' => 'holding', 'position' => 'MC', 'secondary' => null, 'stats' => ['speed' => 62, 'stamina' => 76, 'attack' => 24, 'defense' => 26, 'shot' => 24, 'pass' => 27, 'tackle' => 24], 'note' => '3e du Mondial 1994, Arsenal, Valence, Fiorentina ; milieu défensif complet, bon relanceur.'],
+    ];
 }

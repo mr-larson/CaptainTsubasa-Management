@@ -25,8 +25,8 @@ class HistoricalRosterImportTest extends TestCase
         $this->assertCount(108, array_filter($audit, fn ($r) => $r['status'] === 'à ajouter'));
         $this->seed(PlayerSeeder::class);
         $players = Player::where('origin', 'world_legends')->get();
-        $this->assertCount(509, $players);
-        $this->assertCount(509, $players->unique(fn ($p) => Str::slug($p->full_name)));
+        $this->assertCount(514, $players);
+        $this->assertCount(514, $players->unique(fn ($p) => Str::slug($p->full_name)));
         foreach ($audit as $row) {
             if ($row['status'] === 'archivé') {
                 $this->assertNull($players->first(fn ($p) => $p->firstname === $row['firstname'] && $p->lastname === $row['lastname']));

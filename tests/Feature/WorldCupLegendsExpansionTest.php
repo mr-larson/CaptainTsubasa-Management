@@ -25,8 +25,8 @@ class WorldCupLegendsExpansionTest extends TestCase
     {
         $this->seed(PlayerSeeder::class);
         $players = Player::where('origin', PlayerOrigin::LEGENDS)->get();
-        $this->assertCount(509, $players);
-        $this->assertCount(509, $players->unique(fn ($p) => Str::slug($p->full_name)));
+        $this->assertCount(514, $players);
+        $this->assertCount(514, $players->unique(fn ($p) => Str::slug($p->full_name)));
         $source = fopen(base_path('tests/Fixtures/world_cup_legends.csv'), 'r');
         fgetcsv($source);
         $count = 0;
@@ -72,12 +72,12 @@ class WorldCupLegendsExpansionTest extends TestCase
         $savedBefore = $saved->fresh()->getAttributes();
         $migration = require database_path('migrations/2026_11_17_200000_add_missing_world_cup_legends.php');
         $migration->up();
-        $this->assertSame(509, Player::where('origin', PlayerOrigin::LEGENDS)->count());
+        $this->assertSame(514, Player::where('origin', PlayerOrigin::LEGENDS)->count());
         foreach ($before as $id => $row) $this->assertEquals($row, DB::table('players')->find($id));
         $cantona = Player::where('lastname', 'Cantona')->firstOrFail();
         $cantona->delete();
         $migration->up();
-        $this->assertSame(509, Player::withTrashed()->where('origin', PlayerOrigin::LEGENDS)->count());
+        $this->assertSame(514, Player::withTrashed()->where('origin', PlayerOrigin::LEGENDS)->count());
         $this->assertSoftDeleted('players', ['id' => $cantona->id]);
         $this->assertSame($savedBefore, $saved->fresh()->getAttributes());
     }
