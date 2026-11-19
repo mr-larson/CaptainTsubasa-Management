@@ -24,4 +24,12 @@ final class Norway
         ['firstname' => 'Erling', 'lastname' => 'Haaland', 'profile' => 'power_forward', 'position' => 'BU', 'stats' => ['speed' => 79, 'stamina' => 78, 'attack' => 37, 'defense' => 17, 'shot' => 30, 'pass' => 19, 'dribble' => 23, 'heading' => 29]],
         ['firstname' => 'Tom', 'lastname' => 'Lund', 'profile' => 'second_striker', 'position' => 'AG', 'secondary' => 'AT', 'stats' => ['speed' => 72, 'stamina' => 72, 'attack' => 32, 'defense' => 18, 'shot' => 27, 'pass' => 27, 'dribble' => 29, 'heading' => 21]],
     ];
+
+    // Compléments de la revue Norvège : seulement douze joueurs au départ, quatre noms très connus manquants.
+    public const EXTRA_ADDITIONS = [
+        ['firstname' => 'Tore André', 'lastname' => 'Flo', 'profile' => 'target', 'position' => 'BU', 'secondary' => null, 'stats' => ['speed' => 66, 'stamina' => 72, 'attack' => 31, 'shot' => 27, 'heading' => 29, 'dribble' => 21, 'pass' => 20], 'note' => 'Coupe des Coupes 1998 et FA Cup 2000 avec Chelsea, Rangers ; grand attaquant de tête et de surface.'],
+        ['firstname' => 'John', 'lastname' => 'Carew', 'profile' => 'target', 'position' => 'BU', 'secondary' => null, 'stats' => ['speed' => 62, 'stamina' => 72, 'attack' => 31, 'shot' => 26, 'heading' => 31, 'dribble' => 20, 'pass' => 22], 'note' => 'Champion d’Espagne 2004 avec Valence, Lyon, Aston Villa ; avant-centre de gabarit, redoutable de la tête.'],
+        ['firstname' => 'Brede', 'lastname' => 'Hangeland', 'profile' => 'stopper', 'position' => 'DC', 'secondary' => null, 'stats' => ['speed' => 56, 'stamina' => 74, 'defense' => 32, 'block' => 28, 'tackle' => 27, 'heading' => 30, 'pass' => 20], 'note' => 'Finaliste de la Ligue Europa 2010 avec Fulham, Crystal Palace ; défenseur central de grande taille, dominant dans les airs.'],
+        ['firstname' => 'Alexander', 'lastname' => 'Sørloth', 'profile' => 'target', 'position' => 'BU', 'secondary' => null, 'stats' => ['speed' => 70, 'stamina' => 76, 'attack' => 31, 'shot' => 26, 'heading' => 28, 'dribble' => 22], 'note' => 'Villarreal puis Atlético de Madrid, meilleur buteur norvégien de sa génération avec Haaland ; avant-centre rapide et puissant.'],
+    ];
 }
