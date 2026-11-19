@@ -1,0 +1,106 @@
+{
+  "nationality": "Danemark",
+  "sources": "Palmarès : Wikipédia / FIFA. Quatre joueurs ajoutés par migration (K. Schmeichel, Kjær, Tomasson, Højbjerg), sans portrait : à illustrer. Le pays n'avait que onze joueurs, un seul gardien et aucun personnage Captain Tsubasa.",
+  "players": {
+    "Thomas Helveg": {
+      "stats": {
+        "speed": 68,
+        "stamina": 79,
+        "defense": 29,
+        "cross": 24
+      },
+      "why": "Udinese, Milan, plus de 100 sélections : latéral droit régulier."
+    },
+    "Morten Olsen": {
+      "stats": {
+        "defense": 33,
+        "intercept": 29,
+        "pass": 27
+      },
+      "why": "Capitaine du Danemark des années 1980, Anderlecht : libéro de lecture."
+    },
+    "Daniel Agger": {
+      "stats": {
+        "defense": 32,
+        "pass": 27,
+        "speed": 65,
+        "tackle": 24
+      },
+      "why": "Liverpool, Barcelone : défenseur gaucher relanceur."
+    },
+    "Jan Heintze": {
+      "stats": {
+        "stamina": 80,
+        "speed": 71,
+        "defense": 29
+      },
+      "why": "Champion d'Europe 1992 : latéral infatigable."
+    },
+    "Brian Laudrup": {
+      "stats": {
+        "speed": 78,
+        "dribble": 30,
+        "attack": 33,
+        "pass": 26
+      },
+      "why": "Champion d'Europe 1992, Milan, Rangers, Juventus : ailier technique et rapide."
+    },
+    "Preben Elkjær Larsen": {
+      "stats": {
+        "attack": 36,
+        "shot": 29,
+        "speed": 74,
+        "heading": 25
+      },
+      "why": "Champion d'Italie 1985 avec Vérone, la botte de la légende : attaquant puissant."
+    },
+    "Allan Simonsen": {
+      "stats": {
+        "attack": 34,
+        "dribble": 29,
+        "speed": 76,
+        "shot": 28
+      },
+      "why": "Ballon d'Or 1977, Mönchengladbach, Barcelone : petit attaquant rapide et technique."
+    },
+    "Peter Schmeichel": {
+      "stats": {
+        "defense": 36,
+        "hand_save": 29,
+        "punch_save": 28
+      },
+      "why": "Champion d'Europe 1992, triplé 1999 avec Manchester United : colosse sur sa ligne."
+    },
+    "Søren Lerby": {
+      "stats": {
+        "stamina": 82,
+        "defense": 27,
+        "tackle": 26,
+        "pass": 26,
+        "shot": 25
+      },
+      "why": "Bayern et PSV, milieu complet : volume de jeu et frappe de loin."
+    },
+    "Christian Eriksen": {
+      "stats": {
+        "pass": 31,
+        "shot": 26,
+        "attack": 31,
+        "dribble": 26,
+        "stamina": 78,
+        "speed": 62
+      },
+      "why": "Demi-finaliste de l'Euro 2020, Tottenham, Inter : passes décisives et coups francs."
+    },
+    "Michael Laudrup": {
+      "stats": {
+        "pass": 31,
+        "dribble": 30,
+        "attack": 34,
+        "speed": 70,
+        "shot": 25
+      },
+      "why": "Dream Team du Barça, Real Madrid, Juventus : meneur au toucher de balle d'exception."
+    }
+  }
+}
