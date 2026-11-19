@@ -1,0 +1,144 @@
+{
+  "nationality": "Pays-Bas",
+  "sources": "Palmarès : Wikipédia / FIFA. Sept joueurs ajoutés par migration (Gullit, Neeskens, Robben, Sneijder, Van Persie, Van Dijk, Van Breukelen), sans portrait : à illustrer.",
+  "players": {
+    "Johan Cruyff": {
+      "stats": {
+        "attack": 37,
+        "shot": 25,
+        "pass": 30,
+        "dribble": 30,
+        "speed": 76,
+        "stamina": 70
+      },
+      "why": "Trois Ballons d'Or, finaliste du Mondial 1974 : chef d'orchestre du football total, passe et dribble."
+    },
+    "Marco van Basten": {
+      "stats": {
+        "attack": 36,
+        "shot": 30,
+        "heading": 29,
+        "speed": 64,
+        "stamina": 68,
+        "dribble": 22
+      },
+      "why": "Trois Ballons d'Or, champion d'Europe 1988 : finisseur absolu, carrière écourtée."
+    },
+    "Dennis Bergkamp": {
+      "stats": {
+        "attack": 34,
+        "pass": 29,
+        "dribble": 28,
+        "shot": 27,
+        "speed": 62,
+        "stamina": 66
+      },
+      "why": "Arsenal Invincibles, 1998 : contrôle de balle et créativité."
+    },
+    "Patrick Kluivert": {
+      "stats": {
+        "attack": 32,
+        "shot": 28,
+        "heading": 25
+      },
+      "why": "Ligue des champions 1995 avec l'Ajax, Barcelone : avant-centre mobile et puissant."
+    },
+    "Marc Overmars": {
+      "stats": {
+        "speed": 80,
+        "attack": 31,
+        "dribble": 28
+      },
+      "why": "Arsenal, Barcelone : ailier explosif."
+    },
+    "Ronald Koeman": {
+      "stats": {
+        "defense": 32,
+        "pass": 30,
+        "shot": 28,
+        "heading": 26
+      },
+      "why": "Barcelone (Coupe d'Europe 1992), buteur du but de la victoire : défenseur buteur, coups francs."
+    },
+    "Frank de Boer": {
+      "stats": {
+        "pass": 30,
+        "defense": 31
+      },
+      "why": "Ajax, 112 sélections : défenseur relanceur au pied gauche."
+    },
+    "Jaap Stam": {
+      "stats": {
+        "defense": 33,
+        "tackle": 28,
+        "speed": 64,
+        "heading": 28
+      },
+      "why": "Triplé 1999 avec Manchester United : défenseur massif, sûr dans les duels."
+    },
+    "Giovanni van Bronckhorst": {
+      "stats": {
+        "speed": 74,
+        "stamina": 78,
+        "shot": 26
+      },
+      "why": "Finaliste du Mondial 2010, Barcelone : latéral gauche, frappe de loin."
+    },
+    "Edwin van der Sar": {
+      "stats": {
+        "defense": 34,
+        "hand_save": 29,
+        "punch_save": 28
+      },
+      "why": "Ligue des champions 1995 et 2008, meilleur gardien d'Europe : maîtrise de la surface."
+    },
+    "Frank Rijkaard": {
+      "stats": {
+        "defense": 31,
+        "intercept": 28,
+        "pass": 29,
+        "tackle": 27,
+        "stamina": 78,
+        "speed": 62
+      },
+      "why": "Champion d'Europe 1988, trois Coupes d'Europe avec Milan : milieu défensif complet."
+    },
+    "Clarence Seedorf": {
+      "stats": {
+        "stamina": 82,
+        "pass": 30,
+        "shot": 26,
+        "attack": 28
+      },
+      "why": "Quatre Ligues des champions avec trois clubs différents : milieu endurant, passes et frappes de loin."
+    },
+    "Edgar Davids": {
+      "stats": {
+        "tackle": 28,
+        "stamina": 82,
+        "defense": 28,
+        "attack": 24,
+        "shot": 22
+      },
+      "why": "Pitbull de la Juventus et de l'Ajax : milieu récupérateur, agressivité et volume."
+    },
+    "Mark van Bommel": {
+      "stats": {
+        "tackle": 27,
+        "defense": 28,
+        "shot": 23
+      },
+      "why": "Finaliste du Mondial 2010, Barcelone, Bayern : milieu défensif agressif."
+    },
+    "Dirk Kuyt": {
+      "stats": {
+        "stamina": 82,
+        "speed": 68,
+        "attack": 28,
+        "shot": 24,
+        "defense": 24
+      },
+      "why": "Finaliste du Mondial 2010, Liverpool : travailleur de l'ombre."
+    }
+  }
+}
