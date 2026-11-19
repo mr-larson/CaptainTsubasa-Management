@@ -25,4 +25,11 @@ final class Nigeria
         ['firstname' => 'Rashidi', 'lastname' => 'Yekini', 'profile' => 'power_forward', 'position' => 'BU', 'stats' => ['speed' => 70, 'stamina' => 76, 'attack' => 36, 'defense' => 18, 'shot' => 29, 'pass' => 19, 'dribble' => 22, 'heading' => 29]],
         ['firstname' => 'Nwankwo', 'lastname' => 'Kanu', 'profile' => 'second_striker', 'position' => 'AG', 'secondary' => 'AT', 'stats' => ['speed' => 62, 'stamina' => 72, 'attack' => 33, 'defense' => 19, 'shot' => 27, 'pass' => 27, 'dribble' => 29, 'heading' => 26]],
     ];
+
+    // Compléments de la revue Nigéria : trois noms très connus manquants (aucun Tsubasa, un seul gardien).
+    public const EXTRA_ADDITIONS = [
+        ['firstname' => 'Victor', 'lastname' => 'Osimhen', 'profile' => 'striker', 'position' => 'BU', 'secondary' => null, 'stats' => ['speed' => 79, 'stamina' => 78, 'attack' => 34, 'shot' => 28, 'pass' => 18, 'dribble' => 24, 'heading' => 27], 'note' => 'Champion d’Italie 2023 avec Naples, joueur africain de l’année 2023, Galatasaray ; avant-centre explosif, appels en profondeur et détente.'],
+        ['firstname' => 'Finidi', 'lastname' => 'George', 'profile' => 'winger', 'position' => 'AD', 'secondary' => null, 'stats' => ['speed' => 76, 'stamina' => 74, 'attack' => 30, 'shot' => 24, 'pass' => 25, 'dribble' => 27, 'cross' => 27], 'note' => 'Ligue des champions 1995 avec l’Ajax, champion d’Afrique 1994, Betis ; ailier droit rapide et inspiré.'],
+        ['firstname' => 'Emmanuel', 'lastname' => 'Amunike', 'profile' => 'winger', 'position' => 'AG', 'secondary' => null, 'stats' => ['speed' => 76, 'stamina' => 72, 'attack' => 30, 'shot' => 27, 'pass' => 24, 'dribble' => 26], 'note' => 'Champion d’Afrique 1994 (deux buts en finale) et olympique 1996 (but de l’or), Barcelone ; ailier gauche vif et finisseur.'],
+    ];
 }

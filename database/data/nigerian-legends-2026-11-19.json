@@ -1,0 +1,47 @@
+[
+    {
+        "firstname": "Victor",
+        "lastname": "Osimhen",
+        "age": 13,
+        "position": "Forward",
+        "origin": "world_legends",
+        "nationality": "Nigéria",
+        "secondary_positions": "[]",
+        "cost": 45,
+        "stats": "{\"speed\":79,\"stamina\":78,\"attack\":34,\"defense\":17,\"shot\":28,\"pass\":18,\"dribble\":24,\"block\":14,\"intercept\":16,\"tackle\":16,\"hand_save\":10,\"punch_save\":10,\"heading\":27}",
+        "heading": 27,
+        "special_moves": null,
+        "description": "Légendes internationales — profil adapté au jeu. Attaquant de soutien, mobile et efficace dans la surface. Poste : BU. Champion d’Italie 2023 avec Naples, joueur africain de l’année 2023, Galatasaray ; avant-centre explosif, appels en profondeur et détente.",
+        "photo_path": null
+    },
+    {
+        "firstname": "Finidi",
+        "lastname": "George",
+        "age": 13,
+        "position": "Forward",
+        "origin": "world_legends",
+        "nationality": "Nigéria",
+        "secondary_positions": "[]",
+        "cost": 44,
+        "stats": "{\"speed\":76,\"stamina\":74,\"attack\":30,\"defense\":18,\"shot\":24,\"pass\":25,\"dribble\":27,\"block\":14,\"intercept\":18,\"tackle\":16,\"hand_save\":10,\"punch_save\":10,\"cross\":27,\"heading\":21}",
+        "heading": 21,
+        "special_moves": null,
+        "description": "Légendes internationales — profil adapté au jeu. Milieu de couloir, rapide et habile dans les débordements. Poste : AD. Ligue des champions 1995 avec l’Ajax, champion d’Afrique 1994, Betis ; ailier droit rapide et inspiré.",
+        "photo_path": null
+    },
+    {
+        "firstname": "Emmanuel",
+        "lastname": "Amunike",
+        "age": 13,
+        "position": "Forward",
+        "origin": "world_legends",
+        "nationality": "Nigéria",
+        "secondary_positions": "[]",
+        "cost": 44,
+        "stats": "{\"speed\":76,\"stamina\":72,\"attack\":30,\"defense\":18,\"shot\":27,\"pass\":24,\"dribble\":26,\"block\":14,\"intercept\":18,\"tackle\":16,\"hand_save\":10,\"punch_save\":10,\"heading\":21}",
+        "heading": 21,
+        "special_moves": null,
+        "description": "Légendes internationales — profil adapté au jeu. Milieu de couloir, rapide et habile dans les débordements. Poste : AG. Champion d’Afrique 1994 (deux buts en finale) et olympique 1996 (but de l’or), Barcelone ; ailier gauche vif et finisseur.",
+        "photo_path": null
+    }
+]
