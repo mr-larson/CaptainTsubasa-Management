@@ -4,8 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Ajoute vingt légendes brésiliennes (Gilmar, Alisson, Carlos Alberto Torres, Nilton Santos, Lúcio, Aldair,
- * Thiago Silva, Júnior, Zico, Sócrates, Falcão, Gérson, Rivelino, Kaká, Casemiro, Clodoaldo, Bebeto, Careca, Tostão, Vinícius Júnior), sans portrait pour l'instant. Instantané figé dans
+ * Ajoute dix légendes brésiliennes (Alisson, Carlos Alberto Torres, Lúcio, Thiago Silva,
+ * Zico, Sócrates, Kaká, Casemiro, Bebeto, Vinícius Júnior), sans portrait pour l'instant. Instantané figé dans
  * `database/data/brazilian-legends-2026-11-19.json`. Un joueur déjà présent n'est pas dupliqué.
  */
 return new class extends Migration
