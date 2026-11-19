@@ -1,0 +1,146 @@
+{
+  "nationality": "Angleterre",
+  "sources": "Palmarès : Wikipédia / FIFA. Sept joueurs ajoutés par migration (Shilton, Terry, Lampard, Gascoigne, Bellingham, Rooney, Lineker), sans portrait : à illustrer.",
+  "players": {
+    "Bobby Moore": {
+      "stats": {
+        "defense": 35,
+        "intercept": 29,
+        "pass": 25,
+        "speed": 59
+      },
+      "why": "Capitaine champion du monde 1966 : défenseur d'une propreté et d'une lecture rares."
+    },
+    "Gary Neville": {
+      "stats": {
+        "defense": 29,
+        "stamina": 76,
+        "cross": 26
+      },
+      "why": "Manchester United, huit Premier League : latéral droit fiable."
+    },
+    "Rio Ferdinand": {
+      "stats": {
+        "defense": 34,
+        "speed": 68,
+        "pass": 26,
+        "intercept": 28
+      },
+      "why": "Ligue des champions 2008 avec Manchester United : central élégant et rapide, bonne relance."
+    },
+    "Ashley Cole": {
+      "stats": {
+        "speed": 76,
+        "defense": 32,
+        "stamina": 80,
+        "tackle": 28
+      },
+      "why": "Arsenal Invincibles, Chelsea, 107 sélections : arrière gauche, vitesse et marquage."
+    },
+    "Billy Wright": {
+      "stats": {
+        "defense": 33,
+        "stamina": 79,
+        "tackle": 28
+      },
+      "why": "Premier joueur à 100 sélections, capitaine de Wolverhampton : défenseur loyal et solide."
+    },
+    "Michael Owen": {
+      "stats": {
+        "speed": 79,
+        "attack": 34,
+        "shot": 28,
+        "dribble": 25,
+        "stamina": 66
+      },
+      "why": "Ballon d'Or 2001 : vitesse de pointe et finition, buts à 18 ans."
+    },
+    "Alan Shearer": {
+      "stats": {
+        "attack": 36,
+        "shot": 30,
+        "heading": 28,
+        "speed": 64
+      },
+      "why": "Meilleur buteur de l'histoire de la Premier League (260 buts) : puissance et jeu de tête."
+    },
+    "Andy Cole": {
+      "stats": {
+        "speed": 72,
+        "attack": 31,
+        "shot": 27
+      },
+      "why": "Triplé 1999 avec Manchester United : attaquant rapide et opportuniste."
+    },
+    "Geoff Hurst": {
+      "stats": {
+        "heading": 28,
+        "attack": 33,
+        "shot": 28
+      },
+      "why": "Triplé en finale du Mondial 1966 : finisseur de la tête et du pied."
+    },
+    "Harry Kane": {
+      "stats": {
+        "attack": 36,
+        "shot": 30,
+        "pass": 28,
+        "heading": 27,
+        "speed": 62,
+        "stamina": 76
+      },
+      "why": "Meilleur buteur de l'histoire de l'Angleterre et de Tottenham : avant-centre complet, passes et tête."
+    },
+    "Gordon Banks": {
+      "stats": {
+        "defense": 36,
+        "hand_save": 29,
+        "punch_save": 28
+      },
+      "why": "Champion du monde 1966, auteur de l'arrêt du siècle : réflexes inégalés."
+    },
+    "Bobby Charlton": {
+      "stats": {
+        "attack": 35,
+        "shot": 30,
+        "pass": 28,
+        "dribble": 26,
+        "speed": 68,
+        "stamina": 77
+      },
+      "why": "Ballon d'Or 1966, champion du monde 1966 : frappe de loin foudroyante."
+    },
+    "David Beckham": {
+      "stats": {
+        "pass": 30,
+        "cross": 31,
+        "shot": 27,
+        "attack": 30,
+        "speed": 63,
+        "stamina": 79
+      },
+      "why": "Triplé 1999 avec Manchester United, 115 sélections : centres et coups francs d'une précision rare."
+    },
+    "Paul Scholes": {
+      "stats": {
+        "pass": 30,
+        "shot": 27,
+        "attack": 31,
+        "stamina": 72,
+        "tackle": 18
+      },
+      "why": "Onze Premier League avec Manchester United : passes longues et frappes lointaines, tacle faible."
+    },
+    "Steven Gerrard": {
+      "stats": {
+        "stamina": 82,
+        "pass": 28,
+        "shot": 28,
+        "attack": 32,
+        "defense": 26,
+        "speed": 69
+      },
+      "why": "Ligue des champions 2005 avec Liverpool : milieu à tout faire, passe et frappe."
+    }
+  }
+}
