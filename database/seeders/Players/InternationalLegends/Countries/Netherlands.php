@@ -37,4 +37,15 @@ final class Netherlands
         ['firstname' => 'Foeke', 'lastname' => 'Booy', 'profile' => 'striker', 'stats' => [], 'note' => 'Référence de la période des années 1990.'],
         ['firstname' => 'Marco', 'lastname' => 'van Basten', 'profile' => 'target', 'stats' => ['attack' => 35, 'shot' => 29, 'heading' => 29], 'note' => 'Référence de la période des années 1990.'],
     ];
+
+    // Compléments de la revue Pays-Bas : légendes très connues manquantes (un seul gardien au départ).
+    public const EXTRA_ADDITIONS = [
+        ['firstname' => 'Ruud', 'lastname' => 'Gullit', 'profile' => 'second_striker', 'position' => 'MOC', 'secondary' => 'AT', 'stats' => ['speed' => 74, 'stamina' => 78, 'attack' => 34, 'defense' => 24, 'shot' => 27, 'pass' => 28, 'dribble' => 27, 'heading' => 26], 'note' => 'Ballon d’Or 1987, capitaine champion d’Europe 1988, Milan ; joueur total, puissant, technique et polyvalent.'],
+        ['firstname' => 'Johan', 'lastname' => 'Neeskens', 'profile' => 'box_to_box', 'position' => 'MC', 'secondary' => null, 'stats' => ['speed' => 68, 'stamina' => 82, 'attack' => 28, 'defense' => 26, 'shot' => 26, 'pass' => 28, 'tackle' => 25], 'note' => 'Moteur du football total, double finaliste du Mondial 1974 et 1978, Barcelone ; milieu infatigable, tireur de penalty.'],
+        ['firstname' => 'Arjen', 'lastname' => 'Robben', 'profile' => 'winger', 'position' => 'AD', 'secondary' => 'MOC', 'stats' => ['speed' => 80, 'stamina' => 72, 'attack' => 34, 'shot' => 28, 'pass' => 24, 'dribble' => 30], 'note' => 'Ligue des champions 2013 avec le Bayern, finaliste du Mondial 2010 ; ailier qui repique sur son pied gauche.'],
+        ['firstname' => 'Wesley', 'lastname' => 'Sneijder', 'profile' => 'playmaker', 'position' => 'MOC', 'secondary' => null, 'stats' => ['speed' => 62, 'stamina' => 72, 'attack' => 31, 'shot' => 28, 'pass' => 30, 'dribble' => 25], 'note' => 'Triplé 2010 avec l’Inter, finaliste du Mondial 2010 ; meneur et frappeur de loin.'],
+        ['firstname' => 'Robin', 'lastname' => 'van Persie', 'profile' => 'striker', 'position' => 'BU', 'secondary' => null, 'stats' => ['speed' => 68, 'stamina' => 68, 'attack' => 34, 'shot' => 30, 'pass' => 24, 'dribble' => 26, 'heading' => 20], 'note' => 'Soulier d’or de Premier League 2013 avec Manchester United, finaliste du Mondial 2010 ; finisseur du pied gauche, volée légendaire.'],
+        ['firstname' => 'Virgil', 'lastname' => 'van Dijk', 'profile' => 'stopper', 'position' => 'DC', 'secondary' => null, 'stats' => ['speed' => 70, 'stamina' => 76, 'defense' => 34, 'block' => 28, 'tackle' => 28, 'heading' => 29, 'pass' => 24], 'note' => 'Ligue des champions 2019 et Premier League avec Liverpool, capitaine des Oranje ; défenseur central dominant.'],
+        ['firstname' => 'Hans', 'lastname' => 'van Breukelen', 'profile' => 'keeper', 'position' => 'GB', 'secondary' => null, 'stats' => ['speed' => 58, 'stamina' => 70, 'defense' => 31, 'hand_save' => 27, 'punch_save' => 27], 'note' => 'Champion d’Europe 1988, Coupe d’Europe 1988 avec le PSV ; gardien spécialiste des penalties.'],
+    ];
 }
