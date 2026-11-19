@@ -9,7 +9,7 @@ import { fieldClass, TEXTAREA_CLASS } from '@/Components/fieldStyles';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ButtonPrimary from '@/Components/ButtonPrimary.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ref, reactive, computed } from 'vue';
+import { ref, reactive, computed, watch } from 'vue';
 import H2 from '@/Components/H2.vue';
 import GameRules from '@/Components/GameRules.vue';
 import Modal from '@/Components/Modal.vue';
@@ -120,6 +120,27 @@ const config = reactive({
     legends_countries: null,
 });
 
+// Univers par défaut selon le mode : la Coupe du monde active tous les univers
+// (sélections nationales pioche partout) ; la Ligue garde le catalogue Captain Tsubasa.
+function universePreset(competitionType) {
+    const all = competitionType === 'world_cup';
+    return {
+        visible_origins: {
+            captain_tsubasa: true, captain_tsubasa_international: true, world_legends: all,
+            ecole_des_champions: all, hungry_heart: all, blue_lock: all, ao_ashi: all, original: true,
+        },
+        internationals_visible: all,
+        legends_countries: null,
+    };
+}
+const universeSnapshot = (preset) => JSON.stringify([preset.visible_origins, preset.internationals_visible, preset.legends_countries]);
+
+// Au changement de mode, on adapte les univers sauf si l'utilisateur les a modifiés à la main.
+watch(() => form.competition_type, (next, previous) => {
+    const untouched = universeSnapshot(config) === universeSnapshot(universePreset(previous));
+    if (untouched) Object.assign(config, universePreset(next));
+});
+
 const budgetFields = [
     { key: 'human_start_budget', label: 'Budget de départ par équipe humaine', min: 0 },
     { key: 'ai_start_budget', label: 'Budget de départ par équipe IA', min: 0 },
@@ -151,9 +172,7 @@ function resetDefaults() {
         initial_morale_random: true, initial_stamina_random: true, initial_speed_random: true, luck_random: true,
         human_start_budget: props.humanStartBudgets.standard, ai_start_budget: props.aiStartBudget,
         draft_budget: props.draftBudgets.standard, ai_draft_budget: props.aiDraftBudget,
-        visible_origins: { captain_tsubasa: true, captain_tsubasa_international: true, world_legends: false, ecole_des_champions: false, hungry_heart: false, blue_lock: false, ao_ashi: false, original: true },
-        internationals_visible: false,
-        legends_countries: null,
+        ...universePreset(form.competition_type),
     });
 }
 
