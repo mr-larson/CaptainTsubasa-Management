@@ -42,4 +42,15 @@ final class Germany
         ['firstname' => 'Andreas', 'lastname' => 'Möller', 'profile' => 'box_to_box', 'stats' => [], 'note' => 'Référence de la période des années 1990.'],
         ['firstname' => 'Karl-Heinz', 'lastname' => 'Riedle', 'profile' => 'striker', 'stats' => [], 'note' => 'Référence de la période des années 1990.'],
     ];
+
+    // Compléments de la revue Allemagne : générations 1950-1990 et 2010-2020.
+    public const EXTRA_ADDITIONS = [
+        ['firstname' => 'Sepp', 'lastname' => 'Maier', 'profile' => 'keeper', 'position' => 'GB', 'secondary' => null, 'stats' => ['speed' => 58, 'stamina' => 72, 'defense' => 32, 'hand_save' => 28, 'punch_save' => 27], 'note' => 'Champion du monde 1974 et d’Europe 1972, trois Coupes d’Europe avec le Bayern ; gardien acrobatique et sûr.'],
+        ['firstname' => 'Paul', 'lastname' => 'Breitner', 'profile' => 'wingback', 'position' => 'DG', 'secondary' => 'MC', 'stats' => ['speed' => 68, 'stamina' => 76, 'defense' => 27, 'attack' => 26, 'pass' => 27, 'shot' => 24], 'note' => 'Champion du monde 1974 et buteur en deux finales de Coupe du monde, Real Madrid et Bayern ; latéral offensif.'],
+        ['firstname' => 'Fritz', 'lastname' => 'Walter', 'profile' => 'playmaker', 'position' => 'MOC', 'secondary' => null, 'stats' => ['speed' => 62, 'stamina' => 68, 'attack' => 33, 'shot' => 25, 'pass' => 30, 'dribble' => 27], 'note' => 'Capitaine champion du monde 1954 (« miracle de Berne ») avec Kaiserslautern ; meneur et passeur.'],
+        ['firstname' => 'Günter', 'lastname' => 'Netzer', 'profile' => 'playmaker', 'position' => 'MC', 'secondary' => null, 'stats' => ['speed' => 62, 'stamina' => 68, 'attack' => 33, 'shot' => 27, 'pass' => 31, 'dribble' => 26], 'note' => 'Champion d’Europe 1972, Mönchengladbach puis Real Madrid ; passes longues et frappes lointaines.'],
+        ['firstname' => 'Toni', 'lastname' => 'Kroos', 'profile' => 'playmaker', 'position' => 'MC', 'secondary' => null, 'stats' => ['speed' => 56, 'stamina' => 74, 'attack' => 28, 'defense' => 21, 'shot' => 25, 'pass' => 31, 'dribble' => 25], 'note' => 'Champion du monde 2014, six Ligues des champions avec le Real Madrid ; passeur d’une précision rare, lent mais jamais pressé.'],
+        ['firstname' => 'Bastian', 'lastname' => 'Schweinsteiger', 'profile' => 'box_to_box', 'position' => 'MC', 'secondary' => null, 'stats' => ['speed' => 66, 'stamina' => 80, 'attack' => 28, 'defense' => 26, 'shot' => 25, 'pass' => 28, 'dribble' => 24, 'tackle' => 24, 'heading' => 23], 'note' => 'Champion du monde 2014, Ligue des champions 2013 ; milieu de combat et de relance.'],
+        ['firstname' => 'Uwe', 'lastname' => 'Seeler', 'profile' => 'striker', 'position' => 'BU', 'secondary' => null, 'stats' => ['speed' => 68, 'stamina' => 72, 'attack' => 34, 'shot' => 29, 'heading' => 27], 'note' => 'Idole de Hambourg, finaliste du Mondial 1966, quatre Coupes du monde ; avant-centre buteur et combatif.'],
+    ];
 }
