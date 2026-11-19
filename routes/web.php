@@ -168,6 +168,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/setup',   [GameSaveCreationController::class, 'setup'])->name('setup');
         Route::post('/start',  [GameSaveCreationController::class, 'start'])->middleware('throttle:game-create')->name('start');
         Route::post('/world-cup/start', [GameSaveCreationController::class, 'startWorldCup'])->middleware('throttle:game-create')->name('start-world-cup');
+        Route::post('/world-cup/lineup-preview', [GameSaveCreationController::class, 'worldCupLineupPreview'])->name('world-cup-lineup-preview');
         Route::get('/continue',[GameSaveController::class, 'continue'])->name('continue');
         Route::get('/{gameSave}/draft', [GameDraftController::class, 'show'])->name('draft');
         Route::post('/{gameSave}/draft/ai-pick', [GameDraftController::class, 'aiPick'])->name('draft.ai-pick');

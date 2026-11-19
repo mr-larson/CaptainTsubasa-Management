@@ -92,13 +92,14 @@ class NationalSquadPicker
     }
 
     /**
-     * Composition d'un effectif pour un schéma favori (s'il est jouable avec ces joueurs), sinon pour le meilleur schéma.
+     * Schéma favori de l’IA si adapté au vivier, ou schéma explicitement choisi par un manager.
+     * Le choix humain est conservé, même si certains joueurs doivent jouer hors poste.
      *
      * @return array{formation: string, slots: array<int, int>}
      */
-    public function lineupFor(Collection $players, ?string $formation): array
+    public function lineupFor(Collection $players, ?string $formation, bool $forceFormation = false): array
     {
-        return $formation && $this->formationFits($players, $formation)
+        return $formation && ($forceFormation || $this->formationFits($players, $formation))
             ? $this->lineups->recommendLineupForFormation($players, $formation)
             : $this->lineups->recommendInitialLineup($players);
     }

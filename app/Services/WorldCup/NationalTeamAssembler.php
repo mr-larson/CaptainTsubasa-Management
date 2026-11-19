@@ -3,6 +3,7 @@
 namespace App\Services\WorldCup;
 
 use App\Contracts\Randomizer;
+use App\Helpers\InitialPlayerStats;
 use App\Enums\Nationality;
 use App\Models\GameSaves\GameContract;
 use App\Models\GameSaves\GamePlayer;
@@ -10,8 +11,6 @@ use App\Models\GameSaves\GameSave;
 use App\Models\GameSaves\GameTeam;
 use App\Models\Nation;
 use App\Models\Player;
-use App\Services\Players\MoraleService;
-use App\Support\GameConfig;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 
@@ -43,7 +42,7 @@ class NationalTeamAssembler
 
     public function __construct(private Randomizer $random, private NationalSquadPicker $picker) {}
 
-    public function preview(string $nation): ?array
+    public function preview(string $nation, ?array $gameConfig = null, ?int $seed = null): ?array
     {
         $players = Player::where('nationality', $nation)->orderBy('lastname')->orderBy('firstname')->orderBy('id')->get();
         $catalog = Nation::where('name', $nation)->first();
@@ -53,22 +52,55 @@ class NationalTeamAssembler
         }
         [$squad, $lineup] = $picked;
 
+        $previewSave = new GameSave(['state' => ['config' => $gameConfig ?? []]]);
+
         return [
             'name' => $nation,
             'flag' => Nationality::flag($nation),
             'flag_url' => $catalog?->flag_url,
-            'players' => $players->map(fn (Player $player) => [
-                'id' => $player->id,
-                'name' => $player->full_name,
-                'position' => $player->position->value,
-                'overall' => round($this->overall($player)),
-            ])->all(),
+            'players' => $players->map(function (Player $player) use ($previewSave, $seed) {
+                $initial = InitialPlayerStats::forPlayer($previewSave, $seed ?? 0, $player->id, (int) ($player->stats['speed'] ?? 50));
+
+                return [
+                    'id' => $player->id,
+                    'name' => $player->full_name,
+                    'firstname' => $player->firstname,
+                    'lastname' => $player->lastname,
+                    'age' => $player->age,
+                    'photo_path' => $player->photo_path,
+                    'nationality' => $player->nationality,
+                    'position' => $player->position->value,
+                    'secondary_positions' => $player->secondary_positions ?? [],
+                    'special_moves' => $player->special_moves ?? [],
+                    'stats' => array_merge(Player::DEFAULT_STATS, $player->stats ?? [], $initial),
+                    ...$initial,
+                    'overall' => round($this->overall($player)),
+                ];
+            })->all(),
             'selectedIds' => $squad->pluck('id')->all(),
             'formation' => $lineup['formation'],
             'description' => $this->describe($squad),
             'minPlayers' => self::MIN_PLAYERS,
             'maxPlayers' => self::MAX_PLAYERS,
         ];
+    }
+
+    /**
+     * Onze que l'IA alignerait avec cette convocation (même logique que la création de partie) : alimente le
+     * terrain de la page de convocation. Null si les joueurs ne permettent pas d'aligner un onze.
+     *
+     * @param  array<int, int>  $playerIds  ids des joueurs convoqués
+     * @return array{formation: string, slots: array<int, int>}|null  poste (1..11) => id de joueur
+     */
+    public function lineupPreview(string $nation, array $playerIds, ?string $formation = null): ?array
+    {
+        $squad = Player::where('nationality', $nation)->whereKey($playerIds)->orderBy('id')->get();
+        if ($squad->count() < self::MIN_PLAYERS) {
+            return null;
+        }
+        $lineup = $this->picker->lineupFor($squad, $formation ?? Nation::where('name', $nation)->first()?->default_formation, $formation !== null);
+
+        return count($lineup['slots']) >= self::MIN_PLAYERS ? $lineup : null;
     }
 
     /**
@@ -83,7 +115,7 @@ class NationalTeamAssembler
      * @param  array<int, string>  $coHumanNations  nations humaines supplémentaires (sièges 2, 3…)
      * @param  array<string, array<int, int>>  $coPlayerIds  convocation choisie par nation des co-managers
      */
-    public function assemble(GameSave $gameSave, array $nations, string $controlledNation, ?array $playerIds = null, array $coHumanNations = [], array $coPlayerIds = []): void
+    public function assemble(GameSave $gameSave, array $nations, string $controlledNation, ?array $playerIds = null, array $coHumanNations = [], array $coPlayerIds = [], ?string $formation = null, array $coFormations = [], ?array $lineupSlots = null, array $coLineupSlots = []): void
     {
         $state = $gameSave->gameState();
         $seats = array_flip(array_values(array_merge([$controlledNation], $coHumanNations))); // nation → siège - 1
@@ -104,7 +136,8 @@ class NationalTeamAssembler
                         $isControlled ? 'player_ids' : 'co_player_ids' => "Convoque entre 11 et 20 joueurs disponibles de {$nation}, dont au moins un gardien.",
                     ]);
                 }
-                $lineup = $this->picker->lineupFor($squad, $catalog?->default_formation);
+                $chosenFormation = $isControlled ? $formation : ($coFormations[$nation] ?? null);
+                $lineup = $this->picker->lineupFor($squad, $chosenFormation ?? $catalog?->default_formation, $chosenFormation !== null);
             } else {
                 $picked = $this->picker->pick($query->get(), $catalog?->default_formation, $catalog?->tactical_style ?? 'balanced', $catalog?->management_philosophy ?? 'collective');
                 if ($picked === null) {
@@ -115,6 +148,11 @@ class NationalTeamAssembler
                     continue;
                 }
                 [$squad, $lineup] = $picked;
+            }
+
+            $chosenSlots = $isControlled ? $lineupSlots : ($coLineupSlots[$nation] ?? null);
+            if ($isHuman && $chosenSlots !== null) {
+                $lineup['slots'] = $this->validateChosenSlots($squad, $chosenSlots, $isControlled ? 'lineup_slots' : 'co_lineup_slots');
             }
 
             $gameTeam = GameTeam::create([
@@ -146,6 +184,21 @@ class NationalTeamAssembler
         }
 
         $gameSave->save();
+    }
+
+    /** Seuls onze joueurs distincts de la convocation peuvent figurer sur les onze postes. */
+    private function validateChosenSlots(Collection $squad, array $slots, string $field): array
+    {
+        $keys = array_map('intval', array_keys($slots));
+        sort($keys);
+        $ids = array_map('intval', array_values($slots));
+        if ($keys !== range(1, 11) || count(array_unique($ids)) !== 11 || array_diff($ids, $squad->pluck('id')->all()) !== []) {
+            throw ValidationException::withMessages([$field => 'Place onze joueurs convoqués différents sur les onze postes.']);
+        }
+        $normalized = [];
+        foreach ($slots as $slot => $id) $normalized[(int) $slot] = (int) $id;
+        ksort($normalized);
+        return $normalized;
     }
 
     private function describe(Collection $squad): string
@@ -203,6 +256,7 @@ class NationalTeamAssembler
     private function snapshotPlayer(GameSave $gameSave, Player $player): GamePlayer
     {
         $s = $player->stats ?? [];
+        $initial = InitialPlayerStats::forPlayer($gameSave, (int) ($gameSave->state['player_stats_seed'] ?? 0), $player->id, (int) ($player->speed ?? $s['speed'] ?? 50));
 
         return GamePlayer::create([
             'game_save_id' => $gameSave->id,
@@ -215,9 +269,9 @@ class NationalTeamAssembler
             'secondary_positions' => $player->secondary_positions ?? [],
             'description' => $player->description,
             'photo_path' => $player->photo_path,
-            'speed' => $gameSave->config()->initialSpeed((int) ($player->speed ?? $s['speed'] ?? 50)),
-            'stamina' => $gameSave->config()->initialStamina(),
-            'luck' => $gameSave->config()->rollLuck(),
+            'speed' => $initial['speed'],
+            'stamina' => $initial['stamina'],
+            'luck' => $initial['luck'],
             'attack' => $player->attack ?? $s['attack'] ?? 50,
             'defense' => $player->defense ?? $s['defense'] ?? 50,
             'shot' => $player->shot ?? $s['shot'] ?? 50,
@@ -231,9 +285,7 @@ class NationalTeamAssembler
             'punch_save' => $player->punch_save ?? $s['punch_save'] ?? 0,
             'special_moves' => $player->special_moves ?? [],
             'cost' => $player->cost ?? 0,
-            'morale' => $gameSave->getConfig('initial_morale_random')
-                ? $this->random->int(GameConfig::INITIAL_MORALE_MIN, GameConfig::INITIAL_MORALE_MAX)
-                : MoraleService::NEUTRAL_MORALE,
+            'morale' => $initial['morale'],
         ]);
     }
 
