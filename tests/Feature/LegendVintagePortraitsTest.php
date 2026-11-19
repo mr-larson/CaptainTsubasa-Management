@@ -49,9 +49,19 @@ class LegendVintagePortraitsTest extends TestCase
             $file = public_path('storage/'.$image['photo_path']);
             $this->assertSame($image['sha256'], hash_file('sha256', $file));
             $this->assertNotFalse(getimagesize($file));
-            $this->assertTrue($image['career_period_reviewed']);
-            $this->assertNotEmpty($image['source_url']);
             $this->assertNotEmpty($image['rights']);
+            // Les portraits historiques du projet n'ont pas de source externe
+            // documentée (rights le dit explicitement) : seuls le fichier et son
+            // empreinte sont vérifiés pour eux.
+            $historical = str_starts_with($image['credit'] ?? '', 'Portrait historique du projet');
+            if (!$historical) {
+                $this->assertNotEmpty($image['source_url']);
+            }
+            // Personnages de manga sans période de carrière à relire : le champ
+            // est absent, mais s'il existe il doit valoir true.
+            if (array_key_exists('career_period_reviewed', $image)) {
+                $this->assertTrue($image['career_period_reviewed']);
+            }
             $this->assertSame($image['photo_path'], PlayerPhotos::pathFor($image['player_slug'], $image['origin'] ?? null));
             if (isset($image['portrait_crop'])) {
                 [$x, $y, $width, $height] = $image['portrait_crop'];
