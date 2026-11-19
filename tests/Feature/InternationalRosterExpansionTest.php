@@ -18,7 +18,7 @@ class InternationalRosterExpansionTest extends TestCase
     public function test_seeds_separate_origins_and_preserves_eight_national_player_pools(): void
     {
         $this->seed(PlayerSeeder::class);
-        $this->assertSame(478, Player::where('origin', PlayerOrigin::LEGENDS)->count());
+        $this->assertSame(485, Player::where('origin', PlayerOrigin::LEGENDS)->count());
         $this->assertSame('captain_tsubasa', Player::where('lastname', 'Ozora')->value('origin'));
         $this->assertSame(PlayerOrigin::INTERNATIONAL, Player::where('lastname', 'Schneider')->value('origin'));
         foreach (['Allemagne', 'France', 'Brésil', 'Argentine', 'Uruguay', 'Pays-Bas', 'Mexique', 'Italie'] as $nation) {
@@ -42,7 +42,7 @@ class InternationalRosterExpansionTest extends TestCase
         $legend = Player::where('origin', PlayerOrigin::LEGENDS)->firstOrFail();
         $legend->update(['cost' => 123]);
         $migration->up();
-        $this->assertSame(478, Player::where('origin', PlayerOrigin::LEGENDS)->count());
+        $this->assertSame(485, Player::where('origin', PlayerOrigin::LEGENDS)->count());
         $this->assertSame(123, $legend->fresh()->cost);
         $this->assertSame(PlayerOrigin::INTERNATIONAL, $reference->fresh()->origin);
         $this->assertSame('captain_tsubasa', $saved->fresh()->origin);
