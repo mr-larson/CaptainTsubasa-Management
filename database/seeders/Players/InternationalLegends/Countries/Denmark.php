@@ -23,4 +23,12 @@ final class Denmark
         ['firstname' => 'Preben', 'lastname' => 'Elkjær Larsen', 'profile' => 'power_forward', 'position' => 'BU', 'stats' => ['speed' => 74, 'stamina' => 79, 'attack' => 35, 'defense' => 19, 'shot' => 28, 'pass' => 22, 'dribble' => 26, 'heading' => 25]],
         ['firstname' => 'Allan', 'lastname' => 'Simonsen', 'profile' => 'winger_forward', 'position' => 'AG', 'secondary' => 'AT', 'stats' => ['speed' => 76, 'stamina' => 71, 'attack' => 33, 'defense' => 17, 'shot' => 27, 'pass' => 25, 'dribble' => 29, 'heading' => 18]],
     ];
+
+    // Compléments de la revue Danemark : seulement onze joueurs au départ (un seul gardien, aucun Tsubasa).
+    public const EXTRA_ADDITIONS = [
+        ['firstname' => 'Kasper', 'lastname' => 'Schmeichel', 'profile' => 'keeper', 'position' => 'GB', 'secondary' => null, 'stats' => ['speed' => 60, 'stamina' => 72, 'defense' => 33, 'hand_save' => 28, 'punch_save' => 28], 'note' => 'Champion d’Angleterre 2016 avec Leicester, demi-finaliste de l’Euro 2020 ; gardien sûr, héritier de son père.'],
+        ['firstname' => 'Simon', 'lastname' => 'Kjær', 'profile' => 'stopper', 'position' => 'DC', 'secondary' => null, 'stats' => ['speed' => 62, 'stamina' => 72, 'defense' => 32, 'block' => 27, 'tackle' => 28, 'heading' => 27, 'pass' => 24], 'note' => 'Capitaine de l’Euro 2020 (demi-finale), champion d’Italie 2022 avec Milan ; défenseur central de caractère.'],
+        ['firstname' => 'Jon Dahl', 'lastname' => 'Tomasson', 'profile' => 'striker', 'position' => 'BU', 'secondary' => null, 'stats' => ['speed' => 70, 'stamina' => 72, 'attack' => 31, 'shot' => 27, 'pass' => 24, 'dribble' => 24, 'heading' => 24], 'note' => 'Ligue des champions 2003 et titre 2004 avec Milan, Feyenoord, meilleur buteur danois à son retrait ; finisseur régulier.'],
+        ['firstname' => 'Pierre-Emile', 'lastname' => 'Højbjerg', 'profile' => 'holding', 'position' => 'MC', 'secondary' => null, 'stats' => ['speed' => 62, 'stamina' => 82, 'attack' => 22, 'defense' => 28, 'shot' => 22, 'pass' => 26, 'tackle' => 27, 'intercept' => 26], 'note' => 'Demi-finaliste de l’Euro 2020, Bayern et Tottenham ; milieu défensif infatigable.'],
+    ];
 }

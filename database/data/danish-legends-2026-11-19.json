@@ -1,0 +1,62 @@
+[
+    {
+        "firstname": "Kasper",
+        "lastname": "Schmeichel",
+        "age": 13,
+        "position": "Goalkeeper",
+        "origin": "world_legends",
+        "nationality": "Danemark",
+        "secondary_positions": "[]",
+        "cost": 48,
+        "stats": "{\"speed\":60,\"stamina\":72,\"attack\":14,\"defense\":33,\"shot\":11,\"pass\":18,\"dribble\":13,\"block\":22,\"intercept\":21,\"tackle\":17,\"hand_save\":28,\"punch_save\":28,\"heading\":15}",
+        "heading": 15,
+        "special_moves": null,
+        "description": "Légendes internationales — profil adapté au jeu. Gardien de soutien, réactif et fiable sur sa ligne. Poste : GB. Champion d’Angleterre 2016 avec Leicester, demi-finaliste de l’Euro 2020 ; gardien sûr, héritier de son père.",
+        "photo_path": null
+    },
+    {
+        "firstname": "Simon",
+        "lastname": "Kjær",
+        "age": 13,
+        "position": "Defender",
+        "origin": "world_legends",
+        "nationality": "Danemark",
+        "secondary_positions": "[]",
+        "cost": 44,
+        "stats": "{\"speed\":62,\"stamina\":72,\"attack\":18,\"defense\":32,\"shot\":15,\"pass\":24,\"dribble\":16,\"block\":27,\"intercept\":24,\"tackle\":28,\"hand_save\":10,\"punch_save\":10,\"heading\":27}",
+        "heading": 27,
+        "special_moves": null,
+        "description": "Légendes internationales — profil adapté au jeu. Défenseur de soutien, puissant au marquage et dans les duels. Poste : DC. Capitaine de l’Euro 2020 (demi-finale), champion d’Italie 2022 avec Milan ; défenseur central de caractère.",
+        "photo_path": null
+    },
+    {
+        "firstname": "Jon Dahl",
+        "lastname": "Tomasson",
+        "age": 13,
+        "position": "Forward",
+        "origin": "world_legends",
+        "nationality": "Danemark",
+        "secondary_positions": "[]",
+        "cost": 43,
+        "stats": "{\"speed\":70,\"stamina\":72,\"attack\":31,\"defense\":17,\"shot\":27,\"pass\":24,\"dribble\":24,\"block\":14,\"intercept\":16,\"tackle\":16,\"hand_save\":10,\"punch_save\":10,\"heading\":24}",
+        "heading": 24,
+        "special_moves": null,
+        "description": "Légendes internationales — profil adapté au jeu. Attaquant de soutien, mobile et efficace dans la surface. Poste : BU. Ligue des champions 2003 et titre 2004 avec Milan, Feyenoord, meilleur buteur danois à son retrait ; finisseur régulier.",
+        "photo_path": null
+    },
+    {
+        "firstname": "Pierre-Emile",
+        "lastname": "Højbjerg",
+        "age": 13,
+        "position": "Midfielder",
+        "origin": "world_legends",
+        "nationality": "Danemark",
+        "secondary_positions": "[]",
+        "cost": 46,
+        "stats": "{\"speed\":62,\"stamina\":82,\"attack\":22,\"defense\":28,\"shot\":22,\"pass\":26,\"dribble\":19,\"block\":23,\"intercept\":26,\"tackle\":27,\"hand_save\":10,\"punch_save\":10,\"heading\":18}",
+        "heading": 18,
+        "special_moves": null,
+        "description": "Légendes internationales — profil adapté au jeu. Milieu récupérateur, spécialiste du placement et de la protection de la défense. Poste : MC. Demi-finaliste de l’Euro 2020, Bayern et Tottenham ; milieu défensif infatigable.",
+        "photo_path": null
+    }
+]
