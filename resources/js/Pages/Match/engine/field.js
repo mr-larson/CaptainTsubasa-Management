@@ -313,7 +313,14 @@ export function pickFieldDefender(defenseTeam, originZone, originLane) {
 // -----------------------------------------------------------
 //   Déplacement ballon
 // -----------------------------------------------------------
-export function moveBallToPlayer(team, number, updateTeamCardFn) {
+export function moveBallToPlayer(team, number, updateTeamCardFn, { animate = true } = {}) {
+    const placeBall = animate ? applyBallMotion : (x, y) => {
+        clearTimeout(_ballClassTimer);
+        _ui.ballEl.classList.remove("ball-pass-short", "ball-pass-medium", "ball-pass-long");
+        _ui.ballEl.style.transition = "none";
+        _ui.ballEl.style.left = x + "%";
+        _ui.ballEl.style.top = y + "%";
+    };
     const ball = _state.ball;
     if (!_ui.ballEl) return;
 
@@ -325,7 +332,7 @@ export function moveBallToPlayer(team, number, updateTeamCardFn) {
     let y = parseFloat(el.style.top);
     if (Number.isNaN(x) || Number.isNaN(y)) return;
 
-    applyBallMotion(x, y);
+    placeBall(x, y);
 
     const info = _roster.getPlayerInfo(team, targetNumber);
     _ui.ballEl.textContent = info ? String(info.number) : String(targetNumber);
@@ -344,7 +351,7 @@ export function moveBallToPlayer(team, number, updateTeamCardFn) {
             if (!el) return;
             x = parseFloat(el.style.left);
             y = parseFloat(el.style.top);
-            applyBallMotion(x, y);
+            placeBall(x, y);
             const info2 = _roster.getPlayerInfo(team, targetNumber);
             _ui.ballEl.textContent = info2 ? String(info2.number) : String(targetNumber);
         }
@@ -357,7 +364,7 @@ export function moveBallToPlayer(team, number, updateTeamCardFn) {
         if (safeEl) {
             const sx = parseFloat(safeEl.style.left);
             const sy = parseFloat(safeEl.style.top);
-            applyBallMotion(x, y);
+            placeBall(x, y);
             const safeInfo = _roster.getPlayerInfo(team, safe);
             _ui.ballEl.textContent = safeInfo ? String(safeInfo.number) : String(safe);
             ball.number   = safe;
@@ -420,15 +427,16 @@ export function applyPreMatchPositions(basePositions) {
     }
 }
 
-export function applyKickoffPositions(basePositions) {
+export function applyKickoffPositions(basePositions, takerId) {
     _rootEl.querySelectorAll(".player").forEach((el) => {
         const base = basePositions[el.dataset.player];
         if (!base) return;
         let x = base.x;
         if (el.classList.contains("internal") && x > 50) x = 48;
         if (el.classList.contains("external") && x < 50) x = 52;
-        el.style.left = x + "%";
-        el.style.top  = base.y + "%";
+        const takesKickoff = el.dataset.player === takerId;
+        el.style.left = (takesKickoff ? 50 : x) + "%";
+        el.style.top  = (takesKickoff ? 50 : base.y) + "%";
     });
 }
 

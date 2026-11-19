@@ -320,7 +320,15 @@ export function initMatchEngine(rootEl, config = {}) {
     });
 
     state._moveBallFn = (team, number) => moveBallToPlayer(team, number, () => updateTeamCard(ball));
-    state._applyKickoffFn = () => applyKickoffPositions(basePositions);
+    const availableOutfieldSlots = (team) => Array.from({ length: 10 }, (_, index) => index + 2)
+        .filter(slot => getCarrierElement(team, slot)?.matches(".player:not(.unavailable)"));
+
+    state._applyKickoffFn = (team) => {
+        const available = availableOutfieldSlots(team);
+        const taker = available.includes(8) ? 8 : available[0] ?? 8;
+        applyKickoffPositions(basePositions, getPlayerId(team, taker));
+        moveBallToPlayer(team, taker, () => updateTeamCard(ball), { animate: false });
+    };
 
     // ==========================
     //   ADVANCE TURN
@@ -483,7 +491,11 @@ export function initMatchEngine(rootEl, config = {}) {
         if (!state.isKickoff) return;
         state.isKickoff = false;
 
-        const number     = [5, 6][Math.floor(Math.random() * 2)];
+        const teammates = availableOutfieldSlots(attackTeam).filter(slot => slot !== ball.number);
+        const preferred = teammates.filter(slot => slot === 5 || slot === 6);
+        const receivers = preferred.length ? preferred : teammates;
+        const receiver = receivers[Math.floor(Math.random() * receivers.length)] ?? ball.number;
+        const number = roster.getPlayerInfo(attackTeam, receiver)?.number ?? receiver;
         // La remise en jeu obligatoire ne consomme pas d’énergie d’action.
 
         setMessage(TEXTS.logs.kickoffTitle, `${TEAMS[attackTeam].label} joue court vers le n°${number}.`);
@@ -491,7 +503,7 @@ export function initMatchEngine(rootEl, config = {}) {
 
         animateAndThen(() => {
             restoreBasePositions(basePositions);
-            state._moveBallFn(attackTeam, number);
+            state._moveBallFn(attackTeam, receiver);
             advanceTurn(attackTeam);
         });
     }
@@ -935,10 +947,10 @@ export function initMatchEngine(rootEl, config = {}) {
             external: state.startingSlots.external.filter(id => id !== null),
         };
 
-        applyKickoffPositions(basePositions);
         const kickoffTeam = matchConfig.isControlledHome ? "internal" : "external";
         state.currentTeam = kickoffTeam;
-        state._moveBallFn(kickoffTeam, 8);
+        ball.team = kickoffTeam;
+        if (!paused) state._applyKickoffFn(kickoffTeam);
 
         updateSideCard("home", "internal", 8);
         updateSideCard("away", "external", 8);
@@ -952,7 +964,7 @@ export function initMatchEngine(rootEl, config = {}) {
             gameSaveId: matchConfig.gameSaveId ?? null,
             matchId:    matchConfig.matchId    ?? null,
             turn: 0, type: "kickoff",
-            context: { team: "internal" },
+            context: { team: kickoffTeam },
             attack: null, defense: null, result: null, resultWinner: null, diff: null,
         });
 
@@ -1009,8 +1021,7 @@ export function initMatchEngine(rootEl, config = {}) {
         // avant de rendre la main au manager ou à l’IA.
         setTimeout(() => {
             if (state.disposed) return;
-            applyKickoffPositions(basePositions);
-            state._moveBallFn(state.currentTeam, ball.number);
+            state._applyKickoffFn(state.currentTeam);
             const duration = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? 0 : 700;
             setTimeout(() => {
                 if (state.disposed) return;
@@ -1018,7 +1029,7 @@ export function initMatchEngine(rootEl, config = {}) {
                     if (state.disposed) return;
                     paused = false;
                     enteringKickoff = false;
-                    scheduleAIAttack();
+                    showAttackBarForCurrentTeam();
                 });
             }, duration);
         }, 200);

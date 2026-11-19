@@ -432,7 +432,6 @@ function ensureCardPhotoLayer(cardEl) {
         img.alt         = "";
         img.loading     = "lazy";
         img.decoding    = "async";
-        Object.assign(img.style, { position: "absolute", inset: "0", width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none", zIndex: "50" });
         img.addEventListener("error", () => { img.classList.add("hidden"); img.removeAttribute("src"); });
         cardEl.appendChild(img);
     }

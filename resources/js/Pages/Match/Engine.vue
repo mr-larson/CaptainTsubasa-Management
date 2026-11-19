@@ -51,12 +51,13 @@
                             <!-- INTERNAL (équipe contrôlée) — placée à gauche si domicile, sinon à droite -->
                             <div class="flex items-center gap-2 min-w-0 sm:min-w-[160px]"
                                  :class="internalIsHome ? 'order-1 justify-end' : 'order-3 justify-start flex-row-reverse'">
-                                <div class="h-12 w-12 rounded-md overflow-hidden flex items-center justify-center">
+                                <div :class="scoreLogoFrameClass" class="rounded-md overflow-hidden flex items-center justify-center">
                                     <TeamLogoImage
                                         v-if="homeLogoUrl"
                                         :src="homeLogoUrl"
                                         :alt="internalIsHome ? 'Logo domicile' : 'Logo extérieur'"
                                         class="h-full w-full"
+                                        :style="scoreLogoStyle"
                                     />
                                     <span v-else class="text-2xs opacity-60">—</span>
                                 </div>
@@ -84,12 +85,13 @@
                   {{ awayName }}
                 </span>
 
-                                <div class="h-12 w-12 rounded-md overflow-hidden flex items-center justify-center">
+                                <div :class="scoreLogoFrameClass" class="rounded-md overflow-hidden flex items-center justify-center">
                                     <TeamLogoImage
                                         v-if="awayLogoUrl"
                                         :src="awayLogoUrl"
                                         :alt="internalIsHome ? 'Logo extérieur' : 'Logo domicile'"
                                         class="h-full w-full"
+                                        :style="scoreLogoStyle"
                                     />
                                     <span v-else class="text-2xs opacity-60">—</span>
                                 </div>
@@ -443,6 +445,8 @@ const awayName = computed(() => props.engineConfig?.teams?.external?.name ?? 'Ex
 // L'équipe à domicile doit apparaître en premier (à gauche) dans le bandeau de
 // score, que le joueur contrôle le domicile (internal) ou l'extérieur.
 const internalIsHome = computed(() => props.engineConfig?.internalIsHome ?? true);
+const scoreLogoFrameClass = computed(() => props.engineConfig?.isWorldCup ? 'h-8 w-12 shrink-0' : 'h-12 w-12');
+const scoreLogoStyle = computed(() => props.engineConfig?.isWorldCup ? { objectFit: 'cover' } : undefined);
 
 const homeLogoUrl = computed(() => {
     const p = props.engineConfig?.teams?.internal?.logo_path;

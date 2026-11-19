@@ -159,6 +159,7 @@ class MatchScreenBuilder
         return [
             'gameSaveId'       => $gameSave->id,
             'matchId'          => $match->id,
+            'isWorldCup'       => $gameSave->isWorldCup(),
             'week'             => $match->week,
             'maxTurns'         => (int) $gameSave->getConfig('match_max_turns', 30),
             'criticalsEnabled' => (bool) $gameSave->getConfig('match_criticals_enabled'),

@@ -253,8 +253,7 @@ function _continueKeeperDuelResult(duelResult, attackTeam, defenseTeam, isSpecia
         animateGoalThenReset(attackTeam, () => {
             shared.state.isKickoff = true;
             shared.state.keeperRestartMustPass = false;
-            shared.state._applyKickoffFn?.();
-            _moveBall(defenseTeam, 8);
+            shared.state._applyKickoffFn(defenseTeam);
             shared.advanceTurn(defenseTeam);
         });
         return;
