@@ -1,0 +1,89 @@
+{
+  "nationality": "Uruguay",
+  "sources": "Palmarès : Wikipédia / FIFA. Huit joueurs ajoutés par migration (Francescoli, Cavani, Varela, Ghiggia, Valverde, Mazurkiewicz, Montero, Recoba), sans portrait : à illustrer. Le pays n'avait que neuf joueurs.",
+  "players": {
+    "Diego Godín": {
+      "stats": {
+        "defense": 33,
+        "heading": 28,
+        "tackle": 28,
+        "speed": 58,
+        "stamina": 78,
+        "pass": 21
+      },
+      "why": "Capitaine, Atlético de Madrid, plus de 150 sélections : défenseur dur et dominant de la tête."
+    },
+    "Diego Lugano": {
+      "stats": {
+        "defense": 31,
+        "heading": 28,
+        "speed": 56,
+        "stamina": 72
+      },
+      "why": "Capitaine de l'Uruguay au Mondial 2010 : grand défenseur, jeu aérien."
+    },
+    "José Nasazzi": {
+      "stats": {
+        "defense": 31,
+        "tackle": 28,
+        "stamina": 74
+      },
+      "why": "Capitaine champion du monde 1930 et olympique : défenseur loyal et dur."
+    },
+    "Luis Suárez": {
+      "stats": {
+        "attack": 36,
+        "shot": 30,
+        "dribble": 29,
+        "speed": 70,
+        "stamina": 78,
+        "pass": 24
+      },
+      "why": "Meilleur buteur de l'histoire de l'Uruguay, Barcelone : finisseur et presseur, tempérament de feu."
+    },
+    "Diego Forlán": {
+      "stats": {
+        "attack": 33,
+        "shot": 29,
+        "pass": 26,
+        "dribble": 25,
+        "speed": 66
+      },
+      "why": "Ballon d'or du Mondial 2010, Atlético de Madrid : frappe des deux pieds et volées."
+    },
+    "Juan Alberto Schiaffino": {
+      "stats": {
+        "attack": 33,
+        "pass": 30,
+        "dribble": 29,
+        "shot": 28,
+        "speed": 66
+      },
+      "why": "Auteur du but égalisateur du Maracanazo, champion du monde 1950, Milan : meneur élégant."
+    },
+    "Fernando Muslera": {
+      "stats": {
+        "defense": 31,
+        "hand_save": 27,
+        "punch_save": 27
+      },
+      "why": "Galatasaray, plus de 130 sélections : gardien régulier et sûr."
+    },
+    "Egidio Arévalo Ríos": {
+      "stats": {
+        "tackle": 27,
+        "intercept": 27,
+        "stamina": 78
+      },
+      "why": "Milieu défensif, finaliste de la Copa 2011 : récupération et volume."
+    },
+    "Diego Pérez": {
+      "stats": {
+        "tackle": 26,
+        "pass": 25,
+        "stamina": 76
+      },
+      "why": "Milieu de Monaco et Bologne : récupérateur propre."
+    }
+  }
+}
