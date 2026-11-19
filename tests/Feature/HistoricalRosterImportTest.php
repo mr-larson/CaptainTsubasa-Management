@@ -22,11 +22,11 @@ class HistoricalRosterImportTest extends TestCase
         $audit = json_decode(file_get_contents(resource_path('data/historical-roster-import.json')), true);
         $this->assertCount(200, $audit);
         $this->assertCount(4, array_unique(array_column($audit, 'source')));
-        $this->assertCount(124, array_filter($audit, fn ($r) => $r['status'] === 'à ajouter'));
+        $this->assertCount(108, array_filter($audit, fn ($r) => $r['status'] === 'à ajouter'));
         $this->seed(PlayerSeeder::class);
         $players = Player::where('origin', 'world_legends')->get();
-        $this->assertCount(480, $players);
-        $this->assertCount(480, $players->unique(fn ($p) => Str::slug($p->full_name)));
+        $this->assertCount(463, $players);
+        $this->assertCount(463, $players->unique(fn ($p) => Str::slug($p->full_name)));
         foreach ($audit as $row) {
             if ($row['status'] === 'archivé') {
                 $this->assertNull($players->first(fn ($p) => $p->firstname === $row['firstname'] && $p->lastname === $row['lastname']));

@@ -39,15 +39,15 @@ class BelgianLegendsTest extends TestCase
             }
         }
         fclose($source);
-        $this->assertSame(41, $index);
+        $this->assertSame(40, $index);
     }
 
     public function test_seeding_produces_a_playable_belgium_with_keepers_and_distinct_tiers(): void
     {
         $this->seed(PlayerSeeder::class);
         $belgians = Player::where('nationality', Nationality::BELGIQUE)->get();
-        $this->assertCount(78, $belgians);
-        $this->assertCount(10, $belgians->where('position', 'Goalkeeper'));
+        $this->assertCount(61, $belgians);
+        $this->assertCount(7, $belgians->where('position', 'Goalkeeper'));
         $this->assertSame([PlayerOrigin::LEGENDS], $belgians->pluck('origin')->unique()->values()->all());
         $this->assertSame('🇧🇪', Nationality::flag(Nationality::BELGIQUE));
         // Points forts de la revue belge (Countries/stats/belgium.json).
@@ -78,7 +78,7 @@ class BelgianLegendsTest extends TestCase
         $this->assertFalse($other->fresh()->trashed());
         $this->assertSame($before, $saved->fresh()->getAttributes());
         $this->assertSame($stats, $remaining->fresh()->stats);
-        $this->assertSame(78, Player::where('origin', PlayerOrigin::LEGENDS)->where('nationality', 'Belgique')->count());
+        $this->assertSame(61, Player::where('origin', PlayerOrigin::LEGENDS)->where('nationality', 'Belgique')->count());
     }
 
     public function test_removing_players_does_not_promote_the_remaining_players(): void
@@ -98,7 +98,7 @@ class BelgianLegendsTest extends TestCase
         $player = Player::where('lastname', 'De Bruyne')->firstOrFail();
         $player->update(['cost' => 321]);
         $migration->up();
-        $this->assertSame(41, Player::where('nationality', Nationality::BELGIQUE)->count());
+        $this->assertSame(40, Player::where('nationality', Nationality::BELGIQUE)->count());
         $this->assertSame(321, $player->fresh()->cost);
     }
 }

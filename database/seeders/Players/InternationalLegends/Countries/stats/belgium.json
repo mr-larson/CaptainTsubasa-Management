@@ -60,14 +60,6 @@
       },
       "why": "Tottenham, Mondial 1986 : finisseur dans la surface, peu créatif."
     },
-    "Alexandre Czerniatynski": {
-      "stats": {
-        "attack": 30,
-        "shot": 26,
-        "speed": 68
-      },
-      "why": "Buteur d'Anderlecht et Beveren : placement et finition."
-    },
     "Jérémy Doku": {
       "stats": {
         "speed": 82,
@@ -168,20 +160,6 @@
         "shot": 28
       },
       "why": "Cercle Bruges, meilleur buteur du championnat 1992-93 et du Mondial 1994 : instinct de buteur."
-    },
-    "Branko Strupar": {
-      "stats": {
-        "attack": 30,
-        "shot": 27
-      },
-      "why": "Genk, Derby County : buteur de surface efficace."
-    },
-    "François Sterchele": {
-      "stats": {
-        "attack": 28,
-        "shot": 26
-      },
-      "why": "Club Bruges, Soulier d'or 2008 : finisseur avant tout."
     },
     "Kevin De Bruyne": {
       "stats": {
@@ -346,14 +324,6 @@
         "tackle": 24
       },
       "why": "Bayern, Marseille : colosse, puissance et jeu aérien, lent."
-    },
-    "Jelle Van Damme": {
-      "stats": {
-        "speed": 58,
-        "defense": 27,
-        "tackle": 28
-      },
-      "why": "Genk, Standard, Gand : défenseur dur sur l'homme."
     },
     "Thomas Vermaelen": {
       "stats": {

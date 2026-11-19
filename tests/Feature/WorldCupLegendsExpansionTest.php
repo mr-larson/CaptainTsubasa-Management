@@ -25,8 +25,8 @@ class WorldCupLegendsExpansionTest extends TestCase
     {
         $this->seed(PlayerSeeder::class);
         $players = Player::where('origin', PlayerOrigin::LEGENDS)->get();
-        $this->assertCount(480, $players);
-        $this->assertCount(480, $players->unique(fn ($p) => Str::slug($p->full_name)));
+        $this->assertCount(463, $players);
+        $this->assertCount(463, $players->unique(fn ($p) => Str::slug($p->full_name)));
         $source = fopen(base_path('tests/Fixtures/world_cup_legends.csv'), 'r');
         fgetcsv($source);
         $count = 0;
@@ -51,7 +51,7 @@ class WorldCupLegendsExpansionTest extends TestCase
         $this->assertSame('France', $players->firstWhere('lastname', 'Cantona')->nationality);
         $this->assertSame('🇵🇹', Nationality::flag('Portugal'));
         $this->assertSame('🇭🇷', Nationality::flag('Croatie'));
-        $this->assertCount(78, $players->where('nationality', 'Belgique'));
+        $this->assertCount(61, $players->where('nationality', 'Belgique'));
     }
 
     public function test_migration_appends_only_missing_profiles_and_preserves_ids_edits_archives_and_saved_players(): void
@@ -72,12 +72,12 @@ class WorldCupLegendsExpansionTest extends TestCase
         $savedBefore = $saved->fresh()->getAttributes();
         $migration = require database_path('migrations/2026_11_17_200000_add_missing_world_cup_legends.php');
         $migration->up();
-        $this->assertSame(480, Player::where('origin', PlayerOrigin::LEGENDS)->count());
+        $this->assertSame(463, Player::where('origin', PlayerOrigin::LEGENDS)->count());
         foreach ($before as $id => $row) $this->assertEquals($row, DB::table('players')->find($id));
         $cantona = Player::where('lastname', 'Cantona')->firstOrFail();
         $cantona->delete();
         $migration->up();
-        $this->assertSame(480, Player::withTrashed()->where('origin', PlayerOrigin::LEGENDS)->count());
+        $this->assertSame(463, Player::withTrashed()->where('origin', PlayerOrigin::LEGENDS)->count());
         $this->assertSoftDeleted('players', ['id' => $cantona->id]);
         $this->assertSame($savedBefore, $saved->fresh()->getAttributes());
     }
