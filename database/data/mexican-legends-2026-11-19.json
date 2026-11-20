@@ -30,21 +30,6 @@
         "photo_path": null
     },
     {
-        "firstname": "Jorge",
-        "lastname": "Campos",
-        "age": 13,
-        "position": "Goalkeeper",
-        "origin": "world_legends",
-        "nationality": "Mexique",
-        "secondary_positions": "[]",
-        "cost": 48,
-        "stats": "{\"speed\":62,\"stamina\":72,\"attack\":14,\"defense\":30,\"shot\":11,\"pass\":20,\"dribble\":13,\"block\":22,\"intercept\":21,\"tackle\":17,\"hand_save\":26,\"punch_save\":27,\"heading\":14}",
-        "heading": 14,
-        "special_moves": null,
-        "description": "Légendes internationales — profil adapté au jeu. Gardien de soutien, réactif et fiable sur sa ligne. Poste : GB. Gardien flamboyant des Mondiaux 1994 et 1998, parfois avant-centre en club ; vif, imprévisible, sorties hors de sa surface.",
-        "photo_path": null
-    },
-    {
         "firstname": "Claudio",
         "lastname": "Suárez",
         "age": 13,
@@ -60,21 +45,6 @@
         "photo_path": null
     },
     {
-        "firstname": "Pável",
-        "lastname": "Pardo",
-        "age": 13,
-        "position": "Midfielder",
-        "origin": "world_legends",
-        "nationality": "Mexique",
-        "secondary_positions": "[]",
-        "cost": 45,
-        "stats": "{\"speed\":62,\"stamina\":78,\"attack\":24,\"defense\":25,\"shot\":22,\"pass\":27,\"dribble\":22,\"block\":20,\"intercept\":23,\"tackle\":23,\"hand_save\":10,\"punch_save\":10,\"heading\":17}",
-        "heading": 17,
-        "special_moves": null,
-        "description": "Légendes internationales — profil adapté au jeu. Milieu de soutien endurant, capable de relier défense et attaque. Poste : MC. Champion d’Allemagne 2007 avec Stuttgart, plusieurs Mondiaux ; milieu complet et régulier.",
-        "photo_path": null
-    },
-    {
         "firstname": "Hirving",
         "lastname": "Lozano",
         "age": 13,
@@ -87,21 +57,6 @@
         "heading": 21,
         "special_moves": null,
         "description": "Légendes internationales — profil adapté au jeu. Milieu de couloir, rapide et habile dans les débordements. Poste : AG. Auteur du but contre l’Allemagne au Mondial 2018, champion d’Italie 2023 avec Naples ; ailier explosif.",
-        "photo_path": null
-    },
-    {
-        "firstname": "Raúl",
-        "lastname": "Jiménez",
-        "age": 13,
-        "position": "Forward",
-        "origin": "world_legends",
-        "nationality": "Mexique",
-        "secondary_positions": "[]",
-        "cost": 42,
-        "stats": "{\"speed\":68,\"stamina\":76,\"attack\":31,\"defense\":17,\"shot\":26,\"pass\":22,\"dribble\":22,\"block\":14,\"intercept\":16,\"tackle\":16,\"hand_save\":10,\"punch_save\":10,\"heading\":25}",
-        "heading": 25,
-        "special_moves": null,
-        "description": "Légendes internationales — profil adapté au jeu. Attaquant de soutien, mobile et efficace dans la surface. Poste : BU. Benfica, Wolverhampton, Fulham ; avant-centre travailleur et physique, jeu de dos.",
         "photo_path": null
     }
 ]

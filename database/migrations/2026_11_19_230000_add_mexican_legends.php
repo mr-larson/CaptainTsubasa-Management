@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Ajoute sept légendes mexicaines (Hugo Sánchez, Chicharito, Campos, Suárez,
- * Pardo, Lozano, Jiménez), sans portrait pour l'instant. Instantané figé dans
+ * Ajoute quatre légendes mexicaines (Hugo Sánchez, Chicharito, Suárez, Lozano), sans portrait pour l'instant. Instantané figé dans
  * `database/data/mexican-legends-2026-11-19.json`. Un joueur déjà présent n'est pas dupliqué.
  */
 return new class extends Migration
