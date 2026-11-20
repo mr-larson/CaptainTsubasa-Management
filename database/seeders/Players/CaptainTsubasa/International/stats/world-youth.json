@@ -53,18 +53,21 @@
     },
     "Junguang Xiao": {
       "stats": {
-        "attack": 29,
-        "defense": 32,
-        "shot": 26,
-        "pass": 26,
-        "dribble": 27,
-        "tackle": 26,
-        "intercept": 28,
+        "speed": 70,
+        "stamina": 77,
+        "attack": 28,
+        "defense": 31,
+        "shot": 25,
+        "pass": 25,
+        "dribble": 26,
         "block": 31,
-        "speed": 72,
-        "stamina": 80
+        "intercept": 27,
+        "tackle": 25,
+        "heading": 26,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Ramené sous Tsubasa : milieu défensif complet (contre 31 conservé), pas un cran au-dessus des héros."
+      "why": "Ramené sous Tsubasa : milieu défensif complet (contre 31 conservé), pas un cran au-dessus des héros. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Mark Owairan": {
       "stats": {
@@ -91,23 +94,279 @@
     },
     "Ryoma Hino": {
       "stats": {
+        "speed": 77,
+        "stamina": 81,
         "attack": 40,
-        "shot": 32,
-        "dribble": 28,
-        "pass": 23,
         "defense": 25,
-        "tackle": 22,
-        "intercept": 22,
+        "shot": 33,
+        "pass": 23,
+        "dribble": 28,
         "block": 20,
-        "speed": 76
+        "intercept": 22,
+        "tackle": 22,
+        "heading": 23,
+        "hand_save": 15,
+        "punch_save": 15
       },
-      "why": "Star offensive de Real Seven, buteur puissant au Tir de Feu : relevé pour être compétitif (juste au-dessus du capitaine uruguayen Victorino), tout en restant sous Tsubasa."
+      "why": "Star offensive de Real Seven, buteur puissant au Tir de Feu : relevé pour être compétitif (juste au-dessus du capitaine uruguayen Victorino), tout en restant sous Tsubasa. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Ricardo Espadas": {
       "stats": {
         "punch_save": 30
       },
       "why": "Gardien mexicain : arrêt au poing 30."
+    },
+    "Hans Dolman": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 61,
+        "stamina": 73,
+        "attack": 16,
+        "defense": 33,
+        "shot": 13,
+        "pass": 19,
+        "dribble": 16,
+        "block": 23,
+        "intercept": 21,
+        "tackle": 20,
+        "heading": 14,
+        "hand_save": 28,
+        "punch_save": 27
+      }
+    },
+    "Leon Dick": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 69,
+        "stamina": 76,
+        "attack": 23,
+        "defense": 34,
+        "shot": 18,
+        "pass": 24,
+        "dribble": 23,
+        "block": 28,
+        "intercept": 25,
+        "tackle": 27,
+        "heading": 30,
+        "hand_save": 15,
+        "punch_save": 15
+      }
+    },
+    "Ruud Klisman": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 71,
+        "stamina": 77,
+        "attack": 34,
+        "defense": 27,
+        "shot": 29,
+        "pass": 29,
+        "dribble": 27,
+        "block": 22,
+        "intercept": 24,
+        "tackle": 24,
+        "heading": 18,
+        "hand_save": 15,
+        "punch_save": 15
+      }
+    },
+    "Brian Cruyfford": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 78,
+        "stamina": 81,
+        "attack": 40,
+        "defense": 23,
+        "shot": 32,
+        "pass": 30,
+        "dribble": 31,
+        "block": 19,
+        "intercept": 21,
+        "tackle": 21,
+        "heading": 18,
+        "hand_save": 15,
+        "punch_save": 15
+      }
+    },
+    "Johan Rensenbrink": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 76,
+        "stamina": 76,
+        "attack": 36,
+        "defense": 23,
+        "shot": 28,
+        "pass": 25,
+        "dribble": 29,
+        "block": 18,
+        "intercept": 20,
+        "tackle": 20,
+        "heading": 23,
+        "hand_save": 15,
+        "punch_save": 15
+      }
+    },
+    "Gert Keizer": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 74,
+        "stamina": 75,
+        "attack": 35,
+        "defense": 23,
+        "shot": 27,
+        "pass": 25,
+        "dribble": 28,
+        "block": 18,
+        "intercept": 20,
+        "tackle": 20,
+        "heading": 23,
+        "hand_save": 15,
+        "punch_save": 15
+      }
+    },
+    "Jovan Lensenblink": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 73,
+        "stamina": 79,
+        "attack": 35,
+        "defense": 20,
+        "shot": 29,
+        "pass": 22,
+        "dribble": 26,
+        "block": 17,
+        "intercept": 19,
+        "tackle": 19,
+        "heading": 22,
+        "hand_save": 15,
+        "punch_save": 15
+      }
+    },
+    "Yong-un Lee": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 75,
+        "stamina": 78,
+        "attack": 35,
+        "defense": 20,
+        "shot": 27,
+        "pass": 25,
+        "dribble": 28,
+        "block": 18,
+        "intercept": 21,
+        "tackle": 20,
+        "heading": 24,
+        "hand_save": 10,
+        "punch_save": 10
+      }
+    },
+    "In-cheon Cha": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 68,
+        "stamina": 80,
+        "attack": 36,
+        "defense": 22,
+        "shot": 28,
+        "pass": 21,
+        "dribble": 25,
+        "block": 21,
+        "intercept": 20,
+        "tackle": 22,
+        "heading": 29,
+        "hand_save": 10,
+        "punch_save": 10
+      }
+    },
+    "Ramon Victorino": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 77,
+        "stamina": 80,
+        "attack": 38,
+        "defense": 25,
+        "shot": 30,
+        "pass": 23,
+        "dribble": 26,
+        "block": 21,
+        "intercept": 23,
+        "tackle": 23,
+        "heading": 24,
+        "hand_save": 15,
+        "punch_save": 15
+      }
+    },
+    "Haas": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 73,
+        "stamina": 79,
+        "attack": 35,
+        "defense": 20,
+        "shot": 28,
+        "pass": 22,
+        "dribble": 25,
+        "block": 17,
+        "intercept": 19,
+        "tackle": 19,
+        "heading": 22,
+        "hand_save": 15,
+        "punch_save": 15
+      }
+    },
+    "Christiansen": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 71,
+        "stamina": 79,
+        "attack": 34,
+        "defense": 20,
+        "shot": 28,
+        "pass": 22,
+        "dribble": 25,
+        "block": 17,
+        "intercept": 19,
+        "tackle": 19,
+        "heading": 22,
+        "hand_save": 15,
+        "punch_save": 15
+      }
+    },
+    "Zhongming Wang": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 72,
+        "stamina": 74,
+        "attack": 29,
+        "defense": 18,
+        "shot": 20,
+        "pass": 27,
+        "dribble": 26,
+        "block": 16,
+        "intercept": 18,
+        "tackle": 17,
+        "heading": 22,
+        "hand_save": 10,
+        "punch_save": 10
+      }
+    },
+    "Xiang Fei": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 58,
+        "stamina": 73,
+        "attack": 33,
+        "defense": 19,
+        "shot": 23,
+        "pass": 20,
+        "dribble": 20,
+        "block": 19,
+        "intercept": 18,
+        "tackle": 18,
+        "heading": 32,
+        "hand_save": 10,
+        "punch_save": 10
+      }
     }
   }
 }

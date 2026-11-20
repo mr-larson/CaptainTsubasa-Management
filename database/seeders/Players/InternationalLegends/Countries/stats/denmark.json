@@ -4,103 +4,273 @@
   "players": {
     "Thomas Helveg": {
       "stats": {
-        "speed": 68,
-        "stamina": 79,
-        "defense": 29,
-        "cross": 24
+        "speed": 69,
+        "stamina": 80,
+        "attack": 22,
+        "defense": 30,
+        "shot": 16,
+        "pass": 24,
+        "dribble": 21,
+        "block": 22,
+        "intercept": 24,
+        "tackle": 26,
+        "heading": 27,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Udinese, Milan, plus de 100 sélections : latéral droit régulier."
+      "why": "Udinese, Milan, plus de 100 sélections : latéral droit régulier. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Morten Olsen": {
       "stats": {
-        "defense": 33,
+        "speed": 61,
+        "stamina": 77,
+        "attack": 23,
+        "defense": 34,
+        "shot": 19,
+        "pass": 27,
+        "dribble": 22,
+        "block": 24,
         "intercept": 29,
-        "pass": 27
+        "tackle": 26,
+        "heading": 25,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Capitaine du Danemark des années 1980, Anderlecht : libéro de lecture."
+      "why": "Capitaine du Danemark des années 1980, Anderlecht : libéro de lecture. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Daniel Agger": {
       "stats": {
-        "defense": 32,
+        "speed": 66,
+        "stamina": 76,
+        "attack": 23,
+        "defense": 33,
+        "shot": 22,
         "pass": 27,
-        "speed": 65,
-        "tackle": 24
+        "dribble": 22,
+        "block": 24,
+        "intercept": 27,
+        "tackle": 24,
+        "heading": 27,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Liverpool, Barcelone : défenseur gaucher relanceur."
+      "why": "Liverpool, Barcelone : défenseur gaucher relanceur. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Jan Heintze": {
       "stats": {
-        "stamina": 80,
-        "speed": 71,
-        "defense": 29
+        "speed": 72,
+        "stamina": 81,
+        "attack": 23,
+        "defense": 30,
+        "shot": 17,
+        "pass": 24,
+        "dribble": 22,
+        "block": 22,
+        "intercept": 26,
+        "tackle": 24,
+        "heading": 27,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Champion d'Europe 1992 : latéral infatigable."
+      "why": "Champion d'Europe 1992 : latéral infatigable. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Brian Laudrup": {
       "stats": {
-        "speed": 78,
+        "speed": 79,
+        "stamina": 74,
+        "attack": 34,
+        "defense": 18,
+        "shot": 25,
+        "pass": 26,
         "dribble": 30,
-        "attack": 33,
-        "pass": 26
+        "block": 14,
+        "intercept": 17,
+        "tackle": 16,
+        "heading": 22,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Champion d'Europe 1992, Milan, Rangers, Juventus : ailier technique et rapide."
+      "why": "Champion d'Europe 1992, Milan, Rangers, Juventus : ailier technique et rapide. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Preben Elkjær Larsen": {
       "stats": {
+        "speed": 75,
+        "stamina": 80,
         "attack": 36,
-        "shot": 29,
-        "speed": 74,
-        "heading": 25
+        "defense": 19,
+        "shot": 30,
+        "pass": 22,
+        "dribble": 26,
+        "block": 16,
+        "intercept": 17,
+        "tackle": 17,
+        "heading": 25,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Champion d'Italie 1985 avec Vérone, la botte de la légende : attaquant puissant."
+      "why": "Champion d'Italie 1985 avec Vérone, la botte de la légende : attaquant puissant. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Allan Simonsen": {
       "stats": {
-        "attack": 34,
+        "speed": 77,
+        "stamina": 72,
+        "attack": 35,
+        "defense": 17,
+        "shot": 28,
+        "pass": 25,
         "dribble": 29,
-        "speed": 76,
-        "shot": 28
+        "block": 14,
+        "intercept": 17,
+        "tackle": 16,
+        "heading": 18,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Ballon d'Or 1977, Mönchengladbach, Barcelone : petit attaquant rapide et technique."
+      "why": "Ballon d'Or 1977, Mönchengladbach, Barcelone : petit attaquant rapide et technique. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Peter Schmeichel": {
       "stats": {
+        "speed": 59,
+        "stamina": 77,
+        "attack": 15,
         "defense": 36,
-        "hand_save": 29,
+        "shot": 12,
+        "pass": 23,
+        "dribble": 14,
+        "block": 22,
+        "intercept": 26,
+        "tackle": 17,
+        "heading": 16,
+        "hand_save": 30,
         "punch_save": 28
       },
-      "why": "Champion d'Europe 1992, triplé 1999 avec Manchester United : colosse sur sa ligne."
+      "why": "Champion d'Europe 1992, triplé 1999 avec Manchester United : colosse sur sa ligne. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Søren Lerby": {
       "stats": {
-        "stamina": 82,
+        "speed": 67,
+        "stamina": 83,
+        "attack": 30,
         "defense": 27,
-        "tackle": 26,
+        "shot": 25,
         "pass": 26,
-        "shot": 25
+        "dribble": 23,
+        "block": 20,
+        "intercept": 23,
+        "tackle": 26,
+        "heading": 18,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Bayern et PSV, milieu complet : volume de jeu et frappe de loin."
+      "why": "Bayern et PSV, milieu complet : volume de jeu et frappe de loin. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Christian Eriksen": {
       "stats": {
-        "pass": 31,
+        "speed": 63,
+        "stamina": 79,
+        "attack": 32,
+        "defense": 21,
         "shot": 26,
-        "attack": 31,
+        "pass": 31,
         "dribble": 26,
-        "stamina": 78,
-        "speed": 62
+        "block": 16,
+        "intercept": 20,
+        "tackle": 18,
+        "heading": 17,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Demi-finaliste de l'Euro 2020, Tottenham, Inter : passes décisives et coups francs."
+      "why": "Demi-finaliste de l'Euro 2020, Tottenham, Inter : passes décisives et coups francs. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Michael Laudrup": {
       "stats": {
+        "speed": 71,
+        "stamina": 74,
+        "attack": 35,
+        "defense": 18,
+        "shot": 25,
         "pass": 31,
         "dribble": 30,
-        "attack": 34,
-        "speed": 70,
-        "shot": 25
+        "block": 16,
+        "intercept": 20,
+        "tackle": 18,
+        "heading": 16,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Dream Team du Barça, Real Madrid, Juventus : meneur au toucher de balle d'exception."
+      "why": "Dream Team du Barça, Real Madrid, Juventus : meneur au toucher de balle d'exception. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
+    },
+    "Kasper Schmeichel": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 61,
+        "stamina": 73,
+        "attack": 14,
+        "defense": 34,
+        "shot": 11,
+        "pass": 18,
+        "dribble": 13,
+        "block": 22,
+        "intercept": 21,
+        "tackle": 17,
+        "heading": 15,
+        "hand_save": 28,
+        "punch_save": 28
+      }
+    },
+    "Simon Kjær": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 63,
+        "stamina": 73,
+        "attack": 18,
+        "defense": 33,
+        "shot": 15,
+        "pass": 24,
+        "dribble": 16,
+        "block": 27,
+        "intercept": 24,
+        "tackle": 28,
+        "heading": 27,
+        "hand_save": 10,
+        "punch_save": 10
+      }
+    },
+    "Jon Dahl Tomasson": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 71,
+        "stamina": 73,
+        "attack": 32,
+        "defense": 17,
+        "shot": 27,
+        "pass": 24,
+        "dribble": 24,
+        "block": 14,
+        "intercept": 16,
+        "tackle": 16,
+        "heading": 24,
+        "hand_save": 10,
+        "punch_save": 10
+      }
+    },
+    "Pierre-Emile Højbjerg": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 63,
+        "stamina": 83,
+        "attack": 22,
+        "defense": 29,
+        "shot": 22,
+        "pass": 26,
+        "dribble": 19,
+        "block": 23,
+        "intercept": 26,
+        "tackle": 27,
+        "heading": 18,
+        "hand_save": 10,
+        "punch_save": 10
+      }
     }
   }
 }

@@ -4,95 +4,201 @@
   "players": {
     "Heung-min Son": {
       "stats": {
-        "speed": 81,
-        "stamina": 80,
-        "attack": 36,
+        "speed": 78,
+        "stamina": 78,
+        "attack": 35,
+        "defense": 16,
         "shot": 29,
-        "dribble": 28,
-        "pass": 25
+        "pass": 24,
+        "dribble": 27,
+        "block": 14,
+        "intercept": 17,
+        "tackle": 16,
+        "heading": 22,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Soulier d'or de Premier League 2022 et Prix Puskás avec Tottenham : finisseur des deux pieds, vitesse et frappes enroulées."
+      "why": "Soulier d'or de Premier League 2022 et Prix Puskás avec Tottenham : finisseur des deux pieds, vitesse et frappes enroulées. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Bum-kun Cha": {
       "stats": {
-        "attack": 35,
-        "shot": 29,
-        "speed": 79,
-        "dribble": 27,
-        "heading": 28
+        "speed": 77,
+        "stamina": 77,
+        "attack": 34,
+        "defense": 16,
+        "shot": 28,
+        "pass": 21,
+        "dribble": 26,
+        "block": 14,
+        "intercept": 17,
+        "tackle": 16,
+        "heading": 27,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Cha Boom, Bayer Leverkusen et Francfort (Coupe UEFA 1980 et 1988) : légende coréenne en Europe, frappe puissante et vitesse."
+      "why": "Cha Boom, Bayer Leverkusen et Francfort (Coupe UEFA 1980 et 1988) : légende coréenne en Europe, frappe puissante et vitesse. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Sun-hong Hwang": {
       "stats": {
-        "attack": 32,
-        "shot": 27,
-        "heading": 27,
-        "speed": 70
+        "speed": 68,
+        "stamina": 74,
+        "attack": 31,
+        "defense": 16,
+        "shot": 26,
+        "pass": 19,
+        "dribble": 22,
+        "block": 14,
+        "intercept": 16,
+        "tackle": 16,
+        "heading": 26,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Meilleur buteur de la sélection de sa génération : attaquant de surface."
+      "why": "Meilleur buteur de la sélection de sa génération : attaquant de surface. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Ji-sung Park": {
       "stats": {
-        "stamina": 84,
-        "speed": 75,
-        "attack": 30,
-        "defense": 27,
-        "pass": 27,
-        "dribble": 26,
-        "shot": 25,
+        "speed": 73,
+        "stamina": 82,
+        "attack": 29,
+        "defense": 26,
+        "shot": 24,
+        "pass": 26,
+        "dribble": 25,
+        "block": 20,
+        "intercept": 25,
         "tackle": 25,
-        "intercept": 26
+        "heading": 18,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Trois poumons, Ligue des champions 2008 avec Manchester United : milieu infatigable, travail défensif dans les grands matchs."
+      "why": "Trois poumons, Ligue des champions 2008 avec Manchester United : milieu infatigable, travail défensif dans les grands matchs. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Myung-bo Hong": {
       "stats": {
-        "defense": 34,
-        "intercept": 30,
-        "pass": 27,
-        "block": 28,
-        "heading": 27,
-        "speed": 66
+        "speed": 64,
+        "stamina": 77,
+        "attack": 23,
+        "defense": 33,
+        "shot": 20,
+        "pass": 26,
+        "dribble": 21,
+        "block": 27,
+        "intercept": 29,
+        "tackle": 26,
+        "heading": 26,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Capitaine du Mondial 2002 (4e) : libéro de lecture et d'autorité, penalty décisif contre l'Espagne."
+      "why": "Capitaine du Mondial 2002 (4e) : libéro de lecture et d'autorité, penalty décisif contre l'Espagne. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Min-jae Kim": {
       "stats": {
-        "defense": 33,
-        "speed": 71,
-        "stamina": 80,
-        "tackle": 29,
-        "heading": 29,
-        "block": 28
+        "speed": 69,
+        "stamina": 78,
+        "attack": 18,
+        "defense": 32,
+        "shot": 15,
+        "pass": 18,
+        "dribble": 16,
+        "block": 27,
+        "intercept": 26,
+        "tackle": 28,
+        "heading": 28,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Champion d'Italie 2023 avec Naples, Bayern : défenseur central rapide et dominant, le Monstre."
+      "why": "Champion d'Italie 2023 avec Naples, Bayern : défenseur central rapide et dominant, le Monstre. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Young-pyo Lee": {
       "stats": {
-        "speed": 75,
-        "stamina": 83,
-        "cross": 26,
-        "defense": 29
+        "speed": 73,
+        "stamina": 81,
+        "attack": 23,
+        "defense": 28,
+        "shot": 20,
+        "pass": 24,
+        "dribble": 23,
+        "block": 20,
+        "intercept": 22,
+        "tackle": 25,
+        "heading": 26,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Tottenham, PSV, 4e du Mondial 2002 : latéral gauche infatigable et rapide."
+      "why": "Tottenham, PSV, 4e du Mondial 2002 : latéral gauche infatigable et rapide. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Woon-jae Lee": {
       "stats": {
-        "defense": 32,
-        "hand_save": 28,
-        "punch_save": 27
+        "speed": 55,
+        "stamina": 74,
+        "attack": 14,
+        "defense": 31,
+        "shot": 11,
+        "pass": 17,
+        "dribble": 13,
+        "block": 21,
+        "intercept": 20,
+        "tackle": 17,
+        "heading": 14,
+        "hand_save": 27,
+        "punch_save": 26
       },
-      "why": "Gardien héros du Mondial 2002 (penalty arrêté contre l'Espagne), plus de 130 sélections."
+      "why": "Gardien héros du Mondial 2002 (penalty arrêté contre l'Espagne), plus de 130 sélections. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Sung-yueng Ki": {
       "stats": {
-        "pass": 28,
-        "stamina": 80,
-        "defense": 27,
-        "intercept": 26
+        "speed": 63,
+        "stamina": 78,
+        "attack": 23,
+        "defense": 26,
+        "shot": 23,
+        "pass": 27,
+        "dribble": 19,
+        "block": 23,
+        "intercept": 25,
+        "tackle": 25,
+        "heading": 23,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Swansea, Newcastle : milieu relanceur calme."
+      "why": "Swansea, Newcastle : milieu relanceur calme. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
+    },
+    "Chong-gug Song": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 70,
+        "stamina": 80,
+        "attack": 21,
+        "defense": 28,
+        "shot": 16,
+        "pass": 22,
+        "dribble": 21,
+        "block": 21,
+        "intercept": 24,
+        "tackle": 25,
+        "heading": 26,
+        "hand_save": 10,
+        "punch_save": 10
+      }
+    },
+    "Sang-chul Yoo": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 66,
+        "stamina": 81,
+        "attack": 27,
+        "defense": 27,
+        "shot": 24,
+        "pass": 24,
+        "dribble": 22,
+        "block": 20,
+        "intercept": 22,
+        "tackle": 23,
+        "heading": 26,
+        "hand_save": 10,
+        "punch_save": 10
+      }
     }
   }
 }

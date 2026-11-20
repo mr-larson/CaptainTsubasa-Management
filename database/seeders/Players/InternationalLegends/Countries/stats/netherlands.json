@@ -4,13 +4,13 @@
   "players": {
     "Johan Cruyff": {
       "stats": {
-        "speed": 82,
-        "stamina": 76,
+        "speed": 83,
+        "stamina": 77,
         "attack": 38,
         "defense": 21,
-        "shot": 30,
-        "pass": 32,
-        "dribble": 32,
+        "shot": 31,
+        "pass": 33,
+        "dribble": 33,
         "block": 18,
         "intercept": 21,
         "tackle": 19,
@@ -18,35 +18,35 @@
         "hand_save": 11,
         "punch_save": 11
       },
-      "why": "Relevé à un OVR de 32 (même niveau que les autres grandes légendes) : points forts du joueur au maximum, le reste complété avec mesure."
+      "why": "Relevé à un OVR de 32 (même niveau que les autres grandes légendes) : points forts du joueur au maximum, le reste complété avec mesure. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Marco van Basten": {
       "stats": {
-        "speed": 70,
-        "stamina": 68,
+        "speed": 71,
+        "stamina": 69,
         "attack": 38,
         "defense": 23,
-        "shot": 31,
+        "shot": 32,
         "pass": 27,
-        "dribble": 28,
+        "dribble": 29,
         "block": 21,
         "intercept": 22,
         "tackle": 22,
-        "heading": 30,
+        "heading": 31,
         "hand_save": 12,
         "punch_save": 11
       },
-      "why": "Relevé à un OVR de 31 : points forts du joueur au maximum, le reste complété avec mesure."
+      "why": "Relevé à un OVR de 31 : points forts du joueur au maximum, le reste complété avec mesure. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Dennis Bergkamp": {
       "stats": {
-        "speed": 66,
-        "stamina": 66,
+        "speed": 67,
+        "stamina": 67,
         "attack": 38,
         "defense": 21,
-        "shot": 31,
-        "pass": 32,
-        "dribble": 32,
+        "shot": 32,
+        "pass": 33,
+        "dribble": 33,
         "block": 18,
         "intercept": 21,
         "tackle": 19,
@@ -54,132 +54,232 @@
         "hand_save": 11,
         "punch_save": 11
       },
-      "why": "Relevé à un OVR de 30 : points forts du joueur au maximum, le reste complété avec mesure."
+      "why": "Relevé à un OVR de 30 : points forts du joueur au maximum, le reste complété avec mesure. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Patrick Kluivert": {
       "stats": {
-        "attack": 32,
-        "shot": 28,
-        "heading": 25
+        "speed": 69,
+        "stamina": 73,
+        "attack": 33,
+        "defense": 17,
+        "shot": 29,
+        "pass": 21,
+        "dribble": 24,
+        "block": 14,
+        "intercept": 16,
+        "tackle": 16,
+        "heading": 26,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Ligue des champions 1995 avec l'Ajax, Barcelone : avant-centre mobile et puissant."
+      "why": "Ligue des champions 1995 avec l'Ajax, Barcelone : avant-centre mobile et puissant. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Marc Overmars": {
       "stats": {
-        "speed": 80,
-        "attack": 31,
-        "dribble": 28
+        "speed": 81,
+        "stamina": 71,
+        "attack": 32,
+        "defense": 17,
+        "shot": 27,
+        "pass": 23,
+        "dribble": 29,
+        "block": 14,
+        "intercept": 17,
+        "tackle": 16,
+        "heading": 21,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Arsenal, Barcelone : ailier explosif."
+      "why": "Arsenal, Barcelone : ailier explosif. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Ronald Koeman": {
       "stats": {
-        "defense": 32,
-        "pass": 30,
-        "shot": 28,
-        "heading": 26
+        "speed": 63,
+        "stamina": 73,
+        "attack": 23,
+        "defense": 33,
+        "shot": 29,
+        "pass": 31,
+        "dribble": 21,
+        "block": 27,
+        "intercept": 27,
+        "tackle": 27,
+        "heading": 26,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Barcelone (Coupe d'Europe 1992), buteur du but de la victoire : défenseur buteur, coups francs."
+      "why": "Barcelone (Coupe d'Europe 1992), buteur du but de la victoire : défenseur buteur, coups francs. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Frank de Boer": {
       "stats": {
-        "pass": 30,
-        "defense": 31,
-        "intercept": 31
+        "speed": 63,
+        "stamina": 73,
+        "attack": 23,
+        "defense": 32,
+        "shot": 20,
+        "pass": 31,
+        "dribble": 21,
+        "block": 26,
+        "intercept": 32,
+        "tackle": 26,
+        "heading": 27,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Ajax, 112 sélections : défenseur relanceur au pied gauche. Interception 31."
+      "why": "Ajax, 112 sélections : défenseur relanceur au pied gauche. Interception 31. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Jaap Stam": {
       "stats": {
-        "defense": 33,
-        "tackle": 28,
-        "speed": 64,
-        "heading": 28
+        "speed": 65,
+        "stamina": 73,
+        "attack": 18,
+        "defense": 34,
+        "shot": 15,
+        "pass": 21,
+        "dribble": 16,
+        "block": 27,
+        "intercept": 27,
+        "tackle": 29,
+        "heading": 29,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Triplé 1999 avec Manchester United : défenseur massif, sûr dans les duels."
+      "why": "Triplé 1999 avec Manchester United : défenseur massif, sûr dans les duels. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Giovanni van Bronckhorst": {
       "stats": {
-        "speed": 74,
-        "stamina": 78,
-        "shot": 26
+        "speed": 75,
+        "stamina": 79,
+        "attack": 24,
+        "defense": 28,
+        "shot": 27,
+        "pass": 25,
+        "dribble": 23,
+        "block": 22,
+        "intercept": 24,
+        "tackle": 24,
+        "heading": 27,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Finaliste du Mondial 2010, Barcelone : latéral gauche, frappe de loin."
+      "why": "Finaliste du Mondial 2010, Barcelone : latéral gauche, frappe de loin. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Edwin van der Sar": {
       "stats": {
-        "speed": 58,
-        "stamina": 71,
+        "speed": 59,
+        "stamina": 72,
         "attack": 15,
-        "defense": 35,
+        "defense": 36,
         "shot": 12,
         "pass": 19,
         "dribble": 14,
-        "block": 25,
+        "block": 26,
         "intercept": 24,
         "tackle": 18,
         "heading": 14,
         "hand_save": 30,
-        "punch_save": 29
+        "punch_save": 30
       },
-      "why": "Ligue des champions 1995 et 2008, meilleur gardien d'Europe : maîtrise de la surface. Profil relevé (OVR 28) sous la référence Genzo Wakabayashi (main 33)."
+      "why": "Ligue des champions 1995 et 2008, meilleur gardien d'Europe : maîtrise de la surface. Profil relevé (OVR 28) sous la référence Genzo Wakabayashi (main 33). Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Frank Rijkaard": {
       "stats": {
-        "defense": 31,
-        "intercept": 28,
-        "pass": 29,
+        "speed": 63,
+        "stamina": 79,
+        "attack": 23,
+        "defense": 32,
+        "shot": 19,
+        "pass": 30,
+        "dribble": 21,
+        "block": 23,
+        "intercept": 29,
         "tackle": 27,
-        "stamina": 78,
-        "speed": 62
+        "heading": 18,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Champion d'Europe 1988, trois Coupes d'Europe avec Milan : milieu défensif complet."
+      "why": "Champion d'Europe 1988, trois Coupes d'Europe avec Milan : milieu défensif complet. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Clarence Seedorf": {
       "stats": {
-        "stamina": 82,
-        "pass": 30,
+        "speed": 67,
+        "stamina": 83,
+        "attack": 29,
+        "defense": 27,
         "shot": 26,
-        "attack": 28
+        "pass": 31,
+        "dribble": 23,
+        "block": 20,
+        "intercept": 24,
+        "tackle": 24,
+        "heading": 17,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Quatre Ligues des champions avec trois clubs différents : milieu endurant, passes et frappes de loin."
+      "why": "Quatre Ligues des champions avec trois clubs différents : milieu endurant, passes et frappes de loin. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Edgar Davids": {
       "stats": {
-        "tackle": 28,
-        "stamina": 82,
-        "defense": 28,
+        "speed": 67,
+        "stamina": 83,
         "attack": 24,
-        "shot": 22
+        "defense": 29,
+        "shot": 22,
+        "pass": 28,
+        "dribble": 23,
+        "block": 20,
+        "intercept": 24,
+        "tackle": 29,
+        "heading": 17,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Pitbull de la Juventus et de l'Ajax : milieu récupérateur, agressivité et volume."
+      "why": "Pitbull de la Juventus et de l'Ajax : milieu récupérateur, agressivité et volume. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Mark van Bommel": {
       "stats": {
-        "tackle": 27,
-        "defense": 28,
-        "shot": 23
+        "speed": 62,
+        "stamina": 77,
+        "attack": 21,
+        "defense": 29,
+        "shot": 23,
+        "pass": 24,
+        "dribble": 19,
+        "block": 23,
+        "intercept": 27,
+        "tackle": 28,
+        "heading": 18,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Finaliste du Mondial 2010, Barcelone, Bayern : milieu défensif agressif."
+      "why": "Finaliste du Mondial 2010, Barcelone, Bayern : milieu défensif agressif. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Dirk Kuyt": {
       "stats": {
-        "stamina": 82,
-        "speed": 68,
-        "attack": 28,
-        "shot": 24,
-        "defense": 24
+        "speed": 69,
+        "stamina": 83,
+        "attack": 29,
+        "defense": 25,
+        "shot": 25,
+        "pass": 22,
+        "dribble": 21,
+        "block": 18,
+        "intercept": 22,
+        "tackle": 22,
+        "heading": 21,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Finaliste du Mondial 2010, Liverpool : travailleur de l'ombre."
+      "why": "Finaliste du Mondial 2010, Liverpool : travailleur de l'ombre. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Wesley Sneijder": {
       "stats": {
-        "speed": 65,
-        "stamina": 75,
-        "attack": 35,
+        "speed": 66,
+        "stamina": 76,
+        "attack": 36,
         "defense": 22,
-        "shot": 31,
-        "pass": 32,
+        "shot": 32,
+        "pass": 33,
         "dribble": 29,
         "block": 18,
         "intercept": 22,
@@ -188,17 +288,17 @@
         "hand_save": 11,
         "punch_save": 11
       },
-      "why": "Relevé à un OVR de 30 : points forts du joueur au maximum, le reste complété avec mesure."
+      "why": "Relevé à un OVR de 30 : points forts du joueur au maximum, le reste complété avec mesure. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Robin van Persie": {
       "stats": {
-        "speed": 68,
-        "stamina": 68,
+        "speed": 69,
+        "stamina": 69,
         "attack": 38,
         "defense": 20,
-        "shot": 31,
-        "pass": 30,
-        "dribble": 32,
+        "shot": 32,
+        "pass": 31,
+        "dribble": 33,
         "block": 16,
         "intercept": 18,
         "tackle": 18,
@@ -206,7 +306,187 @@
         "hand_save": 11,
         "punch_save": 11
       },
-      "why": "Relevé à un OVR de 30 : points forts du joueur au maximum, le reste complété avec mesure."
+      "why": "Relevé à un OVR de 30 : points forts du joueur au maximum, le reste complété avec mesure. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
+    },
+    "Michael Reiziger": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 69,
+        "stamina": 76,
+        "attack": 21,
+        "defense": 28,
+        "shot": 16,
+        "pass": 23,
+        "dribble": 21,
+        "block": 22,
+        "intercept": 25,
+        "tackle": 24,
+        "heading": 28,
+        "hand_save": 10,
+        "punch_save": 10
+      }
+    },
+    "John Bosman": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 69,
+        "stamina": 73,
+        "attack": 29,
+        "defense": 17,
+        "shot": 27,
+        "pass": 19,
+        "dribble": 23,
+        "block": 14,
+        "intercept": 16,
+        "tackle": 16,
+        "heading": 21,
+        "hand_save": 10,
+        "punch_save": 10
+      }
+    },
+    "Foeke Booy": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 69,
+        "stamina": 73,
+        "attack": 27,
+        "defense": 17,
+        "shot": 22,
+        "pass": 18,
+        "dribble": 22,
+        "block": 14,
+        "intercept": 16,
+        "tackle": 16,
+        "heading": 21,
+        "hand_save": 10,
+        "punch_save": 10
+      }
+    },
+    "Ruud Gullit": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 75,
+        "stamina": 79,
+        "attack": 35,
+        "defense": 24,
+        "shot": 28,
+        "pass": 29,
+        "dribble": 27,
+        "block": 16,
+        "intercept": 19,
+        "tackle": 17,
+        "heading": 26,
+        "hand_save": 10,
+        "punch_save": 10
+      }
+    },
+    "Johan Neeskens": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 69,
+        "stamina": 83,
+        "attack": 29,
+        "defense": 27,
+        "shot": 26,
+        "pass": 29,
+        "dribble": 22,
+        "block": 20,
+        "intercept": 23,
+        "tackle": 25,
+        "heading": 18,
+        "hand_save": 10,
+        "punch_save": 10
+      }
+    },
+    "Arjen Robben": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 81,
+        "stamina": 73,
+        "attack": 35,
+        "defense": 18,
+        "shot": 29,
+        "pass": 24,
+        "dribble": 31,
+        "block": 14,
+        "intercept": 18,
+        "tackle": 16,
+        "heading": 22,
+        "hand_save": 10,
+        "punch_save": 10
+      }
+    },
+    "Virgil van Dijk": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 71,
+        "stamina": 77,
+        "attack": 18,
+        "defense": 35,
+        "shot": 15,
+        "pass": 24,
+        "dribble": 16,
+        "block": 29,
+        "intercept": 24,
+        "tackle": 28,
+        "heading": 30,
+        "hand_save": 10,
+        "punch_save": 10
+      }
+    },
+    "Hans van Breukelen": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 59,
+        "stamina": 71,
+        "attack": 14,
+        "defense": 32,
+        "shot": 11,
+        "pass": 18,
+        "dribble": 13,
+        "block": 22,
+        "intercept": 21,
+        "tackle": 17,
+        "heading": 14,
+        "hand_save": 28,
+        "punch_save": 28
+      }
+    },
+    "Ronald de Boer": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 67,
+        "stamina": 75,
+        "attack": 29,
+        "defense": 20,
+        "shot": 26,
+        "pass": 29,
+        "dribble": 25,
+        "block": 16,
+        "intercept": 20,
+        "tackle": 18,
+        "heading": 16,
+        "hand_save": 10,
+        "punch_save": 10
+      }
+    },
+    "Philippe Cocu": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 69,
+        "stamina": 81,
+        "attack": 21,
+        "defense": 29,
+        "shot": 16,
+        "pass": 24,
+        "dribble": 21,
+        "block": 22,
+        "intercept": 25,
+        "tackle": 27,
+        "heading": 28,
+        "hand_save": 10,
+        "punch_save": 10
+      }
     }
   }
 }

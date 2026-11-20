@@ -4,14 +4,219 @@
   "players": {
     "José Luis Chilavert": {
       "stats": {
-        "defense": 32,
-        "hand_save": 28,
-        "punch_save": 27,
-        "shot": 22,
+        "speed": 58,
+        "stamina": 71,
         "attack": 16,
-        "pass": 22
+        "defense": 33,
+        "shot": 22,
+        "pass": 22,
+        "dribble": 13,
+        "block": 22,
+        "intercept": 21,
+        "tackle": 17,
+        "heading": 13,
+        "hand_save": 28,
+        "punch_save": 27
       },
-      "why": "Gardien buteur (plus de 60 buts sur coups francs et penalties), Vélez Sarsfield (Copa Libertadores 1994) et Paraguay : arrêts et frappe de loin."
+      "why": "Gardien buteur (plus de 60 buts sur coups francs et penalties), Vélez Sarsfield (Copa Libertadores 1994) et Paraguay : arrêts et frappe de loin. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
+    },
+    "Justo Villar": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 59,
+        "stamina": 71,
+        "attack": 14,
+        "defense": 32,
+        "shot": 11,
+        "pass": 18,
+        "dribble": 13,
+        "block": 22,
+        "intercept": 21,
+        "tackle": 17,
+        "heading": 14,
+        "hand_save": 27,
+        "punch_save": 27
+      }
+    },
+    "Carlos Gamarra": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 63,
+        "stamina": 77,
+        "attack": 18,
+        "defense": 34,
+        "shot": 15,
+        "pass": 20,
+        "dribble": 16,
+        "block": 28,
+        "intercept": 28,
+        "tackle": 29,
+        "heading": 27,
+        "hand_save": 10,
+        "punch_save": 10
+      }
+    },
+    "Celso Ayala": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 61,
+        "stamina": 75,
+        "attack": 23,
+        "defense": 32,
+        "shot": 20,
+        "pass": 22,
+        "dribble": 21,
+        "block": 24,
+        "intercept": 27,
+        "tackle": 26,
+        "heading": 26,
+        "hand_save": 10,
+        "punch_save": 10
+      }
+    },
+    "Francisco Arce": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 71,
+        "stamina": 81,
+        "attack": 27,
+        "defense": 25,
+        "shot": 24,
+        "pass": 24,
+        "dribble": 23,
+        "block": 20,
+        "intercept": 22,
+        "tackle": 22,
+        "heading": 26,
+        "hand_save": 10,
+        "punch_save": 10
+      }
+    },
+    "Gustavo Gómez": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 63,
+        "stamina": 77,
+        "attack": 18,
+        "defense": 33,
+        "shot": 15,
+        "pass": 22,
+        "dribble": 16,
+        "block": 27,
+        "intercept": 24,
+        "tackle": 27,
+        "heading": 28,
+        "hand_save": 10,
+        "punch_save": 10
+      }
+    },
+    "Roberto Acuña": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 63,
+        "stamina": 81,
+        "attack": 24,
+        "defense": 27,
+        "shot": 22,
+        "pass": 26,
+        "dribble": 22,
+        "block": 20,
+        "intercept": 23,
+        "tackle": 25,
+        "heading": 17,
+        "hand_save": 10,
+        "punch_save": 10
+      }
+    },
+    "Julio César Romero": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 63,
+        "stamina": 67,
+        "attack": 32,
+        "defense": 20,
+        "shot": 25,
+        "pass": 29,
+        "dribble": 29,
+        "block": 16,
+        "intercept": 20,
+        "tackle": 18,
+        "heading": 17,
+        "hand_save": 10,
+        "punch_save": 10
+      }
+    },
+    "Miguel Almirón": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 77,
+        "stamina": 83,
+        "attack": 29,
+        "defense": 22,
+        "shot": 24,
+        "pass": 24,
+        "dribble": 26,
+        "block": 14,
+        "intercept": 18,
+        "tackle": 16,
+        "heading": 21,
+        "hand_save": 10,
+        "punch_save": 10
+      }
+    },
+    "Roque Santa Cruz": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 71,
+        "stamina": 73,
+        "attack": 32,
+        "defense": 19,
+        "shot": 27,
+        "pass": 20,
+        "dribble": 21,
+        "block": 18,
+        "intercept": 18,
+        "tackle": 18,
+        "heading": 27,
+        "hand_save": 10,
+        "punch_save": 10
+      }
+    },
+    "Salvador Cabañas": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 69,
+        "stamina": 73,
+        "attack": 33,
+        "defense": 17,
+        "shot": 27,
+        "pass": 22,
+        "dribble": 24,
+        "block": 14,
+        "intercept": 16,
+        "tackle": 16,
+        "heading": 22,
+        "hand_save": 10,
+        "punch_save": 10
+      }
+    },
+    "José Cardozo": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 63,
+        "stamina": 71,
+        "attack": 32,
+        "defense": 17,
+        "shot": 28,
+        "pass": 20,
+        "dribble": 20,
+        "block": 14,
+        "intercept": 16,
+        "tackle": 16,
+        "heading": 25,
+        "hand_save": 10,
+        "punch_save": 10
+      }
     }
   }
 }

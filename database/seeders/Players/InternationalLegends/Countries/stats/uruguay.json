@@ -4,95 +4,174 @@
   "players": {
     "Diego Godín": {
       "stats": {
-        "defense": 33,
-        "heading": 28,
+        "speed": 59,
+        "stamina": 79,
+        "attack": 18,
+        "defense": 34,
+        "shot": 15,
+        "pass": 21,
+        "dribble": 16,
+        "block": 27,
+        "intercept": 27,
         "tackle": 28,
-        "speed": 58,
-        "stamina": 78,
-        "pass": 21
+        "heading": 28,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Capitaine, Atlético de Madrid, plus de 150 sélections : défenseur dur et dominant de la tête."
+      "why": "Capitaine, Atlético de Madrid, plus de 150 sélections : défenseur dur et dominant de la tête. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Diego Lugano": {
       "stats": {
-        "defense": 31,
+        "speed": 57,
+        "stamina": 73,
+        "attack": 18,
+        "defense": 32,
+        "shot": 15,
+        "pass": 20,
+        "dribble": 16,
+        "block": 27,
+        "intercept": 26,
+        "tackle": 27,
         "heading": 28,
-        "speed": 56,
-        "stamina": 72
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Capitaine de l'Uruguay au Mondial 2010 : grand défenseur, jeu aérien."
+      "why": "Capitaine de l'Uruguay au Mondial 2010 : grand défenseur, jeu aérien. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "José Nasazzi": {
       "stats": {
-        "defense": 31,
+        "speed": 58,
+        "stamina": 75,
+        "attack": 18,
+        "defense": 32,
+        "shot": 15,
+        "pass": 20,
+        "dribble": 16,
+        "block": 27,
+        "intercept": 26,
         "tackle": 28,
-        "stamina": 74
+        "heading": 26,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Capitaine champion du monde 1930 et olympique : défenseur loyal et dur."
+      "why": "Capitaine champion du monde 1930 et olympique : défenseur loyal et dur. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Luis Suárez": {
       "stats": {
+        "speed": 71,
+        "stamina": 79,
         "attack": 36,
+        "defense": 17,
         "shot": 30,
+        "pass": 24,
         "dribble": 29,
-        "speed": 70,
-        "stamina": 78,
-        "pass": 24
+        "block": 14,
+        "intercept": 16,
+        "tackle": 16,
+        "heading": 21,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Meilleur buteur de l'histoire de l'Uruguay, Barcelone : finisseur et presseur, tempérament de feu."
+      "why": "Meilleur buteur de l'histoire de l'Uruguay, Barcelone : finisseur et presseur, tempérament de feu. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Diego Forlán": {
       "stats": {
-        "attack": 33,
+        "speed": 67,
+        "stamina": 71,
+        "attack": 34,
+        "defense": 19,
         "shot": 29,
         "pass": 26,
         "dribble": 25,
-        "speed": 66
+        "block": 16,
+        "intercept": 19,
+        "tackle": 17,
+        "heading": 21,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Ballon d'or du Mondial 2010, Atlético de Madrid : frappe des deux pieds et volées."
+      "why": "Ballon d'or du Mondial 2010, Atlético de Madrid : frappe des deux pieds et volées. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Juan Alberto Schiaffino": {
       "stats": {
-        "attack": 33,
+        "speed": 67,
+        "stamina": 71,
+        "attack": 34,
+        "defense": 19,
+        "shot": 28,
         "pass": 30,
         "dribble": 29,
-        "shot": 28,
-        "speed": 66
+        "block": 16,
+        "intercept": 19,
+        "tackle": 17,
+        "heading": 21,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Auteur du but égalisateur du Maracanazo, champion du monde 1950, Milan : meneur élégant."
+      "why": "Auteur du but égalisateur du Maracanazo, champion du monde 1950, Milan : meneur élégant. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Fernando Muslera": {
       "stats": {
-        "defense": 31,
+        "speed": 58,
+        "stamina": 71,
+        "attack": 14,
+        "defense": 32,
+        "shot": 11,
+        "pass": 18,
+        "dribble": 13,
+        "block": 22,
+        "intercept": 21,
+        "tackle": 17,
+        "heading": 13,
         "hand_save": 27,
         "punch_save": 27
       },
-      "why": "Galatasaray, plus de 130 sélections : gardien régulier et sûr."
+      "why": "Galatasaray, plus de 130 sélections : gardien régulier et sûr. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Egidio Arévalo Ríos": {
       "stats": {
-        "tackle": 27,
+        "speed": 62,
+        "stamina": 79,
+        "attack": 21,
+        "defense": 29,
+        "shot": 17,
+        "pass": 24,
+        "dribble": 19,
+        "block": 23,
         "intercept": 27,
-        "stamina": 78
+        "tackle": 27,
+        "heading": 18,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Milieu défensif, finaliste de la Copa 2011 : récupération et volume."
+      "why": "Milieu défensif, finaliste de la Copa 2011 : récupération et volume. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Diego Pérez": {
       "stats": {
-        "tackle": 26,
+        "speed": 62,
+        "stamina": 77,
+        "attack": 21,
+        "defense": 29,
+        "shot": 17,
         "pass": 25,
-        "stamina": 76
+        "dribble": 19,
+        "block": 23,
+        "intercept": 26,
+        "tackle": 26,
+        "heading": 18,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Milieu de Monaco et Bologne : récupérateur propre."
+      "why": "Milieu de Monaco et Bologne : récupérateur propre. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Enzo Francescoli": {
       "stats": {
-        "speed": 69,
-        "stamina": 68,
+        "speed": 70,
+        "stamina": 69,
         "attack": 38,
         "defense": 20,
         "shot": 31,
-        "pass": 32,
+        "pass": 33,
         "dribble": 32,
         "block": 18,
         "intercept": 22,
@@ -101,7 +180,133 @@
         "hand_save": 11,
         "punch_save": 11
       },
-      "why": "Relevé à un OVR de 30 : points forts du joueur au maximum, le reste complété avec mesure."
+      "why": "Relevé à un OVR de 30 : points forts du joueur au maximum, le reste complété avec mesure. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
+    },
+    "Edinson Cavani": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 73,
+        "stamina": 83,
+        "attack": 35,
+        "defense": 20,
+        "shot": 29,
+        "pass": 21,
+        "dribble": 24,
+        "block": 14,
+        "intercept": 16,
+        "tackle": 16,
+        "heading": 28,
+        "hand_save": 10,
+        "punch_save": 10
+      }
+    },
+    "Obdulio Varela": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 59,
+        "stamina": 77,
+        "attack": 22,
+        "defense": 32,
+        "shot": 17,
+        "pass": 24,
+        "dribble": 19,
+        "block": 23,
+        "intercept": 27,
+        "tackle": 28,
+        "heading": 25,
+        "hand_save": 10,
+        "punch_save": 10
+      }
+    },
+    "Alcides Ghiggia": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 77,
+        "stamina": 71,
+        "attack": 33,
+        "defense": 18,
+        "shot": 27,
+        "pass": 24,
+        "dribble": 28,
+        "block": 14,
+        "intercept": 18,
+        "tackle": 16,
+        "heading": 22,
+        "hand_save": 10,
+        "punch_save": 10
+      }
+    },
+    "Federico Valverde": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 79,
+        "stamina": 83,
+        "attack": 29,
+        "defense": 25,
+        "shot": 26,
+        "pass": 27,
+        "dribble": 25,
+        "block": 20,
+        "intercept": 23,
+        "tackle": 24,
+        "heading": 17,
+        "hand_save": 10,
+        "punch_save": 10
+      }
+    },
+    "Ladislao Mazurkiewicz": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 59,
+        "stamina": 73,
+        "attack": 14,
+        "defense": 34,
+        "shot": 11,
+        "pass": 18,
+        "dribble": 13,
+        "block": 22,
+        "intercept": 21,
+        "tackle": 17,
+        "heading": 15,
+        "hand_save": 27,
+        "punch_save": 27
+      }
+    },
+    "Paolo Montero": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 61,
+        "stamina": 73,
+        "attack": 18,
+        "defense": 33,
+        "shot": 15,
+        "pass": 20,
+        "dribble": 16,
+        "block": 27,
+        "intercept": 24,
+        "tackle": 28,
+        "heading": 27,
+        "hand_save": 10,
+        "punch_save": 10
+      }
+    },
+    "Álvaro Recoba": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 65,
+        "stamina": 63,
+        "attack": 32,
+        "defense": 14,
+        "shot": 29,
+        "pass": 26,
+        "dribble": 27,
+        "block": 16,
+        "intercept": 20,
+        "tackle": 18,
+        "heading": 16,
+        "hand_save": 10,
+        "punch_save": 10
+      }
     }
   }
 }

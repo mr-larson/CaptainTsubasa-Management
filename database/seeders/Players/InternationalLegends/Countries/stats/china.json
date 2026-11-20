@@ -4,80 +4,201 @@
   "players": {
     "Jihai Sun": {
       "stats": {
-        "speed": 73,
-        "stamina": 81,
-        "cross": 26,
-        "defense": 29
+        "speed": 71,
+        "stamina": 79,
+        "attack": 20,
+        "defense": 28,
+        "shot": 16,
+        "pass": 23,
+        "dribble": 20,
+        "block": 21,
+        "intercept": 24,
+        "tackle": 25,
+        "heading": 26,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Premier Chinois de Premier League (Manchester City), plus de 100 sélections : latéral endurant, centres et montées."
+      "why": "Premier Chinois de Premier League (Manchester City), plus de 100 sélections : latéral endurant, centres et montées. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Zhiyi Fan": {
       "stats": {
-        "defense": 31,
-        "pass": 25,
-        "heading": 28,
-        "intercept": 27,
-        "attack": 25
+        "speed": 65,
+        "stamina": 77,
+        "attack": 24,
+        "defense": 30,
+        "shot": 22,
+        "pass": 24,
+        "dribble": 21,
+        "block": 26,
+        "intercept": 26,
+        "tackle": 26,
+        "heading": 27,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Pionnier chinois en Europe (Crystal Palace), capitaine historique : libéro de lecture et de relance."
+      "why": "Pionnier chinois en Europe (Crystal Palace), capitaine historique : libéro de lecture et de relance. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Weifeng Li": {
       "stats": {
-        "defense": 30,
-        "heading": 28,
-        "tackle": 27
+        "speed": 59,
+        "stamina": 75,
+        "attack": 17,
+        "defense": 29,
+        "shot": 15,
+        "pass": 18,
+        "dribble": 16,
+        "block": 26,
+        "intercept": 24,
+        "tackle": 26,
+        "heading": 27,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Défenseur d'Everton : central solide dans les airs."
+      "why": "Défenseur d'Everton : central solide dans les airs. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Chengying Wu": {
       "stats": {
-        "speed": 73,
-        "defense": 27
+        "speed": 71,
+        "stamina": 77,
+        "attack": 23,
+        "defense": 26,
+        "shot": 19,
+        "pass": 22,
+        "dribble": 22,
+        "block": 20,
+        "intercept": 21,
+        "tackle": 23,
+        "heading": 26,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Latéral de Shanghai Shenhua : vitesse et travail."
+      "why": "Latéral de Shanghai Shenhua : vitesse et travail. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Lei Wu": {
       "stats": {
-        "speed": 78,
-        "attack": 31,
-        "shot": 25,
-        "dribble": 25
+        "speed": 75,
+        "stamina": 74,
+        "attack": 30,
+        "defense": 16,
+        "shot": 24,
+        "pass": 21,
+        "dribble": 24,
+        "block": 14,
+        "intercept": 17,
+        "tackle": 16,
+        "heading": 21,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Espanyol, joueur chinois de référence de sa génération : attaquant rapide, accélérations."
+      "why": "Espanyol, joueur chinois de référence de sa génération : attaquant rapide, accélérations. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Haidong Hao": {
       "stats": {
-        "attack": 33,
-        "shot": 28,
-        "heading": 26
+        "speed": 71,
+        "stamina": 74,
+        "attack": 32,
+        "defense": 16,
+        "shot": 27,
+        "pass": 19,
+        "dribble": 24,
+        "block": 14,
+        "intercept": 16,
+        "tackle": 16,
+        "heading": 25,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Sheffield United, meilleur buteur historique de la sélection : finisseur de surface."
+      "why": "Sheffield United, meilleur buteur historique de la sélection : finisseur de surface. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Huikang Zhang": {
       "stats": {
-        "defense": 31,
-        "hand_save": 27,
-        "punch_save": 27
+        "speed": 54,
+        "stamina": 70,
+        "attack": 14,
+        "defense": 30,
+        "shot": 11,
+        "pass": 17,
+        "dribble": 13,
+        "block": 21,
+        "intercept": 20,
+        "tackle": 16,
+        "heading": 14,
+        "hand_save": 26,
+        "punch_save": 26
       },
-      "why": "Gardien de la génération des années 2000 : sûr sur sa ligne."
+      "why": "Gardien de la génération des années 2000 : sûr sur sa ligne. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Tie Li": {
       "stats": {
-        "stamina": 83,
-        "defense": 29,
-        "tackle": 27
+        "speed": 62,
+        "stamina": 80,
+        "attack": 20,
+        "defense": 28,
+        "shot": 17,
+        "pass": 23,
+        "dribble": 18,
+        "block": 22,
+        "intercept": 26,
+        "tackle": 26,
+        "heading": 18,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Everton, milieu défensif : abattage et récupération."
+      "why": "Everton, milieu défensif : abattage et récupération. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
     },
     "Zhi Zheng": {
       "stats": {
-        "stamina": 81,
-        "pass": 27,
-        "shot": 25,
-        "attack": 29,
-        "defense": 27
+        "speed": 66,
+        "stamina": 79,
+        "attack": 28,
+        "defense": 26,
+        "shot": 24,
+        "pass": 26,
+        "dribble": 24,
+        "block": 19,
+        "intercept": 24,
+        "tackle": 23,
+        "heading": 18,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Charlton, capitaine champion d'Asie des clubs 2013 avec Guangzhou : milieu complet et meneur d'hommes."
+      "why": "Charlton, capitaine champion d'Asie des clubs 2013 avec Guangzhou : milieu complet et meneur d'hommes. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR."
+    },
+    "Zhixing Rong": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 65,
+        "stamina": 70,
+        "attack": 28,
+        "defense": 19,
+        "shot": 22,
+        "pass": 27,
+        "dribble": 26,
+        "block": 16,
+        "intercept": 19,
+        "tackle": 17,
+        "heading": 16,
+        "hand_save": 10,
+        "punch_save": 10
+      }
+    },
+    "Wai Tong Lee": {
+      "why": "Profil conservé. Équilibrage des sélections : stats ajustées d'au plus un niveau d'OVR.",
+      "stats": {
+        "speed": 70,
+        "stamina": 73,
+        "attack": 32,
+        "defense": 17,
+        "shot": 27,
+        "pass": 21,
+        "dribble": 24,
+        "block": 16,
+        "intercept": 16,
+        "tackle": 17,
+        "heading": 27,
+        "hand_save": 10,
+        "punch_save": 10
+      }
     }
   }
 }
