@@ -11,7 +11,7 @@ class Roster
     /** @return array<int, array<int, mixed>> */
     public static function players(): array
     {
-        return [
+        $players = [
             // L'École des Champions – Not contract
 
 // Columbus / Gênes / Ailes de Jupiter
@@ -225,6 +225,13 @@ class Roster
                 'Défenseuse de L\'École des Champions au profil encore modeste, mais déjà précieuse grâce à son tacle franc et à sa qualité de passe pour relancer le jeu.'
             ],
         ];
+
+        // Retouches individuelles par niveau (EcoleDesChampions/stats/*.json), appliquées sur les stats d'origine.
+        return array_map(function (array $player): array {
+            $player[5] = EcoleStatFiles::apply(trim($player[0].' '.$player[1]), $player[5]);
+
+            return $player;
+        }, $players);
     }
 
     /** @return array<string, array<int, array<string, mixed>>> */

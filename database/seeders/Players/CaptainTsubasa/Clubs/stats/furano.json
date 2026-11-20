@@ -171,10 +171,11 @@
       "stats": {
         "defense": 32,
         "stamina": 85,
-        "block": 24,
-        "intercept": 25
+        "block": 22,
+        "intercept": 25,
+        "dribble": 22
       },
-      "why": "Sous Tsubasa : seul Misugi a de meilleures stats que Tsubasa parmi les joueurs de club."
+      "why": "Sous Tsubasa : dribble 22 et contre 22 (demandés), défense 32, endurance 85, interception 25."
     }
   }
 }

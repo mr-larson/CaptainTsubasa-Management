@@ -34,7 +34,7 @@ final class HeadingOverrides
             'louis-napoleon'       => 23, // libéro français athlétique
             'shingo-takasugi'      => 22, // défenseur solide dans les duels
             'carlos-santana'       => 22, // crack brésilien, complet
-            'salvatore-gentile'    => 22, // défenseur italien rugueux
+            'salvatore-gentile'    => 28, // défenseur italien rugueux, très bon de la tête
             'shun-nitta'           => 22, // attaquant explosif, bon dans la surface
 
             // --- Moyens (18-20) ---

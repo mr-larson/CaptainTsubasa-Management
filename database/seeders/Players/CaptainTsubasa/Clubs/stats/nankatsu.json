@@ -13,7 +13,8 @@
         "intercept": 19,
         "block": 21,
         "speed": 60,
-        "heading": 25
+        "heading": 25,
+        "stamina": 57
       },
       "why": "Calibré au niveau du club — coefficient 1.12 sur les stats de duel, vitesse selon le profil."
     },
@@ -43,7 +44,8 @@
         "intercept": 20,
         "block": 21,
         "speed": 59,
-        "heading": 25
+        "heading": 25,
+        "stamina": 62
       },
       "why": "Calibré au niveau du club — coefficient 1.12 sur les stats de duel, vitesse selon le profil."
     },
@@ -73,7 +75,8 @@
         "intercept": 19,
         "block": 19,
         "speed": 61,
-        "heading": 16
+        "heading": 16,
+        "stamina": 62
       },
       "why": "Calibré au niveau du club — coefficient 1.12 sur les stats de duel, vitesse selon le profil."
     },
