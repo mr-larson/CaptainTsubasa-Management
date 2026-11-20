@@ -71,10 +71,17 @@ class Roster
      */
     public static function players(): array
     {
-        return array_merge(
+        $players = array_merge(
             ...array_map(fn (string $club) => $club::starters(), self::CLUBS),
             ...array_map(fn (string $club) => $club::substitutes(), self::CLUBS),
         );
+
+        // Retouches individuelles par niveau (Clubs/stats/*.json), appliquées sur les stats d'origine.
+        return array_map(function (array $player): array {
+            $player[5] = ClubStatFiles::apply(trim($player[0].' '.$player[1]), $player[5]);
+
+            return $player;
+        }, $players);
     }
 
     /**

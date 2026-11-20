@@ -1,0 +1,74 @@
+{
+  "club": "Nankatsu",
+  "tiers": "1 Tsubasa, Misaki | 2 Ishizaki, Morisaki | 3 Oda, Minowa, Murashige | 4 Iwami, Nagano, Nakazato, Okawa, Sakurai | 5 Tomo, Tsuboi",
+  "sources": "Pilote : fourchettes d'indicateur (attaque+défense+tir+passe+dribble+tacle+interception+contre + 1/3 vitesse + 1/3 endurance) : N1 255-285, N2 225-250, N3 200-220, N4 180-198, N5 160-178.",
+  "players": {
+    "Masato Nakazato": {
+      "stats": {
+        "defense": 23,
+        "tackle": 22,
+        "intercept": 19,
+        "block": 21,
+        "stamina": 57
+      },
+      "why": "Niveau 4 (titulaire de dépannage) : défenseur de marquage, rôle simple et efficace."
+    },
+    "Hiroshi Nagano": {
+      "stats": {
+        "defense": 24,
+        "tackle": 22,
+        "intercept": 21,
+        "block": 23,
+        "heading": 27
+      },
+      "why": "Niveau 4 : défenseur de soutien, travail de couverture et jeu de tête."
+    },
+    "Manabu Okawa": {
+      "stats": {
+        "defense": 23,
+        "intercept": 20,
+        "stamina": 62
+      },
+      "why": "Niveau 4 : joueur discipliné, apporte de la stabilité et de l'endurance."
+    },
+    "Susumu Sakurai": {
+      "stats": {
+        "speed": 46,
+        "defense": 23,
+        "tackle": 21,
+        "intercept": 20,
+        "block": 21,
+        "attack": 17
+      },
+      "why": "Niveau 4 (bas) : défenseur de complément, relevé au bas de la fourchette des titulaires."
+    },
+    "Kenichi Iwami": {
+      "stats": {
+        "pass": 24,
+        "dribble": 21,
+        "attack": 22,
+        "stamina": 62
+      },
+      "why": "Niveau 4 (haut) : milieu de soutien, circulation du ballon."
+    },
+    "Yutaka Murashige": {
+      "stats": {
+        "shot": 27,
+        "attack": 29,
+        "dribble": 24
+      },
+      "why": "Niveau 3 (bas) : attaquant volontaire, tente sa chance face au but."
+    },
+    "Kenji Tomo": {
+      "stats": {
+        "attack": 19,
+        "defense": 18,
+        "shot": 17,
+        "pass": 18,
+        "dribble": 17,
+        "tackle": 15
+      },
+      "why": "Niveau 5 : remplaçant polyvalent, ramené sous les titulaires (il dépassait des titulaires)."
+    }
+  }
+}
