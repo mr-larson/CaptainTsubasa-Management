@@ -1,0 +1,34 @@
+[
+    {
+        "firstname": "Ronald",
+        "lastname": "de Boer",
+        "age": 13,
+        "position": "Midfielder",
+        "origin": "world_legends",
+        "nationality": "Pays-Bas",
+        "national_eligible": true,
+        "secondary_positions": "[]",
+        "cost": 44,
+        "stats": "{\"speed\":66,\"stamina\":74,\"attack\":28,\"defense\":20,\"shot\":25,\"pass\":28,\"dribble\":25,\"block\":16,\"intercept\":20,\"tackle\":18,\"hand_save\":10,\"punch_save\":10,\"heading\":16}",
+        "heading": 16,
+        "special_moves": null,
+        "description": "Légendes internationales — profil adapté au jeu. Milieu créatif, spécialisé dans la dernière passe et la conservation du ballon. Poste : MOC, poste secondaire : MD. Ajax (Ligue des champions 1995), Barcelone, Rangers, 67 sélections, demi-finaliste des Mondiaux 1998 ; milieu offensif technique, passeur et buteur.",
+        "photo_path": null
+    },
+    {
+        "firstname": "Philippe",
+        "lastname": "Cocu",
+        "age": 13,
+        "position": "Defender",
+        "origin": "world_legends",
+        "nationality": "Pays-Bas",
+        "national_eligible": true,
+        "secondary_positions": "[\"Midfielder\"]",
+        "cost": 46,
+        "stats": "{\"speed\":68,\"stamina\":80,\"attack\":21,\"defense\":28,\"shot\":16,\"pass\":24,\"dribble\":21,\"block\":22,\"intercept\":25,\"tackle\":26,\"hand_save\":10,\"punch_save\":10,\"heading\":27}",
+        "heading": 27,
+        "special_moves": null,
+        "description": "Légendes internationales — profil adapté au jeu. Latéral de soutien, appliqué défensivement et disponible dans son couloir. Poste : DD, poste secondaire : MC. PSV puis Barcelone, 101 sélections, demi-finaliste des Mondiaux 1998 et de l’Euro 2000 ; latéral droit polyvalent, infatigable.",
+        "photo_path": null
+    }
+]
