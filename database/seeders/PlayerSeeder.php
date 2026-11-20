@@ -84,6 +84,7 @@ class PlayerSeeder extends Seeder
         $nationalityByPlayerSlug = array_merge(
             Players\EcoleDesChampions\Roster::nationalities(),
             Players\HungryHeart\Roster::nationalities(),
+            Players\BlueLock\Roster::nationalities(),
             Players\CaptainTsubasa\International\Roster::nationalities(),
             Players\InternationalLegends\Roster::nationalities(),
         );

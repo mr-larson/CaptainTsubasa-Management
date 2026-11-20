@@ -32,18 +32,19 @@ class NationalPoolTest extends TestCase
         Player::factory()->count(10)->create(['nationality' => 'Japon', 'origin' => 'captain_tsubasa', 'position' => 'Forward']);
         $extras = Player::factory()->count(5)->create(['nationality' => 'Japon', 'origin' => 'captain_tsubasa', 'position' => 'Defender', 'national_eligible' => false]);
 
-        $this->assertSame(12, Player::nationalEligible()->where('nationality', 'Japon')->count());
-        $this->assertSame(17, Player::where('nationality', 'Japon')->count(), 'les figurants restent en base, donc jouables en club');
+        // Sae Itoshi est inséré par la migration de revue Blue Lock.
+        $this->assertSame(13, Player::nationalEligible()->where('nationality', 'Japon')->count());
+        $this->assertSame(18, Player::where('nationality', 'Japon')->count(), 'les figurants restent en base, donc jouables en club');
 
         $preview = app(NationalTeamAssembler::class)->preview('Japon');
         $this->assertNotNull($preview);
         $ids = collect($preview['players'])->pluck('id');
-        $this->assertCount(12, $ids);
+        $this->assertCount(13, $ids);
         $this->assertEmpty($ids->intersect($extras->pluck('id')));
 
         $japan = collect(app(NewWorldCupBuilder::class)->playableNations())->firstWhere('name', 'Japon');
         if ($japan !== null) {
-            $this->assertSame(12, $japan['total']);
+            $this->assertSame(13, $japan['total']);
         }
     }
 

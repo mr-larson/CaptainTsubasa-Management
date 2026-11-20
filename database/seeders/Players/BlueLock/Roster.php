@@ -18,9 +18,9 @@ class Roster
             [
                 'Yoichi', 'Isagi', 13, 'Midfielder', 400,
                 [
-                    'speed' => 68, 'stamina' => 70, 'defense' => 18, 'attack' => 34,
-                    'shot' => 27, 'pass' => 26, 'dribble' => 22,
-                    'block' => 15, 'intercept' => 23, 'tackle' => 16,
+                    'speed' => 70, 'stamina' => 72, 'defense' => 23, 'attack' => 33,
+                    'shot' => 28, 'pass' => 28, 'dribble' => 26,
+                    'block' => 17, 'intercept' => 27, 'tackle' => 21,
                     'hand_save' => 10, 'punch_save' => 10,
                 ],
                 'Isagi brille par sa lecture du jeu et sa capacité à analyser le terrain pour être toujours au bon endroit au bon moment.',
@@ -64,9 +64,9 @@ class Roster
             [
                 'Seishiro', 'Nagi', 13, 'Forward', 415,
                 [
-                    'speed' => 68, 'stamina' => 64, 'defense' => 18, 'attack' => 36,
-                    'shot' => 28, 'pass' => 24, 'dribble' => 28,
-                    'block' => 15, 'intercept' => 17, 'tackle' => 15,
+                    'speed' => 70, 'stamina' => 64, 'defense' => 18, 'attack' => 36,
+                    'shot' => 28, 'pass' => 28, 'dribble' => 31,
+                    'block' => 15, 'intercept' => 20, 'tackle' => 15,
                     'hand_save' => 10, 'punch_save' => 10,
                 ],
                 'Génie naturel du football découvert par Reo. Ses amortis et son contrôle de balle exceptionnels font de lui un joueur unique, capable de dominer sans effort apparent.',
@@ -74,22 +74,22 @@ class Roster
             ],
 
             [
-                'Reo', 'Mikage', 13, 'Defender', 378,
+                'Reo', 'Mikage', 13, 'Midfielder', 378,
                 [
-                    'speed' => 64, 'stamina' => 70, 'defense' => 28, 'attack' => 28,
-                    'shot' => 23, 'pass' => 28, 'dribble' => 23,
-                    'block' => 17, 'intercept' => 25, 'tackle' => 24,
+                    'speed' => 62, 'stamina' => 68, 'defense' => 24, 'attack' => 26,
+                    'shot' => 21, 'pass' => 27, 'dribble' => 22,
+                    'block' => 15, 'intercept' => 24, 'tackle' => 21,
                     'hand_save' => 10, 'punch_save' => 10,
                 ],
                 'Héritier de la Mikage Corporation. Polyvalent et intelligent, il a tout pour réussir et son seul désir est de gagner la Coupe du monde avec Nagi.',
-                ['Midfielder']
+                ['Defender']
             ],
 
             [
                 'Shoei', 'Baro', 13, 'Forward', 420,
                 [
-                    'speed' => 70, 'stamina' => 72, 'defense' => 20, 'attack' => 36,
-                    'shot' => 30, 'pass' => 16, 'dribble' => 26,
+                    'speed' => 72, 'stamina' => 74, 'defense' => 20, 'attack' => 38,
+                    'shot' => 33, 'pass' => 16, 'dribble' => 28,
                     'block' => 16, 'intercept' => 17, 'tackle' => 18,
                     'hand_save' => 10, 'punch_save' => 10,
                 ],
@@ -136,10 +136,37 @@ class Roster
                 [
                     'speed' => 63, 'stamina' => 72, 'defense' => 24, 'attack' => 12,
                     'shot' => 10, 'pass' => 14, 'dribble' => 12,
-                    'block' => 22, 'intercept' => 20, 'tackle' => 16,
-                    'hand_save' => 28, 'punch_save' => 26,
+                    'block' => 23, 'intercept' => 22, 'tackle' => 16,
+                    'hand_save' => 29, 'punch_save' => 27,
                 ],
                 'Reconverti gardien de but après avoir été attaquant. Sa polyvalence et ses réflexes surprenants lui permettent de réaliser des arrêts décisifs dans les grands matchs.'
+            ],
+
+            [
+                'Sae', 'Itoshi', 13, 'Midfielder', 0,
+                [
+                    'speed' => 72, 'stamina' => 76, 'defense' => 26, 'attack' => 36, 'shot' => 30, 'pass' => 34, 'dribble' => 32, 'block' => 18, 'intercept' => 26, 'tackle' => 22, 'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Frère aîné de Rin et meilleur milieu de sa génération, passé par l’Espagne : Sae joue avec un calme glacial, une vision et une précision de passe hors normes, et dicte le rythme de tout un match.',
+                ['Forward']
+            ],
+
+            [
+                'Noel', 'Noa', 13, 'Forward', 0,
+                [
+                    'speed' => 74, 'stamina' => 78, 'defense' => 24, 'attack' => 38, 'shot' => 32, 'pass' => 30, 'dribble' => 32, 'block' => 18, 'intercept' => 22, 'tackle' => 22, 'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Considéré comme le meilleur attaquant du monde : Noa combine puissance, vitesse, technique et sang-froid, et sert de modèle à toute la génération Blue Lock.',
+                ['Midfielder']
+            ],
+
+            [
+                'Michael', 'Kaiser', 13, 'Forward', 0,
+                [
+                    'speed' => 72, 'stamina' => 72, 'defense' => 22, 'attack' => 37, 'shot' => 31, 'pass' => 28, 'dribble' => 30, 'block' => 17, 'intercept' => 20, 'tackle' => 20, 'hand_save' => 10, 'punch_save' => 10,
+                ],
+                'Prodige allemand du Bayern, surnommé l’Empereur : attaquant brillant et dominateur, sûr de lui jusqu’à l’arrogance, dont les frappes et les dribbles font la loi dans la surface.',
+                ['Midfielder']
             ],
 
         ];
@@ -263,6 +290,19 @@ class Roster
             ]],
 
             // =======================
+        ];
+    }
+
+    /**
+     * Exceptions de nationalité : les autres joueurs sont japonais par défaut (origin blue_lock).
+     *
+     * @return array<string, string>
+     */
+    public static function nationalities(): array
+    {
+        return [
+            'noel-noa' => 'Suède',
+            'michael-kaiser' => 'Allemagne',
         ];
     }
 }
