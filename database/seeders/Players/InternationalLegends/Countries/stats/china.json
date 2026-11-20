@@ -1,0 +1,83 @@
+{
+  "nationality": "Chine",
+  "sources": "Palmarès : Wikipédia / FIFA. Aucun joueur ajouté : le pays compte déjà 11 légendes et 3 personnages Captain Tsubasa (Zhongming Wang, Xiang Fei, Junguang Xiao), non retouchés ici. Wai Tong Lee et Zhixing Rong, dont l'identité est mal établie, ne sont pas retouchés.",
+  "players": {
+    "Jihai Sun": {
+      "stats": {
+        "speed": 73,
+        "stamina": 81,
+        "cross": 26,
+        "defense": 29
+      },
+      "why": "Premier Chinois de Premier League (Manchester City), plus de 100 sélections : latéral endurant, centres et montées."
+    },
+    "Zhiyi Fan": {
+      "stats": {
+        "defense": 31,
+        "pass": 25,
+        "heading": 28,
+        "intercept": 27,
+        "attack": 25
+      },
+      "why": "Pionnier chinois en Europe (Crystal Palace), capitaine historique : libéro de lecture et de relance."
+    },
+    "Weifeng Li": {
+      "stats": {
+        "defense": 30,
+        "heading": 28,
+        "tackle": 27
+      },
+      "why": "Défenseur d'Everton : central solide dans les airs."
+    },
+    "Chengying Wu": {
+      "stats": {
+        "speed": 73,
+        "defense": 27
+      },
+      "why": "Latéral de Shanghai Shenhua : vitesse et travail."
+    },
+    "Lei Wu": {
+      "stats": {
+        "speed": 78,
+        "attack": 31,
+        "shot": 25,
+        "dribble": 25
+      },
+      "why": "Espanyol, joueur chinois de référence de sa génération : attaquant rapide, accélérations."
+    },
+    "Haidong Hao": {
+      "stats": {
+        "attack": 33,
+        "shot": 28,
+        "heading": 26
+      },
+      "why": "Sheffield United, meilleur buteur historique de la sélection : finisseur de surface."
+    },
+    "Huikang Zhang": {
+      "stats": {
+        "defense": 31,
+        "hand_save": 27,
+        "punch_save": 27
+      },
+      "why": "Gardien de la génération des années 2000 : sûr sur sa ligne."
+    },
+    "Tie Li": {
+      "stats": {
+        "stamina": 83,
+        "defense": 29,
+        "tackle": 27
+      },
+      "why": "Everton, milieu défensif : abattage et récupération."
+    },
+    "Zhi Zheng": {
+      "stats": {
+        "stamina": 81,
+        "pass": 27,
+        "shot": 25,
+        "attack": 29,
+        "defense": 27
+      },
+      "why": "Charlton, capitaine champion d'Asie des clubs 2013 avec Guangzhou : milieu complet et meneur d'hommes."
+    }
+  }
+}
