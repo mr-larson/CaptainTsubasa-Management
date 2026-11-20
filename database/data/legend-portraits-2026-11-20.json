@@ -1,0 +1,622 @@
+[
+    {
+        "firstname": "Michel",
+        "lastname": "Platini",
+        "photo_path": "players/michel-platini.jpg"
+    },
+    {
+        "firstname": "Raymond",
+        "lastname": "Kopa",
+        "photo_path": "players/raymond-kopa.jpg"
+    },
+    {
+        "firstname": "Maxime",
+        "lastname": "Bossis",
+        "photo_path": "players/maxime-bossis.jpg"
+    },
+    {
+        "firstname": "Franck",
+        "lastname": "Ribéry",
+        "photo_path": "players/franck-ribery.jpg"
+    },
+    {
+        "firstname": "Karim",
+        "lastname": "Benzema",
+        "photo_path": "players/karim-benzema.jpg"
+    },
+    {
+        "firstname": "Antoine",
+        "lastname": "Griezmann",
+        "photo_path": "players/antoine-griezmann.jpg"
+    },
+    {
+        "firstname": "Paul",
+        "lastname": "Pogba",
+        "photo_path": "players/paul-pogba.jpg"
+    },
+    {
+        "firstname": "N’Golo",
+        "lastname": "Kanté",
+        "photo_path": "players/ngolo-kante.jpg"
+    },
+    {
+        "firstname": "Raphaël",
+        "lastname": "Varane",
+        "photo_path": "players/raphael-varane.jpg"
+    },
+    {
+        "firstname": "Ivan",
+        "lastname": "Perišić",
+        "photo_path": "players/ivan-perisic.jpg"
+    },
+    {
+        "firstname": "Joško",
+        "lastname": "Gvardiol",
+        "photo_path": "players/josko-gvardiol.jpg"
+    },
+    {
+        "firstname": "Yordan",
+        "lastname": "Letchkov",
+        "photo_path": "players/yordan-letchkov.jpg"
+    },
+    {
+        "firstname": "Martin",
+        "lastname": "Petrov",
+        "photo_path": "players/martin-petrov.jpg"
+    },
+    {
+        "firstname": "Shay",
+        "lastname": "Given",
+        "photo_path": "players/shay-given.jpg"
+    },
+    {
+        "firstname": "Robbie",
+        "lastname": "Keane",
+        "photo_path": "players/robbie-keane.jpg"
+    },
+    {
+        "firstname": "Seamus",
+        "lastname": "Coleman",
+        "photo_path": "players/seamus-coleman.jpg"
+    },
+    {
+        "firstname": "Kasper",
+        "lastname": "Schmeichel",
+        "photo_path": "players/kasper-schmeichel.jpg"
+    },
+    {
+        "firstname": "Pierre-Emile",
+        "lastname": "Højbjerg",
+        "photo_path": "players/pierre-emile-hojbjerg.jpg"
+    },
+    {
+        "firstname": "Ray",
+        "lastname": "Houghton",
+        "photo_path": "players/ray-houghton.jpg"
+    },
+    {
+        "firstname": "Paul",
+        "lastname": "McGrath",
+        "photo_path": "players/paul-mcgrath.jpg"
+    },
+    {
+        "firstname": "Niall",
+        "lastname": "Quinn",
+        "photo_path": "players/niall-quinn.jpg"
+    },
+    {
+        "firstname": "John",
+        "lastname": "Aldridge",
+        "photo_path": "players/john-aldridge.jpg"
+    },
+    {
+        "firstname": "Damien",
+        "lastname": "Duff",
+        "photo_path": "players/damien-duff.jpg"
+    },
+    {
+        "firstname": "Steve",
+        "lastname": "Staunton",
+        "photo_path": "players/steve-staunton.jpg"
+    },
+    {
+        "firstname": "Jon Dahl",
+        "lastname": "Tomasson",
+        "photo_path": "players/jon-dahl-tomasson.jpg"
+    },
+    {
+        "firstname": "Simon",
+        "lastname": "Kjær",
+        "photo_path": "players/simon-kjaer.jpg"
+    },
+    {
+        "firstname": "Denis",
+        "lastname": "Irwin",
+        "photo_path": "players/denis-irwin.jpg"
+    },
+    {
+        "firstname": "Salvador",
+        "lastname": "Cabañas",
+        "photo_path": "players/salvador-cabanas.jpg"
+    },
+    {
+        "firstname": "Obdulio",
+        "lastname": "Varela",
+        "photo_path": "players/obdulio-varela.jpg"
+    },
+    {
+        "firstname": "Alcides",
+        "lastname": "Ghiggia",
+        "photo_path": "players/alcides-ghiggia.jpg"
+    },
+    {
+        "firstname": "Carlos",
+        "lastname": "Gamarra",
+        "photo_path": "players/carlos-gamarra.jpg"
+    },
+    {
+        "firstname": "Miguel",
+        "lastname": "Almirón",
+        "photo_path": "players/miguel-almiron.jpg"
+    },
+    {
+        "firstname": "Gustavo",
+        "lastname": "Gómez",
+        "photo_path": "players/gustavo-gomez.jpg"
+    },
+    {
+        "firstname": "Julio César",
+        "lastname": "Romero",
+        "photo_path": "players/julio-cesar-romero.jpg"
+    },
+    {
+        "firstname": "Roque",
+        "lastname": "Santa Cruz",
+        "photo_path": "players/roque-santa-cruz.jpg"
+    },
+    {
+        "firstname": "José",
+        "lastname": "Cardozo",
+        "photo_path": "players/jose-cardozo.jpg"
+    },
+    {
+        "firstname": "Enzo",
+        "lastname": "Francescoli",
+        "photo_path": "players/enzo-francescoli.jpg"
+    },
+    {
+        "firstname": "Edinson",
+        "lastname": "Cavani",
+        "photo_path": "players/edinson-cavani.jpg"
+    },
+    {
+        "firstname": "Federico",
+        "lastname": "Valverde",
+        "photo_path": "players/federico-valverde.jpg"
+    },
+    {
+        "firstname": "Ladislao",
+        "lastname": "Mazurkiewicz",
+        "photo_path": "players/ladislao-mazurkiewicz.jpg"
+    },
+    {
+        "firstname": "Paolo",
+        "lastname": "Montero",
+        "photo_path": "players/paolo-montero.jpg"
+    },
+    {
+        "firstname": "Álvaro",
+        "lastname": "Recoba",
+        "photo_path": "players/alvaro-recoba.jpg"
+    },
+    {
+        "firstname": "Justo",
+        "lastname": "Villar",
+        "photo_path": "players/justo-villar.jpg"
+    },
+    {
+        "firstname": "Petr",
+        "lastname": "Čech",
+        "photo_path": "players/petr-cech.jpg"
+    },
+    {
+        "firstname": "Tomáš",
+        "lastname": "Ujfaluši",
+        "photo_path": "players/tomas-ujfalusi.jpg"
+    },
+    {
+        "firstname": "Marek",
+        "lastname": "Jankulovski",
+        "photo_path": "players/marek-jankulovski.jpg"
+    },
+    {
+        "firstname": "Zdeněk",
+        "lastname": "Grygera",
+        "photo_path": "players/zdenek-grygera.jpg"
+    },
+    {
+        "firstname": "Tomáš",
+        "lastname": "Rosický",
+        "photo_path": "players/tomas-rosicky.jpg"
+    },
+    {
+        "firstname": "Tomáš",
+        "lastname": "Souček",
+        "photo_path": "players/tomas-soucek.jpg"
+    },
+    {
+        "firstname": "Josef",
+        "lastname": "Masopust",
+        "photo_path": "players/josef-masopust.jpg"
+    },
+    {
+        "firstname": "Antonín",
+        "lastname": "Panenka",
+        "photo_path": "players/antonin-panenka.jpg"
+    },
+    {
+        "firstname": "Milan",
+        "lastname": "Baroš",
+        "photo_path": "players/milan-baros.jpg"
+    },
+    {
+        "firstname": "Patrik",
+        "lastname": "Schick",
+        "photo_path": "players/patrik-schick.jpg"
+    },
+    {
+        "firstname": "Tore André",
+        "lastname": "Flo",
+        "photo_path": "players/tore-andre-flo.jpg"
+    },
+    {
+        "firstname": "John",
+        "lastname": "Carew",
+        "photo_path": "players/john-carew.jpg"
+    },
+    {
+        "firstname": "Alexander",
+        "lastname": "Sørloth",
+        "photo_path": "players/alexander-sorloth.jpg"
+    },
+    {
+        "firstname": "Brede",
+        "lastname": "Hangeland",
+        "photo_path": "players/brede-hangeland.jpg"
+    },
+    {
+        "firstname": "Florin",
+        "lastname": "Răducioiu",
+        "photo_path": "players/florin-raducioiu.jpg"
+    },
+    {
+        "firstname": "Ilie",
+        "lastname": "Dumitrescu",
+        "photo_path": "players/ilie-dumitrescu.jpg"
+    },
+    {
+        "firstname": "",
+        "lastname": "Alisson",
+        "photo_path": "players/alisson.jpg"
+    },
+    {
+        "firstname": "",
+        "lastname": "Lúcio",
+        "photo_path": "players/lucio.jpg"
+    },
+    {
+        "firstname": "Thiago",
+        "lastname": "Silva",
+        "photo_path": "players/thiago-silva.jpg"
+    },
+    {
+        "firstname": "",
+        "lastname": "Sócrates",
+        "photo_path": "players/socrates.jpg"
+    },
+    {
+        "firstname": "",
+        "lastname": "Kaká",
+        "photo_path": "players/kaka.jpg"
+    },
+    {
+        "firstname": "",
+        "lastname": "Casemiro",
+        "photo_path": "players/casemiro.jpg"
+    },
+    {
+        "firstname": "",
+        "lastname": "Bebeto",
+        "photo_path": "players/bebeto.jpg"
+    },
+    {
+        "firstname": "Vinícius",
+        "lastname": "Júnior",
+        "photo_path": "players/vinicius-junior.jpg"
+    },
+    {
+        "firstname": "Alfredo",
+        "lastname": "Di Stéfano",
+        "photo_path": "players/alfredo-di-stefano.jpg"
+    },
+    {
+        "firstname": "Juan Román",
+        "lastname": "Riquelme",
+        "photo_path": "players/juan-roman-riquelme.jpg"
+    },
+    {
+        "firstname": "Ángel",
+        "lastname": "Di María",
+        "photo_path": "players/angel-di-maria.jpg"
+    },
+    {
+        "firstname": "Emiliano",
+        "lastname": "Martínez",
+        "photo_path": "players/emiliano-martinez.jpg"
+    },
+    {
+        "firstname": "Sergio",
+        "lastname": "Agüero",
+        "photo_path": "players/sergio-aguero.jpg"
+    },
+    {
+        "firstname": "Hugo",
+        "lastname": "Sánchez",
+        "photo_path": "players/hugo-sanchez.jpg"
+    },
+    {
+        "firstname": "Javier",
+        "lastname": "Hernández",
+        "photo_path": "players/javier-hernandez.jpg"
+    },
+    {
+        "firstname": "Hirving",
+        "lastname": "Lozano",
+        "photo_path": "players/hirving-lozano.png"
+    },
+    {
+        "firstname": "Andrea",
+        "lastname": "Pirlo",
+        "photo_path": "players/andrea-pirlo.jpg"
+    },
+    {
+        "firstname": "Francesco",
+        "lastname": "Totti",
+        "photo_path": "players/francesco-totti.jpg"
+    },
+    {
+        "firstname": "Daniele",
+        "lastname": "De Rossi",
+        "photo_path": "players/daniele-de-rossi.jpg"
+    },
+    {
+        "firstname": "Marco",
+        "lastname": "Tardelli",
+        "photo_path": "players/marco-tardelli.jpg"
+    },
+    {
+        "firstname": "Giacinto",
+        "lastname": "Facchetti",
+        "photo_path": "players/giacinto-facchetti.jpg"
+    },
+    {
+        "firstname": "Giorgio",
+        "lastname": "Chiellini",
+        "photo_path": "players/giorgio-chiellini.jpg"
+    },
+    {
+        "firstname": "Gigi",
+        "lastname": "Riva",
+        "photo_path": "players/gigi-riva.jpg"
+    },
+    {
+        "firstname": "Bernardo",
+        "lastname": "Silva",
+        "photo_path": "players/bernardo-silva.jpg"
+    },
+    {
+        "firstname": "Bruno",
+        "lastname": "Fernandes",
+        "photo_path": "players/bruno-fernandes.jpg"
+    },
+    {
+        "firstname": "Rúben",
+        "lastname": "Dias",
+        "photo_path": "players/ruben-dias.jpg"
+    },
+    {
+        "firstname": "",
+        "lastname": "Nani",
+        "photo_path": "players/nani.jpg"
+    },
+    {
+        "firstname": "Rui",
+        "lastname": "Patrício",
+        "photo_path": "players/rui-patricio.jpg"
+    },
+    {
+        "firstname": "João",
+        "lastname": "Moutinho",
+        "photo_path": "players/joao-moutinho.jpg"
+    },
+    {
+        "firstname": "Toni",
+        "lastname": "Kroos",
+        "photo_path": "players/toni-kroos.jpg"
+    },
+    {
+        "firstname": "Bastian",
+        "lastname": "Schweinsteiger",
+        "photo_path": "players/bastian-schweinsteiger.jpg"
+    },
+    {
+        "firstname": "Ruud",
+        "lastname": "Gullit",
+        "photo_path": "players/ruud-gullit.jpg"
+    },
+    {
+        "firstname": "Johan",
+        "lastname": "Neeskens",
+        "photo_path": "players/johan-neeskens.jpg"
+    },
+    {
+        "firstname": "Arjen",
+        "lastname": "Robben",
+        "photo_path": "players/arjen-robben.jpg"
+    },
+    {
+        "firstname": "Paul",
+        "lastname": "Breitner",
+        "photo_path": "players/paul-breitner.jpg"
+    },
+    {
+        "firstname": "Wesley",
+        "lastname": "Sneijder",
+        "photo_path": "players/wesley-sneijder.jpg"
+    },
+    {
+        "firstname": "Frank",
+        "lastname": "Lampard",
+        "photo_path": "players/frank-lampard.jpg"
+    },
+    {
+        "firstname": "Hans",
+        "lastname": "van Breukelen",
+        "photo_path": "players/hans-van-breukelen.jpg"
+    },
+    {
+        "firstname": "Jude",
+        "lastname": "Bellingham",
+        "photo_path": "players/jude-bellingham.jpg"
+    },
+    {
+        "firstname": "Wayne",
+        "lastname": "Rooney",
+        "photo_path": "players/wayne-rooney.jpg"
+    },
+    {
+        "firstname": "Virgil",
+        "lastname": "van Dijk",
+        "photo_path": "players/virgil-van-dijk.jpg"
+    },
+    {
+        "firstname": "Uwe",
+        "lastname": "Seeler",
+        "photo_path": "players/uwe-seeler.jpg"
+    },
+    {
+        "firstname": "Robin",
+        "lastname": "van Persie",
+        "photo_path": "players/robin-van-persie.jpg"
+    },
+    {
+        "firstname": "Peter",
+        "lastname": "Shilton",
+        "photo_path": "players/peter-shilton.png"
+    },
+    {
+        "firstname": "John",
+        "lastname": "Terry",
+        "photo_path": "players/john-terry.jpg"
+    },
+    {
+        "firstname": "Paul",
+        "lastname": "Gascoigne",
+        "photo_path": "players/paul-gascoigne.png"
+    },
+    {
+        "firstname": "Gary",
+        "lastname": "Lineker",
+        "photo_path": "players/gary-lineker.jpg"
+    },
+    {
+        "firstname": "Günter",
+        "lastname": "Netzer",
+        "photo_path": "players/gunter-netzer.jpg"
+    },
+    {
+        "firstname": "David",
+        "lastname": "Villa",
+        "photo_path": "players/david-villa.jpg"
+    },
+    {
+        "firstname": "Sergio",
+        "lastname": "Busquets",
+        "photo_path": "players/sergio-busquets.jpg"
+    },
+    {
+        "firstname": "Xabi",
+        "lastname": "Alonso",
+        "photo_path": "players/xabi-alonso.jpg"
+    },
+    {
+        "firstname": "Cesc",
+        "lastname": "Fàbregas",
+        "photo_path": "players/cesc-fabregas.jpg"
+    },
+    {
+        "firstname": "",
+        "lastname": "Pedri",
+        "photo_path": "players/pedri.jpg"
+    },
+    {
+        "firstname": "Emilio",
+        "lastname": "Butragueño",
+        "photo_path": "players/emilio-butragueno.jpg"
+    },
+    {
+        "firstname": "Tomas",
+        "lastname": "Brolin",
+        "photo_path": "players/tomas-brolin.jpg"
+    },
+    {
+        "firstname": "Alexander",
+        "lastname": "Isak",
+        "photo_path": "players/alexander-isak.jpg"
+    },
+    {
+        "firstname": "Kurt",
+        "lastname": "Hamrin",
+        "photo_path": "players/kurt-hamrin.jpg"
+    },
+    {
+        "firstname": "Stefan",
+        "lastname": "Schwarz",
+        "photo_path": "players/stefan-schwarz.jpg"
+    },
+    {
+        "firstname": "Yassine",
+        "lastname": "Bounou",
+        "photo_path": "players/yassine-bounou.jpg"
+    },
+    {
+        "firstname": "Sofyan",
+        "lastname": "Amrabat",
+        "photo_path": "players/sofyan-amrabat.jpg"
+    },
+    {
+        "firstname": "Youssef",
+        "lastname": "En-Nesyri",
+        "photo_path": "players/youssef-en-nesyri.jpg"
+    },
+    {
+        "firstname": "Victor",
+        "lastname": "Osimhen",
+        "photo_path": "players/victor-osimhen.jpg"
+    },
+    {
+        "firstname": "Andoni",
+        "lastname": "Zubizarreta",
+        "photo_path": "players/andoni-zubizarreta.jpg"
+    },
+    {
+        "firstname": "Hakim",
+        "lastname": "Ziyech",
+        "photo_path": "players/hakim-ziyech.jpg"
+    },
+    {
+        "firstname": "Emmanuel",
+        "lastname": "Amunike",
+        "photo_path": "players/emmanuel-amunike.jpg"
+    }
+]
