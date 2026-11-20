@@ -11,14 +11,14 @@
         "shot": 21,
         "pass": 32,
         "dribble": 22,
-        "block": 30,
+        "block": 32,
         "intercept": 31,
         "tackle": 30,
         "heading": 31,
         "hand_save": 10,
         "punch_save": 10
       },
-      "why": "Relevé à un OVR de 32 (même niveau que les autres grandes légendes) : points forts du joueur au maximum, le reste complété avec mesure."
+      "why": "Relevé à un OVR de 32 (même niveau que les autres grandes légendes) : points forts du joueur au maximum, le reste complété avec mesure. Contre 32."
     },
     "Matthias Sammer": {
       "stats": {
@@ -154,22 +154,39 @@
     },
     "Manuel Neuer": {
       "stats": {
-        "defense": 37,
-        "hand_save": 29,
-        "punch_save": 29,
         "speed": 68,
-        "pass": 24,
-        "stamina": 74
+        "stamina": 76,
+        "attack": 15,
+        "defense": 38,
+        "shot": 12,
+        "pass": 25,
+        "dribble": 14,
+        "block": 24,
+        "intercept": 23,
+        "tackle": 18,
+        "heading": 17,
+        "hand_save": 30,
+        "punch_save": 30
       },
-      "why": "Champion du monde 2014, six titres de Ligue des champions : gardien-libéro, sorties et relance."
+      "why": "Champion du monde 2014, six titres de Ligue des champions : gardien-libéro, sorties et relance. Profil relevé (OVR 30) sous la référence Genzo Wakabayashi (main 33)."
     },
     "Oliver Kahn": {
       "stats": {
-        "defense": 36,
-        "hand_save": 29,
-        "punch_save": 28
+        "speed": 58,
+        "stamina": 71,
+        "attack": 15,
+        "defense": 38,
+        "shot": 12,
+        "pass": 19,
+        "dribble": 14,
+        "block": 25,
+        "intercept": 24,
+        "tackle": 18,
+        "heading": 17,
+        "hand_save": 30,
+        "punch_save": 30
       },
-      "why": "Meilleur joueur du Mondial 2002, Ligue des champions 2001 : autorité et réflexes."
+      "why": "Meilleur joueur du Mondial 2002, Ligue des champions 2001 : autorité et réflexes. Profil relevé (OVR ≈28,5) sous la référence Genzo Wakabayashi (main 33)."
     },
     "Thomas Hässler": {
       "stats": {

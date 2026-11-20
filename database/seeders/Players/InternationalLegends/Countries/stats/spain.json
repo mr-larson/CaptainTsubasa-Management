@@ -18,9 +18,9 @@
         "heading": 30,
         "stamina": 80,
         "attack": 25,
-        "tackle": 28
+        "tackle": 32
       },
-      "why": "Champion du monde 2010, 5 Ligues des champions : défenseur buteur, but à la 93e minute en finale 2014."
+      "why": "Champion du monde 2010, 5 Ligues des champions : défenseur buteur, but à la 93e minute en finale 2014. Tacle 32."
     },
     "Carles Puyol": {
       "stats": {
@@ -92,11 +92,21 @@
     },
     "Iker Casillas": {
       "stats": {
-        "defense": 36,
-        "hand_save": 29,
-        "punch_save": 29
+        "speed": 65,
+        "stamina": 77,
+        "attack": 15,
+        "defense": 38,
+        "shot": 12,
+        "pass": 22,
+        "dribble": 15,
+        "block": 25,
+        "intercept": 26,
+        "tackle": 18,
+        "heading": 17,
+        "hand_save": 30,
+        "punch_save": 30
       },
-      "why": "Capitaine champion du monde 2010 et d'Europe 2008 et 2012, trois Ligues des champions : gardien aux réflexes légendaires."
+      "why": "Capitaine champion du monde 2010 et d'Europe 2008 et 2012, trois Ligues des champions : gardien aux réflexes légendaires. Profil relevé (OVR 30) sous la référence Genzo Wakabayashi (main 33)."
     },
     "Xavi Hernández": {
       "stats": {

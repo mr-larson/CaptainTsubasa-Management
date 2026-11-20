@@ -28,6 +28,24 @@
         "speed": 66
       },
       "why": "Ballon d'Or 2003, Juventus, Lazio : milieu à la frappe puissante et à l'endurance exceptionnelle."
+    },
+    "Petr Čech": {
+      "why": "Gardien de référence de son pays. Profil relevé (OVR 28) sous la référence Genzo Wakabayashi (main 33).",
+      "stats": {
+        "speed": 60,
+        "stamina": 74,
+        "attack": 14,
+        "defense": 37,
+        "shot": 11,
+        "pass": 18,
+        "dribble": 13,
+        "block": 23,
+        "intercept": 21,
+        "tackle": 17,
+        "heading": 16,
+        "hand_save": 30,
+        "punch_save": 30
+      }
     }
   }
 }

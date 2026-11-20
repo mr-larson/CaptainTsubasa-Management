@@ -89,22 +89,32 @@
     },
     "Vítor Baía": {
       "stats": {
+        "speed": 59,
+        "stamina": 74,
+        "attack": 14,
         "defense": 34,
-        "hand_save": 28,
+        "shot": 11,
+        "pass": 22,
+        "dribble": 14,
+        "block": 22,
+        "intercept": 26,
+        "tackle": 17,
+        "heading": 15,
+        "hand_save": 29,
         "punch_save": 27
       },
-      "why": "Ligue des champions 2004 avec Porto, longévité : gardien sûr dans les airs."
+      "why": "Ligue des champions 2004 avec Porto, longévité : gardien sûr dans les airs. Profil relevé (OVR 28) sous la référence Genzo Wakabayashi (main 33)."
     },
     "Pepe": {
       "stats": {
         "defense": 34,
-        "tackle": 29,
+        "tackle": 32,
         "block": 29,
         "intercept": 27,
         "heading": 29,
         "speed": 69
       },
-      "why": "Trois Ligues des champions avec le Real, champion d'Europe 2016 : défenseur dur et tenace."
+      "why": "Trois Ligues des champions avec le Real, champion d'Europe 2016 : défenseur dur et tenace. Tacle 32."
     },
     "Ricardo Carvalho": {
       "stats": {

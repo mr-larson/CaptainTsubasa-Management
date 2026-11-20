@@ -84,9 +84,10 @@
     "Frank de Boer": {
       "stats": {
         "pass": 30,
-        "defense": 31
+        "defense": 31,
+        "intercept": 31
       },
-      "why": "Ajax, 112 sélections : défenseur relanceur au pied gauche."
+      "why": "Ajax, 112 sélections : défenseur relanceur au pied gauche. Interception 31."
     },
     "Jaap Stam": {
       "stats": {
@@ -107,11 +108,21 @@
     },
     "Edwin van der Sar": {
       "stats": {
-        "defense": 34,
-        "hand_save": 29,
-        "punch_save": 28
+        "speed": 58,
+        "stamina": 71,
+        "attack": 15,
+        "defense": 35,
+        "shot": 12,
+        "pass": 19,
+        "dribble": 14,
+        "block": 25,
+        "intercept": 24,
+        "tackle": 18,
+        "heading": 14,
+        "hand_save": 30,
+        "punch_save": 29
       },
-      "why": "Ligue des champions 1995 et 2008, meilleur gardien d'Europe : maîtrise de la surface."
+      "why": "Ligue des champions 1995 et 2008, meilleur gardien d'Europe : maîtrise de la surface. Profil relevé (OVR 28) sous la référence Genzo Wakabayashi (main 33)."
     },
     "Frank Rijkaard": {
       "stats": {

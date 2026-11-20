@@ -20,7 +20,7 @@ class Roster
                 [
                     'speed' => 72, 'stamina' => 74, 'defense' => 28, 'attack' => 28,
                     'shot' => 22, 'pass' => 29, 'dribble' => 17,
-                    'block' => 17, 'intercept' => 28, 'tackle' => 25,
+                    'block' => 17, 'intercept' => 32, 'tackle' => 25,
                     'hand_save' => 10, 'punch_save' => 10,
                 ],
                 'Latéral gauche d\'Esperion, reconverti d\'attaquant par le coach Fukuda. Sa vision exceptionnelle du jeu et sa détermination sans faille compensent son inexpérience au poste défensif.',

@@ -25,10 +25,10 @@
         "stamina": 77,
         "attack": 24,
         "shot": 26,
-        "pass": 26,
+        "pass": 33,
         "defense": 28
       },
-      "why": "Champion du monde 2002, Real Madrid : coups francs surpuissants et montées sur le côté gauche."
+      "why": "Champion du monde 2002, Real Madrid : coups francs surpuissants et montées sur le côté gauche. Passe 33."
     },
     "Carlos Dunga": {
       "stats": {
@@ -82,7 +82,7 @@
         "defense": 19,
         "shot": 29,
         "pass": 32,
-        "dribble": 32,
+        "dribble": 33,
         "block": 21,
         "intercept": 22,
         "tackle": 23,
@@ -90,7 +90,7 @@
         "hand_save": 11,
         "punch_save": 11
       },
-      "why": "Relevé à un OVR de 32 : dribble et passe au maximum, tir 29 (sous R9) et défense 19 (créateur, pas défenseur)."
+      "why": "Relevé à un OVR de 32 : dribble et passe au maximum, tir 29 (sous R9) et défense 19 (créateur, pas défenseur). Dribble 33."
     },
     "Romário": {
       "stats": {
@@ -234,6 +234,24 @@
         "punch_save": 10
       },
       "why": "Relevé à un OVR de 30 : points forts du joueur au maximum, le reste complété avec mesure."
+    },
+    "Alisson": {
+      "why": "Gardien de référence de son pays. Profil relevé (OVR 28) sous la référence Genzo Wakabayashi (main 33).",
+      "stats": {
+        "speed": 62,
+        "stamina": 74,
+        "attack": 14,
+        "defense": 34,
+        "shot": 11,
+        "pass": 22,
+        "dribble": 13,
+        "block": 23,
+        "intercept": 21,
+        "tackle": 17,
+        "heading": 15,
+        "hand_save": 29,
+        "punch_save": 29
+      }
     }
   }
 }

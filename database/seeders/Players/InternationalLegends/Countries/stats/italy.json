@@ -4,19 +4,39 @@
   "players": {
     "Gianluigi Buffon": {
       "stats": {
-        "defense": 37,
-        "hand_save": 29,
-        "punch_save": 29
+        "speed": 61,
+        "stamina": 74,
+        "attack": 16,
+        "defense": 38,
+        "shot": 13,
+        "pass": 22,
+        "dribble": 15,
+        "block": 27,
+        "intercept": 25,
+        "tackle": 20,
+        "heading": 19,
+        "hand_save": 30,
+        "punch_save": 30
       },
-      "why": "Champion du monde 2006, 10 Scudetti, 176 sélections : le gardien de référence, sans point faible."
+      "why": "Champion du monde 2006, 10 Scudetti, 176 sélections : le gardien de référence, sans point faible. Profil relevé (OVR 30) sous la référence Genzo Wakabayashi (main 33)."
     },
     "Dino Zoff": {
       "stats": {
-        "defense": 36,
-        "hand_save": 29,
-        "punch_save": 28
+        "speed": 58,
+        "stamina": 71,
+        "attack": 15,
+        "defense": 38,
+        "shot": 12,
+        "pass": 19,
+        "dribble": 14,
+        "block": 25,
+        "intercept": 24,
+        "tackle": 18,
+        "heading": 17,
+        "hand_save": 30,
+        "punch_save": 30
       },
-      "why": "Capitaine champion du monde 1982 à 40 ans : gardien d'une régularité et d'un calme légendaires."
+      "why": "Capitaine champion du monde 1982 à 40 ans : gardien d'une régularité et d'un calme légendaires. Profil relevé (OVR ≈28,5) sous la référence Genzo Wakabayashi (main 33)."
     },
     "Angelo Peruzzi": {
       "stats": {
@@ -32,12 +52,12 @@
         "defense": 34,
         "block": 28,
         "intercept": 28,
-        "tackle": 29,
+        "tackle": 31,
         "heading": 29,
         "attack": 24,
         "pass": 26
       },
-      "why": "Cinq Ligues des champions avec Milan, 126 sélections : latéral puis central, anticipation et propreté du tacle."
+      "why": "Cinq Ligues des champions avec Milan, 126 sélections : latéral puis central, anticipation et propreté du tacle. Tacle 31."
     },
     "Franco Baresi": {
       "stats": {
@@ -49,13 +69,13 @@
         "pass": 30,
         "dribble": 21,
         "block": 27,
-        "intercept": 31,
+        "intercept": 32,
         "tackle": 27,
         "heading": 31,
         "hand_save": 10,
         "punch_save": 10
       },
-      "why": "Relevé à un OVR de 31 : points forts du joueur au maximum, le reste complété avec mesure."
+      "why": "Relevé à un OVR de 31 : points forts du joueur au maximum, le reste complété avec mesure. Interception 32."
     },
     "Alessandro Nesta": {
       "stats": {

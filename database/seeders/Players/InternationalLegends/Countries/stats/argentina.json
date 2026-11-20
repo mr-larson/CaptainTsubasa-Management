@@ -28,7 +28,7 @@
         "defense": 23,
         "shot": 31,
         "pass": 32,
-        "dribble": 32,
+        "dribble": 34,
         "block": 19,
         "intercept": 23,
         "tackle": 21,
@@ -36,7 +36,7 @@
         "hand_save": 11,
         "punch_save": 11
       },
-      "why": "Relevé à un OVR de 32 (même niveau que les autres grandes légendes) : points forts du joueur au maximum, le reste complété avec mesure."
+      "why": "Relevé à un OVR de 32 (même niveau que les autres grandes légendes) : points forts du joueur au maximum, le reste complété avec mesure. Dribble 34."
     },
     "Mario Kempes": {
       "stats": {

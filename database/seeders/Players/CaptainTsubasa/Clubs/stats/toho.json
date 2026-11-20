@@ -153,9 +153,10 @@
       "stats": {
         "hand_save": 25,
         "punch_save": 28,
-        "block": 18
+        "block": 18,
+        "stamina": 70
       },
-      "why": "Gardien au poing : arrêt au poing 28, arrêt à la main 25, contre 18."
+      "why": "Gardien au poing : arrêt au poing 28, arrêt à la main 25, contre 18. Endurance 70."
     }
   }
 }

@@ -109,11 +109,21 @@
     },
     "Gordon Banks": {
       "stats": {
-        "defense": 36,
-        "hand_save": 29,
-        "punch_save": 28
+        "speed": 60,
+        "stamina": 75,
+        "attack": 14,
+        "defense": 37,
+        "shot": 11,
+        "pass": 20,
+        "dribble": 13,
+        "block": 23,
+        "intercept": 26,
+        "tackle": 17,
+        "heading": 16,
+        "hand_save": 30,
+        "punch_save": 29
       },
-      "why": "Champion du monde 1966, auteur de l'arrêt du siècle : réflexes inégalés."
+      "why": "Champion du monde 1966, auteur de l'arrêt du siècle : réflexes inégalés. Profil relevé (OVR ≈28,5) sous la référence Genzo Wakabayashi (main 33)."
     },
     "Bobby Charlton": {
       "stats": {
@@ -140,7 +150,7 @@
         "attack": 38,
         "defense": 26,
         "shot": 31,
-        "pass": 32,
+        "pass": 33,
         "dribble": 23,
         "block": 21,
         "intercept": 24,
@@ -149,7 +159,7 @@
         "hand_save": 14,
         "punch_save": 14
       },
-      "why": "Relevé à un OVR de 32 (même niveau que les autres grandes légendes) : points forts du joueur au maximum, le reste complété avec mesure."
+      "why": "Relevé à un OVR de 32 (même niveau que les autres grandes légendes) : points forts du joueur au maximum, le reste complété avec mesure. Passe 33."
     },
     "Paul Scholes": {
       "stats": {

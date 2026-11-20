@@ -5,30 +5,56 @@
     "Thibaut Courtois": {
       "stats": {
         "speed": 60,
+        "stamina": 78,
+        "attack": 15,
         "defense": 37,
+        "shot": 12,
+        "pass": 19,
+        "dribble": 14,
         "block": 26,
         "intercept": 24,
-        "hand_save": 30,
-        "punch_save": 28
+        "tackle": 18,
+        "heading": 15,
+        "hand_save": 31,
+        "punch_save": 29
       },
-      "why": "Meilleur gardien du monde au sommet (Real Madrid, Chelsea, Golden Glove 2018) : réflexes et envergure, lent en dehors de sa ligne."
+      "why": "Meilleur gardien du monde au sommet (Real Madrid, Chelsea, Golden Glove 2018) : réflexes et envergure, lent en dehors de sa ligne. Profil relevé (OVR 29) sous la référence Genzo Wakabayashi (main 33). Arrêt à la main 31 (le plus haut des gardiens réels)."
     },
     "Michel Preud'homme": {
       "stats": {
-        "defense": 36,
-        "hand_save": 29,
-        "punch_save": 29,
-        "intercept": 25
+        "speed": 61,
+        "stamina": 75,
+        "attack": 14,
+        "defense": 37,
+        "shot": 11,
+        "pass": 18,
+        "dribble": 13,
+        "block": 26,
+        "intercept": 26,
+        "tackle": 17,
+        "heading": 13,
+        "hand_save": 30,
+        "punch_save": 30
       },
-      "why": "Meilleur gardien du Mondial 1994 (Yashin) : placement et sorties, très régulier."
+      "why": "Meilleur gardien du Mondial 1994 (Yashin) : placement et sorties, très régulier. Profil relevé (OVR ≈28,5) sous la référence Genzo Wakabayashi (main 33)."
     },
     "Jean-Marie Pfaff": {
       "stats": {
+        "speed": 60,
+        "stamina": 75,
+        "attack": 14,
         "defense": 34,
-        "hand_save": 28,
-        "punch_save": 29
+        "shot": 11,
+        "pass": 18,
+        "dribble": 13,
+        "block": 26,
+        "intercept": 24,
+        "tackle": 17,
+        "heading": 13,
+        "hand_save": 29,
+        "punch_save": 30
       },
-      "why": "Bayern, Mondial 1982 et 1986 : gardien spectaculaire, arrêts réflexes."
+      "why": "Bayern, Mondial 1982 et 1986 : gardien spectaculaire, arrêts réflexes. Profil relevé (OVR 28) sous la référence Genzo Wakabayashi (main 33)."
     },
     "Gilbert Bodart": {
       "stats": {

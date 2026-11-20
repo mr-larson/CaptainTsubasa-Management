@@ -76,11 +76,21 @@
     },
     "Vincent Enyeama": {
       "stats": {
+        "speed": 60,
+        "stamina": 75,
+        "attack": 14,
         "defense": 33,
-        "hand_save": 28,
-        "punch_save": 28
+        "shot": 11,
+        "pass": 20,
+        "dribble": 14,
+        "block": 22,
+        "intercept": 25,
+        "tackle": 17,
+        "heading": 15,
+        "hand_save": 29,
+        "punch_save": 29
       },
-      "why": "Champion d'Afrique 2013, Lille : gardien de référence du Nigéria."
+      "why": "Champion d'Afrique 2013, Lille : gardien de référence du Nigéria. Profil relevé (OVR 28) sous la référence Genzo Wakabayashi (main 33)."
     },
     "Sunday Oliseh": {
       "stats": {

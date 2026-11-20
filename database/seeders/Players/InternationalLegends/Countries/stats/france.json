@@ -33,10 +33,10 @@
         "speed": 72,
         "stamina": 78,
         "defense": 32,
-        "tackle": 28,
+        "tackle": 31,
         "intercept": 27
       },
-      "why": "Plus de 140 sélections, champion du monde 1998 : latéral et central, tacle et lecture."
+      "why": "Plus de 140 sélections, champion du monde 1998 : latéral et central, tacle et lecture. Tacle 31."
     },
     "Laurent Blanc": {
       "stats": {
@@ -119,7 +119,7 @@
     },
     "Thierry Henry": {
       "stats": {
-        "speed": 82,
+        "speed": 85,
         "stamina": 78,
         "attack": 38,
         "defense": 19,
@@ -133,7 +133,7 @@
         "hand_save": 11,
         "punch_save": 11
       },
-      "why": "Relevé à un OVR de 31 : points forts du joueur au maximum, le reste complété avec mesure."
+      "why": "Relevé à un OVR de 31 : points forts du joueur au maximum, le reste complété avec mesure. Vitesse 85."
     },
     "David Trezeguet": {
       "stats": {
