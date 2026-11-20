@@ -19,10 +19,9 @@ class CuratedTsubasaInternationalsTest extends TestCase
     {
         $this->seed(PlayerSeeder::class);
         $players = Player::where('origin', PlayerOrigin::INTERNATIONAL)->get();
-        // 47 personnages illustrés, plus 22 ajoutés par la revue des internationaux (sans portrait).
-        $this->assertCount(69, $players);
-        $withoutPortrait = ['Levin', 'Bunnaak', 'Juanito', 'Konsawatt', 'Brolin', 'Federiks', 'Larson', 'Raphael', 'Robson', 'Haas', 'Christiansen',
-            'Teigerbran', 'Schmidt', 'Goethe', 'Bossis', 'Amoros', 'Lensenblink', 'Ramirez', 'Branco'];
+        // 47 personnages illustrés, plus 22 ajoutés par la revue des internationaux (sans portrait), puis 4 Américains et 10 portraits officiels Bandai ajoutés.
+        $this->assertCount(73, $players);
+        $withoutPortrait = ['Luke', 'Juanito', 'Raphael', 'Haas', 'Christiansen', 'Schmidt', 'Goethe', 'Bossis', 'Amoros', 'Lensenblink', 'Ramirez', 'Branco'];
         foreach ($players->reject(fn ($p) => in_array($p->lastname, $withoutPortrait, true)) as $player) {
             $this->assertNotNull($player->photo_path, $player->full_name);
             $this->assertFileExists(public_path('storage/'.$player->photo_path));

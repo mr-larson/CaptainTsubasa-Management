@@ -46,6 +46,7 @@ class Roster
         Countries\Spain::class,
         Countries\England::class,
         Countries\Denmark::class,
+        Countries\UnitedStates::class,
     ];
 
     /**
@@ -256,6 +257,10 @@ class Roster
             'robson' => 'Angleterre',
             'haas' => 'Danemark',
             'christiansen' => 'Danemark',
+            'ryan-ortiz' => 'États-Unis',
+            'blake-martin' => 'États-Unis',
+            'cheikh-azwan' => 'États-Unis',
+            'sylvester-luke' => 'États-Unis',
             'schweil-teigerbran' => 'Allemagne',
             'kevin-schmidt' => 'Allemagne',
             'eric-schmidt' => 'Allemagne',

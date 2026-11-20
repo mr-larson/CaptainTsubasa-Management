@@ -1,0 +1,52 @@
+[
+    {
+        "firstname": "Singprasert",
+        "lastname": "Bunnaak",
+        "photo_path": "players/singprasert-bunnaak-world-fighters.png"
+    },
+    {
+        "firstname": "Faran",
+        "lastname": "Konsawatt",
+        "photo_path": "players/faran-konsawatt-world-fighters.png"
+    },
+    {
+        "firstname": "Sakhon",
+        "lastname": "Konsawatt",
+        "photo_path": "players/sakhon-konsawatt-world-fighters.png"
+    },
+    {
+        "firstname": "Chana",
+        "lastname": "Konsawatt",
+        "photo_path": "players/chana-konsawatt-world-fighters.png"
+    },
+    {
+        "firstname": "Stefan",
+        "lastname": "Levin",
+        "photo_path": "players/stefan-levin-world-fighters.png"
+    },
+    {
+        "firstname": "",
+        "lastname": "Larson",
+        "photo_path": "players/larson-world-fighters.png"
+    },
+    {
+        "firstname": "",
+        "lastname": "Brolin",
+        "photo_path": "players/brolin-world-fighters.png"
+    },
+    {
+        "firstname": "",
+        "lastname": "Federiks",
+        "photo_path": "players/federiks-world-fighters.png"
+    },
+    {
+        "firstname": "Schweil",
+        "lastname": "Teigerbran",
+        "photo_path": "players/schweil-teigerbran-world-fighters.png"
+    },
+    {
+        "firstname": "",
+        "lastname": "Robson",
+        "photo_path": "players/robson-world-fighters.png"
+    }
+]
