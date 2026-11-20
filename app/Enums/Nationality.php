@@ -68,6 +68,7 @@ class Nationality
     public const AUSTRALIE       = 'Australie';
     public const GHANA           = 'Ghana';
     public const THAILANDE       = 'Thaïlande';
+    public const COLOMBIE        = 'Colombie';
 
     /** Toutes les nationalités reconnues. */
     public const ALL = [
@@ -92,6 +93,7 @@ class Nationality
         self::AUSTRALIE,
         self::GHANA,
         self::THAILANDE,
+        self::COLOMBIE,
         self::BELGIQUE,
         self::PORTUGAL,
         self::CROATIE,
@@ -177,6 +179,7 @@ class Nationality
         self::AUSTRALIE       => '🇦🇺',
         self::GHANA           => '🇬🇭',
         self::THAILANDE       => '🇹🇭',
+        self::COLOMBIE        => '🇨🇴',
     ];
 
     /** La nationalité fait-elle partie des valeurs reconnues ? */

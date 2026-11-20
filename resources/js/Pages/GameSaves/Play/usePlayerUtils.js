@@ -89,6 +89,7 @@ const NATIONALITY_FLAGS = {
     'Australie':       '🇦🇺',
     'Ghana':           '🇬🇭',
     'Thaïlande':       '🇹🇭',
+    'Colombie':        '🇨🇴',
 };
 
 export function overallOf(player) {

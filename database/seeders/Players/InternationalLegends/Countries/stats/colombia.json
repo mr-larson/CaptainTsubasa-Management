@@ -1,0 +1,240 @@
+{
+  "nationality": "Colombie",
+  "sources": "Palmarès : Wikipédia / FIFA. Sélection d'abord pensée faible, relevée ensuite pour refléter la génération dorée des années 1990 (OVR 25 à 28).",
+  "players": {
+    "Carlos Valderrama": {
+      "stats": {
+        "speed": 52,
+        "stamina": 70,
+        "attack": 30,
+        "defense": 18,
+        "shot": 26,
+        "pass": 33,
+        "dribble": 31,
+        "block": 12,
+        "intercept": 24,
+        "tackle": 17,
+        "heading": 16,
+        "hand_save": 10,
+        "punch_save": 10
+      },
+      "why": "« El Pibe », maître à jouer absolu (111 sélections) : passe et dribble relevés, vitesse volontairement basse."
+    },
+    "James Rodríguez": {
+      "stats": {
+        "speed": 64,
+        "stamina": 70,
+        "attack": 30,
+        "defense": 16,
+        "shot": 29,
+        "pass": 31,
+        "dribble": 29,
+        "block": 12,
+        "intercept": 20,
+        "tackle": 16,
+        "heading": 15,
+        "hand_save": 10,
+        "punch_save": 10
+      },
+      "why": "Soulier d'Or 2014 : passe et frappe relevées."
+    },
+    "Radamel Falcao": {
+      "stats": {
+        "speed": 66,
+        "stamina": 70,
+        "attack": 32,
+        "defense": 16,
+        "shot": 30,
+        "pass": 20,
+        "dribble": 24,
+        "block": 12,
+        "intercept": 16,
+        "tackle": 14,
+        "heading": 30,
+        "hand_save": 10,
+        "punch_save": 10
+      },
+      "why": "Meilleur buteur de l'histoire de la Colombie : attaque, tir et jeu de tête relevés."
+    },
+    "Faustino Asprilla": {
+      "stats": {
+        "speed": 76,
+        "stamina": 70,
+        "attack": 31,
+        "defense": 14,
+        "shot": 28,
+        "pass": 22,
+        "dribble": 31,
+        "block": 10,
+        "intercept": 14,
+        "tackle": 12,
+        "heading": 16,
+        "hand_save": 10,
+        "punch_save": 10
+      },
+      "why": "Héros du 5-0 contre l'Argentine : dribble et attaque relevés."
+    },
+    "Freddy Rincón": {
+      "stats": {
+        "speed": 62,
+        "stamina": 70,
+        "attack": 25,
+        "defense": 17,
+        "shot": 24,
+        "pass": 26,
+        "dribble": 24,
+        "block": 14,
+        "intercept": 22,
+        "tackle": 21,
+        "heading": 20,
+        "hand_save": 10,
+        "punch_save": 10
+      },
+      "why": "But mythique contre la RFA en 1990 : milieu puissant et buteur."
+    },
+    "Luis Díaz": {
+      "stats": {
+        "speed": 82,
+        "stamina": 70,
+        "attack": 30,
+        "defense": 14,
+        "shot": 26,
+        "pass": 22,
+        "dribble": 30,
+        "block": 10,
+        "intercept": 14,
+        "tackle": 12,
+        "heading": 14,
+        "hand_save": 10,
+        "punch_save": 10
+      },
+      "why": "Ailier explosif de Liverpool : vitesse et dribble relevés."
+    },
+    "Iván Córdoba": {
+      "stats": {
+        "speed": 58,
+        "stamina": 66,
+        "attack": 14,
+        "defense": 32,
+        "shot": 12,
+        "pass": 18,
+        "dribble": 14,
+        "block": 27,
+        "intercept": 28,
+        "tackle": 29,
+        "heading": 29,
+        "hand_save": 10,
+        "punch_save": 10
+      },
+      "why": "Capitaine, buteur de la finale de la Copa América 2001 : défense et jeu de tête relevés."
+    },
+    "Mario Yepes": {
+      "stats": {
+        "speed": 56,
+        "stamina": 66,
+        "attack": 14,
+        "defense": 31,
+        "shot": 12,
+        "pass": 16,
+        "dribble": 12,
+        "block": 26,
+        "intercept": 27,
+        "tackle": 28,
+        "heading": 28,
+        "hand_save": 10,
+        "punch_save": 10
+      },
+      "why": "Capitaine du quart de finale 2014, 102 sélections : défenseur solide, relevé."
+    },
+    "Luis Fernando Herrera": {
+      "stats": {
+        "speed": 62,
+        "stamina": 68,
+        "attack": 14,
+        "defense": 28,
+        "shot": 12,
+        "pass": 23,
+        "dribble": 15,
+        "block": 22,
+        "intercept": 26,
+        "tackle": 27,
+        "heading": 15,
+        "hand_save": 10,
+        "punch_save": 10
+      },
+      "why": "Titulaire de la génération des années 1990 : profil légèrement relevé."
+    },
+    "Andrés Escobar": {
+      "stats": {
+        "speed": 55,
+        "stamina": 64,
+        "attack": 11,
+        "defense": 28,
+        "shot": 10,
+        "pass": 24,
+        "dribble": 12,
+        "block": 27,
+        "intercept": 28,
+        "tackle": 27,
+        "heading": 26,
+        "hand_save": 10,
+        "punch_save": 10
+      },
+      "why": "Titulaire de la génération des années 1990 : profil légèrement relevé."
+    },
+    "Willington Ortiz": {
+      "stats": {
+        "speed": 72,
+        "stamina": 68,
+        "attack": 28,
+        "defense": 12,
+        "shot": 24,
+        "pass": 26,
+        "dribble": 29,
+        "block": 10,
+        "intercept": 14,
+        "tackle": 12,
+        "heading": 14,
+        "hand_save": 10,
+        "punch_save": 10
+      },
+      "why": "Titulaire de la génération des années 1990 : profil légèrement relevé."
+    },
+    "Leonel Álvarez": {
+      "stats": {
+        "speed": 55,
+        "stamina": 70,
+        "attack": 13,
+        "defense": 27,
+        "shot": 12,
+        "pass": 27,
+        "dribble": 14,
+        "block": 23,
+        "intercept": 28,
+        "tackle": 28,
+        "heading": 15,
+        "hand_save": 10,
+        "punch_save": 10
+      },
+      "why": "Titulaire de la génération des années 1990 : profil légèrement relevé."
+    },
+    "Juan Cuadrado": {
+      "stats": {
+        "speed": 72,
+        "stamina": 70,
+        "attack": 25,
+        "defense": 15,
+        "shot": 20,
+        "pass": 24,
+        "dribble": 28,
+        "block": 12,
+        "intercept": 16,
+        "tackle": 19,
+        "heading": 11,
+        "hand_save": 10,
+        "punch_save": 10
+      },
+      "why": "Titulaire de la génération des années 1990 : profil légèrement relevé."
+    }
+  }
+}
