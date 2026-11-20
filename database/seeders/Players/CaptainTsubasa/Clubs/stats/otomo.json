@@ -1,0 +1,126 @@
+{
+    "club": "Otomo",
+    "sources": "Cible de moyenne du onze (joueurs de champ) : 217, selon l'ordre des clubs voulu. Les stars (liste de 42) restent inchangées, sauf la vitesse de Shingo Aoi et de Hiroshi Jito. Coefficient de niveau 0.69.",
+    "players": {
+        "Masaki Yoshikawa": {
+            "stats": {
+                "attack": 18,
+                "defense": 24,
+                "shot": 16,
+                "pass": 17,
+                "dribble": 15,
+                "tackle": 21,
+                "intercept": 20,
+                "block": 20,
+                "speed": 57,
+                "heading": 28
+            },
+            "why": "Calibré au niveau du club — coefficient 0.69 sur les stats de duel, vitesse selon le profil."
+        },
+        "Kozo Kawada": {
+            "stats": {
+                "attack": 18,
+                "defense": 25,
+                "shot": 16,
+                "pass": 17,
+                "dribble": 15,
+                "tackle": 22,
+                "intercept": 20,
+                "block": 21,
+                "speed": 58,
+                "heading": 28
+            },
+            "why": "Calibré au niveau du club — coefficient 0.69 sur les stats de duel, vitesse selon le profil."
+        },
+        "Toru Hiraoka": {
+            "stats": {
+                "attack": 20,
+                "defense": 21,
+                "shot": 18,
+                "pass": 20,
+                "dribble": 18,
+                "tackle": 17,
+                "intercept": 18,
+                "block": 17,
+                "speed": 59,
+                "heading": 17
+            },
+            "why": "Calibré au niveau du club — coefficient 0.69 sur les stats de duel, vitesse selon le profil."
+        },
+        "Shingo Tadami": {
+            "stats": {
+                "attack": 21,
+                "defense": 21,
+                "shot": 20,
+                "pass": 20,
+                "dribble": 19,
+                "tackle": 17,
+                "intercept": 18,
+                "block": 17,
+                "speed": 62,
+                "heading": 17
+            },
+            "why": "Calibré au niveau du club — coefficient 0.69 sur les stats de duel, vitesse selon le profil."
+        },
+        "Akio Nakao": {
+            "stats": {
+                "attack": 25,
+                "defense": 16,
+                "shot": 22,
+                "pass": 18,
+                "dribble": 20,
+                "tackle": 15,
+                "intercept": 15,
+                "block": 15,
+                "speed": 66,
+                "heading": 22
+            },
+            "why": "Calibré au niveau du club — coefficient 0.69 sur les stats de duel, vitesse selon le profil."
+        },
+        "Shunsuke Wada": {
+            "stats": {
+                "attack": 16,
+                "defense": 21,
+                "shot": 15,
+                "pass": 15,
+                "dribble": 14,
+                "tackle": 18,
+                "intercept": 17,
+                "block": 18,
+                "speed": 52,
+                "heading": 27
+            },
+            "why": "Niveau 5 (remplaçant) — coefficient 0.64 sur les stats de duel, vitesse selon le profil."
+        },
+        "Yuya Saeki": {
+            "stats": {
+                "attack": 18,
+                "defense": 18,
+                "shot": 17,
+                "pass": 18,
+                "dribble": 17,
+                "tackle": 16,
+                "intercept": 16,
+                "block": 16,
+                "speed": 54,
+                "heading": 17
+            },
+            "why": "Niveau 5 (remplaçant) — coefficient 0.64 sur les stats de duel, vitesse selon le profil."
+        },
+        "Kazuki Hara": {
+            "stats": {
+                "attack": 20,
+                "defense": 15,
+                "shot": 19,
+                "pass": 16,
+                "dribble": 18,
+                "tackle": 15,
+                "intercept": 14,
+                "block": 14,
+                "speed": 59,
+                "heading": 20
+            },
+            "why": "Niveau 5 (remplaçant) — coefficient 0.64 sur les stats de duel, vitesse selon le profil."
+        }
+    }
+}
