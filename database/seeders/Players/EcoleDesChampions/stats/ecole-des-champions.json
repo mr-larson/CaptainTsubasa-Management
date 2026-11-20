@@ -1,204 +1,207 @@
 {
-    "origin": "ecole_des_champions",
-    "sources": "Gatti (tir 32, dribble 28), Lefranc (tacle 22, interception 23, tir 28, dribble 26) et Haarden (contre 16) fixés à la main ; les autres joueurs sont placés sous eux par niveau.",
-    "players": {
-        "Benjamin Lefranc": {
-            "stats": {
-                "tackle": 22,
-                "intercept": 23,
-                "shot": 28,
-                "dribble": 26
-            },
-            "why": "Retouche demandée (valeurs fixées à la main)."
-        },
-        "Eric Townsend": {
-            "stats": {
-                "attack": 32,
-                "defense": 19,
-                "shot": 25,
-                "pass": 24,
-                "dribble": 27,
-                "tackle": 17,
-                "intercept": 17,
-                "block": 16
-            },
-            "why": "Niveau ajusté sous les trois attaquants vedettes (cible d'indicateur 225)."
-        },
-        "Lucas Rondi": {
-            "stats": {
-                "attack": 22,
-                "defense": 25,
-                "shot": 17,
-                "pass": 20,
-                "dribble": 26,
-                "tackle": 23,
-                "intercept": 22,
-                "block": 24
-            },
-            "why": "Niveau ajusté sous les trois attaquants vedettes (cible d'indicateur 226)."
-        },
-        "Cesare Gatti": {
-            "stats": {
-                "shot": 32,
-                "dribble": 28
-            },
-            "why": "Retouche demandée (valeurs fixées à la main)."
-        },
-        "Roberto Concini": {
-            "stats": {
-                "attack": 28,
-                "defense": 22,
-                "shot": 21,
-                "pass": 26,
-                "dribble": 22,
-                "tackle": 20,
-                "intercept": 21,
-                "block": 19
-            },
-            "why": "Niveau ajusté sous les trois attaquants vedettes (cible d'indicateur 222)."
-        },
-        "Macaroni Giotti": {
-            "stats": {
-                "attack": 18,
-                "defense": 28,
-                "shot": 14,
-                "pass": 17,
-                "dribble": 16,
-                "tackle": 26,
-                "intercept": 22,
-                "block": 26
-            },
-            "why": "Niveau ajusté sous les trois attaquants vedettes (cible d'indicateur 208)."
-        },
-        "Mario Santis": {
-            "stats": {
-                "attack": 30,
-                "defense": 25,
-                "shot": 21,
-                "pass": 28,
-                "dribble": 23,
-                "tackle": 21,
-                "intercept": 23,
-                "block": 20
-            },
-            "why": "Niveau ajusté sous les trois attaquants vedettes (cible d'indicateur 236)."
-        },
-        "Renato Salgari": {
-            "stats": {
-                "attack": 34,
-                "defense": 18,
-                "shot": 26,
-                "pass": 23,
-                "dribble": 26,
-                "tackle": 16,
-                "intercept": 17,
-                "block": 16
-            },
-            "why": "Niveau ajusté sous les trois attaquants vedettes (cible d'indicateur 220)."
-        },
-        "Renzo Rotta": {
-            "stats": {
-                "attack": 30,
-                "defense": 18,
-                "shot": 25,
-                "pass": 22,
-                "dribble": 23,
-                "tackle": 16,
-                "intercept": 17,
-                "block": 16
-            },
-            "why": "Niveau ajusté sous les trois attaquants vedettes (cible d'indicateur 211)."
-        },
-        "Bruno Moricone": {
-            "stats": {
-                "attack": 29,
-                "defense": 24,
-                "shot": 23,
-                "pass": 25,
-                "dribble": 24,
-                "tackle": 21,
-                "intercept": 22,
-                "block": 19
-            },
-            "why": "Niveau ajusté sous les trois attaquants vedettes (cible d'indicateur 231)."
-        },
-        "Nino Biancchi": {
-            "stats": {
-                "attack": 29,
-                "defense": 18,
-                "shot": 25,
-                "pass": 24,
-                "dribble": 22,
-                "tackle": 16,
-                "intercept": 17,
-                "block": 16
-            },
-            "why": "Niveau ajusté sous les trois attaquants vedettes (cible d'indicateur 211)."
-        },
-        "Riki Biancchi": {
-            "stats": {
-                "attack": 29,
-                "defense": 18,
-                "shot": 25,
-                "pass": 24,
-                "dribble": 22,
-                "tackle": 16,
-                "intercept": 17,
-                "block": 16
-            },
-            "why": "Niveau ajusté sous les trois attaquants vedettes (cible d'indicateur 211)."
-        },
-        "Papan Correia Da Silva": {
-            "stats": {
-                "attack": 34,
-                "defense": 20,
-                "shot": 25,
-                "pass": 27,
-                "dribble": 31,
-                "tackle": 18,
-                "intercept": 19,
-                "block": 17
-            },
-            "why": "Niveau ajusté sous les trois attaquants vedettes (cible d'indicateur 236)."
-        },
-        "Ash Rodrigues": {
-            "stats": {
-                "attack": 20,
-                "defense": 28,
-                "shot": 16,
-                "pass": 19,
-                "dribble": 18,
-                "tackle": 25,
-                "intercept": 24,
-                "block": 25
-            },
-            "why": "Niveau ajusté sous les trois attaquants vedettes (cible d'indicateur 221)."
-        },
-        "Yann Haarden": {
-            "stats": {
-                "block": 16
-            },
-            "why": "Retouche demandée (valeurs fixées à la main)."
-        },
-        "Marcel Beauregard": {
-            "stats": {
-                "attack": 30,
-                "defense": 23,
-                "shot": 22,
-                "pass": 29,
-                "dribble": 24,
-                "tackle": 21,
-                "intercept": 22,
-                "block": 19
-            },
-            "why": "Niveau ajusté sous les trois attaquants vedettes (cible d'indicateur 236)."
-        },
-        "Anna Liegi": {
-            "stats": {
-                "speed": 44,
-                "stamina": 50
-            },
-            "why": "Retouche demandée (valeurs fixées à la main)."
-        }
+  "origin": "ecole_des_champions",
+  "sources": "Gatti (tir 32, dribble 28), Lefranc (tacle 22, interception 23, tir 28, dribble 26) et Haarden (contre 16) fixés à la main ; les autres joueurs sont placés sous eux par niveau.",
+  "players": {
+    "Benjamin Lefranc": {
+      "stats": {
+        "tackle": 22,
+        "intercept": 23,
+        "shot": 28,
+        "dribble": 26,
+        "block": 20
+      },
+      "why": "Valeurs fixées à la main : tacle 22, interception 23, tir 28, dribble 26, contre 20."
+    },
+    "Eric Townsend": {
+      "stats": {
+        "attack": 32,
+        "defense": 22,
+        "shot": 25,
+        "pass": 26,
+        "dribble": 27,
+        "tackle": 20,
+        "intercept": 22,
+        "block": 16,
+        "heading": 24
+      },
+      "why": "Valeurs fixées à la main : interception 22, tête 24, défense 22, tacle 20, passe 26."
+    },
+    "Lucas Rondi": {
+      "stats": {
+        "attack": 22,
+        "defense": 25,
+        "shot": 17,
+        "pass": 20,
+        "dribble": 31,
+        "tackle": 23,
+        "intercept": 22,
+        "block": 24
+      },
+      "why": "Valeur fixée à la main : dribble 31."
+    },
+    "Cesare Gatti": {
+      "stats": {
+        "shot": 32,
+        "dribble": 28
+      },
+      "why": "Retouche demandée (valeurs fixées à la main)."
+    },
+    "Roberto Concini": {
+      "stats": {
+        "attack": 28,
+        "defense": 22,
+        "shot": 21,
+        "pass": 26,
+        "dribble": 22,
+        "tackle": 20,
+        "intercept": 21,
+        "block": 19
+      },
+      "why": "Niveau ajusté sous les trois attaquants vedettes (cible d'indicateur 222)."
+    },
+    "Macaroni Giotti": {
+      "stats": {
+        "attack": 18,
+        "defense": 28,
+        "shot": 14,
+        "pass": 17,
+        "dribble": 16,
+        "tackle": 26,
+        "intercept": 22,
+        "block": 26
+      },
+      "why": "Niveau ajusté sous les trois attaquants vedettes (cible d'indicateur 208)."
+    },
+    "Mario Santis": {
+      "stats": {
+        "attack": 30,
+        "defense": 25,
+        "shot": 21,
+        "pass": 28,
+        "dribble": 23,
+        "tackle": 21,
+        "intercept": 23,
+        "block": 20
+      },
+      "why": "Niveau ajusté sous les trois attaquants vedettes (cible d'indicateur 236)."
+    },
+    "Renato Salgari": {
+      "stats": {
+        "attack": 34,
+        "defense": 18,
+        "shot": 31,
+        "pass": 23,
+        "dribble": 26,
+        "tackle": 16,
+        "intercept": 17,
+        "block": 16
+      },
+      "why": "Valeur fixée à la main : tir 31."
+    },
+    "Renzo Rotta": {
+      "stats": {
+        "attack": 30,
+        "defense": 18,
+        "shot": 25,
+        "pass": 22,
+        "dribble": 23,
+        "tackle": 16,
+        "intercept": 17,
+        "block": 16
+      },
+      "why": "Niveau ajusté sous les trois attaquants vedettes (cible d'indicateur 211)."
+    },
+    "Bruno Moricone": {
+      "stats": {
+        "attack": 29,
+        "defense": 24,
+        "shot": 23,
+        "pass": 25,
+        "dribble": 24,
+        "tackle": 21,
+        "intercept": 22,
+        "block": 19
+      },
+      "why": "Niveau ajusté sous les trois attaquants vedettes (cible d'indicateur 231)."
+    },
+    "Nino Biancchi": {
+      "stats": {
+        "attack": 29,
+        "defense": 18,
+        "shot": 25,
+        "pass": 24,
+        "dribble": 22,
+        "tackle": 16,
+        "intercept": 17,
+        "block": 16
+      },
+      "why": "Niveau ajusté sous les trois attaquants vedettes (cible d'indicateur 211)."
+    },
+    "Riki Biancchi": {
+      "stats": {
+        "attack": 29,
+        "defense": 18,
+        "shot": 25,
+        "pass": 24,
+        "dribble": 22,
+        "tackle": 16,
+        "intercept": 17,
+        "block": 16
+      },
+      "why": "Niveau ajusté sous les trois attaquants vedettes (cible d'indicateur 211)."
+    },
+    "Papan Correia Da Silva": {
+      "stats": {
+        "attack": 34,
+        "defense": 20,
+        "shot": 25,
+        "pass": 27,
+        "dribble": 31,
+        "tackle": 18,
+        "intercept": 19,
+        "block": 17
+      },
+      "why": "Niveau ajusté sous les trois attaquants vedettes (cible d'indicateur 236)."
+    },
+    "Ash Rodrigues": {
+      "stats": {
+        "attack": 20,
+        "defense": 28,
+        "shot": 16,
+        "pass": 24,
+        "dribble": 24,
+        "tackle": 15,
+        "intercept": 24,
+        "block": 25
+      },
+      "why": "Valeurs fixées à la main : tacle 15, dribble 24, passe 24."
+    },
+    "Yann Haarden": {
+      "stats": {
+        "block": 16,
+        "dribble": 24
+      },
+      "why": "Valeurs fixées à la main : contre 16, dribble 24."
+    },
+    "Marcel Beauregard": {
+      "stats": {
+        "attack": 30,
+        "defense": 23,
+        "shot": 22,
+        "pass": 29,
+        "dribble": 24,
+        "tackle": 21,
+        "intercept": 22,
+        "block": 19
+      },
+      "why": "Niveau ajusté sous les trois attaquants vedettes (cible d'indicateur 236)."
+    },
+    "Anna Liegi": {
+      "stats": {
+        "speed": 44,
+        "stamina": 50
+      },
+      "why": "Retouche demandée (valeurs fixées à la main)."
     }
+  }
 }
