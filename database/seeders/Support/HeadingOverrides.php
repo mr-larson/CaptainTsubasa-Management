@@ -47,7 +47,7 @@ final class HeadingOverrides
             // --- Faibles : techniciens / petits gabarits / meneurs au sol (11-14) ---
             'taro-misaki'          => 14, // « magicien du terrain », jeu au sol
             'takeshi-sawada'       => 12, // jeune surdoué technique, petit gabarit
-            'tsubasa-ozora'        => 11, // génie technique au sol, faible de la tête
+            'tsubasa-ozora'        => 22, // génie technique, tête correcte sans être sa spécialité
         ];
 
         return $overrides[$slug] ?? null;
