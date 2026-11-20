@@ -289,6 +289,32 @@ class NationalTeamAssembler
         ]);
     }
 
+    /**
+     * Note moyenne du onze de départ d'une sélection : moyenne des OVR (moyenne des douze stats renseignées, comme
+     * l'affiche l'interface, tête exclue) des onze titulaires que l'IA aligne. Null si la nation ne peut pas aligner un onze.
+     */
+    public function startingElevenRating(string $nation): ?float
+    {
+        $players = Player::nationalEligible()->where('nationality', $nation)->orderBy('lastname')->orderBy('firstname')->orderBy('id')->get();
+        $catalog = Nation::where('name', $nation)->first();
+        $picked = $this->picker->pick($players, $catalog?->default_formation, $catalog?->tactical_style ?? 'balanced', $catalog?->management_philosophy ?? 'collective');
+        if ($picked === null) {
+            return null;
+        }
+        [$squad, $lineup] = $picked;
+        $byId = $squad->keyBy('id');
+        $starters = collect($lineup['slots'])->map(fn ($id) => $byId->get($id))->filter();
+        if ($starters->isEmpty()) {
+            return null;
+        }
+
+        return round($starters->avg(function (Player $player): float {
+            $values = collect($player->stats ?? [])->only(['speed', 'stamina', 'attack', 'defense', 'shot', 'pass', 'dribble', 'block', 'intercept', 'tackle', 'hand_save', 'punch_save'])->filter(fn ($v) => is_numeric($v) && $v > 0);
+
+            return $values->isEmpty() ? 0.0 : (float) $values->avg();
+        }), 1);
+    }
+
     /** Note synthétique d'un joueur selon son poste (définie dans NationalSquadPicker). */
     private function overall(Player $player): float
     {

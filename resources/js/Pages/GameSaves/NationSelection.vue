@@ -211,6 +211,10 @@ function launch() {
                             {{ nation.total }} joueur{{ nation.total > 1 ? 's' : '' }}
                             <template v-if="!nation.playable"> · incomplet</template>
                         </span>
+                        <span v-if="nation.rating" class="mt-0.5 px-2 py-0.5 rounded-full bg-slate-100 text-[11px] font-bold text-slate-600"
+                              title="Note moyenne du onze de départ">
+                            Onze {{ nation.rating.toFixed(1).replace('.', ',') }}
+                        </span>
                         <div v-if="seatOf(nation.name)"
                              class="absolute top-2 right-2 px-1.5 h-5 rounded-full bg-teal-500 flex items-center justify-center">
                             <span class="text-white text-2xs font-bold">{{ humans > 1 ? 'Siège ' + seatOf(nation.name) : '✓' }}</span>

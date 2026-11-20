@@ -11,6 +11,7 @@ use App\Models\Player;
 use App\Models\User;
 use App\Services\Season\SeasonBootstrapService;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -66,7 +67,7 @@ class NewWorldCupBuilder
      *
      * Tri : nations jouables d'abord, puis par effectif décroissant.
      *
-     * @return array<int, array<string, mixed>> une ligne par nation : name, flag, total, goalkeepers, playable
+     * @return array<int, array<string, mixed>> une ligne par nation : name, flag, total, goalkeepers, playable, rating (note moyenne du onze)
      */
     public function playableNations(): array
     {
@@ -80,6 +81,8 @@ class NewWorldCupBuilder
 
         $nations = [];
         $flagUrls = Nation::flagUrls();
+        // La note du onze est mise en cache : elle ne change que si un joueur est modifié, ajouté ou retiré.
+        $poolVersion = Player::nationalEligible()->count().'-'.Player::nationalEligible()->max('updated_at');
         foreach (Nation::names(activeOnly: true) as $name) {
             $row = $rows->get($name);
             $total = (int) ($row->total ?? 0);
@@ -93,6 +96,10 @@ class NewWorldCupBuilder
                 'goalkeepers' => $gk,
                 'playable' => $total >= NationalTeamAssembler::MIN_PLAYERS && $gk >= self::MIN_GOALKEEPERS,
             ];
+            $last = array_key_last($nations);
+            $nations[$last]['rating'] = $nations[$last]['playable']
+                ? Cache::remember('world_cup.eleven_rating.'.md5($name.'|'.$poolVersion), 3600, fn () => $this->assembler->startingElevenRating($name))
+                : null;
         }
 
         usort($nations, fn ($a, $b) => [$b['playable'], $b['total']] <=> [$a['playable'], $a['total']]);
