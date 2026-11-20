@@ -1,0 +1,98 @@
+{
+  "nationality": "Corée du Sud",
+  "sources": "Palmarès : Wikipédia / FIFA. Aucun joueur ajouté : le pays compte déjà 11 légendes et 2 personnages Captain Tsubasa (Yong-un Lee, In-cheon Cha), non retouchés ici. Contraintes de test conservées : tir de Son > tir de Majed Abdullah, endurance de Park > endurance de Son, défense de Hong > défense de Park.",
+  "players": {
+    "Heung-min Son": {
+      "stats": {
+        "speed": 81,
+        "stamina": 80,
+        "attack": 36,
+        "shot": 29,
+        "dribble": 28,
+        "pass": 25
+      },
+      "why": "Soulier d'or de Premier League 2022 et Prix Puskás avec Tottenham : finisseur des deux pieds, vitesse et frappes enroulées."
+    },
+    "Bum-kun Cha": {
+      "stats": {
+        "attack": 35,
+        "shot": 29,
+        "speed": 79,
+        "dribble": 27,
+        "heading": 28
+      },
+      "why": "Cha Boom, Bayer Leverkusen et Francfort (Coupe UEFA 1980 et 1988) : légende coréenne en Europe, frappe puissante et vitesse."
+    },
+    "Sun-hong Hwang": {
+      "stats": {
+        "attack": 32,
+        "shot": 27,
+        "heading": 27,
+        "speed": 70
+      },
+      "why": "Meilleur buteur de la sélection de sa génération : attaquant de surface."
+    },
+    "Ji-sung Park": {
+      "stats": {
+        "stamina": 84,
+        "speed": 75,
+        "attack": 30,
+        "defense": 27,
+        "pass": 27,
+        "dribble": 26,
+        "shot": 25,
+        "tackle": 25,
+        "intercept": 26
+      },
+      "why": "Trois poumons, Ligue des champions 2008 avec Manchester United : milieu infatigable, travail défensif dans les grands matchs."
+    },
+    "Myung-bo Hong": {
+      "stats": {
+        "defense": 34,
+        "intercept": 30,
+        "pass": 27,
+        "block": 28,
+        "heading": 27,
+        "speed": 66
+      },
+      "why": "Capitaine du Mondial 2002 (4e) : libéro de lecture et d'autorité, penalty décisif contre l'Espagne."
+    },
+    "Min-jae Kim": {
+      "stats": {
+        "defense": 33,
+        "speed": 71,
+        "stamina": 80,
+        "tackle": 29,
+        "heading": 29,
+        "block": 28
+      },
+      "why": "Champion d'Italie 2023 avec Naples, Bayern : défenseur central rapide et dominant, le Monstre."
+    },
+    "Young-pyo Lee": {
+      "stats": {
+        "speed": 75,
+        "stamina": 83,
+        "cross": 26,
+        "defense": 29
+      },
+      "why": "Tottenham, PSV, 4e du Mondial 2002 : latéral gauche infatigable et rapide."
+    },
+    "Woon-jae Lee": {
+      "stats": {
+        "defense": 32,
+        "hand_save": 28,
+        "punch_save": 27
+      },
+      "why": "Gardien héros du Mondial 2002 (penalty arrêté contre l'Espagne), plus de 130 sélections."
+    },
+    "Sung-yueng Ki": {
+      "stats": {
+        "pass": 28,
+        "stamina": 80,
+        "defense": 27,
+        "intercept": 26
+      },
+      "why": "Swansea, Newcastle : milieu relanceur calme."
+    }
+  }
+}
