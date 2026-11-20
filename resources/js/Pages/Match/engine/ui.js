@@ -776,7 +776,7 @@ export function updateCardsPower(ball) {
             ? Math.round(_roster.headingDuelStat(attackDefTeam, slot))
             : Number(_roster.getPlayerInfo(attackDefTeam, slot)?.stats?.[vs[0]] ?? 0);
         el.innerHTML = `vs ${vs[1]} <b>${value}</b>`;
-        el.title     = a === "cross" ? "Duel aérien : 80 % Tête + 20 % Vitesse" : `Face à : ${vs[1]} de l'adversaire (${value})`;
+        el.title     = a === "cross" ? `Duel aérien : Tête de l'adversaire (${value}). Sa vitesse ajoute un petit bonus (10 % au maximum).` : `Face à : ${vs[1]} de l'adversaire (${value})`;
     });
 
     const mode = [..._ui.actionBarEl.classList].find(c => c.startsWith("mode-defense-"));

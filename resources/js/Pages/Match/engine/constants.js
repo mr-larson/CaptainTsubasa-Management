@@ -38,7 +38,7 @@ export const DUEL_RULES = {
 export const DUEL_CONTEXT = {
     ATTACK_ZONE_MAX:   0.15, // `attack`  : boost offensif, croît vers le but adverse
     DEFENSE_ZONE_MAX:  0.15, // `defense` : boost défensif, croît en défendant bas
-    SPEED_DUEL_WEIGHT: 0.10, // `speed`   : dribble (att.) / tackle + intercept (déf.)
+    SPEED_DUEL_WEIGHT: 0.10, // `speed`   : toute action de champ, attaque comme défense
     BLOCK_EDGE_MAX:    0.12, // `block`   : dernier rempart anti-tir, scalé par la profondeur
 };
 

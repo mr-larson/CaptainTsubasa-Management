@@ -79,16 +79,14 @@ export function runFieldDuel({ attackTeam, defenseTeam, attackType, defenseActio
     const zoneIdx = b.zoneIndex;
     const attackFactors = [["Zone (Attaque)", shared.roster.attackZoneMultiplier(attackTeam, b.number, zoneIdx)]];
     const defenseFactors = [["Zone (Défense)", shared.roster.defenseZoneMultiplier(defenseTeam, defenderSlot, zoneIdx)]];
-    if (attackType === "dribble") {
-        attackFactors.push(["Vitesse", shared.roster.speedDuelMultiplier(attackTeam, b.number)]);
-    }
+    // Vitesse : prorata (0 à +10 %) sur toute action de champ, des deux camps (pas seulement le dribble).
+    attackFactors.push(["Vitesse", shared.roster.speedDuelMultiplier(attackTeam, b.number)]);
     // Passe après dribble (décalage vers un attaquant ou passe en retrait) : léger avantage.
     const layoff = currentDribbleLayoff(attackTeam, attackType);
     if (layoff) attackFactors.push([layoff.label, layoff.factor]);
     const counter = defenseBase ?? defenseAction;
-    if (counter === "tackle" || counter === "intercept") {
-        defenseFactors.push(["Vitesse", shared.roster.speedDuelMultiplier(defenseTeam, defenderSlot)]);
-    } else if (counter === "block") {
+    defenseFactors.push(["Vitesse", shared.roster.speedDuelMultiplier(defenseTeam, defenderSlot)]);
+    if (counter === "block") {
         defenseFactors.push(["Profondeur (Contre)", shared.roster.blockEdgeMultiplier(defenseTeam, defenderSlot, zoneIdx)]);
     }
 

@@ -157,8 +157,13 @@ export class RosterService {
         return 0.7 * this.getStat(team, slot, "pass") + 0.3 * this.getStat(team, slot, "attack");
     }
 
+    /**
+     * Stat du duel aérien : la Tête seule. La vitesse (échelle ~100, bien plus haute que les autres stats)
+     * n'est plus additionnée ici : elle agit comme un prorata multiplicatif borné, appliqué à toutes les
+     * actions de champ (voir fieldDuel.js et speedDuelMultiplier).
+     */
     headingDuelStat(team, slot) {
-        return 0.8 * this.getStat(team, slot, "heading") + 0.2 * this.getStat(team, slot, "speed");
+        return this.getStat(team, slot, "heading");
     }
 
     getRoleFromPositionString(pos) {
@@ -319,7 +324,7 @@ export class RosterService {
         return 1.0 + (defenseStat / 100) * DUEL_CONTEXT.DEFENSE_ZONE_MAX * this.zoneFactor(zoneIndex);
     }
 
-    /** `speed` : avantage de poursuite — dribble (attaquant), tackle/intercept (défenseur). */
+    /** `speed` : prorata de vitesse (0 à +10 %) sur toute action de champ, attaque comme défense. */
     speedDuelMultiplier(team, slotNumber) {
         const speedStat = this.getStat(team, slotNumber, "speed");
         return 1.0 + (speedStat / 100) * DUEL_CONTEXT.SPEED_DUEL_WEIGHT;
