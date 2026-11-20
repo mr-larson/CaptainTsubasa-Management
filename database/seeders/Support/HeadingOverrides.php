@@ -20,7 +20,7 @@ final class HeadingOverrides
             'masao-tachibana'      => 30, // frères Tachibana : tête acrobatique légendaire
             'kazuo-tachibana'      => 30,
             'hiroshi-jito'         => 30, // défenseur, spécialiste des duels aériens
-            'makoto-soda'          => 29, // Musashi, mur défensif dominant dans les airs
+            'makoto-soda'          => 26, // défenseur puissant, bon dans les airs
 
             // --- Très forts de la tête (25-28) ---
             'kojiro-hyuga'         => 28, // avant-centre puissant et impitoyable
