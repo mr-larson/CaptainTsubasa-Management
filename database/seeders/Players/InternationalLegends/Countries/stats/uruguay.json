@@ -84,6 +84,24 @@
         "stamina": 76
       },
       "why": "Milieu de Monaco et Bologne : récupérateur propre."
+    },
+    "Enzo Francescoli": {
+      "stats": {
+        "speed": 69,
+        "stamina": 68,
+        "attack": 38,
+        "defense": 20,
+        "shot": 31,
+        "pass": 32,
+        "dribble": 32,
+        "block": 18,
+        "intercept": 22,
+        "tackle": 20,
+        "heading": 18,
+        "hand_save": 11,
+        "punch_save": 11
+      },
+      "why": "Relevé à un OVR de 30 : points forts du joueur au maximum, le reste complété avec mesure."
     }
   }
 }

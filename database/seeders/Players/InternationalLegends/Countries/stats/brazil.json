@@ -59,13 +59,20 @@
     "Rivaldo": {
       "stats": {
         "speed": 64,
-        "stamina": 68,
-        "attack": 35,
-        "shot": 29,
-        "dribble": 28,
-        "pass": 27
+        "stamina": 71,
+        "attack": 38,
+        "defense": 22,
+        "shot": 31,
+        "pass": 31,
+        "dribble": 32,
+        "block": 18,
+        "intercept": 22,
+        "tackle": 20,
+        "heading": 19,
+        "hand_save": 11,
+        "punch_save": 11
       },
-      "why": "Ballon d'Or 1999, champion du monde 2002 : frappe du pied gauche et dribble, peu de repli."
+      "why": "Relevé à un OVR de 30 : points forts du joueur au maximum, le reste complété avec mesure."
     },
     "Ronaldinho": {
       "stats": {
@@ -191,6 +198,42 @@
         "punch_save": 11
       },
       "why": "Relevé à un OVR de 32 (même niveau que les autres grandes légendes) : points forts du joueur au maximum, le reste complété avec mesure."
+    },
+    "Sócrates": {
+      "stats": {
+        "speed": 58,
+        "stamina": 70,
+        "attack": 36,
+        "defense": 22,
+        "shot": 30,
+        "pass": 32,
+        "dribble": 30,
+        "block": 18,
+        "intercept": 22,
+        "tackle": 20,
+        "heading": 30,
+        "hand_save": 11,
+        "punch_save": 11
+      },
+      "why": "Relevé à un OVR de 30 : points forts du joueur au maximum, le reste complété avec mesure."
+    },
+    "Vinícius Júnior": {
+      "stats": {
+        "speed": 82,
+        "stamina": 77,
+        "attack": 37,
+        "defense": 18,
+        "shot": 29,
+        "pass": 25,
+        "dribble": 32,
+        "block": 14,
+        "intercept": 17,
+        "tackle": 16,
+        "heading": 23,
+        "hand_save": 10,
+        "punch_save": 10
+      },
+      "why": "Relevé à un OVR de 30 : points forts du joueur au maximum, le reste complété avec mesure."
     }
   }
 }

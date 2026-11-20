@@ -49,12 +49,21 @@
     },
     "Gabriel Batistuta": {
       "stats": {
-        "speed": 65,
-        "attack": 35,
-        "shot": 30,
-        "heading": 24
+        "speed": 70,
+        "stamina": 74,
+        "attack": 38,
+        "defense": 20,
+        "shot": 31,
+        "pass": 26,
+        "dribble": 23,
+        "block": 18,
+        "intercept": 19,
+        "tackle": 19,
+        "heading": 30,
+        "hand_save": 11,
+        "punch_save": 11
       },
-      "why": "Fiorentina et Roma, 10 buts en Coupe du monde : frappe de loin et puissance."
+      "why": "Relevé à un OVR de 30 : points forts du joueur au maximum, le reste complété avec mesure."
     },
     "Claudio Caniggia": {
       "stats": {
@@ -182,6 +191,42 @@
         "pass": 27
       },
       "why": "Milieu de Lazio et Milan, finaliste du Mondial 2014 : relance posée."
+    },
+    "Juan Román Riquelme": {
+      "stats": {
+        "speed": 56,
+        "stamina": 72,
+        "attack": 37,
+        "defense": 24,
+        "shot": 31,
+        "pass": 32,
+        "dribble": 32,
+        "block": 19,
+        "intercept": 23,
+        "tackle": 21,
+        "heading": 21,
+        "hand_save": 11,
+        "punch_save": 11
+      },
+      "why": "Relevé à un OVR de 30 : points forts du joueur au maximum, le reste complété avec mesure."
+    },
+    "Sergio Agüero": {
+      "stats": {
+        "speed": 80,
+        "stamina": 75,
+        "attack": 38,
+        "defense": 19,
+        "shot": 31,
+        "pass": 22,
+        "dribble": 32,
+        "block": 16,
+        "intercept": 18,
+        "tackle": 18,
+        "heading": 19,
+        "hand_save": 11,
+        "punch_save": 11
+      },
+      "why": "Relevé à un OVR de 30 : points forts du joueur au maximum, le reste complété avec mesure."
     }
   }
 }

@@ -74,13 +74,21 @@
     },
     "Lamine Yamal": {
       "stats": {
-        "speed": 78,
-        "dribble": 30,
-        "attack": 33,
-        "shot": 26,
-        "pass": 27
+        "speed": 81,
+        "stamina": 73,
+        "attack": 36,
+        "defense": 18,
+        "shot": 29,
+        "pass": 30,
+        "dribble": 32,
+        "block": 14,
+        "intercept": 18,
+        "tackle": 16,
+        "heading": 23,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Champion d'Europe 2024 à 16 ans, Barcelone : dribbleur précoce, accélérations du côté droit."
+      "why": "Relevé à un OVR de 30 : points forts du joueur au maximum, le reste complété avec mesure."
     },
     "Iker Casillas": {
       "stats": {

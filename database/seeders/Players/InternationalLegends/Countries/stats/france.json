@@ -102,12 +102,20 @@
     "Kylian Mbappé": {
       "stats": {
         "speed": 82,
-        "attack": 37,
-        "shot": 29,
-        "dribble": 29,
-        "pass": 22
+        "stamina": 73,
+        "attack": 38,
+        "defense": 18,
+        "shot": 31,
+        "pass": 25,
+        "dribble": 32,
+        "block": 14,
+        "intercept": 18,
+        "tackle": 16,
+        "heading": 23,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Champion du monde 2018 : vitesse de pointe et accélérations, peu de jeu de passe."
+      "why": "Relevé à un OVR de 30 : points forts du joueur au maximum, le reste complété avec mesure."
     },
     "Thierry Henry": {
       "stats": {
@@ -196,6 +204,24 @@
         "punch_save": 11
       },
       "why": "Relevé à un OVR de 31 : points forts du joueur au maximum, le reste complété avec mesure."
+    },
+    "Karim Benzema": {
+      "stats": {
+        "speed": 70,
+        "stamina": 75,
+        "attack": 38,
+        "defense": 19,
+        "shot": 31,
+        "pass": 30,
+        "dribble": 29,
+        "block": 16,
+        "intercept": 19,
+        "tackle": 17,
+        "heading": 26,
+        "hand_save": 10,
+        "punch_save": 10
+      },
+      "why": "Relevé à un OVR de 30 : points forts du joueur au maximum, le reste complété avec mesure."
     }
   }
 }

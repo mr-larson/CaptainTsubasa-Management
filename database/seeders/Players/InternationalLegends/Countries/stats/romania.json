@@ -81,14 +81,21 @@
     },
     "Gheorghe Hagi": {
       "stats": {
-        "pass": 31,
-        "dribble": 28,
-        "shot": 28,
-        "attack": 33,
         "speed": 62,
-        "stamina": 68
+        "stamina": 71,
+        "attack": 36,
+        "defense": 24,
+        "shot": 31,
+        "pass": 32,
+        "dribble": 31,
+        "block": 18,
+        "intercept": 24,
+        "tackle": 22,
+        "heading": 18,
+        "hand_save": 11,
+        "punch_save": 10
       },
-      "why": "Le Maradona des Carpates, Real Madrid, Barcelone, Galatasaray : pied gauche, vision et frappe."
+      "why": "Relevé à un OVR de 30 : points forts du joueur au maximum, le reste complété avec mesure."
     },
     "Ladislau Bölöni": {
       "stats": {

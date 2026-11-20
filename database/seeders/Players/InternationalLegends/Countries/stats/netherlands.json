@@ -40,14 +40,21 @@
     },
     "Dennis Bergkamp": {
       "stats": {
-        "attack": 34,
-        "pass": 29,
-        "dribble": 28,
-        "shot": 27,
-        "speed": 62,
-        "stamina": 66
+        "speed": 66,
+        "stamina": 66,
+        "attack": 38,
+        "defense": 21,
+        "shot": 31,
+        "pass": 32,
+        "dribble": 32,
+        "block": 18,
+        "intercept": 21,
+        "tackle": 19,
+        "heading": 24,
+        "hand_save": 11,
+        "punch_save": 11
       },
-      "why": "Arsenal Invincibles, 1998 : contrôle de balle et créativité."
+      "why": "Relevé à un OVR de 30 : points forts du joueur au maximum, le reste complété avec mesure."
     },
     "Patrick Kluivert": {
       "stats": {
@@ -153,6 +160,42 @@
         "defense": 24
       },
       "why": "Finaliste du Mondial 2010, Liverpool : travailleur de l'ombre."
+    },
+    "Wesley Sneijder": {
+      "stats": {
+        "speed": 65,
+        "stamina": 75,
+        "attack": 35,
+        "defense": 22,
+        "shot": 31,
+        "pass": 32,
+        "dribble": 29,
+        "block": 18,
+        "intercept": 22,
+        "tackle": 20,
+        "heading": 19,
+        "hand_save": 11,
+        "punch_save": 11
+      },
+      "why": "Relevé à un OVR de 30 : points forts du joueur au maximum, le reste complété avec mesure."
+    },
+    "Robin van Persie": {
+      "stats": {
+        "speed": 68,
+        "stamina": 68,
+        "attack": 38,
+        "defense": 20,
+        "shot": 31,
+        "pass": 30,
+        "dribble": 32,
+        "block": 16,
+        "intercept": 18,
+        "tackle": 18,
+        "heading": 29,
+        "hand_save": 11,
+        "punch_save": 11
+      },
+      "why": "Relevé à un OVR de 30 : points forts du joueur au maximum, le reste complété avec mesure."
     }
   }
 }

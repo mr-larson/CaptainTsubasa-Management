@@ -113,14 +113,21 @@
     },
     "Roberto Baggio": {
       "stats": {
-        "attack": 34,
-        "shot": 28,
-        "pass": 29,
-        "dribble": 30,
-        "speed": 66,
-        "stamina": 66
+        "speed": 69,
+        "stamina": 66,
+        "attack": 37,
+        "defense": 21,
+        "shot": 31,
+        "pass": 32,
+        "dribble": 32,
+        "block": 18,
+        "intercept": 21,
+        "tackle": 19,
+        "heading": 23,
+        "hand_save": 11,
+        "punch_save": 10
       },
-      "why": "Ballon d'Or 1993, finaliste du Mondial 1994 : dribble, finesse et coups francs."
+      "why": "Relevé à un OVR de 30 : points forts du joueur au maximum, le reste complété avec mesure."
     },
     "Giuseppe Meazza": {
       "stats": {
@@ -133,13 +140,21 @@
     },
     "Alessandro Del Piero": {
       "stats": {
-        "attack": 34,
-        "dribble": 30,
-        "shot": 29,
-        "pass": 27,
-        "speed": 66
+        "speed": 69,
+        "stamina": 70,
+        "attack": 37,
+        "defense": 21,
+        "shot": 31,
+        "pass": 30,
+        "dribble": 32,
+        "block": 17,
+        "intercept": 21,
+        "tackle": 19,
+        "heading": 23,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Champion du monde 2006, légende de la Juventus : dribble et frappe enroulée."
+      "why": "Relevé à un OVR de 30 : points forts du joueur au maximum, le reste complété avec mesure."
     },
     "Christian Vieri": {
       "stats": {
@@ -167,6 +182,42 @@
         "dribble": 22
       },
       "why": "Champion du monde 2006, deux Ligues des champions avec Milan : rapide à l'appel, pur finisseur."
+    },
+    "Andrea Pirlo": {
+      "stats": {
+        "speed": 54,
+        "stamina": 72,
+        "attack": 36,
+        "defense": 24,
+        "shot": 31,
+        "pass": 32,
+        "dribble": 31,
+        "block": 20,
+        "intercept": 24,
+        "tackle": 22,
+        "heading": 20,
+        "hand_save": 12,
+        "punch_save": 12
+      },
+      "why": "Relevé à un OVR de 30 : points forts du joueur au maximum, le reste complété avec mesure."
+    },
+    "Francesco Totti": {
+      "stats": {
+        "speed": 62,
+        "stamina": 69,
+        "attack": 38,
+        "defense": 21,
+        "shot": 31,
+        "pass": 32,
+        "dribble": 32,
+        "block": 18,
+        "intercept": 21,
+        "tackle": 19,
+        "heading": 25,
+        "hand_save": 11,
+        "punch_save": 11
+      },
+      "why": "Relevé à un OVR de 30 : points forts du joueur au maximum, le reste complété avec mesure."
     }
   }
 }

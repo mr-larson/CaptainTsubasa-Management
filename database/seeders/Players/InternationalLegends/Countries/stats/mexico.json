@@ -65,6 +65,24 @@
         "stamina": 76
       },
       "why": "Milieu défensif, 150 sélections : récupérateur sobre."
+    },
+    "Hugo Sánchez": {
+      "stats": {
+        "speed": 76,
+        "stamina": 68,
+        "attack": 38,
+        "defense": 20,
+        "shot": 31,
+        "pass": 20,
+        "dribble": 31,
+        "block": 16,
+        "intercept": 19,
+        "tackle": 19,
+        "heading": 30,
+        "hand_save": 11,
+        "punch_save": 11
+      },
+      "why": "Relevé à un OVR de 30 : points forts du joueur au maximum, le reste complété avec mesure."
     }
   }
 }
