@@ -1,0 +1,19 @@
+{
+  "origin": "hungry_heart",
+  "sources": "Valeurs fixées à la main.",
+  "players": {
+    "Kyosuke Kano": {
+      "stats": {
+        "shot": 30,
+        "attack": 35
+      },
+      "why": "Valeurs fixées à la main : tir 30, attaque 35."
+    },
+    "Koji Sakai": {
+      "stats": {
+        "punch_save": 28
+      },
+      "why": "Valeur fixée à la main : arrêt au poing 28."
+    }
+  }
+}

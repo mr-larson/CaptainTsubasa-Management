@@ -48,7 +48,7 @@
     },
     "Roberto Concini": {
       "stats": {
-        "attack": 28,
+        "attack": 24,
         "defense": 22,
         "shot": 21,
         "pass": 26,
@@ -57,7 +57,7 @@
         "intercept": 21,
         "block": 19
       },
-      "why": "Niveau ajusté sous les trois attaquants vedettes (cible d'indicateur 222)."
+      "why": "Valeur fixée à la main : attaque 24 (le reste du niveau est ajusté sous les attaquants vedettes)."
     },
     "Macaroni Giotti": {
       "stats": {

@@ -11,7 +11,7 @@ class Roster
     /** @return array<int, array<int, mixed>> */
     public static function players(): array
     {
-        return [
+        $players = [
             //-------------------------------
             // Hungry Heart – Not contract
             //-------------------------------
@@ -93,6 +93,13 @@ class Roster
             ],
 
         ];
+
+        // Retouches individuelles (HungryHeart/stats/*.json), appliquées sur les stats d'origine.
+        return array_map(function (array $player): array {
+            $player[5] = HungryHeartStatFiles::apply(trim($player[0].' '.$player[1]), $player[5]);
+
+            return $player;
+        }, $players);
     }
 
     /** @return array<string, array<int, array<string, mixed>>> */
