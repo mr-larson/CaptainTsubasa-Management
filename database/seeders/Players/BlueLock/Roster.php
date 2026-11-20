@@ -301,7 +301,7 @@ class Roster
     public static function nationalities(): array
     {
         return [
-            'noel-noa' => 'Suède',
+            'noel-noa' => 'France',
             'michael-kaiser' => 'Allemagne',
         ];
     }

@@ -13652,5 +13652,31 @@
       360
     ],
     "career_period_reviewed": true
+  },
+  {
+    "firstname": "Michael",
+    "lastname": "Kaiser",
+    "player": "Michael Kaiser",
+    "nationality": "Allemagne",
+    "slug": "michael-kaiser",
+    "player_slug": "michael-kaiser",
+    "origin": "blue_lock",
+    "photo_path": "players/michael-kaiser.webp",
+    "preferred_for_catalog": true,
+    "source_url": "https://tv.bluelock-pr.com/character/",
+    "image_url": "https://tv.bluelock-pr.com/tv3rd/wp-content/themes/tv-bluelock-3rd-season/_assets/images/character/card/michael.png",
+    "credit": "© 金城宗幸・ノ村優介・講談社／「ブルーロック」製作委員会",
+    "rights": "Illustration officielle protégée ; aucune licence libre revendiquée.",
+    "object_position": "center top",
+    "sha256": "fc4bf5067174c3e50c998c10a964be02dcbc92f159fea09d09debd1b95f01f35",
+    "image_width": 474,
+    "image_height": 474,
+    "portrait_crop": [
+      0,
+      0,
+      474,
+      474
+    ],
+    "career_period_reviewed": true
   }
 ]

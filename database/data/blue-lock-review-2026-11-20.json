@@ -101,7 +101,7 @@
         "age": 13,
         "position": "Forward",
         "origin": "blue_lock",
-        "nationality": "Suède",
+        "nationality": "France",
         "national_eligible": true,
         "secondary_positions": "[\"Midfielder\"]",
         "cost": 51,
@@ -125,6 +125,6 @@
         "heading": 23,
         "special_moves": null,
         "description": "Prodige allemand du Bayern, surnommé l’Empereur : attaquant brillant et dominateur, sûr de lui jusqu’à l’arrogance, dont les frappes et les dribbles font la loi dans la surface.",
-        "photo_path": null
+        "photo_path": "players\/michael-kaiser.webp"
     }
 ]
