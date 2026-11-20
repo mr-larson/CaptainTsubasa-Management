@@ -83,15 +83,21 @@
     },
     "Zinédine Zidane": {
       "stats": {
-        "speed": 64,
-        "stamina": 72,
-        "attack": 37,
-        "shot": 26,
-        "pass": 31,
-        "dribble": 30,
-        "heading": 26
+        "speed": 70,
+        "stamina": 78,
+        "attack": 38,
+        "defense": 23,
+        "shot": 31,
+        "pass": 32,
+        "dribble": 32,
+        "block": 18,
+        "intercept": 23,
+        "tackle": 20,
+        "heading": 29,
+        "hand_save": 11,
+        "punch_save": 11
       },
-      "why": "Ballon d'Or 1998, champion du monde et d'Europe : maîtrise du ballon et vision, sommet du milieu français."
+      "why": "Relevé à un OVR de 32 (même niveau que les autres grandes légendes) : points forts du joueur au maximum, le reste complété avec mesure."
     },
     "Kylian Mbappé": {
       "stats": {
@@ -105,14 +111,21 @@
     },
     "Thierry Henry": {
       "stats": {
-        "speed": 80,
-        "attack": 36,
-        "shot": 29,
-        "dribble": 28,
-        "pass": 22,
-        "heading": 18
+        "speed": 82,
+        "stamina": 78,
+        "attack": 38,
+        "defense": 19,
+        "shot": 31,
+        "pass": 28,
+        "dribble": 32,
+        "block": 16,
+        "intercept": 18,
+        "tackle": 18,
+        "heading": 21,
+        "hand_save": 11,
+        "punch_save": 11
       },
-      "why": "Arsenal Invincibles, champion du monde 1998 : vitesse et finition sur le côté."
+      "why": "Relevé à un OVR de 31 : points forts du joueur au maximum, le reste complété avec mesure."
     },
     "David Trezeguet": {
       "stats": {
@@ -165,6 +178,24 @@
         "shot": 24
       },
       "why": "Arsenal, buteur de l'Euro 2000 : appels en profondeur."
+    },
+    "Michel Platini": {
+      "stats": {
+        "speed": 66,
+        "stamina": 74,
+        "attack": 38,
+        "defense": 22,
+        "shot": 31,
+        "pass": 32,
+        "dribble": 32,
+        "block": 18,
+        "intercept": 22,
+        "tackle": 20,
+        "heading": 26,
+        "hand_save": 11,
+        "punch_save": 11
+      },
+      "why": "Relevé à un OVR de 31 : points forts du joueur au maximum, le reste complété avec mesure."
     }
   }
 }

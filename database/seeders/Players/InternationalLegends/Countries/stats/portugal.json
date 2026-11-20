@@ -4,25 +4,39 @@
   "players": {
     "Eusébio": {
       "stats": {
-        "attack": 36,
-        "shot": 30,
-        "speed": 79,
-        "dribble": 26,
-        "stamina": 74
+        "speed": 82,
+        "stamina": 80,
+        "attack": 38,
+        "defense": 21,
+        "shot": 31,
+        "pass": 26,
+        "dribble": 32,
+        "block": 18,
+        "intercept": 20,
+        "tackle": 20,
+        "heading": 26,
+        "hand_save": 11,
+        "punch_save": 11
       },
-      "why": "Ballon d'Or 1965, meilleur buteur du Mondial 1966 : vitesse et frappe, la Panthère noire."
+      "why": "Relevé à un OVR de 32 (même niveau que les autres grandes légendes) : points forts du joueur au maximum, le reste complété avec mesure."
     },
     "Cristiano Ronaldo": {
       "stats": {
-        "speed": 81,
-        "stamina": 80,
-        "attack": 38,
-        "shot": 30,
+        "speed": 82,
+        "stamina": 82,
+        "attack": 40,
+        "defense": 25,
+        "shot": 32,
+        "pass": 27,
+        "dribble": 30,
+        "block": 19,
+        "intercept": 22,
+        "tackle": 21,
         "heading": 30,
-        "dribble": 29,
-        "pass": 25
+        "hand_save": 14,
+        "punch_save": 14
       },
-      "why": "Cinq Ballons d'Or, cinq Ligues des champions, champion d'Europe 2016 : athlète complet, tête et frappe."
+      "why": "Relevé au niveau des héros (OVR 33,8, comme Tsubasa) : athlète complet, tête et frappe de très haut niveau."
     },
     "Luís Figo": {
       "stats": {

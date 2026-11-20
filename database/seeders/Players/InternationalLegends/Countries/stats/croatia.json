@@ -66,14 +66,21 @@
     },
     "Luka Modrić": {
       "stats": {
+        "speed": 69,
         "stamina": 82,
-        "pass": 31,
-        "dribble": 29,
-        "attack": 32,
+        "attack": 33,
+        "defense": 25,
         "shot": 26,
-        "defense": 25
+        "pass": 32,
+        "dribble": 30,
+        "block": 20,
+        "intercept": 25,
+        "tackle": 23,
+        "heading": 18,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Ballon d'Or 2018, six Ligues des champions : maître du milieu, passes et dribbles."
+      "why": "Relevé à un OVR de 31 : points forts du joueur au maximum, le reste complété avec mesure."
     },
     "Zvonimir Boban": {
       "stats": {

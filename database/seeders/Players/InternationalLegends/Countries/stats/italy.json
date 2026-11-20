@@ -41,12 +41,21 @@
     },
     "Franco Baresi": {
       "stats": {
-        "speed": 62,
-        "defense": 34,
-        "intercept": 29,
-        "pass": 27
+        "speed": 64,
+        "stamina": 74,
+        "attack": 23,
+        "defense": 35,
+        "shot": 20,
+        "pass": 30,
+        "dribble": 21,
+        "block": 27,
+        "intercept": 31,
+        "tackle": 27,
+        "heading": 31,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Capitaine de Milan, finaliste du Mondial 1994 : libéro de référence, placement et lecture."
+      "why": "Relevé à un OVR de 31 : points forts du joueur au maximum, le reste complété avec mesure."
     },
     "Alessandro Nesta": {
       "stats": {

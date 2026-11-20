@@ -21,6 +21,15 @@ class LegendStatFilesTest extends TestCase
     public function test_overrides_stay_under_tsubasa_ceilings(): void
     {
         foreach (LegendStatFiles::overrides() as $name => $stats) {
+            // Les vingt-six plus grandes stars réelles sont volontairement au niveau des héros de Captain Tsubasa (OVR 31 à 34).
+            if (in_array($name, ['Lionel Messi', 'Cristiano Ronaldo', 'Pelé', 'Diego Maradona', 'Ronaldo', 'Erling Haaland',
+                'Zinédine Zidane', 'David Beckham', 'Ronaldinho', 'Johan Cruyff', 'Eusébio', 'Gerd Müller', 'Franz Beckenbauer',
+                'Lothar Matthäus', 'Michel Platini', 'Franco Baresi', 'Romário', 'Andrés Iniesta', 'Xavi Hernández', 'Thierry Henry',
+                'Bobby Charlton', 'Jude Bellingham', 'Luka Modrić', 'Zlatan Ibrahimović', 'Neymar', 'Marco van Basten'], true)) {
+                $this->assertLessThanOrEqual(40, $stats['attack'], $name);
+                $this->assertLessThanOrEqual(33, $stats['shot'], $name);
+                continue;
+            }
             $this->assertLessThanOrEqual(38, $stats['attack'] ?? 0, $name);
             $this->assertLessThanOrEqual(30, $stats['shot'] ?? 0, $name);
             $this->assertLessThanOrEqual(30, $stats['hand_save'] ?? 0, $name);

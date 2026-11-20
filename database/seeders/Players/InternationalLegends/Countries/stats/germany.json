@@ -4,14 +4,21 @@
   "players": {
     "Franz Beckenbauer": {
       "stats": {
-        "defense": 33,
-        "pass": 30,
-        "intercept": 28,
+        "speed": 65,
+        "stamina": 75,
         "attack": 24,
+        "defense": 35,
+        "shot": 21,
+        "pass": 32,
         "dribble": 22,
-        "shot": 21
+        "block": 30,
+        "intercept": 31,
+        "tackle": 30,
+        "heading": 31,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Der Kaiser, champion du monde 1974 et d'Europe 1972, trois Coupes d'Europe : libéro élégant, relance et lecture."
+      "why": "Relevé à un OVR de 32 (même niveau que les autres grandes légendes) : points forts du joueur au maximum, le reste complété avec mesure."
     },
     "Matthias Sammer": {
       "stats": {
@@ -102,13 +109,21 @@
     },
     "Gerd Müller": {
       "stats": {
-        "attack": 37,
-        "shot": 30,
-        "heading": 26,
-        "speed": 66,
-        "dribble": 20
+        "speed": 77,
+        "stamina": 81,
+        "attack": 38,
+        "defense": 24,
+        "shot": 31,
+        "pass": 20,
+        "dribble": 24,
+        "block": 21,
+        "intercept": 23,
+        "tackle": 23,
+        "heading": 30,
+        "hand_save": 12,
+        "punch_save": 12
       },
-      "why": "Le Bombardier, champion du monde 1974 : buteur de surface, instinct inégalé."
+      "why": "Relevé à un OVR de 32 (même niveau que les autres grandes légendes) : points forts du joueur au maximum, le reste complété avec mesure."
     },
     "Rudi Völler": {
       "stats": {
@@ -182,12 +197,21 @@
     },
     "Lothar Matthäus": {
       "stats": {
-        "attack": 30,
+        "speed": 70,
         "stamina": 82,
-        "pass": 29,
-        "shot": 28
+        "attack": 34,
+        "defense": 27,
+        "shot": 31,
+        "pass": 32,
+        "dribble": 28,
+        "block": 21,
+        "intercept": 25,
+        "tackle": 25,
+        "heading": 19,
+        "hand_save": 11,
+        "punch_save": 11
       },
-      "why": "Capitaine champion du monde 1990, Ballon d'Or 1990, 150 sélections : box-to-box complet."
+      "why": "Relevé à un OVR de 32 (même niveau que les autres grandes légendes) : points forts du joueur au maximum, le reste complété avec mesure."
     }
   }
 }

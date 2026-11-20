@@ -92,24 +92,39 @@
     },
     "Xavi Hernández": {
       "stats": {
-        "pass": 31,
-        "stamina": 80,
-        "dribble": 28,
-        "attack": 31,
-        "shot": 22,
-        "speed": 62
+        "speed": 65,
+        "stamina": 82,
+        "attack": 34,
+        "defense": 26,
+        "shot": 25,
+        "pass": 32,
+        "dribble": 31,
+        "block": 21,
+        "intercept": 25,
+        "tackle": 23,
+        "heading": 19,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Quatre Ligues des champions, champion du monde 2010 : métronome du jeu de passes."
+      "why": "Relevé à un OVR de 31 : points forts du joueur au maximum, le reste complété avec mesure."
     },
     "Andrés Iniesta": {
       "stats": {
-        "dribble": 31,
-        "pass": 30,
-        "attack": 32,
-        "stamina": 76,
-        "speed": 68
+        "speed": 71,
+        "stamina": 79,
+        "attack": 35,
+        "defense": 22,
+        "shot": 27,
+        "pass": 32,
+        "dribble": 32,
+        "block": 20,
+        "intercept": 24,
+        "tackle": 23,
+        "heading": 18,
+        "hand_save": 10,
+        "punch_save": 10
       },
-      "why": "Auteur du but de la finale du Mondial 2010, quatre Ligues des champions : conduite de balle, élégance."
+      "why": "Relevé à un OVR de 31 : points forts du joueur au maximum, le reste complété avec mesure."
     },
     "Rodri": {
       "stats": {

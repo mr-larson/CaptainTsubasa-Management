@@ -4,26 +4,39 @@
   "players": {
     "Lionel Messi": {
       "stats": {
-        "speed": 77,
-        "stamina": 70,
-        "attack": 38,
-        "shot": 30,
-        "pass": 29,
-        "dribble": 31
+        "speed": 80,
+        "stamina": 78,
+        "attack": 40,
+        "defense": 25,
+        "shot": 32,
+        "pass": 31,
+        "dribble": 32,
+        "block": 20,
+        "intercept": 23,
+        "tackle": 22,
+        "heading": 24,
+        "hand_save": 14,
+        "punch_save": 14
       },
-      "why": "Huit Ballons d'Or, champion du monde 2022 : dribble et finition, un cran au-dessus de tous."
+      "why": "Relevé au niveau des héros (OVR 33,5) : huit Ballons d'Or, champion du monde 2022, dribble, passe et finition au sommet."
     },
     "Diego Maradona": {
       "stats": {
-        "speed": 76,
-        "stamina": 66,
+        "speed": 82,
+        "stamina": 72,
         "attack": 38,
-        "shot": 28,
-        "pass": 30,
-        "dribble": 31,
-        "defense": 20
+        "defense": 23,
+        "shot": 31,
+        "pass": 32,
+        "dribble": 32,
+        "block": 19,
+        "intercept": 23,
+        "tackle": 21,
+        "heading": 21,
+        "hand_save": 11,
+        "punch_save": 11
       },
-      "why": "Champion du monde 1986, Naples : conduite de balle et création, sommet technique du milieu."
+      "why": "Relevé à un OVR de 32 (même niveau que les autres grandes légendes) : points forts du joueur au maximum, le reste complété avec mesure."
     },
     "Mario Kempes": {
       "stats": {

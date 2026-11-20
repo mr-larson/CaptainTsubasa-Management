@@ -48,15 +48,21 @@
     },
     "Erling Haaland": {
       "stats": {
+        "speed": 82,
+        "stamina": 82,
         "attack": 38,
-        "shot": 30,
-        "speed": 79,
-        "heading": 29,
-        "stamina": 76,
-        "dribble": 23,
-        "pass": 19
+        "defense": 21,
+        "shot": 31,
+        "pass": 19,
+        "dribble": 29,
+        "block": 20,
+        "intercept": 21,
+        "tackle": 21,
+        "heading": 30,
+        "hand_save": 11,
+        "punch_save": 11
       },
-      "why": "Soulier d'or, triplé 2023 avec Manchester City : puissance, vitesse et finition."
+      "why": "Relevé à un OVR de 32 (même niveau que les autres grandes légendes) : points forts du joueur au maximum, le reste complété avec mesure."
     },
     "Erik Thorstvedt": {
       "stats": {

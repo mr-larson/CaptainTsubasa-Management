@@ -69,33 +69,57 @@
     },
     "Ronaldinho": {
       "stats": {
-        "speed": 77,
-        "attack": 36,
-        "shot": 28,
-        "pass": 31,
-        "dribble": 31
+        "speed": 82,
+        "stamina": 76,
+        "attack": 38,
+        "defense": 19,
+        "shot": 29,
+        "pass": 32,
+        "dribble": 32,
+        "block": 21,
+        "intercept": 22,
+        "tackle": 23,
+        "heading": 20,
+        "hand_save": 11,
+        "punch_save": 11
       },
-      "why": "Ballon d'Or 2005, champion du monde 2002, Ligue des champions 2006 : dribble et dernière passe."
+      "why": "Relevé à un OVR de 32 : dribble et passe au maximum, tir 29 (sous R9) et défense 19 (créateur, pas défenseur)."
     },
     "Romário": {
       "stats": {
-        "stamina": 66,
-        "attack": 35,
-        "shot": 29,
-        "dribble": 27
+        "speed": 75,
+        "stamina": 72,
+        "attack": 38,
+        "defense": 21,
+        "shot": 31,
+        "pass": 26,
+        "dribble": 32,
+        "block": 18,
+        "intercept": 20,
+        "tackle": 20,
+        "heading": 26,
+        "hand_save": 12,
+        "punch_save": 12
       },
-      "why": "Champion du monde 1994, Ballon d'Or FIFA 1994 : finisseur dans la surface, économe de ses efforts."
+      "why": "Relevé à un OVR de 31 : points forts du joueur au maximum, le reste complété avec mesure."
     },
     "Neymar": {
       "stats": {
-        "speed": 80,
-        "stamina": 70,
-        "attack": 36,
-        "shot": 28,
-        "pass": 28,
-        "dribble": 30
+        "speed": 82,
+        "stamina": 77,
+        "attack": 38,
+        "defense": 18,
+        "shot": 30,
+        "pass": 32,
+        "dribble": 32,
+        "block": 16,
+        "intercept": 19,
+        "tackle": 18,
+        "heading": 19,
+        "hand_save": 11,
+        "punch_save": 11
       },
-      "why": "Barcelone (Ligue des champions 2015), Santos, PSG : dribbleur et passeur, vitesse et créativité."
+      "why": "Relevé à un OVR de 31 : points forts du joueur au maximum, le reste complété avec mesure."
     },
     "Vavá": {
       "stats": {
@@ -131,6 +155,42 @@
         "dribble": 28
       },
       "why": "Buteur dans chaque match du Mondial 1970 : ailier puissant et finisseur."
+    },
+    "Pelé": {
+      "stats": {
+        "speed": 80,
+        "stamina": 81,
+        "attack": 38,
+        "defense": 20,
+        "shot": 31,
+        "pass": 31,
+        "dribble": 32,
+        "block": 17,
+        "intercept": 20,
+        "tackle": 18,
+        "heading": 28,
+        "hand_save": 10,
+        "punch_save": 10
+      },
+      "why": "Relevé à un OVR de 32 (même niveau que les autres grandes légendes) : points forts du joueur au maximum, le reste complété avec mesure."
+    },
+    "Ronaldo": {
+      "stats": {
+        "speed": 82,
+        "stamina": 78,
+        "attack": 38,
+        "defense": 21,
+        "shot": 31,
+        "pass": 26,
+        "dribble": 32,
+        "block": 18,
+        "intercept": 20,
+        "tackle": 20,
+        "heading": 27,
+        "hand_save": 12,
+        "punch_save": 11
+      },
+      "why": "Relevé à un OVR de 32 (même niveau que les autres grandes légendes) : points forts du joueur au maximum, le reste complété avec mesure."
     }
   }
 }

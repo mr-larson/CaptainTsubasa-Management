@@ -101,25 +101,39 @@
     },
     "Bobby Charlton": {
       "stats": {
-        "attack": 35,
-        "shot": 30,
-        "pass": 28,
-        "dribble": 26,
-        "speed": 68,
-        "stamina": 77
+        "speed": 71,
+        "stamina": 80,
+        "attack": 38,
+        "defense": 22,
+        "shot": 31,
+        "pass": 31,
+        "dribble": 29,
+        "block": 18,
+        "intercept": 22,
+        "tackle": 20,
+        "heading": 19,
+        "hand_save": 11,
+        "punch_save": 11
       },
-      "why": "Ballon d'Or 1966, champion du monde 1966 : frappe de loin foudroyante."
+      "why": "Relevé à un OVR de 31 : points forts du joueur au maximum, le reste complété avec mesure."
     },
     "David Beckham": {
       "stats": {
-        "pass": 30,
-        "cross": 31,
-        "shot": 27,
-        "attack": 30,
         "speed": 63,
-        "stamina": 79
+        "stamina": 82,
+        "attack": 38,
+        "defense": 26,
+        "shot": 31,
+        "pass": 32,
+        "dribble": 23,
+        "block": 21,
+        "intercept": 24,
+        "tackle": 23,
+        "heading": 25,
+        "hand_save": 14,
+        "punch_save": 14
       },
-      "why": "Triplé 1999 avec Manchester United, 115 sélections : centres et coups francs d'une précision rare."
+      "why": "Relevé à un OVR de 32 (même niveau que les autres grandes légendes) : points forts du joueur au maximum, le reste complété avec mesure."
     },
     "Paul Scholes": {
       "stats": {
@@ -141,6 +155,24 @@
         "speed": 69
       },
       "why": "Ligue des champions 2005 avec Liverpool : milieu à tout faire, passe et frappe."
+    },
+    "Jude Bellingham": {
+      "stats": {
+        "speed": 71,
+        "stamina": 79,
+        "attack": 34,
+        "defense": 24,
+        "shot": 27,
+        "pass": 29,
+        "dribble": 29,
+        "block": 20,
+        "intercept": 23,
+        "tackle": 22,
+        "heading": 25,
+        "hand_save": 10,
+        "punch_save": 10
+      },
+      "why": "Relevé à un OVR de 31 : points forts du joueur au maximum, le reste complété avec mesure."
     }
   }
 }

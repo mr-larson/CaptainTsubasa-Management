@@ -45,15 +45,21 @@
     },
     "Zlatan Ibrahimović": {
       "stats": {
-        "attack": 37,
-        "shot": 30,
-        "dribble": 29,
-        "pass": 27,
         "speed": 65,
-        "heading": 28,
-        "stamina": 72
+        "stamina": 75,
+        "attack": 38,
+        "defense": 20,
+        "shot": 31,
+        "pass": 30,
+        "dribble": 32,
+        "block": 20,
+        "intercept": 20,
+        "tackle": 20,
+        "heading": 30,
+        "hand_save": 11,
+        "punch_save": 11
       },
-      "why": "Plus de 500 buts en carrière, titré dans sept clubs : puissance, acrobaties et finition."
+      "why": "Relevé à un OVR de 31 : points forts du joueur au maximum, le reste complété avec mesure."
     },
     "Henrik Larsson": {
       "stats": {
