@@ -59,6 +59,7 @@ final class Roster
         Countries\China::class,
         Countries\Senegal::class,
         Countries\Cameroon::class,
+        Countries\Thailand::class,
     ];
 
     public static function players(): array
