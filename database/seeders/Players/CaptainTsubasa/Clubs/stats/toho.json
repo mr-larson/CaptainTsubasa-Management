@@ -148,6 +148,14 @@
         "dribble": 29
       },
       "why": "Équivalent à Tsubasa (tir à 33) : le seul club à avoir un joueur au niveau de Tsubasa avec Misugi au-dessus."
+    },
+    "Ken Wakashimazu": {
+      "stats": {
+        "hand_save": 25,
+        "punch_save": 28,
+        "block": 18
+      },
+      "why": "Gardien au poing : arrêt au poing 28, arrêt à la main 25, contre 18."
     }
   }
 }
