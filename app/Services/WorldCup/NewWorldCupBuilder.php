@@ -70,7 +70,7 @@ class NewWorldCupBuilder
      */
     public function playableNations(): array
     {
-        $rows = Player::query()
+        $rows = Player::nationalEligible()
             ->whereNotNull('nationality')
             ->selectRaw('nationality, COUNT(*) as total')
             ->selectRaw("SUM(CASE WHEN position = 'Goalkeeper' THEN 1 ELSE 0 END) as goalkeepers")

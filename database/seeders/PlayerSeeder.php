@@ -8,6 +8,7 @@ use App\Models\Traits\CalculatesWeeklyCost;
 use Database\Seeders\Concerns\GuardsReferenceReseed;
 use Database\Seeders\Support\HeadingOverrides;
 use Database\Seeders\Support\PlayerNationality;
+use Database\Seeders\Support\NationalPool;
 use Database\Seeders\Support\PlayerPhotos;
 use Database\Seeders\Support\PlayerSkills;
 use Illuminate\Database\Seeder;
@@ -141,6 +142,9 @@ class PlayerSeeder extends Seeder
             'position' => $position,
             'origin' => \App\Enums\PlayerOrigin::forNationality($origin, $nationality),
             'nationality' => $nationality,
+            'national_eligible' => NationalPool::eligible(
+                \App\Enums\PlayerOrigin::forNationality($origin, $nationality), $nationality, trim($firstname . ' ' . $lastname),
+            ),
             'secondary_positions' => json_encode($secondaryPositions, JSON_UNESCAPED_UNICODE),
             'cost' => $cost,
             'stats' => json_encode($fullStats, JSON_UNESCAPED_UNICODE),

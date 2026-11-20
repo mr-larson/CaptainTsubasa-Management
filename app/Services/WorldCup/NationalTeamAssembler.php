@@ -44,7 +44,7 @@ class NationalTeamAssembler
 
     public function preview(string $nation, ?array $gameConfig = null, ?int $seed = null): ?array
     {
-        $players = Player::where('nationality', $nation)->orderBy('lastname')->orderBy('firstname')->orderBy('id')->get();
+        $players = Player::nationalEligible()->where('nationality', $nation)->orderBy('lastname')->orderBy('firstname')->orderBy('id')->get();
         $catalog = Nation::where('name', $nation)->first();
         $picked = $this->picker->pick($players, $catalog?->default_formation, $catalog?->tactical_style ?? 'balanced', $catalog?->management_philosophy ?? 'collective');
         if ($picked === null) {
@@ -94,7 +94,7 @@ class NationalTeamAssembler
      */
     public function lineupPreview(string $nation, array $playerIds, ?string $formation = null): ?array
     {
-        $squad = Player::where('nationality', $nation)->whereKey($playerIds)->orderBy('id')->get();
+        $squad = Player::nationalEligible()->where('nationality', $nation)->whereKey($playerIds)->orderBy('id')->get();
         if ($squad->count() < self::MIN_PLAYERS) {
             return null;
         }
@@ -123,7 +123,7 @@ class NationalTeamAssembler
         foreach ($nations as $nation) {
             $isHuman = isset($seats[$nation]);
             $isControlled = $nation === $controlledNation;
-            $query = Player::where('nationality', $nation)->orderBy('id');
+            $query = Player::nationalEligible()->where('nationality', $nation)->orderBy('id');
             $catalog = Nation::where('name', $nation)->first();
             $chosenIds = $isControlled ? $playerIds : ($isHuman ? ($coPlayerIds[$nation] ?? null) : null);
             if ($chosenIds !== null) {

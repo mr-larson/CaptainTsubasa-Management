@@ -58,6 +58,7 @@ class Player extends Model
         'position',
         'origin',
         'nationality',
+        'national_eligible',
         'secondary_positions',
         'cost',
         'stats',
@@ -68,6 +69,7 @@ class Player extends Model
 
     protected $casts = [
         'position' => PlayerPosition::class,
+        'national_eligible' => 'boolean',
         'secondary_positions' => 'array',
         'special_moves' => 'array'
     ];
@@ -89,6 +91,12 @@ class Player extends Model
     public function contracts(): HasMany
     {
         return $this->hasMany(Contract::class);
+    }
+
+    /** Joueurs convocables en sélection nationale (les figurants des effectifs de clubs en sont exclus). */
+    public function scopeNationalEligible($query)
+    {
+        return $query->where('national_eligible', true);
     }
 
     // ==========================
