@@ -1,0 +1,19 @@
+{
+  "nationality": "Irlande",
+  "sources": "Palmarès : Wikipédia / FIFA. Douze joueurs ajoutés par migration (Given, Bonner, McGrath, Irwin, Staunton, Coleman, Brady, Houghton, Duff, R. Keane, Quinn, Aldridge), sans portrait : à illustrer. Le pays n'avait que Roy Keane et aucun personnage Captain Tsubasa.",
+  "players": {
+    "Roy Keane": {
+      "stats": {
+        "stamina": 82,
+        "tackle": 28,
+        "defense": 30,
+        "intercept": 27,
+        "pass": 28,
+        "attack": 24,
+        "shot": 22,
+        "speed": 62
+      },
+      "why": "Capitaine du triplé 1999 avec Manchester United : milieu récupérateur au tempérament de feu, endurance et tacle."
+    }
+  }
+}
