@@ -87,6 +87,26 @@
         "pass": 25
       },
       "why": "Défenseur argentin : passe 25."
+    },
+    "Ryoma Hino": {
+      "stats": {
+        "attack": 40,
+        "shot": 32,
+        "dribble": 28,
+        "pass": 23,
+        "defense": 25,
+        "tackle": 22,
+        "intercept": 22,
+        "block": 20,
+        "speed": 76
+      },
+      "why": "Star offensive de Real Seven, buteur puissant au Tir de Feu : relevé pour être compétitif (juste au-dessus du capitaine uruguayen Victorino), tout en restant sous Tsubasa."
+    },
+    "Ricardo Espadas": {
+      "stats": {
+        "punch_save": 30
+      },
+      "why": "Gardien mexicain : arrêt au poing 30."
     }
   }
 }
