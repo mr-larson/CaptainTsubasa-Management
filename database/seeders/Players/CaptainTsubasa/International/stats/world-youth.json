@@ -1,0 +1,79 @@
+{
+  "sources": "Règles voulues : seuls Schneider, Natureza, Diaz et Santana dépassent Tsubasa parmi les internationaux ; Schneider est le plus fort et le seul à 35 en tir ; Kaltz est sous Schneider ; Xiao et Owairan sous Tsubasa.",
+  "players": {
+    "Karl-Heinz Schneider": {
+      "stats": {
+        "shot": 35,
+        "pass": 29,
+        "dribble": 31,
+        "defense": 30,
+        "block": 22,
+        "intercept": 24,
+        "tackle": 24,
+        "speed": 79,
+        "stamina": 85
+      },
+      "why": "Le plus fort des internationaux : seul à 35 en tir, au-dessus de Tsubasa, Santana, Natureza et Diaz, et de Kaltz en Allemagne."
+    },
+    "Carlos Santana": {
+      "stats": {
+        "defense": 30,
+        "block": 22,
+        "intercept": 24,
+        "tackle": 24,
+        "pass": 29,
+        "dribble": 31
+      },
+      "why": "Un des quatre internationaux plus forts que Tsubasa (avec Schneider, Natureza et Diaz)."
+    },
+    "Natureza": {
+      "stats": {
+        "defense": 30,
+        "block": 22,
+        "intercept": 24,
+        "tackle": 24,
+        "pass": 31,
+        "dribble": 31,
+        "speed": 78,
+        "stamina": 84
+      },
+      "why": "Un des quatre internationaux plus forts que Tsubasa."
+    },
+    "Juan Diaz": {
+      "stats": {
+        "defense": 30,
+        "block": 22,
+        "intercept": 24,
+        "tackle": 24,
+        "pass": 29,
+        "dribble": 31,
+        "speed": 77
+      },
+      "why": "Un des quatre internationaux plus forts que Tsubasa."
+    },
+    "Junguang Xiao": {
+      "stats": {
+        "attack": 29,
+        "defense": 32,
+        "shot": 26,
+        "pass": 26,
+        "dribble": 27,
+        "tackle": 26,
+        "intercept": 28,
+        "block": 31,
+        "speed": 72,
+        "stamina": 80
+      },
+      "why": "Ramené sous Tsubasa : milieu défensif complet (contre 31 conservé), pas un cran au-dessus des héros."
+    },
+    "Mark Owairan": {
+      "stats": {
+        "defense": 34,
+        "intercept": 29,
+        "block": 27,
+        "tackle": 29
+      },
+      "why": "Ramené sous Tsubasa : défenseur capitaine, très fort en défense."
+    }
+  }
+}

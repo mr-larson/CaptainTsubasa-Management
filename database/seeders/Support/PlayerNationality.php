@@ -7,7 +7,7 @@ use App\Enums\Nationality;
 /**
  * Nationalité d'un joueur de référence. Sert à composer les sélections
  * nationales du mode Coupe du Monde. Résolution :
- *   override par slug  >  défaut par origin  >  null
+ *   override « origine:slug »  >  override par slug  >  défaut par origin  >  null
  */
 final class PlayerNationality
 {
@@ -32,7 +32,9 @@ final class PlayerNationality
     /** @param array<string, string> $overridesBySlug */
     public static function resolve(string $slug, string $origin, array $overridesBySlug): ?string
     {
-        $nationality = $overridesBySlug[$slug] ?? self::DEFAULT_BY_ORIGIN[$origin] ?? null;
+        // Un homonyme d'un autre univers (le Pepe brésilien de Captain Tsubasa et le Pepe portugais réel)
+        // se distingue par une clé « origine:slug », prioritaire sur la clé simple.
+        $nationality = $overridesBySlug[$origin.':'.$slug] ?? $overridesBySlug[$slug] ?? self::DEFAULT_BY_ORIGIN[$origin] ?? null;
 
         // Validation stricte : une nationalité non reconnue (faute de frappe,
         // langue mélangée comme « Sweden » au lieu de « Suède ») fait échouer

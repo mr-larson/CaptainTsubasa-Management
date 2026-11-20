@@ -1,0 +1,50 @@
+[
+    {
+        "firstname": "Stefan",
+        "lastname": "Levin",
+        "age": 13,
+        "position": "Midfielder",
+        "origin": "captain_tsubasa_international",
+        "nationality": "Suède",
+        "national_eligible": true,
+        "secondary_positions": "[]",
+        "cost": 52,
+        "stats": "{\"speed\":76,\"stamina\":82,\"defense\":25,\"attack\":38,\"shot\":34,\"pass\":30,\"dribble\":29,\"block\":20,\"intercept\":23,\"tackle\":23,\"hand_save\":15,\"punch_save\":15,\"heading\":18}",
+        "heading": 18,
+        "special_moves": null,
+        "description": "Capitaine de la sélection suédoise, milieu de terrain complet et puissant. Frappe de loin redoutable et autorité naturelle : il porte son équipe sur ses épaules.",
+        "photo_path": null
+    },
+    {
+        "firstname": "Singprasert",
+        "lastname": "Bunnaak",
+        "age": 13,
+        "position": "Defender",
+        "origin": "captain_tsubasa_international",
+        "nationality": "Thaïlande",
+        "national_eligible": true,
+        "secondary_positions": "[]",
+        "cost": 47,
+        "stats": "{\"speed\":66,\"stamina\":80,\"defense\":32,\"attack\":21,\"shot\":17,\"pass\":23,\"dribble\":21,\"block\":27,\"intercept\":28,\"tackle\":27,\"hand_save\":15,\"punch_save\":15,\"heading\":28}",
+        "heading": 28,
+        "special_moves": null,
+        "description": "Capitaine et défenseur de la Thaïlande. Solide, courageux et organisateur de sa défense, il mène sa sélection par l’exemple.",
+        "photo_path": null
+    },
+    {
+        "firstname": "Michael",
+        "lastname": "Juanito",
+        "age": 13,
+        "position": "Midfielder",
+        "origin": "captain_tsubasa_international",
+        "nationality": "Espagne",
+        "national_eligible": true,
+        "secondary_positions": "[]",
+        "cost": 48,
+        "stats": "{\"speed\":72,\"stamina\":78,\"defense\":24,\"attack\":31,\"shot\":28,\"pass\":27,\"dribble\":27,\"block\":19,\"intercept\":22,\"tackle\":22,\"hand_save\":15,\"punch_save\":15,\"heading\":17}",
+        "heading": 17,
+        "special_moves": null,
+        "description": "Milieu de terrain de la sélection espagnole, technique et inventif, capable de lier le jeu et d’ouvrir des brèches.",
+        "photo_path": null
+    }
+]

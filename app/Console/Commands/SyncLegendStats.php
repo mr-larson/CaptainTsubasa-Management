@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Player;
 use Database\Seeders\Players\CaptainTsubasa\Clubs\ClubStatFiles;
+use Database\Seeders\Players\CaptainTsubasa\International\InternationalStatFiles;
 use Database\Seeders\Players\InternationalLegends\Support\LegendStatFiles;
 use Illuminate\Console\Command;
 
@@ -20,10 +21,11 @@ class SyncLegendStats extends Command
 
     public function handle(): int
     {
-        // Deux sources : fichiers par pays (légendes réelles) et fichiers par club (Captain Tsubasa).
+        // Trois sources : fichiers par pays (légendes), par club et par nation d'internationaux (Captain Tsubasa).
         $sources = [
             'world_legends' => LegendStatFiles::overrides(),
             'captain_tsubasa' => ClubStatFiles::overrides(),
+            'captain_tsubasa_international' => InternationalStatFiles::overrides(),
         ];
 
         $changed = 0;

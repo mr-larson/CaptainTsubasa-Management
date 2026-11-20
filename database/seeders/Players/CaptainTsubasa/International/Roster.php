@@ -41,6 +41,11 @@ class Roster
         Countries\SaudiArabia::class,
         Countries\Uzbekistan::class,
         Countries\Senegal::class,
+        Countries\Sweden::class,
+        Countries\Thailand::class,
+        Countries\Spain::class,
+        Countries\England::class,
+        Countries\Denmark::class,
     ];
 
     /**
@@ -50,7 +55,14 @@ class Roster
      */
     public static function players(): array
     {
-        return array_merge(...array_map(fn (string $nation) => $nation::players(), self::NATIONS));
+        $players = array_merge(...array_map(fn (string $nation) => $nation::players(), self::NATIONS));
+
+        // Retouches individuelles (International/stats/*.json), appliquées sur les stats d'origine.
+        return array_map(function (array $player): array {
+            $player[5] = InternationalStatFiles::apply(trim($player[0].' '.$player[1]), $player[5]);
+
+            return $player;
+        }, $players);
     }
 
     /** @return array<string, array<int, array<string, mixed>>> */
@@ -229,7 +241,31 @@ class Roster
             'dugo'                 => 'Brésil',
             'marcio'               => 'Brésil',
             'carlos-santana'       => 'Brésil',
-            'pepe'                 => 'Brésil',
+            // Suède, Thaïlande, Espagne
+            'stefan-levin'         => 'Suède',
+            'singprasert-bunnaak'  => 'Thaïlande',
+            'michael-juanito'      => 'Espagne',
+            // Compléments issus du site officiel Dream Team
+            'faran-konsawatt' => 'Thaïlande',
+            'sakhon-konsawatt' => 'Thaïlande',
+            'chana-konsawatt' => 'Thaïlande',
+            'brolin' => 'Suède',
+            'federiks' => 'Suède',
+            'larson' => 'Suède',
+            'raphael' => 'Espagne',
+            'robson' => 'Angleterre',
+            'haas' => 'Danemark',
+            'christiansen' => 'Danemark',
+            'schweil-teigerbran' => 'Allemagne',
+            'kevin-schmidt' => 'Allemagne',
+            'eric-schmidt' => 'Allemagne',
+            'mario-goethe' => 'Allemagne',
+            'bossis' => 'France',
+            'amoros' => 'France',
+            'jovan-lensenblink' => 'Pays-Bas',
+            'hugo-ramirez' => 'Mexique',
+            'branco' => 'Brésil',
+            'captain_tsubasa:pepe' => 'Brésil', // distinct du Pepe portugais des légendes réelles (même slug)
             'luciano-leo'          => 'Brésil',
             // Argentine
             'juan-diaz'            => 'Argentine',

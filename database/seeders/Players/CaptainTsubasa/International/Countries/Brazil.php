@@ -148,6 +148,16 @@ final class Brazil
                 ],
                 'Ailier foudroyant de Flamengo, sa vitesse et ses débordements affolent les défenses.',
             ],
+            [
+                '', 'Branco', 13, 'Midfielder', 0,
+                [
+                    'speed' => 70, 'stamina' => 78, 'defense' => 23, 'attack' => 30,
+                    'shot' => 25, 'pass' => 27, 'dribble' => 26,
+                    'block' => 18, 'intercept' => 21, 'tackle' => 21,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Milieu offensif de la sélection le Brésil. Technique et inventif, il alimente l’attaque.',
+            ],
         ];
     }
 }

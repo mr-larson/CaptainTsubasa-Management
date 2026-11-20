@@ -88,6 +88,16 @@ final class Netherlands
                 ],
                 'Ailier rapide et technique, spécialiste des débordements et des centres millimétrés.',
             ],
+            [
+                'Jovan', 'Lensenblink', 13, 'Forward', 0,
+                [
+                    'speed' => 72, 'stamina' => 78, 'defense' => 20, 'attack' => 34,
+                    'shot' => 28, 'pass' => 22, 'dribble' => 25,
+                    'block' => 17, 'intercept' => 19, 'tackle' => 19,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Attaquant de la sélection les Pays-Bas. Rapide et direct, il cherche sans relâche le chemin du but.',
+            ],
         ];
     }
 }

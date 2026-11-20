@@ -71,6 +71,49 @@ final class Germany
                 ],
                 'Gardien rigoureux et bien placé, dernier rempart fiable de la sélection allemande.',
             ],
+            [
+                'Schweil', 'Teigerbran', 13, 'Midfielder', 0,
+                [
+                    'speed' => 70, 'stamina' => 80, 'defense' => 23, 'attack' => 30,
+                    'shot' => 25, 'pass' => 27, 'dribble' => 26,
+                    'block' => 18, 'intercept' => 21, 'tackle' => 21,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Milieu offensif de la sélection l’Allemagne. Technique et inventif, il alimente l’attaque.',
+                ['Defender'],
+            ],
+            [
+                'Kevin', 'Schmidt', 13, 'Midfielder', 0,
+                [
+                    'speed' => 66, 'stamina' => 80, 'defense' => 29, 'attack' => 24,
+                    'shot' => 20, 'pass' => 25, 'dribble' => 21,
+                    'block' => 24, 'intercept' => 26, 'tackle' => 26,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Milieu défensif de la sélection l’Allemagne. Récupérateur infatigable, il protège sa défense.',
+                ['Defender'],
+            ],
+            [
+                'Eric', 'Schmidt', 13, 'Midfielder', 0,
+                [
+                    'speed' => 67, 'stamina' => 80, 'defense' => 29, 'attack' => 24,
+                    'shot' => 20, 'pass' => 25, 'dribble' => 21,
+                    'block' => 24, 'intercept' => 26, 'tackle' => 26,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Milieu défensif de la sélection l’Allemagne. Récupérateur infatigable, il protège sa défense.',
+                ['Defender'],
+            ],
+            [
+                'Mario', 'Goethe', 13, 'Forward', 0,
+                [
+                    'speed' => 72, 'stamina' => 78, 'defense' => 20, 'attack' => 34,
+                    'shot' => 28, 'pass' => 22, 'dribble' => 25,
+                    'block' => 17, 'intercept' => 19, 'tackle' => 19,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Attaquant de la sélection l’Allemagne. Rapide et direct, il cherche sans relâche le chemin du but.',
+            ],
         ];
     }
 }

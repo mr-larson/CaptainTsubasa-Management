@@ -41,6 +41,26 @@ final class France
                 ],
                 'Attaquant tranchant, partenaire de Pierre. Leur une-deux « de l’aigle » déchire les défenses.',
             ],
+            [
+                '', 'Bossis', 13, 'Forward', 0,
+                [
+                    'speed' => 72, 'stamina' => 78, 'defense' => 20, 'attack' => 34,
+                    'shot' => 28, 'pass' => 22, 'dribble' => 25,
+                    'block' => 17, 'intercept' => 19, 'tackle' => 19,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Attaquant de la sélection la France. Rapide et direct, il cherche sans relâche le chemin du but.',
+            ],
+            [
+                '', 'Amoros', 13, 'Goalkeeper', 0,
+                [
+                    'speed' => 58, 'stamina' => 76, 'defense' => 34, 'attack' => 15,
+                    'shot' => 12, 'pass' => 18, 'dribble' => 15,
+                    'block' => 22, 'intercept' => 22, 'tackle' => 17,
+                    'hand_save' => 28, 'punch_save' => 27,
+                ],
+                'Gardien de la sélection la France. Vif sur sa ligne, il rassure sa défense.',
+            ],
         ];
     }
 }

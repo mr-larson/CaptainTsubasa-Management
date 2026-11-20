@@ -22,7 +22,8 @@ class ClubStatFilesTest extends TestCase
     {
         foreach (ClubStatFiles::overrides() as $name => $stats) {
             $this->assertLessThanOrEqual(39, $stats['attack'] ?? 0, $name);
-            $this->assertLessThanOrEqual(31, $stats['shot'] ?? 0, $name);
+            // Hyuga (tir à 33) est le seul à dépasser 31 parmi les joueurs de club.
+            $this->assertLessThanOrEqual(33, $stats['shot'] ?? 0, $name);
             $this->assertGreaterThanOrEqual(8, min($stats), $name);
         }
     }

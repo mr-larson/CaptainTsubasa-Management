@@ -49,6 +49,16 @@ final class Mexico
                 'Petit attaquant du Mexique Youth, Lopez se distingue par ses frappes acrobatiques. Il forme avec Alvez et les autres guerriers du Soleil aztèque un groupe soudé autour d’Espadas.'],
 
 
+            [
+                'Hugo', 'Ramirez', 13, 'Midfielder', 0,
+                [
+                    'speed' => 70, 'stamina' => 78, 'defense' => 23, 'attack' => 30,
+                    'shot' => 25, 'pass' => 27, 'dribble' => 26,
+                    'block' => 18, 'intercept' => 21, 'tackle' => 21,
+                    'hand_save' => 15, 'punch_save' => 15,
+                ],
+                'Milieu offensif de la sélection le Mexique. Technique et inventif, il alimente l’attaque.',
+            ],
         ];
     }
 }

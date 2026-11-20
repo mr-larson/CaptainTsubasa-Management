@@ -15,12 +15,15 @@ class CuratedTsubasaInternationalsTest extends TestCase
     use RefreshDatabase;
     use BuildsGameWorld;
 
-    public function test_fresh_catalogue_keeps_47_illustrated_characters_and_omits_archived_secondary_roles(): void
+    public function test_fresh_catalogue_keeps_47_illustrated_characters_plus_three_new_without_portrait_and_omits_archived_secondary_roles(): void
     {
         $this->seed(PlayerSeeder::class);
         $players = Player::where('origin', PlayerOrigin::INTERNATIONAL)->get();
-        $this->assertCount(47, $players);
-        foreach ($players as $player) {
+        // 47 personnages illustrés, plus 22 ajoutés par la revue des internationaux (sans portrait).
+        $this->assertCount(69, $players);
+        $withoutPortrait = ['Levin', 'Bunnaak', 'Juanito', 'Konsawatt', 'Brolin', 'Federiks', 'Larson', 'Raphael', 'Robson', 'Haas', 'Christiansen',
+            'Teigerbran', 'Schmidt', 'Goethe', 'Bossis', 'Amoros', 'Lensenblink', 'Ramirez', 'Branco'];
+        foreach ($players->reject(fn ($p) => in_array($p->lastname, $withoutPortrait, true)) as $player) {
             $this->assertNotNull($player->photo_path, $player->full_name);
             $this->assertFileExists(public_path('storage/'.$player->photo_path));
         }
