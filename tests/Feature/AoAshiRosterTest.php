@@ -61,6 +61,8 @@ class AoAshiRosterTest extends TestCase
         foreach ($before as $id => $row) {
             $this->assertEquals($row, DB::table('players')->find($id));
         }
+        // La revue du 20 novembre met Nakamura à jour : son profil final est comparé au catalogue actuel.
+        (require database_path('migrations/2026_11_20_230000_review_ao_ashi_players.php'))->up();
         $taira = Player::where('firstname', 'Taira')->sole();
         $profile = collect(Roster::players())->first(fn ($p) => $p[0] === 'Taira' && $p[1] === 'Nakamura');
         $expected = $seeder->row('ao_ashi', $profile, [], $moves);

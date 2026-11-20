@@ -16,15 +16,15 @@ class Roster
             // Ao Ashi – Not contract
             //-------------------------------
             [
-                'Ashito', 'Aoi', 13, 'Defender', 390,
+                'Ashito', 'Aoi', 13, 'Midfielder', 390,
                 [
                     'speed' => 72, 'stamina' => 74, 'defense' => 28, 'attack' => 28,
                     'shot' => 22, 'pass' => 29, 'dribble' => 17,
                     'block' => 17, 'intercept' => 32, 'tackle' => 25,
                     'hand_save' => 10, 'punch_save' => 10,
                 ],
-                'Latéral gauche d\'Esperion, reconverti d\'attaquant par le coach Fukuda. Sa vision exceptionnelle du jeu et sa détermination sans faille compensent son inexpérience au poste défensif.',
-                ['Forward']
+                'Milieu d\'Esperion, d\'abord latéral gauche puis reconverti d\'attaquant par le coach Fukuda : il joue aussi bien en défense qu\'en attaque. Sa vision exceptionnelle du jeu et sa détermination sans faille en font un meneur polyvalent.',
+                ['Defender', 'Forward']
             ],
 
             [
@@ -52,9 +52,9 @@ class Roster
             [
                 'Keiji', 'Togashi', 13, 'Defender', 340,
                 [
-                    'speed' => 58, 'stamina' => 68, 'defense' => 32, 'attack' => 23,
+                    'speed' => 57, 'stamina' => 66, 'defense' => 31, 'attack' => 23,
                     'shot' => 22, 'pass' => 22, 'dribble' => 15,
-                    'block' => 26, 'intercept' => 22, 'tackle' => 28,
+                    'block' => 25, 'intercept' => 21, 'tackle' => 27,
                     'hand_save' => 10, 'punch_save' => 10,
                 ],
                 'Défenseur central de l\'équipe B d\'Esperion et colocataire d\'Ashito. Physique et offensif, il combine impact dans les duels, bonnes bases techniques et frappe puissante pour soutenir les attaques.'
@@ -85,8 +85,8 @@ class Roster
             [
                 'Yuma', 'Motoki', 13, 'Forward', 395,
                 [
-                    'speed' => 68, 'stamina' => 68, 'defense' => 17, 'attack' => 35,
-                    'shot' => 28, 'pass' => 25, 'dribble' => 27,
+                    'speed' => 68, 'stamina' => 68, 'defense' => 17, 'attack' => 33,
+                    'shot' => 28, 'pass' => 25, 'dribble' => 26,
                     'block' => 14, 'intercept' => 16, 'tackle' => 15,
                     'hand_save' => 10, 'punch_save' => 10,
                 ],
@@ -107,9 +107,9 @@ class Roster
             [
                 'Taira', 'Nakamura', 13, 'Midfielder', 360,
                 [
-                    'speed' => 62, 'stamina' => 72, 'defense' => 30, 'attack' => 23,
-                    'shot' => 19, 'pass' => 28, 'dribble' => 22,
-                    'block' => 23, 'intercept' => 27, 'tackle' => 25,
+                    'speed' => 60, 'stamina' => 70, 'defense' => 28, 'attack' => 23,
+                    'shot' => 19, 'pass' => 27, 'dribble' => 22,
+                    'block' => 21, 'intercept' => 26, 'tackle' => 24,
                     'hand_save' => 10, 'punch_save' => 10,
                 ],
                 'Milieu de l\'équipe B d\'Esperion, formé au club et aîné d\'Ashito. Attentif à ses coéquipiers, il apporte de l\'équilibre à la récupération et à la relance, et conseille les nouveaux joueurs.',
