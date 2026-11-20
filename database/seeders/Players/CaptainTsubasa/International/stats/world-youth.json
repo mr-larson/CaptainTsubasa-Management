@@ -74,6 +74,19 @@
         "tackle": 29
       },
       "why": "Ramené sous Tsubasa : défenseur capitaine, très fort en défense."
+    },
+    "Salvatore Gentile": {
+      "stats": {
+        "heading": 28,
+        "pass": 25
+      },
+      "why": "Défenseur italien : jeu de tête 28 et passe 25."
+    },
+    "Ramon Galvan": {
+      "stats": {
+        "pass": 25
+      },
+      "why": "Défenseur argentin : passe 25."
     }
   }
 }
