@@ -1,0 +1,33 @@
+{
+  "nationality": "République tchèque",
+  "sources": "Palmarès : Wikipédia / FIFA. Onze joueurs ajoutés par migration (Čech, Ujfaluši, Jankulovski, Grygera, Rosický, Poborský, Souček, Masopust, Panenka, Baroš, Schick), sans portrait : à illustrer. Le pays n'avait que trois joueurs et aucun personnage Captain Tsubasa.",
+  "players": {
+    "Jan Koller": {
+      "stats": {
+        "attack": 30,
+        "shot": 26,
+        "heading": 31,
+        "speed": 55
+      },
+      "why": "Géant de 2 m 02, Dortmund, demi-finaliste de l'Euro 2004 : avant-centre de tête et de présence."
+    },
+    "Daniel Zítka": {
+      "stats": {
+        "defense": 30,
+        "hand_save": 26,
+        "punch_save": 25
+      },
+      "why": "Gardien du Zénith et de Parme, demi-finaliste de l'Euro 2004 : sûr et régulier."
+    },
+    "Pavel Nedvěd": {
+      "stats": {
+        "stamina": 82,
+        "shot": 28,
+        "attack": 31,
+        "pass": 29,
+        "speed": 66
+      },
+      "why": "Ballon d'Or 2003, Juventus, Lazio : milieu à la frappe puissante et à l'endurance exceptionnelle."
+    }
+  }
+}
