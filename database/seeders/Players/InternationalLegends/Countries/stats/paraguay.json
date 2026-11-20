@@ -1,0 +1,17 @@
+{
+  "nationality": "Paraguay",
+  "sources": "Palmarès : Wikipédia / FIFA. Onze joueurs ajoutés par migration (Villar, Gamarra, Ayala, Arce, G. Gómez, Acuña, Romero, Almirón, Santa Cruz, Cabañas, Cardozo), sans portrait : à illustrer. Le pays n'avait que Chilavert et aucun personnage Captain Tsubasa. Il n'a que trois milieux : Riveros ou Barreto pourraient s'ajouter.",
+  "players": {
+    "José Luis Chilavert": {
+      "stats": {
+        "defense": 32,
+        "hand_save": 28,
+        "punch_save": 27,
+        "shot": 22,
+        "attack": 16,
+        "pass": 22
+      },
+      "why": "Gardien buteur (plus de 60 buts sur coups francs et penalties), Vélez Sarsfield (Copa Libertadores 1994) et Paraguay : arrêts et frappe de loin."
+    }
+  }
+}
