@@ -89,11 +89,13 @@
     },
     "Salvatore Gentile": {
       "stats": {
-        "heading": 28,
-        "pass": 25,
-        "block": 32
+        "heading": 30,
+        "pass": 27,
+        "block": 33,
+        "tackle": 31,
+        "intercept": 31
       },
-      "why": "Défenseur italien : jeu de tête 28 et passe 25. Contre 32."
+      "why": "Meilleur défenseur de la base : OVR 33 (contre 33, tacle 31, interception 31, tête 30, passe 27)."
     },
     "Ramon Galvan": {
       "stats": {

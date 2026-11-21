@@ -100,25 +100,33 @@
     },
     "Eden Hazard": {
       "stats": {
-        "speed": 77,
-        "stamina": 74,
-        "attack": 37,
-        "shot": 28,
-        "pass": 28,
-        "dribble": 31,
-        "heading": 16
+        "speed": 78,
+        "stamina": 65,
+        "attack": 38,
+        "shot": 30,
+        "pass": 34,
+        "dribble": 37,
+        "heading": 19,
+        "defense": 25,
+        "block": 19,
+        "intercept": 23,
+        "tackle": 21
       },
       "why": "Chelsea et Real Madrid, joueur de l'année de Premier League 2015 : dribble et accélérations, faible de la tête."
     },
     "Romelu Lukaku": {
       "stats": {
-        "speed": 72,
+        "speed": 74,
         "stamina": 78,
-        "attack": 34,
-        "shot": 29,
-        "pass": 22,
-        "dribble": 21,
-        "heading": 30
+        "attack": 36,
+        "shot": 30,
+        "pass": 24,
+        "dribble": 23,
+        "heading": 30,
+        "defense": 22,
+        "block": 19,
+        "intercept": 20,
+        "tackle": 20
       },
       "why": "Meilleur buteur de l'histoire de la Belgique, MVP de Serie A 2021 : puissance, finition et jeu aérien, peu de technique."
     },
@@ -191,11 +199,15 @@
       "stats": {
         "speed": 75,
         "stamina": 80,
-        "attack": 37,
-        "shot": 28,
-        "pass": 31,
-        "dribble": 27,
-        "defense": 24
+        "attack": 38,
+        "shot": 30,
+        "pass": 35,
+        "dribble": 30,
+        "defense": 26,
+        "block": 21,
+        "intercept": 25,
+        "tackle": 23,
+        "heading": 19
       },
       "why": "Manchester City, plus de 100 passes décisives en Premier League : passe, frappe de loin et volume de jeu."
     },
@@ -214,14 +226,17 @@
     },
     "Marc Wilmots": {
       "stats": {
-        "speed": 66,
+        "speed": 68,
         "stamina": 78,
-        "attack": 30,
-        "shot": 25,
-        "pass": 24,
-        "dribble": 22,
-        "tackle": 24,
-        "heading": 26
+        "attack": 32,
+        "shot": 27,
+        "pass": 26,
+        "dribble": 23,
+        "tackle": 26,
+        "heading": 26,
+        "defense": 26,
+        "block": 21,
+        "intercept": 23
       },
       "why": "Le Sanglier : Schalke (Coupe UEFA 1997), 4 Mondiaux : arrivées dans la surface, combativité et endurance."
     },
@@ -272,10 +287,17 @@
     },
     "Marc Degryse": {
       "stats": {
-        "attack": 28,
-        "pass": 28,
-        "dribble": 25,
-        "shot": 22
+        "attack": 30,
+        "pass": 31,
+        "dribble": 28,
+        "shot": 24,
+        "speed": 67,
+        "stamina": 74,
+        "defense": 26,
+        "block": 20,
+        "intercept": 23,
+        "tackle": 21,
+        "heading": 19
       },
       "why": "Anderlecht, Sheffield Wednesday, Bordeaux : créateur plus que buteur."
     },
@@ -308,10 +330,16 @@
     "Éric Gerets": {
       "stats": {
         "speed": 71,
-        "defense": 32,
-        "block": 28,
-        "tackle": 28,
-        "stamina": 78
+        "defense": 34,
+        "block": 31,
+        "tackle": 31,
+        "stamina": 78,
+        "attack": 22,
+        "shot": 19,
+        "pass": 25,
+        "dribble": 20,
+        "intercept": 30,
+        "heading": 28
       },
       "why": "Standard, PSV (Coupe d'Europe 1988), Mondial 1982 et 1986 : défenseur et latéral complet."
     },
@@ -335,8 +363,17 @@
     },
     "Georges Grün": {
       "stats": {
-        "defense": 30,
-        "heading": 27
+        "defense": 33,
+        "heading": 29,
+        "speed": 64,
+        "stamina": 74,
+        "attack": 20,
+        "shot": 17,
+        "pass": 23,
+        "dribble": 18,
+        "block": 29,
+        "intercept": 27,
+        "tackle": 29
       },
       "why": "Anderlecht, Parme : défenseur solide, bon de la tête."
     },
