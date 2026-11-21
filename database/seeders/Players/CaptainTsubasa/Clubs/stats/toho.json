@@ -140,12 +140,16 @@
     "Kojiro Hyuga": {
       "stats": {
         "shot": 33,
-        "defense": 26,
+        "defense": 30,
         "pass": 24,
         "block": 22,
         "intercept": 24,
         "tackle": 24,
-        "dribble": 29
+        "dribble": 29,
+        "speed": 78,
+        "stamina": 85,
+        "attack": 41,
+        "heading": 28
       },
       "why": "Équivalent à Tsubasa (tir à 33) : le seul club à avoir un joueur au niveau de Tsubasa avec Misugi au-dessus."
     },

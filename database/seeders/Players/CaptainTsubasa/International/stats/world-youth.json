@@ -6,12 +6,14 @@
         "shot": 35,
         "pass": 29,
         "dribble": 31,
-        "defense": 30,
+        "defense": 26,
         "block": 22,
-        "intercept": 24,
+        "intercept": 20,
         "tackle": 24,
         "speed": 79,
-        "stamina": 85
+        "stamina": 85,
+        "attack": 42,
+        "heading": 24
       },
       "why": "Le plus fort des internationaux : seul à 35 en tir, au-dessus de Tsubasa, Santana, Natureza et Diaz, et de Kaltz en Allemagne."
     },
@@ -28,14 +30,17 @@
     },
     "Natureza": {
       "stats": {
-        "defense": 30,
+        "defense": 32,
         "block": 22,
-        "intercept": 24,
-        "tackle": 24,
+        "intercept": 25,
+        "tackle": 25,
         "pass": 31,
-        "dribble": 31,
+        "dribble": 32,
         "speed": 78,
-        "stamina": 84
+        "stamina": 84,
+        "shot": 30,
+        "attack": 38,
+        "heading": 24
       },
       "why": "Un des quatre internationaux plus forts que Tsubasa."
     },
@@ -46,8 +51,12 @@
         "intercept": 24,
         "tackle": 24,
         "pass": 29,
-        "dribble": 31,
-        "speed": 77
+        "dribble": 33,
+        "speed": 77,
+        "shot": 31,
+        "stamina": 80,
+        "attack": 41,
+        "heading": 24
       },
       "why": "Un des quatre internationaux plus forts que Tsubasa."
     },

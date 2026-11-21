@@ -21,7 +21,8 @@ export function usePlayerEditorFilters(players, { gameSave = null } = {}) {
             && (contract.end_week == null || Number(contract.end_week) >= Number(save.week ?? 1));
     });
     const overall = player => {
-        const values = PLAYER_STATS.map(({ key }) => playerStat(player, key)).filter(v => Number.isFinite(v) && v > 0);
+        // `stats` (JSON, édité par la fiche) fait foi : la colonne `heading` héritée n'est plus mise à jour.
+        const values = PLAYER_STATS.map(({ key }) => Number(player.stats?.[key] ?? playerStat(player, key))).filter(v => Number.isFinite(v) && v > 0);
         return values.length ? Math.round(values.reduce((a, b) => a + b, 0) / values.length) : 0;
     };
     const filtered = computed(() => toValue(players).filter(player => {
