@@ -2,6 +2,7 @@
 
 namespace App\Exceptions;
 
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
 
@@ -29,5 +30,19 @@ class Handler extends ExceptionHandler
         $this->reportable(function (Throwable $e) {
             //
         });
+    }
+
+    /**
+     * Visiteur non connecté (session expirée, par exemple). Une visite Inertia en PATCH/PUT/DELETE reçoit une
+     * redirection 303 : avec un 302, le navigateur rejouerait la même méthode sur /login (« PATCH method is not
+     * supported for route login »).
+     */
+    protected function unauthenticated($request, AuthenticationException $exception)
+    {
+        if ($request->header('X-Inertia') && ! $request->isMethod('GET') && ! $request->expectsJson()) {
+            return redirect()->guest($exception->redirectTo($request) ?? route('login'), 303);
+        }
+
+        return parent::unauthenticated($request, $exception);
     }
 }
